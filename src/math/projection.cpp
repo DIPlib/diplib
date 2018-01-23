@@ -43,7 +43,7 @@ class ProjectionScanFunction {
 void ProjectionScan(
       Image const& c_in,
       Image const& c_mask,
-      Image& c_out,
+      Image& out,
       DataType outImageType,
       BooleanArray process,   // taken by copy so we can modify
       ProjectionScanFunction& function
@@ -98,22 +98,22 @@ void ProjectionScan(
    // Is there anything to do?
    if( !process.any() ) {
       //std::cout << "Projection framework: nothing to do!" << std::endl;
-      c_out = c_in; // This ignores the mask image
+      out = c_in; // This ignores the mask image
       return;
    }
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
-      if( c_out.IsOverlappingView( input ) || c_out.IsOverlappingView( mask )) {
-         c_out.Strip();
+      if( out.IsOverlappingView( input ) || out.IsOverlappingView( mask )) {
+         out.Strip();
       }
-      c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
+      out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
       // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
-      c_out.ReshapeTensor( outTensor );
+      out.ReshapeTensor( outTensor );
    DIP_END_STACK_TRACE
-   c_out.SetPixelSize( pixelSize );
-   c_out.SetColorSpace( colorSpace );
-   Image output = c_out.QuickCopy();
+   out.SetPixelSize( pixelSize );
+   out.SetColorSpace( colorSpace );
+   Image output = out.QuickCopy();
 
    // Do tensor to spatial dimension if necessary
    if( outTensor.Elements() > 1 ) {
@@ -253,10 +253,9 @@ void ProjectionScan(
 
 namespace {
 
-template< typename TPI >
-class ProjectionMean : public ProjectionScanFunction {
+template< typename TPI, bool ComputeMean_ >
+class ProjectionSumMean : public ProjectionScanFunction {
    public:
-      ProjectionMean( bool computeMean ) : computeMean_( computeMean ) {}
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FlexType< TPI > sum = 0;
@@ -266,7 +265,9 @@ class ProjectionMean : public ProjectionScanFunction {
             do {
                if( it.template Sample< 1 >() ) {
                   sum += static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
-                  ++n;
+                  if( ComputeMean_ ) {
+                     ++n;
+                  }
                }
             } while( ++it );
          } else {
@@ -275,15 +276,25 @@ class ProjectionMean : public ProjectionScanFunction {
             do {
                sum += static_cast< FlexType< TPI >>( *it );
             } while( ++it );
-            n = in.NumberOfPixels();
+            if( ComputeMean_ ) {
+               n = in.NumberOfPixels();
+            }
          }
-         *static_cast< FlexType< TPI >* >( out ) = ( computeMean_ && ( n > 0 ))
-                                                   ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                   : ( sum );
+         if( ComputeMean_ ) {
+            *static_cast< FlexType< TPI >* >( out ) = ( n > 0 )
+                                                      ? ( sum / static_cast< FloatType< TPI >>( n ))
+                                                      : ( sum );
+         } else {
+            *static_cast< FlexType< TPI >* >( out ) = sum;
+         }
       }
-   private:
-      bool computeMean_ = true;
 };
+
+template< typename TPI >
+using ProjectionSum = ProjectionSumMean< TPI, false >;
+
+template< typename TPI >
+using ProjectionMean = ProjectionSumMean< TPI, true >;
 
 template< typename TPI >
 class ProjectionMeanDirectional : public ProjectionScanFunction {
@@ -322,7 +333,7 @@ void Mean(
    if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionMeanDirectional, (), in.DataType() );
    } else {
-      DIP_OVL_NEW_ALL( lineFilter, ProjectionMean, ( true ), in.DataType() );
+      DIP_OVL_NEW_ALL( lineFilter, ProjectionMean, (), in.DataType() );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
 }
@@ -334,7 +345,7 @@ void Sum(
       BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   DIP_OVL_NEW_ALL( lineFilter, ProjectionMean, ( false ), in.DataType() );
+   DIP_OVL_NEW_ALL( lineFilter, ProjectionSum, (), in.DataType() );
    ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
 }
 
@@ -379,10 +390,9 @@ void Product(
 
 namespace {
 
-template< typename TPI >
-class ProjectionMeanAbs : public ProjectionScanFunction {
+template< typename TPI, bool ComputeMean_ >
+class ProjectionSumMeanAbs : public ProjectionScanFunction {
    public:
-      ProjectionMeanAbs( bool computeMean ) : computeMean_( computeMean ) {}
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FloatType< TPI > sum = 0;
@@ -392,7 +402,9 @@ class ProjectionMeanAbs : public ProjectionScanFunction {
             do {
                if( it.template Sample< 1 >() ) {
                   sum += std::abs( static_cast< FlexType< TPI >>( it.template Sample< 0 >() ));
-                  ++n;
+                  if ( ComputeMean_ ) {
+                     ++n;
+                  }
                }
             } while( ++it );
          } else {
@@ -401,15 +413,25 @@ class ProjectionMeanAbs : public ProjectionScanFunction {
             do {
                sum += std::abs( static_cast< FlexType< TPI >>( *it ));
             } while( ++it );
-            n = in.NumberOfPixels();
+            if( ComputeMean_ ) {
+               n = in.NumberOfPixels();
+            }
          }
-         *static_cast< FloatType< TPI >* >( out ) = ( computeMean_ && ( n > 0 ))
-                                                    ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                    : ( sum );
+         if( ComputeMean_ ) {
+            *static_cast< FlexType< TPI >* >( out ) = ( n > 0 )
+                                                      ? ( sum / static_cast< FloatType< TPI >>( n ))
+                                                      : ( sum );
+         } else {
+            *static_cast< FlexType< TPI >* >( out ) = sum;
+         }
       }
-   private:
-      bool computeMean_ = true;
 };
+
+template< typename TPI >
+using ProjectionSumAbs = ProjectionSumMeanAbs< TPI, false >;
+
+template< typename TPI >
+using ProjectionMeanAbs = ProjectionSumMeanAbs< TPI, true >;
 
 } // namespace
 
@@ -421,9 +443,9 @@ void MeanAbs(
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsUnsigned() ) {
-      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMean, ( true ), in.DataType() );
+      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMean, (), in.DataType() );
    } else {
-      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMeanAbs, ( true ), in.DataType() );
+      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMeanAbs, (), in.DataType() );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
 }
@@ -436,19 +458,18 @@ void SumAbs(
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsUnsigned() ) {
-      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMean, ( false ), in.DataType() );
+      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionSum, (), in.DataType() );
    } else {
-      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMeanAbs, ( false ), in.DataType() );
+      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionSumAbs, (), in.DataType() );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
 }
 
 namespace {
 
-template< typename TPI >
-class ProjectionMeanSquare : public ProjectionScanFunction {
+template< typename TPI, bool ComputeMean_ >
+class ProjectionSumMeanSquare : public ProjectionScanFunction {
    public:
-      ProjectionMeanSquare( bool computeMean ) : computeMean_( computeMean ) {}
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FlexType< TPI > sum = 0;
@@ -459,7 +480,9 @@ class ProjectionMeanSquare : public ProjectionScanFunction {
                if( it.template Sample< 1 >() ) {
                   FlexType< TPI > v = static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
                   sum += v * v;
-                  ++n;
+                  if( ComputeMean_ ) {
+                     ++n;
+                  }
                }
             } while( ++it );
          } else {
@@ -469,15 +492,25 @@ class ProjectionMeanSquare : public ProjectionScanFunction {
                FlexType< TPI > v = static_cast< FlexType< TPI >>( *it );
                sum += v * v;
             } while( ++it );
-            n = in.NumberOfPixels();
+            if( ComputeMean_ ) {
+               n = in.NumberOfPixels();
+            }
          }
-         *static_cast< FlexType< TPI >* >( out ) = ( computeMean_ && ( n > 0 ))
-                                                   ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                   : ( sum );
+         if( ComputeMean_ ) {
+            *static_cast< FlexType< TPI >* >( out ) = ( n > 0 )
+                                                      ? ( sum / static_cast< FloatType< TPI >>( n ))
+                                                      : ( sum );
+         } else {
+            *static_cast< FlexType< TPI >* >( out ) = sum;
+         }
       }
-   private:
-      bool computeMean_ = true;
 };
+
+template< typename TPI >
+using ProjectionSumSquare = ProjectionSumMeanSquare< TPI, false >;
+
+template< typename TPI >
+using ProjectionMeanSquare = ProjectionSumMeanSquare< TPI, true >;
 
 } // namespace
 
@@ -489,9 +522,9 @@ void MeanSquare(
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsBinary() ) {
-      DIP_OVL_NEW_BINARY( lineFilter, ProjectionMean, ( true ), DT_BIN );
+      DIP_OVL_NEW_BINARY( lineFilter, ProjectionMean, (), DT_BIN );
    } else {
-      DIP_OVL_NEW_NONBINARY( lineFilter, ProjectionMeanSquare, ( true ), in.DataType() );
+      DIP_OVL_NEW_NONBINARY( lineFilter, ProjectionMeanSquare, (), in.DataType() );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
 }
@@ -504,9 +537,9 @@ void SumSquare(
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsBinary() ) {
-      DIP_OVL_NEW_BINARY( lineFilter, ProjectionMean, ( false ), DT_BIN );
+      DIP_OVL_NEW_BINARY( lineFilter, ProjectionSum, (), DT_BIN );
    } else {
-      DIP_OVL_NEW_NONBINARY( lineFilter, ProjectionMeanSquare, ( false ), in.DataType() );
+      DIP_OVL_NEW_NONBINARY( lineFilter, ProjectionSumSquare, (), in.DataType() );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
 }
@@ -542,17 +575,13 @@ class ProjectionVariance : public ProjectionScanFunction {
 };
 
 template< typename TPI >
-inline std::unique_ptr< ProjectionScanFunction > NewProjectionVarianceStable( bool computeStD ) {
-   return static_cast< std::unique_ptr< ProjectionScanFunction >>( new ProjectionVariance< TPI, VarianceAccumulator >( computeStD ));
-}
+using ProjectionVarianceStable = ProjectionVariance< TPI, VarianceAccumulator >;
+
 template< typename TPI >
-inline std::unique_ptr< ProjectionScanFunction > NewProjectionVarianceFast( bool computeStD ) {
-   return static_cast< std::unique_ptr< ProjectionScanFunction >>( new ProjectionVariance< TPI, FastVarianceAccumulator >( computeStD ));
-}
+using ProjectionVarianceFast = ProjectionVariance< TPI, FastVarianceAccumulator >;
+
 template< typename TPI >
-inline std::unique_ptr< ProjectionScanFunction > NewProjectionVarianceDirectional( bool computeStD ) {
-   return static_cast< std::unique_ptr< ProjectionScanFunction >>( new ProjectionVariance< TPI, DirectionalStatisticsAccumulator >( computeStD ));
-}
+using ProjectionVarianceDirectional = ProjectionVariance< TPI, DirectionalStatisticsAccumulator >;
 
 } // namespace
 
@@ -569,11 +598,11 @@ void Variance(
       mode = S::FAST;
    }
    if( mode == S::STABLE ) {
-      DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewProjectionVarianceStable, ( false ), in.DataType() );
+      DIP_OVL_NEW_REAL( lineFilter, ProjectionVarianceStable, ( false ), in.DataType() );
    } else if( mode == S::FAST ) {
-      DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewProjectionVarianceFast, ( false ), in.DataType() );
+      DIP_OVL_NEW_REAL( lineFilter, ProjectionVarianceFast, ( false ), in.DataType() );
    } else if( mode == S::DIRECTIONAL ) {
-      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceDirectional, ( false ), in.DataType() );
+      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( false ), in.DataType() );
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
@@ -593,11 +622,11 @@ void StandardDeviation(
       mode = S::FAST;
    }
    if( mode == S::STABLE ) {
-      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceStable, ( true ), in.DataType() );
+      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceStable, ( true ), in.DataType() );
    } else if( mode == S::FAST ) {
-      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceFast, ( true ), in.DataType() );
+      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceFast, ( true ), in.DataType() );
    } else if( mode == S::DIRECTIONAL ) {
-      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceDirectional, ( true ), in.DataType() );
+      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( true ), in.DataType() );
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
@@ -606,29 +635,48 @@ void StandardDeviation(
 
 namespace {
 
+// Some functor object to compute maximum and minimum
 template< typename TPI >
-class ProjectionMaximum : public ProjectionScanFunction {
+struct MaxComputer {
+   static TPI compare( TPI a, TPI b ) { return std::max( a, b ); }
+   static constexpr TPI init_value = std::numeric_limits< TPI >::lowest();
+};
+
+template< typename TPI >
+struct MinComputer {
+   static TPI compare( TPI a, TPI b ) { return std::min( a, b ); }
+   static constexpr TPI init_value = std::numeric_limits< TPI >::max();
+};
+
+template< typename TPI, typename Computer >
+class ProjectionMaxMin : public ProjectionScanFunction {
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         TPI max = std::numeric_limits< TPI >::lowest();
+         TPI res = Computer::init_value;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  max = std::max( max, it.template Sample< 0 >() );
+                  res = Computer::compare( res, it.template Sample< 0 >() );
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               max = std::max( max, *it );
+               res = Computer::compare( res, *it );
             } while( ++it );
          }
-         *static_cast< TPI* >( out ) = max;
+         *static_cast< TPI* >( out ) = res;
       }
 };
+
+template< typename TPI >
+using ProjectionMaximum = ProjectionMaxMin< TPI, MaxComputer< TPI >>;
+
+template< typename TPI >
+using ProjectionMinimum = ProjectionMaxMin< TPI, MinComputer< TPI >>;
 
 } // namespace
 
@@ -638,38 +686,14 @@ void Maximum(
       Image& out,
       BooleanArray const& process
 ) {
+   if( in.DataType().IsBinary() ) {
+      Any( in, mask, out, process );
+      return;
+   }
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionMaximum, (), in.DataType() );
+   DIP_OVL_NEW_REAL( lineFilter, ProjectionMaximum, (), in.DataType() );
    ProjectionScan( in, mask, out, in.DataType(), process, *lineFilter );
 }
-
-namespace {
-
-template< typename TPI >
-class ProjectionMinimum : public ProjectionScanFunction {
-   public:
-      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         TPI min = std::numeric_limits< TPI >::max();
-         if( mask.IsForged() ) {
-            JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
-            do {
-               if( it.template Sample< 1 >() ) {
-                  min = std::min( min, it.template Sample< 0 >() );
-               }
-            } while( ++it );
-         } else {
-            ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
-            do {
-               min = std::min( min, *it );
-            } while( ++it );
-         }
-         *static_cast< TPI* >( out ) = min;
-      }
-};
-
-} // namespace
 
 void Minimum(
       Image const& in,
@@ -677,36 +701,47 @@ void Minimum(
       Image& out,
       BooleanArray const& process
 ) {
+   if( in.DataType().IsBinary() ) {
+      All( in, mask, out, process );
+      return;
+   }
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionMinimum, (), in.DataType() );
+   DIP_OVL_NEW_REAL( lineFilter, ProjectionMinimum, (), in.DataType() );
    ProjectionScan( in, mask, out, in.DataType(), process, *lineFilter );
 }
 
 namespace {
 
-template< typename TPI >
-class ProjectionMaximumAbs : public ProjectionScanFunction {
+template< typename TPI, typename Computer >
+class ProjectionMaxMinAbs : public ProjectionScanFunction {
+      using TPO = AbsType< TPI >;
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         AbsType< TPI > max = 0;
+         TPO res = Computer::init_value;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  max = std::max( max, static_cast< AbsType< TPI >>( abs( it.template Sample< 0 >() )));
+                  res = Computer::compare( res, static_cast< TPO >( abs( it.template Sample< 0 >() )));
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               max = std::max( max, static_cast< AbsType< TPI >>( abs( *it )));
+               res = Computer::compare( res, static_cast< TPO >( abs( *it )));
             } while( ++it );
          }
-         *static_cast< AbsType< TPI >* >( out ) = max;
+         *static_cast< TPO* >( out ) = res;
       }
 };
+
+template< typename TPI >
+using ProjectionMaximumAbs = ProjectionMaxMinAbs< TPI, MaxComputer< AbsType< TPI >>>;
+
+template< typename TPI >
+using ProjectionMinimumAbs = ProjectionMaxMinAbs< TPI, MinComputer< AbsType< TPI >>>;
 
 } // namespace
 
@@ -716,45 +751,16 @@ void MaximumAbs(
       Image& out,
       BooleanArray const& process
 ) {
-   std::unique_ptr< ProjectionScanFunction > lineFilter;
    DataType dt = in.DataType();
    if( dt.IsUnsigned() ) {
-      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMaximum, (), dt );
-   } else {
-      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMaximumAbs, (), dt );
+      Maximum( in, mask, out, process );
+      return;
    }
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMaximumAbs, (), dt );
    dt = DataType::SuggestAbs( dt );
    ProjectionScan( in, mask, out, dt, process, *lineFilter );
 }
-
-namespace {
-
-template< typename TPI >
-class ProjectionMinimumAbs : public ProjectionScanFunction {
-      using TPO = AbsType< TPI >;
-   public:
-      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         AbsType< TPI > min = std::numeric_limits< AbsType< TPI >>::max();
-         if( mask.IsForged() ) {
-            JointImageIterator< TPI, bin > it( { in, mask } );
-            it.OptimizeAndFlatten();
-            do {
-               if( it.template Sample< 1 >() ) {
-                  min = std::min( min, static_cast< AbsType< TPI >>( abs( it.template Sample< 0 >() )));
-               }
-            } while( ++it );
-         } else {
-            ImageIterator< TPI > it( in );
-            it.OptimizeAndFlatten();
-            do {
-               min = std::min( min, static_cast< AbsType< TPI >>( abs( *it )));
-            } while( ++it );
-         }
-         *static_cast< AbsType< TPI >* >( out ) = min;
-      }
-};
-
-} // namespace
 
 void MinimumAbs(
       Image const& in,
@@ -762,13 +768,13 @@ void MinimumAbs(
       Image& out,
       BooleanArray const& process
 ) {
-   std::unique_ptr< ProjectionScanFunction > lineFilter;
    DataType dt = in.DataType();
    if( dt.IsUnsigned() ) {
-      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMinimum, (), dt );
-   } else {
-      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMinimumAbs, (), dt );
+      Minimum( in, mask, out, process );
+      return;
    }
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMinimumAbs, (), dt );
    dt = DataType::SuggestAbs( dt );
    ProjectionScan( in, mask, out, dt, process, *lineFilter );
 }
