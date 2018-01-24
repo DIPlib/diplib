@@ -213,6 +213,7 @@ void init_image( py::module& m ) {
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
    py::implicitly_convertible< py::buffer, dip::Image >();
+   // TODO: add a constructor (or special function) that creates a 0D tensor image from a list or numpy array
    // Export a Python raw buffer
    img.def_buffer( []( dip::Image& self ) -> py::buffer_info { return ImageToBuffer( self ); } );
    // Basic properties
@@ -380,6 +381,7 @@ void init_image( py::module& m ) {
    img.def( py::self % dip::dfloat() );
    img.def( "__pow__", []( dip::Image const& a, dip::Image const& b ) { return dip::Power( a, b ); }, py::is_operator() );
    img.def( "__pow__", []( dip::Image const& a, dip::dfloat b ) { return dip::Power( a, b ); }, py::is_operator() );
+   img.def( "__pow__", []( dip::dfloat a, dip::Image const& b ) { return dip::Power( dip::Image{ a }, b ); }, py::is_operator() );
    img.def( "__ipow__", []( dip::Image& a, dip::Image const& b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
    img.def( "__ipow__", []( dip::Image& a, dip::dfloat b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
    img.def( py::self == py::self );

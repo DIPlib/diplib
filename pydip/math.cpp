@@ -20,6 +20,32 @@
 #include "diplib/math.h"
 
 void init_math( py::module& m ) {
+   m.def( "Add", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Add( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "Add", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Add( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Subtract", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Subtract( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "Subtract", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Subtract( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Multiply", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Multiply( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "Multiply", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Multiply( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "MultiplySampleWise", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::MultiplySampleWise( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "MultiplySampleWise", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::MultiplySampleWise( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "MultiplyConjugate", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::MultiplyConjugate( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "MultiplyConjugate", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::MultiplyConjugate( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Divide", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Divide( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "Divide", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Divide( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "SafeDivide", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::SafeDivide( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "SafeDivide", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::SafeDivide( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Modulo", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Modulo( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "Modulo", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Modulo( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Power", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Power( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
+   m.def( "Power", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Power( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Invert", py::overload_cast< dip::Image const& >( &dip::Invert ), "in"_a );
+   m.def( "And", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::And( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Or", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Or( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Xor", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Xor( lhs, rhs ); }, "lhs"_a, "rhs"_a );
+   m.def( "Not", py::overload_cast< dip::Image const& >( &dip::Not ), "in"_a );
+   m.def( "InRange", []( dip::Image const& in, dip::Image const& lhs, dip::Image const& rhs ) { return dip::InRange( in, lhs, rhs ); }, "in"_a, "lhs"_a, "rhs"_a );
+   m.def( "OutOfRange", []( dip::Image const& in, dip::Image const& lhs, dip::Image const& rhs ) { return dip::OutOfRange( in, lhs, rhs ); }, "in"_a, "lhs"_a, "rhs"_a );
+
    m.def( "SquareModulus", py::overload_cast< dip::Image const& >( &dip::SquareModulus ), "in"_a );
    m.def( "Phase", py::overload_cast< dip::Image const& >( &dip::Phase ), "in"_a );
    m.def( "Round", py::overload_cast< dip::Image const& >( &dip::Round ), "in"_a );
