@@ -152,6 +152,7 @@ FeretValues ConvexHull::Feret() const {
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    dip::ChainCode cc;

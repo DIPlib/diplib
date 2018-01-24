@@ -733,6 +733,7 @@ void ExpandBuffer(
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 #include <numeric>
 
 DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {

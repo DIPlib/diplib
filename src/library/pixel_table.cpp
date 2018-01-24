@@ -458,6 +458,7 @@ void PixelTable::AddDistanceToOriginAsWeights() {
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    dip::PixelTable pt( "elliptic", dip::FloatArray{ 10.1, 12.7, 5.3 }, 1 );

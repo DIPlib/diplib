@@ -56,7 +56,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    # using Visual Studio C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
-   # add_compile_options(/wd4251) # Disable "needs to have dll-interface" warning
 endif()
 
 # RPATH
@@ -155,7 +154,8 @@ endif()
 set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
 if(DIP_ENABLE_DOCTEST)
    target_include_directories(DIP PRIVATE dependencies/doctest)
-   target_compile_definitions(DIP PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
+   target_compile_definitions(DIP PRIVATE DIP__ENABLE_DOCTEST
+                                          DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
                                           DIP__EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
    if(DIP_SHARED_LIBRARY)
       target_compile_definitions(DIP PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
@@ -231,7 +231,9 @@ if(DIP_ENABLE_DOCTEST)
    add_executable(unit_tests EXCLUDE_FROM_ALL src/library/unit_tests.cpp)
    target_include_directories(unit_tests PRIVATE dependencies/doctest)
    target_link_libraries(unit_tests PRIVATE DIP)
-   target_compile_definitions(unit_tests PRIVATE DIP__IMPLEMENT_UNIT_TESTS DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
+   target_compile_definitions(unit_tests PRIVATE DIP__IMPLEMENT_UNIT_TESTS
+                                                 DIP__ENABLE_DOCTEST
+                                                 DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
    if(DIP_SHARED_LIBRARY)
       target_compile_definitions(unit_tests PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
       if(APPLE)
@@ -243,7 +245,7 @@ if(DIP_ENABLE_DOCTEST)
       include(dependencies/doctest/doctest_force_link_static_lib_in_target.cmake)
       doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
    endif()
-   add_custom_target(check COMMAND ./unit_tests)
+   add_custom_target(check COMMAND unit_tests)
    add_dependencies(check unit_tests)
    add_custom_target(check_memory COMMAND valgrind ./unit_tests)
    add_dependencies(check_memory unit_tests)

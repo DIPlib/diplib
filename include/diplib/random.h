@@ -228,7 +228,7 @@ class DIP_NO_EXPORT BinaryRandomGenerator {
 
 
 #ifdef DIP__ENABLE_DOCTEST
-
+#include "doctest.h"
 #include "diplib/transform.h"
 #include "diplib/math.h"
 #include "diplib/accumulators.h"

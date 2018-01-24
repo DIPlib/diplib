@@ -3,7 +3,7 @@
  * This file is not part of the DIPlib library, it is the main() for the
  * unit tests program.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,30 @@
  * limitations under the License.
  */
 
+#ifdef DIP__ENABLE_DOCTEST
+
 // Define this value when compiling the unit_tests program
 #ifdef DIP__IMPLEMENT_UNIT_TESTS
 
 #ifdef DIP__DOCTEST_IN_SHARED_LIB
 
-#include "diplib.h"
-#define DOCTEST_CONFIG_IMPLEMENT
+#define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
 #include "doctest.h"
 
-namespace dip {
-// Declaration for function in `src/library/unit_tests_shared_lib.cpp`
-DIP_EXPORT int run_unit_tests( int argc, const char* const* argv );
+#include "diplib.h"
+#include "diplib/linear.h"
+
+DOCTEST_TEST_CASE("[DIPlib] checking that exceptions can be caught outside the shared library") {
+   dip::Image img( {}, 1 );
+   DOCTEST_CHECK_THROWS_AS( dip::GaussFIR( img, { 1 }, { 0 }, { "illegal BC" } ), dip::ParameterError );
 }
 
 int main( int argc, const char* const* argv ) {
+   // force the use of a symbol from the DIP shared library so tests from it get registered
+   dip::DataType::SuggestInteger( dip::DT_UINT8 );
+
    doctest::Context context( argc, argv );
-   int res = dip::run_unit_tests( argc, argv );
+   int res = context.run();
    if( context.shouldExit() ) {  // important - query flags (and --exit) rely on the user doing this
       return res;                // propagate the result of the tests
    }
@@ -43,10 +50,21 @@ int main( int argc, const char* const* argv ) {
 
 #else // !DIP__DOCTEST_IN_SHARED_LIB
 
-#include "diplib.h"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
 #endif // DIP__DOCTEST_IN_SHARED_LIB
 
+#else //! DIP__IMPLEMENT_UNIT_TESTS
+
+#ifdef DIP__DOCTEST_IN_SHARED_LIB
+
+#define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "doctest.h"
+
+#endif // DIP__DOCTEST_IN_SHARED_LIB
+
 #endif // DIP__IMPLEMENT_UNIT_TESTS
+
+#endif // DIP__ENABLE_DOCTEST

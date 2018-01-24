@@ -1225,6 +1225,7 @@ inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
    dip::Image img{ dip::UnsignedArray{ 3, 2, 4 }, 1, dip::DT_UINT16 };

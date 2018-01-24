@@ -114,7 +114,6 @@ src/library/neighborhood.cpp
 src/library/physical_dimensions.cpp
 src/library/pixel_table.cpp
 src/library/unit_tests.cpp
-src/library/unit_tests_shared_lib.cpp
 src/linear/convolution.cpp
 src/linear/derivative.cpp
 src/linear/finitediff.cpp

@@ -264,6 +264,7 @@ void Solve(
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    dip::dfloat matrix2[] = { 4, 8, 0 };

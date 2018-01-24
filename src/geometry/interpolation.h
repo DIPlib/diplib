@@ -672,6 +672,7 @@ void Dispatch(
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 #include <numeric>
 
 template< typename T >

@@ -277,6 +277,7 @@ ChainCode ChainCode::Offset() const {
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    dip::ChainCode cc;
