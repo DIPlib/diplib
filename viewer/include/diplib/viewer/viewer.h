@@ -399,7 +399,14 @@ template<typename T>
 std::string to_string(dip::DimensionArray<T> array)
 {
   std::ostringstream oss;
-  oss << "[" << array << "]";
+  oss << "[";
+  for (size_t ii=0; ii < array.size(); ++ii)
+  {
+    oss << array[ii];
+    if (ii < array.size()-1)
+      oss << ", ";
+  }
+  oss << "]";
   return oss.str();
 }
 
