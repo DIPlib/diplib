@@ -62,7 +62,7 @@
 %   See also DIPSETPREF, DIPFIG, DIPTRUESIZE, DIPMAPPING, DIPZOOM, DIPTEST,
 %   DIPORIEN, DIPLINK, DIPSTEP.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -710,11 +710,18 @@ cdata = squeeze(double(cdata))';
 xdata = (0:sz)-0.5;
 xdata = reshape(repmat(xdata,2,1),[1,sz*2+2]);
 xdata = xdata(2:end-1);
-colors = get(0,'DefaultAxesColorOrder');
+if strcmp(udata.imagedata.colorspace,'RGB')
+   % These colors are taken from 'DefaultAxesColorOrder' on R2017a
+   colors = [0.850, 0.325, 0.098;... % most red color
+             0.466, 0.674, 0.188;... % most green color
+             0.000, 0.447, 0.741]; % most blue color
+else
+   colors = get(0,'DefaultAxesColorOrder');
+end
 for ii=1:size(cdata,2)
    ydata = reshape(repmat(cdata(:,ii)',2,1),[1,sz*2]);
    jj = mod(ii-1,size(colors,1))+1;
-   line('xdata',xdata,'ydata',ydata,'color',colors(jj,:),'linestyle','-');
+   line('parent',axh,'xdata',xdata,'ydata',ydata,'color',colors(jj,:),'linestyle','-');
 end
 udata = stretchYaxis_1D(axh,udata);
 

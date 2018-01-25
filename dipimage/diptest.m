@@ -14,7 +14,7 @@
 %
 %   See also DIPSHOW, DIPORIEN, DIPZOOM, DIPSTEP, DIPLINK.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -306,15 +306,6 @@ if isfield(udata,'Zlineh')
    len = abs(delta);
    str = [str,' ',num2str(len)];
 end
-str = [str,' : '];
-if ~isempty(udata.colspace)
-   str = [str,udata.colspace,' = ['];
-   data = double(udata.colordata(pt(1)));
-   for ii=1:length(data)
-      str = [str,formatvalue(data(ii)),','];
-   end
-   str(end) = ']';
-else
-   str = [str,formatvalue(double(udata.imagedata(pt(1))))];
-end
+value = mat2str(reshape(double(udata.imagedata(pt(1))),1,[]),4);
+str = [str,' : ',value];
 set(fig,'Name',str);
