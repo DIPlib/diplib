@@ -1,4 +1,4 @@
-%DIPLINK   Linking of displays for 3D images
+%DIPLINK   Linking of display windows
 %   DIPLINK allows the user to select one or more display windows to
 %   link the current window with.
 %   DIPLINK OFF unlinks the current figure window.
@@ -12,7 +12,7 @@
 %   Also: DIPLINK(H,'ON'), DIPLINK(H,'OFF'), etc. to specify a window handle.
 %
 %   DIPLINK(H,LIST) links display H with the displays in LIST. LIST is either
-%   a numeric array with figure window handles, or a cell array with variable
+%   an array with figure window handles, or a cell array with variable
 %   names. The handle H cannot be left out in this syntax.
 %
 %   NOTE: DIPLINK(H,CHARLIST) only works on registerd windows, i.e.
@@ -22,7 +22,7 @@
 %
 %   See also DIPSHOW, DIPMAPPING, DIPSTEP, DIPZOOM, DIPTEST.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -111,7 +111,7 @@ end
 function makeDIPlinkObj(fig,udata,list)
 tag = get(fig,'Tag');
 nD = tag(11);
-if isnumeric(list) && isnan(list)
+if isnumeric(list) && all(isnan(list))
    newlist = handleselect(['Select a ',nD,'D image display'],fig,udata.linkdisplay,[nD,'D']);
    if ischar(newlist)
       return
@@ -141,16 +141,13 @@ else
    else
       return
    end
-   valid = zeros(size(newlist));
-   for ii=1:length(newlist)   
-       valid(ii) = strncmp(get(newlist(ii),'Tag'),['DIP_Image_' num2str(nD) 'D'],12);    
-   end
-   newlist = newlist(logical(valid));
+   valid = strncmp(get(newlist,'Tag'),['DIP_Image_' num2str(nD) 'D'],12);
+   newlist = newlist(valid);
    if isempty(newlist)
       return
    end
 end
-udata.linkdisplay = newlist;
+udata.linkdisplay = newlist(:);
 set(fig,'UserData',[]); % Solve MATLAB bug!
 set(fig,'UserData',udata);
 if isempty(newlist)

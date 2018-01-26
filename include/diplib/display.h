@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the ImageDisplay class
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,9 +165,12 @@ class DIP_NO_EXPORT ImageDisplay{
       /// That is, the display needs to be redrawn.
       bool OutIsDirty() const { return outputIsDirty_ || rgbSliceIsDirty_ || sliceIsDirty_; }
 
-      /// \brief Returns true if the next call to `Output` will yield a different slice, which means that the
-      /// output image could have a different size (and be reallocated).
+      /// \brief Returns true if the next call to `Output` will yield a different slice
       bool SliceIsDirty() const { return sliceIsDirty_; }
+
+      /// \brief Returns true if the next call to `Output` will yield an output of a different size. That is,
+      /// the slicing direction has changed, and this yields a change in sizes.
+      bool SizeIsDirty() const { return sizeIsDirty_; }
 
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
       /// In case of a 1D `Output`, `y` is ignored.
@@ -195,10 +198,21 @@ class DIP_NO_EXPORT ImageDisplay{
          DIP_THROW_IF(( dim1 >= nDim ) || ( dim2 >= nDim ), E::ILLEGAL_DIMENSION );
          if(( dim1_ != dim1 ) || ( dim2_ != dim2 )) {
             twoDimOut_ = dim1 != dim2;
+            // Will the output sizes change?
+            if(( dim1_ != dim2_ ) ^ twoDimOut_ ) {
+               // changing from 1D to 2D out, or reverse
+               sizeIsDirty_ = true;
+            } else {
+               if(( image_.Size( dim1_ ) != image_.Size( dim1 )) || ( image_.Size( dim2_ ) != image_.Size( dim2 ))) {
+                  sizeIsDirty_ = true;
+               }
+            }
+            // Update dimensions
             dim1_ = dim1;
             dim2_ = dim2;
             sliceIsDirty_ = true;
-            if( twoDimOut_ && nDim == 2 ) { // Make sure projection mode is always "slice" if ndims(img)==ndims(out)
+            // Make sure projection mode is always "slice" if ndims(img)==ndims(out)
+            if( twoDimOut_ && nDim == 2 ) {
                projectionMode_ = ProjectionMode::SLICE;
             }
             FillOrthogonal();
@@ -495,7 +509,8 @@ class DIP_NO_EXPORT ImageDisplay{
       Image output_;
 
       // Changing display flags causes one or more "dirty" flags to be set. This indicates that the corresponding
-      // image needs to be recomputed.
+      // image needs to be recomputed. If one flag is set, the ones below it are also (implicitly) set.
+      bool sizeIsDirty_ = true;     // true if a new slice direction was chosen -- output sizes will change
       bool sliceIsDirty_ = true;    // corresponds to slice_
       bool rgbSliceIsDirty_ = true; // corresponds to rgbSlice_
       bool outputIsDirty_ = true;   // corresponds to output_

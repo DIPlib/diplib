@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `imagedisplay` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,6 @@
  *    imagedisplay(handle,'mappingmode',[a,b])      % map the given range
  *
  * Get display modes.
- *    mode = imagedisplay(handle,'sizes')
  *    mode = imagedisplay(handle,'coordinates')
  *    mode = imagedisplay(handle,'slicing')
  *    mode = imagedisplay(handle,'slicemode')
@@ -46,6 +45,15 @@
  *    mode = imagedisplay(handle,'complexmapping')
  *    mode = imagedisplay(handle,'mappingmode')
  *    mode = imagedisplay(handle,'range')
+ *
+ * Get display properties and image properties.
+ *    mode = imagedisplay(handle,'sizes')           % image sizes
+ *    mode = imagedisplay(handle,'dirty')           % pixel values have changed?
+ *    mode = imagedisplay(handle,'change')          % slicing has changed?
+ *    mode = imagedisplay(handle,'orthogonal')      % a list of dimensions not displayed
+ *    mode = imagedisplay(handle,'dimensionality')  % the dimensionality of the image
+ *    mode = imagedisplay(handle,'limits_or_nan')   % the max and min value of the displayed data, if computed
+ *    mode = imagedisplay(handle,'limits')          % the max and min value of the displayed data, computes them if necessary
  *
  * Get an image for display. OUT can be directly passed to an Image handle graphics object.
  *    out = imagedisplay(handle)
@@ -217,7 +225,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                   plhs[ 0 ] = dml::GetArray( object->OutIsDirty() );
                } else if( key == "change" ) {
                   DML_MAX_ARGS( 2 );
-                  plhs[ 0 ] = dml::GetArray( object->SliceIsDirty() );
+                  plhs[ 0 ] = dml::GetArray( object->SizeIsDirty() );
                } else if( key == "orthogonal" ) {
                   DML_MAX_ARGS( 2 );
                   plhs[ 0 ] = dml::GetArray( object->GetOrhthogonal() );

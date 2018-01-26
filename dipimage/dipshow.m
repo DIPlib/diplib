@@ -273,7 +273,7 @@ if nargin >= n
          handle = udata.handle;
          coords = imagedisplay(handle,'coordinates');
          slicing = imagedisplay(handle,'slicing');
-         udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+         udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,[]);
          set(fig,'UserData',udata)
       else
          change_mapping(fig,varargin{n:end});
@@ -652,7 +652,7 @@ udata.linkdisplay = [];
 udata = display_data_1D(axh,udata);
 set(axh,'XLim',[0,sz]-0.5);
 % Set figure properties
-set_mode_check(fig,imagedisplay(handle,'mappingmode'),'',imagedisplay(handle,'complexmapping'),[]);
+set_mode_check(fig,imagedisplay(handle,'mappingmode'),'',imagedisplay(handle,'complexmapping'),[],'');
 if dontshowzoom
    udata.zoom = 0;
 else
@@ -880,7 +880,7 @@ else
 end
 set(fig,'Colormap',colmapdata);
 % Set figure properties
-set_mode_check(fig,imagedisplay(handle,'mappingmode'),udata.colmap,imagedisplay(handle,'complexmapping'),imagedisplay(handle,'slicing'));
+set_mode_check(fig,imagedisplay(handle,'mappingmode'),udata.colmap,imagedisplay(handle,'complexmapping'),imagedisplay(handle,'slicing'),imagedisplay(handle,'slicemode'));
 if nD>=3
    set_global_check(fig,imagedisplay(handle,'globalstretch'));
    if ~isempty(udata.linkdisplay)
@@ -978,55 +978,93 @@ end
 %
 % Update slices in linked displays
 %
-function hlist = update_linked(fig,hlist,newcoords,newslicing,curzoom)
-%input of newcoords and newslicing is only required for 3D, 4D images
+function hlist = update_linked(fig,hlist,newcoords,newslicing,zoomdelta)
+% Input of newcoords, newslicing and zoomdelta can be empty if no change
+% needed. If they're all empty, just shift to center.
 
-keep = ones(size(hlist));
 curax = findobj(fig,'Type','axes');
-curxlim = get(curax,'xlim');
-curylim = get(curax,'ylim');
+center = [mean(get(curax,'xlim')),mean(get(curax,'ylim'))];
 
 tag = get(fig,'Tag');
-for ii=1:length(hlist)
-   if ~isfigh(hlist(ii)) || ~strncmp(get(hlist(ii),'Tag'),tag,12)
-      disp(['Warning: the linked display ',num2str(hlist(ii)),' no longer matches this one.']);
-      keep(ii) = 0;
-   else
-      udata = get(hlist(ii),'UserData');
-      if ~isempty(newcoords) && isfield(udata,'handle')
-         imh = findobj(hlist(ii),'Type','image');
-         if length(imh)~=1, return, end
-         handle = udata.handle;
+hlist = hlist(isfighlist(hlist));
+valid = strncmp(get(hlist,'Tag'),tag,12);
+hlist = hlist(valid);
+
+% Get figures linked with
+oldlist = hlist;
+while true
+   newlist = [];
+   for ii=1:numel(oldlist)
+      ud = get(oldlist(ii),'UserData');
+      if isfield(ud,'linkdisplay')
+         newlist = [newlist;ud.linkdisplay];
+      end
+   end
+   newlist = setdiff(newlist,[fig;hlist]);
+   if isempty(newlist)
+      break
+   end
+   newlist = newlist(isfighlist(newlist));
+   valid = strncmp(get(newlist,'Tag'),tag,12);
+   newlist = newlist(valid);
+   if isempty(newlist)
+      break;
+   end
+   hlist = [hlist;newlist]; % Copy linked windows to local list
+   oldlist = newlist;
+end
+
+% Update all linked windows
+for ii=1:numel(hlist)
+   h = hlist(ii);
+   imh = findobj(h,'Type','image');
+   if length(imh)~=1, return, end
+   udata = get(h,'UserData');
+   change = false; % change in axes
+   update = false;
+   if isfield(udata,'handle') && (~isempty(newcoords) || ~isempty(newslicing))
+      handle = udata.handle;
+      if ~isempty(newcoords)
          imagedisplay(handle,'coordinates',newcoords);
+      end
+      if ~isempty(newslicing)
          imagedisplay(handle,'slicing',newslicing);
+      end
+      change = imagedisplay(handle,'change');
+      if (imagedisplay(handle,'dirty'))
          udata = update_display(udata,imh,handle);
-         % TODO: axes don't resize?
-         set(hlist(ii),'UserData',[]);    % Solve MATLAB bug!
-         set(hlist(ii),'UserData',udata);
+         update = true;
       end
-      % Change the axis and zoom also for 2D data
-      % TODO: This does not work when images have different sizes! Zoom in target window is fudged up.
-      ax = findobj(hlist(ii),'Type','axes');
-      if udata.zoom ~= curzoom
-         au = get(ax,'Units');
-         set(ax,'Units','pixels');
-         set(hlist(ii),'Units','pixels');
-         winsize = get(hlist(ii),'Position');
-         winsize = winsize(3:4);
-         pt = [mean(get(ax,'XLim')),mean(get(ax,'YLim'))];
-         dipzoomZoom(curzoom/udata.zoom,pt,ax,udata,winsize)
-         udata.zoom = dipfig_isnormalaspect(ax);
-         set(hlist(ii),'UserData',[]);    % Solve MATLAB bug!
-         set(hlist(ii),'UserData',udata);
-         dipfig_titlebar(hlist(ii),udata);
-         set(ax,'Units',au);
-      end
-      set(ax,'xlim',curxlim);
-      set(ax,'ylim',curylim);
-      % TODO: Update the displays linked by this display!
+   end
+   if change && ~isempty(udata.zoom)
+      set(h,'UserData',[]);    % Solve MATLAB bug!
+      set(h,'UserData',udata);
+      diptruesize(h,udata.zoom*100); % changes UserData
+      udata = get(h,'UserData');
+      update = false;
+   end
+   % Maybe we need to shift the image and/or zoom?
+   ax = findobj(h,'Type','axes');
+   au = get(ax,'Units');
+   set(ax,'Units','pixels');
+   set(h,'Units','pixels');
+   winsize = get(h,'Position');
+   winsize = winsize(3:4);
+   if ~isempty(zoomdelta)
+      dipzoomZoom(zoomdelta,center,ax,udata,winsize)
+      udata.zoom = dipfig_isnormalaspect(ax);
+      update = true;
+   else
+      % This centers around `center`
+      dipzoomZoom(1,center,ax,udata,winsize)
+   end
+   set(ax,'Units',au);
+   if update
+      dipfig_titlebar(h,udata);
+      set(h,'UserData',[]);    % Solve MATLAB bug!
+      set(h,'UserData',udata);
    end
 end
-hlist = hlist(keep);
 if isempty(hlist)
    diplink(fig,'off');
 end
@@ -1153,22 +1191,27 @@ else
    end
 end
 if nD>=3
-   uimenu(h,'Label','X-Y slice','Tag','xy','Callback',...
+   uimenu(h,'Label','X-Y axes','Tag','xy','Callback',...
           @(~,~)dipshow(gcbf,'ch_slicing','xy'),'Separator','on');
-   uimenu(h,'Label','X-Z slice','Tag','xz','Callback',...
+   uimenu(h,'Label','X-Z axes','Tag','xz','Callback',...
           @(~,~)dipshow(gcbf,'ch_slicing','xz'));
-   uimenu(h,'Label','Y-Z slice','Tag','yz','Callback',...
+   uimenu(h,'Label','Y-Z axes','Tag','yz','Callback',...
           @(~,~)dipshow(gcbf,'ch_slicing','yz'));
+   if nD>3
+      uimenu(h,'Label','X-T axes','Tag','xt','Callback',...
+             @(~,~)dipshow(gcbf,'ch_slicing','xt'));
+      uimenu(h,'Label','Y-T axes','Tag','yt','Callback',...
+             @(~,~)dipshow(gcbf,'ch_slicing','yt'));
+      uimenu(h,'Label','Z-T axes','Tag','zt','Callback',...
+             @(~,~)dipshow(gcbf,'ch_slicing','zt'));
+   end
+   uimenu(h,'Label','Slice','Tag','slice','Callback',...
+          @(~,~)dipshow(gcbf,'ch_slicemode','slice'),'Separator','on');
+   uimenu(h,'Label','Max projection','Tag','max','Callback',...
+          @(~,~)dipshow(gcbf,'ch_slicemode','max'));
+   uimenu(h,'Label','Mean projection','Tag','mean','Callback',...
+          @(~,~)dipshow(gcbf,'ch_slicemode','mean'));
 end
-if nD==4
-   uimenu(h,'Label','X-T slice','Tag','xt','Callback',...
-          @(~,~)dipshow(gcbf,'ch_slicing','xt'));
-   uimenu(h,'Label','Y-T slice','Tag','yt','Callback',...
-          @(~,~)dipshow(gcbf,'ch_slicing','yt'));
-   uimenu(h,'Label','Z-T slice','Tag','zt','Callback',...
-          @(~,~)dipshow(gcbf,'ch_slicing','zt'));
-end
-% TODO: add slice / max projection / mean projection as options for nD>=3
 
 % Create 'Actions' menu
 h = uimenu(fig,'Label','Actions','Tag','actions');
@@ -1249,7 +1292,7 @@ end
 %
 % Set the checkmarks to the current modes
 %
-function set_mode_check(fig,mappingmode,colmap,complexmapping,slicing)
+function set_mode_check(fig,mappingmode,colmap,complexmapping,slicing,slicemode)
 m = findobj(get(fig,'Children'),'Tag','mappings');
 set(get(m,'Children'),'Checked','off');
 if ~isempty(mappingmode)
@@ -1264,6 +1307,9 @@ end
 if ~isempty(slicing)
    map = 'xyzt';
    set(findobj(m,'Tag',map(slicing)),'Checked','on');
+end
+if ~isempty(slicemode)
+   set(findobj(m,'Tag',slicemode),'Checked','on');
 end
 
 
@@ -1333,6 +1379,8 @@ while ii<=N
       case 'ch_slicing'
          slicing = parse_slicing(varargin{ii});
          imagedisplay(handle,'slicing',slicing);
+      case 'ch_slicemode'
+         imagedisplay(handle,'slicemode',varargin{ii});
       case 'ch_globalstretch'
          imagedisplay(handle,'globalstretch',varargin{ii});
       case 'ch_slice'
@@ -1375,7 +1423,7 @@ else %other dimensionality
       set(fig,'Colormap',colmap);
    end
 end
-set_mode_check(fig,imagedisplay(handle,'mappingmode'),udata.colmap,imagedisplay(handle,'complexmapping'),imagedisplay(handle,'slicing'));
+set_mode_check(fig,imagedisplay(handle,'mappingmode'),udata.colmap,imagedisplay(handle,'complexmapping'),imagedisplay(handle,'slicing'),imagedisplay(handle,'slicemode'));
 if imagedisplay(handle,'dimensionality')>=3
    set_global_check(fig,imagedisplay(handle,'globalstretch'))
 end
@@ -1389,7 +1437,7 @@ end
 if dolinked && ~isempty(udata.linkdisplay)
    coords = imagedisplay(handle,'coordinates');
    slicing = imagedisplay(handle,'slicing');
-   newlinks = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+   newlinks = update_linked(fig,udata.linkdisplay,coords,slicing,[]);
    if ~isequal(newlinks,udata.linkdisplay)
       udata.linkdisplay = newlinks;
       set(fig,'UserData',[]);    % Solve MATLAB bug!
@@ -1541,27 +1589,22 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
          set(udata.ax,'XLim',pt(1)+[0,delta(1)]-0.5,'YLim',pt(2)+[0,delta(2)]-0.5);
          position_axes(udata.ax,[pelsize,pelsize],delta,udata.figsz);
       end
+      zoomdelta = [];
    else
       % Clicked
       switch get(fig,'SelectionType')
          case 'normal'
             % zoom in
-            dipzoomZoom(2,pt,udata.ax,udata,udata.figsz);
+            zoomdelta = 2;
          case 'alt'
             % zoom out
-            dipzoomZoom(0.5,pt,udata.ax,udata,udata.figsz);
+            zoomdelta = 0.5;
          case 'open'
             % set to 100%
-            dipzoomZoom(0,pt,udata.ax,udata,udata.figsz);
-            %if isfield(udata,'imagedata')
-            %   set(udata.ax,'XLim',[0,udata.imsize]-0.5,...
-            %       'Units','normalized','Position',[0,0,1,1]);
-            %else
-            %   set(udata.ax,'XLim',[0,udata.imsize(1)]-0.5,'YLim',[0,udata.imsize(2)]-0.5,...
-            %       'Units','normalized','Position',[0,0,1,1]);
-            %end
+            zoomdelta = 0;
          otherwise
       end
+      dipzoomZoom(zoomdelta,pt,udata.ax,udata,udata.figsz);
    end
    % Clean up
    udata = rmfield(udata,{'recth','coords','figsz'});
@@ -1574,8 +1617,8 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = rmfield(udata,{'ax','oldAxesUnits','oldNumberTitle'});
    dipfig_titlebar(fig,udata);
    % Update linked displays
-   if ~isempty(udata.linkdisplay)
-      udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],udata.zoom);
+   if ~isempty(zoomdelta) && ~isempty(udata.linkdisplay)
+      udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],zoomdelta);
    end
    set(fig,'UserData',[]);    % Solve MATLAB bug!
    set(fig,'UserData',udata);
@@ -1722,8 +1765,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Imag
    if ~isempty(udata.linkdisplay)
       handle = udata.handle;
       coords = imagedisplay(handle,'coordinates');
-      slicing = imagedisplay(handle,'slicing');
-      udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+      udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
    end
    % Clean up
    set(udata.ax,'Units',udata.oldAxesUnits);
@@ -1772,8 +1814,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                   if ~isempty(udata.linkdisplay)
                      handle = udata.handle;
                      coords = imagedisplay(handle,'coordinates');
-                     slicing = imagedisplay(handle,'slicing');
-                     udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+                     udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
                   end
                end
                udata.nextslice = '';
@@ -1798,8 +1839,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                dipfig_titlebar(fig,udata);
                if ~isempty(udata.linkdisplay)
                   coords = imagedisplay(handle,'coordinates');
-                  slicing = imagedisplay(handle,'slicing');
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
                end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
@@ -1823,8 +1863,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                dipfig_titlebar(fig,udata);
                if ~isempty(udata.linkdisplay)
                   coords = imagedisplay(handle,'coordinates');
-                  slicing = imagedisplay(handle,'slicing');
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,'',[]);
                end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
@@ -1843,17 +1882,18 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                pt = [mean(get(ax,'XLim')),mean(get(ax,'YLim'))];
             end
             if upper(ch)=='I'
-               dipzoomZoom(2,pt,ax,udata,winsize)
+               zoomdelta = 2;
             else
-               dipzoomZoom(0.5,pt,ax,udata,winsize)
+               zoomdelta = 0.5;
             end
+            dipzoomZoom(zoomdelta,pt,ax,udata,winsize)
             if ~isequal(udata.zoom,0)
                udata.zoom = dipfig_isnormalaspect(ax);
             end
             set(ax,'Units',au);
             dipfig_titlebar(fig,udata);
             if ~isempty(udata.linkdisplay)
-               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],udata.zoom);
+               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',zoomdelta);
             end
             set(fig,'UserData',[]);    % Solve MATLAB bug!
             set(fig,'UserData',udata);
@@ -1865,7 +1905,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             curxlim = curxlim-stepsize;
             set(ax,'Xlim',curxlim);
             if ~isempty(udata.linkdisplay)
-               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],udata.zoom);
+               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
             end
@@ -1878,7 +1918,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             curxlim = curxlim+stepsize;
             set(ax,'Xlim',curxlim);
             if ~isempty(udata.linkdisplay)
-               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],udata.zoom);
+               udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
             end
@@ -1892,7 +1932,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                curylim = curylim-stepsize;
                set(ax,'Ylim',curylim);
                if ~isempty(udata.linkdisplay)
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],udata.zoom);
+                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
                   set(fig,'UserData',[]);    % Solve MATLAB bug!
                   set(fig,'UserData',udata);
                end
@@ -1907,7 +1947,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                curylim = curylim+stepsize;
                set(ax,'Ylim',curylim);
                if ~isempty(udata.linkdisplay)
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],[],udata.zoom);
+                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,[],'',[]);
                   set(fig,'UserData',[]);    % Solve MATLAB bug!
                   set(fig,'UserData',udata);
                end

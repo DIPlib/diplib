@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition of the ImageDisplay class
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -168,6 +168,7 @@ void ImageDisplay::UpdateSlice() {
       } else {
          slice_ = image_.QuickCopy();
       }
+      sizeIsDirty_ = false;
       sliceIsDirty_ = false;
       rgbSliceIsDirty_ = true;
    }
