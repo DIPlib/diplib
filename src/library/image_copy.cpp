@@ -222,8 +222,8 @@ void Image::Copy( Image const& src ) {
          CopyNonDataProperties( src );
          return;
       }
-      if( !CompareProperties( src, Option::CmpProp::Sizes + Option::CmpProp::TensorElements ) ||
-            IsOverlappingView( src )) {
+      if( !CompareProperties( src, Option::CmpProp::Sizes + Option::CmpProp::TensorElements,
+                              Option::ThrowException::DONT_THROW ) || IsOverlappingView( src )) {
          // We cannot reuse the data segment
          Strip();
       } else {
