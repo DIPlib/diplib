@@ -40,7 +40,7 @@
 %
 %   See also DIPSHOW, DIPGETCOORDS, DIPCROP, DIPPROFILE.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,13 +72,12 @@ if size(coords,1)<3
 end
 
 if strcmp(intertype, 'spline')
-   coords(end+1,:)=coords(1,:); % TODO: splines need periodic boundary conditions to look good
-   n=length(coords);
-   xs = spline(1:n,coords(:,1),1:.2:n);
-   ys = spline(1:n,coords(:,2),1:.2:n);
+   coords = [coords(end-2:end,:);coords;coords(1:3,:)]; % Impose periodic boundary conditions
+   n = length(coords);
+   xs = spline(1:n,coords(:,1),3:.1:n-3.1);
+   ys = spline(1:n,coords(:,2),3:.1:n-3.1);
    coords = [xs' ys'];
-   coords(end,:) = [];
-   coords = floor(coords);
+   coords = round(coords);
 elseif ~strcmp(intertype, 'polygon')
    error('Unkown interpolation type.');
 end
