@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2017, Cris Luengo.)
+[//]: # ([c]2016-2018, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -129,10 +129,8 @@ document's source</a> for the most up-to-date version.
 
 - Stain unmixing for bright-field microscopy.
 
-- Some filters that are trivial to add:
-    - Scharr (slightly better than Sobel)
-    - alternating sequential open-close filter (3 versions: with structural opening,
-      opening by reconstruction, and area opening)
+- Alternating sequential open-close filter (3 versions: with structural opening,
+  opening by reconstruction, and area opening) -- easy to add!
 
 - We're also lacking some other morphological filters:
     - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
@@ -263,16 +261,6 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/segmentation.h
     - dip_KMeansClustering (dip_analysis.h)
-
-- diplib/statistics.h
-    - dip_PositionMaximum (dip_math.h)
-    - dip_PositionMinimum (dip_math.h)
-    - dip_PositionMedian (dip_math.h)
-    - dip_PositionPercentile (dip_math.h)
-    - dip_RadialMean (dip_math.h)
-    - dip_RadialSum (dip_math.h)
-    - dip_RadialMaximum (dip_math.h)
-    - dip_RadialMinimum (dip_math.h)
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)
