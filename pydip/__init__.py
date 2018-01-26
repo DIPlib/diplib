@@ -30,38 +30,35 @@ current matplotlib window, if matplotlib is installed:
    img = dip.ImageReadTIFF('cameraman')
    img.Show()
 
-**What is written below is out-of-date** (TODO: update!)
+If DIPviewer is installed, its functionality will be in hte PyDIP.viewer
+namespace.
 
-Note that even indexing is as it is in C++, and quite different from
-what you'd expect if you are a NumPy user. The [] indexing accesses
-the various tensor elements in the image (e.g. color channels). For
-spatial indexing, use the Image.At() method:
+# Indexing:
+
+Indexing into a Image object works as it does for other array types in
+Python:
    img[0]
-   img.At(slice(0,-1),slice(100,200))
-   img[0].At(slice(0,-1),slice(100,200))
-   img.At(slice(0,-1),slice(100,200))[0]
-The first line above extracts the red channel. The second line extracts
-a rectangular area covering the whole image left to right, and
-vertically from index 100 to 200, both included (indexing starts at 0).
-The third and fourth lines are equivalent, and combines the two
-indexing operations, extracting the rectangular area for the red
-channel only. The image returned by Image.At() and [] indexing are
-always views of the original image. That is, they share the same data.
-Writing to these views also changes the original image.
+   img[0:10]
+   img[0:-1:2,0:-1:2]
 
-Irregular indexing is also supported, through the Image.CopyAt()
-method. This method copies the pixels to a new image, so cannot be used
-to change pixel values. Overloaded versions of Image.CopyAt() can be
-used to write to those pixels instead:
-   mask = img < 0
-   tmp = img.CopyAt(mask)
-   tmp.Copy(-tmp)          # does not affect img
-   tmp.Fill(0)             # does not affect img
-   img.CopyAt(-tmp,mask)   # copies values to pixels selected by mask
-   img.FillAt(0,mask)      # writes 0 to the pixels selected by mask
+Note that dimensions are ordered in reverse from how NumPy stores them
+(the first dimension is horizontal, or x).
 
-Dimensions are ordered in reverse from how NumPy stores them (the first
-dimension is horizontal, or x).
+Unlike in the C++ API, the square brackets index into spatial dimensions.
+To index into tensor dimensions, use the Image.TensorElement method:
+   img.TensorElement(0)
+   img.TensorElement(0,2)
+   img.TensorElement(0:3)
+
+The output of all these indexing operations shares data with the original
+image, so writing to that output also changes the original image:
+   img.TensorElement(0).Fill(100)
+
+Irregular indexing using a mask image is also supported. This indexing
+returns a copy of the data, but an assignment form is also available:
+   img2 = img[mask]
+   img2.Fill(0)     # does not affect img
+   img[mask] = 0    # sets all pixels in mask to 0
 """
 
 # Here we import classes and functions from the binary and the python-code modules into
@@ -70,9 +67,10 @@ from PyDIP.PyDIP_bin import *
 from PyDIP.PyDIP_py import *
 
 # Here we import PyDIPviewer if it exists
-hasDIPviewer = True
+hasDIPviewer = False
 import importlib.util
-if importlib.util.find_spec('PyDIP.PyDIPviewer') is None:
-    hasDIPviewer = False
-else:
-    import PyDIP.PyDIPviewer as viewer
+
+if importlib.util.find_spec( 'PyDIP.PyDIPviewer' ) is not None:
+   import PyDIP.PyDIPviewer as viewer
+
+   hasDIPviewer = True

@@ -72,15 +72,17 @@ dip::Image BufferToImage( py::buffer& buf ) {
                datatype = dip::DT_DCOMPLEX;
                break;
             default:
+               std::cout << "Attempted to convert buffer to dip.Image object: data type not compatible." << std::endl;
                DIP_THROW( "Buffer data type not compatible with class Image" );
          }
          break;
       default:
+         std::cout << "Attempted to convert buffer to dip.Image object: data type not compatible." << std::endl;
          DIP_THROW( "Buffer data type not compatible with class Image" );
    }
    // Sizes, reversed
    dip::uint ndim = static_cast< dip::uint >( info.ndim );
-   DIP_ASSERT( ndim == info.shape.size());
+   DIP_ASSERT( ndim == info.shape.size() );
    dip::UnsignedArray sizes( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
       sizes[ ii ] = static_cast< dip::uint >( info.shape[ ndim - ii - 1 ] );
@@ -194,7 +196,7 @@ dip::String ImageRepr( dip::Image const& image ) {
    }
    os << ", " << image.DataType();
    if( image.Dimensionality() == 0 ) {
-      os << ", 0D" << std::endl;
+      os << ", 0D";
    } else {
       os << ", sizes " << image.Sizes();
    }
@@ -213,7 +215,6 @@ void init_image( py::module& m ) {
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
    py::implicitly_convertible< py::buffer, dip::Image >();
-   // TODO: add a constructor (or special function) that creates a 0D tensor image from a list or numpy array
    // Export a Python raw buffer
    img.def_buffer( []( dip::Image& self ) -> py::buffer_info { return ImageToBuffer( self ); } );
    // Basic properties
@@ -333,7 +334,6 @@ void init_image( py::module& m ) {
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
    img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
-   // TODO: Indexing operators below work well in Python, but don't match the C++ syntax for dip::Image.
    // Indexing using a mask image
    img.def( "__getitem__", []( dip::Image const& image, dip::Image const& mask ) -> dip::Image { return image.At( mask ); } );
    // Indexing into single pixel using coordinates
@@ -414,4 +414,26 @@ void init_image( py::module& m ) {
    //                                   dip::Image::Pixel >( dip::GenericImageIterator<>( image ),
    //                                                        dip::GenericImageIterator<>() );
    //}, py::keep_alive< 0, 1 >() ); // Essential: keep object alive while iterator exists
+
+   m.def( "Create0D", []( dip::Image const& in ) -> dip::Image {
+      DIP_THROW_IF( !in.IsForged(), dip::E::IMAGE_NOT_FORGED );
+      DIP_THROW_IF( !in.IsScalar(), dip::E::IMAGE_NOT_SCALAR );
+      dip::UnsignedArray sz = in.Sizes();
+      DIP_THROW_IF( sz.size() > 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
+      bool swapped = false;
+      if( sz.size() == 2 ) {
+         std::swap( sz[ 0 ], sz[ 1 ] ); // This way storage will be column-major
+         swapped = true;
+      } else {
+         sz.resize( 2, 1 ); // add dimensions of size 1
+      }
+      dip::Image out( sz, 1, in.DataType() );
+      if( swapped ) {
+         out.SwapDimensions( 0, 1 ); // Swap dimensions so they match those of `in`
+      }
+      out.Copy( in ); // copy pixel data, don't re-use
+      out.Flatten();
+      out.SpatialToTensor( 0, sz[ 0 ], sz[ 1 ] );
+      return out;
+   } );
 }

@@ -18,12 +18,12 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-import PyDIP.PyDIP_bin as dip
+import PyDIP.PyDIP_bin
 
 hasMatPlotLib = True
 
 import importlib.util
-if importlib.util.find_spec('matplotlib') is None:
+if importlib.util.find_spec( 'matplotlib' ) is None:
    print("""
 PyDIP requires matplotlib for its display functionality. Matplotlib was not found
 on your system. Image display (PyDIP.Show and PyDIP.Image.Show) will not do anything.
@@ -42,31 +42,32 @@ else:
 # Label color map from the function of the same name in DIPimage:
 def _label_colormap():
    if hasMatPlotLib:
-      cm = np.array([
-         [1.0000, 0.0000, 0.0000],
-         [0.0000, 1.0000, 0.0000],
-         [0.0000, 0.0000, 1.0000],
-         [1.0000, 1.0000, 0.0000],
-         [0.0000, 1.0000, 1.0000],
-         [1.0000, 0.0000, 1.0000],
-         [1.0000, 0.3333, 0.0000],
-         [0.6667, 1.0000, 0.0000],
-         [0.0000, 0.6667, 1.0000],
-         [0.3333, 0.0000, 1.0000],
-         [1.0000, 0.0000, 0.6667],
-         [1.0000, 0.6667, 0.0000],
-         [0.0000, 1.0000, 0.5000],
-         [0.0000, 0.3333, 1.0000],
-         [0.6667, 0.0000, 1.0000],
-         [1.0000, 0.0000, 0.3333],
-      ])
-      n = len(cm)
-      index = list(i % n for i in range(0, 255))
-      cm = np.concatenate((np.array([[0, 0, 0]]), cm[index]))
-      return matplotlib.colors.ListedColormap(cm)
+      cm = np.array( [
+         [ 1.0000, 0.0000, 0.0000 ],
+         [ 0.0000, 1.0000, 0.0000 ],
+         [ 0.0000, 0.0000, 1.0000 ],
+         [ 1.0000, 1.0000, 0.0000 ],
+         [ 0.0000, 1.0000, 1.0000 ],
+         [ 1.0000, 0.0000, 1.0000 ],
+         [ 1.0000, 0.3333, 0.0000 ],
+         [ 0.6667, 1.0000, 0.0000 ],
+         [ 0.0000, 0.6667, 1.0000 ],
+         [ 0.3333, 0.0000, 1.0000 ],
+         [ 1.0000, 0.0000, 0.6667 ],
+         [ 1.0000, 0.6667, 0.0000 ],
+         [ 0.0000, 1.0000, 0.5000 ],
+         [ 0.0000, 0.3333, 1.0000 ],
+         [ 0.6667, 0.0000, 1.0000 ],
+         [ 1.0000, 0.0000, 0.3333 ],
+      ] )
+      n = len( cm )
+      index = list( i % n for i in range( 0, 255 ) )
+      cm = np.concatenate(( np.array( [[ 0, 0, 0 ]] ), cm[ index ] ))
+      return matplotlib.colors.ListedColormap( cm )
    return None
 
-def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordinates = (), dim1 = 0, dim2 = 1, colormap = ''):
+
+def Show( img, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap='' ):
    """Show an image in the current pyplot window
 
    Keyword arguments:
@@ -125,13 +126,13 @@ def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordina
    projected as described above for higher-dimensional images.
    """
    if hasMatPlotLib:
-      out = dip.ImageDisplay(img, range, complexMode, projectionMode, coordinates, dim1, dim2)
+      out = PyDIP.PyDIP_bin.ImageDisplay( img, range, complexMode, projectionMode, coordinates, dim1, dim2 )
       if out.Dimensionality() == 1:
          axes = pp.gca()
          axes.clear()
          axes.plot( out )
-         axes.set_ylim((0,255))
-         axes.set_xlim((0,out.Size(0)-1))
+         axes.set_ylim(( 0, 255) )
+         axes.set_xlim(( 0, out.Size( 0 ) - 1 ))
       else:
          if colormap == '':
             if range == 'base' or range == 'based':
@@ -145,9 +146,9 @@ def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordina
          if colormap == 'labels':
             cmap = _label_colormap()
          else:
-            cmap = pp.get_cmap(colormap)
-         pp.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none')
-      pp.show(block=False)
+            cmap = pp.get_cmap( colormap )
+         pp.imshow( out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none' )
+      pp.show( block=False )
 
 
-dip.Image.Show = Show
+PyDIP.PyDIP_bin.Image.Show = Show
