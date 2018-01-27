@@ -460,7 +460,7 @@ void dip__SeededWatershed(
       dip::uint maxSize,
       bool lowFirst,
       bool binaryOutput,
-      bool noGaps, // TODO!
+      bool noGaps,
       bool uphillOnly
 ) {
    auto AddRegions = lowFirst ? AddRegionsLowFist< TPI > : AddRegionsHighFist< TPI >;
@@ -661,7 +661,6 @@ void SeededWatershed(
    bool lowFirst = true;
    bool noGaps = false;
    bool uphillOnly = false;
-   // TODO: Add a flag to not leave watershed lines
    for( auto& flag : flags ) {
       if( flag == S::LABELS ) {
          binaryOutput = false;

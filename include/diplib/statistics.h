@@ -281,7 +281,6 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray co
 ///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
-/// For directional statistics, the input must be real (integer or floating point).
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex, and for
 /// directional statistics it must be floating point.
@@ -311,7 +310,6 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 ///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
-/// For directional statistics, the input must be real (integer or floating point).
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex, and for
 /// directional statistics it must be floating point.

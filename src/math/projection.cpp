@@ -598,9 +598,9 @@ void Variance(
       mode = S::FAST;
    }
    if( mode == S::STABLE ) {
-      DIP_OVL_NEW_REAL( lineFilter, ProjectionVarianceStable, ( false ), in.DataType() );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionVarianceStable, ( false ), in.DataType() );
    } else if( mode == S::FAST ) {
-      DIP_OVL_NEW_REAL( lineFilter, ProjectionVarianceFast, ( false ), in.DataType() );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionVarianceFast, ( false ), in.DataType() );
    } else if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( false ), in.DataType() );
    } else {
@@ -622,9 +622,9 @@ void StandardDeviation(
       mode = S::FAST;
    }
    if( mode == S::STABLE ) {
-      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceStable, ( true ), in.DataType() );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionVarianceStable, ( true ), in.DataType() );
    } else if( mode == S::FAST ) {
-      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceFast, ( true ), in.DataType() );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionVarianceFast, ( true ), in.DataType() );
    } else if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( true ), in.DataType() );
    } else {
