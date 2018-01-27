@@ -56,8 +56,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       } else if( type == "binary" ) {
          dip::BinaryNoise( in, out, random, param1, param2 );
       } else if( type == "saltpepper" ) {
-         DIP_THROW( dip::E::NOT_IMPLEMENTED );
-         // TODO: implement salt and pepper noise.
+         dip::SaltPepperNoise( in, out, random, param1, param2, 255.0 );
       } else if( type == "brownian" ) {
          dip::ColoredNoise( in, out, random, param1 * param1, -2.0 );
       } else if( type == "pink" ) {

@@ -132,7 +132,8 @@ class DIP_NO_EXPORT Random {
 /// \brief Generates random floating-point values taken from a uniform distribution.
 ///
 /// The `operator()` method returns the next random value in the sequence. It takes two
-/// parameters, the lower and upper bound of the distribution.
+/// parameters, the lower and upper bound of the distribution. The values are taken from
+/// the half-open interval [`lowerBound`, `upperBound`).
 ///
 /// The constructor takes and stores a reference to a `dip::Random` object, which is used
 /// to produce the randomness. That object needs to exist for as long as this one exists.

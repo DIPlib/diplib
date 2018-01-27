@@ -588,9 +588,9 @@ inline Image CreateCoordinates( UnsignedArray const& sizes, StringSet const& mod
 
 /// \brief Adds uniformly distributed white noise to the input image.
 ///
-/// The uniformly distributed noise added to the image is in the range `lowerBound` to `upperBound`. That is,
-/// for each pixel it does `in += uniformRandomGenerator( lowerBound, upperBound )`. The output image is of the
-/// same type as the input image.
+/// The uniformly distributed noise added to the image is taken from the half-open interval
+/// [`lowerBound`, `upperBound`). That is, for each pixel it does
+/// `in += uniformRandomGenerator( lowerBound, upperBound )`. The output image is of the same type as the input image.
 ///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
@@ -658,7 +658,7 @@ inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 
 /// Thus, `p10` indicates the probability for each foreground pixel in the input image to be set to background,
 /// and `p01` indicates the probability that a background pixel in the input image is set to foreground. It is
 /// possible to set either of these to 0, to limit the noise to only one of the phases: for example,
-/// `BinaryNoise( in, 0.05, 0.0 )` limits the noise to the foreground components, and does not add noise to
+/// `BinaryNoise( in, random, 0.05, 0.0 )` limits the noise to the foreground components, and does not add noise to
 /// the background.
 ///
 /// Note that the noise generated corresponds to a Poisson point process. The distances between changed pixels
@@ -704,6 +704,31 @@ DIP_EXPORT void BinaryNoise( Image const& in, Image& out, Random& random, dfloat
 inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, dfloat p01 = 0.05 ) {
    Image out;
    BinaryNoise( in, out, random, p10, p01 );
+   return out;
+}
+
+/// \brief Adds salt-and-pepper noise to the input image.
+///
+/// The noise added to the image is described by the two probabilities `p0` and `p1`. `p0` is the
+/// probability that a pixel is set to 0 (black), and `p01` is the probability that a pixel is set to `white`.
+/// It is possible to set either of these to 0, to limit the noise to only one of the phases: for example,
+/// `SaltPepperNoise( in, random, 0.05, 0.0 )` adds only black pixels to the image, not white ones. `p0+p1`
+/// must not be larger than 1.
+///
+/// Note that the noise generated corresponds to a Poisson point process. The distances between changed pixels
+/// have a Poisson distribution.
+///
+/// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
+/// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
+/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// identical state before calling this function, the output image will be different depending on the number of
+/// threads used.
+///
+/// \see dip::UniformRandomGenerator.
+DIP_EXPORT void SaltPepperNoise( Image const& in, Image& out, Random& random, dfloat p0 = 0.05, dfloat p1 = 0.05, dfloat white = 1.0 );
+inline Image SaltPepperNoise( Image const& in, Random& random, dfloat p0 = 0.05, dfloat p1 = 0.05, dfloat white = 1.0 ) {
+   Image out;
+   SaltPepperNoise( in, out, random, p0, p1, white );
    return out;
 }
 
