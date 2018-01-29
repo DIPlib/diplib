@@ -29,19 +29,7 @@
 #include "diplib/overload.h"
 #include "diplib/lookup_table.h"
 
-
 namespace dip {
-
-
-void KMeansClustering(
-      Image const& /*in*/,
-      Image& /*out*/,
-      dip::uint /*nClusters*/
-) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO: implement KMeansClustering
-}
-
 
 FloatArray IsodataThreshold(
       Image const& in,

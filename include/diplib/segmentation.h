@@ -45,12 +45,22 @@ namespace dip {
 /// of high intensity. `out` is a labeled image with `nClusters` regions tiling the image. Each
 /// region is identified by a different label. Boundaries between regions are the Voronoi tessellation
 /// given the identified cluster centers.
-DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
+///
+/// The return `dip::CoordinateArray` contains the cluster centers.
+DIP_EXPORT CoordinateArray KMeansClustering(
       Image const& in,
       Image& out,
       dip::uint nClusters = 2
 );
-// TODO: port dip_KMeansClustering (dip_analysis.h)
+inline Image KMeansClustering(
+      Image const& in,
+      dip::uint nClusters = 2
+) {
+   Image out;
+   KMeansClustering( in, out, nClusters );
+   return out;
+}
+
 
 /// \brief Thresholds the image `in` using `nThresholds` thresholds, determined using the Isodata algorithm
 /// (k-means clustering), and the histogram of `in`.
