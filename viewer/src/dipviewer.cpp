@@ -59,12 +59,14 @@ inline void Delete() {
 } // namespace
 
 void Show( Image const& image, String const& title ) {
+   DIP_THROW_IF( image.Dimensionality() == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    Create();
    DIP_STACK_TRACE_THIS( manager__->createWindow( SliceViewer::Create( image, getWindowTitle( title ))));
    ++count__;
 }
 
 void ShowSimple( Image const& image, String const& title ) {
+   DIP_THROW_IF( image.Dimensionality() == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    Create();
    DIP_STACK_TRACE_THIS( manager__->createWindow( ImageViewer::Create( image, getWindowTitle( title ))));
    ++count__;
