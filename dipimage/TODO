@@ -55,17 +55,16 @@ not listed here will not be ported):
 
 affine_trans
 afm_flatten
-aniso
+aniso *
 arcf
 backgroundoffset
 bilateralf
 cal_readnoise
-canny
-ced
+ced *
 chordlength
 correctshift
 countingframe
-cpf
+cpf *
 curvature
 curvature_thirion
 dcc
@@ -99,7 +98,7 @@ laplace_plus_dgg
 lfmse
 localshift
 mappg
-mcd
+mcd *
 morphscales
 msr_remap
 nconv
@@ -112,8 +111,8 @@ orientationspace
 paircorrelation
 percf_adap
 percf_adap_banana
-pmd
-pmd_gaussian
+pmd *
+pmd_gaussian *
 pst
 quadraturetensor
 radoncircle

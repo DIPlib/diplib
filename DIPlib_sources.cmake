@@ -190,6 +190,7 @@ src/morphology/reconstruction.cpp
 src/morphology/watershed.cpp
 src/morphology/watershed_support.cpp
 src/morphology/watershed_support.h
+src/nonlinear/anisotropic_diffusion.cpp
 src/nonlinear/kuwahara.cpp
 src/nonlinear/nonmaximumsuppression.cpp
 src/nonlinear/percentile.cpp

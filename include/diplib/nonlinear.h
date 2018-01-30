@@ -224,6 +224,7 @@ inline Image Kuwahara(
    return out;
 }
 
+
 /// \brief Non-maximum suppression, as used in the Canny edge detector.
 ///
 /// `out` contains the value of `gradmag` where `gradmag` is a local maximum in the orientation
@@ -262,6 +263,46 @@ inline Image NonMaximumSuppression(
    return out;
 }
 
+
+/// \brief Applies Perona-Malik anisotropic diffusion
+///
+/// Applies `iterations` steps of the anisotropic diffusion as proposed by Perona and Malik:
+///
+/// \f$ I^{t+1} = I^t + \lambda \sum_D \left( c_D^t \nabla_D I^t \right) \f$
+///
+/// where \f$ \lambda \f$ is set with the `lambda` parameter, *D* are the each of the cardinal directions,
+/// \f$ \nabla_D \f$ is the finite difference in direction *D*,
+///
+/// \f$ c_D^t = g\left( \left| \nabla_D I^t \right| \right)  \f$
+///
+/// and *g* is a monotonically decreasing function, selected with the `g` parameter, and modulated
+/// by the `K` parameter:
+///  - `"Gauss"`: \f$ g(x) = exp(-(x/K)^2) \f$
+///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (x/K)^2) \f$
+///  - `"exponential"`: \f$ g(x) = exp(-(x/K)) \f$
+/// The diffusion is generalized to any image dimensionality.
+///
+/// **Literature**
+/// - P. Perona and J. Malik, "Scale-Space and Edge Detection Using Anisotropic Diffusion",
+///   IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
+DIP_EXPORT void PeronaMalik(
+      Image const& in,
+      Image& out,
+      dip::uint iterations = 5,
+      dfloat K = 10,
+      dfloat lambda = 0.25,
+      String g_s = "Gauss"
+);
+inline Image PeronaMalik(
+      Image const& in,
+      dip::uint iterations = 5,
+      dfloat K = 10,
+      dfloat lambda = 0.25
+) {
+   Image out;
+   PeronaMalik( in, out, iterations, K, lambda );
+   return out;
+}
 
 // TODO: functions to port:
 /*

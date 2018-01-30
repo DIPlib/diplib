@@ -81,6 +81,7 @@ dipimage/opening.cpp
 dipimage/overlay.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
+dipimage/pmd.cpp
 dipimage/private/imagedisplay.cpp
 dipimage/private/libraryinformation.cpp
 dipimage/private/numberofthreads.cpp
