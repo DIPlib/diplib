@@ -117,6 +117,7 @@ src/library/unit_tests.cpp
 src/linear/convolution.cpp
 src/linear/derivative.cpp
 src/linear/finitediff.cpp
+src/linear/gaboriir.cpp
 src/linear/gauss.cpp
 src/linear/gaussiir.cpp
 src/linear/separate_filter.cpp

@@ -1018,6 +1018,15 @@ DIP_EXPORT void GaborFIR(
       dfloat truncation = 3
 );
 
+/// \brief Recursive infinite impulse response implementation of the Gabor filter
+///
+/// `sigmas` defines sigma for each dimension.
+/// `frequencies` defines the frequency for each dimension.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// Set `process` to false for those dimensions that should not be filtered.
+/// The `order` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
+///
+/// \see dip::Gabor.
 DIP_EXPORT void GaborIIR(
       Image const& in,
       Image& out,
@@ -1025,9 +1034,58 @@ DIP_EXPORT void GaborIIR(
       FloatArray frequencies,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
-      IntegerArray filterOrder = {},
+      IntegerArray order = {},
       dfloat truncation = 3
 );
+inline Image GaborIIR(
+   Image const& in,
+   FloatArray sigmas,
+   FloatArray frequencies,
+   StringArray const& boundaryCondition = {},
+   BooleanArray process = {},
+   IntegerArray order = {},
+   dfloat truncation = 3
+) {
+   Image out;
+   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, order, truncation );
+   return out;
+}
+
+/// \brief 2D Gabor filter with direction parameter
+///
+/// `sigma` is sigma in the spatial domain.
+/// `frequency` is the frequency magnitude in pixel, in the range [0, 0.5).
+/// `direction` is the filter direction [0, 2*pi] (compare polar coordinates)
+///
+/// To use cartesian coordinates, \see dip::GaborIIR.
+inline void Gabor(
+   Image const& in,
+   Image& out,
+   FloatArray sigmas = { 5.0, 5.0 },
+   dfloat frequency = 0.1,
+   dfloat direction = dip::pi,
+   StringArray const& boundaryCondition = {},
+   BooleanArray process = {},
+   dfloat truncation = 3
+) {
+   DIP_THROW_IF( in.Dimensionality() != 2, "Gabor only implemented for 2 dimensional images; use GaborIIR().");
+   DIP_THROW_IF( frequency >= 0.5, "Frequency must be < 0.5" );
+   FloatArray frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
+   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, {}, truncation );
+}
+inline Image Gabor(
+   Image const& in,
+   FloatArray sigmas,
+   dfloat frequency,
+   dfloat direction,
+   StringArray const& boundaryCondition = {},
+   BooleanArray process = {},
+   dfloat truncation = 3
+) {
+   Image out;
+   Gabor( in, out, sigmas, frequency, direction, boundaryCondition, process, truncation );
+   return out;
+}
 
 // TODO: functions to port:
 /*

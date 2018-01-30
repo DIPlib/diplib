@@ -32,9 +32,6 @@ using ComplexArray = std::array< dcomplex, 10 >;
 constexpr dip::uint MAX_IIR_ORDER = 6;
 
 struct dip__GaussIIRParams {
-   dip::uint dim_nr;
-   bool process;
-   dip::uint derivative;
    dfloat sigma;
    dip::uint border;
    std::array< dip::uint, 6 > iir_order_num;
