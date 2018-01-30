@@ -34,7 +34,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::Image mask;
       if( nrhs > arg ) {
-         if( !mxIsNumeric( prhs[ arg ] ) || !mxIsScalar( prhs[ arg ] )) {
+         if( !mxIsNumeric( prhs[ arg ] ) || !dml::IsScalar( prhs[ arg ] )) {
             // It seems we might have a mask image as 2nd input argument
             mask = dml::GetImage( prhs[ arg ] );
             ++arg;
@@ -49,7 +49,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::String maxRadius = dip::S::OUTERRADIUS;
       if( nrhs > arg ) {
-         if( mxIsNumeric( prhs[ arg ] ) && mxIsScalar( prhs[ arg ] )) {
+         if( mxIsNumeric( prhs[ arg ] ) && dml::IsScalar( prhs[ arg ] )) {
             maxRadius = dml::GetBoolean( prhs[ arg ] ) ? dip::S::INNERRADIUS : dip::S::OUTERRADIUS;
          } else {
             maxRadius = dml::GetString( prhs[ arg ] );
