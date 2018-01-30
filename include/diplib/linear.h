@@ -1090,7 +1090,6 @@ inline Image Gabor(
 // TODO: functions to port:
 /*
    dip_OrientedGauss (dip_linear.h)
-   dip_GaborIIR (dip_iir.h)
    dip_Dgg (dip_derivatives.h)
    dip_LaplacePlusDgg (dip_derivatives.h)
    dip_LaplaceMinDgg (dip_derivatives.h)
