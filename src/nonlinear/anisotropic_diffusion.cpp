@@ -20,30 +20,62 @@
 
 #include "diplib.h"
 #include "diplib/nonlinear.h"
-#include "diplib/linear.h"
 #include "diplib/framework.h"
+#include "diplib/pixel_table.h"
 
 namespace dip {
 
 namespace {
 
-template< typename TPI, bool forward_ >
-class FiniteDifferenceLineFilter : public Framework::SeparableLineFilter {
+template< typename F >
+class PeronaMalikLineFilter : public Framework::FullLineFilter {
    public:
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) {
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+      PeronaMalikLineFilter( F const& func, dip::uint cost, sfloat lambda ) : func_( func ), cost_( cost ), lambda_( lambda ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return cost_ * lineLength;
+      }
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+         sfloat* in = static_cast< sfloat* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
-         dip::sint step = forward_ ? inStride : -inStride;
-         dip::uint length = params.inBuffer.length;
-         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         sfloat* out = static_cast< sfloat* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
+         dip::uint length = params.bufferLength;
+         dip::uint nDims = params.pixelTable.Dimensionality();
+         std::vector< PixelTableOffsets::PixelRun > pixelTableRuns = params.pixelTable.Runs(); // copy!
+         // The pixel table has `(nDims-1)*2+1` runs of length 1, and 1 run of length 3:
+         DIP_ASSERT( pixelTableRuns.size() == ( nDims - 1 ) * 2 + 1 );
+         for( dip::uint ii = 0; ii < ( nDims - 1 ) * 2 + 1; ++ii ) {
+            if( pixelTableRuns[ ii ].length == 3 ) {
+               //DIP_ASSERT( pixelTableRuns[ ii ].offset == -inStride );
+               pixelTableRuns[ ii ].length = 1; // the run should have a length of 1
+               pixelTableRuns.push_back( { -pixelTableRuns[ ii ].offset, 1 } ); // add another run of length one to the other side
+            //} else {
+               //DIP_ASSERT( pixelTableRuns[ ii ].length == 1 );
+            }
+         }
+         //DIP_ASSERT( pixelTableRuns.size() == nDims * 2 );
+         // Now the pixel table has `2*nDims` runs, one for each neighbor. The `offset` is the address of the neighbor.
          for( dip::uint ii = 0; ii < length; ++ii ) {
-            *out = in[ step ] - in[ 0 ];
+            sfloat delta = 0;
+            for( auto run : pixelTableRuns ) {
+               sfloat diff = in[ run.offset ] - in[ 0 ];
+               delta += func_( diff ) * diff;
+            }
+            *out = *in + lambda_ * delta;
             in += inStride;
             out += outStride;
          }
       }
+   private:
+      F func_; // save a copy of the lambda, in case we want to use it with a temporary-constructed lambda that captures a variable.
+      dip::uint cost_;
+      sfloat lambda_;
 };
+
+template< typename F >
+inline std::unique_ptr< Framework::FullLineFilter > NewPeronaMalikLineFilter( F const& func, dip::uint cost, sfloat lambda ) {
+   return static_cast< std::unique_ptr< Framework::FullLineFilter >>( new PeronaMalikLineFilter< F >( func, cost, lambda ));
+}
 
 } // namespace
 
@@ -53,7 +85,7 @@ void PeronaMalik(
       dip::uint iterations,
       dfloat K,
       dfloat lambda,
-      String g_s
+      String g
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -63,56 +95,29 @@ void PeronaMalik(
    DIP_THROW_IF(( lambda <= 0.0 ) || ( lambda > 1.0 ), E::PARAMETER_OUT_OF_RANGE );
 
    // Create a line filter for the scan framework that applies `g`.
-   std::unique_ptr< Framework::ScanLineFilter > g;
+   std::unique_ptr< Framework::FullLineFilter > lineFilter;
    sfloat fK = static_cast< sfloat >( K );
-   if( g_s == "Gauss" ) {
-      g = Framework::NewMonadicScanLineFilter< sfloat >(
-            [ fK ]( auto its ) { sfloat v = *its[ 0 ] / fK; return std::exp( -v * v ); },
-            20 );
-   } else if( g_s == "quadratic") {
-      g = Framework::NewMonadicScanLineFilter< sfloat >(
-            [ fK ]( auto its ) { sfloat v = *its[ 0 ] / fK; return 1.0f / ( 1.0f + ( v * v )); },
-            5 );
-   } else if( g_s == "exponential") {
-      g = Framework::NewMonadicScanLineFilter< sfloat >(
-            [ fK ]( auto its ) { sfloat v = *its[ 0 ] / fK; return std::exp( -std::abs( v )); },
-            20 );
+   if( g == "Gauss" ) {
+      lineFilter = NewPeronaMalikLineFilter(
+            [ fK ]( sfloat v ) { v /= fK; return std::exp( -v * v ); },
+            20, static_cast< sfloat >( lambda ));
+   } else if( g == "quadratic") {
+      lineFilter = NewPeronaMalikLineFilter(
+            [ fK ]( sfloat v ) { v /= fK; return 1.0f / ( 1.0f + ( v * v )); },
+            5, static_cast< sfloat >( lambda ));
+   } else if( g == "exponential") {
+      lineFilter = NewPeronaMalikLineFilter(
+            [ fK ]( sfloat v ) { v /= fK; return std::exp( -std::abs( v )); },
+            20, static_cast< sfloat >( lambda ));
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
-   FiniteDifferenceLineFilter< sfloat, true > forwardFiniteDifference;
-   FiniteDifferenceLineFilter< sfloat, false > backwardFiniteDifference;
 
    // Each iteration is applied to `out`.
-   Convert( in, out, DT_SFLOAT );
-   dip::uint nDims = in.Dimensionality();
-   BooleanArray process( nDims, false );
-   UnsignedArray border( nDims, 1 );
-   BoundaryConditionArray bc( nDims, BoundaryCondition::ADD_ZEROS );
+   BoundaryConditionArray bc( in.Dimensionality(), BoundaryCondition::ADD_ZEROS );
+   Kernel kernel( Kernel::ShapeCode::DIAMOND, { 3 } );
    for( dip::uint ii = 0; ii < iterations; ++ii ) {
-      // TODO: each iteration could be computed in a single step of a Framework::Full filter.
-      Image fd;
-      Image c;
-      process[ 0 ] = true;
-      Framework::Separable( out, fd, DT_SFLOAT, DT_SFLOAT, process, border, bc, forwardFiniteDifference );
-      Framework::ScanMonadic( fd, c, DT_SFLOAT, DT_SFLOAT, 1, *g );
-      Image delta = fd * c;
-      Framework::Separable( out, fd, DT_SFLOAT, DT_SFLOAT, process, border, bc, backwardFiniteDifference );
-      Framework::ScanMonadic( fd, c, DT_SFLOAT, DT_SFLOAT, 1, *g );
-      c *= fd; delta += c; // delta += fd * c;
-      process[ 0 ] = false;
-      for( dip::uint jj = 1; jj < nDims; ++jj ) {
-         process[ jj ] = true;
-         Framework::Separable( out, fd, DT_SFLOAT, DT_SFLOAT, process, border, bc, forwardFiniteDifference );
-         Framework::ScanMonadic( fd, c, DT_SFLOAT, DT_SFLOAT, 1, *g );
-         c *= fd; delta += c; // delta += fd * c;
-         Framework::Separable( out, fd, DT_SFLOAT, DT_SFLOAT, process, border, bc, backwardFiniteDifference );
-         Framework::ScanMonadic( fd, c, DT_SFLOAT, DT_SFLOAT, 1, *g );
-         c *= fd; delta += c; // delta += fd * c;
-         process[ jj ] = false;
-      }
-      delta *= lambda;
-      out += delta;
+      Framework::Full( ii == 0 ? in : out, out, DT_SFLOAT, DT_SFLOAT, DT_SFLOAT, 1, bc, kernel, *lineFilter, Framework::FullOption::AsScalarImage );
    }
 }
 

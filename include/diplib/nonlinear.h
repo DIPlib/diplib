@@ -291,16 +291,17 @@ DIP_EXPORT void PeronaMalik(
       dip::uint iterations = 5,
       dfloat K = 10,
       dfloat lambda = 0.25,
-      String g_s = "Gauss"
+      String g = "Gauss"
 );
 inline Image PeronaMalik(
       Image const& in,
       dip::uint iterations = 5,
       dfloat K = 10,
-      dfloat lambda = 0.25
+      dfloat lambda = 0.25,
+      String g = "Gauss"
 ) {
    Image out;
-   PeronaMalik( in, out, iterations, K, lambda );
+   PeronaMalik( in, out, iterations, K, lambda, g );
    return out;
 }
 
