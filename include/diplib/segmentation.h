@@ -209,7 +209,7 @@ inline Image VolumeThreshold(
 /// `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is applied:
 /// `out = ( in >= threshold ) ? foreground : background`.
 ///
-/// `in` must be scalar and real-valued.
+/// `in` must be real-valued, each tensor element is thresholded independently.
 ///
 /// Note that, for the "binary" output case, it might be easier to write:
 ///
@@ -245,7 +245,7 @@ inline Image FixedThreshold(
 /// `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is applied:
 /// `out = ( lowerBound <= in && in <= upperBound ) ? foreground : background`.
 ///
-/// `in` must be scalar and real-valued.
+/// `in` must be real-valued, each tensor element is thresholded independently.
 ///
 /// \see dip::InRange, dip::OutOfRange
 DIP_EXPORT void RangeThreshold(

@@ -56,6 +56,8 @@ dfloat OtsuThreshold(
       Image const& mask,
       Image& out
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       dfloat threshold = OtsuThreshold( Histogram( in, mask ) );
       FixedThreshold( in, out, threshold );
@@ -68,6 +70,8 @@ dfloat MinimumErrorThreshold(
       Image const& mask,
       Image& out
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       dfloat threshold = MinimumErrorThreshold( Histogram( in, mask ) );
       FixedThreshold( in, out, threshold );
@@ -80,6 +84,8 @@ dfloat TriangleThreshold(
       Image const& mask,
       Image& out
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       dfloat threshold = TriangleThreshold( Histogram( in, mask ) );
       FixedThreshold( in, out, threshold );
@@ -93,6 +99,8 @@ dfloat BackgroundThreshold(
       Image& out,
       dfloat distance
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       dfloat threshold = BackgroundThreshold( Histogram( in, mask ), distance );
       FixedThreshold( in, out, threshold );
@@ -106,6 +114,8 @@ dfloat VolumeThreshold(
       Image& out,
       dfloat volumeFraction
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       dfloat threshold = Percentile( in, mask, volumeFraction * 100 ).As< dfloat >();
       FixedThreshold( in, out, threshold );
@@ -121,6 +131,7 @@ void FixedThreshold(
       dfloat background,
       String const& output
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_START_STACK_TRACE
       if( output == S::BINARY ) {
          if( foreground == 0.0 ) {
@@ -178,6 +189,7 @@ void RangeThreshold(
       dfloat background,
       String const& output
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( output == S::BINARY ) {
       DIP_START_STACK_TRACE
          if( foreground == 0.0 ) {
@@ -207,6 +219,8 @@ void HysteresisThreshold(
       dfloat lowThreshold,
       dfloat highThreshold
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       Image low = in >= lowThreshold;
       Image high = in >= highThreshold;
@@ -219,6 +233,8 @@ void MultipleThresholds(
       Image& out,
       FloatArray const& thresholds
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nLabels = thresholds.size() + 1;
    DataType dataType = DT_UINT8;
    if( nLabels > std::numeric_limits< uint16 >::max() ) {
