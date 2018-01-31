@@ -94,9 +94,9 @@ dip__GaborIIRParams dip__FillGaborIIRParams(
    params.b1[ 3 ].real( -1 * (q*q*q) / scale );
 
    // Normalization
-   params.cc.real( (params.b1[ 0 ].real() + params.b1[ 1 ].real() + params.b1[ 2 ].real() + params.b1[ 3 ].real()) );
-   params.cc.real( (params.cc.real() * params.cc.real()) / (params.a1[ 0 ].real() * params.a2[ 0 ].real()) );
-   params.cc.imag(  0.0 );
+   params.cc.real(( params.b1[ 0 ].real() + params.b1[ 1 ].real() + params.b1[ 2 ].real() + params.b1[ 3 ].real() ));
+   params.cc.real(( params.cc.real() * params.cc.real() ) / ( params.a1[ 0 ].real() * params.a2[ 0 ].real() ));
+   params.cc.imag( 0.0 );
 
    // Actual coefficients
    params.b1[ 0 ].imag( 0.0 );
@@ -118,23 +118,6 @@ dip__GaborIIRParams dip__FillGaborIIRParams(
    params.b2[ 1 ].real( params.b1[ 1 ].real() );
    params.b2[ 2 ].real( params.b1[ 2 ].real() );
    params.b2[ 3 ].real( params.b1[ 3 ].real() );
-
-   /*
-   for (dip::uint jj = params.iir_order_num[1]; jj <= params.iir_order_num[2]; jj++)
-   {
-      printf("a1[%1zu] = %8.5f %8.5f\n", jj, params.a1[jj].real(), params.a1[jj].imag());
-   }
-   for (dip::uint jj = params.iir_order_num[4]; jj <= params.iir_order_num[5]; jj++)
-   {
-      printf("a2[%1zu] = %8.5f %8.5f\n", jj, params.a2[jj].real(), params.a2[jj].imag() );
-   }
-   for (dip::uint jj = 0; jj < MAX_IIR_ORDER; jj++)
-   {
-      printf("b1[%1zu] = %8.5f %8.5f \tb2[%1zu] = %8.5f %8.5f\n",
-         jj, params.b1[jj].real(), params.b1[jj].imag(), jj, params.b2[jj].real(), params.b2[jj].imag() );
-   }
-   printf("c[%1d]  = %8.5f %8.5f\n", 0, params.cc.real(), params.cc.imag() );
-   */
 
    return params;
 }
@@ -170,7 +153,7 @@ public:
       auto const& a2 = fParams.a2;
       auto const& b1 = fParams.b1;
       auto const& b2 = fParams.b2;
-      dcomplex c = (fParams.cc);
+      dcomplex c = fParams.cc;
 
       auto const& orderMA = fParams.iir_order_num;
       auto const& orderAR = fParams.iir_order_den;
@@ -178,10 +161,10 @@ public:
       dip::uint order2 = std::max( orderAR[ 3 ], orderMA[ 3 ] );
       bool copy_forward = false;
       bool copy_backward = false;
-      if( (orderMA[ 0 ] == 0) && (a1[ 0 ] == 1.0) ) {
+      if(( orderMA[ 0 ] == 0 ) && ( a1[ 0 ] == 1.0 )) {
          copy_forward = true;
       }
-      if( (orderMA[ 3 ] == 0) && (a2[ 0 ] == 1.0) ) {
+      if(( orderMA[ 3 ] == 0 ) && ( a2[ 0 ] == 1.0 )) {
          copy_backward = true;
       }
 
@@ -194,16 +177,16 @@ public:
          if( !copy_forward ) {
             p1[ ii ] = 0.0;
             for( dip::uint jj = orderMA[ 1 ]; jj <= orderMA[ 2 ]; jj++ ) {
-               p1[ ii ] += dcomplex( (a1[ jj ].real() * p0[ ii - jj ].real()) - (a1[ jj ].imag() * p0[ ii - jj ].imag()),
-                                     (a1[ jj ].real() * p0[ ii - jj ].imag()) - (a1[ jj ].imag() * p0[ ii - jj ].real()) );
+               p1[ ii ] += dcomplex(( a1[ jj ].real() * p0[ ii - jj ].real() ) - ( a1[ jj ].imag() * p0[ ii - jj ].imag() ),
+                                    ( a1[ jj ].real() * p0[ ii - jj ].imag() ) - ( a1[ jj ].imag() * p0[ ii - jj ].real() ));
             }
          } else {
             p1[ ii ] = p0[ ii ];
          }
 
          for(dip::uint jj = orderAR[ 1 ]; jj <= orderAR[ 2 ]; jj++ ) {
-            p1[ ii ] -= dcomplex( (b1[ jj ].real() * p1[ ii - jj ].real()) - (b1[ jj ].imag() * p1[ ii - jj ].imag()),
-                                  (b1[ jj ].real() * p1[ ii - jj ].imag()) + (b1[ jj ].imag() * p1[ ii - jj ].real()) );
+            p1[ ii ] -= dcomplex(( b1[ jj ].real() * p1[ ii - jj ].real() ) - ( b1[ jj ].imag() * p1[ ii - jj ].imag() ),
+                                 ( b1[ jj ].real() * p1[ ii - jj ].imag() ) + ( b1[ jj ].imag() * p1[ ii - jj ].real() ));
          }
       }
 
@@ -212,20 +195,20 @@ public:
       for( dip::uint ii = length - order2; ii < length; ii++ ) {
          p2[ ii ] = p1[ ii ];
       }
-      for( dip::sint ii = length - order2; --ii >= 0; ) {
+      for( dip::uint ii = length - order2; ii-- > 0; ) {
          if( !copy_backward ) {
             p2[ ii ] = 0.0;
             for( dip::uint jj = orderMA[ 4 ]; jj <= orderMA[ 5 ]; jj++ ) {
-               p2[ ii ] += dcomplex( (a2[ jj ].real() * p1[ ii + jj ].real()) - (a2[ jj ].imag() * p1[ ii + jj ].imag()),
-                                     (a2[ jj ].real() * p1[ ii + jj ].imag()) - (a2[ jj ].imag() * p1[ ii + jj ].real()) );
+               p2[ ii ] += dcomplex(( a2[ jj ].real() * p1[ ii + jj ].real() ) - ( a2[ jj ].imag() * p1[ ii + jj ].imag() ),
+                                    ( a2[ jj ].real() * p1[ ii + jj ].imag() ) - ( a2[ jj ].imag() * p1[ ii + jj ].real() ));
             }
          } else {
             p2[ ii ] = p1[ ii ];
          }
 
          for( dip::uint jj = orderAR[ 4 ]; jj <= orderAR[ 5 ]; jj++ ) {
-            p2[ ii ] -= dcomplex( (b2[ jj ].real() * p2[ ii + jj ].real()) - (b2[ jj ].imag() * p2[ ii + jj ].imag()),
-                                  (b2[ jj ].real() * p2[ ii + jj ].imag()) + (b2[ jj ].imag() * p2[ ii + jj ].real()) );
+            p2[ ii ] -= dcomplex(( b2[ jj ].real() * p2[ ii + jj ].real() ) - ( b2[ jj ].imag() * p2[ ii + jj ].imag() ),
+                                 ( b2[ jj ].real() * p2[ ii + jj ].imag() ) + ( b2[ jj ].imag() * p2[ ii + jj ].real() ));
          }
       }
 
@@ -246,16 +229,19 @@ void GaborIIR(
    Image const& in,
    Image& out,
    FloatArray sigmas,
-   FloatArray frequencies,
+   FloatArray const& frequencies,
    StringArray const& boundaryCondition,
    BooleanArray process,
    IntegerArray, // order is ignored, treated as 0
    dfloat truncation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sigmas.empty(), E::INVALID_PARAMETER ); // This must be given, but can be a scalar
    dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( frequencies.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_START_STACK_TRACE
       ArrayUseParameter( sigmas, nDims, 1.0 );
+      ArrayUseParameter( process, nDims, true );
    DIP_END_STACK_TRACE
    if( truncation <= 0.0 ) {
       truncation = 3;   // Default truncation
@@ -265,10 +251,10 @@ void GaborIIR(
    std::vector< dip__GaborIIRParams > filterParams( nDims );
    UnsignedArray border( nDims );
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
-      if( (sigmas[ ii ] > 0.0) && (in.Size( ii ) > 1) ) {
+      if(( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
          bool found = false;
          for( dip::uint jj = 0; jj < ii; ++jj ) {
-            if( process[ jj ] && (sigmas[ jj ] == sigmas[ ii ]) ) {
+            if( process[ jj ] && ( sigmas[ jj ] == sigmas[ ii ] ) && ( frequencies[ jj ] == frequencies[ ii ] )) {
                filterParams[ ii ] = filterParams[ jj ];
                found = true;
                break;
