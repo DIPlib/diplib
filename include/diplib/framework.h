@@ -972,7 +972,10 @@ class DIP_EXPORT FullLineFilter {
 ///
 /// `position` gives the coordinates for the first pixel in the buffers,
 /// subsequent pixels occur along dimension `dimension`. `position[dimension]`
-/// is always zero.
+/// is always zero. If `dip::FrameWork::FullOption::AsScalarImage` was given and the
+/// input image has more than one tensor element, then `position` will have an additional
+/// element. Use `pixelTable.Dimensionality()` to determine how many of the elements
+/// in `position` to use.
 ///
 /// The input and output buffers will never share memory. That is, the line
 /// filter can freely write in the output buffer without invalidating the input

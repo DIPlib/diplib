@@ -57,7 +57,9 @@ void Full(
    bool asScalarImage = false;
    if( opts.Contains( FullOption::AsScalarImage )) {
       outTensor = c_in.Tensor();
-      asScalarImage = true;
+      if( !c_in.IsScalar() ) {
+         asScalarImage = true;
+      }
    } else {
       expandTensor = opts.Contains( FullOption::ExpandTensorInBuffer ) && !c_in.Tensor().HasNormalOrder();
    }
@@ -121,6 +123,7 @@ void Full(
    } else {
       input = cc_in.QuickCopy();
    }
+   cc_in.Strip(); // we don't need to keep that around any more
 
    // Create a pixel table suitable to be applied to `input`
    dip::uint processingDim = OptimalProcessingDim( input, kernelSizes );
