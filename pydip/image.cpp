@@ -212,6 +212,12 @@ void init_image( py::module& m ) {
    img.def( py::init<>() );
    // Constructor, generic
    img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
+   // Constructor that takes a Sample
+   img.def( py::init< dip::Image::Sample const& >(), "sample"_a );
+   img.def( py::init< dip::Image::Sample const&, dip::DataType >(), "sample"_a, "dt"_a );
+   // Constructor that takes a Pixel
+   img.def( py::init< dip::Image::Pixel const& >(), "pixel"_a );
+   img.def( py::init< dip::Image::Pixel const&, dip::DataType >(), "pixel"_a, "dt"_a );
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
    py::implicitly_convertible< py::buffer, dip::Image >();

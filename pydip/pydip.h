@@ -214,7 +214,7 @@ class type_caster< dip::Image::Sample > {
    PYBIND11_TYPE_CASTER( type, _( "Sample" ));
 };
 
-// Cast Python scalar value to dip::Image::Pixel
+// Cast Python list to dip::Image::Pixel
 template<>
 class type_caster< dip::Image::Pixel > {
    public:

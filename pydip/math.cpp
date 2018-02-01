@@ -125,7 +125,7 @@ void init_math( py::module& m ) {
              py::make_tuple( out, eigenvectors ).release();
           }, "in"_a );
    m.def( "Inverse", py::overload_cast< dip::Image const& >( &dip::Inverse ), "in"_a );
-   m.def( "PseudoInverse", py::overload_cast< dip::Image const& >( &dip::PseudoInverse ), "in"_a );
+   m.def( "PseudoInverse", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::PseudoInverse ), "in"_a, "tolerance"_a = 1e-7 );
    m.def( "SingularValues", py::overload_cast< dip::Image const& >( &dip::SingularValues ), "in"_a );
    m.def( "SingularValueDecomposition", []( dip::Image const& in ){
              dip::Image U, S, V;
