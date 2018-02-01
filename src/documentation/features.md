@@ -129,9 +129,9 @@ connected component. If multiple connected components have the same label, only 
 connected component found for that label will be measured.
 
 \subsection shape_features_P2A P2A
-Computes \f$p^2/(4 \pi a)\f$, where *p* is the perimeter and *a* is the area, for
-2D objects, and \f$\sqrt{a^3}/(6v\sqrt{\pi})\f$, where *a* is the surface area and
-*v* is the volume, for 3D objects. See "Perimeter", "SurfaceArea" and "Size".
+Computes \f$p^2/(4 \pi a)\f$, where \f$p\f$ is the perimeter and \f$a\f$ is the area, for
+2D objects, and \f$\sqrt{a^3}/(6v\sqrt{\pi})\f$, where \f$a\f$ is the surface area and
+\f$v\f$ is the volume, for 3D objects. See "Perimeter", "SurfaceArea" and "Size".
 
 \subsection shape_features_PodczeckShapes PodczeckShapes
 Computes the 5 Podczeck shape descriptors using the results of features "Size", "Feret"
@@ -142,8 +142,8 @@ and "Perimeter". The shape descriptors are:
  - "Ellipse": similarity to an ellipse: \f$4 a/(\pi w h)\f$.
  - "Elongation": object elongation: \f$p/l\f$.
 
-where *a* is the object area, *p* the perimeter, *l* the largest Feret diameter, *w* the
-smallest Feret diameter, and *h* the diameter perpendicular to the smallest diameter
+where \f$a\f$ is the object area, \f$p\f$ the perimeter, \f$l\f$ the largest Feret diameter, \f$w\f$ the
+smallest Feret diameter, and \f$h\f$ the diameter perpendicular to the smallest diameter
 ("FeretPerpMin" value).
 
 \subsection shape_features_Convexity Convexity
@@ -197,7 +197,7 @@ represent the distances to the lower image edge along each dimension.
 
 \subsection binary_moments_Mu Mu
 Elements of the inertia tensor of the object, which is composed of second order
-normalized central moments of the binary shape. For an image with *n* dimensions,
+normalized central moments of the binary shape. For an image with \f$n\f$ dimensions,
 there are \f$n(n+1)/2\f$ values. These are stored in the same order as symmetric
 tensors are stored in an image (see `dip::Tensor::Shape`).
 
@@ -210,8 +210,8 @@ largest to smallest.
 
 \subsection binary_moments_MajorAxes MajorAxes
 Principal axes of the binary object, the eigenvectors of the tensor computed by
-feature "Mu". For an image with *n* dimensions, there are \f$n^2\f$ values. The first
-*n* values are the eigenvector associated to the largest eigenvalue, etc.
+feature "Mu". For an image with \f$n\f$ dimensions, there are \f$n^2\f$ values. The first
+\f$n\f$ values are the eigenvector associated to the largest eigenvalue, etc.
 
 \subsection binary_moments_DimensionsCube DimensionsCube
 Lengths of the sides of a rectangle (2D) or box (3D) with the same moments of inertia
@@ -240,7 +240,7 @@ Identical to feature "Center" but using the grey-value image as weighting.
 \subsection grey_moments_GreyMu GreyMu
 Elements of the inertia tensor of the grey-weighted object, which is composed of second order
 normalized central moments of the binary shape weighted by the grey-value image's intensities.
-For an image with *n* dimensions, there are \f$n(n+1)/2\f$ values. These are stored in the same
+For an image with \f$n\f$ dimensions, there are \f$n(n+1)/2\f$ values. These are stored in the same
 order as symmetric tensors are stored in an image (see `dip::Tensor::Shape`).
 
 For more information, see `dip::MomentAccumulator::SecondOrder`.
@@ -256,8 +256,8 @@ Identical to feature "Inertia" but using the grey-value image as weighting.
 
 \subsection grey_moments_GreyMajorAxes GreyMajorAxes
 Principal axes of the grey-weighted object, the eigenvectors of the tensor computed by
-feature "GreyMu". For an image with *n* dimensions, there are \f$n^2\f$ values. The first
-*n* values are the eigenvector associated to the largest eigenvalue, etc.
+feature "GreyMu". For an image with \f$n\f$ dimensions, there are \f$n^2\f$ values. The first
+\f$n\f$ values are the eigenvector associated to the largest eigenvalue, etc.
 
 Identical to feature "MajorAxes" but using the grey-value image as weighting.
 

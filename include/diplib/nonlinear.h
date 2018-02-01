@@ -268,18 +268,19 @@ inline Image NonMaximumSuppression(
 ///
 /// Applies `iterations` steps of the anisotropic diffusion as proposed by Perona and Malik:
 ///
-/// \f$ I^{t+1} = I^t + \lambda \sum_D \left( c_D^t \nabla_D I^t \right) \f$
+/// \f[ I^{t+1} = I^t + \lambda \sum_D \left( c_D^t \nabla_D I^t \right) \f]
 ///
-/// where \f$ \lambda \f$ is set with the `lambda` parameter, *D* are the each of the cardinal directions,
-/// \f$ \nabla_D \f$ is the finite difference in direction *D*,
+/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$D\f$ are the each of the cardinal directions,
+/// \f$\nabla_D\f$ is the finite difference in direction \f$D\f$.
 ///
-/// \f$ c_D^t = g\left( \left| \nabla_D I^t \right| \right)  \f$
+/// \f[ c_D^t = g\left( \left| \nabla_D I^t \right| \right)  \f]
 ///
-/// and *g* is a monotonically decreasing function, selected with the `g` parameter, and modulated
+/// and \f$g\f$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
 /// by the `K` parameter:
 ///  - `"Gauss"`: \f$ g(x) = exp(-(x/K)^2) \f$
 ///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (x/K)^2) \f$
 ///  - `"exponential"`: \f$ g(x) = exp(-(x/K)) \f$
+///
 /// The diffusion is generalized to any image dimensionality.
 ///
 /// **Literature**

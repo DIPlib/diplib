@@ -1307,7 +1307,7 @@ inline Image PathOpening(
 /// steps in one of three directions (in 2D): the main direction, or 45 degrees to the left or right. That is,
 /// if the main direction is [1,0] (to the right), then [1,-1] and [1,1] (diagonal up or down) are also possible
 /// steps. This leads to a number of different paths that is exponential in its lengths. However, the opening over
-/// all these paths can be computed in \f$O(n \log(n))\f$ time, with *n* the path length.
+/// all these paths can be computed in \f$O(n \log(n))\f$ time, with \f$n\f$ the path length.
 ///
 /// The direction description above can be generalized to any number of dimensions by realizing that the main direction
 /// can be specified by any of the neighbors of a central pixel, and then the other allowed steps are the neighbor

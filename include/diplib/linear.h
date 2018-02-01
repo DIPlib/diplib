@@ -462,7 +462,7 @@ inline Image SobelGradient(
 /// A finite difference derivative is an approximation to the derivative operator on the discrete grid.
 /// In contrast, convolving an image with the derivative of a Gaussian provides the exact derivative of
 /// the image convolved with a Gaussian:
-/// \f$\frac{\partial G}{\partial x}\otimes f = \frac{\partial}{\partial x}(G \otimes f)\f$
+/// \f[ \frac{\partial G}{\partial x}\otimes f = \frac{\partial}{\partial x}(G \otimes f) \f]
 /// Thus (considering the regularization provided by the Gaussian smoothing is beneficial) it is always
 /// better to use Gaussian derivatives than finite difference derivatives.
 ///
@@ -874,7 +874,7 @@ inline Image Hessian(
 /// See `dip::Gradient` for information on the parameters.
 ///
 /// If `method` is "finitediff", it does not add second order derivatives, but instead computes a convolution
-/// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with *d* the number
+/// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with \f$d\f$ the number
 /// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kernel:
 /// ```
 ///    | -1  -1  -1 |

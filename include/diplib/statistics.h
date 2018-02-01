@@ -737,7 +737,7 @@ DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Imag
 ///
 /// The I-Divergence is defined as \f$I(x,y) = x \ln(x/y) - (x - y)\f$ and is divided by the number of pixels.
 /// It is the -log of a Poisson distribution \f$p(x,y) = e^{-y} / x! - y^x\f$ with the stirling approximation for
-/// \f$\ln x!\f$. For *x* = 0, the stirling approximation would fail, *y* is returned.
+/// \f$\ln x!\f$. For \f$x=0\f$, the stirling approximation would fail, \f$y\f$ is returned.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
