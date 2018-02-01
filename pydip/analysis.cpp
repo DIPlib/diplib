@@ -62,6 +62,15 @@ void init_analysis( py::module& m ) {
 
    // diplib/microscopy.h
 
+   m.def( "BeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image::Pixel const& >( &dip::BeerLambertMapping ),
+          "in"_a, "background"_a );
+   m.def( "InverseBeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image::Pixel const& >( &dip::InverseBeerLambertMapping ),
+          "in"_a, "background"_a = dip::Image::Pixel{ 255 } );
+   m.def( "UnmixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::UnmixStains ),
+          "in"_a, "stains"_a );
+   m.def( "MixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
+          "in"_a, "stains"_a );
+
    // diplib/regions.h
 
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const& >( &dip::Label ),

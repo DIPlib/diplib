@@ -180,6 +180,7 @@ src/measurement/measure_convex_hull.cpp
 src/measurement/measurement.cpp
 src/measurement/measurement_tool.cpp
 src/measurement/object_to_measurement.cpp
+src/microscopy/unmix_stains.cpp
 src/morphology/areaopening.cpp
 src/morphology/basic.cpp
 src/morphology/filters.cpp

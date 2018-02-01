@@ -80,6 +80,8 @@ image created in memory). Next, note that the operation `img / I` is a per-eleme
 division, such that `img[0]` (red channel) is divided by `I[0]`, `img[1]` by `I[1]`,
 and `img[2]` by `I[2]`. In contrast, `U * t` is a matrix multiplication.
 
+The above is implemented in the functions `dip::BeerLambertMapping` and `dip::UnmixStains`.
+
 [//]: # (--------------------------------------------------------------)
 
 \section structure_tensor The structure tensor

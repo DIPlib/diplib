@@ -127,8 +127,6 @@ document's source</a> for the most up-to-date version.
 
 ## Functionality currently not in *DIPlib* that would be important to include
 
-- Stain unmixing for bright-field microscopy.
-
 - Alternating sequential open-close filter (3 versions: with structural opening,
   opening by reconstruction, and area opening) -- easy to add!
 
@@ -258,9 +256,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_RegionConnectivity (dip_regions.h) (is experimental code)
     - dip_GrowRegions (dip_regions.h)
     - dip_GrowRegionsWeighted (dip_regions.h)
-
-- diplib/segmentation.h
-    - dip_KMeansClustering (dip_analysis.h)
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)
