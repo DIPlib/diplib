@@ -445,13 +445,18 @@ inline Image Inverse( Image const& in ) {
 /// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
 ///
 /// Computes the Moore-Penrose pseudo-inverse using `tolerance`. Singular values smaller than
-/// `tolerance * max(rows,cols)` times the largest singular value will be set to zero in the inverse.
+/// `tolerance * max(rows,cols) * p`, with `p` the largest singular value, will be set to zero in the inverse.
 DIP_EXPORT void PseudoInverse( Image const& in, Image& out, dfloat tolerance = 1e-7 );
-inline Image PseudoInverse( Image const& in ) {
+inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e-7 ) {
    Image out;
-   PseudoInverse( in, out );
+   PseudoInverse( in, out, tolerance );
    return out;
 }
+
+// TODO: void Solve( Image const& A, Image const& b, Image& x ) : solves `A x = b`
+//       If `A` is a 0D image, compute SVD, and do `SVD.solve(b)`. Otherwise compute SVD for each pixel and do `SVD.solve(b)`.
+//       In reality, SVD is only a good choice if `A` is not square. Should we implement other possible options? For
+//       example specific cases for `A` is symmetric, diagonal, etc.
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///

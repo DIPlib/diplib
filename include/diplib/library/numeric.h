@@ -466,14 +466,14 @@ DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, Sampl
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
 
-/// \brief Computes the pseudo-inverse of a real matrix, using the Jacobi SVD decomposition.
+/// \brief Computes the Moore-Penrose pseudo-inverse of a real matrix, using the Jacobi SVD decomposition.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 ///
 /// `output` is a pointer to `n*m` values, in column-major order.
 ///
-/// `tolerance` is an appropriate tolerance. Singular values smaller than `tolerance * max(n,m)` times the largest
-/// singular value will be set to zero in the inverse.
+/// `tolerance` is an appropriate tolerance. Singular values smaller than `tolerance * max(n,m) * p`, with `p`
+/// the largest singular value, will be set to zero in the inverse.
 DIP_EXPORT void PseudoInverse(
       dip::uint m,
       dip::uint n,
@@ -482,14 +482,14 @@ DIP_EXPORT void PseudoInverse(
       dfloat tolerance = 1e-7
 );
 
-/// \brief Computes the pseudo-inverse of a complex matrix, using the Jacobi SVD decomposition.
+/// \brief Computes the Moore-Penrose pseudo-inverse of a complex matrix, using the Jacobi SVD decomposition.
 ///
 /// `input` and `output` are pointers to `m*n` values, in column-major order.
 ///
 /// `output` is a pointer to `n*m` values, in column-major order.
 ///
-/// `tolerance` is an appropriate tolerance. Singular values smaller than `tolerance * max(n,m)` times the largest
-/// singular value will be set to zero in the inverse.
+/// `tolerance` is an appropriate tolerance. Singular values smaller than `tolerance * max(n,m) * p`, with `p`
+/// the largest singular value, will be set to zero in the inverse.
 DIP_EXPORT void PseudoInverse(
       dip::uint m,
       dip::uint n,
