@@ -936,11 +936,11 @@ inline Image Watershed(
 ///   between them.
 /// - The `flags` values "fast" or "correct" are not allowed.
 /// - `flags` can contain the string "no gaps", which prevents the formation of watershed lines in between
-///   the regions. That is, seeds are grown until they touch. This is typically useful only in combination
-///   with "labels", since in a binary image there will be no distinction between initially separate regions.
+///   the regions. That is, seeds are grown until they touch. This flag implies the flag "labels", since in
+///   a binary image there would be no distinction between initially separate regions.
 ///   Pixels that have an infinite value in `in`, or a zero value in `mask`, will still be excluded from the
 ///   region growing process.
-/// - `flags` can contain the string "uphill only", and will limit the region growing to be exclusively
+/// - `flags` can contain the string "uphill only", which will limit the region growing to be exclusively
 ///   uphill (or downhill if "high first" is also given). This means that regions will grow to fill the
 ///   local catchment basin, but will not grow into neighboring catchment basins that have no seeds. This
 ///   flag will also disable any merging.

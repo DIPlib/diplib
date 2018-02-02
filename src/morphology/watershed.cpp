@@ -678,6 +678,9 @@ void SeededWatershed(
          DIP_THROW_INVALID_FLAG( flag );
       }
    }
+   if( noGaps ) {
+      binaryOutput = false; // "no gaps" implies "labels"
+   }
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
