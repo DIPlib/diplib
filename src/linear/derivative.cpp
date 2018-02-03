@@ -320,11 +320,11 @@ void Divergence(
    if( nDims > 1 ) {
       Image tmp;
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         ++it;
          order[ dims[ ii - 1 ]] = 0;
          order[ dims[ ii ]] = 1;
          DIP_STACK_TRACE_THIS( Derivative( *it, tmp, order, sigmas, method, boundaryCondition, truncation ));
          Add( out, tmp, out, out.DataType() );
-         ++it;
       }
    }
    out.SetPixelSize( pxsz );
