@@ -121,7 +121,9 @@ inline void Subsampling(
       Image& out,
       UnsignedArray const& sample
 ) {
-   DefineROI( in, out, {}, {}, sample );
+   Image tmp; // will be a window onto `in`.
+   DefineROI( in, tmp, {}, {}, sample );
+   out.Copy( tmp );
 }
 inline Image Subsampling(
       Image const& in,
