@@ -214,6 +214,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   These functions are quite noise sensitive, however, and produce high frequencies along
   the edge.
 
+- The mirror and asymmetric boundary extension methods have been fixed to work correctly
+  when the boundary is larger than the image. Mirror no longer repeats the pixel at the
+  edge of the image.
+
 - Fixed little bug in the "Perimeter" measurement feature, which didn't check the corner count
   for the transition from the last to the first chain code, yielding a perimeter that was often
   0.0910 pixels too long. The feature "Radius" now computes the center of mass of the object
@@ -284,11 +288,15 @@ code that used *DIPlib* or *DIPimage* to the new version.
   that re-orders strides for the output image to match those of the file, again potentially decreasing
   reading times significantly.
 
+- `dip::Canny` and `dip::MaximumSuppression` have been generalized from 2D only to any
+   number of dimensions.
+
+- `dip::GreyWeightedDistanceTransform` now works for images of any dimensionality, and no longer
+  excludes the pixels at the edge of the image.
+
 - Lots of new algorithms, some previously only available in *DIPimage*.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
-  - `dip::Canny` and `dip::MaximumSuppression` have been generalized from 2D only to any number of
-    dimensions.
   - TODO: try to list them all!
 
 [//]: # (--------------------------------------------------------------)
@@ -340,6 +348,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
     this way!
 
   - The `inner` and `outer` methods no longer exist, use `cross` and `dot`.
+
+  - New methods: `clone`, `cosh`, `cumsum`, `erfc`, `flip`, `gammaln`, `iscomplex`, `issigned`, `isunsigned`,
+    `numArgumentsFromSubscript`, `numberchannels`, `numpixels`, `numtensorel`, `sinh`, `slice_ex`, `slice_in`,
+    `slice_op`, `spatialtotensor`, `swapdim`, `tanh`, `tensorfun`, `tensorsize`, `tensortospatial`.
 
 - The `dip_measurement` object has changed completely internally. The interface is identical
   except:

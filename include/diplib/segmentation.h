@@ -378,14 +378,14 @@ inline Image Threshold(
 }
 
 
-/// \brief Detect edges in grey-value image by finding salient ridges in the gradient magnitude
+/// \brief Detect edges in the grey-value image by finding salient ridges in the gradient magnitude
 ///
-/// The Canny edge detector finds the ridges in the gradient magnitude, which correspond to the
+/// The Canny edge detector finds the ridges in the gradient magnitude of `in`, which correspond to the
 /// edges in the image. The gradient magnitude (see `dip::GradientMagnitude`) is computed using
 /// Gaussian derivatives, with a sigma of `sigma`. The found ridges are pruned to remove the less
 /// salient edges (see `dip::NonMaximumSuppression`). Next, a threshold `t1` is computed such that
-/// the `1-upper` fraction of pixels with the highest gradient magnitude are kept. A second threshold,
-/// `t2 = t1*lower`, is selected that determines the minimal gradient magnitude expected for an edge.
+/// the `1 - upper` fraction of pixels with the highest gradient magnitude are kept. A second threshold,
+/// `t2 = t1 * lower`, is selected that determines the minimal gradient magnitude expected for an edge.
 /// All edge pixels that exceed `t2`, and are in the same connected region as at least one pixel that
 /// exceeds `t1`, are selected as the output of this function (see `dip::HysteresisThreshold`).
 /// Finally, a homotopic thinning is applied to reduce the detections to single-pixel--thick lines
@@ -394,13 +394,12 @@ inline Image Threshold(
 /// `in` must be scalar, real-valued, and have at least one dimension.
 ///
 /// The Canny edge detector was originally described, and typically implemented, for 2D images only.
-/// Here we provide an obvious extension to arbitrary dimensions. The finaly homotopic thinning is
+/// Here we provide an obvious extension to arbitrary dimensions. The final homotopic thinning is
 /// only applied in 2D and 3D, since `dip::EuclideanSkeleton` is not defined for other dimensionalities.
 ///
 /// **Literature**:
 /// - J. Canny, "A Computational Approach to Edge Detection", IEEE Transactions on Pattern Analysis
 ///   and Machine Intelligence, 8(6):679-697, 1986.
-
 DIP_EXPORT void Canny(
       Image const& in,
       Image& out,
@@ -413,14 +412,11 @@ inline Image Canny(
       FloatArray const& sigmas = { 1 },
       dfloat lower = 0.5,
       dfloat upper = 0.9
-
 ) {
    Image out;
    Canny( in, out, sigmas, lower, upper );
    return out;
 }
-
-
 
 
 // TODO: Add 2D snakes from diptree/dipimage/mfiles/snakeminimize.m
