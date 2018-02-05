@@ -218,6 +218,9 @@ void init_image( py::module& m ) {
    // Constructor that takes a Pixel
    img.def( py::init< dip::Image::Pixel const& >(), "pixel"_a );
    img.def( py::init< dip::Image::Pixel const&, dip::DataType >(), "pixel"_a, "dt"_a );
+   // Create new similar image
+   img.def( "Similar", py::overload_cast< >( &dip::Image::Similar ));
+   img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar ), "dt"_a );
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
    py::implicitly_convertible< py::buffer, dip::Image >();
@@ -240,7 +243,6 @@ void init_image( py::module& m ) {
    img.def( "HasNormalStrides", &dip::Image::HasNormalStrides );
    img.def( "IsSingletonExpanded", &dip::Image::IsSingletonExpanded );
    img.def( "HasSimpleStride", &dip::Image::HasSimpleStride );
-   //img.def( "GetSimpleStrideAndOrigin", &dip::Image::GetSimpleStrideAndOrigin); // It's not very useful to have a pointer in Python...
    img.def( "HasSameDimensionOrder", &dip::Image::HasSameDimensionOrder, "other"_a );
    img.def( "TensorSizes", &dip::Image::TensorSizes );
    img.def( "TensorElements", &dip::Image::TensorElements );
@@ -408,9 +410,8 @@ void init_image( py::module& m ) {
    img.def( py::self | dip::sint() );
    img.def( py::self ^ py::self );
    img.def( py::self ^ dip::sint() );
-   img.def( !py::self );
    img.def( -py::self );
-   img.def( ~py::self );
+   img.def( "__invert__", []( dip::Image& a ) { return dip::Not( a ); }, py::is_operator() ); //img.def( ~py::self );
    // Iterators
    // TODO: This does not work! Iterators need to return a writeable reference, which implies making dip::Image::Pixel available from within Pyton
    //img.def( "__iter__", []( dip::Image const& image ) {
@@ -442,4 +443,8 @@ void init_image( py::module& m ) {
       out.SpatialToTensor( 0, sz[ 0 ], sz[ 1 ] );
       return out;
    } );
+
+   m.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Copy ), "src"_a );
+   m.def( "ExpandTensor", py::overload_cast< dip::Image const& >( &dip::ExpandTensor ), "src"_a );
+   m.def( "Convert", py::overload_cast< dip::Image const&, dip::DataType >( &dip::Convert ), "src"_a, "dt"_a );
 }
