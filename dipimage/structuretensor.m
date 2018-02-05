@@ -51,6 +51,8 @@
 %   - 'cylindrical': Measure for local anisotropy: ( l2 - l3 ) / ( l2 + l3 ).
 %   - 'planar': Measure for local anisotropy: ( l1 - l2 ) / ( l1 + l2 ).
 %
+% Note that 'anisotropy' is an alias for 'anisotropy1' for backwards compatibility.
+%
 % DIPlib:
 %  This function calls the DIPlib function dip::StructureTensor, and
 %  dip::StructureTensorAnalysis.

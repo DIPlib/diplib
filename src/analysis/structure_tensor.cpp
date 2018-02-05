@@ -196,7 +196,7 @@ void StructureTensorAnalysis(
             orientation = &out[ ii ].get();
          } else if( outputs[ ii ] == "energy" ) {
             energy = &out[ ii ].get();
-         } else if( outputs[ ii ] == "anisotropy1" ) {
+         } else if(( outputs[ ii ] == "anisotropy1" ) || ( outputs[ ii ] == "anisotropy" )) {
             anisotropy1 = &out[ ii ].get();
          } else if( outputs[ ii ] == "anisotropy2" ) {
             anisotropy2 = &out[ ii ].get();
