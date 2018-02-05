@@ -1238,11 +1238,11 @@ Image::CastPixel< T > Image::At( dip::uint x_index, dip::uint y_index, dip::uint
 }
 
 inline Image::View Image::operator[]( UnsignedArray const& indices ) const {
-   return operator[]( tensor_.Index( indices ));
+   return operator[]( static_cast< dip::sint >( tensor_.Index( indices )));
 }
 
-inline Image::View Image::operator[]( dip::uint index ) const {
-   return operator[]( Range( static_cast< dip::sint >( index )));
+inline Image::View Image::operator[]( dip::sint index ) const {
+   return operator[]( Range( index ));
 }
 
 inline Image::View Image::operator[]( Range const& range ) const {
@@ -1250,17 +1250,17 @@ inline Image::View Image::operator[]( Range const& range ) const {
 }
 
 inline Image::View Image::At( Range const& x_range ) const {
-   DIP_THROW_IF( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
+   DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
    return At( RangeArray{ x_range } );
 }
 
 inline Image::View Image::At( Range const& x_range, Range const& y_range ) const {
-   DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
+   DIP_THROW_IF( Dimensionality() != 2, E::ILLEGAL_DIMENSIONALITY );
    return At( RangeArray{ x_range, y_range } );
 }
 
 inline Image::View Image::At( Range const& x_range, Range const& y_range, Range const& z_range ) const {
-   DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
+   DIP_THROW_IF( Dimensionality() != 3, E::ILLEGAL_DIMENSIONALITY );
    return At( RangeArray{ x_range, y_range, z_range } );
 }
 

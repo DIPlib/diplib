@@ -331,7 +331,7 @@ void init_image( py::module& m ) {
    img.def( "Imaginary", []( dip::Image const& image ) -> dip::Image { return image.Imaginary(); } );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
    // These don't exist, but we need to have a function for operation[] too
-   img.def( "TensorElement", []( dip::Image const& image, dip::uint index ) -> dip::Image { return image[ index ]; }, "index"_a );
+   img.def( "TensorElement", []( dip::Image const& image, dip::sint index ) -> dip::Image { return image[ index ]; }, "index"_a );
    img.def( "TensorElement", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "TensorElement", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
    // Copy or write data

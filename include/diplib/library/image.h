@@ -1878,8 +1878,8 @@ class DIP_NO_EXPORT Image {
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
       View operator[]( UnsignedArray const& indices ) const;
 
-      /// \brief Extract a tensor element using linear indexing. The image must be forged.
-      View operator[]( dip::uint index ) const;
+      /// \brief Extract a tensor element using linear indexing. Negative indices start at the end. The image must be forged.
+      View operator[]( dip::sint index ) const;
 
       /// \brief Extract tensor elements using linear indexing. The image must be forged.
       View operator[]( Range const& range ) const;

@@ -325,7 +325,7 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
    binSizes_.resize( ndims );
    UnsignedArray sizes( ndims, 1 );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      DIP_STACK_TRACE_THIS( CompleteConfiguration( input[ ii ], mask, configuration[ ii ] ));
+      DIP_STACK_TRACE_THIS( CompleteConfiguration( input[ static_cast< dip::sint >( ii ) ], mask, configuration[ ii ] ));
       lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;

@@ -185,17 +185,17 @@ void ImageDisplay::UpdateRgbSlice() {
          }
          rgbSlice_.ReForge( slice_.Sizes(), 3, slice_.DataType() );
          if( red_ >= 0 ) {
-            rgbSlice_[ 0 ].Copy( slice_[ static_cast< dip::uint >( red_ ) ] );
+            rgbSlice_[ 0 ].Copy( slice_[ red_ ] );
          } else {
             rgbSlice_[ 0 ].Fill( 0 );
          }
          if( green_ >= 0 ) {
-            rgbSlice_[ 1 ].Copy( slice_[ static_cast< dip::uint >( green_ ) ] );
+            rgbSlice_[ 1 ].Copy( slice_[ green_ ] );
          } else {
             rgbSlice_[ 1 ].Fill( 0 );
          }
          if( blue_ >= 0 ) {
-            rgbSlice_[ 2 ].Copy( slice_[ static_cast< dip::uint >( blue_ ) ] );
+            rgbSlice_[ 2 ].Copy( slice_[ blue_ ] );
          } else {
             rgbSlice_[ 2 ].Fill( 0 );
          }

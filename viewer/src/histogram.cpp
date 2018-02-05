@@ -116,7 +116,7 @@ void HistogramViewPort::render()
         
         glBegin(GL_TRIANGLE_STRIP);
         
-        ImageIterator<dip::uint32> it(histogram_[(dip::uint)o.color_elements_[ii]]);
+        ImageIterator<dip::uint32> it(histogram_[o.color_elements_[ii]]);
         for (size_t jj=0; jj < histogram_.Size(0); ++jj, ++it)
         {
           glVertex2f(0., (GLfloat)jj/(GLfloat)histogram_.Size(0));
@@ -138,7 +138,7 @@ void HistogramViewPort::render()
     glColor3f(1., 1., 1.);
     glBegin(GL_TRIANGLE_STRIP);
     
-    ImageIterator<dip::uint32> it(histogram_[o.element_]);
+    ImageIterator<dip::uint32> it(histogram_[(dip::sint)o.element_]);
     for (size_t ii=0; ii < histogram_.Size(0); ++ii, ++it)
     {
       glVertex2f(0., (GLfloat)ii/(GLfloat)histogram_.Size(0));
