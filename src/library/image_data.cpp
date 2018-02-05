@@ -263,14 +263,13 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
    dip::uint N = strides_.size();
    UnsignedArray coordinates( N );
    offset += offset_;
-   for( dip::uint ii = 0; ii < N; ++ii ) {
-      dip::uint jj = index_[ ii ];
-      coordinates[ jj ] = static_cast< dip::uint >( offset / strides_[ jj ] );
-      offset = offset % strides_[ jj ];
-      if( sizes_[ jj ] < 0 ) {
+   for( dip::uint ii : index_ ) {
+      coordinates[ ii ] = static_cast< dip::uint >( offset / strides_[ ii ] );
+      offset = offset % strides_[ ii ];
+      if( sizes_[ ii ] < 0 ) {
          // This dimension had a negative stride. The computed coordinate started
          // at the end of the line instead of the begging, so we reverse it.
-         coordinates[ jj ] = static_cast< dip::uint >( -sizes_[ jj ] ) - coordinates[ jj ] - 1;
+         coordinates[ ii ] = static_cast< dip::uint >( -sizes_[ ii ] ) - coordinates[ ii ] - 1;
       }
    }
    return coordinates;
@@ -323,6 +322,18 @@ bool Image::HasNormalStrides() const {
       total *= static_cast< dip::sint >( sizes_[ ii ] );
    }
    return true;
+}
+
+
+// If any dimension is 1, there is a singleton dimension
+bool Image::HasSingletonDimension() const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   for( auto s : sizes_ ) {
+      if( s == 1 ) {
+         return true;
+      }
+   }
+   return false;
 }
 
 

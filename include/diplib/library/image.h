@@ -546,6 +546,10 @@ class DIP_NO_EXPORT Image {
       /// \brief Test if strides are as by default. The image must be forged.
       DIP_EXPORT bool HasNormalStrides() const;
 
+      /// \brief Test if any of the image dimensions is a singleton dimension (size is 1). Singleton expanded
+      /// dimensions are not considered. The image must be forged.
+      DIP_EXPORT bool HasSingletonDimension() const;
+
       /// \brief Test if the image has been singleton expanded.
       ///
       /// If any dimension is larger than 1, but has a stride of 0, it means that a single pixel is being used
