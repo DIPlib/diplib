@@ -17,6 +17,7 @@
  */
 
 #include "pydip.h"
+#include "diplib/boundary.h"
 #include "diplib/color.h"
 #include "diplib/display.h"
 #include "diplib/file_io.h"
@@ -93,6 +94,12 @@ dip::Image DisplayMode(
 } // namespace
 
 void init_assorted( py::module& m ) {
+   // diplib/boundary.h
+   m.def( "ExtendImage", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::StringArray const&, dip::StringSet const& >( &dip::ExtendImage ),
+          "in"_a, "borderSizes"_a, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::StringSet{} );
+   m.def( "ExtendRegion", py::overload_cast< dip::Image&, dip::RangeArray const&, dip::StringArray const& >( &dip::ExtendRegion ),
+          "image"_a, "ranges"_a, "boundaryCondition"_a = dip::StringArray{} );
+
    // diplib/color.h
    auto mcol = m.def_submodule("ColorSpaceManager", "A Tool to convert images from one color space to another.");
    mcol.def( "Convert", []( dip::Image const& in, dip::String const& colorSpaceName ){ return colorSpaceManager.Convert( in, colorSpaceName ); }, "in"_a, "colorSpaceName"_a = "RGB" );

@@ -507,22 +507,22 @@ static inline void ExpandBufferMirror(
 ) {
    dip::uint steps = pixels - 1;
    // Left side
-   DataType* in = buffer + stride;
-   DataType* out = buffer - stride;
-   for( dip::uint ii = 1; ii < left + 1; ii++ ) {
+   DataType* in = buffer;
+   DataType* out = buffer;
+   for( dip::uint ii = 0; ii < left; ii++ ) {
       bool dir = (( ii / steps ) & 1 ) == 1;
-      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
       in -= dir ? stride : -stride;
       out -= stride;
+      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
    }
    // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 2 ) * stride;
-   out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   for( dip::uint ii = 1; ii < right + 1; ii++ ) {
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   out = in;
+   for( dip::uint ii = 0; ii < right; ii++ ) {
       bool dir = (( ii / steps ) & 1 ) == 1;
-      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
       in += dir ? stride : -stride;
       out += stride;
+      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
    }
 }
 

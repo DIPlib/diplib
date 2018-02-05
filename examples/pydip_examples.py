@@ -149,3 +149,22 @@ b = dip.MorphologicalReconstruction(seed,mask,1)
 print(dip.All(a==b)[0][0])
 timeit.timeit("dip.BinaryPropagation(seed,mask,1,0)", number=1000, globals=globals())
 timeit.timeit("dip.MorphologicalReconstruction(seed,mask,1)", number=1000, globals=globals())
+
+###
+
+a=dip.Image([10,11],1,'UINT8')
+a.Fill(0)
+a[1,1]=255
+a[-2,-2]=200
+a[1,-2]=150
+a[-2,1]=100
+a[0,5]=50
+a[-1,5]=50
+a[5,0]=40
+a[5,-1]=40
+Show(a)
+
+Show(dip.ExtendImage(a,[45,45],['mirror']))
+Show(dip.ExtendImage(a,[45,45],['asym mirror']))
+Show(dip.ExtendImage(a,[45,45],['periodic']))
+Show(dip.ExtendImage(a,[45,45],['asym periodic']))
