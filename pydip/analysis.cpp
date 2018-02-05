@@ -58,7 +58,7 @@ void init_analysis( py::module& m ) {
    m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
           "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
    m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
-          "grey"_a, "in"_a, "metric"_a, "outputMode"_a = "GDT" );
+          "grey"_a, "in"_a, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 }, "outputMode"_a = "GDT" );
 
    // diplib/microscopy.h
 

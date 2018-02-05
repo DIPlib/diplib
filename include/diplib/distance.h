@@ -111,25 +111,17 @@ inline Image VectorDistanceTransform(
 /// \brief Grey-weighted distance transform
 ///
 /// `%GreyWeightedDistanceTransform` determines the grey weighted distance transform of the object elements in
-/// the `in` image, using the sample values in `grey` as the local weights for the distances. That is, it computes
-/// the integral of `grey` along a path from each pixel that is set in `in` (foreground) to any pixel that is not set
-/// in `in` (background), with the path chosen such that this integral is minimal.
+/// the `bin` image, using the sample values in `grey` as the local weights for the distances. That is, it computes
+/// the integral of `grey` along a path from each pixel that is set in `bin` (foreground) to any pixel that is not set
+/// in `bin` (background), with the path chosen such that this integral is minimal.
 ///
-/// The implemented algorithm uses a heap sort for sorting the pixels to be processed.
-///
-/// The images `in` and `grey` must have the same sizes. `in` is a binary image, `grey` is real-valued, and both
+/// The images `bin` and `grey` must have the same sizes. `bin` is a binary image, `grey` is real-valued, and both
 /// must be scalar. `out` will have type `dip::DT_SFLOAT`.
-///
-/// Those elements that are neighboring an object element in the output image are considered seeds for the distance
-/// propagation. Before any seeds are detected the borders of the `out` image are set to 0. The size of the border
-/// is determined by the chamfer metric size. In case of a 3 by 3 chamfer metric, the image border is one element;
-/// in case of a 5 by 5 chamfer it is 2 elements. Elements in the border are not considered seeds. If no valid seeds
-/// are found the routine will throw an exception.
 ///
 /// The chamfer metric is defined by the parameter `metric`. Any metric can be given, but a 3x3 or 5x5 chamfer metric
 /// is recommended for unbiased distances. See `dip::Metric` for more information. If the `metric` doesn't have a
-/// pixel size set, but either `grey` or `in` have a pixel size defined, then that pixel size will be added to the
-/// metric (the pixel size in `grey` will have precedence over the one in `in` if they both have one defined). To
+/// pixel size set, but either `grey` or `bin` have a pixel size defined, then that pixel size will be added to the
+/// metric (the pixel size in `grey` will have precedence over the one in `bin` if they both have one defined). To
 /// avoid the use of any pixel size, define `metric` with a pixel size of 1.
 ///
 /// If `outputMode` is `"GDT"` (the default), then `out` will contain the grey-weighted distance transform. If it is
@@ -148,29 +140,21 @@ inline Image VectorDistanceTransform(
 ///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
 ///  - K.C. Strasters, "Quantitative Analysis in Confocal Image Cytometry", Ph.D. thesis, Delft University of
 ///    Technology, The Netherlands, 1994.
-///
-/// **Known issue**
-///  - The function produces incomplete results in a 2-pixel border around the edge (or more for larger metric
-///    neighborhoods). If this is an issue, consider adding 2 pixels on each side of your image. Make sure that
-///    `in` has high grey values in the border to avoid unexpected output.
-///
-/// The function `dip::GrowRegionsWeighted` produces a grey-weighted distance transform without this or other
-/// limitations of `%dip::GreyWeightedDistanceTransform`.
 DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
-      Image const& in,
+      Image const& bin,
       Image&  out,
       Metric metric = { S::CHAMFER, 2 },
       String const& outputMode = S::GDT
 );
 inline Image GreyWeightedDistanceTransform(
       Image const& grey,
-      Image const& in,
+      Image const& bin,
       Metric const& metric = { S::CHAMFER, 2 },
       String const& outputMode = S::GDT
 ) {
    Image out;
-   GreyWeightedDistanceTransform( grey, in, out, metric, outputMode );
+   GreyWeightedDistanceTransform( grey, bin, out, metric, outputMode );
    return out;
 }
 
