@@ -360,7 +360,7 @@ DIP_EXPORT void Gauss(
       Image& out,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      String const& method = S::BEST,
+      String method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );

@@ -66,10 +66,13 @@ void Gauss(
       Image& out,
       FloatArray const& sigmas,
       UnsignedArray const& derivativeOrder,
-      String const& method,
+      String method,
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
+   if( method.substr( 0, 5 ) == "gauss" ) {
+      method = method.substr( 5, String::npos );
+   }
    if( method == S::BEST ) {
       DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "FIR" ) || ( method == "fir" ) ) {
