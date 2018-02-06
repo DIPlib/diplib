@@ -284,6 +284,15 @@ void Scan(
    BooleanArray outUseBuffer( nOut );
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       outUseBuffer[ ii ] = out[ ii ].DataType() != outBufferTypes[ ii ];
+      if( !outUseBuffer[ ii ] && opts.Contains( ScanOption::NotInPlace )) {
+         // Make sure we don't alias
+         for( dip::uint jj = 0; jj < nIn; ++jj ) {
+            if( !inUseBuffer[ jj ] && Alias( in[ jj ], out[ ii ] )) {
+               outUseBuffer[ ii ] = true;
+               break;
+            }
+         }
+      }
       needBuffers |= outUseBuffer[ ii ];
    }
    // Temporary buffers are necessary also when expanding the tensor.

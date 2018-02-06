@@ -140,6 +140,7 @@ DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const&
 /// `ScanOption::TensorAsSpatialDim`   | Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
 /// `ScanOption::ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
 /// `ScanOption::NoSingletonExpansion` | Inhibits singleton expansion of input images.
+/// `ScanOption::NotInPlace`           | The line filter can write to the output buffers without affecting the input buffers.
 ///
 /// Combine options by adding constants together.
 enum class ScanOption {
@@ -147,7 +148,8 @@ enum class ScanOption {
       NeedCoordinates,
       TensorAsSpatialDim,
       ExpandTensorInBuffer,
-      NoSingletonExpansion
+      NoSingletonExpansion,
+      NotInPlace
 };
 DIP_DECLARE_OPTIONS( ScanOption, ScanOptions );
 
@@ -290,7 +292,10 @@ class DIP_EXPORT ScanLineFilter {
 /// overwritten with the processing result. That is, all processing can be
 /// performed in place. The scan framework is intended for pixel-wise processing,
 /// not neighborhood-based processing, so there is never a reason not to work
-/// in place.
+/// in place. However, some types of tensor processing might want to write to the output
+/// without invalidating the input for that same pixel. In this case, give the option
+/// `dip::FrameWork::ScanOption::NotInPlace`. It will make sure that the output
+/// buffers given to the line filter do not alias the input buffers.
 ///
 /// `%dip::Framework::Scan` will process the image using multiple threads, so
 /// `lineFilter` will be called from multiple threads simultaneously. If it is not

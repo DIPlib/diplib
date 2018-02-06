@@ -202,7 +202,7 @@ void Multiply(
                        ( nOuter, nInner ), dt );
       ImageRefArray outar{ out };
       Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer );
+                       Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace );
       out.ReshapeTensor( outTensor );
    } else {
       // General case
@@ -212,7 +212,7 @@ void Multiply(
                        ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
       ImageRefArray outar{ out };
       Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer );
+                       Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace );
       out.ReshapeTensor( outTensor );
    }
 }
