@@ -91,7 +91,9 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   explicit ViewingOptions(const dip::Image &image)
   {
     // Projection
-    if (image.Dimensionality() == 1)
+    if (image.Dimensionality() == 0)
+      dims_ = {-1, -1, -1, -1};
+    else if (image.Dimensionality() == 1)
       dims_ = {0, -1, -1, -1};
     else if (image.Dimensionality() == 2)
       dims_ = {0,  1, -1, -1};

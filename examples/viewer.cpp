@@ -3,6 +3,7 @@
 #include <diplib/generation.h>
 #include <diplib/analysis.h>
 #include <diplib/linear.h>
+#include <diplib/math.h>
 
 #ifdef DIP__HAS_GLFW
 #include <diplib/viewer/glfw.h>
@@ -71,6 +72,19 @@ int main() {
    
    // Create thread to programatically alter image
    std::thread thread = std::thread(run, iv);
+   
+   // Generate 0D RGB image
+   dip::Image image0 = dip::Image{ dip::UnsignedArray{ }, 3, dip::DT_UINT8 };
+   image0[0] = 64;
+   image0[1] = 128;
+   image0[2] = 192;
+   manager.createWindow( dip::viewer::SliceViewer::Create( image0, "0d", 500, 400 ));
+
+   // Generate 1D RGB image
+   dip::Image image1 = dip::Image{ dip::UnsignedArray{ 160 }, 1, dip::DT_UINT8 };
+   dip::FillXCoordinate( image1, { "corner" } );
+   image1 = dip::Sin(image1/10);
+   manager.createWindow( dip::viewer::SliceViewer::Create( image1, "1d", 500, 400 ));
 
    while( manager.activeWindows() ) {
       // Only necessary for GLFW

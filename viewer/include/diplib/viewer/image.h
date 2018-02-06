@@ -116,8 +116,9 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     explicit ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
     {
       DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );
-      DIP_THROW_IF( image.DataType() != DT_UINT8, "ImageViewer requires an image of type DT_UINT8" );
-      DIP_THROW_IF( image.TensorElements() != 3, "ImageViewer requires an image with three tensor elements" );
+      DIP_THROW_IF( image.DataType() != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+      DIP_THROW_IF( image.TensorElements() != 3, "Only defined for 3-vector images" );
 
       if (!width || !height)
       {
