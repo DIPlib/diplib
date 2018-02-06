@@ -2,7 +2,7 @@
  * dip::viewer::ShowSimple() shows a 3-channel, UINT8 image as an RGB image on the screen.
  * This example program shows different ways to create such an image.
  *
- * It also shows some simple image manipulations: thresholding, labelling, and indexing using a mask image.
+ * It also shows some simple image manipulations: thresholding, labeling, and indexing using a mask image.
  */
 
 #include "diplib.h"

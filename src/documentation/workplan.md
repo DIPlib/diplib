@@ -204,7 +204,6 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/linear.h
     - dip_OrientedGauss (dip_linear.h)
-    - dip_GaborIIR (dip_iir.h)
     - dip_Dgg (dip_derivatives.h)
     - dip_LaplacePlusDgg (dip_derivatives.h)
     - dip_LaplaceMinDgg (dip_derivatives.h)
@@ -254,8 +253,6 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/regions.h
     - dip_RegionConnectivity (dip_regions.h) (is experimental code)
-    - dip_GrowRegions (dip_regions.h)
-    - dip_GrowRegionsWeighted (dip_regions.h)
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)

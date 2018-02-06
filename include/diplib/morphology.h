@@ -893,6 +893,8 @@ inline Image RankMaxOpening(
 ///
 /// Any pixel that is infinity will be part of the watershed lines, as is any pixel not within
 /// `mask`.
+///
+/// \see dip::SeededWatershed
 DIP_EXPORT void Watershed(
       Image const& in,
       Image const& mask,
@@ -944,6 +946,8 @@ inline Image Watershed(
 ///   uphill (or downhill if "high first" is also given). This means that regions will grow to fill the
 ///   local catchment basin, but will not grow into neighboring catchment basins that have no seeds. This
 ///   flag will also disable any merging.
+///
+/// \see dip::Watershed, dip::GrowRegions, dip::GrowRegionsWeighted
 DIP_EXPORT void SeededWatershed(
       Image const& in,
       Image const& seeds,

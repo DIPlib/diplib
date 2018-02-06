@@ -65,7 +65,7 @@ void dip__GreyWeightedDistanceTransform(
 
    // Put all background pixels that have a foreground neighbor in the queue
    ImageIterator< sfloat > it( im_gdt );
-   it.Optimize();
+   it.OptimizeAndFlatten();
    do {
       dip::sint offset = it.Offset();
       if( gdt[ offset ] == 0 ) {

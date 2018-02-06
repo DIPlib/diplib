@@ -25,8 +25,7 @@
 #include "diplib.h"
 #include "diplib/neighborlist.h"
 
-namespace dip
-{
+namespace dip {
 
 // A queue (FIFO). Since std::queue doesn't support iterators,
 // std::deque is used, accepting a wider interface than strictly necessary.

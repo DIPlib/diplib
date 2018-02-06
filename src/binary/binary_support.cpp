@@ -125,13 +125,15 @@ dip::uint GetAbsBinaryConnectivity( dip::uint dimensionality, dip::sint connecti
    if( dimensionality == 2 ) {
       if( connectivity == -1 ) {
          return ( iteration % 2 == 0 ) ? 1 : 2;
-      } else if( connectivity == -2 ) {
+      }
+      if( connectivity == -2 ) {
          return ( iteration % 2 == 0 ) ? 2 : 1;
       }
    } else if( dimensionality == 3 ) {
       if( connectivity == -1 ) {
          return ( iteration % 2 == 0 ) ? 1 : 3;
-      } else if( connectivity == -2 || connectivity == -3 ) {
+      }
+      if( connectivity == -2 || connectivity == -3 ) {
          return ( iteration % 2 == 0 ) ? 3 : 1;
       }
    }

@@ -4,7 +4,7 @@
 %  image_out = msr2obj(image_in,msr,feature,value)
 %
 % PARAMETERS:
-%  image_in:      labelled image containing the objects.
+%  image_in:      labeled image containing the objects.
 %  msr:           measurement object derived from IMAGE_IN.
 %  feature:       name of one of the features in MSR.
 %  value:         the component of the feature, if it has more than one.
@@ -31,7 +31,7 @@
 function image_out = msr2obj(image_in,msr,msrID,msrDim)
 type = class(dip_array(image_in));
 if ~strncmp(type,'uint',4)
-   error('Input image must be labelled.')
+   error('Input image must be labeled.')
 end
 if nargin<4
    msrDim = 1;

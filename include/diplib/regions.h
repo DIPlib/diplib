@@ -121,6 +121,39 @@ inline Image SmallObjectsRemove(
    return out;
 }
 
+/// \brief  Grow (dilate) labeled regions uniformly.
+///
+/// The regions in the labeled image `label` are dilated `iterations` steps, according to `connectivity`,
+/// and optionally constrained by `mask`. If `iterations` is 0, the objects are dilated until no further
+/// change is possible.
+///
+/// If a `mask` is given, this is the labeled equivalent to `dip::BinaryPropagation`, otherwise it works as
+/// `dip::BinaryDilation` on each label. The difference between `%dip::GrowRegions` and `dip::Dilation`
+/// (which can also be applied to a labeled image) is that here growing stops when different labels meet,
+/// whereas in a normal dilation, the label with the larger value would grow over the one with the smaller value.
+///
+/// The `connectivity` parameter defines the metric, that is, the shape of the structuring element
+/// (see \ref connectivity). Alternating connectivity is only implemented for 2D and 3D images.
+///
+/// \see dip::GrowRegionsWeighted, dip::SeededWatershed
+DIP_EXPORT void GrowRegions(
+      Image const& label,
+      Image const& mask,
+      Image& out,
+      dip::sint connectivity = -1,
+      dip::uint iterations = 0
+);
+inline Image GrowRegions(
+      Image const& label,
+      Image const& mask = {},
+      dip::sint connectivity = -1,
+      dip::uint iterations = 0
+) {
+   Image out;
+   GrowRegions( label, mask, out, connectivity, iterations );
+   return out;
+}
+
 /// \brief Grow labeled regions with a speed function given by a grey-value image.
 ///
 /// The regions in the input image `label` are grown according to a grey-weighted distance
@@ -133,6 +166,8 @@ inline Image SmallObjectsRemove(
 /// Non-isotropic sampling is supported through `metric`, which assumes isotropic sampling
 /// by default. See `dip::GreyWeightedDistanceTransform` for more information on how the
 /// grey-weighted distance is computed.
+///
+/// \see dip::GrowRegions, dip::SeededWatershed
 DIP_EXPORT void GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
@@ -150,19 +185,6 @@ inline Image GrowRegionsWeighted(
    GrowRegionsWeighted( label, grey, mask, out, metric );
    return out;
 }
-
-// TODO: functions to port:
-/*
-   dip_GrowRegions (dip_regions.h)
-     Has two modes, and really should have two separate interfaces (there's hardly any common code):
-      - With grey-value image: does what dip::SeededWatershed does (I've already adapted that function to
-        optionally not leave watershed lines).
-      - Without grey-value image: does what dip::BinaryPropagation does, but on a uint image, propagating labels.
-        Look also at dip::BinaryPropagation implementation.
-   dip_GrowRegionsWeighted (dip_regions.h)
-     Has strong similarities to dip::GreyWeightedDistanceTransform. Merge? Re-use?
-*/
-
 
 /// \}
 

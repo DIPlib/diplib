@@ -294,6 +294,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip::GreyWeightedDistanceTransform` now works for images of any dimensionality, and no longer
   excludes the pixels at the edge of the image. It also accepts an optional mask image.
 
+- `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
+
 - Lots of new algorithms, some previously only available in *DIPimage*.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
