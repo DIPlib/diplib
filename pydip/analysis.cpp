@@ -80,6 +80,8 @@ void init_analysis( py::module& m ) {
    m.def( "Relabel", py::overload_cast< dip::Image const& >( &dip::Relabel ), "label"_a );
    m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),
           "in"_a, "threshold"_a, "connectivity"_a = 0 );
+   m.def( "GrowRegionsWeighted", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric const& >( &dip::GrowRegionsWeighted ),
+          "label"_a, "grey"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 } );
 
    // diplib/segmentation.h
    m.def( "KMeansClustering", py::overload_cast< dip::Image const&, dip::uint >( &dip::KMeansClustering ),

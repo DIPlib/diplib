@@ -22,6 +22,7 @@
 #define DIP_REGIONS_H
 
 #include "diplib.h"
+#include "diplib/neighborlist.h"
 
 
 /// \file
@@ -120,6 +121,35 @@ inline Image SmallObjectsRemove(
    return out;
 }
 
+/// \brief Grow labeled regions with a speed function given by a grey-value image.
+///
+/// The regions in the input image `label` are grown according to a grey-weighted distance
+/// metric; the weights are given by `grey`. The optional mask image `mask` limits the
+/// growing (not yet implemented!). All three images must be scalar. `label` must be of
+/// an unsigned integer type, and `grey` must be real-valued.
+///
+/// `out` is of the type `dip::DT_LABEL`, and contains the grown regions.
+///
+/// Non-isotropic sampling is supported through `metric`, which assumes isotropic sampling
+/// by default. See `dip::GreyWeightedDistanceTransform` for more information on how the
+/// grey-weighted distance is computed.
+DIP_EXPORT void GrowRegionsWeighted(
+      Image const& label,
+      Image const& grey,
+      Image const& mask, // TODO: implement `mask` parameter!
+      Image& out,
+      Metric const& metric = { S::CHAMFER, 2 }
+);
+inline Image GrowRegionsWeighted(
+      Image const& label,
+      Image const& grey,
+      Image const& mask = {},
+      Metric const& metric = { S::CHAMFER, 2 }
+) {
+   Image out;
+   GrowRegionsWeighted( label, grey, mask, out, metric );
+   return out;
+}
 
 // TODO: functions to port:
 /*

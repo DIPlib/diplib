@@ -149,7 +149,7 @@ void GreyWeightedDistanceTransform(
    DIP_THROW_IF( !c_grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( !bin.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    dip::uint dims = bin.Dimensionality();
-   DIP_THROW_IF( dims < 1 , E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( dims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( bin.Sizes() != c_grey.Sizes(), E::SIZES_DONT_MATCH );
 
    DIP_THROW_IF( c_grey.HasSingletonDimension(), "Images with singleton dimensions not supported. Use Squeeze." );

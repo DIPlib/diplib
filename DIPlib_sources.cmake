@@ -197,6 +197,7 @@ src/nonlinear/kuwahara.cpp
 src/nonlinear/nonmaximumsuppression.cpp
 src/nonlinear/percentile.cpp
 src/nonlinear/variancefilter.cpp
+src/regions/grow_regions.cpp
 src/regions/label.cpp
 src/regions/label_manipulation.cpp
 src/regions/labelingGrana2016.h

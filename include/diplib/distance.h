@@ -140,7 +140,7 @@ inline Image VectorDistanceTransform(
 ///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
 ///  - K.C. Strasters, "Quantitative Analysis in Confocal Image Cytometry", Ph.D. thesis, Delft University of
 ///    Technology, The Netherlands, 1994.
-DIP_EXPORT void GreyWeightedDistanceTransform(
+DIP_EXPORT void GreyWeightedDistanceTransform( // TODO: add a `mask` parameter! -- easy to add to internal `flags` image
       Image const& grey,
       Image const& bin,
       Image&  out,
