@@ -28,14 +28,14 @@ namespace dip {
 void GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
-      Image const& mask, // TODO: implement `mask` parameter!
+      Image const& mask,
       Image& out,
       Metric const& metric
 ) {
    // Compute grey-weighted distance transform
    Image binary = label == 0;
    Image distance;
-   DIP_STACK_TRACE_THIS( GreyWeightedDistanceTransform( grey, binary, distance, metric ));
+   DIP_STACK_TRACE_THIS( GreyWeightedDistanceTransform( grey, binary, mask, distance, metric ));
    binary.Strip();
 
    // Grow regions

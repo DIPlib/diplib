@@ -48,12 +48,12 @@ b.Show()
 
 mask = img < 120
 b = dip.SeededWatershed(smooth,seeds,mask,flags={"labels","uphill only"})
-b.Show()
+b.Show('labels')
 
 
 ###
 
-img = dip.ImageReadICS('erika')
+img = dip.ImageReadTIFF('erika')
 h,b = dip.Histogram(img)
 import matplotlib.pyplot as pp
 pp.clf()
@@ -62,7 +62,7 @@ pp.show(block=False)
 
 ###
 
-img = dip.ImageReadICS('erika')
+img = dip.ImageReadTIFF('erika')
 x = dip.Gradient(dip.Norm(img))
 x.Show()
 
@@ -84,8 +84,8 @@ b.Show()
 b.TensorElement(1).Show()
 
 b,c = dip.Histogram(a)
-len(c)
-b.Dimensionality() == len(c)
+print(len(c))
+print(b.Dimensionality() == len(c))
 
 a = dip.Image((250,260),3)
 a.Fill(0)
@@ -93,7 +93,8 @@ import random
 color = list([1.0,1.5,0.5])
 for ii in range(0,1000):
    random.shuffle(color)
-   dip.DrawGaussianBlob(a,[random.uniform(1,3),random.uniform(1,3)],[random.uniform(-2,252),random.uniform(-2,262)],color)
+   dip.DrawBandlimitedPoint(a,[random.uniform(-2,252),random.uniform(-2,262)],color,[random.uniform(1,3),random.uniform(1,3)])
+
 a.Show()
 
 ###
@@ -104,7 +105,7 @@ b = dip.Label(a < 120)
 dip.MeasurementTool.Features()
 m = dip.MeasurementTool.Measure(b,a,['Size','Feret','Convexity','Statistics'])
 print(m)
-m['Feret'][50][2]
+print(m['Feret'][50][2])
 dip.WriteCSV(m,'test.csv')
 dip.WriteCSV(m,'test2.csv',{'unicode','simple'})
 
@@ -115,25 +116,25 @@ dip.GetBranchPixels(b).Show()
 
 ###
 
-a=dip.ImageReadICS('cermet')
-b=dip.Label(a < 120)
+a = dip.ImageReadICS('cermet')
+b = dip.Label(a < 120)
 b.Show('labels')
 dip.GetObjectLabels(b)
-c=dip.SmallObjectsRemove(b, 150)
+c = dip.SmallObjectsRemove(b, 150)
 c.Show('labels')
 dip.GetObjectLabels(c)
-d=dip.Relabel(c)
+d = dip.Relabel(c)
 d.Show('labels')
 dip.GetObjectLabels(d)
 
 ###
 
-mask=dip.Image([70,70],1,'BIN')
+mask = dip.Image([70,70],1,'BIN')
 mask.Fill(0)
 dip.DrawEllipsoid(mask,[40,50],[30,40])
 dip.DrawEllipsoid(mask,[4,5],[40,40],[0])
 
-seed=dip.Image([70,70],1,'BIN')
+seed = dip.Image([70,70],1,'BIN')
 seed.Fill(0)
 dip.DrawBox(seed,[5,70],[20,35])
 dip.DrawLine(seed,[14,28],[35,28])
@@ -152,19 +153,42 @@ timeit.timeit("dip.MorphologicalReconstruction(seed,mask,1)", number=1000, globa
 
 ###
 
-a=dip.Image([10,11],1,'UINT8')
+a = dip.Image([10,11],1,'UINT8')
 a.Fill(0)
-a[1,1]=255
-a[-2,-2]=200
-a[1,-2]=150
-a[-2,1]=100
-a[0,5]=50
-a[-1,5]=50
-a[5,0]=40
-a[5,-1]=40
+a[1,1] = 255
+a[-2,-2] = 200
+a[1,-2] = 150
+a[-2,1] = 100
+a[0,5] = 50
+a[-1,5] = 50
+a[5,0] = 40
+a[5,-1] = 40
 Show(a)
 
 Show(dip.ExtendImage(a,[45,45],['mirror']))
 Show(dip.ExtendImage(a,[45,45],['asym mirror']))
 Show(dip.ExtendImage(a,[45,45],['periodic']))
 Show(dip.ExtendImage(a,[45,45],['asym periodic']))
+
+###
+
+a = dip.ImageReadICS('trui')
+b = a.Similar('UINT8')
+b.Fill(0)
+b[50,120] = 1
+b[225,120] = 2
+b[161,61] = 3
+c = b==0
+m = a.Similar('BIN')
+m.Fill(1)
+dip.DrawEllipsoid(m,[60,30],[70,180],[0])
+dip.DrawEllipsoid(m,[20,80],[85,120],[0])
+d1 = dip.GreyWeightedDistanceTransform(a,c)
+d2 = dip.GreyWeightedDistanceTransform(a,c,m)
+Show(dip.Overlay(dip.Overlay(a,~m),~c,[0,200,0]))
+Show(d1)
+Show(d2)
+r1 = dip.GrowRegionsWeighted(b,a)
+r2 = dip.GrowRegionsWeighted(b,a,m)
+Show(r1)
+Show(r2)

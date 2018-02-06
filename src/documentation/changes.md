@@ -292,7 +292,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
    number of dimensions.
 
 - `dip::GreyWeightedDistanceTransform` now works for images of any dimensionality, and no longer
-  excludes the pixels at the edge of the image.
+  excludes the pixels at the edge of the image. It also accepts an optional mask image.
 
 - Lots of new algorithms, some previously only available in *DIPimage*.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,

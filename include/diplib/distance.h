@@ -118,6 +118,12 @@ inline Image VectorDistanceTransform(
 /// The images `bin` and `grey` must have the same sizes. `bin` is a binary image, `grey` is real-valued, and both
 /// must be scalar. `out` will have type `dip::DT_SFLOAT`.
 ///
+/// `mask` is an optional input that further constrains the paths taken by the distance transform. Paths only go
+/// through those pixels that are set in `mask`. If a pixel is set in `bin` but not in `mask`, then that pixel will
+/// have a value of 0 in the output, just as if `bin` had not been set. But the pixel is not a seed for paths, so
+/// that its neighbors can have large distance values. If `mask` is not forged, paths are not constrained. If `mask`
+/// is forged, it must be of the same sizes as `bin` and `grey`, and be binary and scalar.
+///
 /// The chamfer metric is defined by the parameter `metric`. Any metric can be given, but a 3x3 or 5x5 chamfer metric
 /// is recommended for unbiased distances. See `dip::Metric` for more information. If the `metric` doesn't have a
 /// pixel size set, but either `grey` or `bin` have a pixel size defined, then that pixel size will be added to the
@@ -140,9 +146,10 @@ inline Image VectorDistanceTransform(
 ///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
 ///  - K.C. Strasters, "Quantitative Analysis in Confocal Image Cytometry", Ph.D. thesis, Delft University of
 ///    Technology, The Netherlands, 1994.
-DIP_EXPORT void GreyWeightedDistanceTransform( // TODO: add a `mask` parameter! -- easy to add to internal `flags` image
+DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
+      Image const& mask,
       Image&  out,
       Metric metric = { S::CHAMFER, 2 },
       String const& outputMode = S::GDT
@@ -150,11 +157,12 @@ DIP_EXPORT void GreyWeightedDistanceTransform( // TODO: add a `mask` parameter! 
 inline Image GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
+      Image const& mask = {},
       Metric const& metric = { S::CHAMFER, 2 },
       String const& outputMode = S::GDT
 ) {
    Image out;
-   GreyWeightedDistanceTransform( grey, bin, out, metric, outputMode );
+   GreyWeightedDistanceTransform( grey, bin, mask, out, metric, outputMode );
    return out;
 }
 

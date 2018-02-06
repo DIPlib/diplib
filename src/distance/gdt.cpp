@@ -96,7 +96,11 @@ void dip__GreyWeightedDistanceTransform(
             }
          }
       } else {
-         gdt[ offset ] = std::numeric_limits< sfloat >::max();
+         if( flags[ offset ] & FINISHED ) {
+            gdt[ offset ] = 0;
+         } else {
+            gdt[ offset ] = std::numeric_limits< sfloat >::max();
+         }
       }
    } while( ++it );
 
@@ -140,6 +144,7 @@ void dip__GreyWeightedDistanceTransform(
 void GreyWeightedDistanceTransform(
       Image const& c_grey,
       Image const& bin,
+      Image const& c_mask,
       Image& out,
       Metric metric,
       String const& outputMode
@@ -152,10 +157,21 @@ void GreyWeightedDistanceTransform(
    DIP_THROW_IF( dims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( bin.Sizes() != c_grey.Sizes(), E::SIZES_DONT_MATCH );
 
+   // Some of the logic below does not work if we have singleton dimensions. TODO: ignore singleton dimensions
    DIP_THROW_IF( c_grey.HasSingletonDimension(), "Images with singleton dimensions not supported. Use Squeeze." );
 
    // We can only support non-negative weights --
    DIP_THROW_IF( Minimum( c_grey ).As< dfloat >() < 0.0, "Minimum input value < 0.0" );
+
+   // Check mask, expand mask singleton dimensions if necessary
+   Image mask;
+   if( c_mask.IsForged() ) {
+      mask = c_mask.QuickCopy();
+      DIP_START_STACK_TRACE
+         mask.CheckIsMask( bin.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
+         mask.ExpandSingletonDimensions( bin.Sizes() );
+      DIP_END_STACK_TRACE
+   }
 
    // What will we output?
    bool outputGDT = false;
@@ -209,7 +225,6 @@ void GreyWeightedDistanceTransform(
    flags.SetDataType( DT_UINT8 );
    flags.Forge();
    DIP_ASSERT( flags.Strides() == grey.Strides() );
-   flags.Fill( 0 );
 
    // Get neighborhoods and metrics
    NeighborList neighborhood{ metric, dims };
@@ -217,7 +232,17 @@ void GreyWeightedDistanceTransform(
 
    // Initialize `flags` image
    UnsignedArray border = neighborhood.Border();
+   flags.Fill( 0 );
    SetBorder( flags, { BORDER }, border );
+   if( mask.IsForged() ) {
+      JointImageIterator< uint8, dip::bin > it( { flags, mask } );
+      it.OptimizeAndFlatten( 1 );
+      do {
+         if( !it.Sample< 1 >() ) {
+            it.Sample< 0 >() |= FINISHED;
+         }
+      } while( ++it );
+   }
 
    // Create coordinate computer
    CoordinatesComputer coordComputer = grey.OffsetToCoordinatesComputer();
