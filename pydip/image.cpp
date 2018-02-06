@@ -219,8 +219,8 @@ void init_image( py::module& m ) {
    img.def( py::init< dip::Image::Pixel const& >(), "pixel"_a );
    img.def( py::init< dip::Image::Pixel const&, dip::DataType >(), "pixel"_a, "dt"_a );
    // Create new similar image
-   img.def( "Similar", py::overload_cast< >( &dip::Image::Similar ));
-   img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar ), "dt"_a );
+   img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
+   img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
    py::implicitly_convertible< py::buffer, dip::Image >();

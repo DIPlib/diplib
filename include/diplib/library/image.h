@@ -411,7 +411,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
-      Image Similar() {
+      Image Similar() const {
          Image out;
          out.CopyProperties( *this );
          out.Forge();
@@ -419,7 +419,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a new forged image similar to `this`, but with different data type. The data is not copied, and left uninitialized.
-      Image Similar( dip::DataType dt ) {
+      Image Similar( dip::DataType dt ) const {
          Image out;
          out.CopyProperties( *this );
          out.dataType_ = dt;
