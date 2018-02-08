@@ -88,7 +88,7 @@ void StructureTensorAnalysis2D(
    }
    if( anisotropy2 ) {
       Divide( ll[ 1 ], ll[ 0 ], *anisotropy2 );
-      Subtract( Image{ 1.0 }, *anisotropy2, *anisotropy2, anisotropy2->DataType() );
+      Subtract( 1, *anisotropy2, *anisotropy2, anisotropy2->DataType() );
       // *anisotropy2 = ( ll[0] == 0 ) ? 0 : *anisotropy2;
       Select( ll[ 0 ], Image{ 0.0 }, Image( 0.0, anisotropy2->DataType() ), *anisotropy2, *anisotropy2, "==" );
    }
