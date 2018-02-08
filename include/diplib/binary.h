@@ -404,7 +404,7 @@ inline Image BinaryAreaClosing(
 ///    same results, and sometimes planes in the skeleton are not thinned to a single pixel thickness.
 ///
 /// **Literature**
-/// - B.J.H. Verwer, "Improved metrics in image processing applied to the Hilditch skeleton", 9th ICPR, 1988.
+/// - B.J.H. Verwer, "Improved metrics in image processing applied to the Hilditch skeleton", 9<sup>th</sup> ICPR, 1988.
 DIP_EXPORT void EuclideanSkeleton(
       Image const& in,
       Image& out,

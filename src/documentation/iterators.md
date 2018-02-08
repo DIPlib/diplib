@@ -269,11 +269,11 @@ many efficient algorithms.
 
 \section iterate_slices Processing an image slice by slice
 
-Take for example the case of a time series image, a 3D image where the 3rd dimension is
+Take for example the case of a time series image, a 3D image where the 3<sup>rd</sup> dimension is
 time. One might want to filter each of the 2D slices in the same way, but not mix
 information from one slice to another. Some image processing functions allow to specify
 which dimensions are to be processed, one can choose to process only the first two dimensions.
-With other filters one can set the size of the neighborhood to 1 along the third
+With other filters one can set the size of the neighborhood to 1 along the 3<sup>rd</sup>
 dimension, so that effectively no filtering is applied in that direction. But a few
 filters are written explicitly for 2D images, or do not make it possible to restrict
 processing dimensions. `dip::EuclideanSkeleton` is an example of the latter. The
@@ -288,7 +288,7 @@ in the time series one can use the `dip::ImageSliceIterator`:
 ```
 
 Here, the slice iterator `it` points at a 2D subimage of the 3D image `img`,
-in which the third dimension (dimension number 2) of `img` is removed. It is
+in which the 3<sup>rd</sup> dimension (dimension number 2) of `img` is removed. It is
 possible to read and write to the pixels of this slice, but it is not possible
 to strip or reforge it.
 When constructed, the iterator points at the slice for index 0. Each time it is

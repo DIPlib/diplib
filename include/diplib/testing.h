@@ -129,7 +129,7 @@ void PrintPixelValues( Image const& img ) {
 ///
 /// If `mode` is `dip::Option::CompareImagesMode::APPROX`, the sample values must all be within
 /// `epsilon`, which defaults to 1e-6. For this mode of operation there is an overloaded function
-/// that takes `epsilon` as the 3rd argument (i.e. you can skip the `mode` parameter):
+/// that takes `epsilon` as the 3<sup>rd</sup> argument (i.e. you can skip the `mode` parameter):
 /// ```cpp
 ///     dip::CompareImages( img1, img2 );       // samples must be identical
 ///     dip::CompareImages( img1, img2, 1e-3 ); // samples must be within 1e-3 of each other

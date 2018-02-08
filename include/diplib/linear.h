@@ -310,7 +310,7 @@ inline Image GaussFT(
 /// 44(2):139-151, 1995.
 ///
 /// See: L.J. van Vliet, I.T. Young and P.W. Verbeek, Recursive Gaussian Derivative Filters,
-/// in: Proc. 14th Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
+/// in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
 DIP_EXPORT void GaussIIR(
       Image const& in,
       Image& out,

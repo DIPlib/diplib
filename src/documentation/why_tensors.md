@@ -17,8 +17,8 @@
 [//]: # (limitations under the License.)
 
 Images in *DIPlib* 3.0 have pixel values generalized to tensors. Currently only
-tensors of order up to 2 are supported. Thus, pixel values can be scalar (0th-order
-tensor), vector (1st-order) or matrix (2nd order). This covers all current
+tensors of order up to 2 are supported. Thus, pixel values can be scalar (0<sup>th</sup>-order
+tensor), vector (1<sup>st</sup>-order) or matrix (2<sup>nd</sup> order). This covers all current
 applications of multi-valued pixels, as far as we're aware. On this page we show
 some examples of these applications that show the notational simplicity that comes
 with the tensor representation. In each of the examples below, please think about
@@ -241,8 +241,8 @@ Using *DIPlib* we can write:
     dip::EigenDecomposition( S, E, V );
     E = 1 / E;
     E /= dip::Trace( E );
-    dip::Image D = V * E * Transpose( V );
-    img += lambda * Divergence( D * Gradient( img ));
+    dip::Image D = V * E * dip::Transpose( V );
+    img += lambda * dip::Divergence( D * dip::Gradient( img ));
 ```
 
 Repeating this bit of code leads to a coherence enhancing diffusion simulation

@@ -63,7 +63,7 @@ namespace dip {
 ///  - P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and Image Processing 14:227-248, 1980.
 ///  - J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and Image Processing 54(6):526-535, 1992.
 ///  - I. Ragnemalm, "Generation of Euclidean Distance Maps", Licentiate thesis, No. 206, Link&ouml;ping University, Sweden, 1990.
-///  - Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9th International Conference on Pattern Recognition, 495-499, 1988.
+///  - Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
 ///
 /// **Known bugs**
 ///  - The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger (almost)

@@ -414,7 +414,7 @@ inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray c
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
 /// the `percentile` percentile of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
-/// and equals the percentile projection along the processing dimensions. To get the 30th percentile of all pixels in the
+/// and equals the percentile projection along the processing dimensions. To get the 30<sup>th</sup> percentile of all pixels in the
 /// image:
 /// ```cpp
 ///     dip::Percentile( img, {}, 30.0 ).As< double >();
@@ -435,7 +435,7 @@ inline Image Percentile( Image const& in, Image const& mask, dfloat percentile, 
 /// \brief Calculates the median of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
-/// the median (50th percentile) of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// the median (50<sup>th</sup> percentile) of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the median projection along the processing dimensions. To get the median of all pixels in the
 /// image:
 /// ```cpp

@@ -779,7 +779,7 @@ inline Image RankFilter(
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
 /// **Literature**
-///  - P. Soille, "Morphological Image Analysis", 2nd Edition, section 4.4.3. Springer, 2002.
+///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
 DIP_EXPORT void RankMinClosing(
       Image const& in,
       Image& out,
@@ -818,7 +818,7 @@ inline Image RankMinClosing(
 /// and `"add max"` with the rank filter, equivalent to ignoring what's outside the image.
 ///
 /// **Literature**
-///  - P. Soille, "Morphological Image Analysis", 2nd Edition, section 4.4.3. Springer, 2002.
+///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
 DIP_EXPORT void RankMaxOpening(
       Image const& in,
       Image& out,
