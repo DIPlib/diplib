@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2017, Cris Luengo.)
+[//]: # ([c]2016-2018, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 [//]: # (Based on original DIPimage code: [c]1999-2014, Delft University of Technology.)
 
@@ -296,7 +296,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
 
-- Lots of new algorithms, some previously only available in *DIPimage*.
+- Lots of new algorithms, some previously only available in *DIPimage*, some completely new.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
   - TODO: try to list them all!

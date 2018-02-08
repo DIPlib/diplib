@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for non-linear image filters
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -268,41 +268,197 @@ inline Image NonMaximumSuppression(
 ///
 /// Applies `iterations` steps of the anisotropic diffusion as proposed by Perona and Malik:
 ///
-/// \f[ I^{t+1} = I^t + \lambda \sum_D \left( c_D^t \nabla_D I^t \right) \f]
+/// \f[ I^{t+1} = I^t + \lambda \sum_\eta \left( c_\eta^t \nabla_\eta I^t \right) \; , \f]
 ///
-/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$D\f$ are the each of the cardinal directions,
-/// \f$\nabla_D\f$ is the finite difference in direction \f$D\f$.
+/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\eta\f$ are the each of the cardinal directions,
+/// \f$\nabla_\eta\f$ is the finite difference in direction \f$\eta\f$,
 ///
-/// \f[ c_D^t = g\left( \left| \nabla_D I^t \right| \right)  \f]
+/// \f[ c_\eta^t = g\left( \| \nabla_\eta I^t \| \right) \; , \f]
 ///
 /// and \f$g\f$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
 /// by the `K` parameter:
-///  - `"Gauss"`: \f$ g(x) = exp(-(x/K)^2) \f$
-///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (x/K)^2) \f$
-///  - `"exponential"`: \f$ g(x) = exp(-(x/K)) \f$
+///  - `"Gauss"`: \f$ g(x) = \exp(-(\frac{x}{K})^2) \f$
+///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (\frac{x}{K})^2) \f$
+///  - `"exponential"`: \f$ g(x) = \exp(-\frac{x}{K}) \f$
 ///
-/// The diffusion is generalized to any image dimensionality.
+/// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
 /// **Literature**
 /// - P. Perona and J. Malik, "Scale-Space and Edge Detection Using Anisotropic Diffusion",
 ///   IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
-DIP_EXPORT void PeronaMalik(
+DIP_EXPORT void PeronaMalikDiffusion(
       Image const& in,
       Image& out,
       dip::uint iterations = 5,
       dfloat K = 10,
       dfloat lambda = 0.25,
-      String g = "Gauss"
+      String const& g = "Gauss"
 );
-inline Image PeronaMalik(
+inline Image PeronaMalikDiffusion(
       Image const& in,
       dip::uint iterations = 5,
       dfloat K = 10,
       dfloat lambda = 0.25,
-      String g = "Gauss"
+      String const& g = "Gauss"
 ) {
    Image out;
-   PeronaMalik( in, out, iterations, K, lambda, g );
+   PeronaMalikDiffusion( in, out, iterations, K, lambda, g );
+   return out;
+}
+
+/// \brief Applies iterative generic anisotropic diffusion using Gaussian derivatives
+///
+/// Applies `iterations` steps of the generic anisotropic diffusion equation:
+///
+/// \f[ I^{t+1} = I^t + \lambda \, \mathrm{div} \left( c^t \nabla I^t \right) \; , \f]
+///
+/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\nabla\f$ and \f$\mathrm{div}\f$ are computed using
+/// Gaussian gradients (`dip::Gradient` and `dip::Divergence`),
+///
+/// \f[ c^t = g\left( \| \nabla I^t \| \right) \; , \f]
+///
+/// and \f$g\f$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
+/// by the `K` parameter:
+///  - `"Gauss"`: \f$ g(x) = \exp(-(\frac{x}{K})^2) \f$
+///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (\frac{x}{K})^2) \f$
+///  - `"exponential"`: \f$ g(x) = \exp(-\frac{x}{K}) \f$
+///
+/// Note that the parameters here are identical to those in `dip::PeronaMalik`. The Perona-Malik diffusion
+/// is a discrete differences approximation to the generic anosotropic diffusion equation. This function uses Gaussian
+/// gradients as a discretization strategy.
+///
+/// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
+DIP_EXPORT void GaussianAnisotropicDiffusion(
+      Image const& in,
+      Image& out,
+      dip::uint iterations = 5,
+      dfloat K = 10,
+      dfloat lambda = 0.25,
+      String const& g = "Gauss"
+);
+inline Image GaussianAnisotropicDiffusion(
+      Image const& in,
+      dip::uint iterations = 5,
+      dfloat K = 10,
+      dfloat lambda = 0.25,
+      String const& g = "Gauss"
+) {
+   Image out;
+   GaussianAnisotropicDiffusion( in, out, iterations, K, lambda, g );
+   return out;
+}
+
+/// \brief Applies iterative robust anisotropic diffusion
+///
+/// Applies `iterations` steps of the robust anisotropic diffusion using Tukey's biweight (Black et al., 1998):
+///
+/// \f[ I^{t+1} = I^t + \lambda \sum_\eta \psi ( \nabla_\eta I^t, \sigma ) \; , \f]
+///
+/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\eta\f$ are the each of the cardinal directions,
+/// \f$\nabla_\eta\f$ is the finite difference in direction \f$\eta\f$, and
+///
+/// \f[
+///    \psi(x,\sigma) =
+///       \begin{cases}
+///          x\,\left(1-\frac{x^2}{\sigma^2}\right)^2, & \text{if}\ |x| \lt \sigma
+///       \\ 0, & \text{if}\ |x| \ge \sigma
+///       \end{cases}
+/// \f]
+///
+/// \f$\sigma\f$ is set by the `sigma` parameter.
+///
+/// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
+///
+/// **Literature**
+/// - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust Anisotropic Diffusion,"
+///   IEEE Transactions on Image Processing 7(3):421-432, 1998.
+inline void RobustAnisotropicDiffusion(
+      Image const& in,
+      Image& out,
+      dip::uint iterations = 5,
+      dfloat sigma = 10,
+      dfloat lambda = 0.25
+) {
+   PeronaMalikDiffusion( in, out, iterations, sigma, lambda, "Tukey" );
+}
+inline Image RobustAnisotropicDiffusion(
+      Image const& in,
+      dip::uint iterations = 5,
+      dfloat sigma = 10,
+      dfloat lambda = 0.25
+) {
+   Image out;
+   RobustAnisotropicDiffusion( in, out, iterations, sigma, lambda );
+   return out;
+}
+
+/// \brief Applies iterative coherence enhancing (anisotropic) diffusion
+///
+/// Applies `iterations` steps of the coherence enhancing diffusion:
+///
+/// \f[ I^{t+1} = I^t + \lambda \, \mathrm{div} \left( D \nabla I^t \right) \; , \f]
+///
+/// where \f$\lambda\f$ is set with the `lambda` parameter, and \f$D\f$ is the diffusion tensor, derived from
+/// the structure tensor (see `dip::StructureTensor`). `derivativeSigma` and `regularizationSigma`
+/// are the sigmas for the Gaussian derivatives and smoothing in the structure tensor. The gradient and
+/// divergence are computed using Gaussian derivatives also, using a sigma of 0.5.
+///
+/// `flags` allows the selection of different computational options:
+/// - `"const"`: \f$D\f$ is taken as constant, simplifying the computation from
+///   \f$ \frac{\partial}{\partial x} \left( D_{xx} \frac{\partial}{\partial x} I^t \right) \f$
+///   to \f$ D_{xx} \frac{\partial^2}{\partial x^2} I^t \f$, reducing the number of filters to apply from
+///   4 to 3. The opposite is `"variable"`, which is the default.
+/// - `"all"`: \f$D\f$ is obtained in a simple manner from the structure tensor, where all eigenvalues of \f$D\f$
+///   are adjusted. The opposite is `"first"`, which is the default. See below for more information.
+/// - `"resample"`: the output is twice the size of the input. Computations are always done on the larger image,
+///   this flag returns the larger image instead of the subsampled one.
+///
+/// This function can be applied to images with two or more dimensions. `in` must be scalar and real-valued.
+/// The `"first"` flag is only supported for 2D images, if `in` has more dimensions, the `"first"` flag is
+/// isnored and `"all"` is assumed.
+///
+/// In `"all"` mode, \f$D\f$ is composed from the eigen decoposition of the structure tensor \f$S\f$:
+///
+/// \f[ S = V \, E \, V^T \; \rightarrow \; D = V \, E' \, V^T \; , \f]
+///
+/// with
+///
+/// \f[ E' = \frac{1}{\textrm{trace}(E^{-1})} \, E^{-1} \f]
+///
+/// In `"first"` mode, \f$D\f$ is composed similarly, but the two eigenvalues of \f$D\f$, \f$d_i\f$, are determined
+/// from the eigenvalues \f$\mu_i\f$ of \f$S\f$ (with \f$\mu_1 \ge \mu_2\f$) as follows:
+///
+/// \f{eqnarray*}{
+///       d_1 &=& \alpha
+///    \\ d_2 &=& \begin{cases}
+///                    \alpha + ( 1.0 - \alpha ) \exp\left(\frac{-c}{(\mu_1 - \mu_2)^2}\right) \, ,
+///                                & \text{if}\ \frac{\mu_1 - \mu_2}{\mu_1 + \mu_2} \gt \alpha \; \textrm{(high anisotropy)}
+///                 \\ \alpha \, , & \text{otherwise}
+///               \end{cases}
+/// \f}
+///
+/// \f$\alpha\f$ is a magic number set to 0.01, and \f$c\f$ is set to the median of all \f$\mu_2^2\f$
+/// values across the image (as proposed by Lucas van Vliet).
+///
+/// **Literature**
+/// - J. Weickert, "Anisotropic diffusion in image processing," Teubner (Stuttgart), pages 95 and 127, 1998.
+DIP_EXPORT void CoherenceEnhancingDiffusion(
+      Image const& in,
+      Image& out,
+      dfloat derivativeSigma = 1,
+      dfloat regularizationSigma = 3,
+      dip::uint iterations = 5,
+      StringSet const& flags = {}
+);
+inline Image CoherenceEnhancingDiffusion(
+      Image const& in,
+      dfloat derivativeSigma = 1,
+      dfloat regularizationSigma = 3,
+      dip::uint iterations = 5,
+      StringSet const& flags = {}
+) {
+   Image out;
+   CoherenceEnhancingDiffusion( in, out, derivativeSigma, regularizationSigma, iterations, flags );
    return out;
 }
 

@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2017, Cris Luengo.)
+[//]: # ([c]2017-2018, Cris Luengo.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
 [//]: # (you may not use this file except in compliance with the License.)
@@ -166,7 +166,7 @@ image `img`:
 ```
 
 Note again that is is possible to compute `corners` more efficiently
-by \ref iterators. That way, one can run throug the image `S` only once,
+by \ref iterators. That way, one can run through the image `S` only once,
 and avoid the temporary intermediate images.
 
 [//]: # (--------------------------------------------------------------)
@@ -179,7 +179,7 @@ also involves the structure tensor. The problem to solve is \f$Av=b\f$,
 where \f$A\f$ is a matrix with \f$x\f$ and \f$y\f$ partial derivatives at each
 pixel in a neighborhood, \f$b\f$ is a vector with \f$t\f$ derivatives at each
 of those pixels, and \f$v\f$ is the velocity vector for the neighborhood.
-This is rewritten as \f$A^{T}Av=A^{T}b\f$, where \f$A^{T}A\f$ is the
+This is rewritten as \f$A^T A v = A^T b\f$, where \f$A^T A\f$ is the
 structure tensor. Using *DIPlib*, and assuming a 3D image `img` where
 the third dimension is time, we can write:
 
@@ -197,3 +197,53 @@ to set the `process` parameter: a boolean array indicating along which
 dimensions to compute the derivative. Since this parameter is towards the
 end of the parameter list, we must fill out the other default values,
 which we simply copied from the function declaration.
+
+[//]: # (--------------------------------------------------------------)
+
+\section diffusion Anisotropic diffusion
+
+There are many more examples where per-pixel matrix algebra is useful and
+*DIPlib* allows simple, efficient implementation. The last example we'll
+give here is from the function `dip::CoherenceEnhancingDiffusion`.
+
+The diffussion equation can be discretized along the time axis to yield
+an iterative update process described by
+
+\f[
+   I^{t+1} = I^t + \lambda \, \mathrm{div} \left( D \, \nabla I^t \right) \; .
+\f]
+
+If \f$D\f$ is constant (spatially and in time), the above iterative process
+leads to Gaussian smoothing. By adjusting \f$D\f$ to be small at edges,
+an anisotropic, edge-enhancing diffusion is obtained. Coherence enhancing
+diffusion uses a tensor for \f$D\f$. The above-mentioned function allows
+to construct this tensor in two ways, starting from (yet again!) the
+structure tensor \f$S\f$. Here we apply an eigen decompostion, leading
+to a full matrix image \f$V\f$ (the eigenvectors), and a diagonal matrix
+image \f$E\f$ (the eigenvalues):
+
+\f[
+   S = V \, E \, V^T \; .
+\f]
+
+Next we compute \f$t = \textrm{trace}(E^{-1})\f$ and \f$E' = \frac{1}{t} E^{-1}\f$,
+and re-compose a tensor using these new eigenvalues:
+
+\f[
+   D = V \, E' \, V^T \; .
+\f]
+
+Using *DIPlib* we can write:
+
+```cpp
+    dip::Image S = dip::StructureTensor( img ); // see above for how this is computed
+    dip::Image E, V;
+    dip::EigenDecomposition( S, E, V );
+    E = 1 / E;
+    E /= dip::Trace( E );
+    dip::Image D = V * E * Transpose( V );
+    img += lambda * Divergence( D * Gradient( img ));
+```
+
+Repeating this bit of code leads to a coherence enhancing diffusion simulation
+on the image `img`.

@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `pmd` function
+ * This MEX-file implements the `ced` function
  *
  * (c)2018, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -25,38 +25,45 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 6 );
+      DML_MAX_ARGS( 7 );
+
+      dml::streambuf b;
 
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
 
-      dip::uint iterations = 5;
+      dip::dfloat derivativeSigma = 1;
       if( nrhs > 1 ) {
-         iterations = dml::GetUnsigned( prhs[ 1 ] );
+         derivativeSigma = dml::GetFloat( prhs[ 1 ] );
       }
-
-      dip::dfloat K = 10;
+      dip::dfloat regularizationSigma = 3;
       if( nrhs > 2 ) {
-         K = dml::GetFloat( prhs[ 2 ] );
+         regularizationSigma = dml::GetFloat( prhs[ 2 ] );
       }
 
-      dip::dfloat lambda = 0.25;
+      dip::uint iterations = 5;
       if( nrhs > 3 ) {
-         lambda = dml::GetFloat( prhs[ 3 ] );
+         iterations = dml::GetUnsigned( prhs[ 3 ] );
       }
 
-      dip::String g = "Gauss";
+      dip::StringSet flags = {};
       if( nrhs > 4 ) {
-         g = dml::GetString( prhs[ 4 ] );
+         dip::String coef = dml::GetString( prhs[ 4 ] );
+         flags.insert( std::move( coef ));
+      }
+      if( nrhs > 5 ) {
+         dip::String flavour = dml::GetString( prhs[ 5 ] );
+         flags.insert( std::move( flavour ));
+      }
+      if( nrhs > 6 ) {
+         if( !dml::GetBoolean( prhs[ 6 ] )) {
+            flags.emplace( "resample" );
+         }
       }
 
       dml::MatlabInterface mi;
       dip::Image out = mi.NewImage();
 
-      if( nrhs > 5 ) { // secret flag: if there's a 6th parameter, no matter what, call `dip::AnisotropicDiffusion`.
-         dip::GaussianAnisotropicDiffusion( in, out, iterations, K, lambda, g );
-      } else {
-         dip::PeronaMalikDiffusion( in, out, iterations, K, lambda, g );
-      }
+      CoherenceEnhancingDiffusion( in, out, derivativeSigma, regularizationSigma, iterations, flags );
 
       plhs[ 0 ] = mi.GetArray( out );
 
