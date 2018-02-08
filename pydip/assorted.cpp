@@ -203,6 +203,15 @@ void init_assorted( py::module& m ) {
    m.def( "Rotation3d", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3d ),
           "in"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
 
+   m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray const& >( &dip::Tile ),
+          "in"_a, "tiling"_a = dip::UnsignedArray{} );
+   m.def( "TileTensorElements", py::overload_cast< dip::Image const& >( &dip::TileTensorElements ),
+          "in"_a );
+   m.def( "Concatenate", py::overload_cast< dip::ImageConstRefArray const&, dip::uint >( &dip::Concatenate ),
+          "in"_a, "dimension"_a = 0 );
+   m.def( "Concatenate", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Concatenate ),
+          "in1"_a, "in2"_a, "dimension"_a = 0 );
+
    // diplib/histogram.h
    m.def( "Histogram", []( dip::Image const& input ){
       dip::Histogram histogram( input );

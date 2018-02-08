@@ -92,6 +92,7 @@ src/generation/draw_support.h
 src/generation/noise.cpp
 src/geometry/interpolation.h
 src/geometry/resampling.cpp
+src/geometry/tile.cpp
 src/histogram/histogram.cpp
 src/histogram/statistics.cpp
 src/histogram/threshold_algorithms.cpp

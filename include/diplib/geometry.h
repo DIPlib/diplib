@@ -496,6 +496,109 @@ inline Image Rotation3d(
 
 // TODO: port also rot_euler_low.c and affine_trans_low.c from DIPimage
 
+
+/// \brief Tiles a set of images to form a single image.
+///
+/// Input images are arranged according to `tiling`. For example, if `tiling = { 3, 2 }, will generate an
+/// output where three images are placed horizontally, and two vertically. In this case, up to 6 input images
+/// can be given in `in`. If `in` has fewer images, the corresponding locations in `out` will be zero. If `in`
+/// has 6 images, they will be placed as follows:
+///
+/// ```
+///    | in[0], in[1], in[2] |
+///    | in[3], in[4], in[5] |
+/// ```
+///
+/// That is, images are tiled row-wise, from left to right and then top to bottom. `tiling` can have any number
+/// of elements, it is for example possible to tile 2D images along the 4<sup>th</sup> dimension.
+///
+/// If `tiling` is an empty array (the default), then `ceil(sqrt(in.size()))` images will be placed horizontally,
+/// in however many rows are necessary to fit all images.
+///
+/// The input images must all have the same sizes, with the exception for the case where all images are tiled
+/// along a single dimension, in which case their sizes can differ along that dimension (see `dip::Concatenate`)
+///
+/// The input images must all have the same number of tensor elements. If their tensor representations do not
+/// match, the output image will be a default column vector. If images are differing data types, the output will
+/// be of a type that best can represent the input (see `dip::DataType::SuggestDyadicOperation`).
+DIP_EXPORT void Tile(
+      ImageConstRefArray const& in,
+      Image& out,
+      UnsignedArray tiling = {}
+);
+inline Image Tile(
+      ImageConstRefArray const& in,
+      UnsignedArray const& tiling = {}
+) {
+   Image out;
+   Tile( in, out, tiling );
+   return out;
+}
+
+/// \brief Tiles the tensor elements of `in` to produce a scalar image
+///
+/// The tensor elements of `in` are arranged according to its tensor representation, along the first two
+/// spatial dimensions. This produces a scalar image of size `in.Size(0) * in.TensorColumns()` along the
+/// horizontal dimension, and size `in.Size(1) * in.TensorRows()` along the vertical dimension. The output
+/// image has the same dimensions as `in` along the third and further dimensions.
+DIP_EXPORT void TileTensorElements(
+      Image const& in,
+      Image& out
+);
+inline Image TileTensorElements(
+      Image const& in
+) {
+   Image out;
+   TileTensorElements( in, out );
+   return out;
+}
+
+/// \brief Concatenates a set of images along one dimension.
+///
+/// Input images are concatenated along dimension `dimension`. They must all have the same sizes along all
+/// dimensions except `dimension`, where they can differ.
+///
+/// The input images must all have the same number of tensor elements. If their tensor representations do not
+/// match, the output image will be a default column vector. If images are differing data types, the output will
+/// be of a type that best can represent the input (see `dip::DataType::SuggestDyadicOperation`).
+inline void Concatenate(
+      ImageConstRefArray const& in,
+      Image& out,
+      dip::uint dimension = 0
+) {
+   UnsignedArray tiling( dimension + 1, 1 );
+   tiling[ dimension ] = in.size();
+   Tile( in, out, tiling );
+}
+inline Image Concatenate(
+      ImageConstRefArray const& in,
+      dip::uint dimension = 0
+) {
+   Image out;
+   Concatenate( in, out, dimension );
+   return out;
+}
+
+/// \brief Concatenates two images.
+inline void Concatenate(
+      Image const& in1,
+      Image const& in2,
+      Image& out,
+      dip::uint dimension = 0
+) {
+   Concatenate( { in1, in2 }, out, dimension );
+}
+inline Image Concatenate(
+      Image const& in1,
+      Image const& in2,
+      dip::uint dimension = 0
+) {
+   Image out;
+   Concatenate( { in1, in2 }, out, dimension );
+   return out;
+}
+
+
 /// \}
 
 } // namespace dip
