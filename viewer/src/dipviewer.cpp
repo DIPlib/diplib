@@ -65,8 +65,14 @@ void Show( Image const& image, String const& title ) {
 }
 
 void ShowSimple( Image const& image, String const& title ) {
+   DIP_THROW_IF( image.DataType() != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );
    Create();
-   DIP_STACK_TRACE_THIS( manager__->createWindow( ImageViewer::Create( image, getWindowTitle( title ))));
+   Image tmp = image.QuickCopy();
+   if( image.IsScalar() ) {
+      tmp.ExpandSingletonTensor( 3 );
+   }
+   tmp.ForceNormalStrides();
+   DIP_STACK_TRACE_THIS( manager__->createWindow( ImageViewer::Create( tmp, getWindowTitle( title ))));
    ++count__;
 }
 

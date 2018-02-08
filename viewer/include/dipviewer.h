@@ -46,9 +46,12 @@ namespace viewer {
 /// at an appropriate time after calling `%dip::viewer::Show` or `dip::viewer::ShowSimple`.
 DIPVIEWER_EXPORT void Show( Image const& image, String const& title = "" );
 
-/// \brief Show a 2D RGB image.
+/// \brief Show a 2D grey-value or RGB image, of type `dip::DT_UINT8`.
 ///
 /// A new non-interactive `dip::viewer::ImageViewer` window is created for the image. `title` sets the window title.
+///
+/// A scalar (grey-value) image will be replicated across three channels to form an RGB image (meaning that data
+/// will be copied).
 ///
 /// Calling `dip::viewer::Show` or `%dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
 /// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
