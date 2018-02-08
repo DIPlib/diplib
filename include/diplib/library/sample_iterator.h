@@ -88,7 +88,7 @@ class DIP_NO_EXPORT SampleIterator {
       /// Dereference
       pointer operator->() const { return ptr_; }
       /// Index
-      template< typename I, typename std::enable_if< IsIndexingType< I >::value, int >::type = 0 >
+      template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
       reference operator[]( I index ) const { return *( ptr_ + static_cast< difference_type >( index ) * stride_ ); }
       /// Increment
       SampleIterator& operator++() {
@@ -113,13 +113,13 @@ class DIP_NO_EXPORT SampleIterator {
          return tmp;
       }
       /// Add integer
-      template< typename I, typename std::enable_if< IsIndexingType< I >::value, int >::type = 0 >
+      template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
       SampleIterator& operator+=( I index ) {
          ptr_ += static_cast< difference_type >( index ) * stride_;
          return *this;
       }
       /// Subtract integer
-      template< typename I, typename std::enable_if< IsIndexingType< I >::value, int >::type = 0 >
+      template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
       SampleIterator& operator-=( I index ) {
          ptr_ -= static_cast< difference_type >( index ) * stride_;
          return *this;
@@ -152,13 +152,13 @@ class DIP_NO_EXPORT SampleIterator {
 };
 
 /// \brief Add integer to a sample iterator
-template< typename T, typename I, typename std::enable_if< IsIndexingType< I >::value, int >::type = 0 >
+template< typename T, typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
 inline SampleIterator< T > operator+( SampleIterator< T > it, I n ) {
    it += n;
    return it;
 }
 /// \brief Subtract integer from a sample iterator
-template< typename T, typename I, typename std::enable_if< IsIndexingType< I >::value, int >::type = 0 >
+template< typename T, typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
 inline SampleIterator< T > operator-( SampleIterator< T > it, I n ) {
    it -= n;
    return it;

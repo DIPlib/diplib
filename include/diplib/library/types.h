@@ -130,10 +130,20 @@ template<> struct IsIndexingType< dip::sint > { static constexpr bool value = tr
 /// One example usage is as follows:
 ///
 /// ```cpp
-///     template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+///     template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
 ///     void MyFunction( T value ) { ... }
 /// ```
-template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv< T >::type > {};
+///
+/// When defining different versions of the templated function for `IsSampleType< T >` and `!IsSampleType< T >`,
+/// you'll need to use the following form:
+///
+/// ```cpp
+///     template< typename T, typename std::enable_if_t< IsSampleType< T >::value, int > = 0 >
+///     void MyFunction( T value ) { ... }
+///     template< typename T, typename std::enable_if_t< !IsSampleType< T >::value, int > = 0 >
+///     void MyFunction( T value ) { ... }
+/// ```
+template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are numeric types, similar to
 /// `std::is_arithmetic` but also true for complex types.
@@ -141,10 +151,20 @@ template< typename T > struct IsSampleType : public detail::IsSampleType< typena
 /// One example usage is as follows:
 ///
 /// ```cpp
-///     template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+///     template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 ///     void MyFunction( T value ) { ... }
 /// ```
-template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv< T >::type > {};
+///
+/// When defining different versions of the templated function for `IsNumericType< T >` and `!IsNumericType< T >`,
+/// you'll need to use the following form:
+///
+/// ```cpp
+///     template< typename T, typename std::enable_if_t< IsNumericType< T >::value, int > = 0 >
+///     void MyFunction( T value ) { ... }
+///     template< typename T, typename std::enable_if_t< !IsNumericType< T >::value, int > = 0 >
+///     void MyFunction( T value ) { ... }
+/// ```
+template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are indexing types, true for
 /// signed and unsigned integers.
@@ -152,27 +172,37 @@ template< typename T > struct IsNumericType : public detail::IsNumericType< type
 /// One example usage is as follows:
 ///
 /// ```cpp
-///     template< typename T, typename std::enable_if< IsIndexingType< T >::value, int >::type = 0 >
+///     template< typename T, typename = std::enable_if_t< IsIndexingType< T >::value >>
 ///     void MyFunction( T value ) { ... }
 /// ```
-template< typename T > struct IsIndexingType : public detail::IsIndexingType< typename std::remove_cv< T >::type > {};
+///
+/// When defining different versions of the templated function for `IsIndexingType< T >` and `!IsIndexingType< T >`,
+/// you'll need to use the following form:
+///
+/// ```cpp
+///     template< typename T, typename std::enable_if_t< IsIndexingType< T >::value, int > = 0 >
+///     void MyFunction( T value ) { ... }
+///     template< typename T, typename std::enable_if_t< !IsIndexingType< T >::value, int > = 0 >
+///     void MyFunction( T value ) { ... }
+/// ```
+template< typename T > struct IsIndexingType : public detail::IsIndexingType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief A templated function to check for positive infinity, which works also for integer types (always returning false)
-template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+template< typename TPI, typename std::enable_if_t< !std::numeric_limits< TPI >::has_infinity, int > = 0 >
 bool PixelIsInfinity( TPI /*value*/ ) {
    return false;
 }
-template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+template< typename TPI, typename std::enable_if_t< std::numeric_limits< TPI >::has_infinity, int > = 0 >
 bool PixelIsInfinity( TPI value ) {
    return value == std::numeric_limits< TPI >::infinity();
 }
 
 /// \brief A templated function to check for negative infinity, which works also for integer types (always returning false)
-template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+template< typename TPI, typename std::enable_if_t< !std::numeric_limits< TPI >::has_infinity, int > = 0 >
    bool PixelIsMinusInfinity( TPI /*value*/ ) {
    return false;
 }
-template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+template< typename TPI, typename std::enable_if_t< std::numeric_limits< TPI >::has_infinity, int > = 0 >
 bool PixelIsMinusInfinity( TPI value ) {
    return value == -std::numeric_limits< TPI >::infinity();
 }
@@ -198,7 +228,7 @@ class DIP_NO_EXPORT bin {
       constexpr bin( bool v ) : v_( static_cast< uint8 >( v )) {};
 
       /// Any arithmetic type converts to bin by comparing to zero
-      template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
 
       /// A bin implicitly converts to bool
@@ -571,7 +601,7 @@ using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 
 namespace detail {
 
-template< typename Enum, typename = typename std::enable_if< std::is_enum< Enum >::value >::type >
+template< typename Enum, typename = std::enable_if_t< std::is_enum< Enum >::value >>
 class DIP_NO_EXPORT dip__Options {
       using value_type = unsigned long;
       using enum_u_type = typename std::underlying_type< Enum >::type;

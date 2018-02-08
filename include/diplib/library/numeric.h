@@ -69,9 +69,8 @@ inline dip::uint gcd( dip::uint a, dip::uint b ) {
 }
 
 /// \brief Integer division, unsigned, return ceil.
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value && !std::is_signed<T>::value, T>::type
-div_ceil( T lhs, T rhs ) {
+template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
+T div_ceil( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -79,9 +78,8 @@ div_ceil( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, signed, return ceil.
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, T>::type
-div_ceil( T lhs, T rhs ) {
+template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
+T div_ceil( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -97,9 +95,8 @@ div_ceil( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, unsigned, return floor.
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value && !std::is_signed<T>::value, T>::type
-div_floor( T lhs, T rhs ) {
+template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
+T div_floor( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -107,9 +104,8 @@ div_floor( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, signed, return floor.
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, T>::type
-div_floor( T lhs, T rhs ) {
+template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
+T div_floor( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -125,9 +121,8 @@ div_floor( T lhs, T rhs ) {
 }
 
 /// \brief Integer division, return rounded.
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value, T>::type
-div_round( T lhs, T rhs ) {
+template< typename T, typename = std::enable_if_t< std::is_integral< T >::value, T >>
+T div_round( T lhs, T rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
@@ -143,7 +138,7 @@ inline dip::sint modulo( dip::sint value, dip::sint period ) {
 
 /// \brief Fast floor operation, without checks, returning a `dip::sint`.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
-template< typename T, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 dip::sint floor_cast( T v ) {
    auto w = static_cast< dip::sint >( v );
    return w - ( v < static_cast< T >( w ));
@@ -151,7 +146,7 @@ dip::sint floor_cast( T v ) {
 
 /// \brief Fast ceil operation, without checks, returning a `dip::sint`.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
-template< typename T, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 dip::sint ceil_cast( T v ) {
    auto w = static_cast< dip::sint >( v );
    return w + ( v > static_cast< T >( w ));
@@ -159,7 +154,7 @@ dip::sint ceil_cast( T v ) {
 
 /// \brief Fast round operation, without checks, returning a `dip::sint`.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
-template< typename T, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 dip::sint round_cast( T v ) {
    return floor_cast( v + 0.5 );
 }
@@ -169,7 +164,7 @@ dip::sint round_cast( T v ) {
 /// This rounding is consistent in that half-way cases are rounded in the same direction for positive and negative
 /// values. The `inverse` template parameter indicates the direction for these cases. By default, it matches
 /// `std::round` for positive values.
-template< typename T, bool inverse = false, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+template< typename T, bool inverse = false, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 dip::sint consistent_round( T v ) {
    return inverse ? ceil_cast( v - 0.5 ) : floor_cast( v + 0.5 ); // conditional should be optimized out
 };
@@ -184,15 +179,15 @@ dip::sint consistent_round( T v ) {
 ///
 /// The return type is the same as the input type, except if the input is a signed integer,
 /// in which case the return type is the unsigned counterpart.
-template< typename T, typename std::enable_if< !std::is_integral< T >::value, int >::type = 0 >
+template< typename T, typename std::enable_if_t< !std::is_integral< T >::value, int > = 0 >
 AbsType< T > abs( T value ) {
    return static_cast< AbsType< T >>( std::abs( value ));
 }
-template< typename T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value, int >::type = 0 >
+template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_unsigned< T >::value, int > = 0 >
 T abs( T value ) {
    return value;
 }
-template< typename T, typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value, int >::type = 0 >
+template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 AbsType< T > abs( T value ) {
    return static_cast< AbsType< T >>( std::abs( static_cast< dfloat >( value )));
 }

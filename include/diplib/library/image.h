@@ -340,14 +340,14 @@ class DIP_NO_EXPORT Image {
       explicit Image( Sample const& sample, dip::DataType dt );
 
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       explicit Image( std::initializer_list< T > values ) {
          Image tmp{ Pixel( values ) };
          this->move( std::move( tmp )); // a way of calling a different constructor.
       }
 
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       explicit Image( std::initializer_list< T > values, dip::DataType dt ) {
          Image tmp{ Pixel( values ), dt };
          this->move( std::move( tmp )); // a way of calling a different constructor.
@@ -1879,7 +1879,8 @@ class DIP_NO_EXPORT Image {
       View operator[]( UnsignedArray const& indices ) const;
 
       /// \brief Extract a tensor element using linear indexing. Negative indices start at the end. The image must be forged.
-      View operator[]( dip::sint index ) const;
+      template< typename T, typename = std::enable_if_t< IsIndexingType< T >::value >>
+      View operator[]( T index ) const;
 
       /// \brief Extract tensor elements using linear indexing. The image must be forged.
       View operator[]( Range const& range ) const;
@@ -2207,14 +2208,14 @@ class DIP_NO_EXPORT Image {
       }
 
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       Image& operator=( std::initializer_list< T > values ) {
          Fill( Pixel( values ));
          return *this;
       }
 
       /// Returns the value of the first sample in the first pixel in the image as the given numeric type.
-      template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
 
       /// \}

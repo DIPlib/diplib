@@ -372,4 +372,27 @@ DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
    DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 5.0, 25.0, 61.0, 11.0, 17.0, 39.0 } ));
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing the operator overloading") {
+   // We want all these things to compile:
+   dip::Image lhs( { 1.0, 2.0, 3.0 } );
+   dip::Image rhs( { 1.0, 10.0, 100.0 } );
+   dip::Image out;
+   Add( lhs, rhs, out );
+   Add( lhs[ 0 ], rhs, out );
+   Add( lhs, rhs[ 0 ], out );
+   Add( lhs[ 0 ], rhs[ 0 ], out );
+   Add( lhs, 1, out );
+   Add( 1, rhs, out );
+   Add( lhs[ 0 ], 1, out );
+   Add( 1, rhs[ 0 ], out );
+   out = lhs + rhs;
+   out = lhs[ 0 ] + rhs;
+   out = lhs + rhs[ 0 ];
+   out = lhs[ 0 ] + rhs[ 0 ];
+   out = lhs + 1;
+   out = 1 + rhs;
+   out = lhs[ 0 ] + 1;
+   out = 1 + rhs[ 0 ];
+}
+
 #endif // DIP__ENABLE_DOCTEST

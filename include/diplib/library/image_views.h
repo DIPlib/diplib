@@ -89,7 +89,7 @@ class Image::Sample {
       }
 
       /// A numeric value implicitly converts to a `%Sample`.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       constexpr Sample( T value ) {
          dataType_ = dip::DataType( value );
          *static_cast< T* >( origin_ ) = value;
@@ -140,7 +140,7 @@ class Image::Sample {
       void swap( Sample&& other ) { swap( other ); };
 
       /// Returns the value of the sample as the given numeric type, similar to using `static_cast`.
-      template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
 
       /// A `%Sample` can be cast to basic numerical types.
@@ -173,7 +173,7 @@ class Image::Sample {
       }
 
       /// It is also possible to assign a constant directly.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       constexpr Sample& operator=( T value ) {
          detail::CastSample( dip::DataType( value ), &value, dataType_, origin_ );
          return *this;
@@ -338,7 +338,7 @@ class Image::Pixel {
 
       /// \brief A `%Pixel` can be constructed from an initializer list, yielding a pixel with the same data
       /// type and number of tensor elements as the initializer list. The pixel will be a column vector.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename std::enable_if_t< IsSampleType< T >::value, int > = 0 >
       Pixel( std::initializer_list< T > values ) {
          dip::uint N = values.size();
          tensor_.SetVector( N );
@@ -392,7 +392,7 @@ class Image::Pixel {
       void swap( Pixel&& other ) { swap( other ); }
 
       /// Returns the value of the first sample in the pixel as the given numeric type, similar to using `static_cast`.
-      template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
 
       /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
@@ -446,7 +446,7 @@ class Image::Pixel {
          return operator=( static_cast< Pixel const& >( pixel ));
       }
       /// It is also possible to assign from an initializer list.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       Pixel& operator=( std::initializer_list< T > values ) {
          dip::uint N = tensor_.Elements();
          DIP_THROW_IF( values.size() != N, E::NTENSORELEM_DONT_MATCH );
@@ -683,42 +683,42 @@ inline void swap( Image::Pixel::Iterator& v1, Image::Pixel::Iterator& v2 ) { v1.
 
 /// \brief Arithmetic operator, element-wise.
 DIP_EXPORT Image::Pixel operator+( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator+( Image::Pixel const& lhs, T const& rhs ) { return operator+( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, element-wise.
 DIP_EXPORT Image::Pixel operator-( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator-( Image::Pixel const& lhs, T const& rhs ) { return operator-( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, tensor multiplication.
 DIP_EXPORT Image::Pixel operator*( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator*( Image::Pixel const& lhs, T const& rhs ) { return operator*( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, element-wise.
 DIP_EXPORT Image::Pixel operator/( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator/( Image::Pixel const& lhs, T const& rhs ) { return operator/( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, element-wise.
 DIP_EXPORT Image::Pixel operator%( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator%( Image::Pixel const& lhs, T const& rhs ) { return operator%( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Bit-wise operator, element-wise.
 DIP_EXPORT Image::Pixel operator&( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator&( Image::Pixel const& lhs, T const& rhs ) { return operator&( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Bit-wise operator, element-wise.
 DIP_EXPORT Image::Pixel operator|( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator|( Image::Pixel const& lhs, T const& rhs ) { return operator|( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Bit-wise operator, element-wise.
 DIP_EXPORT Image::Pixel operator^( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator^( Image::Pixel const& lhs, T const& rhs ) { return operator^( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Unary operator, element-wise.
@@ -732,31 +732,31 @@ DIP_EXPORT Image::Pixel operator!( Image::Pixel const& in );
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
 DIP_EXPORT bool operator==( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator==( Image::Pixel const& lhs, T const& rhs ) { return operator==( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, equivalent to `!(lhs==rhs)`.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator!=( Image::Pixel const& lhs, T const& rhs ) { return !operator==( lhs, rhs ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
 DIP_EXPORT bool operator< ( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator< ( Image::Pixel const& lhs, T const& rhs ) { return operator< ( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
 DIP_EXPORT bool operator> ( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator> ( Image::Pixel const& lhs, T const& rhs ) { return operator> ( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
 DIP_EXPORT bool operator<=( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator<=( Image::Pixel const& lhs, T const& rhs ) { return operator<=( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
 DIP_EXPORT bool operator>=( Image::Pixel const& lhs, Image::Pixel const& rhs );
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator>=( Image::Pixel const& lhs, T const& rhs ) { return operator>=( lhs, Image::Pixel{ rhs } ); }
 
 template< typename T >
@@ -1241,8 +1241,9 @@ inline Image::View Image::operator[]( UnsignedArray const& indices ) const {
    return operator[]( static_cast< dip::sint >( tensor_.Index( indices )));
 }
 
-inline Image::View Image::operator[]( dip::sint index ) const {
-   return operator[]( Range( index ));
+template< typename T, typename >
+inline Image::View Image::operator[]( T index ) const {
+   return operator[]( Range( static_cast< dip::sint >( index )));
 }
 
 inline Image::View Image::operator[]( Range const& range ) const {

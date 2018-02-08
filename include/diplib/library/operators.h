@@ -52,35 +52,35 @@ using isView = isa< T, Image::View >;
 }
 
 template< typename T >
-using IsNotImageOrView = std::enable_if_t< !detail::isImage< T >::value && !detail::isView< T >::value >;
+using EnableIfNotImageOrView = std::enable_if_t< !detail::isImage< T >::value && !detail::isView< T >::value >;
 
 template< typename T1, typename T2 >
-using OneIsImageOrView = std::enable_if_t< ( detail::isImage< T1 >::value || detail::isView< T1 >::value ) ||
-                                           ( detail::isImage< T2 >::value || detail::isView< T2 >::value ) >;
+using EnableIfOneIsImageOrView = std::enable_if_t< ( detail::isImage< T1 >::value || detail::isView< T1 >::value ) ||
+                                                   ( detail::isImage< T2 >::value || detail::isView< T2 >::value ) >;
 
 #define DIP__DEFINE_ARITHMETIC_OVERLOADS( name ) \
 DIP_EXPORT void  name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
 inline     void  name( Image const& lhs, Image const& rhs, Image& out )  { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
 inline     Image name( Image const& lhs, Image const& rhs, DataType dt ) { Image out; name( lhs, rhs, out, dt ); return out; } \
 inline     Image name( Image const& lhs, Image const& rhs )              { Image out; name( lhs, rhs, out ); return out; } \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out, DataType dt ) { name( lhs, Image{ rhs }, out, dt ); } \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out )              { name( lhs, Image{ rhs }, out ); } \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( T const& lhs, Image const& rhs, Image& out, DataType dt ) { name( Image{ lhs }, rhs, out, dt ); } \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( T const& lhs, Image const& rhs, Image& out )              { name( Image{ lhs }, rhs, out ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out, DataType dt ) { name( lhs, Image{ rhs }, out, dt ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out )              { name( lhs, Image{ rhs }, out ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( T const& lhs, Image const& rhs, Image& out, DataType dt ) { name( Image{ lhs }, rhs, out, dt ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( T const& lhs, Image const& rhs, Image& out )              { name( Image{ lhs }, rhs, out ); } \
 template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs, DataType dt ) { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out, dt ); return out; } \
 template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )              { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 #define DIP__DEFINE_DYADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out ); \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
 template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )  { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 #define DIP__DEFINE_TRIADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& in, Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T1, typename T2 > inline void name( Image const& in, T1 const& lhs, T2 const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( Image const& in, Image const& lhs, T const& rhs, Image& out ) { name( in, lhs, Image{ rhs }, out ); } \
-template< typename T, typename = IsNotImageOrView< T >> inline void  name( Image const& in, T const& lhs, Image const& rhs, Image& out ) { name( in, Image{ lhs }, rhs, out ); } \
-template< typename T1, typename T2, typename = IsNotImageOrView< T1 >, typename = IsNotImageOrView< T2 >> inline void name( Image const& in, T1 const& lhs, T2 const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, Image const& lhs, T const& rhs, Image& out ) { name( in, lhs, Image{ rhs }, out ); } \
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, T const& lhs, Image const& rhs, Image& out ) { name( in, Image{ lhs }, rhs, out ); } \
+template< typename T1, typename T2, typename = EnableIfNotImageOrView< T1 >, typename = EnableIfNotImageOrView< T2 >> inline void name( Image const& in, T1 const& lhs, T2 const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
 template< typename T1, typename T2 > inline Image name( Image const& in, T1&& lhs, T2&& rhs ) { Image out; name( in, std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 
@@ -203,14 +203,14 @@ DIP_EXPORT void  Modulo( Image const& lhs, Image const& rhs, Image& out, DataTyp
 inline     void  Modulo( Image const& lhs, Image const& rhs, Image& out )  { Modulo( lhs, rhs, out, lhs.DataType() ); }
 inline     Image Modulo( Image const& lhs, Image const& rhs, DataType dt ) { Image out; Modulo( lhs, rhs, out, dt ); return out; }
 inline     Image Modulo( Image const& lhs, Image const& rhs )              { Image out; Modulo( lhs, rhs, out ); return out; }
-template< typename T, typename = IsNotImageOrView< T >> inline void  Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); }
-template< typename T, typename = IsNotImageOrView< T >> inline void  Modulo( Image const& lhs, T const& rhs, Image& out )              { Modulo( lhs, Image{ rhs }, out ); }
-template< typename T, typename = IsNotImageOrView< T >> inline void  Modulo( T const& lhs, Image const& rhs, Image& out, DataType dt ) { Modulo( Image{ lhs }, rhs, out, dt ); }
-template< typename T, typename = IsNotImageOrView< T >> inline void  Modulo( T const& lhs, Image const& rhs, Image& out )              { Modulo( Image{ lhs }, rhs, out ); }
-template< typename T, typename = IsNotImageOrView< T >> inline Image Modulo( Image const& lhs, T const& rhs, DataType dt )      { return Modulo( lhs, Image{ rhs }, dt ); }
-template< typename T, typename = IsNotImageOrView< T >> inline Image Modulo( Image const& lhs, T const& rhs )                   { return Modulo( lhs, Image{ rhs } ); }
-template< typename T, typename = IsNotImageOrView< T >> inline Image Modulo( T const& lhs, Image const& rhs, DataType dt )      { return Modulo( Image{ lhs }, rhs, dt ); }
-template< typename T, typename = IsNotImageOrView< T >> inline Image Modulo( T const& lhs, Image const& rhs )                   { return Modulo( Image{ lhs }, rhs ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( Image const& lhs, T const& rhs, Image& out )              { Modulo( lhs, Image{ rhs }, out ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( T const& lhs, Image const& rhs, Image& out, DataType dt ) { Modulo( Image{ lhs }, rhs, out, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( T const& lhs, Image const& rhs, Image& out )              { Modulo( Image{ lhs }, rhs, out ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( Image const& lhs, T const& rhs, DataType dt )      { return Modulo( lhs, Image{ rhs }, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( Image const& lhs, T const& rhs )                   { return Modulo( lhs, Image{ rhs } ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( T const& lhs, Image const& rhs, DataType dt )      { return Modulo( Image{ lhs }, rhs, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( T const& lhs, Image const& rhs )                   { return Modulo( Image{ lhs }, rhs ); }
 
 /// \brief Elevates `lhs` to the power of `rhs`, sample-wise, with singleton expansion.
 ///
@@ -277,31 +277,31 @@ inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 //
 
 /// \brief Arithmetic operator, calls `dip::Add`.
-template< typename T1, typename T2, typename = OneIsImageOrView< T1, T2 >>
+template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator+( T1 const& lhs, T2 const& rhs ) {
    return Add( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Subtract`.
-template< typename T1, typename T2, typename = OneIsImageOrView< T1, T2 >>
+template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator-( T1 const& lhs, T2 const& rhs ) {
    return Subtract( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Multiply`.
-template< typename T1, typename T2, typename = OneIsImageOrView< T1, T2 >>
+template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator*( T1 const& lhs, T2 const& rhs ) {
    return Multiply( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Divide`.
-template< typename T1, typename T2, typename = OneIsImageOrView< T1, T2 >>
+template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator/( T1 const& lhs, T2 const& rhs ) {
    return Divide( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Modulo`.
-template< typename T1, typename T2, typename = OneIsImageOrView< T1, T2 >>
+template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator%( T1 const& lhs, T2 const& rhs ) {
    return Modulo( lhs, rhs );
 }
