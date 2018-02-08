@@ -512,6 +512,7 @@ set(EXAMPLES_REQUIRE_VIEWER
     display
     fileviewer
     viewer
+    test_filters
 )
 foreach(file ${DIP_EXAMPLES})
    get_filename_component(target ${file} NAME_WE)
