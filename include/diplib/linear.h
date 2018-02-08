@@ -770,7 +770,19 @@ inline Image GradientDirection(
    return out;
 }
 
-/// \brief Computes the rotation of the 2D or 3D vector field `in`.
+/// \brief Computes the curl (rotation) of the 2D or 3D vector field `in`.
+///
+/// Curl is defined as by \f$ \mathrm{curl}\,\mathbf{f} = \nabla \times \mathbf{f} \f$, for a 3-vector
+/// \f$\mathbf{f}=(f_x, f_y, f_z)\f$ (the vector image `in`), resulting in a 3-vector with components:
+///
+/// \f{eqnarray*}{
+///      (\mathrm{curl}\,\mathbf{f})_x &=& \frac{\partial}{\partial y} f_z - \frac{\partial}{\partial z} f_y \, ,
+///   \\ (\mathrm{curl}\,\mathbf{f})_y &=& \frac{\partial}{\partial z} f_x - \frac{\partial}{\partial x} f_z \, ,
+///   \\ (\mathrm{curl}\,\mathbf{f})_z &=& \frac{\partial}{\partial x} f_y - \frac{\partial}{\partial y} f_x \, .
+/// \f}
+///
+/// For the 2D case, \f$f_z\f$ is assumed to be zero, and only the z-component of the curl is computed, yielding
+/// a scalar output.
 ///
 /// `in` is expected to be a 2D or 3D image with a 2-vector or a 3-vector tensor representation, respectively.
 /// However, the image can have more dimensions if they are excluded from processing through `process`.
@@ -800,6 +812,16 @@ inline Image Curl(
 }
 
 /// \brief Computes the divergence of the vector field `in`.
+///
+/// Divergence is defined as
+///
+/// \f[
+///   \mathrm{div}\,\mathbf{f} = \nabla \cdot \mathbf{f} =
+///   \frac{\partial}{\partial x}f_x + \frac{\partial}{\partial y}f_y + \frac{\partial}{\partial z}f_z \; ,
+/// \f]
+///
+/// with \f$\mathbf{f}=(f_x, f_y, f_z)\f$ the vector image `in`. This concept naturally extends to any number
+/// of dimensions.
 ///
 /// `in` is expected to have as many dimensions as tensor components. However, the image
 /// can have more dimensions if they are excluded from processing through `process`.
@@ -831,18 +853,23 @@ inline Image Divergence(
 /// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input
 /// was *N*-dimensional.
 ///
-/// Each tensor component corresponds to the a second-order derivative. For a 3D image, the Hessian is given by:
-/// ```
-///     | dxx dxy dxz |
-/// H = | dxy dyy dyz |
-///     | dxz dyz dzz |
-/// ```
-/// Note that duplicate entries are not stored in the symmetric tensor image. Image dimensions for which
-/// `process` is false do not participate in the set of dimensions that form the Hessian matrix. Thus, a
-/// 5D image with only two dimensions selected by the `process` array will yield a 2-by-2 Hessian matrix.
+/// The Hessian of input image \f$f\f$ is given by \f$ \mathbf{H} = \nabla \nabla^T f \f$, with tensor components
 ///
-/// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
-/// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
+/// \f[
+///   \mathbf{H}_{i,j} = \frac{\partial^2}{\partial u_i \partial u_j} f \; .
+/// \f]
+///
+/// Each tensor component corresponds to one of the second-order derivatives.
+/// Note that \f$H\f$ is a symmetric matrix (order of differentiation does not matter). Duplicate entries
+/// are not stored in the symmetric tensor image.
+///
+/// Image dimensions for which `process` is false do not participate in the set of dimensions that form the
+/// Hessian matrix. Thus, a 5D image with only two dimensions selected by the `process` array will yield a 2-by-2
+/// Hessian matrix.
+///
+/// By default this function uses Gaussian derivatives in the computation. Set `method = "finitediff"` for
+/// finite difference approximations to the gradient. See `dip::Derivative` for more information on the other
+/// parameters.
 ///
 /// The input image must be scalar.
 ///
@@ -869,7 +896,14 @@ inline Image Hessian(
    return out;
 }
 
-/// \brief Computes the Laplacian of the image, equivalent to `dip::Trace( dip::Hessian ( in ))`, but more efficient.
+/// \brief Computes the Laplacian of the image, equivalent to `dip::Trace( dip::Hessian( in ))`, but more efficient.
+///
+/// The Laplacian of input image \f$f\f$ is written as \f$ \nabla\cdot\nabla f = \nabla^2 f = \Delta f \f$, and given
+/// by
+///
+/// \f[
+///   \Delta f = \sum_i \frac{\partial^2}{\partial u_i^2} f \; .
+/// \f]
 ///
 /// See `dip::Gradient` for information on the parameters.
 ///

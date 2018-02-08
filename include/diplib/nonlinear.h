@@ -423,7 +423,7 @@ inline Image RobustAnisotropicDiffusion(
 ///
 /// with
 ///
-/// \f[ E' = \frac{1}{\textrm{trace}(E^{-1})} \, E^{-1} \f]
+/// \f[ E' = \frac{1}{\mathrm{trace}\,E^{-1}} \, E^{-1} \f]
 ///
 /// In `"first"` mode, \f$D\f$ is composed similarly, but the two eigenvalues of \f$D\f$, \f$d_i\f$, are determined
 /// from the eigenvalues \f$\mu_i\f$ of \f$S\f$ (with \f$\mu_1 \ge \mu_2\f$) as follows:
@@ -432,7 +432,7 @@ inline Image RobustAnisotropicDiffusion(
 ///       d_1 &=& \alpha
 ///    \\ d_2 &=& \begin{cases}
 ///                    \alpha + ( 1.0 - \alpha ) \exp\left(\frac{-c}{(\mu_1 - \mu_2)^2}\right) \, ,
-///                                & \text{if}\ \frac{\mu_1 - \mu_2}{\mu_1 + \mu_2} \gt \alpha \; \textrm{(high anisotropy)}
+///                                & \text{if}\ \frac{\mu_1 - \mu_2}{\mu_1 + \mu_2} \gt \alpha \; \text{(high anisotropy)}
 ///                 \\ \alpha \, , & \text{otherwise}
 ///               \end{cases}
 /// \f}

@@ -104,7 +104,6 @@ document's source</a> for the most up-to-date version.
 -   Stuff that is in *DIPimage*:
     - 2D snakes
     - general 2D affine transformation, 3D rotation (is already C code)
-    - anisotropic diffusion and the like
     - tiling, concatenating, etc. of images
     - histogram equalization
     - ...and many more, see the old toolbox M-files for inspiration.
@@ -228,7 +227,7 @@ Some of the following functions already have their prototype written in the new 
     - dip_TikhonovRegularizationParameter (dip_restoration.h)
     - dip_TikhonovMiller (dip_restoration.h)
     - dip_Wiener (dip_restoration.h)
-    - dip_PseudoInverse (dip_restoration.h)
+    - dip_PseudoInverse (dip_restoration.h) (this name is wrong, maybe InverseFilterRestoration?)
 
 - diplib/morphology.h
     - dip_UpperEnvelope (dip_morphology.h)

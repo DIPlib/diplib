@@ -152,7 +152,7 @@ are corners. It is common to use the following equivalence to avoid computation
 of the eigenvalues:
 
 \f[
-   \lambda_1 \lambda_2 - \kappa \, (\lambda_1 + \lambda_2)^2 = \textrm{det}(S) - \kappa \, \textrm{trace}^2(S)
+   \lambda_1 \lambda_2 - \kappa \, (\lambda_1 + \lambda_2)^2 = \mathrm{det}\,S - \kappa \, (\mathrm{trace}\,S)^2
 \f]
 
 We can compute this in *DIPlib* as follows, again starting with a scalar
@@ -206,7 +206,7 @@ There are many more examples where per-pixel matrix algebra is useful and
 *DIPlib* allows simple, efficient implementation. The last example we'll
 give here is from the function `dip::CoherenceEnhancingDiffusion`.
 
-The diffussion equation can be discretized along the time axis to yield
+The diffusion equation can be discretized along the time axis to yield
 an iterative update process described by
 
 \f[
@@ -226,7 +226,7 @@ image \f$E\f$ (the eigenvalues):
    S = V \, E \, V^T \; .
 \f]
 
-Next we compute \f$t = \textrm{trace}(E^{-1})\f$ and \f$E' = \frac{1}{t} E^{-1}\f$,
+Next we compute \f$t = \mathrm{trace}\,E^{-1}\f$ and \f$E' = \frac{1}{t} E^{-1}\f$,
 and re-compose a tensor using these new eigenvalues:
 
 \f[
