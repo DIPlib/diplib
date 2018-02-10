@@ -54,8 +54,8 @@ dip__GaborIIRParams dip__FillGaborIIRParams(
    params.frequency = frequency;
    params.border = static_cast< dip::uint >(sigma * truncation + 0.5);
 
-   params.iir_order_num = { 0, 0, 0, 0, 0, 0 };
-   params.iir_order_den = { 3, 1, 3, 3, 1, 3 };
+   params.iir_order_num = {{ 0, 0, 0, 0, 0, 0 }};
+   params.iir_order_den = {{ 3, 1, 3, 3, 1, 3 }};
 
    // Init a1, a2, b1, b2 and cc with zero
    params.a1.fill( 0.0 );
