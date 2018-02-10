@@ -371,7 +371,7 @@ void PathOpening(
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( c_in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint ndims = c_in.Dimensionality();
    DIP_THROW_IF( ndims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
@@ -413,6 +413,10 @@ void PathOpening(
    Image tmp;
    tmp.Copy( in );
    DIP_ASSERT( tmp.HasContiguousData() );
+   DataType ovlType = tmp.DataType();
+   if( ovlType.IsBinary() ) {
+      ovlType = DT_UINT8; // treat binary image as if it were uint8.
+   }
 
    Image active;
    active.SetStrides( tmp.Strides() );
@@ -489,11 +493,11 @@ void PathOpening(
          if( constrained ) {
             DIP_OVL_CALL_REAL( dip__ConstrainedPathOpening,
                                ( tmp, active, len1, len2, len3, len4, offsets, offsetUp, offsetDown, length ),
-                               tmp.DataType());
+                               ovlType );
          } else {
             DIP_OVL_CALL_REAL( dip__PathOpening,
                                ( tmp, active, len1, len2, offsets, offsetUp, offsetDown, length ),
-                               tmp.DataType());
+                               ovlType );
          }
 
          // Collect in output
@@ -535,7 +539,7 @@ void DirectedPathOpening(
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( c_in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint ndims = c_in.Dimensionality();
    DIP_THROW_IF( ndims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
@@ -585,6 +589,10 @@ void DirectedPathOpening(
    }
    out.Copy( in );
    DIP_ASSERT( out.HasContiguousData() );
+   DataType ovlType = out.DataType();
+   if( ovlType.IsBinary() ) {
+      ovlType = DT_UINT8; // treat binary image as if it were uint8.
+   }
 
    // Prepare temporary images
    Image active;
@@ -635,11 +643,11 @@ void DirectedPathOpening(
    if( constrained ) {
       DIP_OVL_CALL_REAL( dip__ConstrainedPathOpening,
                          ( out, active, len1, len2, len3, len4, offsets, offsetUp, offsetDown, length ),
-                         out.DataType());
+                         ovlType );
    } else {
       DIP_OVL_CALL_REAL( dip__PathOpening,
                          ( out, active, len1, len2, offsets, offsetUp, offsetDown, length ),
-                         out.DataType());
+                         ovlType );
    }
 }
 

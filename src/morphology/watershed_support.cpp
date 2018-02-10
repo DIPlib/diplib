@@ -113,7 +113,11 @@ void dip__SortOffsets( void const* ptr, std::vector< dip::sint >& offsets, bool 
 } // namespace
 
 void SortOffsets( Image const& img, std::vector< dip::sint >& offsets, bool lowFirst ) {
-   DIP_OVL_CALL_REAL( dip__SortOffsets, ( img.Origin(), offsets, lowFirst ), img.DataType() );
+   DataType ovlType = img.DataType();
+   if( ovlType.IsBinary() ) {
+      ovlType = DT_UINT8;
+   }
+   DIP_OVL_CALL_REAL( dip__SortOffsets, ( img.Origin(), offsets, lowFirst ), ovlType );
 }
 
 } // namespace dip
