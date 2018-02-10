@@ -369,9 +369,6 @@ void ContrastStretch(
    if( inMax < inMin ) {
       std::swap( inMax, inMin );
    }
-   if( outMax < outMin ) {
-      std::swap( outMax, outMin );
-   }
    DataType outType = DataType::SuggestFloat( in.DataType() );
    if(( inMax == inMin ) || ( outMax == outMin )) {
       PixelSize pixelSize = in.PixelSize();
