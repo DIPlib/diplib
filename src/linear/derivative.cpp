@@ -189,8 +189,7 @@ void GradientMagnitude(
    DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Image in = c_in.QuickCopy();
-   PixelSize pxsz = c_in.PixelSize();
+   Image in = c_in;
    if( in.Aliases( out ) ) {
       out.Strip();
    }
@@ -211,7 +210,6 @@ void GradientMagnitude(
    } else {
       Abs( out, out );
    }
-   out.SetPixelSize( pxsz );
 }
 
 void GradientDirection(
@@ -387,7 +385,6 @@ void Laplace (
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
    DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
@@ -406,8 +403,7 @@ void Laplace (
       kernel.At( ksz ) = static_cast< dfloat >( kernel.NumberOfPixels() ) - 1.0;
       DIP_STACK_TRACE_THIS( GeneralConvolution( c_in, kernel, out, boundaryCondition ));
    } else {
-      Image in = c_in.QuickCopy();
-      PixelSize pxsz = c_in.PixelSize();
+      Image in = c_in;
       if( in.Aliases( out ) ) {
          out.Strip();
       }
@@ -421,7 +417,6 @@ void Laplace (
          DIP_STACK_TRACE_THIS( Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation ));
          out += tmp;
       }
-      out.SetPixelSize( pxsz );
    }
 }
 

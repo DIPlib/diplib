@@ -21,6 +21,7 @@
 #include "diplib.h"
 #include "diplib/nonlinear.h"
 #include "diplib/linear.h"
+#include "diplib/math.h"
 #include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/pixel_table.h"
@@ -151,7 +152,7 @@ void SelectionFilter(
       out.ReForge( in.Sizes(), in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DONT_ALLOW );
       out.ReshapeTensor( in.Tensor() );
       out.SetPixelSize( in.PixelSize() );
-      if( !in.IsColor() ) {
+      if( in.IsColor() ) {
          out.SetColorSpace( in.ColorSpace() );
       }
    DIP_END_STACK_TRACE
@@ -205,6 +206,9 @@ void Kuwahara(
    DIP_START_STACK_TRACE
       Image value = dip::Uniform( in, kernel, boundaryCondition );
       Image control = dip::VarianceFilter( in, kernel, boundaryCondition );
+      if( !control.IsScalar() ) {
+         control = MaximumTensorElement( control );
+      }
       kernel.Mirror();
       SelectionFilter( value, control, out, kernel, threshold, S::MINIMUM, boundaryCondition );
    DIP_END_STACK_TRACE

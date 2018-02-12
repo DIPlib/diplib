@@ -145,6 +145,15 @@ inline Image VarianceFilter(
 ///     Image out = dip::SelectionFilter( in, in, kernel );
 /// ```
 ///
+/// Nonetheless, this can used to implement color morphology, for example (note there are much better approaches to
+/// build the `control` image):
+///
+/// ```cpp
+///     // Image in is a color image
+///     Image control = dip::SumTensorElements( in );
+///     Image out = dip::SelectionFilter( in, control, kernel, 0.0, "maximum" );
+/// ```
+///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
 /// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
 ///
@@ -194,6 +203,10 @@ inline Image SelectionFilter(
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
 /// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+///
+/// If `in` is non-scalar (e.g. a color image), then the variance is computed per-channel, and the maximum variance
+/// at each pixel (i.e. the maximum across tensor elements) is used to direct the filtering for all channels.
+/// If the Kuwahara filter were applied to each channel independently, false colors would appear.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
