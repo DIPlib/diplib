@@ -513,7 +513,7 @@ inline Image MorphologicalThreshold(
    return out;
 }
 
-// TODO: Document MorphologicalGist. It was undocumented in the old DIPlib.
+// TODO: Document MorphologicalGist. It was undocumented in DIPlib 2.
 DIP_EXPORT void MorphologicalGist(
       Image const& in,
       Image& out,

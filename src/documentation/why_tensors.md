@@ -16,7 +16,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-Images in *DIPlib* 3.0 have pixel values generalized to tensors. Currently only
+Images in *DIPlib 3* have pixel values generalized to tensors. Currently only
 tensors of order up to 2 are supported. Thus, pixel values can be scalar (0<sup>th</sup>-order
 tensor), vector (1<sup>st</sup>-order) or matrix (2<sup>nd</sup> order). This covers all current
 applications of multi-valued pixels, as far as we're aware. On this page we show

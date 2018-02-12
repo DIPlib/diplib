@@ -1,4 +1,4 @@
-# DIPlib 3.0 design decisions {#design}
+# DIPlib 3 design decisions {#design}
 
 [//]: # (DIPlib 3.0)
 
@@ -17,7 +17,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-This page gives reasons behind some of the design choices of *DIPlib* 3.0.
+This page gives reasons behind some of the design choices of *DIPlib 3*.
 Many of these decisions are inherited from the previous version of the library,
 and some new ones are made possible by the port to C++.
 
@@ -65,12 +65,12 @@ to languages (such as *MATLAB*) that do not allow a function to modify its input
 arguments. Such an automatic interface generation tool needs to know which
 arguments are inputs and which are outputs.
 
-In the previous version of *DIPlib* (written in C), all functions returned an
+In *DIPlib 2*, (written in C), all functions returned an
 error code, and so output values had to be function arguments
 (style 1). But in C++ we have exceptions to handle error conditions, and so
 are free to have an image as the return value of the function (style 2).
 However, the advantage of style 1 is too large to ignore. Therefore, we have
-kept the function signature style (and argument order) of the old *DIPlib*.
+kept the function signature style (and argument order) of *DIPlib 2*.
 However, we have written a small, inline wrapper function for most of the image
 filters that follow the signature style 2. Such a wrapper is very straight-forward:
 
@@ -172,11 +172,11 @@ code.
 
 \section design_options Passing options to a function
 
-Many algorithms require parameters that select a mode of operation. *DIPlib 3.0*
+Many algorithms require parameters that select a mode of operation. *DIPlib 3*
 uses strings for such parameters when the function is intended to be usable
 from interfaces. By not defining C++ constants, the interface code can be
 kept simple. For example, `dip::Dilation` has an option for the shape of the
-structuring element. Instead of defining an `enum` (as the old *DIPlib* did)
+structuring element. Instead of defining an `enum` (as *DIPlib 2* did)
 with various values that the interface code needs to translate, the option
 parameter is a string. The user of the interface and the user of the C++ library
 see the same parameter and use the function in the same way. The overhead of a
@@ -261,7 +261,7 @@ Such a line function is passed to the framework function, and the framework
 function calls the line function for every image line. The line function might
 need a state (parameters, intermediate data, output data). Furthermore, intermediate
 and output data (i.e. data that the line function writes) must be separate for each
-thread calling the line function. The old *DIPlib* did this in the typical C fashion:
+thread calling the line function. *DIPlib 2* did this in the typical C fashion:
 a function pointer and a `void*` to the state. The framework function passed the
 `void*` to the line function, which would cast it back to its original type. C++11
 offers several alternatives that are more type-safe, and offer greater flexibility.
@@ -327,7 +327,7 @@ because it depends on the data (e.g. see the pixel table morphology line filter)
 
 Thus, the point at which multiple threads are launched is imprecise at best.
 However, what matters here is that, for very small images, we do not start threads
-and double or worse the time spent on the filtering. The old *DIPlib* did not have
+and double or worse the time spent on the filtering. *DIPlib 2* did not have
 any such logic, always started threads within the frameworks, and consequently
 behaved poorly with very small images. This system is intended to overcome that
 problem.

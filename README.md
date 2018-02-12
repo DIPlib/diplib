@@ -1,4 +1,4 @@
-# DIPlib 3.0
+# DIPlib 3
 
 *DIPlib* is a library for quantitative image analysis. It has been in development
 at Delft University of Technology in The Netherlands since 1995. The 3.0 release

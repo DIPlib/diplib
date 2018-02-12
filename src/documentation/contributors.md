@@ -1,4 +1,4 @@
-# Contributors to the DIPlib 3.0 project {#contributors}
+# Contributors to the DIPlib 3 project {#contributors}
 
 [//]: # (DIPlib 3.0)
 
@@ -23,7 +23,7 @@ The project is initiated and directed by Cris Luengo, with support from:
 * Damir Sudar, Lawrence Berkeley National Laboratory
 * Michel Nederlof, Quantitative Imaging Systems
 
-The following people have contributed to the *DIPlib* 3.0 project:
+The following people have contributed to the *DIPlib 3* project:
 
 * Cris Luengo
 * Ronald Ligteringen

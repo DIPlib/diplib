@@ -1,4 +1,4 @@
-# Work plan for DIPlib 3.0 {#workplan}
+# Work plan for DIPlib 3 {#workplan}
 
 [//]: # (DIPlib 3.0)
 
@@ -19,7 +19,7 @@
 
 This is a list of tasks that need to be done, no longer in any particular order.
 
-Header files mentioned are from *DIPlib* 2.x ("the old *DIPlib*").
+Header files mentioned are from *DIPlib 2*.
 
 **NOTE:** The online documentation is not updated continuously, please see
 <a href="https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md">this
@@ -50,13 +50,13 @@ document's source</a> for the most up-to-date version.
 -   Color support. More color spaces could be added in time.
 
 -   The Fourier transform: built-in code is based on the code out of OpenCV, much faster than
-    the version in the old *DIPlib*; optionally uses [*FFTW*](http://www.fftw.org) instead
+    the version in *DIPlib 2*; optionally uses [*FFTW*](http://www.fftw.org) instead
     (which is GPL).
 
 -   Histograms, including multi-dimensional histograms constructed from tensor images.
 
 -   Look-up table, a single object that includes functionality of various related look-up
-    functions in the old *DIPlib*.
+    functions in *DIPlib 2*.
 
 -   Global threshold algorithms, ported from a *DIPimage* M-file.
 
@@ -105,9 +105,9 @@ document's source</a> for the most up-to-date version.
     - 2D snakes
     - general 2D affine transformation, 3D rotation (is already C code)
     - histogram equalization
-    - ...and many more, see the old toolbox M-files for inspiration.
+    - ...and many more, see the *DIPimage 2* M-files for inspiration.
 
--   Other stuff that's not in the old *DIPlib* (see below).
+-   Other stuff that's not in *DIPlib 2* (see below).
 
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
@@ -149,7 +149,7 @@ document's source</a> for the most up-to-date version.
 - A function to write text into an image, using the [*FreeType*](https://www.freetype.org) library.
 
 
-## List of old *DIPlib* functions that still need to be ported
+## List of *DIPlib 2* functions that still need to be ported
 
 Between brackets is the name of the old header file it's declared in. They are grouped by
 the new header file they should be declared in.

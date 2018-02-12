@@ -1,4 +1,4 @@
-Functions in the new DIPimage that didn't exist in the old one:
+Functions in DIPimage 3 that didn't exist in DIPimage 2:
 
 areaopening
 boundary_condition
@@ -50,7 +50,7 @@ writetiff
 
 ------------------------------------------------------
 
-Functions in the old DIPimage that are not yet ported (functions
+Functions in DIPimage 2 that are not yet ported (functions
 not listed here will not be ported):
 
 affine_trans

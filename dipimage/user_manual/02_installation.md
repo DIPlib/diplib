@@ -11,7 +11,7 @@ with.
 You can choose to install the toolbox from source, or download the binary.
 
 On all platforms, it is possible to have multiple versions of *DIPimage* installed
-(this is not true for the older versions of *DIPimage*, before 3.0).
+(this is not true for versions of *DIPimage* before 3.0).
 But you can only add one of them to your *MATLAB* path.
 
 Windows Installation

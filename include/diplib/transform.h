@@ -50,7 +50,7 @@ namespace dip {
 /// As it is commonly defined, the Fourier transform is not normalized, and the inverse transform
 /// is normalized by `1/size` for each dimension. This normalization is necessary for the sequence of
 /// forward and inverse transform to be idempotent. However, it is possible to change where the
-/// normalization is applied. For example, versions of *DIPlib* prior to version 3.0 used identical
+/// normalization is applied. For example, *DIPlib 2* used identical
 /// normalization for each of the two transforms. The advantage of using the common
 /// definition without normalization in the forward transform is that it is straightforward to
 /// transform an image and a convolution kernel, multiply them, and apply the inverse transform, as
@@ -74,8 +74,7 @@ namespace dip {
 ///     frequency domain). This yields a standard DFT (Discrete Fourier Transform).
 ///   - "symmetric": the normalization is made symmetric, where both forward and inverse transforms
 ///     are normalized by the same amount. Each transform is multiplied by `1/sqrt(size)` for each
-///     dimension. This makes the transform identical to how it was in versions of *DIPlib* prior to
-///     version 3.0.
+///     dimension. This makes the transform identical to how it was in *DIPlib 2*.
 ///
 /// For tensor images, each plane is transformed independently.
 ///

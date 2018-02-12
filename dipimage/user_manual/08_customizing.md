@@ -288,8 +288,6 @@ be a scalar value (`true`, `false`, `0` or `1`), or `yes` or `no`.
 Initialization File {#sec:customizing_dipinit}
 -------------------
 
-**NOTE: The GUI is not yet available in 3.0 (we still have work to do)**
-
 The *DIPimage* GUI will call the `dipinit` command when starting. It
 initializes the working environment, setting up figure windows and the
 like. You can also call it yourself, to return the windows to their

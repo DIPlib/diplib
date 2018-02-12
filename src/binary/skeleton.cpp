@@ -97,7 +97,7 @@ namespace dip {
  *                     memory allocation & resource tracking functions.
  *                   - "dip_"ed the variables.
  *                   - made the code "stride-aware".
- *  Aug 03, 2017:   Cris Luengo - C++-ified a little bit, ported to DIPlib 3.0
+ *  Aug 03, 2017:   Cris Luengo - C++-ified a little bit, ported to DIPlib 3
  *                   - Bucket is now a class with a constructor and methods
  *                   - turned macros to deal with Bucket into methods
  *                   - replaced memory allocation with std::vector

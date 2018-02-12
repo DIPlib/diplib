@@ -13,8 +13,6 @@ some rice grains, then analyze these measurements.
 Starting the GUI
 ----------------
 
-**NOTE: The GUI is not yet available in 3.0 (we still have work to do)**
-
 Type the following command at the *MATLAB* prompt:
 ```matlab
     dipimage

@@ -1,4 +1,4 @@
-# DIPlib 3.0 {#mainpage}
+# DIPlib 3 {#mainpage}
 
 [//]: # (DIPlib 3.0)
 
@@ -95,7 +95,7 @@ algorithms. That same year, a user-friendly GUI in the spirit of
 *MATLAB* toolbox, called *DIPimage*, became the primary interface to the
 *DIPlib* library.
 
-*DIPlib* 3.0 represents the first major rewrite of the *DIPlib* code base.
+*DIPlib 3* represents the first major rewrite of the *DIPlib* code base.
 We have rewritten the infrastructure in C++14, using all of the original
 ideas and concepts, but adding tensor images, color support, and other
 ideas we had developed within the *DIPimage* toolbox. C++14 allows the
@@ -106,7 +106,7 @@ contribute to. We are in the process of porting all of the image analysis
 routines to use the new infrastructure. See \ref workplan for progress and
 a detailed list of what still needs to be done.
 
-The *DIPimage* toolbox is being updated to optimally use *DIPlib* 3.0. This means
+The *DIPimage* toolbox is being updated to optimally use *DIPlib 3*. This means
 that some of the *MATLAB* code is being replaced with calls to *DIPlib*, and
 the low-level interface (`dip_*` functions) disappears. The internal
 representation of images has also changed. However, we strive
@@ -137,7 +137,7 @@ See \ref contributors.
 If you want to contribute to the *DIPlib* project, there are many different
 ways of doing so:
 
-- Help port algorithms from the old *DIPlib* to the new infrastructure. Please
+- Help port algorithms from *DIPlib 2* to the new infrastructure. Please
   coordinate with Cris Luengo before you get started. He can share the old code
   for the algorithms that need porting. See \ref workplan for a list of stuff to do.
 

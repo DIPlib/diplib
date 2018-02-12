@@ -315,7 +315,7 @@ void CoherenceEnhancingDiffusion(
          eigenvalues.At( mask )[ 1 ] = tmp;
          EigenComposition( eigenvalues, eigenvectors, D );
       } else { // all
-         // This is not exactly the same as the code in the old DIPimage. That was specifically 2D. It does:
+         // This is not exactly the same as the code in DIPimage 2. That was specifically 2D. It does:
          //  - normalize D by its trace
          //  - swap D[0] and D[1] (the two diagonal elements)
          //  - negate D[2] (the two off-diagonal elements)

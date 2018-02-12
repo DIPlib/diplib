@@ -1,4 +1,4 @@
-# Assorted concepts used in DIPlib 3.0 {#concepts}
+# Assorted concepts used in DIPlib 3 {#concepts}
 
 [//]: # (DIPlib 3.0)
 
@@ -17,7 +17,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-This page describes assorted concepts used in *DIPlib* 3.0.
+This page describes assorted concepts used in *DIPlib 3*.
 
 \tableofcontents
 

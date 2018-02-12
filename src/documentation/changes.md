@@ -1,4 +1,4 @@
-# Changes from DIPlib 2.x (the old DIPlib) {#changes}
+# Changes from DIPlib 2 {#changes}
 
 [//]: # (DIPlib 3.0)
 
@@ -18,7 +18,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-*DIPlib* 3.0 is a complete rewrite in C++ of the *DIPlib* 1.x/2.x infrastructure, which was written
+*DIPlib 3* is a complete rewrite in C++ of the *DIPlib 2* infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
 over.
 
@@ -153,7 +153,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip_WeightedMul` and `dip_WeightedDiv` were not used anywhere, and don't seem very useful.
 
 - Morphological filters now use a `dip::StructuringElement` to collect three parameters
-  of the old *DIPlib*. Other filters that had a filter shape argument now use a
+  of *DIPlib 2*. Other filters that had a filter shape argument now use a
   `dip::Kernel` to collect three parameters.
 
 - `dip_Min` and `dip_Max` are now `dip::Infimum` and `dip::Supremum`, and `dip_SignedMinimum`
@@ -204,7 +204,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 \section changes_functionality Changes in functionality
 
-- Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.
+- Second order extrapolation boundary extension didn't do as advertised in *DIPlib 2*.
   Also the first order extrapolation didn't work correctly with unsigned integers.
   The new implementation fits a 1<sup>st</sup> or 2<sup>nd</sup> order polynomial that reaches
   0 at the end of the extended boundary, with the 2<sup>nd</sup> order polynomial matching
@@ -238,12 +238,12 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::ImageDisplay` no longer does any spatial scaling. Also, it's a class, not a function.
 
-- `dip::ColorSpaceManager` is functionality ported from MATLAB-code in the old *DIPimage*,
+- `dip::ColorSpaceManager` is functionality ported from MATLAB-code in *DIPimage 2*,
   with a few new color spaces added.
 
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
   normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change
-  the normalization to be consistent with the old *DIPlib*, which used a symmetric normalization
+  the normalization to be consistent with *DIPlib 2*, which used a symmetric normalization
   scheme (both forward and backward transforms use 1/N<sup>1/2</sup>)
 
 - `dip::Histogram` misses a few of the options that `dip_MultiDimensionalHistogram` had, but I
@@ -277,7 +277,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip::Skew` can now skew in multiple dimensions at the same time.
 
 - `dip::Resampling` (and by extension `dip::Shift`) shifts the image in the opposite direction
-  from what it did in the old *DIPlib*, where the shift was unintuitive.
+  from what it did in *DIPlib 2*, where the shift was unintuitive.
 
 - `dip::FindShift` now returns the shift with inverse sign compared to before, to match the reversal
   in `dip::Shift`.
@@ -303,7 +303,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 [//]: # (--------------------------------------------------------------)
 
-\section changes_dipimage Changes from DIPimage 2.x (the old DIPimage)
+\section changes_dipimage Changes from DIPimage 2
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
   tensor images have all samples in the same *MATLAB* array. Complex images are stored as a
@@ -319,7 +319,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   and I'd be happy to hear if you actually used tensors with more than two dimensions.
 
   We tried keeping how the `dip_image` object is used as similar as possible to how it was
-  in the old *DIPimage*, so that users need not change their code. Nonetheless, some changes
+  in *DIPimage 2*, so that users need not change their code. Nonetheless, some changes
   must occur:
 
   - The `size` method was discouraged, we asked users to use `imsize` and `imarsize` instead.
@@ -343,7 +343,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - The `reshape` method now takes pixels column-wise instead of row-wise from the input. This
     is the natural way of doing it, as it doesn't require data copy. I don't remember why it
-    was row-wise in the old *DIPimage*, and I presume there are few (if any) programs that
+    was row-wise in *DIPimage 2*, and I presume there are few (if any) programs that
     depend on the old behavior.
 
   - Related to the previous point, `squeeze` now might reorder dimensions. But it's cheaper
@@ -370,7 +370,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
 
-- `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*:
+- `dipsetpref` and `dipgetpref` have fewer settings than in *DIPimage 2*:
    - `'BoundaryCondition'`, `'Truncation'`, and `'DerivativeFlavour'` have been removed, relevant
      functions optionally take these parameters as input arguments.
    - `'MorphologicalFlavour'` (and the associated function `dip_morph_flavour`) has been removed
@@ -389,7 +389,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `newimar` and `imarfun` are now in the `alias` subdirectory, and are identical to the new
   functions `newtensorim` and `tensorfun`.
 
-- Many filters now have a boundary condition parameter. In the old *DIPimage* one would change
+- Many filters now have a boundary condition parameter. In *DIPimage 2*, one would change
   the boundary condition through a global parameter, which no longer exists. If you never
   touched the global parameter, nothing should change for you. If you did change this global
   parameter in a program, you now need to pass the value to the relevant functions instead.
@@ -418,8 +418,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `mdhistogram` has fewer options, but should still be able to produce the same results as
     previously.
 
-  - `resample` and `shift` shift the image in the opposite direction from what it did in the old
-    *DIPimage*, where the shift was unintuitive.
+  - `resample` and `shift` shift the image in the opposite direction from what it did in
+    *DIPimage 2*, where the shift was unintuitive.
 
   - `readim` and `writeim` work differently now, in part because *DIPlib* natively only supports
     two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
@@ -445,7 +445,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - Old functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
 
-- If you customized the menus in the DIPimage GUI, you will have to update your `localdipmenus.m`
+- If you customized the menus in the *DIPimage* GUI, you will have to update your `localdipmenus.m`
   file. If you wrote your own functions that integrated in the GUI, you'll have to do so through
   your `localdipmenus.m` now. Preference setting `'CommandFilePath'` no longer exists,
   `getparams` no longer exists, and functions are no longer probed with `'DIP_GetParamList'`.
