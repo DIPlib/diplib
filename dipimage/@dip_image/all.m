@@ -1,5 +1,6 @@
 %ALL   True if all pixels in an image are non-zero.
-%   VALUE = ALL(B) gets true if all pixels in B are non-zero.
+%   VALUE = ALL(B) gets true if all pixels in B are non-zero. It works
+%   independently on each tensor element.
 %
 %   VALUE = ALL(B,M) only tests the pixels within the mask specified by
 %   the binary image M, and is equivalent to ALL(B(M)).
@@ -9,8 +10,16 @@
 %   with 2 dimensions, containing the 'all' projection over the third
 %   dimension (z). DIM can be an array with any number of dimensions.
 %   M can be [].
+%
+%   VALUE = ALL(B,'tensor') works over the tensor elements, returning
+%   a scalar image of the same size as B.
+%
+%   COMPATIBILITY NOTE:
+%   The behavior of ALL(B), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with ALL(B,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

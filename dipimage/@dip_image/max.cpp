@@ -35,8 +35,21 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       dip::Image in2; // either 2nd image or mask image
       dip::Image out = mi.NewImage();
 
-      // Get images
+      // Get first image
       in1 = dml::GetImage( prhs[ 0 ] );
+
+      // Handle tensor flag
+      if(( nrhs == 2 ) && mxIsChar( prhs[ 1 ] )) {
+         dip::String flag = dml::GetString( prhs[ 1 ] );
+         if( flag != "tensor" ) {
+            DIP_THROW_INVALID_FLAG( flag );
+         }
+         dip::MaximumTensorElement( in1, out );
+         plhs[ 0 ] = mi.GetArray( out );
+         return;
+      }
+
+      // Get second image
       if( nrhs > 1 ) {
          in2 = dml::GetImage( prhs[ 1 ] );
       }

@@ -162,7 +162,8 @@ void SortTensorElements( Image& out ) {
             // Note that pin and pout will point to the same data:
             // `Scan` is called with the same image as input and output, and the buffer and output types
             // are all the same as the image's type, so no intermediate buffers will be made.
-            [ n ]( auto const& /*pin*/, auto const& pout ) { std::sort( pout, pout + n, std::greater<>() ); }, static_cast< dip::uint >( 2 * static_cast< dfloat >( n ) * std::log2( n ))
+            [ n ]( auto const& /*pin*/, auto const& pout ) { std::sort( pout, pout + n, std::greater<>() ); },
+            static_cast< dip::uint >( 2 * static_cast< dfloat >( n ) * std::log2( n ))
       ), outtype );
       ImageRefArray outar{ out };
       Framework::Scan( { out }, outar, { outtype }, { outtype }, { outtype }, { n }, *scanLineFilter );
@@ -263,6 +264,7 @@ void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
 }
 
 void Norm( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.IsScalar() ) {
       Abs( in, out );
    } else {
@@ -288,6 +290,7 @@ void Norm( Image const& in, Image& out ) {
 }
 
 void Angle( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = in.TensorElements();
    DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
    DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -314,6 +317,7 @@ void Angle( Image const& in, Image& out ) {
 }
 
 void Orientation( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = in.TensorElements();
    DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
    DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -342,6 +346,7 @@ void Orientation( Image const& in, Image& out ) {
 }
 
 void CartesianToPolar( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = in.TensorElements();
    DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
    DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -369,6 +374,7 @@ void CartesianToPolar( Image const& in, Image& out ) {
 }
 
 void PolarToCartesian( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = in.TensorElements();
    DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
    DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -396,6 +402,7 @@ void PolarToCartesian( Image const& in, Image& out ) {
 }
 
 void Determinant( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The determinant can only be computed from square matrices" );
    dip::uint n = in.TensorRows();
    if( n == 1 ) {
@@ -435,37 +442,17 @@ void Determinant( Image const& in, Image& out ) {
 }
 
 void Trace( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsSquare(), "Trace only defined for square matrix images" );
    if( in.IsScalar() ) {
       out = in;
    } else {
-      DataType dtype = DataType::SuggestFlex( in.DataType() );
-      dip::uint n = in.TensorRows();
-      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      switch( in.TensorShape() ) {
-         case Tensor::Shape::DIAGONAL_MATRIX:
-         case Tensor::Shape::SYMMETRIC_MATRIX:
-         case Tensor::Shape::UPPTRIANG_MATRIX:
-         case Tensor::Shape::LOWTRIANG_MATRIX: {
-            DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = TraceDiagonal( n, pin ); }, n
-            ), dtype );
-            break;
-         }
-         default: {
-            DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = Trace( n, pin ); }, n
-            ), dtype );
-            break;
-         }
-      }
-      ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+      SumTensorElements( in.Diagonal(), out );
    }
-
 }
 
 void Rank( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint m = in.TensorRows();
    dip::uint n = in.TensorColumns();
    DataType intype;
@@ -487,6 +474,7 @@ void Rank( Image const& in, Image& out ) {
 }
 
 void Eigenvalues( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
    if( in.IsScalar() ) {
       out = in;
@@ -536,6 +524,7 @@ void Eigenvalues( Image const& in, Image& out ) {
 }
 
 void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
    if( in.IsScalar() ) {
       out = in;
@@ -582,6 +571,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
 }
 
 void Inverse( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The regular inverse can only be computed from square matrices" );
    DataType outtype = DataType::SuggestFlex( in.DataType() );
    if(( in.IsScalar() ) || ( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX )) {
@@ -609,6 +599,7 @@ void Inverse( Image const& in, Image& out ) {
 }
 
 void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DataType outtype = DataType::SuggestFlex( in.DataType() );
    if(( in.IsScalar() ) || ( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX )) {
       Divide( Image( 1, outtype ), in, out, outtype ); // computes 1/in for each of the diagonal elements
@@ -636,6 +627,7 @@ void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
 }
 
 void SingularValues( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.IsScalar() ) {
       out = in;
    } else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
@@ -674,6 +666,7 @@ void SingularValues( Image const& in, Image& out ) {
 }
 
 void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DataType outtype = DataType::SuggestFlex( in.DataType() );
    if( in.IsScalar() && !outtype.IsComplex() ) {
       out = in;
@@ -718,6 +711,138 @@ void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V
       U.ReshapeTensor( m, p );
       V.ReshapeTensor( n, p );
       out.ReshapeTensorAsDiagonal();
+   }
+}
+
+void SumTensorElements( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = DataType::SuggestFlex( in.DataType() );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) { *pout = Sum( n, pin ); }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+   }
+}
+
+void ProductTensorElements( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = DataType::SuggestFlex( in.DataType() );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) { *pout = Product( n, pin ); }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+   }
+}
+
+void AllTensorElements( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      NotEqual( in, 0, out );
+   } else {
+      dip::uint n = in.TensorElements();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = NewTensorMonadicScanLineFilter< bin >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = *pin;
+               for( dip::uint ii = 1; ii < n; ++ii ) {
+                  *pout &= pin[ ii ];
+               }
+            }, n
+      );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter );
+   }
+}
+
+void AnyTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      NotEqual( in, 0, out );
+   } else {
+      dip::uint n = in.TensorElements();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = NewTensorMonadicScanLineFilter< bin >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = *pin;
+               for( dip::uint ii = 1; ii < n; ++ii ) {
+                  *pout |= pin[ ii ];
+               }
+            }, n
+      );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter );
+   }
+}
+
+void MaximumTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.DataType().IsBinary() ) {
+      AnyTensorElement( in, out );
+   } else if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = in.DataType();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = *pin;
+               for( dip::uint ii = 1; ii < n; ++ii ) {
+                  *pout = std::max( *pout, pin[ ii ] );
+               }
+            }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+   }
+}
+
+void MinimumTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.DataType().IsBinary() ) {
+      AllTensorElements( in, out );
+   } else if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = in.DataType();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = *pin;
+               for( dip::uint ii = 1; ii < n; ++ii ) {
+                  *pout = std::min( *pout, pin[ ii ] );
+               }
+            }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+   }
+}
+
+void MeanTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = DataType::SuggestFlex( in.DataType() );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) { *pout = Sum( n, pin ) / static_cast< FloatType< decltype( *pout ) >>( n ); }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
    }
 }
 

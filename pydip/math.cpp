@@ -134,6 +134,14 @@ void init_math( py::module& m ) {
           }, "in"_a );
    m.def( "Identity", py::overload_cast< dip::Image const& >( &dip::Identity ), "in"_a );
 
+   m.def( "SumTensorElements", py::overload_cast< dip::Image const& >( &dip::SumTensorElements ), "in"_a );
+   m.def( "ProductTensorElements", py::overload_cast< dip::Image const& >( &dip::ProductTensorElements ), "in"_a );
+   m.def( "AllTensorElements", py::overload_cast< dip::Image const& >( &dip::AllTensorElements ), "in"_a );
+   m.def( "AnyTensorElement", py::overload_cast< dip::Image const& >( &dip::AnyTensorElement ), "in"_a );
+   m.def( "MaximumTensorElement", py::overload_cast< dip::Image const& >( &dip::MaximumTensorElement ), "in"_a );
+   m.def( "MinimumTensorElement", py::overload_cast< dip::Image const& >( &dip::MinimumTensorElement ), "in"_a );
+   m.def( "MeanTensorElement", py::overload_cast< dip::Image const& >( &dip::MeanTensorElement ), "in"_a );
+
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::String const& >( &dip::Select ),
           "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Select ),

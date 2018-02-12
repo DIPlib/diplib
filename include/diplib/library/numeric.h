@@ -350,7 +350,7 @@ DIP_EXPORT void EigenDecomposition(
 /// `input` is a pointer to `n` values.
 template< typename T >
 inline T Sum( dip::uint n, ConstSampleIterator< T > input ) {
-   return std::accumulate( input, input + n, T( 0.0 ));
+   return std::accumulate( input, input + n, T( 0 ));
 }
 
 /// \brief Computes the sum of the square of the values of a vector.
@@ -358,7 +358,15 @@ inline T Sum( dip::uint n, ConstSampleIterator< T > input ) {
 /// `input` is a pointer to `n` values.
 template< typename T >
 inline FloatType< T > SumAbsSquare( dip::uint n, ConstSampleIterator< T > input ) {
-   return std::accumulate( input, input + n, FloatType< T >( 0.0 ), []( FloatType< T > a, T b ){ return a + std::abs( b ) * std::abs( b ); } );
+   return std::accumulate( input, input + n, FloatType< T >( 0 ), []( FloatType< T > a, T b ){ return a + std::abs( b ) * std::abs( b ); } );
+}
+
+/// \brief Computes the sum of the values of a vector.
+///
+/// `input` is a pointer to `n` values.
+template< typename T >
+inline T Product( dip::uint n, ConstSampleIterator< T > input ) {
+   return std::accumulate( input, input + n, T( 1 ), std::multiplies< T >() );
 }
 
 /// \brief Computes the norm of a vector.

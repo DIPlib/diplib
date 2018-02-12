@@ -1,6 +1,6 @@
 %MEDIAN   Get the median of an image.
 %   VALUE = MEDIAN(B) gets the value of the median of all pixels in
-%   the image B.
+%   the image B. It works independently on each tensor element.
 %
 %   VALUE = MEDIAN(B,M), with M a binary image, is the same as MEDIAN(B(M)).
 %
@@ -13,13 +13,15 @@
 %   [VALUE,POSITION] = MEDIAN(B,...) returns the position of the found values
 %   as well. With this syntax, DIM can specify just one dimension.
 %
+%   VALUE = MEDIAN(B,'tensor') works over the tensor elements, returning
+%   a scalar image of the same size as B.
+%
 %   COMPATIBILITY NOTE:
-%   In DIPimage 2.x, MEDIAN(B), with B a tensor image, would work over all
-%   tensor components, yielding a scalar image of the same size as B. To obtain
-%   the old behavior:
-%      tensorfun('immedian',B);
+%   The behavior of MEDIAN(B), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with MEDIAN(B,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

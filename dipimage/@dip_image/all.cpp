@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the 'all' function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -21,6 +21,7 @@
 
 #include "dip_matlab_interface.h"
 #include "diplib/statistics.h"
+#include "diplib/math.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
@@ -34,8 +35,21 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image mask;
       dip::Image out = mi.NewImage();
 
-      // Get images
+      // Get input image
       in = dml::GetImage( prhs[ 0 ] );
+
+      // Handle tensor flag
+      if(( nrhs == 2 ) && mxIsChar( prhs[ 1 ] )) {
+         dip::String flag = dml::GetString( prhs[ 1 ] );
+         if( flag != "tensor" ) {
+            DIP_THROW_INVALID_FLAG( flag );
+         }
+         dip::AllTensorElements( in, out );
+         plhs[ 0 ] = mi.GetArray( out );
+         return;
+      }
+
+      // Get mask image
       if( nrhs > 1 ) {
          mask = dml::GetImage( prhs[ 1 ] );
       }

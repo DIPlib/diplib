@@ -1,6 +1,7 @@
 %PERCENTILE   Get the percentile of an image.
 %   VALUE = PERCENTILE(B,P) gets the value of the P percentile of all
-%   pixels in the image B. P must be between 0 and 100.
+%   pixels in the image B. P must be between 0 and 100. It works
+%   independently on each tensor element.
 %
 %   Note that:
 %   PERCENTILE(B,0) is the same as MIN(B)
@@ -19,13 +20,15 @@
 %   [VALUE,POSITION] = PERCENTILE(B,...) returns the position of the found
 %   values as well. With this syntax, DIM can specify just one dimension.
 %
+%   VALUE = PERCENTILE(B,P,'tensor') works over the tensor elements, returning
+%   a scalar image of the same size as B.
+%
 %   COMPATIBILITY NOTE:
-%   In DIPimage 2.x, PERCENTILE(B,P), with B a tensor image, would work over all
-%   tensor components, yielding a scalar image of the same size as B. To obtain
-%   the old behavior:
-%      reshape(percentile(tensortospatial(B),P,[],2),imsize(B));
+%   The behavior of PERCENTILE(B,P), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with PERCENTILE(B,P,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

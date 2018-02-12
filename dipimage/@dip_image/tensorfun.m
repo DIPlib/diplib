@@ -21,14 +21,18 @@
 %     'imlargest' -- index of first element with largest pixel value
 %     'imsmallest'-- index of first element with smallest pixel value
 %
-%   OUT is a scalar image that results in applying the given projection
-%   across the tensor elements. That is, each output pixel is the result
-%   of the given operation on all input tensor elements.
+%  OUT is a scalar image that results in applying the given projection
+%  across the tensor elements. That is, each output pixel is the result
+%  of the given operation on all input tensor elements.
 %
-%   For example,
-%      A = TENSORFUN('imsum',IMG);
-%   is the same as
-%      A = IMG{1} + IMG{2} + IMG{3} + ...;
+%  For example,
+%     A = TENSORFUN('imsum',IMG);
+%  is the same as
+%     A = IMG{1} + IMG{2} + IMG{3} + ...;
+%
+%  NOTE! The first 8 options can all be accomplished by using the 'tensor'
+%  option of the equivalent method. For example 'imsum' calls
+%  SUM(IMG,'tensor'). Only the last three modes are still useful.
 %
 % MODE 2:
 %  NOTE! This exists mostly for backwards-compatibility, and should no
@@ -58,7 +62,7 @@
 % SEE ALSO:
 %  dip_image/iterate, dip_image/slice_op
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,21 +95,21 @@ if strncmpi(fun,'im',2)
    end
    switch fun
       case 'imsum'
-         out = reshape(sum(tensortospatial(in),[],2),imsize(in));
+         out = sum(in,'tensor');
       case 'improd'
-         out = reshape(prod(tensortospatial(in),[],2),imsize(in));
+         out = prod(in,'tensor');
       case 'imor'
-         out = reshape(any(tensortospatial(in),[],2),imsize(in));
+         out = any(in,'tensor');
       case 'imand'
-         out = reshape(all(tensortospatial(in),[],2),imsize(in));
+         out = all(in,'tensor');
       case 'immax'
-         out = reshape(max(tensortospatial(in),[],2),imsize(in));
+         out = max(in,'tensor');
       case 'immin'
-         out = reshape(min(tensortospatial(in),[],2),imsize(in));
+         out = min(in,'tensor');
       case 'immean'
-         out = reshape(mean(tensortospatial(in),[],2),imsize(in));
+         out = mean(in,'tensor');
       case 'immedian'
-         out = reshape(median(tensortospatial(in),[],2),imsize(in));
+         out = median(in,'tensor');
       case 'imeq'
          indx = repmat({':'},1,ndims(in));
          base = in;

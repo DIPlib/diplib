@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the 'mean' function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -21,49 +21,51 @@
 
 #include "dip_matlab_interface.h"
 #include "diplib/statistics.h"
+#include "diplib/math.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 3 );
+      DML_MAX_ARGS( 4 );
 
       dml::MatlabInterface mi;
-
-      dip::Image in;
-      dip::Image mask;
       dip::Image out = mi.NewImage();
 
+      // Is there a mode string as last argument?
       dip::String mode = "";
+      if(( nrhs > 1 ) && mxIsChar( prhs[ nrhs - 1 ] )) {
+         mode = dml::GetString( prhs[ nrhs - 1 ] );
+         --nrhs;
+      }
 
-      // Get images
+      // Get image
+      dip::Image in;
       in = dml::GetImage( prhs[ 0 ] );
+
+      // Get mask image
+      dip::Image mask;
       if( nrhs > 1 ) {
-         if(( nrhs == 2 ) && mxIsChar( prhs[ 1 ] )) {
-            mode = dml::GetString( prhs[ 1 ] );
-         } else {
-            mask = dml::GetImage( prhs[ 1 ] );
-         }
+         mask = dml::GetImage( prhs[ 1 ] );
       }
 
       // Get optional process array
       dip::BooleanArray process;
       if( nrhs > 2 ) {
-         if(( nrhs == 3 ) && mxIsChar( prhs[ 2 ] )) {
-            mode = dml::GetString( prhs[ 2 ] );
-         } else {
-            process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality());
-         }
+         process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality());
       }
 
       // Do the thing
-      dip::Mean( in, mask, out, mode, process );
-
-      // Done
-      if( nrhs > 2 ) {
+      if(( nrhs == 1 ) && ( mode == "tensor" )) { // nrhs == 1 because we did --nrhs earlier!
+         dip::MeanTensorElement( in, out );
          plhs[ 0 ] = mi.GetArray( out );
       } else {
-         plhs[ 0 ] = dml::GetArray( out.At( 0 ));
+         dip::Mean( in, mask, out, mode, process );
+         if( nrhs > 2 ) {
+            plhs[ 0 ] = mi.GetArray( out );
+         } else {
+            plhs[ 0 ] = dml::GetArray( out.At( 0 ));
+         }
       }
 
    } catch( const dip::Error& e ) {

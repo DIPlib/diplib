@@ -29,20 +29,35 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       DML_MAX_ARGS( 4 );
 
       dml::MatlabInterface mi;
-
-      dip::Image in;
-      dip::Image mask;
       dip::Image out = mi.NewImage();
 
-      // Get images
+      // Get image
+      dip::Image in;
       in = dml::GetImage( prhs[ 0 ] );
-      if( nrhs > 2 ) {
-         mask = dml::GetImage( prhs[ 2 ] );
-      }
 
       // Get parameter
       dip::dfloat percentile = dml::GetFloat( prhs[ 1 ] );
       dip::uint nDims = in.Dimensionality();
+
+      if(( nrhs == 3 ) && mxIsChar( prhs[ 2 ] )) {
+         dip::String flag = dml::GetString( prhs[ 2 ] );
+         if( flag != "tensor" ) {
+            DIP_THROW_INVALID_FLAG( flag );
+         }
+         in.TensorToSpatial( nDims );
+         dip::BooleanArray process( nDims + 1, false );
+         process[ nDims ] = true;
+         dip::Percentile( in, {}, out, percentile, process );
+         out.Squeeze( nDims );
+         plhs[ 0 ] = mi.GetArray( out );
+         return;
+      }
+
+      // Get mask image
+      dip::Image mask;
+      if( nrhs > 2 ) {
+         mask = dml::GetImage( prhs[ 2 ] );
+      }
 
       if( nlhs == 2 ) { // Output position as well
 

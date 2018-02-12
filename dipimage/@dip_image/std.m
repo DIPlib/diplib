@@ -1,6 +1,6 @@
 %STD   Standard deviation of all pixels in an image.
 %   VALUE = STD(B) returns the standard deviation of all pixels in
-%   image B.
+%   image B. It works independently on each tensor element.
 %
 %   VALUE = STD(B,M), with M a binary image, is the same as STD(B(M)).
 %
@@ -12,7 +12,7 @@
 %   catastrophic cancellation.
 %   VALUE = STD(...,'directional') uses directional statistics.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

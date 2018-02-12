@@ -1,5 +1,6 @@
 %MEAN   Mean of all pixels in an image.
 %   VALUE = MEAN(B) returns the mean intensity of all pixels in image B.
+%   It works independently on each tensor element.
 %
 %   VALUE = MEAN(B,M) only computes the mean of the pixels within the
 %   mask specified by the binary image M, and is equivalent to MEAN(B(M)).
@@ -10,13 +11,16 @@
 %
 %   VALUE = MEAN(...,'directional') uses directional statistics.
 %
+%   VALUE = MEAN(B,'tensor') computes the mean over the tensor elements,
+%   returning a scalar image of the same size as B. This option cannot be
+%   combined with directional statistics or a mask image.
+%
 %   COMPATIBILITY NOTE:
-%   In DIPimage 2.x, MEAN(B), with B a tensor image, would work over all tensor
-%   components, yielding a scalar image of the same size as B. To obtain
-%   the old behavior:
-%      tensorfun('immean',B);
+%   The behavior of MEAN(B), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with MEAN(B,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

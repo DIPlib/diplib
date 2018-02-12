@@ -1,6 +1,6 @@
 %MIN   Get the first minimum in an image.
 %   [VALUE,POSITION] = MIN(B) gets the value and postion of the first
-%   minimum in image B.
+%   minimum in image B. It works independently on each tensor element.
 %
 %   [VALUE,POSITION] = MIN(B,M) gets the value and postion of the first
 %   minimum in image B masked by M. M may be [] for no mask.
@@ -17,13 +17,15 @@
 %   be a binary image, or it will be taken as a mask image (see syntax
 %   above).
 %
+%   VALUE = MIN(B,'tensor') works over the tensor elements, returning
+%   a scalar image of the same size as B.
+%
 %   COMPATIBILITY NOTE:
-%   In DIPimage 2.x, MIN(B), with B a tensor image, would work over all tensor
-%   components, yielding a scalar image of the same size as B. To obtain
-%   the old behavior:
-%      tensorfun('immin',B);
+%   The behavior of MIN(B), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with MIN(B,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

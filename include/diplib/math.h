@@ -504,6 +504,64 @@ inline Image Identity( Image const& in ) {
    return out;
 }
 
+
+/// \brief Adds all tensor elements, producing a scalar image.
+DIP_EXPORT void SumTensorElements( Image const& in, Image& out );
+inline Image SumTensorElements( Image const& in ) {
+   Image out;
+   SumTensorElements( in, out );
+   return out;
+}
+
+/// \brief Multiplies all tensor elements, producing a scalar image.
+DIP_EXPORT void ProductTensorElements( Image const& in, Image& out );
+inline Image ProductTensorElements( Image const& in ) {
+   Image out;
+   ProductTensorElements( in, out );
+   return out;
+}
+
+/// \brief Determines if all tensor elements are non-zero, producing a binary scalar image.
+DIP_EXPORT void AllTensorElements( Image const& in, Image& out );
+inline Image AllTensorElements( Image const& in ) {
+   Image out;
+   AllTensorElements( in, out );
+   return out;
+}
+
+/// \brief Determines if any tensor element is non-zero, producing a binary scalar image.
+DIP_EXPORT void AnyTensorElement( Image const& in, Image& out );
+inline Image AnyTensorElement( Image const& in ) {
+   Image out;
+   AnyTensorElement( in, out );
+   return out;
+}
+
+/// \brief Takes the maximum tensor element at each pixel, producing a scalar image.
+DIP_EXPORT void MaximumTensorElement( Image const& in, Image& out );
+inline Image MaximumTensorElement( Image const& in ) {
+   Image out;
+   MaximumTensorElement( in, out );
+   return out;
+}
+
+/// \brief Takes the maximum tensor element at each pixel, producing a scalar image.
+DIP_EXPORT void MinimumTensorElement( Image const& in, Image& out );
+inline Image MinimumTensorElement( Image const& in ) {
+   Image out;
+   MinimumTensorElement( in, out );
+   return out;
+}
+
+/// \brief Computes the mean tensor element value at each pixel, producing a scalar image.
+DIP_EXPORT void MeanTensorElement( Image const& in, Image& out );
+inline Image MeanTensorElement( Image const& in ) {
+   Image out;
+   MeanTensorElement( in, out );
+   return out;
+}
+
+
 /// \}
 
 

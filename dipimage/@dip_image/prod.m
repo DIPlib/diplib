@@ -1,5 +1,6 @@
 %PROD Product of elements.
 %   VALUE = PROD(B) gets the value of the product of all pixels in an image.
+%   It works independently on each tensor element.
 %
 %   VALUE = PROD(B,M) only computes the product of the pixels within the
 %   mask specified by the binary image M, and is equivalent to PROD(B(M)).
@@ -10,13 +11,15 @@
 %   the third dimension (z). DIM can be an array with any number of
 %   dimensions. M can be [].
 %
+%   VALUE = PROD(B,'tensor') works over the tensor elements, returning
+%   a scalar image of the same size as B.
+%
 %   COMPATIBILITY NOTE:
-%   In DIPimage 2.x, PROD(B), with B a tensor image, would work over all tensor
-%   components, yielding a scalar image of the same size as B. To obtain
-%   the old behavior:
-%      tensorfun('improd',B);
+%   The behavior of PROD(B), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with PROD(B,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

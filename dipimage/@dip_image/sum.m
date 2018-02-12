@@ -1,5 +1,6 @@
 %SUM   Sum of all pixels in an image.
 %   VALUE = SUM(B) gets the value of the sum of all pixels in an image.
+%   It works independently on each tensor element.
 %
 %   VALUE = SUM(B,M) only computes the sum of the pixels within the
 %   mask specified by the binary image M, and is equivalent to SUM(B(M)).
@@ -10,13 +11,15 @@
 %   the third dimension (z). DIM can be an array with any number of
 %   dimensions. M can be [].
 %
+%   VALUE = SUM(B,'tensor') works over the tensor elements, returning
+%   a scalar image of the same size as B.
+%
 %   COMPATIBILITY NOTE:
-%   In DIPimage 2.x, SUM(B), with B a tensor image, would work over all tensor
-%   components, yielding a scalar image of the same size as B. To obtain
-%   the old behavior:
-%      tensorfun('imsum',B);
+%   The behavior of SUM(B), with B a tensor image, has changed since
+%   DIPimage 2. Previously, it operated on the tensor elements, which
+%   is currently accomplished with SUM(B,'tensor').
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

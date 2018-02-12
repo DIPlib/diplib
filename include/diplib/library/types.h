@@ -240,14 +240,23 @@ class DIP_NO_EXPORT bin {
       /// Bit-wise negation is the same as regular negation
       constexpr bin operator~() const { return v_ == 0; }
 
-      /// And operator, prefer to use this over `std::min`.
+      /// And operator, prefer to use this over `std::min`
       constexpr bin operator&( bin other ) const { return { ( v_ != 0 ) && ( other.v_ != 0 ) }; } // Why && and not & ? Short circuit.
 
-      /// Or operator, prefer to use this over `std::max`.
+      /// Or operator, prefer to use this over `std::max`
       constexpr bin operator|( bin other ) const { return { ( v_ != 0 ) || ( other.v_ != 0 ) }; } // Why || and not | ? Short circuit.
 
       /// Exclusive-or operator
       constexpr bin operator^( bin other ) const { return bin( v_ ^ other.v_ ); }
+
+      /// And compound operator
+      constexpr bin& operator&=( bin other ) { v_ &= other.v_; return *this; }
+
+      /// Or compound operator
+      constexpr bin& operator|=( bin other ) { v_ |= other.v_; return *this; }
+
+      /// Exclusive-or compound operator
+      constexpr bin& operator^=( bin other ) { v_ ^= other.v_; return *this; }
 
 	  /// Equality operator
 	  template< typename T >
@@ -293,7 +302,7 @@ template<> struct FloatTypeCalculator< dfloat > { using type = dfloat; };
 template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
 /// \brief The type to use in calculations when a floating-point type is needed. Matches `dip::DataType::SuggestFloat`.
-template< typename T > using FloatType = typename detail::FloatTypeCalculator< T >::type;
+template< typename T > using FloatType = typename detail::FloatTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct DoubleTypeCalculator { using type = dfloat; };
@@ -301,7 +310,7 @@ template<> struct DoubleTypeCalculator< scomplex > { using type = dcomplex; };
 template<> struct DoubleTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
 /// \brief The double precision floating point type (real or complex) to use when computing large sums of any input type. Matches `dip::DataType::SuggestDouble`.
-template< typename T > using DoubleType = typename detail::DoubleTypeCalculator< T >::type;
+template< typename T > using DoubleType = typename detail::DoubleTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct ComplexTypeCalculator { using type = scomplex; };
@@ -311,7 +320,7 @@ template<> struct ComplexTypeCalculator< dfloat > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
 /// \brief The type to use in calculations when a complex type is needed. Matches `dip::DataType::SuggestComplex`.
-template< typename T > using ComplexType = typename detail::ComplexTypeCalculator< T >::type;
+template< typename T > using ComplexType = typename detail::ComplexTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct FlexTypeCalculator { using type = FloatType< T >; };
@@ -319,14 +328,14 @@ template<> struct FlexTypeCalculator< scomplex > { using type = scomplex; };
 template<> struct FlexTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
 /// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlex`.
-template< typename T > using FlexType = typename detail::FlexTypeCalculator< T >::type;
+template< typename T > using FlexType = typename detail::FlexTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct FlexBinTypeCalculator { using type = FlexType< T >; };
 template<> struct FlexBinTypeCalculator< bin > { using type = bin; };
 } // namespace detail
 /// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlexBin`.
-template< typename T > using FlexBinType = typename detail::FlexBinTypeCalculator< T >::type;
+template< typename T > using FlexBinType = typename detail::FlexBinTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct AbsTypeCalculator { using type = T; };
@@ -337,7 +346,7 @@ template<> struct AbsTypeCalculator< scomplex > { using type = sfloat; };
 template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
 /// \brief The type to use for the output of abs operations. Matches `dip::DataType::SuggestAbs`.
-template< typename T > using AbsType = typename detail::AbsTypeCalculator< T >::type;
+template< typename T > using AbsType = typename detail::AbsTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct RealTypeCalculator { using type = T; };
@@ -346,7 +355,7 @@ template<> struct RealTypeCalculator< scomplex > { using type = sfloat; };
 template<> struct RealTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
 /// \brief The type to use in calculations when a real-valued type is needed. Matches `dip::DataType::SuggestReal`.
-template< typename T > using RealType = typename detail::RealTypeCalculator< T >::type;
+template< typename T > using RealType = typename detail::RealTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 /// \}
 
