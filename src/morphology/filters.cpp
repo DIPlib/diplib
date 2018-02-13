@@ -21,10 +21,29 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/math.h"
+#include "diplib/mapping.h"
+#include "diplib/framework.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
 namespace {
+
+// Prevent issues with in-place operations -- returns a new `in` image to use, and potentially strips `out`.
+// This function is useful in the filters below where we do lots of things like:
+//    Filter( in, out )
+//    in - out;
+// There, Filter() would invalidate `in` if they happen to be the same object or share data, making the second
+// line do the wrong thing.
+// NOTE! Presumes a scalar image -- color space information is not copied.
+Image Separate( Image const& in, Image& out ) {
+   Image tmp = in.QuickCopy(); // prevent `in` being overwritten if it's the same image as `out`.
+   tmp.SetPixelSize( in.PixelSize() );
+   if( out.Aliases( in )) {
+      out.Strip(); // prevent `in` data being overwritten if `out` points to the same region.
+   }
+   return tmp;
+}
 
 // "texture", "object", "both", "dynamic"=="both"
 enum class EdgeType {
@@ -63,35 +82,33 @@ void Tophat(
          default:
          //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
             if( white ) {
-               Image c_in = in.QuickCopy();
+               Image c_in = Separate( in, out );
                Erosion( c_in, out, se, boundaryCondition );
                Subtract( c_in, out, out, out.DataType() );
             } else {
-               Image c_in = in.QuickCopy();
+               Image c_in = Separate( in, out );
                Dilation( c_in, out, se, boundaryCondition );
                out -= c_in;
             }
             break;
          case EdgeType::TEXTURE:
             if( white ) {
-               Image c_in = in.QuickCopy();
+               Image c_in = Separate( in, out );
                Opening( c_in, out, se, boundaryCondition );
                Subtract( c_in, out, out, out.DataType() );
             } else {
-               Image c_in = in.QuickCopy();
+               Image c_in = Separate( in, out );
                Closing( c_in, out, se, boundaryCondition );
                out -= c_in;
             }
             break;
          case EdgeType::OBJECT:
             if( white ) {
-               Image tmp;
-               Erosion( in, tmp, se, boundaryCondition );
+               Image tmp = Erosion( in, se, boundaryCondition );
                Dilation( tmp, out, se, boundaryCondition );
                out -= tmp;
             } else {
-               Image tmp;
-               Dilation( in, tmp, se, boundaryCondition );
+               Image tmp = Dilation( in, se, boundaryCondition );
                Erosion( tmp, out, se, boundaryCondition );
                Subtract( tmp, out, out, out.DataType() );
             }
@@ -125,7 +142,7 @@ void MorphologicalThreshold(
             out /= 2;
             break;
          case EdgeType::OBJECT: {
-            Image c_in = in.QuickCopy();
+            Image c_in = Separate( in, out );
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( tmp, out, se, boundaryCondition );
             Subtract( tmp, out, out, out.DataType() );
@@ -151,7 +168,7 @@ void MorphologicalGist(
    DIP_START_STACK_TRACE
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       Image tmp;
-      Image c_in = in.QuickCopy();
+      Image c_in = Separate( in,  out );
       switch( decodedEdgeType ) {
          default:
          //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
@@ -205,7 +222,7 @@ void MorphologicalRange(
             Subtract( tmp, out, out, out.DataType() );
             break;
          case EdgeType::OBJECT: {
-            Image c_in = in.QuickCopy();
+            Image c_in = Separate( in,  out );
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( tmp, out, se, boundaryCondition );
             Subtract( tmp, out, out, out.DataType() );
@@ -230,7 +247,7 @@ void Lee(
    DIP_START_STACK_TRACE
       Image out2;
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
-      Image c_in = in.QuickCopy();
+      Image c_in = Separate( in,  out );
       switch( decodedEdgeType ) {
          default:
          //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
@@ -329,9 +346,8 @@ void MorphologicalLaplace(
       StructuringElement const& se,
       StringArray const& boundaryCondition
 ) {
-   Image c_in = in;
-   Image tmp;
-   Dilation( c_in, tmp, se, boundaryCondition );
+   Image c_in = Separate( in,  out );
+   Image tmp = Dilation( c_in, se, boundaryCondition );
    Erosion( c_in, out, se, boundaryCondition );
    out += tmp;
    out /= 2;
@@ -345,7 +361,7 @@ void RankMinClosing(
       dip::uint rank,
       StringArray const& boundaryCondition
 ) {
-   Image c_in = in;
+   Image c_in = Separate( in,  out );
    RankFilter( c_in, out, se, rank + 1, S::DECREASING, boundaryCondition );
    se.Mirror();
    Erosion( out, out, se, boundaryCondition );
@@ -359,7 +375,7 @@ void RankMaxOpening(
       dip::uint rank,
       StringArray const& boundaryCondition
 ) {
-   Image c_in = in;
+   Image c_in = Separate( in,  out );
    RankFilter( c_in, out, se, rank + 1, S::INCREASING, boundaryCondition );
    se.Mirror();
    Dilation( out, out, se, boundaryCondition );
@@ -447,6 +463,55 @@ void AlternatingSequentialFilter(
    ++size;
    for( ; size != sizes.end(); ++size ) {
       DIP_STACK_TRACE_THIS( dip__AlternatingSequentialFilter( out, out, *size, shape, mode, openingFirst, boundaryCondition ));
+   }
+}
+
+void HitAndMiss(
+      Image const& in,
+      Image& out,
+      StructuringElement const& hit,
+      StructuringElement const& miss,
+      String const& mode,
+      StringArray const& boundaryCondition
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   bool constrained = false;
+   if( in.DataType().IsBinary() ) {
+      // We use the unconstrained mode, ignore `mode`.
+      // Note that the constrained mode would yield the same result, but it's more expensive.
+   } else {
+      DIP_STACK_TRACE_THIS( constrained = BooleanFromString( mode, S::CONSTRAINED, S::UNCONSTRAINED ));
+   }
+   if( constrained ) {
+      // Constrained HMT
+      Image ero = Erosion( in, hit, boundaryCondition );
+      Image dil = Dilation( in, miss, boundaryCondition );
+      DataType dt = in.DataType();
+      std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewTriadicScanLineFilter, (
+            []( auto its ) { //  -> std::remove_reference_t< decltype( *its[ 0 ] ) >
+               auto in = *its[ 0 ];
+               auto ero = *its[ 1 ];
+               auto dil = *its[ 2 ];
+               if(( in == ero ) && ( dil < in )) {
+                  return static_cast< decltype( *its[ 0 ] ) >( in - dil );
+               }
+               if(( in == dil ) && ( ero > in )) {
+                  return static_cast< decltype( *its[ 0 ] ) >( ero - in );
+               }
+               return static_cast< decltype( *its[ 0 ] ) >( 0 );
+            } ), dt );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in, ero, dil }, outar, { dt, dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter );
+   } else {
+      // Unconstrained HMT
+      Image dil = Dilation( in, miss, boundaryCondition );
+      Erosion( in, out, hit, boundaryCondition );
+      out -= dil;
+      if( out.DataType().IsSigned() ) {
+         Clip( out, out, 0, 0, S::LOW ); // set negative values to 0.
+      } // If `out` is an unsigned type, the subtractions above are saturated, negative values automatically become 0.
    }
 }
 

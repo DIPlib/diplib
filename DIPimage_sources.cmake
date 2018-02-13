@@ -65,6 +65,7 @@ dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
 dipimage/gradmag.cpp
 dipimage/hessian.cpp
+dipimage/hitmiss.cpp
 dipimage/hmaxima.cpp
 dipimage/hminima.cpp
 dipimage/kuwahara.cpp

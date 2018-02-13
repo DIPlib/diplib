@@ -1459,6 +1459,71 @@ inline Image AlternatingSequentialFilter(
    return out;
 }
 
+/// \brief The Hit-and-Miss transform, uses two structuring elements, `hit` must be within the structures,
+/// `miss` must be without.
+///
+/// For a binary image, the result is the intersection of the erosion of the image with `hit` and the erosion of the
+/// inverted image with `miss`.
+///
+/// For a grey-value image, there are two definitions of the operator. If `mode` is `"unconstrained"`, the output is
+/// the difference of the erosion with `hit` and the dilation with `miss`, with any negative values clipped to 0.
+///
+/// If `mode` is `"constrained"`, a more restrictive definition is applied (conditions evaluated pixel-wise):
+///  - If `in == erosion(in,hit) && dilation(in,miss) < in`: `out = in - dilation(in,miss)`.
+///  - If `in == dilation(in,miss) && erosion(in,hit) > in`: `out = erosion(in,hit) - in`.
+///  - Otherwise: `out = 0`.
+///
+/// Note that the two SEs must be disjoint. If one pixel is set in both SEs, the output will be all zeros.
+///
+/// **Literature**
+///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, sections 5.1.1 and 5.1.2. Springer, 2002.
+DIP_EXPORT void HitAndMiss(
+      Image const& in,
+      Image& out,
+      StructuringElement const& hit,
+      StructuringElement const& miss,
+      String const& mode = S::UNCONSTRAINED,
+      StringArray const& boundaryCondition = {}
+);
+inline Image HitAndMiss(
+      Image const& in,
+      StructuringElement const& hit,
+      StructuringElement const& miss,
+      String const& mode = S::UNCONSTRAINED,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   HitAndMiss( in, out, hit, miss, mode, boundaryCondition );
+   return out;
+}
+
+/// \brief The Hit-and-Miss transform, in the form of a small image, defined with a single structuring element that
+/// has "hit", "miss" and "don't care" values.
+///
+/// The `hit` SE is `se == 1`, the `miss` SE is `se == 0`. "Don't care" values are any other value.
+///
+/// See the description for the other `dip::HitAndMiss` function for a description of the other parameters.
+inline void HitAndMiss(
+      Image const& in,
+      Image& out,
+      Image const& se,
+      String const& mode = S::UNCONSTRAINED,
+      StringArray const& boundaryCondition = {}
+) {
+   DIP_THROW_IF( !se.IsForged(), E::IMAGE_NOT_FORGED );
+   HitAndMiss( in, out, StructuringElement{ se == 1 }, StructuringElement{ se == 0 }, mode, boundaryCondition );
+}
+inline Image HitAndMiss(
+      Image const& in,
+      Image const& se,
+      String const& mode = S::UNCONSTRAINED,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   HitAndMiss( in, out, se, mode, boundaryCondition );
+   return out;
+}
+
 // TODO: functions to port:
 /*
 dip_UpperEnvelope (dip_morphology.h)

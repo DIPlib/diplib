@@ -87,6 +87,7 @@ constexpr char const* INCREASING = "increasing";
 constexpr char const* DECREASING = "decreasing";
 constexpr char const* NORMAL = "normal";
 constexpr char const* CONSTRAINED = "constrained";
+constexpr char const* UNCONSTRAINED = "unconstrained";
 constexpr char const* STRUCTURAL = "structural";
 constexpr char const* RECONSTRUCTION = "reconstruction";
 constexpr char const* AREA = "area";
