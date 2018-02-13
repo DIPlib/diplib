@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for histograms and related functionality
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -212,6 +212,25 @@ class DIP_NO_EXPORT Histogram {
          DIP_END_STACK_TRACE
       }
 
+      /// \brief Deep copy, returns a copy of `this` with its own data segment.
+      ///
+      /// When making a copy of a histogram, the data segment is shared:
+      /// ```cpp
+      ///     Histogram second = first;
+      ///     second.Smooth(); // modifies `first` also!
+      /// ```
+      ///
+      /// In contrast, this function returns a deep copy of `this`, with its own data segment:
+      /// ```cpp
+      ///     Histogram second = first.Copy();
+      ///     second.Smooth(); // OK
+      /// ```
+      Histogram Copy() const {
+         Histogram out( *this );
+         out.data_ = data_.Copy();
+         return out;
+      }
+
       /// \brief Adds a histogram to *this. `other` must have identical properties.
       ///
       /// Adding multiple histograms together can be useful, for example, when accumulating pixel values
@@ -365,7 +384,8 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Returns the total number of elements in the histogram (sum of bins)
       DIP_EXPORT dip::uint Count() const;
 
-      /// \brief Returns a new histogram containing, for each bin, the sum of that bin with all the previous ones.
+      /// \brief Converts the histogram to a cumulative histogram. For each bin, it will contain the sum of that
+      /// bin with all the previous ones.
       ///
       /// The cumulative histogram has `this->Count()` as the right-most bin. The `Count` method applied to the
       /// cumulative histogram is meaningless, as are `Mean` and the other statistics functions.
@@ -373,25 +393,24 @@ class DIP_NO_EXPORT Histogram {
       /// For a multi-dimensional histogram, the cumulative histogram has bin(i,j,k) equal to the sum of all bins
       /// with indices equal or smaller to i, j and k: bin(1..i,1..j,1..k). It is computed through the
       /// `dip::CumulativeSum` function.
-      DIP_EXPORT Histogram Cumulative() const;
+      DIP_EXPORT Histogram& Cumulative();
 
       /// \brief Returns the marginal histogram for dimension `dim`.
       ///
       /// The marginal histogram represents the marginal intensity distribution. It is a 1D histogram determined
       /// by summing over all dimensions except `dim`, and is equivalent to the histogram for tensor element
       /// `dim`.
-      DIP_EXPORT Histogram Marginal( dip::uint dim ) const;
+      DIP_EXPORT Histogram GetMarginal( dip::uint dim ) const;
 
-      /// \brief Returns a smoothed version of the histogram, using Gaussian smoothing with parameters `sigma`.
+      /// \brief Smooths the histogram, using Gaussian smoothing with parameters `sigma`.
       ///
-      /// Set a single sigma value, or one value per image dimension. The value is in bins, yielding a Gaussian kernel
-      /// of size `2 * std::ceil( 3 * sigma ) + 1` bins. See `dip::GaussFIR` for information on the smoothing operation applied.
-      /// `sigma` defaults to 1.
+      /// Set a single sigma value, or one value per histogram dimension. The value is in bins, yielding a Gaussian
+      /// kernel of size `2 * std::ceil( 3 * sigma ) + 1` bins. See `dip::GaussFIR` for information on the smoothing
+      /// operation applied. `sigma` defaults to 1.
       ///
-      /// The output histogram is larger than the input histogram: it is extended by `std::ceil( 3 * sigma )` below and
-      /// above the input bounds.
-      DIP_EXPORT Histogram Smooth( FloatArray sigma ) const;
-      Histogram Smooth( dfloat sigma = 1 ) const {
+      /// The histogram is extended by `std::ceil( 3 * sigma )` below and above the original bounds.
+      DIP_EXPORT Histogram& Smooth( FloatArray sigma );
+      Histogram& Smooth( dfloat sigma = 1 ) {
          return Smooth( FloatArray{ sigma } );
       }
 
@@ -412,6 +431,29 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void JointImageHistogram( Image const& input1, Image const& input2, Image const& mask, ConfigurationArray& configuration );
       DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
 };
+
+//
+// Creating modified histograms
+//
+
+/// \brief Computes a cumulative histogram from `in`. See `dip::Histogram::Cumulative`.
+inline Histogram CumulativeHistogram( Histogram const& in ) {
+   Histogram out = in.Copy();
+   out.Cumulative();
+   return out;
+}
+
+/// \brief Returns a smoothed version of the histogram `in`. See `dip::Histogram::Smooth`.
+inline Histogram Smooth( Histogram const& in, FloatArray const& sigma ) {
+   Histogram out = in.Copy();
+   out.Smooth( sigma );
+   return out;
+}
+
+/// \brief Returns a smoothed version of the histogram `in`. See `dip::Histogram::Smooth`.
+inline Histogram Smooth( Histogram const& in, dfloat sigma = 1 ) {
+   return Smooth( in, FloatArray{ sigma } );
+}
 
 //
 // Computing image statistics from the histogram
@@ -435,7 +477,7 @@ DIP_EXPORT FloatArray Mean( Histogram const& in );
 DIP_EXPORT FloatArray Covariance( Histogram const& in );
 
 /// \brief Computes the marginal median value of the data represented by the histogram. The marginal median
-/// is a median computed independently on each pixel, and thus is not one of the input values.
+/// is a median computed independently on each dimension, and thus is not one of the input values.
 ///
 /// In the 1D histogram case (for scalar images) this function computes the approximate median (i.e. the
 /// bin containing the median value). The distinction between marginal median and median is only relevant
@@ -446,10 +488,10 @@ DIP_EXPORT FloatArray Covariance( Histogram const& in );
 /// computing the statistic on data rounded to the bin centers.
 DIP_EXPORT FloatArray MarginalMedian( Histogram const& in );
 
-/// \brief Returns the mode, the bin with the largest count. The return value is the
+/// \brief Returns the mode, the bin with the largest count.
 ///
 /// When multiple bins have the same, largest count, the first bin encountered is returned. This is the bin
-/// with the lowest linear index, and is closest to the origin.
+/// with the lowest linear index.
 DIP_EXPORT FloatArray Mode( Histogram const& in );
 
 /// \brief Calculates the mutual information, in bits, between two images from their joint histogram `in`.

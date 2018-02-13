@@ -32,7 +32,7 @@ FloatArray Mean( Histogram const& in ) {
       binCenters[ ii ] = in.BinCenters( ii );
    }
    ImageIterator< Histogram::CountType > it( in.GetImage() );
-   // Histogram always has notmal strides, it.Optimize() would not do anything here.
+   // Histogram always has normal strides, it.Optimize() would not do anything here.
    do {
       UnsignedArray const& coord = it.Coordinates();
       dfloat v = static_cast< dfloat >( *it );
@@ -89,7 +89,7 @@ FloatArray Covariance( Histogram const& in ) {
 FloatArray MarginalMedian( Histogram const& in ) {
    dip::uint nDims = in.Dimensionality();
    FloatArray median( nDims );
-   Histogram cum = in.Cumulative(); // we look along the last line in each direction
+   Histogram cum = CumulativeHistogram( in ); // we look along the last line in each direction
    Image const& cumImg = cum.GetImage();
    Histogram::CountType* pcum = static_cast< Histogram::CountType* >( cumImg.Origin() );
    dfloat n = static_cast< dfloat >( pcum[ cumImg.NumberOfPixels() - 1 ] );
@@ -116,7 +116,7 @@ FloatArray Mode( Histogram const& in ) {
    UnsignedArray coord( nDims, 0 );
    Histogram::CountType maxVal = 0;
    ImageIterator< Histogram::CountType > it( in.GetImage() );
-   // Histogram always has notmal strides, it.Optimize() would not do anything here.
+   // Histogram always has normal strides, it.Optimize() would not do anything here.
    do {
       if( *it > maxVal ) {
          maxVal = *it;
@@ -140,13 +140,13 @@ dfloat MutualInformation( Histogram const& hist ) {
    DIP_ASSERT( histImg.Stride( 0 ) == 1 );
    DIP_ASSERT( histImg.Stride( 1 ) == static_cast< dip::sint >( n1 ));
 
-   Histogram c1 = hist.Marginal( 0 );
+   Histogram c1 = hist.GetMarginal( 0 );
    Image const& c1Img = c1.GetImage();
    DIP_ASSERT( c1Img.Dimensionality() == 1 );
    DIP_ASSERT( c1Img.NumberOfPixels() == n1 );
    DIP_ASSERT( c1Img.Stride( 0 ) == 1 );
 
-   Histogram c2 = hist.Marginal( 1 );
+   Histogram c2 = hist.GetMarginal( 1 );
    Image const& c2Img = c2.GetImage();
    DIP_ASSERT( c2Img.Dimensionality() == 1 );
    DIP_ASSERT( c2Img.NumberOfPixels() == n2 );

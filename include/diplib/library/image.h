@@ -2107,7 +2107,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// `this` must be forged.
       ///
-      /// `dip::Image::QuickCopy` does the same, but witout copying the data, its output image shares
+      /// `dip::Image::QuickCopy` does the same, but without copying the data, its output image shares
       /// the data segment with `this`.
       Image Copy() const {
          Image out;
