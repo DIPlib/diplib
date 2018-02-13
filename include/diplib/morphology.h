@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for mathematical morphology functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -625,9 +625,9 @@ inline Image Lee(
 /// \brief A morphological smoothing filter
 ///
 /// Implements a morphological smoothing based on the sequence of two complementary morphological
-/// operations. These can be chosen through the `mode` parameter.
+/// operations. These can be chosen through the `polarity` parameter.
 ///
-/// `mode` can be one of:
+/// `polarity` can be one of:
 /// - `"open-close"`: applies the opening first, then the closing.
 /// - `"close-open"`: applies the closing first, then the opening.
 /// - `"average"`: computes the average of the result of the first two modes.
@@ -639,17 +639,17 @@ DIP_EXPORT void MorphologicalSmoothing(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& mode = S::AVERAGE,
+      String const& polarity = S::AVERAGE,
       StringArray const& boundaryCondition = {}
 );
 inline Image MorphologicalSmoothing(
       Image const& in,
       StructuringElement const& se = {},
-      String const& mode = S::AVERAGE,
+      String const& polarity = S::AVERAGE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   MorphologicalSmoothing( in, out, se, mode, boundaryCondition );
+   MorphologicalSmoothing( in, out, se, polarity, boundaryCondition );
    return out;
 }
 
@@ -1415,7 +1415,49 @@ inline Image ClosingByReconstruction(
    return out;
 }
 
-
+/// \brief Alternating sequential filters for smoothing
+///
+/// Applies alternating sequential filters to `in`, using structuring element sizes given by the range `sizes`.
+/// Alternating sequential filters are two morphological filters opening and closing, applied in sequence, from
+/// a small size to a larger size. This provides an effective smoothing that is less biased than applying an
+/// opening and closing of a single size (as in `dip::MorphologicalSmoothing`).
+/// `polarity` can be `"open-close"` or `"close-open"`, and determines which of the operations is applied first.
+///
+/// For example, if `sizes` is `{3,7,2}` and `polarity` is `"opening"`, the following operations are applied:
+/// ```cpp
+///     dip::Opening( in,  out, { 3, shape } );
+///     dip::Closing( out, out, { 3, shape } );
+///     dip::Opening( out, out, { 5, shape } );
+///     dip::Closing( out, out, { 5, shape } );
+///     dip::Opening( out, out, { 7, shape } );
+///     dip::Closing( out, out, { 7, shape } );
+/// ```
+///
+/// `mode` is one of:
+///  - `"structural"`: uses structural openings and closings (see `dip::Opening`).
+///  - `"reconstruction"`: uses openings and closings by reconstruction (see `dip::OpeningByReconstruction`).
+///  - `"area"`: uses area openings and closings (see `dip::AreaOpening`) -- `shape` is ignored.
+DIP_EXPORT void AlternatingSequentialFilter(
+      Image const& in,
+      Image& out,
+      Range const& sizes = { 3, 7, 2 },
+      String const& shape = S::ELLIPTIC,
+      String const& mode = S::STRUCTURAL,
+      String const& polarity = S::OPENCLOSE,
+      StringArray const& boundaryCondition = {}
+);
+inline Image AlternatingSequentialFilter(
+      Image const& in,
+      Range const& sizes = { 3, 7, 2 },
+      String const& shape = S::ELLIPTIC,
+      String const& mode = S::STRUCTURAL,
+      String const& polarity = S::OPENCLOSE,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   AlternatingSequentialFilter( in, out, sizes, shape, mode, polarity, boundaryCondition );
+   return out;
+}
 
 // TODO: functions to port:
 /*
@@ -1423,7 +1465,6 @@ dip_UpperEnvelope (dip_morphology.h)
 dip_UpperSkeleton2D (dip_binary.h)
 */
 
-// TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
 // TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotations).
 // TODO: levelling
 // TODO: granulometries (isotropic and path opening)

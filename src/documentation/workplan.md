@@ -125,9 +125,6 @@ document's source</a> for the most up-to-date version.
 
 ## Functionality currently not in *DIPlib* that would be important to include
 
-- Alternating sequential open-close filter (3 versions: with structural opening,
-  opening by reconstruction, and area opening) -- easy to add!
-
 - We're also lacking some other morphological filters:
     - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
     - levelling

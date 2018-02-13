@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the basic morphological operators.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -364,6 +364,90 @@ void RankMaxOpening(
    se.Mirror();
    Dilation( out, out, se, boundaryCondition );
    Infimum( c_in, out, out );
+}
+
+namespace {
+
+enum class AlternatingSequentialFilterMode {
+      STRUCTURAL,
+      RECONSTRUCTION,
+      AREA
+};
+
+void dip__AlternatingSequentialFilter(
+      Image const& in,
+      Image& out,
+      dip::uint size,
+      String const& shape,
+      AlternatingSequentialFilterMode mode,
+      bool openingFirst,
+      StringArray const& boundaryCondition
+) {
+   switch( mode ) {
+      case AlternatingSequentialFilterMode::STRUCTURAL: {
+         StructuringElement se( static_cast< dfloat >( size ), shape );
+         if( openingFirst ) {
+            Opening( in,  out, se, boundaryCondition );
+            Closing( out, out, se, boundaryCondition );
+         } else {
+            Closing( in,  out, se, boundaryCondition );
+            Opening( out, out, se, boundaryCondition );
+         }
+         break;
+      }
+      case AlternatingSequentialFilterMode::RECONSTRUCTION: {
+         StructuringElement se( static_cast< dfloat >( size ), shape );
+         if( openingFirst ) {
+            OpeningByReconstruction( in,  out, se, 1, boundaryCondition ); // TODO: connectivity?
+            ClosingByReconstruction( out, out, se, 1, boundaryCondition );
+         } else {
+            ClosingByReconstruction( in,  out, se, 1, boundaryCondition );
+            OpeningByReconstruction( out, out, se, 1, boundaryCondition );
+         }
+         break;
+      }
+      case AlternatingSequentialFilterMode::AREA:
+         if( openingFirst ) {
+            AreaOpening( in,  {}, out, size, 1 ); // TODO: connectivity?
+            AreaClosing( out, {}, out, size, 1 );
+         } else {
+            AreaClosing( in,  {}, out, size, 1 );
+            AreaOpening( out, {}, out, size, 1 );
+         }
+         break;
+   }
+}
+
+} // namespace
+
+void AlternatingSequentialFilter(
+      Image const& in,
+      Image& out,
+      Range const& sizes,
+      String const& shape,
+      String const& s_mode,
+      String const& polarity,
+      StringArray const& boundaryCondition
+) {
+   DIP_THROW_IF(( sizes.step < 1 ) || ( sizes.start < 2 ) || ( sizes.stop < sizes.start ), E::INVALID_PARAMETER );
+   bool openingFirst;
+   DIP_STACK_TRACE_THIS( openingFirst = BooleanFromString( polarity, S::OPENCLOSE, S::CLOSEOPEN ));
+   AlternatingSequentialFilterMode mode;
+   if( s_mode == S::STRUCTURAL ) {
+      mode = AlternatingSequentialFilterMode::STRUCTURAL;
+   } else if( s_mode == S::RECONSTRUCTION ) {
+      mode = AlternatingSequentialFilterMode::RECONSTRUCTION;
+   } else if( s_mode == S::AREA ) {
+      mode = AlternatingSequentialFilterMode::AREA;
+   } else {
+      DIP_THROW_INVALID_FLAG( s_mode );
+   }
+   auto size = sizes.begin();
+   DIP_STACK_TRACE_THIS( dip__AlternatingSequentialFilter( in, out, *size, shape, mode, openingFirst, boundaryCondition ));
+   ++size;
+   for( ; size != sizes.end(); ++size ) {
+      DIP_STACK_TRACE_THIS( dip__AlternatingSequentialFilter( out, out, *size, shape, mode, openingFirst, boundaryCondition ));
+   }
 }
 
 } // namespace dip

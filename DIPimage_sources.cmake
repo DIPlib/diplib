@@ -28,6 +28,7 @@ dipimage/@dip_image/svd.cpp
 dipimage/@dip_image/trace.cpp
 dipimage/@dip_image/var.cpp
 dipimage/areaopening.cpp
+dipimage/asf.cpp
 dipimage/bclosing.cpp
 dipimage/bdilation.cpp
 dipimage/berosion.cpp

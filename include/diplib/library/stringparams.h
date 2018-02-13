@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for string constants.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,6 +87,9 @@ constexpr char const* INCREASING = "increasing";
 constexpr char const* DECREASING = "decreasing";
 constexpr char const* NORMAL = "normal";
 constexpr char const* CONSTRAINED = "constrained";
+constexpr char const* STRUCTURAL = "structural";
+constexpr char const* RECONSTRUCTION = "reconstruction";
+constexpr char const* AREA = "area";
 
 // Watershed flags
 constexpr char const* CORRECT = "correct";

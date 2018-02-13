@@ -587,12 +587,12 @@ struct DIP_NO_EXPORT Range {
    };
 
    /// Get an iterator to the beginning of the range (must be fixed first!).
-   Iterator begin() {
+   Iterator begin() const {
       return Iterator( start, Step() );
    }
 
    /// Get an iterator to the end of the range (must be fixed first!).
-   Iterator end() {
+   Iterator end() const {
       return Iterator( start + static_cast< dip::sint >( Size() ) * Step(), Step() );
    }
 };
