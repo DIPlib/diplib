@@ -237,7 +237,7 @@ SubpixelExtremumMethod ParseMethod( String const& s_method, dip::uint nDims ) {
    } else if( s_method == dip::S::INTEGER ) {
       method = SubpixelExtremumMethod::INTEGER;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( s_method );
    }
    if( nDims == 1 ) {
       // The non-separable and separable methods are identical for 1D images.

@@ -357,8 +357,8 @@ void DrawPolygon2D(
       filled = true;
    } else if( mode == S::OPEN ) {
       open = true;
-   } else {
-      DIP_THROW_IF( mode != S::CLOSED, E::INVALID_FLAG );
+   } else if( mode != S::CLOSED ) {
+      DIP_THROW_INVALID_FLAG( mode );
    }
    DIP_THROW_IF( polygon.vertices.size() < ( open ? 2u : 3u ), E::ARRAY_ILLEGAL_SIZE ); // need at least 2 points to draw an open polygon, otherwise 3 points
    if( filled ) {

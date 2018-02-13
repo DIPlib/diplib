@@ -1743,7 +1743,7 @@ void VectorDistanceTransform(
                           sizes, stride, dist, objectBorder );
       }
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( method );
    }
 }
 

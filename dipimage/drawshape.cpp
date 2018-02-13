@@ -85,7 +85,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       } else if( shape == "diamond" ) {
          dip::DrawDiamond( out, sizes, origin, color );
       } else {
-         DIP_THROW( dip::E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( shape );
       }
 
       plhs[ 0 ] = mi.GetArray( out );

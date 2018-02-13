@@ -2083,7 +2083,7 @@ class DIP_NO_EXPORT Image {
          } else if( cropLocation == S::BOTTOM_RIGHT ) {
             return Pad( sizes, Option::CropLocation::BOTTOM_RIGHT );
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( cropLocation );
          }
       };
 

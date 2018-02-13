@@ -1670,7 +1670,7 @@ void ApplyColorMap(
    } else if( colorMap == "label" ) {
       values = labelColorMap.data();
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+          DIP_THROW_INVALID_FLAG( colorMap );
    }
    void* data = const_cast< void* >( static_cast< void const* >( values ));
    Image im( NonOwnedRefToDataSegment( data ), data, DT_UINT8, { 256 }, { 3 }, Tensor( 3 ), 1 );

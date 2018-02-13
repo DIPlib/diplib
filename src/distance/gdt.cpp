@@ -184,7 +184,7 @@ void GreyWeightedDistanceTransform(
       outputGDT = true;
       outputDistance = true;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( outputMode );
    }
 
    // Find pixel size to keep

@@ -361,7 +361,7 @@ FloatArray FindShift(
          } else if( method == "PROJ" ) {
             DIP_STACK_TRACE_THIS( shift += FindShift_PROJ( in1, in2, maxIter, accuracy, 1.0 )); // calls FindShift_MTS
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( method );
          }
       }
    }

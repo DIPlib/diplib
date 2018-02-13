@@ -242,7 +242,7 @@ void init_assorted( py::module& m ) {
       } else if( mode == "keep" ) {
          lookupTable.KeepInputValueOnOutOfBounds();
       } else {
-         DIP_THROW( dip::E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( mode );
       }
       return lookupTable.Apply( in, interpolation );
    }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = dip::S::LINEAR, "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0

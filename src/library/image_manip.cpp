@@ -498,7 +498,7 @@ Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
    } else if( cropLocation == S::BOTTOM_RIGHT ) {
       flag = Option::CropLocation::BOTTOM_RIGHT;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( cropLocation );
    }
    return Crop( sizes, flag );
 }

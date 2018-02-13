@@ -201,7 +201,7 @@ void StructureTensorAnalysis(
          } else if( outputs[ ii ] == "anisotropy2" ) {
             anisotropy2 = &out[ ii ].get();
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( outputs[ ii ] );
          }
       }
       DIP_STACK_TRACE_THIS( StructureTensorAnalysis2D( in, l1, l2, orientation, energy, anisotropy1, anisotropy2 ));
@@ -244,7 +244,7 @@ void StructureTensorAnalysis(
          } else if( outputs[ ii ] == "planar" ) {
             planar = &out[ ii ].get();
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( outputs[ ii ] );
          }
       }
       DIP_STACK_TRACE_THIS( StructureTensorAnalysis3D( in, l1, phi1, theta1, l2, phi2, theta2, l3, phi3, theta3, energy, cylindrical, planar ));

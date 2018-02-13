@@ -519,7 +519,7 @@ Method ParseMethod( String const& method ) {
    } else if(( method == "ft" ) || ( method == S::FOURIER )) {
       return Method::FOURIER;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( method );
    }
 }
 

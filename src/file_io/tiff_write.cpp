@@ -77,7 +77,7 @@ static uint16 CompressionTranslate( String const& compression ) {
    } else if( compression == "none" ) {
       return COMPRESSION_NONE;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( compression );
    }
 }
 

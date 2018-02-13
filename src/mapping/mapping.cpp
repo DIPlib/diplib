@@ -45,7 +45,7 @@ ClipOptions ParseClipOptions( String const& mode ) {
    } else if( mode == S::RANGE ) {
       options.range = true;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( mode );
    }
    return options;
 }
@@ -397,7 +397,7 @@ void ContrastStretch(
    } else if( method == "sigmoid" ) {
       lineFilter = std::make_unique< ContrastStretchLineFilter_Sigmoid >( inMin, inMax, outMin, outMax, parameter1, parameter2 );
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( method );
    }
    Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
