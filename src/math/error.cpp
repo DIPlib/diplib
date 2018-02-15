@@ -261,14 +261,17 @@ dfloat MutualInformation( Image const& in, Image const& reference, Image const& 
    configuration[ 0 ] = Histogram::Configuration( in.DataType() );
    configuration[ 1 ] = Histogram::Configuration( reference.DataType() );
    configuration[ 0 ].nBins = nBins;
-   configuration[ 1 ].nBins = nBins; // TODO: This does nothing for 16 or 32-bit integer types.
+   configuration[ 1 ].nBins = nBins;
+   configuration[ 0 ].mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
+   configuration[ 1 ].mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
    Histogram hist( in, reference, mask, configuration );
    return MutualInformation( hist );
 }
 
 dfloat Entropy( Image const& in, Image const& mask, dip::uint nBins ) {
    Histogram::Configuration configuration( in.DataType() );
-   configuration.nBins = nBins; // TODO: This does nothing for 16 or 32-bit integer types.
+   configuration.nBins = nBins;
+   configuration.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
    Histogram hist( in, mask, configuration );
    return Entropy( hist );
 }

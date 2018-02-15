@@ -174,6 +174,12 @@ class DIP_NO_EXPORT LookupTable{
          return Apply( value, mode );
       }
 
+      /// \brief Converts the LUT to a different data type. Values are clipped to the target range and/or truncated,
+      /// as applicable. Complex values are converted to non-complex values by taking the absolute value.
+      void Convert( dip::DataType dataType ) {
+         values_.Convert( dataType );
+      }
+
    private:
       Image values_;       // The table containing the output values. 1D image, any type, possibly tensor-valued.
       FloatArray index_;   // This is where the input value is looked up, has same number of elements as `values_`, strictly monotonic.

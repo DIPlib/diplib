@@ -93,6 +93,7 @@ src/generation/noise.cpp
 src/geometry/interpolation.h
 src/geometry/resampling.cpp
 src/geometry/tile.cpp
+src/histogram/equalization.cpp
 src/histogram/histogram.cpp
 src/histogram/statistics.cpp
 src/histogram/threshold_algorithms.cpp
@@ -124,6 +125,7 @@ src/linear/gaussiir.cpp
 src/linear/separate_filter.cpp
 src/linear/sharpen.cpp
 src/linear/uniform.cpp
+src/mapping/equalization.cpp
 src/mapping/lookup_table.cpp
 src/mapping/mapping.cpp
 src/math/arithmetic.cpp

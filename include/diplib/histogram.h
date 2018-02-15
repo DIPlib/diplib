@@ -24,6 +24,7 @@
 #include "diplib.h"
 #include "diplib/iterators.h"
 #include "diplib/measurement.h"
+#include "diplib/lookup_table.h"
 
 
 /// \file
@@ -586,6 +587,36 @@ DIP_EXPORT dfloat BackgroundThreshold(
       dfloat distance = 2.0
 );
 
+//
+// Computing lookup tables from the histogram
+//
+
+/// \brief Computes a lookup table that, when applied to an image with the histogram `in`, yields an image with a
+/// flat histogram (or rather a histogram that is as flat as possible).
+///
+/// The lookup table will be of type `dip::DT_DFLOAT`, meaning that applying it to an image will yield an image
+/// of that type. Convert the lookup table to a different type using `dip::LookupTable::Convert`.
+///
+/// The lookup table will produce an output in the range [0,255].
+///
+/// `in` must be a 1D histogram.
+DIP_EXPORT LookupTable EqualizationLookupTable(
+      Histogram const& in
+);
+
+/// \brief Computes a lookup table that, when applied to an image with the histogram `in`, yields an image with a
+/// histogram as similar as possible to `example`.
+///
+/// The lookup table will be of type `dip::DT_DFLOAT`, meaning that applying it to an image will yield an image
+/// of that type. Convert the lookup table to a different type using `dip::LookupTable::Convert`.
+///
+/// The lookup table will produce an output in the range [`example.LowerBound()`,`example.UpperBound()`].
+///
+/// `in` and `example` must be 1D histograms.
+DIP_EXPORT LookupTable MatchingLookupTable(
+      Histogram const& in,
+      Histogram const& example
+);
 
 /// \}
 

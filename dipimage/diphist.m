@@ -109,7 +109,7 @@ end
 
 if nargout>0
    % Give output data.
-   outhist = histogram;
+   outhist = double(histogram);
    outbins = bins;
 end
 

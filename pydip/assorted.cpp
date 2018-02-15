@@ -213,15 +213,18 @@ void init_assorted( py::module& m ) {
           "in1"_a, "in2"_a, "dimension"_a = 0 );
 
    // diplib/histogram.h
-   m.def( "Histogram", []( dip::Image const& input ){
-      dip::Histogram histogram( input );
+   m.def( "Histogram", []( dip::Image const& input, dip::uint nBins ){
+      dip::Histogram::Configuration config( input.DataType() );
+      config.nBins = nBins;
+      config.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
+      dip::Histogram histogram( input, {}, config );
       dip::Image im = histogram.GetImage();
       std::vector< dip::FloatArray > bins( histogram.Dimensionality() );
       for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
          bins[ ii ] = histogram.BinCenters( ii );
       }
       return py::make_tuple( im, bins ).release();
-   }, "input"_a );
+   }, "input"_a, "nBins"_a = 256 );
    m.def( "Histogram", []( dip::Image const& input1, dip::Image const& input2 ){
       dip::Histogram histogram( input1, input2 );
       dip::Image im = histogram.GetImage();
@@ -255,4 +258,20 @@ void init_assorted( py::module& m ) {
          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = dip::S::RANGE );
    m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = dip::S::LINEAR, "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
+
+   m.def( "HistogramEqualization", py::overload_cast< dip::Image const&, dip::uint >( &dip::HistogramEqualization ),
+          "in"_a, "nBins"_a = 256 );
+   m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ){
+      DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
+      dip::uint nBins = example.Size( 0 );
+      // Create a histogram of the right dimensions
+      dip::Image blank( {}, 1, dip::DT_DFLOAT );
+      dip::Histogram::Configuration config( 0.0, static_cast< int >( nBins ), 1.0 );
+      dip::Histogram exampleHistogram( blank, {}, config );
+      // Fill it with the input
+      dip::Image guts = exampleHistogram.GetImage();
+      guts.Copy( example ); // Copies data from example to data segment in guts, which is shared with the image in exampleHistogram. This means we're changing the histogram.
+      return dip::HistogramMatching( in, exampleHistogram );
+   }, "in"_a, "example"_a );
+
 }
