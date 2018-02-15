@@ -114,9 +114,9 @@ inline Image InverseBeerLambertMapping(
 ///
 /// The absorption of the dyes in each channel combine linearly with the density of each of the dyes:
 ///
-/// \f[ A_R = S_{1,R} d_1 + S_{2,R} d_2 + S_{3,R} d_3 + ... \f]
+/// \f[ A_R = S_{R,1} d_1 + S_{R,2} d_2 + S_{R,3} d_3 + ... \f]
 ///
-/// with \f$S_{n,R}\f$ the absorbance of dye \f$n\f$ in the red channel, \f$d_n\f$ the density (concentration) of
+/// with \f$S_{R,n}\f$ the absorbance of dye \f$n\f$ in the red channel, \f$d_n\f$ the density (concentration) of
 /// dye \f$n\f$, and \f$A_R\f$ the total absorbance in the red channel. In matrix notation this leads to
 ///
 /// \f[ A = \mathbf{S} d \f]
@@ -127,10 +127,17 @@ inline Image InverseBeerLambertMapping(
 /// is described by Ruifrok (2001). This function computes a Moore-Penrose pseudo-inverse of \f$\mathbf{S}\f$,
 /// and applies a per-pixel matrix multiplication with `in` to obtain `out`.
 ///
-/// `stains` is a vector with these absorbance values, one for each dye. `stains` contains all the values
-/// for matrix \f$\mathbf{S}\f$. It cannot have more elements than channels (tensor elements) are in `in`.
-/// Each element of the vector is a `dip::Image::Pixel` with the same number of tensor elements as `in`.
-/// `out` will contain one channel for each stain.
+/// `stains` is a `std::vector` that contains each of the columns of matrix \f$\mathbf{S}\f$. That is, each element
+/// of `stains` is the values of one column of \f$\mathbf{S}\f$, which we refer to as a *stain vector*. These
+/// stain vectors are represented by a `dip::Image::Pixel` with the same number of tensor elements as `in`.
+/// `stains` cannot have more elements than channels (tensor elements) are in `in`.
+/// `out` will contain one channel for each stain. For example, assuming an RGB image with 3 channels, `stains` can
+/// have one, two or three elements, each element being a `dip::Image::Pixel` with exactly 3 elements (corresponding
+/// to the 3 RGB channels).
+///
+/// Best results are obtained when each element of `stains` is normalized (i.e. the norm of each stain vector is 1);
+/// this function does not normalize these stain vectors. The standard brightfield stain vectors given below are
+/// normalized.
 ///
 /// Example:
 /// ```cpp
@@ -204,7 +211,7 @@ inline Image UnmixStains(
 /// matrix multiplication \f$A = \mathbf{S} d\f$ to obtain \f$A\f$ (`out`) from  \f$d\f$ (`in`) and
 /// \f$\mathbf{S}\f$ (composed from the values in `stains`).
 ///
-/// `stains` is `stains` is a vector with these absorbance/emission values, and should have the same number of
+/// `stains` is a vector with these absorbance/emission values, and should have the same number of
 /// elements as channels (tensor elements) in the image `in`. Each element of the vector should have the
 /// same number of channels, and these dictate the number of channels in the output image `out`. If `out`
 /// has three channels, it will be tagged as an RGB image. Call `dip::InverseBeerLambertMapping` with `out`
