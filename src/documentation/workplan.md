@@ -104,7 +104,6 @@ document's source</a> for the most up-to-date version.
 -   Stuff that is in *DIPimage*:
     - 2D snakes
     - general 2D affine transformation, 3D rotation (is already C code)
-    - histogram equalization
     - ...and many more, see the *DIPimage 2* M-files for inspiration.
 
 -   Other stuff that's not in *DIPlib 2* (see below).
@@ -112,8 +111,8 @@ document's source</a> for the most up-to-date version.
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
 
--   *PyDIP* Python module: Write interactive image display and GUI as exists in *MATLAB*.
-    Make the module more "Pythonic"?
+-   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
+    to be added as these functions are written. Make the module more "Pythonic"?
 
 -   Other interfaces. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,

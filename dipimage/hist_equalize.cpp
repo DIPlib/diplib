@@ -53,9 +53,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             v *= scale;
          }
          // Create a histogram of the right dimensions
-         dip::Image blank( {}, 1, dip::DT_DFLOAT );
          dip::Histogram::Configuration config( 0.0, static_cast< int >( data.size() ), 1.0 );
-         dip::Histogram example( blank, {}, config );
+         dip::Histogram example( config );
          // Fill it with the input
          dip::Image img = example.GetImage().QuickCopy();
          DIP_ASSERT( img.NumberOfPixels() == data.size() );

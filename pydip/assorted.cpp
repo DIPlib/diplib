@@ -213,26 +213,26 @@ void init_assorted( py::module& m ) {
           "in1"_a, "in2"_a, "dimension"_a = 0 );
 
    // diplib/histogram.h
-   m.def( "Histogram", []( dip::Image const& input, dip::uint nBins ){
+   m.def( "Histogram", []( dip::Image const& input, dip::Image const& mask, dip::uint nBins ){
       dip::Histogram::Configuration config( input.DataType() );
       config.nBins = nBins;
       config.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
-      dip::Histogram histogram( input, {}, config );
+      dip::Histogram histogram( input, mask, config );
       dip::Image im = histogram.GetImage();
       std::vector< dip::FloatArray > bins( histogram.Dimensionality() );
       for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
          bins[ ii ] = histogram.BinCenters( ii );
       }
       return py::make_tuple( im, bins ).release();
-   }, "input"_a, "nBins"_a = 256 );
-   m.def( "Histogram", []( dip::Image const& input1, dip::Image const& input2 ){
-      dip::Histogram histogram( input1, input2 );
+   }, "input"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
+   m.def( "Histogram", []( dip::Image const& input1, dip::Image const& input2, dip::Image const& mask ){
+      dip::Histogram histogram( input1, input2, mask );
       dip::Image im = histogram.GetImage();
       std::vector< dip::FloatArray > bins( 2 );
       bins[ 0 ] = histogram.BinCenters( 0 );
       bins[ 1 ] = histogram.BinCenters( 1 );
       return py::make_tuple( im, bins ).release();
-   }, "input1"_a, "input2"_a );
+   }, "input1"_a, "input2"_a, "mask"_a = dip::Image{} );
 
    // diplib/lookup_table.h
    m.def( "LookupTable", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index, dip::String const& interpolation,
@@ -265,11 +265,10 @@ void init_assorted( py::module& m ) {
       DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
       dip::uint nBins = example.Size( 0 );
       // Create a histogram of the right dimensions
-      dip::Image blank( {}, 1, dip::DT_DFLOAT );
       dip::Histogram::Configuration config( 0.0, static_cast< int >( nBins ), 1.0 );
-      dip::Histogram exampleHistogram( blank, {}, config );
+      dip::Histogram exampleHistogram( config );
       // Fill it with the input
-      dip::Image guts = exampleHistogram.GetImage();
+      dip::Image guts = exampleHistogram.GetImage().QuickCopy();
       guts.Copy( example ); // Copies data from example to data segment in guts, which is shared with the image in exampleHistogram. This means we're changing the histogram.
       return dip::HistogramMatching( in, exampleHistogram );
    }, "in"_a, "example"_a );

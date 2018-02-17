@@ -213,6 +213,31 @@ class DIP_NO_EXPORT Histogram {
          DIP_END_STACK_TRACE
       }
 
+      /// \brief An empty histogram with the given configuration. Histogram bins are initialized to 0.
+      ///
+      /// The array must not be empty. The histogram will have `configuration->size()` dimensions.
+      /// `configuration[ii].lowerIsPercentile` and `configuration[ii].upperIsPercentile` must all be false (since
+      /// there is no way of determining these percentiles).
+      ///
+      /// The `GetImage` method returns a const reference to the histogram bins (in the form of an image),
+      /// but it is possible to modify the values in the bins (modify the pixel values of this image).
+      explicit Histogram( ConfigurationArray configuration ) {
+         DIP_THROW_IF( configuration.empty(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_STACK_TRACE_THIS( EmptyHistogram( std::move( configuration )));
+      }
+
+      /// \brief An empty histogram with the given configuration. Histogram bins are initialized to 0.
+      ///
+      /// The histogram will have one dimension.
+      /// `configuration.lowerIsPercentile` and `configuration.upperIsPercentile` must both be false (since
+      /// there is no way of determining these percentiles).
+      ///
+      /// The `GetImage` method returns a const reference to the histogram bins (in the form of an image),
+      /// but it is possible to modify the values in the bins (modify the pixel values of this image).
+      explicit Histogram( Configuration const& configuration ) {
+         DIP_STACK_TRACE_THIS( EmptyHistogram( ConfigurationArray{ configuration } ));
+      }
+
       /// \brief Deep copy, returns a copy of `this` with its own data segment.
       ///
       /// When making a copy of a histogram, the data segment is shared:
@@ -431,6 +456,7 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void TensorImageHistogram( Image const& input, Image const& mask, ConfigurationArray& configuration );
       DIP_EXPORT void JointImageHistogram( Image const& input1, Image const& input2, Image const& mask, ConfigurationArray& configuration );
       DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
+      DIP_EXPORT void EmptyHistogram( ConfigurationArray configuration );
 };
 
 //

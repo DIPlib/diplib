@@ -402,6 +402,8 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
    }
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
+   data_.Forge();
+   data_.Fill( 0 );
    CountType* data = static_cast< CountType* >( data_.Origin() );
    auto in = featureValues.FirstObject();
    while( in ) {
@@ -424,6 +426,23 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
       }
       ++in;
    }
+}
+
+void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
+   dip::uint ndims = configuration.size();
+   lowerBounds_.resize( ndims );
+   binSizes_.resize( ndims );
+   UnsignedArray sizes( ndims );
+   for( dip::uint ii = 0; ii < ndims; ++ii ) {
+      DIP_STACK_TRACE_THIS( CompleteConfiguration( configuration[ ii ], false ));
+      lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
+      binSizes_[ ii ] = configuration[ ii ].binSize;
+      sizes[ ii ] = configuration[ ii ].nBins;
+   }
+   data_.SetSizes( sizes );
+   data_.SetDataType( DT_COUNT );
+   data_.Forge();
+   data_.Fill( 0 );
 }
 
 dip::uint Histogram::Count() const {
