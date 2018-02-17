@@ -343,14 +343,9 @@ void CoherenceEnhancingDiffusion(
          Divergence( gradient, delta, { 1 }, "gaussFIR" );
       } else { // const
          Hessian( out, hessian, { 1 }, "gaussFIR" );
-         // TODO: stuff below here can be a `delta = NewDyadicScanLineFilter( D, hessian )`
          MultiplySampleWise( D, hessian, D, D.DataType() );
          DIP_ASSERT( D.TensorElements() == nDims * nDims ); // make sure D is a full matrix
-         D.TensorToSpatial( nDims );
-         BooleanArray process( nDims + 1, false );
-         process[ nDims ] = true;
-         Sum( D, {}, delta, process );
-         delta.Squeeze( nDims );
+         SumTensorElements( D, delta );
       }
       out += delta;
    }

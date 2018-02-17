@@ -755,6 +755,8 @@ The `dip::Image::Transpose` method belongs in this set, though it has a mathemat
 meaning. `%Transpose` changes the row-major matrix into a column-major matrix and
 vice-versa, thereby transposing the tensor.
 
+TODO: Fix the example below to something more meaningful, now that we've got MaximumTensorElement().
+
 It is also possible to turn the tensor dimension into a spatial dimension and
 back, using `dip::Image::TensorToSpatial` and `dip::Image::SpatialToTensor`.
 Turning the tensor dimension into a spatial dimension can be useful for example
