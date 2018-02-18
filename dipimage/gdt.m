@@ -12,12 +12,6 @@
 %            in IMAGE_IN to the nearest background pixel.
 %  distance: Metric distance over least-resistance path.
 %
-% WARNING
-%  The algorithm produces incomplete results in a 2-pixel thick border at the
-%  edges of the image (4 for chamfer distance 5). Extend the image with a
-%  dummy border if this is a problem for you. However, do make sure that this
-%  border added has non-zero weights to avoid unexpected results.
-%
 % DEFAULTS:
 %  chamfer = 3
 %
