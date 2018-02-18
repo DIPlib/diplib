@@ -134,7 +134,7 @@ void DrawLines(
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
-   DIP_THROW_IF( points.size() < 2, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( points.size() < 2, E::ARRAY_PARAMETER_WRONG_LENGTH );
    for( auto& point : points ) {
       DIP_THROW_IF( point.size() != out.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
       DIP_THROW_IF( !( point < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
@@ -360,7 +360,7 @@ void DrawPolygon2D(
    } else if( mode != S::CLOSED ) {
       DIP_THROW_INVALID_FLAG( mode );
    }
-   DIP_THROW_IF( polygon.vertices.size() < ( open ? 2u : 3u ), E::ARRAY_ILLEGAL_SIZE ); // need at least 2 points to draw an open polygon, otherwise 3 points
+   DIP_THROW_IF( polygon.vertices.size() < ( open ? 2u : 3u ), E::ARRAY_PARAMETER_WRONG_LENGTH ); // need at least 2 points to draw an open polygon, otherwise 3 points
    if( filled ) {
       bool horizontalScanLines = Framework::OptimalProcessingDim( out ) == 0;
       std::vector< PolygonEdge > edges;

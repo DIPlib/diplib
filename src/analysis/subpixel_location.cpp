@@ -433,7 +433,7 @@ SubpixelLocationResult SubpixelLocation(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( position.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( position.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       // We can't determine sub-pixel locations if the maximum pixel is on the image border either!
       DIP_THROW_IF(( position[ ii ] < 1 ) || ( position[ ii ] >= in.Size( ii ) - 1 ),

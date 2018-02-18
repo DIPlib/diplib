@@ -469,7 +469,7 @@ class DIP_NO_EXPORT Tensor {
                i = indices[ 0 ];
                break;
             default:
-               DIP_THROW( E::ARRAY_ILLEGAL_SIZE );
+               DIP_THROW( E::ARRAY_PARAMETER_WRONG_LENGTH );
          }
          dip::uint m = rows_;
          dip::uint n = Columns();

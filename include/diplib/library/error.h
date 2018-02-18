@@ -178,14 +178,12 @@ constexpr char const* ITERATOR_NOT_VALID = "Iterator is not valid";
 // miscellaneous errors
 constexpr char const* NOT_IMPLEMENTED = "Functionality has not (yet) been implemented";
 
-// array errors
-constexpr char const* ARRAY_ILLEGAL_SIZE = "Array has an illegal size";
-constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";
-
 // function parameter errors
 constexpr char const* INVALID_PARAMETER = "Parameter has invalid value";
 constexpr char const* PARAMETER_OUT_OF_RANGE = "Parameter value out of range";
 constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wrong number of elements";
+constexpr char const* ARRAY_PARAMETER_EMPTY = "Array parameter is empty";
+constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";
 constexpr char const* KERNEL_NOT_BINARY = "Kernel has weights, a binary kernel is expected";
 constexpr char const* CONNECTIVITY_NOT_SUPPORTED = "Connectivity is not supported";
 constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";

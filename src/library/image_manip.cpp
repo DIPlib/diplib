@@ -458,7 +458,7 @@ Image& Image::MergeTensorToComplex() {
 Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = sizes_.size();
-   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
    UnsignedArray origin( nDims, 0 );
    switch( cropLocation ) {

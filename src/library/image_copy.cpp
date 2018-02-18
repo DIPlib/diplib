@@ -74,7 +74,7 @@ void CopyFrom( Image const& src, Image& dest, Image const& mask ) {
 void CopyFrom( Image const& src, Image& dest, IntegerArray const& offsets ) {
    // Check input
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( offsets.size() == 0, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( offsets.empty(), E::ARRAY_PARAMETER_EMPTY );
    // Create output TODO: reforge?
    dest.CopyProperties( src );
    dest.SetSizes( UnsignedArray( { offsets.size() } ));
@@ -156,7 +156,7 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets ) {
    // Check input
    DIP_THROW_IF( !src.IsForged() || !dest.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( src.TensorElements() != dest.TensorElements(), E::NTENSORELEM_DONT_MATCH );
-   DIP_THROW_IF( offsets.size() == 0, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( offsets.empty(), E::ARRAY_PARAMETER_EMPTY );
    DIP_THROW_IF( src.NumberOfPixels() != offsets.size(), "Number of pixels does not match offset list" );
    if( DataType() == src.DataType() ) {
       dip::uint telems = dest.TensorElements();
@@ -197,7 +197,7 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets ) {
 Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = sizes_.size();
-   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( sizes < sizes_, E::INDEX_OUT_OF_RANGE );
    Image out;
    out.CopyProperties( *this );

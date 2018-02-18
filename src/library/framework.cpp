@@ -120,7 +120,7 @@ dip::uint OptimalProcessingDim(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray sizes = in.Sizes();
-   DIP_THROW_IF( sizes.size() != kernelSizes.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes.size() != kernelSizes.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
       if( kernelSizes[ ii ] == 1 ) {
          sizes[ ii ] = 1; // this will surely force the algorithm to not return this dimension as optimal processing dimension

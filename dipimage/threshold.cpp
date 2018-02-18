@@ -43,7 +43,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          dip::dfloat param2;
          if( nrhs > 2 ) {
             dip::FloatArray parameter = dml::GetFloatArray( prhs[ 2 ] );
-            DIP_THROW_IF( parameter.size() != 2, dip::E::ARRAY_ILLEGAL_SIZE );
+            DIP_THROW_IF( parameter.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
             param1 = parameter[ 0 ];
             param2 = parameter[ 1 ];
          } else {

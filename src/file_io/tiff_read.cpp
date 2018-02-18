@@ -921,7 +921,7 @@ void ImageReadTIFFSeries(
       Image& out,
       StringArray const& filenames
 ) {
-   DIP_THROW_IF( filenames.size() < 1, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( filenames.size() < 1, E::ARRAY_PARAMETER_EMPTY );
 
    // Read in first image
    Image tmp;

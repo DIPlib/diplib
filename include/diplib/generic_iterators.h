@@ -572,7 +572,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// To construct a useful iterator, provide two images, and optionally a processing dimension
       explicit GenericJointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
             procDim_( procDim ), atEnd_( false ) {
-         DIP_THROW_IF( images.size() != N, E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( images.size() != N, E::ARRAY_PARAMETER_WRONG_LENGTH );
          Image const& img0 = images[ 0 ].get();
          DIP_THROW_IF( !img0.IsForged(), E::IMAGE_NOT_FORGED );
          coords_.resize( img0.Dimensionality(), 0 );

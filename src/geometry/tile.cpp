@@ -44,7 +44,7 @@ void Tile(
       UnsignedArray tiling
 ) {
    dip::uint nImages = in.size();
-   DIP_THROW_IF( nImages == 0, E::ARRAY_ILLEGAL_SIZE ); // If you want to create an empty image, just do that directly...
+   DIP_THROW_IF( nImages == 0, E::ARRAY_PARAMETER_EMPTY ); // If you want to create an empty image, just do that directly...
    DIP_THROW_IF( !in[ 0 ].get().IsForged(), E::IMAGE_NOT_FORGED );
    if( tiling.empty() ) {
       tiling.resize( 2, 1 );

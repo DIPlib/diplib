@@ -251,7 +251,7 @@ inline void ExtendRegion(
       UnsignedArray sizes,
       StringArray const& boundaryCondition
 ) {
-   DIP_THROW_IF( origin.empty() || sizes.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( origin.empty() || sizes.empty(), E::ARRAY_PARAMETER_EMPTY );
    dip::uint nDims = image.Dimensionality();
    DIP_START_STACK_TRACE
       ArrayUseParameter( origin, nDims );

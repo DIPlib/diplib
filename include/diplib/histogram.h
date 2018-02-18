@@ -222,7 +222,7 @@ class DIP_NO_EXPORT Histogram {
       /// The `GetImage` method returns a const reference to the histogram bins (in the form of an image),
       /// but it is possible to modify the values in the bins (modify the pixel values of this image).
       explicit Histogram( ConfigurationArray configuration ) {
-         DIP_THROW_IF( configuration.empty(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( configuration.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          DIP_STACK_TRACE_THIS( EmptyHistogram( std::move( configuration )));
       }
 
@@ -350,7 +350,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Gets the bin for `value` in an nD histogram
       UnsignedArray Bin( FloatArray value ) const {
-         DIP_THROW_IF( Dimensionality() != value.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( Dimensionality() != value.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          UnsignedArray out( value.size() );
          for( dip::uint ii = 0; ii < value.size(); ++ii ) {
             out[ ii ] = FindClampedBin( value[ ii ], ii );

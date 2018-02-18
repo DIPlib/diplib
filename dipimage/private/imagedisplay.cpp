@@ -263,7 +263,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                                                               static_cast< dip::dfloat >( dim2 ) + 1 );
                      } else {
                         dip::UnsignedArray dims = dml::GetUnsignedArray( prhs[ 2 ] );
-                        DIP_THROW_IF( dims.size() != 2, dip::E::ARRAY_ILLEGAL_SIZE );
+                        DIP_THROW_IF( dims.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
                         DIP_THROW_IF(( dims[ 0 ] == 0 ) || ( dims[ 1 ] == 0 ), dip::E::PARAMETER_OUT_OF_RANGE );
                         object->SetDirection( dims[ 0 ] - 1, dims[ 1 ] - 1 );
                      }
@@ -297,7 +297,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                            object->SetRange( dml::GetString( prhs[ 2 ] ) );
                         } else {
                            dip::FloatArray arr = dml::GetFloatArray( prhs[ 2 ] );
-                           DIP_THROW_IF( arr.size() != 2, dip::E::ARRAY_ILLEGAL_SIZE );
+                           DIP_THROW_IF( arr.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
                            object->SetRange( dip::ImageDisplay::Limits{ arr[ 0 ], arr[ 1 ] } );
                         }
                      }
@@ -308,7 +308,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                                                               static_cast< dip::dfloat >( lims.upper ));
                      } else {
                         dip::FloatArray arr = dml::GetFloatArray( prhs[ 2 ] );
-                        DIP_THROW_IF( arr.size() != 2, dip::E::ARRAY_ILLEGAL_SIZE );
+                        DIP_THROW_IF( arr.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
                         object->SetRange( dip::ImageDisplay::Limits{ arr[ 0 ], arr[ 1 ] } );
                      }
                   } else {
@@ -327,7 +327,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
                DML_MAX_ARGS( 2 );
                dip::UnsignedArray coords = dml::GetUnsignedArray( prhs[ 1 ] );
-               DIP_THROW_IF( coords.size() != 2, dip::E::ARRAY_ILLEGAL_SIZE );
+               DIP_THROW_IF( coords.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
                plhs[ 0 ] = dml::GetArray( object->Pixel( coords[ 0 ], coords[ 1 ] ));
 
             }
