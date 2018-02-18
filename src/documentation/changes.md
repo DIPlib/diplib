@@ -441,6 +441,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
     dimension 1). `slice_in`, `slice_ex` and `slice_op` have been made into `dip_image` methods,
     for efficiency.
 
+  - `get_subpixel` no longer supports the `'spline'` interpolation method, this string is still
+    accepted, but uses the `'cubic'` method.
+
 - New functions not mentioned above: `areaopening`, `coordinates`, `extendimage`, `getmaximumandminimum`,
   `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`, `smallobjectsremove`,
   `thetatheta`.

@@ -91,6 +91,7 @@ src/generation/draw_discrete.cpp
 src/generation/draw_support.h
 src/generation/noise.cpp
 src/geometry/interpolation.h
+src/geometry/resampleat.cpp
 src/geometry/resampling.cpp
 src/geometry/tile.cpp
 src/histogram/equalization.cpp

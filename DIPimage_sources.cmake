@@ -61,6 +61,7 @@ dipimage/gaussianblob.cpp
 dipimage/gaussianedgeclip.cpp
 dipimage/gaussianlineclip.cpp
 dipimage/gdt.cpp
+dipimage/get_subpixel.cpp
 dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
 dipimage/gradmag.cpp

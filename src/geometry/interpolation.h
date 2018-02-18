@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+
+// NOTE!!! This file only to be included by `resampling.cpp`.
+
+
 #include "diplib/library/types.h"
 #include "diplib/library/sample_iterator.h"
 #include "diplib/dft.h"
@@ -471,7 +475,7 @@ inline dip::uint FourierBufferSize(
 }
 
 
-// Returns the output size of an image line after the zooom
+// Returns the output size of an image line after the zoom
 inline dip::uint ComputeOutputSize( dip::uint inSize, dfloat zoom ) {
    return static_cast< dip::uint >( std::floor( static_cast< dfloat >( inSize ) * zoom + 1e-6 ));
    // The 1e-6 is to avoid floating-point inaccuracies, ex: floor(49*(64/49))!=64

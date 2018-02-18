@@ -374,6 +374,7 @@ using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter
 using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
 using CoordinateArray = std::vector< UnsignedArray >; ///< An array of pixel coordinates.
+using FloatCoordinateArray = std::vector< FloatArray >; ///< An array of subpixel coordinates.
 
 
 /// \brief Check the length of an array, and extend it if necessary and possible.

@@ -446,6 +446,46 @@ inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
    DIP_THROW( "Coordinate array expected" );
 }
 
+/// \brief Convert a coordinates array from `mxArray` to `dip::FloatCoordinateArray` by copy.
+///
+/// A coordinates array is either a cell array with arrays of double floats (all of them
+/// the same length), or a matrix with a row per coordinate and a column per dimension.
+inline dip::FloatCoordinateArray GetFloatCoordinateArray( mxArray const* mx ) {
+   if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      dip::uint n = mxGetM( mx );
+      dip::uint ndims = mxGetN( mx );
+      dip::FloatCoordinateArray out( n );
+      double* data = mxGetPr( mx );
+      for( auto& o : out ) {
+         o.resize( ndims );
+         for( dip::uint ii = 0; ii < ndims; ++ii ) {
+            o[ ii ] = data[ ii * n ];
+         }
+         ++data;
+      }
+      return out;
+   } else if( mxIsCell( mx ) && IsVector( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::FloatCoordinateArray out( n );
+      dip::uint ndims = 0;
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         mxArray const* elem = mxGetCell( mx, ii );
+         if( ii == 0 ) {
+            ndims = mxGetNumberOfElements( elem );
+         } else {
+            DIP_THROW_IF( ndims != mxGetNumberOfElements( elem ), "Coordinates in array must have consistent dimensionalities" );
+         }
+         try {
+            out[ ii ] = GetFloatArray( elem );
+         } catch( dip::Error& ) {
+            DIP_THROW( "Coordinates in array must be numeric arrays" );
+         }
+      }
+      return out;
+   }
+   DIP_THROW( "Coordinate array expected" );
+}
+
 /// \brief Convert a string from `mxArray` to `dip::String` by copy.
 inline dip::String GetString( mxArray const* mx ) {
    if( mxIsChar( mx ) && IsVector( mx )) {
@@ -1007,9 +1047,8 @@ class MatlabInterface : public dip::ExternalInterface {
          return dip::DataSegment{ m, StripHandler( *this ) };
       }
 
-      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
-      /// and create a MATLAB dip_image object around it.
-      mxArray* GetArray( dip::Image const& img ) {
+      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
+      mxArray* GetArrayAsArray( dip::Image const& img ) {
          //std::cout << "GetArray for image: " << img;
          DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* mat = static_cast< mxArray* >( img.Data() );
@@ -1017,16 +1056,15 @@ class MatlabInterface : public dip::ExternalInterface {
          if( it == mla.end() ) {
             mat = nullptr;
          }
-         void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat ) ) : nullptr;
+         void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat )) : nullptr;
          // Does the image point to a modified view of the mxArray or to a non-MATLAB array?
-         if( !mat || ( mptr != img.Origin() ) ||
-             !detail::IsMatlabStrides( img.Sizes(), img.TensorElements(),
-                               img.Strides(), img.TensorStride() ) ||
+         if( !mat || ( mptr != img.Origin()) ||
+             !detail::IsMatlabStrides( img.Sizes(), img.TensorElements(), img.Strides(), img.TensorStride() ) ||
              !detail::MatchDimensions( img.Sizes(), img.TensorElements(), img.DataType().IsComplex(),
-                               mxGetDimensions( mat ), mxGetNumberOfDimensions( mat )) ||
-             ( mxGetClassID( mat ) != detail::GetMatlabClassID( img.DataType() ))
-             // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
-         ) {
+                                       mxGetDimensions( mat ), mxGetNumberOfDimensions( mat )) ||
+             ( mxGetClassID( mat ) != detail::GetMatlabClassID( img.DataType()))
+            // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
+               ) {
             // Yes, it does. We need to make a copy of the image into a new MATLAB array.
             //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
             dip::Image tmp = NewImage();
@@ -1039,6 +1077,14 @@ class MatlabInterface : public dip::ExternalInterface {
             mla.erase( it );
             //mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
          }
+         return mat;
+      }
+
+      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
+      /// and create a MATLAB dip_image object around it.
+      mxArray* GetArray( dip::Image const& img ) {
+         mxArray* mat;
+         DIP_STACK_TRACE_THIS( mat = GetArrayAsArray( img ));
 
          // Create a MATLAB dip_image object with the mxArray inside.
          // We create an empty object, then set the Array property, because calling the constructor
