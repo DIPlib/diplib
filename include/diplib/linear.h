@@ -1115,12 +1115,14 @@ inline Image UnsharpMask(
    return out;
 }
 
+
 DIP_EXPORT void OrientedGauss( // TODO: port dip_OrientedGauss (from dip_linear.h)
       Image const& in,
       Image& out,
       FloatArray,
       FloatArray
 );
+
 
 DIP_EXPORT void GaborFIR( // TODO: implement a separable FIR Gabor filter
       Image const& in,
@@ -1205,6 +1207,103 @@ inline Image Gabor2D(
 }
 
 
+/// \brief Computes the normalized convolution with a Gaussian kernel: a Gaussian convolution for missing or
+/// uncertain data.
+///
+/// The normalized convolution is a convolution that handles missing or uncertain data. `mask` is an image, expected
+/// to be in the range [0,1], that indicates the confidence in each of the values of `in`. Missing values are indicated
+/// by setting the corresponding value in `mask` to 0.
+///
+/// The normalized convolution is then `Convolution( in * mask ) / Convolution( mask )`.
+///
+/// This function applies convolutions with a Gaussian kernel, using `dip::Gauss`. See that function for the meaning
+/// of the parameters. `boundaryCondition` defaults to `"add zeros"`, the normalized convolution then takes pixels
+/// outside of the image domain as missing values.
+///
+/// **Literature**
+/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
+///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+inline void NormalizedConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+) {
+   DIP_THROW_IF( !in.IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
+   Image denominator;
+   DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, out ));
+   DIP_STACK_TRACE_THIS( Gauss( out, out, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, out.DataType() ));
+}
+inline Image NormalizedConvolution(
+      Image const& in,
+      Image const& mask,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+) {
+   Image out;
+   NormalizedConvolution( in, mask, out, sigmas, method, boundaryCondition, truncation );
+   return out;
+}
+
+/// \brief Computes the normalized differential convolution with a Gaussian kernel: a derivative operator for missing
+/// or uncertain data.
+///
+/// The normalized convolution is a convolution that handles missing or uncertain data. `mask` is an image, expected
+/// to be in the range [0,1], that indicates the confidence in each of the values of `in`. Missing values are indicated
+/// by setting the corresponding value in `mask` to 0.
+///
+/// The normalized differential convolution is defined here as the derivative of the normalized convolution with a
+/// Gaussian kernel:
+///
+/// \f[
+///   \frac{\partial}{\partial x} \frac{(f \, m) \ast g}{m \ast g}
+///         = \frac{(f \, m) \ast \frac{\partial}{\partial x} g}{m \ast g}
+///         - \frac{(f \, m) \ast g}{m \ast g} \frac{m \ast \frac{\partial}{\partial x} g}{m \ast g} \; .
+/// \f]
+///
+/// \f$\ast\f$ is the convolution operator, \f$f\f$ is `in`, \f$m\f$ is `mask`, and \f$g\f$ is the Gaussian kernel
+///
+/// The derivative is computed along `dimension`.
+///
+/// This function uses `dip::Gauss`. See that function for the meaning of the parameters. `boundaryCondition` defaults
+/// to `"add zeros"`, the normalized convolution then takes pixels outside of the image domain as missing values.
+///
+/// **Literature**
+/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
+///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+DIP_EXPORT void NormalizedDifferentialConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint dimension = 0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+);
+inline Image NormalizedDifferentialConvolution(
+      Image const& in,
+      Image const& mask,
+      dip::uint dimension = 0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+) {
+   Image out;
+   NormalizedDifferentialConvolution( in, mask, out, dimension, sigmas, method, boundaryCondition, truncation );
+   return out;
+}
 
 /// \}
 

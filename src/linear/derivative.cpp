@@ -80,7 +80,7 @@ void Gauss(
    } else if( ( method == "FT" ) || ( method == "ft" ) ) {
       DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
    } else if( ( method == "IIR" ) || ( method == "iir" ) ) {
-      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation ));
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
       DIP_THROW( "Unknown Gauss filter method" );
    }
@@ -114,7 +114,7 @@ void Derivative(
    } else if( ( method == "gaussFT" ) || ( method == "gaussft" ) ) {
       DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
    } else if( ( method == "gaussIIR" ) || ( method == "gaussiir" ) ) {
-      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation ));
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
       DIP_THROW( "Unknown derivative method" );
    }
@@ -520,5 +520,47 @@ void LaplaceMinusDgg(
 ) {
    DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::LaplaceMinusDgg ));
 }
+
+void NormalizedDifferentialConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint dimension,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !in.IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
+   DataType dt = DataType::SuggestFlex( in.DataType());
+
+   // We compute here:
+   //    out = SafeDivide( Derivative( a * m ), Gauss( m )) - SafeDivide( Gauss( a * m ), Gauss( m )) * SafeDivide( Derivative( m ), Gauss( m ))
+   //        = SafeDivide( Derivative( a * m ) - SafeDivide( Gauss( a * m ), Gauss( m )) * Derivative( m ), Gauss( m ))
+
+   Image denominator;
+   DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   Image weighted;
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, weighted, dt ));
+   // NC = SafeDivide( Gauss( a * m ), Gauss( m ));
+   Image NC;
+   DIP_STACK_TRACE_THIS( Gauss( weighted, NC, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   SafeDivide( NC, denominator, NC, dt ); // NC.DataType() == dt
+   // out = SafeDivide( Derivative( a * m ) - NC * Derivative( m ), Gauss( m ));
+   UnsignedArray derivativeOrder( in.Dimensionality(), 0 );
+   derivativeOrder[ dimension ] = 1;
+   Image tmp;
+   DIP_STACK_TRACE_THIS( Derivative( mask, tmp, derivativeOrder, sigmas, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( Derivative( weighted, out, derivativeOrder, sigmas, method, boundaryCondition, truncation ));
+   weighted.Strip();
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( NC, tmp, NC, dt ));
+   tmp.Strip();
+   DIP_STACK_TRACE_THIS( Subtract( out, NC, out, dt ));
+   NC.Strip();
+   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, dt ));
+};
 
 } // namespace dip
