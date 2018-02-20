@@ -939,6 +939,27 @@ inline Image Laplace(
    return out;
 }
 
+/// \brief Computes the second derivative in the gradient direction.
+///
+/// The second derivative in the gradient direction is computed by projecting the Hessian matrix onto
+/// the unit gradient:
+///
+/// \f[
+///   f_{gg} = \frac{ \nabla^T \! f \; \nabla \nabla^T \! f \; \nabla f } { \nabla^T \! f \; \nabla f } \; .
+/// \f]
+///
+/// This function is equivalent to:
+/// ```cpp
+///     Image g = dip::Gradient( in, ... );
+///     Image H = dip::Hessian( in, ... );
+///     Image Dgg = dip::Transpose( g ) * H * g;
+///     Dgg /= dip::Transpose( g ) * g;
+/// ```
+///
+/// See `dip::Derivative` for how derivatives are computed, and the meaning of the parameters. See `dip::Gradient`
+/// or `dip::Hessian` for the meaning of the `process` parameter
+///
+/// \see dip::Dxx, dip::Dyy, dip::Dzz
 DIP_EXPORT void Dgg(
       Image const& in,
       Image& out,
@@ -948,7 +969,34 @@ DIP_EXPORT void Dgg(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image Dgg(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Dgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
+/// \brief Adds the second derivative in the gradient direction to the Laplacian.
+///
+/// This function computes `dip::Laplace( in ) + dip::Dgg( in )`, but avoiding computing the second derivatives twice.
+///
+/// The zero-crossings of the result correspond to the edges in the image, just as they do for the individual
+/// Laplace and Dgg operators. However, the localization is improved by an order of magnitude with respect to
+/// the individual operators.
+///
+/// See `dip::Laplace` and `dip::Dgg` for more information.
+///
+/// **Literature**
+/// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images," PhD Thesis, Delft University
+///   of Technology, 1993.
+/// - P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images,"
+///   IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
 DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
@@ -958,8 +1006,28 @@ DIP_EXPORT void LaplacePlusDgg(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image LaplacePlusDgg(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   LaplacePlusDgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
-DIP_EXPORT void LaplaceMinDgg(
+/// \brief Subtracts the second derivative in the gradient direction from the Laplacian.
+///
+/// This function computes `dip::Laplace( in ) - dip::Dgg( in )`, but avoiding computing the second derivatives twice.
+///
+/// For two-dimensional images, this is equivalent to the second order derivative in the direction perpendicular
+/// to the gradient direction.
+///
+/// See `dip::Laplace` and `dip::Dgg` for more information.
+DIP_EXPORT void LaplaceMinusDgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -968,6 +1036,18 @@ DIP_EXPORT void LaplaceMinDgg(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image LaplaceMinusDgg(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   LaplaceMinusDgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
 /// \brief Sharpens `in` by subtracting the Laplacian of the image.
 ///
@@ -1035,14 +1115,14 @@ inline Image UnsharpMask(
    return out;
 }
 
-DIP_EXPORT void OrientedGauss(
+DIP_EXPORT void OrientedGauss( // TODO: port dip_OrientedGauss (from dip_linear.h)
       Image const& in,
       Image& out,
       FloatArray,
       FloatArray
 );
 
-DIP_EXPORT void GaborFIR(
+DIP_EXPORT void GaborFIR( // TODO: implement a separable FIR Gabor filter
       Image const& in,
       Image& out,
       FloatArray sigmas,
@@ -1124,13 +1204,7 @@ inline Image Gabor2D(
    return out;
 }
 
-// TODO: functions to port:
-/*
-   dip_OrientedGauss (dip_linear.h)
-   dip_Dgg (dip_derivatives.h)
-   dip_LaplacePlusDgg (dip_derivatives.h)
-   dip_LaplaceMinDgg (dip_derivatives.h)
-*/
+
 
 /// \}
 
