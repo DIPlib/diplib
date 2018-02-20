@@ -367,7 +367,7 @@ DIP_EXPORT void Rotation(
       dip::uint dimension1,
       dip::uint dimension2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = { "add zeros" }
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image Rotation(
       Image const& in,
@@ -375,7 +375,7 @@ inline Image Rotation(
       dip::uint dimension1,
       dip::uint dimension2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = { "add zeros" }
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
    Rotation( in, out, angle, dimension1, dimension2, interpolationMethod, boundaryCondition );

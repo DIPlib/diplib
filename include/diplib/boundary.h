@@ -79,18 +79,18 @@ using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An arra
 /// \brief Convert a string to a boundary condition.
 inline BoundaryCondition StringToBoundaryCondition( String const& bc ) {
    if( bc.empty() ) { return BoundaryCondition::DEFAULT; }
-   else if( bc == "default" ) { return BoundaryCondition::DEFAULT; }
-   else if( bc == "mirror" ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
-   else if( bc == "asym mirror" ) { return BoundaryCondition::ASYMMETRIC_MIRROR; }
-   else if( bc == "periodic" ) { return BoundaryCondition::PERIODIC; }
-   else if( bc == "asym periodic" ) { return BoundaryCondition::ASYMMETRIC_PERIODIC; }
-   else if( bc == "add zeros" ) { return BoundaryCondition::ADD_ZEROS; }
-   else if( bc == "add max" ) { return BoundaryCondition::ADD_MAX_VALUE; }
-   else if( bc == "add min" ) { return BoundaryCondition::ADD_MIN_VALUE; }
-   else if( bc == "zero order" ) { return BoundaryCondition::ZERO_ORDER_EXTRAPOLATE; }
-   else if( bc == "first order" ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
-   else if( bc == "second order" ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
-   else if( bc == "third order" ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
+   else if( bc == S::DEFAULT ) { return BoundaryCondition::DEFAULT; }
+   else if( bc == S::SYMMETRIC_MIRROR ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
+   else if( bc == S::ASYMMETRIC_MIRROR ) { return BoundaryCondition::ASYMMETRIC_MIRROR; }
+   else if( bc == S::PERIODIC ) { return BoundaryCondition::PERIODIC; }
+   else if( bc == S::ASYMMETRIC_PERIODIC ) { return BoundaryCondition::ASYMMETRIC_PERIODIC; }
+   else if( bc == S::ADD_ZEROS ) { return BoundaryCondition::ADD_ZEROS; }
+   else if( bc == S::ADD_MAX_VALUE ) { return BoundaryCondition::ADD_MAX_VALUE; }
+   else if( bc == S::ADD_MIN_VALUE ) { return BoundaryCondition::ADD_MIN_VALUE; }
+   else if( bc == S::ZERO_ORDER_EXTRAPOLATE ) { return BoundaryCondition::ZERO_ORDER_EXTRAPOLATE; }
+   else if( bc == S::FIRST_ORDER_EXTRAPOLATE ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
+   else if( bc == S::SECOND_ORDER_EXTRAPOLATE ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
+   else if( bc == S::THIRD_ORDER_EXTRAPOLATE ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
    else DIP_THROW( "Boundary condition not recognized: " + bc );
 }
 

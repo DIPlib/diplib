@@ -209,6 +209,21 @@ constexpr char const* INTEGER = "integer";
 constexpr char const* INNERRADIUS = "inner radius";
 constexpr char const* OUTERRADIUS = "outer radius";
 
+// Boundary conditions
+constexpr char const* DEFAULT = "default";
+constexpr char const* SYMMETRIC_MIRROR = "mirror";
+constexpr char const* ASYMMETRIC_MIRROR = "asym mirror";
+constexpr char const* PERIODIC = "periodic";
+constexpr char const* ASYMMETRIC_PERIODIC = "asym periodic";
+constexpr char const* ADD_ZEROS = "add zeros";
+constexpr char const* ADD_MAX_VALUE = "add max";
+constexpr char const* ADD_MIN_VALUE = "add min";
+constexpr char const* ZERO_ORDER_EXTRAPOLATE = "zero order";
+constexpr char const* FIRST_ORDER_EXTRAPOLATE = "first order";
+constexpr char const* SECOND_ORDER_EXTRAPOLATE = "second order";
+constexpr char const* THIRD_ORDER_EXTRAPOLATE = "third order";
+
+
 } // namespace S
 
 } // namespace dip

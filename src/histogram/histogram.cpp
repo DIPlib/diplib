@@ -483,7 +483,7 @@ Histogram& Histogram::Smooth( FloatArray sigma ) {
    }
    data_ = data_.Pad( sizes );
    data_.Protect(); // so that GaussFIR() produces a DT_COUNT image.
-   GaussFIR( data_, data_, sigma, { 0 }, { "add zeros" }, truncation );
+   GaussFIR( data_, data_, sigma, { 0 }, { S::ADD_ZEROS }, truncation );
    data_.Protect( false );
    return *this;
 }
