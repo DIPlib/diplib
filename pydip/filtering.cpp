@@ -86,7 +86,7 @@ void init_filtering( py::module& m ) {
 
    m.def( "GaborIIR", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::StringArray const&, dip::BooleanArray const&, dip::IntegerArray const&, dip::dfloat >( &dip::GaborIIR ),
           "in"_a, "sigmas"_a, "frequencies"_a, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "order"_a = dip::IntegerArray{}, "truncation"_a = 3.0 );
-   m.def( "Gabor", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Gabor ),
+   m.def( "Gabor2D", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Gabor2D ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 5.0, 5.0 }, "frequency"_a = 0.1, "direction"_a = dip::pi, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
 
    // diplib/nonlinear.h

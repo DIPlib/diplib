@@ -1095,7 +1095,7 @@ inline Image GaborIIR(
 /// `direction` is the filter direction [0, 2*pi] (compare polar coordinates)
 ///
 /// To use cartesian frequency coordinates, see `dip::GaborIIR`.
-inline void Gabor(
+inline void Gabor2D(
    Image const& in,
    Image& out,
    FloatArray const& sigmas = { 5.0, 5.0 },
@@ -1105,12 +1105,12 @@ inline void Gabor(
    BooleanArray const& process = {},
    dfloat truncation = 3
 ) {
-   DIP_THROW_IF( in.Dimensionality() != 2, "Gabor only implemented for 2 dimensional images; use GaborIIR().");
+   DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( frequency >= 0.5, "Frequency must be < 0.5" );
    FloatArray frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
    GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, {}, truncation );
 }
-inline Image Gabor(
+inline Image Gabor2D(
    Image const& in,
    FloatArray const& sigmas = { 5.0, 5.0 },
    dfloat frequency = 0.1,
@@ -1120,7 +1120,7 @@ inline Image Gabor(
    dfloat truncation = 3
 ) {
    Image out;
-   Gabor( in, out, sigmas, frequency, direction, boundaryCondition, process, truncation );
+   Gabor2D( in, out, sigmas, frequency, direction, boundaryCondition, process, truncation );
    return out;
 }
 
