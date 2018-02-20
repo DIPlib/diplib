@@ -130,6 +130,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::BesselJ0`. `dip_BooleanArrayUseParameter`, `dip_IntegerArrayUseParameter`, etc. are
   now all `dip::ArrayUseParameter`.
 
+- Some other function names that included only parts of a name or verb (they were shortened)
+  have been renamed to use full names. For example: `dip_Sub` is now `dip::Subtract`;
+  `dip_LaplaceMinDgg` is now called `dip::LaplaceMinusDgg`; `dip_RadialMin` and `dip_RadialMax`
+  are now called `dip::RadialMinimum` and `dip::RadialMaximum`.
+
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
   that knows about defined measurement features.
 
@@ -181,13 +186,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip_GetMaximumAndMinimum` is now called `dip::MaximumAndMinimum` for consistency.
 
-- `dip_RadialMin` and `dip_RadialMax` are now called `dip::RadialMinimum` and `dip::RadialMaximum`.
-
 - `dip_ResamplingFT` is no longer a separate function, call `dip::Resampling` with "ft" as
   method. `dip_Skewing` was renamed to `dip::Skew` for consistency. `dip_Rotation` has
-  been renamed `dip::Rotation2d`, and a generalized `dip::Rotation` is similar but takes
+  been renamed `dip::Rotation2D`, and a generalized `dip::Rotation` is similar but takes
   two additional integers to specify the rotation plane. `dip_Rotation3d_Axis` and
-  `dip_Rotation3d` are now both called `dip::Rotation3d`, their argument types are different.
+  `dip_Rotation3d` are now both called `dip::Rotation3D`, their argument types are different.
   `dip::Resampling`, `dip::Skew`, `dip::Rotation` and similar now take a boundary condition
   as optional argument.
 
@@ -270,7 +273,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip::Rotation` and dependent functions now rotate around the pixel that is right from center
   (the same pixel that is assumed the origin in `dip::FourierTransform` and other functions),
   instead of the point in between pixels, in case of an even-sized image. The implementation is
-  slightly more complex, but this definition is more useful. This function nows work for any
+  slightly more complex, but this definition is more useful. This function now works for any
   number of dimensions, though it only rotates around one cartesian axis. `dip::Rotation3D` is
   a new function that does a full 3D rotation.
 

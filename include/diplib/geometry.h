@@ -386,7 +386,7 @@ inline Image Rotation(
 ///
 /// Calls `dip::Rotation`, setting the dimension parameters to 0 and 1. Provides a simplified
 /// interface for 2D images.
-inline void Rotation2d(
+inline void Rotation2D(
       Image const& in,
       Image& out,
       dfloat angle,
@@ -396,14 +396,14 @@ inline void Rotation2d(
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    Rotation( in, out, angle, 0, 1, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation2d(
+inline Image Rotation2D(
       Image const& in,
       dfloat angle,
       String const& interpolationMethod = "",
       String const& boundaryCondition = {}
 ) {
    Image out;
-   Rotation2d( in, out, angle, interpolationMethod, boundaryCondition );
+   Rotation2D( in, out, angle, interpolationMethod, boundaryCondition );
    return out;
 }
 
@@ -411,7 +411,7 @@ inline Image Rotation2d(
 ///
 /// Calls `dip::Rotation`, setting the dimension parameters according to `axis`. Provides a simplified
 /// interface for 3D images.
-inline void Rotation3d(
+inline void Rotation3D(
       Image const& in,
       Image& out,
       dfloat angle,
@@ -439,7 +439,7 @@ inline void Rotation3d(
    }
    Rotation( in, out, angle, dim1, dim2, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation3d(
+inline Image Rotation3D(
       Image const& in,
       dfloat angle,
       dip::uint axis = 2,
@@ -447,7 +447,7 @@ inline Image Rotation3d(
       String const& boundaryCondition = {}
 ) {
    Image out;
-   Rotation3d( in, out, angle, axis, interpolationMethod, boundaryCondition );
+   Rotation3D( in, out, angle, axis, interpolationMethod, boundaryCondition );
    return out;
 }
 
@@ -461,7 +461,7 @@ inline Image Rotation3d(
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
 /// The rotation is over the center of the image.
-inline void Rotation3d(
+inline void Rotation3D(
       Image const& in,
       Image& out,
       dfloat alpha,
@@ -474,7 +474,7 @@ inline void Rotation3d(
    Rotation( out, out, beta,  2, 0, interpolationMethod, boundaryCondition );
    Rotation( out, out, gamma, 0, 1, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation3d(
+inline Image Rotation3D(
       Image const& in,
       dfloat alpha,
       dfloat beta,
@@ -483,7 +483,7 @@ inline Image Rotation3d(
       String const& boundaryCondition = {}
 ) {
    Image out;
-   Rotation3d( in, out, alpha, beta, gamma, interpolationMethod, boundaryCondition );
+   Rotation3D( in, out, alpha, beta, gamma, interpolationMethod, boundaryCondition );
    return out;
 }
 
