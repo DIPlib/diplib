@@ -22,12 +22,13 @@
 #include "diplib/analysis.h"
 #include "diplib/math.h"
 #include "diplib/linear.h"
+#include "diplib/generic_iterators.h"
 
 namespace dip {
 
 void StructureTensor(
       Image const& in,
-      Image const& /*mask*/,
+      Image const& mask,
       Image& out,
       FloatArray const& gradientSigmas,
       FloatArray const& tensorSigmas,
@@ -38,10 +39,19 @@ void StructureTensor(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   // TODO normalized convolution
-   Image tmp = Gradient( in, gradientSigmas, method, boundaryCondition, {}, truncation );
-   tmp = tmp * Transpose( tmp );
-   Gauss( tmp, out, tensorSigmas, {}, method, boundaryCondition, truncation );
+   Image tmp;
+   if( mask.IsForged() ) {
+      tmp.ReForge( in.Sizes(), in.Dimensionality(), DataType::SuggestFlex( in.DataType() ), Option::AcceptDataTypeChange::DO_ALLOW );
+      auto it = ImageTensorIterator( tmp );
+      for( dip::uint ii = 0; ii < in.Dimensionality(); ++ii ) {
+         DIP_STACK_TRACE_THIS( NormalizedDifferentialConvolution( in, mask, *it, ii, gradientSigmas, method, boundaryCondition, truncation ));
+         ++it;
+      }
+   } else {
+      DIP_STACK_TRACE_THIS( Gradient( in, tmp, gradientSigmas, method, boundaryCondition, {}, truncation ));
+   }
+   Multiply( tmp, Transpose( tmp ), out );
+   DIP_STACK_TRACE_THIS( Gauss( out, out, tensorSigmas, {}, method, boundaryCondition, truncation ));
 }
 
 void StructureTensorAnalysis2D(
