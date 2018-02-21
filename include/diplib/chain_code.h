@@ -863,7 +863,7 @@ using ChainCodeArray = std::vector< ChainCode >;
 ///
 /// `objectIDs` is a list with object IDs present in the labeled image. If an empty array is given, all objects in
 /// the image are used.
-ChainCodeArray DIP_NO_EXPORT GetImageChainCodes(
+ChainCodeArray DIP_EXPORT GetImageChainCodes(
       Image const& labels,             ///< Labeled image, unsigned integer type
       UnsignedArray const& objectIDs,  ///< A list of object IDs to get chain codes for
       dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
@@ -876,7 +876,7 @@ ChainCodeArray DIP_NO_EXPORT GetImageChainCodes(
 ///
 /// `startCoord` is the 2D coordinates of a boundary pixel. If it points to a zero-valued pixel or a pixel not on
 /// the boundary of an object, an exception will be thrown.
-ChainCode DIP_NO_EXPORT GetSingleChainCode(
+ChainCode DIP_EXPORT GetSingleChainCode(
       Image const& labels,             ///< Labeled or binary image (unsigned integer type or binary type)
       UnsignedArray const& startCoord, ///< The starting coordinates for the chain code; must point to a non-zero pixel in `labels`
       dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity

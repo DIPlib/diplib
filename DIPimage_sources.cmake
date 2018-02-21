@@ -113,6 +113,7 @@ dipimage/structuretensor.cpp
 dipimage/subpixlocation.cpp
 dipimage/threshold.cpp
 dipimage/tophat.cpp
+dipimage/traceobjects.cpp
 dipimage/unif.cpp
 dipimage/varif.cpp
 dipimage/vdt.cpp
