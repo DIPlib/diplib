@@ -57,6 +57,7 @@ dipimage/findmaxima.cpp
 dipimage/findminima.cpp
 dipimage/findshift.cpp
 dipimage/ft.cpp
+dipimage/gabor.cpp
 dipimage/gaussianblob.cpp
 dipimage/gaussianedgeclip.cpp
 dipimage/gaussianlineclip.cpp
