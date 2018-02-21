@@ -34,7 +34,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      if(( nrhs > 1 ) && !mxIsScalar( prhs[ 1 ] )) {
+      if(( nrhs > 1 ) && !mxIsEmpty( prhs[ 1 ] ) && !dml::IsScalar( prhs[ 1 ] )) {
          // Get input as float array, and convert to something we can stick in a histogram
          dip::FloatArray data = dml::GetFloatArray( prhs[ 1 ] );
          dip::dfloat minV = std::numeric_limits< double >::max();
@@ -66,7 +66,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          dip::HistogramMatching( in, out, example );
       } else {
          dip::uint nBins = 256;
-         if( nrhs > 1 ) {
+         if(( nrhs > 1 ) && !mxIsEmpty( prhs[ 1 ] ) ) {
             nBins = dml::GetUnsigned( prhs[ 1 ] );
          }
          dip::HistogramEqualization( in, out, nBins );

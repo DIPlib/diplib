@@ -1,11 +1,12 @@
-%STRUCTURETENSOR   Computes the Structure Tensor
+%STRUCTURETENSOR   Computes the structure tensor
 %
 % SYNOPSIS:
 %  varargout = structuretensor(image_in,dsigma,tsigma,outputs,method,...
 %                              boundary_condition,truncation)
 %
 % PARAMETERS:
-%  sigma: Gaussian parameter for each dimension.
+%  dsigma: Gaussian parameter for each dimension, used to compute derivatives.
+%  tsigma: Gaussian parameter for each dimension, used to smooth the tensor.
 %  outputs: which outputs to produce, see below.
 %  method: Method used to compute the derivatives and smoothing. One of:
 %    - 'gaussfir':     Finite Impulse Resonse filter (convolution with a kernel).

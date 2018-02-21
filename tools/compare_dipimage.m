@@ -9,7 +9,7 @@ o = {o.name}';
 added = setdiff(n,o)
 missing = setdiff(o,n)
 
-f = fopen('/Users/cris/newdip/dipimage/TODO','w');
+f = fopen('/Users/cris/newdip/dipimage/updated_TODO','w');
 fprintf(f,'Functions in DIPimage 3 that didn''t exist in DIPimage 2:\n\n');
 fprintf(f,'%s\n',added{:});
 fprintf(f,'\n\n\nFunctions in DIPimage 2 that are not yet ported:\n\n');

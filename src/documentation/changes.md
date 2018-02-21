@@ -444,9 +444,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `get_subpixel` no longer supports the `'spline'` interpolation method, this string is still
     accepted, but uses the `'cubic'` method.
 
-- New functions not mentioned above: `areaopening`, `coordinates`, `extendimage`, `getmaximumandminimum`,
-  `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`, `smallobjectsremove`,
-  `thetatheta`.
+  - `structuretensor3d` is moved to the `alias` directory, `structuretensor` now works for any
+    number of dimensions (with special support for 2D and 3D images).
+
+- New functions not mentioned above: `areaopening`, `asf`, `coordinates`, `drawshape`, `extendregion`,
+  `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`,
+  `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
+  learn what these functions provide.
 
 - Old functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
