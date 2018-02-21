@@ -941,8 +941,8 @@ inline Image Laplace(
 
 /// \brief Computes the second derivative in the gradient direction.
 ///
-/// The second derivative in the gradient direction is computed by projecting the Hessian matrix onto
-/// the unit gradient:
+/// The second derivative in the gradient direction is computed by Raleigh quotient of the
+/// Hessian matrix and the gradient vector:
 ///
 /// \f[
 ///   f_{gg} = \frac{ \nabla^T \! f \; \nabla \nabla^T \! f \; \nabla f } { \nabla^T \! f \; \nabla f } \; .

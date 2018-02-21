@@ -5,7 +5,7 @@
 %
 %   DIVERGENCE(A,SIGMA,METHOD,BOUNDARY_CONDITION,PROCESS,TRUNCATION)
 %   defines how the gradient is computed. See DERIVATIVE for a description
-%   of these parameters.
+%   of these parameters and their defaults.
 %
 %   PROCESS determines along which dimensions to apply the operation.
 %   If A has N dimensions but only M tensor elements, and PROCESS has

@@ -10,7 +10,6 @@ dipimage/@dip_image/det.cpp
 dipimage/@dip_image/divergence.cpp
 dipimage/@dip_image/dot.cpp
 dipimage/@dip_image/eig.cpp
-dipimage/@dip_image/gradient.cpp
 dipimage/@dip_image/inv.cpp
 dipimage/@dip_image/max.cpp
 dipimage/@dip_image/mean.cpp
@@ -65,15 +64,12 @@ dipimage/gdt.cpp
 dipimage/get_subpixel.cpp
 dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
-dipimage/gradmag.cpp
-dipimage/hessian.cpp
 dipimage/hist_equalize.cpp
 dipimage/hitmiss.cpp
 dipimage/hmaxima.cpp
 dipimage/hminima.cpp
 dipimage/kuwahara.cpp
 dipimage/label.cpp
-dipimage/laplace.cpp
 dipimage/lee.cpp
 dipimage/lut.cpp
 dipimage/maxima.cpp
@@ -88,6 +84,7 @@ dipimage/overlay.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/pmd.cpp
+dipimage/private/compute_derivatives.cpp
 dipimage/private/imagedisplay.cpp
 dipimage/private/libraryinformation.cpp
 dipimage/private/numberofthreads.cpp
