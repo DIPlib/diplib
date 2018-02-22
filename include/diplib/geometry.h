@@ -262,7 +262,7 @@ DIP_EXPORT dip::UnsignedArray Skew(
       BoundaryConditionArray boundaryCondition = {} // if it is "periodic", does periodic skew
 );
 
-/// \brief Skews an image
+/// \brief Skews (shears) an image
 ///
 /// The image is skewed such that a straight line along dimension `axis` is tilted by an angle of
 /// `atan( shearArray[ ii ] )` radian in the direction of dimension `ii`. `shearArray[ ii ]` thus represents
@@ -314,7 +314,7 @@ inline Image Skew(
    return out;
 }
 
-/// \brief Skews an image
+/// \brief Skews (shears) an image
 ///
 /// The image is skewed such that a straight line along dimension `axis` is tilted by an
 /// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
@@ -497,6 +497,9 @@ inline Image Rotation3D(
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
 /// The rotation is over the center of the image.
+// TODO: Implement the rotation using 4 skews as described by Chen and Kaufman, Graphical Models 62:308-322, 2000.
+//       This method uses either 4 "2D slice shears" (what dip::Skew does), or 4 "2D beam shears" (which is more
+//       efficient in our case because each step only requires interpolation in 1D, not in 2D as dip::Skew does).
 inline void Rotation3D(
       Image const& in,
       Image& out,
@@ -524,13 +527,7 @@ inline Image Rotation3D(
 }
 
 
-// TODO: functions to port:
-/*
-   dip_AffineTransform (dip_interpolation.h) => was never implemented, but we do have affine_trans in DIPimage.
-   dip_ResampleAt (dip_interpolation.h)
-*/
-
-// TODO: port also rot_euler_low.c and affine_trans_low.c from DIPimage
+// TODO: port rot_euler_low.c and affine_trans_low.c from DIPimage
 
 
 /// \brief Tiles a set of images to form a single image.

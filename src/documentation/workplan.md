@@ -113,6 +113,8 @@ document's source</a> for the most up-to-date version.
 
 -   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
     to be added as these functions are written. Make the module more "Pythonic"?
+    Find a way to automatically generate documentation from Doxygen, one approach is
+    [here](https://stackoverflow.com/q/34896122/7328782).
 
 -   Other interfaces. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
@@ -192,15 +194,8 @@ Some of the following functions already have their prototype written in the new 
     - dip_ObjectPlane (dip_generation.h)
     - dip_ObjectEllipsoid (dip_generation.h)
 
-- diplib/geometry.h
-    - dip_ResampleAt (dip_interpolation.h)
-    - dip_AffineTransform (dip_interpolation.h) (was actually never finished)
-
 - diplib/linear.h
     - dip_OrientedGauss (dip_linear.h)
-    - dip_Dgg (dip_derivatives.h)
-    - dip_LaplacePlusDgg (dip_derivatives.h)
-    - dip_LaplaceMinDgg (dip_derivatives.h)
 
 - diplib/math.h
     - dip_RemapOrientation (dip_point.h)

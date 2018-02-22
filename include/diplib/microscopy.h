@@ -243,7 +243,6 @@ inline Image MixStains(
 }
 
 
-
 // TODO: functions to port:
 /*
    dip_IncoherentPSF (dip_microscopy.h)
@@ -258,7 +257,6 @@ inline Image MixStains(
    dip_PseudoInverse (dip_restoration.h)
 */
 
-// TODO: add brightfield stain unmixing
 
 /// \}
 
