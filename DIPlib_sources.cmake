@@ -82,6 +82,8 @@ src/display/image_display.cpp
 src/distance/edt.cpp
 src/distance/gdt.cpp
 src/distance/vdt.cpp
+src/file_io/file_io_support.cpp
+src/file_io/file_io_support.h
 src/file_io/ics.cpp
 src/file_io/tiff_read.cpp
 src/file_io/tiff_write.cpp

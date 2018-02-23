@@ -27,6 +27,8 @@
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 
+#include "file_io_support.h"
+
 #include "libics.h"
 
 // Fix strcasecmp for MSVC compilation
@@ -427,36 +429,11 @@ FileInformation ImageReadICS(
    dip::uint nDims = sizes.size();
 
    // check & fix ROI information
-   UnsignedArray outSizes( nDims );
-   dip::uint outTensor;
-   BooleanArray mirror( nDims, false );
-   DIP_START_STACK_TRACE
-      ArrayUseParameter( roi, nDims, Range{} );
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         //std::cout << "roi[" << ii << "] = " << roi[ ii ].start << ":" << roi[ ii ].stop << ":" << roi[ ii ].step;
-         roi[ ii ].Fix( sizes[ ii ] );
-         //std::cout << " => " << roi[ ii ].start << ":" << roi[ ii ].stop << ":" << roi[ ii ].step << std::endl;
-         if( roi[ ii ].start > roi[ ii ].stop ) {
-            std::swap( roi[ ii ].start, roi[ ii ].stop );
-            mirror[ ii ] = true;
-         }
-         outSizes[ ii ] = roi[ ii ].Size();
-         if( outSizes[ ii ] != sizes[ ii ] ) {
-            fast = false;
-         }
-      }
-      //std::cout << "channels = " << channels.start << ":" << channels.stop << ":" << channels.step;
-      channels.Fix( data.fileInformation.tensorElements );
-      //std::cout << " => " << channels.start << ":" << channels.stop << ":" << channels.step << std::endl;
-      if( channels.start > channels.stop ) {
-         std::swap( channels.start, channels.stop );
-         // We don't read the tensor dimension in reverse order
-      }
-      outTensor = channels.Size();
-      if( outTensor != data.fileInformation.tensorElements ) {
-         fast = false;
-      }
-   DIP_END_STACK_TRACE
+   RoiSpec roiSpec;
+   DIP_STACK_TRACE_THIS( roiSpec = CheckAndConvertRoi( roi, channels, data.fileInformation, nDims ));
+   if( !roiSpec.isFullImage || !roiSpec.isAllChannels ) {
+      fast = false;
+   }
 
    // prepare the strides of the image on file (including tensor dimension)
    UnsignedArray tmp( data.fileSizes.size() );
@@ -477,11 +454,11 @@ FileInformation ImageReadICS(
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          reqStrides[ ii ] = strides[ ii ];
       }
-      dip::sint reqTensorStride = outTensor > 1 ? strides.back() : 1;
+      dip::sint reqTensorStride = roiSpec.tensorElements > 1 ? strides.back() : 1;
       if(   ( out.Strides() != reqStrides )
          || ( out.TensorStride() != reqTensorStride )
-         || ( out.Sizes() != outSizes )
-         || ( out.TensorElements() != outTensor )
+         || ( out.Sizes() != roiSpec.sizes )
+         || ( out.TensorElements() != roiSpec.tensorElements )
          || ( out.DataType() != data.fileInformation.dataType )) {
          out.Strip();
       }
@@ -492,14 +469,14 @@ FileInformation ImageReadICS(
    }
 
    // forge the image
-   out.ReForge( outSizes, outTensor, data.fileInformation.dataType );
-   if( outTensor == data.fileInformation.tensorElements ) {
+   out.ReForge( roiSpec.sizes, roiSpec.tensorElements, data.fileInformation.dataType );
+   if( roiSpec.tensorElements == data.fileInformation.tensorElements ) {
       out.SetColorSpace( data.fileInformation.colorSpace );
    }
    out.SetPixelSize( data.fileInformation.pixelSize );
 
    // get tensor shape if necessary
-   if(( outTensor > 1 ) && ( outTensor == data.fileInformation.tensorElements )) {
+   if(( roiSpec.tensorElements > 1 ) && ( roiSpec.tensorElements == data.fileInformation.tensorElements )) {
       Ics_HistoryIterator it;
       Ics_Error e = IcsNewHistoryIterator( icsFile, &it, "tensor" );
       if( e == IcsErr_Ok ) {
@@ -534,7 +511,7 @@ FileInformation ImageReadICS(
    if( data.fileInformation.tensorElements > 1 ) {
       outRef.TensorToSpatial();
       roi.push_back( channels );
-      sizes.push_back( outTensor );
+      sizes.push_back( roiSpec.tensorElements );
       ++nDims;
    }
    //std::cout << "[ImageReadICS] outRef = " << outRef << std::endl;
@@ -615,7 +592,7 @@ FileInformation ImageReadICS(
    }
 
    // apply the mirroring to the output image
-   out.Mirror( mirror );
+   out.Mirror( roiSpec.mirror );
 
    // we're done
    icsFile.Close();
@@ -631,42 +608,8 @@ FileInformation ImageReadICS(
       Range const& channels,
       String const& mode
 ) {
-   dip::uint n = origin.size();
-   n = std::max( n, sizes.size() );
-   n = std::max( n, spacing.size() );
-   if( n > 1 ) {
-      DIP_THROW_IF(( origin.size() > 1 ) && ( origin.size() != n ), E::ARRAY_SIZES_DONT_MATCH );
-      DIP_THROW_IF(( sizes.size() > 1 ) && ( sizes.size() != n ), E::ARRAY_SIZES_DONT_MATCH );
-      DIP_THROW_IF(( spacing.size() > 1 ) && ( spacing.size() != n ), E::ARRAY_SIZES_DONT_MATCH );
-   }
-   RangeArray roi( n );
-   if( origin.size() == 1 ) {
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         roi[ ii ].start = static_cast< dip::sint >( origin[ 0 ] );
-      }
-   } else if( origin.size() > 1 ) {
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         roi[ ii ].start = static_cast< dip::sint >( origin[ ii ] );
-      }
-   }
-   if( sizes.size() == 1 ) {
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         roi[ ii ].stop = roi[ ii ].start + static_cast< dip::sint >( sizes[ 0 ] ) - 1;
-      }
-   } else if( sizes.size() > 1 ) {
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         roi[ ii ].stop = roi[ ii ].start + static_cast< dip::sint >( sizes[ ii ] ) - 1;
-      }
-   }
-   if( spacing.size() == 1 ) {
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         roi[ ii ].step = spacing[ 0 ];
-      }
-   } else if( spacing.size() > 1 ) {
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         roi[ ii ].step = spacing[ ii ];
-      }
-   }
+   RangeArray roi;
+   DIP_STACK_TRACE_THIS( roi = ConvertRoiSpec( origin, sizes, spacing ));
    return ImageReadICS( image, filename, roi, channels, mode );
 }
 

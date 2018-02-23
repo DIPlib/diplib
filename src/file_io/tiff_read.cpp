@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for TIFF reading
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,8 @@
 #include "diplib/file_io.h"
 #include "diplib/generic_iterators.h"
 
+#include "file_io_support.h"
+
 #include <tiffio.h>
 
 namespace dip {
@@ -31,7 +33,6 @@ namespace dip {
 namespace {
 
 constexpr char const* TIFF_NO_TAG = "Invalid TIFF: Required tag not found";
-constexpr char const* TIFF_TILES_NOT_SUPPORTED = "Tiled TIFF format not yet supported";
 constexpr char const* TIFF_DIRECTORY_NOT_FOUND = "Could not find the requested image in the file";
 
 #define READ_REQUIRED_TIFF_TAG( tiff, tag, ... ) do { if( !TIFFGetField( tiff, tag, __VA_ARGS__ )) { DIP_THROW_RUNTIME( TIFF_NO_TAG ); }} while(false)
@@ -318,7 +319,7 @@ void ReadTIFFColorMap(
    // Test for tiled TIFF files. These we can't handle (yet).
    uint32 tileWidth;
    if( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth )) {
-      DIP_THROW_RUNTIME( TIFF_TILES_NOT_SUPPORTED );
+      DIP_THROW_RUNTIME( "Tiled TIFF format not supported for colormapped images" );
    }
 
    // Read the tags
@@ -434,7 +435,7 @@ void ReadTIFFBinary(
    // Test for tiled TIFF files. These we can't handle (yet).
    uint32 tileWidth;
    if( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth )) {
-      DIP_THROW_RUNTIME( TIFF_TILES_NOT_SUPPORTED );
+      DIP_THROW_RUNTIME( "Tiled TIFF format not supported for binary images" );
    }
 
    // Forge the image
@@ -470,111 +471,125 @@ void ReadTIFFBinary(
 // Grey-value (including multi-channel, color, etc)
 //
 
-inline void CopyBuffer8(
+inline void CopyBuffer2D_8bit(
       uint8* dest,
       uint8 const* src,
-      dip::uint width,
-      dip::uint height,
-      IntegerArray const& destStrides,
-      dip::sint srcStride // src has x-stride = 1, y-stride = srcStride.
+      dip::uint destSizeX,
+      dip::uint destSizeY,
+      dip::sint destStrideX,
+      dip::sint destStrideY,
+      dip::uint srcStrideX,
+      dip::uint srcStrideY
 ) {
-   for( dip::uint ii = 0; ii < height; ++ii ) {
+   for( dip::uint yy = 0; yy < destSizeY; ++yy ) {
       uint8* dest_pixel = dest;
-      uint8 const* src_sample = src;
-      for( dip::uint jj = 0; jj < width; ++jj ) {
-         *dest_pixel = *src_sample;
-         dest_pixel += destStrides[ 0 ];
-         ++src_sample;
+      uint8 const* src_pixel = src;
+      for( dip::uint xx = 0; xx < destSizeX; ++xx ) {
+         *dest_pixel = *src_pixel;
+         dest_pixel += destStrideX;
+         src_pixel += srcStrideX;
       }
-      dest += destStrides[ 1 ];
-      src += srcStride;
+      dest += destStrideY;
+      src += srcStrideY;
    }
 }
 
-inline void CopyBufferN(
+inline void CopyBuffer2D(
       uint8* dest,
       uint8 const* src,
-      dip::uint width,
-      dip::uint height,
-      IntegerArray const& destStrides,
-      dip::sint srcStride, // src has x-stride = 1, y-stride = srcStride.
+      dip::uint destSizeX,
+      dip::uint destSizeY,
+      dip::sint destStrideX,
+      dip::sint destStrideY,
+      dip::uint srcStrideX,
+      dip::uint srcStrideY,
       dip::uint sizeOf
 ) {
-   dip::sint stride_row = destStrides[ 1 ] * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_pixel = destStrides[ 0 ] * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_src = srcStride * static_cast< dip::sint >( sizeOf );
-   for( dip::uint ii = 0; ii < height; ++ii ) {
+   destStrideX *= static_cast< dip::sint >( sizeOf );
+   destStrideY *= static_cast< dip::sint >( sizeOf );
+   srcStrideX *= sizeOf;
+   srcStrideY *= sizeOf;
+   for( dip::uint yy = 0; yy < destSizeY; ++yy ) {
       uint8* dest_pixel = dest;
-      uint8 const* src_sample = src;
-      for( dip::uint jj = 0; jj < width; ++jj ) {
-         memcpy( dest_pixel, src_sample, sizeOf );
-         dest_pixel += stride_pixel;
-         src_sample += sizeOf;
+      uint8 const* src_pixel = src;
+      for( dip::uint xx = 0; xx < destSizeX; ++xx ) {
+         memcpy( dest_pixel, src_pixel, sizeOf );
+         dest_pixel += destStrideX;
+         src_pixel += srcStrideX;
       }
-      dest += stride_row;
-      src += stride_src;
+      dest += destStrideY;
+      src += srcStrideY;
    }
 }
 
-inline void CopyBufferMultiChannel8(
+inline void CopyBuffer3D_8bit(
       uint8* dest,
       uint8 const* src,
-      dip::uint tensorElements,
-      dip::uint width,
-      dip::uint height,
-      dip::sint tensorStride, // for dest
-      IntegerArray const& destStrides,
-      dip::sint srcStride // src has tensor-stride = 1, x-stride = tensorElements, y-stride = srcStride.
+      dip::uint destSizeT,
+      dip::uint destSizeX,
+      dip::uint destSizeY,
+      dip::sint destStrideT,
+      dip::sint destStrideX,
+      dip::sint destStrideY,
+      dip::uint srcStrideT,
+      dip::uint srcStrideX,
+      dip::uint srcStrideY
 ) {
-   //std::cout << "[CopyBufferMultiChannel8] tensorElements = " << tensorElements << ", width = " << width << ", height = " << height << std::endl;
-   //std::cout << "[CopyBufferMultiChannel8] tensorStride = " << tensorStride << ", destStrides[0] = " << destStrides[0] << ", destStrides[1] = " << destStrides[1] << std::endl;
-   //std::cout << "[CopyBufferMultiChannel8] srcStride = " << srcStride << std::endl;
-   for( dip::uint ii = 0; ii < height; ++ii ) {
+   for( dip::uint yy = 0; yy < destSizeY; ++yy ) {
       uint8* dest_pixel = dest;
-      uint8 const* src_sample = src;
-      for( dip::uint jj = 0; jj < width; ++jj ) {
+      uint8 const* src_pixel = src;
+      for( dip::uint xx = 0; xx < destSizeX; ++xx ) {
          uint8* dest_sample = dest_pixel;
-         for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
+         uint8 const* src_sample = src_pixel;
+         for( dip::uint tt = 0; tt < destSizeT; ++tt ) {
             *dest_sample = *src_sample;
-            dest_sample += tensorStride;
-            ++src_sample;
+            dest_sample += destStrideT;
+            src_sample += srcStrideT;
          }
-         dest_pixel += destStrides[ 0 ];
+         dest_pixel += destStrideX;
+         src_pixel += srcStrideX;
       }
-      dest += destStrides[ 1 ];
-      src += srcStride;
+      dest += destStrideY;
+      src += srcStrideY;
    }
 }
 
-inline void CopyBufferMultiChannelN(
+inline void CopyBuffer3D(
       uint8* dest,
       uint8 const* src,
-      dip::uint tensorElements,
-      dip::uint width,
-      dip::uint height,
-      dip::sint tensorStride, // for dest
-      IntegerArray const& destStrides,
-      dip::sint srcStride, // src has tensor-stride = 1, x-stride = tensorElements, y-stride = srcStride.
+      dip::uint destSizeT,
+      dip::uint destSizeX,
+      dip::uint destSizeY,
+      dip::sint destStrideT,
+      dip::sint destStrideX,
+      dip::sint destStrideY,
+      dip::uint srcStrideT,
+      dip::uint srcStrideX,
+      dip::uint srcStrideY,
       dip::uint sizeOf
 ) {
-   dip::sint stride_row = destStrides[ 1 ] * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_pixel = destStrides[ 0 ] * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_sample = tensorStride * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_src = srcStride * static_cast< dip::sint >( sizeOf );
-   for( dip::uint ii = 0; ii < height; ++ii ) {
+   destStrideT *= static_cast< dip::sint >( sizeOf );
+   destStrideX *= static_cast< dip::sint >( sizeOf );
+   destStrideY *= static_cast< dip::sint >( sizeOf );
+   srcStrideT *= sizeOf;
+   srcStrideX *= sizeOf;
+   srcStrideY *= sizeOf;
+   for( dip::uint yy = 0; yy < destSizeY; ++yy ) {
       uint8* dest_pixel = dest;
-      uint8 const* src_sample = src;
-      for( dip::uint jj = 0; jj < width; ++jj ) {
+      uint8 const* src_pixel = src;
+      for( dip::uint xx = 0; xx < destSizeX; ++xx ) {
          uint8* dest_sample = dest_pixel;
-         for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
+         uint8 const* src_sample = src_pixel;
+         for( dip::uint tt = 0; tt < destSizeT; ++tt ) {
             memcpy( dest_sample, src_sample, sizeOf );
-            dest_sample += stride_sample;
-            src_sample += sizeOf;
+            dest_sample += destStrideT;
+            src_sample += srcStrideT;
          }
-         dest_pixel += stride_pixel;
+         dest_pixel += destStrideX;
+         src_pixel += srcStrideX;
       }
-      dest += stride_row;
-      src += stride_src;
+      dest += destStrideY;
+      src += srcStrideY;
    }
 }
 
@@ -599,18 +614,18 @@ inline bool StridesAreNormal(
 
 void ReadTIFFData(
       uint8* imagedata,
-      UnsignedArray const& sizes,
       IntegerArray const& strides,
-      dip::uint tensorElements,
       dip::sint tensorStride,
       DataType dataType,
-      TiffFile& tiff
+      TiffFile& tiff,
+      FileInformation& data, // Shows how the data is stored in the file
+      RoiSpec const& roiSpec // Shows how the data is stored in memory -- sizes might be smaller if reading ROI!
 ) {
    dip::uint sizeOf = dataType.SizeOf();
 
    // Planar configuration?
    uint16 planarConfiguration = PLANARCONFIG_SEPARATE;
-   if( tensorElements > 1 ) {
+   if( data.tensorElements > 1 ) {
       if( !TIFFGetField( tiff, TIFFTAG_PLANARCONFIG, &planarConfiguration )) {
          planarConfiguration = PLANARCONFIG_CONTIG; // Default
       }
@@ -623,148 +638,215 @@ void ReadTIFFData(
       uint32 tileLength;
       READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_TILELENGTH, &tileLength );
       auto tileSize = TIFFTileSize( tiff );
-      //std::cout << "[ReadTIFFData] tileSize = " << tileSize << std::endl;
-      //std::cout << "[ReadTIFFData] tileWidth = " << tileWidth << ", tileLength = " << tileLength << std::endl;
-      //std::cout << "[ReadTIFFData] tensorElements = " << tensorElements << ", sizeOf = " << sizeOf << std::endl;
       std::vector< uint8 > buf( static_cast< dip::uint >( tileSize ));
       //uint32 nTiles = TIFFNumberOfTiles( tiff );
+      dip::uint firstTileX = ( roiSpec.roi[ 0 ].Offset() / tileWidth ) * tileWidth;
+      dip::uint firstTileY = ( roiSpec.roi[ 1 ].Offset() / tileLength ) * tileLength;
       if( planarConfiguration == PLANARCONFIG_CONTIG ) {
          // 1234123412341234....
-         // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
-         DIP_ASSERT( static_cast< dip::uint >( tileSize ) == tileWidth * tileLength * tensorElements * sizeOf );
-         dip::sint tileStride = static_cast< dip::sint >( tensorElements * tileWidth );
-         uint32 tile = 0;
-         for( dip::uint y = 0; y < sizes[ 1 ]; y += tileLength ) {
-            uint8* imagedataRow = imagedata;
-            dip::uint copyHeight = std::min< dip::uint >( sizes[ 1 ] - y, tileLength );
-            for( dip::uint x = 0; x < sizes[ 0 ]; x += tileWidth ) {
-               dip::uint copyWidth = std::min< dip::uint >( sizes[ 0 ] - x, tileWidth );
+         // We know that data.tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
+         //std::cout << "[ReadTIFFData] Tiles, Contiguous\n";
+         DIP_ASSERT( static_cast< dip::uint >( tileSize ) == tileWidth * tileLength * data.tensorElements * sizeOf );
+         dip::uint tileStrideY = data.tensorElements * tileWidth;
+         dip::uint yPos = roiSpec.roi[ 1 ].Offset();
+         for( dip::uint y = firstTileY; y <= roiSpec.roi[ 1 ].Last(); y += tileLength ) {
+            dip::uint tileEndY = std::min( y + tileLength, data.sizes[ 1 ] );
+            tileEndY = std::min( tileEndY, roiSpec.roi[ 1 ].Last() + 1 );
+            if( yPos >= tileEndY ) {
+               continue;
+            }
+            dip::uint copyHeight = div_ceil( tileEndY - yPos, roiSpec.roi[ 1 ].step );
+            uint8* imagedataPtr = imagedata;
+            dip::uint offsetY = ( yPos - y ) * tileStrideY;
+            dip::uint xPos = roiSpec.roi[ 0 ].Offset();
+            for( dip::uint x = firstTileX; x <= roiSpec.roi[ 0 ].Last(); x += tileWidth ) {
+               dip::uint tileEndX = std::min( x + tileWidth, data.sizes[ 0 ] );
+               tileEndX = std::min( tileEndX, roiSpec.roi[ 0 ].Last() + 1 );
+               if( xPos >= tileEndX ) {
+                  continue;
+               }
+               dip::uint copyWidth = div_ceil( tileEndX - xPos, roiSpec.roi[ 0 ].step );
+               dip::uint offset = ( offsetY + ( xPos - x ) * data.tensorElements + roiSpec.channels.Offset() );
+               uint32 tile = TIFFComputeTile( tiff, static_cast< uint32 >( x ), static_cast< uint32 >( y ), 0, 0 );
                TIFFReadEncodedTile( tiff, tile, buf.data(), tileSize );
                if( sizeOf == 1 ) {
-                  CopyBufferMultiChannel8( imagedataRow, buf.data(), tensorElements, copyWidth, copyHeight,
-                                           tensorStride, strides, tileStride );
-                  imagedataRow += static_cast< dip::sint >( tileWidth ) * strides[ 0 ];
+                  CopyBuffer3D_8bit( imagedataPtr, buf.data() + offset, roiSpec.tensorElements, copyWidth, copyHeight,
+                                     tensorStride, strides[ 0 ], strides[ 1 ],
+                                     roiSpec.channels.step, data.tensorElements * roiSpec.roi[ 0 ].step, tileStrideY * roiSpec.roi[ 1 ].step );
+                  imagedataPtr += static_cast< dip::sint >( copyWidth ) * strides[ 0 ];
                } else {
-                  CopyBufferMultiChannelN( imagedataRow, buf.data(), tensorElements, copyWidth, copyHeight,
-                                           tensorStride, strides, tileStride, sizeOf );
-                  imagedataRow += static_cast< dip::sint >( tileWidth * sizeOf ) * strides[ 0 ];
+                  CopyBuffer3D( imagedataPtr, buf.data() + offset * sizeOf, roiSpec.tensorElements, copyWidth, copyHeight,
+                                tensorStride, strides[ 0 ], strides[ 1 ],
+                                roiSpec.channels.step, data.tensorElements * roiSpec.roi[ 0 ].step, tileStrideY * roiSpec.roi[ 1 ].step, sizeOf );
+                  imagedataPtr += static_cast< dip::sint >( copyWidth * sizeOf ) * strides[ 0 ];
                }
-               ++tile;
+               xPos += roiSpec.roi[ 0 ].step * copyWidth;
             }
-            imagedata += static_cast< dip::sint >( tileLength * sizeOf ) * strides[ 1 ];
+            imagedata += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
+            yPos += roiSpec.roi[ 1 ].step * copyHeight;
          }
       } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
          // 1111...2222...3333...4444...
+         //std::cout << "[ReadTIFFData] Tiles, Separate\n";
          DIP_ASSERT( static_cast< dip::uint >( tileSize ) == tileWidth * tileLength * sizeOf );
-         dip::sint tileStride = tileWidth;
-         uint8* imagebase = imagedata;
-         uint32 tile = 0;
-         for( uint16 plane = 0; plane < tensorElements; ++plane ) {
-            imagedata = imagebase + static_cast< dip::sint >( plane * sizeOf ) * tensorStride;
-            for( dip::uint y = 0; y < sizes[ 1 ]; y += tileLength ) {
-               uint8* imagedataRow = imagedata;
-               dip::uint copyHeight = std::min< dip::uint >( sizes[ 1 ] - y, tileLength );
-               for( dip::uint x = 0; x < sizes[ 0 ]; x += tileWidth ) {
-                  dip::uint copyWidth = std::min< dip::uint >( sizes[ 0 ] - x, tileWidth );
+         dip::uint tileStrideY = tileWidth;
+         for( auto plane : roiSpec.channels ) {
+            uint8* imagedataRow = imagedata;
+            dip::uint yPos = roiSpec.roi[ 1 ].Offset();
+            for( dip::uint y = firstTileY; y <= roiSpec.roi[ 1 ].Last(); y += tileLength ) {
+               dip::uint tileEndY = std::min( y + tileLength, data.sizes[ 1 ] );
+               tileEndY = std::min( tileEndY, roiSpec.roi[ 1 ].Last() + 1 );
+               if( yPos >= tileEndY ) {
+                  continue;
+               }
+               dip::uint copyHeight = div_ceil( tileEndY - yPos, roiSpec.roi[ 1 ].step );
+               uint8* imagedataPtr = imagedataRow;
+               dip::uint offsetY = ( yPos - y ) * tileStrideY;
+               dip::uint xPos = roiSpec.roi[ 0 ].Offset();
+               for( dip::uint x = firstTileX; x <= roiSpec.roi[ 0 ].Last(); x += tileWidth ) {
+                  dip::uint tileEndX = std::min( x + tileWidth, data.sizes[ 0 ] );
+                  tileEndX = std::min( tileEndX, roiSpec.roi[ 0 ].Last() + 1 );
+                  if( xPos >= tileEndX ) {
+                     continue;
+                  }
+                  dip::uint copyWidth = div_ceil( tileEndX - xPos, roiSpec.roi[ 0 ].step );
+                  dip::uint offset = ( offsetY + ( xPos - x ));
+                  uint32 tile = TIFFComputeTile( tiff, static_cast< uint32 >( x ), static_cast< uint32 >( y ), 0, static_cast< uint16 >( plane ));
                   TIFFReadEncodedTile( tiff, tile, buf.data(), tileSize );
                   if( sizeOf == 1 ) {
-                     CopyBuffer8( imagedataRow, buf.data(), copyWidth, copyHeight, strides, tileStride );
-                     imagedataRow += static_cast< dip::sint >( tileWidth ) * strides[ 0 ];
+                     //std::cout << "Copying " << copyWidth << "x" << copyHeight << " pixels from tile, pos = " << xPos << ", " << yPos << std::endl;
+                     CopyBuffer2D_8bit( imagedataPtr, buf.data() + offset, copyWidth, copyHeight,
+                                        strides[ 0 ], strides[ 1 ],
+                                        roiSpec.roi[ 0 ].step, tileStrideY * roiSpec.roi[ 1 ].step );
+                     imagedataPtr += static_cast< dip::sint >( copyWidth ) * strides[ 0 ];
                   } else {
-                     CopyBufferN( imagedataRow, buf.data(), copyWidth, copyHeight, strides, tileStride, sizeOf );
-                     imagedataRow += static_cast< dip::sint >( tileWidth * sizeOf ) * strides[ 0 ];
+                     CopyBuffer2D( imagedataPtr, buf.data() + offset * sizeOf, copyWidth, copyHeight,
+                                   strides[ 0 ], strides[ 1 ],
+                                   roiSpec.roi[ 0 ].step, tileStrideY * roiSpec.roi[ 1 ].step, sizeOf );
+                     imagedataPtr += static_cast< dip::sint >( copyWidth * sizeOf ) * strides[ 0 ];
                   }
-                  ++tile;
+                  xPos += roiSpec.roi[ 0 ].step * copyWidth;
                }
-               imagedata += static_cast< dip::sint >( tileLength * sizeOf ) * strides[ 1 ];
+               imagedataRow += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
+               yPos += roiSpec.roi[ 1 ].step * copyHeight;
             }
+            imagedata += static_cast< dip::sint >( sizeOf ) * tensorStride;
          }
       } else {
          DIP_THROW_RUNTIME( "Unsupported TIFF: unknown PlanarConfiguration value" );
       }
    } else {
       // --- Striped TIFF file ---
-      uint32 rowsPerStrip;
-      TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
+      uint32 stripHeight;
+      TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &stripHeight );
       tsize_t stripSize = TIFFStripSize( tiff );
       uint32 nStrips = TIFFNumberOfStrips( tiff );
+      dip::uint firstStrip = ( roiSpec.roi[ 1 ].Offset() / stripHeight ) * stripHeight;
       if( planarConfiguration == PLANARCONFIG_CONTIG ) {
          // 1234123412341234....
          // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
-         DIP_ASSERT( static_cast< dip::uint >( TIFFScanlineSize( tiff )) == sizes[ 0 ] * tensorElements * sizeOf );
-         if( StridesAreNormal( tensorElements, tensorStride, sizes, strides )) {
-            uint32 row = 0;
+         DIP_ASSERT( static_cast< dip::uint >( TIFFScanlineSize( tiff )) == data.sizes[ 0 ] * data.tensorElements * sizeOf );
+         if( roiSpec.isFullImage && roiSpec.isAllChannels && StridesAreNormal( data.tensorElements, tensorStride, data.sizes, strides )) {
+            //std::cout << "[ReadTIFFData] Stripes, Contiguous, isFullImage\n";
+            uint32 yPos = 0;
             for( uint32 strip = 0; strip < nStrips; ++strip ) {
-               dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+               dip::uint copyHeight = ( yPos + stripHeight > data.sizes[ 1 ] ? data.sizes[ 1 ] - yPos : stripHeight );
                if( TIFFReadEncodedStrip( tiff, strip, imagedata, stripSize ) < 0 ) {
                   DIP_THROW_RUNTIME( "Error reading data (planar config cont)" );
                }
-               imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
-               row += rowsPerStrip;
+               imagedata += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
+               yPos += stripHeight;
             }
          } else {
+            //std::cout << "[ReadTIFFData] Stripes, Contiguous\n";
             std::vector< uint8 > buf( static_cast< dip::uint >( stripSize ));
-            dip::sint bufferStride = static_cast< dip::sint >( tensorElements * sizes[ 0 ] );
-            uint32 row = 0;
-            for( uint32 strip = 0; strip < nStrips; ++strip ) {
-               dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+            dip::uint yPos = roiSpec.roi[ 1 ].Offset();
+            dip::uint yStride = data.tensorElements * data.sizes[ 0 ];
+            for( dip::uint y = firstStrip; y <= roiSpec.roi[ 1 ].Last(); y += stripHeight ) {
+               dip::uint stripEnd = std::min( y + stripHeight, data.sizes[ 1 ] );
+               stripEnd = std::min( stripEnd, roiSpec.roi[ 1 ].Last() + 1 );
+               if( yPos >= stripEnd ) {
+                  continue;
+               }
+               dip::uint copyHeight = div_ceil( stripEnd - yPos, roiSpec.roi[ 1 ].step );
+               dip::uint offsetY = ( yPos - y ) * yStride;
+               dip::uint offset = ( offsetY + roiSpec.roi[ 0 ].Offset() * data.tensorElements + roiSpec.channels.Offset() );
+               uint32 strip = TIFFComputeStrip( tiff, static_cast< uint32 >( y ), 0 );
                if( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripSize ) < 0 ) {
                   DIP_THROW_RUNTIME( "Error reading data (planar config cont)" );
                }
                if( sizeOf == 1 ) {
-                  CopyBufferMultiChannel8( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow,
-                                          tensorStride, strides, bufferStride );
-                  imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
+                  //std::cout << "Copying " << roiSpec.sizes[ 0 ] << "x" << copyHeight << " pixels from stripe, pos = " << roiSpec.roi[ 0 ].Offset() << ", " << yPos << std::endl;
+                  CopyBuffer3D_8bit(
+                        imagedata, buf.data() + offset, roiSpec.tensorElements, roiSpec.sizes[ 0 ], copyHeight,
+                        tensorStride, strides[ 0 ], strides[ 1 ],
+                        roiSpec.channels.step, data.tensorElements * roiSpec.roi[ 0 ].step, yStride * roiSpec.roi[ 1 ].step );
+                  imagedata += static_cast< dip::sint >( copyHeight ) * strides[ 1 ];
                } else {
-                  CopyBufferMultiChannelN( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow,
-                                          tensorStride, strides, bufferStride, sizeOf );
-                  imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+                  CopyBuffer3D(
+                        imagedata, buf.data() + offset * sizeOf, roiSpec.tensorElements, roiSpec.sizes[ 0 ], copyHeight,
+                        tensorStride, strides[ 0 ], strides[ 1 ],
+                        roiSpec.channels.step, data.tensorElements * roiSpec.roi[ 0 ].step, yStride * roiSpec.roi[ 1 ].step, sizeOf );
+                  imagedata += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
                }
-               row += rowsPerStrip;
+               yPos += roiSpec.roi[ 1 ].step * copyHeight;
             }
          }
       } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
          // 1111...2222...3333...4444...
-         DIP_ASSERT( static_cast< dip::uint >( TIFFScanlineSize( tiff )) == sizes[ 0 ] * sizeOf );
-         DIP_ASSERT( nStrips % tensorElements == 0 );
-         nStrips /= static_cast< uint32 >( tensorElements );
-         uint8* imagebase = imagedata;
-         uint32 stripOffset = 0;
-         if( StridesAreNormal( 1, 1, sizes, strides )) {
-            for( uint16 plane = 0; plane < tensorElements; ++plane ) {
-               imagedata = imagebase + static_cast< dip::sint >( plane * sizeOf ) * tensorStride;
-               uint32 row = 0;
+         DIP_ASSERT( static_cast< dip::uint >( TIFFScanlineSize( tiff )) == data.sizes[ 0 ] * sizeOf );
+         DIP_ASSERT( nStrips % data.tensorElements == 0 );
+         nStrips /= static_cast< uint32 >( data.tensorElements );
+         if( roiSpec.isFullImage && StridesAreNormal( 1, 1, data.sizes, strides )) {
+            //std::cout << "[ReadTIFFData] Stripes, Separate, isFullImage\n";
+            for( auto plane : roiSpec.channels ) {
+               uint8* imagedataRow = imagedata;
+               uint32 stripOffset = TIFFComputeStrip( tiff, 0, static_cast< uint16 >( plane ));
+               uint32 yPos = 0;
                for( uint32 strip = 0; strip < nStrips; ++strip ) {
-                  dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-                  if( TIFFReadEncodedStrip( tiff, stripOffset + strip, imagedata, stripSize ) < 0 ) {
+                  dip::uint copyHeight = ( yPos + stripHeight > data.sizes[ 1 ] ? data.sizes[ 1 ] - yPos : stripHeight );
+                  if( TIFFReadEncodedStrip( tiff, stripOffset + strip, imagedataRow, stripSize ) < 0 ) {
                      DIP_THROW_RUNTIME( "Error reading data (planar config separate)" );
                   }
-                  imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
-                  row += rowsPerStrip;
+                  imagedataRow += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
+                  yPos += stripHeight;
                }
-               stripOffset += nStrips;
+               imagedata += static_cast< dip::sint >( sizeOf ) * tensorStride;
             }
          } else {
+            //std::cout << "[ReadTIFFData] Stripes, Separate\n";
             std::vector< uint8 > buf( static_cast< dip::uint >( stripSize ));
-            dip::sint bufferStride = static_cast< dip::sint >( sizes[ 0 ] );
-            for( uint16 plane = 0; plane < tensorElements; ++plane ) {
-               imagedata = imagebase + static_cast< dip::sint >( plane * sizeOf ) * tensorStride;
-               uint32 row = 0;
-               for( uint32 strip = 0; strip < nStrips; ++strip ) {
-                  dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-                  if( TIFFReadEncodedStrip( tiff, stripOffset + strip, buf.data(), stripSize ) < 0 ) {
+            dip::uint yStride = data.sizes[ 0 ];
+            for( auto plane : roiSpec.channels ) {
+               uint8* imagedataRow = imagedata;
+               dip::uint yPos = roiSpec.roi[ 1 ].Offset();
+               for( dip::uint y = firstStrip; y <= roiSpec.roi[ 1 ].Last(); y += stripHeight ) {
+                  dip::uint stripEnd = std::min( y + stripHeight, data.sizes[ 1 ] );
+                  stripEnd = std::min( stripEnd, roiSpec.roi[ 1 ].Last() + 1 );
+                  if( yPos >= stripEnd ) {
+                     continue;
+                  }
+                  dip::uint copyHeight = div_ceil( stripEnd - yPos, roiSpec.roi[ 1 ].step );
+                  dip::uint offsetY = ( yPos - y ) * yStride;
+                  dip::uint offset = ( offsetY + roiSpec.roi[ 0 ].Offset() );
+                  uint32 strip = TIFFComputeStrip( tiff, static_cast< uint32 >( y ), static_cast< uint16 >( plane ));
+                  if( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripSize ) < 0 ) {
                      DIP_THROW_RUNTIME( "Error reading data (planar config separate)" );
                   }
                   if( sizeOf == 1 ) {
-                     CopyBuffer8( imagedata, buf.data(), sizes[ 0 ], nrow, strides, bufferStride );
-                     imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
+                     CopyBuffer2D_8bit( imagedataRow, buf.data() + offset, roiSpec.sizes[ 0 ], copyHeight,
+                                        strides[ 0 ], strides[ 1 ],
+                                        roiSpec.roi[ 0 ].step, yStride * roiSpec.roi[ 1 ].step );
+                     imagedataRow += static_cast< dip::sint >( copyHeight ) * strides[ 1 ];
                   } else {
-                     CopyBufferN( imagedata, buf.data(), sizes[ 0 ], nrow, strides, bufferStride, sizeOf );
-                     imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+                     CopyBuffer2D( imagedataRow, buf.data() + offset * sizeOf, roiSpec.sizes[ 0 ], copyHeight,
+                                   strides[ 0 ], strides[ 1 ],
+                                   roiSpec.roi[ 0 ].step, yStride * roiSpec.roi[ 1 ].step, sizeOf );
+                     imagedataRow += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
                   }
-                  row += rowsPerStrip;
+                  yPos += roiSpec.roi[ 1 ].step * copyHeight;
                }
-               stripOffset += nStrips;
+               imagedata += static_cast< dip::sint >( sizeOf ) * tensorStride;
             }
          }
       } else {
@@ -776,16 +858,32 @@ void ReadTIFFData(
 void ReadTIFFGreyValue(
       Image& image,
       TiffFile& tiff,
-      GetTIFFInfoData& data
+      GetTIFFInfoData& data,
+      RoiSpec const& roiSpec
 ) {
+   if( image.IsForged() && roiSpec.isFullImage && (( image.Sizes() != roiSpec.sizes ) || ( image.TensorElements() != roiSpec.tensorElements ))) {
+      // We need to reforge anyway, let's strip now.
+      image.Strip();
+   }
+   if( !image.IsForged() && ( roiSpec.tensorElements > 1 )) {
+      uint16 planarConfiguration = PLANARCONFIG_CONTIG;
+      TIFFGetField( tiff, TIFFTAG_PLANARCONFIG, &planarConfiguration );
+      if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
+         // Set the tensor dimension as the last one, it will speed up reading
+         image.SetSizes( roiSpec.sizes );
+         image.SetTensorSizes( 1 );
+         image.SetNormalStrides();
+         image.SetTensorSizes( roiSpec.tensorElements );
+         image.SetTensorStride( static_cast< dip::sint >( roiSpec.sizes.product() ));
+      }
+   }
+
    // Forge the image
-   image.ReForge( data.fileInformation.sizes, data.fileInformation.tensorElements, data.fileInformation.dataType );
+   image.ReForge( roiSpec.sizes, roiSpec.tensorElements, data.fileInformation.dataType );
    uint8* imagedata = static_cast< uint8* >( image.Origin() );
 
    // Read the image data
-   DIP_STACK_TRACE_THIS( ReadTIFFData(
-         imagedata, image.Sizes(), image.Strides(), image.TensorElements(), image.TensorStride(),
-         image.DataType(), tiff ));
+   DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
 
    if( data.photometricInterpretation == PHOTOMETRIC_MINISWHITE ) {
       Invert( image, image );
@@ -796,18 +894,20 @@ void ImageReadTIFFStack(
       Image& image,
       TiffFile& tiff,
       GetTIFFInfoData& data,
-      Range const& imageNumbers
+      Range const& imageNumbers,
+      RoiSpec& roiSpec
 ) {
    // Forge the image
    data.fileInformation.sizes.push_back( imageNumbers.Size() );
-   image.ReForge( data.fileInformation.sizes, data.fileInformation.tensorElements, data.fileInformation.dataType );
+   roiSpec.sizes.push_back( imageNumbers.Size() );
+   roiSpec.mirror.push_back( false );
+   std::cout << "[ImageReadTIFFStack] roiSpec.sizes = " << roiSpec.sizes << ", roiSpec.tensorElements = " << roiSpec.tensorElements << '\n';
+   image.ReForge( roiSpec.sizes, roiSpec.tensorElements, data.fileInformation.dataType );
    uint8* imagedata = static_cast< uint8* >( image.Origin() );
    dip::sint z_stride = image.Stride( 2 ) * static_cast< dip::sint >( data.fileInformation.dataType.SizeOf() );
 
    // Read the image data for first plane
-   DIP_STACK_TRACE_THIS( ReadTIFFData(
-         imagedata, image.Sizes(), image.Strides(), image.TensorElements(), image.TensorStride(),
-         image.DataType(), tiff ));
+   DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
 
    // Read the image data for other planes
    dip::uint directory = imageNumbers.Offset();
@@ -825,11 +925,11 @@ void ImageReadTIFFStack(
       // Test image plane to make sure it matches expectations
       uint32 temp32;
       READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_IMAGEWIDTH, &temp32 );
-      if( temp32 != image.Size( 0 )) {
+      if( temp32 != data.fileInformation.sizes[ 0 ] ) {
          DIP_THROW_RUNTIME( "Reading multi-slice TIFF: width of images not consistent" );
       }
       READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_IMAGELENGTH, &temp32 );
-      if( temp32 != image.Size( 1 )) {
+      if( temp32 != data.fileInformation.sizes[ 1 ] ) {
          DIP_THROW_RUNTIME( "Reading multi-slice TIFF: length of images not consistent" );
       }
       uint16 photometricInterpretation;
@@ -850,14 +950,12 @@ void ImageReadTIFFStack(
       if( dataType != image.DataType() ) {
          DIP_THROW_RUNTIME( "Reading multi-slice TIFF: data type not consistent" );
       }
-      if( samplesPerPixel != image.TensorElements() ) {
+      if( samplesPerPixel != data.fileInformation.tensorElements ) {
          DIP_THROW_RUNTIME( "Reading multi-slice TIFF: samples per pixel not consistent" );
       }
 
       // Read the image data for this plane
-      DIP_STACK_TRACE_THIS( ReadTIFFData(
-            imagedata, image.Sizes(), image.Strides(), image.TensorElements(), image.TensorStride(),
-            image.DataType(), tiff ));
+      DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
    }
 }
 
@@ -866,7 +964,9 @@ void ImageReadTIFFStack(
 FileInformation ImageReadTIFF(
       Image& out,
       String const& filename,
-      Range imageNumbers
+      Range imageNumbers,
+      RangeArray const& roi,
+      Range const& channels
 ) {
    // Open TIFF file
    TiffFile tiff( filename );
@@ -883,9 +983,14 @@ FileInformation ImageReadTIFF(
    GetTIFFInfoData data;
    DIP_STACK_TRACE_THIS( data = GetTIFFInfo( tiff ));
 
+   // Check & fix ROI information
+   //dip::uint nDims = imageNumbers.start == imageNumbers.stop ? 2 : 3;
+   RoiSpec roiSpec;
+   DIP_STACK_TRACE_THIS( roiSpec = CheckAndConvertRoi( roi, channels, data.fileInformation, 2 ));
+
    if( imageNumbers.start != imageNumbers.stop ) {
       // Read in multiple pages as a 3D image
-      DIP_STACK_TRACE_THIS( ImageReadTIFFStack( out, tiff, data, imageNumbers ));
+      DIP_STACK_TRACE_THIS( ImageReadTIFFStack( out, tiff, data, imageNumbers, roiSpec ));
    } else {
       // Hack by Bernd Rieger to recognize Leica 12 bit TIFFs
       // These are written as color-mapped images, but they are not
@@ -901,20 +1006,42 @@ FileInformation ImageReadTIFF(
          }
       }
       if( data.photometricInterpretation == PHOTOMETRIC_PALETTE ) {
+         DIP_THROW_IF( !roiSpec.isFullImage, "Reading ROI not supported for colormapped images" );
          DIP_STACK_TRACE_THIS( ReadTIFFColorMap( out, tiff, data ));
       } else {
          if( data.fileInformation.dataType.IsBinary() ) {
+            DIP_THROW_IF( !roiSpec.isFullImage, "Reading ROI not supported for binary images" );
             DIP_STACK_TRACE_THIS( ReadTIFFBinary( out, tiff, data ));
          } else {
-            DIP_STACK_TRACE_THIS( ReadTIFFGreyValue( out, tiff, data ));
+            DIP_STACK_TRACE_THIS( ReadTIFFGreyValue( out, tiff, data, roiSpec ));
          }
       }
    }
 
-   out.SetColorSpace( data.fileInformation.colorSpace );
+   if( roiSpec.isAllChannels ) {
+      out.SetColorSpace( data.fileInformation.colorSpace );
+   }
    out.SetPixelSize( data.fileInformation.pixelSize );
 
+   // Apply the mirroring to the output image
+   out.Mirror( roiSpec.mirror );
+
    return data.fileInformation;
+}
+
+FileInformation ImageReadTIFF(
+      Image& out,
+      String const& filename,
+      Range const& imageNumbers,
+      UnsignedArray const& origin,
+      UnsignedArray const& sizes,
+      UnsignedArray const& spacing,
+      Range const& channels
+) {
+   RangeArray roi;
+   DIP_STACK_TRACE_THIS( roi = ConvertRoiSpec( origin, sizes, spacing ));
+   DIP_THROW_IF( roi.size() > 2, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   return ImageReadTIFF( out, filename, imageNumbers, roi, channels );
 }
 
 void ImageReadTIFFSeries(

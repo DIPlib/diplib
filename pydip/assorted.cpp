@@ -123,7 +123,8 @@ void init_assorted( py::module& m ) {
    m.def( "ImageWriteICS", py::overload_cast< dip::Image const&, dip::String const&, dip::StringArray const&, dip::uint, dip::StringSet const& >( &dip::ImageWriteICS ),
           "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
 
-   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const& >( &dip::ImageReadTIFF ), "filename"_a, "imageNumbers"_a = dip::Range{ 0 } );
+   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const& >( &dip::ImageReadTIFF ),
+          "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{} );
    m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const& >( &dip::ImageReadTIFFSeries ), "filenames"_a );
    m.def( "ImageIsTIFF", &dip::ImageIsTIFF, "filename"_a );
    m.def( "ImageWriteTIFF", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::uint >( &dip::ImageWriteTIFF ),

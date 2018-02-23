@@ -536,6 +536,11 @@ struct DIP_NO_EXPORT Range {
       return static_cast< dip::uint >( start );
    }
 
+   /// Get the last index in the range (must be fixed first!).
+   dip::uint Last() const {
+      return static_cast< dip::uint >( stop );
+   }
+
    /// Get the signed step size for the range (must be fixed first!).
    dip::sint Step() const {
       if( start > stop ) {
