@@ -492,7 +492,7 @@ inline Image All( Image const& in, Image const& mask = {}, BooleanArray const& p
 DIP_EXPORT void Any( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Any( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
-   All( in, mask, out, process );
+   Any( in, mask, out, process );
    return out;
 }
 
