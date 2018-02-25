@@ -235,8 +235,8 @@ using ImagePtr = std::unique_ptr< ::Image >;
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
 /// ```cpp
-///     img_out0 = in1 + in2;                                                                    // Bad!
-///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() )); // Correct
+///     img_out0 = in1 + in2;           // Bad!
+///     dip::Add( in1, in2, img_out0 ); // Correct
 /// ```
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
 /// pixels are then copied into the `::%Image` created for `img_out0`. In the

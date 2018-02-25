@@ -868,7 +868,7 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
  * little simpler:
  *  - The `DataSegment` pointer points to an object that holds a pointer to the mxArray.
  *  - The object's destructor calls `mxDestroyArray` on this pointer if the pointer is not `nullptr`.
- *  - We can call a function that sets this pointer to `nullptr` (or simply allow directy access to the pointer).
+ *  - We can call a function that sets this pointer to `nullptr` (or simply allow direct access to the pointer).
  *  - When we want to "rescue" the `mxArray`, we set its pointer to `nullptr`, the `DataSegment` can then be
  *    deleted without us loosing our `mxArray`.
  * Advantages:
@@ -960,8 +960,8 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
 /// ```cpp
-///     img_out0 = in1 + in2;                                                                    // Bad!
-///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() )); // Correct
+///     img_out0 = in1 + in2;           // Bad!
+///     dip::Add( in1, in2, img_out0 ); // Correct
 /// ```
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
 /// pixels are then copied into the `mxArray` created for `img_out0`. In the
