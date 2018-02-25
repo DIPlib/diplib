@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2017, Cris Luengo.)
+[//]: # ([c]2016-2018, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -56,7 +56,7 @@ following three principles:
 
 Algorithms in *DIPlib* typically accept input images of any data type (though,
 of course, some algorithms are specific to binary images, or cannot handle
-complex images) and any number of dimensions (algorithms that are limited to
+complex images, etc.) and any number of dimensions (algorithms that are limited to
 one specific dimensionality typically show so in their name). The image data
 type and dimensionality do not need to be known at compile time. Images can
 have pixels that are vectors or matrices, for some examples on how this
@@ -71,66 +71,29 @@ are the following documentation pages:
 - \ref using_iterators, in case existing algorithms are not sufficient.
 - \ref design, might help understand the library architecture.
 
-## A short history
+## Interfaces and bindings
 
-Development of *DIPlib* started in 1995, at the capable hands of Geert
-van Kempen and Michael van Ginkel, under direction of Lucas van Vliet,
-at the Pattern Recognition Group (now Quantitative Imaging Group) of
-Delft University of Technology. Most of the algorithms that had been
-developed there were included in the library, together with a large
-collection of standard algorithms. Due to the lack of a C++ standard at the
-time, they developed the library in C, recreating much of the C++
-functionality (templates, function overloading, exceptions, data
-hiding, memory management)
-using preprocessor macros and other tricks. *DIPlib* was originally used
-on HPUX, Solaris and IRIX, and later on Windows, Linux, Mac OS 9 and
-Mac OS X.
+Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
-Originally, the *DIPlib* library was used from within the *SCIL_Image*
-image processing software. In 1999, Cris Luengo (with a lot of help from
-Michael van Ginkel) wrote an interface to *MATLAB*, defining a flexible
-and intuitive command-line syntax for the development of image analysis
-algorithms. That same year, a user-friendly GUI in the spirit of
-*SCIL_Image* was written, as well as interactive image display tools. This
-*MATLAB* toolbox, called *DIPimage*, became the primary interface to the
-*DIPlib* library.
+- *MATLAB*: \ref DIPimage is a MATLAB toolbox that gives access to most functionality
+  in *DIPlib*, but goes beyond that by providing a lot of additional functionality
+  as M-file functions.
 
-*DIPlib 3* represents the first major rewrite of the *DIPlib* code base.
-We have rewritten the infrastructure in C++14, using all of the original
-ideas and concepts, but adding tensor images, color support, and other
-ideas we had developed within the *DIPimage* toolbox. C++14 allows the
-user to write code that is almost as simple as the equivalent *MATLAB*
-code, making it simple to use the library even for rapid prototyping.
-Hopefully, the new infrastructure is much easier to read, maintain, and
-contribute to. We are in the process of porting all of the image analysis
-routines to use the new infrastructure. See \ref workplan for progress and
-a detailed list of what still needs to be done.
+- *Python*: \ref PyDIP is a thin wrapper of most functionality in *DIPlib*.
 
-The *DIPimage* toolbox is being updated to optimally use *DIPlib 3*. This means
-that some of the *MATLAB* code is being replaced with calls to *DIPlib*, and
-the low-level interface (`dip_*` functions) disappears. The internal
-representation of images has also changed. However, we strive
-to keep backwards-compatibility in the high-level toolbox functions.
+- *MMorph* (SDC Morphology Toolbox for C++): \ref dip_mmorph_interface.h
+  provides copyless conversion to and from *MMorph* images.
 
-Main contributors to the original *DIPlib* project were:
-* Geert van Kempen
-* Michael van Ginkel
-* Lucas van Vliet
-* Cris Luengo
-* Bernd Rieger
+## Support
 
-With additional contributions by:
-* Ben Verwer
-* Hans Netten
-* J.W. Brandenburg
-* Judith Dijk
-* Niels van den Brink
-* Frank Faas
-* Kees van Wijk
-* Tuan Pham
-* Ronald Ligteringen
+The *DIPlib* project was originally developed at the Pattern Recognition
+Group of Delt University of Technology, in the Netherlands. *DIPlib 3* is being
+developed primarily by volunteers, but has had some financial support from:
 
-See \ref contributors.
+- A European Research Council grant to Bernd Rieger, TU Delft
+- Flagship Biosciences, Inc.
+
+See \ref history for a list of contributors.
 
 ## Contributing
 
@@ -138,8 +101,9 @@ If you want to contribute to the *DIPlib* project, there are many different
 ways of doing so:
 
 - Help port algorithms from *DIPlib 2* to the new infrastructure. Please
-  coordinate with Cris Luengo before you get started. He can share the old code
-  for the algorithms that need porting. See \ref workplan for a list of stuff to do.
+  coordinate with [Cris Luengo](https://github.com/crisluengo) before you get
+  started. He can share the old code for the algorithms that need porting.
+  See \ref workplan for a list of stuff to do.
 
 - Write new algorithms. If you have an algorithm that you'd like to contribute
   to the project, we'll be happy to see it!
@@ -148,7 +112,7 @@ ways of doing so:
 
 - Fix bugs, improve documentation, add code to the unit tests
 
-- Create a nice Doxygen theme for the documentation, create a logo for the project
+- Create a nice *Doxygen* theme for the documentation, create a logo for the project
 
 In any of these cases, fork the project, create a new branch for your contribution,
 and send a pull request. Do also read \ref styleguide, and make sure
@@ -160,7 +124,7 @@ you keep the copyright to any substantial contribution.
 
 ## License
 
-Copyright 2014-2017 Cris Luengo<br>
+Copyright 2014-2018 Cris Luengo<br>
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");

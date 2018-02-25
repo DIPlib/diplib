@@ -265,8 +265,6 @@ all are listed by typing
 The usage of each function can be retrieved through the `help` command
 or through the GUI.
 
-**NOTE: `help dipimage` currently lists all toolbox functions, TODO: make Contents file.**
-
 
 [^71]: *MATLAB* will ask if it is OK to overwrite the file, don't worry,
     the file will not be overwritten but appended to.

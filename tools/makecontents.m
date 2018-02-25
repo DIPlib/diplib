@@ -85,19 +85,23 @@ format = ['%%   %-',num2str(l),'s - %s\n'];
 
 % Write the functions in the menulist next
 for ii = 1:size(menulist,1)
-   fprintf(f,'%% %s:\n',menulist{ii,1});
-   functionlist = menulist{ii,2};
-   for jj=1:length(functionlist)
-      if ~strcmp(functionlist{jj},'-') && functionlist{jj}(1)~='#'
-         I = strcmp([functionlist{jj},'.m'],mfiles);
+   functionlist = menulist{ii,2}(:)'; % reshape just in case...
+   valid = false(size(functionlist));
+   for jj=1:size(functionlist,2)
+      if ~strcmp(functionlist{1,jj},'-') && functionlist{1,jj}(1)~='#'
+         I = strcmp([functionlist{1,jj},'.m'],mfiles);
          if any(I)
             mfiles(I) = {''};
-            descr = getdescription(functionlist{jj});
-            fprintf(f,format,functionlist{jj},descr);
+            functionlist{2,jj} = getdescription(functionlist{1,jj});
+            valid(jj) = true;
          end
       end
    end
-   fprintf(f,'%%\n');
+   if any(valid)
+      fprintf(f,'%% %s:\n',menulist{ii,1});
+      fprintf(f,format,functionlist{:,valid});
+      fprintf(f,'%%\n');
+   end
 end
 
 % Write the functions related to the image display
@@ -137,7 +141,7 @@ fprintf(f,'%%\n');
 fprintf(f,'%% More information is available in the DIPimage User Manual, type\n');
 fprintf(f,'%%   web(dipgetpref(''UserManualLocation''),''-browser'')\n');
 fprintf(f,'\n');
-fprintf(f,'%% (c)2017, Cris Luengo.\n');
+fprintf(f,'%% (c)2017-%s, Cris Luengo.\n',cc);
 fprintf(f,'%%\n');
 fprintf(f,'%% Licensed under the Apache License, Version 2.0 (the "License");\n');
 fprintf(f,'%% you may not use this file except in compliance with the License.\n');

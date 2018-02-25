@@ -1,8 +1,6 @@
 Customizing the *DIPimage* Environment
 ======================================
 
-**NOTE: This section needs updating, things have changed since this was written**
-
 Figure Windows
 --------------
 

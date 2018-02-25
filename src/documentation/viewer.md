@@ -21,40 +21,39 @@
 
 ## Introduction
 
-*DIPlib* includes an OpenGL-based image viewer to help in the visualization
+*DIPlib* includes an *OpenGL*-based image viewer to help in the visualization
 of intermediate results. Its main purpose is as a debugging tool. It existis
 in its own library, which must be linked separately if used. The
 viewer contains two main classes
 
-1. ImageViewer, to visualize 2d 8-bit RGB images
-2. SliceViewer, to visualize 2d slices of n-d (tensor) images
+1. `dip::viewer::ImageViewer`, to visualize 2d 8-bit RGB images
+2. `dip::viewer::SliceViewer`, to visualize 2d slices of n-d (tensor) images
 
 More than one viewer can be active at the same time, and the separate
 windows are managed by a primitive window manager. Two libraries are
 supported for window management:
 
-1. **GLUT** (GLUTManager):
+1. **GLUT** (`dip::viewer::GLUTManager`):
 
-   The venerable OpenGL Utility Toolkit, in the form of freeglut3.  
-   http://www.apache.org/licenses/LICENSE-2.0
+   The venerable *OpenGL Utility Toolkit*, in the form of
+   [*FreeGLUT*](http://freeglut.sourceforge.net).
 
-2. **GLFW** (GLFWManager):
+2. **GLFW** (`dip::viewer::GLFWManager`):
 
-   GLFW is more modern than GLUT, and better supported by MacOS. Its
-   disadvantage is that it requires the user to poll an event handler from
-   the main thread of the program, something that is baked into the MacOS
-   Cocoa framework.  
-   http://www.glfw.org/
+   [*GLFW*](http://www.glfw.org/) is more modern than *GLUT*, and better supported
+   by MacOS. Its disadvantage is that it requires the user to poll an event handler
+   from the main thread of the program, something that is baked into the MacOS
+   *Cocoa* framework.
 
-To use the ImageViewer, the image must first be converted to 8-bit RGB,
-for example using the \ref dip::ImageDisplay class. It does not have a user
+To use the `dip::viewer::ImageViewer`, the image must first be converted to 8-bit RGB,
+for example using the `dip::ImageDisplay` class. It does not have a user
 interface, and just shows the image.
 
 ## User interface
 
 ![SliceViewer showing the chromo3d.ics test image](viewer.png)
 
-SliceViewer is more elaborate. Its user interface consists of three
+`dip::viewer::SliceViewer` is more elaborate. Its user interface consists of three
 main parts
 
 1. **Main visualization window**
@@ -117,7 +116,7 @@ main parts
 Interaction occurs mainly within the main visualization window, and depends
 on where it occurs
 
-- *Tensor elements*
+- *%Tensor elements*
 
   Within the tensor visualization subwindow, left-clicking selects the
   tensor element to visualize. If the RGB colorspace is chosen,
@@ -190,7 +189,7 @@ There are also a few keyboard shortcuts:
 
 ## Usage example
 
-The viewer is most easily used through the dip::viewer namespace. Simply
+The viewer is most easily used through the `dip::viewer` namespace. Simply
 call
 
 ```cpp
