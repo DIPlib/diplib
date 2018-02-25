@@ -76,7 +76,7 @@ end
 function res = contain(str1,str2)
 if iscell(str1)
    N = numel(str1);
-   res = logical(zeros(N,1));
+   res = false(N,1);
    for ii=1:N
       res(ii) = contains(str1{ii},str2);
    end
