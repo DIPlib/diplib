@@ -314,7 +314,18 @@ endif()
 
 ### PyDIP module for Python
 
-set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
+# Some code modified from the Pybind11 cmake file, to determine if Python is installed.
+# Pybind11 cmake file calls `find_package` for Python with `REQUIRED`, which causes the
+# build to fail if Python is not installed. Here we disable the `DIP_BUILD_PYDIP` setting
+# if there is no Python libraries.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/pybind11/tools")
+set(PYBIND11_PYTHON_VERSION ${PYBIND11_PYTHON_VERSION} CACHE STRING "Python version to use for compiling modules")
+set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4) # TODO: This line will need to be updated when Pybind11 updates.
+find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION})
+# (end of code modified from Pybind11 cmake file)
+if(PYTHONLIBS_FOUND)
+   set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
+endif()
 if(DIP_BUILD_PYDIP)
    add_subdirectory(dependencies/pybind11 EXCLUDE_FROM_ALL)
    file(GLOB DIP_PYTHON_SRC pydip/*.cpp pydip/*.h)
@@ -534,7 +545,9 @@ foreach(file ${DIP_EXAMPLES})
       set(EXAMPLES_TARGETS ${EXAMPLES_TARGETS} ${target})
    endif()
 endforeach()
-target_link_libraries(viewer Threads::Threads)
+if(DIP_BUILD_DIPVIEWER)
+   target_link_libraries(viewer Threads::Threads)
+endif()
 
 add_custom_target(examples DEPENDS ${EXAMPLES_TARGETS})
 

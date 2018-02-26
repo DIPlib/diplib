@@ -72,7 +72,7 @@ Important `cmake` command-line arguments:
     -DDIP_BUILD_DIPVIEWER=Off          # don't build/install the DIPviewer module
     -DDIP_BUILD_PYDIP=Off              # don't build/install the PyDIP Python module
     -DDIP_BUILD_DIPIMAGE=Off           # don't build/install the DIPimage MATLAB toolbox
-    -DPYBIND11_PYTHON_VERSION=3        # compile PyDIP agains Python 3
+    -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP agains Python 3.6
 
 Some of these options might not be available on your system. For example, if you don't have
 MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
