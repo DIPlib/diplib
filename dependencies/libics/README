@@ -41,6 +41,7 @@ libics@svi.nl
 
    Documentation
 ==============================
+
    Online documentation can be found at: https://svi-opensource.github.io/libics
 
    Installation Instructions
@@ -99,7 +100,6 @@ The dynamic library libics.dll has an import library named
 libics.dll.lib. To make a debug version add '/D DEBUG' to these
 commands. To disable zlib support, remove the definition of ZLIB_SUPPORT
 from the file Makefile.vc.
-
 
  - Compilation with CMake under UNIX / Linux / Mac OS X / Cygwin
 

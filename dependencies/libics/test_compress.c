@@ -49,7 +49,7 @@ int main (int argc, const char* argv[]) {
    /* Read image 2 */
    retval = IcsOpen(&ip, argv[2], "r");
    if (retval != IcsErr_Ok) {
-      fprintf(stderr, "Could not open output file for reading: %s\n",
+      fprintf(stderr, "Could not open compressed file for reading: %s\n",
                IcsGetErrorText(retval));
       exit(-1);
    }
@@ -69,7 +69,7 @@ int main (int argc, const char* argv[]) {
    }
    retval = IcsGetData(ip, buf2, bufsize);
    if (retval != IcsErr_Ok) {
-      fprintf(stderr, "Could not read output image data: %s\n",
+      fprintf(stderr, "Could not read compressed image data: %s\n",
                IcsGetErrorText(retval));
       exit(-1);
    }

@@ -58,11 +58,6 @@
 #include "libics_intern.h"
 
 
-#if defined(ICS_DO_GZEXT) && !defined(ICS_ZLIB)
-#undef ICS_DO_GZEXT
-#endif
-
-
 /* Write uncompressed data, with strides. */
 Ics_Error IcsWritePlainWithStrides(const void      *src,
                                    const size_t    *dim,

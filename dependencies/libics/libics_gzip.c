@@ -69,6 +69,7 @@
 
 
 /* GZIP stuff */
+#ifdef ICS_ZLIB
 #ifdef WIN32
 #define OS_CODE 0x0b
 #else
@@ -82,9 +83,10 @@ static int gz_magic[2] = {0x1f, 0x8b}; /* gzip magic header */
 #define ORIG_NAME    0x08 /* bit 3 set: original file name present */
 #define COMMENT      0x10 /* bit 4 set: file comment present */
 #define RESERVED     0xE0 /* bits 5..7: reserved */
-
+#endif // ICS_ZLIB
 
 /* Outputs a long in LSB order to the given stream */
+#ifdef ICS_ZLIB
 static void icsPutLong(FILE *file,
                        unsigned long int x)
 {
@@ -94,9 +96,11 @@ static void icsPutLong(FILE *file,
       x >>= 8;
    }
 }
+#endif
 
 
 /* Reads a long in LSB order from the given stream. */
+#ifdef ICS_ZLIB
 static unsigned long int icsGetLong(FILE *file)
 {
     unsigned long int x = (unsigned long int)getc(file);
@@ -105,6 +109,7 @@ static unsigned long int icsGetLong(FILE *file)
     x += ((unsigned long int)getc(file))<<24;
     return x;
 }
+#endif
 
 
 /* Write ZIP compressed data. This function mostly does:

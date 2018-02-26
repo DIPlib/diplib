@@ -71,7 +71,9 @@ int main(int argc, const char* argv[]) {
    }
    IcsSetLayout(ip, dt, ndims, dims);
    IcsSetDataWithStrides(ip, buf3, 2*bufsize, strides, 3);
+#ifdef ICS_ZLIB
    IcsSetCompression(ip, IcsCompr_gzip, 6);
+#endif
    retval = IcsClose(ip);
    if (retval != IcsErr_Ok) {
       fprintf(stderr, "Could not write output file: %s\n",
