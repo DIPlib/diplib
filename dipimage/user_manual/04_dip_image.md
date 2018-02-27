@@ -344,7 +344,7 @@ these are stored.
 The method `numtensorel` returns the number of tensor elements, and
 the method `tensorsize` returns the size of the tensor.
 
-TODO: document how to set and change the tensor shape.
+**TODO: document how to set and change the tensor shape.**
 
 To get the array at a single pixel, use the `double` function:
 `c(0,0)` is a tensor image with a single pixel, and `double(c(0,0))` is

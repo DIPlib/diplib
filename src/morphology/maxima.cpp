@@ -28,6 +28,8 @@
 
 namespace dip {
 
+// TODO: This algorithm follows the same strategy as the old `dip_Label`. Rewrite using Union-Find and the strategy of the new `dip::Label`.
+
 namespace {
 
 constexpr LabelType PIXEL_NOT_EXTREMUM = std::numeric_limits< LabelType >::max();

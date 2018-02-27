@@ -82,6 +82,8 @@ src/display/image_display.cpp
 src/distance/edt.cpp
 src/distance/gdt.cpp
 src/distance/vdt.cpp
+src/file_io/file_io_support.cpp
+src/file_io/file_io_support.h
 src/file_io/ics.cpp
 src/file_io/tiff_read.cpp
 src/file_io/tiff_write.cpp
@@ -91,8 +93,10 @@ src/generation/draw_discrete.cpp
 src/generation/draw_support.h
 src/generation/noise.cpp
 src/geometry/interpolation.h
+src/geometry/resampleat.cpp
 src/geometry/resampling.cpp
 src/geometry/tile.cpp
+src/histogram/equalization.cpp
 src/histogram/histogram.cpp
 src/histogram/statistics.cpp
 src/histogram/threshold_algorithms.cpp
@@ -124,6 +128,7 @@ src/linear/gaussiir.cpp
 src/linear/separate_filter.cpp
 src/linear/sharpen.cpp
 src/linear/uniform.cpp
+src/mapping/equalization.cpp
 src/mapping/lookup_table.cpp
 src/mapping/mapping.cpp
 src/math/arithmetic.cpp

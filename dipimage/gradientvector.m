@@ -13,12 +13,15 @@
 %  is a scalar image with only the derivative along the first
 %  dimension.
 %
-%  See DERIVATIVE for a description of the parameters.
+%  See DERIVATIVE for a description of the parameters and the defaults.
+%
+%  This function is identical to DIP_IMAGE/GRADIENT if IMAGE_IN is
+%  a DIP_IMAGE object.
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Gradient.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -34,6 +37,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = gradientvector(in,varargin)
-in = dip_image(in);
-out = gradient(in,varargin{:});
+function out = gradientvector(varargin)
+out = compute_derivatives('gradientvector',varargin{:});

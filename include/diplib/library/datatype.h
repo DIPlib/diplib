@@ -202,6 +202,56 @@ struct DIP_NO_EXPORT DataType {
       DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
    }
 
+   /// \brief Returns true if the integer `value` is within the range representable by the data type.
+   bool IsInRange( dip::sint value ) const {
+      switch( dt ) {
+         case DT::BIN:
+            return ( value >= 0 ) && ( value <= 1 );
+         case DT::UINT8:
+            return ( value >= static_cast< dip::sint >( std::numeric_limits< uint8 >::min() ))
+                && ( value <= static_cast< dip::sint >( std::numeric_limits< uint8 >::max() ));
+         case DT::SINT8:
+            return ( value >= static_cast< dip::sint >( std::numeric_limits< sint8 >::min() ))
+                && ( value <= static_cast< dip::sint >( std::numeric_limits< sint8 >::max() ));
+         case DT::UINT16:
+            return ( value >= static_cast< dip::sint >( std::numeric_limits< uint16 >::min() ))
+                && ( value <= static_cast< dip::sint >( std::numeric_limits< uint16 >::max() ));
+         case DT::SINT16:
+            return ( value >= static_cast< dip::sint >( std::numeric_limits< sint16 >::min() ))
+                && ( value <= static_cast< dip::sint >( std::numeric_limits< sint16 >::max() ));
+         case DT::UINT32:
+            return ( value >= static_cast< dip::sint >( std::numeric_limits< uint32 >::min() ))
+                && ( value <= static_cast< dip::sint >( std::numeric_limits< uint32 >::max() ));
+         case DT::SINT32:
+            return ( value >= static_cast< dip::sint >( std::numeric_limits< sint32 >::min() ))
+                && ( value <= static_cast< dip::sint >( std::numeric_limits< sint32 >::max() ));
+         default:
+            return true;
+      };
+   }
+
+   /// \brief Returns true if the integer `value` is within the range representable by the data type.
+   bool IsInRange( dip::uint value ) const {
+      switch( dt ) {
+         case DT::BIN:
+            return value <= 1;
+         case DT::UINT8:
+            return value <= static_cast< dip::uint >( std::numeric_limits< uint8 >::max() );
+         case DT::SINT8:
+            return value <= static_cast< dip::uint >( std::numeric_limits< sint8 >::max() );
+         case DT::UINT16:
+            return value <= static_cast< dip::uint >( std::numeric_limits< uint16 >::max() );
+         case DT::SINT16:
+            return value <= static_cast< dip::uint >( std::numeric_limits< sint16 >::max() );
+         case DT::UINT32:
+            return value <= static_cast< dip::uint >( std::numeric_limits< uint32 >::max() );
+         case DT::SINT32:
+            return value <= static_cast< dip::uint >( std::numeric_limits< sint32 >::max() );
+         default:
+            return true;
+      };
+   }
+
    /// \brief Returns the real data type corresponding to a complex data type
    DataType Real() {
       switch( dt ) {

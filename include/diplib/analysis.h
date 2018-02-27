@@ -128,6 +128,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 ///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image. Thus, for `in1==in2`, only this pixel will be set.
+/// See `dip::FindShift` with the `"NCC"` or `"CC"` method for localizing this peak.
 ///
 /// If `in1` or `in2` is already Fourier transformed, set `in1Representation` or `in2Representation`
 /// to `"frequency"`. Similarly, if `outRepresentation` is `"frequency"`, the output will not be
@@ -239,8 +240,8 @@ DIP_EXPORT FloatArray FindShift(
 ///
 /// The structure tensor is a tensor image that contains, at each pixel, information about the local image structure.
 /// The eigenvalues of the structure tensor are larger when there are stronger gradients locally. That is, if all
-/// eigenvalues are small, the image is locally uniform. If one one eigenvalue is large, then there is a unique line
-/// or edge orienatation (in 2D), or a plane-like edge or structure (in 3D). In 3D, if two eigenvalues are large
+/// eigenvalues are small, the image is locally uniform. If one eigenvalue is large, then there is a unique line
+/// or edge orientation (in 2D), or a plane-like edge or structure (in 3D). In 3D, if two eigenvalues are large
 /// then there is a line-like structure. The associated eigenvalues indicate the orientation of this structure.
 /// See the literature references below for more information.
 ///
@@ -252,8 +253,9 @@ DIP_EXPORT FloatArray FindShift(
 /// ```
 ///
 /// If `mask` is given (not a raw image), then it is interpreted as confidence weights for the input pixels. It
-/// should have values between 0 and 1 (or be binary). Normalized convolution is used to compute the derivatives and
-/// local averaging, and thereby fill in the missing values of the input image. [This is not yet implemented.]
+/// should have values between 0 and 1 (or be binary). Normalized differential convolution is used to compute the
+/// gradients. This method applies Gaussian gradients taking missing and uncertain values into account. See
+/// `dip::NormalizedDifferentialConvolution`.
 ///
 /// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
 ///

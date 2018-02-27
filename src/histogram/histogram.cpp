@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for histogram-related functionality.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -402,6 +402,8 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
    }
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
+   data_.Forge();
+   data_.Fill( 0 );
    CountType* data = static_cast< CountType* >( data_.Origin() );
    auto in = featureValues.FirstObject();
    while( in ) {
@@ -426,22 +428,37 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
    }
 }
 
+void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
+   dip::uint ndims = configuration.size();
+   lowerBounds_.resize( ndims );
+   binSizes_.resize( ndims );
+   UnsignedArray sizes( ndims );
+   for( dip::uint ii = 0; ii < ndims; ++ii ) {
+      DIP_STACK_TRACE_THIS( CompleteConfiguration( configuration[ ii ], false ));
+      lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
+      binSizes_[ ii ] = configuration[ ii ].binSize;
+      sizes[ ii ] = configuration[ ii ].nBins;
+   }
+   data_.SetSizes( sizes );
+   data_.SetDataType( DT_COUNT );
+   data_.Forge();
+   data_.Fill( 0 );
+}
+
 dip::uint Histogram::Count() const {
    return Sum( data_ ).As< dip::uint >();
 }
 
-Histogram Histogram::Cumulative() const {
-   Histogram out = *this;
-   out.data_.Strip();
-   out.data_.Protect();
-   CumulativeSum( data_, {}, out.data_ );
-   out.data_.Protect( false );
-   return out;
+Histogram& Histogram::Cumulative() {
+   data_.Protect();
+   CumulativeSum( data_, {}, data_ );
+   data_.Protect( false );
+   return *this;
 }
 
-Histogram Histogram::Marginal( dip::uint dim ) const {
+Histogram Histogram::GetMarginal( dip::uint dim ) const {
    DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
-   Histogram out = *this;
+   Histogram out = Copy();
    BooleanArray ps( Dimensionality(), true );
    ps[ dim ] = false;
    out.data_.Strip();
@@ -454,22 +471,21 @@ Histogram Histogram::Marginal( dip::uint dim ) const {
    return out;
 }
 
-Histogram Histogram::Smooth( FloatArray sigma ) const {
-   Histogram out = *this;
-   UnsignedArray sizes = out.data_.Sizes();
+Histogram& Histogram::Smooth( FloatArray sigma ) {
+   UnsignedArray sizes = data_.Sizes();
    dip::uint nDims = sizes.size();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sigma, nDims, 1.0 ));
    dfloat truncation = 3.0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       dfloat extension = std::ceil( sigma[ ii ] * truncation );
       sizes[ ii ] += 2 * static_cast< dip::uint >( extension );
-      out.lowerBounds_[ ii ] -= out.binSizes_[ ii ] * extension;
+      lowerBounds_[ ii ] -= binSizes_[ ii ] * extension;
    }
-   out.data_ = out.data_.Pad( sizes );
-   out.data_.Protect(); // so that GaussFIR() produces a DT_COUNT image.
-   GaussFIR( out.data_, out.data_, sigma, { 0 }, { "add zeros" }, truncation );
-   out.data_.Protect( false );
-   return out;
+   data_ = data_.Pad( sizes );
+   data_.Protect(); // so that GaussFIR() produces a DT_COUNT image.
+   GaussFIR( data_, data_, sigma, { 0 }, { S::ADD_ZEROS }, truncation );
+   data_.Protect( false );
+   return *this;
 }
 
 } // namespace dip
@@ -562,7 +578,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorH.LowerBound( 2 ) == 0.0 );
    DOCTEST_CHECK( tensorH.UpperBound( 2 ) == upperBound );
    DOCTEST_CHECK( tensorH.Count() == tensorIm.NumberOfPixels() );
-   dip::Histogram tensorM = tensorH.Marginal( 2 );
+   dip::Histogram tensorM = tensorH.GetMarginal( 2 );
    DOCTEST_CHECK( tensorM.Dimensionality() == 1 );
    DOCTEST_CHECK( tensorM.Bins() == nBins );
    DOCTEST_CHECK( tensorM.BinSize() == binSize );

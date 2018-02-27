@@ -939,6 +939,27 @@ inline Image Laplace(
    return out;
 }
 
+/// \brief Computes the second derivative in the gradient direction.
+///
+/// The second derivative in the gradient direction is computed by Raleigh quotient of the
+/// Hessian matrix and the gradient vector:
+///
+/// \f[
+///   f_{gg} = \frac{ \nabla^T \! f \; \nabla \nabla^T \! f \; \nabla f } { \nabla^T \! f \; \nabla f } \; .
+/// \f]
+///
+/// This function is equivalent to:
+/// ```cpp
+///     Image g = dip::Gradient( in, ... );
+///     Image H = dip::Hessian( in, ... );
+///     Image Dgg = dip::Transpose( g ) * H * g;
+///     Dgg /= dip::Transpose( g ) * g;
+/// ```
+///
+/// See `dip::Derivative` for how derivatives are computed, and the meaning of the parameters. See `dip::Gradient`
+/// or `dip::Hessian` for the meaning of the `process` parameter
+///
+/// \see dip::Dxx, dip::Dyy, dip::Dzz
 DIP_EXPORT void Dgg(
       Image const& in,
       Image& out,
@@ -948,7 +969,34 @@ DIP_EXPORT void Dgg(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image Dgg(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Dgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
+/// \brief Adds the second derivative in the gradient direction to the Laplacian.
+///
+/// This function computes `dip::Laplace( in ) + dip::Dgg( in )`, but avoiding computing the second derivatives twice.
+///
+/// The zero-crossings of the result correspond to the edges in the image, just as they do for the individual
+/// Laplace and Dgg operators. However, the localization is improved by an order of magnitude with respect to
+/// the individual operators.
+///
+/// See `dip::Laplace` and `dip::Dgg` for more information.
+///
+/// **Literature**
+/// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images," PhD Thesis, Delft University
+///   of Technology, 1993.
+/// - P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images,"
+///   IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
 DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
@@ -958,8 +1006,28 @@ DIP_EXPORT void LaplacePlusDgg(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image LaplacePlusDgg(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   LaplacePlusDgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
-DIP_EXPORT void LaplaceMinDgg(
+/// \brief Subtracts the second derivative in the gradient direction from the Laplacian.
+///
+/// This function computes `dip::Laplace( in ) - dip::Dgg( in )`, but avoiding computing the second derivatives twice.
+///
+/// For two-dimensional images, this is equivalent to the second order derivative in the direction perpendicular
+/// to the gradient direction.
+///
+/// See `dip::Laplace` and `dip::Dgg` for more information.
+DIP_EXPORT void LaplaceMinusDgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -968,6 +1036,18 @@ DIP_EXPORT void LaplaceMinDgg(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image LaplaceMinusDgg(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   LaplaceMinusDgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
 /// \brief Sharpens `in` by subtracting the Laplacian of the image.
 ///
@@ -1035,14 +1115,16 @@ inline Image UnsharpMask(
    return out;
 }
 
-DIP_EXPORT void OrientedGauss(
+
+DIP_EXPORT void OrientedGauss( // TODO: port dip_OrientedGauss (from dip_linear.h)
       Image const& in,
       Image& out,
       FloatArray,
       FloatArray
 );
 
-DIP_EXPORT void GaborFIR(
+
+DIP_EXPORT void GaborFIR( // TODO: implement a separable FIR Gabor filter
       Image const& in,
       Image& out,
       FloatArray sigmas,
@@ -1095,7 +1177,7 @@ inline Image GaborIIR(
 /// `direction` is the filter direction [0, 2*pi] (compare polar coordinates)
 ///
 /// To use cartesian frequency coordinates, see `dip::GaborIIR`.
-inline void Gabor(
+inline void Gabor2D(
    Image const& in,
    Image& out,
    FloatArray const& sigmas = { 5.0, 5.0 },
@@ -1105,12 +1187,12 @@ inline void Gabor(
    BooleanArray const& process = {},
    dfloat truncation = 3
 ) {
-   DIP_THROW_IF( in.Dimensionality() != 2, "Gabor only implemented for 2 dimensional images; use GaborIIR().");
+   DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( frequency >= 0.5, "Frequency must be < 0.5" );
    FloatArray frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
    GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, {}, truncation );
 }
-inline Image Gabor(
+inline Image Gabor2D(
    Image const& in,
    FloatArray const& sigmas = { 5.0, 5.0 },
    dfloat frequency = 0.1,
@@ -1120,17 +1202,108 @@ inline Image Gabor(
    dfloat truncation = 3
 ) {
    Image out;
-   Gabor( in, out, sigmas, frequency, direction, boundaryCondition, process, truncation );
+   Gabor2D( in, out, sigmas, frequency, direction, boundaryCondition, process, truncation );
    return out;
 }
 
-// TODO: functions to port:
-/*
-   dip_OrientedGauss (dip_linear.h)
-   dip_Dgg (dip_derivatives.h)
-   dip_LaplacePlusDgg (dip_derivatives.h)
-   dip_LaplaceMinDgg (dip_derivatives.h)
-*/
+
+/// \brief Computes the normalized convolution with a Gaussian kernel: a Gaussian convolution for missing or
+/// uncertain data.
+///
+/// The normalized convolution is a convolution that handles missing or uncertain data. `mask` is an image, expected
+/// to be in the range [0,1], that indicates the confidence in each of the values of `in`. Missing values are indicated
+/// by setting the corresponding value in `mask` to 0.
+///
+/// The normalized convolution is then `Convolution( in * mask ) / Convolution( mask )`.
+///
+/// This function applies convolutions with a Gaussian kernel, using `dip::Gauss`. See that function for the meaning
+/// of the parameters. `boundaryCondition` defaults to `"add zeros"`, the normalized convolution then takes pixels
+/// outside of the image domain as missing values.
+///
+/// **Literature**
+/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
+///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+inline void NormalizedConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+) {
+   DIP_THROW_IF( !in.IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
+   Image denominator;
+   DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, out ));
+   DIP_STACK_TRACE_THIS( Gauss( out, out, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, out.DataType() ));
+}
+inline Image NormalizedConvolution(
+      Image const& in,
+      Image const& mask,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+) {
+   Image out;
+   NormalizedConvolution( in, mask, out, sigmas, method, boundaryCondition, truncation );
+   return out;
+}
+
+/// \brief Computes the normalized differential convolution with a Gaussian kernel: a derivative operator for missing
+/// or uncertain data.
+///
+/// The normalized convolution is a convolution that handles missing or uncertain data. `mask` is an image, expected
+/// to be in the range [0,1], that indicates the confidence in each of the values of `in`. Missing values are indicated
+/// by setting the corresponding value in `mask` to 0.
+///
+/// The normalized differential convolution is defined here as the derivative of the normalized convolution with a
+/// Gaussian kernel:
+///
+/// \f[
+///   \frac{\partial}{\partial x} \frac{(f \, m) \ast g}{m \ast g}
+///         = \frac{(f \, m) \ast \frac{\partial}{\partial x} g}{m \ast g}
+///         - \frac{(f \, m) \ast g}{m \ast g} \frac{m \ast \frac{\partial}{\partial x} g}{m \ast g} \; .
+/// \f]
+///
+/// \f$\ast\f$ is the convolution operator, \f$f\f$ is `in`, \f$m\f$ is `mask`, and \f$g\f$ is the Gaussian kernel
+///
+/// The derivative is computed along `dimension`.
+///
+/// This function uses `dip::Gauss`. See that function for the meaning of the parameters. `boundaryCondition` defaults
+/// to `"add zeros"`, the normalized convolution then takes pixels outside of the image domain as missing values.
+///
+/// **Literature**
+/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
+///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+DIP_EXPORT void NormalizedDifferentialConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint dimension = 0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+);
+inline Image NormalizedDifferentialConvolution(
+      Image const& in,
+      Image const& mask,
+      dip::uint dimension = 0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = { S::ADD_ZEROS },
+      dfloat truncation = 3
+) {
+   Image out;
+   NormalizedDifferentialConvolution( in, mask, out, dimension, sigmas, method, boundaryCondition, truncation );
+   return out;
+}
 
 /// \}
 

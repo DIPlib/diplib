@@ -43,37 +43,37 @@ namespace dip {
 /// called `interpolationMethod`, which determines how image data is interpolated. It can be set to one of
 /// the following strings:
 ///
-///  - '"3-cubic"' (or `""`): Third-order cubic spline interpolation (Keys, 1981), using 4 input samples to
+///  - `"3-cubic"` (or `""`): Third-order cubic spline interpolation (Keys, 1981), using 4 input samples to
 ///    compute each output sample. This is the default method for most functions.
 ///
-///  - '"4-cubic"': Fourth-order cubic spline interpolation (Keys, 1981), using 6 input samples to compute
+///  - `"4-cubic"`: Fourth-order cubic spline interpolation (Keys, 1981), using 6 input samples to compute
 ///    compute each output sample.
 ///
-///  - '"linear"': Linear interpolation, using 2 input samples to compute each output sample.
+///  - `"linear"`: Linear interpolation, using 2 input samples to compute each output sample.
 ///
-///  - '"nearest"' (or '"nn"'): Nearest neighbor interpolation, samples are simply shifted and replicated.
+///  - `"nearest"` (or `"nn"`): Nearest neighbor interpolation, samples are simply shifted and replicated.
 ///
-///  - '"inverse nearest"' (or '"nn2"'): Nearest neighbor interpolation, but resolves the rounding of x.5 in
+///  - `"inverse nearest"` (or `"nn2"`): Nearest neighbor interpolation, but resolves the rounding of x.5 in
 ///    the opposite direction that `"nearest"` does. This is useful when applying the inverse of an earlier
 ///    transform, to be able to obtain the original geometry back.
 ///
-///  - '"bspline"': A third-order cardinal B-spline is computed for all samples on an image line, which is
+///  - `"bspline"`: A third-order cardinal B-spline is computed for all samples on an image line, which is
 ///    sampled anew to obtain the interpolated sample values. All input samples are used to compute all
 ///    output samples, but only about 10 input samples significantly influence each output value.
 ///
-///  - '"lanczos8"': Lanczos interpolation with *a* = 8, using 16 input samples to compute each output sample.
+///  - `"lanczos8"`: Lanczos interpolation with *a* = 8, using 16 input samples to compute each output sample.
 ///    The Lanczos kernel is a sinc function windowed by a larger sinc function, where *a* is the width of
 ///    the larger sinc function. The kernel is normalized.
 ///
-///  - '"lanczos6"': Lanczos interpolation with *a* = 6, using 12 input samples to compute each output sample.
+///  - `"lanczos6"`: Lanczos interpolation with *a* = 6, using 12 input samples to compute each output sample.
 ///
-///  - '"lanczos4"': Lanczos interpolation with *a* = 4, using 8 input samples to compute each output sample.
+///  - `"lanczos4"`: Lanczos interpolation with *a* = 4, using 8 input samples to compute each output sample.
 ///
-///  - '"lanczos3"': Lanczos interpolation with *a* = 3, using 6 input samples to compute each output sample.
+///  - `"lanczos3"`: Lanczos interpolation with *a* = 3, using 6 input samples to compute each output sample.
 ///
-///  - '"lanczos2"': Lanczos interpolation with *a* = 2, using 4 input samples to compute each output sample.
+///  - `"lanczos2"`: Lanczos interpolation with *a* = 2, using 4 input samples to compute each output sample.
 ///
-///  - '"ft"': Interpolation through padding and cropping, and/or modifying the phase component of the
+///  - `"ft"`: Interpolation through padding and cropping, and/or modifying the phase component of the
 ///    Fourier transform of the image line. Padding with zeros increases the sampling density, cropping
 ///    reduces the sampling density, and multiplying the phase component by \f$-j s \omega\f$ shifts
 ///    the image. Equivalent to interpolation with a sinc kernel. All input samples are used to compute
@@ -207,6 +207,42 @@ inline Image Shift(
 }
 
 
+/// \brief Finds the values of the image at sub-pixel locations `coordinates` by linear interpolation.
+///
+/// The array `coordinates` must have all elements be array of the same length as the image dimensionality.
+/// Any coordinates outside of the image domain are returned as zero values. That is, no extrapolation is
+/// performed.
+///
+/// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
+/// See \ref interpolation_methods for their definition.
+///
+/// `out` will be a 1D image with the same size as the `coordinates` array, and the same data type and tensor
+/// shape as `in`. To obtain results in a floating-point type, set the data type of `out` and protect it,
+/// see \ref protect.
+DIP_EXPORT void ResampleAt(
+      Image const& in,
+      Image& out,
+      FloatCoordinateArray const& coordinates,
+      String const& interpolationMethod = S::LINEAR
+);
+inline Image ResampleAt(
+      Image const& in,
+      FloatCoordinateArray const& coordinates,
+      String const& interpolationMethod = S::LINEAR
+) {
+   Image out;
+   ResampleAt( in, out, coordinates, interpolationMethod );
+   return out;
+}
+
+/// \brief Identical to the previous function with the same name, but for a single point.
+DIP_EXPORT Image::Pixel ResampleAt(
+      Image const& in,
+      FloatArray const& coordinates,
+      String const& interpolationMethod = S::LINEAR
+);
+
+
 // Undocumented internal function called by the other forms of Skew.
 // Each sub-volume perpendicular to axis is shifted with sub-pixel precision, according to `shearArray`.
 // That is, if `axis` is 1, then the sub-volume `in[:,ii,:,:,...]`, with all possible `ii`, is shifted
@@ -226,7 +262,7 @@ DIP_EXPORT dip::UnsignedArray Skew(
       BoundaryConditionArray boundaryCondition = {} // if it is "periodic", does periodic skew
 );
 
-/// \brief Skews an image
+/// \brief Skews (shears) an image
 ///
 /// The image is skewed such that a straight line along dimension `axis` is tilted by an angle of
 /// `atan( shearArray[ ii ] )` radian in the direction of dimension `ii`. `shearArray[ ii ]` thus represents
@@ -278,7 +314,7 @@ inline Image Skew(
    return out;
 }
 
-/// \brief Skews an image
+/// \brief Skews (shears) an image
 ///
 /// The image is skewed such that a straight line along dimension `axis` is tilted by an
 /// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
@@ -367,7 +403,7 @@ DIP_EXPORT void Rotation(
       dip::uint dimension1,
       dip::uint dimension2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = { "add zeros" }
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image Rotation(
       Image const& in,
@@ -375,7 +411,7 @@ inline Image Rotation(
       dip::uint dimension1,
       dip::uint dimension2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = { "add zeros" }
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
    Rotation( in, out, angle, dimension1, dimension2, interpolationMethod, boundaryCondition );
@@ -386,7 +422,7 @@ inline Image Rotation(
 ///
 /// Calls `dip::Rotation`, setting the dimension parameters to 0 and 1. Provides a simplified
 /// interface for 2D images.
-inline void Rotation2d(
+inline void Rotation2D(
       Image const& in,
       Image& out,
       dfloat angle,
@@ -396,14 +432,14 @@ inline void Rotation2d(
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    Rotation( in, out, angle, 0, 1, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation2d(
+inline Image Rotation2D(
       Image const& in,
       dfloat angle,
       String const& interpolationMethod = "",
       String const& boundaryCondition = {}
 ) {
    Image out;
-   Rotation2d( in, out, angle, interpolationMethod, boundaryCondition );
+   Rotation2D( in, out, angle, interpolationMethod, boundaryCondition );
    return out;
 }
 
@@ -411,7 +447,7 @@ inline Image Rotation2d(
 ///
 /// Calls `dip::Rotation`, setting the dimension parameters according to `axis`. Provides a simplified
 /// interface for 3D images.
-inline void Rotation3d(
+inline void Rotation3D(
       Image const& in,
       Image& out,
       dfloat angle,
@@ -439,7 +475,7 @@ inline void Rotation3d(
    }
    Rotation( in, out, angle, dim1, dim2, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation3d(
+inline Image Rotation3D(
       Image const& in,
       dfloat angle,
       dip::uint axis = 2,
@@ -447,7 +483,7 @@ inline Image Rotation3d(
       String const& boundaryCondition = {}
 ) {
    Image out;
-   Rotation3d( in, out, angle, axis, interpolationMethod, boundaryCondition );
+   Rotation3D( in, out, angle, axis, interpolationMethod, boundaryCondition );
    return out;
 }
 
@@ -461,7 +497,10 @@ inline Image Rotation3d(
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
 /// The rotation is over the center of the image.
-inline void Rotation3d(
+// TODO: Implement the rotation using 4 skews as described by Chen and Kaufman, Graphical Models 62:308-322, 2000.
+//       This method uses either 4 "2D slice shears" (what dip::Skew does), or 4 "2D beam shears" (which is more
+//       efficient in our case because each step only requires interpolation in 1D, not in 2D as dip::Skew does).
+inline void Rotation3D(
       Image const& in,
       Image& out,
       dfloat alpha,
@@ -474,7 +513,7 @@ inline void Rotation3d(
    Rotation( out, out, beta,  2, 0, interpolationMethod, boundaryCondition );
    Rotation( out, out, gamma, 0, 1, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation3d(
+inline Image Rotation3D(
       Image const& in,
       dfloat alpha,
       dfloat beta,
@@ -483,18 +522,12 @@ inline Image Rotation3d(
       String const& boundaryCondition = {}
 ) {
    Image out;
-   Rotation3d( in, out, alpha, beta, gamma, interpolationMethod, boundaryCondition );
+   Rotation3D( in, out, alpha, beta, gamma, interpolationMethod, boundaryCondition );
    return out;
 }
 
 
-// TODO: functions to port:
-/*
-   dip_AffineTransform (dip_interpolation.h) => was never implemented, but we do have affine_trans in DIPimage.
-   dip_ResampleAt (dip_interpolation.h)
-*/
-
-// TODO: port also rot_euler_low.c and affine_trans_low.c from DIPimage
+// TODO: port rot_euler_low.c and affine_trans_low.c from DIPimage
 
 
 /// \brief Tiles a set of images to form a single image.

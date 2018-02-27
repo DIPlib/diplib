@@ -269,7 +269,7 @@ class DIP_NO_EXPORT PixelTable {
       /// Shifts the origin of the neighborhood by the given amount
       void ShiftOrigin( IntegerArray const& shift ) {
          dip::uint nDims = origin_.size();
-         DIP_THROW_IF( shift.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( shift.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
          origin_ -= shift;
          for( auto& run : runs_ ) {
             run.coordinates -= shift;

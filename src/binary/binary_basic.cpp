@@ -170,7 +170,9 @@ void BinaryOpening(
       BinaryDilation( out, out, connectivity, iterations, edgeCondition );
    } else {
       // "Special handling"
-      DIP_THROW_IF( edgeCondition != S::SPECIAL, E::INVALID_FLAG );
+      if( edgeCondition != S::SPECIAL ) {
+         DIP_THROW_INVALID_FLAG( edgeCondition );
+      }
       BinaryErosion( in, out, connectivity, iterations, S::OBJECT );
       BinaryDilation( out, out, connectivity, iterations, S::BACKGROUND );
    }
@@ -188,7 +190,9 @@ void BinaryClosing(
       BinaryErosion( out, out, connectivity, iterations, edgeCondition );
    } else {
       // "Special handling"
-      DIP_THROW_IF( edgeCondition != S::SPECIAL, E::INVALID_FLAG );
+      if( edgeCondition != S::SPECIAL ) {
+         DIP_THROW_INVALID_FLAG( edgeCondition );
+      }
       BinaryDilation( in, out, connectivity, iterations, S::BACKGROUND );
       BinaryErosion( out, out, connectivity, iterations, S::OBJECT );
    }

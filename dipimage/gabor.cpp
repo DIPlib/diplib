@@ -1,8 +1,8 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `laplace` function
+ * This MEX-file implements the `gabor` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -26,35 +26,52 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 5 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
+      int index = 1;
 
-      dip::FloatArray sigmas = { 1 };
-      dip::String method = dip::S::BEST;
-      dip::StringArray bc = {};
-      dip::BooleanArray process = {};
-      dip::dfloat truncation = 3;
-
-      if( nrhs > 1 ) {
+      dip::FloatArray sigmas = { 5.0 };
+      if( nrhs > index ) {
          sigmas = dml::GetFloatArray( prhs[ 1 ] );
-      }
-      if( nrhs > 2 ) {
-         method = dml::GetString( prhs[ 2 ] );
-      }
-      if( nrhs > 3 ) {
-         bc = dml::GetStringArray( prhs[ 3 ] );
-      }
-      if( nrhs > 4 ) {
-         process = dml::GetProcessArray( prhs[ 4 ], in.Dimensionality() );
-      }
-      if( nrhs > 5 ) {
-         truncation = dml::GetFloat( prhs[ 5 ] );
+         ++index;
       }
 
-      dip::Laplace( in, out, sigmas, method, bc, process, truncation );
+      dip::FloatArray frequencies = { 0.15 };
+      if( nrhs > index ) {
+         frequencies = dml::GetFloatArray( prhs[ 2 ] );
+         ++index;
+      }
+
+      if(( in.Dimensionality() == 2 ) && ( frequencies.size() == 1 )) {
+         dip::dfloat frequency = frequencies[ 0 ];
+         dip::dfloat direction = dip::pi;
+         if( nrhs > index ) {
+            direction = dml::GetFloat( prhs[ index ] );
+            ++index;
+         }
+         frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
+      }
+
+      DML_MAX_ARGS( index + 3 );
+
+      dip::StringArray bc = {};
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
+         ++index;
+      }
+      dip::BooleanArray process = {};
+      if( nrhs > index ) {
+         process = dml::GetProcessArray( prhs[ index ], in.Dimensionality() );
+         ++index;
+      }
+      dip::dfloat truncation = 3;
+      if( nrhs > index ) {
+         truncation = dml::GetFloat( prhs[ index ] );
+      }
+
+      dip::GaborIIR( in, out, sigmas, frequencies, bc, process, {}, truncation );
 
       plhs[ 0 ] = mi.GetArray( out );
 

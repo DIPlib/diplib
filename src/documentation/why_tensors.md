@@ -218,7 +218,7 @@ leads to Gaussian smoothing. By adjusting \f$D\f$ to be small at edges,
 an anisotropic, edge-enhancing diffusion is obtained. Coherence enhancing
 diffusion uses a tensor for \f$D\f$. The above-mentioned function allows
 to construct this tensor in two ways, starting from (yet again!) the
-structure tensor \f$S\f$. Here we apply an eigen decompostion, leading
+structure tensor \f$S\f$. Here we apply an eigen decomposition, leading
 to a full matrix image \f$V\f$ (the eigenvectors), and a diagonal matrix
 image \f$E\f$ (the eigenvalues):
 
@@ -245,5 +245,5 @@ Using *DIPlib* we can write:
     img += lambda * dip::Divergence( D * dip::Gradient( img ));
 ```
 
-Repeating this bit of code leads to a coherence enhancing diffusion simulation
+Iterating this bit of code leads to a coherence enhancing diffusion simulation
 on the image `img`.

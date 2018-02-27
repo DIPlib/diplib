@@ -19,7 +19,7 @@
  */
 
 #include <set>
-#include <map>
+#include <unordered_map>
 
 #include "diplib.h"
 #include "diplib/regions.h"
@@ -158,7 +158,7 @@ class dip__Relabel: public Framework::ScanLineFilter {
          }
       }
    private:
-      std::map< TPI, TPI > objectIDs_;
+      std::unordered_map< TPI, TPI > objectIDs_;
       TPI lastLabel_ = 0;
 };
 

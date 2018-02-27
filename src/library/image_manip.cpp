@@ -458,7 +458,7 @@ Image& Image::MergeTensorToComplex() {
 Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = sizes_.size();
-   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
    UnsignedArray origin( nDims, 0 );
    switch( cropLocation ) {
@@ -498,7 +498,7 @@ Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
    } else if( cropLocation == S::BOTTOM_RIGHT ) {
       flag = Option::CropLocation::BOTTOM_RIGHT;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( cropLocation );
    }
    return Crop( sizes, flag );
 }

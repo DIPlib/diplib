@@ -76,8 +76,7 @@ Finally, the "Actions" menu contains some more options:
     an image before generating an isosurface plot. The isosurface plot
     is only available for 3D displays.
 
--   "View5d" (TODO: port this and document this, though preferably we'd
-    use the DIPviewer for this!)
+-   "View5d" (not yet ported over from *DIPimage 2*)
 
 Using the Mouse in Figure Windows {#sec:figure_mouse}
 ---------------------------------

@@ -32,7 +32,7 @@
 %  This function calls the DIPlib function dip::Derivative, which calls dip::GaussFIR,
 %  dip::GaussIIR, and dip::GaussFT.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -48,7 +48,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function image_out = gaussf(image_in,sigma,method,boundary_condition,truncation)
+function image_out = gaussf(image_in,sigma,method,varargin)
 % The code below looks a little silly, but it's an easy way to not parse input arguments twice.
 if nargin < 1
    error('Need an input image');
@@ -63,11 +63,5 @@ else
    if ~strcmp(method,'best')
       method = ['gauss',method];
    end
-   if nargin < 4
-      image_out = derivative(image_in,0,sigma,method);
-   elseif nargin < 5
-      image_out = derivative(image_in,0,sigma,method,boundary_condition);
-   else
-      image_out = derivative(image_in,0,sigma,method,boundary_condition,truncation);
-   end
+   image_out = derivative(image_in,0,sigma,method,varargin{:});
 end

@@ -73,9 +73,9 @@ void Scan(
    }
 
    // Check array sizes
-   DIP_THROW_IF( inBufferTypes.size() != nIn, E::ARRAY_ILLEGAL_SIZE );
-   DIP_THROW_IF( outBufferTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
-   DIP_THROW_IF( outImageTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF(( inBufferTypes.size()  != nIn )  ||
+                ( outBufferTypes.size() != nOut ) ||
+                ( outImageTypes.size()  != nOut ), E::ARRAY_PARAMETER_WRONG_LENGTH );
 
    // NOTE: In this function, we use some DimensionArray objects where the
    // array needs to hold nIn or nOut elements. We expect nIn and nOut to be

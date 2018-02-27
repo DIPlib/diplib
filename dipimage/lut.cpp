@@ -62,7 +62,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             } else if( bounds.size() == 2 ) {
                lut.SetOutOfBoundsValue( bounds[ 0 ], bounds[ 1 ] );
             } else {
-               DIP_THROW( dip::E::INVALID_FLAG );
+               DIP_THROW( dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
             }
          } else {
             dip::String bounds = dml::GetString( prhs[ index ] );
@@ -71,7 +71,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             } else if( bounds == dip::S::KEEP ) {
                lut.KeepInputValueOnOutOfBounds();
             } else {
-               DIP_THROW( dip::E::INVALID_FLAG );
+               DIP_THROW_INVALID_FLAG( bounds );
             }
          }
       }

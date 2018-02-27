@@ -4718,7 +4718,7 @@ void EuclideanSkeleton(
    } else if( s_endPixelCondition == S::THREE_NEIGHBORS ) {
       endPixelCondition = 3;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( s_endPixelCondition );
    }
 
    // Edge condition

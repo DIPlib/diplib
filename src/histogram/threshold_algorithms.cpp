@@ -55,7 +55,7 @@ FloatArray IsodataThreshold(
    dip::uint nBins = hist.Size( 0 );
    FloatArray thresholds( nThresholds );
    // Initialize thresholds such that each interval has approximately same number of pixels
-   Histogram cumh = in.Cumulative();
+   Histogram cumh = CumulativeHistogram( in );
    Image const& cum = cumh.GetImage();
    DIP_ASSERT( cum.IsForged() );
    DIP_ASSERT( cum.DataType() == DT_UINT32 );
@@ -238,7 +238,7 @@ dfloat TriangleThreshold(
       Histogram const& in
 ) {
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Histogram smoothIn = in.Smooth( 4 );
+   Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();
    DIP_ASSERT( hist.IsForged());
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
@@ -281,7 +281,7 @@ dfloat BackgroundThreshold(
 ) {
    DIP_THROW_IF( distance <= 0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Histogram smoothIn = in.Smooth( 4 );
+   Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();
    DIP_ASSERT( hist.IsForged());
    DIP_ASSERT( hist.DataType() == DT_UINT32 );

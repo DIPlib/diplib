@@ -123,7 +123,8 @@ void init_assorted( py::module& m ) {
    m.def( "ImageWriteICS", py::overload_cast< dip::Image const&, dip::String const&, dip::StringArray const&, dip::uint, dip::StringSet const& >( &dip::ImageWriteICS ),
           "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
 
-   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const& >( &dip::ImageReadTIFF ), "filename"_a, "imageNumbers"_a = dip::Range{ 0 } );
+   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const& >( &dip::ImageReadTIFF ),
+          "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{} );
    m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const& >( &dip::ImageReadTIFFSeries ), "filenames"_a );
    m.def( "ImageIsTIFF", &dip::ImageIsTIFF, "filename"_a );
    m.def( "ImageWriteTIFF", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::uint >( &dip::ImageWriteTIFF ),
@@ -190,17 +191,21 @@ void init_assorted( py::module& m ) {
           "in"_a, "zoom"_a = dip::FloatArray{ 1.0 }, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Shift", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::Shift ),
           "in"_a, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = dip::S::FOURIER, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::FloatCoordinateArray const&, dip::String const& >( &dip::ResampleAt ),
+          "in"_a, "coordinates"_a, "method"_a = dip::S::LINEAR );
+   m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const& >( &dip::ResampleAt ),
+          "in"_a, "coordinates"_a, "method"_a = dip::S::LINEAR );
    m.def( "Skew", py::overload_cast< dip::Image const&, dip::FloatArray, dip::uint, dip::String const&, dip::StringArray const& >( &dip::Skew ),
           "in"_a, "shearArray"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Skew", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Skew ),
           "in"_a, "shear"_a, "skew"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
    m.def( "Rotation", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation ),
-          "in"_a, "angle"_a, "dimension1"_a, "dimension2"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "add zeros" );
-   m.def( "Rotation2d", py::overload_cast< dip::Image const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation2d ),
+          "in"_a, "angle"_a, "dimension1"_a, "dimension2"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS );
+   m.def( "Rotation2D", py::overload_cast< dip::Image const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation2D ),
           "in"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
-   m.def( "Rotation3d", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation3d ),
+   m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation3D ),
           "in"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
-   m.def( "Rotation3d", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3d ),
+   m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3D ),
           "in"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
 
    m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray const& >( &dip::Tile ),
@@ -213,23 +218,26 @@ void init_assorted( py::module& m ) {
           "in1"_a, "in2"_a, "dimension"_a = 0 );
 
    // diplib/histogram.h
-   m.def( "Histogram", []( dip::Image const& input ){
-      dip::Histogram histogram( input );
+   m.def( "Histogram", []( dip::Image const& input, dip::Image const& mask, dip::uint nBins ){
+      dip::Histogram::Configuration config( input.DataType() );
+      config.nBins = nBins;
+      config.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
+      dip::Histogram histogram( input, mask, config );
       dip::Image im = histogram.GetImage();
       std::vector< dip::FloatArray > bins( histogram.Dimensionality() );
       for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
          bins[ ii ] = histogram.BinCenters( ii );
       }
       return py::make_tuple( im, bins ).release();
-   }, "input"_a );
-   m.def( "Histogram", []( dip::Image const& input1, dip::Image const& input2 ){
-      dip::Histogram histogram( input1, input2 );
+   }, "input"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
+   m.def( "Histogram", []( dip::Image const& input1, dip::Image const& input2, dip::Image const& mask ){
+      dip::Histogram histogram( input1, input2, mask );
       dip::Image im = histogram.GetImage();
       std::vector< dip::FloatArray > bins( 2 );
       bins[ 0 ] = histogram.BinCenters( 0 );
       bins[ 1 ] = histogram.BinCenters( 1 );
       return py::make_tuple( im, bins ).release();
-   }, "input1"_a, "input2"_a );
+   }, "input1"_a, "input2"_a, "mask"_a = dip::Image{} );
 
    // diplib/lookup_table.h
    m.def( "LookupTable", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index, dip::String const& interpolation,
@@ -242,7 +250,7 @@ void init_assorted( py::module& m ) {
       } else if( mode == "keep" ) {
          lookupTable.KeepInputValueOnOutOfBounds();
       } else {
-         DIP_THROW( dip::E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( mode );
       }
       return lookupTable.Apply( in, interpolation );
    }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = dip::S::LINEAR, "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0
@@ -255,4 +263,19 @@ void init_assorted( py::module& m ) {
          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = dip::S::RANGE );
    m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = dip::S::LINEAR, "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
+
+   m.def( "HistogramEqualization", py::overload_cast< dip::Image const&, dip::uint >( &dip::HistogramEqualization ),
+          "in"_a, "nBins"_a = 256 );
+   m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ){
+      DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
+      dip::uint nBins = example.Size( 0 );
+      // Create a histogram of the right dimensions
+      dip::Histogram::Configuration config( 0.0, static_cast< int >( nBins ), 1.0 );
+      dip::Histogram exampleHistogram( config );
+      // Fill it with the input
+      dip::Image guts = exampleHistogram.GetImage().QuickCopy();
+      guts.Copy( example ); // Copies data from example to data segment in guts, which is shared with the image in exampleHistogram. This means we're changing the histogram.
+      return dip::HistogramMatching( in, exampleHistogram );
+   }, "in"_a, "example"_a );
+
 }

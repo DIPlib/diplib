@@ -196,3 +196,28 @@ r3 = dip.GrowRegions(b)
 r4 = dip.GrowRegions(b,m)
 Show(r3)
 Show(r4)
+
+###
+
+import matplotlib.pyplot as pp
+import numpy as np
+
+img1 = dip.ImageReadTIFF('../../../examples/erika')
+img2 = dip.ImageReadICS('../../../examples/trui')
+
+h,b = dip.Histogram(img2)
+img3 = dip.HistogramMatching(img1,h)
+img3.Convert('UINT8')
+
+h1,b1 = dip.Histogram(img1,64)
+h2,b2 = dip.Histogram(img2,64)
+h3,b3 = dip.Histogram(img3,64)
+
+pp.clf()
+pp.subplot(3,1,1)
+pp.bar(b1[0],np.array(h1),align='center')
+pp.subplot(3,1,2)
+pp.bar(b2[0],np.array(h2),align='center')
+pp.subplot(3,1,3)
+pp.bar(b3[0],np.array(h3),align='center')
+pp.show(block=False)

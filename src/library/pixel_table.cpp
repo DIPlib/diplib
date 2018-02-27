@@ -337,7 +337,7 @@ PixelTable::PixelTable(
          origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
       }
    } else {
-      DIP_THROW_IF( origin.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+      DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
       origin_.resize( nDims, 0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          origin_[ ii ] = -origin[ ii ];

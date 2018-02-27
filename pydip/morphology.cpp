@@ -161,6 +161,14 @@ void init_morphology( py::module& m ) {
    m.def( "ClosingByReconstruction", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::ClosingByReconstruction ),
           "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 1, "boundaryCondition"_a = dip::StringArray{} );
 
+   m.def( "AlternatingSequentialFilter", py::overload_cast< dip::Image const&, dip::Range const&, dip::String const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::AlternatingSequentialFilter ),
+          "in"_a, "sizes"_a = dip::Range{ 3, 7, 2 }, "shape"_a = dip::S::ELLIPTIC, "mode"_a = dip::S::STRUCTURAL, "polarity"_a = dip::S::OPENCLOSE, "boundaryCondition"_a = dip::StringArray{} );
+
+   m.def( "HitAndMiss", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::HitAndMiss ),
+          "in"_a, "hit"_a, "miss"_a, "mode"_a = dip::S::UNCONSTRAINED, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "HitAndMiss", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::StringArray const& >( &dip::HitAndMiss ),
+          "in"_a, "se"_a, "mode"_a = dip::S::UNCONSTRAINED, "boundaryCondition"_a = dip::StringArray{} );
+
    // diplib/binary.h
    m.def( "BinaryDilation", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryDilation ),
          "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::BACKGROUND );

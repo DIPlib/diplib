@@ -171,7 +171,7 @@ inline Image GrowRegions(
 DIP_EXPORT void GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
-      Image const& mask, // TODO: implement `mask` parameter!
+      Image const& mask,
       Image& out,
       Metric const& metric = { S::CHAMFER, 2 }
 );

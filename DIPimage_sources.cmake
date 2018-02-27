@@ -10,7 +10,6 @@ dipimage/@dip_image/det.cpp
 dipimage/@dip_image/divergence.cpp
 dipimage/@dip_image/dot.cpp
 dipimage/@dip_image/eig.cpp
-dipimage/@dip_image/gradient.cpp
 dipimage/@dip_image/inv.cpp
 dipimage/@dip_image/max.cpp
 dipimage/@dip_image/mean.cpp
@@ -28,6 +27,7 @@ dipimage/@dip_image/svd.cpp
 dipimage/@dip_image/trace.cpp
 dipimage/@dip_image/var.cpp
 dipimage/areaopening.cpp
+dipimage/asf.cpp
 dipimage/bclosing.cpp
 dipimage/bdilation.cpp
 dipimage/berosion.cpp
@@ -56,19 +56,20 @@ dipimage/findmaxima.cpp
 dipimage/findminima.cpp
 dipimage/findshift.cpp
 dipimage/ft.cpp
+dipimage/gabor.cpp
 dipimage/gaussianblob.cpp
 dipimage/gaussianedgeclip.cpp
 dipimage/gaussianlineclip.cpp
 dipimage/gdt.cpp
+dipimage/get_subpixel.cpp
 dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
-dipimage/gradmag.cpp
-dipimage/hessian.cpp
+dipimage/hist_equalize.cpp
+dipimage/hitmiss.cpp
 dipimage/hmaxima.cpp
 dipimage/hminima.cpp
 dipimage/kuwahara.cpp
 dipimage/label.cpp
-dipimage/laplace.cpp
 dipimage/lee.cpp
 dipimage/lut.cpp
 dipimage/maxima.cpp
@@ -83,6 +84,7 @@ dipimage/overlay.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/pmd.cpp
+dipimage/private/compute_derivatives.cpp
 dipimage/private/imagedisplay.cpp
 dipimage/private/libraryinformation.cpp
 dipimage/private/numberofthreads.cpp
@@ -109,6 +111,7 @@ dipimage/structuretensor.cpp
 dipimage/subpixlocation.cpp
 dipimage/threshold.cpp
 dipimage/tophat.cpp
+dipimage/traceobjects.cpp
 dipimage/unif.cpp
 dipimage/varif.cpp
 dipimage/vdt.cpp

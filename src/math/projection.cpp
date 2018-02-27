@@ -604,7 +604,7 @@ void Variance(
    } else if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( false ), in.DataType() );
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( mode );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
 }
@@ -628,7 +628,7 @@ void StandardDeviation(
    } else if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( true ), in.DataType() );
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( mode );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
 }

@@ -221,7 +221,7 @@ class DIP_NO_EXPORT ImageDisplay{
 
       /// \brief Sets the current coordinates. This affects the slice displayed.
       void SetCoordinates( UnsignedArray coordinates ) {
-         DIP_THROW_IF( coordinates.size() != coordinates_.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( coordinates.size() != coordinates_.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          for( dip::uint ii = 0; ii < coordinates_.size(); ++ii ) {
             if( coordinates[ ii ] >= image_.Size( ii )) {
                coordinates[ ii ] = image_.Size( ii ) - 1;

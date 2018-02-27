@@ -1,10 +1,8 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `hessian` function
+ * This MEX-file implements the `closing` function
  *
- * (c)2017, Cris Luengo.
- * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
- * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+ * (c)2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,41 +18,49 @@
  */
 
 #include "dip_matlab_interface.h"
-#include "diplib/linear.h"
+#include "diplib/morphology.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 5 );
+      DML_MAX_ARGS( 6 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
+      int index = 1;
 
-      dip::FloatArray sigmas = { 1 };
-      dip::String method = dip::S::BEST;
-      dip::StringArray bc = {};
-      dip::BooleanArray process = {};
-      dip::dfloat truncation = 3;
-
-      if( nrhs > 1 ) {
-         sigmas = dml::GetFloatArray( prhs[ 1 ] );
-      }
-      if( nrhs > 2 ) {
-         method = dml::GetString( prhs[ 2 ] );
-      }
-      if( nrhs > 3 ) {
-         bc = dml::GetStringArray( prhs[ 3 ] );
-      }
-      if( nrhs > 4 ) {
-         process = dml::GetProcessArray( prhs[ 4 ], in.Dimensionality() );
-      }
-      if( nrhs > 5 ) {
-         truncation = dml::GetFloat( prhs[ 5 ] );
+      dip::Range sizes = { 3, 7, 2 };
+      if( nrhs > index ) {
+         sizes = dml::GetRange( prhs[ index ] );
+         ++index;
       }
 
-      dip::Hessian( in, out, sigmas, method, bc, process, truncation );
+      dip::String shape = dip::S::ELLIPTIC;
+      if( nrhs > index ) {
+         shape = dml::GetString( prhs[ index ] );
+         ++index;
+      }
+
+      dip::String mode = dip::S::STRUCTURAL;
+      if( nrhs > index ) {
+         mode = dml::GetString( prhs[ index ] );
+         ++index;
+      }
+
+      dip::String polarity = dip::S::OPENCLOSE;
+      if( nrhs > index ) {
+         polarity = dml::GetString( prhs[ index ] );
+         ++index;
+      }
+
+      dip::StringArray bc;
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
+      }
+
+      dip::AlternatingSequentialFilter( in, out, sizes, shape, mode, polarity, bc );
 
       plhs[ 0 ] = mi.GetArray( out );
 

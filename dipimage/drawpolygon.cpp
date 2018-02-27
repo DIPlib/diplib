@@ -84,8 +84,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             if( coords.front() != coords.back() ) {
                coords.push_back( coords.front() );
             }
-         } else {
-            DIP_THROW_IF( mode != dip::S::OPEN, dip::E::INVALID_FLAG );
+         } else if( mode != dip::S::OPEN ) {
+            DIP_THROW_INVALID_FLAG( mode );
          }
          dip::DrawLines( out, coords, color );
       }

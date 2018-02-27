@@ -103,7 +103,7 @@ necessary:
     void dip::Filter( const dip::Image &in_, dip::Image &out, ... ) {
        Image in = in_QuickCopy();
        if( in.Aliases( out )) {
-          out.Strip();     // Force out to not point at data we still need 
+          out.Strip();     // Force out to not point at data we still need
        }
        out.ReForge( ... );   // create new data segment for output
        // do more processing ...

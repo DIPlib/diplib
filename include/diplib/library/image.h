@@ -1315,7 +1315,7 @@ class DIP_NO_EXPORT Image {
       /// The image must be forged.
       bool IsOnEdge( UnsignedArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
             if(( coords[ ii ] == 0 ) || ( coords[ ii ] == sizes_[ ii ] - 1 )) {
                return true;
@@ -1345,7 +1345,7 @@ class DIP_NO_EXPORT Image {
       /// If `coords` is not within the domain given by `sizes`, an exception is thrown.
       /// The size of `coords` is not verified.
       static dip::sint Offset( UnsignedArray const& coords, IntegerArray const& strides, UnsignedArray const& sizes ) {
-         DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          DIP_ASSERT( coords.size() == sizes.size() );
          dip::sint offset = 0;
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
@@ -1362,7 +1362,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// `coords` can have negative values, no domain assumptions are made.
       static dip::sint Offset( IntegerArray const& coords, IntegerArray const& strides ) {
-         DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          dip::sint offset = 0;
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
             offset += coords[ ii ] * strides[ ii ];
@@ -1438,7 +1438,7 @@ class DIP_NO_EXPORT Image {
       /// This index is not related to the position of the pixel in memory, and should not be
       /// used to index many pixels in sequence.
       static dip::uint Index( UnsignedArray const& coords, UnsignedArray const& sizes ) {
-         DIP_THROW_IF( coords.size() != sizes.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( coords.size() != sizes.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          dip::uint index = 0;
          for( dip::uint ii = sizes.size(); ii > 0; ) {
             --ii;
@@ -1946,30 +1946,31 @@ class DIP_NO_EXPORT Image {
       /// \brief Extracts a subset of pixels from an image. The image must be forged.
       View At( RangeArray const& ranges ) const;
 
-      /// \brief Creates a 1D image containing the pixels selected by `mask`.
+      /// \brief Creates a 1D image view containing the pixels selected by `mask`.
       ///
-      /// The values are copied, not referenced. The output image will be of the same data type and tensor shape
-      /// as `this`, but have only one dimension. Pixels will be read from `mask` in the linear index order.
+      /// When cast to an image, the values will be copied, not referenced. The output is of the same data type
+      /// and tensor shape as `this`, but have only one dimension. Pixels will be read from `mask` in the linear
+      /// index order.
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
       View At( Image const& mask ) const;
 
-      /// \brief Creates a 1D image containing the pixels selected by `coordinates`.
+      /// \brief Creates a 1D image view containing the pixels selected by `coordinates`.
       ///
-      /// The values are copied, not referenced. The output image will be of the same data type and tensor shape
-      /// as `this`, but have only one dimension. It will have as many pixels as coordinates are in `coordinates`,
-      /// and be sorted in the same order.
+      /// When cast to an image, the values will be copied, not referenced. The output is of the same data type
+      /// and tensor shape as `this`, but have only one dimension. It will have as many pixels as coordinates are
+      /// in `coordinates`, and be sorted in the same order.
       ///
       /// Each of the coordinates must have the same number of dimensions as `this`.
       ///
       /// `this` must be forged.
       View At( CoordinateArray const& coordinates ) const;
 
-      /// \brief Creates a 1D image containing the pixels selected by `indices`.
+      /// \brief Creates a 1D image view containing the pixels selected by `indices`.
       ///
-      /// The values are copied, not referenced. The output image will be of the same data type and tensor shape
-      /// as `this`, but have only one dimension. It will have as many pixels as indices are in `indices`, and
-      /// be sorted in the same order.
+      /// When cast to an image, the values will be copied, not referenced. The output is of the same data type
+      /// and tensor shape as `this`, but have only one dimension. It will have as many pixels as indices are in
+      /// `indices`, and be sorted in the same order.
       ///
       /// `indices` contains linear indices into the image. Note that converting indices into offsets is not a
       /// trivial operation; prefer to use the version of this function that uses coordinates.
@@ -2083,7 +2084,7 @@ class DIP_NO_EXPORT Image {
          } else if( cropLocation == S::BOTTOM_RIGHT ) {
             return Pad( sizes, Option::CropLocation::BOTTOM_RIGHT );
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( cropLocation );
          }
       };
 
@@ -2107,7 +2108,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// `this` must be forged.
       ///
-      /// `dip::Image::QuickCopy` does the same, but witout copying the data, its output image shares
+      /// `dip::Image::QuickCopy` does the same, but without copying the data, its output image shares
       /// the data segment with `this`.
       Image Copy() const {
          Image out;

@@ -38,7 +38,7 @@ Image::View::View( Image const& reference, Range range ) : reference_( reference
 Image::View::View( Image const& reference, RangeArray ranges ) : reference_( reference ) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = reference_.Dimensionality();
-   DIP_THROW_IF( nDims != ranges.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( nDims != ranges.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       DIP_STACK_TRACE_THIS( ranges[ ii ].Fix( reference_.Size(  ii )));
    }
@@ -65,7 +65,7 @@ Image::View::View( Image const& reference, Image const& mask ) : reference_( ref
 
 Image::View::View( Image const& reference, UnsignedArray const& indices ) : reference_( reference ) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( indices.size() == 0, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( indices.empty(), E::ARRAY_PARAMETER_EMPTY );
    dip::uint maxIndex = reference_.NumberOfPixels();
    for( auto const& ii : indices ) {
       DIP_THROW_IF( ii >= maxIndex, E::INDEX_OUT_OF_RANGE );
@@ -81,7 +81,7 @@ Image::View::View( Image const& reference, UnsignedArray const& indices ) : refe
 
 Image::View::View( Image const& reference, CoordinateArray const& coordinates ) : reference_( reference ) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( coordinates.size() == 0, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( coordinates.empty(), E::ARRAY_PARAMETER_EMPTY );
    dip::uint nDims = reference_.Dimensionality();
    for( UnsignedArray const& pp : coordinates ) {
       DIP_THROW_IF( pp.size() != nDims, E::COORDINATES_OUT_OF_RANGE );

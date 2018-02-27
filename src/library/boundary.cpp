@@ -30,7 +30,7 @@ Image::Pixel ReadPixelWithBoundaryCondition(
       IntegerArray coords, // getting a local copy so we can modify it
       BoundaryConditionArray const& bc
 ) {
-   DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    bool invert = false;
    Image::Pixel out( DataType::SuggestFlex( img.DataType() ), img.TensorElements() );
    out.ReshapeTensor( img.Tensor() );
@@ -88,7 +88,7 @@ void ExtendImage(
    dip::uint nDims;
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    nDims = c_in.Dimensionality();
-   DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_EMPTY );
    DIP_START_STACK_TRACE
       ArrayUseParameter( borderSizes, nDims );
    DIP_END_STACK_TRACE
@@ -153,7 +153,7 @@ void ExtendRegion(
 ) {
    // Test input arguments
    dip::uint nDims = image.Dimensionality();
-   DIP_THROW_IF( ranges.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( ranges.empty(), E::ARRAY_PARAMETER_EMPTY );
    DIP_START_STACK_TRACE
       ArrayUseParameter( ranges, nDims );
       for( dip::uint dim = 0; dim < nDims; ++dim ) {

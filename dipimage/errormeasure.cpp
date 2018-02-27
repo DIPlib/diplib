@@ -63,7 +63,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
      } else if( method == "MutualInformation" ) {
          error = dip::MutualInformation( in, reference, mask );
       } else {
-         DIP_THROW( dip::E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( method );
       }
 
       plhs[ 0 ] = dml::GetArray( error );

@@ -675,7 +675,7 @@ class DIP_NO_EXPORT JointImageIterator {
       /// and optionally a processing dimension.
       explicit JointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
             procDim_( procDim ), atEnd_( false ) {
-         DIP_THROW_IF( images.size() != N, E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( images.size() != N, E::ARRAY_PARAMETER_WRONG_LENGTH );
          Image const& img0 = images[ 0 ].get();
          DIP_THROW_IF( !img0.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( img0.DataType() != DataType( value_type< 0 >( 0 )), E::WRONG_DATA_TYPE );

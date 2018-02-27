@@ -38,7 +38,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::uint dimension1 = 0;
       dip::uint dimension2 = dimension1 + 1;
       dip::String method = "";
-      dip::String boundaryCondition = "add zeros";
+      dip::String boundaryCondition = dip::S::ADD_ZEROS;
 
       if(( nrhs > 2 ) && ( mxIsChar( prhs[ 2 ] ))) {
          // rotation(image_in,angle,interpolation_method,boundary_condition)

@@ -245,7 +245,7 @@ void SeparableConvolution(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF(( filterArray.size() != 1 ) && ( filterArray.size() != nDims ), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF(( filterArray.size() != 1 ) && ( filterArray.size() != nDims ), E::ARRAY_PARAMETER_WRONG_LENGTH );
    bool useDouble = in.DataType().IsA( DataType::Class_DComplex + DataType::Class_DFloat );
    //std::cout << "useDouble = " << useDouble << std::endl;
    InternOneDimensionalFilterArray filterData;

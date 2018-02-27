@@ -374,6 +374,7 @@ using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter
 using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
 using CoordinateArray = std::vector< UnsignedArray >; ///< An array of pixel coordinates.
+using FloatCoordinateArray = std::vector< FloatArray >; ///< An array of subpixel coordinates.
 
 
 /// \brief Check the length of an array, and extend it if necessary and possible.
@@ -535,6 +536,11 @@ struct DIP_NO_EXPORT Range {
       return static_cast< dip::uint >( start );
    }
 
+   /// Get the last index in the range (must be fixed first!).
+   dip::uint Last() const {
+      return static_cast< dip::uint >( stop );
+   }
+
    /// Get the signed step size for the range (must be fixed first!).
    dip::sint Step() const {
       if( start > stop ) {
@@ -587,12 +593,12 @@ struct DIP_NO_EXPORT Range {
    };
 
    /// Get an iterator to the beginning of the range (must be fixed first!).
-   Iterator begin() {
+   Iterator begin() const {
       return Iterator( start, Step() );
    }
 
    /// Get an iterator to the end of the range (must be fixed first!).
-   Iterator end() {
+   Iterator end() const {
       return Iterator( start + static_cast< dip::sint >( Size() ) * Step(), Step() );
    }
 };

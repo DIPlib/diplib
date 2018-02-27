@@ -273,6 +273,7 @@ void Resampling(
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
+   String colorSpace = c_in.ColorSpace();
 
    // Calculate new output sizes and other processing parameters
    UnsignedArray outSizes = in.Sizes();
@@ -294,6 +295,7 @@ void Resampling(
    // Create output
    out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
    out.SetPixelSize( pixelSize );
+   out.SetColorSpace( colorSpace );
    DataType bufferType = DataType::SuggestFlex( out.DataType() );
 
    // Find line filter
@@ -428,10 +430,12 @@ dip::UnsignedArray Skew(
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
+   String colorSpace = c_in.ColorSpace();
 
    // Create output
    out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
    out.SetPixelSize( pixelSize );
+   out.SetColorSpace( colorSpace );
    DataType bufferType = DataType::SuggestFlex( out.DataType() );
 
    // Find line filter

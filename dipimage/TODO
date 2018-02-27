@@ -1,6 +1,7 @@
 Functions in DIPimage 3 that didn't exist in DIPimage 2:
 
 areaopening
+asf
 boundary_condition
 coordinates
 countneighbors    (renamed from countneighbours)
@@ -13,6 +14,7 @@ getmaximumandminimum
 getsamplestatistics
 lee
 newtensorim       (adapted from newimar)
+nonmaximumsuppression (not documented)
 pathopening
 readics
 readtiff
@@ -21,6 +23,7 @@ setborder
 skew
 smallobjectsremove
 thetatheta
+traceobjects
 writeics
 writetiff
 
@@ -65,9 +68,7 @@ countingframe
 cpf
 curvature
 curvature_thirion
-dcc
 deblock
-dgg
 distancebetweenpointsets
 dpr
 find_affine_trans
@@ -77,22 +78,14 @@ findlocmax
 findospeaks
 fmmatch
 frc
-gabor
-gabor_click
 gaussf_adap
 gaussf_adap_banana
-get_subpixel
 granulometry
-gvf
 hist2image
-hist_equalize
 ht
 hybridf
-im2snake
 isophote_curvature
 jpeg_quality_score
-laplace_min_dgg
-laplace_plus_dgg
 lfmse
 localshift
 mappg
@@ -119,17 +112,12 @@ rotation3d
 scale2rgb
 scalespace
 setlabels
-snake2im
-snakedraw
-snakeminimize
 splitandmerge
 structf
 testobject
-tframehessian
 tikhonovmiller
 transform
 umbra
-vfc
 view5d
 wiener
 write_add

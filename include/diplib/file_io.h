@@ -61,11 +61,11 @@ struct FileInformation {
 /// `roi` can be set to read in a subset of the pixels in the file. If only one array element is given,
 /// it is used for all dimensions. An empty array indicates that all pixels should be read. Otherwise,
 /// the array should have as many elements as dimensions are represented in the file. Tensor dimensions
-/// are not included in the `roi` parameter.
+/// are not included in the `roi` parameter, but are set through the `channels` parameter.
 ///
 /// If `mode` is `"fast"`, it will attempt to forge `out` with strides matching those in the file, so
 /// that reading is much faster. When reading an ROI this is not possible. When `out` has an external
-/// interface set it might also be impossible to dictate what the stides will look like. In these cases,
+/// interface set it might also be impossible to dictate what the strides will look like. In these cases,
 /// the flag is ignored.
 ///
 /// Information about the file and all metadata is returned in the `FileInformation` output argument.
@@ -100,7 +100,7 @@ inline Image ImageReadICS(
 /// `sizes` to *image_size* - `origin` (i.e. up to the bottom right pixel),
 /// and `spacing` to all ones (i.e. no subsampling).
 ///
-/// Information about the file and all metadata is returned in the `FileInformation` output argument.
+/// See the first overload for this function to learn about the other parameters.
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
       String const& filename,
@@ -178,6 +178,10 @@ DIP_EXPORT void ImageWriteICS(
 /// planes and thumbnails alternate. A range such as {0,-1,2} reads all image planes skipping the
 /// thumbnails.
 ///
+/// `roi` can be set to read in a subset of the pixels in the 2D image. If only one array element is given,
+/// it is used for both dimensions. An empty array indicates that all pixels should be read. Tensor dimensions
+/// are not included in the `roi` parameter, but are set through the `channels` parameter.
+///
 /// The pixels per inch value in the TIFF file will be used to set the pixel size of `out`.
 ///
 /// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
@@ -192,14 +196,53 @@ DIP_EXPORT void ImageWriteICS(
 DIP_EXPORT FileInformation ImageReadTIFF(
       Image& out,
       String const& filename,
-      Range imageNumbers = Range{ 0 }
+      Range imageNumbers = Range{ 0 },
+      RangeArray const& roi = {},
+      Range const& channels = {}
 );
 inline Image ImageReadTIFF(
       String const& filename,
-      Range const& imageNumbers = Range{ 0 }
+      Range const& imageNumbers = Range{ 0 },
+      RangeArray const& roi = {},
+      Range const& channels = {}
 ) {
    Image out;
-   ImageReadTIFF( out, filename, imageNumbers );
+   ImageReadTIFF( out, filename, imageNumbers, roi, channels );
+   return out;
+}
+
+/// \brief This function is an overload of the previous function that defines the ROI using different
+/// parameters.
+///
+/// The parameters `origin` and `sizes` define a ROI to read in.
+/// The ROI is clipped to the image size, so it is safe to specify a ROI that is too large.
+/// `spacing` can be used to read in a subset of the pixels of the chosen ROI.
+/// These three parameters are handled as in `dip::DefineROI`:
+/// If `origin`, `sizes` or `spacing` have only one value, that value is repeated for each dimension.
+/// For empty arrays, `origin` defaults to all zeros (i.e. the top left pixel),
+/// `sizes` to *image_size* - `origin` (i.e. up to the bottom right pixel),
+/// and `spacing` to all ones (i.e. no subsampling).
+///
+/// See the first overload for this function to learn about the other parameters.
+DIP_EXPORT FileInformation ImageReadTIFF(
+      Image& out,
+      String const& filename,
+      Range const& imageNumbers,
+      UnsignedArray const& origin,
+      UnsignedArray const& sizes = {},
+      UnsignedArray const& spacing = {},
+      Range const& channels = {}
+);
+inline Image ImageReadTIFF(
+      String const& filename,
+      Range const& imageNumbers,
+      UnsignedArray const& origin,
+      UnsignedArray const& sizes = {},
+      UnsignedArray const& spacing = {},
+      Range const& channels = {}
+) {
+   Image out;
+   ImageReadTIFF( out, filename, imageNumbers, origin, sizes, spacing, channels );
    return out;
 }
 

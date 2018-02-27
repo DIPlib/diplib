@@ -120,7 +120,7 @@ void PeronaMalikDiffusion(
             [ fK ]( sfloat v ) { v /= fK; return std::abs( v ) < 1.0f ? ( 1 - ( v * v )) * ( 1 - ( v * v )) : 0.0f; },
             6, static_cast< sfloat >( lambda ));
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( g );
    }
 
    // Each iteration is applied to `out`.
@@ -207,7 +207,7 @@ void GaussianAnisotropicDiffusion(
             [ fK, fL ]( sfloat n2 ) { n2 *= fK; return fL * std::exp( -std::sqrt( n2 )); },
             30 );
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( g );
    }
 
    // Each iteration is applied to `out`.
@@ -343,14 +343,9 @@ void CoherenceEnhancingDiffusion(
          Divergence( gradient, delta, { 1 }, "gaussFIR" );
       } else { // const
          Hessian( out, hessian, { 1 }, "gaussFIR" );
-         // TODO: stuff below here can be a `delta = NewDyadicScanLineFilter( D, hessian )`
          MultiplySampleWise( D, hessian, D, D.DataType() );
          DIP_ASSERT( D.TensorElements() == nDims * nDims ); // make sure D is a full matrix
-         D.TensorToSpatial( nDims );
-         BooleanArray process( nDims + 1, false );
-         process[ nDims ] = true;
-         Sum( D, {}, delta, process );
-         delta.Squeeze( nDims );
+         SumTensorElements( D, delta );
       }
       out += delta;
    }

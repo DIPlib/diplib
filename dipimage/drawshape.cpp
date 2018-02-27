@@ -65,14 +65,14 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if(( shape == "ellipse" ) || shape == "ellipsoid" ) {
          dip::DrawEllipsoid( out, sizes, origin, color );
       } else if(( shape == "disk" ) || shape == "ball" ) {
-         DIP_THROW_IF( sizes.size() != 1, dip::E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( sizes.size() != 1, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
          if( sigma == 0.0 ) {
             dip::DrawEllipsoid( out, sizes, origin, color );
          } else {
             dip::DrawBandlimitedBall( out, sizes[ 0 ], origin, color, dip::S::FILLED, sigma, truncation );
          }
       } else if(( shape == "circle" ) || shape == "sphere" ) {
-         DIP_THROW_IF( sizes.size() != 1, dip::E::ARRAY_ILLEGAL_SIZE );
+         DIP_THROW_IF( sizes.size() != 1, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
          dip::DrawBandlimitedBall( out, sizes[ 0 ], origin, color, dip::S::EMPTY, sigma, truncation );
       } else if(( shape == "rectangle" ) || shape == "box" ) {
          if( sigma == 0.0 ) {
@@ -85,7 +85,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       } else if( shape == "diamond" ) {
          dip::DrawDiamond( out, sizes, origin, color );
       } else {
-         DIP_THROW( dip::E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( shape );
       }
 
       plhs[ 0 ] = mi.GetArray( out );

@@ -80,7 +80,7 @@ void Gauss(
    } else if( ( method == "FT" ) || ( method == "ft" ) ) {
       DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
    } else if( ( method == "IIR" ) || ( method == "iir" ) ) {
-      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation ));
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
       DIP_THROW( "Unknown Gauss filter method" );
    }
@@ -114,7 +114,7 @@ void Derivative(
    } else if( ( method == "gaussFT" ) || ( method == "gaussft" ) ) {
       DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
    } else if( ( method == "gaussIIR" ) || ( method == "gaussiir" ) ) {
-      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation ));
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
       DIP_THROW( "Unknown derivative method" );
    }
@@ -419,5 +419,148 @@ void Laplace (
       }
    }
 }
+
+namespace {
+
+enum class DggFamilyVersion { Dgg, LaplacePlusDgg, LaplaceMinusDgg };
+
+void DggFamily(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation,
+      DggFamilyVersion version
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+
+   Image g, H;
+   DIP_STACK_TRACE_THIS( Gradient( in, g, sigmas, method, boundaryCondition, process, truncation ));
+   DIP_STACK_TRACE_THIS( Hessian( in, H, sigmas, method, boundaryCondition, process, truncation ));
+   DIP_ASSERT( g.TensorElements() == H.TensorRows());
+
+   // The easy way to compute this:
+   //    out = Transpose( g ) * H * g;
+   //    out /= Transpose( g ) * g;
+   // But that duplicates some computations, so we write it out by hand.
+   // Note that computing the elements of the gradient and Hessian as they are needed, instead of
+   // computing them all upfront, would reduce temporary memory usage. But it's too attractive to
+   // re-use those functions here.
+
+   // 1. The first diagonal element, to initialize `out` and `gradSum`.
+   Image gradSum = MultiplySampleWise( g[ 0 ], g[ 0 ] );
+   MultiplySampleWise( gradSum, H[ 0 ], out );
+   // 2. The rest of the diagonal elements
+   Image tmp;
+   for( dip::uint ii = 1; ii < g.TensorElements(); ++ii ) {
+      MultiplySampleWise( g[ ii ], g[ ii ], tmp );
+      Add( gradSum, tmp, gradSum );
+      MultiplySampleWise( tmp, H[ ii ], tmp );
+      Add( out, tmp, out );
+   }
+   // 3. The off-diagonal elements
+   for( dip::uint ii = 1; ii < g.TensorElements() - 1; ++ii ) {
+      for( dip::uint jj = ii + 1; jj < g.TensorElements(); ++jj ) {
+         MultiplySampleWise( g[ ii ], g[ jj ], tmp );
+         MultiplySampleWise( tmp, H[ UnsignedArray{ ii, jj } ], tmp );
+         LinearCombination( out, tmp, out, 1.0, 2.0 );
+      }
+   }
+   // 4. The division
+   SafeDivide( out, gradSum, out );
+   // 5. Compute Laplace if necessary.
+   if( version == DggFamilyVersion::Dgg ) {
+      return;
+   }
+   Trace( H, tmp );
+   if( version == DggFamilyVersion::LaplaceMinusDgg ) {
+      Subtract( tmp, out, out );
+   } else { // DggFamilyVersion::LaplacePlusDgg
+      Add( tmp, out, out );
+   }
+}
+
+} // namespace
+
+void Dgg(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::Dgg ));
+}
+
+void LaplacePlusDgg(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::LaplacePlusDgg ));
+}
+
+void LaplaceMinusDgg(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::LaplaceMinusDgg ));
+}
+
+void NormalizedDifferentialConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint dimension,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !in.IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
+   DataType dt = DataType::SuggestFlex( in.DataType());
+
+   // We compute here:
+   //    out = SafeDivide( Derivative( a * m ), Gauss( m )) - SafeDivide( Gauss( a * m ), Gauss( m )) * SafeDivide( Derivative( m ), Gauss( m ))
+   //        = SafeDivide( Derivative( a * m ) - SafeDivide( Gauss( a * m ), Gauss( m )) * Derivative( m ), Gauss( m ))
+
+   Image denominator;
+   DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   Image weighted;
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, weighted, dt ));
+   // NC = SafeDivide( Gauss( a * m ), Gauss( m ));
+   Image NC;
+   DIP_STACK_TRACE_THIS( Gauss( weighted, NC, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   SafeDivide( NC, denominator, NC, dt ); // NC.DataType() == dt
+   // out = SafeDivide( Derivative( a * m ) - NC * Derivative( m ), Gauss( m ));
+   UnsignedArray derivativeOrder( in.Dimensionality(), 0 );
+   derivativeOrder[ dimension ] = 1;
+   Image tmp;
+   DIP_STACK_TRACE_THIS( Derivative( mask, tmp, derivativeOrder, sigmas, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( Derivative( weighted, out, derivativeOrder, sigmas, method, boundaryCondition, truncation ));
+   weighted.Strip();
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( NC, tmp, NC, dt ));
+   tmp.Strip();
+   DIP_STACK_TRACE_THIS( Subtract( out, NC, out, dt ));
+   NC.Strip();
+   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, dt ));
+};
 
 } // namespace dip

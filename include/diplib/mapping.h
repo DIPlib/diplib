@@ -23,7 +23,6 @@
 
 #include "diplib.h"
 
-
 /// \file
 /// \brief Image grey-value mapping functions.
 /// \see mapping
@@ -192,6 +191,51 @@ inline Image ContrastStretch(
    return out;
 }
 
+/// \brief Modifies the image such that its histogram is as flat as possible.
+///
+/// This function applies a mapping (`dip::LookupTable`) designed by `dip::EqualizationLookupTable`, yielding
+/// an output in the range [0,nBins-1].
+///
+/// `in` must be real-valued and scalar.
+/// The data type of `out` is the same as that for `in`, except if that type is a small integer type that cannot
+/// hold the output range, in which case a larger type is chosen.
+DIP_EXPORT void HistogramEqualization(
+      Image const& in,
+      Image& out,
+      dip::uint nBins = 256
+);
+inline Image HistogramEqualization(
+      Image const& in,
+      dip::uint nBins = 256
+) {
+   Image out;
+   HistogramEqualization( in, out, nBins );
+   return out;
+}
+
+class DIP_NO_EXPORT Histogram; // forward declaration: include <diplib/histogram.h>
+
+/// \brief Modifies the image such that its histogram is as similar as possible to `example`.
+///
+/// This function applies a mapping (`dip::LookupTable`) designed by `dip::MatchingLookupTable`, yielding an
+/// output in the range [`example.LowerBound()`,`example.UpperBound()`].
+///
+/// `in` must be real-valued and scalar. `example` must be a 1D histogram.
+/// The data type of `out` is always `dip::DT_SFLOAT`. If `example` is the histogram of a `dip::DT_UINT8` image,
+/// it is possible to cast `out` to `dip::DT_UINT8`.
+DIP_EXPORT void HistogramMatching(
+      Image const& in,
+      Image& out,
+      Histogram const& example
+);
+inline Image HistogramMatching(
+      Image const& in,
+      Histogram const& example
+) {
+   Image out;
+   HistogramMatching( in, out, example );
+   return out;
+}
 
 /// \}
 

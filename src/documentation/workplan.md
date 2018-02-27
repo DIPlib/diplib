@@ -104,7 +104,6 @@ document's source</a> for the most up-to-date version.
 -   Stuff that is in *DIPimage*:
     - 2D snakes
     - general 2D affine transformation, 3D rotation (is already C code)
-    - histogram equalization
     - ...and many more, see the *DIPimage 2* M-files for inspiration.
 
 -   Other stuff that's not in *DIPlib 2* (see below).
@@ -112,8 +111,10 @@ document's source</a> for the most up-to-date version.
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
 
--   *PyDIP* Python module: Write interactive image display and GUI as exists in *MATLAB*.
-    Make the module more "Pythonic"?
+-   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
+    to be added as these functions are written. Make the module more "Pythonic"?
+    Find a way to automatically generate documentation from Doxygen, one approach is
+    [here](https://stackoverflow.com/q/34896122/7328782).
 
 -   Other interfaces. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
@@ -124,9 +125,6 @@ document's source</a> for the most up-to-date version.
 -   Style sheets for the documentation.
 
 ## Functionality currently not in *DIPlib* that would be important to include
-
-- Alternating sequential open-close filter (3 versions: with structural opening,
-  opening by reconstruction, and area opening) -- easy to add!
 
 - We're also lacking some other morphological filters:
     - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
@@ -196,15 +194,8 @@ Some of the following functions already have their prototype written in the new 
     - dip_ObjectPlane (dip_generation.h)
     - dip_ObjectEllipsoid (dip_generation.h)
 
-- diplib/geometry.h
-    - dip_ResampleAt (dip_interpolation.h)
-    - dip_AffineTransform (dip_interpolation.h) (was actually never finished)
-
 - diplib/linear.h
     - dip_OrientedGauss (dip_linear.h)
-    - dip_Dgg (dip_derivatives.h)
-    - dip_LaplacePlusDgg (dip_derivatives.h)
-    - dip_LaplaceMinDgg (dip_derivatives.h)
 
 - diplib/math.h
     - dip_RemapOrientation (dip_point.h)

@@ -34,8 +34,7 @@ dfloat MeanError( Image const& in1, Image const& in2, Image const& mask ) {
    DIP_STACK_TRACE_THIS( error = Mean( in1 - in2, mask ));
    DIP_THROW_IF( error.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED ); // means one of the inputs was complex
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Mean( error ); // average across tensor elements also
+      error = MeanTensorElement( error );
    }
    return error.As< dfloat >();
 }
@@ -48,8 +47,7 @@ dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask ) 
    }
    DIP_STACK_TRACE_THIS( error = MeanSquare( error, mask ));
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Mean( error ); // average across tensor elements also
+      error = MeanTensorElement( error );
    }
    return error.As< dfloat >();
 }
@@ -58,8 +56,7 @@ dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask 
    Image error;
    DIP_STACK_TRACE_THIS( error = MeanAbs( in1 - in2, mask ));
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Mean( error ); // average across tensor elements also
+      error = MeanTensorElement( error );
    }
    return error.As< dfloat >();
 }
@@ -68,8 +65,7 @@ dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& ma
    Image error;
    DIP_STACK_TRACE_THIS( error = MaximumAbs( in1 - in2, mask ));
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Maximum( error ); // max across tensor elements also
+      error = MaximumTensorElement( error );
    }
    return error.As< dfloat >();
 }
@@ -166,8 +162,7 @@ dfloat InProduct( Image const& in1, Image const& in2, Image const& mask ) {
    Image error = Sum( MultiplySampleWise( in1, in2 ), mask );
    DIP_THROW_IF( error.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED ); // means one of the inputs was complex
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Sum( error ); // average across tensor elements also
+      error = SumTensorElements( error );
    }
    return error.As< dfloat >();
 }
@@ -185,8 +180,7 @@ dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask, dfloa
    DIP_STACK_TRACE_THIS( error = Sum( error, mask ));
    if( !error.IsScalar() ) {
       N *= error.TensorElements();
-      error.TensorToSpatial( 0 );
-      error = Sum( error );
+      error = SumTensorElements( error );
    }
    return N > 0
           ? std::pow( error.As< dfloat >(), 1.0 / order ) / static_cast< dfloat >( N )
@@ -250,8 +244,7 @@ dfloat SSIM( Image const& in, Image const& reference, Image const& mask, dfloat 
    Image error;
    DIP_STACK_TRACE_THIS( error = Mean( meanProduct, mask ));
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Mean( error ); // average across tensor elements also
+      error = MeanTensorElement( error );
    }
    return error.As< dfloat >();
 }
@@ -261,14 +254,17 @@ dfloat MutualInformation( Image const& in, Image const& reference, Image const& 
    configuration[ 0 ] = Histogram::Configuration( in.DataType() );
    configuration[ 1 ] = Histogram::Configuration( reference.DataType() );
    configuration[ 0 ].nBins = nBins;
-   configuration[ 1 ].nBins = nBins; // TODO: This does nothing for 16 or 32-bit integer types.
+   configuration[ 1 ].nBins = nBins;
+   configuration[ 0 ].mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
+   configuration[ 1 ].mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
    Histogram hist( in, reference, mask, configuration );
    return MutualInformation( hist );
 }
 
 dfloat Entropy( Image const& in, Image const& mask, dip::uint nBins ) {
    Histogram::Configuration configuration( in.DataType() );
-   configuration.nBins = nBins; // TODO: This does nothing for 16 or 32-bit integer types.
+   configuration.nBins = nBins;
+   configuration.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
    Histogram hist( in, mask, configuration );
    return Entropy( hist );
 }
@@ -283,12 +279,7 @@ dfloat EstimateNoiseVariance( Image const& in, Image const& c_mask ) {
          Gauss( mask, mask, { 3 } );
          if( !mask.IsScalar() ) {
             // In case of a multi-channel input, take maximum over the gradient magnitudes for each channel
-            dip::uint n = mask.Dimensionality();
-            mask.TensorToSpatial( n );
-            BooleanArray process( mask.Dimensionality(), false );
-            process[ n ] = true;
-            Maximum( mask, {}, mask, process );
-            mask.Squeeze( n );
+            MaximumTensorElement( mask, mask );
          }
          dfloat threshold = OtsuThreshold( Histogram( mask ));
          Lesser( mask, threshold, mask );
@@ -301,8 +292,7 @@ dfloat EstimateNoiseVariance( Image const& in, Image const& c_mask ) {
       error = MeanSquare( error, mask );
    DIP_END_STACK_TRACE
    if( !error.IsScalar() ) {
-      error.TensorToSpatial( 0 );
-      error = Mean( error ); // average across tensor elements also
+      error = MeanTensorElement( error );
    }
    return error.As< dfloat >() / 36.0;
 }

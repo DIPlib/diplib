@@ -6,9 +6,9 @@
 %  IMAGE_IN is a scalar image with N dimensions.
 %  IMAGE_OUT is a scalar image, computed by DET(HESSIAN(IMAGE_IN,...).
 %
-%  See HESSIAN for a description of the parameters
+%  See DERIVATIVE for a description of the parameters and the defaults.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
