@@ -25,7 +25,6 @@
 #include <GLFW/glfw3.h>
 
 #include "diplib/viewer/glfw.h"
-#include "fg_font_data.h"
 
 #define EPS 0.001
 
@@ -33,40 +32,6 @@
 /// \brief Defines the GLFW interface of \ref viewer.
 
 namespace dip { namespace viewer {
-
-/*
- * This function is 
- * Copyright (c) 1999-2000 Pawel W. Olszta. All Rights Reserved.
- * Written by Pawel W. Olszta, <olszta@sourceforge.net>
- * Creation date: Thu Dec 16 1999
- * 
- * See fg_font_data.h for license information.
- */
-void bitmapCharacter( int character )
-{
-    const GLubyte* face;
-    const SFG_Font* font = &fgFontFixed8x13;
-
-    /*
-     * Find the character we want to draw (???)
-     */
-    face = font->Characters[ character ];
-
-    glPushClientAttrib( GL_CLIENT_PIXEL_STORE_BIT );
-    glPixelStorei( GL_UNPACK_SWAP_BYTES,  GL_FALSE );
-    glPixelStorei( GL_UNPACK_LSB_FIRST,   GL_FALSE );
-    glPixelStorei( GL_UNPACK_ROW_LENGTH,  0        );
-    glPixelStorei( GL_UNPACK_SKIP_ROWS,   0        );
-    glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0        );
-    glPixelStorei( GL_UNPACK_ALIGNMENT,   1        );
-    glBitmap(
-        face[ 0 ], font->Height,      /* The bitmap's width and height  */
-        font->xorig, font->yorig,     /* The origin in the font glyph   */
-        ( float )( face[ 0 ] ), 0.0,  /* The raster advance -- inc. x,y */
-        ( face + 1 )                  /* The packed bitmap data...      */
-    );
-    glPopClientAttrib( );
-}
 
 GLFWManager *GLFWManager::instance_ = NULL;
 
@@ -165,16 +130,6 @@ WindowPtr GLFWManager::getWindow(GLFWwindow *window)
     return it->second.wdw;
   else
     return NULL;
-}
-
-size_t GLFWManager::drawString(Window* /*window*/, const char *string)
-{
-  size_t movex = 0;
-
-  for (; *string; ++string, movex += 8)
-    bitmapCharacter(*string);
-    
-  return movex;
 }
 
 void GLFWManager::swapBuffers(Window* window)

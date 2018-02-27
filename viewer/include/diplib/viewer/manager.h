@@ -45,6 +45,7 @@ class DIPVIEWER_EXPORT Window
 {
   friend class GLUTManager;
   friend class GLFWManager;
+  friend class ProxyManager;
 
   private:
     void *id_;
@@ -192,11 +193,6 @@ class DIPVIEWER_EXPORT Manager
     virtual void processEvents() = 0;
     
   protected:
-    /// \brief Draw a string onto a window.
-    ///
-    /// Must be called from the specified Window's callback.
-    virtual size_t drawString(Window* window, const char *string) = 0;
-
     /// \brief Swap display buffers.
     ///
     /// Must be called from the specified Window's callback.

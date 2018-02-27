@@ -112,7 +112,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     }
     else
     {
-      mapping_ = Mapping::Normal;
+      mapping_ = Mapping::Linear;
       mapping_range_ = {0, 255};
     }
     
@@ -124,6 +124,8 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
       
     if (image.IsColor())
       lut_ = LookupTable::ColorSpace;
+    else if (image.TensorElements() > 1)
+      lut_ = LookupTable::RGB;
     else
       lut_ = LookupTable::Grey;
     

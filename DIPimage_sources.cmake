@@ -119,4 +119,5 @@ dipimage/waterseed.cpp
 dipimage/watershed.cpp
 dipimage/writeics.cpp
 dipimage/writetiff.cpp
+viewer/dipimage/viewslice.cpp
 )

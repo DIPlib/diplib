@@ -69,7 +69,6 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
     DIPVIEWER_EXPORT void processEvents() override;
     
   protected:    
-    DIPVIEWER_EXPORT size_t drawString(Window* window, const char *string) override;
     DIPVIEWER_EXPORT void swapBuffers(Window* window) override;
     DIPVIEWER_EXPORT void setWindowTitle(Window* window, const char *name) override;
     DIPVIEWER_EXPORT void refreshWindow(Window* window) override;

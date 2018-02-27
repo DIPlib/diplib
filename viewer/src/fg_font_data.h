@@ -50,6 +50,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "diplib/viewer/include_gl.h"
+
 namespace dip { namespace viewer {
 
 typedef struct tagSFG_Font SFG_Font;
@@ -344,5 +346,31 @@ static const GLubyte* Fixed8x13_Character_Map[] = {Fixed8x13_Character_000,Fixed
 
 /* The font structure: */
 const SFG_Font fgFontFixed8x13 = { 256, 14, Fixed8x13_Character_Map, 0, 3 };
+
+void bitmapCharacter( int character )
+{
+    const GLubyte* face;
+    const SFG_Font* font = &fgFontFixed8x13;
+
+    /*
+     * Find the character we want to draw (???)
+     */
+    face = font->Characters[ character ];
+
+    glPushClientAttrib( GL_CLIENT_PIXEL_STORE_BIT );
+    glPixelStorei( GL_UNPACK_SWAP_BYTES,  GL_FALSE );
+    glPixelStorei( GL_UNPACK_LSB_FIRST,   GL_FALSE );
+    glPixelStorei( GL_UNPACK_ROW_LENGTH,  0        );
+    glPixelStorei( GL_UNPACK_SKIP_ROWS,   0        );
+    glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0        );
+    glPixelStorei( GL_UNPACK_ALIGNMENT,   1        );
+    glBitmap(
+        face[ 0 ], font->Height,      /* The bitmap's width and height  */
+        font->xorig, font->yorig,     /* The origin in the font glyph   */
+        ( float )( face[ 0 ] ), 0.0,  /* The raster advance -- inc. x,y */
+        ( face + 1 )                  /* The packed bitmap data...      */
+    );
+    glPopClientAttrib( );
+}
 
 }} // namespace dip::viewer

@@ -19,6 +19,8 @@
 
 #include "diplib/viewer/manager.h"
 
+#include "fg_font_data.h"
+
 /// \file
 /// \brief Defines `dip::viewer::Manager`.
 
@@ -36,7 +38,12 @@ void Window::swap()
 
 size_t Window::drawString(const char *string)
 {
-  return manager()->drawString(this, string);
+  size_t movex = 0;
+
+  for (; *string; ++string, movex += 8)
+    bitmapCharacter(*string);
+    
+  return movex;
 }
 
 void Window::refresh()

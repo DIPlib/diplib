@@ -275,7 +275,7 @@ if(WIN32 AND DIP_BUILD_DIPVIEWER)
 endif()
 
 if(DIP_BUILD_DIPVIEWER)
-   file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp viewer/src/manager/*.cpp viewer/src/manager/*.h viewer/include/*.h viewer/include/diplib/viewer/*.h)
+   file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp viewer/src/*.h viewer/src/manager/*.cpp viewer/src/manager/*.h viewer/include/*.h viewer/include/diplib/viewer/*.h)
    update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
    add_library(DIPviewer ${DIP_VIEWER_SRC})
    if(DIP_SHARED_LIBRARY)
@@ -310,7 +310,6 @@ if(DIP_BUILD_DIPVIEWER)
    install(TARGETS DIPviewer DESTINATION lib)
    install(DIRECTORY viewer/include/ DESTINATION include)
 endif()
-
 
 ### PyDIP module for Python
 
@@ -463,6 +462,29 @@ if(DIP_BUILD_DIPIMAGE)
    install(TARGETS ${DIPIMAGE_TARGETS} LIBRARY DESTINATION ${DIPIMAGE_INSTALL_PATH}
                                        RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH})
 
+   if(DIP_BUILD_DIPVIEWER)
+      # Compile and install MEX-files in dipviewer/dipimage/
+      file(GLOB DIPVIEWER_DIPIMAGE viewer/dipimage/*.cpp)
+      list(APPEND DIPIMAGE_DEPS "${DIPVIEWER_DIPIMAGE}")
+      if(APPLE)
+         set(LIB_REL_PATH "@loader_path/../../../lib/")
+      else()
+         set(LIB_REL_PATH "$ORIGIN/../../../lib/")
+      endif()
+      set(DIPVIEWER_DIPIMAGE_TARGETS "")
+      foreach(file ${DIPVIEWER_DIPIMAGE})
+         get_filename_component(target ${file} NAME_WE)
+         matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP DIPviewer)
+         set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+         if(DIP_ENABLE_UNICODE)
+            target_compile_definitions(MEX_${target} PRIVATE DIP__ENABLE_UNICODE)
+         endif()
+         set(DIPVIEWER_DIPIMAGE_TARGETS ${DIPVIEWER_DIPIMAGE_TARGETS} MEX_${target})
+      endforeach()
+      install(TARGETS ${DIPVIEWER_DIPIMAGE_TARGETS} LIBRARY DESTINATION ${DIPIMAGE_INSTALL_PATH}
+                                                    RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH})
+   endif()
+
    # Keep a file with all dependencies
    update_deps_file("DIPimage_sources" "${DIPIMAGE_DEPS}")
 
@@ -514,6 +536,22 @@ if(DIP_BUILD_DIPIMAGE)
    endif()
 endif()
 
+### DIPviewer Java binding
+
+find_package(Java)
+if (JAVA_FOUND AND MATLAB_FOUND AND DIP_BUILD_DIPIMAGE)
+   set(DIP_BUILD_DIPVIEWER_JAVA ON CACHE BOOL "Build the viewer Java bindings")
+endif()
+
+if(DIP_BUILD_DIPVIEWER_JAVA)
+   include(UseJava)
+   add_jar(Viewer viewer/java/Viewer.java
+           INCLUDE_JARS ${Matlab_ROOT_DIR}/java/jarext/svnkit/jna.jar
+                        ${Matlab_ROOT_DIR}/java/jarext/jogl-all.jar
+                        ${Matlab_ROOT_DIR}/java/jarext/gluegen-rt.jar)
+
+   install_jar(Viewer ${DIPIMAGE_INSTALL_PATH})
+endif()
 
 ### Examples
 
@@ -695,6 +733,12 @@ if(DIP_BUILD_DIPVIEWER)
    message(" * DIPviewer module added to 'all' with window managers: " ${DIP_VIEWER_MANAGERS})
 else()
    message(" * DIPviewer module not configured")
+endif()
+
+if(DIP_BUILD_DIPVIEWER_JAVA)
+   message(" * DIPviewer Java bindings added to 'all' target")
+else()
+   message(" * DIPviewer Java bindings not configured")
 endif()
 
 if(DIP_BUILD_PYDIP)
