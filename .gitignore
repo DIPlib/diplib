@@ -3,6 +3,7 @@ target2/
 build/
 .idea/
 .vs/
+.vscode/
 *.geany
 dipimage/private/*.jar
 *~
