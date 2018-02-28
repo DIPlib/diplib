@@ -347,8 +347,7 @@ if(DIP_BUILD_PYDIP)
 
    if(DIP_BUILD_DIPVIEWER)
       file(GLOB DIP_PYTHON_VIEWER_SRC pydip/viewer/*.cpp pydip/viewer/*.h)
-      set(PyDIPviewerdeps "${DIP_PYTHON_VIEWER_SRC}")
-      update_deps_file("PyDIPviewer_sources" "${PyDIPviewerdeps}")
+      update_deps_file("PyDIPviewer_sources" "${DIP_PYTHON_VIEWER_SRC}")
       pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
       #target_compile_options(PyDIPviewer PRIVATE -Wno-deprecated-declarations)
       target_link_libraries(PyDIPviewer PRIVATE DIP DIPviewer)
@@ -373,7 +372,7 @@ endif()
 
 if(DIP_BUILD_DIPIMAGE)
    # Install M-files
-   install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
+   install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m" PATTERN "user_manual" EXCLUDE )
 
    # Compile and install MEX-files in dipimage/@dip_image/private
    file(GLOB DIP_IMAGE_PRIVATE dipimage/@dip_image/private/*.cpp)
@@ -463,13 +462,16 @@ if(DIP_BUILD_DIPIMAGE)
                                        RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH})
 
    if(DIP_BUILD_DIPVIEWER)
+      # Install M-files in dipviewer/dipimage
+      install(DIRECTORY viewer/dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m")
+
       # Compile and install MEX-files in dipviewer/dipimage/
       file(GLOB DIPVIEWER_DIPIMAGE viewer/dipimage/*.cpp)
-      list(APPEND DIPIMAGE_DEPS "${DIPVIEWER_DIPIMAGE}")
+      update_deps_file("DIPimageViewer_sources" "${DIPVIEWER_DIPIMAGE}")
       if(APPLE)
-         set(LIB_REL_PATH "@loader_path/../../../lib/")
+         set(LIB_REL_PATH "@loader_path/../../lib/")
       else()
-         set(LIB_REL_PATH "$ORIGIN/../../../lib/")
+         set(LIB_REL_PATH "$ORIGIN/../../lib/")
       endif()
       set(DIPVIEWER_DIPIMAGE_TARGETS "")
       foreach(file ${DIPVIEWER_DIPIMAGE})
@@ -542,15 +544,15 @@ find_package(Java)
 if (JAVA_FOUND AND MATLAB_FOUND AND DIP_BUILD_DIPIMAGE)
    set(DIP_BUILD_DIPVIEWER_JAVA ON CACHE BOOL "Build the viewer Java bindings")
 endif()
-
 if(DIP_BUILD_DIPVIEWER_JAVA)
    include(UseJava)
-   add_jar(Viewer viewer/java/Viewer.java
+   set(CMAKE_JAVA_COMPILE_FLAGS -target 1.7 -source 1.7) # MATLAB R2013b--R2017a use Java SDK 1.7, R2017b-- use SDK 1.8.
+   add_jar(ViewerJava viewer/java/Viewer.java
            INCLUDE_JARS ${Matlab_ROOT_DIR}/java/jarext/svnkit/jna.jar
                         ${Matlab_ROOT_DIR}/java/jarext/jogl-all.jar
-                        ${Matlab_ROOT_DIR}/java/jarext/gluegen-rt.jar)
-
-   install_jar(Viewer ${DIPIMAGE_INSTALL_PATH})
+                        ${Matlab_ROOT_DIR}/java/jarext/gluegen-rt.jar
+           OUTPUT_NAME Viewer)
+   install_jar(ViewerJava ${DIPIMAGE_INSTALL_PATH})
 endif()
 
 ### Examples
