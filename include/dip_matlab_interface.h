@@ -707,6 +707,13 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 
 } // namespace detail
 
+/// \brief `dml::GetImage` can optionally create a shared copy of the input `mxArray`, which extends its lifetime.
+/// This is useful if the MEX-file needs to keep a reference to the object
+enum class GetImageMode {
+      REFERENCE,     ///< Reference the `mxArray` in the `dip::Image` object.
+      SHARED_COPY    ///< Make a shared copy of the `mxArray` and take ownership of the copy.
+};
+
 /// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
 ///
 /// This function "converts" an `mxArray` with image data to a dip::Image object.
@@ -723,7 +730,7 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 /// ```
 ///
 /// An empty `mxArray` produces a non-forged image.
-inline dip::Image GetImage( mxArray const* mx ) {
+inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode::REFERENCE ) {
    // Find image properties
    bool complex = false;
    bool needCopy = false;
@@ -884,15 +891,24 @@ inline dip::Image GetImage( mxArray const* mx ) {
       //out.SetPixelSize( pixelSize );
       //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
       return out;
-   } else if( datatype.IsBinary() ) {
-      // Create Image object
-      dip::Image out( dip::NonOwnedRefToDataSegment( mxdata ), mxGetLogicals( mxdata ), datatype, sizes, strides, tensor, tstride );
-      out.SetPixelSize( pixelSize );
-      out.SetColorSpace( colorSpace );
-      return out;
    } else {
+      dip::DataSegment dataSegment;
+      if( mode == GetImageMode::SHARED_COPY ) {
+         mxArray *copy = mxCreateSharedDataCopy( mxdata );
+         mexMakeArrayPersistent( copy );
+         dataSegment = dip::DataSegment{ copy, []( void* ptr ){ mxDestroyArray( static_cast< mxArray* >( ptr )); }};
+      } else {
+         dataSegment = dip::NonOwnedRefToDataSegment( mxdata );
+      }
+      void* origin;
+      if( datatype.IsBinary() ) {
+         origin = mxGetLogicals( mxdata );
+      } else {
+         // Create Image object
+         origin = mxGetData( mxdata );
+      }
       // Create Image object
-      dip::Image out( dip::NonOwnedRefToDataSegment( mxdata ), mxGetData( mxdata ), datatype, sizes, strides, tensor, tstride );
+      dip::Image out( dataSegment, origin, datatype, sizes, strides, tensor, tstride );
       out.SetPixelSize( pixelSize );
       out.SetColorSpace( colorSpace );
       return out;
