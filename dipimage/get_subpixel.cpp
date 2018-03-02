@@ -51,7 +51,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::ResampleAt( in, out, coords, mode );
 
       out.TensorToSpatial( 0 ); // Return to original shape
-      plhs[ 0 ] = mi.GetArrayAsArray( out );
+      plhs[ 0 ] = dml::GetArrayAsArray( out );
       // the image has 2, 3 or 4 dimensions, we want to get rid of the first two singleton dimension
       mwSize nDims = mxGetNumberOfDimensions( plhs[ 0 ] );
       const mwSize* dims = mxGetDimensions( plhs[ 0 ] );

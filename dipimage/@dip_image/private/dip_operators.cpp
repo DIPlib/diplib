@@ -34,25 +34,23 @@
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
-      dml::MatlabInterface mi;
-
-      dip::Image lhs;
-      dip::Image rhs;
-      dip::Image out = mi.NewImage();
-
       // Get operator
       DML_MIN_ARGS( 2 );
       DIP_THROW_IF( !mxIsChar( prhs[ 0 ] ), "First argument must be a string.");
       mxChar* ch = mxGetChars( prhs[ 0 ] );
 
       // Get images
-      lhs = dml::GetImage( prhs[ 1 ] );
+      dip::Image lhs = dml::GetImage( prhs[ 1 ] );
+      dip::Image rhs;
       if( *ch == 'm' ) {
          DIP_THROW_IF( nrhs != 2, "Wrong number of input arguments." );
       } else {
          DIP_THROW_IF( nrhs != 3, "Wrong number of input arguments." );
          rhs = dml::GetImage( prhs[ 2 ] );
       }
+
+      dml::MatlabInterface mi;
+      dip::Image out = mi.NewImage();
 
       // Apply operator
       switch( *ch ) {
@@ -220,7 +218,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       }
 
       // Done
-      plhs[ 0 ] = mi.GetArray( out );
+      plhs[ 0 ] = dml::GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

@@ -58,7 +58,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::HitAndMiss( in, out, se1, se2, mode, bc );
 
-      plhs[ 0 ] = mi.GetArray( out );
+      plhs[ 0 ] = dml::GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

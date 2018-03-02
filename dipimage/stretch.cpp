@@ -63,7 +63,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::ContrastStretch( in, out, low, high, minimum, maximum, method, param1, param2 );
 
-      plhs[ 0 ] = mi.GetArray( out );
+      plhs[ 0 ] = dml::GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

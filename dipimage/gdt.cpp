@@ -60,10 +60,10 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::GreyWeightedDistanceTransform( grey, in, {}, out, metric, outputMode );
 
       if( nlhs > 1 ) {
-         plhs[ 0 ] = mi.GetArray( out[ 0 ] );
-         plhs[ 1 ] = mi.GetArray( out[ 1 ] );
+         plhs[ 0 ] = dml::GetArray( out[ 0 ] );
+         plhs[ 1 ] = dml::GetArray( out[ 1 ] );
       } else {
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
       }
 
    } catch( const dip::Error& e ) {

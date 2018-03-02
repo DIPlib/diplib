@@ -45,7 +45,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
             DIP_THROW_INVALID_FLAG( flag );
          }
          dip::MaximumTensorElement( in1, out );
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
          return;
       }
 
@@ -67,7 +67,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          // Maximum pixel projection
          dip::Maximum( in1, in2, out, process );
          if( hasProcess ) {
-            plhs[ 0 ] = mi.GetArray( out );
+            plhs[ 0 ] = dml::GetArray( out );
          } else {
             plhs[ 0 ] = dml::GetArray( out.At( 0 ));
          }
@@ -80,7 +80,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
                k = process.find( true );
                dip::Image out2 = mi.NewImage();
                dip::PositionMaximum( in1, in2, out2, k );
-               plhs[ 1 ] = mi.GetArray( out2 );
+               plhs[ 1 ] = dml::GetArray( out2 );
             } else {
                DIP_THROW( "Cannot produce position value for more than one dimension" );
             }
@@ -88,7 +88,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       } else {
          // Maximum over two images
          dip::Supremum( in1, in2, out );
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
       }
 
    } catch( const dip::Error& e ) {

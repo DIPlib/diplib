@@ -37,13 +37,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          dip::Image U = mi.NewImage();
          dip::Image V = mi.NewImage();
          dip::SingularValueDecomposition( in, U, S, V );
-         plhs[ 0 ] = mi.GetArray( U );
-         plhs[ 1 ] = mi.GetArray( S );
-         plhs[ 2 ] = mi.GetArray( V );
+         plhs[ 0 ] = dml::GetArray( U );
+         plhs[ 1 ] = dml::GetArray( S );
+         plhs[ 2 ] = dml::GetArray( V );
       } else if( nlhs <= 1 ) {
          dip::Image S = mi.NewImage();
          dip::SingularValues( in, S );
-         plhs[ 0 ] = mi.GetArray( S );
+         plhs[ 0 ] = dml::GetArray( S );
       } else {
          DIP_THROW( "SVD needs one or three output arguments" );
       }

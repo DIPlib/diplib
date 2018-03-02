@@ -45,7 +45,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
             DIP_THROW_INVALID_FLAG( flag );
          }
          dip::ProductTensorElements( in, out );
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
          return;
       }
 
@@ -65,7 +65,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
 
       // Done
       if( nrhs > 2 ) {
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
       } else {
          plhs[ 0 ] = dml::GetArray( out.At( 0 ));
       }

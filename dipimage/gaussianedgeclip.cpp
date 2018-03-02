@@ -42,7 +42,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::GaussianEdgeClip( in, out, { 1.0 }, sigma, truncation );
 
-      plhs[ 0 ] = mi.GetArray( out );
+      plhs[ 0 ] = dml::GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

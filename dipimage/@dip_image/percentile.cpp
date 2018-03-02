@@ -49,7 +49,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          process[ nDims ] = true;
          dip::Percentile( in, {}, out, percentile, process );
          out.Squeeze( nDims );
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
          return;
       }
 
@@ -75,11 +75,11 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          dip::BooleanArray process( nDims, false );
          process[ dim ] = true;
          dip::Percentile( in, mask, out, percentile, process );
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
 
          dip::Image out2 = mi.NewImage();
          dip::PositionPercentile( in, mask, out2, percentile, dim );
-         plhs[ 1 ] = mi.GetArray( out2 );
+         plhs[ 1 ] = dml::GetArray( out2 );
 
       } else {
 
@@ -94,7 +94,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
          // Done
          if( nrhs > 2 ) {
-            plhs[ 0 ] = mi.GetArray( out );
+            plhs[ 0 ] = dml::GetArray( out );
          } else {
             plhs[ 0 ] = dml::GetArray( out.At( 0 ));
          }

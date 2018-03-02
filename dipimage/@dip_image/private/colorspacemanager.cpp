@@ -63,7 +63,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
             dml::MatlabInterface mi;
             dip::Image out = mi.NewImage();
             csm.Convert( in, out, col );
-            plhs[ 0 ] = mi.GetArray( out );
+            plhs[ 0 ] = dml::GetArray( out );
          }
 
       }

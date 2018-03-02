@@ -56,7 +56,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::BinaryPropagation( inSeed, inMask, out, connectivity, iterations, edgeCondition );
 
-      plhs[ 0 ] = mi.GetArray( out );
+      plhs[ 0 ] = dml::GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

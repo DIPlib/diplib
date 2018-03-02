@@ -58,11 +58,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       // Do the thing
       if(( nrhs == 1 ) && ( mode == "tensor" )) { // nrhs == 1 because we did --nrhs earlier!
          dip::MeanTensorElement( in, out );
-         plhs[ 0 ] = mi.GetArray( out );
+         plhs[ 0 ] = dml::GetArray( out );
       } else {
          dip::Mean( in, mask, out, mode, process );
          if( nrhs > 2 ) {
-            plhs[ 0 ] = mi.GetArray( out );
+            plhs[ 0 ] = dml::GetArray( out );
          } else {
             plhs[ 0 ] = dml::GetArray( out.At( 0 ));
          }

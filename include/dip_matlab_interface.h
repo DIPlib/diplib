@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality for the MATLAB interface.
  *
- * (c)2015-2017, Cris Luengo.
+ * (c)2015-2018, Cris Luengo.
  * Based on original DIPlib/MATLAB interface code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 
 #ifndef DIP_MATLAB_H
 #define DIP_MATLAB_H
@@ -56,17 +57,6 @@ extern "C" {
 #include "diplib.h"
 #include "diplib/file_io.h" // Definition of FileInformation
 
-/*
- * An alternative:
- *
- * We create a `dip::Image` with `new`, and return the pointer to MATLAB in a handle class. The handle class
- * needs a destructor defined, which calls the `dip::Image` destructor in a MEX-file. I think the image
- * needs to be created and destroyed in the same MEX-file for this to work, because the file needs to be locked.
- * If not locked, `clear functions` causes memory to be wiped (apparently) and pointers to dangle.
- *
- * See http://www.mathworks.com/matlabcentral/fileexchange/38964-example-matlab-class-wrapper-for-a-c++-class
- */
-
 
 /// \file
 /// \brief This file should be included in each MEX-file. It defines the `#dml` namespace.
@@ -77,10 +67,12 @@ extern "C" {
 /// The functions and classes defined in this namespace are meant to be used in *MATLAB* MEX-files.
 namespace dml {
 
+
 /// \defgroup dip_matlab_interface *DIPlib*--*MATLAB* interface
 /// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
 ///
 /// \{
+
 
 // These are the names of the properties we get/set in the dip_image class in MATLAB:
 constexpr char const* imageClassName = "dip_image";
@@ -98,160 +90,9 @@ static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one 
 
 
 //
-// Private functions
-//
-
-namespace detail {
-
-// Are the strides consistent for how we create them in this interface?
-inline bool IsMatlabStrides(
-      dip::UnsignedArray const& sizes,
-      dip::uint telem,
-      dip::IntegerArray const& strides,
-      dip::sint tstride
-) {
-   if( sizes.size() != strides.size() ) {
-      //mexPrintf( "IsMatlabStrides: dimensionality test failed\n" );
-      return false;
-   }
-   if(( telem > 1 ) && ( tstride != 1 )) { // tstride is meaningless if there's only one tensor element
-      //mexPrintf( "IsMatlabStrides: tensor test failed\n" );
-      return false;
-   }
-   if( sizes.size() == 1 ) {
-      if( strides[ 0 ] != static_cast< dip::sint >( telem )) {
-         //mexPrintf( "IsMatlabStrides: 1D test failed\n" );
-         return false;
-      }
-   } else if( sizes.size() >= 2 ) {
-      dip::sint total = static_cast< dip::sint >( telem );
-      if( strides[ 1 ] != total ) {
-         //mexPrintf( "IsMatlabStrides: second dimension test failed\n" );
-         return false;
-      }
-      total *= static_cast< dip::sint >( sizes[ 1 ] );
-      if( strides[ 0 ] != total ) {
-         //mexPrintf( "IsMatlabStrides: first dimension test failed\n" );
-         return false;
-      }
-      total *= static_cast< dip::sint >( sizes[ 0 ] );
-      for( dip::uint ii = 2; ii < sizes.size(); ++ii ) {
-         if( strides[ ii ] != total ) {
-            //mexPrintf( "IsMatlabStrides: higher dimension test failed\n" );
-            return false;
-         }
-         total *= static_cast< dip::sint >( sizes[ ii ] );
-      }
-   }
-   return true;
-}
-
-// Do the dip::Image and mxArray dimensions match?
-inline bool MatchDimensions(
-      dip::UnsignedArray const& sizes,
-      dip::uint telem,
-      bool complex,
-      mwSize const* psizes,
-      mwSize ndims
-) {
-   if(( complex && psizes[ 0 ] != 2 ) || ( !complex && psizes[ 0 ] != 1 )) {
-      //mexPrintf( "MatchDimensions: complexity test failed\n" );
-      return false;
-   }
-   if( psizes[ 1 ] != telem ) {
-      //mexPrintf( "MatchDimensions: telem test failed\n" );
-      return false;
-   }
-   dip::uint n = ndims - 2;
-   if( n > sizes.size() ) { // can be smaller if there are trailing singleton dimensions
-      //mexPrintf( "MatchDimensions: dimensionality test failed\n" );
-      return false;
-   }
-   if( n == 1 ) {
-      if( psizes[ 2 ] != sizes[ 0 ] ) {
-         //mexPrintf( "MatchDimensions: 1D test failed\n" );
-         return false;
-      }
-   } else if( n >= 2 ) {
-      if(( psizes[ 2 ] != sizes[ 1 ] ) || ( psizes[ 3 ] != sizes[ 0 ] )) {
-         //mexPrintf( "MatchDimensions: first two dimensions test failed\n" );
-         return false;
-      }
-      for( dip::uint ii = 2; ii < n; ++ii ) {
-         if( psizes[ 2 + ii ] != sizes[ ii ] ) {
-            //mexPrintf( "MatchDimensions: higher dimension test failed\n" );
-            return false;
-         }
-      }
-      for( dip::uint ii = n; ii < sizes.size(); ++ii ) {
-         if( sizes[ ii ] != 1 ) {
-            //mexPrintf( "MatchDimensions: trailing singleton test failed\n" );
-            return false;
-         }
-      }
-   }
-   return true;
-}
-
-// Convert DIPlib data type to MATLAB class ID
-inline mxClassID GetMatlabClassID(
-      dip::DataType dt
-) {
-   mxClassID type;
-   switch( dt ) {
-      case dip::DT_BIN:
-         type = mxLOGICAL_CLASS;
-         break;
-      case dip::DT_UINT8:
-         type = mxUINT8_CLASS;
-         break;
-      case dip::DT_SINT8:
-         type = mxINT8_CLASS;
-         break;
-      case dip::DT_UINT16:
-         type = mxUINT16_CLASS;
-         break;
-      case dip::DT_SINT16:
-         type = mxINT16_CLASS;
-         break;
-      case dip::DT_UINT32:
-         type = mxUINT32_CLASS;
-         break;
-      case dip::DT_SINT32:
-         type = mxINT32_CLASS;
-         break;
-      case dip::DT_SFLOAT:
-      case dip::DT_SCOMPLEX:
-         type = mxSINGLE_CLASS;
-         break;
-      case dip::DT_DFLOAT:
-      case dip::DT_DCOMPLEX:
-         type = mxDOUBLE_CLASS;
-         break;
-      default:
-         DIP_THROW_ASSERTION( "Unhandled DataType" ); // Should not be possible
-   }
-   return type;
-}
-
-// Get the dip::Tensor::Shape value from a string mxArray
-inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
-   char str[ 25 ];
-   if( mxGetString( mx, str, 25 ) == 0 ) {
-      try {
-         return dip::Tensor::ShapeFromString( str );
-      } catch( dip::Error& ) {
-         DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } );
-      }
-   }
-   DIP_THROW( "TensorShape property returned wrong data!" );
-}
-
-} // namespace detail
-
-//
 // Get input arguments: convert mxArray to various dip:: types
 //
+
 
 #define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < ( n ), "Too few input arguments" )
 #define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > ( n ), "Too many input arguments" )
@@ -656,6 +497,7 @@ inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
 // Put output values: convert various dip:: types to mxArray
 //
 
+
 /// \brief Create a two-element mxArray and write the two values in it.
 inline mxArray* CreateDouble2Vector( dip::dfloat v0, dip::dfloat v1 ) {
    mxArray* out = mxCreateDoubleMatrix( 1, 2, mxREAL );
@@ -844,316 +686,26 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
 
 
 //
-// The ExternalInterface for MATLAB: Converting dip::Image to mxArray (sort of)
-//
-
-/* How this works:
- *
- * A `dip::Image` object has this class set as its external interface. When the image is forged, the
- * `AllocateData` member function is called to allocate the data segment for the image. This function then
- * creates an `mxArray` of the right sizes and type, and returns its data pointer as the `origin` pointer.
- * The pointer to the `mxArray` is stored in the image's `DataSegment` shared pointer. When the image is
- * stripped, this `DataSegment` is reset or replaced. Because it's a shared pointer, when the last copy
- * is reset or replaced, the deleter function associated to it is called. This is where the complexity
- * comes in. We need to be able to "rescue" the `mxArray` from being deleted, so we can return it to
- * MATLAB when the MEX-file terminates. So making this deleter function simply call `mxDestroyArray` is
- * not sufficient. Instead, we provide an instance of the `StripHandler` class as the deleter function.
- * Its `operator()` looks up the `mxArray` pointer in the `mla` "database", and only calls `mxDestroyArray`
- * if it can find the pointer. Thus, if we want to "rescue" the `mxArray`, all we need to do is remove
- * its pointer from `mla`.
- *
- * Alternative (NOTE that the description below is not actually implemented!)
- *
- * There are other ways in which we could have accomplished the same thing. This alternative is maybe a
- * little simpler:
- *  - The `DataSegment` pointer points to an object that holds a pointer to the mxArray.
- *  - The object's destructor calls `mxDestroyArray` on this pointer if the pointer is not `nullptr`.
- *  - We can call a function that sets this pointer to `nullptr` (or simply allow direct access to the pointer).
- *  - When we want to "rescue" the `mxArray`, we set its pointer to `nullptr`, the `DataSegment` can then be
- *    deleted without us loosing our `mxArray`.
- * Advantages:
- *  - No `mla` in the external interface. No status at all outside of the `dip::Image` object.
- *  - No special deleter functor in the shared object. The shared object just manages a normal object created
- *    with `new`.
- *  - The `GetArray` function does not need to be a method of the external interface. This makes it easier to
- *    use, as any DIPlib type can be converted to a MATLAB type using the same `dml::GetArray` interface.
- * Disadvantages:
- *  - The object needs to be allocated on the heap. With `std::make_shared` this allocation is combined with
- *    that for the shared pointer's control structure, but we then need to `std::static_pointer_cast` to a
- *    void shared pointer, which (maybe?) requires one more allocation?
- *  - The external interface needs to continue existing for as long as the `dip::Image` that references it
- *    might be forged or reforged, even though there is no need to access it directly otherwise (i.e. it is
- *    not clear from the calling code that the external interface needs to continue existing).
- * Example use would be:
- * ```cpp
- *     dml::MatlabInterface mi;
- *     dip::Image img_out0 = mi.NewImage();
- *     ...
- *     plhs[ 0 ] = dml::GetArray( img_out0 );
- * ```
- * The class would look like this:
- * ```cpp
- *     class MatlabInterface : public dip::ExternalInterface {
- *        public:
- *           struct mxContainer {
- *              mxArray* array = nullptr;
- *              ~mxContainer() { if( array ) { mxDestroyArray( array ); } }
- *           };
- *           virtual dip::DataSegment AllocateData( ... ) override {
- *              ...
- *              auto tmp = std::make_shared< mxContainer >();
- *              tmp->array = mxCreateNumericArray( ... );
- *              origin = mxGetData( tmp->array );
- *              return std::static_pointer_cast< void >( tmp );
- *           }
- *           dip::Image NewImage() {
- *              dip::Image out;
- *              out.SetExternalInterface( this );
- *              return out;
- *           }
- *     };
- *     mxArray* GetArray( dip::Image const& img ) {
- *        DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
- *        auto tmp = static_cast< MatlabInterface::mxContainer* >( img.Data()->get() );
- *        mxArray* out = nullptr;
- *        if( tmp && tmp->array ) {
- *           out = tmp->array;
- *           tmp->array = nullptr;
- *        }
- *        if( out ) {
- *           ... // test, set `out = nullptr` if we need a fresh copy
- *        }
- *        if( out ) {
- *           ... // create a fresh copy of `img`
- *        }
- *        ... // create dip_image object holding the mxArray
- *        return out;
- *     }
- * ```
- */
-
-/// \brief This class is the dip::ExternalInterface for the *MATLAB* interface.
-///
-/// In a MEX-file, use the following code when declaring images to be
-/// used as the output to a function:
-/// ```cpp
-///     dml::MatlabInterface mi;
-///     dip::Image img_out0 = mi.NewImage();
-///     dip::Image img_out1 = mi.NewImage();
-/// ```
-/// This configures the images `img_out0` and `img_out1` such that, when they are
-/// forged later on, an `mxArray` structure will be created to hold the pixel data.
-/// `mxArray` is *MATLAB*'s representation of arrays.
-/// To return those images back to *MATLAB*, use the GetArray() method, which returns
-/// the `mxArray` created when the image was forged:
-/// ```cpp
-///     plhs[ 0 ] = mi.GetArray( img_out0 );
-///     plhs[ 1 ] = mi.GetArray( img_out1 );
-/// ```
-///
-/// If you don't use the GetArray() method, the `mxArray` that contains
-/// the pixel data will be destroyed when the dip::Image object goes out
-/// of scope.
-///
-/// Remember to not assign a result into the images created with `NewImage`,
-/// as the pixel data will be copied in the assignment into a *MATLAB* array.
-/// Instead, use the *DIPlib* functions that take output images as function
-/// arguments:
-/// ```cpp
-///     img_out0 = in1 + in2;           // Bad!
-///     dip::Add( in1, in2, img_out0 ); // Correct
-/// ```
-/// In the first case, `in1 + in2` is computed into a temporary image, whose
-/// pixels are then copied into the `mxArray` created for `img_out0`. In the
-/// second case, the result of the operation is directly written into the
-/// `mxArray`, no copies are necessary.
-///
-/// This interface handler doesn't own any image data.
-class MatlabInterface : public dip::ExternalInterface {
-   private:
-      // Here we store the mxArray pointers that the interface owns.
-      std::set< mxArray* > mla;
-      // This is the deleter functor we'll associate to the dip::DataSegment.
-      class StripHandler {
-         private:
-            MatlabInterface& interface;
-         public:
-            StripHandler( MatlabInterface& mi ) : interface{ mi } {};
-            void operator()( void* p ) {
-               mxArray* m = static_cast< mxArray* >( p );
-               auto it = interface.mla.find( m );
-               if( it != interface.mla.end() ) {
-                  mxDestroyArray( *it );
-                  interface.mla.erase( it );
-               }
-            };
-      };
-
-   public:
-      /// This function overrides dip::ExternalInterface::AllocateData().
-      /// It is called when an image with this `ExternalInterface` is forged.
-      /// It allocates a *MATLAB* `mxArray` and returns a `dip::DataSegment`
-      /// containing a pointer to the  `mxArray` data pointer, with a custom
-      /// deleter functor. It also adjusts strides to match the `mxArray` storage.
-      ///
-      /// A user will never call this function directly.
-      virtual dip::DataSegment AllocateData(
-            void*& origin,
-            dip::DataType datatype,
-            dip::UnsignedArray const& sizes,
-            dip::IntegerArray& strides,
-            dip::Tensor const& tensor,
-            dip::sint& tstride
-      ) override {
-         // Find the right MATLAB class
-         mxClassID type = detail::GetMatlabClassID( datatype );
-         // Copy size array
-         dip::UnsignedArray mlsizes = sizes;
-         dip::uint n = sizes.size();
-         // MATLAB arrays switch y and x axes
-         if( n >= 2 ) {
-            using std::swap;
-            swap( mlsizes[ 0 ], mlsizes[ 1 ] );
-         }
-         // Create stride array
-         tstride = 1;
-         dip::uint s = tensor.Elements();
-         strides.resize( n );
-         for( dip::uint ii = 0; ii < n; ii++ ) {
-            strides[ ii ] = static_cast< dip::sint >( s );
-            s *= mlsizes[ ii ];
-         }
-         // Prepend tensor dimension
-         mlsizes.insert( 0, tensor.Elements() );
-         // Handle complex data
-         mlsizes.insert( 0, datatype.IsComplex() ? 2 : 1 );
-         // MATLAB arrays switch y and x axes
-         if( n >= 2 ) {
-            using std::swap;
-            swap( strides[ 0 ], strides[ 1 ] );
-         }
-         // Allocate MATLAB matrix
-         mxArray* m;
-         if( type == mxLOGICAL_CLASS ) {
-            m = mxCreateLogicalArray( mlsizes.size(), mlsizes.data() );
-            origin = mxGetLogicals( m );
-
-         } else {
-            m = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
-            origin = mxGetData( m );
-         }
-         //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
-         mla.insert( m );
-         return dip::DataSegment{ m, StripHandler( *this ) };
-      }
-
-      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
-      mxArray* GetArrayAsArray( dip::Image const& img ) {
-         //std::cout << "GetArray for image: " << img;
-         DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
-         mxArray* mat = static_cast< mxArray* >( img.Data() );
-         auto it = mla.find( mat );
-         if( it == mla.end() ) {
-            mat = nullptr;
-         }
-         void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat )) : nullptr;
-         // Does the image point to a modified view of the mxArray or to a non-MATLAB array?
-         if( !mat || ( mptr != img.Origin()) ||
-             !detail::IsMatlabStrides( img.Sizes(), img.TensorElements(), img.Strides(), img.TensorStride() ) ||
-             !detail::MatchDimensions( img.Sizes(), img.TensorElements(), img.DataType().IsComplex(),
-                                       mxGetDimensions( mat ), mxGetNumberOfDimensions( mat )) ||
-             ( mxGetClassID( mat ) != detail::GetMatlabClassID( img.DataType()))
-            // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
-               ) {
-            // Yes, it does. We need to make a copy of the image into a new MATLAB array.
-            //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
-            dip::Image tmp = NewImage();
-            tmp.Copy( img );
-            //std::cout << "   New image: " << tmp;
-            mat = static_cast< mxArray* >( tmp.Data() );
-            mla.erase( mat );
-         } else {
-            // No, it doesn't. Directly return the mxArray.
-            mla.erase( it );
-            //mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
-         }
-         return mat;
-      }
-
-      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
-      /// and create a MATLAB dip_image object around it.
-      mxArray* GetArray( dip::Image const& img ) {
-         mxArray* mat;
-         DIP_STACK_TRACE_THIS( mat = GetArrayAsArray( img ));
-
-         // Create a MATLAB dip_image object with the mxArray inside.
-         // We create an empty object, then set the Array property, because calling the constructor
-         // with the mxArray for some reason causes a deep copy of the mxArray.
-         mxArray* out;
-         mexCallMATLAB( 1, &out, 0, nullptr, imageClassName );
-         mxSetPropertyShared( out, 0, arrayPropertyName, mat );
-         // Set NDims property
-         mxArray* ndims = mxCreateDoubleScalar( static_cast< double >( img.Dimensionality() ));
-         mxSetPropertyShared( out, 0, ndimsPropertyName, ndims );
-         // Set TensorShape property
-         if( img.TensorElements() > 1 ) {
-            mxArray* tshape;
-            switch( img.TensorShape() ) {
-               default:
-               //case dip::Tensor::Shape::COL_VECTOR:
-                  tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorElements() ), 1 );
-                  break;
-               case dip::Tensor::Shape::ROW_VECTOR:
-                  tshape = CreateDouble2Vector( 1, static_cast< dip::dfloat >( img.TensorElements() ));
-                  break;
-               case dip::Tensor::Shape::COL_MAJOR_MATRIX:
-                  tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorRows() ), static_cast< dip::dfloat >( img.TensorColumns() ));
-                  break;
-               case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
-                  // requires property to be set twice
-                  tshape = mxCreateString( img.Tensor().TensorShapeAsString().c_str() );
-                  mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
-                  tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorRows() ), static_cast< dip::dfloat >( img.TensorColumns() ));
-                  break;
-               case dip::Tensor::Shape::DIAGONAL_MATRIX:
-               case dip::Tensor::Shape::SYMMETRIC_MATRIX:
-               case dip::Tensor::Shape::UPPTRIANG_MATRIX:
-               case dip::Tensor::Shape::LOWTRIANG_MATRIX:
-                  tshape = mxCreateString( img.Tensor().TensorShapeAsString().c_str() );
-                  break;
-            }
-            mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
-         }
-         // Set PixelSize property
-         if( img.HasPixelSize() ) {
-            dip::PixelSize const& pixelSize = img.PixelSize();
-            mxArray* pxsz = dml::GetArray( pixelSize );
-            mxSetPropertyShared( out, 0, pxsizePropertyName, pxsz );
-         }
-         // Set ColorSpace property
-         if( img.IsColor() ) {
-            mxSetPropertyShared( out, 0, colspPropertyName, dml::GetArray( img.ColorSpace() ));
-         }
-         return out;
-      }
-
-      /// \brief Constructs a dip::Image object with the external interface set so that,
-      /// when forged, a *MATLAB* `mxArray` will be allocated to hold the samples.
-      ///
-      /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
-      /// it as a `lhs` argument to your MEX-file.
-      dip::Image NewImage() {
-         dip::Image out;
-         out.SetExternalInterface( this );
-         return out;
-      }
-};
-
-
-//
 // Converting mxArray to dip::Image
 //
 
+
+namespace detail {
+
+// Get the dip::Tensor::Shape value from a string mxArray
+inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
+   char str[ 25 ];
+   if( mxGetString( mx, str, 25 ) == 0 ) {
+      try {
+         return dip::Tensor::ShapeFromString( str );
+      } catch( dip::Error& ) {
+         DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } );
+      }
+   }
+   DIP_THROW( "TensorShape property returned wrong data!" );
+}
+
+} // namespace detail
 
 /// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
 ///
@@ -1247,12 +799,10 @@ inline dip::Image GetImage( mxArray const* mx ) {
       }
       sizes.resize( ndims, 1 );
       if( ndims == 1 ) {
-         // for a 1D image, we expect one of the two dimensions to be 1. This also handles the case that one of them is 0.
+         // for a 1D image, we expect one of the two dimensions to be 1
          sizes[ 0 ] = psizes[ 0 ] * psizes[ 1 ];
       } else if( ndims > 1 ) {
-         for( dip::uint ii = 0; ii < ndims; ii++ ) {
-            sizes[ ii ] = psizes[ ii ];
-         }
+         std::copy( psizes, psizes + ndims, sizes.begin() );
       }
       // Data Type
       type = mxGetClassID( mxdata );
@@ -1351,6 +901,470 @@ inline dip::Image GetImage( mxArray const* mx ) {
 
 
 //
+// The ExternalInterface for MATLAB: Converting dip::Image to mxArray (sort of)
+//
+
+
+/* How this works:
+ *
+ * A `dip::Image` object has this class set as its external interface. When the image is forged, the
+ * `AllocateData` member function is called to allocate the data segment for the image. This function then
+ * creates an `mxArray` of the right sizes and type, and returns its data pointer as the `origin` pointer.
+ * The pointer to the `mxArray` is stored in a `dml::MatlabInterface::mxContainer` object, which is owned by
+ * the image's `DataSegment` shared pointer. When the image is stripped, this `DataSegment` is reset or
+ * replaced. Because it's a shared pointer, when the last copy is reset or replaced, the `mxContainer` object
+ * is deleted, causing  the `mxArray` to be destroyed.
+ *
+ * But, it is possible to set the `mxArray` pointer inside the `mxContainer` object to `nullptr`, thereby
+ * "rescuing" the `mxArray`. The shared pointer will no longer own it.
+ */
+
+namespace detail {
+
+// Convert DIPlib data type to MATLAB class ID
+inline mxClassID GetMatlabClassID(
+      dip::DataType dt
+) {
+   mxClassID type;
+   switch( dt ) {
+      case dip::DT_BIN:
+         type = mxLOGICAL_CLASS;
+         break;
+      case dip::DT_UINT8:
+         type = mxUINT8_CLASS;
+         break;
+      case dip::DT_SINT8:
+         type = mxINT8_CLASS;
+         break;
+      case dip::DT_UINT16:
+         type = mxUINT16_CLASS;
+         break;
+      case dip::DT_SINT16:
+         type = mxINT16_CLASS;
+         break;
+      case dip::DT_UINT32:
+         type = mxUINT32_CLASS;
+         break;
+      case dip::DT_SINT32:
+         type = mxINT32_CLASS;
+         break;
+      case dip::DT_SFLOAT:
+      case dip::DT_SCOMPLEX:
+         type = mxSINGLE_CLASS;
+         break;
+      case dip::DT_DFLOAT:
+      case dip::DT_DCOMPLEX:
+         type = mxDOUBLE_CLASS;
+         break;
+      default:
+         DIP_THROW_ASSERTION( "Unhandled DataType" ); // Should not be possible
+   }
+   return type;
+}
+
+// Create mxArray compatible with the given dip::Image properties
+inline mxArray* CreateMxArray(
+      dip::DataType datatype,
+      dip::UnsignedArray const& sizes,
+      dip::IntegerArray& strides,
+      dip::Tensor const& tensor,
+      dip::sint& tstride
+) {
+   // Find the right MATLAB class
+   mxClassID type = detail::GetMatlabClassID( datatype );
+   // Copy size array
+   dip::UnsignedArray mlsizes = sizes;
+   dip::uint n = sizes.size();
+   // MATLAB arrays switch y and x axes
+   if( n >= 2 ) {
+      using std::swap;
+      swap( mlsizes[ 0 ], mlsizes[ 1 ] );
+   }
+   // Create stride array
+   tstride = 1;
+   dip::uint s = tensor.Elements();
+   strides.resize( n );
+   for( dip::uint ii = 0; ii < n; ii++ ) {
+      strides[ ii ] = static_cast< dip::sint >( s );
+      s *= mlsizes[ ii ];
+   }
+   // Prepend tensor dimension
+   mlsizes.insert( 0, tensor.Elements() );
+   // Handle complex data
+   mlsizes.insert( 0, datatype.IsComplex() ? 2 : 1 );
+   // MATLAB arrays switch y and x axes
+   if( n >= 2 ) {
+      using std::swap;
+      swap( strides[ 0 ], strides[ 1 ] );
+   }
+   // Allocate MATLAB matrix
+   if( type == mxLOGICAL_CLASS ) {
+      return mxCreateLogicalArray( mlsizes.size(), mlsizes.data() );
+   } else {
+      return mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
+   }
+}
+
+// Are the strides consistent for how we create them in this interface?
+// Note that it is not an issue if singleton dimensions were added or removed, EXCEPT if one of the first
+// two dimensions were shifted because of that. Shifting the first two dimensions requires a re-organization
+// of the data because we store them swapped: 1, 0, 2, 3, 4, ...
+//  - Removing dimension 0 or 1 causes 2 to jump to the front: 2, 1, 3, 4, ...
+//  - Adding a dimension 0 causes 1 to jump over 1: 0, x, 1, 2, 3, 4, ...
+//  - Adding a dimension 1 causes the same: x, 0, 1, 2, 3, 4, ...
+// Thus, here we ignore singleton dimensions only after the first two dimensions.
+inline bool IsMatlabStrides(
+      dip::Image const& img
+) {
+   dip::uint nDims = img.Dimensionality();
+   dip::uint tElem = img.TensorElements();
+   if(( tElem > 1 ) && ( img.TensorStride() != 1 )) {
+      //mexPrintf( "IsMatlabStrides: tensor test failed\n" );
+      return false;
+   }
+   // After squeezing, are we dealing with a 1D image?
+   dip::uint nSqueezeDims = 0;
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if( img.Size( ii ) > 1 ) {
+         ++nSqueezeDims;
+      }
+   }
+   if( nSqueezeDims == 1 ) {
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         if(( img.Size( ii ) > 1 ) && ( img.Stride( ii ) != static_cast< dip::sint >( tElem ))) {
+            //mexPrintf( "IsMatlabStrides: 1D test failed\n" );
+            return false;
+         }
+      }
+   } else if( nDims >= 2 ) {
+      dip::sint total = static_cast< dip::sint >( tElem );
+      if( img.Stride( 1 ) != total ) {
+         //mexPrintf( "IsMatlabStrides: second dimension test failed\n" );
+         return false;
+      }
+      total *= static_cast< dip::sint >( img.Size( 1 ));
+      if( img.Stride( 0 ) != total ) {
+         //mexPrintf( "IsMatlabStrides: first dimension test failed\n" );
+         return false;
+      }
+      total *= static_cast< dip::sint >( img.Size( 0 ));
+      for( dip::uint ii = 2; ii < nDims; ++ii ) {
+         if(( img.Size( ii ) > 1 ) && ( img.Stride( ii ) != total )) {
+            //mexPrintf( "IsMatlabStrides: higher dimension test failed\n" );
+            return false;
+         }
+         total *= static_cast< dip::sint >( img.Size( ii ));
+      }
+   }
+   return true;
+}
+
+// Do the dip::Image and mxArray sizes match?
+// NOTE: this function will add or remove singletons from `mat` if it can make the sizes match.
+// As in the function above, added singletons in the first two dimensions will require a data copy,
+// because we store them swapped. So we only add or remove singletons in dimensions 2 and above.
+// The exception is if there is only one non-singleton dimension -- we can add and remove singletons
+// as we please in this case without affecting storage order.
+inline bool MatchSizes(
+      dip::Image const& img,
+      mxArray* mat
+) {
+   mwSize const* mexSizes = mxGetDimensions( mat );
+   bool complex = img.DataType().IsComplex();
+   if(( complex && mexSizes[ 0 ] != 2 ) || ( !complex && mexSizes[ 0 ] != 1 )) {
+      //mexPrintf( "MatchSizes: complexity test failed\n" );
+      return false;
+   }
+   if( mexSizes[ 1 ] != img.TensorElements()) {
+      //mexPrintf( "MatchSizes: TensorElements test failed\n" );
+      return false;
+   }
+   mwSize nDimsMex = mxGetNumberOfDimensions( mat );
+   dip::uint nDimsDip = img.Dimensionality();
+   dip::UnsignedArray const& dipSizes = img.Sizes();
+   // Check number of pixels
+   dip::uint totalDip = std::accumulate( dipSizes.begin(), dipSizes.end(), 1u, std::multiplies< dip::uint >() );
+   dip::uint totalMex = std::accumulate( mexSizes + 2, mexSizes + nDimsMex, 1u, std::multiplies< dip::uint >() );
+   if( totalDip != totalMex ) {
+      //mexPrintf( "MatchSizes: number of pixels test failed\n" );
+      return false;
+   }
+   // After squeezing, are we dealing with a 1D image?
+   bool dipIs1D = false;
+   for( dip::uint ii = 0; ii < nDimsDip; ++ii ) {
+      if( dipSizes[ ii ] == totalDip ) {
+         dipIs1D = true;
+      }
+   }
+   bool mexIs1D = false;
+   for( dip::uint ii = 2; ii < nDimsMex; ++ii ) {
+      if( mexSizes[ ii ] == totalMex ) {
+         mexIs1D = true;
+      }
+   }
+   if( dipIs1D != mexIs1D ) {
+      //mexPrintf( "MatchSizes: 1D test failed\n" );
+      return false;
+   }
+   bool needAdjustment = false;
+   if( mexIs1D ) {
+      // Both are 1D images (possibly with singleton dimensions)
+      needAdjustment = true; // not sure, but it won't hurt
+   } else {
+      // Both have at least 2 non-singleton dimensions.
+      if(( mexSizes[ 2 ] != dipSizes[ 1 ] ) || ( mexSizes[ 3 ] != dipSizes[ 0 ] )) {
+         //mexPrintf( "MatchDimensions: first two dimensions test failed\n" );
+         return false;
+      }
+      dip::uint iiMex = 4;
+      dip::uint iiDip = 2;
+      while( iiDip < nDimsDip ) {
+         dip::uint sz = ( iiMex < nDimsMex ) ? mexSizes[ iiMex ] : 1;
+         if( sz != dipSizes[ iiDip ] ) {
+            if( sz == 1 ) {
+               needAdjustment = true;
+               ++iiMex;
+               continue;
+            } else if( dipSizes[ iiDip ] == 1 ) {
+               needAdjustment = true;
+               ++iiDip;
+               continue;
+            }
+            //mexPrintf( "MatchSizes: size test failed\n" );
+            return false;
+         }
+         ++iiMex;
+         ++iiDip;
+      }
+   }
+   if( needAdjustment ) {
+      //mexPrintf( "MatchSizes: adjusting mxArray singletons\n" );
+      dip::UnsignedArray newSizes( nDimsDip + 2 );
+      newSizes[ 0 ] = mexSizes[ 0 ];
+      newSizes[ 1 ] = mexSizes[ 1 ];
+      std::copy( dipSizes.begin(), dipSizes.end(), newSizes.begin() + 2 );
+      if( nDimsDip > 1 ) {
+         std::swap( newSizes[ 2 ], newSizes[ 3 ] );
+      }
+      mxSetDimensions( mat, newSizes.data(), newSizes.size() );
+   }
+   return true;
+}
+
+} // namespace detail
+
+/// \brief This class is the dip::ExternalInterface for the *MATLAB* interface.
+///
+/// In a MEX-file, use the following code when declaring images to be
+/// used as the output to a function:
+/// ```cpp
+///     dml::MatlabInterface mi;
+///     dip::Image img_out0 = mi.NewImage();
+///     dip::Image img_out1 = mi.NewImage();
+/// ```
+/// This configures the images `img_out0` and `img_out1` such that, when they are
+/// forged later on, an `mxArray` structure will be created to hold the pixel data.
+/// `mxArray` is *MATLAB*'s representation of arrays.
+/// To return those images back to *MATLAB*, use `dml::GetArray`, which returns
+/// the `mxArray` created when the image was forged:
+/// ```cpp
+///     plhs[ 0 ] = dm::GetArray( img_out0 );
+///     plhs[ 1 ] = dm::GetArray( img_out1 );
+/// ```
+///
+/// If you don't use `dml::GetArray`, the `mxArray` that contains
+/// the pixel data will be destroyed when the dip::Image object goes out
+/// of scope.
+///
+/// Note that the `%dml::MatlabInterface` object needs to persist for the duration
+/// of the lifetime of the images returned by the `NewImage` method, since these
+/// images hold a pointer to it.
+///
+/// Remember to not assign a result into the images created with `NewImage`,
+/// as the pixel data will be copied in the assignment into a *MATLAB* array.
+/// Instead, use the *DIPlib* functions that take output images as function
+/// arguments:
+/// ```cpp
+///     img_out0 = in1 + in2;           // Bad!
+///     dip::Add( in1, in2, img_out0 ); // Correct
+/// ```
+/// In the first case, `in1 + in2` is computed into a temporary image, whose
+/// pixels are then copied into the `mxArray` created for `img_out0`. In the
+/// second case, the result of the operation is directly written into the
+/// `mxArray`, no copies are necessary.
+///
+/// This interface handler doesn't own any image data.
+class MatlabInterface : public dip::ExternalInterface {
+   public:
+
+      // This holds the pointer to the `mxArray`, but it can also hold a `nullptr`.
+      // Inside a `std::shared_ptr`, this object's mxArray can be extracted without
+      // it being deleted when the container goes out of scope.
+      struct mxContainer {
+         mxArray* array = nullptr;
+         explicit mxContainer( mxArray* a ) : array( a ) {}
+         ~mxContainer() {
+            if( array ) {
+               mxDestroyArray( array );
+            }
+         }
+      };
+
+      /// This function overrides dip::ExternalInterface::AllocateData().
+      /// It is called when an image with this `ExternalInterface` is forged.
+      /// It allocates a *MATLAB* `mxArray` and returns a `dip::DataSegment`
+      /// containing a pointer to the  `mxArray` data pointer, with a custom
+      /// deleter functor. It also adjusts strides to match the `mxArray` storage.
+      ///
+      /// A user will never call this function directly.
+      virtual dip::DataSegment AllocateData(
+            void*& origin,
+            dip::DataType datatype,
+            dip::UnsignedArray const& sizes,
+            dip::IntegerArray& strides,
+            dip::Tensor const& tensor,
+            dip::sint& tstride
+      ) override {
+         mxArray* m = detail::CreateMxArray( datatype, sizes, strides, tensor, tstride );
+         if( mxIsLogical( m )) {
+            origin = mxGetLogicals( m );
+         } else {
+            origin = mxGetData( m );
+         }
+         auto tmp = std::make_shared< mxContainer >( m );
+         return std::static_pointer_cast< void >( tmp );
+      }
+
+      /// \brief Constructs a dip::Image object with the external interface set so that,
+      /// when forged, a *MATLAB* `mxArray` will be allocated to hold the samples.
+      ///
+      /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
+      /// it as a `lhs` argument to your MEX-file.
+      dip::Image NewImage() {
+         dip::Image out;
+         out.SetExternalInterface( this );
+         return out;
+      }
+};
+
+/// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
+mxArray* GetArrayAsArray( dip::Image const& img ) {
+   DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
+   mxArray* mat = nullptr;
+   // Make sure that `img` has the correct external interface set
+   if( img.IsExternalData() && dynamic_cast< MatlabInterface* >( img.ExternalInterface() )) {
+      auto tmp = static_cast< MatlabInterface::mxContainer* >( img.Data() );
+      if( tmp ) {
+         // Get the `mxArray` that contains the data for `img`
+         mat = tmp->array;
+         // By setting this to a `nullptr`, we ensure it will not be destroyed later on
+         tmp->array = nullptr;
+      }
+   }
+   // Get the data pointer inside the `mxArray` (if we have one)
+   void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat )) : nullptr;
+   // If the mxArray data pointer is not equal to the image origin, we either have a mirrored dimension or
+   // shifted origin, or the image data is not stored in the mxArray at all -- either way we need a copy
+   bool needCopy = !mat || ( mptr != img.Origin() );
+   if( !needCopy ) {
+      // If we fudged the data type, we need a copy.
+      needCopy = mxGetClassID( mat ) != detail::GetMatlabClassID( img.DataType() );
+   }
+   if( !needCopy ) {
+      // If the strides are not as expected, we've permuted dimensions and need a copy
+      needCopy = !detail::IsMatlabStrides( img );
+   }
+   if( !needCopy ) {
+      // Compare also dimensions, adding or removing singleton dimensions from `mat` if that helps
+      // If needCopy is false, `mat` can have been modified (shape only, not data of course).
+      needCopy = !detail::MatchSizes( img, mat );
+   }
+   // If the image points to a modified view, or a non-MATLAB array, make a copy
+   if( needCopy ) {
+      //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+      dip::IntegerArray strides;
+      dip::sint tStride = 1;
+      mxArray* newmat = detail::CreateMxArray( img.DataType(), img.Sizes(), strides, img.Tensor(), tStride );
+      dip::Image tmp = GetImage( newmat );
+      // Note that `newmat` is designed to be stuck inside a `dip_image` object, so is slightly different than
+      // what `GetImage` expects: the tensor dimension is spatial dimension 0, and spatial dimension 1 is the complex
+      // "dimension". GetImage will also swap the first two dimensions. We need to fix `tmp` to be like `img`.
+      tmp.ExpandDimensionality( img.Dimensionality() + 2 );
+      if( img.DataType().IsComplex() ) {
+         tmp.MergeComplex( 1 );
+      } else {
+         tmp.Squeeze( 1 );
+      }
+      tmp.SpatialToTensor( 0 );
+      if( tmp.Dimensionality() > 1 ) {
+         tmp.SwapDimensions( 0, 1 );
+      }
+      tmp.Protect(); // Shouldn't be necessary, but consider this an assert.
+      tmp.Copy( img );
+      mxDestroyArray( mat );
+      mat = newmat;
+   }
+   return mat;
+}
+
+/// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
+/// and create a MATLAB dip_image object around it.
+mxArray* GetArray( dip::Image const& img ) {
+   mxArray* mat;
+   DIP_STACK_TRACE_THIS( mat = GetArrayAsArray( img ));
+   // Create a MATLAB `dip_image` object with the `mxArray` inside.
+   // We create an empty object, then set the Array property, because calling the constructor
+   // with the `mxArray` for some reason causes a deep copy of the `mxArray`.
+   mxArray* out;
+   mexCallMATLAB( 1, &out, 0, nullptr, imageClassName );
+   mxSetPropertyShared( out, 0, arrayPropertyName, mat );
+   // Set NDims property
+   mxArray* ndims = mxCreateDoubleScalar( static_cast< double >( img.Dimensionality() ));
+   mxSetPropertyShared( out, 0, ndimsPropertyName, ndims );
+   // Set TensorShape property
+   if( img.TensorElements() > 1 ) {
+      mxArray* tshape;
+      switch( img.TensorShape() ) {
+         default:
+            //case dip::Tensor::Shape::COL_VECTOR:
+            tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorElements() ), 1 );
+            break;
+         case dip::Tensor::Shape::ROW_VECTOR:
+            tshape = CreateDouble2Vector( 1, static_cast< dip::dfloat >( img.TensorElements() ));
+            break;
+         case dip::Tensor::Shape::COL_MAJOR_MATRIX:
+            tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorRows() ), static_cast< dip::dfloat >( img.TensorColumns() ));
+            break;
+         case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
+            // requires property to be set twice
+            tshape = mxCreateString( img.Tensor().TensorShapeAsString().c_str() );
+            mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
+            tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorRows() ), static_cast< dip::dfloat >( img.TensorColumns() ));
+            break;
+         case dip::Tensor::Shape::DIAGONAL_MATRIX:
+         case dip::Tensor::Shape::SYMMETRIC_MATRIX:
+         case dip::Tensor::Shape::UPPTRIANG_MATRIX:
+         case dip::Tensor::Shape::LOWTRIANG_MATRIX:
+            tshape = mxCreateString( img.Tensor().TensorShapeAsString().c_str() );
+            break;
+      }
+      mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
+   }
+   // Set PixelSize property
+   if( img.HasPixelSize() ) {
+      dip::PixelSize const& pixelSize = img.PixelSize();
+      mxArray* pxsz = dml::GetArray( pixelSize );
+      mxSetPropertyShared( out, 0, pxsizePropertyName, pxsz );
+   }
+   // Set ColorSpace property
+   if( img.IsColor() ) {
+      mxSetPropertyShared( out, 0, colspPropertyName, dml::GetArray( img.ColorSpace() ));
+   }
+   return out;
+}
+
+
+//
 // Some other common code for many functions
 //
 
@@ -1434,6 +1448,7 @@ void ToLower( dip::String& str ) {
       c = static_cast< char >( std::tolower( static_cast< unsigned char >( c )));
    }
 }
+
 
 /// \}
 

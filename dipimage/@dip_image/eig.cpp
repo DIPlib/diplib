@@ -36,12 +36,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          dip::Image V = mi.NewImage();
          dip::Image D = mi.NewImage();
          dip::EigenDecomposition( in, D, V );
-         plhs[ 0 ] = mi.GetArray( V );
-         plhs[ 1 ] = mi.GetArray( D );
+         plhs[ 0 ] = dml::GetArray( V );
+         plhs[ 1 ] = dml::GetArray( D );
       } else if( nlhs <= 1 ) {
          dip::Image E = mi.NewImage();
          dip::Eigenvalues( in, E );
-         plhs[ 0 ] = mi.GetArray( E );
+         plhs[ 0 ] = dml::GetArray( E );
       } else {
          DIP_THROW( "EIG needs one or two output arguments" );
       }

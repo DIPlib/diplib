@@ -76,7 +76,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
          // If no outputs were requested, just return the structure tensor itself
 
-         plhs[ 0 ] = mi.GetArray( st );
+         plhs[ 0 ] = dml::GetArray( st );
 
       } else {
 
@@ -91,7 +91,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          dip::StructureTensorAnalysis( st, out, outputs );
 
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
-            plhs[ ii ] = mi.GetArray( out[ ii ] );
+            plhs[ ii ] = dml::GetArray( out[ ii ] );
          }
 
       }
