@@ -23,6 +23,9 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Native;
 import com.sun.jna.Library;
 import com.sun.jna.Callback;
+import com.sun.jna.NativeLibrary;
+
+import java.io.File;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -79,13 +82,19 @@ interface Proxy extends Library {
 
 /// Viewer class, basically an jogl canvas with the appropriate callbacks router to ProxyManager.
 public class Viewer extends JFrame implements GLEventListener, WindowListener, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
-    Proxy proxy_ = (Proxy) Native.loadLibrary("DIPviewer", Proxy.class);
+    Proxy proxy_;
     Pointer pointer_;
     GLCanvas canvas_;
     Proxy.SetWindowTitleCallback title_cb_;
     Proxy.RefreshWindowCallback refresh_cb_;
 
     public Viewer(long pointer) {
+        final File f = new File(Viewer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        final String sopath = f.getParent() + File.separator + ".." + File.separator + ".." + File.separator + "lib";
+        //System.setProperty("jna.library.path", sopath);
+        NativeLibrary.addSearchPath("DIPviewer", sopath);
+        proxy_ = (Proxy) Native.loadLibrary("DIPviewer", Proxy.class);
+
         pointer_ = new Pointer(pointer);
         
         GLProfile profile = GLProfile.get(GLProfile.GL2);
