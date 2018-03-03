@@ -34,6 +34,8 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 
+import java.awt.Point;
+
 import java.awt.event.WindowEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -87,6 +89,7 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     GLCanvas canvas_;
     Proxy.SetWindowTitleCallback title_cb_;
     Proxy.RefreshWindowCallback refresh_cb_;
+    int framebuffer_width_, framebuffer_height_;
 
     public Viewer(long pointer) {
         final File f = new File(Viewer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
@@ -96,6 +99,10 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         proxy_ = (Proxy) Native.loadLibrary("DIPviewer", Proxy.class);
 
         pointer_ = new Pointer(pointer);
+        
+        // Just a default. Will get overwritten on reshape event.
+        framebuffer_width_ = proxy_.proxyGetWidth(pointer_);
+        framebuffer_height_ = proxy_.proxyGetHeight(pointer_);
         
         GLProfile profile = GLProfile.get(GLProfile.GL2);
         GLCapabilities capabilities = new GLCapabilities(profile);
@@ -135,6 +142,18 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         proxy_.proxySetRefreshWindowCallback(pointer_, refresh_cb_);
     }
     
+    /// Convert from window to framebuffer coordinates
+    Point convertMouse(Point p)
+    {
+        return new Point(p.x * framebuffer_width_ / this.getWidth(),
+                         p.y * framebuffer_height_ / this.getHeight());
+    }
+    
+    public String display() {
+        // Avoid error message when Matlab tries to disp() this object.
+        return "org.java.viewer.Viewer";
+    }
+    
     // GLEventListener
     
     public void display(GLAutoDrawable drawable) {
@@ -150,6 +169,8 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     }
     
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+        framebuffer_width_ = width;
+        framebuffer_height_ = height;
         proxy_.proxyReshapeEvent(pointer_, width, height);
     }
     
@@ -165,11 +186,13 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     }
 
     public void mousePressed(MouseEvent e) {
-        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 0, e.getX(), e.getY());
+        final Point p = convertMouse(e.getPoint());
+        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 0, p.x, p.y);
     }
 
     public void mouseReleased(MouseEvent e) {
-        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 1, e.getX(), e.getY());
+        final Point p = convertMouse(e.getPoint());
+        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 1, p.x, p.y);
     }
     
     // MouseMotionListener
@@ -178,20 +201,23 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     }
 
     public void mouseDragged(MouseEvent e) {
-        proxy_.proxyMotionEvent(pointer_, e.getX(), e.getY());
+        final Point p = convertMouse(e.getPoint());
+        proxy_.proxyMotionEvent(pointer_, p.x, p.y);
     }
     
     // MouseWheelListener
     
     public void mouseWheelMoved(MouseWheelEvent e) {
+        final Point p = convertMouse(e.getPoint());
+
         int button = 3;
         if (e.getWheelRotation() > 0)
             button = button + 1;
         
         if (e.getWheelRotation() != 0)
         {
-          proxy_.proxyClickEvent(pointer_, button, 1, e.getX(), e.getY());
-          proxy_.proxyClickEvent(pointer_, button, 0, e.getX(), e.getY());
+          proxy_.proxyClickEvent(pointer_, button, 1, p.x, p.y);
+          proxy_.proxyClickEvent(pointer_, button, 0, p.x, p.y);
         }
     }
     
