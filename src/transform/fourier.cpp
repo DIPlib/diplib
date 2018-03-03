@@ -815,11 +815,7 @@ void FourierTransform(
    }
    //std::cout << "outSize = " << outSize << std::endl;
    //std::cout << "border = " << border << std::endl;
-   // Determine output data type
-   DataType dtype = DataType::SuggestComplex( in.DataType() );
-   // Allocate output image, so that it has the right (padded) size. If we don't do padding, then we're just doing the framework's work here
-   Image const in_copy = in; // Make a copy of the header to preserve image in case in == out
-   
+
 #ifdef DIP__HAS_FFTW
 
    // Determine floating point size and call appropriate work horse
@@ -839,13 +835,18 @@ void FourierTransform(
 
 #else // DIP__HAS_FFTW
 
+   // Determine output data type
+   DataType dtype = DataType::SuggestComplex( in.DataType() );
+   // Allocate output image, so that it has the right (padded) size. If we don't do padding, then we're just doing the framework's work here
+   Image const in_copy = in; // Make a copy of the header to preserve image in case in == out
    Image tmp;
    if( real ) {
-      tmp.ReForge( outSize, 1, dtype );
+      tmp.ReForge( outSize, in_copy.TensorElements(), dtype );
    } else {
-      out.ReForge( outSize, 1, dtype );
+      out.ReForge( outSize, in_copy.TensorElements(), dtype );
       tmp = out.QuickCopy();
    }
+   tmp.Protect(); // make sure it won't be reforged by the framework function.
    // Do the processing
    DIP_START_STACK_TRACE
       // Get callback function
@@ -881,6 +882,11 @@ void FourierTransform(
    }
    pixelSize.Resize( nDims );
    out.SetPixelSize( pixelSize );
+
+   // Set output color space
+   if( in_copy.IsColor() ) {
+      out.SetColorSpace( in_copy.ColorSpace() );
+   }
 }
 
 
