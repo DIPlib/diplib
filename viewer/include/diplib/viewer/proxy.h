@@ -22,6 +22,7 @@
 
 #include <map>
 #include <deque>
+#include <mutex>
 
 #include "diplib.h"
 #include "diplib/viewer/export.h"
@@ -74,6 +75,7 @@ namespace dip { namespace viewer {
 class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
 {
   protected:
+    std::mutex mutex_;
     std::map<Window *, WindowPtr> windows_;
     
     std::map<Window*, ProxySwapBuffersCallback> swap_buffers_callbacks_;
@@ -94,16 +96,20 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     {
       window->manager(this);
       window->id((void*)window.get());
+      
+      std::lock_guard<std::mutex> guard(mutex_);
       windows_[window.get()] = window;
     }
     
     virtual size_t activeWindows()
     {
+      std::lock_guard<std::mutex> guard(mutex_);
       return windows_.size();
     }
     
     virtual void destroyWindows()
     {
+      std::lock_guard<std::mutex> guard(mutex_);
       for (auto it = windows_.begin(); it != windows_.end(); ++it)
         it->second->destroy();
     }
@@ -128,7 +134,15 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
 
     void release(Window *window)
     {
-      windows_.erase(window);
+      WindowPtr wdw;
+      {
+        std::lock_guard<std::mutex> guard(mutex_);
+        if (windows_.count(window))
+        {
+          wdw = windows_[window];
+          windows_.erase(window);
+        }
+      }
     }
     
     // Events
@@ -183,36 +197,60 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     
     void setSwapBuffersCallback(Window *window, ProxySwapBuffersCallback cb)
     {
+      std::lock_guard<std::mutex> guard(mutex_);
       swap_buffers_callbacks_[window] = cb;
     }
 
     void setWindowTitleCallback(Window *window, ProxySetWindowTitleCallback cb)
     {
+      std::lock_guard<std::mutex> guard(mutex_);
       set_window_title_callbacks_[window] = cb;
     }
 
     void setRefreshWindowCallback(Window *window, ProxyRefreshWindowCallback cb)
     {
+      std::lock_guard<std::mutex> guard(mutex_);
       refresh_window_callbacks_[window] = cb;
     }
     
   protected:
     virtual void swapBuffers(Window* window)
     {
-      if (swap_buffers_callbacks_.count(window))
-        swap_buffers_callbacks_[window]();
+      ProxySwapBuffersCallback cb;
+      {
+        std::lock_guard<std::mutex> guard(mutex_);
+        if (swap_buffers_callbacks_.count(window))
+          cb = swap_buffers_callbacks_[window];
+        else
+          return;
+      }
+      cb();
     }
     
     virtual void setWindowTitle(Window* window, const char *name)
     {
-      if (set_window_title_callbacks_.count(window))
-        set_window_title_callbacks_[window](name);
+      ProxySetWindowTitleCallback cb;
+      {
+        std::lock_guard<std::mutex> guard(mutex_);
+        if (set_window_title_callbacks_.count(window))
+          cb = set_window_title_callbacks_[window];
+        else
+          return;
+      }
+      cb(name);
     }
     
     virtual void refreshWindow(Window *window)
     {
-      if (refresh_window_callbacks_.count(window))
-        refresh_window_callbacks_[window]();
+      ProxyRefreshWindowCallback cb;
+      {
+        std::lock_guard<std::mutex> guard(mutex_);
+        if (refresh_window_callbacks_.count(window))
+          cb = refresh_window_callbacks_[window];
+        else
+          return;
+      }
+      cb();
     }
 };
 

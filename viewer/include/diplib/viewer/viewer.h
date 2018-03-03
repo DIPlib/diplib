@@ -102,7 +102,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     
     operating_point_ = dip::UnsignedArray(image.Dimensionality(), 0);
     complex_ = ComplexToReal::Real;
-    projection_ = Projection::Max;
+    projection_ = Projection::None;
       
     // Mapping
     if (image.DataType().IsBinary())
@@ -132,8 +132,11 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     // Display
     zoom_ = image.AspectRatio();
     for (size_t ii=0; ii < image.Dimensionality(); ++ii)
+    {
+      operating_point_[ii] = (dip::uint) image.Size(ii)/2;
       if (zoom_[ii] == 0)
         zoom_[ii] = 1;
+    }
     
     origin_ = dip::FloatArray(image.Dimensionality(), 0.);
     split_ = {100, 100};

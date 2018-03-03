@@ -26,7 +26,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       DML_MIN_ARGS( 1 );
       DML_MAX_ARGS( 2 );
          
-      dip::Image image = dml::GetImage( prhs[ 0 ] );
+      dip::Image image = dml::GetImage( prhs[ 0 ], dml::GetImageMode::SHARED_COPY );
          
       dip::String title = "";
       if (nrhs > 1) {
