@@ -452,6 +452,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
   learn what these functions provide.
 
+- Functions removed: `diporien` (was funny, but not really useful), `dipprojection` (no longer
+  useful, the display window itself does projections).
+
 - Old functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
 

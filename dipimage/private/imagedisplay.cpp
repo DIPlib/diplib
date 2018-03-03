@@ -61,6 +61,9 @@
  * Get the pixel value at the given 2D coordinates in the displayed image. VALUE is a string.
  *    value = imagedisplay(handle,coords)
  *
+ * Get the original image stored in the display object.
+ *    img = imagedisplay(handle,'input')
+ *
  * Unlock the MEX-file so it can be deleted:
  *    imagedisplay('unlock')
  *    clear imagedisplay
@@ -85,7 +88,7 @@
 // This is a simplified version of dml::MatlabInterface that creates 2D UINT8 images only.
 //  - The tensor dimension is always at the end.
 //  - The mxArray is made persistent, and always destroyed when the dip::Image is destroyed.
-//  - The GetArray method does not convert to dip_image, but it returns a copy of the mxArray.
+//  - The GetArray method does not convert to dip_image, but it returns a shared copy of the mxArray.
 class MatlabInterfaceUInt8 : public dip::ExternalInterface {
    private:
       static void StripHandler( void* p ) {
@@ -121,7 +124,7 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
       mxArray* GetArray( dip::Image const& img ) {
          DIP_ASSERT( img.IsForged() );
          mxArray* mat = static_cast< mxArray* >( img.Data() );
-         return mxDuplicateArray( mat );
+         return mxCreateSharedDataCopy( mat );
       }
 };
 
@@ -244,6 +247,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                   DML_MAX_ARGS( 2 );
                   auto lims = object->GetLimits( true );
                   plhs[ 0 ] = dml::CreateDouble2Vector( lims.lower, lims.upper );
+               } else if( key == "input" ) {
+                  DML_MAX_ARGS( 2 );
+                  dip::Image const& inputRef = object->Input();
+                  plhs[ 0 ] = dml::GetArray( inputRef, true );
+                  // `true` in the call above extracts the `mxArray` from `inputRef` and builds a `dip_image`
+                  // object around it. `inputRef` is an image created by `dml::GetImage`.
                } else {
 
                   // --- Get/Set dynamic properties ---
@@ -339,15 +348,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
          DML_MAX_ARGS( 1 );
 
-         dip::Image const in = dml::GetImage( prhs[ 0 ] );
-         // NOTE: `in` references a MATLAB array, but doesn't own it. We need to keep this reference until the
-         //       corresponding handle is cleared. But the MATLAB array can be cleared and/or rewritten in between
-         //       calls to this function.
-         //       One option is to make it persistent, I don't know how well that works with input arrays (not
-         //       allocated here), and we'd also need to register it somewhere so it can be cleared when necessary.
-         //       The option we follow here instead is to simply make a deep copy of the image.
-         dip::Image copy = dip::Copy( in );
-         Object object = std::make_shared< dip::ImageDisplay >( copy, &colorSpaceManager, &externalInterface );
+         dip::Image in = dml::GetImage( prhs[ 0 ], dml::GetImageMode::SHARED_COPY );
+         Object object = std::make_shared< dip::ImageDisplay >( in, &colorSpaceManager, &externalInterface );
          objects.emplace( newHandle, object );
          plhs[ 0 ] = CreateHandle( newHandle );
 

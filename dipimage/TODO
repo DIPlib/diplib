@@ -129,14 +129,7 @@ writedisplayavi
 @dip_image/unique
 
 (GUI and/or DIPSHOW related stuff):
-dipcrop *
-dipgetimage *
 dipmex
-diporien -- was funny, not really useful
-dipprofile *
-dipprojection *
-dipstackinspect *
-* -> These cannot be implemented unless we modify `dip::ImageDisplay` and `private/imagedisplay`
 
 (color stuff, which needs lots of love):
 change_chroma

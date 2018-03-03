@@ -83,7 +83,7 @@ class DIP_NO_EXPORT ImageDisplay{
       /// Both `colorSpaceManager` and `externalInterface`, if given, must exist for as long as the
       /// `%ImageDisplay` object exists.
       ImageDisplay( Image const& image, ColorSpaceManager* colorSpaceManager = nullptr, ExternalInterface* externalInterface = nullptr ) :
-            image_( image.QuickCopy() ), colorspace_( image.ColorSpace() ), colorSpaceManager_( colorSpaceManager ) {
+            image_( image ), colorspace_( image.ColorSpace() ), colorSpaceManager_( colorSpaceManager ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          // Dimensionality
          dip::uint nDims = image_.Dimensionality();

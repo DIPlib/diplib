@@ -240,8 +240,6 @@ coordinates of one or more points selected by clicking on an image.
 `diproi` returns a mask image (ROI stands for region of interest)
 created by selecting the vertices of a polygon; it can only be used with 2D images.
 
-**NOTE: The next functions described in this sub-section are not (yet?) ported.**
-
 `dipcrop` returns a rectangular portion of an image selected by dragging
 a rectangle. `dipprofile` returns a 1D image interpolated along a path
 selected by the user on the display.

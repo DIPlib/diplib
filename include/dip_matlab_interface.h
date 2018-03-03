@@ -1091,7 +1091,7 @@ inline bool MatchSizes(
       //mexPrintf( "MatchSizes: complexity test failed\n" );
       return false;
    }
-   if( mexSizes[ 1 ] != img.TensorElements()) {
+   if( mexSizes[ 1 ] != img.TensorElements() ) {
       //mexPrintf( "MatchSizes: TensorElements test failed\n" );
       return false;
    }
@@ -1264,17 +1264,24 @@ class MatlabInterface : public dip::ExternalInterface {
 };
 
 /// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
-mxArray* GetArrayAsArray( dip::Image const& img ) {
+// The *UNDOCUMENTED* `doNotSetToTrue` flag tells this function that the data shared pointer in the image
+// is an `mxArray`. This is true only if `img` was created by `dml::GetImage`. You should not need this
+// functionality, it is used in `dipimage/private/imagedisplay.cpp`.
+mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
    mxArray* mat = nullptr;
-   // Make sure that `img` has the correct external interface set
-   if( img.IsExternalData() && dynamic_cast< MatlabInterface* >( img.ExternalInterface() )) {
-      auto tmp = static_cast< MatlabInterface::mxContainer* >( img.Data() );
-      if( tmp ) {
-         // Get the `mxArray` that contains the data for `img`
-         mat = tmp->array;
-         // By setting this to a `nullptr`, we ensure it will not be destroyed later on
-         tmp->array = nullptr;
+   // Make sure that `img` has external data and the correct external interface set
+   if( img.IsExternalData() ) {
+      if( doNotSetToTrue ) {
+         mat = static_cast< mxArray* >( img.Data() );
+      } else if( dynamic_cast< MatlabInterface* >( img.ExternalInterface() )) {
+         auto tmp = static_cast< MatlabInterface::mxContainer* >( img.Data() );
+         if( tmp ) {
+            // Get the `mxArray` that contains the data for `img`
+            mat = tmp->array;
+            // By setting this to a `nullptr`, we ensure it will not be destroyed later on
+            tmp->array = nullptr;
+         }
       }
    }
    // Get the data pointer inside the `mxArray` (if we have one)
@@ -1297,7 +1304,7 @@ mxArray* GetArrayAsArray( dip::Image const& img ) {
    }
    // If the image points to a modified view, or a non-MATLAB array, make a copy
    if( needCopy ) {
-      //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+      //mexPrintf( "GetArrayAsArray: Copying data from dip::Image to mxArray\n" );
       dip::IntegerArray strides;
       dip::sint tStride = 1;
       mxArray* newmat = detail::CreateMxArray( img.DataType(), img.Sizes(), strides, img.Tensor(), tStride );
@@ -1325,9 +1332,10 @@ mxArray* GetArrayAsArray( dip::Image const& img ) {
 
 /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
 /// and create a MATLAB dip_image object around it.
-mxArray* GetArray( dip::Image const& img ) {
+// See `dml::GetArrayAsArray` above for the meaning of `doNotSetToTrue`.
+mxArray* GetArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    mxArray* mat;
-   DIP_STACK_TRACE_THIS( mat = GetArrayAsArray( img ));
+   DIP_STACK_TRACE_THIS( mat = GetArrayAsArray( img, doNotSetToTrue ));
    // Create a MATLAB `dip_image` object with the `mxArray` inside.
    // We create an empty object, then set the Array property, because calling the constructor
    // with the `mxArray` for some reason causes a deep copy of the `mxArray`.
