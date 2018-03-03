@@ -1332,17 +1332,17 @@ classdef dip_image
             nd = in.NDims;
             dim = dim+2;
             n = 1:max(ndims(in.Data)+1,dim);
-            if length(n) > 4
+            if length(n) > 3
                n = n([1:2,4,3,5:end]);
             end
             n = [n(1:dim-1),2,n(dim:end)];
             n(2) = n(end);
             n(end) = [];
-            if length(n) > 2
+            if length(n) > 3
                n = n([1:2,4,3,5:end]);
             end
             in.Data = permute(in.Data,n);
-            in.NDims = nd + 1;
+            in.NDims = max(nd+1, dim-2);
             if ~isempty(in.PixelSize)
                in = insertPixelSizeElement(in,dim-2,defaultPixelSize);
             end
@@ -1378,11 +1378,11 @@ classdef dip_image
             if ~isintscalar(dim) || dim < 1 || dim > nd, error('Dimension argument must be a positive scalar integer in the indexing range'), end
             dim = dim+2;
             n = 1:ndims(in.Data);
-            if length(n) > 4
+            if length(n) > 3
                n = n([1:2,4,3,5:end]);
             end
             n = n([1,dim,3:dim-1,dim+1:end,2]);
-            if length(n) > 2
+            if length(n) > 4 % one more than necessary, since the trailing singleton dimension we want to keep trailing
                n = n([1:2,4,3,5:end]);
             end
             in.Data = permute(in.Data,n);
