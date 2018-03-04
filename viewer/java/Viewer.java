@@ -153,11 +153,14 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     int translateModifiers(InputEvent e)
     {
       int m = e.getModifiersEx();
-    
-      return (m&InputEvent.SHIFT_DOWN_MASK)>0?1:0 + 
-             (m&InputEvent.CTRL_DOWN_MASK )>0?2:0 +
-             (m&InputEvent.ALT_DOWN_MASK  )>0?4:0 +
-             (m&InputEvent.META_DOWN_MASK )>0?8:0;
+      int t = (m&InputEvent.SHIFT_DOWN_MASK)>0?1:0 + 
+              (m&InputEvent.CTRL_DOWN_MASK )>0?2:0 +
+              (m&InputEvent.ALT_DOWN_MASK  )>0?4:0 +
+              (m&InputEvent.META_DOWN_MASK )>0?8:0;
+              
+      System.out.println("translate: " + m + " -> " + t);
+      
+      return t;
     }
     
     public String display() {

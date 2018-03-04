@@ -226,36 +226,24 @@ void SliceView::render()
     }
   glEnd();
   
-  auto ro = viewport()->viewer()->options().roi_origin_;  
+  auto ro = viewport()->viewer()->options().roi_origin_;
   auto rs = viewport()->viewer()->options().roi_sizes_;  
 
   // ROI
   glColor3f(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-    if (dx != -1)
+    if (dx != -1 && (dimy_ != 3 || dy == -1))
     {
       GLfloat start=0., end=(GLfloat)height;
-      if (dy != -1)
-      {
-        start = (GLfloat)(ro[(dip::uint)dy]);
-        end   = (GLfloat)(ro[(dip::uint)dy]+rs[(dip::uint)dy]);
-      }
-    
       glVertex2f((GLfloat)(ro[(dip::uint)dx]),                   start);
       glVertex2f((GLfloat)(ro[(dip::uint)dx]),                   end);
       
       glVertex2f((GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]), start);
       glVertex2f((GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]), end);
     }
-    if (dy != -1)
+    if (dy != -1 && (dimx_ != 2 || dx == -1))
     {
-      GLfloat start=0., end=(GLfloat)height;
-      if (dx != -1)
-      {
-        start = (GLfloat)(ro[(dip::uint)dx]);
-        end   = (GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]);
-      }
-      
+      GLfloat start=0., end=(GLfloat)width;
       glVertex2f(start, (GLfloat)(ro[(dip::uint)dy]));
       glVertex2f(end,   (GLfloat)(ro[(dip::uint)dy]));
       
@@ -456,6 +444,13 @@ void SliceViewPort::motion(int button, int x, int y)
     {
       // Change ROI
       dip::IntegerArray dims = dip::IntegerArray{dx, dy};
+      
+      // Only change one dimension in side projections
+      if (view()->dimx() == 2 && dx != -1)
+        dims[1] = -1;
+      if (view()->dimy() == 3 && dy != -1)
+        dims[0] = -1;
+      
       for (size_t ii=0; ii < 2; ++ii)
       {
         if (dims[ii] != -1)
