@@ -130,6 +130,10 @@ on where it occurs
   dimension(s). If slice projection is used, this will also affect the
   slices that are being visualized in the other projections.
 
+  Shift-left-dragging sets the projection ROI. The ROI edge closest to the
+  cursor is selected to be moved. This is only available when minimum, mean,
+  or maximum projection is used.
+
   Middle-dragging gives some limited control over the relative sizes of the
   three projections.
 
@@ -182,6 +186,10 @@ There are also a few keyboard shortcuts:
 - *Control-L*
 
   Sets linear mapping between global minimum and maximum values.
+
+- *Control-R*
+
+  Resets the projection ROI.
 
 - *Control-W* and *Control-Shift-W*
 

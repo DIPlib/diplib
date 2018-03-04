@@ -230,27 +230,30 @@ void SliceView::render()
   auto rs = viewport()->viewer()->options().roi_sizes_;  
 
   // ROI
-  glColor3f(0.5, 0.5, 0.5);
-  glBegin(GL_LINES);
-    if (dx != -1 && (dimy_ != 3 || dy == -1))
-    {
-      GLfloat start=0., end=(GLfloat)height;
-      glVertex2f((GLfloat)(ro[(dip::uint)dx]),                   start);
-      glVertex2f((GLfloat)(ro[(dip::uint)dx]),                   end);
-      
-      glVertex2f((GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]), start);
-      glVertex2f((GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]), end);
-    }
-    if (dy != -1 && (dimx_ != 2 || dx == -1))
-    {
-      GLfloat start=0., end=(GLfloat)width;
-      glVertex2f(start, (GLfloat)(ro[(dip::uint)dy]));
-      glVertex2f(end,   (GLfloat)(ro[(dip::uint)dy]));
-      
-      glVertex2f(start, (GLfloat)(ro[(dip::uint)dy]+rs[(dip::uint)dy]));
-      glVertex2f(end,   (GLfloat)(ro[(dip::uint)dy]+rs[(dip::uint)dy]));
-    }
-  glEnd();
+  if (viewport()->viewer()->options().projection_ != ViewingOptions::Projection::None)
+  {
+    glColor3f(0.5, 0.5, 0.5);
+    glBegin(GL_LINES);
+      if (dx != -1 || dy == -1)
+      {
+        GLfloat start=0., end=(GLfloat)height;
+        glVertex2f((GLfloat)(ro[(dip::uint)dx]),                   start);
+        glVertex2f((GLfloat)(ro[(dip::uint)dx]),                   end);
+        
+        glVertex2f((GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]), start);
+        glVertex2f((GLfloat)(ro[(dip::uint)dx]+rs[(dip::uint)dx]), end);
+      }
+      if (dy != -1 || dx == -1)
+      {
+        GLfloat start=0., end=(GLfloat)width;
+        glVertex2f(start, (GLfloat)(ro[(dip::uint)dy]));
+        glVertex2f(end,   (GLfloat)(ro[(dip::uint)dy]));
+        
+        glVertex2f(start, (GLfloat)(ro[(dip::uint)dy]+rs[(dip::uint)dy]));
+        glVertex2f(end,   (GLfloat)(ro[(dip::uint)dy]+rs[(dip::uint)dy]));
+      }
+    glEnd();
+  }
 }
 
 void SliceViewPort::render()
@@ -332,8 +335,40 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
         
       if (mods == KEY_MOD_SHIFT)
       {
-        // Change ROI
-        roi_origin_ = viewer()->options().operating_point_;
+        dip::UnsignedArray start = viewer()->options().roi_origin_;
+        dip::UnsignedArray end = start;
+        end += viewer()->options().roi_sizes_;
+      
+        // Find closest edge
+        roi_dim_ = dx;
+        double dist = std::numeric_limits<double>::infinity();
+        if (dx != -1)
+        {
+          double dstart = abs(ix - (double)start[(dip::uint)dx]), dend = abs(ix-(double)end[(dip::uint)dx]);
+          dist = std::min(dstart, dend);
+          if (dstart < dend)
+            roi_edge_ = 0;
+          else
+            roi_edge_ = 1;
+        }
+        if (dy != -1)
+        {
+          double dstart = abs(iy - (double)start[(dip::uint)dy]), dend = abs(iy-(double)end[(dip::uint)dy]);
+          if (std::min(dstart, dend) < dist)
+          {
+            roi_dim_ = dy;
+            if (dstart < dend)
+              roi_edge_ = 0;
+            else
+              roi_edge_ = 1;
+          }
+        }
+        
+        if (roi_dim_ != -1)
+        {
+          roi_start_ = (dip::sint)start[(dip::uint)roi_dim_];
+          roi_end_   = (dip::sint)end[(dip::uint)roi_dim_];
+        }
       }
 
       viewer()->options().status_ = "";
@@ -414,7 +449,7 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
         if (view()->dimx() == 0 && dy != -1) viewer()->options().origin_[(dip::uint)dy] /= factor;
       }
 
-      viewer()->options().status_ = "Zoom set to " + to_string(viewer()->options().zoom_);
+      viewer()->options().status_ = "Zoom set to " + to_string(viewer()->options().zoom_) + ". Reset with Ctrl-1.";
       viewer()->refresh();
       viewer_->updateLinkedViewers();
     }
@@ -440,40 +475,34 @@ void SliceViewPort::motion(int button, int x, int y)
     if (dy != -1)
       viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
 
-    if (drag_mods_ == KEY_MOD_SHIFT)
+    if (drag_mods_ == KEY_MOD_SHIFT && viewer()->options().projection_ != ViewingOptions::Projection::None)
     {
       // Change ROI
-      dip::IntegerArray dims = dip::IntegerArray{dx, dy};
-      
-      // Only change one dimension in side projections
-      if (view()->dimx() == 2 && dx != -1)
-        dims[1] = -1;
-      if (view()->dimy() == 3 && dy != -1)
-        dims[0] = -1;
-      
-      for (size_t ii=0; ii < 2; ++ii)
+      if (roi_dim_ != -1)
       {
-        if (dims[ii] != -1)
-        {
-          dip::uint d = (dip::uint)dims[ii];
+        double dix, diy;
+        screenToView(drag_x_, drag_y_, &dix, &diy);
+      
+        int d = (int)((roi_dim_==dx)?(ix-dix):(iy-diy));
+          
+        dip::uint start = std::min((dip::uint)std::max(roi_start_+d*(1-roi_edge_), 0L), viewer()->image().Size((dip::uint)roi_dim_));
+        dip::uint end   = std::min((dip::uint)std::max(roi_end_  +d*(  roi_edge_), 0L), viewer()->image().Size((dip::uint)roi_dim_));
         
-          dip::uint imc = viewer()->options().operating_point_[d];
-          if (imc >= roi_origin_[d])
-          {
-            viewer()->options().roi_origin_[d] = roi_origin_[d];
-            viewer()->options().roi_sizes_[d] = imc - roi_origin_[d] + 1;
-          }
+        if (start == end)
+        {
+          if (end == viewer()->image().Size((dip::uint)roi_dim_))
+            start--;
           else
-          {
-            viewer()->options().roi_origin_[d] = imc;
-            viewer()->options().roi_sizes_[d] = roi_origin_[d] - imc;
-          }
+            end++;
         }
-      }
+        
+        viewer()->options().roi_origin_[(dip::uint)roi_dim_] = std::min(start, end);
+        viewer()->options().roi_sizes_[(dip::uint)roi_dim_] = (dip::uint)std::abs((dip::sint)start-(dip::sint)end);
        
-      std::ostringstream oss;
-      oss << "Projection ROI set to " << viewer()->options().roi_origin_ << "+" << viewer()->options().roi_sizes_;
-      viewer()->options().status_ = oss.str();
+        std::ostringstream oss;
+        oss << "Projection ROI set to " << viewer()->options().roi_origin_ << "+" << viewer()->options().roi_sizes_ << ". Reset with Ctrl-N.";
+        viewer()->options().status_ = oss.str();
+      }
     }
     
     viewer()->refresh();
@@ -694,7 +723,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
           zoom[(dip::uint)dx] = zoom[(dip::uint)dy];
       }
       
-      options_.status_ = "Zoom set to fit window: " + to_string(options_.zoom_);
+      options_.status_ = "Zoom set to fit window: " + to_string(options_.zoom_) + ". Reset with Ctrl-1.";
       refresh();
       updateLinkedViewers();
     }
@@ -706,6 +735,16 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       options_.mapping_range_ = options_.range_;
       
       options_.status_ = "Mapping set to " + options_.getMappingDescription() + ": range [" + std::to_string(options_.mapping_range_.first) + ", " + std::to_string(options_.mapping_range_.second) + "]";
+      refresh();
+    }
+
+    if (k == 'R')
+    {
+      // ^R: reset ROI
+      options_.roi_origin_ = dip::UnsignedArray(image_.Dimensionality(), 0);
+      options_.roi_sizes_ = image_.Sizes();
+        
+      options_.status_ = "Reset projection ROI";
       refresh();
     }
   }

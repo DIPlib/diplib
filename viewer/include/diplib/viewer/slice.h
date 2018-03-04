@@ -70,7 +70,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewPort : public ViewPort
     class SliceViewer *viewer_;
     SliceView *view_;
     int drag_x_, drag_y_, drag_mods_;
-    dip::UnsignedArray roi_origin_;
+    dip::sint roi_start_, roi_end_, roi_dim_, roi_edge_;
     
   public:
     explicit SliceViewPort(class SliceViewer *viewer) : ViewPort((Viewer*)viewer), viewer_(viewer), view_(NULL) { }

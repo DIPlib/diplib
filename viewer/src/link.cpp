@@ -148,7 +148,7 @@ void LinkViewPort::update(const ViewingOptions &options)
 void LinkViewPort::link(LinkViewPort *link)
 {
   links_.insert(link);
-  viewer()->options().status_ = "Linked to " + link->viewer()->name();
+  viewer()->options().status_ = "Linked to " + link->viewer()->name() + ". Unlink with right-click.";
 }
 
 void LinkViewPort::unlink(LinkViewPort *link)

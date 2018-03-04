@@ -7,10 +7,8 @@
 %   dispose() member function.
 %
 % HINTS:
-%   To use this function, viewer.jar must be in Matlab's Java classpath.
-%   For example, by calling
-%   
-%   javaaddpath('path_to_dipimage/Viewer.jar');
+%   See https://diplib.github.io/diplib-docs/group__viewer.html#details
+%   for mouse interaction and keyboard shortcuts.
 
 % (c)2018, Wouter Caarls
 %
