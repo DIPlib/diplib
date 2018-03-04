@@ -21,31 +21,84 @@
 #include "diplib/viewer/proxy.h"
 #include "diplib/viewer/slice.h"
 
+constexpr char const* ViewerClassName = "org.diplib.viewer.Viewer";
+constexpr char const* MexFileName = "viewslice";
+constexpr char const* JarFileName = "Viewer.jar";
+
+void JavaAddPath( bool add = true ) {
+   // The code below does:
+   //    path = fullfile(fileparts(which('viewslice')),'Viewer.jar')
+   mxArray* fname = mxCreateString( MexFileName );
+   mxArray* path1;
+   mexCallMATLAB( 1, &path1, 1, &fname, "which" );
+   mxArray* path2;
+   mexCallMATLAB( 1, &path2, 1, &path1, "fileparts" ); // Is this easier than implementing it in C++?
+   mxArray* path;
+   mxArray* args[ 2 ];
+   args[ 0 ] = path2;
+   args[ 1 ] = mxCreateString( JarFileName );
+   mexCallMATLAB( 1, &path, 2, args, "fullfile" ); // Is this easier than implementing it in C++?
+   // Add the found path to the Java Path:
+   mexCallMATLABWithTrap( 0, nullptr, 1, &path, add ? "javaaddpath" : "javarmpath" ); // Ignore any errors generated
+   //mexPrintf( add ? "Added to the Java path\n" : "Removed from the Java path\n" );
+}
+
+bool HasViewerClass() {
+   static bool hasViewerClass = false;
+   if( !hasViewerClass ) {
+      //mexPrintf( "Testing for the Viewer java class\n" );
+      mxArray* rhs[ 2 ];
+      rhs[ 0 ] = mxCreateString( ViewerClassName );
+      rhs[ 1 ] = mxCreateString( "class" );
+      mxArray* lhs;
+      mexCallMATLAB(1, &lhs, 2, rhs, "exist");
+      dip::uint result = dml::GetUnsigned( lhs );
+      if( result == 8 ) {
+         hasViewerClass = true;
+         //mexPrintf( "   - Tested true\n" );
+      }
+   }
+   return hasViewerClass;
+}
+
+void EnsureViewerJarIsOnPath() {
+   if( !HasViewerClass() ) {
+      JavaAddPath();
+      if( !HasViewerClass() ) {
+         JavaAddPath( false );
+         mexErrMsgTxt( "Cannot load library Viewer.jar.\nPossible sources of this error:\n"
+                          " - Viewer.jar is not in the expected location.\n"
+                          " - Viewer.jar is not compatible with this version of MATLAB.\n"
+                          " - MATLAB's JVM is disabled." );
+      }
+   }
+}
+
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+
+   EnsureViewerJarIsOnPath();
+
    try {
       DML_MIN_ARGS( 1 );
       DML_MAX_ARGS( 2 );
-         
+
       dip::Image image = dml::GetImage( prhs[ 0 ], dml::GetImageMode::SHARED_COPY );
-         
-      dip::String title = "";
-      if (nrhs > 1) {
+
+      dip::String title;
+      if( nrhs > 1 ) {
          title = dml::GetString( prhs[ 1 ] );
       }
-         
+
       dip::viewer::WindowPtr wdw = dip::viewer::SliceViewer::Create( image, title );
       dip::viewer::ProxyManager::instance()->createWindow( wdw );
-      
-      mxArray *rhs[2];
-      rhs[0] = mxCreateString("org.diplib.viewer.Viewer");
-      rhs[1] = mxCreateUninitNumericMatrix(1, 1, mxINT64_CLASS, mxREAL);
-      *(long*)mxGetData( rhs[ 1 ] ) = (long)wdw.get();
-      
-      mexCallMATLAB(1, plhs, 2, rhs, "javaObjectEDT");
-      
-      mxDestroyArray(rhs[0]);
-      mxDestroyArray(rhs[1]);
+
+      mxArray* rhs[2];
+      rhs[ 0 ] = mxCreateString( ViewerClassName );
+      rhs[ 1 ] = mxCreateUninitNumericMatrix( 1, 1, mxINT64_CLASS, mxREAL );
+      *static_cast< std::int64_t* >( mxGetData( rhs[ 1 ] )) = reinterpret_cast< std::int64_t >( wdw.get() );
+      mexCallMATLAB( 1, plhs, 2, rhs, "javaObjectEDT" );
+
    } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
+      mexErrMsgTxt( e.what());
    }
 }
