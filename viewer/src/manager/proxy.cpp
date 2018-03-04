@@ -76,9 +76,9 @@ void proxyKeyEvent(Window *window, unsigned char k, int x, int y, int mods)
   ProxyManager::instance()->proxyKeyEvent(window, k, x, y, mods);
 }
 
-void proxyClickEvent(Window *window, int button, int state, int x, int y)
+void proxyClickEvent(Window *window, int button, int state, int x, int y, int mods)
 {
-  ProxyManager::instance()->proxyClickEvent(window, button, state, x, y);
+  ProxyManager::instance()->proxyClickEvent(window, button, state, x, y, mods);
 }
 
 void proxyMotionEvent(Window *window, int x, int y)

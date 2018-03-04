@@ -69,7 +69,8 @@ class DIPVIEWER_CLASS_EXPORT SliceViewPort : public ViewPort
   protected:
     class SliceViewer *viewer_;
     SliceView *view_;
-    int drag_x_, drag_y_;
+    int drag_x_, drag_y_, drag_mods_;
+    dip::UnsignedArray roi_origin_;
     
   public:
     explicit SliceViewPort(class SliceViewer *viewer) : ViewPort((Viewer*)viewer), viewer_(viewer), view_(NULL) { }
@@ -77,7 +78,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewPort : public ViewPort
     
     void rebuild() override { view()->rebuild(); }
     DIPVIEWER_EXPORT void render() override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
     DIPVIEWER_EXPORT void motion(int button, int x, int y) override;
 
     void setView(SliceView *view) { view_ = view; }
@@ -155,7 +156,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     DIPVIEWER_EXPORT void reshape(int width, int height) override;
     DIPVIEWER_EXPORT void draw() override;
     DIPVIEWER_EXPORT void key(unsigned char k, int x, int y, int mods) override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
     DIPVIEWER_EXPORT void motion(int x, int y) override;
 
     DIPVIEWER_EXPORT void place();

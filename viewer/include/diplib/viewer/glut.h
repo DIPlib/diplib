@@ -116,7 +116,7 @@ class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager
     {
       WindowPtr window = instance_->getCurrentWindow();
       if (window)
-        window->click(button, state, x, y);
+        window->click(button, state, x, y, glutGetModifiers());
     }
 
     static void motion(int x, int y)

@@ -129,7 +129,7 @@ class DIPVIEWER_EXPORT Window
     virtual void key(unsigned char k, int x, int y, int mods);
     
     /// Overridable callback that is called when a mouse button is clicked.
-    virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/) { }
+    virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/, int /*mods*/) { }
     
     /// Overridable callback that is called when the mouse is moved while a button is clicked.
     virtual void motion(int /*x*/, int /*y*/) { }

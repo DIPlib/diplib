@@ -180,7 +180,7 @@ void HistogramViewPort::render()
   viewer()->drawString(buf);
 }
 
-void HistogramViewPort::click(int button, int state, int x, int y)
+void HistogramViewPort::click(int button, int state, int x, int y, int /*mods*/)
 {
   auto &o = viewer()->options();
 

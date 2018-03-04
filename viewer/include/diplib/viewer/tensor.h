@@ -32,7 +32,7 @@ class DIPVIEWER_CLASS_EXPORT TensorViewPort : public ViewPort
     ~TensorViewPort() { }
     
     DIPVIEWER_EXPORT void render();
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y);
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods);
 };
 
 }} // namespace dip::viewer

@@ -69,7 +69,7 @@ void ControlViewPort::render()
   }
 }
 
-void ControlViewPort::click(int button, int state, int x, int y)
+void ControlViewPort::click(int button, int state, int x, int y, int /*mods*/)
 {
   if (state == 0 && button == 0)
   {

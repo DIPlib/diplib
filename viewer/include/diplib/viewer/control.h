@@ -41,7 +41,7 @@ class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort
     ~ControlViewPort() override { }
     
     DIPVIEWER_EXPORT void render() override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
 };
 
 }} // namespace dip::viewer

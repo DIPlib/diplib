@@ -61,6 +61,8 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   dip::UnsignedArray operating_point_; ///< Value of nonvisualized, nonprojected dimensions.
   ComplexToReal complex_;              ///< What to do with complex numbers.
   Projection projection_;              ///< Type of projection.
+  dip::UnsignedArray roi_origin_;      ///< Origin of projection ROI.
+  dip::UnsignedArray roi_sizes_;       ///< Sizes of projection ROI.
   
   // Mapping
   FloatRange range_;                   ///< value range across image (histogram limits).
@@ -103,7 +105,9 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     operating_point_ = dip::UnsignedArray(image.Dimensionality(), 0);
     complex_ = ComplexToReal::Real;
     projection_ = Projection::None;
-      
+    roi_origin_ = dip::UnsignedArray(image.Dimensionality(), 0);
+    roi_sizes_ = image.Sizes();
+    
     // Mapping
     if (image.DataType().IsBinary())
     {
@@ -153,6 +157,8 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
       return Diff::Projection;
     
     if (projection_ != options.projection_) return Diff::Projection;
+    if (roi_origin_ != options.roi_origin_) return Diff::Projection;
+    if (roi_sizes_ != options.roi_sizes_) return Diff::Projection;
     
     if (mapping_range_ != options.mapping_range_) return Diff::Mapping;
     if (mapping_ != options.mapping_) return Diff::Mapping;
@@ -186,6 +192,16 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
       for (size_t ii=0; ii < operating_point_.size(); ++ii)
         if ((int)ii != dims_[dimx] && (int)ii != dims_[dimy])
           if (operating_point_[ii] != options.operating_point_[ii])
+            return true;
+    }
+    
+    // Change of ROI in nonvisualized dimension
+    if (projection_ != Projection::None)
+    {
+      for (size_t ii=0; ii < roi_origin_.size(); ++ii)
+        if ((int)ii != dims_[dimx] && (int)ii != dims_[dimy])
+          if (roi_origin_[ii] != options.roi_origin_[ii] || 
+              roi_sizes_[ii] != options.roi_sizes_[ii])
             return true;
     }
     
@@ -285,7 +301,7 @@ class DIPVIEWER_CLASS_EXPORT ViewPort
     virtual void render() { } 
     
     /// \brief Handles mouse clicking interaction
-    virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/) { }
+    virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/, int /*mods*/) { }
     
     /// \brief Handles mouse dragging interaction
     virtual void motion(int /*button*/, int /*x*/, int /*y*/) { }

@@ -84,7 +84,7 @@ void TensorViewPort::render()
     }
 }
 
-void TensorViewPort::click(int button, int state, int x, int y)
+void TensorViewPort::click(int button, int state, int x, int y, int /*mods*/)
 {
   if (state == 0 && button == 0)
   {

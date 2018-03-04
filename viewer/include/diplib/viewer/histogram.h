@@ -45,7 +45,7 @@ class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort
     
     DIPVIEWER_EXPORT void calculate();
     DIPVIEWER_EXPORT void render() override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
     DIPVIEWER_EXPORT void motion(int button, int x, int y) override;
     
   protected:

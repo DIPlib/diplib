@@ -132,7 +132,7 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void click(GLFWwindow *window, int button, int state, int /*mods*/)
+    static void click(GLFWwindow *window, int button, int state, int mods)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -140,7 +140,7 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
         int x, y;
         instance_->makeCurrent(wdw.get());
         instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->click(button==1?2:button==2?1:0, state==0, x, y);
+        wdw->click(button==1?2:button==2?1:0, state==0, x, y, mods);
       }
     }
 
@@ -156,8 +156,8 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
         int button = 3 + (yoffset < 0);
         if (yoffset != 0)
         {
-          wdw->click(button, 1, x, y);
-          wdw->click(button, 0, x, y);
+          wdw->click(button, 1, x, y, 0);
+          wdw->click(button, 0, x, y, 0);
         }
       }
     }

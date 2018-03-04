@@ -37,6 +37,7 @@ import com.jogamp.opengl.awt.GLCanvas;
 import java.awt.Point;
 
 import java.awt.event.WindowEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.KeyEvent;
@@ -75,7 +76,7 @@ interface Proxy extends Library {
     void proxyCreateEvent(Pointer window);
     void proxyCloseEvent(Pointer window);
     void proxyKeyEvent(Pointer window, byte k, int x, int y, int mods);
-    void proxyClickEvent(Pointer window, int button, int state, int x, int y);
+    void proxyClickEvent(Pointer window, int button, int state, int x, int y, int mods);
     void proxyMotionEvent(Pointer window, int x, int y);
     void proxySetSwapBuffersCallback(Pointer window, SwapBuffersCallback cb);
     void proxySetWindowTitleCallback(Pointer window, SetWindowTitleCallback cb);
@@ -143,10 +144,20 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     }
     
     /// Convert from window to framebuffer coordinates
-    Point convertMouse(Point p)
+    Point translateMouse(MouseEvent e)
     {
-        return new Point(p.x * framebuffer_width_ / this.getWidth(),
-                         p.y * framebuffer_height_ / this.getHeight());
+        return new Point(e.getX() * framebuffer_width_ / this.getWidth(),
+                         e.getY() * framebuffer_height_ / this.getHeight());
+    }
+    
+    int translateModifiers(InputEvent e)
+    {
+      int m = e.getModifiersEx();
+    
+      return (m&InputEvent.SHIFT_DOWN_MASK)>0?1:0 + 
+             (m&InputEvent.CTRL_DOWN_MASK )>0?2:0 +
+             (m&InputEvent.ALT_DOWN_MASK  )>0?4:0 +
+             (m&InputEvent.META_DOWN_MASK )>0?8:0;
     }
     
     public String display() {
@@ -186,13 +197,13 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     }
 
     public void mousePressed(MouseEvent e) {
-        final Point p = convertMouse(e.getPoint());
-        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 0, p.x, p.y);
+        final Point p = translateMouse(e);
+        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 0, p.x, p.y, translateModifiers(e));
     }
 
     public void mouseReleased(MouseEvent e) {
-        final Point p = convertMouse(e.getPoint());
-        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 1, p.x, p.y);
+        final Point p = translateMouse(e);
+        proxy_.proxyClickEvent(pointer_, e.getButton()-1, 1, p.x, p.y, translateModifiers(e));
     }
     
     // MouseMotionListener
@@ -201,14 +212,14 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     }
 
     public void mouseDragged(MouseEvent e) {
-        final Point p = convertMouse(e.getPoint());
+        final Point p = translateMouse(e);
         proxy_.proxyMotionEvent(pointer_, p.x, p.y);
     }
     
     // MouseWheelListener
     
     public void mouseWheelMoved(MouseWheelEvent e) {
-        final Point p = convertMouse(e.getPoint());
+        final Point p = translateMouse(e);
 
         int button = 3;
         if (e.getWheelRotation() > 0)
@@ -216,8 +227,8 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         
         if (e.getWheelRotation() != 0)
         {
-          proxy_.proxyClickEvent(pointer_, button, 1, p.x, p.y);
-          proxy_.proxyClickEvent(pointer_, button, 0, p.x, p.y);
+          proxy_.proxyClickEvent(pointer_, button, 1, p.x, p.y, translateModifiers(e));
+          proxy_.proxyClickEvent(pointer_, button, 0, p.x, p.y, translateModifiers(e));
         }
     }
     
@@ -261,7 +272,7 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         if (c >= 'a' && c <= 'z')
             c = c - 'a' + 'A';
     
-        proxy_.proxyKeyEvent(pointer_, (byte)c, 0, 0, e.getModifiers());
+        proxy_.proxyKeyEvent(pointer_, (byte)c, 0, 0, translateModifiers(e));
     }
 
     public void keyPressed(KeyEvent e) {

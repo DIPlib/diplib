@@ -67,7 +67,7 @@ void LinkViewPort::render()
   }
 }
 
-void LinkViewPort::click(int button, int state, int /*x*/, int /*y*/)
+void LinkViewPort::click(int button, int state, int /*x*/, int /*y*/, int /*mods*/)
 {
   if (state == 0)
   {

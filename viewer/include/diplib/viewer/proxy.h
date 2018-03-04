@@ -61,7 +61,7 @@ DIPVIEWER_EXTERN_EXPORT void proxyVisibleEvent(Window *window, int vis);
 DIPVIEWER_EXTERN_EXPORT void proxyCreateEvent(Window *window);
 DIPVIEWER_EXTERN_EXPORT void proxyCloseEvent(Window *window);
 DIPVIEWER_EXTERN_EXPORT void proxyKeyEvent(Window *window, unsigned char k, int x, int y, int mods);
-DIPVIEWER_EXTERN_EXPORT void proxyClickEvent(Window *window, int button, int state, int x, int y);
+DIPVIEWER_EXTERN_EXPORT void proxyClickEvent(Window *window, int button, int state, int x, int y, int mods);
 DIPVIEWER_EXTERN_EXPORT void proxyMotionEvent(Window *window, int x, int y);
 
 // Callbacks, to be called internally
@@ -183,9 +183,9 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
       window->key(k, x, y, mods);
     }
 
-    void proxyClickEvent(Window *window, int button, int state, int x, int y)
+    void proxyClickEvent(Window *window, int button, int state, int x, int y, int mods)
     {
-      window->click(button, state, x, y);
+      window->click(button, state, x, y, mods);
     }
 
     void proxyMotionEvent(Window *window, int x, int y)
