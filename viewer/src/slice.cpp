@@ -405,7 +405,7 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
     if (button == 3 || button == 4)
     {
       // Mouse wheel: zoom
-      double factor = 1.5;
+      double factor = std::sqrt(2.0);
       if (button == 4)
         factor = 1./factor;
         
