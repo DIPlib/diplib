@@ -146,8 +146,8 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     /// Convert from window to framebuffer coordinates
     Point translateMouse(MouseEvent e)
     {
-        return new Point(e.getX() * framebuffer_width_ / this.getWidth(),
-                         e.getY() * framebuffer_height_ / this.getHeight());
+        return new Point(e.getX() * framebuffer_width_ / canvas_.getWidth(),
+                         e.getY() * framebuffer_height_ / canvas_.getHeight());
     }
     
     int translateModifiers(InputEvent e)
@@ -157,9 +157,6 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
               (m&InputEvent.CTRL_DOWN_MASK )>0?2:0 +
               (m&InputEvent.ALT_DOWN_MASK  )>0?4:0 +
               (m&InputEvent.META_DOWN_MASK )>0?8:0;
-              
-      System.out.println("translate: " + m + " -> " + t);
-      
       return t;
     }
     
@@ -265,20 +262,20 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     // KeyListener
     
     public void keyTyped(KeyEvent e) {
-        int c = e.getKeyChar();
-        
-        // Control-Char
-        if (c < 27)
-            c = c + 'A' - 1;
-        
-        // use capitals
-        if (c >= 'a' && c <= 'z')
-            c = c - 'a' + 'A';
-    
-        proxy_.proxyKeyEvent(pointer_, (byte)c, 0, 0, translateModifiers(e));
     }
 
     public void keyPressed(KeyEvent e) {
+        int c = e.getKeyChar();
+
+        // Control-Char
+        if (c < 27)
+            c = c + 'A' - 1;
+
+        // use capitals
+        if (c >= 'a' && c <= 'z')
+            c = c - 'a' + 'A';
+
+        proxy_.proxyKeyEvent(pointer_, (byte)c, 0, 0, translateModifiers(e));
     }
 
     public void keyReleased(KeyEvent e) {
