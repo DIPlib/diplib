@@ -312,11 +312,11 @@ Other settings are available through the `dipsetpref` command (see
 
 *Value*: 3x1 array of floats between 0 and 1
 
-*Default*: \[`1 0 0`\]
+*Default*: `[1 0 0]`
 
 This specifies the color used to display the object pixels in a binary
 image. Be default they are red, out of historical reasons. Some people
-prefer a different color, such as \[`1 1 1`\] or \[`0 1 0`\].
+prefer a different color, such as white (`[1 1 1]`) or green (`[0 1 0]`).
 
 ### BringToFrontOnDisplay
 
@@ -333,7 +333,7 @@ when displaying a new image, or updating an old one.
 
 *Default*: `'x+iy'`
 
-This only affects display of complex images. When using the [*Pixel
+This only affects display of complex images in `dipshow`. When using the [*Pixel
 testing*]{} mode in the image display window, the pixel value can be
 displayed as real and imaginary components (`'x+iy'`), or as magnitude
 and phase components(`'r/phi'`).
@@ -420,7 +420,7 @@ This value determines the width of a window created by `dipshow` or
 *Default*: `'off'`
 
 Set this option if you want global stretching for 3D/4D images on by
-default. See [@sec:function_dipmapping;@sec:figure_menus].
+default in `dipshow`. See [@sec:function_dipmapping;@sec:figure_menus].
 
 ### DefaultMappingMode
 
@@ -440,9 +440,10 @@ compatible with the image being displayed. Possible values are `'lin'`,
 
 *Default*: `'xy'`
 
-Sets the direction in which 3D/4D volumes are sliced by default.
-Possible values are `'xy'`, `'xz'` and `'yz'`. See
-[@sec:function_dipmapping;@sec:figure_menus].
+Sets the direction in which 3D/4D volumes are sliced by default in `dipshow`.
+Possible values are `'xy'`, `'xz'`, `'yz'`, `'xt'`, `'yt'` and `'zt'`.
+But if you select one of the options with `t`, 3D images cannot be displayed.
+See [@sec:function_dipmapping;@sec:figure_menus].
 
 ### DisplayToFigure
 
@@ -453,8 +454,32 @@ Possible values are `'xy'`, `'xz'` and `'yz'`. See
 When this setting is `'on'`, the `display` method of the `dip_image`
 object sends the image data to a figure window. When it is `'off'`,
 `disp` is called instead. The display method is called when a *MATLAB*
-command does not end with a semicolon. See
-[@sec:dip_image_display] for more information on this behavior.
+command does not end with a semicolon.
+See [@sec:dip_image_display] for more information on this behavior.
+
+### DisplayFunction
+
+*Value*: `'dipshow'` or `'viewslice'`
+
+*Default*: `'dipshow'`
+
+This option selects how images are shown to a figure window when the
+command does not end with a semicolon. `dipshow` is the default
+method, yielding well-integrated display windows. Many of the settings
+described in this section apply only to the figure windows created by `dipshow`,
+as do the interactive tools described in [@sec:function_dipcrop].
+See [@sec:dum_figurewindows] for more information on these figure
+windows.
+
+`viewslice` is the alternate method. It uses the *DIPviewer* tool.
+This tool has no limitations to what type of images can be shown
+(i.e. it can show images with more than 4 dimensions, as well as tensor
+images). However, all the `dipshow`-related options mentioned in this
+section are ignored, and no further programmatic interaction with
+the figure windows is supported. A new window will always be opened
+for each display command, `dipfig` ([@sec:function_dipfig]) does not
+apply either. See the [*DIPviewer* documention](https://diplib.github.io/diplib-docs/group__viewer.html#details)
+for more information on these fi
 
 ### EnableKeyboard
 
@@ -463,7 +488,7 @@ command does not end with a semicolon. See
 *Default*: `'on'`
 
 If you set this value to `'off'`, the keyboard will be disabled when
-displaying an image. This is useful for Windows machines, on which the
+displaying an image with `dipshow`. This is useful for Windows machines, on which the
 figure window will get keyboard focus when displaying an image. This can
 be annoying when you want to continue typing. Enable the keyboard
 callback for a figure window using the appropriate menu item under
@@ -528,7 +553,7 @@ by a semicolon (`;`).
 
 This is the maximum size of an image automatically displayed through
 `display`. If any of the sizes of an image is larger, you will need to
-display it manually using `dipshow`. The reason behind this behavior is
+display it manually using `dipshow` or `viewslice`. The reason behind this behavior is
 that such an image is most likely to be created accidentally, and not
 meant for display anyway. For example, `a(a>10)` returns a 1D image with
 all pixel values of `a` larger than 10; this is very useful, but not
@@ -574,7 +599,7 @@ hidden if it was hidden.
 *Default*: `'on'`
 
 This setting controls whether `diptruesize` is called after an image is
-displayed to a figure window (see [@sec:function_diptruesize]).
+displayed to a figure window with `dipshow` (see [@sec:function_diptruesize]).
 
 ### UserManualLocation
 

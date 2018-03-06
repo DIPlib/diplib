@@ -136,6 +136,8 @@ must be together and in that order, but otherwise can be combined in any
 way with any of the other parameters. The same is true for the
 `'colormap'` parameter.
 
+Note that this function applies only to figure windows created by `dipshow`.
+
 Figure Window Support: `diptruesize` {#sec:function_diptruesize}
 ------------------------------------
 
@@ -155,6 +157,8 @@ as an optional first argument. If you provide a handle, you must also
 provide a zoom factor. See `help diptruesize` for other options not
 available through the figure window menu.
 
+Note that this function applies only to figure windows created by `dipshow`.
+
 Figure Window Support: `diptest`, `dipzoom`, *et al.* {#sec:function_diptest}
 -----------------------------------------------------
 
@@ -163,6 +167,8 @@ items corresponding to the commands `diptest`, `dipzoom`, `diplooking`,
 `dippan`, `diplink`, `dipstep`, `dipanimate`, and `dipisosurface`.
 See the help for each of these functions (using the `help` command)
 to learn more about them.
+
+Note that these functions apply only to figure windows created by `dipshow`.
 
 Creating, Linking and Clearing Figure Windows: `dipfig` and `dipclf` {#sec:function_dipfig}
 --------------------------------------------------------------------
@@ -205,6 +211,8 @@ window, but removes the images in them. `dipclf` can also be used to
 clear selected windows by giving it an array with handles or a `cell`
 array with names as an argument (in a `cell` array you can actually
 combine numeric handles and variable names).
+
+Note that these functions apply only to figure windows created by `dipshow`.
 
 Toolbox Preferences: `dipsetpref` and `dipgetpref` {#sec:function_dippref}
 --------------------------------------------------
@@ -250,6 +258,8 @@ image but can still see it in its display.
 `dipstackinspect` lets the user click on a 3D display, and shows a 1D
 plot of the hidden dimension at that point. The tool will stay active
 until the right mouse button is clicked over the image.
+
+Note that these functions apply only to figure windows created by `dipshow`.
 
 Image Processing Functions
 --------------------------

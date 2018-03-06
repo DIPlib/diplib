@@ -868,19 +868,25 @@ classdef dip_image
 
       function display(obj)
          %DISPLAY   Called when not terminating a statement with a semicolon.
-         if ~isempty(obj) && dipgetpref('DisplayToFigure') && (isscalar(obj) || iscolor(obj))
-            sz = imsize(squeeze(obj));
-            dims = length(sz);
-            if dims >= 1 && dims <= 4
-               if all(sz<=dipgetpref('ImageSizeLimit'))
-                  h = dipshow(obj,'name',inputname(1));
-                  if ~isnumeric(h)
-                     if ishandle(h)
-                        h = h.Number;
-                     end
-                  end
-                  disp(['Displayed in figure ',num2str(h)])
+         if ~isempty(obj) && numpixels(obj)>1 && dipgetpref('DisplayToFigure')
+            sz = imsize(obj);
+            if all(sz<=dipgetpref('ImageSizeLimit'))
+               if strcmp(dipgetpref('DisplayFunction'),'viewslice')
+                  viewslice(obj,inputname(1));
+                  disp(['Displayed to new DIPviewer figure'])
                   return
+               elseif (isscalar(obj) || iscolor(obj))
+                  dims = sum(sz>1);
+                  if dims >= 1 && dims <= 4
+                     h = dipshow(obj,'name',inputname(1));
+                     if ~isnumeric(h)
+                        if ishandle(h)
+                           h = h.Number;
+                        end
+                     end
+                     disp(['Displayed in figure ',num2str(h)])
+                     return
+                  end
                end
             end
          end

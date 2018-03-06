@@ -9,6 +9,22 @@ with each other or with other graphical elements. This chapter describes
 the possible interactions with figure windows, how to link variables
 with them, and their placing on the desktop.
 
+The figure windows described in this chapter are those created by the `dipshow`
+function. This function is also used by default to automatically display
+images when a when a *MATLAB* command does not end with a semicolon.
+See the `'DisplayToFigure'` option in [@sec:customizing_dippref].
+
+The alternative way to display images is with the `viewslice` function.
+The figure windows created use the *DIPviewer* tool, which has better
+image display capabilities (for example it can show tensor images),
+but is not integrated equally well into *MATLAB*.
+See the [*DIPviewer* documention](https://diplib.github.io/diplib-docs/group__viewer.html#details)
+for more information on these figure windows.
+
+The `'DisplayFunction'` option (see [@sec:customizing_dippref])
+controls which of these two commands is used to automatically display
+images.
+
 The Figure Window Menus {#sec:figure_menus}
 -----------------------
 
@@ -77,6 +93,22 @@ Finally, the "Actions" menu contains some more options:
     is only available for 3D displays.
 
 -   "View5d" (not yet ported over from *DIPimage 2*)
+
+Programmatic Updating of Figure Windows
+---------------------------------------
+
+The function `dipshow` ([@sec:function_dipshow]) displays an image to
+a figure window. It accepts multiple optional arguments to specify
+how the image is to be shown. Once displayed, it is possible to
+further change these properties using the menus, as described above,
+but also using additional commands:
+
+-   `dipmapping` ([@sec:function_dipmapping]) changes how pixel values
+    are mapped to screen colors (stretching modes, color maps, slicing
+    directions, etc.)
+
+-   `diptruesize` ([@sec:function_diptruesize]) changes the spatial
+    scaling of the image (zoom factor).
 
 Using the Mouse in Figure Windows {#sec:figure_mouse}
 ---------------------------------
