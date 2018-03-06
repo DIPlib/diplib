@@ -53,7 +53,7 @@ namespace dip {
 ///
 /// See the `dipimage/private/imagedisplay.cpp` file implementing the MATLAB interface to this class, and the
 /// `dipimage/dipshow.m` function, for an example of how this can be used.
-class DIP_NO_EXPORT ImageDisplay{
+class DIP_NO_EXPORT ImageDisplay {
    public:
 
       enum class ProjectionMode : unsigned char { SLICE, MAX, MEAN };
@@ -103,7 +103,7 @@ class DIP_NO_EXPORT ImageDisplay{
             if( !colorspace_.empty() ) {
                if( !colorSpaceManager_ ||
                    !colorSpaceManager_->IsDefined( colorspace_ ) ||
-                    colorSpaceManager_->NumberOfChannels( colorspace_ ) != image_.TensorElements()) {
+                    colorSpaceManager_->NumberOfChannels( colorspace_ ) != image_.TensorElements() ) {
                   // We won't be able to convert this image to RGB, let's treat it as a tensor image.
                   colorspace_.clear();
                }
@@ -142,7 +142,7 @@ class DIP_NO_EXPORT ImageDisplay{
       ///
       /// This function also causes an update of the slice if the projection changed. The raw slice image contains
       /// the input data for the what is shown in `Output`.
-      Image const& Slice(){
+      Image const& Slice() {
          UpdateSlice();
          return slice_;
       }
@@ -417,7 +417,7 @@ class DIP_NO_EXPORT ImageDisplay{
       void SetGlobalStretch( String const& globalStretch ) {
          if(( globalStretch == "yes" ) || ( globalStretch == "on" )) {
             SetGlobalStretch( true );
-         } else if(( globalStretch == "no" ) || ( globalStretch == "off" )){
+         } else if(( globalStretch == "no" ) || ( globalStretch == "off" )) {
             SetGlobalStretch( false );
          } else {
             DIP_THROW_INVALID_FLAG( globalStretch );

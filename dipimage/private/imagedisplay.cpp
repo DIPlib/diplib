@@ -300,7 +300,26 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                      }
                   } else if( key == "mappingmode" ) {
                      if( nrhs == 2 ) {
-                        plhs[ 0 ] = dml::GetArray( object->GetMappingMode());
+                        dip::String mode = object->GetMappingMode();
+                        plhs[ 0 ] = dml::GetArray( mode );
+                        if( mode == "manual" ) {
+                           dip::ImageDisplay::Limits lims = object->GetRange();
+                           if( lims.lower == 0.0 ) {
+                              if( lims.upper == 1.0 ) {
+                                 plhs[ 0 ] = mxCreateString( "unit" );
+                              } else if( lims.upper == 255.0 ) {
+                                 plhs[ 0 ] = mxCreateString( "normal" );
+                              } else if( lims.upper == 4095.0 ) {
+                                 plhs[ 0 ] = mxCreateString( "12bit" );
+                              } else if( lims.upper == 65535.0 ) {
+                                 plhs[ 0 ] = mxCreateString( "16bit" );
+                              }
+                           } else if(( lims.lower == -dip::pi ) && ( lims.upper == dip::pi )) {
+                              plhs[ 0 ] = mxCreateString( "angle" );
+                           } else if(( lims.lower == -dip::pi / 2.0 ) && ( lims.upper == dip::pi / 2.0 )) {
+                              plhs[ 0 ] = mxCreateString( "orientation" );
+                           }
+                        }
                      } else {
                         if( mxIsChar( prhs[ 2 ] )) {
                            object->SetRange( dml::GetString( prhs[ 2 ] ) );

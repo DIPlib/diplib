@@ -19,12 +19,12 @@
 %      's16bit'            [-32768 32767]
 %      'lin' or 'all'      [MIN(B) MAX(B)]
 %      'percentile'        [PERCENTILE(B,5) PERCENTILE(B,95)]
-%      'base'              [MIN([MIN(B),-MAX(B)]) MAX([-MIN(B),MAX(B)])]
+%      'based' or 'base'   [MIN([MIN(B),-MAX(B)]) MAX([-MIN(B),MAX(B)])]
 %      'angle'             [-PI PI]
 %      'orientation'       [-PI/2 PI/2]
 %   These modes additionally set the colormap to 'grey', except for the
 %   'angle' and 'orientation' modes, which set the colormap to 'periodic',
-%   and the 'base' mode, which sets the colormap to 'zerobased' (see below).
+%   and the 'based' mode, which sets the colormap to 'zerobased' (see below).
 %
 %   DIPSHOW(B,'log') displays the image in B using logarithmic stretching.
 %   The colormap is set to 'grey'.
@@ -97,7 +97,7 @@
 %      DIPSHOW(H,'ch_mappingmode',RANGE)
 %      DIPSHOW(H,'ch_mappingmode',MAPPINGMODE)
 %   RANGE or MAPPINGMODE are as defined above for regular DIPSHOW syntax.
-%      DIPSHOW(H,'ch_colormap', COLORMAP)
+%      DIPSHOW(H,'ch_colormap',COLORMAP)
 %   COLORMAP is 'grey', 'periodic', 'saturation', 'labels' or a colormap.
 %      DIPSHOW(H,'ch_globalstretch',BOOLEAN)
 %   BOOLEAN is 'yes', 'no', 'on', 'off', 1, 0, true or false.
@@ -326,7 +326,8 @@ while nargin >= n
             end
             position = position(:)';
             n = n+1;
-         case {'normal','unit','lin','all','percentile','angle','orientation','base','log','8bit','12bit','16bit','u8bit','u12bit','u16bit','s8bit','s12bit','s16bit'}
+         case {'normal','unit','lin','all','percentile','angle','orientation','based','base','log',...
+               '8bit','12bit','16bit','u8bit','u12bit','u16bit','s8bit','s12bit','s16bit'}
             if hasrange, error('Only one stretching mode allowed on the command line.'); end
             rangestr = tmp;
             hasrange = 1;
@@ -525,6 +526,8 @@ if ischar(currange)
    switch mappingmode
       case {'base','based'}
          colmap = 'zerobased';
+      case {'angle','orientation'}
+         colmap = 'periodic';
       case 'labels'
          mappingmode = 'modulo';
          colmap = 'labels';
@@ -588,8 +591,10 @@ if ischar(str)
       error('Illegal slicing argument.')
    end
    slicing = [get__slicing__dim(str(1)), get__slicing__dim(str(2))];
-   if slicing(1)==slicing(2)
+   if slicing(1) == slicing(2)
       error('Illegal slicing argument.')
+   elseif slicing(1) > slicing(2)
+      slicing = slicing([2,1]);
    end
 else
    slicing = str;
@@ -681,11 +686,11 @@ if truesz
 else
    dipfig_titlebar(fig,udata);
 end
-newstate = find_action_state(state,1,iscomp,iscol);
+newstate = find_action_state(state,1,iscol);
 if ~strcmp(state,newstate)
    % Current state is not compatible with display. Try default state:
    state = dipgetpref('DefaultActionState');
-   newstate = find_action_state(state,1,iscomp,iscol);
+   newstate = find_action_state(state,1,iscol);
 end
 change_action_state(fig,newstate);
 % 27-10-2006 MvG -- the 'visible' 'off'>'on' cycle brings the window to
@@ -915,11 +920,11 @@ if truesz
 else
    dipfig_titlebar(fig,udata);
 end
-newstate = find_action_state(state,nD,iscomp,iscol);
+newstate = find_action_state(state,nD,iscol);
 if ~strcmp(state,newstate)
    % Current state is not compatible with display. Try default state:
    state = dipgetpref('DefaultActionState');
-   newstate = find_action_state(state,nD,iscomp,iscol);
+   newstate = find_action_state(state,nD,iscol);
 end
 change_action_state(fig,newstate);
 % 27-10-2006 MvG -- the 'visible' 'off'>'on' cycle brings the window to
@@ -961,6 +966,9 @@ end
 function udata = update_display(udata,imh,handle)
 if imagedisplay(handle,'dirty')
    change = imagedisplay(handle,'change');
+   % Since we're re-using the same array to produce a different output, MATLAB doesn't realize anything changed
+   % if we just set the 'cdata' property to the same array. We need to clear it first by setting it to [].
+   set(imh,'cdata',[]);
    set(imh,'cdata',imagedisplay(handle));
    if change
       axh = get(imh,'Parent');
@@ -1153,8 +1161,8 @@ else
           @(~,~)dipshow(gcbf,'ch_mappingmode','percentile'));
    uimenu(h,'Label','Log stretch','Tag','log','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','log'));
-   uimenu(h,'Label','Based at 0','Tag','base','Callback',...
-          @(~,~)dipshow(gcbf,'ch_mappingmode','base'));
+   uimenu(h,'Label','Based at 0','Tag','based','Callback',...
+          @(~,~)dipshow(gcbf,'ch_mappingmode','based'));
    uimenu(h,'Label','Angle','Tag','angle','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','angle'));
    uimenu(h,'Label','Orientation','Tag','orientation','Callback',...
@@ -1250,7 +1258,7 @@ h = uimenu(fig);drawnow;delete(h);
 %
 % Find the correct action state for the current image
 %
-function state = find_action_state(state,nD,iscomplex,iscolor)
+function state = find_action_state(state,nD,iscolor)
 switch state
    case 'diptest'
    case 'diporien'
