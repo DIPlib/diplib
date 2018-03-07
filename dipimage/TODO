@@ -24,6 +24,7 @@ skew
 smallobjectsremove
 thetatheta
 traceobjects
+viewslice         (only if compiling DIPviewer)
 writeics
 writetiff
 
