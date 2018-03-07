@@ -19,7 +19,7 @@
 %                      See HELP BOUNDARY_CONDITION
 %
 % DEFAULTS:
-%  size_range = 7
+%  size_range = [3, 7, 2]
 %  filter_shape = 'elliptic'
 %  filter_type = 'structural'
 %  polarity = 'open-close'

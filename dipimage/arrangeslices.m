@@ -35,10 +35,12 @@
 
 function img = arrangeslices(img,ncolumns)
 % check input arguments
-if nargin > 1
+if nargin > 1 && ~isempty(ncolumns)
    if length(ncolumns)~=1 || ~isnumeric(ncolumns) || ncolumns < 1 || mod(ncolumns,1)
       error('NCOLUMNS must be a positive integer scalar')
    end
+else
+   ncolumns = [];
 end
 % some checks
 if ~isa(img,'dip_image')
@@ -53,7 +55,7 @@ if length(sz)>3
    img = reshape(img,sz);
 end
 % compute table size
-if nargin<2
+if isempty(ncolumns)
    ncolumns = ceil(sqrt(sz(3)));
 end
 nrows = ceil(sz(3)/ncolumns);

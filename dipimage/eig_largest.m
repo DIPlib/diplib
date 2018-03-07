@@ -1,17 +1,13 @@
 %EIG_LARGEST   Computes the largest eigenvector and value
-%  V=EIG_LARGEST(A,SIGMA)
-%  calculates the largest eigenvector V of a square tensor image A via the
-%  Power Method. Only 7 iterations are done, this should be sufficient for
-%  most images
+%  V=EIG_LARGEST(A) calculates the largest eigenvector V of a square tensor
+%  image A via the Power Method. Only 7 iterations are done, this should be
+%  sufficient for most images.
 %
-%  [V,LAMBDA]=EIG_LARGEST(A,SIGMA)
-%  calculates the largest eigenvector V and value LAMBDA of a square
-%  tensor image A via the Power Method.
+%  [V,LAMBDA]=EIG_LARGEST(A) also computes the corresponding eigenvalue.
 %
-%  DEFAULTS: SIMGA=0, i.e. no tensor smoothing. Otherwise the tensor is
-%  smoothed by a Gaussian with width SIGMA. Without smoothing you may get
-%  lots of warnings (Divide by zero), so warnings are surpressed for this
-%  function.
+%  EIG_LARGEST(A,SIMGA) smooths the tensor with a Gaussian of width SIGMA
+%  before the eigenvector computation. Without smoothing there will be
+%  many divisions by zero. Warnings are surpressed for this function.
 %
 %  See also: DIP_IMAGE/EIG, DIP_IMAGE/SVD
 
@@ -46,9 +42,7 @@ end
 
 % make initial vector for iteration q=(1,1,1...1)'
 q = newtensorim(s(1),imsize(A));
-tmp = newim(imsize(A));
-tmp.data(:) = 1;
-q(:) = tmp;
+q(:) = 1;
 
 wa = warning('off');
 

@@ -53,8 +53,8 @@ if length(ts)==1
 elseif numel(ts)~=2
 	error('Array to detile the image must have no more than two elements');
 end
-sz = imsize(in);
-dd = sz./ts([2,1]);
+dd = imsize(in);
+dd(1:2) = dd(1:2)./ts([2,1]);
 if any(mod(dd,1))
    error('The array must divide the image size');
 end
