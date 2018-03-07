@@ -1,10 +1,13 @@
 %VIEWSLICE   Shows image slices in an interactive display window
 %   VIEWSLICE(B) displays the image in B.
-%   VIEWSLICE(B, TITLE) displays the image in B with title TITLE.
+%   VIEWSLICE(B,TITLE) displays the image in B with title TITLE.
 %
-%   The return value is a Java object of class org.diplib.viewer.Viewer,
-%   which extends javax.swing.JFrame. To close programatically, use the
-%   dispose() member function.
+%   H = VIEWSLICE(B,...) returns a Java object of class
+%   org.diplib.viewer.Viewer, which extends javax.swing.JFrame.
+%   To close programatically, use the DISPOSE member function:
+%
+%      h = viewslice(readim);
+%      h.dispose
 %
 % HINTS:
 %   See https://diplib.github.io/diplib-docs/group__viewer.html#details

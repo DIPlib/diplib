@@ -74,7 +74,7 @@ void EnsureViewerJarIsOnPath() {
    }
 }
 
-void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    EnsureViewerJarIsOnPath();
 
@@ -92,11 +92,17 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::viewer::WindowPtr wdw = dip::viewer::SliceViewer::Create( image, title );
       dip::viewer::ProxyManager::instance()->createWindow( wdw );
 
+      mxArray* obj;
       mxArray* rhs[2];
       rhs[ 0 ] = mxCreateString( ViewerClassName );
+      static_assert( sizeof( void* ) == 8, "viewslice requires a 64-bit environment" );
       rhs[ 1 ] = mxCreateUninitNumericMatrix( 1, 1, mxINT64_CLASS, mxREAL );
-      *static_cast< std::int64_t* >( mxGetData( rhs[ 1 ] )) = reinterpret_cast< std::int64_t >( wdw.get() );
-      mexCallMATLAB( 1, plhs, 2, rhs, "javaObjectEDT" );
+      *static_cast< void** >( mxGetData( rhs[ 1 ] )) = wdw.get();
+      mexCallMATLAB( 1, &obj, 2, rhs, "javaObjectEDT" );
+
+      if( nlhs > 0 ) {
+         plhs[ 0 ] = obj;
+      }
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what());
