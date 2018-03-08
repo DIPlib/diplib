@@ -111,13 +111,8 @@ class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager
     }
 
     DIPVIEWER_EXPORT static void key(unsigned char k, int x, int y);
-    
-    static void click(int button, int state, int x, int y)
-    {
-      WindowPtr window = instance_->getCurrentWindow();
-      if (window)
-        window->click(button, state, x, y, glutGetModifiers());
-    }
+
+    DIPVIEWER_EXPORT static void click(int button, int state, int x, int y);
 
     static void motion(int x, int y)
     {

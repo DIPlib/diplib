@@ -199,6 +199,13 @@ void GLUTManager::key(unsigned char k, int x, int y)
   }
 }
 
+void GLUTManager::click(int button, int state, int x, int y)
+{
+  WindowPtr window = instance_->getCurrentWindow();
+  if (window)
+    window->click(button, state, x, y, glutGetModifiers());
+}
+
 }} // namespace dip::viewer
 
 #endif // DIP__HAS_FREEGLUT
