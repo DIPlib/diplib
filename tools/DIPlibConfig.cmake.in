@@ -1,0 +1,16 @@
+include(CMakeFindDependencyMacro)
+
+include("${CMAKE_CURRENT_LIST_DIR}/DIPlibTargets.cmake")
+
+set(_supported_components DIP DIPviewer)
+
+foreach(_comp ${DIPlib_FIND_COMPONENTS})
+   if (NOT ";${_supported_components};" MATCHES _comp)
+      set(DIPlib_FOUND False)
+      set(DIPlib_NOT_FOUND_MESSAGE "Unsupported component: ${_comp}")
+   endif()
+   include("${CMAKE_CURRENT_LIST_DIR}/DIPlib${_comp}Targets.cmake")
+endforeach()
+
+# TODO: Look for dependencies and set target_link_libraries()
+#find_dependency(Stats 2.6.4)
