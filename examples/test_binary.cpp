@@ -1,3 +1,7 @@
+/*
+ * Testing the binary morphology functions
+ */
+
 #include "diplib.h"
 #include "diplib/binary.h"
 #include "diplib/file_io.h"
@@ -5,8 +9,6 @@
 #include "diplib/generation.h"
 #include "diplib/testing.h"
 #include <iomanip>
-
-// Testing binary morphological functions
 
 // Define some utility functions used in this test
 namespace

@@ -1,3 +1,7 @@
+/*
+ * A simple tool that shows an image file using dip::viewer::Show
+ */
+
 #include <iostream>
 
 #include <diplib.h>

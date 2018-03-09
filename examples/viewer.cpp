@@ -1,3 +1,10 @@
+/*
+ * This program demonstrates some of the low-level functionality of DIPviewer:
+ *  - Creating and using a dip::viewer::Manager window manager.
+ *  - Creating multiple dip::viewer::SliceViewer and dip::viewer::ImageViewer windows.
+ *  - Updating the image shown in a dip::viewer::ImageViewer window in a background thread.
+ */
+
 #include <diplib.h>
 #include <diplib/file_io.h>
 #include <diplib/generation.h>
@@ -70,7 +77,7 @@ int main() {
    auto iv = dip::viewer::ImageViewer::Create( image2 );
    manager.createWindow( iv );
    
-   // Create thread to programatically alter image
+   // Create thread to programmatically alter image
    std::thread thread = std::thread(run, iv);
    
    // Generate 0D RGB image

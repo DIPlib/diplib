@@ -1,3 +1,8 @@
+/*
+ * This program shows how to delete small objects from a grey-value image.
+ * It displays the result using dip::viewer::ShowSimple.
+ */
+
 #include <vector>
 #include "diplib.h"
 #include "dipviewer.h"
@@ -6,7 +11,7 @@
 #include "diplib/measurement.h"
 
 int main() {
-   // Create a test image with similar properties to your example
+   // Create a test image
    dip::Image input = -dip::ImageReadICS( "/Users/cris/newdip/examples/cermet.ics" );
    input.At( input < 120 ) = 0;
    // Display

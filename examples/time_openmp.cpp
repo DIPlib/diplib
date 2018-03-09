@@ -1,3 +1,8 @@
+/*
+ * A program to time functions with and without multithreading.
+ * This is useful to fine-tune the cost value that determines for what size image DIPlib will use multi-threading.
+ */
+
 #include <iostream>
 #include "diplib.h"
 #include "diplib/multithreading.h"

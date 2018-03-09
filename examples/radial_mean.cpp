@@ -1,11 +1,15 @@
+/*
+ * This is a simple program that replicates the dip::RadialMean function. It is not very efficient,
+ * uses an intermediate image to store the radius, and uses no multithreading. But it shows how to
+ * use dip::JointImageIterator to iterate over two images simultaneously.
+ */
+
 #include "diplib.h"
 #include "diplib/file_io.h"
 #include "diplib/transform.h"
 #include "diplib/math.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
-
-// This function gives a quick-and-dirty implementation of the RadialMean function
 
 int main() {
 

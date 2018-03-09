@@ -1,3 +1,8 @@
+/*
+ * This program times dilations with different structuring element shapes and sizes.
+ * It shows the computational complexity of each shape w.r.t. the size.
+ */
+
 #include <iostream>
 #include "diplib.h"
 #include "diplib/multithreading.h"

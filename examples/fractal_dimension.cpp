@@ -1,3 +1,8 @@
+/*
+ * This program computes the fractal dimension of an input image. If no input image is given, it
+ * computes the fractal dimension of the example images `examples/fractal?.tiff`.
+ */
+
 #include "diplib.h"
 #include "diplib/analysis.h"
 #include "diplib/generation.h"

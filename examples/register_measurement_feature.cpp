@@ -1,3 +1,10 @@
+/*
+ * This example program demonstrates how to register a new measurement feature in dip::MeasurementTool.
+ * The new class FeatureTest implements an image-based measurement feature (though it doesn't really do anything,
+ * it just outputs a constant). The feature can be configured, and doing so changes the constant that is output
+ * by the feature.
+ */
+
 #include <iostream>
 #include "diplib/measurement.h"
 

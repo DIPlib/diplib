@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#  This Python script tests all code that reads grey-value data
+# This Python script tests all code that reads grey-value data
 # from TIFF files (that is, it doesn't exercise that code that
 # reads binary and color-mapped data, which is less complex).
 # It does not test reading multi-page TIFFs or the like, all
@@ -18,8 +18,6 @@ dipdir = os.getcwd() + '/../target/dip/lib'
 sys.path.append( dipdir )
 
 import PyDIP as dip
-
-# ImageReadTIFF(filename, slice(0, 0, 1), [slice(0, -1, 1), slice(0, -1, 1)], slice(0, -1, 1))
 
 # Step 1: Read in full images, make sure they are the same
 
