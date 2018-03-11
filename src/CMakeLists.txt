@@ -98,8 +98,6 @@ endif()
 if(DIP_ENABLE_TIFF)
    target_link_libraries(DIP PRIVATE TIFF::TIFF)
    target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
-   #get_filename_component(TIFF_LIBS_TRUE ${TIFF_LIBRARIES} REALPATH)
-   #install(PROGRAMS ${TIFF_LIBS_TRUE} DESTINATION lib)
 endif()
 
 # Switch to link against the FFTW library for Fourier transforms

@@ -73,10 +73,6 @@ if(OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
    set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
 endif()
 
-# Pthreads
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
 include(tools/update_deps_file.cmake)
 
 
@@ -99,16 +95,23 @@ find_package(GLFW)
 if(GLFW_FOUND)
    list(APPEND DIP_VIEWER_MANAGERS "GLFW")
 endif()
+
 if(OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
    set(DIP_BUILD_DIPVIEWER ON CACHE BOOL "Build the viewer module")
 endif()
-if(WIN32 AND DIP_BUILD_DIPVIEWER)
-   # On Windows, GLEW is required for OpenGL extensions
-   find_package(GLEW REQUIRED)
-endif()
 
 if(DIP_BUILD_DIPVIEWER)
+
+   set(THREADS_PREFER_PTHREAD_FLAG ON)
+   find_package(Threads REQUIRED)
+
+   if(WIN32)
+      # On Windows, GLEW is required for OpenGL extensions
+      find_package(GLEW REQUIRED)
+   endif()
+
    add_subdirectory(viewer)
+
 endif()
 
 
@@ -134,10 +137,16 @@ endif()
 
 ### DIPimage toolbox for MATLAB
 
-#set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # A line like this might be necessary if your version of MATLAB is more recent than your version of CMake.
-find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY MAIN_PROGRAM)
-if(Matlab_FOUND)
-   set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
+if(DIP_SHARED_LIBRARY)
+   # We will not build DIPimage without a shared DIPlib -- technically possible, but not desireable.
+   # (This would also require solving linker warnings because of Doctest.)
+
+   #set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # A line like this might be necessary if your version of MATLAB is more recent than your version of CMake.
+   find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY MAIN_PROGRAM)
+   if(Matlab_FOUND)
+      set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
+   endif()
+
 endif()
 
 if(DIP_BUILD_DIPIMAGE)
@@ -152,30 +161,35 @@ add_subdirectory(examples EXCLUDE_FROM_ALL)
 
 ### Packaging
 
-include(CMakePackageConfigHelpers)
-set(ConfigPackageLocation lib/cmake/DIPlib)
-#install(EXPORT DIPlib NAMESPACE DIPlib:: DESTINATION ${ConfigPackageLocation})
+# Write CMake configuration import scripts (but only when DIPlib is a shared library)
+if(DIP_SHARED_LIBRARY)
 
-export(EXPORT DIPlibTargets
-       FILE "${CMAKE_CURRENT_BINARY_DIR}/DIPlibTargets.cmake"
-       NAMESPACE DIPlib::)
-install(EXPORT DIPlibTargets
-        FILE DIPlibTargets.cmake
-        NAMESPACE DIPlib::
-        DESTINATION ${ConfigPackageLocation})
+   include(CMakePackageConfigHelpers)
+   set(ConfigPackageLocation lib/cmake/DIPlib)
 
-configure_package_config_file(
-      tools/DIPlibConfig.cmake.in
-      "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfig.cmake"
-      INSTALL_DESTINATION ${ConfigPackageLocation})
-write_basic_package_version_file(
-      "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfigVersion.cmake"
-      VERSION ${DIPlib_VERSION}
-      COMPATIBILITY SameMajorVersion)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfigVersion.cmake"
-              "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfig.cmake"
-        DESTINATION ${ConfigPackageLocation})
+   export(EXPORT DIPlibTargets
+          FILE "${CMAKE_CURRENT_BINARY_DIR}/DIPlibTargets.cmake"
+          NAMESPACE DIPlib::)
+   install(EXPORT DIPlibTargets
+           FILE DIPlibTargets.cmake
+           NAMESPACE DIPlib::
+           DESTINATION ${ConfigPackageLocation})
 
+   configure_package_config_file(
+         tools/DIPlibConfig.cmake.in
+         "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfig.cmake"
+         INSTALL_DESTINATION ${ConfigPackageLocation})
+   write_basic_package_version_file(
+         "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfigVersion.cmake"
+         VERSION ${DIPlib_VERSION}
+         COMPATIBILITY SameMajorVersion)
+   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfigVersion.cmake"
+                 "${CMAKE_CURRENT_BINARY_DIR}/DIPlibConfig.cmake"
+           DESTINATION ${ConfigPackageLocation})
+
+endif()
+
+# Package stuff
 if(CMAKE_HOST_WIN32)
    # On Windows we use the NSIS generator
    # TODO: This must be tested and cofigured properly
