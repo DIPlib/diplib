@@ -535,32 +535,14 @@ inline mxArray* GetArray( dip::dcomplex in ) {
    return mx;
 }
 
-/// \brief Convert an unsigned integer array from `dip::UnsignedArray` to `mxArray` by copy.
-inline mxArray* GetArray( dip::UnsignedArray const& in ) {
+/// \brief Convert a numeric array from `dip::DimensionalArray< T >` to `mxArray` by copy. Works for
+/// `dip::UnsignedArray`, `dip::IntegerArray` and `dip::FloatArray`.
+template< typename T, typename = std::enable_if_t< std::is_arithmetic< T >::value >>
+inline mxArray* GetArray( dip::DimensionArray< T > const& in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
    double* data = mxGetPr( mx );
    for( dip::uint ii = 0; ii < in.size(); ++ii ) {
       data[ ii ] = static_cast< double >( in[ ii ] );
-   }
-   return mx;
-}
-
-/// \brief Convert a signed integer array from `dip::IntegerArray` to `mxArray` by copy.
-inline mxArray* GetArray( dip::IntegerArray const& in ) {
-   mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
-   double* data = mxGetPr( mx );
-   for( dip::uint ii = 0; ii < in.size(); ++ii ) {
-      data[ ii ] = static_cast< double >( in[ ii ] );
-   }
-   return mx;
-}
-
-/// \brief Convert a floating-point array from `dip::FloatArray` to `mxArray` by copy.
-inline mxArray* GetArray( dip::FloatArray const& in ) {
-   mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
-   double* data = mxGetPr( mx );
-   for( dip::uint ii = 0; ii < in.size(); ++ii ) {
-      data[ ii ] = in[ ii ];
    }
    return mx;
 }
