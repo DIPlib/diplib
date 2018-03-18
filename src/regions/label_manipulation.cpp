@@ -85,9 +85,7 @@ UnsignedArray GetObjectLabels(
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( mask.IsForged() ) {
-      DIP_THROW_IF( mask.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
-      DIP_THROW_IF( !mask.DataType().IsBinary(), E::MASK_NOT_BINARY );
-      DIP_STACK_TRACE_THIS( mask.CompareProperties( label, Option::CmpProp::Sizes ));
+      DIP_STACK_TRACE_THIS( mask.CheckIsMask( label.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
    }
    bool nullIsObject;
    DIP_STACK_TRACE_THIS( nullIsObject = BooleanFromString( background, S::INCLUDE, S::EXCLUDE ));

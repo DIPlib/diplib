@@ -135,7 +135,7 @@ void Select(
    DIP_START_STACK_TRACE
       UnsignedArray size = in1.Sizes();
       Framework::SingletonExpandedSize( size, in2.Sizes() );
-      mask.CheckIsMask( size, Option::AllowSingletonExpansion::DO_ALLOW );
+      mask.CheckIsMask( size, Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
    DIP_END_STACK_TRACE
    DataType dataType = dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;

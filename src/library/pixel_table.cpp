@@ -324,8 +324,8 @@ PixelTable::PixelTable(
       dip::uint procDim
 ) {
    DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( mask.TensorElements() != 1, E::MASK_NOT_SCALAR );
-   DIP_THROW_IF( mask.DataType() != DT_BIN, E::MASK_NOT_BINARY );
+   DIP_THROW_IF( mask.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( mask.DataType() != DT_BIN, E::IMAGE_NOT_BINARY );
    dip::uint nDims = mask.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( procDim >= nDims, E::PARAMETER_OUT_OF_RANGE );
