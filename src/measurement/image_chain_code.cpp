@@ -154,7 +154,7 @@ ChainCodeArray GetImageChainCodes(
    // Create a map for the object IDs
    ObjectIdList objectIdList;
    dip::uint nObjects;
-   if (objectIDs.empty()) {
+   if( objectIDs.empty() ) {
       UnsignedArray allObjectIDs = GetObjectLabels( labels, Image(), S::EXCLUDE );
       for( dip::uint ii = 0; ii < allObjectIDs.size(); ++ii ) {
          objectIdList.emplace( allObjectIDs[ ii ], ObjectData{ ii, false } );

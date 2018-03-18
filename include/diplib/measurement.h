@@ -580,6 +580,7 @@ class DIP_NO_EXPORT Measurement {
       }
       void AddObjectID_( dip::uint objectID ) {
          dip::uint index = objects_.size();
+         // TODO: Using `push_back` is not efficient because `objects_` is a `dip::UnsignedArray`. This function is often called within a loop!
          objects_.push_back( objectID );
          objectIndices_.emplace( objectID, index );
       }

@@ -132,8 +132,8 @@ void LabelFirstPass(
       //    +-+-+-+
       //    | | | |  If `p` is set, `x` gets the same label. We need to test only `m` pixels
       //    +-+-+-+  Otherwise, we test all pixels `n` and `m`.
-      IntegerArray allNeighbors;     // `n` and `m` pixels
-      IntegerArray forwardNeighbors; // `m` pixels only
+      std::vector< dip::sint > allNeighbors;     // `n` and `m` pixels
+      std::vector< dip::sint > forwardNeighbors; // `m` pixels only
       UnsignedArray coords = it.Coordinates();
       coords[ procDim ] = 1; // pretend we're in the middle of the line here, so we can properly test for neighbors being inside or outside the image
                              // NOTE! this will not work correctly if the image has less that 3 pixels along `procDim`.
@@ -313,7 +313,7 @@ dip::uint Label(
             // used feature, it's OK if it's not super-fast.
             DIP_START_STACK_TRACE
             IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_out.Strides() );
-            IntegerArray otherSideOffsets;
+            std::vector< dip::sint > otherSideOffsets; // Don't use IntegerArray, we will push_back
             std::vector< IntegerArray > otherSideCoords;
             dip::sint acrossImage = c_out.Stride( ii ) * static_cast< dip::sint >( c_out.Size( ii ));
             auto nl = neighborList.begin();
