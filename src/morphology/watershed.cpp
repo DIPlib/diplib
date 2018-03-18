@@ -226,8 +226,7 @@ void dip__FastWatershed(
          default: {
             // Touching two or more labels
             dip::uint realRegionCount = 0;
-            for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
-               LabelType lab = neighborLabels.Label( jj );
+            for( LabelType lab : neighborLabels ) {
                if( !WatershedShouldMerge( in[ offset ], regions.Value( lab ), maxDepth, maxSize )) {
                   ++realRegionCount;
                }
@@ -236,7 +235,7 @@ void dip__FastWatershed(
             if( realRegionCount <= 1 ) {
                // At most one is a "real" region: merge all
                for( dip::uint jj = 1; jj < neighborLabels.Size(); ++jj ) {
-                  regions.Union( lab, neighborLabels.Label( jj ) );
+                  regions.Union( lab, neighborLabels.Label( jj ));
                }
                labels[ offset ] = lab;
                AddPixel( regions, lab );
@@ -560,8 +559,7 @@ void dip__SeededWatershed(
          default: {
             // Touching two or more labels
             dip::uint realRegionCount = 0;
-            for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
-               LabelType lab = neighborLabels.Label( jj );
+            for( LabelType lab : neighborLabels ) {
                if( !WatershedShouldMerge( grey[ offsetGrey ], regions.Value( lab ), maxDepth, maxSize )) {
                   ++realRegionCount;
                }

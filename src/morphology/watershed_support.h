@@ -64,6 +64,12 @@ class DIP_NO_EXPORT NeighborLabels{
       LabelType Label( dip::uint index ) const {
          return labels[ index ];
       }
+      std::vector< LabelType >::const_iterator begin() const {
+         return labels.begin();
+      }
+      std::vector< LabelType >::const_iterator end() const {
+         return labels.end();
+      }
    private:
       std::vector< LabelType > labels;
 };

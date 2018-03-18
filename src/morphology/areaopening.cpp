@@ -117,10 +117,10 @@ void dip__AreaOpening(
          default: {
             // Touching two or more labels
             // Find a small region, if it exists
-            LabelType lab = 0; // GCC's "may be used uninitialized" warning is way off here!
-            for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
-               lab = neighborLabels.Label( jj );
-               if( regions.Value( lab ).size < filterSize ) {
+            LabelType lab = 0;
+            for( auto nlab : neighborLabels ) {
+               if( regions.Value( nlab ).size < filterSize ) {
+                  lab = nlab;
                   break;
                }
             }
@@ -130,8 +130,7 @@ void dip__AreaOpening(
                AddPixel( regions, lab, grey[ offset ], filterSize );
                // This region is small, let's merge all other small regions into it, and increase the size
                // with that of the large regions as well.
-               for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
-                  LabelType lab2 = neighborLabels.Label( jj );
+               for( LabelType lab2 : neighborLabels ) {
                   if( lab != lab2 ) {
                      if( regions.Value( lab2 ).size < filterSize ) {
                         // A small neighboring region should be merged in
