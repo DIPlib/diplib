@@ -48,7 +48,7 @@ void BinaryPropagation(
 
    // Check connectivity validity
    dip::uint nDims = c_inMask.Dimensionality();
-   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::ILLEGAL_CONNECTIVITY );
 
    // Edge condition: true means object, false means background
    bool outsideImageIsObject;

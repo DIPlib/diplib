@@ -88,7 +88,7 @@ void FixUpPixelSizeArray( FloatArray& pixelSize, dip::uint nDims ) {
 
 void NeighborList::ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize ) {
    DIP_THROW_IF( dimensionality < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( connectivity > dimensionality, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( connectivity > dimensionality, E::ILLEGAL_CONNECTIVITY );
    if( connectivity == 0 ) {
       connectivity = dimensionality;
    }

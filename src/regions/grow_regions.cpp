@@ -144,7 +144,7 @@ void GrowRegions(
    DIP_THROW_IF( !c_label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( !c_label.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nDims = c_label.Dimensionality();
-   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::ILLEGAL_CONNECTIVITY );
 
    // Zero iterations means: continue until propagation is done
    if( iterations == 0 ) {

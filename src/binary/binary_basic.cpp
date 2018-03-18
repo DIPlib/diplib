@@ -46,7 +46,7 @@ void BinaryDilationErosion(
    DIP_THROW_IF( !in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nDims = in.Dimensionality();
-   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::ILLEGAL_CONNECTIVITY );
 
    // Edge condition: true means object, false means background
    bool outsideImageIsObject;

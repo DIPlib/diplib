@@ -259,7 +259,7 @@ dip::uint Label(
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    dip::uint nDims = c_in.Dimensionality();
-   DIP_THROW_IF( connectivity > nDims, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
 
    Image in = c_in.QuickCopy();
    auto pixelSize = c_in.PixelSize();
