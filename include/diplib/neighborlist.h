@@ -303,6 +303,14 @@ class DIP_NO_EXPORT NeighborList {
          return out;
       }
 
+      /// \brief Returns an array that is true for those neighbors that would be processed earlier
+      /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
+      DIP_EXPORT BooleanArray FindBackward( dip::uint procDim = 0 ) const;
+
+      /// \brief Returns an array that is true for those neighbors that would be processed later
+      /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
+      DIP_EXPORT BooleanArray FindForward( dip::uint procDim = 0 ) const;
+
       /// \brief Returns a new `%NeighborList` object containing only those neighbors that would be processed earlier
       /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
       DIP_EXPORT NeighborList SelectBackward( dip::uint procDim = 0 ) const;

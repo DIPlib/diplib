@@ -748,9 +748,9 @@ void Watershed(
       if( correct ) {
          Image seeds;
          if( flags.count( S::HIGHFIRST )) {
-            seeds = Maxima( in, mask, connectivity, S::LABELS );
+            seeds = Maxima( in, connectivity, S::LABELS );
          } else {
-            seeds = Minima( in, mask, connectivity, S::LABELS );
+            seeds = Minima( in, connectivity, S::LABELS );
          }
          SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
       } else {

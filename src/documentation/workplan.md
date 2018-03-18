@@ -111,6 +111,10 @@ document's source</a> for the most up-to-date version.
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
 
+    **Major change coming in R2018a**: we need to add -R2017b to the `mex` compile command
+    for the time being. We need to rewrite how numeric mxArray data is read if
+    `MX_HAS_INTERLEAVED_COMPLEX` is defined.
+
 -   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
     to be added as these functions are written. Make the module more "Pythonic"?
     Find a way to automatically generate documentation from Doxygen, one approach is

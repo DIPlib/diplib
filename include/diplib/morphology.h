@@ -1048,30 +1048,22 @@ inline Image WatershedMaxima(
 /// surrounded by pixels with a higher value. If `output` is "binary", the result is a binary image where these
 /// pixels and plateaus are set. If `output` is "labels", the result is a labeled image.
 ///
-/// If `mask` is given, it restricts the area in the image that is searched.
-///
-/// For images that have large plateaus (regions of constant value) that are not local minima, this function can
-/// be quite slow. For example, an image that is zero everywhere except for a small valley. For such an image
-/// it is recommended to use the `mask` input, for example with the output of a threshold operation.
-///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
 /// \see dip::Maxima, dip::WatershedMinima, dip::WatershedMaxima.
 DIP_EXPORT void Minima(
       Image const& in,
-      Image const& mask,
       Image& out,
       dip::uint connectivity = 0,
       String const& output = S::BINARY
 );
 inline Image Minima(
       Image const& in,
-      Image const& mask = {},
       dip::uint connectivity = 0,
       String const& output = S::BINARY
 ) {
    Image out;
-   Minima( in, mask, out, connectivity, output );
+   Minima( in, out, connectivity, output );
    return out;
 }
 
@@ -1081,30 +1073,22 @@ inline Image Minima(
 /// surrounded by pixels with a lower value. If `output` is "binary", the result is a binary image where these
 /// pixels and plateaus are set. If `output` is "labels", the result is a labeled image.
 ///
-/// If `mask` is given, it restricts the area in the image that is searched.
-///
-/// For images that have large plateaus (regions of constant value) that are not local maxima, this function can
-/// be quite slow. For example, an image that is zero everywhere except for a small peak. For such an image
-/// it is recommended to use the `mask` input, for example with the output of a threshold operation.
-///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
 /// \see dip::Minima, dip::WatershedMaxima, dip::WatershedMinima.
 DIP_EXPORT void Maxima(
       Image const& in,
-      Image const& mask,
       Image& out,
       dip::uint connectivity = 0,
       String const& output = S::BINARY
 );
 inline Image Maxima(
       Image const& in,
-      Image const& mask = {},
       dip::uint connectivity = 0,
       String const& output = S::BINARY
 ) {
    Image out;
-   Maxima( in, mask, out, connectivity, output );
+   Maxima( in, out, connectivity, output );
    return out;
 }
 

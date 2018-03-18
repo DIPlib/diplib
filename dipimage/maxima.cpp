@@ -37,12 +37,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          connectivity = dml::GetUnsigned( prhs[ 1 ] );
       }
 
-      dip::String flag = {};
+      dip::String flag = dip::S::BINARY;
       if( nrhs > 2 ) {
          flag = dml::GetString( prhs[ 2 ] );
       }
 
-      dip::Maxima( in, {}, out, connectivity, flag );
+      dip::Maxima( in, out, connectivity, flag );
 
       plhs[ 0 ] = dml::GetArray( out );
 

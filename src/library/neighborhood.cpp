@@ -427,6 +427,32 @@ bool IsProcessed( IntegerArray const& coords, dip::uint procDim ) {
 
 } // namespace
 
+BooleanArray NeighborList::FindBackward( dip::uint procDim ) const {
+   if( procDim >= neighbors_[ 0 ].coords.size() ) {
+      procDim = 0;
+   }
+   BooleanArray out( neighbors_.size(), false );
+   for( dip::uint ii = 0; ii < neighbors_.size(); ++ii ) {
+      if( IsProcessed( neighbors_[ ii ].coords, procDim )) {
+         out[ ii ] = true;
+      }
+   }
+   return out;
+}
+
+BooleanArray NeighborList::FindForward( dip::uint procDim ) const {
+   if( procDim >= neighbors_[ 0 ].coords.size() ) {
+      procDim = 0;
+   }
+   BooleanArray out( neighbors_.size(), false );
+   for( dip::uint ii = 0; ii < neighbors_.size(); ++ii ) {
+      if( !IsProcessed( neighbors_[ ii ].coords, procDim )) {
+         out[ ii ] = true;
+      }
+   }
+   return out;
+}
+
 NeighborList NeighborList::SelectBackward( dip::uint procDim ) const {
    if( procDim >= neighbors_[ 0 ].coords.size() ) {
       procDim = 0;

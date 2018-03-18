@@ -471,9 +471,14 @@ SubpixelLocationArray SubpixelExtrema(
    // Find local extrema
    Image localExtrema;
    if( invert ) {
-      DIP_STACK_TRACE_THIS( Minima( in, mask, localExtrema, nDims, "labels" ));
+      DIP_STACK_TRACE_THIS( Minima( in, localExtrema, nDims, "labels" ));
    } else {
-      DIP_STACK_TRACE_THIS( Maxima( in, mask, localExtrema, nDims, "labels" ));
+      DIP_STACK_TRACE_THIS( Maxima( in, localExtrema, nDims, "labels" ));
+   }
+
+   // Mask local extrema
+   if( mask.IsForged() ) {
+      // TODO: mask local extrema
    }
 
    // Remove local extrema on the edge of the image

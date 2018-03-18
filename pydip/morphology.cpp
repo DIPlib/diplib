@@ -134,10 +134,10 @@ void init_morphology( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1.0, "maxSize"_a = 0, "flags"_a = dip::StringSet{} );
    m.def( "SeededWatershed", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::StringSet const& >( &dip::SeededWatershed ),
           "in"_a, "seeds"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1.0, "maxSize"_a = 0, "flags"_a = dip::StringSet{} );
-   m.def( "Maxima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),
-          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
-   m.def( "Minima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
-          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
+   m.def( "Maxima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),
+          "in"_a, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
+   m.def( "Minima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
+          "in"_a, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
    m.def( "WatershedMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMinima ),
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "WatershedMaxima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMaxima ),

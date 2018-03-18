@@ -446,6 +446,7 @@ DIP_EXPORT dfloat FractalDimension(
    dip_ProbabilisticPairCorrelation (dip_analysis.h)
    dip_ChordLength (dip_analysis.h)
    dip_RadialDistribution (dip_analysis.h)
+   granulometry.m
 
    dip_StructureAnalysis (dip_analysis.h)
 
