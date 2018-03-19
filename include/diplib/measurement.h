@@ -64,8 +64,8 @@ struct DIP_NO_EXPORT Information {
    String name;               ///< The name of the feature, used to identify it
    String description;        ///< A description of the feature, to be shown to the user
    bool needsGreyValue;       ///< Does the feature need a grey-value image?
-   Information( String const& name, String const& description, bool needsGreyValue = false ) :
-         name( name ), description( description ), needsGreyValue( needsGreyValue ) {}
+   Information( String name, String description, bool needsGreyValue = false ) :
+         name( std::move( name )), description( std::move( description )), needsGreyValue( needsGreyValue ) {}
    Information() : name( "" ), description( "" ), needsGreyValue( false ) {}
 };
 
@@ -157,8 +157,8 @@ class DIP_NO_EXPORT Measurement {
          String name;            ///< Name of the feature
          dip::uint startColumn;  ///< Column for first value of feature
          dip::uint numberValues; ///< Number of vales in feature
-         FeatureInformation( String const& name, dip::uint startColumn, dip::uint numberValues )
-               : name( name ), startColumn( startColumn ), numberValues( numberValues ) {}
+         FeatureInformation( String name, dip::uint startColumn, dip::uint numberValues )
+               : name( std::move( name )), startColumn( startColumn ), numberValues( numberValues ) {}
       };
 
       /// \brief An iterator to visit all features (column groups) in the `dip::Measurement` table. Can also
@@ -418,16 +418,16 @@ class DIP_NO_EXPORT Measurement {
       bool IsForged() const { return !data_.empty(); }
 
       /// \brief Creates an iterator (view) to the first object
-      IteratorObject FirstObject() const { return IteratorObject( *this, 0 ); }
+      IteratorObject FirstObject() const { return { *this, 0 }; }
 
       /// \brief Creates and iterator (view) to the given object
-      IteratorObject operator[]( dip::uint objectID ) const { return IteratorObject( *this, ObjectIndex( objectID )); }
+      IteratorObject operator[]( dip::uint objectID ) const { return { *this, ObjectIndex( objectID )}; }
 
       /// \brief Creates and iterator (view) to the first feature
-      IteratorFeature FirstFeature() const { return IteratorFeature( *this, 0 ); }
+      IteratorFeature FirstFeature() const { return { *this, 0 }; }
 
       /// \brief Creates and iterator (view) to the given feature
-      IteratorFeature operator[]( String const& name ) const { return IteratorFeature( *this, FeatureIndex( name )); }
+      IteratorFeature operator[]( String const& name ) const { return { *this, FeatureIndex( name )}; }
 
       /// \brief Creates and iterator (view) to a subset of feature values
       ///
@@ -439,7 +439,7 @@ class DIP_NO_EXPORT Measurement {
       /// ```
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
          DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
-         return IteratorFeature( *this, startValue, numberValues );
+         return { *this, startValue, numberValues };
       }
 
       /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
@@ -619,7 +619,7 @@ class DIP_CLASS_EXPORT Base {
       Information const information; ///< Information on the feature
       Type const type; ///< The type of the measurement
 
-      Base( Information const& information, Type const type ) : information( information ), type( type ) {};
+      Base( Information information, Type const type ) : information( std::move( information )), type( type ) {};
 
       /// \brief A feature can have configurable parameters. Such a feature can define a `%Configure` method
       /// that the user can access through `dip::MeasurementTool::Configure`.
@@ -660,7 +660,7 @@ class DIP_CLASS_EXPORT Base {
 /// \brief The pure virtual base class for all line-based measurement features.
 class DIP_CLASS_EXPORT LineBased : public Base {
    public:
-      LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {};
+      explicit LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {};
 
       /// \brief Called once for each image line, to accumulate information about each object.
       /// This function is not called in parallel, and hence does not need to be thread-safe.
@@ -689,7 +689,7 @@ class DIP_CLASS_EXPORT LineBased : public Base {
 /// \brief The pure virtual base class for all image-based measurement features.
 class DIP_CLASS_EXPORT ImageBased : public Base {
    public:
-      ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
+      explicit ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
 
       /// \brief Called once to compute measurements for all objects
       virtual void Measure( Image const& label, Image const& grey, Measurement::IteratorFeature& output ) = 0;
@@ -698,7 +698,7 @@ class DIP_CLASS_EXPORT ImageBased : public Base {
 /// \brief The pure virtual base class for all chain-code--based measurement features.
 class DIP_CLASS_EXPORT ChainCodeBased : public Base {
    public:
-      ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
+      explicit ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
 
       /// \brief Called once for each object
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) = 0;
@@ -707,7 +707,7 @@ class DIP_CLASS_EXPORT ChainCodeBased : public Base {
 /// \brief The pure virtual base class for all polygon-based measurement features.
 class DIP_CLASS_EXPORT PolygonBased : public Base {
    public:
-      PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
+      explicit PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
 
       /// \brief Called once for each object
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) = 0;
@@ -716,7 +716,7 @@ class DIP_CLASS_EXPORT PolygonBased : public Base {
 /// \brief The pure virtual base class for all convex-hull--based measurement features.
 class DIP_CLASS_EXPORT ConvexHullBased : public Base {
    public:
-      ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
+      explicit ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
 
       /// \brief Called once for each object
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) = 0;
@@ -725,7 +725,7 @@ class DIP_CLASS_EXPORT ConvexHullBased : public Base {
 /// \brief The pure virtual base class for all composite measurement features.
 class DIP_CLASS_EXPORT Composite : public Base {
    public:
-      Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {};
+      explicit Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {};
 
       /// \brief Lists the features that the measurement depends on. These features will be computed and made
       /// available to the `Measure` method. This function is always called after `dip::Feature::Base::Initialize`.

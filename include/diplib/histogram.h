@@ -106,18 +106,18 @@ class DIP_NO_EXPORT Histogram {
          bool excludeOutOfBoundValues = false; ///< If set, pixels outside of the histogram bounds are not counted.
 
          /// \brief Default-constructed configuration defines 256 bins in the range [0,256].
-         Configuration() {}
+         Configuration() = default;
          /// \brief A constructor takes a lower and upper bounds, and the bin size. The numbr of bins are computed.
          Configuration( dfloat lowerBound, dfloat upperBound, dfloat binSize ) :
                lowerBound( lowerBound ), upperBound( upperBound ), binSize( binSize ), mode( Mode::COMPUTE_BINS ) {}
          /// \brief A constructor takes a lower and upper bounds, and the number of bins. The bin size is computed.
          Configuration( dfloat lowerBound, dfloat upperBound, int nBins = 256 ) :
-               lowerBound( lowerBound ), upperBound( upperBound ), nBins( static_cast< dip::uint >( nBins )), mode( Mode::COMPUTE_BINSIZE ) {}
+               lowerBound( lowerBound ), upperBound( upperBound ), nBins( static_cast< dip::uint >( nBins )) {}
          /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
          Configuration( dfloat lowerBound, int nBins, dfloat binSize ) :
                lowerBound( lowerBound ), nBins( static_cast< dip::uint >( nBins )), binSize( binSize ), mode( Mode::COMPUTE_UPPER ) {}
          /// \brief A constructor takes an image data type, yielding a default histogram configuration for that data type.
-         Configuration( DataType dataType ) {
+         explicit Configuration( DataType dataType ) {
             if( dataType == DT_UINT8 ) {
                // 256 bins between 0 and 255, this is the default:
             } else if ( dataType == DT_SINT8 ) {
