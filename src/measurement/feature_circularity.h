@@ -1,8 +1,9 @@
 /*
  * DIPlib 3.0
- * This file defines the "EllipseVariance" measurement feature
+ * This file defines the "Circularity" measurement feature
  *
- * (c)2017, Cris Luengo.
+ * (c)2018, Cris Luengo.
+ * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +23,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureEllipseVariance : public PolygonBased {
+class FeatureCircularity : public PolygonBased {
    public:
-      FeatureEllipseVariance() : PolygonBased( { "EllipseVariance", "Distance to best fit ellipse (2D)", false } ) {};
+      FeatureCircularity() : PolygonBased( { "Circularity", "Circularity of the object (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
@@ -33,7 +34,7 @@ class FeatureEllipseVariance : public PolygonBased {
       }
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
-         *output = polygon.EllipseVariance();
+         output[ 0 ] = polygon.RadiusStatistics().Circularity();
       }
 };
 

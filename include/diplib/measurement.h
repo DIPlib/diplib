@@ -41,7 +41,7 @@ struct DIP_NO_EXPORT Polygon;
 class DIP_NO_EXPORT ConvexHull;
 
 /// \defgroup measurement Measurement
-/// \brief The measurement infrastructure and functionality.
+/// \brief The measurement infrastructure and functionality. It all revolves around the `dip::MeasurementTool` class.
 /// \{
 
 
@@ -771,15 +771,20 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// <tr><td> "Perimeter"               <td> Length of the object perimeter <td> 2D (CC)
 /// <tr><td> "SurfaceArea"             <td> Surface area of object <td> 3D
 /// <tr><td> "Feret"                   <td> Maximum and minimum object diameters <td> 2D (CC)
+/// <tr><td> "SolidArea"               <td> Area of object with any holes filled <td> 2D (CC)
 /// <tr><td> "ConvexArea"              <td> Area of the convex hull <td> 2D (CC)
 /// <tr><td> "ConvexPerimeter"         <td> Perimeter of the convex hull <td> 2D (CC)
 /// <tr><td colspan="3"> **Shape features**
 /// <tr><td> "AspectRatioFeret"        <td> Feret-based aspect ratio <td> 2D (CC)
 /// <tr><td> "Radius"                  <td> Statistics on radius of object <td> 2D (CC)
-/// <tr><td> "EllipseVariance"         <td> Ellipse variance <td> 2D (CC)
-/// <tr><td> "P2A"                     <td> Circularity of the object <td> 2D (CC) & 3D
+/// <tr><td> "P2A"                     <td> Perimeter to area ratio of the object <td> 2D (CC) & 3D
+/// <tr><td> "Roundness"               <td> Roundness of the object <td> 2D (CC)
+/// <tr><td> "Circularity"             <td> Circularity of the object <td> 2D (CC)
 /// <tr><td> "PodczeckShapes"          <td> Podczeck shape descriptors <td> 2D (CC)
 /// <tr><td> "Solidity"                <td> Area fraction of convex hull covered by object <td> 2D (CC)
+/// <tr><td> "Convexity"               <td> Ratio of perimeter of convex hull to perimeter of object <td> 2D (CC)
+/// <tr><td> "EllipseVariance"         <td> Distance to best fit ellipse <td> 2D (CC)
+/// <tr><td> "Eccentricity"            <td> Aspect ratio of best fit ellipse <td> 2D (CC)
 /// <tr><td> "BendingEnergy"           <td> Bending energy of object perimeter <td> 2D (CC)
 /// <tr><td colspan="3"> **Intensity features**
 /// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Scalar grey

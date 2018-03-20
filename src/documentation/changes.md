@@ -232,9 +232,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
   The algorithms to compute these statistics have changed to be more stable. The measurement
   feature "Sum" was an alias to "Mass", and is not (yet?) available.
 
-- New measurement features: "EllipseVariance", "DimensionsCube", "DimensionsEllipsoid",
-  "GreyDimensionsCube", and "GreyDimensionsEllipsoid". The features "Mu", "Inertia", "MajorAxes",
-  and their grey-value versions have been generalized to arbitrary number of dimensions.
+- The measurement feature "Convexity" has been renamed to "Solidity", the more common name
+  for the ratio of area to convex area.
+
+- New measurement features: "SolidArea", "Circularity", "Convexity", "Eccentricity", "EllipseVariance",
+  "Roundness", "DimensionsCube", "DimensionsEllipsoid", "GreyDimensionsCube" and "GreyDimensionsEllipsoid".
+  The features "Mu", "Inertia", "MajorAxes", and their grey-value versions have been generalized
+  to arbitrary number of dimensions.
 
 - `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
   no longer are "left" and "right" options.
@@ -367,7 +371,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
     to a `table`.
 
   - Fixed a bug: `msr.featureID` now returns an array that is transposed w.r.t. previous versions.
-    This was a bug that we never fixed because of backwards compatability, we took this
+    This was a bug that we never fixed because of backwards compatibility, we took this
     opportunity to fix it. Now we have total consistency: no matter how the measurement data is
     extracted or converted, objects are always rows, and features are always columns.
 

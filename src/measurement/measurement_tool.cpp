@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions in the dip::MeasurementTool class.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,7 @@
 // FEATURES:
 // Size
 #include "feature_size.h"
+#include "feature_solid_area.h"
 #include "feature_minimum.h"
 #include "feature_maximum.h"
 #include "feature_cartesian_box.h"
@@ -39,10 +40,14 @@
 // Shape
 #include "feature_aspect_ratio_feret.h"
 #include "feature_radius.h"
-#include "feature_ellipse_variance.h"
 #include "feature_p2a.h"
+#include "feature_roundness.h"
+#include "feature_circularity.h"
 #include "feature_podczeck_shapes.h"
 #include "feature_solidity.h"
+#include "feature_convexity.h"
+#include "feature_ellipse_variance.h"
+#include "feature_eccentricity.h"
 #include "feature_bending_energy.h"
 // Intensity
 #include "feature_mass.h"
@@ -79,15 +84,20 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeaturePerimeter );
    Register( new Feature::FeatureSurfaceArea );
    Register( new Feature::FeatureFeret );
+   Register( new Feature::FeatureSolidArea );
    Register( new Feature::FeatureConvexArea );
    Register( new Feature::FeatureConvexPerimeter );
    // Shape
    Register( new Feature::FeatureAspectRatioFeret );
    Register( new Feature::FeatureRadius );
-   Register( new Feature::FeatureEllipseVariance );
    Register( new Feature::FeatureP2A );
+   Register( new Feature::FeatureRoundness );
+   Register( new Feature::FeatureCircularity );
    Register( new Feature::FeaturePodczeckShapes );
    Register( new Feature::FeatureSolidity );
+   Register( new Feature::FeatureConvexity );
+   Register( new Feature::FeatureEllipseVariance );
+   Register( new Feature::FeatureEccentricity );
    Register( new Feature::FeatureBendingEnergy );
    // Intensity
    Register( new Feature::FeatureMass );

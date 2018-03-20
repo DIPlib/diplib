@@ -109,6 +109,17 @@ print(m['Feret'][50][2])
 dip.WriteCSV(m,'test.csv')
 dip.WriteCSV(m,'test2.csv',{'unicode','simple'})
 
+b = a < 120
+b = dip.EdgeObjectsRemove(b)
+b = dip.Label(b)
+m = dip.MeasurementTool.Measure(b,features=['EllipseVariance','P2A','Roundness','Circularity','Solidity','Convexity'])
+print(m)
+dip.Show(dip.ObjectToMeasurement(b,m['EllipseVariance']))
+dip.Show(dip.ObjectToMeasurement(b,m['Roundness']))
+dip.Show(dip.ObjectToMeasurement(b,m['Circularity']))
+dip.Show(dip.ObjectToMeasurement(b,m['Solidity']))
+dip.Show(dip.ObjectToMeasurement(b,m['Convexity']))
+
 b = dip.EuclideanSkeleton(a > 120)
 dip.GetEndPixels(b).Show()
 dip.GetLinkPixels(b).Show()

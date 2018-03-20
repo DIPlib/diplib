@@ -25,7 +25,8 @@
 #include "accumulators.h"
 
 /// \file
-/// \brief Support for chain-code and polygon object representation and quantification.
+/// \brief Support for chain-code and polygon object representation and quantification. Everything declared in
+/// this file is explicitly 2D.
 /// \see measurement
 
 
@@ -781,6 +782,10 @@ struct DIP_NO_EXPORT ChainCode {
    ///
    /// If the chain code represents the closed contour of an object, add pi to the result to determine
    /// the object's perimeter.
+   ///
+   /// Any portions of the chain code that run along the image edge are not measured. That is, for
+   /// an object that is only partially inside the image, the portion of the object's perimeter that
+   /// is inside of the image is measured, the edge created by cutting the object is not.
    ///
    /// **Literature**
    /// - A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation

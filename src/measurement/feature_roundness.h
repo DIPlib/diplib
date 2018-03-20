@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file defines the "P2A" measurement feature
+ * This file defines the "Roundness" measurement feature
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,13 +23,12 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureP2A : public Composite {
+class FeatureRoundness : public Composite {
    public:
-      FeatureP2A() : Composite( { "P2A", "Perimeter to area ratio of the object (2D & 3D)", false } ) {};
+      FeatureRoundness() : Composite( { "Roundness", "Roundness of the object (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
-         nD_ = label.Dimensionality();
-         DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
+         DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
          hasIndex_ = false;
@@ -38,39 +37,32 @@ class FeatureP2A : public Composite {
 
       virtual StringArray Dependencies() override {
          StringArray out( 2 );
-         out[ 0 ] = "Size";
-         out[ 1 ] = nD_ == 2 ? "Perimeter" : "SurfaceArea";
+         out[ 0 ] = "SolidArea";
+         out[ 1 ] = "Perimeter";
          return out;
       }
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
-            sizeIndex_ = dependencies.ValueIndex( "Size" );
-            if( nD_ == 2 ) {
-               perimIndex_ = dependencies.ValueIndex( "Perimeter" );
-            } else  {
-               perimIndex_ = dependencies.ValueIndex( "SurfaceArea" );
-            }
+            sizeIndex_ = dependencies.ValueIndex( "SolidArea" );
+            perimIndex_ = dependencies.ValueIndex( "Perimeter" );
             hasIndex_ = true;
          }
-         dfloat area = it[ sizeIndex_ ];
-         if( area == 0 ) {
+         dfloat perimeter = it[ perimIndex_ ];
+         if( perimeter == 0 ) {
             *output = nan;
          } else {
-            dfloat perimeter = it[ perimIndex_ ];
-            if( nD_ == 2 ) {
-               *output = ( perimeter * perimeter ) / ( 4.0 * pi * area );
-            } else {
-               *output = std::pow( perimeter, 1.5 ) / ( 6.0 * std::sqrt( pi ) * area );
-            }
+            dfloat area = it[ sizeIndex_ ];
+            *output = clamp(( 4.0 * pi * area ) / ( perimeter * perimeter ), 0.0, 1.0);
+            // Note that perimeter estimate is not perfect, and the ratio could potentially go over 1.
+            // We use `clamp` to prevent this.
          }
       }
 
    private:
       dip::uint sizeIndex_;
       dip::uint perimIndex_;
-      dip::uint nD_;
       bool hasIndex_;
 };
 

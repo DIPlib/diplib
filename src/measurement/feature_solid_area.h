@@ -2,7 +2,8 @@
  * DIPlib 3.0
  * This file defines the "EllipseVariance" measurement feature
  *
- * (c)2017, Cris Luengo.
+ * (c)2018, Cris Luengo.
+ * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +23,30 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureEllipseVariance : public PolygonBased {
+class FeatureSolidArea : public PolygonBased {
    public:
-      FeatureEllipseVariance() : PolygonBased( { "EllipseVariance", "Distance to best fit ellipse (2D)", false } ) {};
+      FeatureSolidArea() : PolygonBased( { "SolidArea", "Area of object with any holes filled (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
+         PhysicalQuantity pq = label.PixelSize( 0 );
+         if( label.IsIsotropic() && pq.IsPhysical() ) {
+            scale_ = pq.magnitude * pq.magnitude;
+            out[ 0 ].units = pq.units;
+         } else {
+            scale_ = 1;
+            out[ 0 ].units = Units::SquarePixel();
+         }
          out[ 0 ].name = "";
          return out;
       }
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
-         *output = polygon.EllipseVariance();
+         *output = polygon.Area() + 0.5;
       }
+
+   private:
+      dfloat scale_;
 };
 
 

@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file defines the "EllipseVariance" measurement feature
+ * This file defines the "Eccentricity" measurement feature
  *
- * (c)2017, Cris Luengo.
+ * (c)2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureEllipseVariance : public PolygonBased {
+class FeatureEccentricity : public PolygonBased {
    public:
-      FeatureEllipseVariance() : PolygonBased( { "EllipseVariance", "Distance to best fit ellipse (2D)", false } ) {};
+      FeatureEccentricity() : PolygonBased( { "Eccentricity", "Aspect ratio of best fit ellipse (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
@@ -33,7 +33,7 @@ class FeatureEllipseVariance : public PolygonBased {
       }
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
-         *output = polygon.EllipseVariance();
+         *output = polygon.CovarianceMatrix().Eig().Eccentricity();
       }
 };
 

@@ -148,11 +148,14 @@ measurement/feature_aspect_ratio_feret.h
 measurement/feature_bending_energy.h
 measurement/feature_cartesian_box.h
 measurement/feature_center.h
+measurement/feature_circularity.h
 measurement/feature_convex_area.h
 measurement/feature_convex_perimeter.h
+measurement/feature_convexity.h
 measurement/feature_dimensions_cube.h
 measurement/feature_dimensions_ellipsoid.h
 measurement/feature_directional_statistics.h
+measurement/feature_eccentricity.h
 measurement/feature_ellipse_variance.h
 measurement/feature_feret.h
 measurement/feature_gravity.h
@@ -174,7 +177,9 @@ measurement/feature_p2a.h
 measurement/feature_perimeter.h
 measurement/feature_podczeck_shapes.h
 measurement/feature_radius.h
+measurement/feature_roundness.h
 measurement/feature_size.h
+measurement/feature_solid_area.h
 measurement/feature_solidity.h
 measurement/feature_statistics.h
 measurement/feature_stdandard_deviation.h
