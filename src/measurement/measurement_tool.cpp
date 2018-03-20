@@ -42,7 +42,7 @@
 #include "feature_ellipse_variance.h"
 #include "feature_p2a.h"
 #include "feature_podczeck_shapes.h"
-#include "feature_convexity.h"
+#include "feature_solidity.h"
 #include "feature_bending_energy.h"
 // Intensity
 #include "feature_mass.h"
@@ -87,7 +87,7 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeatureEllipseVariance );
    Register( new Feature::FeatureP2A );
    Register( new Feature::FeaturePodczeckShapes );
-   Register( new Feature::FeatureConvexity );
+   Register( new Feature::FeatureSolidity );
    Register( new Feature::FeatureBendingEnergy );
    // Intensity
    Register( new Feature::FeatureMass );

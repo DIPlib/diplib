@@ -150,7 +150,6 @@ measurement/feature_cartesian_box.h
 measurement/feature_center.h
 measurement/feature_convex_area.h
 measurement/feature_convex_perimeter.h
-measurement/feature_convexity.h
 measurement/feature_dimensions_cube.h
 measurement/feature_dimensions_ellipsoid.h
 measurement/feature_directional_statistics.h
@@ -176,6 +175,7 @@ measurement/feature_perimeter.h
 measurement/feature_podczeck_shapes.h
 measurement/feature_radius.h
 measurement/feature_size.h
+measurement/feature_solidity.h
 measurement/feature_statistics.h
 measurement/feature_stdandard_deviation.h
 measurement/feature_surface_area.cpp

@@ -130,8 +130,9 @@ connected component found for that label will be measured.
 
 \subsection shape_features_P2A P2A
 Computes \f$p^2/(4 \pi a)\f$, where \f$p\f$ is the perimeter and \f$a\f$ is the area, for
-2D objects, and \f$\sqrt{a^3}/(6v\sqrt{\pi})\f$, where \f$a\f$ is the surface area and
-\f$v\f$ is the volume, for 3D objects. See "Perimeter", "SurfaceArea" and "Size".
+2D objects; and \f$\sqrt{a^3}/(6v\sqrt{\pi})\f$, where \f$a\f$ is the surface area and
+\f$v\f$ is the volume, for 3D objects. This measure is often referred to as roundness.
+See "Perimeter", "SurfaceArea" and "Size".
 
 \subsection shape_features_PodczeckShapes PodczeckShapes
 Computes the 5 Podczeck shape descriptors using the results of features "Size", "Feret"
@@ -146,7 +147,7 @@ where \f$a\f$ is the object area, \f$p\f$ the perimeter, \f$l\f$ the largest Fer
 smallest Feret diameter, and \f$h\f$ the diameter perpendicular to the smallest diameter
 ("FeretPerpMin" value).
 
-\subsection shape_features_Convexity Convexity
+\subsection shape_features_Solidity Solidity
 The ratio `Size/ConvexArea` of the features "Size" and "ConvexArea".
 
 \subsection shape_features_BendingEnergy BendingEnergy

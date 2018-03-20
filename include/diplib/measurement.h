@@ -779,7 +779,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// <tr><td> "EllipseVariance"         <td> Ellipse variance <td> 2D (CC)
 /// <tr><td> "P2A"                     <td> Circularity of the object <td> 2D (CC) & 3D
 /// <tr><td> "PodczeckShapes"          <td> Podczeck shape descriptors <td> 2D (CC)
-/// <tr><td> "Convexity"               <td> Area fraction of convex hull covered by object <td> 2D (CC)
+/// <tr><td> "Solidity"                <td> Area fraction of convex hull covered by object <td> 2D (CC)
 /// <tr><td> "BendingEnergy"           <td> Bending energy of object perimeter <td> 2D (CC)
 /// <tr><td colspan="3"> **Intensity features**
 /// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Scalar grey

@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file defines the "Convexity" measurement feature
+ * This file defines the "Solidity" measurement feature
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -23,9 +23,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureConvexity : public Composite {
+class FeatureSolidity : public Composite {
    public:
-      FeatureConvexity() : Composite( { "Convexity", "Area fraction of convex hull covered by object (2D)", false } ) {};
+      FeatureSolidity() : Composite( { "Solidity", "Area fraction of convex hull covered by object (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
