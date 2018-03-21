@@ -42,7 +42,8 @@ add_executable(fileviewer fileviewer.cpp)
 target_link_libraries(fileviewer DIP DIPviewer)
 
 # An example program that shows how to delete small objects from a grey-value image, and use dip::viewer::ShowSimple
-add_executable( select_objects select_objects.cpp )
+add_executable(select_objects select_objects.cpp)
+target_compile_definitions(select_objects PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(select_objects DIP DIPviewer)
 
 endif(DIP_BUILD_DIPVIEWER)
