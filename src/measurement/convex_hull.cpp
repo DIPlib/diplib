@@ -32,20 +32,57 @@
 
 namespace dip {
 
+namespace {
 
-static inline void DecrementMod4( unsigned& k ) {
+inline void DecrementMod4( unsigned& k ) {
    k = ( k == 0 ) ? ( 3 ) : ( k - 1 );
+}
+
+} // namespace
+
+ChainCode ChainCode::ConvertTo8Connected() const {
+   ChainCode out;
+   out.objectID = objectID;
+   out.start = start;
+   if( codes.size() < 3 ) {
+      out.codes = codes;
+      for( auto& c : out.codes ) {
+         c = Code( c * 2, c.IsBorder() );
+      }
+   } else {
+      Code cur = codes.back();
+      bool skipLast = false;
+      Code next = codes[ 0 ];
+      dip::uint ii = 0;
+      if(( cur + 1 ) % 4 == next ) { // If the chain code was created by GetImageChainCodes or GetSingleChainCode, this will not happen.
+         out.Push( Code( cur * 2 + 1, false ));
+         out.start -= deltas4[ cur ];
+         skipLast = true;
+         ++ii;
+      }
+      for( ; ii < codes.size() - 1; ++ii ) {
+         cur = codes[ ii ];
+         next = codes[ ii + 1 ];
+         if(( cur + 1 ) % 4 == next ) {
+            out.Push( Code( cur * 2 + 1, false )); // this cannot be along the image edge!
+            ++ii;
+         } else {
+            out.Push( Code( cur * 2, cur.IsBorder() ));
+         }
+      }
+      if(( ii < codes.size() ) && !skipLast ) {
+         cur = codes[ ii ];
+         out.Push( Code( cur * 2, cur.IsBorder() ));
+      }
+   }
+   return out;
 }
 
 dip::Polygon ChainCode::Polygon() const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
 
-   VertexInteger const* dir;
-   if( is8connected ) {
-      dir = deltas8;
-   } else {
-      dir = deltas4;
-   }
+   // This function works only for 8-connected chain codes, convert it if it's 4-connected.
+   ChainCode const& cc = is8connected ? *this : ConvertTo8Connected();
 
    std::array< VertexFloat, 4 > pts;
    pts[ 0 ] = {  0.0, -0.5 };
@@ -53,33 +90,27 @@ dip::Polygon ChainCode::Polygon() const {
    pts[ 2 ] = {  0.0,  0.5 };
    pts[ 3 ] = {  0.5,  0.0 };
 
-   VertexFloat pos { dfloat( start.x ), dfloat( start.y ) };
+   VertexFloat pos { dfloat( cc.start.x ), dfloat( cc.start.y ) };
    dip::Polygon polygon;
 
-   if( codes.empty() ) {
+   if( cc.codes.empty() ) {
       // A 1-pixel object.
       polygon.vertices.push_back( pts[ 0 ] + pos );
       polygon.vertices.push_back( pts[ 3 ] + pos );
       polygon.vertices.push_back( pts[ 2 ] + pos );
       polygon.vertices.push_back( pts[ 1 ] + pos );
    } else {
-      unsigned m = codes.back();
-      for( unsigned n : codes ) {
-         unsigned k, l;
-         if( is8connected ) {
-            k = ( m + 1 ) / 2;
-            if( k == 4 ) {
-               k = 0;
-            }
-            l = n / 2;
-            if( l < k ) {
-               l += 4;
-            }
-            l -= k;
-         } else {
-            k = m;
-            l = n;
+      unsigned m = cc.codes.back();
+      for( unsigned n : cc.codes ) {
+         unsigned k = ( m + 1 ) / 2;
+         if( k == 4 ) {
+            k = 0;
          }
+         unsigned l = n / 2;
+         if( l < k ) {
+            l += 4;
+         }
+         l -= k;
          polygon.vertices.push_back( pts[ k ] + pos );
          if( l != 0 ) {
             DecrementMod4( k );
@@ -87,14 +118,14 @@ dip::Polygon ChainCode::Polygon() const {
             if( l <= 2 ) {
                DecrementMod4( k );
                polygon.vertices.push_back( pts[ k ] + pos );
-               if( is8connected && ( l == 1 ) ) {
+               if( l == 1 ) {
                   // This case is only possible if n is odd and n==m+4
                   DecrementMod4( k );
                   polygon.vertices.push_back( pts[ k ] + pos );
                }
             }
          }
-         pos += dir[ n ];
+         pos += deltas8[ n ];
          m = n;
       }
    }
@@ -169,3 +200,33 @@ ConvexHull::ConvexHull( dip::Polygon&& polygon ) {
 }
 
 } // namespace dip
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+
+// NOTE: polygon to convex hull conversion is tested a bit in `measure_convex_hull.cpp`.
+
+DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to polygon") {
+   dip::ChainCode cc8;
+   cc8.codes = { 0, 0, 7, 6, 6, 5, 4, 4, 3, 2, 2, 1 }; // A chain code that is a little circle.
+   cc8.is8connected = true;
+   dip::ChainCode cc4;
+   cc4.codes = { 0, 0, 3, 0, 3, 3, 2, 3, 2, 2, 1, 2, 1, 1, 0, 1 }; // A 4-connected chain code for the same object.
+   cc4.is8connected = false;
+   auto P8 = cc8.Polygon();
+   for (auto& p : P8.vertices ) {
+      std::cout << ' ' << p.x << ',' << p.y;
+   }
+   std::cout << '\n';
+   auto P4 = cc4.Polygon();
+   for (auto& p : P4.vertices ) {
+      std::cout << ' ' << p.x << ',' << p.y;
+   }
+   std::cout << '\n';
+   DOCTEST_REQUIRE( P8.vertices.size() == P4.vertices.size() );
+   for( dip::uint ii = 0; ii < P8.vertices.size(); ++ii ) {
+      DOCTEST_CHECK( P8.vertices[ ii ] == P4.vertices[ ii ] );
+   }
+}
+
+#endif // DIP__ENABLE_DOCTEST

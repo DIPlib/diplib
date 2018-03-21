@@ -757,9 +757,9 @@ struct DIP_NO_EXPORT ChainCode {
          bool isBorder() const { return static_cast< bool >( value & 8u ); }
    };
 
-   std::vector< Code > codes;  ///< The chain codes
+   std::vector< Code > codes;       ///< The chain codes
    VertexInteger start = { 0, 0 };  ///< The coordinates of the start pixel
-   dip::uint objectID;              ///< The label of the object from which this chain code is taken
+   dip::uint objectID = 0;          ///< The label of the object from which this chain code is taken
    bool is8connected = true;        ///< Is false when connectivity = 1, true when connectivity = 2
 
    /// Adds a code to the end of the chain.
@@ -777,6 +777,9 @@ struct DIP_NO_EXPORT ChainCode {
       DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
       return CodeTable( connectivity != 1, strides ); // 0 means 8-connected also
    }
+
+   /// \brief Creates a new chain code object that is 8-connected and represents the same shape.
+   ChainCode ConvertTo8Connected() const;
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders.
    ///
@@ -832,7 +835,7 @@ struct DIP_NO_EXPORT ChainCode {
    /// Creates a polygon by joining the mid-points between an object pixel and a background pixel that are
    /// edge-connected neighbors. The polygon follows the "crack" between pixels, but without the biases
    /// one gets when joining pixel vertices into a polygon. The polygon always has an area exactly half a
-   /// pixel smaller than the binary object it represents.
+   /// pixel smaller than the solid binary object it represents.
    ///
    /// This idea comes from Steve Eddins:
    /// http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/
