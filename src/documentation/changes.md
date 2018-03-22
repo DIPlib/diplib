@@ -362,6 +362,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
     `numArgumentsFromSubscript`, `numberchannels`, `numpixels`, `numtensorel`, `sinh`, `slice_ex`, `slice_in`,
     `slice_op`, `spatialtotensor`, `swapdim`, `tanh`, `tensorfun`, `tensorsize`, `tensortospatial`.
 
+  - `besselj`, `length` and `unique` are no longer methods of `dip_image`.
+
 - The `dip_measurement` object has changed completely internally. The interface is identical
   except:
 

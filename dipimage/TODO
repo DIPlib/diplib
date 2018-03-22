@@ -125,13 +125,6 @@ write_add
 writeavi
 writedisplayavi
 
-@dip_image/besselj
-@dip_image/length (meaning?)
-@dip_image/unique
-
-(GUI and/or DIPSHOW related stuff):
-dipmex
-
 (color stuff, which needs lots of love):
 change_chroma
 change_gamma
