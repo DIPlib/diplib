@@ -166,7 +166,7 @@ void FillBufferMultiChannel8(
       for( dip::uint jj = 0; jj < width; ++jj ) {
          uint8 const* src_sample = src_pixel;
          for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
-            *dest = *src_pixel;
+            *dest = *src_sample;
             ++dest;
             src_sample += tensorStride;
          }
