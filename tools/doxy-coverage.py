@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- mode: python; coding: utf-8 -*-
 
 # All files in doxy-coverage are Copyright 2014 Alvaro Lopez Ortega.
