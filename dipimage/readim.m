@@ -1,12 +1,7 @@
 %READIM   Read image from file
 %
 % SYNOPSIS:
-%  [image_out,file_info] = readim(filename,format)
-%
-% OUTPUT:
-%  image_out: the image
-%  file_info: additional parameters of the image (if avaiable) returned as a
-%             struct, see DIPIO_IMAGEFILEGETINFO for more information.
+%  [image,metadata] = readim(filename,format)
 %
 % PARAMETERS:
 %  filename: string with name of file, optionally with path and extension.
@@ -103,7 +98,7 @@ end
 % Format aliases. Don't check for these if we found format trough the file name extension
 if isempty(ext)
    switch upper(format)
-      case {'ICSV2','ICS2','ICSv1','ICS1'}
+      case {'ICSV2','ICS2','ICSV1','ICS1'}
          format = 'ICS';
       case 'TIF'
          format = 'TIFF';

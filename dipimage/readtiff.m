@@ -1,7 +1,7 @@
 %READTIFF   Read a TIFF file into an image
 %
 % SYNOPSIS:
-%  [image,metadata] = readtiff(filename,indices)
+%  [image,metadata] = readtiff(filename,indices,origin,sizes,spacing)
 %
 % PARAMETERS:
 %  filename: the name for the file, including path. ".tif" and ".tiff" will be
@@ -14,9 +14,15 @@
 %            from the last one. For example, [0,-1] indicates all images in the
 %            file. And [0,-1,2] indicates every other image, starting at the
 %            first one.
+%  origin:   coordinates for the first pixel to read.
+%  sizes:    size of the ROI to read.
+%  spacing:  step size for reading a down-sampled ROI.
 %
 % DEFAULTS:
 %  indices = 0
+%  origin = [] (reads from the top-left corner)
+%  sizes = [] (reads up to the bottom-right corner)
+%  spacing = [] (does not subsample)
 %
 % NOTE:
 %  When more than one image is requested, the images must all be of the same size
@@ -28,7 +34,7 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::ImageReadTIFF.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

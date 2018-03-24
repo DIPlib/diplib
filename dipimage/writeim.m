@@ -43,7 +43,7 @@
 % limitations under the License.
 
 
-function out = writeim(image,filename,format)
+function writeim(image,filename,format)
 
 if nargin < 3
    format = '';
@@ -89,7 +89,7 @@ switch upper(format)
       writeics(image,filename);
   case 'TIFF'
      if dipgetpref('FileWriteWarning')
-        warning(['You are writing a ZIP compressed TIFF. Older image viewers may not be able to read this compression.']);
+        warning('You are writing a ZIP compressed TIFF. Older image viewers may not be able to read this compression.');
         dt = datatype(image);
         if ~any(strcmp(dt,{'uint8','uint16','bin'}))
            warning(['You are writing a ',dt,' TIFF. This is not supported by most image viewers.'])

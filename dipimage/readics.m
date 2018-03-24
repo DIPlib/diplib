@@ -7,13 +7,13 @@
 %  filename: the name for the file, including path. ".ics" will be
 %            appended if the file could not be found.
 %  origin:   coordinates for the first pixel to read.
-%  sizes:    size of the ROI to read
-%  spacing:  step size for reading a down-sampled ROI
+%  sizes:    size of the ROI to read.
+%  spacing:  step size for reading a down-sampled ROI.
 %
 % DEFAULTS:
-%  origin = {} (reads from the top-left corner)
-%  sizes = {} (reads up to the bottom-right corner)
-%  spacing = {} (does not subsample)
+%  origin = [] (reads from the top-left corner)
+%  sizes = [] (reads up to the bottom-right corner)
+%  spacing = [] (does not subsample)
 %
 % SEE ALSO:
 %  writeics, readim, writeim

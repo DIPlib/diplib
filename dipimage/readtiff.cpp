@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `readtiff` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -26,7 +26,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 2 );
+      DML_MAX_ARGS( 6 );
 
       dml::MatlabInterface mi;
       dip::Image out = mi.NewImage();
@@ -37,7 +37,23 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       if( nrhs > 1 ) {
          imageNumbers = dml::GetRange( prhs[ 1 ] );
       }
-      dip::FileInformation fileInformation = dip::ImageReadTIFF( out, filename, imageNumbers );
+      dip::UnsignedArray origin = {};
+      if( nrhs > 2 ) {
+         origin = dml::GetUnsignedArray( prhs[ 2 ] );
+      }
+      dip::UnsignedArray sizes = {};
+      if( nrhs > 3 ) {
+         sizes = dml::GetUnsignedArray( prhs[ 3 ] );
+      }
+      dip::UnsignedArray spacing = {};
+      if( nrhs > 4 ) {
+         spacing = dml::GetUnsignedArray( prhs[ 4 ] );
+      }
+      dip::Range channels = {};
+      if( nrhs > 5 ) {
+         channels = dml::GetRange( prhs[ 5 ] );
+      }
+      dip::FileInformation fileInformation = dip::ImageReadTIFF( out, filename, imageNumbers, origin, sizes, spacing, channels);
 
       plhs[ 0 ] = dml::GetArray( out );
       if( nlhs > 1 ) {
