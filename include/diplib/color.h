@@ -95,7 +95,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// but aliases are registered for all these names using all-lowercase.
 ///
 /// Name     | Aliases  | Description
-/// -------- | -------- | --------------
+/// -------- | -------- | ------------
 /// "grey"   | "gray"   | An empty string is also interpreted as grey. Defined to be in the range [0,255].
 /// "RGB"    |          | Linear RGB, defined in the range [0,255].
 /// "sRGB"   |          | Industry-standard non-linear RGB, gamma-corrected linear RGB (average gamma is approximately 2.2, with a linear segment near 0). Values in the range is [0,255].

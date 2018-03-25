@@ -134,7 +134,7 @@ DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const&
 /// Valid values are:
 ///
 /// `ScanOptions` constant             | Meaning
-/// ---------------------------------- | ----------
+/// ---------------------------------- | --------
 /// `ScanOption::NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
 /// `ScanOption::NeedCoordinates`      | The line filter needs the coordinates to the first pixel in the buffer.
 /// `ScanOption::TensorAsSpatialDim`   | Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
@@ -590,7 +590,7 @@ inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& fun
 /// Valid values are:
 ///
 /// `SeparableOptions` constant             | Meaning
-/// --------------------------------        | ----------
+/// --------------------------------        | --------
 /// `SeparableOption::NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
 /// `SeparableOption::AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
 /// `SeparableOption::ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
@@ -823,7 +823,7 @@ DIP_EXPORT void Separable(
 /// Valid values are:
 ///
 /// `FullOptions` constant              | Meaning
-/// ----------------------------------- | ----------
+/// ----------------------------------- | --------
 /// `FullOption::NoMultiThreading`      | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
 /// `FullOption::AsScalarImage`         | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
 /// `FullOption::ExpandTensorInBuffer`  | The line filter always gets input tensor elements as a standard, column-major matrix.

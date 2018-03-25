@@ -311,13 +311,13 @@ inline Image StructureTensor(
 /// The output images are defined as follows:
 ///
 /// %Image        | Description
-/// --------------|-------------------
+/// --------------|------------
 /// `l1`          | The largest eigenvalue.
 /// `l2`          | The smallest eigenvalue.
 /// `orientation` | Orientation. Lies in the interval (-pi/2, pi/2).
 /// `energy`      | Sum of the two eigenvalues `l1` and `l2`.
 /// `anisotropy1` | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
-/// `anisotropy2` | Measure for local anisotropy: `1 - l2 / l1`, where l1 > 0.
+/// `anisotropy2` | Measure for local anisotropy: `1 - l2 / l1`, where `l1 > 0`.
 ///
 /// Note that `l1` and `l2` will both reference data within the same data segment, and therefore will likely not
 /// have normal strides.
@@ -354,7 +354,7 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 /// The output images are defined as follows:
 ///
 /// %Image        | Description
-/// --------------|-------------------
+/// --------------|------------
 /// `l1`          | The largest eigenvalue.
 /// `phi1`        | First component of the orientation of the eigenvector for `l1`.
 /// `theta1`      | Second component of the orientation of the eigenvector for `l1`.

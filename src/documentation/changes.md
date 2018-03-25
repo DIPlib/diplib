@@ -380,19 +380,27 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
 
 - `dipsetpref` and `dipgetpref` have fewer settings than in *DIPimage 2*:
-   - `'BoundaryCondition'`, `'Truncation'`, and `'DerivativeFlavour'` have been removed, relevant
+
+   - ` 'BoundaryCondition' ` , ` 'Truncation' ` , and ` 'DerivativeFlavour' ` have been removed, relevant
      functions optionally take these parameters as input arguments.
-   - `'MorphologicalFlavour'` (and the associated function `dip_morph_flavour`) has been removed
+
+   - `MorphologicalFlavour` (and the associated function `dip_morph_flavour`) has been removed
      as it didn't seem useful.
+
    - `'ComputationLimit'` is no longer relevant because of changes in how image arithmetic is
      performed.
+
    - `'ConflictingPixelSize'` and `'InconsistentPixelSize'` are no longer relevant, the *DIPlib*
      library keeps track of pixel sizes and handles these situations in a fixed manner.
+
    - `'CommandFilePath'` is no longer relevant, the *DIPimage* GUI no longer probes functions
      to put them in the menus.
+
    - `'DebugMode'` has been removed, *DIPlib* stack traces are shown or not depending on a
      compile-time flag.
+
    - `'FFTtype'` has been removed, *DIPlib* can optionally be compiled to use *FFTW* for the FFT.
+   
    - `'KeepDataType'` has been removed. TODO: should be reinstate it?
 
 - `newimar` and `imarfun` are now in the `alias` subdirectory, and are identical to the new
