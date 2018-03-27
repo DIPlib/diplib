@@ -475,6 +475,102 @@ inline Image CoherenceEnhancingDiffusion(
    return out;
 }
 
+/// \brief Adaptive Gaussian filtering
+/// One or more parameter images control the adaptivity.
+/// The meaning of the parameter images depends on the dimensionality of the input image.
+/// The current implementation only supports 2D and 3D images.
+/// 2D:
+/// - params[0] is the angle of the orientation
+/// - params[1] (optional) is a tensor image with the local kernel scale
+/// 3D:
+/// - params[0] is the polar coordinate phi of the first orientation
+/// - params[1] is the polar coordinate theta of the first orientation
+/// - params[2] (optional) is the polar coordinate phi of the second orientation
+/// - params[3] (optional) is the polar coordinate theta of the second orientation
+/// - params[3 or 5] (optional) is a tensor image with the local kernel scale
+/// For intrinsic 1D strutures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
+/// 
+/// The kernel scale parameter image is interpreted as follows.
+/// Each input tensor element corresponds with a tensor row in the scale image.
+/// Each tensor column in the scale image corresponds with a convolution kernel dimension.
+/// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
+/// | R_kx R_ky |
+/// | G_kx G_ky |
+/// | B_kx B_ky |
+/// The kernel is first scaled and then rotated before it is applied.
+/// The scale parameter image is automatically expanded if the image or the tensor is too small.
+/// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
+/// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
+/// For more information on scaling, also see "Structure-adaptive applicability function" in [1].
+/// 
+/// The sigma for each kernel dimension is passed by `sigmas`.
+/// For intrinsic 1D structures, the first value is along the contour, the second perpendicular to it.
+/// For intrinsic 2D structures, the first two are in the plane, whereas the other is perpendicular to them.
+/// If a value is zero, no convolution is done is this direction.
+///
+/// Together with `sigmas`, the `orders`, `truncation` and `expos` parameters define the gaussian kernel.
+/// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
+/// 
+/// [1] T.Q. Pham, L.J. van Vliet, and K. Schutte. Robust fusion of irregularly sampled data using adaptive normalized convolution.
+///     EURASIP Journal on Applied Signal Processing, article ID 83268, 2006, 1-12.
+///
+/// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
+DIP_EXPORT void AdaptiveGauss(
+      Image const& in,
+      ImageConstRefArray params,
+      Image& out,
+      FloatArray const& sigmas,
+      UnsignedArray orders,
+      dfloat truncation,
+      UnsignedArray expos,
+      String const& interpolationMethod = S::LINEAR,
+      String const& boundaryCondition = "mirror"
+);
+
+/// \brief Adaptive Gaussian filtering using curvature
+/// The parameter images control the adaptivity.
+/// The current implementation only supports 2D images:
+/// - params[0] is the angle of the orientation
+/// - params[1] is the curvature
+/// - params[2] (optional) is a tensor image with the local kernel scale
+///
+/// The kernel scale parameter image is interpreted as follows.
+/// Each input tensor element corresponds with a tensor row in the scale image.
+/// Each tensor column in the scale image corresponds with a convolution kernel dimension.
+/// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
+/// | R_kx R_ky |
+/// | G_kx G_ky |
+/// | B_kx B_ky |
+/// The kernel is first scaled and then rotated before it is applied.
+/// The scale parameter image is automatically expanded if the image or the tensor is too small.
+/// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
+/// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
+/// For more information on scaling, also see "Structure-adaptive applicability function" in [1].
+/// 
+/// The sigma for each kernel dimension is passed by `sigmas`.
+/// For intrinsic 1D structures, the first value is along the contour, the second perpendicular to it.
+/// For intrinsic 2D structures, the first two are in the plane, whereas the other is perpendicular to them.
+/// If a value is zero, no convolution is done is this direction.
+///
+/// Together with `sigmas`, the `orders`, `truncation` and `expos` parameters define the gaussian kernel.
+/// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
+/// 
+/// [1] T.Q. Pham, L.J. van Vliet, and K. Schutte. Robust fusion of irregularly sampled data using adaptive normalized convolution.
+///     EURASIP Journal on Applied Signal Processing, article ID 83268, 2006, 1-12.
+///
+/// \see dip::AdaptiveGauss, dip::StructureTensorAnalysis2D
+DIP_EXPORT void AdaptiveBanana(
+   Image const& in,
+   ImageConstRefArray params,
+   Image& out,
+   FloatArray const& sigmas,
+   UnsignedArray orders,
+   dfloat truncation,
+   UnsignedArray expos,
+   String const& interpolationMethod = S::LINEAR,
+   String const& boundaryCondition = "mirror"
+);
+
 // TODO: functions to port:
 /*
    dip_RankContrastFilter (dip_rankfilters.h)
@@ -486,8 +582,6 @@ inline Image CoherenceEnhancingDiffusion(
    dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
    dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
    dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
-   dip_AdaptiveGauss (dip_adaptive.h)
-   dip_AdaptiveBanana (dip_adaptive.h)
    dip_StructureAdaptiveGauss (dip_adaptive.h)
    dip_AdaptivePercentile (dip_adaptive.h)
    dip_AdaptivePercentileBanana (dip_adaptive.h)
