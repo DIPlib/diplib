@@ -315,6 +315,13 @@ inline Image GaussianLineClip(
    return out;
 }
 
+DIP_EXPORT void CreateGauss(
+      Image& out,
+      FloatArray const& sigmas,
+      UnsignedArray order,
+      dfloat truncation,
+      UnsignedArray expo
+);
 
 /// \brief Fills an image with a ramp function.
 ///
