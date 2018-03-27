@@ -214,15 +214,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to polygon") {
    cc4.codes = { 0, 0, 3, 0, 3, 3, 2, 3, 2, 2, 1, 2, 1, 1, 0, 1 }; // A 4-connected chain code for the same object.
    cc4.is8connected = false;
    auto P8 = cc8.Polygon();
-   for (auto& p : P8.vertices ) {
-      std::cout << ' ' << p.x << ',' << p.y;
-   }
-   std::cout << '\n';
+   //for (auto& p : P8.vertices ) {
+   //   std::cout << ' ' << p.x << ',' << p.y;
+   //}
+   //std::cout << '\n';
    auto P4 = cc4.Polygon();
-   for (auto& p : P4.vertices ) {
-      std::cout << ' ' << p.x << ',' << p.y;
-   }
-   std::cout << '\n';
+   //for (auto& p : P4.vertices ) {
+   //   std::cout << ' ' << p.x << ',' << p.y;
+   //}
+   //std::cout << '\n';
    DOCTEST_REQUIRE( P8.vertices.size() == P4.vertices.size() );
    for( dip::uint ii = 0; ii < P8.vertices.size(); ++ii ) {
       DOCTEST_CHECK( P8.vertices[ ii ] == P4.vertices[ ii ] );

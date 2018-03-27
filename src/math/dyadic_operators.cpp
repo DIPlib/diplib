@@ -33,7 +33,7 @@ void Atan2( Image const& y, Image const& x, Image& out ) {
          []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }, 20
    ), dt );
    ImageRefArray outar{ out };
-   Framework::Scan( { y, x }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { y, x }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 void Hypot( Image const& a, Image const& b, Image& out ) {
@@ -44,7 +44,7 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
          []( auto its ) { return std::hypot( *its[ 0 ], *its[ 1 ] ); }, 20 // rough guess at the cost
    ), dt );
    ImageRefArray outar{ out };
-   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 namespace {
@@ -97,7 +97,7 @@ void Supremum( ImageConstRefArray const& in, Image& out ) {
    ), dt );
    ImageRefArray outar{ out };
    DataTypeArray buftypes( in.size(), dt );
-   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 void Infimum( ImageConstRefArray const& in, Image& out ) {
@@ -112,7 +112,7 @@ void Infimum( ImageConstRefArray const& in, Image& out ) {
    ), dt );
    ImageRefArray outar{ out };
    DataTypeArray buftypes( in.size(), dt );
-   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 void SignedInfimum( Image const& a, Image const& b, Image& out ) {
@@ -123,7 +123,7 @@ void SignedInfimum( Image const& a, Image const& b, Image& out ) {
          []( auto its ) { return *its[ 0 ] > *its[ 1 ] ? static_cast< decltype( *its[ 1 ] ) >( -( *its[ 1 ] )) : *its[ 0 ]; }
    ), dt );
    ImageRefArray outar{ out };
-   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 namespace {
@@ -167,14 +167,14 @@ void LinearCombination( Image const& a, Image const& b, Image& out, dfloat aWeig
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_FLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
-   Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter ));
 }
 
 void LinearCombination( Image const& a, Image const& b, Image& out, dcomplex aWeight, dcomplex bWeight ) {
    DataType dt = DataType::SuggestArithmetic( DataType::SuggestComplex( a.DataType() ), DataType::SuggestComplex( b.DataType() ));
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_COMPLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
-   Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter ));
 }
 
 } // namespace dip

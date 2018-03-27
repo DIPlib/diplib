@@ -166,7 +166,7 @@ void SortTensorElements( Image& out ) {
             static_cast< dip::uint >( 2 * static_cast< dfloat >( n ) * std::log2( n ))
       ), outtype );
       ImageRefArray outar{ out };
-      Framework::Scan( { out }, outar, { outtype }, { outtype }, { outtype }, { n }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { out }, outar, { outtype }, { outtype }, { outtype }, { n }, *scanLineFilter ));
    }
 }
 
@@ -184,9 +184,9 @@ void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    b.ReshapeTensor( b.TensorElements(), 1 );
    // TODO: should use MultiplyConjugate, except that one does sample-wise multiplication at the moment
    if( b.DataType().IsComplex() ) {
-      b = Conjugate( b ); // If we use `Conjugate( b, b )`, it would write into `rhs`, which we don't want to do.
+      DIP_STACK_TRACE_THIS( b = Conjugate( b )); // If we use `Conjugate( b, b )`, it would write into `rhs`, which we don't want to do.
    }
-   Multiply( a, b, out );
+   DIP_STACK_TRACE_THIS( Multiply( a, b, out ));
 }
 
 //
@@ -260,13 +260,13 @@ void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_OVL_NEW_FLEXBIN( scanLineFilter, CrossProductLineFilter, (), dtype );
    ImageConstRefArray inar{ lhs, rhs };
    ImageRefArray outar{ out };
-   Framework::Scan( inar, outar, { dtype, dtype }, { dtype }, { dtype }, { nElem }, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, { dtype, dtype }, { dtype }, { dtype }, { nElem }, *scanLineFilter ));
 }
 
 void Norm( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.IsScalar() ) {
-      Abs( in, out );
+      DIP_STACK_TRACE_THIS( Abs( in, out ));
    } else {
       DIP_THROW_IF( !in.IsVector(), E::IMAGE_NOT_VECTOR );
       dip::uint n = in.TensorElements();
@@ -285,7 +285,7 @@ void Norm( Image const& in, Image& out ) {
          intype = DT_DFLOAT;
       }
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { intype }, { DT_DFLOAT }, { outtype }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { intype }, { DT_DFLOAT }, { outtype }, { 1 }, *scanLineFilter ));
    }
 }
 
@@ -313,7 +313,7 @@ void Angle( Image const& in, Image& out ) {
       outTensorElem = 2;
    }
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter ));
 }
 
 void Orientation( Image const& in, Image& out ) {
@@ -342,7 +342,7 @@ void Orientation( Image const& in, Image& out ) {
       outTensorElem = 2;
    }
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter ));
 }
 
 void CartesianToPolar( Image const& in, Image& out ) {
@@ -370,7 +370,7 @@ void CartesianToPolar( Image const& in, Image& out ) {
       );
    }
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { n }, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { n }, *scanLineFilter ));
 }
 
 void PolarToCartesian( Image const& in, Image& out ) {
@@ -398,7 +398,7 @@ void PolarToCartesian( Image const& in, Image& out ) {
       );
    }
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { n }, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { n }, *scanLineFilter ));
 }
 
 void Determinant( Image const& in, Image& out ) {
@@ -423,7 +423,7 @@ void Determinant( Image const& in, Image& out ) {
             );
             buffertype = DT_DFLOAT;
          }
-         Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter );
+         DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter ));
       } else {
          if( outtype.IsComplex() ) {
             scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
@@ -436,7 +436,8 @@ void Determinant( Image const& in, Image& out ) {
             );
             buffertype = DT_DFLOAT;
          }
-         Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer );
+         DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter,
+                                                       Framework::ScanOption::ExpandTensorInBuffer ));
       }
    }
 }
@@ -447,7 +448,7 @@ void Trace( Image const& in, Image& out ) {
    if( in.IsScalar() ) {
       out = in;
    } else {
-      SumTensorElements( in.Diagonal(), out );
+      DIP_STACK_TRACE_THIS( SumTensorElements( in.Diagonal(), out ));
    }
 }
 
@@ -469,8 +470,8 @@ void Rank( Image const& in, Image& out ) {
       intype = DT_DFLOAT;
    }
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { intype }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, *scanLineFilter,
-                    Framework::ScanOption::ExpandTensorInBuffer );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { intype }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, *scanLineFilter,
+                                          Framework::ScanOption::ExpandTensorInBuffer ));
 }
 
 void Eigenvalues( Image const& in, Image& out ) {
@@ -487,7 +488,7 @@ void Eigenvalues( Image const& in, Image& out ) {
          } else {
             out.Copy( in.Diagonal() );
          }
-         SortTensorElements( out );
+         DIP_STACK_TRACE_THIS( SortTensorElements( out ));
       }
    } else {
       dip::uint n = in.TensorRows();
@@ -518,8 +519,8 @@ void Eigenvalues( Image const& in, Image& out ) {
          outtype = DataType::SuggestComplex( intype );
       }
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype }, { outtype }, { n }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype }, { outtype }, { n }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer ));
    }
 }
 
@@ -563,8 +564,8 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
          outtype = DataType::SuggestComplex( intype );
       }
       ImageRefArray outar{ out, eigenvectors };
-      Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype, outbuffertype }, { outtype, outtype },
-                       { n, n * n }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype, outbuffertype }, { outtype, outtype },
+                                             { n, n * n }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer ));
       eigenvectors.ReshapeTensor( n, n );
       out.ReshapeTensorAsDiagonal();
    }
@@ -575,7 +576,7 @@ void Inverse( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The regular inverse can only be computed from square matrices" );
    DataType outtype = DataType::SuggestFlex( in.DataType() );
    if(( in.IsScalar() ) || ( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX )) {
-      Divide( Image( 1, outtype ), in, out, outtype ); // computes 1/in for each of the diagonal elements
+      DIP_STACK_TRACE_THIS( Divide( Image( 1, outtype ), in, out, outtype )); // computes 1/in for each of the diagonal elements
    } else {
       dip::uint n = in.TensorRows();
       DataType buffertype;
@@ -592,8 +593,8 @@ void Inverse( Image const& in, Image& out ) {
          buffertype = DT_DFLOAT;
       }
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * n }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * n }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer ));
       out.ReshapeTensor( n, n );
    }
 }
@@ -602,7 +603,7 @@ void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DataType outtype = DataType::SuggestFlex( in.DataType() );
    if(( in.IsScalar() ) || ( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX )) {
-      Divide( Image( 1, outtype ), in, out, outtype ); // computes 1/in for each of the diagonal elements
+      DIP_STACK_TRACE_THIS( Divide( Image( 1, outtype ), in, out, outtype )); // computes 1/in for each of the diagonal elements
    } else {
       dip::uint m = in.TensorRows();
       dip::uint n = in.TensorColumns();
@@ -620,8 +621,8 @@ void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
          buffertype = DT_DFLOAT;
       }
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * m }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * m }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer ));
       out.ReshapeTensor( n, m );
    }
 }
@@ -639,7 +640,7 @@ void SingularValues( Image const& in, Image& out ) {
          } else {
             out.Copy( in.Diagonal() );
          }
-         SortTensorElements( out );
+         DIP_STACK_TRACE_THIS( SortTensorElements( out ));
       }
    } else {
       dip::uint m = in.TensorRows();
@@ -660,8 +661,8 @@ void SingularValues( Image const& in, Image& out ) {
          buffertype = DT_DFLOAT;
       }
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { p }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { p }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer ));
    }
 }
 
@@ -706,8 +707,8 @@ void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V
          buffertype = DT_DFLOAT;
       }
       ImageRefArray outar{ out, U, V };
-      Framework::Scan( { in }, outar, { buffertype }, { buffertype, buffertype, buffertype }, { outtype, outtype, outtype },
-                       { p, m * p, n * p }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { buffertype }, { buffertype, buffertype, buffertype }, { outtype, outtype, outtype },
+                                             { p, m * p, n * p }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer ));
       U.ReshapeTensor( m, p );
       V.ReshapeTensor( n, p );
       out.ReshapeTensorAsDiagonal();
@@ -726,7 +727,7 @@ void SumTensorElements( Image const& in, Image& out ) {
             [ n ]( auto const& pin, auto const& pout ) { *pout = Sum( n, pin ); }, n
       ), dtype );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
    }
 }
 
@@ -742,14 +743,14 @@ void ProductTensorElements( Image const& in, Image& out ) {
             [ n ]( auto const& pin, auto const& pout ) { *pout = Product( n, pin ); }, n
       ), dtype );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
    }
 }
 
 void AllTensorElements( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.IsScalar() ) {
-      NotEqual( in, 0, out );
+      DIP_STACK_TRACE_THIS( NotEqual( in, 0, out ));
    } else {
       dip::uint n = in.TensorElements();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = NewTensorMonadicScanLineFilter< bin >(
@@ -761,14 +762,14 @@ void AllTensorElements( Image const& in, Image& out ) {
             }, n
       );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter ));
    }
 }
 
 void AnyTensorElement( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.IsScalar() ) {
-      NotEqual( in, 0, out );
+      DIP_STACK_TRACE_THIS( NotEqual( in, 0, out ));
    } else {
       dip::uint n = in.TensorElements();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = NewTensorMonadicScanLineFilter< bin >(
@@ -780,14 +781,14 @@ void AnyTensorElement( Image const& in, Image& out ) {
             }, n
       );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter ));
    }
 }
 
 void MaximumTensorElement( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.DataType().IsBinary() ) {
-      AnyTensorElement( in, out );
+      DIP_STACK_TRACE_THIS( AnyTensorElement( in, out ));
    } else if( in.IsScalar() ) {
       out = in;
    } else {
@@ -803,14 +804,14 @@ void MaximumTensorElement( Image const& in, Image& out ) {
             }, n
       ), dtype );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
    }
 }
 
 void MinimumTensorElement( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.DataType().IsBinary() ) {
-      AllTensorElements( in, out );
+      DIP_STACK_TRACE_THIS( AllTensorElements( in, out ));
    } else if( in.IsScalar() ) {
       out = in;
    } else {
@@ -826,7 +827,7 @@ void MinimumTensorElement( Image const& in, Image& out ) {
             }, n
       ), dtype );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
    }
 }
 
@@ -842,7 +843,7 @@ void MeanTensorElement( Image const& in, Image& out ) {
             [ n ]( auto const& pin, auto const& pout ) { *pout = Sum( n, pin ) / static_cast< FloatType< decltype( *pout ) >>( n ); }, n
       ), dtype );
       ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
    }
 }
 

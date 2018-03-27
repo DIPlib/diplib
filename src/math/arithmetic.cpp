@@ -36,7 +36,7 @@ void Add(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -50,7 +50,7 @@ void Subtract(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_sub( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -185,7 +185,7 @@ void Multiply(
 ) {
    // TODO: Another special case could be for diagonal matrices, where each row/column of the other matrix is multiplied by the same value.
    if( lhs.IsScalar() || rhs.IsScalar() ) {
-      MultiplySampleWise( lhs, rhs, out, dt );
+      DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt ));
       return;
    } else if( lhs.TensorColumns() != rhs.TensorRows() ) {
       DIP_THROW( "Inner tensor dimensions must match in multiplication" );
@@ -201,8 +201,8 @@ void Multiply(
       DIP_OVL_NEW_ALL( scanLineFilter, MultiplySymmetricLineFilter,
                        ( nOuter, nInner ), dt );
       ImageRefArray outar{ out };
-      Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace ));
       out.ReshapeTensor( outTensor );
    } else {
       // General case
@@ -211,8 +211,8 @@ void Multiply(
       DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter,
                        ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
       ImageRefArray outar{ out };
-      Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
-                       Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace ));
       out.ReshapeTensor( outTensor );
    }
 }
@@ -227,7 +227,7 @@ void MultiplySampleWise(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_mul( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 void MultiplyConjugate(
@@ -241,9 +241,9 @@ void MultiplyConjugate(
       DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
             []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }, 4
       ), dt );
-      Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
    } else {
-      MultiplySampleWise( lhs, rhs, out, dt );
+      DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt ));
    }
 }
 
@@ -258,7 +258,7 @@ void Divide(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_div( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -276,7 +276,7 @@ void SafeDivide(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_safediv( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -296,7 +296,7 @@ void Modulo(
             []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] % *its[ 1 ] ); }
       ), dt );
    }
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -311,7 +311,7 @@ void Power(
    DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }, 20 // Rough guess at the cost
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -342,7 +342,7 @@ void Invert(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
          []( auto its ) { return saturated_inv( *its[ 0 ] ); }
    ), dt );
-   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 
