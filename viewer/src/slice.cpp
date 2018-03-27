@@ -326,15 +326,9 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
     
     if (button == 0)
     {
-      // Left mouse button: change operating point
-      if (dx != -1)
-        viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)view()->size(0)-1.);
-
-      if (dy != -1)
-        viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
-        
       if (mods == KEY_MOD_SHIFT)
       {
+        // Shift-Left mouse button: adjust projection ROI
         dip::UnsignedArray start = viewer()->options().roi_origin_;
         dip::UnsignedArray end = start;
         end += viewer()->options().roi_sizes_;
@@ -369,6 +363,15 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
           roi_start_ = (dip::sint)start[(dip::uint)roi_dim_];
           roi_end_   = (dip::sint)end[(dip::uint)roi_dim_];
         }
+      }
+      else
+      {
+        // Left mouse button: change operating point
+        if (dx != -1)
+          viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)view()->size(0)-1.);
+
+        if (dy != -1)
+          viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
       }
 
       viewer()->options().status_ = "";
@@ -469,16 +472,10 @@ void SliceViewPort::motion(int button, int x, int y)
   
   if (button == 0)
   {
-    // Left mouse button: change operating point
-    if (dx != -1)
-      viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)view()->size(0)-1.);
-    if (dy != -1)
-      viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
-
-    if (drag_mods_ == KEY_MOD_SHIFT && viewer()->options().projection_ != ViewingOptions::Projection::None)
+    if (drag_mods_ == KEY_MOD_SHIFT)
     {
       // Change ROI
-      if (roi_dim_ != -1)
+      if (roi_dim_ != -1 && viewer()->options().projection_ != ViewingOptions::Projection::None)
       {
         double dix, diy;
         screenToView(drag_x_, drag_y_, &dix, &diy);
@@ -500,9 +497,17 @@ void SliceViewPort::motion(int button, int x, int y)
         viewer()->options().roi_sizes_[(dip::uint)roi_dim_] = (dip::uint)std::abs((dip::sint)start-(dip::sint)end);
        
         std::ostringstream oss;
-        oss << "Projection ROI set to " << viewer()->options().roi_origin_ << "+" << viewer()->options().roi_sizes_ << ". Reset with Ctrl-N.";
+        oss << "Projection ROI set to " << viewer()->options().roi_origin_ << "+" << viewer()->options().roi_sizes_ << ". Reset with Ctrl-R.";
         viewer()->options().status_ = oss.str();
       }
+    }
+    else
+    {
+      // Left mouse button: change operating point
+      if (dx != -1)
+        viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)view()->size(0)-1.);
+      if (dy != -1)
+        viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
     }
     
     viewer()->refresh();

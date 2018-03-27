@@ -131,6 +131,8 @@ void ControlViewPort::click(int button, int state, int x, int y, int /*mods*/)
       case 3:
         o.projection_ = (ViewingOptions::Projection) opt;
         o.status_ = "Projection set to " + o.getProjectionDescription();
+        if (o.projection_ > ViewingOptions::Projection::None)
+          o.status_ += ". Shift-drag to set ROI.";
         break;
     }
 

@@ -168,11 +168,11 @@ There are also a few keyboard shortcuts:
 
 - *N* and *P*
 
-  Step through the second image dimension.
+  Step through the third image dimension.
 
 - *F* and *B*
 
-  Step through the third image dimension.
+  Step through the fourth image dimension.
 
 - *Control-1*
 
