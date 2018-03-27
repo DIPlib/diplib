@@ -68,6 +68,7 @@ binary/binary_support.h
 binary/bucket.h
 binary/count_neighbors.cpp
 binary/skeleton.cpp
+binary/sup_inf_generator.cpp
 binary/thick_thin_2D.cpp
 color/cmyk.h
 color/color.cpp

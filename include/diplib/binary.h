@@ -46,8 +46,8 @@ namespace dip {
 ///
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
-/// 
-/// \see { BinaryErosion, BinaryClosing, BinaryOpening, BinaryPropagation }
+///
+/// For dilations with arbitrary structuring elements, see `dip::Dilation`.
 DIP_EXPORT void BinaryDilation(
       Image const& in,
       Image& out,
@@ -55,7 +55,6 @@ DIP_EXPORT void BinaryDilation(
       dip::uint iterations = 3,
       String const& edgeCondition = S::BACKGROUND
 );
-
 inline Image BinaryDilation(
       Image const& in,
       dip::sint connectivity = -1,
@@ -76,7 +75,7 @@ inline Image BinaryDilation(
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// 
-/// \see { BinaryDilation, BinaryClosing, BinaryOpening }
+/// For erosions with arbitrary structuring elements, see `dip::Erosion`.
 DIP_EXPORT void BinaryErosion(
       Image const& in,
       Image& out,
@@ -84,7 +83,6 @@ DIP_EXPORT void BinaryErosion(
       dip::uint iterations = 3,
       String const& edgeCondition = S::OBJECT
 );
-
 inline Image BinaryErosion(
       Image const& in,
       dip::sint connectivity = -1,
@@ -108,7 +106,7 @@ inline Image BinaryErosion(
 /// `"background"` for the dilation, `"object"` for the erosion; this avoids the border
 /// effect you can get in the corners of the image in some cases.
 ///
-/// \see { BinaryDilation, BinaryErosion, BinaryOpening }
+/// For closings with arbitrary structuring elements, see `dip::Closing`.
 DIP_EXPORT void BinaryClosing(
       Image const& in,
       Image& out,
@@ -116,7 +114,6 @@ DIP_EXPORT void BinaryClosing(
       dip::uint iterations = 3,
       String const& edgeCondition = S::SPECIAL
 );
-
 inline Image BinaryClosing(
       Image const& in,
       dip::sint connectivity = -1,
@@ -140,7 +137,7 @@ inline Image BinaryClosing(
 /// `"object"` for the erosion, `"background"` for the dilation; this avoids the border
 /// effect you can get in the corners of the image in some cases.
 ///
-/// \see { BinaryDilation, BinaryErosion, BinaryClosing }
+/// For openings with arbitrary structuring elements, see `dip::Opening`.
 DIP_EXPORT void BinaryOpening(
       Image const& in,
       Image& out,
@@ -148,7 +145,6 @@ DIP_EXPORT void BinaryOpening(
       dip::uint iterations = 3,
       String const& edgeCondition = S::SPECIAL
 );
-
 inline Image BinaryOpening(
       Image const& in,
       dip::sint connectivity = -1,
@@ -175,8 +171,6 @@ inline Image BinaryOpening(
 /// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed.
 ///
 /// The function `dip::MorphologicalReconstruction` provides similar functionality also for other data types.
-///
-/// \see { dip::MorphologicalReconstruction, dip::BinaryDilation, dip::BinaryErosion }
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,
@@ -185,7 +179,6 @@ DIP_EXPORT void BinaryPropagation(
       dip::uint iterations = 0,
       String const& edgeCondition = S::BACKGROUND
 );
-
 inline Image BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,
@@ -220,7 +213,6 @@ inline void EdgeObjectsRemove(
       out ^= in;
    DIP_END_STACK_TRACE
 }
-
 inline Image EdgeObjectsRemove(
       Image const& in,
       dip::uint connectivity = 1
@@ -411,7 +403,6 @@ DIP_EXPORT void EuclideanSkeleton(
       String const& endPixelCondition = S::NATURAL,
       String const& edgeCondition = S::BACKGROUND
 );
-
 inline Image EuclideanSkeleton(
       Image const& in,
       String const& endPixelCondition = S::NATURAL,
@@ -564,6 +555,451 @@ inline Image GetBranchPixels(
    return out;
 }
 
+
+// The functionality below is inspired by MMorph (though no code was taken from MMorph).
+// MMorph (SDC Morphology Toolbox) is a library (no longer supported) written by Roberto Lotufo
+// and colleagues at University of Campinas (UNICAMP), Brazil.
+//
+// These operations are not necessarily efficient, in most cases more efficient algorithms can
+// be devised. But they are general and allow for complicated binary filters to be built.
+
+class DIP_NO_EXPORT Interval;
+using IntervalArray = std::vector< Interval >;
+
+/// \brief Represents the shape of an interval for inf-generating and sup-generating operators.
+///
+/// An interval is typically expressed as two structuring elements, one marking the foreground
+/// pixels, one marking background pixels. Pixels not marked in either are the "don't care" pixels.
+/// An interval must always have at least one foreground pixel. If there are no background pixels
+/// in the interval, consider using a plain dilation or erosion instead.
+///
+/// There are two constructors: one accepting two binary structuring elements, and one accepting a single
+/// kernel containing `1` for foreground, `0` for background, and any other value for "don't care".
+/// The constructors only take their input in the form of images, not as a `dip::StructuringElement`
+/// or `dip::Kernel`. The generic shapes that are easier to generate using those classes are not often
+/// useful in intervals.
+class DIP_NO_EXPORT Interval {
+   public:
+
+      /// \brief An interval can be constructed with a grey-value image, where `1` indicates foreground,
+      /// `0` indicates background, and any other value indicates "don't care" pixels.
+      ///
+      /// The image must be odd in size, the origin is in the middle pixel.
+      ///
+      /// Such an image converts implicitly to an `%Interval`.
+      DIP_EXPORT Interval( Image const& image );
+
+      /// \brief An interval can be constructed with two binary images, one for the foreground mask
+      /// and one for the background mask.
+      ///
+      /// The images must be odd in size, the origin is in the middle pixel.
+      ///
+      /// The two images must be disjoint, meaning that `dip::Any( dip::Infimum( hit, miss ))` must be false.
+      /// An exception will be raised if this is not the case.
+      DIP_EXPORT Interval( Image hit, Image miss );
+
+      /// \brief Inverts the interval, swapping foreground and background pixels.
+      void Invert() {
+         DIP_THROW_IF( !miss_.IsForged(), "The inverted interval is not valid" );
+         hit_.swap( miss_ );
+      }
+
+      /// \brief Returns the foreground mask image, a binary image.
+      Image const& HitImage() const {
+         return hit_;
+      }
+
+      /// \brief Returns the background mask image, a binary image.
+      Image const& MissImage() const {
+         return miss_;
+      }
+
+      /// \brief Returns true if the interval has at least one background pixel.
+      bool HatMissSamples() const {
+         return miss_.IsForged();
+      }
+
+      /// \brief Returns the sizes of the interval. The output array always has two elements.
+      UnsignedArray const& Sizes() const {
+         return hit_.Sizes();
+      }
+
+      /// \brief Returns rotated versions of the interval, applicable to 2D intervals only.
+      ///
+      /// `rotationAngle` can be 45, 90 or 180, the output vector will have 8, 4 or 2 intervals. Some
+      /// of the interval images might point at the same data. Rotation angles of 45 degrees are only
+      /// possible for square intervals. If the interval is not square, it will be made square by
+      /// adding "don't care" pixels.
+      ///
+      /// `rotationDirection` affects the order of the intervals in the output vector:
+      ///  - `"interleaved clockwise"` sorts the angles as follows: 0, 180, 45, 225, 90, 270, 135, 315.
+      ///  - `"interleaved counter-clockwise"` is the same, but goes around the other way.
+      ///  - `"clockwise"` sorts the angles as follows: 0, 45, 90, 135, 180, 225, 270, 315.
+      ///  - `"counter-clockwise"` is the same, but goes around the other way.
+      DIP_EXPORT IntervalArray GenerateRotatedVersions(
+            dip::uint rotationAngle = 45,
+            String rotationDirection = "interleaved clockwise"
+      ) const;
+
+   private:
+      Image hit_;    // The interval must always have foreground pixels to be useful.
+      Image miss_;   // If there are no background pixels in the interval, this one is raw.
+
+      Interval() = default; // A default constructor that only class methods can use.
+};
+
+/// \brief Sup-generating operator, also known as hit-miss operator.
+///
+/// The sup-generating operator is a relaxed template matching, where `interval` is the template.
+/// `interval` contains some pixels that must be foreground, and some that must be background, but
+/// also allows "don't care" pixels, which will be ignored in the matching.
+///
+/// This operator is equal to the infimum of an erosion and an anti-erosion:
+/// ```
+///     out = dip::Infimum( dip::Erosion( in, hit ), dip::Erosion( ~in, miss ));
+/// ```
+/// where `hit` and `miss` are the two binary structuring elements in `interval`.
+///
+/// This function is specifically for binary images. Use `dip::HitAndMiss` for a more general operator.
+DIP_EXPORT void SupGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval
+);
+inline Image SupGenerating(
+      Image const& in,
+      Interval const& interval
+) {
+   Image out;
+   SupGenerating( in, out, interval );
+   return out;
+}
+
+/// \brief Inf-generating operator, the dual of the Sup-generating operator.
+///
+/// This operator is equal to the supremum of a dilation and an anti-dilation:
+/// ```
+///     out = dip::Supremum( dip::Dilation( in, hit ), dip::Dilation( ~in, miss ));
+/// ```
+/// where `hit` and `miss` are the two binary structuring elements in `interval`.
+///
+/// This function is specifically for binary images.
+DIP_EXPORT void InfGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval
+);
+inline Image InfGenerating(
+      Image const& in,
+      Interval const& interval
+) {
+   Image out;
+   InfGenerating( in, out, interval );
+   return out;
+}
+
+/// \brief Union of Sup-generating operators.
+///
+/// Applies the sup-generating operator with each of the intervals in `intervals`, and takes the union
+/// of the results.
+///
+/// This function is specifically for binary images.
+DIP_EXPORT void UnionSupGenerating(
+      Image const& in,
+      Image& out,
+      IntervalArray const& intervals
+);
+inline Image UnionSupGenerating(
+      Image const& in,
+      IntervalArray const& intervals
+) {
+   Image out;
+   UnionSupGenerating( in, out, intervals );
+   return out;
+}
+
+/// \brief Union of Sup-generating operators.
+///
+/// Applies the sup-generating operator with all the rotated versions of `interval`, and takes the union
+/// of the results. See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle`
+/// and `rotationDirection`.
+///
+/// This function is specifically for 2D binary images.
+inline void UnionSupGenerating2D(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   DIP_START_STACK_TRACE
+      auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
+      UnionSupGenerating( in, out, intarray );
+   DIP_END_STACK_TRACE
+}
+inline Image UnionSupGenerating2D(
+      Image const& in,
+      Interval const& interval,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   Image out;
+   UnionSupGenerating2D( in, out, interval, rotationAngle, rotationDirection );
+   return out;
+}
+
+/// \brief Intersection of Inf-generating operators.
+///
+/// Applies the inf-generating operator with each of the intervals in `intervals`, and takes the intersection
+/// of the results.
+///
+/// This function is specifically for binary images.
+DIP_EXPORT void IntersectionInfGenerating(
+      Image const& in,
+      Image& out,
+      IntervalArray const& intervals
+);
+inline Image IntersectionInfGenerating(
+      Image const& in,
+      IntervalArray const& intervals
+) {
+   Image out;
+   IntersectionInfGenerating( in, out, intervals );
+   return out;
+}
+
+/// \brief Intersection of Inf-generating operators.
+///
+/// Applies the inf-generating operator with all the rotated versions of `interval`, and takes the intersection
+/// of the results. See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle`
+/// and `rotationDirection`.
+///
+/// This function is specifically for 2D binary images.
+inline void IntersectionInfGenerating2D(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   DIP_START_STACK_TRACE
+      auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
+      IntersectionInfGenerating( in, out, intarray );
+   DIP_END_STACK_TRACE
+}
+inline Image IntersectionInfGenerating2D(
+      Image const& in,
+      Interval const& interval,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   Image out;
+   IntersectionInfGenerating2D( in, out, interval, rotationAngle, rotationDirection );
+   return out;
+}
+
+/// \brief Applies the thickening operator, optionally constrained by a mask, to an image.
+///
+/// Thickening is defined as `in + SupGenerating(in)`. The constrained operation is defined as
+///  `in + (SupGenerating(in) & mask)`.
+///
+/// The operation is applied with each of the intervals in `intervals`, and repeated `iterations`
+/// times. If `iterations` is 0, the operation is repeated until convergence.
+///
+/// A thickening with the right set of intervals leads to a background skeleton, also called skiz.
+/// See `dip::HomotopicThickeningInterval2D`.
+/// The intervals returned by `dip::HomotopicInverseEndPixelInterval2D` prune the skiz to single
+/// points and circles.
+///
+/// This function is specifically for binary images.
+DIP_EXPORT void Thickening(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      IntervalArray const& intervals,
+      dip::uint iterations = 0
+);
+inline Image Thickening(
+      Image const& in,
+      Image const& mask,
+      IntervalArray const& intervals,
+      dip::uint iterations = 0
+) {
+   Image out;
+   Thickening( in, mask, out, intervals, iterations );
+   return out;
+}
+
+/// \brief Applies the thickening operator, optionally constrained by a mask, to an image.
+///
+/// The operation is applied with with all the rotated versions of `interval`, and repeated `iterations`
+/// times. See `dip::Thickening` for a description of the operation.
+/// See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle` and `rotationDirection`.
+///
+/// This function is specifically for 2D binary images.
+inline void Thickening2D(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      Interval const& interval,
+      dip::uint iterations = 0,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   DIP_START_STACK_TRACE
+      auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
+      Thickening( in, mask, out, intarray, iterations );
+   DIP_END_STACK_TRACE
+}
+inline Image Thickening2D(
+      Image const& in,
+      Image const& mask,
+      Interval const& interval,
+      dip::uint iterations = 0,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   Image out;
+   Thickening2D( in, mask, out, interval, iterations, rotationAngle, rotationDirection );
+   return out;
+}
+
+/// \brief Applies the thinning operator, optionally constrained by a mask, to an image.
+///
+/// Thinning is defined as `in - SupGenerating(in)`. The constrained operation is defined as
+///  `in - (SupGenerating(in) & mask)`.
+///
+/// The operation is applied with each of the intervals in `intervals`, and repeated `iterations`
+/// times. If `iterations` is 0, the operation is repeated until convergence.
+///
+/// A thinning with the right set of intervals leads to a skeleton. See `dip::HomotopicThinningInterval2D`.
+/// The intervals returned by `dip::HomotopicEndPixelInterval2D` prune the skeleton to single points and
+/// circles.
+///
+/// This function is specifically for binary images.
+DIP_EXPORT void Thinning(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      IntervalArray const& intervals,
+      dip::uint iterations = 0
+);
+inline Image Thinning(
+      Image const& in,
+      Image const& mask,
+      IntervalArray const& intervals,
+      dip::uint iterations = 0
+) {
+   Image out;
+   Thinning( in, mask, out, intervals, iterations );
+   return out;
+}
+
+/// \brief Applies the thinning operator, optionally constrained by a mask, to an image.
+///
+/// The operation is applied with with all the rotated versions of `interval`, and repeated `iterations`
+/// times. See `dip::Thinning` for a description of the operation.
+/// See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle` and `rotationDirection`.
+///
+/// This function is specifically for 2D binary images.
+inline void Thinning2D(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      Interval const& interval,
+      dip::uint iterations = 0,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   DIP_START_STACK_TRACE
+      auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
+      Thinning( in, mask, out, intarray, iterations );
+   DIP_END_STACK_TRACE
+}
+inline Image Thinning2D(
+      Image const& in,
+      Image const& mask,
+      Interval const& interval,
+      dip::uint iterations = 0,
+      dip::uint rotationAngle = 45,
+      String const& rotationDirection = "interleaved clockwise"
+) {
+   Image out;
+   Thinning2D( in, mask, out, interval, iterations, rotationAngle, rotationDirection );
+   return out;
+}
+
+/// \brief Returns a 2D interval array for homotopic thinning.
+///
+/// Use with `dip::Thinning` to shrink objects without changing the Euler number.
+/// Note that `dip::ConditionalThinning2D` is more efficient, though the two functions do not produce exactly
+/// the same output. To create a skeleton, use `dip::EuclideanSkeleton`.
+///
+/// `connectivity` can be 1 to produce 4-connected skeletons, or 2 for 8-connected skeletons.
+DIP_EXPORT IntervalArray HomotopicThinningInterval2D( dip::uint connectivity = 2 );
+
+/// \brief Returns a 2D interval array for homotopic thickening. Use with `dip::Thickening` to grow objects
+/// without merging them. This produces a background skeleton (also known as skiz).
+/// Note that `dip::ConditionalThickening2D` is more efficient, though the two options do not produce exactly
+/// the same output. To create a background skeleton, use `dip::EuclideanSkeleton` on the inverted image.
+///
+/// `connectivity` can be 1 to produce 4-connected skeletons, or 2 for 8-connected skeletons.
+inline IntervalArray HomotopicThickeningInterval2D( dip::uint connectivity = 2 ) {
+   DIP_START_STACK_TRACE
+      IntervalArray out = HomotopicThinningInterval2D( connectivity );
+      for( auto& intv : out ) {
+         intv.Invert();
+      }
+      return out;
+   DIP_END_STACK_TRACE
+}
+
+/// \brief Returns an interval array for detecting end pixels. Includes isolated pixels.
+///
+/// Use with `dip::UnionSupGenerating` to detect skeleton end pixels. Note that `dip::GetEndPixels`
+/// is more efficient.
+///
+/// `connectivity` can be 1 to work with 4-connected skeletons, or 2 for 8-connected skeletons.
+DIP_EXPORT IntervalArray EndPixelInterval2D( dip::uint connectivity = 2 );
+
+/// \brief Returns an interval array for detecting end pixels. Excludes isolated pixels
+///
+/// Use with `dip::Thinning` to prune end points from the skeleton.
+///
+/// `connectivity` can be 1 to prune 4-connected skeletons, or 2 for 8-connected skeletons.
+DIP_EXPORT IntervalArray HomotopicEndPixelInterval2D( dip::uint connectivity = 2 );
+
+/// \brief Returns an interval array for detecting end background pixels. Excludes isolated pixels.
+///
+/// Use with `dip::Thickening` to prune end points from the background skeleton.
+///
+/// `connectivity` can be 1 to prune 4-connected skeletons, or 2 for 8-connected skeletons.
+inline IntervalArray HomotopicInverseEndPixelInterval2D( dip::uint connectivity = 2 ) {
+   DIP_START_STACK_TRACE
+      IntervalArray out = HomotopicEndPixelInterval2D( connectivity );
+      for( auto& intv : out ) {
+         intv.Invert();
+      }
+      return out;
+   DIP_END_STACK_TRACE
+}
+
+/// \brief Returns an interval for detecting single pixels. Use with `dip::SupGenerating` to detect isolated
+/// pixels. Note that `dip::GetSinglePixels` is more efficient.
+DIP_EXPORT Interval SinglePixelInterval( dip::uint nDims = 2 );
+
+/// \brief Returns a 2D interval array for detecting branch pixels.
+///
+/// Use with `dip::UnionSupGenerating` to detect skeleton branch pixels. Note that `dip::GetBranchPixels`
+/// is more efficient.
+DIP_EXPORT IntervalArray BranchPixelInterval2D();
+
+/// \brief Returns a 2D interval for detecting boundary pixels.
+///
+/// Use with `dip::UnionSupGenerating2D` to detect object boundary pixels. Set `rotationAngle` to 45 to detect pixels
+/// 8-connected to the background, and to 90 to detect pixels 4-connected to the background. Note that the
+/// difference between the input image and the eroded image accomplishes the same thing.
+DIP_EXPORT Interval BoundaryPixelInterval2D();
 
 /// \}
 

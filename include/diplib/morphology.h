@@ -1459,6 +1459,8 @@ inline Image AlternatingSequentialFilter(
 ///
 /// Note that the two SEs must be disjoint. If one pixel is set in both SEs, the output will be all zeros.
 ///
+/// See also `dip::SupGenerating` for a function specific to binary images.
+///
 /// **Literature**
 ///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, sections 5.1.1 and 5.1.2. Springer, 2002.
 DIP_EXPORT void HitAndMiss(
@@ -1514,7 +1516,6 @@ dip_UpperEnvelope (dip_morphology.h)
 dip_UpperSkeleton2D (dip_binary.h)
 */
 
-// TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotations).
 // TODO: levelling
 // TODO: granulometries (isotropic and path opening)
 

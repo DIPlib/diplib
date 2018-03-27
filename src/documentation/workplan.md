@@ -74,26 +74,24 @@ document's source</a> for the most up-to-date version.
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
     This should be an optional module, as *Bio-Formats* is GPL.
 
-- We're also lacking some other morphological filters:
-    - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
-    - levelling
+-   Morphological levellings.
 
-- The monogenic signal, including derived quantities, using a similar interface to that used
-  for the structure tensor.
+-   The monogenic signal, including derived quantities, using a similar interface to that used
+    for the structure tensor.
 
-- Radon transform for lines and circles, Hough transform for lines.
+-   Radon transform for lines and circles, Hough transform for lines.
 
-- Level-set segmentation, graph-cut segmentation.
+-   Level-set segmentation, graph-cut segmentation.
 
-- Super pixels.
+-   Super pixels.
 
-- Building a graph out of a labeled image (e.g. from watershed). Graph format?
-  Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
+-   Building a graph out of a labeled image (e.g. from watershed). Graph format?
+    Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
 
-- Wavelet transforms.
+-   Wavelet transforms.
 
-- A function to write text into an image, using the
-  [*FreeType*](https://www.freetype.org) library.
+-   A function to write text into an image, using the
+    [*FreeType*](https://www.freetype.org) library.
 
 
 ## List of *DIPlib 2* functions that still need to be ported

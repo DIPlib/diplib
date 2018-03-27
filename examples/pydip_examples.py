@@ -232,3 +232,47 @@ pp.bar(b2[0],np.array(h2),align='center')
 pp.subplot(3,1,3)
 pp.bar(b3[0],np.array(h3),align='center')
 pp.show(block=False)
+
+###
+
+a = dip.ImageReadICS('cermet')<120
+
+import numpy as np
+intv = dip.Interval(np.array([
+   [ 2,2,1,0,2 ],
+   [ 2,1,1,0,2 ],
+   [ 1,1,0,0,2 ],
+   [ 0,0,0,2,2 ],
+   [ 2,2,2,2,2 ]],'uint8'))
+
+Show(a)
+Show(dip.UnionSupGenerating2D(a, intv, 90 ))
+
+ht = dip.HomotopicThinningInterval2D()
+skel8 = dip.Thinning(a, dip.Image(), ht)
+Show(skel8)
+
+ht = dip.BranchPixelInterval2D()
+Show(dip.UnionSupGenerating(skel8, ht))
+
+ht = dip.HomotopicEndPixelInterval2D()
+skel8 = dip.Thinning(skel8, dip.Image(), ht)
+Show(skel8)
+
+ht = dip.HomotopicThinningInterval2D(1)
+skel4 = dip.Thinning(a, dip.Image(), ht)
+Show(skel4)
+ht = dip.HomotopicEndPixelInterval2D(1)
+skel4 = dip.Thinning(skel4, dip.Image(), ht)
+Show(skel4)
+
+
+ht = dip.HomotopicThickeningInterval2D(2)
+skiz = dip.Thickening(a, dip.Image(), ht)
+Show(skiz)
+ht = dip.HomotopicInverseEndPixelInterval2D(2)
+skiz = dip.Thickening(skiz, dip.Image(), ht)
+Show(skiz)
+
+ht = dip.BoundaryPixelInterval2D()
+Show(dip.UnionSupGenerating2D(a, ht))
