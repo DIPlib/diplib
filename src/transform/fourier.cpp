@@ -816,6 +816,8 @@ void FourierTransform(
    //std::cout << "outSize = " << outSize << std::endl;
    //std::cout << "border = " << border << std::endl;
 
+   Image const in_copy = in; // Make a copy of the header to preserve image in case in == out
+
 #ifdef DIP__HAS_FFTW
 
    // Determine floating point size and call appropriate work horse
@@ -838,7 +840,6 @@ void FourierTransform(
    // Determine output data type
    DataType dtype = DataType::SuggestComplex( in.DataType() );
    // Allocate output image, so that it has the right (padded) size. If we don't do padding, then we're just doing the framework's work here
-   Image const in_copy = in; // Make a copy of the header to preserve image in case in == out
    Image tmp;
    if( real ) {
       tmp.ReForge( outSize, in_copy.TensorElements(), dtype );
