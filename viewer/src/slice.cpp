@@ -482,8 +482,8 @@ void SliceViewPort::motion(int button, int x, int y)
       
         int d = (int)((roi_dim_==dx)?(ix-dix):(iy-diy));
           
-        dip::uint start = std::min((dip::uint)std::max(roi_start_+d*(1-roi_edge_), 0L), viewer()->image().Size((dip::uint)roi_dim_));
-        dip::uint end   = std::min((dip::uint)std::max(roi_end_  +d*(  roi_edge_), 0L), viewer()->image().Size((dip::uint)roi_dim_));
+        dip::uint start = std::min((dip::uint)std::max< dip::sint >(roi_start_+d*(1-roi_edge_), 0), viewer()->image().Size((dip::uint)roi_dim_));
+        dip::uint end   = std::min((dip::uint)std::max< dip::sint >(roi_end_  +d*(  roi_edge_), 0), viewer()->image().Size((dip::uint)roi_dim_));
         
         if (start == end)
         {
