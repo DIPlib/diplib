@@ -1143,8 +1143,8 @@ inline bool MatchSizes(
    dip::uint nDimsDip = img.Dimensionality();
    dip::UnsignedArray const& dipSizes = img.Sizes();
    // Check number of pixels
-   dip::uint totalDip = std::accumulate( dipSizes.begin(), dipSizes.end(), 1u, std::multiplies< dip::uint >() );
-   dip::uint totalMex = std::accumulate( mexSizes + 2, mexSizes + nDimsMex, 1u, std::multiplies< dip::uint >() );
+   dip::uint totalDip = std::accumulate( dipSizes.begin(), dipSizes.end(), static_cast< dip::uint >(1), std::multiplies< dip::uint >() );
+   dip::uint totalMex = std::accumulate( mexSizes + 2, mexSizes + nDimsMex, static_cast< dip::uint >(1), std::multiplies< dip::uint >() );
    if( totalDip != totalMex ) {
       //mexPrintf( "MatchSizes: number of pixels test failed\n" );
       return false;
