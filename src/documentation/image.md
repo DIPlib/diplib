@@ -94,7 +94,7 @@ and how the samples are stored in memory, a `%dip::Image` object specifies a
 **stride** array (`dip::Image::Strides`). This array indicates, for each
 dimension, how many samples to skip to get to the neighboring pixel in the
 given dimension.
-For example, to go from a pixel at coordinates (`x`,`y`) to the neighbour
+For example, to go from a pixel at coordinates (`x`,`y`) to the neighbor
 at coordinates (`x+1`,`y`), you would need to increment the data pointer
 with `strides[0]`. In a 2D image, the pixel at coordinates (`x`,`y`) can be
 reached by (assuming `dip::DT_UINT8` data type):
@@ -1026,10 +1026,10 @@ data segment (i.e. pixel buffer), and image sizes and strides, and creates a new
 image that references that data. The only requirement is that all pixels are
 aligned on boundaries given by the size of the sample data type. That is,
 *DIPlib* strides are not in bytes but in samples. The resulting image is identical
-to any other image in all respects, except the behaviour of `dip::Image::ReForge`,
+to any other image in all respects, except the behavior of `dip::Image::ReForge`,
 as mentioned in the previous paragraph.
 
-For exmple, in this bit of code we take the data of a `std::vector` and build an
+For example, in this bit of code we take the data of a `std::vector` and build an
 image around it, which we can use as both an input or an output image:
 
 ```cpp
@@ -1047,8 +1047,8 @@ image around it, which we can use as both an input or an output image:
 
 The first argument to this constructor is a `dip::DataSegment` object, which is just
 a shared pointer to void. If you want the `%dip::Image` object to own the resources,
-pass create a shared pointer with an appropriate deleter function. Otherwise, use the
-function `dip::NonOwnedRefToDataSegment` to create a shared pointer wihtout a deleter
+pass a shared pointer with an appropriate deleter function. Otherwise, use the
+function `dip::NonOwnedRefToDataSegment` to create a shared pointer without a deleter
 function (as in the example above), indicating that ownership is not to be transferred.
 In the example below, we do the same as above, but we transfer ownership of the
 `std::vector` to the image. When the image goes out of scope (or is reallocated) the
@@ -1070,11 +1070,24 @@ After the call to `dip::Gauss`, `*src` no longer exists. `dip::Gauss` has reforg
 `img` to be of type `dip::DT_SFLOAT`, triggering the deletion of object pointed to
 by `src`.
 
+A convenience function, `dip::ConstructScalarImage`, simplifies the above in the case where
+ownership is not transfered. It takes only two input arguments, a pointer to the data and
+an array with sizes. The strides are assumed to be normal. The data pointer must be of any
+of the allowed data types:
+
+```cpp
+    std::vector<unsigned char> src( 256 * 256, 0 ); // existing data
+    dip::Image img(
+       src.data(),    // origin
+       { 256, 256 }   // sizes
+    );
+```
+
 \subsection external_interface Define an image's allocator
 
 The the previous sub-section we saw how to encapsulate external data. The
 resulting image object can be used as input and output, but most *DIPlib*
-functions will reforge their output images to be of approriate size and data type.
+functions will reforge their output images to be of appropriate size and data type.
 Unless the allocated image is of suitable size and data type, and the image is
 protected, a new data segment will be allocated. This means that the output of the
 function call will not be written into the buffer we had provided.
@@ -1121,7 +1134,7 @@ forging to fail, simply throw an exception.
              if(( sizes.size() != 2 ) || ( !tensor.IsScalar() )) {
                 return nullptr; // We do not want to handle such images
              }
-             auto data = new std::vector<unsigned char>( sizes[ 0 ] * sizes[ 1 ], 0 );
+             auto data = new std::vector< unsigned char >( sizes[ 0 ] * sizes[ 1 ], 0 );
              origin = data.data();
              strides = dip::UnsignedArray{ 1, sizes[ 0 ] };
              tstride = 1;
@@ -1130,16 +1143,11 @@ forging to fail, simply throw an exception.
     }
 ```
 
-See `dml::MatlabInterface` for a more realistic example of this feature.
-That class defines an additional method that can be used to extract the
-allocated object that owns the data segment, so that it can be used after
-the `%dip::Image` object is destroyed. A simple explanation for how that
-works is as follows: The custom deleter function in the `dip::DataSegment`
-object only deletes the object pointed to if that object is in a list
-kept by the `dml::MatlabInterface` object. If one wants to keep the data
-segment, it is removed from the list, so that when the custom deleter
-function runs, it does nothing.
-
+See the source code to `dml::MatlabInterface` for a more realistic example
+of this feature. That class stores the data in such a way that ownership can
+be retrieved from the shared pointer, so that the data array can be used by
+MATLAB after the `%dip::Image` object that originally owned it has been
+destroyed.
 
 [//]: # (--------------------------------------------------------------)
 

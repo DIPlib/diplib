@@ -379,7 +379,9 @@ class DIP_NO_EXPORT Image {
       ///
       /// See \ref external_interface for information about the `externalInterface` parameter.
       ///
-      /// See \ref use_external_data for more information on how to use this function.
+      /// See \ref use_external_data for more information on how to use this constructor.
+      ///
+      /// See `dip::ConstructImage` for a simplified interface to this constructor.
       Image(
             DataSegment const& data,
             void* origin,
@@ -409,6 +411,30 @@ class DIP_NO_EXPORT Image {
          }
          origin_ = origin; // Set this after calling `SetNormalStrides`. It's not forged until now.
       }
+
+      /// \brief Create an image around existing data. No ownership is transferred.
+      ///
+      /// `data` is a raw pointer to the data that will be encapsulated by the output image. Normal strides
+      /// will be assumed. That is, the data is contiguous and in row-major order. `sizes` indicates the
+      /// size of each dimension in the data. `data` must point to a buffer that is at least `sizes.product()`
+      /// elements long. The output image is scalar.
+      ///
+      /// To encapsulate data in a different format, or to transfer ownership of the data to the image, see
+      /// the previous constructor.
+      ///
+      /// See \ref use_external_data for more information on how to use this function.
+      ///
+      /// **Note:** There is no way to make the data segment in an image read-only. It is possible to use this
+      /// function to create an image around const data, and then write to that data. Use images pointing to
+      /// const data only as input images!
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
+      Image(
+            T const* data,
+            UnsignedArray const& sizes
+      ) {
+         Image tmp{ NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), sizes };
+         this->move( std::move( tmp )); // a way of calling a different constructor.
+      };
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
       Image Similar() const {
