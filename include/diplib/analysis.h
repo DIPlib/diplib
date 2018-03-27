@@ -318,6 +318,7 @@ inline Image StructureTensor(
 /// `energy`      | Sum of the two eigenvalues `l1` and `l2`.
 /// `anisotropy1` | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
 /// `anisotropy2` | Measure for local anisotropy: `1 - l2 / l1`, where `l1 > 0`.
+/// `curvature`   | Curvature (1/bending radius), signed
 ///
 /// Note that `l1` and `l2` will both reference data within the same data segment, and therefore will likely not
 /// have normal strides.
@@ -332,7 +333,8 @@ DIP_EXPORT void StructureTensorAnalysis2D(
       Image* orientation = nullptr,
       Image* energy = nullptr,
       Image* anisotropy1 = nullptr,
-      Image* anisotropy2 = nullptr
+      Image* anisotropy2 = nullptr,
+      Image* curvature = nullptr
 );
 
 /// \brief Computes useful image parameters from the 3D structure tensor.

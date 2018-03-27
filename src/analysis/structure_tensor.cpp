@@ -61,14 +61,19 @@ void StructureTensorAnalysis2D(
       Image* orientation,
       Image* energy,
       Image* anisotropy1,
-      Image* anisotropy2
+      Image* anisotropy2,
+      Image* curvature
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !in.Tensor().IsSymmetric() || ( in.TensorElements() != 3 ), "Input must be a 2x2 symmetric tensor image" );
    Image ll;
-   if( orientation ) {
+   Image tempOrientation;
+   if( orientation || curvature) {
+      // Curvature needs orientation
+      if( !orientation )
+         orientation = &tempOrientation;
       // Compute eigenvectors also
       Image vv;
       EigenDecomposition( in, ll, vv );
@@ -102,6 +107,33 @@ void StructureTensorAnalysis2D(
       // *anisotropy2 = ( ll[0] == 0 ) ? 0 : *anisotropy2;
       Select( ll[ 0 ], Image{ 0.0 }, Image( 0.0, anisotropy2->DataType() ), *anisotropy2, *anisotropy2, "==" );
    }
+   if( curvature ) {
+      // phidx = (-sin( 2 * phi )*dx( cos( 2 * phi ), 1 ) + cos( 2 * phi )*dx( sin( 2 * phi ), 1 ))
+      // phidy = (-sin( 2 * phi )*dy( cos( 2 * phi ), 1 ) + cos( 2 * phi )*dy( sin( 2 * phi ), 1 ))
+      // out = 0.5*(-sin( phi )*phidx + cos( phi )*phidy);
+      // TODO: restructure the computation to lower memory consumption
+      Image cos2phi, sin2phi;
+      {
+         Image two_phi = dip::Multiply( *orientation, 2.0 );
+         cos2phi = dip::Cos( two_phi );
+         sin2phi = dip::Sin( two_phi );
+      }
+      // TODO: handle derivative sigmas and other parameters
+      Image phidx, phidy;
+      {
+         Image dx_cos2phi = dip::Derivative( cos2phi, { 1, 0 } );
+         Image dx_sin2phi = dip::Derivative( sin2phi, { 1, 0 } );
+         phidx = -sin2phi*dx_cos2phi + cos2phi*dx_sin2phi;
+      }
+      {
+         Image dy_cos2phi = dip::Derivative( cos2phi, { 0, 1 } );
+         Image dy_sin2phi = dip::Derivative( sin2phi, { 0, 1 } );
+         phidy = -sin2phi*dy_cos2phi + cos2phi*dy_sin2phi;
+      }
+      Image cosphi = dip::Cos( *orientation );
+      Image sinphi = dip::Sin( *orientation );
+      dip::Multiply( -sinphi*phidx + cosphi*phidy, 0.5, *curvature );
+   }
 }
 
 void StructureTensorAnalysis3D(
@@ -121,8 +153,8 @@ void StructureTensorAnalysis3D(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( !in.Tensor().IsSymmetric() || ( in.TensorElements() != 3 ), "Input must be a 2x2 symmetric tensor image" );
+   DIP_THROW_IF( in.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( !in.Tensor().IsSymmetric() || ( in.TensorElements() != 6 ), "Input must be a 3x3 symmetric tensor image" );
    Image ll;
    if( phi1 || theta1 || phi2 || theta2 || phi3 || theta3 ) {
       // Compute eigenvectors also
@@ -197,6 +229,7 @@ void StructureTensorAnalysis(
       Image* energy = nullptr;
       Image* anisotropy1 = nullptr;
       Image* anisotropy2 = nullptr;
+      Image* curvature = nullptr;
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
          if( outputs[ ii ] == "l1" ) {
             l1 = &out[ ii ].get();
@@ -210,11 +243,13 @@ void StructureTensorAnalysis(
             anisotropy1 = &out[ ii ].get();
          } else if( outputs[ ii ] == "anisotropy2" ) {
             anisotropy2 = &out[ ii ].get();
+         } else if( outputs[ ii ] == "curvature" ) {
+            curvature = &out[ ii ].get();
          } else {
             DIP_THROW_INVALID_FLAG( outputs[ ii ] );
          }
       }
-      DIP_STACK_TRACE_THIS( StructureTensorAnalysis2D( in, l1, l2, orientation, energy, anisotropy1, anisotropy2 ));
+      DIP_STACK_TRACE_THIS( StructureTensorAnalysis2D( in, l1, l2, orientation, energy, anisotropy1, anisotropy2, curvature ));
    } else {
       Image* l1 = nullptr;
       Image* phi1 = nullptr;
