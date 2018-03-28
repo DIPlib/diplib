@@ -2002,21 +2002,126 @@ classdef dip_image
 
       function out = and(lhs,rhs)
          %AND   Overload for operator &
+         if ~islogical(lhs)
+            lhs = dip_image(lhs,'bin');
+         end
+         if ~islogical(lhs)
+            rhs = dip_image(rhs,'bin');
+         end
          out = dip_operators('&',lhs,rhs);
       end
 
       function out = or(lhs,rhs)
          %OR   Overload for operator |
+         if ~islogical(lhs)
+            lhs = dip_image(lhs,'bin');
+         end
+         if ~islogical(lhs)
+            rhs = dip_image(rhs,'bin');
+         end
          out = dip_operators('|',lhs,rhs);
       end
 
       function out = xor(lhs,rhs)
          %XOR   Overload for operator XOR
+         if ~islogical(lhs)
+            lhs = dip_image(lhs,'bin');
+         end
+         if ~islogical(lhs)
+            rhs = dip_image(rhs,'bin');
+         end
          out = dip_operators('x',lhs,rhs);
       end
 
       function in = not(in)
          %NOT   Overload for unary operator ~
+         if ~islogical(in)
+            in = dip_image(in,'bin');
+         end
+         in = dip_operators('m~',in);
+      end
+
+      function out = bitand(lhs,rhs)
+         %BITAND   Bitwise AND for integer-valued images
+         if strcmp(class(lhs),'dip_image')
+            dt = class(lhs.Data);
+            if ~isintclass(dt)
+               error('BITAND only defined for integer-valued images')
+            end
+            if strcmp(class(rhs),'dip_image')
+               dt = class(rhs.Data);
+               if ~isintclass(dt)
+                  error('BITAND only defined for integer-valued images')
+               end
+            else
+               rhs = dip_image(rhs,dt);
+            end
+         else % the 2nd image must be a dip_image!
+            dt = class(rhs.Data);
+            if ~isintclass(dt)
+               error('BITAND only defined for integer-valued images')
+            end
+            lhs = dip_image(lhs,dt);
+         end
+         out = dip_operators('&',lhs,rhs);
+      end
+
+      function out = bitor(lhs,rhs)
+         %BITOR   Bitwise OR for integer-valued images
+         if strcmp(class(lhs),'dip_image')
+            dt = class(lhs.Data);
+            if ~isintclass(dt)
+               error('BITOR only defined for integer-valued images')
+            end
+            if strcmp(class(rhs),'dip_image')
+               dt = class(rhs.Data);
+               if ~isintclass(dt)
+                  error('BITOR only defined for integer-valued images')
+               end
+            else
+               rhs = dip_image(rhs,dt);
+            end
+         else % the 2nd image must be a dip_image!
+            dt = class(rhs.Data);
+            if ~isintclass(dt)
+               error('BITOR only defined for integer-valued images')
+            end
+            lhs = dip_image(lhs,dt);
+         end
+         out = dip_operators('|',lhs,rhs);
+      end
+
+      function out = bitxor(lhs,rhs)
+         %BITXOR   Bitwise XOR for integer-valued images
+         if strcmp(class(lhs),'dip_image')
+            dt = class(lhs.Data);
+            if ~isintclass(dt)
+               error('BITXOR only defined for integer-valued images')
+            end
+            if strcmp(class(rhs),'dip_image')
+               dt = class(rhs.Data);
+               if ~isintclass(dt)
+                  error('BITXOR only defined for integer-valued images')
+               end
+            else
+               rhs = dip_image(rhs,dt);
+            end
+         else % the 2nd image must be a dip_image!
+            dt = class(rhs.Data);
+            if ~isintclass(dt)
+               error('BITXOR only defined for integer-valued images')
+            end
+            lhs = dip_image(lhs,dt);
+         end
+         out = dip_operators('x',lhs,rhs);
+      end
+
+      function in = bitcmp(in)
+         %BITCMP   Bitwise complement for integer-valued images
+         dt = class(in.Data);
+         if ~isintclass(dt)
+            error('BITCMP only defined for integer-valued images')
+         end
          in = dip_operators('m~',in);
       end
 
@@ -2283,6 +2388,10 @@ end
 function in = array_convert_datatype(in,class)
    %#function int8, uint8, int16, uint16, int32, uint32, int64, uint64, single, double, logical
    in = feval(class,in);
+end
+
+function res = isintclass(dt)
+   res = any(strcmp(dt,{'uint8','uint16','uint32','int8','int16','int32'}));
 end
 
 % Gives a DIPlib data type string for the data in the image.
