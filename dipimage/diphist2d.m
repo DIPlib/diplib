@@ -38,7 +38,7 @@
 %  Use axis xy to flip the axis.
 %
 % SEE ALSO:
-%  hist2image, diphist, mdhistogram for higher dimensional histograms
+%  hist2image, diphist, mdhistogram
 
 % (c)2004, Max-Planck-Institute for Biophysical Chemistry (G?ttingen), written by Bernd Rieger.
 % (c)2017, Cris Luengo.
