@@ -36,6 +36,11 @@ int proxyGetHeight(Window *window)
   return ProxyManager::instance()->proxyGetHeight(window);
 }
 
+bool proxyGetDestroyed(Window *window)
+{
+  return ProxyManager::instance()->proxyGetDestroyed(window);
+}
+
 void proxyRelease(Window *window)
 {
   ProxyManager::instance()->release(window);
@@ -99,4 +104,9 @@ void proxySetWindowTitleCallback(Window *window, ProxySetWindowTitleCallback cb)
 void proxySetRefreshWindowCallback(Window *window, ProxyRefreshWindowCallback cb)
 {
   ProxyManager::instance()->setRefreshWindowCallback(window, cb);
+}
+
+void proxySetCreateWindowCallback(Window *window, ProxyCreateWindowCallback cb)
+{
+  ProxyManager::instance()->setCreateWindowCallback(window, cb);
 }

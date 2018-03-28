@@ -64,9 +64,14 @@ interface Proxy extends Library {
         void invoke();
     }
         
+    interface CreateWindowCallback extends Callback {
+        void invoke(Pointer window);
+    }
+        
     int proxyShouldClose(Pointer window);
     int proxyGetWidth(Pointer window);
     int proxyGetHeight(Pointer window);
+    boolean proxyGetDestroyed(Pointer window);
     void proxyRelease(Pointer window);
     Pointer proxyGetNew();
     void proxyDrawEvent(Pointer window);
@@ -81,6 +86,7 @@ interface Proxy extends Library {
     void proxySetSwapBuffersCallback(Pointer window, SwapBuffersCallback cb);
     void proxySetWindowTitleCallback(Pointer window, SetWindowTitleCallback cb);
     void proxySetRefreshWindowCallback(Pointer window, RefreshWindowCallback cb);
+    void proxySetCreateWindowCallback(Pointer window, CreateWindowCallback cb);
 }
 
 /// Viewer class, basically an jogl canvas with the appropriate callbacks router to ProxyManager.
@@ -90,6 +96,7 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     GLCanvas canvas_;
     Proxy.SetWindowTitleCallback title_cb_;
     Proxy.RefreshWindowCallback refresh_cb_;
+    Proxy.CreateWindowCallback create_cb_;
     int framebuffer_width_, framebuffer_height_;
 
     public Viewer(long pointer) {
@@ -141,6 +148,13 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
             }
         };
         proxy_.proxySetRefreshWindowCallback(pointer_, refresh_cb_);
+
+        create_cb_ = new Proxy.CreateWindowCallback() {
+            public void invoke(Pointer window) {
+                new Viewer(Pointer.nativeValue(window));
+            }
+        };
+        proxy_.proxySetCreateWindowCallback(pointer_, create_cb_);
     }
     
     /// Convert from window to framebuffer coordinates
@@ -153,10 +167,10 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     int translateModifiers(InputEvent e)
     {
       int m = e.getModifiersEx();
-      int t = (m&InputEvent.SHIFT_DOWN_MASK)>0?1:0 + 
-              (m&InputEvent.CTRL_DOWN_MASK )>0?2:0 +
-              (m&InputEvent.ALT_DOWN_MASK  )>0?4:0 +
-              (m&InputEvent.META_DOWN_MASK )>0?8:0;
+      int t = ((m&InputEvent.SHIFT_DOWN_MASK)>0?1:0) + 
+              ((m&InputEvent.CTRL_DOWN_MASK )>0?2:0) +
+              ((m&InputEvent.ALT_DOWN_MASK  )>0?4:0) +
+              ((m&InputEvent.META_DOWN_MASK )>0?8:0);
       return t;
     }
     
@@ -169,6 +183,9 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
     
     public void display(GLAutoDrawable drawable) {
         proxy_.proxyDrawEvent(pointer_);
+        
+        if (proxy_.proxyGetDestroyed(pointer_))
+            dispose();
     }
     
     public void dispose(GLAutoDrawable drawable) {
@@ -274,8 +291,18 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         // use capitals
         if (c >= 'a' && c <= 'z')
             c = c - 'a' + 'A';
+            
+        int t = translateModifiers(e);
+        if ((t & 3) == 3 && c == 'W')
+        {
+          // Ugly hack to avoid Matlab locking up when mass-closing windows
+          System.out.println("Control-Shift-W not supported under Java");
+        }
+        else
+          proxy_.proxyKeyEvent(pointer_, (byte)c, 0, 0, translateModifiers(e));
 
-        proxy_.proxyKeyEvent(pointer_, (byte)c, 0, 0, translateModifiers(e));
+        if (proxy_.proxyGetDestroyed(pointer_))
+            dispose();
     }
 
     public void keyReleased(KeyEvent e) {

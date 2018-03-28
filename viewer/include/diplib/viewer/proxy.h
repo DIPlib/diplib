@@ -21,7 +21,6 @@
 #define DIP_VIEWER_PROXY_MANAGER_H_
 
 #include <map>
-#include <deque>
 #include <mutex>
 
 #include "diplib.h"
@@ -42,11 +41,13 @@ typedef dip::viewer::Window Window;
 typedef void (*ProxySwapBuffersCallback)();
 typedef void (*ProxySetWindowTitleCallback)(const char *);
 typedef void (*ProxyRefreshWindowCallback)();
+typedef void (*ProxyCreateWindowCallback)(Window *window);
 
 // Window interaction
 
 DIPVIEWER_EXTERN_EXPORT int proxyGetWidth(Window *window);
 DIPVIEWER_EXTERN_EXPORT int proxyGetHeight(Window *window);
+DIPVIEWER_EXTERN_EXPORT bool proxyGetDestroyed(Window *window);
 
 // Manager interaction
 
@@ -69,6 +70,7 @@ DIPVIEWER_EXTERN_EXPORT void proxyMotionEvent(Window *window, int x, int y);
 DIPVIEWER_EXTERN_EXPORT void proxySetSwapBuffersCallback(Window *window, ProxySwapBuffersCallback);
 DIPVIEWER_EXTERN_EXPORT void proxySetWindowTitleCallback(Window *window, ProxySetWindowTitleCallback);
 DIPVIEWER_EXTERN_EXPORT void proxySetRefreshWindowCallback(Window *window, ProxyRefreshWindowCallback);
+DIPVIEWER_EXTERN_EXPORT void proxySetCreateWindowCallback(Window *window, ProxyCreateWindowCallback);
 
 namespace dip { namespace viewer {
 
@@ -81,6 +83,7 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     std::map<Window*, ProxySwapBuffersCallback> swap_buffers_callbacks_;
     std::map<Window*, ProxySetWindowTitleCallback> set_window_title_callbacks_;
     std::map<Window*, ProxyRefreshWindowCallback> refresh_window_callbacks_;
+    std::map<Window*, ProxyCreateWindowCallback> create_window_callbacks_;
     
     static ProxyManager instance_;
 
@@ -91,14 +94,31 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     }
     
     // From Manager
-  
+
     virtual void createWindow(WindowPtr window)
+    {
+      createWindow(window, true);
+    }
+  
+    virtual void createWindow(WindowPtr window, bool useCallback)
     {
       window->manager(this);
       window->id((void*)window.get());
       
-      std::lock_guard<std::mutex> guard(mutex_);
-      windows_[window.get()] = window;
+      ProxyCreateWindowCallback cb(nullptr);
+      {
+        std::lock_guard<std::mutex> guard(mutex_);
+        windows_[window.get()] = window;
+      
+        if (!create_window_callbacks_.empty())
+          cb = create_window_callbacks_.begin()->second;
+      }
+      
+      // Set useCallback to false when the creation event should not be
+      // passed on to the proxy, for example when the respective window
+      // will be created by the caller.
+      if (cb && useCallback)
+        cb(window.get());
     }
     
     virtual size_t activeWindows()
@@ -130,6 +150,11 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
       return window->height();
     }
     
+    bool proxyGetDestroyed(Window *window)
+    {
+      return window->destroyed();
+    }
+    
     // Manager interaction
 
     void release(Window *window)
@@ -142,6 +167,10 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
           wdw = windows_[window];
           windows_.erase(window);
         }
+        swap_buffers_callbacks_.erase(window);
+        set_window_title_callbacks_.erase(window);
+        refresh_window_callbacks_.erase(window);
+        create_window_callbacks_.erase(window);
       }
     }
     
@@ -211,6 +240,12 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     {
       std::lock_guard<std::mutex> guard(mutex_);
       refresh_window_callbacks_[window] = cb;
+    }
+    
+    void setCreateWindowCallback(Window *window, ProxyCreateWindowCallback cb)
+    {
+      std::lock_guard<std::mutex> guard(mutex_);
+      create_window_callbacks_[window] = cb;
     }
     
   protected:

@@ -90,7 +90,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       }
 
       dip::viewer::WindowPtr wdw = dip::viewer::SliceViewer::Create( image, title );
-      dip::viewer::ProxyManager::instance()->createWindow( wdw );
+      dip::viewer::ProxyManager::instance()->createWindow( wdw, false );
 
       mxArray* obj;
       mxArray* rhs[2];

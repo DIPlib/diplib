@@ -752,6 +752,17 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       options_.status_ = "Reset projection ROI";
       refresh();
     }
+    
+    if (k == 'N')
+    {
+      // ^N: Clone
+      Ptr sv = clone();
+      
+      link_->link(sv->link_);
+      sv->link_->link(link_);
+
+      manager()->createWindow(sv);
+    }
   }
 }
 

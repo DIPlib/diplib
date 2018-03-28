@@ -141,6 +141,18 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
         delete viewports_[ii];
     }
     
+    std::shared_ptr<SliceViewer> clone()
+    {
+      Ptr sv = Create(original_, name_, (size_t)width(), (size_t)height());
+      
+      Guard this_guard(*this);
+      Guard other_guard(*sv);
+      
+      sv->options() = options();
+      
+      return sv;
+    }
+    
     ViewingOptions &options() override { return options_; }
     const dip::Image &image() override { return image_; }
     void setImage(const dip::Image &image) override { original_ = image; refresh_seq_++; }

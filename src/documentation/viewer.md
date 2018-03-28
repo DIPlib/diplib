@@ -187,6 +187,11 @@ There are also a few keyboard shortcuts:
 
   Sets linear mapping between global minimum and maximum values.
 
+- *Control-N*
+
+  Creates a linked clone of the current viewer. Handy when wanting to
+  display different tensor elements, mappings, etc.
+
 - *Control-R*
 
   Resets the projection ROI.
