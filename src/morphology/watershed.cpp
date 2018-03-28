@@ -102,82 +102,6 @@ enum class FastWatershedOperation {
       EXTREMA
 };
 
-// Returns true if a pixel in the neighbor list is foreground and has the mask set
-inline bool PixelHasForegroundNeighbor(
-      LabelType const* label,
-      bin const* mask,
-      NeighborList const& neighbors,
-      IntegerArray const& neighborsLabels,
-      IntegerArray const& neighborsMask,
-      UnsignedArray const& coords,
-      UnsignedArray const& imsz,
-      bool onEdge
-) {
-   auto it = neighbors.begin();
-   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
-      if( !onEdge || it.IsInImage( coords, imsz ) ) {
-         if(( *( label + neighborsLabels[ jj ] ) > 0 ) &&
-            ( !mask || *( mask + neighborsMask[ jj ] ) != 0 )) {
-            return true;
-         }
-      }
-   }
-   return false;
-}
-
-// Returns true if a pixel in the neighbor list is foreground, has the mask set, and is larger in greyvalue
-template< typename TPI >
-inline bool PixelHasUphillForegroundNeighbor(
-      LabelType const* label,
-      TPI const* grey,
-      bin const* mask,
-      NeighborList const& neighbors,
-      IntegerArray const& neighborsLabels,
-      IntegerArray const& neighborsGrey,
-      IntegerArray const& neighborsMask,
-      UnsignedArray const& coords,
-      UnsignedArray const& imsz,
-      bool onEdge
-) {
-   auto it = neighbors.begin();
-   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
-      if( !onEdge || it.IsInImage( coords, imsz ) ) {
-         if(( *( label + neighborsLabels[ jj ] ) > 0 ) &&
-            ( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) &&
-            ( *( grey + neighborsGrey[ jj ] ) > *grey )) {
-            return true;
-         }
-      }
-   }
-   return false;
-}
-// Returns true if a pixel in the neighbor list is foreground, has the mask set, and is smaller in greyvalue
-template< typename TPI >
-inline bool PixelHasDownhillForegroundNeighbor(
-      LabelType const* label,
-      TPI const* grey,
-      bin const* mask,
-      NeighborList const& neighbors,
-      IntegerArray const& neighborsLabels,
-      IntegerArray const& neighborsGrey,
-      IntegerArray const& neighborsMask,
-      UnsignedArray const& coords,
-      UnsignedArray const& imsz,
-      bool onEdge
-) {
-   auto it = neighbors.begin();
-   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
-      if( !onEdge || it.IsInImage( coords, imsz ) ) {
-         if(( *( label + neighborsLabels[ jj ] ) > 0 ) &&
-            ( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) &&
-            ( *( grey + neighborsGrey[ jj ] ) < *grey )) {
-            return true;
-         }
-      }
-   }
-   return false;
-}
-
 template< typename TPI >
 void dip__FastWatershed(
       Image const& c_in,
@@ -408,6 +332,86 @@ void FastWatershed(
 constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
 constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
 constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 2;
+
+// Returns true if a pixel in the neighbor list is foreground and has the mask set
+inline bool PixelHasForegroundNeighbor(
+      LabelType const* label,
+      bin const* mask,
+      NeighborList const& neighbors,
+      IntegerArray const& neighborsLabels,
+      IntegerArray const& neighborsMask,
+      UnsignedArray const& coords,
+      UnsignedArray const& imsz,
+      bool onEdge
+) {
+   auto it = neighbors.begin();
+   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
+      if( !onEdge || it.IsInImage( coords, imsz )) {
+         if( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) {
+            LabelType lab = *( label + neighborsLabels[ jj ] );
+            if(( lab != 0 ) && ( lab <= MAX_LABEL )) {
+               return true;
+            }
+         }
+      }
+   }
+   return false;
+}
+
+// Returns true if a pixel in the neighbor list is foreground, has the mask set, and is larger in greyvalue
+template< typename TPI >
+inline bool PixelHasUphillForegroundNeighbor(
+      LabelType const* label,
+      TPI const* grey,
+      bin const* mask,
+      NeighborList const& neighbors,
+      IntegerArray const& neighborsLabels,
+      IntegerArray const& neighborsGrey,
+      IntegerArray const& neighborsMask,
+      UnsignedArray const& coords,
+      UnsignedArray const& imsz,
+      bool onEdge
+) {
+   auto it = neighbors.begin();
+   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
+      if( !onEdge || it.IsInImage( coords, imsz )) {
+         if( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) {
+            LabelType lab = *( label + neighborsLabels[ jj ] );
+            if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) > *grey )) {
+               return true;
+            }
+         }
+      }
+   }
+   return false;
+}
+// Returns true if a pixel in the neighbor list is foreground, has the mask set, and is smaller in greyvalue
+template< typename TPI >
+inline bool PixelHasDownhillForegroundNeighbor(
+      LabelType const* label,
+      TPI const* grey,
+      bin const* mask,
+      NeighborList const& neighbors,
+      IntegerArray const& neighborsLabels,
+      IntegerArray const& neighborsGrey,
+      IntegerArray const& neighborsMask,
+      UnsignedArray const& coords,
+      UnsignedArray const& imsz,
+      bool onEdge
+) {
+   auto it = neighbors.begin();
+   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
+      if( !onEdge || it.IsInImage( coords, imsz )) {
+         if( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) {
+            LabelType lab = *( label + neighborsLabels[ jj ] );
+            if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) < *grey )) {
+               return true;
+            }
+         }
+      }
+   }
+   return false;
+}
 
 template< typename TPI >
 struct Qitem {
@@ -715,7 +719,7 @@ void SeededWatershed(
    IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
    IntegerArray neighborOffsetsMask;
    if( mask.IsForged() ) {
-      neighborOffsetsMask = neighborList.ComputeOffsets( mask.Strides());
+      neighborOffsetsMask = neighborList.ComputeOffsets( mask.Strides() );
    }
 
    // Do the data-type-dependent thing
