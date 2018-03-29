@@ -24,13 +24,22 @@
 #include "diplib/overload.h"
 #include "diplib/pixel_table.h"
 #include "diplib/private/constfor.h"
+
+#if defined(__GNUG__) || defined(__clang__)
+// For this file, turn off -Wsign-conversion, Eigen is really bad at this!
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#if __GNUC__ >= 7
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#endif
+#endif
+
 #include <Eigen/Geometry>
 
-namespace dip
-{
+namespace dip {
 
-namespace
-{
+namespace {
 
 // KernelTransform: transforms kernel pixel coordinates according to one or more parameter images
 // The base class performs no specific transformation,
@@ -56,9 +65,9 @@ public:
    }
 
    // Transforms kernel coordinates to input image coordinates
-   virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const {
-      transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoords[ 0 ];
-      transformedCoords[ 1 ] = imgCoords_[ 1 ] + kernelCoords[ 1 ];
+   virtual void Transform( IntegerArray const& kernelCoords, dip::uint /*tensorIndex*/, FloatArray& transformedCoords ) const {
+      transformedCoords[ 0 ] = imgCoords_[ 0 ] + static_cast< dfloat >( kernelCoords[ 0 ] );
+      transformedCoords[ 1 ] = imgCoords_[ 1 ] + static_cast< dfloat >( kernelCoords[ 1 ] );
    }
 
 protected:
@@ -70,7 +79,8 @@ template< dip::uint nDims>
 class KernelTransformScale
 {
 public:
-   KernelTransformScale( Image const& kernelScale, dip::uint inputTensorElements ) : inputTensorElements_( inputTensorElements ), scaleAtImgCoords_( inputTensorElements ) {
+   KernelTransformScale( Image const& kernelScale, dip::uint inputTensorElements )
+         : scaleAtImgCoords_( inputTensorElements ), inputTensorElements_( inputTensorElements ) {
       // The kernel scale image must be a COL_MAJOR_MATRIX tensor image with the following tensor size:
       // Rows == input tensor size (the input image has a column vector tensor)
       // Cols == input dimensionality == kernelScaleDimensionality
@@ -94,9 +104,9 @@ public:
          //kernelScale_.ExpandSingletonTensor(tensorRows * tensorCols);
          //kernelScale_.ReshapeTensor( tensorRows, tensorCols );
          // Complete LUT by adding the same indices for each column
-         size_t LUTColSize = scaleTensorLUT_.size();
-         for( int iDim = 1; iDim < nDims; ++iDim ) {
-            scaleTensorLUT_.insert( scaleTensorLUT_.end(), scaleTensorLUT_.begin(), scaleTensorLUT_.begin() + LUTColSize);
+         dip::sint LUTColSize = static_cast< dip::sint >( scaleTensorLUT_.size() );
+         for( dip::uint iDim = 1; iDim < nDims; ++iDim ) {
+            scaleTensorLUT_.insert( scaleTensorLUT_.end(), scaleTensorLUT_.begin(), scaleTensorLUT_.begin() + LUTColSize );
          }
       }
       else {
@@ -128,7 +138,7 @@ public:
    }
 
 protected:
-   std::vector< std::array<dfloat, nDims > > scaleAtImgCoords_; // The vector is over the input tensor elements; the array is over the kernel dimensions
+   std::vector< std::array< dfloat, nDims > > scaleAtImgCoords_; // The vector is over the input tensor elements; the array is over the kernel dimensions
    Image kernelScale_;
    dip::uint inputTensorElements_;
    std::vector< dip::sint > scaleTensorLUT_;
@@ -138,7 +148,9 @@ protected:
 class KernelTransform2DRotation : public KernelTransform
 {
 public:
-   KernelTransform2DRotation( Image const& orientation ) : orientation_( orientation ) { csn_.resize( orientation.TensorElements() ), sn_.resize( orientation.TensorElements() ); }
+   KernelTransform2DRotation( Image const& orientation ) : orientation_( orientation ) {
+      csn_.resize( orientation.TensorElements() ), sn_.resize( orientation.TensorElements() );
+   }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform2DRotation( *this ); }
 
@@ -147,13 +159,15 @@ public:
       Image::Pixel dirPixel = orientation_.At( imgCoords );
       // Iterate over tensor elements
       for( dip::uint iTE = 0; iTE < orientation_.TensorElements(); ++iTE ) {
-         csn_[ iTE ] = std::cos( dip::pi*0.5 - dirPixel[ iTE ].As<dfloat>() );
-         sn_[ iTE ] = std::sin( dip::pi*0.5 - dirPixel[ iTE ].As<dfloat>() );
+         csn_[ iTE ] = std::cos( dip::pi * 0.5 - dirPixel[ iTE ].As< dfloat >() );
+         sn_[ iTE ] = std::sin( dip::pi * 0.5 - dirPixel[ iTE ].As< dfloat >() );
       }
    }
    virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
-      transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoords[ 0 ] * csn_[tensorIndex] + kernelCoords[ 1 ] * sn_[tensorIndex];
-      transformedCoords[ 1 ] = imgCoords_[ 1 ] - kernelCoords[ 0 ] * sn_[tensorIndex]  + kernelCoords[ 1 ] * csn_[tensorIndex];
+      transformedCoords[ 0 ] = imgCoords_[ 0 ] + static_cast< dfloat >( kernelCoords[ 0 ] ) * csn_[ tensorIndex ]
+                                               + static_cast< dfloat >( kernelCoords[ 1 ] ) * sn_[ tensorIndex ];
+      transformedCoords[ 1 ] = imgCoords_[ 1 ] - static_cast< dfloat >( kernelCoords[ 0 ] ) * sn_[ tensorIndex ]
+                                               + static_cast< dfloat >( kernelCoords[ 1 ] ) * csn_[ tensorIndex ];
    }
 protected:
    std::vector<dfloat> csn_, sn_;   // Length is equal to number of input tensor elements
@@ -163,7 +177,8 @@ protected:
 class KernelTransform2DScaledRotation : public KernelTransform2DRotation, public KernelTransformScale<2>
 {
 public:
-   KernelTransform2DScaledRotation( Image const& orientation, Image const& kernelScale ) : KernelTransform2DRotation( orientation ), KernelTransformScale<2>( kernelScale, orientation.TensorElements() ) {}
+   KernelTransform2DScaledRotation( Image const& orientation, Image const& kernelScale )
+         : KernelTransform2DRotation( orientation ), KernelTransformScale<2>( kernelScale, orientation.TensorElements() ) {}
    virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledRotation( *this ); }
 
    virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
@@ -173,9 +188,12 @@ public:
 
    virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
       // First scale, then rotate
-      dfloat scaledKernelCoords[ 2 ] = { scaleAtImgCoords_[tensorIndex][ 0 ] * kernelCoords[ 0 ], scaleAtImgCoords_[tensorIndex][ 1 ] * kernelCoords[ 1 ] };
-      transformedCoords[ 0 ] = imgCoords_[ 0 ] + scaledKernelCoords[ 0 ] * csn_[tensorIndex] + scaledKernelCoords[ 1 ] * sn_[ tensorIndex ];
-      transformedCoords[ 1 ] = imgCoords_[ 1 ] - scaledKernelCoords[ 0 ] * sn_[ tensorIndex ] + scaledKernelCoords[ 1 ] * csn_[ tensorIndex ];
+      dfloat scaledKernelCoords[ 2 ] = { scaleAtImgCoords_[ tensorIndex ][ 0 ] * static_cast< dfloat >( kernelCoords[ 0 ] ),
+                                         scaleAtImgCoords_[ tensorIndex ][ 1 ] * static_cast< dfloat >( kernelCoords[ 1 ] ) };
+      transformedCoords[ 0 ] = imgCoords_[ 0 ] + scaledKernelCoords[ 0 ] * csn_[ tensorIndex ]
+                                               + scaledKernelCoords[ 1 ] * sn_[ tensorIndex ];
+      transformedCoords[ 1 ] = imgCoords_[ 1 ] - scaledKernelCoords[ 0 ] * sn_[ tensorIndex ]
+                                               + scaledKernelCoords[ 1 ] * csn_[ tensorIndex ];
    }
 };
 
@@ -183,7 +201,8 @@ public:
 class KernelTransform3DRotationZ : public KernelTransform
 {
 public:
-   KernelTransform3DRotationZ( Image const& phi3, Image const& theta3 ) : phi3_( phi3 ), theta3_( theta3 ), R_( phi3.TensorElements() ) {}
+   KernelTransform3DRotationZ( Image const& phi3, Image const& theta3 )
+         : phi3_( phi3 ), theta3_( theta3 ), R_( phi3.TensorElements() ) {}
 
    virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationZ( *this ); }
 
@@ -201,18 +220,22 @@ public:
 
          RotMatrix& R = R_[ iTE ];
 
-         R[ 0 ] = cs_p*cs_t;   R[ 1 ] = -sn_p; R[ 2 ] = cs_p*sn_t;
-         R[ 3 ] = sn_p*cs_t;   R[ 4 ] = cs_p;  R[ 5 ] = sn_p*sn_t;
-         R[ 6 ] = -sn_t;       R[ 7 ] = 0;     R[ 8 ] = cs_t;
+         R[ 0 ] = cs_p * cs_t;  R[ 1 ] = -sn_p;  R[ 2 ] = cs_p * sn_t;
+         R[ 3 ] = sn_p * cs_t;  R[ 4 ] = cs_p;   R[ 5 ] = sn_p * sn_t;
+         R[ 6 ] = -sn_t;        R[ 7 ] = 0;      R[ 8 ] = cs_t;
       }
    }
 
    virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
       RotMatrix const& R = R_[ tensorIndex ];
-
-      transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoords[ 0 ]*R[ 0 ] + kernelCoords[ 1 ]*R[ 1 ] + kernelCoords[ 2 ]*R[ 2 ];
-      transformedCoords[ 1 ] = imgCoords_[ 1 ] + kernelCoords[ 0 ]*R[ 3 ] + kernelCoords[ 1 ]*R[ 4 ] + kernelCoords[ 2 ]*R[ 5 ];
-      transformedCoords[ 2 ] = imgCoords_[ 2 ] + kernelCoords[ 0 ]*R[ 6 ]                            + kernelCoords[ 2 ]*R[ 8 ];
+      transformedCoords[ 0 ] = imgCoords_[ 0 ] + static_cast< dfloat >( kernelCoords[ 0 ] ) * R[ 0 ]
+                                               + static_cast< dfloat >( kernelCoords[ 1 ] ) * R[ 1 ]
+                                               + static_cast< dfloat >( kernelCoords[ 2 ] ) * R[ 2 ];
+      transformedCoords[ 1 ] = imgCoords_[ 1 ] + static_cast< dfloat >( kernelCoords[ 0 ] ) * R[ 3 ]
+                                               + static_cast< dfloat >( kernelCoords[ 1 ] ) * R[ 4 ]
+                                               + static_cast< dfloat >( kernelCoords[ 2 ] ) * R[ 5 ];
+      transformedCoords[ 2 ] = imgCoords_[ 2 ] + static_cast< dfloat >( kernelCoords[ 0 ] ) * R[ 6 ]
+                                               + static_cast< dfloat >( kernelCoords[ 2 ] ) * R[ 8 ];
    }
 
 protected:
@@ -252,7 +275,7 @@ public:
       }
    }
 
-   virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+   virtual void Transform( IntegerArray const& /*kernelCoords*/, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
       Eigen::Map<Eigen::Vector3d> output( transformedCoords.data() );   // Create an Eigen map that directly accesses transformedCoords
       output = T_[ tensorIndex ] * output;
    }
@@ -267,8 +290,8 @@ protected:
    }
 
    Image const& phi2_;
-   Image const& phi3_;
    Image const& theta2_;
+   Image const& phi3_;
    Image const& theta3_;
    using CompactTransform = Eigen::Transform<dfloat, 3, Eigen::AffineCompact>;
    std::vector< CompactTransform, Eigen::aligned_allocator< CompactTransform > > T_;  // Transformation matrix. The vector is over the input tensor elements.
@@ -292,7 +315,7 @@ public:
    virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
       dfloat kernelCoordX = static_cast<dfloat>(kernelCoords[ 0 ]);
       transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoordX;
-      transformedCoords[ 1 ] = imgCoords_[ 1 ] + kernelCoords[ 1 ] + s_[ tensorIndex ]*kernelCoordX;
+      transformedCoords[ 1 ] = imgCoords_[ 1 ] + static_cast< dfloat >( kernelCoords[ 1 ] ) + s_[ tensorIndex ] * kernelCoordX;
    }
 protected:
    Image const& skew_;
@@ -353,7 +376,7 @@ class InputInterpolator
 public:
    InputInterpolator( Image const& in ) : in_( in ), inOrigin_( static_cast<TPI*>(in_.Origin()) ), inTensorStride_( in_.TensorStride() ) {}
 
-   virtual TPO GetInputValue( FloatArray& coords, dip::uint tensorIndex, bool mirrorAtImageBoundaries ) const { return 0; }
+   virtual TPO GetInputValue( FloatArray& /*coords*/, dip::uint /*tensorIndex*/, bool /*mirrorAtImageBoundaries*/ ) const { return 0; }
 
 protected:
    // Maps coords to a location inside the image using mirroring at the image boundaries.
@@ -383,11 +406,11 @@ protected:
 };
 
 // Input interpolation class, templated in the number of input dimensions
-template<dip::uint nDims, typename TPI, typename TPO>
+template< dip::uint nDims, typename TPI, typename TPO >
 class InputInterpolatorFixedDims : public InputInterpolator< TPI, TPO >
 {
 public:
-   InputInterpolatorFixedDims( Image const& in ) : InputInterpolator< TPI, TPO>( in ) {
+   InputInterpolatorFixedDims( Image const& in ) : InputInterpolator< TPI, TPO >( in ) {
       // Verify input dimensionality
       DIP_THROW_IF( in_.Dimensionality() != nDims, "AdaptiveGauss interpolation dimensionality incorrect" );
 
@@ -398,13 +421,14 @@ public:
       }
    }
 protected:
+   using InputInterpolator< TPI, TPO >::in_;
    std::array< dip::sint, nDims > inStrides_;
    std::array< dip::uint, nDims > inSizes_;
 };
 
 
 // Zero order hold input interpolator
-template<dip::uint nDims, typename TPI, typename TPO>
+template< dip::uint nDims, typename TPI, typename TPO >
 class InputInterpolatorZOH : public InputInterpolatorFixedDims< nDims, TPI, TPO >
 {
 public:
@@ -418,28 +442,33 @@ public:
             return 0;
       } else {
          // Mirror input coordinates. May fail -> return 0.
-         if( !MapCoords_Mirror< nDims >( &coords[ 0 ] ) )
+         if( !this->template MapCoords_Mirror< nDims >( &coords[ 0 ] ) )
             return 0;
       }
 
       // Compute pixel offset
       dip::sint pixelOffset = 0;
       for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-         dip::uint integerCoord = floor_cast( coords[ iDim ] );
+         dip::sint integerCoord = floor_cast( coords[ iDim ] );
          pixelOffset += integerCoord * inStrides_[ iDim ];
       }
 
       // Add tensor offset
-      pixelOffset += tensorIndex * inTensorStride_;
+      pixelOffset += static_cast< dip::sint >( tensorIndex ) * inTensorStride_;
 
       // Output single input value
       TPI inValue = *(inOrigin_ + pixelOffset);
       return static_cast< TPO >(inValue);
    }
+
+   using InputInterpolatorFixedDims< nDims, TPI, TPO >::inStrides_;
+   using InputInterpolator< TPI, TPO >::inTensorStride_;
+   using InputInterpolator< TPI, TPO >::inOrigin_;
+   using InputInterpolator< TPI, TPO >::in_;
 };
 
 // First order hold input interpolator
-template<dip::uint nDims, typename TPI, typename TPO>
+template< dip::uint nDims, typename TPI, typename TPO >
 class InputInterpolatorFOH : public InputInterpolatorFixedDims< nDims, TPI, TPO >
 {
 public:
@@ -455,20 +484,21 @@ public:
             return 0;
       } else {
          // Mirror input coordinates. May fail -> return 0.
-         if( !MapCoords_Mirror< nDims >( &coords[ 0 ] ) )
+         if( !this->template MapCoords_Mirror< nDims >( &coords[ 0 ] ) )
             return 0;
       }
 
       // Start linear interpolation
       // Compute lower bound index and interpolation factor for all coordinates
       //  E.g.: if coords[i] == 1.1, then loBoundIndices[i] == 1.0 and factors[i] == 0.1
-      std::array< dip::uint, nDims> loBoundIndices;
+      std::array< dip::sint, nDims> loBoundIndices;
       std::array< InputAsFloat, nDims > factors; // Linear interpolation factors
       for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-         loBoundIndices[ iDim ] = (floor_cast( coords[ iDim ] ));   // Take lower bound using floor_cast
-         if( coords[ iDim ] == inSizes_[ iDim ] - 1 )  // Because we interpolate between loBound and loBound+1, make sure we don't go beyond the image borders
+         loBoundIndices[ iDim ] = floor_cast( coords[ iDim ] );   // Take lower bound using floor_cast
+         if( loBoundIndices[ iDim ] == static_cast< dip::sint >( inSizes_[ iDim ] - 1 )) { // Because we interpolate between loBound and loBound+1, make sure we don't go beyond the image borders
             loBoundIndices[ iDim ]--;
-         factors[ iDim ] = (static_cast< InputAsFloat >(coords[ iDim ]) - loBoundIndices[ iDim ]);
+         }
+         factors[ iDim ] = static_cast< InputAsFloat >( coords[ iDim ] ) - static_cast< InputAsFloat >( loBoundIndices[ iDim ] );
       }
 
       // Compute pixel offset for first pixel of the interpolation input window, including tensor offset
@@ -482,16 +512,16 @@ public:
 
       TPO result = 0.0;
       //for( dip::uint iOffset = 0; iOffset < numInterpPixels; ++iOffset ) {
-      const_for< numInterpPixels >( [&]( auto iOffset )
+      const_for< numInterpPixels >( [&]( dip::uint iOffset )
       {
          dip::sint pixelOffset = interpOriginOffset;
          InputAsFloat pixelFactor = 1.0;
          //for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-         const_for< nDims >( [&]( auto iDim )
+         const_for< nDims >( [&]( dip::uint iDim )
          {
             // To process all permutations of lowerbound and upperbound (= lowerbound + 1) in each dimension,
             // decide whether to process the upperbound in this dimension by testing the bits in iOffset
-            constexpr bool useUpperBound = (iOffset.value & (dip::uint( 1 ) << iDim)) != 0;
+            bool useUpperBound = (iOffset & (dip::uint( 1 ) << iDim)) != 0;
             if( useUpperBound ) {
                pixelOffset += inStrides_[ iDim ];
                pixelFactor *= factors[ iDim ];
@@ -500,7 +530,7 @@ public:
             }
          } );
          // Add tensor offset
-         pixelOffset += tensorIndex * inTensorStride_;
+         pixelOffset += static_cast< dip::sint >( tensorIndex ) * inTensorStride_;
          // Multiply pixel input values with composite interpolation factors
          TPI inValue = *(inOrigin_ + pixelOffset);
          result += static_cast< TPO >(inValue) * pixelFactor;
@@ -524,7 +554,7 @@ public:
             return 0;
       } else {
          // Mirror input coordinates. May fail -> return 0.
-         if( !MapCoords_Mirror< 2 >( &coords[ 0 ] ) )
+         if( !this->template MapCoords_Mirror< 2 >( &coords[ 0 ] ) )
             return 0;
       }
 
@@ -557,6 +587,12 @@ public:
          + (p11 * xo * yo));
    }
    */
+
+   using InputInterpolatorFixedDims< nDims, TPI, TPO >::inSizes_;
+   using InputInterpolatorFixedDims< nDims, TPI, TPO >::inStrides_;
+   using InputInterpolator< TPI, TPO >::inTensorStride_;
+   using InputInterpolator< TPI, TPO >::inOrigin_;
+   using InputInterpolator< TPI, TPO >::in_;
 };
 
 // The adaptive window convolution filter for adaptive gauss and its variants
@@ -564,7 +600,7 @@ template< typename TPI, typename TPO = FlexType< TPI > >
 class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter
 {
 public:
-   AdaptiveWindowConvolutionLineFilter( Image const& in, Kernel const& kernel, ImageArray const& params, String const& interpolation, BoundaryCondition bc, String const& transform ) : in_( in ), kernel_(kernel) { //, params_( params ) {
+   AdaptiveWindowConvolutionLineFilter( Image const& in, Kernel const& kernel, ImageArray const& params, String const& interpolation, BoundaryCondition bc, String const& transform ) : in_( in ), kernel_( kernel ) { //, params_( params ) {
       // Determine kernel transformation
       if (in_.Dimensionality() == 2) {
          // === 2D ===
@@ -582,8 +618,9 @@ public:
          // Determine kernel transformation
          ConstructKernelTransform3D( transform, params );
       }
-      else
-         DIP_THROW( "AdaptiveWindowConvolutionLineFilter: no transform \"" + transform + "\" known for input dimensionality " + std::to_string(in_.Dimensionality()) );
+      else {
+         DIP_THROW( "AdaptiveWindowConvolutionLineFilter: no transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality()));
+      }
 
       // Store boundary condition. We only support mirroring or zeros for now.
       DIP_THROW_IF( bc != BoundaryCondition::SYMMETRIC_MIRROR  && bc != BoundaryCondition::ADD_ZEROS, "Adaptive filtering: unsupported boundary condition" );
@@ -617,8 +654,9 @@ public:
       }
 
       for( dip::uint ii = 0; ii < length; ++ii ) {
-         for( dip::uint iTE = 0; iTE < in_.TensorElements(); ++iTE)
-            *(out + iTE*outTensorStride) = 0;
+         for( dip::uint iTE = 0; iTE < in_.TensorElements(); ++iTE) {
+            *( out + static_cast< dip::sint >( iTE ) * outTensorStride ) = 0;
+         }
          std::vector< dfloat >::const_iterator itWeight = weights.begin();
          // Prepare kernel transform for current input coordinates
          kernelTransform->SetImageCoords( inCoords );
@@ -628,7 +666,8 @@ public:
                // Apply kernel transformation
                kernelTransform->Transform( *itPT, iTE, transformedKernelCoords );
                // Obtain input value at the transformed kernel coords
-               *(out + iTE*outTensorStride) += inputInterpolator_->GetInputValue( transformedKernelCoords, iTE, mirrorAtInputBoundaries_ ) * static_cast<FloatType<TPO>> (*itWeight);
+               *( out + static_cast< dip::sint >( iTE ) * outTensorStride ) +=
+                     inputInterpolator_->GetInputValue( transformedKernelCoords, iTE, mirrorAtInputBoundaries_ ) * static_cast< FloatType< TPO >>( *itWeight );
             }
             ++itWeight;
          }
@@ -710,12 +749,12 @@ private:
 
 void AdaptiveFilter(
    Image const& in,
-   ImageConstRefArray c_params,
+   ImageConstRefArray const& params,
    Image& out,
    FloatArray const& sigmas,
-   UnsignedArray orders,
+   UnsignedArray const& orders,
    dfloat truncation,
-   UnsignedArray expos,
+   UnsignedArray const& exponents,
    String const& interpolationMethod,
    String const& boundaryCondition,
    String const& transform
@@ -725,8 +764,8 @@ void AdaptiveFilter(
 
    // Prepare parameter images: expand singleton dimensions, including the tensor
    ImageArray paramImages;
-   for( int iP = 0; iP < c_params.size(); ++iP )       {
-      paramImages.emplace_back( c_params[ iP ].get().QuickCopy() );
+   for( dip::uint iP = 0; iP < params.size(); ++iP ) {
+      paramImages.emplace_back( params[ iP ].get().QuickCopy() );
       paramImages.back().ExpandSingletonDimensions( in.Sizes() );
       // Make sure the param image tensor has a row for each input image tensor element
       if( paramImages.back().TensorRows() != in.TensorRows() ) {
@@ -737,7 +776,7 @@ void AdaptiveFilter(
    DIP_START_STACK_TRACE
       // Create gaussian kernel
       Image gaussian;
-      CreateGauss( gaussian, sigmas, orders, truncation, expos );
+      CreateGauss( gaussian, sigmas, orders, truncation, exponents );
       Kernel kernel{ gaussian };
 
       BoundaryCondition bc = StringToBoundaryCondition( boundaryCondition );
@@ -752,30 +791,34 @@ void AdaptiveFilter(
 
 void AdaptiveGauss(
    Image const& in,
-   ImageConstRefArray c_params,
+   ImageConstRefArray const& params,
    Image& out,
    FloatArray const& sigmas,
-   UnsignedArray orders,
+   UnsignedArray const& orders,
    dfloat truncation,
-   UnsignedArray expos,
+   UnsignedArray const& exponents,
    String const& interpolationMethod,
    String const& boundaryCondition
 ) {
-   AdaptiveFilter( in, c_params, out, sigmas, orders, truncation, expos, interpolationMethod, boundaryCondition, "ellipse" );
+   AdaptiveFilter( in, params, out, sigmas, orders, truncation, exponents, interpolationMethod, boundaryCondition, "ellipse" );
 }
 
 void AdaptiveBanana(
    Image const& in,
-   ImageConstRefArray c_params,
+   ImageConstRefArray const& params,
    Image& out,
    FloatArray const& sigmas,
-   UnsignedArray orders,
+   UnsignedArray const& orders,
    dfloat truncation,
-   UnsignedArray expos,
+   UnsignedArray const& exponents,
    String const& interpolationMethod,
    String const& boundaryCondition
 ) {
-   AdaptiveFilter( in, c_params, out, sigmas, orders, truncation, expos, interpolationMethod, boundaryCondition, "banana" );
+   AdaptiveFilter( in, params, out, sigmas, orders, truncation, exponents, interpolationMethod, boundaryCondition, "banana" );
 }
 
 } // namespace dip
+
+#if defined(__GNUG__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif

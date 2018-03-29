@@ -48,6 +48,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/nonlinear.h
 ../include/diplib/overload.h
 ../include/diplib/pixel_table.h
+../include/diplib/private/constfor.h
 ../include/diplib/private/monadic_operators.h
 ../include/diplib/random.h
 ../include/diplib/regions.h
@@ -204,6 +205,7 @@ morphology/reconstruction.cpp
 morphology/watershed.cpp
 morphology/watershed_support.cpp
 morphology/watershed_support.h
+nonlinear/adaptivegauss.cpp
 nonlinear/anisotropic_diffusion.cpp
 nonlinear/kuwahara.cpp
 nonlinear/nonmaximumsuppression.cpp
