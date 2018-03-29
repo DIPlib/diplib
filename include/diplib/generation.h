@@ -278,7 +278,7 @@ DIP_EXPORT void DrawBandlimitedBox(
       dfloat truncation = 3.0
 );
 
-
+// TODO: document
 DIP_EXPORT void GaussianEdgeClip(
       Image const& in,
       Image& out,
@@ -297,6 +297,7 @@ inline Image GaussianEdgeClip(
    return out;
 }
 
+// TODO: document
 DIP_EXPORT void GaussianLineClip(
       Image const& in,
       Image& out,
@@ -315,12 +316,13 @@ inline Image GaussianLineClip(
    return out;
 }
 
+// TODO: document
 DIP_EXPORT void CreateGauss(
       Image& out,
       FloatArray const& sigmas,
-      UnsignedArray order,
-      dfloat truncation,
-      UnsignedArray expo
+      UnsignedArray order = {},
+      dfloat truncation = 3.0,
+      UnsignedArray exponents = {}
 );
 
 /// \brief Fills an image with a ramp function.

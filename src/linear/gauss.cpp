@@ -134,65 +134,52 @@ FloatArray MakeHalfGaussian(
 
 // Create 1D full Gaussian
 FloatArray MakeGaussian(
-   dfloat sigma,
-   dip::uint order,
-   dfloat truncation,
-   bool roundSize
+      dfloat sigma,
+      dip::uint order,
+      dfloat truncation
 ) {
-   FloatArray gaussian;
    // Handle sigma == 0.0
    if( sigma == 0.0 ) {
-      gaussian.resize( 1, 1.0 );
-   } else {
-      // Determine filter size
-      dip::uint halfFilterSize = 1 + clamp_cast<dip::uint>((truncation + 0.5 * static_cast<dfloat>(order)) * sigma + 0.5); // Differs from DIPlib v2: HalfGaussianSize( sigma, order, truncation );
-      // Create actual Gauss
-      if( halfFilterSize < 1 ) {
-         halfFilterSize = 1;
-      }
-      if( order > 2 && halfFilterSize < 2 ) {
-         halfFilterSize = 2;
-      }
-
-      FloatArray halfGaussian = MakeHalfGaussian( sigma, order, halfFilterSize );
-      dfloat symmetrySign;
-      switch( order ) {
-      case 0:
-      case 2:
-         // Even symmetry
-         symmetrySign = 1.0;
-         break;
-      case 1:
-      case 3:
-         // Odd symmetry
-         symmetrySign = -1.0;
-         break;
-      default:
-         DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
-      }
-      // Complete the gaussian
-      gaussian = halfGaussian;
-      for( dip::uint iHG = halfGaussian.size() - 1; iHG > 0; ) {
-         --iHG;
-         gaussian.push_back( symmetrySign * halfGaussian[ iHG ] );
-      }
+      return { 1.0 };
    }
 
+   // Determine filter size
+   // TODO: use 1 + HalfGaussianSize( sigma, order, truncation )?
+   dip::uint halfFilterSize = 1 + clamp_cast<dip::uint>((truncation + 0.5 * static_cast<dfloat>(order)) * sigma + 0.5); // Differs from DIPlib v2: HalfGaussianSize( sigma, order, truncation );
+   // Create actual Gauss
+   if( halfFilterSize < 1 ) {
+      halfFilterSize = 1;
+   }
+   if( order > 2 && halfFilterSize < 2 ) {
+      halfFilterSize = 2;
+   }
+
+   FloatArray gaussian;
+   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, order, halfFilterSize ));
+   dfloat symmetrySign = order & 1 ? -1.0 : 1.0;
+   // Complete the gaussian
+   for( dip::uint iHG = gaussian.size() - 1; iHG > 0; ) {
+      --iHG;
+      gaussian.push_back( symmetrySign * gaussian[ iHG ] );
+   }
    return gaussian;
 }
 
 } // namespace
 
 void CreateGauss(
-   Image& out,
-   FloatArray const& sigmas,
-   UnsignedArray orders,
-   dfloat truncation,
-   UnsignedArray expos
+      Image& out,
+      FloatArray const& sigmas,
+      UnsignedArray orders,
+      dfloat truncation,
+      UnsignedArray exponents
 ) {
    // Verify dimensionality
    dip::uint nDims = sigmas.size();
    std::vector< FloatArray > gaussians;
+   gaussians.reserve( nDims );
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( orders, nDims, dip::uint( 0 )));
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( exponents, nDims, dip::uint( 1 )));
 
    // Adjust truncation to default if needed
    if( truncation <= 0.0 ) {
@@ -203,26 +190,25 @@ void CreateGauss(
    UnsignedArray centers;
    // Create 1D gaussian for each dimension
    for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-      const bool roundSize = true;
-      gaussians.emplace_back( MakeGaussian( sigmas[ iDim ], orders[ iDim ], truncation, roundSize ) );
+      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( sigmas[ iDim ], orders[ iDim ], truncation )));
       dip::uint gaussianLength = gaussians.back().size();
       outSizes.push_back( gaussianLength );
       centers.push_back( (gaussianLength - 1) / 2 );
    }
 
    // Create output image
-   out = Image( outSizes, 1, DT_DFLOAT );
+   out.ReForge( outSizes, 1, DT_DFLOAT );
    ImageIterator< dfloat > itOut( out );
    do {
       const UnsignedArray& coords = itOut.Coordinates();
-      // Multiply gaussians
+      // Multiply Gaussians
       *itOut = 1.0;
       for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
          *itOut *= gaussians[ iDim ][ coords[ iDim ] ];
       }
       // Add moments
       for( dip::uint iM = 0; iM < nDims; ++iM) {
-         *itOut *= std::pow( static_cast<dfloat>(coords[ iM ]) - centers[ iM ], expos[ iM ] );
+         *itOut *= std::pow( static_cast< dfloat >( coords[ iM ] ) - static_cast< dfloat >( centers[ iM ] ), exponents[ iM ] );
       }
    } while( ++itOut );
 }
