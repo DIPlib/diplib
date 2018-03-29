@@ -535,6 +535,11 @@ class DIP_NO_EXPORT DimensionArray {
       }
 };
 
+
+//
+// Compound assingment operator specializations
+//
+
 // The general case: cast rhs to type of lhs
 template< typename T >
 template< typename S >
@@ -576,6 +581,10 @@ inline DimensionArray< std::size_t >& DimensionArray< std::size_t >::operator-=(
    return *this;
 }
 
+
+//
+// Comparison operators, array vs array
+//
 
 /// \brief Compares two arrays, returns true only if they have the same size and contain the same values.
 template< typename T >
@@ -675,6 +684,95 @@ inline bool operator<=( DimensionArray< T > const& lhs, DimensionArray< T > cons
    };
    return true;
 }
+
+
+//
+// Comparison operators, array vs scalar
+//
+
+/// \brief Compares an array to a scalar, returns a boolean array.
+template< typename T >
+inline DimensionArray< bool > operator==( DimensionArray< T > const& lhs, T const& rhs ) {
+   DimensionArray< bool > out( lhs.size() );
+   auto lhsp = lhs.begin();
+   auto outp = out.begin();
+   while( lhsp != lhs.end() ) {
+      *outp = *lhsp == rhs;
+      ++lhsp;
+      ++outp;
+   };
+   return out;
+}
+/// \brief Compares an array to a scalar, returns a boolean array.
+template< typename T >
+inline DimensionArray< bool > operator!=( DimensionArray< T > const& lhs, T const& rhs ) {
+   DimensionArray< bool > out( lhs.size() );
+   auto lhsp = lhs.begin();
+   auto outp = out.begin();
+   while( lhsp != lhs.end() ) {
+      *outp = *lhsp != rhs;
+      ++lhsp;
+      ++outp;
+   };
+   return out;
+}
+/// \brief Compares an array to a scalar, returns a boolean array.
+template< typename T >
+inline DimensionArray< bool > operator>( DimensionArray< T > const& lhs, T const& rhs ) {
+   DimensionArray< bool > out( lhs.size() );
+   auto lhsp = lhs.begin();
+   auto outp = out.begin();
+   while( lhsp != lhs.end() ) {
+      *outp = *lhsp > rhs;
+      ++lhsp;
+      ++outp;
+   };
+   return out;
+}
+/// \brief Compares an array to a scalar, returns a boolean array.
+template< typename T >
+inline DimensionArray< bool > operator<( DimensionArray< T > const& lhs, T const& rhs ) {
+   DimensionArray< bool > out( lhs.size() );
+   auto lhsp = lhs.begin();
+   auto outp = out.begin();
+   while( lhsp != lhs.end() ) {
+      *outp = *lhsp < rhs;
+      ++lhsp;
+      ++outp;
+   };
+   return out;
+}
+/// \brief Compares an array to a scalar, returns a boolean array.
+template< typename T >
+inline DimensionArray< bool > operator>=( DimensionArray< T > const& lhs, T const& rhs ) {
+   DimensionArray< bool > out( lhs.size() );
+   auto lhsp = lhs.begin();
+   auto outp = out.begin();
+   while( lhsp != lhs.end() ) {
+      *outp = *lhsp >= rhs;
+      ++lhsp;
+      ++outp;
+   };
+   return out;
+}
+/// \brief Compares an array to a scalar, returns a boolean array.
+template< typename T >
+inline DimensionArray< bool > operator<=( DimensionArray< T > const& lhs, T const& rhs ) {
+   DimensionArray< bool > out( lhs.size() );
+   auto lhsp = lhs.begin();
+   auto outp = out.begin();
+   while( lhsp != lhs.end() ) {
+      *outp = *lhsp <= rhs;
+      ++lhsp;
+      ++outp;
+   };
+   return out;
+}
+
+
+//
+// Other operators and convenience functions
+//
 
 /// \brief Writes the array to a stream
 template< typename T >

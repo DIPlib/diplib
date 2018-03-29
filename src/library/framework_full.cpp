@@ -69,8 +69,25 @@ void Full(
 
    // Do we need to adjust the input image?
    bool dataTypeChange = c_in.DataType() != inBufferType;
-   bool expandBoundary = boundary.any() && !opts.Contains( FullOption::BorderAlreadyExpanded );
-   bool adjustInput = dataTypeChange || expandTensor || expandBoundary;
+   bool expandBoundary = boundary.any();
+   bool alreadyExpanded = opts.Contains( FullOption::BorderAlreadyExpanded );
+   if( !boundaryConditions.empty() ) {
+      auto cond = boundaryConditions == BoundaryCondition::ALREADY_EXPANDED;
+      if( cond.all() ) {
+         alreadyExpanded = true;
+      } else {
+         DIP_THROW_IF( cond.any(), "\"already expaned\" boundary condition cannot be combined with other boundary conditions" );
+      }
+   }
+   if( !expandBoundary ) {
+      alreadyExpanded = false; // we can ignore this flag in this case, we won't be reading outside the image bounds.
+   }
+   // TODO: We've been passed an input image with borders expanded, meaning we need to use the data there.
+   //      But we need to convert the image's type or expand its tensor, meaning that we need to create an
+   //      input buffer and copy data into it. This requires copying data from the expanded image, not only
+   //      the input image.
+   DIP_THROW_IF( alreadyExpanded && ( dataTypeChange || expandTensor ), "Input buffer was already expanded, but I need to expand the tensor or convert data type." );
+   bool adjustInput = !alreadyExpanded && ( dataTypeChange || expandTensor || expandBoundary );
 
    // Adjust c_out if necessary (and possible)
    // NOTE: Don't use c_in any more from here on. It has possibly been reforged!

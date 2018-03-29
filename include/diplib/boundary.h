@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality related to the boundary condition
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,6 +58,7 @@ namespace dip {
 /// `SECOND_ORDER_EXTRAPOLATE` | "second order"           | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
 /// `THIRD_ORDER_EXTRAPOLATE`  | "third order"            | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                  | "default" or ""          | The default value, currently equal to `SYMMETRIC_MIRROR`.
+/// `ALREADY_EXPANDED`         | "already expanded"       | The dangerous option. The image is an ROI of a larger image, and the operation cannot reach outside this larger image. Not supported by all functions, and can always be combined with other options.
 enum class DIP_NO_EXPORT BoundaryCondition {
       SYMMETRIC_MIRROR,
       ASYMMETRIC_MIRROR,
@@ -70,7 +71,8 @@ enum class DIP_NO_EXPORT BoundaryCondition {
       FIRST_ORDER_EXTRAPOLATE,
       SECOND_ORDER_EXTRAPOLATE,
       THIRD_ORDER_EXTRAPOLATE,
-      DEFAULT = SYMMETRIC_MIRROR
+      DEFAULT = SYMMETRIC_MIRROR,
+      ALREADY_EXPANDED
 };
 
 using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
@@ -91,6 +93,7 @@ inline BoundaryCondition StringToBoundaryCondition( String const& bc ) {
    else if( bc == S::FIRST_ORDER_EXTRAPOLATE ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
    else if( bc == S::SECOND_ORDER_EXTRAPOLATE ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
    else if( bc == S::THIRD_ORDER_EXTRAPOLATE ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
+   else if( bc == S::ALREADY_EXPANDED ) { return BoundaryCondition::ALREADY_EXPANDED; }
    else DIP_THROW( "Boundary condition not recognized: " + bc );
 }
 

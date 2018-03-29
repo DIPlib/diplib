@@ -275,4 +275,7 @@ skiz = dip.Thickening(skiz, dip.Image(), ht)
 Show(skiz)
 
 ht = dip.BoundaryPixelInterval2D()
-Show(dip.UnionSupGenerating2D(a, ht))
+Show(dip.UnionSupGenerating2D(a, ht, 90))
+
+ht = dip.ConvexHullInterval2D()
+Show(dip.Thickening(a, dip.Image(), ht))

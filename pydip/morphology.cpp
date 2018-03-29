@@ -220,26 +220,26 @@ void init_morphology( py::module& m ) {
       return os.str();
    } );
 
-   m.def( "SupGenerating", py::overload_cast< dip::Image const&, dip::Interval const& >( &dip::SupGenerating ),
-          "in"_a, "interval"_a );
-   m.def( "InfGenerating", py::overload_cast< dip::Image const&, dip::Interval const& >( &dip::InfGenerating ),
-          "in"_a, "interval"_a );
-   m.def( "UnionSupGenerating", py::overload_cast< dip::Image const&, dip::IntervalArray const& >( &dip::UnionSupGenerating ),
-          "in"_a, "intervals"_a );
-   m.def( "UnionSupGenerating2D", py::overload_cast< dip::Image const&, dip::Interval const&, dip::uint, dip::String const& >( &dip::UnionSupGenerating2D ),
-          "in"_a, "interval"_a, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise" );
-   m.def( "IntersectionInfGenerating", py::overload_cast< dip::Image const&, dip::IntervalArray const& >( &dip::IntersectionInfGenerating ),
-          "in"_a, "intervals"_a );
-   m.def( "IntersectionInfGenerating2D", py::overload_cast< dip::Image const&, dip::Interval const&, dip::uint, dip::String const& >( &dip::IntersectionInfGenerating2D ),
-          "in"_a, "interval"_a, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise" );
-   m.def( "Thickening", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntervalArray const&, dip::uint >( &dip::Thickening ),
-          "in"_a, "mask"_a, "intervals"_a, "iterations"_a = 0 );
-   m.def( "Thickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Interval const&, dip::uint, dip::uint, dip::String const& >( &dip::Thickening2D ),
-          "in"_a, "mask"_a, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise" );
-   m.def( "Thinning", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntervalArray const&, dip::uint >( &dip::Thinning ),
-          "in"_a, "mask"_a, "intervals"_a, "iterations"_a = 0 );
-   m.def( "Thinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Interval const&, dip::uint, dip::uint, dip::String const& >( &dip::Thinning2D ),
-          "in"_a, "mask"_a, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise" );
+   m.def( "SupGenerating", py::overload_cast< dip::Image const&, dip::Interval const&, dip::String const& >( &dip::SupGenerating ),
+          "in"_a, "interval"_a, "boundaryCondition"_a = "" );
+   m.def( "InfGenerating", py::overload_cast< dip::Image const&, dip::Interval const&, dip::String const& >( &dip::InfGenerating ),
+          "in"_a, "interval"_a, "boundaryCondition"_a = "" );
+   m.def( "UnionSupGenerating", py::overload_cast< dip::Image const&, dip::IntervalArray const&, dip::String const& >( &dip::UnionSupGenerating ),
+          "in"_a, "intervals"_a, "boundaryCondition"_a = "" );
+   m.def( "UnionSupGenerating2D", py::overload_cast< dip::Image const&, dip::Interval const&, dip::uint, dip::String const&, dip::String const& >( &dip::UnionSupGenerating2D ),
+          "in"_a, "interval"_a, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
+   m.def( "IntersectionInfGenerating", py::overload_cast< dip::Image const&, dip::IntervalArray const&, dip::String const& >( &dip::IntersectionInfGenerating ),
+          "in"_a, "intervals"_a, "boundaryCondition"_a = "" );
+   m.def( "IntersectionInfGenerating2D", py::overload_cast< dip::Image const&, dip::Interval const&, dip::uint, dip::String const&, dip::String const& >( &dip::IntersectionInfGenerating2D ),
+          "in"_a, "interval"_a, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
+   m.def( "Thickening", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntervalArray const&, dip::uint, dip::String const& >( &dip::Thickening ),
+          "in"_a, "mask"_a, "intervals"_a, "iterations"_a = 0, "boundaryCondition"_a = "" );
+   m.def( "Thickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Interval const&, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Thickening2D ),
+          "in"_a, "mask"_a, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
+   m.def( "Thinning", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntervalArray const&, dip::uint, dip::String const& >( &dip::Thinning ),
+          "in"_a, "mask"_a, "intervals"_a, "iterations"_a = 0, "boundaryCondition"_a = "" );
+   m.def( "Thinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Interval const&, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Thinning2D ),
+          "in"_a, "mask"_a, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
    m.def( "HomotopicThinningInterval2D", &dip::HomotopicThinningInterval2D, "connectivity"_a = 2 );
    m.def( "HomotopicThickeningInterval2D", &dip::HomotopicThickeningInterval2D, "connectivity"_a = 2 );
    m.def( "EndPixelInterval2D", &dip::EndPixelInterval2D, "connectivity"_a = 2 );
@@ -248,4 +248,5 @@ void init_morphology( py::module& m ) {
    m.def( "SinglePixelInterval", &dip::SinglePixelInterval, "nDims"_a = 2 );
    m.def( "BranchPixelInterval2D", &dip::BranchPixelInterval2D );
    m.def( "BoundaryPixelInterval2D", &dip::BoundaryPixelInterval2D );
+   m.def( "ConvexHullInterval2D", &dip::ConvexHullInterval2D );
 }

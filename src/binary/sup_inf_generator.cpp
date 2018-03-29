@@ -22,6 +22,10 @@
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/morphology.h"
+#include "diplib/boundary.h"
+#include "diplib/framework.h"
+#include "diplib/iterators.h"
+#include "diplib/pixel_table.h"
 
 namespace dip {
 
@@ -35,9 +39,6 @@ Interval::Interval( Image const& image ) {
    hit_ = image == 1;
    DIP_THROW_IF( !Any( hit_ ).As< bool >(), "The interval needs at least one foreground pixel" );
    miss_ = image == 0;
-   if( !Any( miss_ ).As< bool >() ) {
-      miss_.Strip();
-   }
 }
 
 Interval::Interval( Image hit, Image miss ) : hit_( std::move( hit )), miss_( std::move( miss )) {
@@ -49,11 +50,7 @@ Interval::Interval( Image hit, Image miss ) : hit_( std::move( hit )), miss_( st
       DIP_THROW_IF( !(s & 1), "The interval is not odd in size" );
    }
    DIP_THROW_IF( !Any( hit_ ).As< bool >(), "The interval needs at least one foreground pixel" );
-   if( !Any( miss_ ).As< bool >() ) {
-      miss_.Strip();
-   } else {
-      DIP_THROW_IF( dip::Any( dip::Infimum( hit_, miss_ )).As< bool >(), "The hit and miss images are not disjoint" );
-   }
+   DIP_THROW_IF( dip::Any( dip::Infimum( hit_, miss_ )).As< bool >(), "The hit and miss images are not disjoint" );
 }
 
 namespace {
@@ -138,16 +135,12 @@ IntervalArray Interval::GenerateRotatedVersions(
       // 45 degrees + ( 0, 90, 180, 270 )
       dip::uint cur = clockwise ? 1 : 7;
       output[ cur ].hit_ = RotateBy45Degrees( hit_ );
-      if( HatMissSamples() ) {
-         output[ cur ].miss_ = RotateBy45Degrees( miss_ );
-      }
+      output[ cur ].miss_ = RotateBy45Degrees( miss_ );
       for( dip::uint ii = 0; ii < 3; ++ii ) {
          dip::uint next = clockwise ? cur + 2 : cur - 2;
          output[ next ] = output[ cur ];
          output[ next ].hit_.Rotation90( 1 );
-         if( HatMissSamples() ) {
-            output[ next ].miss_.Rotation90( 1 );
-         }
+         output[ next ].miss_.Rotation90( 1 );
          cur = next;
       }
    }
@@ -161,18 +154,14 @@ IntervalArray Interval::GenerateRotatedVersions(
          dip::uint next = clockwise ? cur + ( 3 - step ) : ( cur == 0 ? N : cur ) - ( 3 - step );
          output[ next ] = output[ cur ];
          output[ next ].hit_.Rotation90( 1 );
-         if( HatMissSamples() ) {
-            output[ next ].miss_.Rotation90( 1 );
-         }
+         output[ next ].miss_.Rotation90( 1 );
          cur = next;
       }
    } else {
       // 180
       output[ 1 ] = output[ 0 ];
       output[ 1 ].hit_.Rotation90( 2 );
-      if( HatMissSamples() ) {
-         output[ 1 ].miss_.Rotation90( 2 );
-      }
+      output[ 1 ].miss_.Rotation90( 2 );
    }
    // not interleaved: 0, 45, 90, 135, 180, 225, 270, 315.
    // interleaved:     0, 180, 45, 225, 90, 270, 135, 315.
@@ -198,54 +187,115 @@ IntervalArray Interval::GenerateRotatedVersions(
    return output;
 }
 
-void SupGenerating(
-      Image const& c_in,
-      Image& out,
-      Interval const& interval
-) {
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   Image in = c_in;
-   if( out.Aliases( in )) {
-      out.Strip();   // prevent in-place operation
-   }
-   DIP_START_STACK_TRACE
-      Erosion( in, out, interval.HitImage() );
-      if( interval.HatMissSamples() ) {
-         out -= Dilation( in, interval.MissImage() );
+namespace {
+
+enum class Mode { SUP, INF };
+
+class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
+   public:
+      SupInfGeneratingLineFilter( Mode mode ) : supGenerating_( mode == Mode::SUP ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+         return lineLength * nKernelPixels;
       }
-      // The equation is really: Infimum( Erosion( in, hit ), Erosion( ~in, miss ))
-      // This is the same, but without inverting the image for the second erosion.
+      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+         // Fill in `offsets_` and `hitmiss_` using `pixelTable`.
+         // The pixel table has been prepared such that pixels with a positive weight are hit, and a negative
+         // weight are miss. "Don't care" pixels are not in the table.
+         offsets_ = pixelTable.Offsets();
+         hitmiss_.resize( offsets_.size() );
+         auto const& weights = pixelTable.Weights();
+         for( dip::uint ii = 0; ii < hitmiss_.size(); ++ii ) {
+            hitmiss_[ ii ] = weights[ ii ] != 0;
+            // hitmiss_ is 1 or 0, for hit and miss respectively.
+         }
+      }
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+         dip::bin* in = static_cast< dip::bin* >( params.inBuffer.buffer ); // yes, it's dip::bin, but this is simpler.
+         dip::sint inStride = params.inBuffer.stride;
+         dip::bin* out = static_cast< dip::bin* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
+         dip::uint length = params.bufferLength;
+         if( supGenerating_ ) {
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               dip::bin result = true;
+               for( dip::uint jj = 0; jj < offsets_.size(); ++jj ) {
+                  if( in[ offsets_[ jj ]] ^ hitmiss_[ jj ] ) { // Note that this requires our dip::bin image to be correct (i.e. 0 or 1, not other numbers).
+                     result = false;
+                     break;
+                  }
+               }
+               *out = result;
+               out += outStride;
+               in += inStride;
+            }
+         } else {
+            // For inf-generating operator we do the same as above, but we invert the input and invert the output
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               dip::bin result = false;
+               for( dip::uint jj = 0; jj < offsets_.size(); ++jj ) {
+                  if( !in[ offsets_[ jj ]] ^ hitmiss_[ jj ] ) { // Note that this requires our dip::bin image to be correct (i.e. 0 or 1, not other numbers).
+                     result = true;
+                     break;
+                  }
+               }
+               *out = result;
+               out += outStride;
+               in += inStride;
+            }
+         }
+      }
+   private:
+      bool supGenerating_;
+      std::vector< dip::sint > offsets_;
+      std::vector< dip::bin > hitmiss_;
+};
+
+void SupInfGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      BoundaryCondition boundaryCondition,
+      Mode supGenerating
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      // Create a kernel image with 0, 1, and NaN values.
+      Image kernel = interval.HitImage().Similar( DT_SFLOAT );
+      kernel.Fill( dip::nan );
+      kernel.At( interval.HitImage() ) = 1;
+      kernel.At( interval.MissImage() ) = 0; // Silly, we're recreating an image the user likely originally made when creating the interval...
+      SupInfGeneratingLineFilter lineFilter( supGenerating );
+      Framework::Full( in, out, DT_BIN, DT_BIN, DT_BIN, 1, { boundaryCondition }, kernel, lineFilter );
    DIP_END_STACK_TRACE
 }
 
-void InfGenerating(
-      Image const& c_in,
+}
+
+void SupGenerating(
+      Image const& in,
       Image& out,
-      Interval const& interval
+      Interval const& interval,
+      String const& boundaryCondition
 ) {
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   Image in = c_in;
-   if( out.Aliases( in )) {
-      out.Strip();   // prevent in-place operation
-   }
-   DIP_START_STACK_TRACE
-      Dilation( in, out, interval.HitImage() );
-      if( interval.HatMissSamples() ) {
-         out -= Erosion( in, interval.MissImage() );
-      }
-      // The equation is really: Supremum( Dilation( in, hit ), Dilation( ~in, miss ))
-      // This is the same, but without inverting the image for the second erosion.
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, interval, StringToBoundaryCondition( boundaryCondition ), Mode::SUP ));
+}
+
+void InfGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      String const& boundaryCondition
+) {
+   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, interval, StringToBoundaryCondition( boundaryCondition ), Mode::INF ));
 }
 
 void UnionSupGenerating(
       Image const& c_in,
       Image& out,
-      IntervalArray const& intervals
+      IntervalArray const& intervals,
+      String const& boundaryCondition
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -253,12 +303,14 @@ void UnionSupGenerating(
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    Image in = c_in;
    if( out.Aliases( in )) {
-      out.Strip();   // prevent in-place operation
+      DIP_STACK_TRACE_THIS( out.Strip() );   // prevent in-place operation
    }
    DIP_START_STACK_TRACE
-      SupGenerating( in, out, intervals[ 0 ] );
+      // TODO: expand input image as in ThickeningThinning below.
+      SupGenerating( in, out, intervals[ 0 ], boundaryCondition );
+      Image tmp;
       for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-         Image tmp = SupGenerating( in, intervals[ ii ] );
+         SupGenerating( in, tmp, intervals[ ii ], boundaryCondition );
          Supremum( out, tmp, out );
       }
    DIP_END_STACK_TRACE
@@ -267,7 +319,8 @@ void UnionSupGenerating(
 void IntersectionInfGenerating(
       Image const& c_in,
       Image& out,
-      IntervalArray const& intervals
+      IntervalArray const& intervals,
+      String const& boundaryCondition
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -275,12 +328,14 @@ void IntersectionInfGenerating(
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    Image in = c_in;
    if( out.Aliases( in )) {
-      out.Strip();   // prevent in-place operation
+      DIP_STACK_TRACE_THIS( out.Strip() );   // prevent in-place operation
    }
    DIP_START_STACK_TRACE
-      InfGenerating( in, out, intervals[ 0 ] );
+      // TODO: expand input image as in ThickeningThinning below.
+      InfGenerating( in, out, intervals[ 0 ], boundaryCondition );
+      Image tmp;
       for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-         Image tmp = InfGenerating( in, intervals[ ii ] );
+         InfGenerating( in, tmp, intervals[ ii ], boundaryCondition );
          Infimum( out, tmp, out );
       }
    DIP_END_STACK_TRACE
@@ -289,51 +344,92 @@ void IntersectionInfGenerating(
 namespace {
 
 void ThickeningThinning(
-      Image const& c_in,
+      Image const& in,
       Image const& mask,
       Image& out,
       IntervalArray const& intervals,
       dip::uint iterations,
+      String const& boundaryCondition,
       bool thickening
 ) {
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   Image in = c_in;
-   if( out.Aliases( in )) {
-      out.Strip();   // prevent in-place operation
+   // Find out what size border we need
+   dip::uint nDims = in.Dimensionality();
+   UnsignedArray border = intervals[ 0 ].Sizes();
+   DIP_THROW_IF( border.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
+   for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
+      UnsignedArray const& b = intervals[ ii ].Sizes();
+      DIP_THROW_IF( b.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
+      for( dip::uint jj = 0; jj < b.size(); ++jj ) {
+         border[ jj ] = std::max( border[ jj ], b[ jj ] );
+      }
    }
-   bool untilConvergence = iterations == 0;
-   out.Copy( in );
-   Image tmp;
-   while( true ) {
-      bool change = false;
-      for( auto const& in : intervals ) {
-         tmp = SupGenerating( out, in );
-         if( mask.IsForged() ) {
-            tmp &= mask;
+   for( auto& b : border ) {
+      b /= 2;
+   }
+   // Prepare the output image, adding a border if it's not already there
+   if( boundaryCondition != S::ALREADY_EXPANDED ) {
+      StringArray bc;
+      if( !boundaryCondition.empty() ) {
+         bc.push_back( boundaryCondition );
+      }
+      DIP_STACK_TRACE_THIS( out = ExtendImage( in, border, bc, { "masked" } ));
+   } else {
+      if( &out != &in ) {
+         // Get a view of input image plus its border
+         Image largerIn = in;
+         IntegerArray origin( nDims );
+         UnsignedArray sizes = in.Sizes();
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = -static_cast< dip::sint >( border[ ii ] );
+            sizes[ ii ] += 2 * border[ ii ];
          }
-         if( thickening ) {
-            out += tmp;
+         largerIn.dip__ShiftOrigin( largerIn.Offset( origin ));
+         largerIn.dip__SetSizes( sizes );
+         // Copy
+         if( out.IsForged() && !out.CompareProperties( largerIn, Option::CmpProp::Samples, Option::ThrowException::DONT_THROW )) {
+            out.Strip(); // Make sure we don't get a data type conversion here
+         }
+         out.Copy( largerIn );
+         // Out must be a view on this
+         out.dip__ShiftOrigin( out.Offset( border ));
+         out.dip__SetSizes( in.Sizes() );
+      }
+   }
+   DIP_START_STACK_TRACE
+      Image tmp;
+      bool untilConvergence = iterations == 0;
+      while( true ) {
+         bool change = false;
+         for( auto const& inter : intervals ) {
+            SupInfGenerating( out, tmp, inter, BoundaryCondition::ALREADY_EXPANDED, Mode::SUP );
+            if( mask.IsForged() ) {
+               tmp &= mask;
+            }
+            if( thickening ) {
+               out += tmp;
+            } else {
+               out -= tmp;
+            }
+            if( untilConvergence && Any( tmp ).As< bool >() ) {
+               change = true;
+            }
+         }
+         if( untilConvergence ) {
+            if( !change ) {
+               break;
+            }
          } else {
-            out -= tmp;
-         }
-         if( untilConvergence && Any( tmp ).As< bool >() ) {
-            change = true;
-         }
-      }
-      if( untilConvergence ) {
-         if( !change ) {
-            break;
-         }
-      } else {
-         --iterations;
-         if( iterations == 0 ) {
-            break;
+            --iterations;
+            if( iterations == 0 ) {
+               break;
+            }
          }
       }
-   }
+   DIP_END_STACK_TRACE
 }
 
 }
@@ -343,9 +439,10 @@ void Thickening(
       Image const& mask,
       Image& out,
       IntervalArray const& intervals,
-      dip::uint iterations
+      dip::uint iterations,
+      String const& boundaryCondition
 ) {
-   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, true ));
+   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, true ));
 }
 
 void Thinning(
@@ -353,9 +450,10 @@ void Thinning(
       Image const& mask,
       Image& out,
       IntervalArray const& intervals,
-      dip::uint iterations
+      dip::uint iterations,
+      String const& boundaryCondition
 ) {
-   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, false ));
+   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, false ));
 }
 
 constexpr uint8 X = 2; // The "don't care" pixels.

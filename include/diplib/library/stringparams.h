@@ -222,6 +222,7 @@ constexpr char const* ZERO_ORDER_EXTRAPOLATE = "zero order";
 constexpr char const* FIRST_ORDER_EXTRAPOLATE = "first order";
 constexpr char const* SECOND_ORDER_EXTRAPOLATE = "second order";
 constexpr char const* THIRD_ORDER_EXTRAPOLATE = "third order";
+constexpr char const* ALREADY_EXPANDED = "already expanded";
 
 
 } // namespace S

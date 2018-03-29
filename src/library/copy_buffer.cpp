@@ -658,14 +658,15 @@ static inline void ExpandBufferFromTo(
             ExpandBufferFirstOrder( buffer, stride, pixels, left, right );
          }
          break;
-         // Else: falls through to do zero order extrapolation
-         // fallthrough
 
       case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
             ExpandBufferConstant( buffer, stride, pixels, left, right, buffer[ 0 ], buffer[ ( static_cast< dip::sint >( pixels ) - 1 ) * stride ] );
          }
          break;
+
+      default:
+         DIP_THROW( E::NOT_IMPLEMENTED );
    }
 }
 

@@ -600,7 +600,6 @@ class DIP_NO_EXPORT Interval {
 
       /// \brief Inverts the interval, swapping foreground and background pixels.
       void Invert() {
-         DIP_THROW_IF( !miss_.IsForged(), "The inverted interval is not valid" );
          hit_.swap( miss_ );
       }
 
@@ -612,11 +611,6 @@ class DIP_NO_EXPORT Interval {
       /// \brief Returns the background mask image, a binary image.
       Image const& MissImage() const {
          return miss_;
-      }
-
-      /// \brief Returns true if the interval has at least one background pixel.
-      bool HatMissSamples() const {
-         return miss_.IsForged();
       }
 
       /// \brief Returns the sizes of the interval. The output array always has two elements.
@@ -642,8 +636,8 @@ class DIP_NO_EXPORT Interval {
       ) const;
 
    private:
-      Image hit_;    // The interval must always have foreground pixels to be useful.
-      Image miss_;   // If there are no background pixels in the interval, this one is raw.
+      Image hit_;
+      Image miss_;
 
       Interval() = default; // A default constructor that only class methods can use.
 };
@@ -664,18 +658,20 @@ class DIP_NO_EXPORT Interval {
 DIP_EXPORT void SupGenerating(
       Image const& in,
       Image& out,
-      Interval const& interval
+      Interval const& interval,
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image SupGenerating(
       Image const& in,
-      Interval const& interval
+      Interval const& interval,
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   SupGenerating( in, out, interval );
+   SupGenerating( in, out, interval, boundaryCondition );
    return out;
 }
 
-/// \brief Inf-generating operator, the dual of the Sup-generating operator.
+/// \brief Inf-generating operator, the dual of the hit-miss operator.
 ///
 /// This operator is equal to the supremum of a dilation and an anti-dilation:
 /// ```
@@ -687,14 +683,16 @@ inline Image SupGenerating(
 DIP_EXPORT void InfGenerating(
       Image const& in,
       Image& out,
-      Interval const& interval
+      Interval const& interval,
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image InfGenerating(
       Image const& in,
-      Interval const& interval
+      Interval const& interval,
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   InfGenerating( in, out, interval );
+   InfGenerating( in, out, interval, boundaryCondition );
    return out;
 }
 
@@ -707,14 +705,16 @@ inline Image InfGenerating(
 DIP_EXPORT void UnionSupGenerating(
       Image const& in,
       Image& out,
-      IntervalArray const& intervals
+      IntervalArray const& intervals,
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image UnionSupGenerating(
       Image const& in,
-      IntervalArray const& intervals
+      IntervalArray const& intervals,
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   UnionSupGenerating( in, out, intervals );
+   UnionSupGenerating( in, out, intervals, boundaryCondition );
    return out;
 }
 
@@ -730,21 +730,23 @@ inline void UnionSupGenerating2D(
       Image& out,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
       auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
-      UnionSupGenerating( in, out, intarray );
+      UnionSupGenerating( in, out, intarray, boundaryCondition );
    DIP_END_STACK_TRACE
 }
 inline Image UnionSupGenerating2D(
       Image const& in,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   UnionSupGenerating2D( in, out, interval, rotationAngle, rotationDirection );
+   UnionSupGenerating2D( in, out, interval, rotationAngle, rotationDirection, boundaryCondition );
    return out;
 }
 
@@ -757,14 +759,16 @@ inline Image UnionSupGenerating2D(
 DIP_EXPORT void IntersectionInfGenerating(
       Image const& in,
       Image& out,
-      IntervalArray const& intervals
+      IntervalArray const& intervals,
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image IntersectionInfGenerating(
       Image const& in,
-      IntervalArray const& intervals
+      IntervalArray const& intervals,
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   IntersectionInfGenerating( in, out, intervals );
+   IntersectionInfGenerating( in, out, intervals, boundaryCondition );
    return out;
 }
 
@@ -780,21 +784,23 @@ inline void IntersectionInfGenerating2D(
       Image& out,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
       auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
-      IntersectionInfGenerating( in, out, intarray );
+      IntersectionInfGenerating( in, out, intarray, boundaryCondition );
    DIP_END_STACK_TRACE
 }
 inline Image IntersectionInfGenerating2D(
       Image const& in,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   IntersectionInfGenerating2D( in, out, interval, rotationAngle, rotationDirection );
+   IntersectionInfGenerating2D( in, out, interval, rotationAngle, rotationDirection, boundaryCondition );
    return out;
 }
 
@@ -817,16 +823,18 @@ DIP_EXPORT void Thickening(
       Image const& mask,
       Image& out,
       IntervalArray const& intervals,
-      dip::uint iterations = 0
+      dip::uint iterations = 0,
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image Thickening(
       Image const& in,
       Image const& mask,
       IntervalArray const& intervals,
-      dip::uint iterations = 0
+      dip::uint iterations = 0,
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   Thickening( in, mask, out, intervals, iterations );
+   Thickening( in, mask, out, intervals, iterations, boundaryCondition );
    return out;
 }
 
@@ -844,11 +852,12 @@ inline void Thickening2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
       auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
-      Thickening( in, mask, out, intarray, iterations );
+      Thickening( in, mask, out, intarray, iterations, boundaryCondition );
    DIP_END_STACK_TRACE
 }
 inline Image Thickening2D(
@@ -857,10 +866,11 @@ inline Image Thickening2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   Thickening2D( in, mask, out, interval, iterations, rotationAngle, rotationDirection );
+   Thickening2D( in, mask, out, interval, iterations, rotationAngle, rotationDirection, boundaryCondition );
    return out;
 }
 
@@ -882,16 +892,18 @@ DIP_EXPORT void Thinning(
       Image const& mask,
       Image& out,
       IntervalArray const& intervals,
-      dip::uint iterations = 0
+      dip::uint iterations = 0,
+      String const& boundaryCondition = S::ADD_ZEROS
 );
 inline Image Thinning(
       Image const& in,
       Image const& mask,
       IntervalArray const& intervals,
-      dip::uint iterations = 0
+      dip::uint iterations = 0,
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   Thinning( in, mask, out, intervals, iterations );
+   Thinning( in, mask, out, intervals, iterations, boundaryCondition );
    return out;
 }
 
@@ -909,11 +921,12 @@ inline void Thinning2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
       auto intarray = interval.GenerateRotatedVersions( rotationAngle, rotationDirection );
-      Thinning( in, mask, out, intarray, iterations );
+      Thinning( in, mask, out, intarray, iterations, boundaryCondition );
    DIP_END_STACK_TRACE
 }
 inline Image Thinning2D(
@@ -922,10 +935,11 @@ inline Image Thinning2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise"
+      String const& rotationDirection = "interleaved clockwise",
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
-   Thinning2D( in, mask, out, interval, iterations, rotationAngle, rotationDirection );
+   Thinning2D( in, mask, out, interval, iterations, rotationAngle, rotationDirection, boundaryCondition );
    return out;
 }
 
