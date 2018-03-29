@@ -396,7 +396,7 @@ DIP_EXPORT void StructureTensorAnalysis3D(
 /// `out` is an array with references to output images. It should have exactly as many elements as `outputs`.
 ///
 /// `outputs` is an array with one or more of the following strings, indicating which outputs are needed:
-///  - For 2D inputs: `"l1"`, `"l2"`, `"orientation"`, `"energy"`, `"anisotropy1"`, `"anisotropy2"`.
+///  - For 2D inputs: `"l1"`, `"l2"`, `"orientation"`, `"energy"`, `"anisotropy1"`, `"anisotropy2"`, `"curvature"`.
 ///  - For 3D inputs: `"l1"`, `"phi1"`, `"theta1"`, `"l2"`, `"phi2"`, `"theta2"`, `"l3"`, `"phi3"`, `"theta3"`,
 ///    `"energy"`, `"cylindrical"`, `"planar"`.
 ///

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for cross correlation
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -111,7 +111,6 @@ void StructureTensorAnalysis2D(
       // phidx = (-sin( 2 * phi )*dx( cos( 2 * phi ), 1 ) + cos( 2 * phi )*dx( sin( 2 * phi ), 1 ))
       // phidy = (-sin( 2 * phi )*dy( cos( 2 * phi ), 1 ) + cos( 2 * phi )*dy( sin( 2 * phi ), 1 ))
       // out = 0.5*(-sin( phi )*phidx + cos( phi )*phidy);
-      // TODO: restructure the computation to lower memory consumption
       Image cos2phi, sin2phi;
       {
          Image two_phi = dip::Multiply( *orientation, 2.0 );
@@ -122,17 +121,26 @@ void StructureTensorAnalysis2D(
       Image phidx, phidy;
       {
          Image dx_cos2phi = dip::Derivative( cos2phi, { 1, 0 } );
+         dx_cos2phi *= sin2phi;
          Image dx_sin2phi = dip::Derivative( sin2phi, { 1, 0 } );
-         phidx = -sin2phi*dx_cos2phi + cos2phi*dx_sin2phi;
+         dx_sin2phi *= cos2phi;
+         dx_sin2phi -= dx_cos2phi;
+         phidx = dx_sin2phi;
       }
       {
          Image dy_cos2phi = dip::Derivative( cos2phi, { 0, 1 } );
+         dy_cos2phi *= sin2phi;
          Image dy_sin2phi = dip::Derivative( sin2phi, { 0, 1 } );
-         phidy = -sin2phi*dy_cos2phi + cos2phi*dy_sin2phi;
+         dy_sin2phi *= cos2phi;
+         dy_sin2phi -= dy_cos2phi;
+         phidy = dy_sin2phi;
       }
-      Image cosphi = dip::Cos( *orientation );
-      Image sinphi = dip::Sin( *orientation );
-      dip::Multiply( -sinphi*phidx + cosphi*phidy, 0.5, *curvature );
+      cos2phi.Strip();
+      sin2phi.Strip();
+      phidy *= dip::Cos( *orientation );
+      phidx *= dip::Sin( *orientation );
+      phidy -= phidx;
+      dip::Multiply( phidy, 0.5, *curvature );
    }
 }
 

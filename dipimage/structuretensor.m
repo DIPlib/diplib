@@ -38,6 +38,7 @@
 %   - 'energy': Sum of the two eigenvalues l1 and l2.
 %   - 'anisotropy1': Measure for local anisotropy: ( l1 - l2 ) / ( l1 + l2 ).
 %   - 'anisotropy2': Measure for local anisotropy: 1 - l2 / l1.
+%   - 'curvature': Signed curvature (rate of change of local orientation).
 %  Or for a 3D input image:
 %   - 'l1': The largest eigenvalue.
 %   - 'phi1': First component of the orientation of the eigenvector for l1.
