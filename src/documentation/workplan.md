@@ -35,7 +35,7 @@ document's source</a> for the most up-to-date version.
     projection functions, and `dip::SelectionFilter` can be easily parallelized.
 
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
-    are written.
+    are written. Implement `'KeepDataType'`.
 
     **Major change coming in R2018a**: we need to add -R2017b to the `mex` compile command
     for the time being. We need to rewrite how numeric mxArray data is read if
@@ -52,7 +52,7 @@ document's source</a> for the most up-to-date version.
     (either as a view over the same data segment, or by copying the data). We'll
     do this for: *OpenCV*, *ITK*, *SimpleITK*. Any other libraries of interest?
 
--   Style sheets for the documentation.
+-   Improve style sheets for the documentation.
 
 -   The Fourier transform: Further improvements could be making specific paths for real input or
     output, which could mean a small increase in performance. When compiled with *FFTW*, such

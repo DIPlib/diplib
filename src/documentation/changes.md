@@ -364,6 +364,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - `besselj`, `length` and `unique` are no longer methods of `dip_image`.
 
+- Related to the tensor image changes above, `newimar` and `imarfun` are now in the `alias`
+  subdirectory, and are identical to the new functions `newtensorim` and `tensorfun`.
+
 - The `dip_measurement` object has changed completely internally. The interface is identical
   except:
 
@@ -379,32 +382,56 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
 
-- `dipsetpref` and `dipgetpref` have fewer settings than in *DIPimage 2*:
+- The interactive image display window from `dipshow` has had some internal changes.
+  User-visible changes are:
 
-   - ` 'BoundaryCondition' ` , ` 'Truncation' ` , and ` 'DerivativeFlavour' ` have been removed, relevant
-     functions optionally take these parameters as input arguments.
+   - Three new options in the "Mappings" menu for 3D and 4D images, labeled "Slice", "Max projection"
+     and "Mean projection". These allow to display max or mean projection instead of the default
+     thin slice.
 
-   - `MorphologicalFlavour` (and the associated function `dip_morph_flavour`) has been removed
-     as it didn't seem useful.
+   - Removal of the "Orientation testing" (2D), and "Max projection" and "Sum projection" (3D)
+     options in the "Actions" menu. The two functions that implemented this functionality,
+     `diporien` and `dipprojection`, have also been removed.
 
-   - `'ComputationLimit'` is no longer relevant because of changes in how image arithmetic is
-     performed.
+   - A new function `viewslice` can be used to display any image (including tensor images and
+     higher-dimensional images) in \ref viewer. This is an alternative way to examine images,
+     but none of the tools to programatically interact with images displayed through `dipshow`
+     will work with this viewer.
 
-   - `'ConflictingPixelSize'` and `'InconsistentPixelSize'` are no longer relevant, the *DIPlib*
-     library keeps track of pixel sizes and handles these situations in a fixed manner.
+- Configuration settings accessed through `dipsetpref` and `dipgetpref` have been changed since
+  *DIPimage 2*:
 
-   - `'CommandFilePath'` is no longer relevant, the *DIPimage* GUI no longer probes functions
-     to put them in the menus.
+   - Added settings:
 
-   - `'DebugMode'` has been removed, *DIPlib* stack traces are shown or not depending on a
-     compile-time flag.
+       - '`DisplayFunction`' can be set to either '`dipshow`' (the default), or '`viewslice`',
+         and determines which of these functions is invoked by default when the `dip_image/display`
+         method is invoked (see the
+         [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
+         for more detauls).
 
-   - `'FFTtype'` has been removed, *DIPlib* can optionally be compiled to use *FFTW* for the FFT.
-   
-   - `'KeepDataType'` has been removed. TODO: should be reinstate it?
+   - Removed settings:
 
-- `newimar` and `imarfun` are now in the `alias` subdirectory, and are identical to the new
-  functions `newtensorim` and `tensorfun`.
+       - '`BoundaryCondition`', '`Truncation`', and '`DerivativeFlavour`', because relevant
+         functions take these parameters as optional input arguments.
+
+       - '`MorphologicalFlavour`', as it didn't seem useful (the associated function
+         `dip_morph_flavour` has also been removed).
+
+       - '`ComputationLimit`', because image arithmetic is now always performed by *DIPlib*.
+
+       - '`ConflictingPixelSize`' and '`InconsistentPixelSize`', because the *DIPlib* library
+         keeps track of pixel sizes and handles these situations in a fixed manner.
+
+       - '`CommandFilePath`', because the *DIPimage* GUI no longer probes functions to
+         put them in the menus.
+
+       - '`DebugMode`', as *DIPlib* stack traces are shown or not depending on a
+         compile-time flag.
+
+       - '`FFTtype`', because *DIPlib* can optionally be compiled to use *FFTW* for the FFT.
+
+       - '`FastSubscriptedAssignment`', introduced recently in *DIPimage 2.9*, because the
+         related functionality has not been ported over (yet?).
 
 - Many filters now have a boundary condition parameter. In *DIPimage 2*, one would change
   the boundary condition through a global parameter, which no longer exists. If you never
@@ -455,24 +482,21 @@ code that used *DIPlib* or *DIPimage* to the new version.
     dimension 1). `slice_in`, `slice_ex` and `slice_op` have been made into `dip_image` methods,
     for efficiency.
 
-  - `get_subpixel` no longer supports the `'spline'` interpolation method, this string is still
-    accepted, but uses the `'cubic'` method.
+  - `get_subpixel` no longer supports the `spline` interpolation method, this string is still
+    accepted, but uses the `cubic` method.
 
   - `structuretensor3d` is moved to the `alias` directory, `structuretensor` now works for any
     number of dimensions (with special support for 2D and 3D images).
 
-- New functions not mentioned above: `areaopening`, `asf`, `coordinates`, `drawshape`, `extendregion`,
+- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `coordinates`, `drawshape`, `extendregion`,
   `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`,
   `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
   learn what these functions provide.
-
-- Functions removed: `diporien` (was funny, but not really useful), `dipprojection` (no longer
-  useful, the display window itself does projections).
 
 - Old functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
 
 - If you customized the menus in the *DIPimage* GUI, you will have to update your `localdipmenus.m`
   file. If you wrote your own functions that integrated in the GUI, you'll have to do so through
-  your `localdipmenus.m` now. Preference setting `'CommandFilePath'` no longer exists,
-  `getparams` no longer exists, and functions are no longer probed with `'DIP_GetParamList'`.
+  your `localdipmenus.m` now. Preference setting '`CommandFilePath`' no longer exists,
+  `getparams` no longer exists, and functions are no longer probed with '`DIP_GetParamList`'.
