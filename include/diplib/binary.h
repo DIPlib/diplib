@@ -1001,6 +1001,12 @@ DIP_EXPORT IntervalArray BranchPixelInterval2D();
 /// difference between the input image and the eroded image accomplishes the same thing.
 DIP_EXPORT Interval BoundaryPixelInterval2D();
 
+/// \brief Returns a 2D interval array to thicken to a convex hull.
+///
+/// Use with `dip::Thickening` to grow concave sections of objects until the objects are all convex.
+/// This leads to hexagonal shapes.
+DIP_EXPORT IntervalArray ConvexHullInterval2D();
+
 /// \}
 
 } // namespace dip

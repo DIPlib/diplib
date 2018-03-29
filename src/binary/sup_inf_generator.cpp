@@ -468,6 +468,14 @@ Interval BoundaryPixelInterval2D() {
    return Interval( in );
 }
 
+IntervalArray ConvexHullInterval2D() {
+   constexpr uint8 data[] = { 1, 1, X,
+                              1, 0, X,
+                              1, X, X };
+   Image in( data, { 3, 3 } );
+   return Interval( in ).GenerateRotatedVersions(45);
+}
+
 }
 
 #ifdef DIP__ENABLE_DOCTEST
