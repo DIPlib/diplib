@@ -112,7 +112,7 @@ dip.WriteCSV(m,'test2.csv',{'unicode','simple'})
 b = a < 120
 b = dip.EdgeObjectsRemove(b)
 b = dip.Label(b)
-m = dip.MeasurementTool.Measure(b,features=['EllipseVariance','P2A','Roundness','Circularity','Solidity','Convexity'])
+m = dip.MeasurementTool.Measure(b,a,features=['EllipseVariance','P2A','Roundness','Circularity','Solidity','Convexity'])
 print(m)
 dip.Show(dip.ObjectToMeasurement(b,m['EllipseVariance']))
 dip.Show(dip.ObjectToMeasurement(b,m['Roundness']))
