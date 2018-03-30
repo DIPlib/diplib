@@ -65,6 +65,9 @@ inline dip::sint Round( bin v, int /*digits*/ ) {
 // For floating-point types
 template< typename T, typename std::enable_if_t< !std::is_integral< T >::value, int > = 0 >
 T Round( T v, int digits ) {
+   if( !std::isfinite( v )) {
+      return v;
+   }
    int intDigits = std::abs( v ) < 10.0 ? 1 : static_cast< int >( std::floor( std::log10( std::abs( v ))));
    if( v < 0 ) {
       ++intDigits; // we need space for the minus sign also.
@@ -72,10 +75,9 @@ T Round( T v, int digits ) {
    if( intDigits < digits ) {
       T multiplier = static_cast< T >( pow10( digits - intDigits - 1 ));
       return std::round( v * multiplier ) / multiplier;
-   } else {
-      // We've got more digits to the left of the decimal dot than can fit in the display, this will not look pretty...
-      return std::round( v );
    }
+   // We've got more digits to the left of the decimal dot than can fit in the display, this will not look pretty...
+   return std::round( v );
 }
 
 // For complex types
