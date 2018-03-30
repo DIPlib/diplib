@@ -388,10 +388,13 @@ bool Image::HasSameDimensionOrder( Image const& other ) const {
          return false;
       }
    }
-   // We sort s1, keeping s2 in sync. s2 must be sorted also.
+   // We sort |s1|, keeping s2 in sync. s2 must be sorted also.
+   for( auto& s : s1 ) {
+      s = std::abs( s );
+   }
    s1.sort( s2 );
    for( dip::uint ii = 1; ii < s2.size(); ++ii ) {
-      if( s2[ ii ] < s2[ ii - 1 ] ) {
+      if( std::abs( s2[ ii ] ) < std::abs( s2[ ii - 1 ] )) {
          return false;
       }
    }

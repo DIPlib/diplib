@@ -355,7 +355,7 @@ PixelTable::PixelTable(
             ++length;
          } else {
             if( length ) {
-               position[ procDim ] = start + static_cast< dip::sint >( data.Coordinate() - length );
+               position[ procDim ] = start + static_cast< dip::sint >( data.Coordinate() ) - static_cast< dip::sint >( length );
                runs_.emplace_back( position, length );
                nPixels_ += length;
             }
@@ -363,7 +363,7 @@ PixelTable::PixelTable(
          }
       } while( ++data );
       if( length ) {
-         position[ procDim ] = start + static_cast< dip::sint >( data.Coordinate() - length );
+         position[ procDim ] = start + static_cast< dip::sint >( data.Coordinate() ) - static_cast< dip::sint >( length );
          runs_.emplace_back( position, length );
          nPixels_ += length;
       }
