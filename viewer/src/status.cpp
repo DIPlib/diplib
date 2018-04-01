@@ -52,11 +52,21 @@ void StatusViewPort::render()
     // Describe operating point
     auto op = o.operating_point_;
     auto te = (int)viewer()->image().TensorElements();
+    auto opp = viewer()->image().PixelsToPhysical((FloatArray)op);
     
     rx += viewer()->drawString("(");
     for (dip::uint ii=0; ii < op.size(); ++ii)
     {
       rx += viewer()->drawString(std::to_string(op[ii]).c_str());
+      if (viewer()->image().PixelSize(ii) != PhysicalQuantity::Pixel() || o.offset_[ii])
+      {
+        std::ostringstream oss;
+        PhysicalQuantity p = opp[ii] + o.offset_[ii];
+        p.Normalize();
+        oss << "=" << p;
+        rx += viewer()->drawString(oss.str().c_str());
+      }
+        
       if (ii < op.size()-1)
         rx += viewer()->drawString(", ");
     }

@@ -24,7 +24,7 @@
 using namespace pybind11::literals;
 
 PYBIND11_MODULE( PyDIPviewer, m ) {
-   m.def( "Show", &dip::viewer::Show, "in"_a, "title"_a = "");
+   m.def( "Show", [](dip::Image const& image, dip::String const& title) { dip::viewer::Show(image, title); }, "in"_a, "title"_a = "");
    m.def( "Draw", &dip::viewer::Draw );
    m.def( "Spin", &dip::viewer::Spin );
    m.def( "CloseAll", &dip::viewer::CloseAll );

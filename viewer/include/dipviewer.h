@@ -31,6 +31,9 @@ namespace dip {
 /// \brief Contains all functionality for \ref viewer.
 namespace viewer {
 
+class SliceViewer;
+class ImageViewer;
+
 /// \addtogroup viewer
 /// \{
 
@@ -44,7 +47,7 @@ namespace viewer {
 /// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
 /// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
 /// at an appropriate time after calling `%dip::viewer::Show` or `dip::viewer::ShowSimple`.
-DIPVIEWER_EXPORT void Show( Image const& image, String const& title = "" );
+DIPVIEWER_EXPORT std::shared_ptr<SliceViewer> Show( Image const& image, String const& title = "" );
 
 /// \brief Show a 2D grey-value or RGB image, of type `dip::DT_UINT8`.
 ///
@@ -57,7 +60,7 @@ DIPVIEWER_EXPORT void Show( Image const& image, String const& title = "" );
 /// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
 /// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
 /// at an appropriate time after calling `dip::viewer::Show` or `%dip::viewer::ShowSimple`.
-DIPVIEWER_EXPORT void ShowSimple( Image const& image, String const& title = "" );
+DIPVIEWER_EXPORT std::shared_ptr<ImageViewer> ShowSimple( Image const& image, String const& title = "" );
 
 /// \brief Wait until all windows are closed.
 ///

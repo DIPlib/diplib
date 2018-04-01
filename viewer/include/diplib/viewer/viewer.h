@@ -83,6 +83,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   dip::FloatArray origin_;             ///< Display origin for moving the image around.
   
   // Status
+  dip::PhysicalQuantityArray offset_;  ///< Offset of origin pixel in real-world coordinates.
   dip::String status_;                 ///< Status bar text.
   
   ViewingOptions() : complex_(ComplexToReal::Imaginary) // To force update
@@ -144,6 +145,10 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     
     origin_ = dip::FloatArray(image.Dimensionality(), 0.);
     split_ = {100, 100};
+    
+    offset_ = dip::PhysicalQuantityArray(image.Dimensionality());
+    for (size_t ii=0; ii < image.Dimensionality(); ++ii)
+      offset_[ii] = 0 * image.PixelSize(ii);
   }
   
   /// \brief Calculates which view (parts) need to be recalculated

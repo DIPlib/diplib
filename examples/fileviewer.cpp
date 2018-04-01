@@ -9,6 +9,7 @@
 #include <diplib/generation.h>
 
 #include <dipviewer.h>
+#include <diplib/viewer/slice.h>
 
 int main( int argc, char** argv ) {
    if( argc < 2 ) {
@@ -18,16 +19,20 @@ int main( int argc, char** argv ) {
       for( size_t ii = 1; ( int )ii < argc; ++ii ) {
          std::string arg( argv[ ii ] );
          dip::Image img;
+         dip::FileInformation info;
          if( dip::FileCompareExtension( arg, "ics" )) {
-            img = dip::ImageReadICS( arg );
+            info = dip::ImageReadICS( img, arg );
          } else if( dip::FileCompareExtension( arg, "tiff" ) || dip::FileCompareExtension( arg, "tif" )) {
-            img = dip::ImageReadTIFF( arg );
+            info = dip::ImageReadTIFF( img, arg );
          } else {
             std::cerr << "Unrecognized image extension " << dip::FileGetExtension( arg ) << std::endl;
             return -1;
          }
          std::cout << arg << ": " << img;
-         dip::viewer::Show( img, arg );
+         auto wdw = dip::viewer::Show( img, arg );
+
+         dip::viewer::SliceViewer::Guard guard(*wdw);
+         wdw->options().offset_ = info.origin;
       }
    }
 
