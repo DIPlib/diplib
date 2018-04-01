@@ -620,6 +620,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
    }
    DOCTEST_SUBCASE("Normalization") {
       dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
+      DOCTEST_CHECK( ( f * 0 ).Normalize().magnitude == 0 );
       DOCTEST_CHECK( ( f * 1 ).Normalize().magnitude == 1 );
       DOCTEST_CHECK( ( f * 0.1 ).Normalize().magnitude == 0.1 );
       DOCTEST_CHECK( ( f * 0.01 ).Normalize().magnitude == 10 );
@@ -650,7 +651,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
       DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().magnitude == 10 );
       DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().magnitude == 100 );
       DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().magnitude == 1000 );
+      DOCTEST_CHECK( ( -f ).Normalize().magnitude == -1 );
 
+      DOCTEST_CHECK( ( f * 0 ).Normalize().units.Thousands() == 0 );
       DOCTEST_CHECK( ( f * 1 ).Normalize().units.Thousands() == 0 );
       DOCTEST_CHECK( ( f * 0.1 ).Normalize().units.Thousands() == 0 );
       DOCTEST_CHECK( ( f * 0.01 ).Normalize().units.Thousands() == -1 );
@@ -681,6 +684,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
       DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().units.Thousands() == 2 );
       DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().units.Thousands() == 2 );
       DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( -f ).Normalize().units.Thousands() == 0 );
    }
 }
 
