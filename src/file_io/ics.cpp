@@ -346,22 +346,29 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
       data.fileSizes[ ii ] = static_cast< dip::uint >( icsSizes[ ii ] );
    }
 
-   // get pixel size
+   // get pixel size and origin
    PixelSize pixelSize;
+   PhysicalQuantityArray origin( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      double scale;
+      double scale, offset;
       char const* units;
-      CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), nullptr, &scale, &units ), "Couldn't read ICS file" );
+      CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), &offset, &scale, &units ), "Couldn't read ICS file" );
       if( strcasecmp( units, "undefined" ) == 0 ) {
          pixelSize.Set( ii, PhysicalQuantity::Pixel() );
+         origin[ ii ] = offset * PhysicalQuantity::Pixel();
       } else {
          try {
             PhysicalQuantity ps{ scale, Units{ units }};
             ps.Normalize();
             pixelSize.Set( ii, ps );
+            
+            PhysicalQuantity o{ offset, Units{ units }};
+            o.Normalize();
+            origin[ ii ] = o;
          } catch( Error const& ) {
             // `Units` failed to parse the string
             pixelSize.Set( ii, scale );
+            origin[ ii ] = offset * PhysicalQuantity::Pixel();
          }
       }
    }
@@ -373,13 +380,16 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    // re-order dimensions
    data.order = FindDimensionOrder( icsFile, nDims, tensorDim );
    data.fileInformation.sizes.resize( nDims );
+   data.fileInformation.origin.resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       data.fileInformation.sizes[ ii ] = data.fileSizes[ data.order[ ii ]];
       data.fileInformation.pixelSize.Set( ii, pixelSize[ data.order[ ii ]] );
+      data.fileInformation.origin[ ii ] = origin[ data.order[ ii ]];
    }
    if( data.fileInformation.tensorElements > 1 ) {
       data.fileInformation.sizes.pop_back();
       //data.fileInformation.pixelSize.EraseDimension( nDims - 1 ); // doesn't do anything
+      data.fileInformation.origin.pop_back();
    }
 
    // History tags

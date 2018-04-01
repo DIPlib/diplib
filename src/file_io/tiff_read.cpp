@@ -236,6 +236,19 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
       ps.Normalize();
    }
    data.fileInformation.pixelSize.Set( 1, ps );
+   
+   // Origin offset
+   float position;
+   PhysicalQuantity xPos = 0 * pixelSizeMultiplier, yPos = 0 * pixelSizeMultiplier;
+   if( TIFFGetField( tiff, TIFFTAG_XPOSITION, &position )) {
+      xPos = static_cast< double >( position ) * pixelSizeMultiplier;
+      xPos.Normalize();
+   }
+   if( TIFFGetField( tiff, TIFFTAG_YPOSITION, &position )) {
+      yPos = static_cast< double >( position ) * pixelSizeMultiplier;
+      yPos.Normalize();
+   }
+   data.fileInformation.origin = { xPos, yPos };
 
    // Number of images in file
    data.fileInformation.numberOfImages = TIFFNumberOfDirectories( tiff );

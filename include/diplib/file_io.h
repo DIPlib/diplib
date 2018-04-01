@@ -38,16 +38,17 @@ namespace dip {
 
 /// \brief A data structure with information about an image file.
 struct FileInformation {
-      String        name;              ///< File name
-      String        fileType;          ///< File type (currently, "ICS" or "TIFF")
-      DataType      dataType;          ///< Data type for all samples
-      dip::uint     significantBits;   ///< Number of bits used for each sample
-      UnsignedArray sizes;             ///< Size of image in pixels
-      dip::uint     tensorElements;    ///< Size of pixel in samples
-      String        colorSpace;        ///< Color space
-      PixelSize     pixelSize;         ///< Pixel size
-      dip::uint     numberOfImages;    ///< Number of images in the file. Only TIFF can have more than 1 here.
-      StringArray   history;           ///< Assorted metadata in the file, in the form of strings.
+      String                name;              ///< File name
+      String                fileType;          ///< File type (currently, "ICS" or "TIFF")
+      DataType              dataType;          ///< Data type for all samples
+      dip::uint             significantBits;   ///< Number of bits used for each sample
+      UnsignedArray         sizes;             ///< Size of image in pixels
+      dip::uint             tensorElements;    ///< Size of pixel in samples
+      String                colorSpace;        ///< Color space
+      PixelSize             pixelSize;         ///< Pixel size
+      PhysicalQuantityArray origin;            ///< Real-world location of origin pixel
+      dip::uint             numberOfImages;    ///< Number of images in the file. Only TIFF can have more than 1 here.
+      StringArray           history;           ///< Assorted metadata in the file, in the form of strings.
 };
 
 /// \brief Read the image in the ICS file `filename` and puts it in `out`.
