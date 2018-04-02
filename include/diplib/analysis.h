@@ -415,10 +415,7 @@ inline ImageArray StructureTensorAnalysis(
 ) {
    dip::uint nOut = outputs.size();
    ImageArray out( nOut );
-   ImageRefArray refOut;
-   for( auto& o : out ) {
-      refOut.emplace_back( o );
-   }
+   ImageRefArray refOut = CreateImageRefArray( out );
    DIP_STACK_TRACE_THIS( StructureTensorAnalysis( in, refOut, outputs ));
    return out;
 }

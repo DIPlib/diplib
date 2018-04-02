@@ -83,10 +83,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          // Otherwise, compute requested outputs
 
          dip::ImageArray outar( nOut, mi.NewImage() );
-         dip::ImageRefArray out;
-         for( dip::uint ii = 0; ii < nOut; ++ii ) {
-            out.emplace_back( outar[ ii ] );
-         }
+         dip::ImageRefArray out = dip::CreateImageRefArray( outar );
 
          dip::StructureTensorAnalysis( st, out, outputs );
 

@@ -201,9 +201,6 @@ class DIP_NO_EXPORT CoordinatesComputer {
 /// \brief An array of images
 using ImageArray = std::vector< Image >;
 
-/// \brief An array of const images
-using ConstImageArray = std::vector< Image const >;
-
 /// \brief An array of image references
 using ImageRefArray = std::vector< std::reference_wrapper< Image >>;
 
@@ -2421,6 +2418,26 @@ inline Image Convert( Image const& src, dip::DataType dt ) {
    dest.ReForge( src, dt );
    dest.Copy( src );
    return dest;
+}
+
+/// \brief Creates a `dip::ImageRefArray` from a `dip::ImageArray`.
+inline ImageRefArray CreateImageRefArray( ImageArray& imar ) {
+   dip::ImageRefArray out;
+   out.reserve( imar.size() );
+   for( auto& im : imar ) {
+      out.emplace_back( im );
+   }
+   return out;
+}
+
+/// \brief Creates a `dip::ImageConstRefArray` from a `dip::ImageArray`.
+inline ImageConstRefArray CreateImageConstRefArray( ImageArray const& imar ) {
+   dip::ImageConstRefArray out;
+   out.reserve( imar.size() );
+   for( auto const& im : imar ) {
+      out.emplace_back( im );
+   }
+   return out;
 }
 
 /// \}
