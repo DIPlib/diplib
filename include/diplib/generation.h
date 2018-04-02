@@ -320,10 +320,20 @@ inline Image GaussianLineClip(
 DIP_EXPORT void CreateGauss(
       Image& out,
       FloatArray const& sigmas,
-      UnsignedArray order = {},
+      UnsignedArray order = { 0 },
       dfloat truncation = 3.0,
-      UnsignedArray exponents = {}
+      UnsignedArray exponents = { 0 }
 );
+inline Image CreateGauss(
+      FloatArray const& sigmas,
+      UnsignedArray order = { 0 },
+      dfloat truncation = 3.0,
+      UnsignedArray exponents = { 0 }
+) {
+   Image out;
+   CreateGauss( out, sigmas, order, truncation, exponents );
+   return out;
+}
 
 /// \brief Fills an image with a ramp function.
 ///

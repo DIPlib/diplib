@@ -144,8 +144,7 @@ FloatArray MakeGaussian(
    }
 
    // Determine filter size
-   // TODO: use 1 + HalfGaussianSize( sigma, order, truncation )?
-   dip::uint halfFilterSize = 1 + clamp_cast<dip::uint>((truncation + 0.5 * static_cast<dfloat>(order)) * sigma + 0.5); // Differs from DIPlib v2: HalfGaussianSize( sigma, order, truncation );
+   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, order, truncation );
    // Create actual Gauss
    if( halfFilterSize < 1 ) {
       halfFilterSize = 1;
@@ -179,7 +178,7 @@ void CreateGauss(
    std::vector< FloatArray > gaussians;
    gaussians.reserve( nDims );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( orders, nDims, dip::uint( 0 )));
-   DIP_STACK_TRACE_THIS( ArrayUseParameter( exponents, nDims, dip::uint( 1 )));
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( exponents, nDims, dip::uint( 0 )));
 
    // Adjust truncation to default if needed
    if( truncation <= 0.0 ) {
@@ -189,11 +188,11 @@ void CreateGauss(
    UnsignedArray outSizes;
    UnsignedArray centers;
    // Create 1D gaussian for each dimension
-   for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( sigmas[ iDim ], orders[ iDim ], truncation )));
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( sigmas[ ii ], orders[ ii ], truncation )));
       dip::uint gaussianLength = gaussians.back().size();
       outSizes.push_back( gaussianLength );
-      centers.push_back( (gaussianLength - 1) / 2 );
+      centers.push_back(( gaussianLength - 1 ) / 2 );
    }
 
    // Create output image
@@ -202,14 +201,16 @@ void CreateGauss(
    do {
       const UnsignedArray& coords = itOut.Coordinates();
       // Multiply Gaussians
-      *itOut = 1.0;
-      for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-         *itOut *= gaussians[ iDim ][ coords[ iDim ] ];
+      dfloat value = 1.0;
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         value *= gaussians[ ii ][ coords[ ii ] ];
+         // Add moments
+         if( exponents[ ii ] > 0 ) {
+            dfloat v = static_cast< dfloat >( coords[ ii ] ) - static_cast< dfloat >( centers[ ii ] );
+            value *= exponents[ ii ] > 1 ? std::pow( v, exponents[ ii ] ) : v;
+         }
       }
-      // Add moments
-      for( dip::uint iM = 0; iM < nDims; ++iM) {
-         *itOut *= std::pow( static_cast< dfloat >( coords[ iM ] ) - static_cast< dfloat >( centers[ iM ] ), exponents[ iM ] );
-      }
+      *itOut = value;
    } while( ++itOut );
 }
 
