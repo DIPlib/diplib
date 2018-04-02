@@ -105,7 +105,7 @@ class DIP_NO_EXPORT Kernel {
 
       /// \brief A `dip::FloatArray` implicitly converts to a kernel, it is interpreted as the
       /// parameter for each dimension. A second argument specifies the shape.
-      Kernel( FloatArray const& params, String const& shape = S::ELLIPTIC ) : params_( params ) {
+      Kernel( FloatArray params, String const& shape = S::ELLIPTIC ) : params_( std::move( params )) {
          SetShape( shape );
       }
 
@@ -116,10 +116,10 @@ class DIP_NO_EXPORT Kernel {
       }
 
       /// \brief Low-level constructor mostly for internal use.
-      Kernel( ShapeCode shape, FloatArray const& params ) : shape_( shape ), params_( params ) {}
+      Kernel( ShapeCode shape, FloatArray params ) : shape_( shape ), params_( std::move( params )) {}
 
       /// \brief An image implicitly converts to a kernel, optionally with weights.
-      Kernel( Image const& image ) : shape_( ShapeCode::CUSTOM ), image_( image.QuickCopy() ) {
+      Kernel( Image image ) : shape_( ShapeCode::CUSTOM ), image_( std::move( image )) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
          DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -135,8 +135,8 @@ class DIP_NO_EXPORT Kernel {
       ///
       /// Big shifts can be very expensive, it is recommended to use this feature only for shifting by one pixel
       /// to adjust the location of even-sized kernels.
-      void Shift( IntegerArray const& shift ) {
-         shift_ = shift;
+      void Shift( IntegerArray shift ) {
+         shift_ = std::move( shift );
       }
 
       /// Retrieves the amount that the is shifted.
