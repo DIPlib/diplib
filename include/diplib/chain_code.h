@@ -872,9 +872,9 @@ using ChainCodeArray = std::vector< ChainCode >;
 /// `objectIDs` is a list with object IDs present in the labeled image. If an empty array is given, all objects in
 /// the image are used.
 ChainCodeArray DIP_EXPORT GetImageChainCodes(
-      Image const& labels,             ///< Labeled image, unsigned integer type
-      UnsignedArray const& objectIDs,  ///< A list of object IDs to get chain codes for
-      dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
+      Image const& labels,                   ///< Labeled image, unsigned integer type
+      UnsignedArray const& objectIDs = {},   ///< A list of object IDs to get chain codes for
+      dip::uint connectivity = 2             ///< Connectivity, see \ref connectivity
 );
 
 /// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labeled image.
