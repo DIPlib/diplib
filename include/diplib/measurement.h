@@ -186,7 +186,7 @@ class DIP_NO_EXPORT Measurement {
             /// \brief An iterator to visit all objects (rows) within a feature (column group) of the `dip::Measurement` table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
-            class Iterator {
+            class DIP_NO_EXPORT Iterator {
                public:
                   friend class IteratorFeature;
 
@@ -196,35 +196,42 @@ class DIP_NO_EXPORT Measurement {
                   ValueType& operator*() const { return *begin(); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
-                     return feature_->measurement_->Data() +
-                            static_cast< dip::sint >( index_ ) * feature_->measurement_->Stride() +
-                            static_cast< dip::sint >( feature_->startColumn_ );
+                     return measurement_->Data() +
+                            static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride() +
+                            static_cast< dip::sint >( startColumn_ );
                   }
                   /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
                   ValueType* data() const { return begin(); }
                   /// \brief Number of values
-                  dip::uint size() const { return feature_->numberValues_; }
+                  dip::uint size() const { return numberValues_; }
                   /// \brief Increment, to access the next object
-                  Iterator& operator++() { ++index_; return *this; }
+                  Iterator& operator++() { ++objectIndex_; return *this; }
                   /// \brief Increment, to access the next object
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
-                  bool IsAtEnd() const { return index_ >= feature_->NumberOfObjects(); }
+                  bool IsAtEnd() const { return objectIndex_ >= measurement_->NumberOfObjects(); }
                   /// \brief True if the iterator is valid and can be used
                   explicit operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
-                  String const& FeatureName() const { return feature_->FeatureName(); }
+                  String const& FeatureName() const { return Feature().name; }
                   /// \brief ID of the object
-                  dip::uint ObjectID() const { return feature_->measurement_->objects_[ index_ ]; }
+                  dip::uint ObjectID() const { return measurement_->objects_[ objectIndex_ ]; }
                   /// \brief Index of the object (row number)
-                  dip::uint ObjectIndex() const { return index_; }
+                  dip::uint ObjectIndex() const { return objectIndex_; }
 
                private:
-                  Iterator( IteratorFeature const& feature, dip::uint index ) : feature_( &feature ), index_( index ) {}
-                  IteratorFeature const* feature_;
-                  dip::uint index_;
+                  Iterator( IteratorFeature const& feature, dip::uint objectIndex )
+                        : measurement_( feature.measurement_ ), featureIndex_( feature.featureIndex_ ),
+                          objectIndex_( objectIndex ),
+                          startColumn_( feature.startColumn_ ), numberValues_( feature.numberValues_ ) {}
+                  FeatureInformation const& Feature() const { return measurement_->features_[ featureIndex_ ]; }
+                  Measurement const* measurement_;
+                  dip::uint featureIndex_;
+                  dip::uint objectIndex_;
+                  dip::uint startColumn_;
+                  dip::uint numberValues_;
             };
 
             /// \brief Iterator to the first object for this feature
@@ -233,13 +240,13 @@ class DIP_NO_EXPORT Measurement {
             Iterator operator[]( dip::uint objectID ) const { return Iterator( *this, ObjectIndex( objectID )); }
             /// \brief Increment, to access the next feature
             IteratorFeature& operator++() {
-               ++index_;
+               ++featureIndex_;
                if( IsAtEnd() ) {
                   startColumn_ += numberValues_;
                   numberValues_ = 0;
                } else {
-                  startColumn_ = measurement_->features_[ index_ ].startColumn;
-                  numberValues_ = measurement_->features_[ index_ ].numberValues;
+                  startColumn_ = measurement_->features_[ featureIndex_ ].startColumn;
+                  numberValues_ = measurement_->features_[ featureIndex_ ].numberValues;
                }
                return *this;
             }
@@ -254,7 +261,7 @@ class DIP_NO_EXPORT Measurement {
                return *this;
             }
             /// \brief True if done iterating (do not call other methods if this is true!)
-            bool IsAtEnd() const { return index_ >= NumberOfFeatures(); }
+            bool IsAtEnd() const { return featureIndex_ >= measurement_->NumberOfFeatures(); }
             /// \brief True if the iterator is valid and can be used
             explicit operator bool() const { return !IsAtEnd(); }
             /// \brief Name of the feature
@@ -269,19 +276,18 @@ class DIP_NO_EXPORT Measurement {
             dip::uint ObjectIndex( dip::uint objectID ) const { return measurement_->ObjectIndex( objectID ); }
 
          private:
-            IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), index_( index ) {
+            IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), featureIndex_( index ) {
                startColumn_ = Feature().startColumn;
                numberValues_ = Feature().numberValues;
             }
             IteratorFeature( Measurement const& measurement, dip::uint startColumn, dip::uint numberValues ) :
-                  measurement_( &measurement ), index_( 0 ),
+                  measurement_( &measurement ), featureIndex_( 0 ),
                   startColumn_( startColumn ), numberValues_( numberValues ) {}
-            dip::uint NumberOfFeatures() const { return measurement_->NumberOfFeatures(); }
-            FeatureInformation const& Feature() const { return measurement_->features_[ index_ ]; }
+            FeatureInformation const& Feature() const { return measurement_->features_[ featureIndex_ ]; }
             Measurement const* measurement_;
-            dip::uint index_;
-            dip::uint startColumn_;  // A local copy of measurement_.features_[ index_ ].startColumn, so that it can be tweaked.
-            dip::uint numberValues_; // A local copy of measurement_.features_[ index_ ].numberValues, so that it can be tweaked.
+            dip::uint featureIndex_;
+            dip::uint startColumn_;  // A local copy of measurement_->features_[ featureIndex_ ].startColumn, so that it can be tweaked.
+            dip::uint numberValues_; // A local copy of measurement_->features_[ featureIndex_ ].numberValues, so that it can be tweaked.
       };
 
       /// \brief An iterator to visit all objects (rows) in the `dip::Measurement` table. Can also be seen as a
@@ -297,7 +303,7 @@ class DIP_NO_EXPORT Measurement {
             /// \brief An iterator to visit all features (columns) within an object (row) of the `dip::Measurement` table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
-            class Iterator {
+            class DIP_NO_EXPORT Iterator {
                public:
                   friend class IteratorObject;
 
@@ -307,8 +313,8 @@ class DIP_NO_EXPORT Measurement {
                   ValueType& operator*() const { return *begin(); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
-                     return object_->measurement_->Data() +
-                            static_cast< dip::sint >( object_->index_ ) * object_->measurement_->Stride() +
+                     return measurement_->Data() +
+                            static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride() +
                             static_cast< dip::sint >( Feature().startColumn );
                   }
                   /// \brief Iterator one past the last value
@@ -318,25 +324,28 @@ class DIP_NO_EXPORT Measurement {
                   /// \brief Number of values
                   dip::uint size() const { return Feature().numberValues; }
                   /// \brief Increment, to access the next feature
-                  Iterator& operator++() { ++index_; return *this; }
+                  Iterator& operator++() { ++featureIndex_; return *this; }
                   /// \brief Increment, to access the next feature
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
-                  bool IsAtEnd() const { return index_ >= object_->NumberOfFeatures(); }
+                  bool IsAtEnd() const { return featureIndex_ >= measurement_->NumberOfFeatures(); }
                   /// \brief True if the iterator is valid and can be used
                   explicit operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
                   String const& FeatureName() const { return Feature().name; }
                   /// \brief ID of the object
-                  dip::uint ObjectID() const { return object_->ObjectID(); }
+                  dip::uint ObjectID() const { return measurement_->objects_[ objectIndex_ ]; }
                   /// \brief Index of the object (row number)
-                  dip::uint ObjectIndex() const { return object_->ObjectIndex(); }
+                  dip::uint ObjectIndex() const { return objectIndex_; }
 
                private:
-                  Iterator( IteratorObject const& object, dip::uint index ) : object_( &object ), index_( index ) {}
-                  FeatureInformation const& Feature() const { return object_->measurement_->features_[ index_ ]; }
-                  IteratorObject const* object_;
-                  dip::uint index_;
+                  Iterator( IteratorObject const& object, dip::uint featureIndex )
+                        : measurement_( object.measurement_ ), objectIndex_( object.objectIndex_ ),
+                          featureIndex_( featureIndex ) {}
+                  FeatureInformation const& Feature() const { return measurement_->features_[ featureIndex_ ]; }
+                  Measurement const* measurement_;
+                  dip::uint objectIndex_;
+                  dip::uint featureIndex_;
             };
 
             /// \brief Iterator to the first feature for this object
@@ -344,17 +353,17 @@ class DIP_NO_EXPORT Measurement {
             /// \brief Iterator to the given feature for this object
             Iterator operator[]( String const& name ) const { return Iterator( *this, FeatureIndex( name )); }
             /// \brief Increment, to access the next object
-            IteratorObject& operator++() { ++index_; return *this; }
+            IteratorObject& operator++() { ++objectIndex_; return *this; }
             /// \brief Increment, to access the next object
             IteratorObject operator++( int ) { IteratorObject tmp( *this ); operator++(); return tmp; }
             /// \brief True if done iterating (do not call other methods if this is true!)
-            bool IsAtEnd() const { return index_ >= NumberOfObjects(); }
+            bool IsAtEnd() const { return objectIndex_ >= NumberOfObjects(); }
             /// \brief True if the iterator is valid and can be used
             explicit operator bool() const { return !IsAtEnd(); }
             /// \brief ID of the object
-            dip::uint ObjectID() const { return measurement_->objects_[ index_ ]; }
+            dip::uint ObjectID() const { return measurement_->objects_[ objectIndex_ ]; }
             /// \brief Index of the object (row number)
-            dip::uint ObjectIndex() const { return index_; }
+            dip::uint ObjectIndex() const { return objectIndex_; }
             /// \brief Number of features
             dip::uint NumberOfFeatures() const { return measurement_->NumberOfFeatures(); }
             /// \brief Returns an array of feature names
@@ -363,11 +372,11 @@ class DIP_NO_EXPORT Measurement {
             dip::uint ValueIndex( String const& name ) const { return measurement_->ValueIndex( name ); }
 
          private:
-            IteratorObject( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), index_( index ) {}
+            IteratorObject( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), objectIndex_( index ) {}
             dip::uint NumberOfObjects() const { return measurement_->NumberOfObjects(); }
             dip::uint FeatureIndex( String const& name ) const { return measurement_->FeatureIndex( name ); }
             Measurement const* measurement_;
-            dip::uint index_;
+            dip::uint objectIndex_;
       };
 
       /// \brief Adds a feature to a non-forged `Measurement` object.

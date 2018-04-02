@@ -414,9 +414,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
       values[ 2 ].units = dip::Units::Meter();
       msr2.AddFeature( "Feature3", values );
 
-      dip::UnsignedArray ids;
-      for( dip::uint ii = 10; ii < 20; ++ii ) {
-         ids.push_back( ii );
+      dip::UnsignedArray ids(10);
+      for( dip::uint ii = 0; ii < 10; ++ii ) {
+         ids[ ii ] = ii + 10;
       }
       msr1.AddObjectIDs( ids );
       for( dip::uint ii = 0; ii < 10; ++ii ) {
