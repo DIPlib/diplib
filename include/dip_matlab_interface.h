@@ -938,6 +938,27 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
    }
 }
 
+/// \brief Convert a cell array of images from `mxArray` to `dip::ImageArray`, using `dml::GetImage` for each
+/// element of the cell array.
+inline dip::ImageArray GetImageArray( mxArray const* mx ) {
+   if( mxIsCell( mx ) && IsVector( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::ImageArray out( n );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ ii ] = GetImage( mxGetCell( mx, ii ));
+      }
+      return out;
+   } else {
+      try {
+         dip::ImageArray out( 1 );
+         out[ 0 ] = GetImage( mx );
+         return out;
+      } catch( dip::Error& ) {
+         DIP_THROW( "Image array expected" );
+      }
+   }
+}
+
 
 //
 // The ExternalInterface for MATLAB: Converting dip::Image to mxArray (sort of)

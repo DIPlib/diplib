@@ -119,6 +119,10 @@ void init_filtering( py::module& m ) {
           "in"_a, "iterations"_a = 5, "sigma"_a = 10, "lambda"_a = 0.25 );
    m.def( "CoherenceEnhancingDiffusion", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::uint, dip::StringSet const& >( &dip::CoherenceEnhancingDiffusion ),
           "in"_a, "derivativeSigma"_a = 1, "regularizationSigma"_a = 3, "iterations"_a = 5, "flags"_a = dip::StringSet{} );
+   m.def( "AdaptiveGauss", py::overload_cast< dip::Image const&, dip::ImageConstRefArray const&, dip::FloatArray const&, dip::UnsignedArray const&, dip::dfloat, dip::UnsignedArray const&, dip::String const&, dip::String const& >( &dip::AdaptiveGauss ),
+          "in"_a, "params"_a, "sigmas"_a = dip::FloatArray{ 5.0, 1.0 }, "orders"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 2.0, "exponents"_a = dip::UnsignedArray{ 0 }, "interpolationMethod"_a = dip::S::LINEAR, "boundaryCondition"_a = dip::S::SYMMETRIC_MIRROR );
+   m.def( "AdaptiveBanana", py::overload_cast< dip::Image const&, dip::ImageConstRefArray const&, dip::FloatArray const&, dip::UnsignedArray const&, dip::dfloat, dip::UnsignedArray const&, dip::String const&, dip::String const& >( &dip::AdaptiveBanana ),
+          "in"_a, "params"_a, "sigmas"_a = dip::FloatArray{ 5.0, 1.0 }, "orders"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 2.0, "exponents"_a = dip::UnsignedArray{ 0 }, "interpolationMethod"_a = dip::S::LINEAR, "boundaryCondition"_a = dip::S::SYMMETRIC_MIRROR );
 
    // diplib/transform.h
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),

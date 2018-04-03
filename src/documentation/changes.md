@@ -508,6 +508,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
   learn what these functions provide.
 
+- `jacobi` moved to the `alias` directory, `eig` does it better now.
+
 - Old functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
 

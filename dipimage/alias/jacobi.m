@@ -1,11 +1,11 @@
 %JACOBI   Eigenvalues and vectors of a tensor image
-%  This function calls DIP_IMAGE/EIG, and re-orders the output arguments.
+%  This function calls DIP_IMAGE/EIG.
 %  It exists only for backwards-compatibility.
 %
 % SYNOPSIS:
 %  [lambda, ev] = jacobi(in)
 %
-%  in:     a 2D tensor image, where the elements may be images of any
+%  in:     a tensor image, where the elements may be images of any
 %          dimension
 %  lambda: the sorted eigenvalues in a vector image, out{1} the largest,
 %          out{n} the smallest

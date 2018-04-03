@@ -57,6 +57,8 @@ findminima.cpp
 findshift.cpp
 ft.cpp
 gabor.cpp
+gaussf_adap.cpp
+gaussf_adap_banana.cpp
 gaussianblob.cpp
 gaussianedgeclip.cpp
 gaussianlineclip.cpp
