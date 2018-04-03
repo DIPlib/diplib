@@ -516,6 +516,7 @@ inline Image CoherenceEnhancingDiffusion(
 /// If a value is zero, no convolution is done is this direction.
 ///
 /// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel.
+/// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
 /// 
 /// **Literature**
@@ -528,12 +529,26 @@ DIP_EXPORT void AdaptiveGauss(
       ImageConstRefArray const& params,
       Image& out,
       FloatArray const& sigmas = { 5.0, 1.0 },
-      UnsignedArray const& orders = {},
+      UnsignedArray const& orders = { 0 },
       dfloat truncation = 2.0,
-      UnsignedArray const& exponents = {},
+      UnsignedArray const& exponents = { 0 },
       String const& interpolationMethod = S::LINEAR,
-      String const& boundaryCondition = "mirror"
+      String const& boundaryCondition = S::SYMMETRIC_MIRROR
 );
+inline Image AdaptiveGauss(
+      Image const& in,
+      ImageConstRefArray const& params,
+      FloatArray const& sigmas = { 5.0, 1.0 },
+      UnsignedArray const& orders = { 0 },
+      dfloat truncation = 2.0,
+      UnsignedArray const& exponents = { 0 },
+      String const& interpolationMethod = S::LINEAR,
+      String const& boundaryCondition = S::SYMMETRIC_MIRROR
+) {
+   Image out;
+   AdaptiveGauss( in, params, out, sigmas, orders, truncation, exponents, interpolationMethod, boundaryCondition );
+   return out;
+}
 
 /// \brief Adaptive Gaussian filtering using curvature.
 ///
@@ -559,12 +574,11 @@ DIP_EXPORT void AdaptiveGauss(
 /// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
 /// For more information on scaling, also see "Structure-adaptive applicability function" in in Pham et al. (2006).
 /// 
-/// The sigma for each kernel dimension is passed by `sigmas`.
-/// For intrinsic 1D structures, the first value is along the contour, the second perpendicular to it.
-/// For intrinsic 2D structures, the first two are in the plane, whereas the other is perpendicular to them.
-/// If a value is zero, no convolution is done is this direction.
+/// The sigma for each kernel dimension is passed by `sigmas`. The first value is along the contour,
+/// the second perpendicular to it. If a value is zero, no convolution is done is this direction.
 ///
 /// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel.
+/// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
 /// 
 /// **Literature**
@@ -577,12 +591,26 @@ DIP_EXPORT void AdaptiveBanana(
    ImageConstRefArray const& params,
    Image& out,
    FloatArray const& sigmas = { 5.0, 1.0 },
-   UnsignedArray const& orders = {},
+   UnsignedArray const& orders = { 0 },
    dfloat truncation = 2.0,
-   UnsignedArray const& exponents = {},
+   UnsignedArray const& exponents = { 0 },
    String const& interpolationMethod = S::LINEAR,
-   String const& boundaryCondition = "mirror"
+   String const& boundaryCondition = S::SYMMETRIC_MIRROR
 );
+inline Image AdaptiveBanana(
+      Image const& in,
+      ImageConstRefArray const& params,
+      FloatArray const& sigmas = { 5.0, 1.0 },
+      UnsignedArray const& orders = { 0 },
+      dfloat truncation = 2.0,
+      UnsignedArray const& exponents = { 0 },
+      String const& interpolationMethod = S::LINEAR,
+      String const& boundaryCondition = S::SYMMETRIC_MIRROR
+) {
+   Image out;
+   AdaptiveBanana( in, params, out, sigmas, orders, truncation, exponents, interpolationMethod, boundaryCondition );
+   return out;
+}
 
 // TODO: functions to port:
 /*

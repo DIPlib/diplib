@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions for adaptive Gaussian filtering.
  *
- * (c)2018, Erik Schuitema, Cris Luengo.
+ * (c)2018, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -412,7 +412,7 @@ class InputInterpolatorFixedDims : public InputInterpolator< TPI, TPO >
 public:
    InputInterpolatorFixedDims( Image const& in ) : InputInterpolator< TPI, TPO >( in ) {
       // Verify input dimensionality
-      DIP_THROW_IF( in_.Dimensionality() != nDims, "AdaptiveGauss interpolation dimensionality incorrect" );
+      DIP_THROW_IF( in_.Dimensionality() != nDims, "Interpolation dimensionality incorrect" );
 
       // Cache strides and sizes
       for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
@@ -600,12 +600,13 @@ template< typename TPI, typename TPO = FlexType< TPI > >
 class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter
 {
 public:
-   AdaptiveWindowConvolutionLineFilter( Image const& in, Kernel const& kernel, ImageArray const& params, String const& interpolation, BoundaryCondition bc, String const& transform ) : in_( in ), kernel_( kernel ) { //, params_( params ) {
+   AdaptiveWindowConvolutionLineFilter( Image const& in, Kernel const& kernel, ImageArray const& params, String const& interpolation, BoundaryCondition bc, String const& transform )
+         : in_( in ), kernel_( kernel ) {
       // Determine kernel transformation
-      if (in_.Dimensionality() == 2) {
+      if( in_.Dimensionality() == 2 ) {
          // === 2D ===
          // Construct input interpolator
-         ConstructInputInterpolator<2>( in, interpolation );
+         ConstructInputInterpolator< 2 >( in, interpolation );
 
          // Construct kernel transformation
          ConstructKernelTransform2D( transform, params );
@@ -613,17 +614,17 @@ public:
       } else if( in_.Dimensionality() == 3 ) {
          // === 3D ===
          // Construct input interpolator
-         ConstructInputInterpolator<3>( in, interpolation );
+         ConstructInputInterpolator< 3 >( in, interpolation );
 
          // Determine kernel transformation
          ConstructKernelTransform3D( transform, params );
       }
       else {
-         DIP_THROW( "AdaptiveWindowConvolutionLineFilter: no transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality()));
+         DIP_THROW( "No transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality()));
       }
 
       // Store boundary condition. We only support mirroring or zeros for now.
-      DIP_THROW_IF( bc != BoundaryCondition::SYMMETRIC_MIRROR  && bc != BoundaryCondition::ADD_ZEROS, "Adaptive filtering: unsupported boundary condition" );
+      DIP_THROW_IF( bc != BoundaryCondition::SYMMETRIC_MIRROR  && bc != BoundaryCondition::ADD_ZEROS, "Unsupported boundary condition" );
       mirrorAtInputBoundaries_ = (bc == BoundaryCondition::SYMMETRIC_MIRROR);
    }
 
@@ -633,15 +634,15 @@ public:
    }
 
    virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
-      TPI* in = static_cast< TPI* >(params.inBuffer.buffer);
+      TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
       dip::sint inStride = params.inBuffer.stride;
-      TPO* out = static_cast< TPO* >(params.outBuffer.buffer);
+      TPO* out = static_cast< TPO* >( params.outBuffer.buffer );
       dip::sint outStride = params.outBuffer.stride;
       dip::sint outTensorStride = params.outBuffer.tensorStride;
       dip::uint length = params.bufferLength;
       PixelTableOffsets const& pixelTableOffsets = params.pixelTable;
       std::vector< dfloat > const& weights = pixelTableOffsets.Weights();
-      UnsignedArray inCoords ( params.position );
+      UnsignedArray inCoords( params.position );
       PixelTable pixelTable = kernel_.PixelTable( in_.Dimensionality(), params.dimension );  // Todo: move to constructor
       FloatArray transformedKernelCoords( in_.Dimensionality() );
 
@@ -681,57 +682,53 @@ public:
 private:
    template< dip::uint nDims >
    void ConstructInputInterpolator( Image const& in, String const& interpolation ) {
-      // TODO: use: interpolation::Method interpMethod = interpolation::ParseMethod( interpolation );
-      // TODO: implement bspline, although it seems it was not used in diplib v2
       // Determine input interpolator
       if( interpolation == S::ZERO_ORDER ) {
-         inputInterpolator_.reset( new InputInterpolatorZOH<nDims, TPI, TPO>( in ) );
+         inputInterpolator_ = std::make_unique< InputInterpolatorZOH< nDims, TPI, TPO >>( in );
       } else if( interpolation == S::LINEAR ) {
-         inputInterpolator_.reset( new InputInterpolatorFOH<nDims, TPI, TPO>( in ) );
-         //} else if( interpolation == "bspline" ) {
-         //   inputInterpolator_.reset( new InputInterpolatorBSpline<2, TPI, TPO>( in ) );
+         inputInterpolator_ = std::make_unique< InputInterpolatorFOH< nDims, TPI, TPO >>( in );
       } else {
-         DIP_THROW( "AdaptiveWindowConvolutionLineFilter: unknown interpolation \"" + interpolation + "\"" );
+         DIP_THROW( "Unknown interpolation \"" + interpolation + "\"" );
       }
    }
 
    void ConstructKernelTransform2D( String const& transform, ImageArray const& params ) {
       // Determine kernel transformation
       if( transform == "none" ) {
-         kernelTransform_.reset( new KernelTransform() );
+         kernelTransform_ = std::make_unique< KernelTransform >();
       } else if( transform == "ellipse" ) {
          DIP_ASSERT( params.size() == 1 || params.size() == 2);
          if( params.size() == 1 ) {
-            kernelTransform_.reset( new KernelTransform2DRotation( params[ 0 ] ) );
+            kernelTransform_ = std::make_unique< KernelTransform2DRotation >( params[ 0 ] );
          } else {
-            kernelTransform_.reset( new KernelTransform2DScaledRotation( params[ 0 ], params[ 1 ] ) );
+            kernelTransform_ = std::make_unique< KernelTransform2DScaledRotation >( params[ 0 ], params[ 1 ] );
          }
       } else if( transform == "banana" ) {
          DIP_ASSERT( params.size() == 2 || params.size() == 3 );
          if( params.size() == 2 ) {
-            kernelTransform_.reset( new KernelTransform2DBanana( params[ 0 ], params[ 1 ] ) );
+            kernelTransform_ = std::make_unique< KernelTransform2DBanana >( params[ 0 ], params[ 1 ] );
          } else {
-            kernelTransform_.reset( new KernelTransform2DScaledBanana( params[ 0 ], params[ 1 ], params[ 2 ] ) );
+            kernelTransform_ = std::make_unique< KernelTransform2DScaledBanana >( params[ 0 ], params[ 1 ], params[ 2 ] );
          }
       } else if( transform == "skew" ) {
          DIP_ASSERT( params.size() == 1 );
-         kernelTransform_.reset( new KernelTransform2DSkew( params[ 0 ] ) );
+         kernelTransform_ = std::make_unique< KernelTransform2DSkew >( params[ 0 ] );
       } else {
-         DIP_THROW( "AdaptiveWindowConvolutionLineFilter: unknown 2D transform \"" + transform + "\"" );
+         DIP_THROW( "Unknown 2D transform \"" + transform + "\"" );
       }
    }
 
    void ConstructKernelTransform3D( String const& transform, ImageArray const& params ) {
       if( transform == "none" ) {
-         kernelTransform_.reset( new KernelTransform() );
+         kernelTransform_ = std::make_unique< KernelTransform >();
       } else if( transform == "ellipse" ) {
          if( params.size() == 2 ) {
-            kernelTransform_.reset( new KernelTransform3DRotationZ( params[ 0 ], params[ 1 ] ) );
+            kernelTransform_ = std::make_unique< KernelTransform3DRotationZ >( params[ 0 ], params[ 1 ] );
          } else if( params.size() == 4 ) {
-            kernelTransform_.reset( new KernelTransform3DRotationXY( params[ 0 ], params[ 1 ], params[ 2 ], params[ 3 ] ) );
+            kernelTransform_ = std::make_unique< KernelTransform3DRotationXY >( params[ 0 ], params[ 1 ], params[ 2 ], params[ 3 ] );
          }
       } else {
-         DIP_THROW( "AdaptiveWindowConvolutionLineFilter: unknown 3D transform \"" + transform + "\"" );
+         DIP_THROW( "Unknown 3D transform \"" + transform + "\"" );
       }
    }
 
@@ -751,7 +748,7 @@ void AdaptiveFilter(
    Image const& in,
    ImageConstRefArray const& params,
    Image& out,
-   FloatArray const& sigmas,
+   FloatArray sigmas,
    UnsignedArray const& orders,
    dfloat truncation,
    UnsignedArray const& exponents,
@@ -763,26 +760,26 @@ void AdaptiveFilter(
    // TODO: all param images must be of type DT_DFLOAT?
 
    // Prepare parameter images: expand singleton dimensions, including the tensor
-   ImageArray paramImages;
+   ImageArray paramImages( params.size() );
    for( dip::uint iP = 0; iP < params.size(); ++iP ) {
-      paramImages.emplace_back( params[ iP ].get().QuickCopy() );
-      paramImages.back().ExpandSingletonDimensions( in.Sizes() );
+      paramImages[ iP ] = params[ iP ].get().QuickCopy();
+      paramImages[ iP ].ExpandSingletonDimensions( in.Sizes() );
       // Make sure the param image tensor has a row for each input image tensor element
-      if( paramImages.back().TensorRows() != in.TensorRows() ) {
-         paramImages.back().ExpandSingletonTensor( in.TensorElements() );
+      if( paramImages[ iP ].TensorElements() != in.TensorElements() ) {
+         // TODO: for the scale image, this is probably wrong.
+         paramImages[ iP ].ExpandSingletonTensor( in.TensorElements() );
       }
    }
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( sigmas, in.Dimensionality(), 1.0 ));
 
    DIP_START_STACK_TRACE
       // Create gaussian kernel
-      Image gaussian;
-      CreateGauss( gaussian, sigmas, orders, truncation, exponents );
-      Kernel kernel{ gaussian };
+      Kernel kernel{ CreateGauss( sigmas, orders, truncation, exponents ) };
 
       BoundaryCondition bc = StringToBoundaryCondition( boundaryCondition );
       DataType outputType = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_ALL( lineFilter, AdaptiveWindowConvolutionLineFilter, (in, kernel, paramImages, interpolationMethod, bc, transform), in.DataType() );
+      DIP_OVL_NEW_ALL( lineFilter, AdaptiveWindowConvolutionLineFilter, ( in, kernel, paramImages, interpolationMethod, bc, transform ), in.DataType() );
       // We use the full framework to allow multi-threading. Its parameters prevent input or output buffering to minimize overhead. Border expansion is not used either.
       Framework::Full( in, out, in.DataType(), outputType, outputType, in.TensorElements(), { bc }, kernel, *lineFilter, Framework::FullOption::BorderAlreadyExpanded );// for performance comparisons: +Framework::FullOption::NoMultiThreading );
 
