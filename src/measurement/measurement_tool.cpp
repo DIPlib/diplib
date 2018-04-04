@@ -198,8 +198,7 @@ Measurement MeasurementTool::Measure(
    DIP_THROW_IF( features.empty(), "No features given" );
    FeatureArray featureArray;
    featureArray.reserve( features.size() );
-   dip::uint ii = 0;
-   while( ii < features.size() ) {
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) { // NOTE! `features` can expand every iteration
       String const& name = features[ ii ];
       if( !measurement.FeatureExists( name ) ) {
          Feature::Base* feature = features_[ Index( name ) ].get();
@@ -218,7 +217,6 @@ Measurement MeasurementTool::Measure(
             }
          }
       }
-      ++ii;
    }
 
    // Allocate memory for all features and objects

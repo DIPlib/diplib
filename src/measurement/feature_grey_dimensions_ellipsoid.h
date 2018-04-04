@@ -25,7 +25,7 @@ namespace Feature {
 
 class FeatureGreyDimensionsEllipsoid : public Composite {
    public:
-      FeatureGreyDimensionsEllipsoid() : Composite( { "GreyDimensionsEllipsoid", "Extent along the principal axes of an ellipsoid (grey-weighted)", true } ) {};
+      FeatureGreyDimensionsEllipsoid() : Composite( { "GreyDimensionsEllipsoid", "Extent along the principal axes of an ellipsoid (grey-weighted, 2D & 3D)", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -55,29 +55,31 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
 
       virtual StringArray Dependencies() override {
          StringArray out( 1 );
-         out[ 0 ] = "GreyInertia";
+         out[ 0 ] = "GreyMu";
          return out;
       }
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
-            inertiaIndex_ = dependencies.ValueIndex( "GreyInertia" );
+            muIndex_ = dependencies.ValueIndex( "GreyMu" );
             hasIndex_ = true;
          }
-         dfloat const* data = &it[ inertiaIndex_ ];
+         dfloat const* data = &it[ muIndex_ ];
+         dfloat eig[ 3 ]; // We never have more than 3 eigenvectors.
+         SymmetricEigenDecompositionPacked( nD_, data, eig );
          if( nD_ == 2 ) {
-            output[ 0 ] = std::sqrt( 16 * data[ 0 ] );
-            output[ 1 ] = std::sqrt( 16 * data[ 1 ] );
+            output[ 0 ] = std::sqrt( 16.0 * eig[ 0 ] );
+            output[ 1 ] = std::sqrt( 16.0 * eig[ 1 ] );
          } else { // nD_ == 3
-            output[ 0 ] = std::sqrt( 10 * (   data[ 0 ] + data[ 1 ] - data[ 2 ] ));
-            output[ 1 ] = std::sqrt( 10 * (   data[ 0 ] - data[ 1 ] + data[ 2 ] ));
-            output[ 2 ] = std::sqrt( 10 * ( - data[ 0 ] + data[ 1 ] + data[ 2 ] ));
+            output[ 0 ] = std::sqrt( 10.0 * (   eig[ 0 ] + eig[ 1 ] - eig[ 2 ] ));
+            output[ 1 ] = std::sqrt( 10.0 * (   eig[ 0 ] - eig[ 1 ] + eig[ 2 ] ));
+            output[ 2 ] = std::sqrt( 10.0 * ( - eig[ 0 ] + eig[ 1 ] + eig[ 2 ] ));
          }
       }
 
    private:
-      dip::uint inertiaIndex_;
+      dip::uint muIndex_;
       bool hasIndex_;
       dip::uint nD_;
 };

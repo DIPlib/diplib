@@ -738,6 +738,11 @@ class DIP_CLASS_EXPORT Composite : public Base {
 
       /// \brief Lists the features that the measurement depends on. These features will be computed and made
       /// available to the `Measure` method. This function is always called after `dip::Feature::Base::Initialize`.
+      ///
+      /// **Note:** Depedency chains are currently not supported. Dependencies listed here shoud not be
+      /// other `%Type::COMPOSITE` features. This would require processing the composite features in the
+      /// right order for all dependencies to be present when needed.
+      // TODO: Compute composite features in the right order according to a dependency tree.
       virtual StringArray Dependencies() = 0;
 
       /// \brief Called once for each object, the input `dependencies` object contains the measurements
