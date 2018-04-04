@@ -1,7 +1,7 @@
 %DRAWSHAPE   Draws an ellipse (ellipsoid), rectangle (box) or diamond
 %
 % SYNOPSIS:
-%  image_out = drawline(image_in,sizes,origin,shape,color,sigma,truncation)
+%  image_out = drawshape(image_in,sizes,origin,shape,color,sigma,truncation)
 %
 %  sizes:      array containing the size of the shape along each dimension.
 %  origin:     array containing the origin of the shape (center).

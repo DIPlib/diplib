@@ -398,11 +398,6 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
          if( distance2 <= innerRadius * innerRadius ) {
             // We cut through the core of the circle
             innerWidth = std::sqrt( innerRadius * innerRadius - distance2 );
-            if( filled_ ) {
-               dip::sint start = ceil_cast( origin_[ dim ] - innerWidth );
-               dip::sint end = floor_cast( origin_[ dim ] + innerWidth );
-               dip__AddLine( out, start, end, length, stride, value_, tensorStride );
-            }
          }
          // Now draw the blurry edges of the circle
          dip::sint start = ceil_cast( origin_[ dim ] - outerWidth );
@@ -412,7 +407,14 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
          } else {
             dip__BallBlurredLine( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          }
-         start = floor_cast( origin_[ dim ] + innerWidth ) + 1;
+         if( innerWidth > 0 ) {
+            start = end + 1;
+            end = floor_cast( origin_[ dim ] + innerWidth );
+            if( filled_ ) {
+               dip__AddLine( out, start, end, length, stride, value_, tensorStride );
+            }
+         }
+         start = end + 1;
          end = floor_cast( origin_[ dim ] + outerWidth );
          if( filled_ ) {
             dip__BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
@@ -616,7 +618,7 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
                }
             }
          }
-         // Now draw the blurry edges of the circle
+         // Now draw the blurry edges of the box
          dip::sint start = ceil_cast( origin_[ dim ] - outerWidth );
          dip::sint end = ceil_cast( origin_[ dim ] - innerWidth ) - 1;
          if( filled_ ) {
