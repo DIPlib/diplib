@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for segmentation functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -386,10 +386,20 @@ inline Image Threshold(
 /// salient edges (see `dip::NonMaximumSuppression`). Next, a threshold `t1` is computed such that
 /// the `1 - upper` fraction of pixels with the highest gradient magnitude are kept. A second threshold,
 /// `t2 = t1 * lower`, is selected that determines the minimal gradient magnitude expected for an edge.
-/// All edge pixels that exceed `t2`, and are in the same connected region as at least one pixel that
-/// exceeds `t1`, are selected as the output of this function (see `dip::HysteresisThreshold`).
+/// All edge pixels equal or larger to `t2`, and are in the same connected region as at least one pixel that
+/// is equal or larger to `t1`, are selected as the output of this function (see `dip::HysteresisThreshold`).
 /// Finally, a homotopic thinning is applied to reduce the detections to single-pixel--thick lines
 /// (see `dip::EuclideanSkeleton`).
+///
+/// The `1 - upper` fraction is computed over all pixels in the image by default. If the image has relatively
+/// few edges, this can lead to `t1` being equal to 0. If this happens, the hysteresis threshold would select
+/// all pixels in the image, and the homotopic thinning will lead to a line across the image that is
+/// unrelated to any edges. Instead, `t1` will be set to a value slightly larger than 0.
+///
+/// For more control over the thresholds, the `selection` parameter can be set to `"nonzero"`, in which
+/// case the fraction `1 - upper` refers to non-zero pixels only; or to `"absolute"`, in which case
+/// `upper` and `lower` represent absolute threshold values, and `t1` will be set to `upper` and `t2`
+/// will be set to `lower`.
 ///
 /// `in` must be scalar, real-valued, and have at least one dimension.
 ///
@@ -405,16 +415,18 @@ DIP_EXPORT void Canny(
       Image& out,
       FloatArray const& sigmas = { 1 },
       dfloat lower = 0.5,
-      dfloat upper = 0.9
+      dfloat upper = 0.9,
+      String const& selection = S::ALL
 );
 inline Image Canny(
       Image const& in,
       FloatArray const& sigmas = { 1 },
       dfloat lower = 0.5,
-      dfloat upper = 0.9
+      dfloat upper = 0.9,
+      String const& selection = S::ALL
 ) {
    Image out;
-   Canny( in, out, sigmas, lower, upper );
+   Canny( in, out, sigmas, lower, upper, selection );
    return out;
 }
 

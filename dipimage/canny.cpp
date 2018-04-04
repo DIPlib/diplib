@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `canny` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -26,7 +26,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 4 );
+      DML_MAX_ARGS( 5 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -35,8 +35,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::FloatArray sigmas = nrhs > 1 ? dml::GetFloatArray( prhs[ 1 ] ) : dip::FloatArray{ 1 };
       dip::dfloat lower = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.5;
       dip::dfloat upper = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 0.9;
+      dip::String selection = nrhs > 4 ? dml::GetString( prhs[ 4 ] ) : "all";
 
-      dip::Canny( in, out, sigmas, lower, upper );
+      dip::Canny( in, out, sigmas, lower, upper, selection );
 
       plhs[ 0 ] = dml::GetArray( out );
 

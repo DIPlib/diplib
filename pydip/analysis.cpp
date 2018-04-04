@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,6 @@ void init_analysis( py::module& m ) {
              dip::dfloat threshold = Threshold( in, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
           }, "in"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
-   m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat >( &dip::Canny ),
-          "in"_a, "sigmas"_a, "lower"_a, "upper"_a );
+   m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL );
 }
