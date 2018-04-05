@@ -58,7 +58,7 @@ classdef dip_measurement
 
    % ------- PROPERTIES -------
 
-   properties (GetAccess=public,SetAccess=private,Hidden=true)
+   properties (GetAccess=public,SetAccess=public,Hidden=true)
       %Data - Measurement data. Each row is one object. Each measurement
       %   feature spans several columns. Each column is a value.
       Data = []
@@ -76,11 +76,10 @@ classdef dip_measurement
       %   Values(ii) represents information about Data(:,ii).
       Values = struct('Name',{},'Units',{})
    end
-   % These are all public read properties, but the subsref method prevents
-   % M-code from actually reading them. However, MEX-files can use
-   % mxGetProperty to read any property. (We actually use the undocumented
-   % mxGetPropertyShared to prevent data copy, and to be able to modify
-   % the Data property. Don't do this at home!)
+   % These are all public read/write properties, but the SUBSREF and
+   % SUBSASGN methods prevent M-code from actually reading them. However,
+   % MEX-files can use mxGetProperty and mxSetProperty to read and write
+   % any property.
 
    % ------- METHODS -------
 

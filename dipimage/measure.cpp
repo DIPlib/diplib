@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `measure` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -146,22 +146,31 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       // Step 2: create the object
       mexCallMATLAB( 1, plhs, 3, mxInputArgs, "dip_measurement" );
 
-      // Step 3: get a pointer to the data block, and copy the data over
-      mxArray* dataArray = mxGetPropertyShared( plhs[ 0 ], 0, "Data" );
-      double* data = mxGetPr( dataArray );
-      dip::uint step = msr.NumberOfObjects();
-      auto objIt = msr.FirstObject();
-      do {
-         double* d = data;
-         auto ftrIt = objIt.FirstFeature();
+      // Step 3: copy the data over
+      if( !msr.IsForged() ) {
+         // There are no samples to copy over, we're done
+      } else if( msr.DataSize() == 1 ) {
+         // Create a scalar array and replace the data block
+         mxArray* dataArray = mxCreateDoubleScalar( msr.FirstObject().FirstFeature()[ 0 ] );
+         mxSetProperty( plhs[ 0 ], 0, "Data", dataArray );
+      } else {
+         // Get a pointer to the data block and write the data into it -- this doesn't work if Data is a scalar
+         mxArray* dataArray = mxGetPropertyShared( plhs[ 0 ], 0, "Data" );
+         double* data = mxGetPr( dataArray );
+         dip::uint step = msr.NumberOfObjects();
+         auto objIt = msr.FirstObject();
          do {
-            for( auto& value : ftrIt ) {
-               *d = value;
-               d += step;
-            }
-         } while( ++ftrIt );
-         ++data;
-      } while( ++objIt );
+            double* d = data;
+            auto ftrIt = objIt.FirstFeature();
+            do {
+               for( auto& value : ftrIt ) {
+                  *d = value;
+                  d += step;
+               }
+            } while( ++ftrIt );
+            ++data;
+         } while( ++objIt );
+      }
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );
