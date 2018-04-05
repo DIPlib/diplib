@@ -190,7 +190,6 @@ Measurement MeasurementTool::Measure(
    }
    if( measurement.NumberOfObjects() == 0 ) {
       // There's no objects to be measured. We're done.
-      // TODO: throw?
       return measurement;
    }
 

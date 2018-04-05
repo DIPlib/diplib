@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file defines the "Mass" measurement feature
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,13 +27,18 @@ class FeatureMass : public LineBased {
    public:
       FeatureMass() : LineBased( { "Mass", "Mass of object (sum of object intensity)", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
-         nD_ = label.Dimensionality();
+      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+         nTensor_ = grey.TensorElements();
          data_.clear();
-         data_.resize( nObjects, 0 );
-         ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "" );
+         data_.resize( nObjects * nTensor_, 0 );
+         ValueInformationArray out( nTensor_ );
+         if( nTensor_ == 1 ) {
+            out[ 0 ].name = "";
+         } else {
+            for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+               out[ ii ].name = String( "chan" ) + std::to_string( ii );
+            }
+         }
          return out;
       }
 
@@ -59,7 +64,9 @@ class FeatureMass : public LineBased {
                   }
                }
                if( data ) {
-                  *data += *grey;
+                  for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+                     data[ ii ] += grey[ ii ];
+                  }
                }
             }
             ++grey;
@@ -67,7 +74,10 @@ class FeatureMass : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         *output = data_[ objectIndex ];
+         dfloat* data = &data_[ objectIndex ];
+         for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+            output[ ii ] = data[ ii ];
+         }
       }
 
       virtual void Cleanup() override {
@@ -76,7 +86,7 @@ class FeatureMass : public LineBased {
       }
 
    private:
-      dip::uint nD_;
+      dip::uint nTensor_;
       std::vector< dfloat > data_;
 };
 

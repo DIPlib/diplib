@@ -28,14 +28,13 @@ class FeatureDirectionalStatistics : public LineBased {
    public:
       FeatureDirectionalStatistics() : LineBased( { "DirectionalStatistics", "Directional mean and standard deviation of object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
-         nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects );
          ValueInformationArray out( 2 );
-         out[ 0 ].name = String( "Mean" );
-         out[ 1 ].name = String( "StdDev" );
+         out[ 0 ].name = "Mean";
+         out[ 1 ].name = "StdDev";
          return out;
       }
 
@@ -80,7 +79,6 @@ class FeatureDirectionalStatistics : public LineBased {
       }
 
    private:
-      dip::uint nD_;
       std::vector< DirectionalStatisticsAccumulator > data_;
 };
 

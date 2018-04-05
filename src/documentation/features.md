@@ -74,13 +74,14 @@ connected component. If multiple connected components have the same label, only 
 connected component found for that label will be measured.
 
 Five values are returned:
- - "FeretMax" is the maximum Feret diameter, the length of the object.
- - "FeretMin" in the minimum Feret diameter, the width of the object.
- - "FeretPerpMin", the Feret diameter perpendicular to "FeretMin", which is not necessarily
-   equal to "FeretMax". "FeretMin" and "FeretPerpMin" are (usually, but not necessarily)
+
+ - 0: `Max`, the maximum Feret diameter, the length of the object.
+ - 1: `Min`, the minimum Feret diameter, the width of the object.
+ - 2: `PerpMin`, the Feret diameter perpendicular to `Min`, which is not necessarily
+   equal to `Max`. `Min` and `PerpMin` are (usually, but not necessarily)
    the sizes of the minimum bounding box.
- - "FeretMaxAng" is the angle at which "FeretMax" was obtained.
- - "FeretMinAng" is the angle at which "FeretMin" was obtained.
+ - 3: `MaxAng`, the angle at which `Max` was obtained.
+ - 4: `MinAng`, the angle at which `Min` was obtained.
 
 \subsection size_features_SolidArea SolidArea
 Computes the area of the object ignoring any holes. It uses the object's chain code
@@ -110,7 +111,7 @@ connected component found for that label will be measured.
 \section shape_features Shape features
 
 \subsection shape_features_AspectRatioFeret AspectRatioFeret
-The ratio `FeretPerpMin/FeretMin`, two of the values returned by the \ref size_features_Feret feature.
+The ratio `Feret:PerpMin/Feret:Min`, two of the values returned by the \ref size_features_Feret feature.
 
 \subsection shape_features_Radius Radius
 Statistics on the radius of the object, computed from the chain code using
@@ -123,22 +124,26 @@ connected component found for that label will be measured.
 This feature takes the distances from the object's centroid (as determined from the chain
 code, not influenced by any holes in the object) to each of the border pixels. From these
 distances it computes four values:
- - "RadiusMax", the largest distance.
- - "RadiusMean", the average distance.
- - "RadiusMin", the shortest distance.
- - "RadiusStD", the standard deviation.
+ - 0: `Max`, the largest distance.
+ - 1: `Mean`, the average distance.
+ - 2: `Min`, the shortest distance.
+ - 3: `StD`, the standard deviation.
 
 Note that the centroid does not necessarily lie within the object.
 
 \subsection shape_features_P2A P2A
-Computes \f$p^2/(4 \pi a)\f$, where \f$p\f$ is the perimeter and \f$a\f$ is the area, for
-2D objects; and \f$\sqrt{a^3}/(6v\sqrt{\pi})\f$, where \f$a\f$ is the surface area and
-\f$v\f$ is the volume, for 3D objects. See \ref size_features_Perimeter,
+Computes:
+
+ - 2D: \f$\frac{p^2}{4 \pi a}\f$, where \f$p\f$ is the perimeter and \f$a\f$ is the area.
+ - 3D: \f$\frac{\sqrt{a^3}}{6v\sqrt{\pi}}\f$, where \f$a\f$ is the surface area and
+       \f$v\f$ is the volume.
+
+See \ref size_features_Perimeter,
 \ref size_features_SurfaceArea and \ref size_features_Size. For solid objects, this
 measure is the reciprocal of \ref shape_features_Roundness.
 
 \subsection shape_features_Roundness Roundness
-Computes \f$(4 \pi a)/p^2\f$, where \f$a\f$ is the solid area and \f$p\f$ is the perimeter,
+Computes \f$\frac{4\pi a}{p^2}\f$, where \f$a\f$ is the solid area and \f$p\f$ is the perimeter,
 using the features \ref size_features_SolidArea and \ref size_features_Perimeter.
 This measure is in the range (0,1], with 1 for a perfect circle.
 For solid objects, it is the reciprocal of \ref shape_features_P2A, but for objects with holes,
@@ -146,22 +151,22 @@ this measure takes only the outer boundary into account.
 
 \subsection shape_features_Circularity Circularity
 Circularity is a measure of similarity to a circle, and is given by coefficient of variation
-of the radii of the object. It is computed by the ratio `RadiusStD/RadiusMean`
+of the radii of the object. It is computed by the ratio `Radius:StD/Radius:Mean`
 of the \ref shape_features_Radius feature, and is 0 for a perfect circle.
 See `dip::Polygon::RadiusStatistics::Circularity`.
 
 \subsection shape_features_PodczeckShapes PodczeckShapes
 Computes the 5 Podczeck shape descriptors using the results of features \ref size_features_Size,
 \ref size_features_Feret and \ref size_features_Perimeter. The shape descriptors are:
- - "Square": similarity to a square: \f$a/(w h)\f$.
- - "Circle": similarity to a circle: \f$4 a/(\pi h^2)\f$.
- - "Triangle": similarity to a triangle: \f$2 a/(w h)\f$.
- - "Ellipse": similarity to an ellipse: \f$4 a/(\pi w h)\f$.
- - "Elongation": object elongation: \f$p/l\f$.
+ - 0: `Square`, similarity to a square, \f$\frac{a}{wh}\f$.
+ - 1: `Circle`, similarity to a circle, \f$\frac{4a}{\pi h^2}\f$.
+ - 2: `Triangle`, similarity to a triangle, \f$\frac{2a}{wh}\f$.
+ - 3: `Ellipse`, similarity to an ellipse, \f$\frac{4a}{\pi wh}\f$.
+ - 4: `Elongation`, object elongation, \f$\frac{p}{l}\f$.
 
 where \f$a\f$ is the object area, \f$p\f$ the perimeter, \f$l\f$ the largest Feret diameter, \f$w\f$ the
 smallest Feret diameter, and \f$h\f$ the diameter perpendicular to the smallest diameter
-("FeretPerpMin" value).
+(`Feret:PerpMin` value).
 
 \subsection shape_features_Solidity Solidity
 The ratio `Size/ConvexArea` of the features \ref size_features_Size and \ref size_features_ConvexArea.
@@ -182,7 +187,7 @@ connected component found for that label will be measured.
 \subsection shape_features_Eccentricity Eccentricity
 Aspect ratio of the best fit ellipse, computed using `dip::CovarianceMatrix::Eigenvalues::Eccentricity`
 from the covariance matrix of the chain code. Eccentricity is defined as
-\f$\sqrt{ 1 - \lambda_2 / \lambda_1 }\f$, with \f$\lambda_1\f$ the largest eigenvalue
+\f$\sqrt{\frac{1-\lambda_2}{\lambda_1}}\f$, with \f$\lambda_1\f$ the largest eigenvalue
 and \f$\lambda_2\f$ the smallest eigenvalue of the covariance matrix of the boundary
 pixels of the object.
 
@@ -204,12 +209,15 @@ connected component found for that label will be measured.
 
 \subsection intensity_features_Mass Mass
 The sum of the grey-value image intensities across the object.
+The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 
 \subsection intensity_features_Mean Mean
 The mean of the grey-value image intensities across the object.
+The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 
 \subsection intensity_features_StandardDeviation StandardDeviation
 The standard deviation of the grey-value image intensities across the object.
+The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 A fast algorithm is used that could result in catastrophic cancellation if
 the mean is much larger than the variance, see `dip::FastVarianceAccumulator`.
 If there is a potential for this to happen, choose the \ref intensity_features_Statistics
@@ -217,14 +225,23 @@ feature instead.
 
 \subsection intensity_features_Statistics Statistics
 The mean, standard deviation, skewness and excess kurtosis of the grey-value image intensities
-across the object. This feature has 4 values. A stable algorithm is used that prevents
-catastrophic cancellation, see `dip::StatisticsAccumulator`.
+across the object.
+This feature has 4 values, `grey` must be scalar.
+A stable algorithm is used that prevents catastrophic cancellation, see `dip::StatisticsAccumulator`.
+
+\subsection intensity_features_DirectionalStatistics DirectionalStatistics
+The directional mean and standard deviation of the grey-value image intensities
+across the object.
+Directional statistics assume the input values are angles.
+This feature has 2 values, `grey` must be scalar.
 
 \subsection intensity_features_MaxVal MaxVal
 The maximum grey-value image intensity within the object.
+The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 
 \subsection intensity_features_MinVal MinVal
 The minimum grey-value image intensity within the object.
+The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
 
 [//]: # (--------------------------------------------------------------)
 
@@ -239,7 +256,7 @@ represent the distances to the lower image edge along each dimension.
 \subsection binary_moments_Mu Mu
 Elements of the inertia tensor of the object, which is composed of second order
 normalized central moments of the binary shape. For an image with \f$n\f$ dimensions,
-there are \f$n(n+1)/2\f$ values. These are stored in the same order as symmetric
+there are \f$\frac{1}{2}n(n+1)\f$ values. These are stored in the same order as symmetric
 tensors are stored in an image (see `dip::Tensor::Shape`).
 
 For more information, see `dip::MomentAccumulator::SecondOrder`.
@@ -277,16 +294,18 @@ There is one value per image dimension. If the image has a known pixel size, the
 represent the distances of the center of mass to the lower image edge along each dimension.
 
 Identical to feature \ref binary_moments_Center but using the grey-value image as weighting.
+`grey` must be scalar.
 
 \subsection grey_moments_GreyMu GreyMu
 Elements of the inertia tensor of the grey-weighted object, which is composed of second order
 normalized central moments of the binary shape weighted by the grey-value image's intensities.
-For an image with \f$n\f$ dimensions, there are \f$n(n+1)/2\f$ values. These are stored in the same
-order as symmetric tensors are stored in an image (see `dip::Tensor::Shape`).
+For an image with \f$n\f$ dimensions, there are \f$\frac{1}{2}n(n+1)\f$ values. These are stored
+in the same order as symmetric tensors are stored in an image (see `dip::Tensor::Shape`).
 
 For more information, see `dip::MomentAccumulator::SecondOrder`.
 
 Identical to feature \ref binary_moments_Mu but using the grey-value image as weighting.
+`grey` must be scalar.
 
 \subsection grey_moments_GreyInertia GreyInertia
 Moments of inertia of the grey-weighted object, the eigenvalues of the tensor computed by
@@ -294,6 +313,7 @@ feature \ref grey_moments_GreyMu. There is one value per image dimension. The ei
 largest to smallest.
 
 Identical to feature \ref binary_moments_Inertia but using the grey-value image as weighting.
+`grey` must be scalar.
 
 \subsection grey_moments_GreyMajorAxes GreyMajorAxes
 Principal axes of the grey-weighted object, the eigenvectors of the tensor computed by
@@ -301,6 +321,7 @@ feature \ref grey_moments_GreyMu. For an image with \f$n\f$ dimensions, there ar
 The first \f$n\f$ values are the eigenvector associated to the largest eigenvalue, etc.
 
 Identical to feature \ref binary_moments_MajorAxes but using the grey-value image as weighting.
+`grey` must be scalar.
 
 \subsection grey_moments_GreyDimensionsCube GreyDimensionsCube
 Lengths of the sides of a rectangle (2D) or box (3D) with the same moments of inertia
@@ -309,6 +330,7 @@ as the grey-weighted object. Derived from feature \ref grey_moments_GreyInertia.
 Currently defined only for 2D and 3D images.
 
 Identical to feature \ref binary_moments_DimensionsCube but using the grey-value image as weighting.
+`grey` must be scalar.
 
 \subsection grey_moments_GreyDimensionsEllipsoid GreyDimensionsEllipsoid
 Diameters of an ellipse (2D) or ellipsoid (3D) with the same moments of inertia as the
@@ -317,3 +339,4 @@ grey-weighted object. Derived from feature \ref grey_moments_GreyInertia.
 Currently defined only for 2D and 3D images.
 
 Identical to feature \ref binary_moments_DimensionsEllipsoid but using the grey-value image as weighting.
+`grey` must be scalar.

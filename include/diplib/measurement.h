@@ -417,7 +417,7 @@ class DIP_NO_EXPORT Measurement {
       /// \brief Forges the table, allocating space to hold measurement values.
       void Forge() {
          if( !IsForged() ) {
-            dip::uint n = values_.size() * objects_.size();
+            dip::uint n = DataSize();
             DIP_THROW_IF( n == 0, "Attempting to forge a zero-sized table" );
             data_.resize( n );
          }
@@ -460,6 +460,12 @@ class DIP_NO_EXPORT Measurement {
       /// \brief The stride to use to access the next row of data in the table (next object).
       dip::sint Stride() const {
          return static_cast< dip::sint >( values_.size() );
+      }
+
+      /// \brief The total number of data values in the table, equal to the product of `NumberOfValues`
+      /// and `NumberOfObjects`.
+      dip::uint DataSize() const {
+         return NumberOfValues() * NumberOfObjects();
       }
 
       /// \brief True if the feature is available in `this`.
@@ -801,12 +807,13 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// <tr><td> "Eccentricity"            <td> Aspect ratio of best fit ellipse <td> 2D (CC)
 /// <tr><td> "BendingEnergy"           <td> Bending energy of object perimeter <td> 2D (CC)
 /// <tr><td colspan="3"> **Intensity features**
-/// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Scalar grey
-/// <tr><td> "Mean"                    <td> Mean object intensity <td> Scalar grey
-/// <tr><td> "StandardDeviation"       <td> Standard deviation of object intensity <td> Scalar grey
+/// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Tensor grey
+/// <tr><td> "Mean"                    <td> Mean object intensity <td> Tensor grey
+/// <tr><td> "StandardDeviation"       <td> Standard deviation of object intensity <td> Tensor grey
 /// <tr><td> "Statistics"              <td> Mean, standard deviation, skewness and excess kurtosis of object intensity <td> Scalar grey
-/// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> Scalar grey
-/// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Scalar grey
+/// <tr><td> "DirectionalStatistics"   <td> Directional mean and standard deviation of object intensity <td> Scalar grey
+/// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> Tensor grey
+/// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Tensor grey
 /// <tr><td colspan="3"> **Moments of binary object**
 /// <tr><td> "Center"                  <td> Coordinates of the geometric mean of the object <td>
 /// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td>
@@ -832,7 +839,9 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// is measured, the boundaries of holes in the object are ignored.
 ///
 /// Features that include "Scalar grey" in the limitations column require a scalar grey-value image to be passed
-/// into the `dip::MeasurementTool::Measure` method together with the label image.
+/// into the `dip::MeasurementTool::Measure` method together with the label image. "Tensor grey" indicates that
+/// this grey-value image can be multi-valued (i.e. a tensor image); each tensor element will be reported as a
+/// channel.
 ///
 /// See \ref features for more information on each of these features.
 ///
@@ -891,6 +900,7 @@ class DIP_NO_EXPORT MeasurementTool {
       /// `label` is a labeled image (any unsigned integer type, and scalar), and `grey` is either a raw
       /// image (not forged, without pixel data), or an real-valued image with the same dimensionality and
       /// sizes as `label`. If any selected features require a grey-value image, then it must be provided.
+      /// Note that some features can handle multi-valued (tensor) images, and some can not.
       ///
       /// `features` is an array with feature names. See the `dip::MeasurementTool::Features` method for
       /// information on how to obtain those names. Some features are composite features, they compute
@@ -899,7 +909,8 @@ class DIP_NO_EXPORT MeasurementTool {
       ///
       /// `objectIDs` is an array with the IDs of objects to measure, If any of the IDs is not a label
       /// in the `label` image, the resulting measures will be zero or otherwise marked as invalid. If
-      /// an empty array is given, all objects in the labeled image are measured.
+      /// an empty array is given, all objects in the labeled image are measured. If there are no objects
+      /// to be measured, a non-forged `dip::Measurement` object is returned.
       ///
       /// `connectivity` should match the value used when creating the labeled image `label`.
       ///

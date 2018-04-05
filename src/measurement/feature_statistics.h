@@ -28,16 +28,15 @@ class FeatureStatistics : public LineBased {
    public:
       FeatureStatistics() : LineBased( { "Statistics", "Mean, standard deviation, skewness and excess kurtosis of object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
-         nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects );
          ValueInformationArray out( 4 );
-         out[ 0 ].name = String( "Mean" );
-         out[ 1 ].name = String( "StdDev" );
-         out[ 2 ].name = String( "Skewness" );
-         out[ 3 ].name = String( "ExcessKurtosis" );
+         out[ 0 ].name = "Mean";
+         out[ 1 ].name = "StdDev";
+         out[ 2 ].name = "Skewness";
+         out[ 3 ].name = "ExcessKurtosis";
          return out;
       }
 
@@ -84,7 +83,6 @@ class FeatureStatistics : public LineBased {
       }
 
    private:
-      dip::uint nD_;
       std::vector< StatisticsAccumulator > data_;
 };
 

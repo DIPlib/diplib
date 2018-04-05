@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file defines the "StandardDeviation" measurement feature
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,13 +27,18 @@ class FeatureStandardDeviation : public LineBased {
    public:
       FeatureStandardDeviation() : LineBased( { "StandardDeviation", "Standard deviation of object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
-         nD_ = label.Dimensionality();
+      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+         nTensor_ = grey.TensorElements();
          data_.clear();
-         data_.resize( nObjects );
-         ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "" );
+         data_.resize( nObjects * nTensor_ );
+         ValueInformationArray out( nTensor_ );
+         if( nTensor_ == 1 ) {
+            out[ 0 ].name = "";
+         } else {
+            for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+               out[ ii ].name = String( "chan" ) + std::to_string( ii );
+            }
+         }
          return out;
       }
 
@@ -59,7 +64,9 @@ class FeatureStandardDeviation : public LineBased {
                   }
                }
                if( data ) {
-                  data->Push( *grey );
+                  for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+                     data[ ii ].Push( grey[ ii ] );
+                  }
                }
             }
             ++grey;
@@ -67,8 +74,10 @@ class FeatureStandardDeviation : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         FastVarianceAccumulator data = data_[ objectIndex ];
-         *output = data.StandardDeviation();
+         FastVarianceAccumulator* data = &data_[ objectIndex ];
+         for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+            output[ ii ] = data[ ii ].StandardDeviation();
+         }
       }
 
       virtual void Cleanup() override {
@@ -77,7 +86,7 @@ class FeatureStandardDeviation : public LineBased {
       }
 
    private:
-      dip::uint nD_;
+      dip::uint nTensor_;
       std::vector< FastVarianceAccumulator > data_;
 };
 

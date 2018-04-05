@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file defines the "Mean" measurement feature
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,13 +27,18 @@ class FeatureMean : public LineBased {
    public:
       FeatureMean() : LineBased( { "Mean", "Mean object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
-         nD_ = label.Dimensionality();
+      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+         nTensor_ = grey.TensorElements();
          data_.clear();
-         data_.resize( nObjects );
-         ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "" );
+         data_.resize( nObjects * nTensor_ );
+         ValueInformationArray out( nTensor_ );
+         if( nTensor_ == 1 ) {
+            out[ 0 ].name = "";
+         } else {
+            for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+               out[ ii ].name = String( "chan" ) + std::to_string( ii );
+            }
+         }
          return out;
       }
 
@@ -55,12 +60,14 @@ class FeatureMean : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second ] );
+                     data = &( data_[ it->second * nTensor_ ] );
                   }
                }
                if( data ) {
-                  data->sum += *grey;
-                  ++( data->number );
+                  for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+                     data[ ii ].sum += grey[ ii ];
+                     ++( data[ ii ].number );
+                  }
                }
             }
             ++grey;
@@ -68,8 +75,10 @@ class FeatureMean : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         Data data = data_[ objectIndex ];
-         *output = ( data.number != 0 ) ? ( data.sum / static_cast< dfloat >( data.number )) : ( 0.0 );
+         Data* data = &data_[ objectIndex * nTensor_ ];
+         for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
+            output[ ii ] = ( data[ ii ].number != 0 ) ? ( data[ ii ].sum / static_cast< dfloat >( data[ ii ].number )) : ( 0.0 );
+         }
       }
 
       virtual void Cleanup() override {
@@ -82,7 +91,7 @@ class FeatureMean : public LineBased {
          dfloat sum = 0;
          dip::uint number = 0;
       };
-      dip::uint nD_;
+      dip::uint nTensor_;
       std::vector< Data > data_;
 };
 
