@@ -31,6 +31,25 @@
 #include "dip_matlab_interface.h"
 #include "diplib/math.h"
 
+dip::DataType FindDataType( dip::Image const& lhs, dip::Image const& rhs, mxArray const* keepDataType ) {
+   if( keepDataType && dml::GetBoolean( keepDataType )) {
+      if( rhs.NumberOfPixels() == 1 ) {
+         if( rhs.DataType().IsComplex() ) {
+            return dip::DataType::SuggestComplex( lhs.DataType() ); // rhs is a single pixel, but complex: use a complex version of lhs's data type
+         }
+         return lhs.DataType(); // rhs is a single pixel: use lhs's data type
+      }
+      if( lhs.NumberOfPixels() == 1 ) {
+         if( lhs.DataType().IsComplex() ) {
+            return dip::DataType::SuggestComplex( rhs.DataType() ); // lhs is a single pixel, but complex: use a complex version of rhs's data type
+         }
+         return rhs.DataType(); // lhs is a single pixel: use rhs's data type
+      }
+      return dip::DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() ); // use a data type that can hold the result of the operation
+   }
+   return dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ); // use a flex data type
+}
+
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
@@ -45,10 +64,14 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       if( *ch == 'm' ) {
          DIP_THROW_IF( nrhs != 2, "Wrong number of input arguments." );
       } else {
-         DIP_THROW_IF( nrhs != 3, "Wrong number of input arguments." );
+         DIP_THROW_IF(( nrhs < 3 ) || ( nrhs > 4 ), "Wrong number of input arguments." );
          rhs = dml::GetImage( prhs[ 2 ] );
       }
 
+      // Get optional 4th argument too
+      mxArray const* keepDataType = nrhs > 3 ? prhs[ 3 ] : nullptr;
+
+      // Create output image
       dml::MatlabInterface mi;
       dip::Image out = mi.NewImage();
 
@@ -56,25 +79,25 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       switch( *ch ) {
       // Arithmetic operators
          case '+': // +
-            dip::Add( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            dip::Add( lhs, rhs, out, FindDataType( lhs, rhs, keepDataType ));
             break;
          case '-': // -
-            dip::Subtract( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            dip::Subtract( lhs, rhs, out, FindDataType( lhs, rhs, keepDataType ));
             break;
          case '*': // *
-            dip::Multiply( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            dip::Multiply( lhs, rhs, out, FindDataType( lhs, rhs, keepDataType ));
             break;
          case '.': // .*
-            dip::MultiplySampleWise( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            dip::MultiplySampleWise( lhs, rhs, out, FindDataType( lhs, rhs, keepDataType ));
             break;
          case '/': // ./
-            dip::Divide( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            dip::Divide( lhs, rhs, out, FindDataType( lhs, rhs, keepDataType ));
             break;
          case '%': // mod
             dip::Modulo( lhs, rhs, out, lhs.DataType() );
             break;
          case '^': // .^
-            dip::Power( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            dip::Power( lhs, rhs, out, FindDataType( lhs, rhs, keepDataType ));
             break;
          case 'A': // atan2
             dip::Atan2( lhs, rhs, out );

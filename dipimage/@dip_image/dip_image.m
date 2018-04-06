@@ -1920,23 +1920,23 @@ classdef dip_image
 
       function out = plus(lhs,rhs)
          %PLUS   Overload for operator +
-         out = dip_operators('+',lhs,rhs);
+         out = dip_operators('+',lhs,rhs,dipgetpref('KeepDataType'));
       end
 
       function out = minus(lhs,rhs)
          %MINUS   Overload for operator -
-         out = dip_operators('-',lhs,rhs);
+         out = dip_operators('-',lhs,rhs,dipgetpref('KeepDataType'));
       end
 
       function out = mtimes(lhs,rhs)
          %MTIMES   Overload for operator *
          %   Computes the matrix multiplication of the tensors at each corresponding pixel.
-         out = dip_operators('*',lhs,rhs);
+         out = dip_operators('*',lhs,rhs,dipgetpref('KeepDataType'));
       end
 
       function out = times(lhs,rhs)
          %TIMES   Overload for operator .*
-         out = dip_operators('.',lhs,rhs);
+         out = dip_operators('.',lhs,rhs,dipgetpref('KeepDataType'));
       end
 
       function out = mrdivide(lhs,rhs)
@@ -1944,12 +1944,12 @@ classdef dip_image
          if ~isscalar(rhs)
             error('Not implented');
          end
-         out = dip_operators('/',lhs,rhs);
+         out = dip_operators('/',lhs,rhs,dipgetpref('KeepDataType'));
       end
 
       function out = rdivide(lhs,rhs)
          %RDIVIDE   Overload for operator ./
-         out = dip_operators('/',lhs,rhs);
+         out = dip_operators('/',lhs,rhs,dipgetpref('KeepDataType'));
       end
 
       function out = mod(lhs,rhs)

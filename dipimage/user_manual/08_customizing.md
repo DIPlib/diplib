@@ -445,18 +445,6 @@ Possible values are `'xy'`, `'xz'`, `'yz'`, `'xt'`, `'yt'` and `'zt'`.
 But if you select one of the options with `t`, 3D images cannot be displayed.
 See [@sec:function_dipmapping;@sec:figure_menus].
 
-### DisplayToFigure
-
-*Value*: `'on'` or `'off'`
-
-*Default*: `'on'`
-
-When this setting is `'on'`, the `display` method of the `dip_image`
-object sends the image data to a figure window. When it is `'off'`,
-`disp` is called instead. The display method is called when a *MATLAB*
-command does not end with a semicolon.
-See [@sec:dip_image_display] for more information on this behavior.
-
 ### DisplayFunction
 
 *Value*: `'dipshow'` or `'viewslice'`
@@ -480,6 +468,18 @@ the figure windows is supported. A new window will always be opened
 for each display command, `dipfig` ([@sec:function_dipfig]) does not
 apply either. See the [*DIPviewer* documention](https://diplib.github.io/diplib-docs/group__viewer.html#details)
 for more information on these fi
+
+### DisplayToFigure
+
+*Value*: `'on'` or `'off'`
+
+*Default*: `'on'`
+
+When this setting is `'on'`, the `display` method of the `dip_image`
+object sends the image data to a figure window. When it is `'off'`,
+`disp` is called instead. The display method is called when a *MATLAB*
+command does not end with a semicolon.
+See [@sec:dip_image_display] for more information on this behavior.
 
 ### EnableKeyboard
 
@@ -559,6 +559,24 @@ meant for display anyway. For example, `a(a>10)` returns a 1D image with
 all pixel values of `a` larger than 10; this is very useful, but not
 interesting to look at. For a large `a` (such as a 3D image), the
 display of the resulting 1D image might require a lot of memory.
+
+### KeepDataType
+
+*Value*: `'on'` or `'off'`
+
+*Default*: `'off'`
+
+By default, *DIPimage* performs arithmetic computations in a floating-point type
+(either single or double precision depending on the types of the input). The
+output image is always of the type used in the computations.
+
+Setting this option to `'on'` causes these arithmetic operations to be more
+conservative with memory usage. If one of the operands is a single-pixel image
+(as is the case in `img + 1`), the type of the other image is used, except if
+the single-pixel image is complex, in which case a complex output image must be produced.
+Otherwise, a type is chosen that can hold values from both input types. Typically this means
+the larger of the two types is chosen, but when signed and unsigned integers are
+mixed, a larger type can result.
 
 ### NumberOfThreads
 

@@ -35,7 +35,7 @@ document's source</a> for the most up-to-date version.
     projection functions, and `dip::SelectionFilter` can be easily parallelized.
 
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
-    are written. Implement `'KeepDataType'`.
+    are written.
 
     **Major change coming in R2018a**: we need to add -R2017b to the `mex` compile command
     for the time being. We need to rewrite how numeric mxArray data is read if

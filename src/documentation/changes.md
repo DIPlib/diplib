@@ -356,6 +356,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - Related to the previous point, `squeeze` now might reorder dimensions. But it's cheaper
     this way!
 
+  - There are slight changes to how array data types are handled when converting to a `dip_image`
+    object and when using an array as input to a *DIPimage* function. Most importantly, the
+    *DIPlib* interface translates double-precision scalar arrays to 0D images of a single-precision
+    type as long as that does not cause overflow or underflow. This typically yields the expected
+    results. To avoid this behavior, explicitly cast to `dip_image`. For example: `img + 1` vs
+    `img + dip_image(1)`.
+
   - The `inner` and `outer` methods no longer exist, use `cross` and `dot`.
 
   - New methods: `clone`, `cosh`, `cumsum`, `erfc`, `flip`, `gammaln`, `iscomplex`, `issigned`, `isunsigned`,
@@ -408,6 +415,14 @@ code that used *DIPlib* or *DIPimage* to the new version.
          method is invoked (see the
          [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
          for more detauls).
+
+   - Changed settings:
+
+       - '`KeepDataType`', which changes how the output data type for arithmetic operations is
+         chosen, has the same intent but does not always make the same choice. For example
+         the result is different when mixing signed and unsigned integers. (see the
+         [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
+         for details on the current logic).
 
    - Removed settings:
 

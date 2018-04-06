@@ -687,6 +687,40 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
    DIP_THROW( "TensorShape property returned wrong data!" );
 }
 
+// Return `img` or `img` cast to a single-float type if it doesn't underflow or overflow.
+// Note `img` is always a single sample, of a double-float type.
+void MaybeCastScalar( dip::Image& img ) {
+   if( img.DataType() == dip::DT_DCOMPLEX ) {
+      // Will we underflow or overflow?
+      dip::dcomplex imgValue = *static_cast< dip::dcomplex* >( img.Origin() );
+      dip::dfloat imgValueR = imgValue.real();
+      if( std::isfinite( imgValueR ) && ( std::abs( imgValueR ) > static_cast< dip::dfloat >( std::numeric_limits< dip::sfloat >::max() ))) {
+         return;
+      }
+      if( std::isfinite( imgValueR ) && ( imgValueR != 0.0 ) && ( std::abs( imgValueR ) < static_cast< dip::dfloat >( std::numeric_limits< dip::sfloat >::min() ))) {
+         return;
+      }
+      dip::dfloat imgValueI = imgValue.imag();
+      if( std::isfinite( imgValueI ) && ( std::abs( imgValueI ) > static_cast< dip::dfloat >( std::numeric_limits< dip::sfloat >::max() ))) {
+         return;
+      }
+      if( std::isfinite( imgValueI ) && ( imgValueI != 0.0 ) && ( std::abs( imgValueI ) < static_cast< dip::dfloat >( std::numeric_limits< dip::sfloat >::min() ))) {
+         return;
+      }
+      img.Convert( dip::DT_SCOMPLEX );
+   } else {
+      DIP_ASSERT( img.DataType() == dip::DT_DFLOAT );
+      dip::dfloat imgValue = *static_cast< dip::dfloat* >( img.Origin() );
+      if( std::isfinite( imgValue ) && ( std::abs( imgValue ) > static_cast< dip::dfloat >( std::numeric_limits< dip::sfloat >::max() ))) {
+         return;
+      }
+      if( std::isfinite( imgValue ) && ( imgValue != 0.0 ) && ( std::abs( imgValue ) < static_cast< dip::dfloat >( std::numeric_limits< dip::sfloat >::min() ))) {
+         return;
+      }
+      img.Convert( dip::DT_SFLOAT );
+   }
+}
+
 } // namespace detail
 
 /// \brief `dml::GetImage` can optionally create a shared copy of the input `mxArray`, which extends its lifetime.
@@ -716,6 +750,7 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
    // Find image properties
    bool complex = false;
    bool needCopy = false;
+   bool maybeCast = false;
    dip::Tensor tensor; // scalar by default
    mxClassID type;
    mxArray const* mxdata;
@@ -760,7 +795,6 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
             try {
                u = dip::Units( GetStringUnicode( units ));
             } catch( dip::Error const& /*e*/ ) {
-               //std::cout << "Error converting units: " << e.what() << std::endl;
                u = dip::Units::Pixel();
             }
             pq[ ii ] = { GetFloat( magnitude ), u };
@@ -795,6 +829,7 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
       }
       // Data Type
       type = mxGetClassID( mxdata );
+      maybeCast = ( ndims == 0 ) && ( type == mxDOUBLE_CLASS ); // If it's a scalar double, we might want to cast it to single instead.
       complex = mxIsComplex( mxdata );
       if( complex ) {
          // The complex data in an mxArray is stored as two separate memory blocks, and need to be copied to be
@@ -858,17 +893,20 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
       dip::DataType dt = datatype.Real();
       void* p_real = mxGetData( mxdata );
       if( p_real ) {
-         dip::Image real( nullptr, p_real, dt, sizes, strides, tensor, tstride );
+         dip::Image real( dip::NonOwnedRefToDataSegment( p_real ), p_real, dt, sizes, strides, tensor, tstride );
          out.Real().Copy( real );
       } else {
          out.Real().Fill( 0 );
       }
       void* p_imag = mxGetImagData( mxdata );
       if( p_imag ) {
-         dip::Image imag( nullptr, p_imag, dt, sizes, strides, tensor, tstride );
+         dip::Image imag( dip::NonOwnedRefToDataSegment( p_imag ), p_imag, dt, sizes, strides, tensor, tstride );
          out.Imaginary().Copy( imag );
       } else {
          out.Imaginary().Fill( 0 );
+      }
+      if( maybeCast ) {
+         detail::MaybeCastScalar( out );
       }
       //out.SetPixelSize( pixelSize );
       //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
@@ -891,6 +929,9 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
       }
       // Create Image object
       dip::Image out( dataSegment, origin, datatype, sizes, strides, tensor, tstride );
+      if( maybeCast ) {
+         detail::MaybeCastScalar( out );
+      }
       out.SetPixelSize( pixelSize );
       out.SetColorSpace( colorSpace );
       return out;
