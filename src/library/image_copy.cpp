@@ -36,11 +36,9 @@ void CopyFrom( Image const& src, Image& dest, Image const& mask ) {
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_STACK_TRACE_THIS( mask.CheckIsMask( src.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
-   // Create output TODO: reforge?
    dip::uint N = Count( mask );
-   dest.CopyProperties( src );
-   dest.SetSizes( UnsignedArray( { N } ));
-   dest.Forge();
+   DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { N } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DONT_ALLOW ));
+   dest.CopyNonDataProperties( src );
    // Samples
    dip::uint telems = src.TensorElements();
    dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
@@ -75,10 +73,8 @@ void CopyFrom( Image const& src, Image& dest, IntegerArray const& offsets ) {
    // Check input
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( offsets.empty(), E::ARRAY_PARAMETER_EMPTY );
-   // Create output TODO: reforge?
-   dest.CopyProperties( src );
-   dest.SetSizes( UnsignedArray( { offsets.size() } ));
-   dest.Forge();
+   DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { offsets.size() } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DONT_ALLOW ));
+   dest.CopyNonDataProperties( src );
    // Samples
    dip::uint telems = src.TensorElements();
    dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
