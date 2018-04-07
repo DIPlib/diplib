@@ -415,8 +415,8 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
 FileInformation ImageReadICS(
       Image& out,
       String const& filename,
-      RangeArray roi,
-      Range channels,
+      RangeArray const& roi,
+      Range const& channels,
       String const& mode
 ) {
    bool fast;
@@ -520,7 +520,7 @@ FileInformation ImageReadICS(
    Image outRef = out.QuickCopy();
    if( data.fileInformation.tensorElements > 1 ) {
       outRef.TensorToSpatial();
-      roi.push_back( channels );
+      roiSpec.roi.push_back( roiSpec.channels );
       sizes.push_back( roiSpec.tensorElements );
       ++nDims;
    }
@@ -543,7 +543,7 @@ FileInformation ImageReadICS(
          --ii;
          if( sizes[ ii ] == 1 ) {
             sizes.erase( ii );
-            roi.erase( ii );
+            roiSpec.roi.erase( ii );
             order.erase( ii );
             strides.erase( ii );
             outRef.Squeeze( ii );
@@ -555,7 +555,7 @@ FileInformation ImageReadICS(
       auto sort = strides.sorted_indices();
       outRef.PermuteDimensions( sort );
       sizes = sizes.permute( sort );
-      roi = roi.permute( sort );
+      roiSpec.roi = roiSpec.roi.permute( sort );
       order = order.permute( sort );
       strides = strides.permute( sort );
 
@@ -569,7 +569,7 @@ FileInformation ImageReadICS(
 
       // prepare the buffer
       dip::uint sizeOf = data.fileInformation.dataType.SizeOf();
-      dip::uint bufSize = sizeOf * (( outRef.Size( procDim ) - 1 ) * roi[ procDim ].step + 1 );
+      dip::uint bufSize = sizeOf * (( outRef.Size( procDim ) - 1 ) * roiSpec.roi[ procDim ].step + 1 );
       std::vector< uint8 > buffer( bufSize );
 
       // read the data
@@ -578,10 +578,10 @@ FileInformation ImageReadICS(
       do {
          // find location in file to read at
          UnsignedArray const& curipos = it.Coordinates();
-         dip::uint new_loc = sizeOf * roi[ procDim ].Offset();
+         dip::uint new_loc = sizeOf * roiSpec.roi[ procDim ].Offset();
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if( ii != procDim ) {
-               dip::uint curfpos = curipos[ ii ] * roi[ ii ].step + roi[ ii ].Offset();
+               dip::uint curfpos = curipos[ ii ] * roiSpec.roi[ ii ].step + roiSpec.roi[ ii ].Offset();
                new_loc += sizeOf * curfpos * static_cast< dip::uint >( strides[ ii ] );
             }
          }
@@ -594,7 +594,7 @@ FileInformation ImageReadICS(
          CALL_ICS( IcsGetDataBlock( icsFile, buffer.data(), bufSize ), "Couldn't read pixel data from ICS file" );
          cur_loc += bufSize;
          // copy buffer to image
-         detail::CopyBuffer( buffer.data(), data.fileInformation.dataType, static_cast< dip::sint >( roi[ procDim ].step ), 1,
+         detail::CopyBuffer( buffer.data(), data.fileInformation.dataType, static_cast< dip::sint >( roiSpec.roi[ procDim ].step ), 1,
                              it.Pointer(), outRef.DataType(), outRef.Stride( procDim ), 1,
                              outRef.Size( procDim ), 1 );
       } while( ++it );

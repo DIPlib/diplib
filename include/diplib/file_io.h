@@ -74,8 +74,8 @@ struct FileInformation {
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
       String const& filename,
-      RangeArray roi = {},
-      Range channels = {},
+      RangeArray const& roi = {},
+      Range const& channels = {},
       String const& mode = ""
 );
 inline Image ImageReadICS(
