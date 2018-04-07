@@ -247,7 +247,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `pst`
 - `quadraturetensor`
 - `radoncircle`
-- `readavi`
 - `readrawim`
 - `rotation3d`
 - `scale2rgb`
@@ -262,8 +261,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `view5d`
 - `wiener`
 - `write_add`
-- `writeavi`
-- `writedisplayavi`
 
 Color stuff, which needs lots of work to bring in shape:
 - `change_chroma`

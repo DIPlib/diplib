@@ -98,7 +98,7 @@ if isempty(ext)
       case ''
          % no action
       otherwise
-         error('Unkown format')
+         error('Unkown format, currently only ICS and TIFF files are supported')
    end
 end
 
@@ -115,6 +115,7 @@ if isempty(fileparts(filename)) % The file name has no path.
       end
    end
 end
+% TODO: read the file using IMREAD and crop to the requested ROI
 error('Could not open the file for reading')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,4 +138,6 @@ switch format
         return
      end
      error('The file is not an ICS or TIFF file')
+  otherwise
+     error('Unrecognized format, currently only ICS and TIFF files are supported')
 end
