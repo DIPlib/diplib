@@ -96,7 +96,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       mxArray* rhs[2];
       rhs[ 0 ] = mxCreateString( ViewerClassName );
       static_assert( sizeof( void* ) == 8, "viewslice requires a 64-bit environment" );
-      rhs[ 1 ] = mxCreateUninitNumericMatrix( 1, 1, mxINT64_CLASS, mxREAL );
+      rhs[ 1 ] = mxCreateNumericMatrix( 1, 1, mxINT64_CLASS, mxREAL );
       *static_cast< void** >( mxGetData( rhs[ 1 ] )) = wdw.get();
       mexCallMATLAB( 1, &obj, 2, rhs, "javaObjectEDT" );
 
