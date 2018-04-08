@@ -465,6 +465,7 @@ void Rotation(
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
+   String colorSpace = c_in.ColorSpace();
    // Normalize angle to [0,180)
    angle = std::fmod( angle, 2.0 * pi );
    if( angle < 0.0 ) {
@@ -529,6 +530,7 @@ void Rotation(
       }
       out.SetPixelSize( pixelSize );
    }
+   out.SetColorSpace( colorSpace );
 }
 
 } // namespace dip
