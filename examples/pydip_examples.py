@@ -279,3 +279,33 @@ Show(dip.UnionSupGenerating2D(a, ht, 90))
 
 ht = dip.ConvexHullInterval2D()
 Show(dip.Thickening(a, dip.Image(), ht))
+
+###
+
+import numpy as np
+import matplotlib.pyplot as pp
+
+a = dip.Label(dip.ImageReadICS('cermet')<120)
+ccs = dip.GetImageChainCodes(a)
+Show(a==31)
+cc = ccs[30] # indexing starts at 0, but label IDs start at 1
+print(cc.objectID) # returns 31
+print(cc.Length()) # best approximation of perimeter
+print(cc.Polygon().Length()) # poor approximation of perimeter
+print(cc.Feret()) # poor approximation of Feret diameters
+print(cc.Polygon().Feret()) # best approximation of Feret diameters
+print(cc.BoundingBox())
+print(cc.Polygon().BoundingBox())
+pol = cc.Polygon()
+print(pol.Area() + 0.5)
+print(pol.Centroid())
+print(pol.RadiusStatistics())
+print(pol.EllipseParameters())
+print(pol.EllipseVariance())
+np.array(pol.ConvexHull())
+
+pol = np.array(pol)
+pp.clf()
+a.Show('labels')
+pp.plot(pol[:,0],pol[:,1],'w-')
+pp.show(block=False)

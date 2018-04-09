@@ -311,6 +311,7 @@ void init_image( py::module& m ) {
    img.def( "MergeComplex", py::overload_cast< dip::uint >( &dip::Image::MergeComplex ), "dim"_a, py::return_value_policy::reference_internal );
    img.def( "SplitComplexToTensor", &dip::Image::SplitComplexToTensor, py::return_value_policy::reference_internal );
    img.def( "MergeTensorToComplex", &dip::Image::MergeTensorToComplex, py::return_value_policy::reference_internal );
+   img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop ),  "sizes"_a, "cropLocation"_a = "center", py::return_value_policy::reference_internal );
    // Create a view of another image.
    img.def( "Diagonal", []( dip::Image const& image ) -> dip::Image { return image.Diagonal(); } );
    img.def( "TensorRow", []( dip::Image const& image, dip::uint index ) -> dip::Image { return image.TensorRow( index ); }, "index"_a );

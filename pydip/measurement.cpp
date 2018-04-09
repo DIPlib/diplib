@@ -16,20 +16,83 @@
  * limitations under the License.
  */
 
+#include <diplib/file_io.h>
 #include "pydip.h"
 #include "diplib/measurement.h"
+#include "diplib/chain_code.h"
 
 dip::MeasurementTool measurementTool;
 
+namespace {
+
 template< typename MeasurementValues >
 py::handle MeasurementValuesToList( MeasurementValues values ) {
-   py::list list( values.size());
+   py::list list( values.size() );
    py::ssize_t index = 0;
    for( auto& value: values ) {
       PyList_SET_ITEM( list.ptr(), index++, py::cast( value ).release().ptr() );
    }
    return list.release();
 }
+
+dip::Polygon BufferToPolygon( py::buffer& buf ) {
+   py::buffer_info info = buf.request();
+   //std::cout << "--Constructing dip::Polygon from Python buffer.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndims = " << info.shape.size() << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   if( info.format[ 0 ] != py::format_descriptor< dip::dfloat >::c ) {
+      // TODO: Cast other types to double floats
+      std::cout << "Attempted to convert buffer to dip.Polygon object: data must be double-precision floats." << std::endl;
+      DIP_THROW( "Buffer data type not compatible with class Polygon" );
+   }
+   if(( info.shape.size() != 2 ) || ( info.shape[ 1 ] != 2 )) {
+      std::cout << "Attempted to convert buffer to dip.Polygon object: data must have two columns." << std::endl;
+      DIP_THROW( "Buffer size not compatible with class Polygon" );
+   }
+   // Copy data into polygon
+   dip::Polygon polygon;
+   dip::uint nPoints = static_cast< dip::uint >( info.shape[ 0 ] );
+   polygon.vertices.resize( nPoints );
+   dip::sint stride = info.strides[ 0 ] / static_cast< dip::sint >( info.itemsize );
+   DIP_THROW_IF( stride * static_cast< dip::sint >( info.itemsize ) != info.strides[ 0 ],
+                 "Stride of buffer is not an integer multiple of the item size" );
+   dip::sint dstride = info.strides[ 1 ] / static_cast< dip::sint >( info.itemsize );
+   DIP_THROW_IF( stride * static_cast< dip::sint >( info.itemsize ) != info.strides[ 1 ],
+                 "Stride of buffer is not an integer multiple of the item size" );
+   double* ptr = static_cast< double* >( info.ptr );
+   for( dip::uint ii = 0; ii < nPoints; ++ii, ptr += stride ) {
+      polygon.vertices[ ii ] = { ptr[ 0 ], ptr[ dstride ] };
+   }
+   return polygon;
+}
+
+py::buffer_info PolygonToBuffer( dip::Polygon& polygon ) {
+   dip::sint itemsize = static_cast< dip::sint >( sizeof( dip::dfloat ));
+   dip::IntegerArray strides = { 2 * itemsize, itemsize };
+   dip::UnsignedArray sizes = { polygon.vertices.size(), 2 };
+   py::buffer_info info{ polygon.vertices.data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
+                         static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
+   //std::cout << "--Constructed Python buffer for dip::Image object.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndims = " << info.ndims << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   return info;
+}
+
+} // namespace
 
 void init_measurement( py::module& m ) {
    auto mm = m.def_submodule("MeasurementTool", "A tool to quantify objects in an image.");
@@ -81,7 +144,7 @@ void init_measurement( py::module& m ) {
    obj.def( "Features", &dip::Measurement::IteratorObject::Features );
 
    // dip::Measurement
-   auto meas = py::class_< dip::Measurement >( mm, "Measurement", "The result of a call to PyDIP.Measure, a table with a column group for\neach feature and a row for each object." );
+   auto meas = py::class_< dip::Measurement >( mm, "Measurement", "The result of a call to PyDIP.MeasurementTool.Measure, a table with a column group for\neach feature and a row for each object." );
    meas.def( "__repr__", []( dip::Measurement const& self ) {
                 std::ostringstream os;
                 os << "<Measurement with " << self.NumberOfFeatures() << " features for " << self.NumberOfObjects() << " objects>";
@@ -135,4 +198,77 @@ void init_measurement( py::module& m ) {
              dip::StatisticsAccumulator acc = dip::SampleStatistics( featureValues );
              return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() ).release();
           }, "featureValues"_a );
+
+   // dip::Polygon
+   auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(), "A polygon representing a 2D object." );
+   poly.def( "__init__", []( dip::Polygon& self, py::buffer& buf ) { new( &self ) dip::Polygon(); self = BufferToPolygon( buf ); } );
+   py::implicitly_convertible< py::buffer, dip::Polygon >();
+   poly.def_buffer( []( dip::Polygon& self ) -> py::buffer_info { return PolygonToBuffer( self ); } );
+   poly.def( "__repr__", []( dip::Polygon const& self ) {
+                std::ostringstream os;
+                os << "<Polygon with " << self.vertices.size() << " vertices>";
+                return os.str();
+             } );
+   poly.def( "BoundingBox", []( dip::Polygon const& self ){
+                auto bb = self.BoundingBox();
+                auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
+                auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
+                return py::make_tuple( topLeft, bottomRight ).release();
+             } );
+   poly.def( "IsClockWise", &dip::Polygon::IsClockWise );
+   poly.def( "Area", &dip::Polygon::Area );
+   poly.def( "Centroid", []( dip::Polygon const& self ) {
+                auto centroid = self.Centroid();
+                return py::make_tuple( centroid.x, centroid.y ).release();
+             } );
+   poly.def( "Length", &dip::Polygon::Length ); // is the perimeter
+   poly.def( "EllipseParameters", []( dip::Polygon const& self ) {
+                auto ellipseParams = self.CovarianceMatrix().Ellipse();
+                return py::make_tuple( ellipseParams.majorAxis, ellipseParams.minorAxis, ellipseParams.orientation, ellipseParams.eccentricity ).release();
+             } );
+   poly.def( "RadiusStatistics", []( dip::Polygon const& self ) {
+                auto radiusStats = self.RadiusStatistics();
+                return py::make_tuple( radiusStats.Mean(), radiusStats.StandardDeviation(), radiusStats.Maximum(), radiusStats.Minimum(), radiusStats.Circularity() ).release();
+             } );
+   poly.def( "EllipseVariance", py::overload_cast<>( &dip::Polygon::EllipseVariance, py::const_ ));
+   poly.def( "ConvexHull", []( dip::Polygon const& self ) {
+                auto out = self.ConvexHull().Polygon(); // Make a copy of the polygon, sadly. Otherwise we'd have to return the ConvexHull object. We can't extract that data from it trivially.
+                return out;
+             } );
+   poly.def( "Feret", []( dip::Polygon const& self ) {
+                auto feretValues = self.ConvexHull().Feret();
+                return py::make_tuple( feretValues.maxDiameter, feretValues.minDiameter, feretValues.maxPerpendicular, feretValues.maxAngle, feretValues.minAngle ).release();
+             } );
+
+   // dip::ChainCode
+   auto chain = py::class_< dip::ChainCode >( m, "ChainCode", "" );
+   chain.def( "__repr__", []( dip::ChainCode const& self ) {
+                 std::ostringstream os;
+                 os << "<ChainCode for object #" << self.objectID << ">";
+                 return os.str();
+              } );
+   chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ).release(); } );
+   chain.def_readonly( "objectID", &dip::ChainCode::objectID );
+   chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );
+   chain.def( "ConvertTo8Connected", &dip::ChainCode::ConvertTo8Connected );
+   chain.def( "Length", &dip::ChainCode::Length );
+   chain.def( "Feret", []( dip::ChainCode const& self, dip::dfloat angleStep ) {
+                 auto feretValues = self.Feret( angleStep );
+                 return py::make_tuple( feretValues.maxDiameter, feretValues.minDiameter, feretValues.maxPerpendicular, feretValues.maxAngle, feretValues.minAngle ).release();
+              }, "angleStep"_a = 5.0 / 180.0 * dip::pi );
+   chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy );
+   chain.def( "BoundingBox", []( dip::ChainCode const& self ){
+      auto bb = self.BoundingBox();
+      auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
+      auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
+      return py::make_tuple( topLeft, bottomRight ).release();
+   } );
+   chain.def( "LongestRun", &dip::ChainCode::LongestRun );
+   chain.def( "Polygon", &dip::ChainCode::Polygon );
+   chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ));
+   chain.def( "Offset", &dip::ChainCode::Offset );
+
+   // Chain code functions
+   m.def( "GetImageChainCodes", &dip::GetImageChainCodes, "labels"_a, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 2 );
+   m.def( "GetSingleChainCode", &dip::GetSingleChainCode, "labels"_a, "startCoord"_a, "connectivity"_a = 2 );
 }
