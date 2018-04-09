@@ -380,7 +380,7 @@ void DrawPolygon2D(
       DIP_OVL_CALL_ALL( dip__DrawFilledPolygon, ( out, edges, value, horizontalScanLines ), out.DataType());
    } else {
       // Test all points to be within the image
-      BoundingBox bb{ VertexInteger{ 0, 0 },
+      BoundingBoxInteger bb{ VertexInteger{ 0, 0 },
                       VertexInteger{ static_cast< dip::sint >( out.Size( 0 ) - 1 ),
                                      static_cast< dip::sint >( out.Size( 1 ) - 1 ) }};
       for( auto point : polygon.vertices ) {

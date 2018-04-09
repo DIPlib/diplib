@@ -200,8 +200,8 @@ ChainCode GetSingleChainCode(
 }
 
 void ChainCode::Image( dip::Image& out ) const {
-   dip::BoundingBox bb = BoundingBox();
-   UnsignedArray size = bb.Size();
+   dip::BoundingBoxInteger bb;
+   UnsignedArray size { bb.Size() };
    out.ReForge( size, 1, DT_BIN );
    out = false; // set all pixels to false
    ChainCode::CodeTable freeman = PrepareCodeTable( out.Strides() );

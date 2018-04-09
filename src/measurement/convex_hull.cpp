@@ -41,6 +41,9 @@ inline void DecrementMod4( unsigned& k ) {
 } // namespace
 
 ChainCode ChainCode::ConvertTo8Connected() const {
+   if( is8connected ) {
+      return *this;
+   }
    ChainCode out;
    out.objectID = objectID;
    out.start = start;

@@ -146,6 +146,9 @@ struct DIP_NO_EXPORT Vertex {
    }
 };
 
+using VertexFloat = Vertex< dfloat >;        ///< A vertex with floating-point coordinates
+using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordinates
+
 /// \brief Compare two vertices
 template< typename T >
 inline bool operator==( Vertex< T > v1, Vertex< T > v2 ) {
@@ -202,9 +205,6 @@ template< typename T >
 inline dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ));
 }
-
-using VertexFloat = Vertex< dfloat >;        ///< A vertex with floating-point coordinates
-using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordinates
 
 /// \brief Add two vertices together, with identical types
 template< typename T >
@@ -275,15 +275,17 @@ inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
 }
 
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
+template< typename T >
 struct DIP_NO_EXPORT BoundingBox {
-   VertexInteger topLeft;
-   VertexInteger bottomRight;
+   using VertexType = Vertex< T >;
+   VertexType topLeft;
+   VertexType bottomRight;
    /// Default constructor, yields a bounding box of a single pixel at `{0,0}`
    constexpr BoundingBox() {}
    /// Constructor, yields a bounding box of a single pixel at `pt`
-   constexpr BoundingBox( VertexInteger pt ) : topLeft( pt ), bottomRight( pt ) {}
+   constexpr BoundingBox( VertexType pt ) : topLeft( pt ), bottomRight( pt ) {}
    /// Constructor, yields a bounding box with the two points as two of its vertices
-   BoundingBox( VertexInteger a, VertexInteger b ) {
+   BoundingBox( VertexType a, VertexType b ) {
          if( a.x < b.x ) {
             topLeft.x = a.x;
             bottomRight.x = b.x;
@@ -300,7 +302,7 @@ struct DIP_NO_EXPORT BoundingBox {
          }
    }
    /// Expand bounding box to include given point.
-   void Expand( VertexInteger pt ) {
+   void Expand( VertexType pt ) {
       if( pt.x < topLeft.x ) {
          topLeft.x = pt.x;
       } else if( pt.x > bottomRight.x ) {
@@ -312,20 +314,34 @@ struct DIP_NO_EXPORT BoundingBox {
          bottomRight.y = pt.y;
       }
    }
+   /// Tests to see if the given point is inside the bounding box.
    bool Contains( VertexInteger pt ) {
-      return !(( pt.x < topLeft.x ) || ( pt.x > bottomRight.x ) ||
-               ( pt.y < topLeft.y ) || ( pt.y > bottomRight.y ));
+      return !(( static_cast< T >( pt.x ) < topLeft.x ) || ( static_cast< T >( pt.x ) > bottomRight.x ) ||
+               ( static_cast< T >( pt.y ) < topLeft.y ) || ( static_cast< T >( pt.y ) > bottomRight.y ));
    }
+   /// Tests to see if the given point is inside the bounding box.
    bool Contains( VertexFloat pt ) {
       return !(( pt.x < static_cast< dfloat >( topLeft.x )) || ( pt.x > static_cast< dfloat >( bottomRight.x )) ||
                ( pt.y < static_cast< dfloat >( topLeft.y )) || ( pt.y > static_cast< dfloat >( bottomRight.y )));
    }
    /// Returns the size of the bounding box.
-   UnsignedArray Size() const {
-      VertexInteger res = bottomRight - topLeft + 1;
-      return { static_cast< dip::uint >( res.x ), static_cast< dip::uint >( res.y ) };
-   }
+   DimensionArray< T > Size() const;
 };
+
+using BoundingBoxFloat = BoundingBox< dfloat >;        ///< A bounding box with floating-point coordinates
+using BoundingBoxInteger = BoundingBox< dip::sint >;   ///< A bounding box with integer coordinates
+
+template<>
+inline IntegerArray BoundingBox< dip::sint >::Size() const {
+   auto res = bottomRight - topLeft + 1;
+   return { res.x, res.y };
+}
+
+template<>
+inline FloatArray BoundingBox< dfloat >::Size() const {
+   auto res = bottomRight - topLeft;
+   return { res.x, res.y };
+}
 
 //
 // Covariance matrix
@@ -420,7 +436,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
          dfloat majorAxis;    ///< Major axis length
          dfloat minorAxis;    ///< Minor axis length
          dfloat orientation;  ///< Orientation of major axis
-         double eccentricity; ///< Ellipse eccentricity
+         dfloat eccentricity; ///< Ellipse eccentricity
       };
       /// \brief Compute parameters of ellipse with same covariance matrix.
       EllipseParameters Ellipse() const {
@@ -452,13 +468,13 @@ struct DIP_NO_EXPORT Polygon {
    std::vector< VertexFloat > vertices;  ///< The vertices
 
    /// \brief Returns the bounding box of the polygon
-   dip::BoundingBox BoundingBox() const {
-      if( vertices.size() < 1 ) {
+   BoundingBoxFloat BoundingBox() const {
+      if( vertices.empty() ) {
          return {}; // Should we generate an error instead?
       }
-      dip::BoundingBox bb( VertexInteger( vertices[ 0 ].Round() ));
+      BoundingBoxFloat bb( vertices[ 0 ] );
       for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-         bb.Expand( VertexInteger( vertices[ ii ].Round() ));
+         bb.Expand( vertices[ ii ] );
       }
       return bb;
    }
@@ -613,7 +629,7 @@ class DIP_NO_EXPORT ConvexHull {
       }
 
       /// Compute the bounding box of the convex hull
-      dip::BoundingBox BoundingBox() const {
+      BoundingBoxFloat BoundingBox() const {
          return vertices_.BoundingBox();
       }
 
@@ -779,7 +795,7 @@ struct DIP_NO_EXPORT ChainCode {
    }
 
    /// \brief Creates a new chain code object that is 8-connected and represents the same shape.
-   ChainCode ConvertTo8Connected() const;
+   DIP_EXPORT ChainCode ConvertTo8Connected() const;
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders.
    ///
@@ -797,7 +813,7 @@ struct DIP_NO_EXPORT ChainCode {
 
    /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
    /// It is better to use `this->ConvexHull().Feret()`.
-   DIP_EXPORT FeretValues Feret( dfloat angleStep ) const;
+   DIP_EXPORT FeretValues Feret( dfloat angleStep = 5.0 / 180.0 * pi ) const;
 
    /// Computes the bending energy.
    ///
@@ -825,7 +841,7 @@ struct DIP_NO_EXPORT ChainCode {
    }
 
    /// \brief Finds the bounding box for the object described by the chain code
-   DIP_EXPORT dip::BoundingBox BoundingBox() const;
+   DIP_EXPORT BoundingBoxInteger BoundingBox() const;
 
    /// Returns the length of the longest run of identical chain codes.
    DIP_EXPORT dip::uint LongestRun() const;

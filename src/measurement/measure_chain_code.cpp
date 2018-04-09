@@ -90,17 +90,15 @@ FeretValues ChainCode::Feret( dfloat angleStep ) const {
       std::array< dfloat, 8 > sinval;
       if( is8connected ) {
          for( dip::uint ii = 0; ii < 8; ii++ ) {
-            cosval[ ii ] = ( 1.0 + std::sqrt( 2.0 ) -
-                             1.0 * static_cast< dfloat >( ii % 2 )) *
-                                   std::cos( static_cast< dfloat >( ii ) * pi / 4.0 + angle );
-            sinval[ ii ] = -( 1.0 + std::sqrt( 2.0 ) -
-                              1.0 * static_cast< dfloat >( ii % 2 )) *
-                                    std::sin( static_cast< dfloat >( ii ) * pi / 4.0 + angle );
+            cosval[ ii ] =  ( 1.0 + ( std::sqrt( 2.0 ) - 1.0 ) * static_cast< dfloat >( ii % 2 ))
+                                      * std::cos( static_cast< dfloat >( ii ) * pi / 4.0 + angle );
+            sinval[ ii ] = -( 1.0 + ( std::sqrt( 2.0 ) - 1.0 ) * static_cast< dfloat >( ii % 2 ))
+                                      * std::sin( static_cast< dfloat >( ii ) * pi / 4.0 + angle );
          }
       } else {
          for( dip::uint ii = 0; ii < 4; ii++ ) {
-            cosval[ ii ] =  1.0 * std::cos( static_cast< dfloat >( ii ) * pi / 2.0 + angle );
-            sinval[ ii ] = -1.0 * std::sin( static_cast< dfloat >( ii ) * pi / 2.0 + angle );
+            cosval[ ii ] =  std::cos( static_cast< dfloat >( ii ) * pi / 2.0 + angle );
+            sinval[ ii ] = -std::sin( static_cast< dfloat >( ii ) * pi / 2.0 + angle );
          }
       }
       // Rotate the chain and find bounding box
@@ -200,9 +198,9 @@ dfloat ChainCode::BendingEnergy() const {
    }
 }
 
-dip::BoundingBox ChainCode::BoundingBox() const {
+BoundingBoxInteger ChainCode::BoundingBox() const {
    VertexInteger current = start;
-   dip::BoundingBox bb{ current };
+   dip::BoundingBoxInteger bb{ current };
    if( is8connected ) {
       for( auto code : codes ) {
          current += code.Delta8();
