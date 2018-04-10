@@ -72,6 +72,13 @@ public:
 
 protected:
    FloatArray imgCoords_;
+   // Makes a quick copy of a parameter image and expands its tensor if necessary
+   void ParamImageQuickCopyAndExpandTensor( Image const& paramImage, Image& expandedParamImage, dip::uint inputTensorElements ) {
+      expandedParamImage = paramImage.QuickCopy();
+      if( expandedParamImage.TensorElements() != inputTensorElements ) {
+         expandedParamImage.ExpandSingletonTensor( inputTensorElements );
+      }
+   }
 };
 
 // Scaling helper class
@@ -79,6 +86,7 @@ template< dip::uint nDims>
 class KernelTransformScale
 {
 public:
+   // The `kernelScale` image tensor need not be expanded beforehand
    KernelTransformScale( Image const& kernelScale, dip::uint inputTensorElements )
          : scaleAtImgCoords_( inputTensorElements ), inputTensorElements_( inputTensorElements ) {
       // The kernel scale image must be a COL_MAJOR_MATRIX tensor image with the following tensor size:
@@ -93,11 +101,14 @@ public:
          kernelScale_.ExpandSingletonTensor( tensorRows * tensorCols );
          kernelScale_.ReshapeTensor( tensorRows, tensorCols );
          scaleTensorLUT_ = kernelScale_.Tensor().LookUpTable();
-      } else if( inputTensorElements == 1 && kernelScale_.TensorShape() == Tensor::Shape::COL_VECTOR ) {
+      } else if( kernelScale_.TensorColumns() == tensorCols && kernelScale_.TensorRows() == tensorRows ) {
+         // Dimensions are ok, only create LUT
+         scaleTensorLUT_ = kernelScale_.Tensor().LookUpTable();
+      } else if( inputTensorElements == 1 && kernelScale_.TensorShape() == Tensor::Shape::COL_VECTOR && kernelScale_.TensorRows() == tensorCols) {
          // The scale tensor is a col vector but must be a row vector
          kernelScale_.ReshapeTensor( tensorRows, tensorCols );
          scaleTensorLUT_ = kernelScale_.Tensor().LookUpTable();
-      } else if( kernelScale_.TensorColumns() != tensorCols  && kernelScale_.TensorRows() == tensorRows ) {
+      } else if( kernelScale_.TensorColumns() == 1  && kernelScale_.TensorRows() == tensorRows ) {
          // Only the row size matches: tensor contains a scalar per input tensor element -> create special LUT but leave the tensor itself unchanged
          // LUT is indexed as: [col * NUM_ROWS + row]
          scaleTensorLUT_ = kernelScale_.Tensor().LookUpTable(); // LUT for column vector
@@ -110,8 +121,7 @@ public:
          }
       }
       else {
-         // Dimensions are ok, only create LUT
-         scaleTensorLUT_ = kernelScale_.Tensor().LookUpTable();
+         DIP_THROW( "Scale parameter image tensor has wrong size, must have " + std::to_string( inputTensorElements ) + " rows and " + std::to_string( nDims ) + " columns" );
       }
 
       // Multiply the LUT elements with the tensor stride so that we don't have to do that later
@@ -148,8 +158,11 @@ protected:
 class KernelTransform2DRotation : public KernelTransform
 {
 public:
-   KernelTransform2DRotation( Image const& orientation ) : orientation_( orientation ) {
-      csn_.resize( orientation.TensorElements() ), sn_.resize( orientation.TensorElements() );
+   // The `orientation` image tensor need not be expanded beforehand
+   KernelTransform2DRotation( Image const& orientation, dip::uint inputTensorElements ) {
+      ParamImageQuickCopyAndExpandTensor( orientation, orientation_, inputTensorElements );
+      csn_.resize( inputTensorElements );
+      sn_.resize( inputTensorElements );
    }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform2DRotation( *this ); }
@@ -171,14 +184,15 @@ public:
    }
 protected:
    std::vector<dfloat> csn_, sn_;   // Length is equal to number of input tensor elements
-   Image const& orientation_;
+   Image orientation_;
 };
 
 class KernelTransform2DScaledRotation : public KernelTransform2DRotation, public KernelTransformScale<2>
 {
 public:
-   KernelTransform2DScaledRotation( Image const& orientation, Image const& kernelScale )
-         : KernelTransform2DRotation( orientation ), KernelTransformScale<2>( kernelScale, orientation.TensorElements() ) {}
+   // The `orientation` and `kernelScale` image tensors need not be expanded beforehand
+   KernelTransform2DScaledRotation( Image const& orientation, Image const& kernelScale, dip::uint inputTensorElements )
+         : KernelTransform2DRotation( orientation, inputTensorElements ), KernelTransformScale<2>( kernelScale, inputTensorElements ) {}
    virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledRotation( *this ); }
 
    virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
@@ -201,8 +215,12 @@ public:
 class KernelTransform3DRotationZ : public KernelTransform
 {
 public:
-   KernelTransform3DRotationZ( Image const& phi3, Image const& theta3 )
-         : phi3_( phi3 ), theta3_( theta3 ), R_( phi3.TensorElements() ) {}
+   // The `phi3` and `theta3` image tensors need not be expanded beforehand
+   KernelTransform3DRotationZ( Image const& phi3, Image const& theta3, dip::uint inputTensorElements ) {
+      ParamImageQuickCopyAndExpandTensor( phi3, phi3_, inputTensorElements );
+      ParamImageQuickCopyAndExpandTensor( theta3, theta3_, inputTensorElements );
+      R_.resize( inputTensorElements );
+   }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationZ( *this ); }
 
@@ -239,8 +257,8 @@ public:
    }
 
 protected:
-   Image const& phi3_;
-   Image const& theta3_;
+   Image phi3_;
+   Image theta3_;
    using RotMatrix = std::array<dfloat, 9>;
    std::vector< RotMatrix > R_;  // Rotation matrix. The vector is over the input tensor elements. // TODO: use Matrix class?
 };
@@ -249,7 +267,15 @@ protected:
 class KernelTransform3DRotationXY : public KernelTransform
 {
 public:
-   KernelTransform3DRotationXY( Image const& phi2, Image const& theta2, Image const& phi3, Image const& theta3 ) : phi2_( phi2 ), theta2_( theta2 ), phi3_( phi3 ), theta3_( theta3 ), T_( phi2.TensorElements() ) {}
+   // The `phi2`, `theta2`, `phi3` and `theta3` image tensors need not be expanded beforehand
+   KernelTransform3DRotationXY( Image const& phi2, Image const& theta2, Image const& phi3, Image const& theta3, dip::uint inputTensorElements ) {
+      // Expand parameter images if necessary
+      ParamImageQuickCopyAndExpandTensor( phi2, phi2_, inputTensorElements );
+      ParamImageQuickCopyAndExpandTensor( theta2, theta2_, inputTensorElements );
+      ParamImageQuickCopyAndExpandTensor( phi3, phi3_, inputTensorElements );
+      ParamImageQuickCopyAndExpandTensor( theta3, theta3_, inputTensorElements );
+      T_.resize( inputTensorElements );
+      }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationXY( *this ); }
 
@@ -289,10 +315,10 @@ protected:
       return Eigen::Vector3d( sin_phi*cos_theta, sin_phi*sin_theta, cos_phi );
    }
 
-   Image const& phi2_;
-   Image const& theta2_;
-   Image const& phi3_;
-   Image const& theta3_;
+   Image phi2_;
+   Image theta2_;
+   Image phi3_;
+   Image theta3_;
    using CompactTransform = Eigen::Transform<dfloat, 3, Eigen::AffineCompact>;
    std::vector< CompactTransform, Eigen::aligned_allocator< CompactTransform > > T_;  // Transformation matrix. The vector is over the input tensor elements.
 };
@@ -301,7 +327,11 @@ protected:
 class KernelTransform2DSkew : public KernelTransform
 {
 public:
-   KernelTransform2DSkew( Image const& skew ) : skew_( skew ), s_( skew.TensorElements() ) {}
+   // The `skew` image tensor need not be expanded beforehand
+   KernelTransform2DSkew( Image const& skew, dip::uint inputTensorElements ) {
+      ParamImageQuickCopyAndExpandTensor( skew, skew_, inputTensorElements );
+      s_.resize( inputTensorElements );
+   }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform2DSkew( *this ); }
 
@@ -318,7 +348,7 @@ public:
       transformedCoords[ 1 ] = imgCoords_[ 1 ] + static_cast< dfloat >( kernelCoords[ 1 ] ) + s_[ tensorIndex ] * kernelCoordX;
    }
 protected:
-   Image const& skew_;
+   Image skew_;
    std::vector< dfloat > s_;  // The vector is over the input tensor elements
 };
 
@@ -326,7 +356,11 @@ protected:
 class KernelTransform2DBanana : public KernelTransform2DRotation
 {
 public:
-   KernelTransform2DBanana( Image const& orientation, Image const& hcurvature ) : KernelTransform2DRotation( orientation), hcurvature_( hcurvature ), hcurv_( orientation.TensorElements() ) {}
+   // The `orientation` and `hcurvature` image tensors need not be expanded beforehand
+   KernelTransform2DBanana( Image const& orientation, Image const& hcurvature, dip::uint inputTensorElements ) : KernelTransform2DRotation( orientation, inputTensorElements ) {
+      ParamImageQuickCopyAndExpandTensor( hcurvature, hcurvature_, inputTensorElements );
+      hcurv_.resize( inputTensorElements );
+   }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform2DBanana( *this ); }
 
@@ -345,14 +379,15 @@ public:
       transformedCoords[ 1 ] = imgCoords_[ 1 ] - kernelCoordX * sn_[ tensorIndex ] + kernelCoordY * csn_[ tensorIndex ];
    }
 protected:
-   Image const& hcurvature_;
+   Image hcurvature_;
    std::vector< dfloat > hcurv_; // The vector is over the input tensor elements
 };
 
 class KernelTransform2DScaledBanana : public KernelTransform2DBanana, public KernelTransformScale<2>
 {
 public:
-   KernelTransform2DScaledBanana( Image const& orientation, Image const& hcurvature, Image const& kernelScale ) : KernelTransform2DBanana( orientation, hcurvature ), KernelTransformScale<2>( kernelScale, orientation.TensorElements() ) {}
+   // The `orientation`, `hcurvature` and `kernelScale` image tensors need not be expanded beforehand
+   KernelTransform2DScaledBanana( Image const& orientation, Image const& hcurvature, Image const& kernelScale, dip::uint inputTensorElements ) : KernelTransform2DBanana( orientation, hcurvature, inputTensorElements ), KernelTransformScale<2>( kernelScale, inputTensorElements ) {}
    virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledBanana( *this ); }
 
    virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
@@ -609,7 +644,7 @@ public:
          ConstructInputInterpolator< 2 >( in, interpolation );
 
          // Construct kernel transformation
-         ConstructKernelTransform2D( transform, params );
+         ConstructKernelTransform2D( transform, params, in.TensorElements() );
 
       } else if( in_.Dimensionality() == 3 ) {
          // === 3D ===
@@ -617,7 +652,7 @@ public:
          ConstructInputInterpolator< 3 >( in, interpolation );
 
          // Determine kernel transformation
-         ConstructKernelTransform3D( transform, params );
+         ConstructKernelTransform3D( transform, params, in.TensorElements() );
       }
       else {
          DIP_THROW( "No transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality()));
@@ -692,40 +727,40 @@ private:
       }
    }
 
-   void ConstructKernelTransform2D( String const& transform, ImageArray const& params ) {
+   void ConstructKernelTransform2D( String const& transform, ImageArray const& params, dip::uint inputTensorElements ) {
       // Determine kernel transformation
       if( transform == "none" ) {
          kernelTransform_ = std::make_unique< KernelTransform >();
       } else if( transform == "ellipse" ) {
-         DIP_ASSERT( params.size() == 1 || params.size() == 2);
+         DIP_ASSERT( params.size() == 1 || params.size() == 2 );
          if( params.size() == 1 ) {
-            kernelTransform_ = std::make_unique< KernelTransform2DRotation >( params[ 0 ] );
+            kernelTransform_ = std::make_unique< KernelTransform2DRotation >( params[ 0 ], inputTensorElements );
          } else {
-            kernelTransform_ = std::make_unique< KernelTransform2DScaledRotation >( params[ 0 ], params[ 1 ] );
+            kernelTransform_ = std::make_unique< KernelTransform2DScaledRotation >( params[ 0 ], params[ 1 ], inputTensorElements );
          }
       } else if( transform == "banana" ) {
          DIP_ASSERT( params.size() == 2 || params.size() == 3 );
          if( params.size() == 2 ) {
-            kernelTransform_ = std::make_unique< KernelTransform2DBanana >( params[ 0 ], params[ 1 ] );
+            kernelTransform_ = std::make_unique< KernelTransform2DBanana >( params[ 0 ], params[ 1 ], inputTensorElements );
          } else {
-            kernelTransform_ = std::make_unique< KernelTransform2DScaledBanana >( params[ 0 ], params[ 1 ], params[ 2 ] );
+            kernelTransform_ = std::make_unique< KernelTransform2DScaledBanana >( params[ 0 ], params[ 1 ], params[ 2 ], inputTensorElements );
          }
       } else if( transform == "skew" ) {
          DIP_ASSERT( params.size() == 1 );
-         kernelTransform_ = std::make_unique< KernelTransform2DSkew >( params[ 0 ] );
+         kernelTransform_ = std::make_unique< KernelTransform2DSkew >( params[ 0 ], inputTensorElements );
       } else {
          DIP_THROW( "Unknown 2D transform \"" + transform + "\"" );
       }
    }
 
-   void ConstructKernelTransform3D( String const& transform, ImageArray const& params ) {
+   void ConstructKernelTransform3D( String const& transform, ImageArray const& params, dip::uint inputTensorElements ) {
       if( transform == "none" ) {
          kernelTransform_ = std::make_unique< KernelTransform >();
       } else if( transform == "ellipse" ) {
          if( params.size() == 2 ) {
-            kernelTransform_ = std::make_unique< KernelTransform3DRotationZ >( params[ 0 ], params[ 1 ] );
+            kernelTransform_ = std::make_unique< KernelTransform3DRotationZ >( params[ 0 ], params[ 1 ], inputTensorElements );
          } else if( params.size() == 4 ) {
-            kernelTransform_ = std::make_unique< KernelTransform3DRotationXY >( params[ 0 ], params[ 1 ], params[ 2 ], params[ 3 ] );
+            kernelTransform_ = std::make_unique< KernelTransform3DRotationXY >( params[ 0 ], params[ 1 ], params[ 2 ], params[ 3 ], inputTensorElements );
          }
       } else {
          DIP_THROW( "Unknown 3D transform \"" + transform + "\"" );
@@ -764,11 +799,8 @@ void AdaptiveFilter(
    for( dip::uint iP = 0; iP < params.size(); ++iP ) {
       paramImages[ iP ] = params[ iP ].get().QuickCopy();
       paramImages[ iP ].ExpandSingletonDimensions( in.Sizes() );
-      // Make sure the param image tensor has a row for each input image tensor element
-      if( paramImages[ iP ].TensorElements() != in.TensorElements() ) {
-         // TODO: for the scale image, this is probably wrong.
-         paramImages[ iP ].ExpandSingletonTensor( in.TensorElements() );
-      }
+      // The param image's tensor is expanded while constructing the kernel transformation
+      // TODO: ExpandSingletonDimensions() could also be done while constructing the kernel transformation, so this loop is removed altogether
    }
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sigmas, in.Dimensionality(), 1.0 ));
 
