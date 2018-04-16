@@ -39,7 +39,7 @@
 %
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::GaborIIR.
+%  This function calls the DIPlib function dip::GaborIIR.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -22,7 +22,7 @@
 %  providing a custom binary or grey-value shape.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::Closing.
+%  This function calls the DIPlib function dip::Closing.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

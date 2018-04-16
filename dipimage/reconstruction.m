@@ -34,7 +34,7 @@
 %  c = reconstruction(b,a*1000)
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::MorphologicalReconstruction.
+%  This function calls the DIPlib function dip::MorphologicalReconstruction.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

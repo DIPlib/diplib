@@ -27,7 +27,7 @@
 %                           the erosion)
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::AlternatingSequentialFilter.
+%  This function calls the DIPlib function dip::AlternatingSequentialFilter.
 
 % (c)2018, Cris Luengo.
 %

@@ -18,7 +18,7 @@
 %  See the user guide for the definition of connectivity in DIPimage.
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::HMinima.
+%  This function calls the DIPlib function dip::HMinima.
 
 % (c)2013, 2017, Cris Luengo.
 %

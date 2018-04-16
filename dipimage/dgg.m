@@ -20,7 +20,7 @@
 % SEE ALSO: TFRAMEHESSIAN for reguralised 2nd derivative
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::Dgg.
+%  This function calls the DIPlib function dip::Dgg.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
