@@ -40,6 +40,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    # using Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
+   set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    # using GNU C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unknown-pragmas")
@@ -49,6 +50,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage; to see which flags are enabled: gcc -march=native -Q --help=target
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
+   set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
    # using Intel C++
    # TODO: compiler flags for Intel compiler
@@ -236,15 +238,10 @@ message("--------------------------------------")
 message("   DIPlib CONFIGURATION REPORT")
 message("")
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} UPPERCASE_BUILD_TYPE)
 message(" * C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
-
-if(CMAKE_BUILD_TYPE MATCHES "^Release$")
-   message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-   message(" * Configured for release")
-elseif(CMAKE_BUILD_TYPE MATCHES "^Debug$")
-   message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-   message(" * Configured for debugging")
-endif()
+message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${UPPERCASE_BUILD_TYPE}}")
+message(" * Build type: ${CMAKE_BUILD_TYPE}")
 
 if(DIP_SHARED_LIBRARY)
    message(" * Building shared library")
