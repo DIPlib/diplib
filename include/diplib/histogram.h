@@ -46,6 +46,7 @@ inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::
 }
 }
 
+
 /// \brief Computes and holds histograms.
 ///
 /// A histogram is computed by the constructor. There is no default-constructed `%Histogram`.
@@ -459,6 +460,7 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void EmptyHistogram( ConfigurationArray configuration );
 };
 
+
 //
 // Creating modified histograms
 //
@@ -481,6 +483,7 @@ inline Histogram Smooth( Histogram const& in, FloatArray const& sigma ) {
 inline Histogram Smooth( Histogram const& in, dfloat sigma = 1 ) {
    return Smooth( in, FloatArray{ sigma } );
 }
+
 
 //
 // Computing image statistics from the histogram
@@ -530,6 +533,7 @@ DIP_EXPORT dfloat MutualInformation( Histogram const& in );
 ///
 /// `in` must be a 1D histogram. The number of bins determines the precision for the result.
 DIP_EXPORT dfloat Entropy( Histogram const& in );
+
 
 //
 // Computing image thresholds from the histogram
@@ -613,6 +617,37 @@ DIP_EXPORT dfloat BackgroundThreshold(
       dfloat distance = 2.0
 );
 
+
+//
+// Multi-dimensional histogram partitioning
+//
+
+// TODO: We need a function that does lookup in the histogram, and paints the corresponding histogram bin value to the output image.
+
+/// \brief Partitions a (multi-dimensional) histogram into `nClusters` partitions using k-means clustering.
+///
+/// K-means clustering partitions the histogram into compact, similarly-weighted segments. The algorithm
+/// uses a random initialization, so mutliple runs might yield different results.
+///
+/// For 1D histograms, `dip::IsodataThreshold(Histogram const&, dip::uint)` is more efficient, and deterministic.
+DIP_EXPORT Histogram KMeansClustering(
+      Histogram const& in,
+      dip::uint nClusters = 2
+);
+
+/// \brief Partitions a (multi-dimensional) histogram into `nClusters` partitions iteratively using Otsu
+/// thresholding along individual dimensions.
+///
+/// Minimum variance partitioning builds a k-d tree of the histogram, where, for each node, the marginal histogram
+/// with the largest variance is split using Otsu thresholding.
+///
+/// For two clusters in a 1D histogram, use `dip::OtsuThreshold(Histogram const&)`.
+DIP_EXPORT Histogram MinimumVariancePartitioning(
+      Histogram const& in,
+      dip::uint nClusters = 2
+);
+
+
 //
 // Computing lookup tables from the histogram
 //
@@ -643,6 +678,7 @@ DIP_EXPORT LookupTable MatchingLookupTable(
       Histogram const& in,
       Histogram const& example
 );
+
 
 /// \}
 

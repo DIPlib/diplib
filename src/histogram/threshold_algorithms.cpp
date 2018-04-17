@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions of functions that implement threshold estimation algorithms.
+ * This file contains definitions of threshold estimation algorithms.
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -20,11 +20,36 @@
 
 #include "diplib.h"
 #include "diplib/histogram.h"
+#include "diplib/segmentation.h"
 #include "diplib/statistics.h"
 #include "diplib/chain_code.h" // for VertexFloat, TriangleHeight, etc.
 
 
 namespace dip {
+
+Histogram KMeansClustering(
+      Histogram const& in,
+      dip::uint nClusters
+) {
+   // This works because LabelType == Histogram::CountType. It will fail if we change one of these types.
+   Histogram out = in.Copy();
+   Image labs = out.GetImage();  // Makes a copy, but with shared data segment
+   labs.Protect();               // Don't reforge the data segment
+   KMeansClustering( in.GetImage(), labs, nClusters );
+   return out;
+}
+
+Histogram MinimumVariancePartitioning(
+      Histogram const& in,
+      dip::uint nClusters
+) {
+   // This works because LabelType == Histogram::CountType. It will fail if we change one of these types.
+   Histogram out = in.Copy();
+   Image labs = out.GetImage();  // Makes a copy, but with shared data segment
+   labs.Protect();               // Don't reforge the data segment
+   MinimumVariancePartitioning( in.GetImage(), labs, nClusters );
+   return out;
+}
 
 namespace {
 
@@ -61,7 +86,7 @@ FloatArray IsodataThreshold(
    DIP_ASSERT( cum.DataType() == DT_UINT32 );
    DIP_ASSERT( cum.Stride( 0 ) == 1 );
    DIP_ASSERT( cum.Size( 0 ) == nBins );
-   uint32* ptr = static_cast< uint32* >( cum.Origin() );
+   Histogram::CountType* ptr = static_cast< Histogram::CountType* >( cum.Origin() );
    dip::uint N = ptr[ nBins - 1 ] / ( nThresholds + 1 );
    dip::uint index = 1;
    for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
@@ -72,7 +97,7 @@ FloatArray IsodataThreshold(
    }
    // Apply the iterative process
    FloatArray old;
-   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );
    do {
       old = thresholds;
       dip::uint origin1 = 0;
@@ -126,7 +151,7 @@ dfloat OtsuThreshold(
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    FloatArray bins = in.BinCenters();
-   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );
    dfloat const* binPtr = bins.data();
    // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded between bins(ii) and bins(ii+1)
    dfloat w1 = 0;
@@ -170,7 +195,7 @@ dfloat MinimumErrorThreshold(
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    FloatArray bins = in.BinCenters();
-   uint32 const* data = static_cast< uint32* >( hist.Origin() );
+   Histogram::CountType const* data = static_cast< Histogram::CountType* >( hist.Origin() );
    dfloat const* binPtr = bins.data();
    // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded between bins(ii) and bins(ii+1)
    dfloat w1 = 0;
@@ -191,7 +216,7 @@ dfloat MinimumErrorThreshold(
       dfloat c2 = m2 / w2;
       // v1(ii), v2(ii) are the corresponding second order central moments
       dfloat v1 = 0;
-      uint32 const* it = static_cast< uint32* >( hist.Origin() );
+      Histogram::CountType const* it = static_cast< Histogram::CountType* >( hist.Origin() );
       for( dip::uint jj = 0; jj <= ii; ++jj ) {
          dfloat d = bins[ jj ] - c1;
          v1 += *it * d * d;
@@ -244,11 +269,11 @@ dfloat TriangleThreshold(
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
-   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );
    // Find the peak
    UnsignedArray maxCoords = MaximumPixel( hist );
    dip::uint maxElement = maxCoords[ 0 ];
-   uint32 maxValue = data[ maxElement ];
+   Histogram::CountType maxValue = data[ maxElement ];
    // Define: start, peak, stop positions in histogram
    VertexFloat left_bin{ 0.0, static_cast< dfloat >( data[ 0 ] ) };
    VertexFloat right_bin{ static_cast< dfloat >( nBins - 1 ), static_cast< dfloat >( data[ nBins - 1 ] ) };
@@ -287,11 +312,11 @@ dfloat BackgroundThreshold(
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
-   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );
    // Find the peak
    UnsignedArray maxCoords = MaximumPixel( hist );
    dip::uint maxElement = maxCoords[ 0 ];
-   uint32 maxValue = data[ maxElement ];
+   Histogram::CountType maxValue = data[ maxElement ];
    dfloat threshold = smoothIn.BinCenters()[ maxElement ];
    // Is the peak on the left or right side of the histogram?
    bool rightPeak = maxElement > ( nBins / 2 );
@@ -325,4 +350,3 @@ dfloat BackgroundThreshold(
 }
 
 } // namespace dip
-

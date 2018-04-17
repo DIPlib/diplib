@@ -503,9 +503,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `structuretensor3d` is moved to the `alias` directory, `structuretensor` now works for any
     number of dimensions (with special support for 2D and 3D images).
 
-- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `coordinates`, `drawshape`, `extendregion`,
-  `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`,
-  `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
+- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cluster`, `coordinates`, `drawshape`,
+  `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`,
+  `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
   learn what these functions provide.
 
 - `jacobi` moved to the `alias` directory, `eig` does it better now.

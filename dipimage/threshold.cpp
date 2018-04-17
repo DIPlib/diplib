@@ -60,7 +60,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          if( nlhs > 1 ) {
             plhs[ 1 ] = dml::CreateDouble2Vector( param1, param2 );
          }
-      } else if( method == "isodata" ) {
+      } else if(( method == "isodata" ) || ( method == "kmeans" )) {
          dip::uint nThresholds = 1;
          if( nrhs > 2 ) {
             dip::dfloat parameter = dml::GetFloat( prhs[ 2 ] );
