@@ -351,6 +351,48 @@ class DIP_NO_EXPORT ImageIterator {
          DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( image.DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
       }
+      /// To construct a useful iterator, provide an image, an ROI, and optionally a processing dimension. `spacing` can
+      /// be an empty array or a scalar, but `origin` and `sizes` are expected to contain one value per image dimension.
+      /// Iterator coordinates are within the ROI.
+      ImageIterator(
+            Image const& image,
+            UnsignedArray const& origin, // TODO: Add a similar constructor to the other image iterators
+            UnsignedArray sizes,
+            UnsignedArray const& spacing = {},
+            dip::uint procDim = std::numeric_limits< dip::uint >::max()
+      ) :
+            origin_( static_cast< pointer >( image.Pointer( origin ))),
+            sizes_( std::move( sizes )),
+            strides_( image.Strides() ),
+            tensorElements_( image.TensorElements() ),
+            tensorStride_( image.TensorStride() ),
+            ptr_( origin_ ),
+            coords_( image.Dimensionality(), 0 ),
+            procDim_( procDim ) {
+         DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( image.DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
+         dip::uint nDims = image.Dimensionality();
+         DIP_THROW_IF( sizes_.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            DIP_THROW_IF( origin[ ii ] + sizes_[ ii ] > image.Size( ii ), E::COORDINATES_OUT_OF_RANGE );
+         }
+         if( spacing.size() == 1 ) {
+            if( spacing[ 0 ] > 1 ) {
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
+                  sizes_[ ii ] /= spacing[ 0 ];
+                  strides_[ ii ] *= static_cast< dip::sint >( spacing[ 0 ] );
+               }
+            }
+         } else if( !spacing.empty() ) {
+            DIP_THROW_IF( spacing.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               if( spacing[ ii ] > 1 ) {
+                  sizes_[ ii ] /= spacing[ ii ];
+                  strides_[ ii ] *= static_cast< dip::sint >( spacing[ ii ] );
+               }
+            }
+         }
+      }
 
       /// Swap
       void swap( ImageIterator& other ) {
