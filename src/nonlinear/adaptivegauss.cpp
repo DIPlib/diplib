@@ -167,7 +167,7 @@ public:
 
    virtual KernelTransform* Clone() const override { return new KernelTransform2DRotation( *this ); }
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       KernelTransform::SetImageCoords( imgCoords );
       Image::Pixel dirPixel = orientation_.At( imgCoords );
       // Iterate over tensor elements
@@ -195,7 +195,7 @@ public:
          : KernelTransform2DRotation( orientation, inputTensorElements ), KernelTransformScale<2>( kernelScale, inputTensorElements ) {}
    virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledRotation( *this ); }
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       KernelTransform2DRotation::SetImageCoords( imgCoords );
       SetScaleAtImgCoords( imgCoords );
    }
@@ -224,7 +224,7 @@ public:
 
    virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationZ( *this ); }
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       KernelTransform::SetImageCoords( imgCoords );
       Image::Pixel phiPixel = phi3_.At( imgCoords );
       Image::Pixel thetaPixel = theta3_.At( imgCoords );
@@ -279,7 +279,7 @@ public:
 
    virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationXY( *this ); }
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       Image::Pixel phi2Pixel = phi2_.At( imgCoords );
       Image::Pixel theta2Pixel = theta2_.At( imgCoords );
       Image::Pixel phi3Pixel = phi3_.At( imgCoords );
@@ -335,7 +335,7 @@ public:
 
    virtual KernelTransform* Clone() const override { return new KernelTransform2DSkew( *this ); }
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       KernelTransform::SetImageCoords( imgCoords );
       Image::Pixel skewPixel = skew_.At( imgCoords );
       for( dip::uint iTE = 0; iTE < skew_.TensorElements(); ++iTE ) {
@@ -365,7 +365,7 @@ public:
    virtual KernelTransform* Clone() const override { return new KernelTransform2DBanana( *this ); }
 
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       KernelTransform2DRotation::SetImageCoords( imgCoords );
       Image::Pixel cPixel = hcurvature_.At( imgCoords );
       for( dip::uint iTE = 0; iTE < orientation_.TensorElements(); ++iTE ) {
@@ -390,7 +390,7 @@ public:
    KernelTransform2DScaledBanana( Image const& orientation, Image const& hcurvature, Image const& kernelScale, dip::uint inputTensorElements ) : KernelTransform2DBanana( orientation, hcurvature, inputTensorElements ), KernelTransformScale<2>( kernelScale, inputTensorElements ) {}
    virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledBanana( *this ); }
 
-   virtual void SetImageCoords( UnsignedArray const& imgCoords ) {
+   virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
       KernelTransform2DBanana::SetImageCoords( imgCoords );
       SetScaleAtImgCoords( imgCoords );
    }
