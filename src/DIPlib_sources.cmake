@@ -216,7 +216,8 @@ regions/label.cpp
 regions/label_manipulation.cpp
 regions/labelingGrana2016.h
 segmentation/canny.cpp
-segmentation/clustering.cpp
+segmentation/kmeans_clustering.cpp
+segmentation/minimum_variance_partitioning.cpp
 segmentation/threshold.cpp
 support/math_functions.cpp
 support/matrix.cpp

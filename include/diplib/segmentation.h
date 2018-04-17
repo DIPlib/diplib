@@ -46,7 +46,7 @@ namespace dip {
 /// region is identified by a different label. Boundaries between regions are the Voronoi tessellation
 /// given the identified cluster centers.
 ///
-/// The return `dip::CoordinateArray` contains the cluster centers.
+/// The returned `dip::CoordinateArray` contains the cluster centers.
 DIP_EXPORT CoordinateArray KMeansClustering(
       Image const& in,
       Image& out,
@@ -58,6 +58,30 @@ inline Image KMeansClustering(
 ) {
    Image out;
    KMeansClustering( in, out, nClusters );
+   return out;
+}
+
+/// \brief Spatially partitions an image into `nClusters` partitions iteratively, minimizing the variance
+/// of the partitions.
+///
+/// Minimum variance partitioning builds a k-d tree, where, for each node, the orthogonal projection
+/// with the largest variance is split using the same logic as Otsu thresholding applies to a histogram.
+/// Note that this creates a spatial partitioning, not a partitioning of image intensities.
+///
+/// `in` must be scalar and real-valued.
+///
+/// The returned `dip::CoordinateArray` contains the centers of gravity.
+DIP_EXPORT CoordinateArray MinimumVariancePartitioning(
+      Image const& in,
+      Image& out,
+      dip::uint nClusters = 2
+);
+inline Image MinimumVariancePartitioning(
+      Image const& in,
+      dip::uint nClusters = 2
+) {
+   Image out;
+   MinimumVariancePartitioning( in, out, nClusters );
    return out;
 }
 

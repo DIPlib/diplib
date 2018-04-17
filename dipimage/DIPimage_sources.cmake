@@ -38,6 +38,7 @@ canny.cpp
 ced.cpp
 clip.cpp
 closing.cpp
+cluster.cpp
 convolve.cpp
 coordinates.cpp
 countneighbors.cpp
