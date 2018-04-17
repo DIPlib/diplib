@@ -1232,27 +1232,36 @@ uimenu(h,'Label','Zoom','Tag','mouse_dipzoom','Callback',@(~,~)dipzoom(gcbf,'on'
 uimenu(h,'Label','Looking Glass','Tag','mouse_diplooking','Callback',@(~,~)diplooking(gcbf,'on'));
 uimenu(h,'Label','Pan','Tag','mouse_dippan','Callback',@(~,~)dippan(gcbf,'on'),...
        'Accelerator','p');
-if nD>=2
-      uimenu(h,'Label','Link displays ...','Tag','diplink','Callback',@(~,~)diplink(gcbf,'on'),...
-          'Separator','on');
-   % too lazy to also include it for 1D images (BR)
-end
 if nD>=3
    uimenu(h,'Label','Step through slices','Tag','mouse_dipstep','Callback',@(~,~)dipstep(gcbf,'on'),...
           'Accelerator','o');
    uimenu(h,'Label','Animate','Tag','dipanimate','Callback',@(~,~)dipanimate(gcbf));
-   if nD==3 && ~iscol
-      uimenu(h,'Label','Isosurface plot ...','Tag','dipiso','Callback',@(~,~)dipisosurface(gcbf));
+end
+added_separator = false;
+if nD>=2
+   uimenu(h,'Label','Link displays ...','Tag','diplink','Callback',@(~,~)diplink(gcbf,'on'),...
+          'Separator','on');
+   added_separator = true;
+   % too lazy to also include it for 1D images (BR)
+end
+if nD==3 && ~iscol
+   h2 = uimenu(h,'Label','Isosurface plot ...','Tag','dipiso','Callback',@(~,~)dipisosurface(gcbf));
+   if(~added_separator)
+      set(h2,'Separator','on');
+      added_separator = true;
    end
-
 end
-if nD > 1 && exist('javachk','file') && isempty(javachk('jvm'))
-   uimenu(h,'Label','View5d','Tag','viewer5d','Callback',@(~,~)view5d(gcbf));
+if nD > 1 && exist('view5d','file') && exist('javachk','file') && isempty(javachk('jvm'))
+   h2 = uimenu(h,'Label','View5d','Tag','viewer5d','Callback',@(~,~)view5d(gcbf));
+   if(~added_separator)
+      set(h2,'Separator','on');
+      added_separator = true;
+   end
 end
-uimenu(h,'Label','Enable keyboard','Tag','keyboard','Separator','on',...
+h2 = uimenu(h,'Label','Enable keyboard','Tag','keyboard','Separator','on',...
          'Callback',@(~,~)change_keyboard_state(gcbf,'toggle'),'Accelerator','k');
 % Work around a bug in MATLAB 7.1 (R14SP3) (solution # 1-1XPN82).
-h = uimenu(fig);drawnow;delete(h);
+h = uimenu(fig); drawnow; delete(h);
 
 
 %
