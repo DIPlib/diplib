@@ -161,46 +161,51 @@ inline bool operator!=( Vertex< T > v1, Vertex< T > v2 ) {
    return !( v1 == v2 );
 }
 
-/// \brief The norm of the vector v2-v1.
+/// \brief The norm of the vector `v`.
 template< typename T >
-inline dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
-   Vertex< T > v = v2 - v1;
+inline dfloat Norm( Vertex< T > const& v ) {
    return std::hypot( v.x, v.y );
 }
 
-/// \brief The square norm of the vector v2-v1.
+/// \brief The norm of the vector `v2-v1`.
+template< typename T >
+inline dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
+   return Norm( v2 - v1 );
+}
+
+/// \brief The square norm of the vector `v2-v1`.
 template< typename T >
 inline dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
    return v.x * v.x + v.y * v.y;
 }
 
-/// \brief The angle of the vector v2-v1.
+/// \brief The angle of the vector `v2-v1`.
 template< typename T >
 inline dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
    return std::atan2( v.y, v.x );
 }
 
-/// \brief Compute the z component of the cross product of vectors v1 and v2
+/// \brief Compute the z component of the cross product of vectors `v1` and `v2`
 template< typename T >
 inline dfloat CrossProduct( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    return v1.x * v2.y - v1.y * v2.x;
 }
 
-/// \brief Compute the z component of the cross product of vectors v2-v1 and v3-v1
+/// \brief Compute the z component of the cross product of vectors `v2-v1` and `v3-v1`
 template< typename T >
 inline dfloat ParallelogramSignedArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return CrossProduct( v2 - v1, v3 - v1 );
 }
 
-/// \brief Compute the area of the triangle formed by vertices v1, v2 and v3
+/// \brief Compute the area of the triangle formed by vertices `v1`, `v2` and `v3`
 template< typename T >
 inline dfloat TriangleArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / 2.0 );
 }
 
-/// \brief Compute the height of the triangle formed by vertices v1, v2 and v3, with v3 the tip
+/// \brief Compute the height of the triangle formed by vertices `v1`, `v2` and `v3`, with `v3` the tip
 template< typename T >
 inline dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ));

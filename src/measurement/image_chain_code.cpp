@@ -200,7 +200,7 @@ ChainCode GetSingleChainCode(
 }
 
 void ChainCode::Image( dip::Image& out ) const {
-   dip::BoundingBoxInteger bb;
+   dip::BoundingBoxInteger bb = BoundingBox();
    UnsignedArray size { bb.Size() };
    out.ReForge( size, 1, DT_BIN );
    out = false; // set all pixels to false
@@ -284,9 +284,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    cc.codes = { 0, 0, 7, 6, 6, 5, 4, 4, 3, 2, 2, 1 }; // A chain code that is a little circle.
    cc.start = { 1, 0 }; // start so that the bounding box has a top-left corner at {0,0}.
    cc.is8connected = true;
-   dip::ChainCode cc2;
    dip::Image img = cc.Image();
-   cc2 = dip::GetSingleChainCode( img, { 1, 0 }, 2 );
+   dip::ChainCode cc2 = dip::GetSingleChainCode( img, { 1, 0 }, 2 );
    DOCTEST_CHECK( cc2.start.x == 1 );
    DOCTEST_CHECK( cc2.start.y == 0 );
    DOCTEST_CHECK( cc2.is8connected );
