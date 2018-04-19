@@ -533,7 +533,8 @@ static Ics_Error writeIcsRep(Ics_Header *icsStruct,
         empty |= !(icsStruct->byteOrder[i]);
     }
     if (empty) {
-        IcsFillByteOrder((int)IcsGetDataTypeSize(icsStruct->imel.dataType),
+        IcsFillByteOrder(icsStruct->imel.dataType,
+                         (int)IcsGetDataTypeSize(icsStruct->imel.dataType),
                          icsStruct->byteOrder);
     }
     problem = icsFirstToken(line, ICSTOK_REPRES);

@@ -52,6 +52,10 @@ if(ZLIB_FOUND)
    set(LIBICS_USE_ZLIB TRUE CACHE BOOL "Use Zlib in libics")
 endif()
 
+# Reentrant string tokenization
+include(CheckFunctionExists)
+check_function_exists(strtok_r HAVE_STRTOK_R)
+
 # ICS
 #configure_file(libics_conf.h.in ${CMAKE_CURRENT_SOURCE_DIR}/libics_conf.h COPYONLY)
 set(SOURCES
@@ -104,6 +108,12 @@ if(LIBICS_USE_ZLIB)
    target_link_libraries(libics_static PUBLIC ${ZLIB_LIBRARIES})
    target_include_directories(libics_static PRIVATE ${ZLIB_INCLUDE_DIRS})
    target_compile_definitions(libics_static PUBLIC -DICS_ZLIB)
+endif()
+
+# Reentrant string tokenization
+if (HAVE_STRTOK_R)
+  target_compile_definitions(libics PRIVATE -DHAVE_STRTOK_R)
+  target_compile_definitions(libics_static PRIVATE -DHAVE_STRTOK_R)
 endif()
 
 # Install

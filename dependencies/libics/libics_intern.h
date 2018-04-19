@@ -250,8 +250,9 @@ Ics_Error IcsInternAddHistory(Ics_Header *ics,
                               const char *seps);
 
 /* Binary data support functions */
-void IcsFillByteOrder(int bytes,
-                      int machineByteOrder[ICS_MAX_IMEL_SIZE]);
+void IcsFillByteOrder(Ics_DataType dataType,
+                      int          bytes,
+                      int          machineByteOrder[ICS_MAX_IMEL_SIZE]);
 
 Ics_Error IcsWritePlainWithStrides(const void      *src,
                                    const size_t    *dim,

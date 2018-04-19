@@ -125,6 +125,9 @@ typedef double   ics_t_real64;
 #undef ICS_ZLIB
 
 
-#endif
+/* Whether to use the reentrant string tokenizer */
+#undef HAVE_STRTOK_R
 
+
+#endif
 #endif

@@ -44,6 +44,12 @@
 #include <string.h>
 #include "libics_intern.h"
 
+/* Use thread safe string tokenization if available */
+#ifdef HAVE_STRTOK_R
+#define STRTOK(str, seps) strtok_r(str, seps, &saveptr)
+#else
+#define STRTOK(str, seps) strtok(str, seps)
+#endif
 
 /* Find the index for "bits", which should be the first parameter. */
 static int icsGetBitsParam(char order[ICS_MAXDIM+1][ICS_STRLEN_TOKEN],
@@ -161,14 +167,17 @@ static Ics_Error getIcsVersion(FILE       *fi,
     ICSINIT;
     char *word;
     char  line[ICS_LINE_LENGTH];
+#ifdef HAVE_STRTOK_R
+    char *saveptr;
+#endif
 
 
     if (icsFGetStr(line, ICS_LINE_LENGTH, fi, seps[1]) == NULL)
         return IcsErr_FReadIcs;
-    word = strtok(line, seps);
+    word = STRTOK(line, seps);
     if (word == NULL) return IcsErr_NotIcsFile;
     if (strcmp(word, ICS_VERSION) != 0) return IcsErr_NotIcsFile;
-    word = strtok(NULL, seps);
+    word = STRTOK(NULL, seps);
     if (word == NULL) return IcsErr_NotIcsFile;
     if (strcmp(word, "1.0") == 0) {
         *ver = 1;
@@ -188,11 +197,14 @@ static Ics_Error getIcsFileName(FILE       *fi,
     ICSINIT;
     char *word;
     char  line[ICS_LINE_LENGTH];
+#ifdef HAVE_STRTOK_R
+    char *saveptr;
+#endif
 
 
     if (icsFGetStr(line, ICS_LINE_LENGTH, fi, seps[1]) == NULL)
         return IcsErr_FReadIcs;
-    word = strtok(line, seps);
+    word = STRTOK(line, seps);
     if (word == NULL) return IcsErr_NotIcsFile;
     if (strcmp(word, ICS_FILENAME) != 0) return IcsErr_NotIcsFile;
 
@@ -228,21 +240,24 @@ static Ics_Error getIcsCat(char        *str,
 {
     ICSINIT;
     char *token, buffer[ICS_LINE_LENGTH], *idx;
+#ifdef HAVE_STRTOK_R
+    char *saveptr;
+#endif
 
 
     *subCat = *subSubCat = ICSTOK_NONE;
     *index = NULL;
 
     IcsStrCpy(buffer, str, ICS_LINE_LENGTH);
-    token = strtok(buffer, seps);
+    token = STRTOK(buffer, seps);
     *cat = getIcsToken(token, &G_Categories);
     if (*cat == ICSTOK_NONE) return IcsErr_MissCat;
     if ((*cat != ICSTOK_HISTORY) &&(*cat != ICSTOK_END)) {
-        token = strtok(NULL, seps);
+        token = STRTOK(NULL, seps);
         *subCat = getIcsToken(token, &G_SubCategories);
         if (*subCat == ICSTOK_NONE) return IcsErr_MissSubCat;
         if (*subCat == ICSTOK_SPARAMS || *subCat == ICSTOK_SSTATES) {
-            token = strtok(NULL, seps);
+            token = STRTOK(NULL, seps);
             if (token[strlen(token) - 1] == ']') {
                 idx = strchr(token, '[');
                 if (idx) {
@@ -257,10 +272,10 @@ static Ics_Error getIcsCat(char        *str,
     }
 
         /* Copy the remaining stuff into 'str' */
-    if ((token = strtok(NULL, seps)) != NULL) {
+    if ((token = STRTOK(NULL, seps)) != NULL) {
         strcpy(str, token);
     }
-    while ((token = strtok(NULL, seps)) != NULL) {
+    while ((token = STRTOK(NULL, seps)) != NULL) {
         IcsAppendChar(str, seps[0]);
         strcat(str, token);
     }
@@ -301,7 +316,7 @@ do {                                            \
     while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
         IcsStrCpy(icsStruct->FIELD[i++],        \
                   ptr, ICS_STRLEN_TOKEN);       \
-        ptr = strtok(NULL, seps);               \
+        ptr = STRTOK(NULL, seps);               \
     }                                           \
 } while (0)
 
@@ -318,7 +333,7 @@ do {                                            \
 do {                                            \
     while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
         icsStruct->FIELD[i++] = atoi(ptr);      \
-        ptr = strtok(NULL, seps);               \
+        ptr = STRTOK(NULL, seps);               \
     }                                           \
 } while (0)
 
@@ -327,7 +342,7 @@ do {                                            \
 do {                                            \
     while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
         icsStruct->FIELD[i++] = atof(ptr);      \
-        ptr = strtok(NULL, seps);               \
+        ptr = STRTOK(NULL, seps);               \
     }                                           \
 } while (0)
 
@@ -337,7 +352,7 @@ do {                                            \
     while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
         error = getIcsSensorState(ptr, &state); \
         icsStruct->FIELD ## State[i++] = state; \
-        ptr = strtok(NULL, seps);               \
+        ptr = STRTOK(NULL, seps);               \
     }                                           \
 } while(0)
 
@@ -379,6 +394,9 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
     char             label[ICS_MAXDIM+1][ICS_STRLEN_TOKEN];
     char             unit[ICS_MAXDIM+1][ICS_STRLEN_TOKEN];
     Ics_SensorState  state      = IcsSensorState_default;
+#ifdef HAVE_STRTOK_R
+    char *saveptr;
+#endif
 
 
     for (i = 0; i < ICS_MAXDIM+1; i++) {
@@ -410,7 +428,7 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
            && (icsFGetStr(line, ICS_LINE_LENGTH, fp, seps[1]) != NULL)) {
         if (getIcsCat(line, seps, &cat, &subCat, &subSubCat, &idx) != IcsErr_Ok)
             continue;
-        ptr = strtok(line, seps);
+        ptr = STRTOK(line, seps);
         i = 0;
         switch (cat) {
             case ICSTOK_END:
@@ -450,13 +468,13 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                     case ICSTOK_ORDER:
                         while (ptr!= NULL && i < ICS_MAXDIM+1) {
                             IcsStrCpy(order[i++], ptr, ICS_STRLEN_TOKEN);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     case ICSTOK_SIZES:
                         while (ptr!= NULL && i < ICS_MAXDIM+1) {
                             sizes[i++] = IcsStrToSize(ptr);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     case ICSTOK_COORD:
@@ -529,7 +547,7 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                     case ICSTOK_BYTEO:
                         while (ptr!= NULL && i < ICS_MAX_IMEL_SIZE) {
                             icsStruct->byteOrder[i++] = atoi(ptr);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     default:
@@ -542,25 +560,25 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                     case ICSTOK_ORIGIN:
                         while (ptr!= NULL && i < ICS_MAXDIM+1) {
                             origin[i++] = atof(ptr);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     case ICSTOK_SCALE:
                         while (ptr!= NULL && i < ICS_MAXDIM+1) {
                             scale[i++] = atof(ptr);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     case ICSTOK_UNITS:
                         while (ptr!= NULL && i < ICS_MAXDIM+1) {
                             IcsStrCpy(unit[i++], ptr, ICS_STRLEN_TOKEN);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     case ICSTOK_LABELS:
                         while (ptr!= NULL && i < ICS_MAXDIM+1) {
                             IcsStrCpy(label[i++], ptr, ICS_STRLEN_TOKEN);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     default:
@@ -569,7 +587,7 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                 break;
             case ICSTOK_HISTORY:
                 if (ptr != NULL) {
-                    data = strtok(NULL, seps+1); /* This will get the rest of
+                    data = STRTOK(NULL, seps+1); /* This will get the rest of
                                                     the line */
                     if (data == NULL) { /* data is not allowed to be "", but ptr
                                            is */
@@ -596,7 +614,7 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                         while (ptr != NULL && i < ICS_MAX_LAMBDA) {
                             IcsStrCpy(icsStruct->type[i++], ptr,
                                       ICS_STRLEN_TOKEN);
-                            ptr = strtok(NULL, seps);
+                            ptr = STRTOK(NULL, seps);
                         }
                         break;
                     case ICSTOK_MODEL:
@@ -714,7 +732,7 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                         default:
                                             break;
                                     }
-                                    ptr = strtok(NULL, seps);
+                                    ptr = STRTOK(NULL, seps);
                                 }
                                 break;
                             case ICSTOK_SPIMPLANECENTEROFF:

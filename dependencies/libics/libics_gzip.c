@@ -207,6 +207,10 @@ Ics_Error IcsWriteZip(const void *inBuf,
 
     return err == Z_OK ? IcsErr_Ok : IcsErr_CompressionProblem;
 #else
+    (void)inBuf;
+    (void)len;
+    (void)file;
+    (void)level;
     return IcsErr_UnknownCompression;
 #endif
 }
@@ -371,6 +375,13 @@ Ics_Error IcsWriteZipWithStrides(const void      *src,
         return err == Z_OK ? IcsErr_Ok : IcsErr_CompressionProblem;
     }
 #else
+    (void)src;
+    (void)dim;
+    (void)stride;
+    (void)nDims;
+    (void)nBytes;
+    (void)file;
+    (void)level;
     return IcsErr_UnknownCompression;
 #endif
 }
@@ -455,6 +466,7 @@ Ics_Error IcsOpenZip(Ics_Header *icsStruct)
     br->zlibCRC = crc32(0L, Z_NULL, 0);
     return IcsErr_Ok;
 #else
+    (void)icsStruct;
     return IcsErr_UnknownCompression;
 #endif
 }
@@ -480,6 +492,7 @@ Ics_Error IcsCloseZip(Ics_Header *icsStruct)
     }
     return IcsErr_Ok;
 #else
+    (void)icsStruct;
     return IcsErr_UnknownCompression;
 #endif
 }
@@ -554,6 +567,9 @@ Ics_Error IcsReadZipBlock(Ics_Header *icsStruct,
     if (err == Z_OK) return IcsErr_Ok;
     return IcsErr_DecompressionProblem;
 #else
+    (void)icsStruct;
+    (void)outBuf;
+    (void)len;
     return IcsErr_UnknownCompression;
 #endif
 }
@@ -607,6 +623,9 @@ Ics_Error IcsSetZipBlock(Ics_Header *icsStruct,
 
     return error;
 #else
+    (void)icsStruct;
+    (void)offset;
+    (void)whence;
     return IcsErr_UnknownCompression;
 #endif
 }

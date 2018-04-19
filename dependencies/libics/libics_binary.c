@@ -277,10 +277,11 @@ static int IcsIsLittleEndianMachine(void)
 
 
 /* Fill the byte order array with the machine's byte order. */
-void IcsFillByteOrder(int bytes,
-                      int machineByteOrder[ICS_MAX_IMEL_SIZE])
+void IcsFillByteOrder(Ics_DataType dataType,
+                      int          bytes,
+                      int          machineByteOrder[ICS_MAX_IMEL_SIZE])
 {
-    int i;
+    int i, hbytes;
 
 
     if (bytes > ICS_MAX_IMEL_SIZE) {
@@ -295,19 +296,27 @@ void IcsFillByteOrder(int bytes,
             machineByteOrder[i] = 1 + i;
         }
     } else {
-            /* Fill byte order for a big endian machine. */
-        for (i = 0; i < bytes; i++) {
-            machineByteOrder[i] = bytes - i;
+        if (dataType == Ics_complex32 || dataType == Ics_complex64) {
+            hbytes = bytes/2;
+            for (i = 0; i < hbytes; i++) {
+                machineByteOrder[i]        = hbytes - i;
+                machineByteOrder[i+hbytes] = bytes - i;
+            }
+        } else {
+            for (i = 0; i < bytes; i++) {
+                machineByteOrder[i] = bytes - i;
+            }
         }
     }
 }
 
 
 /* Reorder the bytes in the images as specified in the ByteOrder array. */
-static Ics_Error IcsReorderIds(char   *buf,
-                               size_t  length,
-                               int     srcByteOrder[ICS_MAX_IMEL_SIZE],
-                               int     bytes)
+static Ics_Error IcsReorderIds(char        *buf,
+                               size_t       length,
+                               Ics_DataType dataType,
+                               int          srcByteOrder[ICS_MAX_IMEL_SIZE],
+                               int          bytes)
 {
     ICSINIT;
     int  i;
@@ -321,7 +330,7 @@ static Ics_Error IcsReorderIds(char   *buf,
     if (length % (size_t)bytes != 0) return IcsErr_BitsVsSizeConfl;
 
         /* Create destination byte order: */
-    IcsFillByteOrder(bytes, dstByteOrder);
+    IcsFillByteOrder(dataType, bytes, dstByteOrder);
 
         /* Localize byte order array: */
     for (i = 0; i < bytes; i++){
@@ -332,10 +341,10 @@ static Ics_Error IcsReorderIds(char   *buf,
 
     for (j = 0; j < imels; j++){
         for (i = 0; i < bytes; i++){
-            imel[i] = buf[srcByteOrder[i]-1];
+            imel[srcByteOrder[i]-1] = buf[i];
         }
         for (i = 0; i < bytes; i++){
-            buf[dstByteOrder[i]-1] = imel[i];
+            buf[i] = imel[dstByteOrder[i]-1];
         }
         buf += bytes;
     }
@@ -478,7 +487,8 @@ Ics_Error IcsReadIdsBlock(Ics_Header *icsStruct,
             error = IcsErr_UnknownCompression;
     }
 
-    if (!error) error = IcsReorderIds((char*)dest, n, icsStruct->byteOrder,
+    if (!error) error = IcsReorderIds((char*)dest, n, icsStruct->imel.dataType,
+                                      icsStruct->byteOrder,
                                       IcsGetBytesPerSample(icsStruct));
 
     return error;

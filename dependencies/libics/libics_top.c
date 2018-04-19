@@ -550,7 +550,7 @@ Ics_Error IcsGetDataWithStrides(ICS             *ics,
     char            *buf;
     char            *dest = (char*)destPtr;
     char            *out;
-
+    (void)n; /* we're not using this parameter */
 
     if ((ics == NULL) || (ics->fileMode == IcsFileMode_write))
         return IcsErr_NotValidAction;
