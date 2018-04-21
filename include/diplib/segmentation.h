@@ -46,6 +46,12 @@ namespace dip {
 /// region is identified by a different label. Boundaries between regions are the Voronoi tessellation
 /// given the identified cluster centers.
 ///
+/// Note that this creates a spatial partitioning, not a partitioning of image intensities.
+///
+/// K-means clustering is an iterative process with a random initialization. It is likely to get
+/// suck in local minima. Repeating the clustering several times and picking the best result
+/// (e.g. determined by times each cluster center is found) can be necessary.
+///
 /// The returned `dip::CoordinateArray` contains the cluster centers.
 DIP_EXPORT CoordinateArray KMeansClustering(
       Image const& in,
@@ -66,7 +72,11 @@ inline Image KMeansClustering(
 ///
 /// Minimum variance partitioning builds a k-d tree, where, for each node, the orthogonal projection
 /// with the largest variance is split using the same logic as Otsu thresholding applies to a histogram.
+///
 /// Note that this creates a spatial partitioning, not a partitioning of image intensities.
+///
+/// Minimum variance partitioning is much faster than k-means clustering, though its result might not be
+/// as good. It is also deterministic.
 ///
 /// `in` must be scalar and real-valued.
 ///

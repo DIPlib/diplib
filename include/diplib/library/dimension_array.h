@@ -537,7 +537,7 @@ class DIP_NO_EXPORT DimensionArray {
 
 
 //
-// Compound assingment operator specializations
+// Compound assignment operator specializations
 //
 
 // The general case: cast rhs to type of lhs

@@ -47,20 +47,20 @@ namespace dip {
 namespace {
 
 using ProjectionType = dfloat;
-using ProjectionArray = std::vector< std::vector< ProjectionType >>;
+using Projection = std::vector< ProjectionType >;
+using ProjectionArray = std::vector< Projection >;
 
-typedef void ComputeSumProjectionsFunction( Image const&, UnsignedArray const&, UnsignedArray const&, ProjectionArray& );
+typedef ProjectionArray ComputeSumProjectionsFunction( Image const&, UnsignedArray const&, UnsignedArray const& );
 
 template< typename TPI >
-void ComputeSumProjections(
+ProjectionArray ComputeSumProjections(
       Image const& img,
       UnsignedArray const& leftEdges,
-      UnsignedArray const& rightEdges,
-      ProjectionArray& out
+      UnsignedArray const& rightEdges
 ) {
    DIP_ASSERT( img.DataType() == DataType( TPI( 0 )));
    dip::uint nDims = img.Dimensionality();
-   out.resize( nDims );
+   ProjectionArray out( nDims );
    UnsignedArray sizes( nDims );
    for( dip::uint dim = 0; dim < nDims; ++dim ) {
       DIP_ASSERT( leftEdges[ dim ] <= rightEdges[ dim ] );
@@ -75,6 +75,7 @@ void ComputeSumProjections(
          out[ dim ][ ii ] += static_cast< ProjectionType >( *it );
       }
    } while( ++it );
+   return out;
 }
 
 class KDTree {
@@ -84,7 +85,6 @@ class KDTree {
          dip::uint nPixels;         // number of pixels represented in this partition
          UnsignedArray leftEdges;   // the left edges of the partition (i.e. top-left corner)
          UnsignedArray rightEdges;  // the right edges of the partition (i.e. bottom-right corner)
-         ProjectionArray sumProjection; // nDims projections TODO: this does not need to be stored
          UnsignedArray mean;        // location of the mean
          dip::uint optimalDim;      // dimension along which to split, if needed
          dip::uint threshold;       // location at which to split
@@ -102,19 +102,18 @@ class KDTree {
             rightEdges = image.Sizes();
             rightEdges -= 1;
             DIP_OVL_ASSIGN_NONCOMPLEX( computeSumProjections, ComputeSumProjections, image.DataType() );
-            computeSumProjections( image, leftEdges, rightEdges, sumProjection );
-            FindOptimalSplit(); // TODO: this function could compute projections and discard them after
+            FindOptimalSplit( computeSumProjections( image, leftEdges, rightEdges ));
          }
 
          // Computes optimal split for this partition
-         void FindOptimalSplit() {
+         void FindOptimalSplit( ProjectionArray const& projections ) {
             dip::uint nDims = image.Dimensionality();
             mean.resize( nDims );
             optimalDim = 0;
             variance = 0;
             splitVariances = 1; // larger than variance, will be overwritten for sure
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               ComputeVariances( ii );
+               ComputeVariances( ii, projections[ ii ] );
             }
          }
 
@@ -132,17 +131,15 @@ class KDTree {
             other.rightEdges = rightEdges;
             rightEdges[ optimalDim ] = threshold;
             other.computeSumProjections = computeSumProjections;
-            computeSumProjections( image, leftEdges, rightEdges, sumProjection );
-            computeSumProjections( other.image, other.leftEdges, other.rightEdges, other.sumProjection );
-            FindOptimalSplit();
-            other.FindOptimalSplit();
+            FindOptimalSplit( computeSumProjections( image, leftEdges, rightEdges ));
+            other.FindOptimalSplit( computeSumProjections( other.image, other.leftEdges, other.rightEdges ));
          }
 
          // Computes the mean, variance, and threshold for dimension `dim`. If this split is better than the
          // current one, replaces `optimalDim`, `threshold`, `variance` and `splitVariances`.
-         void ComputeVariances( dip::uint dim ) {
-            ProjectionType* data = sumProjection[ dim ].data();
-            dip::uint nBins = sumProjection[ dim ].size();
+         void ComputeVariances( dip::uint dim, Projection const& projection ) {
+            ProjectionType const* data = projection.data();
+            dip::uint nBins = projection.size();
             // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded at ii (with thresholding being >)
             dfloat w1 = 0;
             dfloat w2 = 0;
@@ -261,12 +258,12 @@ class KDTree {
       }
 
       // Tail-recursive helper function for `Lookup`
-      LabelType LookupStartingAt( dip::uint node, UnsignedArray const& coords ) const {
+      std::pair<LabelType, dip::uint> LookupStartingAt( dip::uint node, UnsignedArray const& coords, dip::uint procDim ) const {
          auto& n = nodes[ node ];
          if( n.label != 0 ) {
-            return n.label;
+            return std::make_pair( n.label, n.partition->rightEdges[ procDim ] );
          }
-         return LookupStartingAt( coords[ n.dimension ] > n.threshold ? n.right : n.left, coords );
+         return LookupStartingAt( coords[ n.dimension ] > n.threshold ? n.right : n.left, coords, procDim );
       }
 
    public:
@@ -301,8 +298,9 @@ class KDTree {
       }
 
       // Look up the label for the given coordinates
-      LabelType Lookup( UnsignedArray const& coords ) const {
-         return LookupStartingAt( 0, coords );
+      // 2nd value in pair is the last coordinate along `procDim` within this node.
+      std::pair<LabelType, dip::uint> Lookup( UnsignedArray const& coords, dip::uint procDim ) const {
+         return LookupStartingAt( 0, coords, procDim );
       }
 
       // Return the centroids
@@ -327,10 +325,14 @@ class dip__PaintClusters : public Framework::ScanLineFilter {
          dip::uint procDim = params.dimension;
          UnsignedArray pos = params.position;
          dip::uint end = pos[ procDim ] + bufferLength;
-         for( ; pos[ procDim ] < end; ++pos[ procDim ] ) {
-            *out = clusters_.Lookup( pos ); // TODO: this would be more efficient if we examine the node's right edge along procDim, and fill all values with the same label.
-            out += outStride;
-         }
+         do {
+            LabelType label;
+            dip::uint last;
+            std::tie( label, last ) = clusters_.Lookup( pos, procDim );
+            for( ; pos[ procDim ] <= last; ++pos[ procDim ], out += outStride ) {
+               *out = label;
+            }
+         } while( pos[ procDim ] < end );
       }
       dip__PaintClusters( KDTree const& clusters ) : clusters_( clusters ) {}
    private:
