@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `mdhistogram` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPimage code: (c)2001, Michael van Ginkel.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,7 +90,6 @@ dip::Histogram::Configuration GetConf(
 } // namespace
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   //dml::streambuf streambuf;
 
    try {
 
@@ -126,27 +125,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       // Copy the histogram bins to an output array.
       dip::Image const& bins = hist.GetImage();
       dip::uint nDims = bins.Dimensionality();
-      if( nDims == 1 ) {
-         plhs[ 0 ] = mxCreateNumericMatrix( 1, bins.Size( 0 ), mxUINT32_CLASS, mxREAL );
-      } else {
-         plhs[ 0 ] = mxCreateNumericArray( nDims, bins.Sizes().data(), mxUINT32_CLASS, mxREAL );
-      }
-      dip::IntegerArray strides( nDims );
-      dip::uint s = 1;
-      for( dip::uint ii = 0; ii < nDims; ii++ ) {
-         strides[ ii ] = static_cast< dip::sint >( s );
-         s *= bins.Size( ii );
-      }
-      dip::Image mlArray(
-            dip::NonOwnedRefToDataSegment( plhs[ 0 ] ),
-            mxGetData( plhs[ 0 ] ),
-            dip::DT_UINT32,
-            bins.Sizes(),
-            strides
-      );
-      mlArray.Protect(); // make sure it doesn't get reforged
-      mlArray.Copy( hist.GetImage() );
+      plhs[ 0 ] = dml::GetArray( bins );
 
+      // Create the optional 2nd output argument bins
       if( nlhs > 1 ) {
          if( nDims == 1 ) {
             plhs[ 1 ] = dml::GetArray( hist.BinCenters( 0 ));

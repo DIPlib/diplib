@@ -106,6 +106,7 @@ end
 
 % Do histogram.
 [histogram,bins] = mdhistogram(in,[],conf);
+histogram = dip_array(histogram);
 
 if nargout>0
    % Give output data.

@@ -475,7 +475,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
     sense having the order first.
 
   - `mdhistogram` has fewer options, but should still be able to produce the same results as
-    previously.
+    previously. In `hist2image`, the `coords` input is transposed w.r.t. previous versions,
+    for consistency: each row is interpreted as a vertex.
 
   - `resample` and `shift` shift the image in the opposite direction from what it did in
     *DIPimage 2*, where the shift was unintuitive.

@@ -77,6 +77,7 @@ lee.cpp
 lut.cpp
 maxima.cpp
 mdhistogram.cpp
+mdhistogrammap.cpp
 measure.cpp
 minima.cpp
 noise.cpp

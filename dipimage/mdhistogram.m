@@ -39,7 +39,10 @@
 %                                 default, they are put into the first or
 %                                 last bin.
 %
-% The second output argument contains the bin centers. It is a cell array
+% The HISTOGRAM output argument is an image where the first dimension (x)
+% corresponds to the first tensor element of IMAGE, etc.
+%
+% The BINS output argument contains the bin centers. It is a cell array
 % with one vector for each histogram dimension. In case of a 1D histogram,
 % it is just a numeric vector.
 %
@@ -58,10 +61,10 @@
 %  histim = mdhistogram(mchim)
 %
 % SEE ALSO:
-%  diphist, diphist2d
+%  diphist, diphist2d, mdhistogrammap
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Maxima.
+%  This function uses the DIPlib class dip::Histogram.
 
 % TODO: I've removed some options and syntax from the original version of
 % this function. Should these be added back in?
