@@ -445,6 +445,83 @@ void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
    data_.Fill( 0 );
 }
 
+namespace {
+
+template< typename TPI >
+class dip__ReverseLookup : public Framework::ScanLineFilter {
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+         return tensorElements * 6;
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;
+         dip::uint nDims = params.inBuffer[ 0 ].tensorLength;
+         dip::sint tensorStride = params.inBuffer[ 0 ].tensorStride;
+         CountType* out = static_cast< CountType* >( params.outBuffer[ 0 ].buffer );
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         CountType* data = static_cast< CountType* >( histogram_.Origin() );
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            bool include = true;
+            TPI const* in_t = in;
+            for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
+               if( configuration_[ jj ].excludeOutOfBoundValues ) {
+                  if(( *in_t < configuration_[ jj ].lowerBound ) || ( *in_t >= configuration_[ jj ].upperBound )) {
+                     include = false;
+                     break;
+                  }
+               }
+            }
+            if( include ) {
+               dip::sint offset = 0;
+               in_t = in;
+               for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
+                  offset += histogram_.Stride( jj ) *
+                            detail::FindBin( *in_t, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+               }
+               *out = data[ offset ];
+            } else {
+               *out = 0;
+            }
+            in += inStride;
+            out += outStride;
+         }
+      }
+      dip__ReverseLookup( Image const& histogram, Histogram::ConfigurationArray const& configuration ) :
+            histogram_( histogram ), configuration_( configuration ) {}
+   private:
+      Image const& histogram_;
+      Histogram::ConfigurationArray const& configuration_;
+};
+
+}
+
+void Histogram::ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues ) {
+   // Check inputs
+   DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = Dimensionality();
+   DIP_THROW_IF( input.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
+
+   // Compute ConfigurationArray for the histogram
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( excludeOutOfBoundValues, nDims, false ));
+   ConfigurationArray configuration( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      configuration[ ii ].lowerBound = lowerBounds_[ ii ];
+      configuration[ ii ].upperBound = lowerBounds_[ ii ] + binSizes_[ ii ] * static_cast< dfloat >( data_.Size( ii ));
+      configuration[ ii ].nBins = data_.Size( ii );
+      configuration[ ii ].binSize = binSizes_[ ii ];
+      configuration[ ii ].excludeOutOfBoundValues = excludeOutOfBoundValues[ ii ];
+   }
+
+   // Create and call dip__ReverseLookup line filter
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__ReverseLookup, ( data_, configuration ), input.DataType() );
+   ImageRefArray outar{ output };
+   DIP_STACK_TRACE_THIS( Framework::Scan( { input }, outar, { input.DataType() }, { DT_COUNT }, { DT_COUNT }, { 1 }, *scanLineFilter ));
+}
+
 dip::uint Histogram::Count() const {
    return Sum( data_ ).As< dip::uint >();
 }

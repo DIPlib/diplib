@@ -258,6 +258,30 @@ class DIP_NO_EXPORT Histogram {
          return out;
       }
 
+      /// \brief Performs a reverse histogram lookup, yielding an image "painted" with the bin values.
+      ///
+      /// The bin corresponding to each pixel in the input image is found in the histogram, and this bin's
+      /// value is written to `output`.
+      ///
+      /// `input` must be similar to the image used to generate the histogram (at least have the same number
+      /// of tensor elements, which corresponds to the dimensionality of the histogram). The lookup occurs
+      /// in the same way as when generating the histogram. The `excludeOutOfBoundValues` parameter for each
+      /// dimension indicates if an edge bin is found or no bin is found (yielding a 0 output) if the pixel
+      /// is not represented in the histogram.
+      ///
+      /// `output` is a scalar image with data type `dip::Histogram::CountType`, containing the histogram
+      /// bin values.
+      ///
+      /// This function is particularly interesting when applied to a histogram resulting from clustering
+      /// algorithms such as `dip::KMeansClustering(dip::Histogram const&, dip::uint)` or
+      /// `dip::MinimumVariancePartitioning(dip::Histogram const&, dip::uint)`.
+      DIP_EXPORT void ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues = { false } );
+      Image ReverseLookup( Image const& input, BooleanArray const& excludeOutOfBoundValues = { false } ) {
+         Image out;
+         ReverseLookup( input, out, excludeOutOfBoundValues );
+         return out;
+      }
+
       /// \brief Adds a histogram to *this. `other` must have identical properties.
       ///
       /// Adding multiple histograms together can be useful, for example, when accumulating pixel values
@@ -445,7 +469,7 @@ class DIP_NO_EXPORT Histogram {
       Image data_;             // This is where the bins are stored. Always scalar and DT_UINT32.
       FloatArray lowerBounds_; // These are the lower bounds of the histogram along each dimension.
       FloatArray binSizes_;    // These are the sizes of the bins along each dimension.
-      // Compute the upper bound by : lowerBounds_[ii] + binSizes_[ii]*data_.Sizes(ii).
+      // Compute the upper bound by : lowerBounds_[ii] + binSizes_[ii]*data_.Size(ii).
       // data_.Dimensionality() == lowerBounds_.size() == binSizes_.size()
       // Lower and upper bounds are not bin centers!
 
@@ -621,8 +645,6 @@ DIP_EXPORT dfloat BackgroundThreshold(
 //
 // Multi-dimensional histogram partitioning
 //
-
-// TODO: We need a function that does lookup in the histogram, and paints the corresponding histogram bin value to the output image.
 
 /// \brief Partitions a (multi-dimensional) histogram into `nClusters` partitions using k-means clustering.
 ///
