@@ -204,9 +204,9 @@ CoordinateArray KMeansClustering(
    // Randomly initialise the clusters
    Random random;
    UniformRandomGenerator generator( random );
-   for( dip::uint ii = 0; ii < nClusters; ++ii ) {
+   for( auto& cluster : clusters ) {
       for( dip::uint jj = 0; jj < nDims; ++jj ) {
-         clusters[ ii ].mean[ jj ] = generator( 0, static_cast< dfloat >( in.Size( jj )));
+         cluster.mean[ jj ] = generator( 0, static_cast< dfloat >( in.Size( jj )));
       }
    }
 
@@ -218,8 +218,8 @@ CoordinateArray KMeansClustering(
    // Copy over cluster centers to output array
    // This is a small amount of work, and will often be unused. But compared to the cost of the clustering, it's negligible.
    CoordinateArray coords( clusters.size() );
-   for( dip::uint ii = 0; ii < clusters.size(); ++ii ) {
-      coords[ ii ] = UnsignedArray( clusters[ ii ].mean );
+   for( auto& cluster : clusters ) {
+      coords[ cluster.label - 1 ] = UnsignedArray( cluster.mean );
    }
    return coords;
 }
