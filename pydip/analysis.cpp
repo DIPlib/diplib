@@ -88,6 +88,8 @@ void init_analysis( py::module& m ) {
    // diplib/segmentation.h
    m.def( "KMeansClustering", py::overload_cast< dip::Image const&, dip::uint >( &dip::KMeansClustering ),
           "in"_a, "nClusters"_a = 2 );
+   m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Image const&, dip::uint >( &dip::MinimumVariancePartitioning ),
+          "in"_a, "nClusters"_a = 2 );
    m.def( "IsodataThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::IsodataThreshold ),
           "in"_a, "mask"_a = dip::Image{}, "nThresholds"_a = 1 );
    m.def( "OtsuThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::OtsuThreshold ),

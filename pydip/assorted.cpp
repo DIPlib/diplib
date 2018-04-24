@@ -238,6 +238,7 @@ void init_assorted( py::module& m ) {
       bins[ 1 ] = histogram.BinCenters( 1 );
       return py::make_tuple( im, bins ).release();
    }, "input1"_a, "input2"_a, "mask"_a = dip::Image{} );
+   // TODO: Histogram should be an object, then we can access the `ReverseLookup` method.
 
    // diplib/lookup_table.h
    m.def( "LookupTable", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index, dip::String const& interpolation,
