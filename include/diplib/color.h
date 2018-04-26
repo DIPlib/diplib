@@ -64,7 +64,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
       /// spaces, as determined by the `InputColorSpace` and `OutputColorSpace` method.
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const = 0;
 
-      virtual ~ColorSpaceConverter() {}
+      virtual ~ColorSpaceConverter() = default;
 };
 
 

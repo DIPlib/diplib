@@ -87,7 +87,7 @@ class DIP_NO_EXPORT PixelTableOffsets {
       class DIP_NO_EXPORT iterator;
 
       /// A default-constructed pixel table is kinda useless
-      PixelTableOffsets() {};
+      PixelTableOffsets() = default;
 
       /// A pixel table with offsets is constructed from a `dip::PixelTable` and a `dip::Image`.
       DIP_EXPORT PixelTableOffsets( PixelTable const& pt, Image const& image );
@@ -201,7 +201,7 @@ class DIP_NO_EXPORT PixelTable {
       class DIP_NO_EXPORT iterator;
 
       /// A default-constructed pixel table is kinda useless
-      PixelTable() {};
+      PixelTable() = default;
 
       /// \brief Construct a pixel table for default filter shapes.
       ///
@@ -372,7 +372,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
       using reference = IntegerArray const&; ///< The type of a reference
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
-      iterator() {}
+      iterator() = default;
 
       /// Constructs an iterator to the first pixel in the neighborhood
       explicit iterator( PixelTable const& pt ) {
@@ -475,7 +475,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       using reference = dip::sint;        ///< The type of a reference, but we don't return by reference, it's just as easy to copy
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
-      iterator() {}
+      iterator() = default;
 
       /// Constructs an iterator to the first pixel in the neighborhood
       explicit iterator( PixelTableOffsets const& pt ) {

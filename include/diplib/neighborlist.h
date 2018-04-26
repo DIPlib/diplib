@@ -222,7 +222,7 @@ class DIP_NO_EXPORT NeighborList {
             using value_type = dfloat;             ///< The type that the iterator points at
             using reference = value_type const&;   ///< The type you get when you dereference
          public:
-            Iterator() {}
+            Iterator() = default;
             Iterator( NeighborListIterator const& it ) : it_( it ) {}
             /// Swap
             void swap( Iterator& other ) {
@@ -357,7 +357,7 @@ class DIP_NO_EXPORT NeighborList {
    private:
       NeighborListData neighbors_;
 
-      NeighborList() {} // Creating a default-initialized object only allowd by class methods.
+      NeighborList() = default; // Creating a default-initialized object only allowed by class methods.
 
       DIP_EXPORT void ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize );
       DIP_EXPORT void ConstructChamfer( dip::uint dimensionality, dip::uint maxDistance, FloatArray pixelSize );

@@ -222,14 +222,14 @@ class DIP_NO_EXPORT bin {
 
       // Overload constructors to make sure we always write 0 or 1 in the bin.
       /// The default value is 0 (false)
-      constexpr bin() : v_( 0 ) {};
+      constexpr bin() = default;
 
       /// A bool implicitly converts to bin
-      constexpr bin( bool v ) : v_( static_cast< uint8 >( v )) {};
+      constexpr bin( bool v ) : v_( static_cast< uint8 >( v )) {}
 
       /// Any arithmetic type converts to bin by comparing to zero
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
-      constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
+      constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {}
 
       /// A bin implicitly converts to bool
       constexpr operator bool() const { return v_ != 0; }
@@ -270,7 +270,7 @@ class DIP_NO_EXPORT bin {
       explicit operator uint8&() { return v_; }
 
    private:
-      uint8 v_;
+      uint8 v_ = 0;
 };
 
 inline std::ostream& operator<<(
@@ -492,12 +492,12 @@ inline bool StringCompareCaseInsensitive( String const& string1, String const& s
 /// The `begin` and `end` methods yield an iterator that dereferences to the indices
 /// defined by the range.
 struct DIP_NO_EXPORT Range {
-   dip::sint start;    ///< First index included in range
-   dip::sint stop;     ///< Last index included in range
-   dip::uint step;     ///< Step size when going from start to stop
+   dip::sint start = 0;    ///< First index included in range
+   dip::sint stop = -1;    ///< Last index included in range
+   dip::uint step = 1;     ///< Step size when going from start to stop
 
    /// Create a range that indicates all pixels
-   Range() : start{ 0 }, stop{ -1 }, step{ 1 } {}
+   Range() = default;
 
    /// Create a range that indicates a single pixel
    explicit Range( dip::sint i ) : start{ i }, stop{ i }, step{ 1 } {}

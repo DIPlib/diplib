@@ -62,7 +62,7 @@ class DIP_NO_EXPORT BresenhamLineIterator {
       constexpr static dfloat delta = 1.0 - epsilon;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
-      BresenhamLineIterator() {}
+      BresenhamLineIterator() = default;
       /// To construct a useful iterator, provide image strides, and coordinates of the start and end pixels
       BresenhamLineIterator( IntegerArray strides, UnsignedArray start, UnsignedArray const& end ) :
             coord_( std::move( start )), strides_( std::move( strides )) {
@@ -1003,7 +1003,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
       using pointer = Image*;             ///< The type of a pointer to `value_type`
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced or used in any way
-      ImageSliceIterator() {}
+      ImageSliceIterator() = default;
       /// To construct a useful iterator, provide an image and a processing dimension
       ImageSliceIterator( Image const& image, dip::uint procDim ) :
             procDim_( procDim ) {

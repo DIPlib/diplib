@@ -81,7 +81,7 @@ class DIP_NO_EXPORT LineIterator {
       using pointer = T*;                 ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
-      LineIterator() {}
+      LineIterator() = default;
       /// To construct a useful iterator, provide an image, the coordinate of the start pixel, and the processing dimension
       LineIterator( Image const& image, UnsignedArray const& coords, dip::uint procDim ) {
          DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );

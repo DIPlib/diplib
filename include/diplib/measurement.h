@@ -669,7 +669,7 @@ class DIP_CLASS_EXPORT Base {
       /// process for one image.
       virtual void Cleanup() {};
 
-      virtual ~Base() {};
+      virtual ~Base() = default;
 };
 
 /// \brief The pure virtual base class for all line-based measurement features.

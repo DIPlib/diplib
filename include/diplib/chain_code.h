@@ -286,7 +286,7 @@ struct DIP_NO_EXPORT BoundingBox {
    VertexType topLeft;
    VertexType bottomRight;
    /// Default constructor, yields a bounding box of a single pixel at `{0,0}`
-   constexpr BoundingBox() {}
+   constexpr BoundingBox() = default;
    /// Constructor, yields a bounding box of a single pixel at `pt`
    constexpr BoundingBox( VertexType pt ) : topLeft( pt ), bottomRight( pt ) {}
    /// Constructor, yields a bounding box with the two points as two of its vertices
@@ -623,7 +623,7 @@ class DIP_NO_EXPORT ConvexHull {
    public:
 
       /// Default-constructed ConvexHull (without vertices)
-      ConvexHull() {};
+      ConvexHull() = default;
 
       /// Constructs a convex hull of a polygon
       DIP_EXPORT ConvexHull( dip::Polygon&& polygon );

@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <utility>
 #include <iostream>
+#include <type_traits>
 
 #include "diplib/library/error.h"
 
@@ -76,10 +77,9 @@ namespace dip {
 /// We also have some custom algorithms such as dip::DimensionArray::sort() that
 /// assumes the array is short.
 ///
-/// You should only use this container with POD types, I won't be held
-/// responsible for weird behavior if you use it otherwise. The POD type should
-/// have a default constructor, not require being constructed, and not require
-/// being destructed.
+/// This container can only be used with trivially copyable types (this means that
+/// the destructor performs no action, and the object can be copied by copying its
+/// bit pattern).
 ///
 /// An array of size 0 has space for writing four values in it, `data()` won't
 /// return a `nullptr`, and nothing will break if you call front(). But don't
@@ -87,6 +87,8 @@ namespace dip {
 /// being silly and making unreadable code.
 template< typename T >
 class DIP_NO_EXPORT DimensionArray {
+      static_assert( std::is_trivially_copyable<T>::value, "DimensionArray can only be used with trivially copyable types." );
+
    public:
       // Types for consistency with STL containers
       using value_type = T;
@@ -97,7 +99,7 @@ class DIP_NO_EXPORT DimensionArray {
       using size_type = std::size_t;
 
       /// The default-initialized array has zero size.
-      DimensionArray() {}
+      DimensionArray() {}; // Using `=default` causes weird sequence of "constructor required before non-static data member for ‘dip::Histogram::Configuration::lowerBound’ has been parsed" in GCC
 
       /// Like `std::vector`, you can initialize with a size and a default value.
       explicit DimensionArray( size_type sz, T newval = T() ) {
@@ -130,7 +132,7 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       // Destructor, no need for documentation
-      ~DimensionArray() {
+      ~DimensionArray() noexcept {
          free_array(); // no need to keep status consistent...
       }
 
@@ -152,7 +154,7 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       /// Swaps the contents of two arrays.
-      void swap( DimensionArray& other ) {
+      void swap( DimensionArray& other ) noexcept {
          using std::swap;
          if( is_dynamic() ) {
             if( other.is_dynamic() ) {
@@ -228,13 +230,16 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       /// Clears the contents of the array, set its length to 0.
-      void clear() { resize( 0 ); }
+      void clear() noexcept {
+         free_array();
+         reset();
+      }
 
       /// Checks whether the array is empty (size is 0).
-      bool empty() const { return size_ == 0; }
+      bool empty() const noexcept { return size_ == 0; }
 
       /// Returns the size of the array.
-      size_type size() const { return size_; }
+      size_type size() const noexcept { return size_; }
 
       /// Accesses an element of the array
       T& operator[]( size_type index ) { return *( data_ + index ); }
@@ -277,7 +282,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// location and subsequent values forward by one.
       void insert( size_type index, T const& value ) {
          DIP_ASSERT( index <= size_ );
-         resize( size_ + 1 );
+         resize( size_ + 1 ); // we're default-initializing one T here.
          if( index < size_ - 1 ) {
             std::move_backward( data_ + index, data_ + size_ - 1, data_ + size_ );
          }
@@ -286,12 +291,11 @@ class DIP_NO_EXPORT DimensionArray {
 
       /// Adds a value to the back.
       void push_back( T const& value ) {
-         resize( size_ + 1 );
-         back() = value;
+         resize( size_ + 1, value );
       }
 
       /// Adds all values in source array to the back.
-      void push_back( DimensionArray const& values ) {
+      void append( DimensionArray const& values ) {
          size_type index = size_;
          resize( size_ + values.size_ );
          for( size_type ii = 0; ii < values.size_; ++ii ) {
@@ -510,7 +514,7 @@ class DIP_NO_EXPORT DimensionArray {
       // access. Data access is most frequent, it's worth using a little bit
       // more memory to avoid that test.
 
-      bool is_dynamic() noexcept {
+      bool is_dynamic() const noexcept {
          return data_ != stat_;
       }
 
@@ -521,12 +525,17 @@ class DIP_NO_EXPORT DimensionArray {
          }
       }
 
+      void reset() noexcept {
+         // This should be called only after `free_array()`.
+         size_ = 0;
+         data_ = stat_;
+      }
+
       void steal_data_from( DimensionArray& other ) noexcept {
          if( other.is_dynamic() ) {
             size_ = other.size_;
             data_ = other.data_;       // move pointer
-            other.size_ = 0;           // so other won't deallocate the memory space
-            other.data_ = other.stat_; // make sure other is consistent
+            other.reset();             // leave other in consistent, empty state
          } else {
             size_ = other.size_;
             data_ = stat_;

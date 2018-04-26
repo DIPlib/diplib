@@ -62,7 +62,7 @@ class DFT {
    public:
 
       /// \brief A default-initialized `%DFT` object is useless. Call `Initialize` to make it useful.
-      DFT() {}
+      DFT() = default;
 
       /// \brief Construct a `%DFT` object by specifying the size and direction of the transform.
       /// Note that this is not a trivial operation.

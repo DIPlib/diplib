@@ -216,7 +216,7 @@ class DIP_EXPORT ScanLineFilter {
          return std::max( nInput, nOutput ) * nTensorElements;
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
-      virtual ~ScanLineFilter() {}
+      virtual ~ScanLineFilter() = default;
 };
 
 /// \brief %Framework for pixel-based processing of images.
@@ -677,7 +677,7 @@ class DIP_EXPORT SeparableLineFilter {
          return lineLength * nTensorElements * 4 * border; // 2*border is filter size, double that for the number of multiply-adds.
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
-      virtual ~SeparableLineFilter() {}
+      virtual ~SeparableLineFilter() = default;
 };
 
 /// \brief %Framework for separable filtering of images.
@@ -898,7 +898,7 @@ class DIP_EXPORT FullLineFilter {
               + lineLength * nKernelPixels;                    // iterating over pixel table weights
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
-      virtual ~FullLineFilter() {}
+      virtual ~FullLineFilter() = default;
 };
 
 /// \brief %Framework for filtering of images with an arbitrary shape neighborhood.

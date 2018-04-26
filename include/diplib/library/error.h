@@ -56,7 +56,7 @@ class DIP_CLASS_EXPORT Error : public std::exception {
    public:
       Error() = default;
       explicit Error( char const* message ) : message_( message ) {}
-      explicit Error( std::string message ) : message_( std::move( message )) {};
+      explicit Error( std::string message ) : message_( std::move( message )) {}
 
       /// \brief Return a message indicating what caused the exception to be thrown, as well as the location
       /// where the error occurred.

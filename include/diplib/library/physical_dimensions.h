@@ -86,8 +86,8 @@ class DIP_NO_EXPORT Units {
 
       /// These are the base units for the SI system.
       enum class BaseUnits {
+            // NOTE: these are used as indices into an array, so we must start at 1 here and use unit increments.
             THOUSANDS = 0,       ///< prefix
-            // NOTE: THOUSANDS must be the first element here and have a value of 0.
             LENGTH,              ///< m
             MASS,                ///< g (should be Kg, but this is easier when working with prefixes)
             TIME,                ///< s
@@ -96,18 +96,16 @@ class DIP_NO_EXPORT Units {
             LUMINOUSINTENSITY,   ///< cd
             ANGLE,               ///< rad (though really dimensionless)
             PIXEL,               ///< px (units to use when the image has no dimension information)
-            // NOTE: PIXEL is assumed to be the last element here, and is used to determine ndims_.
       };
-
+      constexpr static dip::uint thousandsIndex = static_cast< dip::uint >( BaseUnits::THOUSANDS );
+      // We sometimes skip the 0 index into the array, meaning to skip the thousands element. Don't move it from 0!
+      static_assert( thousandsIndex == 0, "dip::Units::BaseUnits::THOUSANDS is not 0!" );
 
       /// A default-constructed `%Units` is dimensionless.
-      Units() {
-         power_.fill( 0 );
-      }
+      Units() = default;
 
       /// Construct a `%Units` for a specific unit.
       explicit Units( BaseUnits bu, dip::sint8 power = 1 ) {
-         power_.fill( 0 );
          power_[ static_cast< dip::uint >( bu ) ] = power;
       }
 
@@ -137,31 +135,31 @@ class DIP_NO_EXPORT Units {
       /// Cubic meter units (m^3)
       static Units CubicMeter() { return Units( BaseUnits::LENGTH, 3 ); }
       /// Nanometer units (nm)
-      static Units Nanometer() { Units out = Meter(); out.power_[ 0 ] = -3; return out; }
+      static Units Nanometer() { Units out = Meter(); out.power_[ thousandsIndex ] = -3; return out; }
       /// Micrometer units (um)
-      static Units Micrometer() { Units out = Meter(); out.power_[ 0 ] = -2; return out; }
+      static Units Micrometer() { Units out = Meter(); out.power_[ thousandsIndex ] = -2; return out; }
       /// Millimeter units (mm)
-      static Units Millimeter() { Units out = Meter(); out.power_[ 0 ] = -1; return out; }
+      static Units Millimeter() { Units out = Meter(); out.power_[ thousandsIndex ] = -1; return out; }
       /// Kilometer units (km)
-      static Units Kilometer() { Units out = Meter(); out.power_[ 0 ] = 1; return out; }
+      static Units Kilometer() { Units out = Meter(); out.power_[ thousandsIndex ] = 1; return out; }
       /// Square micrometer units (um^2)
-      static Units SquareMicrometer() { Units out = SquareMeter(); out.power_[ 0 ] = -4; return out; }
+      static Units SquareMicrometer() { Units out = SquareMeter(); out.power_[ thousandsIndex ] = -4; return out; }
       /// Square millimeter units (mm^2)
-      static Units SquareMillimeter() { Units out = SquareMeter(); out.power_[ 0 ] = -2; return out; }
+      static Units SquareMillimeter() { Units out = SquareMeter(); out.power_[ thousandsIndex ] = -2; return out; }
       /// Cubic millimeter units (mm^3)
-      static Units CubicMillimeter() { Units out = CubicMeter(); out.power_[ 0 ] = -3; return out; }
+      static Units CubicMillimeter() { Units out = CubicMeter(); out.power_[ thousandsIndex ] = -3; return out; }
       /// Second units (s)
       static Units Second() { return Units( BaseUnits::TIME ); }
       /// Millisecond units (ms)
-      static Units Millisecond() { Units out = Second(); out.power_[ 0 ] = -1; return out; }
+      static Units Millisecond() { Units out = Second(); out.power_[ thousandsIndex ] = -1; return out; }
       /// Hertz units (s^-1)
       static Units Hertz() { return Units( BaseUnits::TIME, -1 ); }
       /// Kilohertz units (ms^-1)
-      static Units Kilohertz() { Units out = Hertz(); out.power_[ 0 ] = -1; return out; }
+      static Units Kilohertz() { Units out = Hertz(); out.power_[ thousandsIndex ] = -1; return out; }
       /// Megahertz units (us^-1)
-      static Units Megahertz() { Units out = Hertz(); out.power_[ 0 ] = -2; return out; }
+      static Units Megahertz() { Units out = Hertz(); out.power_[ thousandsIndex ] = -2; return out; }
       /// Gigahertz units (ns^-1)
-      static Units Gigahertz() { Units out = Hertz(); out.power_[ 0 ] = -3; return out; }
+      static Units Gigahertz() { Units out = Hertz(); out.power_[ thousandsIndex ] = -3; return out; }
       /// Radian units (rad)
       static Units Radian() { return Units( BaseUnits::ANGLE ); }
       /// Pixel units (px)
@@ -233,7 +231,7 @@ class DIP_NO_EXPORT Units {
 
       /// \brief Test to see if the units are physical. %Units that involve pixels are not physical, and neither are dimensionless units.
       bool IsPhysical() const {
-         return ( power_[ int( BaseUnits::PIXEL ) ] == 0 ) && !IsDimensionless();
+         return ( power_[ static_cast< dip::uint >( BaseUnits::PIXEL ) ] == 0 ) && !IsDimensionless();
       }
 
       /// \brief Adjusts the power of the thousands, so that we can use an SI prefix with the first unit to be written out.
@@ -241,16 +239,16 @@ class DIP_NO_EXPORT Units {
       /// The return value is a number of thousands, which are taken out of the units and should be handled by the caller.
       /// The input `power` is the number of thousands that the caller would like to include into the units.
       dip::sint AdjustThousands( dip::sint power = 0 ) {
-         dip::sint thousands = power_[ 0 ] + power;
+         dip::sint thousands = power_[ thousandsIndex ] + power;
          if( thousands == 0 ) {
             // No need for checks, this one is easy
-            power_[ 0 ] = 0;
+            power_[ thousandsIndex ] = 0;
             return 0;
          } else {
             dip::sint fp = FirstPower();
             dip::sint newpower = div_floor( thousands, fp ) * fp;
             newpower = clamp< dip::sint >( newpower, -5l, 6l ); // these are the SI prefixes that dip::Units knows.
-            power_[ 0 ] = static_cast< dip::sint8 >( newpower );
+            power_[ thousandsIndex ] = static_cast< dip::sint8 >( newpower );
             thousands -= newpower;
             return thousands;
          }
@@ -258,7 +256,7 @@ class DIP_NO_EXPORT Units {
 
       /// \brief Returns the power associated with `BaseUnits::THOUSANDS`, corresponding to a given SI prefix.
       dip::sint Thousands() const {
-         return power_[ 0 ];
+         return power_[ thousandsIndex ];
       }
 
       /// \brief Cast physical units to a string representation, using only ASCII characters.
@@ -285,8 +283,10 @@ class DIP_NO_EXPORT Units {
 
    private:
 
-      constexpr static dip::uint ndims_ = dip::uint( BaseUnits::PIXEL ) + 1u; // The number of different units we have
-      std::array< sint8, ndims_ > power_;
+      constexpr static dip::uint ndims_ = 9; // Number of elements in BaseUnits below
+      static_assert( static_cast< dip::uint >( BaseUnits::PIXEL ) + 1u == ndims_, "Inconsistency in dip::Units::ndims_ static value" );
+
+      std::array< sint8, ndims_ > power_ = {{ 0, 0, 0, 0, 0, 0, 0, 0, 0 }}; // Keep length of zeros in sync with ndims_!
 
       // Returns the power of the first unit to be written out, needed to figure out what the SI prefix must be.
       dip::sint FirstPower() const {
@@ -342,13 +342,13 @@ inline void swap( Units& v1, Units& v2 ) {
 struct DIP_NO_EXPORT PhysicalQuantity {
 
    /// A default-constructed `%PhysicalQuantity` has magnitude 0 and is unitless.
-   PhysicalQuantity() {};
+   PhysicalQuantity() = default;
 
    /// Create an arbitrary physical quantity.
-   PhysicalQuantity( dip::dfloat m, Units const& u = {} ) : magnitude( m ), units( u ) {};
+   PhysicalQuantity( dip::dfloat m, Units const& u = {} ) : magnitude( m ), units( u ) {}
 
    /// Create a unit-valued physical quantity.
-   PhysicalQuantity( Units const& u ) : magnitude( 1 ), units( u ) {};
+   PhysicalQuantity( Units const& u ) : magnitude( 1 ), units( u ) {}
 
    /// One nanometer.
    static PhysicalQuantity Nanometer() { return Units::Nanometer(); }
@@ -465,12 +465,10 @@ struct DIP_NO_EXPORT PhysicalQuantity {
             dip::dfloat lhsmag =     magnitude * pow10( 3 *     units.Thousands() );
             dip::dfloat rhsmag = rhs.magnitude * pow10( 3 * rhs.units.Thousands() );
             return lhsmag == rhsmag;
-         } else {
-            return false;
          }
-      } else {
-         return ( magnitude == rhs.magnitude ) && ( units == rhs.units );
+         return false;
       }
+      return ( magnitude == rhs.magnitude ) && ( units == rhs.units );
    }
 
    /// Comparison of two physical quantities.
@@ -630,7 +628,7 @@ class DIP_NO_EXPORT PixelSize {
 
       /// By default, an image has no physical dimensions. The pixel size is given
       /// as "1 pixel".
-      PixelSize() {};
+      PixelSize() = default;
 
       /// Create an isotropic pixel size based on a physical quantity.
       PixelSize( PhysicalQuantity const& m ) {
