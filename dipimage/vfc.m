@@ -19,7 +19,7 @@
 %  a = noise(50+100*gaussf(rr>85,2),'gaussian',20)
 %  f = vfc(gradmag(a,5),81);
 %  x = 120+50*cos(0:0.1:2*pi); y = 140+60*sin(0:0.1:2*pi);
-%  s = [x',y'];
+%  s = [x.',y.'];
 %  snakedraw(s);
 %  s = snakeminimize(s,f,0.2,0.4,1,0,60);
 %  snakedraw(s);

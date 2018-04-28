@@ -29,7 +29,7 @@
 %  f = gradient(gradmag(a,5));
 %  f = f./max(norm(f));
 %  x = 100+30*cos(0:0.1:2*pi); y = 150+40*sin(0:0.1:2*pi);
-%  s = [x',y'];
+%  s = [x.',y.'];
 %  snakedraw(s);
 %  s = snakeminimize(s,f,0.01,100,3,0.3,20);
 %  h = snakedraw(s);

@@ -15,7 +15,7 @@
 %  This function does the equivalent of the following:
 %     g = gradient(in,...);
 %     H = hessian(in,...);
-%     dgg = ( g' * H * g ) / ( g' * g );
+%     dgg = ( g.' * H * g ) / ( g.' * g );
 %
 % SEE ALSO: TFRAMEHESSIAN for reguralised 2nd derivative
 %

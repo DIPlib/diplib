@@ -53,7 +53,7 @@ for k=1:7
 end
 out_ev = q;
 if  nargout>=2
-   out_ew = q'*(A*q);
+   out_ew = q.'*(A*q);
 end
 
 warning(wa);

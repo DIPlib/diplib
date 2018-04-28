@@ -13,10 +13,10 @@
 %  array = 2
 %
 % EXAMPLE:
-%  a=readim;
-%  g=gradient(a);
-%  G=g*g';
-%  G1=tile(G);
+%  a = readim;
+%  g = gradient(a);
+%  G = g*g.';
+%  G1 = tile(G);
 %  detile(G1,[2,2]) % identical to G
 %
 % SEE ALSO:

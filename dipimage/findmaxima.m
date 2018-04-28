@@ -21,7 +21,7 @@
 % EXAMPLE: Harris corner detector with subpixel accuracy:
 %  a = readim;
 %  g = gradient(a);
-%  t = gaussf(g*g',3);
+%  t = gaussf(g*g.',3);
 %  c = det(t)-0.1*trace(t)^2;
 %  [p,v] = findmaxima(c);
 %  p(v<0.0001*max(v),:) = [];

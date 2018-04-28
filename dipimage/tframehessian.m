@@ -3,7 +3,7 @@
 % SYNOPSIS:
 %  out = tframehessian(image_in, sg, st, sh)
 %
-%  Each tensor element of OUT is computed by the Raleigh quotient
+%  Each tensor element of OUT is computed by the Rayleigh quotient
 %  of the Hessian matrix and one of the eigenvectors of the stucture
 %  tensor. The first component of OUT is equivalent to `DGG(IMAGE_IN)`,
 %  but replacing the gradient direction with the main direction of
@@ -59,7 +59,7 @@ else
    out = cell(ndims(in),1);
    for ii=1:ndims(in)
       t = V{:,ii};
-      out{ii} = t' * H * t;
+      out{ii} = t.' * H * t;
    end
    H = [];
    V = [];

@@ -85,7 +85,7 @@ if any(mir_para<1) || any(mir_para>di)
    error('MIRROR_PARAMETERS out of range')
 end
 mir_para = unique(mir_para);
-mir_para = mir_para(:)';
+mir_para = mir_para(:).';
 s = substruct('()',cell(1,di));
 s(1).subs(:) = {':'};
 for p = mir_para

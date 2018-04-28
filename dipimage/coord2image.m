@@ -44,7 +44,7 @@ if nargin<2
 elseif isa(sz,'dip_image')
    sz = imsize(sz);
 else
-   sz = sz(:)';
+   sz = sz(:).';
 end
 if numel(sz)~=D || ~isnumeric(sz)
    error('SZ must be an array with D elements');

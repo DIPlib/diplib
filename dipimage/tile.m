@@ -11,9 +11,9 @@
 %  stretch = false
 %
 % EXAMPLE:
-%  a=readim;
-%  g=gradient(a);
-%  G=g*g';
+%  a = readim;
+%  g = gradient(a);
+%  G = g*g.';
 %  tile(G)
 %
 % SEE ALSO:

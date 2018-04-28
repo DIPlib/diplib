@@ -88,7 +88,7 @@ out = (out - l) * (255 / (u - l));
 
 % Draw the red vectors
 sc = findcoord(mr);
-ec = sc + squeeze(double(scale*vector(mr)))';
+ec = sc + squeeze(double(scale*vector(mr))).';
 ec = round(ec);
 ec = bsxfun(@min,ec,imsize(in)-1);
 ec = max(ec,0);
@@ -98,7 +98,7 @@ end
 
 % Draw the green vectors
 sc = findcoord(mg);
-ec = sc + squeeze(double(scale*vector(mg)))';
+ec = sc + squeeze(double(scale*vector(mg))).';
 ec = round(ec);
 ec = bsxfun(@min,ec,imsize(in)-1);
 ec = max(ec,0);

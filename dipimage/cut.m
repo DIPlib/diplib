@@ -76,7 +76,7 @@ if isscalar(newsz)
 elseif length(newsz)~=N
    error('NEWSIZE has wrong number of elements')
 end
-newsz = newsz(:)';
+newsz = newsz(:).';
 newsz = min(sz,newsz);
 if all(newsz==sz)
    out = in;
@@ -112,7 +112,7 @@ else
    if ~isnumeric(location) || ~isvector(location) || length(location)~=N
       error('Illegal LOCATION value')
    end
-   start = round(location(:)');
+   start = round(location(:).');
 end
 
 s = cell(1,N);
