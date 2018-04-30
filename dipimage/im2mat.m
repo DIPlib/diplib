@@ -23,7 +23,7 @@
 %  This function is identical to dip_image/dip_array.
 %
 % SEE ALSO:
-%  mat2im, dip_image, dip_image.dip_array
+%  mat2im, im2cell, dip_image.dip_array
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

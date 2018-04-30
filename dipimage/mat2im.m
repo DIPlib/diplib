@@ -22,7 +22,7 @@
 %  c = mat2im(b,1);       % c is identical to a.
 %
 % SEE ALSO:
-%  im2mat, dip_image, dip_image.dip_array
+%  im2mat, cell2im, joinchannels, dip_image.dip_image
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
