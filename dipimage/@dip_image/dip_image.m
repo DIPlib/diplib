@@ -1941,6 +1941,7 @@ classdef dip_image
 
       function out = mrdivide(lhs,rhs)
          %MRDIVIDE   Overload for operator /
+         %   Only implemented for scalar RHS.
          if ~isscalar(rhs)
             error('Not implented');
          end
@@ -1959,15 +1960,24 @@ classdef dip_image
 
       function out = power(lhs,rhs)
          %POWER   Overload for operator .^
-         out = dip_operators('^',lhs,rhs);
+         if isequal(rhs,2)
+            out = dip_operators('.',lhs,lhs,dipgetpref('KeepDataType')); % a.*a is about four times faster than a.^2
+         else
+            out = dip_operators('^',lhs,rhs);
+         end
       end
 
       function out = mpower(lhs,rhs)
          %MPOWER   Overload for operator ^
-         if ~isscalar(lhs) || ~isscalar(rhs)
-            error('Not implented');
+         %   For powers other than 2, not implemented for non-scalar images.
+         if isequal(rhs,2)
+            out = dip_operators('*',lhs,lhs,dipgetpref('KeepDataType')); % a^2 is implemented as a*a
+         else
+            if ~isscalar(lhs) || ~isscalar(rhs)
+               error('Not implented');
+            end
+            out = dip_operators('^',lhs,rhs);
          end
-         out = dip_operators('^',lhs,rhs);
       end
 
       function out = eq(lhs,rhs)
@@ -2127,11 +2137,13 @@ classdef dip_image
 
       function in = uminus(in)
          %UMINUS   Overload for unary operator -
+         %   For unsigned integer types, -A is the same as INTMAX(DATATYPE(A))-A.
          in = dip_operators('m-',in);
       end
 
       function in = uplus(in)
-         %UPLUS   Overload for unary operator + (converts binary image to UINT8)
+         %UPLUS   Overload for unary operator +
+         %   Converts a binary image to UINT8. Has no effect for other data types.
          if islogical(in.Data)
             in.Data = uint8(in.Data);
          end
