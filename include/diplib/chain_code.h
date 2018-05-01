@@ -288,7 +288,7 @@ struct DIP_NO_EXPORT BoundingBox {
    /// Default constructor, yields a bounding box of a single pixel at `{0,0}`
    constexpr BoundingBox() = default;
    /// Constructor, yields a bounding box of a single pixel at `pt`
-   constexpr BoundingBox( VertexType pt ) : topLeft( pt ), bottomRight( pt ) {}
+   constexpr explicit BoundingBox( VertexType pt ) : topLeft( pt ), bottomRight( pt ) {}
    /// Constructor, yields a bounding box with the two points as two of its vertices
    BoundingBox( VertexType a, VertexType b ) {
          if( a.x < b.x ) {
@@ -363,9 +363,9 @@ inline FloatArray BoundingBox< dfloat >::Size() const {
 class DIP_NO_EXPORT CovarianceMatrix {
    public:
       /// \brief Default-initialized covariance matrix is all zeros
-      CovarianceMatrix() : xx_( 0 ), xy_( 0 ), yy_( 0 ) {}
+      CovarianceMatrix() = default;
       /// \brief Construct a covariance matrix as the outer product of a vector and itself
-      CovarianceMatrix( VertexFloat v ) : xx_( v.x * v.x ), xy_( v.x * v.y ), yy_( v.y * v.y ) {}
+      explicit CovarianceMatrix( VertexFloat v ) : xx_( v.x * v.x ), xy_( v.x * v.y ), yy_( v.y * v.y ) {}
       /// \brief Read matrix element
       dfloat xx() const { return xx_; }
       /// \brief Read matrix element
@@ -417,11 +417,8 @@ class DIP_NO_EXPORT CovarianceMatrix {
          /// \brief Computes eccentricity using the two eigenvalues of the covariance matrix.
          dfloat Eccentricity() const {
             // Eccentricity according to https://en.wikipedia.org/wiki/Image_moment
-            if( largest <= 0.0 ) {    // largest == 0 really, it cannot be negative.
-               return 0.0;            // if largest == 0, then smallest == 0 also.
-            } else {
-               return std::sqrt( 1.0 - smallest / largest );
-            }
+            // largest cannot be negative; if largest == 0, then smallest == 0 also.
+            return largest <= 0.0 ? 0.0 : std::sqrt( 1.0 - smallest / largest );
          }
       };
       /// \brief Compute eigenvalues of matrix
@@ -430,10 +427,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
          dfloat mmu2 = ( xx_ + yy_ ) / 2.0;
          dfloat dmu2 = ( xx_ - yy_ ) / 2.0;
          dfloat sqroot = std::sqrt( xy_ * xy_ + dmu2 * dmu2 );
-         Eigenvalues lambda;
-         lambda.largest = mmu2 + sqroot;
-         lambda.smallest = mmu2 - sqroot;
-         return lambda;
+         return { mmu2 + sqroot, mmu2 - sqroot };
       }
 
       /// \brief Container for ellipse parameters
@@ -447,16 +441,17 @@ class DIP_NO_EXPORT CovarianceMatrix {
       EllipseParameters Ellipse() const {
          // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          Eigenvalues lambda = Eig();
-         EllipseParameters out;
-         out.majorAxis = std::sqrt( 8.0 * lambda.largest );
-         out.minorAxis = std::sqrt( 8.0 * lambda.smallest );
-         out.orientation = std::atan2( lambda.largest - xx_, xy_ ); // eigenvector is {xy, lambda.largest - xx}
-         out.eccentricity = lambda.Eccentricity();
-         return out;
+         return {
+               std::sqrt( 8.0 * lambda.largest ),
+               std::sqrt( 8.0 * lambda.smallest ),
+               // eigenvector is {xy, lambda.largest - xx}, always has an angle in the range [0,pi).
+               std::atan2( lambda.largest - xx_, xy_ ),
+               lambda.Eccentricity()
+         };
       }
 
    private:
-      dfloat xx_, xy_, yy_;
+      dfloat xx_ = 0, xy_ = 0, yy_ = 0;
 };
 
 
@@ -729,16 +724,9 @@ struct DIP_NO_EXPORT ChainCode {
          CodeTable( bool is8connected, IntegerArray strides ) {
             dip::sint xS = strides[ 0 ];
             dip::sint yS = strides[ 1 ];
-            if( is8connected ) {
-               pos = deltas8;
-               for( dip::uint ii = 0; ii < 8; ++ii ) {
-                  offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
-               }
-            } else {
-               pos = deltas4;
-               for( dip::uint ii = 0; ii < 4; ++ii ) {
-                  offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
-               }
+            pos = is8connected ? deltas8 : deltas4;
+            for( dip::uint ii = 0; ii < ( is8connected ? 8 : 4 ); ++ii ) {
+               offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
             }
          }
    };
@@ -748,7 +736,7 @@ struct DIP_NO_EXPORT ChainCode {
    class DIP_NO_EXPORT Code {
       public:
          /// Default constructor
-         Code() : value( 0 ) {}
+         Code() = default;
          /// Constructor
          Code( unsigned code, bool border = false ) { value = static_cast< dip::uint8 >(( code & 7u ) | ( static_cast< unsigned >( border ) << 3u )); }
          /// Returns whether the border flag is set
@@ -772,7 +760,7 @@ struct DIP_NO_EXPORT ChainCode {
             return !( *this == c2 );
          }
       private:
-         dip::uint8 value;
+         dip::uint8 value = 0;
          unsigned code8() const { return value & 7u; }
          unsigned code4() const { return value & 3u; }
          bool isBorder() const { return static_cast< bool >( value & 8u ); }
