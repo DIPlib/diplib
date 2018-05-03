@@ -37,9 +37,17 @@ document's source</a> for the most up-to-date version.
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
 
-    **Major change coming in R2018a**: we need to add -R2017b to the `mex` compile command
-    for the time being. We need to rewrite how numeric mxArray data is read if
-    `MX_HAS_INTERLEAVED_COMPLEX` is defined.
+    For R2018a and newer, complex data is no longer stored in two separate data segments.
+    This is good overall, but requires changes to the DIPlib-MATLAB interface. Additionally,
+    there is a new C++ API for MEX-files. So, since we need to make changes to the interface
+    anyway, for MATLAB R2018a and newer we will use the C++ API. A CMake flag will select
+    with which DIPlib-MATLAB interface the MEX-files will be built. It is not yet clear how
+    complicated all of this will be:
+    - We'll need to wrap the existing `mexFunction` declaration in a preprocessor macro,
+    since the C++ API uses a very different way of declaring the entry point.
+    - `prhs` will be of type `mxArray*[]` or `matlab::mex::ArgumentList` depending on the
+    interface. `nrhs` should be set to `matlab::mex::ArgumentList.size()` within that
+    declaration macro. Idem for LHS arguments.
 
 -   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
     to be added as these functions are written. Make the module more "Pythonic"?

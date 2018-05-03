@@ -34,6 +34,11 @@
 
 #include <mex.h>
 
+// If compiling MEX-files with the -R2018a flag, the code in this file will not work as intended.
+#ifdef MX_HAS_INTERLEAVED_COMPLEX
+#error "This DIPlib-MATLAB interface does not support compiling MEX-files with the -R2018a flag"
+#endif
+
 // MSVC 2015-2017 has a problem linking std::codecvt_utf8_utf16< char16_t >. Here's a workaround.
 // MSVC version numbers from https://sourceforge.net/p/predef/wiki/Compilers/#microsoft-visual-c
 #if( _MSC_VER >= 1900 ) && ( _MSC_VER < 1920 )
