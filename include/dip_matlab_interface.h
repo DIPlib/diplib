@@ -97,6 +97,11 @@ static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one 
 #define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < ( n ), "Too few input arguments" )
 #define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > ( n ), "Too many input arguments" )
 
+#define DML_CATCH catch( const dip::ParameterError& e ) { mexErrMsgIdAndTxt( "DIPlib:ParameterError", e.what() ); } \
+                  catch( const dip::RunTimeError& e ) { mexErrMsgIdAndTxt( "DIPlib:RunTimeError", e.what() ); } \
+                  catch( const dip::AssertionError& e ) { mexErrMsgIdAndTxt( "DIPlib:AssertionError", e.what() ); }
+
+
 /// \brief True if array is scalar (has single value)
 // We define this function because mxIsScalar is too new.
 inline bool IsScalar( mxArray const* mx ) {
@@ -1485,9 +1490,14 @@ class streambuf : public std::streambuf {
       streambuf() {
          stdoutbuf = std::cout.rdbuf( this );
       }
-      ~streambuf() {
+      ~streambuf() override {
          std::cout.rdbuf( stdoutbuf );
       }
+      // Cannot be copied or moved:
+      streambuf( streambuf const& ) = delete;
+      streambuf( streambuf&& ) = delete;
+      streambuf& operator=( streambuf const& ) = delete;
+      streambuf& operator=( streambuf&& ) = delete;
    protected:
       virtual std::streamsize xsputn( const char* s, std::streamsize n ) override {
          mexPrintf( "%.*s", n, s );

@@ -66,10 +66,11 @@ void EnsureViewerJarIsOnPath() {
       JavaAddPath();
       if( !HasViewerClass() ) {
          JavaAddPath( false );
-         mexErrMsgTxt( "Cannot load library Viewer.jar.\nPossible sources of this error:\n"
-                          " - Viewer.jar is not in the expected location.\n"
-                          " - Viewer.jar is not compatible with this version of MATLAB.\n"
-                          " - MATLAB's JVM is disabled." );
+         mexErrMsgIdAndTxt( "DIPlib:RunTimeError",
+                            "Cannot load library Viewer.jar.\nPossible sources of this error:\n"
+                            " - Viewer.jar is not in the expected location.\n"
+                            " - Viewer.jar is not compatible with this version of MATLAB.\n"
+                            " - MATLAB's JVM is disabled." );
       }
    }
 }
@@ -104,7 +105,5 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          plhs[ 0 ] = obj;
       }
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what());
-   }
+   } DML_CATCH
 }

@@ -42,7 +42,5 @@ void mexFunction( int /*nlhs*/, mxArray* /*plhs*/[], int nrhs, const mxArray* pr
 
       dip::ImageWriteTIFF( image, filename, compression, jpegLevel );
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

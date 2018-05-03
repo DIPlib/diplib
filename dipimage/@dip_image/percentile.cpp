@@ -101,7 +101,5 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
       }
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

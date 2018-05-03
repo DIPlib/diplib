@@ -48,7 +48,5 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          DIP_THROW( "SVD needs one or three output arguments" );
       }
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

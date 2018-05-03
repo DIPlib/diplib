@@ -382,7 +382,5 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          DIP_THROW( "Illegal input" );
       }
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

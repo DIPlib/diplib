@@ -41,7 +41,5 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       data[ 0 ] = minmax.Minimum();
       data[ 1 ] = minmax.Maximum();
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

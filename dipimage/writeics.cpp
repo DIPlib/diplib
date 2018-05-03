@@ -45,7 +45,5 @@ void mexFunction( int /*nlhs*/, mxArray* /*plhs*/[], int nrhs, const mxArray* pr
       }
       dip::ImageWriteICS( image, filename, history, significantBits, options );
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

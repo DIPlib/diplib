@@ -43,7 +43,5 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       data[ 2 ] = stats.Skewness();
       data[ 3 ] = stats.ExcessKurtosis();
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

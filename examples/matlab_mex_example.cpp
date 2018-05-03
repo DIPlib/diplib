@@ -47,7 +47,5 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       // Retrieve the MATLAB array for the output image (it's a dip_image object)
       plhs[ 0 ] = dml::GetArray( out );
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }

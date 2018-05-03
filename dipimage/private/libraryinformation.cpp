@@ -34,7 +34,5 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int /*nrhs*/, const mxArray* /*
       mxSetFieldByNumber( plhs[ 0 ], 0, 5, dml::GetArray( dip::libraryInformation.date ));
       mxSetFieldByNumber( plhs[ 0 ], 0, 6, dml::GetArray( dip::libraryInformation.type ));
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what());
-   }
+   } DML_CATCH
 }

@@ -60,7 +60,5 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       mwSize newDims[ 2 ] = { nDims > 2 ? dims[ 2 ] : 1, nDims > 3 ? dims[ 3 ] : 1 };
       mxSetDimensions( plhs[ 0 ], newDims, 2 );
 
-   } catch( const dip::Error& e ) {
-      mexErrMsgTxt( e.what() );
-   }
+   } DML_CATCH
 }
