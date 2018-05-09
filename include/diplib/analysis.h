@@ -318,7 +318,10 @@ inline Image StructureTensor(
 /// `energy`      | Sum of the two eigenvalues `l1` and `l2`.
 /// `anisotropy1` | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
 /// `anisotropy2` | Measure for local anisotropy: `1 - l2 / l1`, where `l1 > 0`.
-/// `curvature`   | Curvature (1/bending radius), signed
+/// `curvature`   | Magnitude of the curvature (1/bending radius).
+///
+/// Curvature sign cannot be computed because the structure tensor does not distinguish the direction of
+/// the gradient.
 ///
 /// Note that `l1` and `l2` will both reference data within the same data segment, and therefore will likely not
 /// have normal strides.

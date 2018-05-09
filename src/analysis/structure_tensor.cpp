@@ -108,9 +108,9 @@ void StructureTensorAnalysis2D(
       Select( ll[ 0 ], Image{ 0.0 }, Image( 0.0, anisotropy2->DataType() ), *anisotropy2, *anisotropy2, "==" );
    }
    if( curvature ) {
-      // phidx = (-sin( 2 * phi )*dx( cos( 2 * phi ), 1 ) + cos( 2 * phi )*dx( sin( 2 * phi ), 1 ))
-      // phidy = (-sin( 2 * phi )*dy( cos( 2 * phi ), 1 ) + cos( 2 * phi )*dy( sin( 2 * phi ), 1 ))
-      // out = 0.5*(-sin( phi )*phidx + cos( phi )*phidy);
+      // phidx = ( cos( 2 * phi ) * dx( sin( 2 * phi ), 1 ) - sin( 2 * phi ) * dx( cos( 2 * phi ), 1 ))
+      // phidy = ( cos( 2 * phi ) * dy( sin( 2 * phi ), 1 ) - sin( 2 * phi ) * dy( cos( 2 * phi ), 1 ))
+      // out = 0.5 * ( cos( phi ) * phidy - sin( phi ) * phidx )
       Image cos2phi, sin2phi;
       {
          Image two_phi = dip::Multiply( *orientation, 2.0 );
@@ -140,7 +140,8 @@ void StructureTensorAnalysis2D(
       phidy *= dip::Cos( *orientation );
       phidx *= dip::Sin( *orientation );
       phidy -= phidx;
-      dip::Multiply( phidy, 0.5, *curvature );
+      dip::Multiply( phidy, 0.5, phidy );
+      dip::Abs( phidy, *curvature );
    }
 }
 
