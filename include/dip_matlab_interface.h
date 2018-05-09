@@ -734,10 +734,17 @@ void MaybeCastScalar( dip::Image& img ) {
 } // namespace detail
 
 /// \brief `dml::GetImage` can optionally create a shared copy of the input `mxArray`, which extends its lifetime.
-/// This is useful if the MEX-file needs to keep a reference to the object
+/// This is useful if the MEX-file needs to keep a reference to the object.
 enum class GetImageMode {
       REFERENCE,     ///< Reference the `mxArray` in the `dip::Image` object.
       SHARED_COPY    ///< Make a shared copy of the `mxArray` and take ownership of the copy.
+};
+
+/// \brief `dml::GetImage` can optionally turn an input numeric array to a tensor image. If the numeric array
+/// is a short vector (up to 5 elements) it will be seen as a 0D tensor image.
+enum class ArrayConversionMode {
+      STANDARD,        ///< All `mxArray`s are scalar images.
+      TENSOR_OPERATOR  ///< Turn the last dimension to a tensor dimension if it is short.
 };
 
 /// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
@@ -756,11 +763,15 @@ enum class GetImageMode {
 /// ```
 ///
 /// An empty `mxArray` produces a non-forged image.
-inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode::REFERENCE ) {
+inline dip::Image GetImage(
+      mxArray const* mx,
+      GetImageMode mode = GetImageMode::REFERENCE,
+      ArrayConversionMode conversion = ArrayConversionMode::STANDARD ) {
    // Find image properties
    bool complex = false;
    bool needCopy = false;
    bool maybeCast = false;
+   bool lastDimToTensor = false;
    dip::Tensor tensor; // scalar by default
    mxClassID type;
    mxArray const* mxdata;
@@ -846,7 +857,11 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
          // compatible with DIPlib storage
          needCopy = true;
       }
-      // It's never a tensor (`tensor` is scalar by default), and color space nor pixel size are defined
+      if( conversion == ArrayConversionMode::TENSOR_OPERATOR ) {
+         // If the last dimension is short, mark it so that we'll turn it into a tensor dimension at the end.
+         lastDimToTensor = ( sizes.size() == 1 ) && ( sizes.back() <= 5 );
+      }
+      // ELSE: It's never a tensor (`tensor` is scalar by default), and color space nor pixel size are defined
    }
    dip::DataType datatype;
    switch( type ) {
@@ -920,6 +935,9 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
       }
       //out.SetPixelSize( pixelSize );
       //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
+      if( lastDimToTensor ) {
+         out.SpatialToTensor();
+      }
       return out;
    } else {
       dip::DataSegment dataSegment;
@@ -942,8 +960,13 @@ inline dip::Image GetImage( mxArray const* mx, GetImageMode mode = GetImageMode:
       if( maybeCast ) {
          detail::MaybeCastScalar( out );
       }
-      out.SetPixelSize( pixelSize );
-      out.SetColorSpace( colorSpace );
+      if( lastDimToTensor ) {
+         out.SpatialToTensor();
+         // In this case, the input was a plain matrix, so we don't have a pixel size or color space.
+      } else {
+         out.SetPixelSize( pixelSize );
+         out.SetColorSpace( colorSpace );
+      }
       return out;
    }
 }

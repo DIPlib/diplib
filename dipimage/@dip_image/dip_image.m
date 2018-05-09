@@ -344,7 +344,7 @@ classdef dip_image
       function out = complex(out,im)
          %COMPLEX   Construct complex image from real and imaginary parts.
          %   COMPLEX(A,B) returns the complex result A + Bi, where A and B
-         %   are identically sized images of the same data type.
+         %   are identically-sized real-valued images.
          %
          %   COMPLEX(A) returns the complex result A + 0i, where A must
          %   be real.
@@ -357,8 +357,11 @@ classdef dip_image
                end
             end
          else % nargin == 2
+            if iscomplex(out) || iscomplex(im)
+               error('Expected two real-valued images')
+            end
             if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32') || ...
-                  isa(im.Data,'double') || isa(im.Data,'uint32') || isa(im.Data,'int32')
+               isa(im.Data, 'double') || isa(im.Data, 'uint32') || isa(im.Data, 'int32')
                out.Data = cat(1,double(out.Data),double(im.Data));
             else
                out.Data = cat(1,single(out.Data),single(im.Data));
@@ -2208,16 +2211,27 @@ classdef dip_image
 
       function in = abs(in)
          %ABS   Absolute value.
+         %   See also DIP_IMAGE/HYPOT and DIP_IMAGE/NORM.
          in = dip_operators('ma',in);
       end
 
       function in = angle(in)
-         %ANGLE   Phase angle.
+         %ANGLE   Phase angle of complex values or angle of vector.
+         %   ANGLE(C), with C a complex-valued image, returns the phase angle of the
+         %   values in C.
+         %
+         %   ANGLE(V), with V a real-valued 2-vector image, returns the angle of the
+         %   vector to the x-axis. If V is a real-valued 3-vector image, returns an
+         %   image with two tensor components, representing the angles PHI and THETA of
+         %   the vector -- PHI being the angle to the x-axis within the x-y plane
+         %   (azimuth), and THETA being the angle to the z-axis (inclination).
+         %
+         %   See also DIP_IMAGE/ATAN2.
          in = dip_operators('mc',in);
       end
 
       function in = phase(in)
-         %PHASE   Phase angle, equivalent to DIP_IMAGE/ANGLE.
+         %PHASE   Phase angle of complex values, alias to DIP_IMAGE/ANGLE.
          in = dip_operators('mc',in);
       end
 
@@ -2259,6 +2273,38 @@ classdef dip_image
       function in = isfinite(in)
          %ISFINITE   True for samples that are not NaN nor Inf.
          in = dip_operators('mk',in);
+      end
+
+      function in = det(in)
+         %DET   Determinant of a tensor image.
+         %   DET(A) returns the determinant of the square tensors in the
+         %   tensor image A.
+         in = dip_operators('ml',in);
+      end
+
+      function in = inv(in)
+         %INV   Inverse of a square tensor image.
+         %   INV(A) returns the inverse of A in the sense that INV(A)*A is equal
+         %   to EYE(A). A must be a square matrix image.
+         %
+         %   It is possible that the inverse does not exist for a pixel. In that
+         %   case output values can be Inf or NaN. Use PINV for a more robust
+         %   inverse, which also works for non-square matrices.
+         %
+         %   See also: DIP_IMAGE/PINV
+         in = dip_operators('mm',in);
+      end
+
+      function in = norm(in)
+         %NORM   Computes the Eucledian norm of a vector image.
+         %   NORM(V) returns the norm of the vectors in V.
+         in = dip_operators('mn',in);
+      end
+
+      function in = trace(in)
+         %TRACE   Sum of the diagonal elements.
+         %   TRACE(A) is the sum of the diagonal elements of the tensor image.
+         in = dip_operators('mo',in);
       end
 
       function in = cos(in)
@@ -2364,6 +2410,35 @@ classdef dip_image
       function res = hypot(a,b)
          %HYPOT   Robust computation of the square root of the sum of squares.
          res = dip_operators('H',a,b);
+      end
+
+      function res = cross(a,b)
+         %CROSS   Cross product of two vector images.
+         %   CROSS(A,B) returns the cross product of the vector images A and B.
+         %   The cross product results in a vector image, and is only defined
+         %   for vectors with 2 or 3 components.
+         %
+         %   For 2-vectors, we define the cross product as the z component of
+         %   the cross product of 3-vectors with 0 z-component. That is, we add
+         %   a 0 as the 3rd vector component, and compute the cross product
+         %   ignoring the two first components of the result, which are zero.
+         %
+         %   Either A or B can be a normal vector such as [1,0,0].
+         %
+         %   See also: DIP_IMAGE/DOT, DIP_IMAGE/MTIMES
+         res = dip_operators('C',a,b);
+      end
+
+      function res = dot(a,b)
+         %DOT   Dot product of two vector images.
+         %   DOT(A,B) returns the dot product of the vector images A and B.
+         %   If both A and B are column vectors, this is the same as A'*B.
+         %   The dot product results in a scalar image.
+         %
+         %   Either A or B can be a normal vector such as [1,0,0].
+         %
+         %   See also: DIP_IMAGE/CROSS, DIP_IMAGE/MTIMES
+         res = dip_operators('D',a,b);
       end
 
    end

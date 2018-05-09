@@ -3,18 +3,13 @@ set(DIPimage_sources_bogus
 @dip_image/all.cpp
 @dip_image/any.cpp
 @dip_image/circshift.cpp
-@dip_image/cross.cpp
 @dip_image/cumsum.cpp
 @dip_image/curl.cpp
-@dip_image/det.cpp
 @dip_image/divergence.cpp
-@dip_image/dot.cpp
 @dip_image/eig.cpp
-@dip_image/inv.cpp
 @dip_image/max.cpp
 @dip_image/mean.cpp
 @dip_image/min.cpp
-@dip_image/norm.cpp
 @dip_image/percentile.cpp
 @dip_image/pinv.cpp
 @dip_image/private/colorspacemanager.cpp
@@ -24,7 +19,6 @@ set(DIPimage_sources_bogus
 @dip_image/std.cpp
 @dip_image/sum.cpp
 @dip_image/svd.cpp
-@dip_image/trace.cpp
 @dip_image/var.cpp
 areaopening.cpp
 asf.cpp

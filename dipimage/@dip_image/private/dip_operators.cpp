@@ -59,13 +59,13 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       mxChar* ch = mxGetChars( prhs[ 0 ] );
 
       // Get images
-      dip::Image lhs = dml::GetImage( prhs[ 1 ] );
+      dip::Image lhs = dml::GetImage( prhs[ 1 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
       dip::Image rhs;
       if( *ch == 'm' ) {
          DIP_THROW_IF( nrhs != 2, "Wrong number of input arguments." );
       } else {
          DIP_THROW_IF(( nrhs < 3 ) || ( nrhs > 4 ), "Wrong number of input arguments." );
-         rhs = dml::GetImage( prhs[ 2 ] );
+         rhs = dml::GetImage( prhs[ 2 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
       }
 
       // Get optional 4th argument too
@@ -104,6 +104,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
             break;
          case 'H': // hypot
             dip::Hypot( lhs, rhs, out );
+            break;
+         case 'C': // cross
+            dip::CrossProduct( lhs, rhs, out );
+            break;
+         case 'D': // dot
+            dip::DotProduct( lhs, rhs, out );
             break;
       // Comparison operators
          case '=': // ==
@@ -146,8 +152,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
                case 'a': // abs
                   dip::Abs( lhs, out );
                   break;
-               case 'c': // phase
-                  dip::Phase( lhs, out );
+               case 'c': // phase -- complex scalar or real vector
+                  if( lhs.DataType().IsComplex() ) {
+                     dip::Phase( lhs, out );
+                  } else {
+                     dip::Angle( lhs, out );
+                  }
                   break;
                case 'd': // round
                   dip::Round( lhs, out );
@@ -172,6 +182,18 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
                   break;
                case 'k': // isfinite
                   dip::IsFinite( lhs, out );
+                  break;
+               case 'l': // det
+                  dip::Determinant( lhs, out );
+                  break;
+               case 'm': // inv
+                  dip::Inverse( lhs, out );
+                  break;
+               case 'n': // norm
+                  dip::Norm( lhs, out );
+                  break;
+               case 'o': // trace
+                  dip::Trace( lhs, out );
                   break;
                case 'A': // cos
                   dip::Cos( lhs, out );
