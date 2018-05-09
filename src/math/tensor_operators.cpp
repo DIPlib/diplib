@@ -327,7 +327,7 @@ void Orientation( Image const& in, Image& out ) {
    if( n == 2 ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
             []( auto const& pin, auto const& pout ) {
-               *pout = pin[ 0 ] == 0 ? 0 : std::atan( pin[ 1 ] / pin[ 0 ] );
+               *pout = pin[ 0 ] == 0 ? pi / 2.0 : std::atan( pin[ 1 ] / pin[ 0 ] );
             }, 21
       );
       outTensorElem = 1;
@@ -335,7 +335,7 @@ void Orientation( Image const& in, Image& out ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
             []( auto const& pin, auto const& pout ) {
                dfloat norm = Norm( 3, pin );
-               pout[ 0 ] = pin[ 0 ] == 0 ? 0 : std::atan( pin[ 1 ] / pin[ 0 ] );
+               pout[ 0 ] = pin[ 0 ] == 0 ? pi / 2.0 : std::atan( pin[ 1 ] / pin[ 0 ] );
                pout[ 1 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
             }, 26 + 21 + 21
       );
