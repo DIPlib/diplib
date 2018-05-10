@@ -501,8 +501,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `get_subpixel` no longer supports the `spline` interpolation method, this string is still
     accepted, but uses the `cubic` method.
 
-  - `structuretensor3d` is moved to the `alias` directory, `structuretensor` now works for any
+  - `structuretensor3d` has been moved to the `alias` directory, `structuretensor` now works for any
     number of dimensions (with special support for 2D and 3D images).
+
+  - `curvature_thirion` and `isophote_curvature` have been moved to the `alias` directory. The function
+    `curvature` now takes `'thirion'` and `'isophote'` as options.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cluster`, `coordinates`, `drawshape`,
   `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`,

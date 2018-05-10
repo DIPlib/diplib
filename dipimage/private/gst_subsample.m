@@ -1,0 +1,37 @@
+% (c)2018, Cris Luengo.
+% Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
+
+function out = gst_subsampled(in,sg,st)
+st = max([st,1,sg]); % Make sure we don't pick one that is too small
+n = ndims (in);
+grad = cell(n,1);
+order = zeros(1,n);
+for ii = 1:n
+   order(ii) = 1;
+   grad{ii} = derivative(in,order,sg);
+   order(ii) = 0;
+end
+out = cell(n*(n+1)/2,1);
+for ii = 1:n
+   out{ii} = subsample(gaussf(grad{ii}*grad{ii},st),floor(st));
+end
+index = n;
+for jj = 2:n
+   for ii = 1:jj-1
+      index = index + 1;
+      out{index} = subsample(gaussf(grad{ii}*grad{jj},st),floor(st));
+   end
+end
+out = dip_image(out,'symmetric matrix');
