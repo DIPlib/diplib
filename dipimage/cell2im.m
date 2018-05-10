@@ -39,7 +39,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function in = mat2im(in,colspace)
+function in = cell2im(in,colspace)
 if nargin>1
    in = joinchannels(colspace,in);
 else

@@ -1008,7 +1008,7 @@ while true
          newlist = [newlist;ud.linkdisplay];
       end
    end
-   newlist = setdiff(newlist,[fig;hlist]);
+   newlist = setdiff(newlist,[double(fig);hlist]);
    if isempty(newlist)
       break
    end

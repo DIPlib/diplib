@@ -614,7 +614,7 @@ classdef dip_image
          end
       end
 
-      function [m,n] = tensorsize(obj)
+      function [m,n] = tensorsize(obj,dim)
          %TENSORSIZE   Size of the image's tensor.
          %   TENSORSIZE(B) returns a 2D array containing the length of the
          %   two tensor dimensions in the tensor image B.
