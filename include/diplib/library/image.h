@@ -431,7 +431,7 @@ class DIP_NO_EXPORT Image {
       ) {
          Image tmp{ NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), sizes };
          this->move( std::move( tmp )); // a way of calling a different constructor.
-      };
+      }
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
       Image Similar() const {
@@ -2240,7 +2240,7 @@ class DIP_NO_EXPORT Image {
 
       /// Returns the value of the first sample in the first pixel in the image as the given numeric type.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
-      T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
+      T As() const { return detail::CastSample< T >( dataType_, origin_ ); }
 
       /// \}
 

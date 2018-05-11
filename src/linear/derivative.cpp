@@ -561,6 +561,6 @@ void NormalizedDifferentialConvolution(
    DIP_STACK_TRACE_THIS( Subtract( out, NC, out, dt ));
    NC.Strip();
    DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, dt ));
-};
+}
 
 } // namespace dip

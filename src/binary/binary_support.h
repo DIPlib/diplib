@@ -92,6 +92,6 @@ DIP_NO_EXPORT void FindBinaryEdgePixels(
 // The function does not check whether connectivity <= dimensionality.
 DIP_NO_EXPORT dip::uint GetAbsBinaryConnectivity( dip::uint dimensionality, dip::sint connectivity, dip::uint iteration );
 
-}; // namespace dip
+} // namespace dip
 
 #endif

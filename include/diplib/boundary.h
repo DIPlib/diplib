@@ -148,7 +148,7 @@ namespace Option {
 ///
 /// Note that you can add these constants together: `dip::Option::ExtendImage::Masked + dip::Option::ExtendImage::ExpandTensor`.
 enum class DIP_NO_EXPORT ExtendImage { Masked, ExpandTensor };
-DIP_DECLARE_OPTIONS( ExtendImage, ExtendImageFlags );
+DIP_DECLARE_OPTIONS( ExtendImage, ExtendImageFlags )
 
 } // namespace Option
 

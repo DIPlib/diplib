@@ -151,7 +151,7 @@ enum class ScanOption {
       NoSingletonExpansion,
       NotInPlace
 };
-DIP_DECLARE_OPTIONS( ScanOption, ScanOptions );
+DIP_DECLARE_OPTIONS( ScanOption, ScanOptions )
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Scan` callback function object.
@@ -609,7 +609,7 @@ enum class SeparableOption {
       UseInputBuffer,
       UseOutputBuffer
 };
-DIP_DECLARE_OPTIONS( SeparableOption, SeparableOptions );
+DIP_DECLARE_OPTIONS( SeparableOption, SeparableOptions )
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Separable` callback function object.
@@ -836,7 +836,7 @@ enum class FullOption {
       ExpandTensorInBuffer,
       BorderAlreadyExpanded
 };
-DIP_DECLARE_OPTIONS( FullOption, FullOptions );
+DIP_DECLARE_OPTIONS( FullOption, FullOptions )
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Full` callback function object.

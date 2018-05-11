@@ -340,7 +340,7 @@ std::pair< UnsignedArray, dip::sint > Image::StandardizeStrides( IntegerArray& s
    }
    order.resize( jj );
    return std::make_pair( order, offset );
-};
+}
 
 
 Image& Image::TensorToSpatial( dip::uint dim ) {

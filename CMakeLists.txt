@@ -38,12 +38,12 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    # using Clang C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
    set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    # using GNU C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unknown-pragmas")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unknown-pragmas -pedantic")
    # -Wno-unknown-pragmas: "#pragma omp" causes a warning if OpenMP is not enabled.
    # "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
    # "DIP_EXPORT" in forward class declaration sometimes causes a warning in GCC 6.0 and 7.0.

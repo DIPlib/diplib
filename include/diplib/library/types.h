@@ -671,7 +671,7 @@ constexpr dip__Options< T > operator+( T a, dip__Options< T > b ) noexcept {
 ///
 /// ```cpp
 ///     enum class MyOption { clean, fresh, shine };
-///     DIP_DECLARE_OPTIONS( MyOption, MyOptions );
+///     DIP_DECLARE_OPTIONS( MyOption, MyOptions )
 /// ```
 ///
 /// `MyOptions` will be a type that combines one or more values from MyOption.
@@ -770,7 +770,7 @@ enum class DIP_NO_EXPORT CmpPropEnumerator {
       ColorSpace,
       PixelSize
 };
-DIP_DECLARE_OPTIONS( CmpPropEnumerator, CmpPropFlags );
+DIP_DECLARE_OPTIONS( CmpPropEnumerator, CmpPropFlags )
 namespace CmpProp {
 constexpr CmpPropFlags DataType = CmpPropEnumerator::DataType;
 constexpr CmpPropFlags Dimensionality = CmpPropEnumerator::Dimensionality;
@@ -802,13 +802,13 @@ namespace std {
 template<>
 inline dip::bin const& max( dip::bin const& a, dip::bin const& b ) {
    return a ? a : b;
-};
+}
 
 // Template specialization of `std::min` for `dip::bin` types
 template<>
 inline dip::bin const& min( dip::bin const& a, dip::bin const& b ) {
    return a ? b : a;
-};
+}
 
 } // namespace std
 

@@ -87,7 +87,7 @@ struct MonadicOperatorDispatch< ComputationType::Class_IntOrBin, F > {
 template< ComputationType classes, typename F >
 void CallMonadicOperator( DataType in1Type, void* in1Ptr, DataType outType, void* outPtr, DataType computeType, F const& function ) {
    MonadicOperatorDispatch< classes, F >::Call( in1Type, in1Ptr, outType, outPtr, computeType, function );
-};
+}
 
 template< ComputationType classes, typename F >
 Image::Pixel MonadicOperator(
@@ -168,7 +168,7 @@ template< ComputationType classes, typename F >
 void CallDyadicOperator( DataType in1Type, void* in1Ptr, DataType in2Type, void* in2Ptr,
                          DataType outType, void* outPtr, DataType computeType, F const& function ) {
    DyadicOperatorDispatch< classes, F >::Call( in1Type, in1Ptr, in2Type, in2Ptr, outType, outPtr, computeType, function );
-};
+}
 
 template< ComputationType classes, typename F >
 Image::Pixel DyadicOperator(

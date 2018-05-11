@@ -141,7 +141,7 @@ class Image::Sample {
 
       /// Returns the value of the sample as the given numeric type, similar to using `static_cast`.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
-      constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
+      constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); }
 
       /// A `%Sample` can be cast to basic numerical types.
       constexpr explicit operator bool() const { return As< bin >(); }
@@ -393,7 +393,7 @@ class Image::Pixel {
 
       /// Returns the value of the first sample in the pixel as the given numeric type, similar to using `static_cast`.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
-      T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
+      T As() const { return detail::CastSample< T >( dataType_, origin_ ); }
 
       /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator bool() const { return As< bin >(); }
