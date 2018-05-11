@@ -1,13 +1,13 @@
 %EIG_LARGEST   Computes the largest eigenvector and value
-%  V=EIG_LARGEST(A) calculates the largest eigenvector V of a square tensor
+%  V = EIG_LARGEST(A) calculates the largest eigenvector V of a square tensor
 %  image A via the Power Method. Only 7 iterations are done, this should be
 %  sufficient for most images.
 %
-%  [V,LAMBDA]=EIG_LARGEST(A) also computes the corresponding eigenvalue.
+%  [V,LAMBDA] = EIG_LARGEST(A) also computes the corresponding eigenvalue.
 %
 %  EIG_LARGEST(A,SIMGA) smooths the tensor with a Gaussian of width SIGMA
 %  before the eigenvector computation. Without smoothing there will be
-%  many divisions by zero. Warnings are surpressed for this function.
+%  many divisions by zero.
 %
 %  See also: DIP_IMAGE/EIG, DIP_IMAGE/SVD
 
@@ -28,7 +28,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function [out_ev,out_ew] = eig_largest(A,sigma)
+function [v,d] = eig_largest(A,sigma)
 if ~isa(A,'dip_image') || isscalar(A)
    error('Image A must be a tensor image')
 end
@@ -40,20 +40,15 @@ if nargin == 2 % default no smoothing
    A = gaussf(A,sigma);
 end
 
-% make initial vector for iteration q=(1,1,1...1)'
-q = newtensorim(s(1),imsize(A));
-q(:) = 1;
-
-wa = warning('off');
+% make initial vector for iteration v=(1,1,1...1)'
+v = newtensorim(s(1),imsize(A));
+v(:) = 1;
 
 % 7 iterations should be sufficient
 for k=1:7
-   q = A*q;
-   q = q./norm(q);
+   v = A*v;
+   v = v./norm(v);
 end
-out_ev = q;
-if  nargout>=2
-   out_ew = q.'*(A*q);
+if nargout>=2
+   d = v.'*(A*v);
 end
-
-warning(wa);

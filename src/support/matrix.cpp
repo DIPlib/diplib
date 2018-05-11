@@ -67,6 +67,46 @@ void SymmetricEigenDecomposition(
    }
 }
 
+void LargestEigenVector(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > vector
+) {
+   DIP_ASSERT( input.Stride() >= 0 );
+   Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
+   Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
+   //if( eigensolver.info() != Eigen::Success ) { abort(); }
+   Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
+   Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
+   std::vector< dip::uint > indices( n );
+   std::iota( indices.begin(), indices.end(), 0 );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
+   dip::uint kk = indices[ 0 ];
+   for( dip::uint jj = 0; jj < n; ++jj ) {
+      vector[ jj ] = eigenvectors( jj, kk );
+   }
+}
+
+void SmallestEigenVector(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > vector
+) {
+   DIP_ASSERT( input.Stride() >= 0 );
+   Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
+   Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
+   //if( eigensolver.info() != Eigen::Success ) { abort(); }
+   Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
+   Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
+   std::vector< dip::uint > indices( n );
+   std::iota( indices.begin(), indices.end(), 0 );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
+   dip::uint kk = indices.back();
+   for( dip::uint jj = 0; jj < n; ++jj ) {
+      vector[ jj ] = eigenvectors( jj, kk );
+   }
+}
+
 void EigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,

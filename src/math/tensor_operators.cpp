@@ -502,7 +502,7 @@ void Eigenvalues( Image const& in, Image& out ) {
                [ n ]( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition( n, pin, pout ); }, 400 * n // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
          );
          inbuffertype = outbuffertype = DT_DFLOAT;
-         outtype = intype;
+         outtype = DataType::SuggestFlex( intype );
       } else {
          if( intype.IsComplex() ) {
             scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
@@ -547,7 +547,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
                [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition( n, pin, pout1, pout2 ); }, 600 * n // cost of decomposition???
          );
          inbuffertype = outbuffertype = DT_DFLOAT;
-         outtype = intype;
+         outtype = DataType::SuggestFlex( intype );
       } else {
          if( intype.IsComplex() ) {
             scanLineFilter = NewTensorDyadicScanLineFilter< dcomplex, dcomplex >(
@@ -571,6 +571,36 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
    }
 }
 
+void LargestEigenVector( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, "The image is not a symmetric matrix" );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint n = in.TensorRows();
+   DataType dataType = DataType::SuggestFlex( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+         [ n ]( auto const& pin, auto const& pout ) { LargestEigenVector( n, pin, pout ); }, 600 * n // cost of decomposition???
+   );
+   ImageRefArray outar{ out };
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { dataType },
+                                          { n }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer ));
+}
+
+void SmallestEigenVector( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, "The image is not a symmetric matrix" );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint n = in.TensorRows();
+   DataType dataType = DataType::SuggestFlex( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+         [ n ]( auto const& pin, auto const& pout ) { SmallestEigenVector( n, pin, pout ); }, 600 * n // cost of decomposition???
+   );
+   ImageRefArray outar{ out };
+   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { dataType },
+                                          { n }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer ));
+}
+
 void Inverse( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The regular inverse can only be computed from square matrices" );
@@ -578,6 +608,7 @@ void Inverse( Image const& in, Image& out ) {
    if(( in.IsScalar() ) || ( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX )) {
       DIP_STACK_TRACE_THIS( Divide( Image( 1, outtype ), in, out, outtype )); // computes 1/in for each of the diagonal elements
    } else {
+      // TODO: Create a specialization for symmetric real-valued matrices, so that the output can be symmetric as well.
       dip::uint n = in.TensorRows();
       DataType buffertype;
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;

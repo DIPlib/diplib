@@ -201,15 +201,9 @@ clear T
 out = sqrt(out)*0.5;
 
 function out = lineND(in,sg,st)
-n = ndims(in);
-if 0 %n == 4 % Faster implementation
-   V = orientation4d(in,sg,st);
-else
-   G = gst_subsample(in,sg,st);
-   [V,~] = eig(G);
-   clear G
-   V = V{:,n}; % smallest eigenvector
-end
+G = gst_subsample(in,sg,st);
+V = eig(G,'smallest'); % smallest eigenvector
+clear G
 T = V * V.';
 out = dotGradientSquare(V,T{1});
 for ii = 2:numtensorel(T)

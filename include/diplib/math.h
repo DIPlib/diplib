@@ -432,6 +432,32 @@ inline Image Eigenvalues( Image const& in ) {
 /// The eigenvectors are the columns `eigenvectors`. It has the same data type as `out`.
 DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
 
+/// \brief Finds the largest eigenvector of the symmetric matrix at each pixel in image `in`.
+///
+/// Computes the eigen decomposition in the same way as `dip::EigenDecomposition`, but
+/// outputs only the eigenvector that corresponds to the largest eigenvalue.
+///
+/// `in` must be symmetric and real-valued.
+DIP_EXPORT void LargestEigenVector( Image const& in, Image& out );
+inline Image LargestEigenVector( Image const& in ) {
+   Image out;
+   LargestEigenVector( in, out );
+   return out;
+}
+
+/// \brief Finds the smallest eigenvector of the symmetric matrix at each pixel in image `in`.
+///
+/// Computes the eigen decomposition in the same way as `dip::EigenDecomposition`, but
+/// outputs only the eigenvector that corresponds to the smallest eigenvalue.
+///
+/// `in` must be symmetric and real-valued.
+DIP_EXPORT void SmallestEigenVector( Image const& in, Image& out );
+inline Image SmallestEigenVector( Image const& in ) {
+   Image out;
+   LargestEigenVector( in, out );
+   return out;
+}
+
 /// \brief Computes the inverse of the square matrix at each pixel in image `in`.
 ///
 /// The result is undetermined if the matrix is not invertible.

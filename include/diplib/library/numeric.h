@@ -167,7 +167,7 @@ dip::sint round_cast( T v ) {
 template< typename T, bool inverse = false, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 dip::sint consistent_round( T v ) {
    return inverse ? ceil_cast( v - 0.5 ) : floor_cast( v + 0.5 ); // conditional should be optimized out
-};
+}
 
 /// \brief Computes the absolute value in such a way that the result is always correct for pixel types.
 /// For `dip::sint` use `std::abs` instead.
@@ -275,6 +275,32 @@ DIP_EXPORT void SymmetricEigenDecomposition(
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors = nullptr
+);
+
+/// \brief Finds the largest eigenvector of a symmetric real matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
+///
+/// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
+/// largest eigenvalue. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
+/// but only one eigenvector is written to the output.
+void LargestEigenVector(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > vector
+);
+
+/// \brief Finds the smallest eigenvector of a symmetric real matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
+///
+/// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
+/// smallest eigenvalue. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
+/// but only one eigenvector is written to the output.
+void SmallestEigenVector(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > vector
 );
 
 /// \brief Finds the eigenvalues and eigenvectors of a symmetric real matrix, where only the unique values are given.
