@@ -14,8 +14,25 @@
 % limitations under the License.
 
 function out = gst_subsampled(in,sg,st)
-st = max([st,1,sg]); % Make sure we don't pick one that is too small
+
 n = ndims (in);
+if numel(sg)==1
+   sg = repmat(sg,1,n);
+elseif numel(sg)~=n
+   error(['SG has wrong length, should have ',num2str(n),' elements'])
+else
+   sg = sg(:).';
+end
+if numel(st)==1
+   st = repmat(st,1,n);
+elseif numel(sg)~=n
+   error(['ST has wrong length, should have ',num2str(n),' elements'])
+else
+   st = st(:).';
+end
+st = max(st,sg);
+st = max(st,1); % Make sure we don't pick one that is too small
+
 grad = cell(n,1);
 order = zeros(1,n);
 for ii = 1:n

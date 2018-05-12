@@ -1,16 +1,20 @@
 %CURVATURE   Curvature in grey value images in nD
 %
 % SYNOPSIS:
-%  out = curvature(in,method,sg,st)
+%  out = curvature(in,method,sg,st,subsample)
 %
-%  method: 'line', 'surface', 'thirion' or 'isophote'; see below
-%  sg:     sigma of the gradient derivative
-%  st:     sigma of the tensor smoothing (for 'line' and 'surface' only)
+%  method:    'line', 'surface', 'thirion' or 'isophote'; see below
+%  sg:        sigma of the gradient derivative
+%  st:        sigma of the tensor smoothing (for 'line' and 'surface' only)
+%  subsample: a boolean value, the output will be subsampled by a factor
+%             FLOOR(ST) if TRUE, but only for 'line' and 'surface' methods,
+%             where ST is used for smoothing. Useful for very large images.
 %
 % DEFAULTS:
 %  method = 'line'
 %  sg = 1
 %  st = 4
+%  subsample = false (up to 3D); true (4D and up)
 %
 % METHODS:
 %  The structure tensor method computes the derivatives of the principal
@@ -68,7 +72,7 @@
 %  dipmapping(1,'slice',25);
 %
 % SEE ALSO:
-%  gradient, structuretensor, orientation4d
+%  gradient, orientation, structuretensor, dip_image/eig
 %
 % LITERATURE:
 %  M. van Ginkel, J. van de Weijer, P.W. Verbeek, and L.J. van Vliet.
@@ -111,35 +115,43 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = curvature(in,opt,sg,st)
+function out = curvature(in,opt,sg,st,subs)
+
 if nargin < 2
-opt = 'line';
+   opt = 'line';
 end
 if nargin < 3
-sg = 1;
+   sg = 1;
 end
 if nargin < 4
-st = 4;
+   st = 4;
 end
 if ~isa(in,'dip_image')
-in = dip_image(in);
+   in = dip_image(in);
 end
 if ~isscalar(in)
-error('Only implemented for scalar images');
+   error('Only implemented for scalar images');
 end
 n = ndims(in);
 if n < 2
-error('Curvature only makes sense with at least 2 dimensions');
+   error('Curvature only makes sense with at least 2 dimensions');
 end
+if nargin < 5
+   subs = n > 3;
+end
+
 switch opt
 case 'line'
    switch n
       case 2
          out = structuretensor(in,sg,st,{'curvature'});
+         if subs
+            out = subsample(out,floor(st)); % Subsampling after the fact, this could be more efficient
+         end
       case 3
-         out = line3D(in,sg,st);
+         out = line3D(in,sg,st,subs);
       otherwise
-         out = lineND(in,sg,st);
+         out = lineND(in,sg,st,subs);
    end
 case 'surface'
    if n < 3
@@ -147,9 +159,9 @@ case 'surface'
    end
    switch n
       case 3
-         out = surface3D(in,sg,st);
+         out = surface3D(in,sg,st,subs);
       otherwise
-         out = surfaceND(in,sg,st);
+         out = surfaceND(in,sg,st,subs);
    end
 case 'thirion'
    switch n
@@ -173,9 +185,13 @@ otherwise
    error('Unkown method');
 end
 
-function out = line3D(in,sg,st)
+function out = line3D(in,sg,st,subs)
 % Use analytic solution for GST and 5D Knutsson mapping
 [phi,theta] = structuretensor(in,sg,st,{'phi3','theta3'});
+if subs
+   phi = subsample(phi,floor(st)); % Subsampling after the fact, this could be more efficient
+   theta = subsample(theta,floor(st));
+end
 sintheta = sin(theta);
 costheta = cos(theta);
 sin2theta = sin(2*theta);
@@ -200,8 +216,12 @@ out = out + dotGradientSquare(V,T);
 clear T
 out = sqrt(out)*0.5;
 
-function out = lineND(in,sg,st)
-G = gst_subsample(in,sg,st);
+function out = lineND(in,sg,st,subs)
+if subs
+   G = gst_subsample(in,sg,st);
+else
+   G = structuretensor(in,sg,st);
+end
 V = eig(G,'smallest'); % smallest eigenvector
 clear G
 T = V * V.';
@@ -212,12 +232,14 @@ end
 clear T V
 out = sqrt(out)*(1/sqrt(2));
 
-function out = surface3D(in,sg,st)
+function out = surface3D(in,sg,st,subs)
 % Use 5D Knutsson mapping
-g = gradient(in,sg);
-G = gaussf(g*g.',st);
-clear g
-[V,~] = eig(G); % TODO: `structuretensor` could have option to return eigenvectors
+if subs
+   G = gst_subsample(in,sg,st);
+else
+   G = structuretensor(in,sg,st);
+end
+[V,~] = eig(G);
 clear G
 N = {V{1,1},V{2,1},V{3,1}}; % largest eigenvector
 V = {V{:,2};V{:,3}};
@@ -238,8 +260,12 @@ out = addCells(out,dotGradientSquare(V,T));
 clear T V
 out = sqrt(dip_image(out))*0.5;
 
-function out = surfaceND(in,sg,st)
-G = gst_subsample(in,st,sg);
+function out = surfaceND(in,sg,st,subs)
+if subs
+   G = gst_subsample(in,sg,st);
+else
+   G = structuretensor(in,sg,st);
+end
 [T,~] = eig(G);
 clear G
 V = cell(tensorsize(T,2)-1,1);
@@ -264,7 +290,6 @@ out = (-g.'*H*g) ./ div;
 out(div<1e-10) = 0;
 
 function out = isophote3D(in,sg)
-in = dip_image(in,'sfloat');
 myeps = 1e-10;
 fx = dx(in,sg);
 fy = dy(in,sg);

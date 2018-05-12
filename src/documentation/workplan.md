@@ -187,8 +187,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
     - dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
     - dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
-    - dip_AdaptiveGauss (dip_adaptive.h)
-    - dip_AdaptiveBanana (dip_adaptive.h)
     - dip_StructureAdaptiveGauss (dip_adaptive.h)
     - dip_AdaptivePercentile (dip_adaptive.h)
     - dip_AdaptivePercentileBanana (dip_adaptive.h)
@@ -216,8 +214,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `correctshift`
 - `countingframe`
 - `cpf`
-- `curvature`
-- `curvature_thirion`
 - `deblock`
 - `distancebetweenpointsets`
 - `dpr`
@@ -228,13 +224,10 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `findospeaks`
 - `fmmatch`
 - `frc`
-- `gaussf_adap`
-- `gaussf_adap_banana`
 - `granulometry`
 - `hist2image`
 - `ht`
 - `hybridf`
-- `isophote_curvature`
 - `jpeg_quality_score`
 - `lfmse`
 - `localshift`
@@ -246,7 +239,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `nufft_type1`
 - `nufft_type2`
 - `opticflow`
-- `orientation4d`
 - `orientationplot`
 - `orientationspace`
 - `paircorrelation`
