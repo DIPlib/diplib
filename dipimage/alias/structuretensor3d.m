@@ -1,4 +1,4 @@
-%STRUCTURETENSOR3D   Alias of STRUCTURETENSOR, for backwards compatability
+%STRUCTURETENSOR3D   Alias of STRUCTURETENSOR, for backwards compatibility
 %  SEE ALSO: structuretensor
 
 % (c)2017, Cris Luengo.

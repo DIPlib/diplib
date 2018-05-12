@@ -1,4 +1,4 @@
-%IMARFUN   Alias of TENSORFUN, for backwards compatability
+%IMARFUN   Alias of TENSORFUN, for backwards compatibility
 %  SEE ALSO: tensorfun
 
 % (c)2017, Cris Luengo.

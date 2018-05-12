@@ -1,4 +1,4 @@
-%DILATION_SE   Alias of DILATION, for backwards compatability
+%DILATION_SE   Alias of DILATION, for backwards compatibility
 %  SEE ALSO: dilation
 
 % (c)2017, Cris Luengo.

@@ -1,5 +1,5 @@
 %MSE   Mean relative error
-%  Alias of ERRORMEASURE(...'MRE'), for backwards compatability.
+%  Alias of ERRORMEASURE(...'MRE'), for backwards compatibility.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.

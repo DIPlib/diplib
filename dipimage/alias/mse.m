@@ -1,5 +1,5 @@
 %MSE   Mean square error
-%  Alias of ERRORMEASURE(...'MSE'), for backwards compatability.
+%  Alias of ERRORMEASURE(...'MSE'), for backwards compatibility.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.

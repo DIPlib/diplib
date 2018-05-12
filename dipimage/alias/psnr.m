@@ -1,5 +1,5 @@
 %PSNR   Peak Signal-to-Noise Ratio (in dB)
-%  Alias of ERRORMEASURE(...'PSNR'), for backwards compatability.
+%  Alias of ERRORMEASURE(...'PSNR'), for backwards compatibility.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.

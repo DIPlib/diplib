@@ -51,7 +51,7 @@ function out = cut(in,newsz,location)
 if nargin < 3
    location = 'symmetric';
 elseif ischar(location)
-   % Aliases for 'location' string (for backwards compatability):
+   % Aliases for 'location' string (for backwards compatibility):
    switch location
       case ''
          location = 'symmetric';

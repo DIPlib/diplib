@@ -18,7 +18,7 @@
 %   NOTE: DIPLINK(H,CHARLIST) only works on registerd windows, i.e.
 %   windows that have been bound to a variable using dipfig.
 %
-%   NOTE: For backwards compatability, DIPLINK ON is the same as DIPLINK.
+%   NOTE: For backwards compatibility, DIPLINK ON is the same as DIPLINK.
 %
 %   See also DIPSHOW, DIPMAPPING, DIPSTEP, DIPZOOM, DIPTEST.
 

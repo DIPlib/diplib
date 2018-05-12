@@ -1,4 +1,4 @@
-%CLOSING_SE   Alias of CLOSING, for backwards compatability
+%CLOSING_SE   Alias of CLOSING, for backwards compatibility
 %  SEE ALSO: closing
 
 % (c)2017, Cris Luengo.

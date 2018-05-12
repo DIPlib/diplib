@@ -1,4 +1,4 @@
-%EROSION_SE   Alias of EROSION, for backwards compatability
+%EROSION_SE   Alias of EROSION, for backwards compatibility
 %  SEE ALSO: erosion
 
 % (c)2017, Cris Luengo.

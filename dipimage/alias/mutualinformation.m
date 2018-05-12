@@ -1,5 +1,5 @@
 %MUTUALINFORMATION   Computes the mutual information (in bits) of two images
-%  Alias of ERRORMEASURE(...'MutualInformation'), for backwards compatability.
+%  Alias of ERRORMEASURE(...'MutualInformation'), for backwards compatibility.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.

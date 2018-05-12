@@ -1,5 +1,5 @@
 %ISOPHOTE_CURVATURE   Isophote curvature in grey value images
-%  Alias of CURVATURE(...'ISOPHOTE'), for backwards compatability.
+%  Alias of CURVATURE(...'ISOPHOTE'), for backwards compatibility.
 %  SEE ALSO: CURVATURE
 
 % (c)2018, Cris Luengo.

@@ -1,4 +1,4 @@
-%RANKMAX_OPENING_SE   Alias of RANKMIN_OPENING, for backwards compatability
+%RANKMAX_OPENING_SE   Alias of RANKMIN_OPENING, for backwards compatibility
 %  SEE ALSO: rankmin_opening
 
 % (c)2017, Cris Luengo.

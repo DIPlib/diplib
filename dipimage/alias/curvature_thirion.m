@@ -1,5 +1,5 @@
 %CURVATURE_THIRION   Isophote curvature in grey value images
-%  Alias of CURVATURE(...'THIRION'), for backwards compatability.
+%  Alias of CURVATURE(...'THIRION'), for backwards compatibility.
 %  SEE ALSO: CURVATURE
 
 % (c)2018, Cris Luengo.

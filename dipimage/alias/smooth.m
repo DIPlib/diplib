@@ -1,4 +1,4 @@
-%SMOOTH   Alias of GAUSSF, for backwards compatability
+%SMOOTH   Alias of GAUSSF, for backwards compatibility
 %  SEE ALSO: gaussf
 
 % (c)2017, Cris Luengo.

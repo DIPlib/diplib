@@ -1,4 +1,4 @@
-%OPENING_SE   Alias of OPENING, for backwards compatability
+%OPENING_SE   Alias of OPENING, for backwards compatibility
 %  SEE ALSO: opening
 
 % (c)2017, Cris Luengo.

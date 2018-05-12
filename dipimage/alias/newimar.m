@@ -1,4 +1,4 @@
-%NEWIMAR   Alias of NEWTENSORIM, for backwards compatability
+%NEWIMAR   Alias of NEWTENSORIM, for backwards compatibility
 %  SEE ALSO: newtensorim
 
 % (c)2017, Cris Luengo.

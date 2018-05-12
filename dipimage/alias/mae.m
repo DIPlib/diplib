@@ -1,5 +1,5 @@
 %MAE   Mean absolute error
-%  Alias of ERRORMEASURE(...'MAE'), for backwards compatability.
+%  Alias of ERRORMEASURE(...'MAE'), for backwards compatibility.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.

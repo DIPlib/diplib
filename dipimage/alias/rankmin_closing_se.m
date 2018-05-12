@@ -1,4 +1,4 @@
-%RANKMIN_CLOSING_SE   Alias of RANKMIN_CLOSING, for backwards compatability
+%RANKMIN_CLOSING_SE   Alias of RANKMIN_CLOSING, for backwards compatibility
 %  SEE ALSO: rankmin_closing
 
 % (c)2017, Cris Luengo.

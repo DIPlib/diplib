@@ -1,5 +1,5 @@
 %SSIM   Structural similarity index (a visual similarity measure)
-%  Alias of ERRORMEASURE(...'SSIM'), for backwards compatability.
+%  Alias of ERRORMEASURE(...'SSIM'), for backwards compatibility.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.

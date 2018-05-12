@@ -17,10 +17,10 @@
 %  equal to the image dimensionality, then OUT is an MxT matrix, where
 %  T is the number of tensor elements.
 %
-%  For backwards compatability, method=='spline' will be interpreted
+%  For backwards compatibility, method=='spline' will be interpreted
 %  as 'cubic', since 'spline' is no longer supported.
 %
-%  `'cubic'` is an alias for `'3-cubic'`, for backwards compatability.
+%  `'cubic'` is an alias for `'3-cubic'`, for backwards compatibility.
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::ResampleAt.
