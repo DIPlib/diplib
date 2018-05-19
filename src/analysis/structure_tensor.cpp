@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for cross correlation
+ * This file contains definitions for structure tensor related functionality
  *
  * (c)2017-2018, Cris Luengo, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -21,6 +21,7 @@
 #include "diplib.h"
 #include "diplib/analysis.h"
 #include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/linear.h"
 #include "diplib/generic_iterators.h"
 
@@ -303,6 +304,53 @@ void StructureTensorAnalysis(
       }
       DIP_STACK_TRACE_THIS( StructureTensorAnalysis3D( in, l1, phi1, theta1, l2, phi2, theta2, l3, phi3, theta3, energy, cylindrical, planar ));
    }
+}
+
+Distribution StructureAnalysis(
+      Image const& in,
+      Image const& mask,
+      std::vector< dfloat > const& in_scales,
+      String const& feature,
+      FloatArray const& gradientSigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      dfloat truncation
+) {
+   static std::vector< dfloat > const default_scales{ 1.00, 1.41, 2.00, 2.83, 4.00, 5.66, 8.00, 11.31, 16.00, 22.63 };
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF(( nDims < 2 ) || ( nDims > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
+   std::vector< dfloat > const& scales = in_scales.empty() ? default_scales : in_scales;
+   FloatArray tensorSigmas = gradientSigmas;
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( tensorSigmas, nDims, 1.0 ));
+   for (auto& ts : tensorSigmas) {
+      ts *= scales[ 0 ];
+   }
+   dip::Image ST;
+   DIP_STACK_TRACE_THIS( StructureTensor( in, {}, ST, gradientSigmas, tensorSigmas, method, boundaryCondition, truncation ));
+   Distribution out( scales );
+   dip::Image featureImage;
+   dip::ImageRefArray refArray{ featureImage };
+   DIP_STACK_TRACE_THIS( StructureTensorAnalysis( ST, refArray, { feature } ));
+   DIP_STACK_TRACE_THIS( out[ 0 ].y = Mean( featureImage, mask ).As< dfloat >() );
+   FloatArray deltaSigmas( nDims );
+   for( dip::uint ii = 1; ii < scales.size(); ++ii ) {
+      // We smooth the ST, which is already smoothed by `tensorSigmas = gradientSigmas * scale[ ii - 1 ]`,
+      // by some amount `deltaSigmas` such that the output is equivalent to the structure tensor
+      // smoothed by `gradientSigmas * scale[ ii ]`.
+      // Note that for Gaussian smoothing, sigmas add quadratically.
+      for( dip::uint jj = 0; jj < nDims; ++jj ) {
+         dfloat newValue = tensorSigmas[ jj ] / scales[ ii - 1 ] * scales[ ii ];
+         deltaSigmas[ jj ] = std::sqrt( std::max( newValue * newValue - tensorSigmas[ jj ] * tensorSigmas[ jj ], 0.0 ));
+         tensorSigmas[ jj ] = newValue;
+      }
+      DIP_STACK_TRACE_THIS( Gauss( ST, ST, deltaSigmas, {}, method, boundaryCondition, truncation ));
+      DIP_STACK_TRACE_THIS( StructureTensorAnalysis( ST, refArray, { feature } ));
+      DIP_STACK_TRACE_THIS( out[ ii ].y = Mean( featureImage, mask ).As< dfloat >() );
+   }
+   return out;
 }
 
 } // namespace dip

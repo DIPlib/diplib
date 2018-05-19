@@ -17,6 +17,7 @@
  */
 
 #include "pydip.h"
+#include "diplib/distribution.h"
 #include "diplib/analysis.h"
 #include "diplib/distance.h"
 #include "diplib/microscopy.h"
@@ -24,6 +25,25 @@
 #include "diplib/segmentation.h"
 
 void init_analysis( py::module& m ) {
+
+   // diplib/distribution.h
+   auto distr = py::class_< dip::Distribution >( m, "Distribution", "" );
+   distr.def( "__repr__", []( dip::Distribution const& self ) { return "<Distribution>"; } );
+   distr.def( "__str__", []( dip::Distribution const& self ) { std::ostringstream os; os << self; return os.str(); } );
+   distr.def( "__getitem__", []( dip::Distribution const& self, dip::uint index ) {
+                                    auto const& sample = self[ index ];
+                                    return py::make_tuple( sample.x, sample.y ).release();
+                             }, "index"_a );
+   distr.def( py::self += py::self );
+   distr.def( "Empty", &dip::Distribution::Empty );
+   distr.def( "Size", &dip::Distribution::Size );
+   distr.def( "X", &dip::Distribution::X );
+   distr.def( "Y", &dip::Distribution::Y );
+   distr.def( "Cumulative", &dip::Distribution::Cumulative );
+   distr.def( "Sum", &dip::Distribution::Sum );
+   distr.def( "Integrate", &dip::Distribution::Integrate );
+   distr.def( "Integral", &dip::Distribution::Integral );
+   distr.def( "Differentiate", &dip::Distribution::Differentiate );
 
    // diplib/analysis.h
 
@@ -50,6 +70,10 @@ void init_analysis( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "StructureTensorAnalysis", py::overload_cast< dip::Image const&, dip::StringArray const& >( &dip::StructureTensorAnalysis ),
           "in"_a, "outputs"_a );
+   m.def( "StructureAnalysis", &dip::StructureAnalysis,
+          "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "feature"_a = "energy",
+          "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "FractalDimension", &dip::FractalDimension, "in"_a, "eta"_a = 0.5 );
 
    // diplib/distance.h
 

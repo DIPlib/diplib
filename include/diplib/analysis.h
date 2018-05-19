@@ -22,6 +22,7 @@
 #define DIP_ANALYSIS_H
 
 #include "diplib.h"
+#include "distribution.h"
 
 
 /// \file
@@ -422,6 +423,39 @@ inline ImageArray StructureTensorAnalysis(
    DIP_STACK_TRACE_THIS( StructureTensorAnalysis( in, refOut, outputs ));
    return out;
 }
+
+
+/// \brief Analyzes the local structure of the image at multiple scales.
+///
+/// Computes the structure tensor, smoothed with each of the values in `scales` multiplied by `gradientSigmas`,
+/// determines the feature `feature` from it, and averages across the image for each scale. This leads to a series
+/// of data points showing how the selected feature changes across scales.
+///
+/// The reason that each element of `scales` is mutliplied by `gradientSigmas` is to allow analysis of
+/// non-isotropic images. The `gradientSigmas` corrects for the non-isotropy, allowing `scales` to be a scalar
+/// value for each scale.
+///
+/// `scales` defaults to a series of 10 values geometrically spaced by `sqrt(2)`.
+///
+/// `feature` can be any of the strings allowed by `dip::StructureTensorAnalysis`, but `"energy"`, `"anisotropy1"`,
+/// and `"anisotropy2"` (in 2D), and `"energy"`, `"cylindrical"`, and `"planar"` (in 2D) make the most sense.
+///
+/// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
+///
+/// `in` must be scalar and real-valued, and either 2D or 3D.
+///
+/// See `dip::StructureTensor` for more information about the structure tensor.
+DIP_EXPORT Distribution StructureAnalysis(
+      Image const& in,
+      Image const& mask,
+      std::vector< dfloat > const& scales = {},
+      String const& feature = "energy",
+      FloatArray const& gradientSigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
+);
+
 
 /// \brief Estimates the fractal dimension of the binary image `in` the sliding box method.
 ///

@@ -13,6 +13,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/dft.h
 ../include/diplib/display.h
 ../include/diplib/distance.h
+../include/diplib/distribution.h
 ../include/diplib/file_io.h
 ../include/diplib/framework.h
 ../include/diplib/generation.h
