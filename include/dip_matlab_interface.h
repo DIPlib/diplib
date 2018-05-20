@@ -60,7 +60,8 @@ extern "C" {
 }
 
 #include "diplib.h"
-#include "diplib/file_io.h" // Definition of FileInformation
+#include "diplib/file_io.h" // Definition of dip::FileInformation
+#include "diplib/distribution.h" // Definition of dip::Distribution
 
 
 /// \file
@@ -224,6 +225,20 @@ inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::FloatArray out( n );
+      double* data = mxGetPr( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ ii ] = data[ ii ];
+      }
+      return out;
+   }
+   DIP_THROW( "Floating-point array expected" );
+}
+
+/// \brief Convert a floating-point array for `mxArray` to `std::vector<dip::dfloat>` by copy.
+inline std::vector< dip::dfloat > GetStdVectorOfFloats( mxArray const* mx ) {
+   if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      std::vector< dip::dfloat > out( n ); // Identical to dml::GetFloatArray except for this line...
       double* data = mxGetPr( mx );
       for( dip::uint ii = 0; ii < n; ++ii ) {
          out[ ii ] = data[ ii ];
@@ -637,7 +652,7 @@ inline mxArray* GetArray( dip::Image::Pixel const& in ) {
    return out;
 }
 
-/// \brief Convert a pixel size structure `dip::PixelSize` to `mxArray` by copy.
+/// \brief Convert a pixel size object `dip::PixelSize` to `mxArray` by copy.
 inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
    mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
    for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
@@ -647,6 +662,7 @@ inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
    return pxsz;
 }
 
+/// \brief Convert a `dip::FileInformation` structure to `mxArray` by copy.
 inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
    constexpr int nFields = 10;
    char const* fieldNames[ nFields ] = {
@@ -676,6 +692,21 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
    return out;
 }
 
+/// \brief Convert a `dip::Distribution` object to `mxArray` by copy.
+inline mxArray* GetArray( dip::Distribution const& in ) {
+   dip::uint n = in.Size();
+   dip::uint m = in.ValuesPerSample();
+   mxArray* mx = mxCreateDoubleMatrix( n, m + 1, mxREAL );
+   double* data = mxGetPr( mx );
+   for( auto& v : in ) {
+      data[ 0 ] = v.X();
+      for( dip::uint ii = 0; ii < m; ++ii ) {
+         data[ n * ( ii + 1 ) ] = v.Y( ii );
+      }
+      ++data;
+   }
+   return mx;
+}
 
 //
 // Converting mxArray to dip::Image

@@ -1313,6 +1313,10 @@ inline Image PathOpening(
 /// algorithm more directionally-selective. The constrained mode increases computation time a little, but is highly
 /// recommended when using the path opening in a granulometry.
 ///
+/// Path openings can be sensitive to noise. A robust path opening is obtained by dilating the image with a 2x2
+/// rectangular structuring element, applying the path opening, then eroding the result. For a path closing,
+/// reverse these operations.
+///
 /// **Definition of `filterSize`:** `length = max(abs(filterSize))` is the number of pixels in the line.
 /// The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using
 /// `direction = round(filterSize/length)`. For example, if `filterSize=[7,0]`, then `length` is 7, and

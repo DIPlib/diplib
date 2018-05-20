@@ -507,6 +507,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `curvature_thirion` and `isophote_curvature` have been moved to the `alias` directory. The function
     `curvature` now takes `'thirion'` and `'isophote'` as options.
 
+  - `granulometry` has changed, but it is still possible to call it the old way. However, the parameters
+    in this old syntax are interpreted to match the new possibilities of this function. ``'usegrey'` and
+    ``'verbose'` options no longer have an effect. Default values have changed a bit.
+
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cluster`, `coordinates`, `drawshape`,
   `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`,
   `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to

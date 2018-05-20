@@ -322,19 +322,24 @@ Distribution StructureAnalysis(
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF(( nDims < 2 ) || ( nDims > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
-   std::vector< dfloat > const& scales = in_scales.empty() ? default_scales : in_scales;
+   // Scales
+   std::vector< dfloat > scales = in_scales.empty() ? default_scales : in_scales; // copy
+   std::sort( scales.begin(), scales.end() );
+   DIP_THROW_IF( scales[ 0 ] < 0.8, E::PARAMETER_OUT_OF_RANGE ); // ensures we don't have negative ones either
+   // Sigmas
    FloatArray tensorSigmas = gradientSigmas;
    DIP_STACK_TRACE_THIS( ArrayUseParameter( tensorSigmas, nDims, 1.0 ));
    for (auto& ts : tensorSigmas) {
       ts *= scales[ 0 ];
    }
+   // Compute
    dip::Image ST;
    DIP_STACK_TRACE_THIS( StructureTensor( in, {}, ST, gradientSigmas, tensorSigmas, method, boundaryCondition, truncation ));
    Distribution out( scales );
    dip::Image featureImage;
    dip::ImageRefArray refArray{ featureImage };
    DIP_STACK_TRACE_THIS( StructureTensorAnalysis( ST, refArray, { feature } ));
-   DIP_STACK_TRACE_THIS( out[ 0 ].y = Mean( featureImage, mask ).As< dfloat >() );
+   DIP_STACK_TRACE_THIS( out[ 0 ].Y() = Mean( featureImage, mask ).As< dfloat >() );
    FloatArray deltaSigmas( nDims );
    for( dip::uint ii = 1; ii < scales.size(); ++ii ) {
       // We smooth the ST, which is already smoothed by `tensorSigmas = gradientSigmas * scale[ ii - 1 ]`,
@@ -348,7 +353,7 @@ Distribution StructureAnalysis(
       }
       DIP_STACK_TRACE_THIS( Gauss( ST, ST, deltaSigmas, {}, method, boundaryCondition, truncation ));
       DIP_STACK_TRACE_THIS( StructureTensorAnalysis( ST, refArray, { feature } ));
-      DIP_STACK_TRACE_THIS( out[ ii ].y = Mean( featureImage, mask ).As< dfloat >() );
+      DIP_STACK_TRACE_THIS( out[ ii ].Y() = Mean( featureImage, mask ).As< dfloat >() );
    }
    return out;
 }

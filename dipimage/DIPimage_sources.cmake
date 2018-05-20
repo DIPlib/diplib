@@ -61,6 +61,7 @@ gdt.cpp
 get_subpixel.cpp
 getmaximumandminimum.cpp
 getsamplestatistics.cpp
+granulometry.cpp
 hist_equalize.cpp
 hitmiss.cpp
 hmaxima.cpp

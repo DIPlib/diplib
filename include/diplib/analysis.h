@@ -435,14 +435,15 @@ inline ImageArray StructureTensorAnalysis(
 /// non-isotropic images. The `gradientSigmas` corrects for the non-isotropy, allowing `scales` to be a scalar
 /// value for each scale.
 ///
-/// `scales` defaults to a series of 10 values geometrically spaced by `sqrt(2)`.
+/// `scales` defaults to a series of 10 values geometrically spaced by `sqrt(2)`, and starting at 1.0.
 ///
 /// `feature` can be any of the strings allowed by `dip::StructureTensorAnalysis`, but `"energy"`, `"anisotropy1"`,
 /// and `"anisotropy2"` (in 2D), and `"energy"`, `"cylindrical"`, and `"planar"` (in 2D) make the most sense.
 ///
 /// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
 ///
-/// `in` must be scalar and real-valued, and either 2D or 3D.
+/// `in` must be scalar and real-valued, and either 2D or 3D. `mask` must be of the same size, and limits the
+/// region over which the structure tensor feature is averaged.
 ///
 /// See `dip::StructureTensor` for more information about the structure tensor.
 DIP_EXPORT Distribution StructureAnalysis(
@@ -456,6 +457,81 @@ DIP_EXPORT Distribution StructureAnalysis(
       dfloat truncation = 3
 );
 
+DIP_EXPORT Distribution PairCorrelation(); // TODO
+
+DIP_EXPORT Distribution ProbabilisticPairCorrelation(); // TODO
+
+DIP_EXPORT Distribution Variogram(); // TODO
+
+DIP_EXPORT Distribution ChordLength(); // TODO
+
+DIP_EXPORT Distribution RadialDistribution(); // TODO
+
+/// \brief Computes the granulometric function for an image
+///
+/// The granulometry yields a volume-weighted, grey-value--weighted, cumulative distribution of object sizes.
+/// It can be used to obtain a size distribution of the image without attempting to segment and separate
+/// individual objects. It is computed by a series of openings or closings at different scales. The result
+/// at each scale is integrated (summed). The obtained series of values is scaled such that the value for
+/// scale 0 is 0, and for scale infinity is 1.
+///
+/// The derivative of the cumulative distribution is a volume-weighted and grey-value--weighted distribution of
+/// object sizes. See `dip::Distribution::Differentiate`.
+///
+/// Grey-value--weighted means that objects with a larger grey-value contrast will be weighted more heavily.
+/// Ensuring a uniform grey-value contrast to prevent this characateristic from affecting the estimated size
+/// distribution.
+///
+/// Volume-weighted means that objects are weighted by their volume (area in 2D). By dividing the distribution
+/// (note: not the cumulative distribution) by the volume corresponding to each scale, it is possible to
+/// approximate a count-based distribution.
+///
+/// This function implements various granulometries, to be specified through the parameters `type`, `polarity`
+/// and `options`. The following `type` values specify the shapes of the structuring element (SE), which determines
+/// the measurement type:
+///  - `"isotropic"`: An isotropic SE leads to a size distribution dictated by the width of objects.
+///  - `"length"`: A line SE leads to a size distribution dictated by the length of objects. We use (constrained)
+///    path openings or closings (see Luengo, 2010).
+///
+/// The `polarity` flag determines whether it is white objects on a black background (`"opening"`) or black objects
+/// on a white background (`"closing"`) that are being analyzed.
+///
+/// The `options` parameter can contain a set of flags that modify how the operations are applied. The allowed flags
+/// differ depending on the `type` flag.
+///  - For `"isotropic"` granulometries:
+///      - `"reconstruction"`: uses openings or closings by reconstruction instead of structural openings or closings.
+///        This leads to objects not being broken up in the same way. Objects need to be clearly separated spatially
+///        for this to work.
+///      - `"shifted"`: uses sub-pixel shifted isotropic strcuturing elements. This allows a finer sampling of the
+///        scale axis (see Luengo et al., 2007). Ignored for images with more than 3 dimensions.
+///      - `"interpolate"`: interpolates by a factor up to 8x for smaller scales, attempting to avoid SE diameters
+///        smaller than 8. This improves precision of the result for small scales (see Luengo et al., 2007).
+///      - `"subsample"`: subsamples for larger scales, such that the largest SE diameter is 64. This speeds up
+///        computation, at the expense of precision.
+///  - For `"length"` granulometries:
+///      - `"non-constrained"`: by default, we use constrained path openings or closings, which improves the precision
+///        of the measurement, but is a little bit more expensive (see Luengo, 2010). This option causes the use
+///        of normal path openings or closings.
+///      - `"robust"`: applies path openings or closings in such a way that they are less sensitive to noise.
+///
+/// `scales` defaults to a series of 12 values geometrically spaced by `sqrt(2)`, and starting at `sqrt(2)`.
+///
+/// `in` must be scalar and real-valued. `mask` must have the same sizes, and limits the region
+/// in which objects are measured.
+///
+/// **Literature**:
+///  - C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
+///    Pattern Recognition Letters 28(7):865–872, 2007.
+///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
+///    IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
+DIP_EXPORT Distribution Granulometry(
+      Image const& in,
+      Image const& mask,
+      std::vector< dfloat > const& scales = {},
+      String const& type = "isotropic",
+      String const& polarity = S::OPENING,
+      StringSet const& options = {}
+);
 
 /// \brief Estimates the fractal dimension of the binary image `in` the sliding box method.
 ///
@@ -478,14 +554,6 @@ DIP_EXPORT dfloat FractalDimension(
 
 // TODO: functions to port:
 /*
-   dip_PairCorrelation (dip_analysis.h)
-   dip_ProbabilisticPairCorrelation (dip_analysis.h)
-   dip_ChordLength (dip_analysis.h)
-   dip_RadialDistribution (dip_analysis.h)
-   granulometry.m
-
-   dip_StructureAnalysis (dip_analysis.h)
-
    dip_OrientationSpace (dip_structure.h)
    dip_ExtendedOrientationSpace (dip_structure.h)
 
