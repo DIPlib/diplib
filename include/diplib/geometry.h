@@ -116,6 +116,8 @@ inline Image Wrap(
 /// The input image is subsampled by `sample[ ii ]` along dimension `ii`. The output image shares
 /// the data segment of the input image, meaning that no data is copied. If a data copy is required,
 /// calling `dip::Image::ForceContiguousData` after subsampling should trigger a data copy.
+///
+/// If `out` has an external interface different from that of `in`, the data will be copied.
 inline void Subsampling(
       Image const& in,
       Image& out,
@@ -123,7 +125,7 @@ inline void Subsampling(
 ) {
    Image tmp; // will be a window onto `in`.
    DefineROI( in, tmp, {}, {}, sample );
-   out.Copy( tmp );
+   out = tmp;  // will copy if `out` has an external interface.
 }
 inline Image Subsampling(
       Image const& in,
