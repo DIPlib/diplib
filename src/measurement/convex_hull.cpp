@@ -149,16 +149,18 @@ ConvexHull::ConvexHull( dip::Polygon&& polygon ) {
    auto v1 = pv.begin();
    auto v2 = v1 + 1;
    auto v3 = v2 + 1;         // these elements exist for sure -- we have more than 3 elements!
-   while( ParallelogramSignedArea( *v1, *v2, *v3 ) == 0 ) {
-      // While the first three vertices are colinear, we discard the middle one and continue
-      // Note that this could cause problems if all vertices are in a straight line, we could discard the points
-      // at the extrema. But because of the way we generate the vertices, they cannot all be in a straight line.
+   dfloat eps = std::max( Distance( *v1, *v2 ), Distance( *v2, *v3 )) * 1e-12;
+   while( std::abs( ParallelogramSignedArea( *v1, *v2, *v3 )) < eps ) {
+      // While the first three vertices are colinear, we discard the middle one and continue.
+      // We ignore a distance that is 12 orders of magnitude smaller than the distance between vertices,
+      // to prevent numerical precision errors in this calculation.
       v2 = v3;
       ++v3;
-      if( v3 == pv.end() ) {
-         vertices_.vertices.push_back( *v1 );
-         vertices_.vertices.push_back( *v2 );
-      }
+      DIP_THROW_IF( v3 == pv.end(), "All vertices are colinear, cannot compute convex hull" );
+      // Note that this error should not occur for any polygon generated from a chain code (i.e. representing a
+      // set of pixels in an image). We have this test here in case the polygon has a different source.
+      // We could, instead of throwing, return the two vertices that compose the bounding box. But that could
+      // cause trouble later on, so this is better.
    }
    if( ParallelogramSignedArea( *v1, *v2, *v3 ) > 0 ) {
       deque.push_back( *v1 );
@@ -187,10 +189,12 @@ ConvexHull::ConvexHull( dip::Polygon&& polygon ) {
       }
       while( ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) <= 0 ) {
          deque.pop_back();
+         DIP_THROW_IF( deque.size() < 2, "The polygon is self-intersecting, cannot compute convex hull" );
       }
       deque.push_back( *v1 );
       while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) <= 0 ) {
          deque.pop_front();
+         DIP_THROW_IF( deque.size() < 2, "The polygon is self-intersecting, cannot compute convex hull" );
       }
       deque.push_front( *v1 );
    }
