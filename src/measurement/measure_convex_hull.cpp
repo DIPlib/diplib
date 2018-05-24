@@ -79,8 +79,8 @@ FeretValues ConvexHull::Feret() const {
     *       end
     * end.
     */
-   auto first = vertices.begin();
-   auto p = first;
+
+   auto p = vertices.begin();
    auto q = p + 1;
    while( ParallelogramSignedArea( *p, *Next( p, vertices ), *Next( q, vertices )) >
           ParallelogramSignedArea( *p, *Next( p, vertices ), *q ) ) {
@@ -99,7 +99,7 @@ FeretValues ConvexHull::Feret() const {
          feret.maxAngle = Angle( *p, *q );
       }
       while( ParallelogramSignedArea( *p, *Next( p, vertices ), *Next( q, vertices )) >
-             ParallelogramSignedArea( *p, *Next( p, vertices ), *q ) ) {
+             ParallelogramSignedArea( *p, *Next( p, vertices ), *q )) {
          // (p,q+1) is an antipodal pair
          d = TriangleHeight( *q, *Next( q, vertices ), *p );
          if( d < feret.minDiameter ) {

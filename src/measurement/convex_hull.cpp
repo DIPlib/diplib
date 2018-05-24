@@ -177,8 +177,8 @@ ConvexHull::ConvexHull( dip::Polygon&& polygon ) {
       if( v1 == pv.end() ) {
          break;
       }
-      while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) >= 0 &&
-             ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) >= 0 ) {
+      while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) > -eps &&
+             ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) > -eps ) {
          ++v1;
          if( v1 == pv.end() ) {
             break;
@@ -187,12 +187,12 @@ ConvexHull::ConvexHull( dip::Polygon&& polygon ) {
       if( v1 == pv.end() ) {
          break;
       }
-      while( ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) <= 0 ) {
+      while( ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) < eps ) {
          deque.pop_back();
          DIP_THROW_IF( deque.size() < 2, "The polygon is self-intersecting, cannot compute convex hull" );
       }
       deque.push_back( *v1 );
-      while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) <= 0 ) {
+      while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) < eps ) {
          deque.pop_front();
          DIP_THROW_IF( deque.size() < 2, "The polygon is self-intersecting, cannot compute convex hull" );
       }
