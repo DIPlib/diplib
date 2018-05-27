@@ -51,7 +51,7 @@ if strcmp(method,'uniform')
    mx = dip_image(max(in).',in.TensorShape);
    out = round((in-mn)./(mx-mn)*levels)/levels.*(mx-mn)+mn;
 else
-   [hist,bins] = mdhistogram(in);
+   [hist,bins] = mdhistogram(in,[],{'lower',0,'upper',100,'bins',64});
    [hist,centers] = cluster(hist,levels,method);
    labs = mdhistogrammap(in,hist,bins,false);
    for ii=1:size(centers,2)

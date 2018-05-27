@@ -54,11 +54,9 @@
 %  mchim1 = xx([256 256],'corner');
 %  mchim2 = newim(mchim1) + 100;
 %  mchim = newtensorim(mchim1,mchim2);
-%  histim = mdhistogram(mchim,...
+%  histim = mdhistogram(mchim,[],...
 %     {{'lower',0,'upper',256,'bins',256,'lower_abs','upper_abs'},...
 %      {'lower',0,'upper',256,'bins',256,'lower_abs','upper_abs'}});
-% This is equivalent to:
-%  histim = mdhistogram(mchim)
 %
 % SEE ALSO:
 %  diphist, diphist2d, mdhistogrammap
