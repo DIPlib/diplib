@@ -98,5 +98,11 @@ switch upper(format)
      writetiff(image,filename);
   otherwise
      % For any other format, relay to MATLAB's built-in file writing
-     imwrite(dip_array(image),filename);
+     warning('Converting the image to uint8 for writing using MATLAB''s imwrite function')
+     if iscolor(image)
+        image = colorspace(image,'rgb');
+        image = tensortospatial(image,ndims(image)+1);
+     end
+     image = uint8(image);
+     imwrite(image,filename);
 end
