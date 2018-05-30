@@ -70,11 +70,11 @@ class DIP_NO_EXPORT SampleIterator {
       using pointer = T*;                 ///< The type of a pointer to a sample
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
-      SampleIterator() : stride_( 1 ), ptr_( nullptr ) {}
+      SampleIterator() noexcept : stride_( 1 ), ptr_( nullptr ) {}
       /// To construct a useful iterator, provide a pointer and a stride
-      SampleIterator( pointer ptr, dip::sint stride = 1 ) : stride_( stride ), ptr_( ptr ) {}
+      SampleIterator( pointer ptr, dip::sint stride = 1 ) noexcept : stride_( stride ), ptr_( ptr ) {}
       /// Swap
-      void swap( SampleIterator& other ) {
+      void swap( SampleIterator& other ) noexcept {
          using std::swap;
          swap( stride_, other.stride_ );
          swap( ptr_, other.ptr_ );
