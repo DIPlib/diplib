@@ -900,7 +900,7 @@ DIP_EXPORT void Watershed(
       Image const& mask,
       Image& out,
       dip::uint connectivity = 1,
-      dfloat maxDepth = 0,
+      dfloat maxDepth = 1,
       dip::uint maxSize = 0,
       StringSet flags = {}
 );
@@ -908,7 +908,7 @@ inline Image Watershed(
       Image const& in,
       Image const& mask = {},
       dip::uint connectivity = 1,
-      dfloat maxDepth = 1.0,
+      dfloat maxDepth = 1,
       dip::uint maxSize = 0,
       StringSet const& flags = {}
 ) {
@@ -954,7 +954,7 @@ DIP_EXPORT void SeededWatershed(
       Image const& mask,
       Image& out,
       dip::uint connectivity = 1,
-      dfloat maxDepth = 1.0,
+      dfloat maxDepth = 1,
       dip::uint maxSize = 0,
       StringSet const& flags = {}
 );
@@ -963,7 +963,7 @@ inline Image SeededWatershed(
       Image const& seeds,
       Image const& mask = {},
       dip::uint connectivity = 1,
-      dfloat maxDepth = 1.0,
+      dfloat maxDepth = 1,
       dip::uint maxSize = 0,
       StringSet const& flags = {}
 ) {
