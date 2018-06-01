@@ -429,7 +429,8 @@ inline ImageArray StructureTensorAnalysis(
 ///
 /// Computes the structure tensor, smoothed with each of the values in `scales` multiplied by `gradientSigmas`,
 /// determines the feature `feature` from it, and averages across the image for each scale. This leads to a series
-/// of data points showing how the selected feature changes across scales.
+/// of data points showing how the selected feature changes across scales. `scales` and `gradientSigmas` are
+/// given in pixels, the image's pixel size is not taken into account.
 ///
 /// The reason that each element of `scales` is mutliplied by `gradientSigmas` is to allow analysis of
 /// non-isotropic images. The `gradientSigmas` corrects for the non-isotropy, allowing `scales` to be a scalar
@@ -446,6 +447,7 @@ inline ImageArray StructureTensorAnalysis(
 /// region over which the structure tensor feature is averaged.
 ///
 /// See `dip::StructureTensor` for more information about the structure tensor.
+// TODO: Take pixel sizes into account.
 DIP_EXPORT Distribution StructureAnalysis(
       Image const& in,
       Image const& mask,
@@ -457,9 +459,74 @@ DIP_EXPORT Distribution StructureAnalysis(
       dfloat truncation = 3
 );
 
-DIP_EXPORT Distribution PairCorrelation(); // TODO
+/// \brief Computes the pair correlation function of the different phases in `object`.
+///
+/// If `object` is a binary image, the image is a regarded as a two-phase image.
+/// In case `object` is of an unsigned integer type, the image is regarded as a labeled image,
+/// with each integer value encoding a phase (note that 0 is included here).
+///
+/// Optionally a `mask` image can be provided to select which pixels in `object`
+/// should be used to compute the pair correlation.
+///
+/// `probes` specifies how many random point pairs should be drawn to compute the function.
+/// `length` specifies the maximum correlation length (in pixels).
+/// The correlation function can be computed using a random sampling method (`sampling` is
+/// `"random"`), or a grid sampling method (`"grid"`). For grid sampling, `probes` can be 0,
+/// in which case all possible pairs along all image axes are used. Otherwise, the grid covers
+/// a subset of points, with all possible pairs along all image axes; the actual number of pairs
+/// is approximate. In general, the grid method needs a lot more probes to be precise, but
+/// it is faster for a given number of probes because it uses sequential memory access.
+///
+/// `options` can contain one or more of the following strings:
+/// - `"covariance"`: Compute covariance instead of correlation.
+/// - `"normalize volume"`: Normalizes the distribution using the volume fraction
+/// - `"normalize volume^2"`: Normalizes the distribution using the square of the volume fraction
+///
+/// Without any of the option strings given, the output has `N` values, with `N` the number of phases
+/// in the image. Element `i` gives the probability of two points at a given distance both hitting
+/// phase number `i`. When normalized using the `"normalize volume"` option, the probability given is
+/// that of the second point hitting phase `i`, given that the first point hits phase `i`. This normalization
+/// is computed by dividing all values (distances) for element `i` by the volume fraction of phase `i`
+/// (which is given by the computed probability at distance equal to 0). When normalized using the
+/// `"normalize volume^2"` option, the values given are expected to tends towards 1, as the square of the
+/// volume fraction of phase `i` is the probability of two random points hitting phase `i`.
+///
+/// These values are read from the output `distribution` by `distribution[distance].Y(i)`, and the
+/// corresponding distance is given by `distribution[distance].X() == distance`. Note that this distance
+/// is in pixels, the pixel size is not taken into account.
+///
+/// With the `"covariance"` option, the output distribution has `N`&times;`N` values. The element at
+/// `(i,j)` gives the probability for two points at a given distance to land on phases `i` and `j`
+/// respectively. The value for `(i,j)` will be identical to that for `(j,i)`. The values at the diagonal
+/// will correspond to the pair correlation as described above. The rest of the elements are for the
+/// cases where the two points fall in different phases. Normalization breaks the symmetry, since each
+/// column `i` is normalized by the volume fraction for phase `i`. That is, `(i,j)` will give the probability
+/// that the second point, at a given distance, will hit phase `j` given that the first point hits phase `i`.
+// TODO: Take pixel sizes into account.
+DIP_EXPORT Distribution PairCorrelation(
+      Image const& object,
+      Image const& mask,
+      dip::uint probes = 1000000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM,
+      StringSet const& options = {}
+);
 
-DIP_EXPORT Distribution ProbabilisticPairCorrelation(); // TODO
+/// \brief Computes the probabilistic pair correlation function of the different phases in `phases`.
+///
+/// Each image in `phases` represents the probability per pixel of one of the phases.
+/// The function assumes, but does not check, that these values are with the [0 1] range
+/// (thus the images must be of a floating-point type).
+///
+/// All other parameters are as in `dip::PairCorrelation`.
+DIP_EXPORT Distribution ProbabilisticPairCorrelation(
+      ImageArray const& phases,
+      Image const& mask,
+      dip::uint probes = 1000000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM,
+      StringSet const& options = {}
+);
 
 DIP_EXPORT Distribution Variogram(); // TODO
 
@@ -514,7 +581,8 @@ DIP_EXPORT Distribution RadialDistribution(); // TODO
 ///        of normal path openings or closings.
 ///      - `"robust"`: applies path openings or closings in such a way that they are less sensitive to noise.
 ///
-/// `scales` defaults to a series of 12 values geometrically spaced by `sqrt(2)`, and starting at `sqrt(2)`.
+/// `scales` defaults to a series of 12 values geometrically spaced by `sqrt(2)`, and starting at `sqrt(2)`. `scales`
+/// are in pixels, the image's pixel size is not taken into account.
 ///
 /// `in` must be scalar and real-valued. `mask` must have the same sizes, and limits the region
 /// in which objects are measured.
@@ -524,6 +592,7 @@ DIP_EXPORT Distribution RadialDistribution(); // TODO
 ///    Pattern Recognition Letters 28(7):865–872, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
 ///    IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
+// TODO: Take pixel sizes into account.
 DIP_EXPORT Distribution Granulometry(
       Image const& in,
       Image const& mask,

@@ -80,6 +80,7 @@ noisestd.cpp
 nonmaximumsuppression.cpp
 opening.cpp
 overlay.cpp
+paircorrelation.cpp
 pathopening.cpp
 percf.cpp
 pmd.cpp

@@ -50,6 +50,8 @@ constexpr char const* EMPTY = "empty";
 constexpr char const* FILLED = "filled";
 constexpr char const* OPEN = "open";
 constexpr char const* CLOSED = "closed";
+constexpr char const* RANDOM = "random";
+constexpr char const* GRID = "grid";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

@@ -187,6 +187,7 @@ constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";
 constexpr char const* KERNEL_NOT_BINARY = "Kernel has weights, a binary kernel is expected";
 constexpr char const* CONNECTIVITY_NOT_SUPPORTED = "Connectivity is not supported";
 constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
+constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 }
 

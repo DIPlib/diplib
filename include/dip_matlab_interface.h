@@ -699,9 +699,11 @@ inline mxArray* GetArray( dip::Distribution const& in ) {
    mxArray* mx = mxCreateDoubleMatrix( n, m + 1, mxREAL );
    double* data = mxGetPr( mx );
    for( auto& v : in ) {
-      data[ 0 ] = v.X();
+      double* ptr = data;
+      *ptr = v.X();
       for( dip::uint ii = 0; ii < m; ++ii ) {
-         data[ n * ( ii + 1 ) ] = v.Y( ii );
+         ptr += n;
+         *ptr = v.Y( ii );
       }
       ++data;
    }
