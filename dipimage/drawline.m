@@ -1,7 +1,7 @@
 %DRAWLINE   Draws a line in an image
 %
 % SYNOPSIS:
-%  image_out = drawline(image_in,start,end,color,sigma,truncation)
+%  image_out = drawline(image_in,start,end,color,sigma,truncation,blend)
 %
 %  start:      array containing the start position(s) of the line(s)
 %  end:        array containing the end position(s) of the line(s)
@@ -9,11 +9,14 @@
 %  sigma:      if larger than 0, draws a line with a Gaussian profile.
 %  truncation: if sigma>0, the Gaussian profile is computed up to
 %              trunction*sigma from the line.
+%  blend:      a string 'assign' or 'add' defining the blend mode. If
+%              sigma>0, the blend mode is always 'add'.
 %
 % DEFAULTS:
 %  color = 255
 %  sigma = 0
 %  truncation = 3
+%  blend = 'assign' (sigma=0) or 'add' (sigma>0)
 %
 % EXAMPLE:
 %  drawline(newim,[100 100; 0 200],[200 200; 200 0],255)

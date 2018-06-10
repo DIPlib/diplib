@@ -24,6 +24,7 @@
 #include "diplib/generic_iterators.h"
 #include "diplib/chain_code.h" // Polygon
 #include "diplib/overload.h"
+#include "diplib/saturated_arithmetic.h"
 #include "draw_support.h"
 
 namespace dip {
@@ -61,38 +62,41 @@ void SetBorder( Image& out, Image::Pixel const& value, UnsignedArray const& size
 
 namespace {
 
-template< typename TPI >
+template< typename TPI, typename F >
 void dip__DrawOneLine(
       TPI* origin,
       dip::sint stride,
       BresenhamLineIterator& iterator,
-      std::vector< TPI > const& value
+      std::vector< TPI > const& value,
+      F const &blend
 ) {
    do {
       dip::sint offset = *iterator;
       for( auto v : value ) {
-         origin[ offset ] = v;
+         origin[ offset ] = blend(origin[ offset ], v);
          offset += stride;
       }
    } while( ++iterator );
 }
 
-template< typename TPI >
+template< typename TPI, typename F >
 void dip__DrawLine(
       Image& out,
       BresenhamLineIterator& iterator,
-      Image::Pixel const& value
+      Image::Pixel const& value,
+      F const &blend
 ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
-   dip__DrawOneLine( static_cast< TPI* >( out.Origin() ), out.TensorStride(), iterator, value_ );
+   dip__DrawOneLine( static_cast< TPI* >( out.Origin() ), out.TensorStride(), iterator, value_, blend);
 }
 
-template< typename TPI >
+template< typename TPI, typename F >
 void dip__DrawLines(
       Image& out,
       CoordinateArray const& points,
-      Image::Pixel const& value
+      Image::Pixel const& value,
+      F const &blend
 ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
@@ -103,7 +107,7 @@ void dip__DrawLines(
       if( jj != 1 ) {
          ++iterator; // skip the first point, it's already drawn
       }
-      dip__DrawOneLine( origin, stride, iterator, value_ );
+      dip__DrawOneLine( origin, stride, iterator, value_, blend);
    }
 }
 
@@ -113,7 +117,8 @@ void DrawLine(
       Image& out,
       UnsignedArray const& start,
       UnsignedArray const& end,
-      Image::Pixel const& value
+      Image::Pixel const& value,
+      String const &blend
 ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -123,13 +128,20 @@ void DrawLine(
    DIP_THROW_IF( !( start < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    DIP_THROW_IF( !( end < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    BresenhamLineIterator iterator( out.Strides(), start, end );
-   DIP_OVL_CALL_ALL( dip__DrawLine, ( out, iterator, value ), out.DataType() );
+   if (blend == S::ASSIGN) {
+      DIP_OVL_CALL_ALL( dip__DrawLine, ( out, iterator, value, [](auto, auto b) { return b; } ), out.DataType() );
+   } else if (blend == S::ADD) {
+      DIP_OVL_CALL_ALL( dip__DrawLine, ( out, iterator, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
+   } else {
+      DIP_THROW_INVALID_FLAG( blend );
+   }
 }
 
 void DrawLines(
       Image& out,
       CoordinateArray const& points,
-      Image::Pixel const& value
+      Image::Pixel const& value,
+      String const &blend
 ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -139,7 +151,13 @@ void DrawLines(
       DIP_THROW_IF( point.size() != out.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
       DIP_THROW_IF( !( point < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    }
-   DIP_OVL_CALL_ALL( dip__DrawLines, ( out, points, value ), out.DataType() );
+   if (blend == S::ASSIGN) {
+      DIP_OVL_CALL_ALL( dip__DrawLines, ( out, points, value, [](auto, auto b) { return b; } ), out.DataType() );
+   } else if (blend == S::ADD) {
+      DIP_OVL_CALL_ALL( dip__DrawLines, ( out, points, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
+   } else {
+      DIP_THROW_INVALID_FLAG( blend );
+   }
 }
 
 
@@ -201,14 +219,14 @@ void dip__DrawPolygon(
       if( jj != 1 ) {
          ++iterator; // skip the first point, it's already drawn
       }
-      dip__DrawOneLine( origin, stride, iterator, value_ );
+      dip__DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
       prev = cur;
    }
    if( !open ) {
       UnsignedArray cur = VertexToUnsignedArray( polygon.vertices[ 0 ] );
       BresenhamLineIterator iterator( out.Strides(), prev, cur );
       ++iterator; // skip the first point, it's already drawn
-      dip__DrawOneLine( origin, stride, iterator, value_ );
+      dip__DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
    }
 }
 

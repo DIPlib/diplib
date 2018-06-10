@@ -82,11 +82,15 @@ DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, Unsign
 ///
 /// The line goes from `start` to `end`, both points included. These points must be within the image.
 /// Pixels in `out` on the line are set to `value`, other pixels are not touched.
+/// `blend` can be one of the following strings:
+///  - `"assign"`: The pixels are set to `value`.
+///  - `"add"`: `value` is added to the pixels using saturated arithmetic.
 DIP_EXPORT void DrawLine(
       Image& out,
       UnsignedArray const& start,
       UnsignedArray const& end,
-      Image::Pixel const& value = { 1 }
+      Image::Pixel const& value = { 1 },
+      String const& blend = S::ASSIGN
 );
 
 /// \brief Draws a series of Bresenham lines in an image.
@@ -97,12 +101,16 @@ DIP_EXPORT void DrawLine(
 ///
 /// `points` must have at least two points, and all points must be within the image.
 /// Pixels in `out` on the lines are set to `value`, other pixels are not touched.
+/// `blend` can be one of the following strings:
+///  - `"assign"`: The pixels are set to `value`.
+///  - `"add"`: `value` is added to the pixels using saturated arithmetic.
 ///
 /// `out` must have at least two dimensions.
 DIP_EXPORT void DrawLines(
       Image& out,
       CoordinateArray const& points,
-      Image::Pixel const& value = { 1 }
+      Image::Pixel const& value = { 1 },
+      String const& blend = S::ASSIGN
 );
 
 /// \brief Draws a polygon in a 2D image.

@@ -32,7 +32,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 3 );
-      DML_MAX_ARGS( 5 );
+      DML_MAX_ARGS( 7 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -59,6 +59,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if( nrhs > 5 ) {
          truncation = dml::GetFloat( prhs[ 5 ] );
       }
+      dip::String blend = "assign";
+      if( nrhs > 6 ) {
+         blend = dml::GetString( prhs[ 6 ] );
+      }
 
       if( sigma == 0.0 ) {
          dip::UnsignedArray start( nDims );
@@ -68,7 +72,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                start[ jj ] = static_cast< dip::uint >( std::round( mxStart[ jj * N ] ));
                end[ jj ] = static_cast< dip::uint >( std::round( mxEnd[ jj * N ] ));
             }
-            dip::DrawLine( out, start, end, color );
+            dip::DrawLine( out, start, end, color, blend );
             ++mxStart;
             ++mxEnd;
          }

@@ -224,6 +224,9 @@ constexpr char const* SECOND_ORDER_EXTRAPOLATE = "second order";
 constexpr char const* THIRD_ORDER_EXTRAPOLATE = "third order";
 constexpr char const* ALREADY_EXPANDED = "already expanded";
 
+// Blend modes
+constexpr char const* ASSIGN = "assign";
+constexpr char const* ADD = "add";
 
 } // namespace S
 
