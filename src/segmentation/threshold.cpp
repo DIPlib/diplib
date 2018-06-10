@@ -117,7 +117,7 @@ dfloat VolumeThreshold(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      dfloat threshold = Percentile( in, mask, volumeFraction * 100 ).As< dfloat >();
+      dfloat threshold = Percentile( in, mask, ( 1 - volumeFraction ) * 100 ).As< dfloat >();
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
