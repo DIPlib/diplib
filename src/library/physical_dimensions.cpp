@@ -620,6 +620,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
    }
    DOCTEST_SUBCASE("Normalization") {
       dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
+      std::cout << f << '\n'; // TODO: GCC 8.1 makes a lot of tests below fail, but not if I add this line here.
       DOCTEST_CHECK( ( f * 0 ).Normalize().magnitude == 0 );
       DOCTEST_CHECK( ( f * 1 ).Normalize().magnitude == 1 );
       DOCTEST_CHECK( ( f * 0.1 ).Normalize().magnitude == 0.1 );
