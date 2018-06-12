@@ -106,6 +106,22 @@ DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
 // TODO: port dip_HartleyTransform (dip_transform.h)
 // TODO: add wavelet transforms
 
+DIP_EXPORT void HoughTransformCircleCenters(
+      Image const& in,
+      Image const& gv,
+      Image& out,
+      UnsignedArray const& range = { }
+);
+inline Image HoughTransformCircleCenters(
+      Image const& in,
+      Image const& gv,
+      UnsignedArray const& range = { }
+) {
+   Image out;
+   HoughTransformCircleCenters( in, gv, out, range);
+   return out;
+}
+
 /// \}
 
 } // namespace dip

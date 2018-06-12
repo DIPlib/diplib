@@ -222,5 +222,6 @@ segmentation/threshold.cpp
 support/math_functions.cpp
 support/matrix.cpp
 transform/fourier.cpp
+transform/hough.cpp
 transform/opencv_dxt.cpp
 )

@@ -126,6 +126,8 @@ void init_filtering( py::module& m ) {
 
    // diplib/transform.h
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),
-         "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
+          "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a );
+   m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
+          "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
 }
