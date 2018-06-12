@@ -279,6 +279,8 @@ Image::View Image::View::At( RangeArray const& ranges ) const {
 Image::View::Iterator::Iterator() : view_( Image{} ), atEnd_( true ) {}
 Image::View::Iterator::Iterator( View const& view ) : view_( view ) { Initialize(); }
 Image::View::Iterator::Iterator( View&& view ) : view_( std::move( view )) { Initialize(); }
+Image::View::Iterator::Iterator( Iterator&& iterator) = default;
+Image::View::Iterator::~Iterator() = default;
 
 void Image::View::Iterator::Initialize() {
    if( view_.mask_.IsForged() ) {

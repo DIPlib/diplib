@@ -1075,6 +1075,12 @@ class Image::View::Iterator {
       explicit Iterator( View const& view );
       /// To construct a useful iterator, provide a view
       explicit Iterator( View&& view );
+      
+      // Define move constructor (not generated automatically because destructor is defined)
+      Iterator( Iterator &&iterator );
+      
+      // Don't generate default destructor until GenericImageIterator is complete
+      ~Iterator();
 
       /// Dereference
       value_type operator*() const {
