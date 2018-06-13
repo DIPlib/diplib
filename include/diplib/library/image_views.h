@@ -891,6 +891,12 @@ class Image::View {
       View& operator=( View const& ) = delete;  // Copy assignment through cast to dip::Image
 
       /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view.
+      ///
+      /// `source` must have the same number of tensor elements as the image, and be forged.
+      /// For the case of a regular view, the view and `src` must have identical sizes, except that
+      /// trailing singleton dimensions are ignored. For non-regular views, `src` must have the same
+      /// number of pixels as the view, its shape is ignored.
+      /// `source` pixel values are cast in the usual way to the type of `this`.
       View& operator=( Image const& source ) {
          Copy( source );
          return *this;
@@ -910,9 +916,12 @@ class Image::View {
 
       /// \brief Copy the pixels from `src` to the view.
       ///
-      /// `src` must have the same number of tensor elements as the image, and be forged.
-      /// Its values will be clipped to the target range and/or truncated, as applicable.
-      DIP_EXPORT void Copy( Image const& src );
+      /// `source` must have the same number of tensor elements as the image, and be forged.
+      /// For the case of a regular view, the view and `src` must have identical sizes, except that
+      /// trailing singleton dimensions are ignored. For non-regular views, `src` must have the same
+      /// number of pixels as the view, its shape is ignored.
+      /// `source` pixel values are cast in the usual way to the type of `this`.
+      DIP_EXPORT void Copy( Image const& source );
 
       /// \brief Sets all pixels in the view to the value `pixel`.
       ///
@@ -1075,10 +1084,8 @@ class Image::View::Iterator {
       explicit Iterator( View const& view );
       /// To construct a useful iterator, provide a view
       explicit Iterator( View&& view );
-      
       // Define move constructor (not generated automatically because destructor is defined)
       Iterator( Iterator &&iterator );
-      
       // Don't generate default destructor until GenericImageIterator is complete
       ~Iterator();
 

@@ -99,11 +99,21 @@ void Image::View::Copy( Image const& source ) {
    DIP_THROW_IF( !source.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( reference_.TensorElements() != source.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    if( mask_.IsForged() ) {
-      CopyTo( source, reference_, mask_ );
+      DIP_STACK_TRACE_THIS( CopyTo( source, reference_, mask_ ));
    } else if( !offsets_.empty() ) {
-      CopyTo( source, reference_, offsets_ );
+      DIP_STACK_TRACE_THIS( CopyTo( source, reference_, offsets_ ));
    } else {
-      reference_.Copy( source );
+      dip::Image src = source.QuickCopy();
+      while( src.Size( src.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
+         src.Squeeze( src.Dimensionality() - 1 );
+      }
+      dip::Image dst = reference_.QuickCopy();
+      while( dst.Size( dst.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
+         dst.Squeeze( dst.Dimensionality() - 1 );
+      }
+      DIP_THROW_IF( dst.Sizes() != src.Sizes(), E::SIZES_DONT_MATCH );
+      dst.Protect();
+      DIP_STACK_TRACE_THIS( dst.Copy( src )); // This should always work.
    }
 }
 
@@ -623,6 +633,18 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( img.At( 1, 1, 1 )[ 2 ] == 2 + 2000 );
    DOCTEST_CHECK( img.At( 0, 1, 1 )[ 2 ] == 3 + 2000 );
    DOCTEST_CHECK( img.At( 1, 1, 0 )[ 2 ] == 4 + 2000 );
+
+   // Writing a 2D image into a slice of a 3D image
+   img.Fill( 0 );
+   dip::Image slice{ dip::UnsignedArray{ 15, 20 }, 3 };
+   it = dip::ImageIterator< dip::sfloat >( slice );
+   for( dip::uint ii = 1; it; ++ii, ++it ) {
+      it[ 0 ] = static_cast< dip::sfloat >( ii );
+      it[ 1 ] = static_cast< dip::sfloat >( ii + 1000 );
+      it[ 2 ] = static_cast< dip::sfloat >( ii + 2000 );
+   }
+   img.At( dip::Range(), dip::Range(), dip::Range( 3 ) ) = slice;
+   DOCTEST_CHECK( dip::testing::CompareImages( dip::Image( img.At( dip::Range(), dip::Range(), dip::Range( 3 ))).Squeeze(), slice ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

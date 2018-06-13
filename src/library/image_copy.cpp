@@ -121,6 +121,7 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
       if( telems == 1 ) { // most frequent case, really.
          do {
             if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
+               DIP_THROW_IF( !srcIt, E::SIZES_DONT_MATCH );
                std::memcpy( destIt.Pointer< 0 >(), srcIt.Pointer(), bytes );
                ++srcIt;
             }
@@ -128,6 +129,7 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
       } else {
          do {
             if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
+               DIP_THROW_IF( !srcIt, E::SIZES_DONT_MATCH );
                for( dip::uint ii = 0; ii < telems; ++ii ) {
                   std::memcpy( destIt.Pointer< 0 >( ii ), srcIt.Pointer( ii ), bytes );
                }
@@ -141,6 +143,7 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
       GenericImageIterator<> srcIt( src );
       do {
          if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
+            DIP_THROW_IF( !srcIt, E::SIZES_DONT_MATCH );
             destIt.Pixel< 0 >() = *srcIt;
             ++srcIt;
          }
