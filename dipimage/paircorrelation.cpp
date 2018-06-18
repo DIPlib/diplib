@@ -67,7 +67,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          }
       }
 
-      dip::Distribution out = dip::PairCorrelation( in, mask, probes, length, estimator, options );
+      dip::Distribution out = in.DataType().IsFloat()
+                              ? dip::ProbabilisticPairCorrelation( in, mask, probes, length, estimator, options )
+                              : dip::PairCorrelation( in, mask, probes, length, estimator, options );
 
       plhs[ 0 ] = dml::GetArray( out );
 

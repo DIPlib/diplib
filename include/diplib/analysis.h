@@ -514,13 +514,14 @@ DIP_EXPORT Distribution PairCorrelation(
 
 /// \brief Computes the probabilistic pair correlation function of the different phases in `phases`.
 ///
-/// Each image in `phases` represents the probability per pixel of one of the phases.
-/// The function assumes, but does not check, that these values are with the [0 1] range
-/// (thus the images must be of a floating-point type).
+/// `phases` is a real-valued image of a floating-point type, with one or more channels (tensor elements). 
+/// Each channel represents the probability per pixel of one of the phases.
+/// The function assumes, but does not check, that these values are with the [0 1] range, and add up to
+/// 1 or less.
 ///
 /// All other parameters are as in `dip::PairCorrelation`.
 DIP_EXPORT Distribution ProbabilisticPairCorrelation(
-      ImageArray const& phases,
+      Image const& phases,
       Image const& mask,
       dip::uint probes = 1000000,
       dip::uint length = 100,

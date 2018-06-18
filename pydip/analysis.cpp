@@ -83,6 +83,8 @@ void init_analysis( py::module& m ) {
           "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "PairCorrelation", &dip::PairCorrelation,
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
+   m.def( "ProbabilisticPairCorrelation", &dip::ProbabilisticPairCorrelation,
+          "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
    m.def( "Granulometry", &dip::Granulometry,
           "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "type"_a = "isotropic", "polarity"_a = dip::S::OPENING, "options"_a = dip::StringSet{} );
    m.def( "FractalDimension", &dip::FractalDimension, "in"_a, "eta"_a = 0.5 );
