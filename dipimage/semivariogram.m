@@ -1,9 +1,7 @@
-%PAIRCORRELATION   Computes the pair correlation of the phases in a labeled image
+%SEMIVARIOGRAM   Computes the semivariogram of the field
 %
 % SYNOPSIS:
-%  distribution = paircorrelation(image_in,mask,probes,length,estimator,options)
-%  distribution = paircorrelation(image_in,mask,probes,length,estimator,...
-%              covariance,normalisation)
+%  distribution = semivariogram(image_in,mask,probes,length,estimator)
 %
 % PARAMETERS:
 %  image_in:   defines the phases on which the pair correlation function is computed.
@@ -14,30 +12,22 @@
 %              function.
 %  length:     the maximum length (in pixels) of the correlation function.
 %  estimator:  type of correlation estimator used: 'random' or 'grid'.
-%  options:    cell array of strings: 'covariance', and/or 'volume_fraction' or
-%              'volume_fraction^2', combines the following two parameters.
-%  covariance: whether or not to compute the covariance function (else it is correlation).
-%  normalisation: type of normalisation to be used on the correlation function:
-%                 'none', 'volume_fraction', or 'volume_fraction^2'
 %
 % EXPLANATION:
-%  The pair correlation is the probability that two points at a distance D are in
-%  the same phase, as a function of D. D is varied from 0 to LENGTH.
+%  The semivariogram is half the variance of the difference between two points at a distance D.
+%  D is varied from 0 to LENGTH.
 %  The function is estimated by probing PROBES pairs in the image. If the estimator
 %  is 'random', pairs are selected randomly. If the estimator is 'grid', pairs are
 %  selected using a grid.
 %
 %  The output DISTRIBUTION is an array where the first column is the distance D, and
-%  subsequent columns represent the different components of the pair correlation.
-%  If COVARIANCE is true, there are N^2 components, otherwise there are N components.
-%  N is the number of phases in IMAGE_IN.
+%  the second column is the semivariogram function samples.
 %
 % DEFAULTS:
 %  image_mask = []
 %  probes = 1000000
 %  length = 100
 %  estimator = 'random'
-%  options = {} (equivalent to covariance = 'no', normalisation = 'none')
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

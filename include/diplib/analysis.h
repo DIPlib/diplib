@@ -514,7 +514,7 @@ DIP_EXPORT Distribution PairCorrelation(
 
 /// \brief Computes the probabilistic pair correlation function of the different phases in `phases`.
 ///
-/// `phases` is a real-valued image of a floating-point type, with one or more channels (tensor elements). 
+/// `phases` is a real-valued image of a floating-point type, with one or more channels (tensor elements).
 /// Each channel represents the probability per pixel of one of the phases.
 /// The function assumes, but does not check, that these values are with the [0 1] range, and add up to
 /// 1 or less.
@@ -529,7 +529,41 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
       StringSet const& options = {}
 );
 
-DIP_EXPORT Distribution Variogram(); // TODO
+/// \brief Computes half the variance of the difference between field values at a distance `d`.
+///
+/// The input image `in` must be scalar and real-valued. An isotropic semivariogram is computed as a function
+/// of the distance, which is varied from 0 to `length`. Therefore, the field in `in` is assumed isotropic
+/// and stationary.
+///
+/// By definition, the semivariogram is zero at the origin (at zero distance). If there is no spatial correlation,
+/// the semivariogram is constant for non-zero distance. The magnitude of the jump at the origin is called nugget.
+/// The value of the semivariogram in the limit of the distance to infinity is the variance of the field; this
+/// value is called the sill. The distance at which the sill is reached (or, more robustly, the distance at which
+/// 0.95 times the sill is reached) is called range, and provides a meaningful descrition of the field.
+///
+/// Optionally a `mask` image can be provided to select which pixels in `in` should be used to compute the
+/// semivariogram.
+///
+/// `probes` specifies how many random point pairs should be drawn to compute the function.
+/// `length` specifies the maximum correlation length (in pixels).
+/// The semivariogram can be computed using a random sampling method (`sampling` is `"random"`), or a grid sampling
+/// method (`"grid"`). For grid sampling, `probes` can be 0, in which case all possible pairs along all image
+/// axes are used. Otherwise, the grid covers a subset of points, with all possible pairs along all image axes;
+/// the actual number of pairs is approximate. In general, the grid method needs a lot more probes to be precise,
+/// but it is faster for a given number of probes because it uses sequential memory access.
+///
+/// The semivariogram distances are in pixels, the image's pixel size is not taken into account.
+///
+/// **Literature**:
+///  - G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
+// TODO: Take pixel sizes into account.
+DIP_EXPORT Distribution Semivariogram(
+      Image const& in,
+      Image const& mask,
+      dip::uint probes = 1000000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM
+);
 
 DIP_EXPORT Distribution ChordLength(); // TODO
 

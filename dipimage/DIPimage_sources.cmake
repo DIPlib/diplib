@@ -103,6 +103,7 @@ resample.cpp
 rotation.cpp
 select.cpp
 selectionf.cpp
+semivariogram.cpp
 setborder.cpp
 skew.cpp
 smallobjectsremove.cpp

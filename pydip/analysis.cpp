@@ -85,6 +85,8 @@ void init_analysis( py::module& m ) {
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
    m.def( "ProbabilisticPairCorrelation", &dip::ProbabilisticPairCorrelation,
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
+   m.def( "Semivariogram", &dip::Semivariogram,
+          "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM );
    m.def( "Granulometry", &dip::Granulometry,
           "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "type"_a = "isotropic", "polarity"_a = dip::S::OPENING, "options"_a = dip::StringSet{} );
    m.def( "FractalDimension", &dip::FractalDimension, "in"_a, "eta"_a = 0.5 );

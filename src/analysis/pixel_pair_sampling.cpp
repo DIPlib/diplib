@@ -47,11 +47,18 @@ static dip::uint UIntPixelValueReader( void const* data ) {
 
 // Reading Float value
 
-using FloatPixelValueReaderFunction = dfloat ( * )( void const*, dip::sint );
+using FloatPixelValueReaderWithOffsetFunction = dfloat ( * )( void const*, dip::sint );
 
 template< typename TPI >
-dfloat FloatPixelValueReader( void const* data, dip::sint offset ) {
+dfloat FloatPixelValueReaderWithOffset( void const* data, dip::sint offset ) {
    return static_cast< dfloat >( *( static_cast< TPI const* >( data ) + offset ));
+}
+
+using FloatPixelValueReaderFunction = dfloat ( * )( void const* );
+
+template< typename TPI >
+dfloat FloatPixelValueReader( void const* data ) {
+   return static_cast< dfloat >( *static_cast< TPI const* >( data ));
 }
 
 
@@ -179,6 +186,23 @@ void GridPixelPairSampler(
    }
 }
 
+void NormalizeDistribution(
+      Distribution& distribution,
+      std::vector< dip::uint >& counts
+) {
+   auto dit = distribution.begin();
+   auto cit = counts.begin();
+   dip::uint n = distribution.ValuesPerSample();
+   //dip::uint totalCount = 0;
+   for( ; cit != counts.end(); ++dit, ++cit ) {
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         dit->Y( ii ) /= static_cast< dfloat >( *cit );
+         //totalCount += *cit;
+      }
+   }
+   //std::cout << "TOTAL COUNT = " << totalCount << '\n';
+}
+
 } // namespace
 
 //
@@ -268,24 +292,10 @@ std::pair< bool, PairCorrelationNormalization > ParsePairCorrelationOptions( Str
 
 void NormalizePairCorrelationDistribution(
       Distribution& distribution,
-      std::vector< dip::uint >& counts,
       dip::uint nPhases,
       bool covariance,
       PairCorrelationNormalization normalization
 ) {
-   {
-      auto dit = distribution.begin();
-      auto cit = counts.begin();
-      dip::uint n = distribution.ValuesPerSample();
-      //dip::uint totalCount = 0;
-      for( ; cit != counts.end(); ++dit, ++cit ) {
-         for( dip::uint ii = 0; ii < n; ++ii ) {
-            dit->Y( ii ) /= static_cast< dfloat >( *cit );
-            //totalCount += *cit;
-         }
-      }
-      //std::cout << "TOTAL COUNT = " << totalCount << '\n';
-   }
    if( normalization != PairCorrelationNormalization::None ) {
       if( covariance ) {
          FloatArray volumeFractions( nPhases );
@@ -368,7 +378,8 @@ Distribution PairCorrelation(
    }
 
    // Process the intermediate output results
-   NormalizePairCorrelationDistribution( distribution, counts, nPhases, covariance, normalization );
+   NormalizeDistribution( distribution, counts );
+   NormalizePairCorrelationDistribution( distribution, nPhases, covariance, normalization );
 
    return distribution;
 }
@@ -421,7 +432,7 @@ class ProbabilisticPairCorrelationFunction : public PixelPairFunction {
             std::vector< dip::uint >& counts,
             bool covariance                     // if true, distribution.Columns()==nPhases, otherwise distribution.Columns()==1
       ) : phases_( phases ), distribution_( distribution ), counts_( counts ), covariance_( covariance ) {
-         DIP_OVL_ASSIGN_FLOAT( GetFloatPixelValue_, FloatPixelValueReader, phases.DataType() );
+         DIP_OVL_ASSIGN_FLOAT( GetFloatPixelValue_, FloatPixelValueReaderWithOffset, phases.DataType() );
          nPhases_ = phases.TensorElements();
       }
 
@@ -431,11 +442,10 @@ class ProbabilisticPairCorrelationFunction : public PixelPairFunction {
       std::vector< dip::uint >& counts_;
       dip::uint nPhases_;
       bool covariance_;
-      FloatPixelValueReaderFunction GetFloatPixelValue_;
+      FloatPixelValueReaderWithOffsetFunction GetFloatPixelValue_;
 };
 
 } // namespace
-
 
 Distribution ProbabilisticPairCorrelation(
       Image const& phases,
@@ -470,9 +480,87 @@ Distribution ProbabilisticPairCorrelation(
    }
 
    // Process the intermediate output results
-   NormalizePairCorrelationDistribution( distribution, counts, nPhases, covariance, normalization );
+   NormalizeDistribution( distribution, counts );
+   NormalizePairCorrelationDistribution( distribution, nPhases, covariance, normalization );
    // TODO: The old DIPlib code used the same normalization as for PairCorrelation, but that is not correct?
    // Here distribution[0]/counts[0] is not the volume fraction, but the square of the volume fraction. I think.
+
+   return distribution;
+}
+
+//
+// --- Probabilistic Pair Correlation ---
+//
+
+namespace {
+
+class SemivariogramFunction : public PixelPairFunction {
+   public:
+      virtual void UpdateRandom(
+            UnsignedArray const& coords1,
+            UnsignedArray const& coords2,
+            dip::uint distance
+      ) override {
+         UpdateGrid( image_.Pointer( coords1 ), image_.Pointer( coords2 ), distance );
+      }
+
+      virtual void UpdateGrid(
+            void const* dataPtr1,
+            void const* dataPtr2,
+            dip::uint distance
+      ) override {
+         ++( counts_[ distance ] );
+         dfloat diff = GetFloatPixelValue_( dataPtr1 ) - GetFloatPixelValue_( dataPtr2 );
+         distribution_[ distance ].Y() += 0.5 * diff * diff;
+      }
+
+      SemivariogramFunction(
+            Image const& in,
+            Distribution& distribution,         // distribution_.Rows()==nPhases
+            std::vector< dip::uint >& counts
+      ) : image_( in ), distribution_( distribution ), counts_( counts ) {
+         DIP_OVL_ASSIGN_REAL( GetFloatPixelValue_, FloatPixelValueReader, in.DataType() );
+      }
+
+   private:
+      Image const& image_;
+      Distribution& distribution_;
+      std::vector< dip::uint >& counts_;
+      FloatPixelValueReaderFunction GetFloatPixelValue_;
+};
+
+} // namespace
+
+Distribution Semivariogram(
+      Image const& in,
+      Image const& mask,
+      dip::uint probes,
+      dip::uint length,
+      String const& sampling
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+
+   // Parse options
+   bool random;
+   DIP_STACK_TRACE_THIS( random = BooleanFromString( sampling, S::RANDOM, S::GRID ));
+
+   // Create output
+   Distribution distribution( length + 1, 1 );
+   std::iota( distribution.Xbegin(), distribution.Xend(), 0.0 );
+   std::vector< dip::uint >counts( length + 1, 0 );
+
+   // Fill output
+   SemivariogramFunction pixelPairFunction( in, distribution, counts );
+   if( random ) {
+      RandomPixelPairSampler( in, mask, &pixelPairFunction, probes, length );
+   } else {
+      GridPixelPairSampler( in, mask, &pixelPairFunction, probes, length );
+   }
+
+   // Process the intermediate output results
+   NormalizeDistribution( distribution, counts );
 
    return distribution;
 }
