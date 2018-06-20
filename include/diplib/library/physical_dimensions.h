@@ -874,7 +874,7 @@ class DIP_NO_EXPORT PixelSize {
                return false;
             }
          }
-         return true;
+         return IsDefined();
       }
 
       /// Multiplies together the sizes for the first `d` dimensions.
