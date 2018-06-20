@@ -3,7 +3,7 @@
  * This file contains definitions for pairwise correlation functions
  *
  * (c)2018, Cris Luengo.
- * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+ * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -366,7 +366,7 @@ Distribution PairCorrelation(
    // Create output
    dip::uint nPhases = phases.size();
    Distribution distribution( length + 1, nPhases, covariance ? nPhases : 1 );
-   std::iota( distribution.Xbegin(), distribution.Xend(), 0.0 );
+   distribution.SetSampling( c_object.PixelSize() );
    std::vector< dip::uint >counts( length + 1, 0 );
 
    // Fill output
@@ -468,7 +468,7 @@ Distribution ProbabilisticPairCorrelation(
    // Create output
    dip::uint nPhases = phases.TensorElements();
    Distribution distribution( length + 1, nPhases, covariance ? nPhases : 1 );
-   std::iota( distribution.Xbegin(), distribution.Xend(), 0.0 );
+   distribution.SetSampling( phases.PixelSize() );
    std::vector< dip::uint >counts( length + 1, 0 );
 
    // Fill output
@@ -548,7 +548,7 @@ Distribution Semivariogram(
 
    // Create output
    Distribution distribution( length + 1, 1 );
-   std::iota( distribution.Xbegin(), distribution.Xend(), 0.0 );
+   distribution.SetSampling( in.PixelSize() );
    std::vector< dip::uint >counts( length + 1, 0 );
 
    // Fill output

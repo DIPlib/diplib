@@ -59,7 +59,6 @@ set(DIPlib_sources_bogus
 ../include/diplib/testing.h
 ../include/diplib/transform.h
 ../include/diplib/union_find.h
-analysis/distribution.cpp
 analysis/findshift.cpp
 analysis/fractal_dimension.cpp
 analysis/granulometry.cpp
@@ -102,6 +101,7 @@ geometry/interpolation.h
 geometry/resampleat.cpp
 geometry/resampling.cpp
 geometry/tile.cpp
+histogram/distribution.cpp
 histogram/equalization.cpp
 histogram/histogram.cpp
 histogram/statistics.cpp

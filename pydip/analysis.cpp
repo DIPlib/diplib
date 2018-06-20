@@ -44,6 +44,7 @@ void init_analysis( py::module& m ) {
    distr.def( "ValuesPerSample", &dip::Distribution::ValuesPerSample );
    distr.def( "Rows", &dip::Distribution::Rows );
    distr.def( "Columns", &dip::Distribution::Columns );
+   distr.def( "XUnits", py::overload_cast<>( &dip::Distribution::XUnits, py::const_ ));
    distr.def( "X", &dip::Distribution::X );
    distr.def( "Y", &dip::Distribution::Y, "index"_a = 0 );
    distr.def( "Cumulative", &dip::Distribution::Cumulative );

@@ -281,6 +281,15 @@ class DIP_NO_EXPORT Distribution {
          return nColums_;
       }
 
+      /// Returns the units used along the *x* axis.
+      Units const& XUnits() const {
+         return units_;
+      }
+      /// Returns a modifyable reference to the units used along the *x* axis.
+      Units& XUnits() {
+         return units_;
+      }
+
       /// Gets the *x* and *y* values at location `index`
       Sample operator[]( dip::uint index ) {
          DIP_THROW_IF( index >= Size(), E::PARAMETER_OUT_OF_RANGE );
@@ -401,11 +410,20 @@ class DIP_NO_EXPORT Distribution {
          return ( *this *= ( 1.0 / scale ));
       }
 
+      /// Fills the values for the *x* axis, starting with 0, and linear increments of `pixelSize[0].magnitude * scaling`,
+      /// if the `pixelSize` is isotropic and has physical units. The `XUnits` are also set.
+      DIP_EXPORT void SetSampling(
+            PixelSize const& pixelSize = {},
+            dfloat scaling = 1.0
+      );
+
+
    private:
       dip::uint length_;   // Number of samples
       dip::uint nRows_;    // Number of rows in the matrix of y values, 1 for scalar distributions
       dip::uint nColums_;  // Number of columns in the matrix of y values, 1 for scalar or vector-valued distributions
       Container data_; // `( 1 + nRows_ * nColums_ ) * length_` elements
+      Units units_ = Units::Pixel();
       // data_[ ii * Stride() ] -> x
       // data_[ ii * Stride() + 1 ] -> y[0,0]
       // data_[ ii * Stride() + nRows_ * nColums_ ] -> y[N,N]
@@ -424,7 +442,7 @@ inline std::ostream& operator<<(
 ) {
    for( auto const& sample : distribution ) {
       dip::uint nValues = distribution.ValuesPerSample();
-      os << sample.X() << " -> " << sample.Y( 0 );
+      os << sample.X() << " " <<  distribution.XUnits() << " -> " << sample.Y( 0 );
       for( dip::uint jj = 1; jj < nValues; ++jj ) {
          os << ", " << sample.Y( jj );
       }

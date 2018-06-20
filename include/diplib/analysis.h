@@ -436,7 +436,8 @@ inline ImageArray StructureTensorAnalysis(
 /// non-isotropic images. The `gradientSigmas` corrects for the non-isotropy, allowing `scales` to be a scalar
 /// value for each scale.
 ///
-/// `scales` defaults to a series of 10 values geometrically spaced by `sqrt(2)`, and starting at 1.0.
+/// `scales` defaults to a series of 10 values geometrically spaced by `sqrt(2)`, and starting at 1.0. Units are
+/// pixels.
 ///
 /// `feature` can be any of the strings allowed by `dip::StructureTensorAnalysis`, but `"energy"`, `"anisotropy1"`,
 /// and `"anisotropy2"` (in 2D), and `"energy"`, `"cylindrical"`, and `"planar"` (in 2D) make the most sense.
@@ -447,7 +448,6 @@ inline ImageArray StructureTensorAnalysis(
 /// region over which the structure tensor feature is averaged.
 ///
 /// See `dip::StructureTensor` for more information about the structure tensor.
-// TODO: Take pixel sizes into account.
 DIP_EXPORT Distribution StructureAnalysis(
       Image const& in,
       Image const& mask,
@@ -469,7 +469,7 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// should be used to compute the pair correlation.
 ///
 /// `probes` specifies how many random point pairs should be drawn to compute the function.
-/// `length` specifies the maximum correlation length (in pixels).
+/// `length` specifies the maximum correlation length in pixels.
 /// The correlation function can be computed using a random sampling method (`sampling` is
 /// `"random"`), or a grid sampling method (`"grid"`). For grid sampling, `probes` can be 0,
 /// in which case all possible pairs along all image axes are used. Otherwise, the grid covers
@@ -492,8 +492,9 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// volume fraction of phase `i` is the probability of two random points hitting phase `i`.
 ///
 /// These values are read from the output `distribution` by `distribution[distance].Y(i)`, and the
-/// corresponding distance is given by `distribution[distance].X() == distance`. Note that this distance
-/// is in pixels, the pixel size is not taken into account.
+/// corresponding distance in physical units is given by `distribution[distance].X()`. If `object` does not
+/// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
+/// are in pixels. `distance` runs from 0 to `length` (inclusive).
 ///
 /// With the `"covariance"` option, the output distribution has `N`&times;`N` values. The element at
 /// `(i,j)` gives the probability for two points at a given distance to land on phases `i` and `j`
@@ -502,7 +503,6 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// cases where the two points fall in different phases. Normalization breaks the symmetry, since each
 /// column `i` is normalized by the volume fraction for phase `i`. That is, `(i,j)` will give the probability
 /// that the second point, at a given distance, will hit phase `j` given that the first point hits phase `i`.
-// TODO: Take pixel sizes into account.
 DIP_EXPORT Distribution PairCorrelation(
       Image const& object,
       Image const& mask,
@@ -529,34 +529,35 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
       StringSet const& options = {}
 );
 
-/// \brief Computes half the variance of the difference between field values at a distance `d`.
+/// \brief Computes the expected value of half the square difference between field values at a distance `d`.
 ///
 /// The input image `in` must be scalar and real-valued. An isotropic semivariogram is computed as a function
-/// of the distance, which is varied from 0 to `length`. Therefore, the field in `in` is assumed isotropic
+/// of the distance, which is varied from 0 to `length` (in pixels). Therefore, the field in `in` is assumed isotropic
 /// and stationary.
 ///
 /// By definition, the semivariogram is zero at the origin (at zero distance). If there is no spatial correlation,
 /// the semivariogram is constant for non-zero distance. The magnitude of the jump at the origin is called nugget.
 /// The value of the semivariogram in the limit of the distance to infinity is the variance of the field; this
 /// value is called the sill. The distance at which the sill is reached (or, more robustly, the distance at which
-/// 0.95 times the sill is reached) is called range, and provides a meaningful descrition of the field.
+/// 0.95 times the sill is reached) is called range, and provides a meaningful description of the field.
 ///
 /// Optionally a `mask` image can be provided to select which pixels in `in` should be used to compute the
 /// semivariogram.
 ///
 /// `probes` specifies how many random point pairs should be drawn to compute the function.
-/// `length` specifies the maximum correlation length (in pixels).
+/// `length` specifies the maximum correlation length in pixels.
 /// The semivariogram can be computed using a random sampling method (`sampling` is `"random"`), or a grid sampling
 /// method (`"grid"`). For grid sampling, `probes` can be 0, in which case all possible pairs along all image
 /// axes are used. Otherwise, the grid covers a subset of points, with all possible pairs along all image axes;
 /// the actual number of pairs is approximate. In general, the grid method needs a lot more probes to be precise,
 /// but it is faster for a given number of probes because it uses sequential memory access.
 ///
-/// The semivariogram distances are in pixels, the image's pixel size is not taken into account.
+/// The output `dip::Distribution` has *x* samples given in physical units. However, if `in` does not
+/// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
+/// are in pixels.
 ///
 /// **Literature**:
 ///  - G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
-// TODO: Take pixel sizes into account.
 DIP_EXPORT Distribution Semivariogram(
       Image const& in,
       Image const& mask,
@@ -565,9 +566,9 @@ DIP_EXPORT Distribution Semivariogram(
       String const& sampling = S::RANDOM
 );
 
-DIP_EXPORT Distribution ChordLength(); // TODO
+DIP_EXPORT Distribution ChordLength(); // TODO: length distribution of chords -- random lines through the image, measure length of intercept through objects
 
-DIP_EXPORT Distribution RadialDistribution(); // TODO
+DIP_EXPORT Distribution RadialDistribution(); // TODO: distribution, per object, of the distance to the background
 
 /// \brief Computes the granulometric function for an image
 ///
@@ -627,7 +628,6 @@ DIP_EXPORT Distribution RadialDistribution(); // TODO
 ///    Pattern Recognition Letters 28(7):865–872, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
 ///    IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
-// TODO: Take pixel sizes into account.
 DIP_EXPORT Distribution Granulometry(
       Image const& in,
       Image const& mask,

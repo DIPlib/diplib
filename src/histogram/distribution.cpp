@@ -201,6 +201,22 @@ Distribution& Distribution::operator*=( dfloat scale ) {
    return *this;
 }
 
+void Distribution::SetSampling(
+      PixelSize const& pixelSize,
+      dfloat scaling
+) {
+   if( pixelSize.IsPhysical() && pixelSize.IsIsotropic() ) {
+      XUnits() = pixelSize[ 0 ].units;
+      scaling *= pixelSize[ 0 ].magnitude;
+   } else {
+      XUnits() = Units::Pixel();
+   }
+   dfloat value = 0;
+   for( auto it = Xbegin(); it != Xend(); ++it, ++value ) {
+      *it = value * scaling;
+   }
+}
+
 } // namespace dip
 
 

@@ -7,7 +7,7 @@
 %
 % PARAMETERS:
 %  image_in:   defines the phases on which the pair correlation function is computed.
-%              image_in can be a binary or labeled image.
+%              image_in can be a binary or labeled image, or it can be a float image.
 %  mask:       mask image to select the regions in image_in that are used to compute the
 %              correlation function.
 %  probes:     the number of random pairs that are generated to compute the correlation
@@ -31,6 +31,12 @@
 %  subsequent columns represent the different components of the pair correlation.
 %  If COVARIANCE is true, there are N^2 components, otherwise there are N components.
 %  N is the number of phases in IMAGE_IN.
+%
+%  If IMAGE_IN is labeled, each label (including label 0) is a phase. The image must be
+%  scalar. If it is binary, it is interpreted as a labeled image with two phases.
+%  If IMAGE_IN is a floating-point image, it is interpreted as represeting the probability
+%  of a phase being present in each pixel. Each tensor component represents one phase.
+%  Pixel values are expected to be in the range [0,1].
 %
 % DEFAULTS:
 %  image_mask = []
