@@ -42,7 +42,7 @@ namespace dip {
 namespace detail {
 inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::uint nBins ) {
    return static_cast< dip::sint >( clamp(( value - lowerBound ) / binSize, 0.0, static_cast< dfloat >( nBins - 1 )));
-   // the cast does implicit floor because it's always positive
+   // the cast does implicit floor because it's always non-negative
 }
 }
 
@@ -101,10 +101,11 @@ class DIP_NO_EXPORT Histogram {
                COMPUTE_BINS,
                COMPUTE_LOWER,
                COMPUTE_UPPER
-         } mode = Mode::COMPUTE_BINSIZE; ///< The given value is ignored and replaced by the computed value.
-         bool lowerIsPercentile = false; ///< If set, `lowerBound` is replaced by the given percentile pixel value.
-         bool upperIsPercentile = false; ///< If set, `upperBound` is replaced by the given percentile pixel value.
-         bool excludeOutOfBoundValues = false; ///< If set, pixels outside of the histogram bounds are not counted.
+         };
+         Mode mode = Mode::COMPUTE_BINSIZE;     ///< The given value is ignored and replaced by the computed value.
+         bool lowerIsPercentile = false;        ///< If set, `lowerBound` is replaced by the given percentile pixel value.
+         bool upperIsPercentile = false;        ///< If set, `upperBound` is replaced by the given percentile pixel value.
+         bool excludeOutOfBoundValues = false;  ///< If set, pixels outside of the histogram bounds are not counted.
 
          /// \brief Default-constructed configuration defines 256 bins in the range [0,256].
          Configuration() = default;
@@ -141,6 +142,32 @@ class DIP_NO_EXPORT Histogram {
                upperIsPercentile = true;
             }
          }
+
+         /// Returns true if the value should not be included in the histogram.
+         bool IsOutOfRange( dfloat value ) const {
+            return( excludeOutOfBoundValues && (( value < lowerBound ) || ( value >= upperBound )));
+         }
+
+         /// \brief Returns the bin that the value belongs in, assuming `!IsOutOfRange(value)`.
+         dip::sint FindBin( dfloat value ) const {
+            return detail::FindBin( value, lowerBound, binSize, nBins );
+         }
+
+         // The functions below are not part of the public interface, though I need them to be available
+         // to functions in the library outside of the dip::Histogram class. Therefore they are public
+         // functions, but they are not documented publicly.
+
+         // Complete the configuration, computing the value given by `mode`. Percentiles will not be
+         // computed. For integer images, bin sizes and bin centers are forced to be integer.
+         DIP_EXPORT void Complete( bool isInteger );
+
+         // Complete the configuration, computing the value given by `mode`, as well as percentiles if
+         // required. For integer images, bin sizes and bin centers are forced to be integer.
+         DIP_EXPORT void Complete( Image const& input, Image const& mask );
+
+         // Complete the configuration, computing the value given by `mode`, as well as percentiles if
+         // required.
+         DIP_EXPORT void Complete( Measurement::IteratorFeature const& featureValues );
       };
       using ConfigurationArray = DimensionArray< Configuration >;
 

@@ -30,86 +30,113 @@
 
 namespace dip {
 
-namespace {
-
 using CountType = Histogram::CountType;
 
 constexpr auto DT_COUNT = DataType( CountType( 0 ));
 
-void CompleteConfiguration( Histogram::Configuration& configuration, bool isInteger ) {
-   if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINS ) {
-      if( configuration.nBins < 1 ) {
-         configuration.nBins = 256;
+void Histogram::Configuration::Complete( bool isInteger ) {
+   if( mode != Mode::COMPUTE_BINS ) {
+      if( nBins < 1 ) {
+         nBins = 256;
       }
    }
    bool hasNoBinSize = false;
-   if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINSIZE ) {
-      if( configuration.binSize <= 0.0 ) {
+   if( mode != Mode::COMPUTE_BINSIZE ) {
+      if( binSize <= 0.0 ) {
          hasNoBinSize = true;
-         configuration.binSize = 1.0;
+         binSize = 1.0;
       }
    }
-   if(( configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) &&
-      ( configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER )) {
-      if( configuration.upperBound < configuration.lowerBound ) {
-         std::swap( configuration.upperBound, configuration.lowerBound );
-      } else if( configuration.upperBound == configuration.lowerBound ) {
-         configuration.upperBound += 1.0;
+   if(( mode != Mode::COMPUTE_LOWER ) &&
+      ( mode != Mode::COMPUTE_UPPER )) {
+      if( upperBound < lowerBound ) {
+         std::swap( upperBound, lowerBound );
+      } else if( upperBound == lowerBound ) {
+         upperBound += 1.0;
       }
    }
-   switch( configuration.mode ) {
+   switch( mode ) {
       default:
-      //case Histogram::Configuration::Mode::COMPUTE_BINSIZE:
-         configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
-         break;
-      case Histogram::Configuration::Mode::COMPUTE_BINS:
-         if( hasNoBinSize && isInteger ) {
-            // Find a suitable bin size that is power of 2:
-            dfloat range = configuration.upperBound - configuration.lowerBound; // an integer value...
-            configuration.binSize = std::pow( 2.0, std::ceil( std::log2( range / 256.0 )));
-            // Shift lower bound to be a multiple of the binSize:
-            configuration.lowerBound = std::floor( configuration.lowerBound / configuration.binSize ) * configuration.binSize;
-            // Update range in case we shifted lower bound:
-            range = configuration.upperBound - configuration.lowerBound;
-            // Find number of bins we need to use:
-            configuration.nBins = static_cast< dip::uint >( std::ceil( range / configuration.binSize ));
-            // Update upper bound so that it matches what the histogram class would compute:
-            configuration.upperBound = configuration.lowerBound + static_cast< dfloat >( configuration.nBins ) * configuration.binSize;
-         } else {
-            configuration.nBins = static_cast< dip::uint >( std::round( configuration.upperBound - configuration.lowerBound ) / configuration.binSize );
-            configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
+      //case Mode::COMPUTE_BINSIZE:
+         binSize = ( upperBound - lowerBound ) / static_cast< dfloat >( nBins );
+         if( isInteger ) {
+            binSize = std::ceil( binSize );
+            upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
          }
          break;
-      case Histogram::Configuration::Mode::COMPUTE_LOWER:
-         configuration.lowerBound = configuration.upperBound - static_cast< dfloat >( configuration.nBins ) * configuration.binSize;
+      case Mode::COMPUTE_BINS:
+         if( hasNoBinSize && isInteger ) {
+            // Find a suitable bin size that is power of 2:
+            dfloat range = upperBound - lowerBound; // an integer value...
+            binSize = std::round( std::pow( 2.0, std::ceil( std::log2( range / 256.0 ))));
+            binSize = std::max( binSize, 1.0 );
+            // Shift lower bound to be a multiple of the binSize:
+            lowerBound = std::floor( lowerBound / binSize ) * binSize;
+            // Update range in case we shifted lower bound:
+            range = upperBound - lowerBound;
+            // Find number of bins we need to use:
+            nBins = static_cast< dip::uint >( std::ceil( range / binSize ));
+            // Update upper bound so that it matches what the histogram class would compute:
+            upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
+         } else {
+            if( isInteger ) {
+               binSize = std::ceil( binSize );
+            }
+            nBins = static_cast< dip::uint >( std::round( upperBound - lowerBound ) / binSize );
+            if( isInteger ) {
+               upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
+            } else {
+               binSize = ( upperBound - lowerBound ) / static_cast< dfloat >( nBins );
+            }
+         }
          break;
-      case Histogram::Configuration::Mode::COMPUTE_UPPER:
-         configuration.upperBound = configuration.lowerBound + static_cast< dfloat >( configuration.nBins ) * configuration.binSize;
+      case Mode::COMPUTE_LOWER:
+         if( isInteger ) {
+            binSize = std::ceil( binSize );
+         }
+         lowerBound = upperBound - static_cast< dfloat >( nBins ) * binSize;
          break;
+      case Mode::COMPUTE_UPPER:
+         if( isInteger ) {
+            binSize = std::ceil( binSize );
+         }
+         upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
+         break;
+   }
+   if( isInteger && ( binSize == std::round( binSize ))) {
+      // Let's make sure the bin centers are integers too
+      dfloat center = lowerBound + binSize / 2;
+      dfloat diff = center - std::floor( center );
+      if( diff > 0 ) {
+         lowerBound -= diff;
+         upperBound -= diff;
+      }
    }
 }
 
-void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Configuration& configuration ) {
-   if( configuration.lowerIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) {
-      configuration.lowerBound = Percentile( input, mask, configuration.lowerBound ).As< dfloat >();
+void Histogram::Configuration::Complete( Image const& input, Image const& mask ) {
+   if( lowerIsPercentile && mode != Mode::COMPUTE_LOWER ) {
+      lowerBound = Percentile( input, mask, lowerBound ).As< dfloat >();
    }
-   if( configuration.upperIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER ) {
+   if( upperIsPercentile && mode != Mode::COMPUTE_UPPER ) {
       // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
-      configuration.upperBound = Percentile( input, mask, configuration.upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
+      upperBound = Percentile( input, mask, upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
    }
-   CompleteConfiguration( configuration, input.DataType().IsInteger() );
+   Complete( input.DataType().IsInteger() );
 }
 
-void CompleteConfiguration( Measurement::IteratorFeature const& featureValues, Histogram::Configuration& configuration ) {
-   if( configuration.lowerIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) {
-      configuration.lowerBound = Percentile( featureValues, configuration.lowerBound );
+void Histogram::Configuration::Complete( Measurement::IteratorFeature const& featureValues ) {
+   if( lowerIsPercentile && mode != Mode::COMPUTE_LOWER ) {
+      lowerBound = Percentile( featureValues, lowerBound );
    }
-   if( configuration.upperIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER ) {
+   if( upperIsPercentile && mode != Mode::COMPUTE_UPPER ) {
       // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
-      configuration.upperBound = Percentile( featureValues, configuration.upperBound ) * ( 1.0 + 1e-15 );
+      upperBound = Percentile( featureValues, upperBound ) * ( 1.0 + 1e-15 );
    }
-   CompleteConfiguration( configuration, false );
+   Complete( false );
 }
+
+namespace {
 
 class dip__HistogramBase : public Framework::ScanLineFilter {
    public:
@@ -153,7 +180,7 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask && ( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                     ++data[ configuration_.FindBin( *in ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -161,7 +188,7 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask ) {
-                     ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                     ++data[ configuration_.FindBin( *in ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -172,13 +199,13 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if(( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                     ++data[ configuration_.FindBin( *in ) ];
                   }
                   in += inStride;
                }
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                  ++data[ configuration_.FindBin( *in ) ];
                   in += inStride;
                }
             }
@@ -243,18 +270,15 @@ class dip__JointImageHistogram : public dip__HistogramBase {
                if( *mask ) {
                   bool include = true;
                   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                     if( configuration_[ jj ].excludeOutOfBoundValues ) {
-                        if(( *( in[ jj ] ) < configuration_[ jj ].lowerBound ) || ( *( in[ jj ] ) >= configuration_[ jj ].upperBound )) {
-                           include = false;
-                           break;
-                        }
+                     if( configuration_[ jj ].IsOutOfRange( *( in[ jj ] ))) {
+                        include = false;
+                        break;
                      }
                   }
                   if( include ) {
                      dip::sint offset = 0;
                      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                        offset += image_.Stride( jj ) *
-                                  detail::FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                        offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( *( in[ jj ] ));
                      }
                      ++data[ offset ];
                   }
@@ -269,18 +293,15 @@ class dip__JointImageHistogram : public dip__HistogramBase {
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                bool include = true;
                for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                  if( configuration_[ jj ].excludeOutOfBoundValues ) {
-                     if(( *( in[ jj ] ) < configuration_[ jj ].lowerBound ) || ( *( in[ jj ] ) >= configuration_[ jj ].upperBound )) {
-                        include = false;
-                        break;
-                     }
+                  if( configuration_[ jj ].IsOutOfRange( *( in[ jj ] ))) {
+                     include = false;
+                     break;
                   }
                }
                if( include ) {
                   dip::sint offset = 0;
                   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                     offset += image_.Stride( jj ) *
-                               detail::FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                     offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( *( in[ jj ] ));
                   }
                   ++data[ offset ];
                }
@@ -300,7 +321,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
 } // namespace
 
 void Histogram::ScalarImageHistogram( Image const& input, Image const& mask, Histogram::Configuration& configuration ) {
-   DIP_STACK_TRACE_THIS( CompleteConfiguration( input, mask, configuration ));
+   DIP_STACK_TRACE_THIS( configuration.Complete( input, mask ));
    lowerBounds_ = { configuration.lowerBound };
    binSizes_ = { configuration.binSize };
    data_.SetSizes( { configuration.nBins } );
@@ -325,7 +346,7 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
    binSizes_.resize( ndims );
    UnsignedArray sizes( ndims, 1 );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      DIP_STACK_TRACE_THIS( CompleteConfiguration( input[ static_cast< dip::sint >( ii ) ], mask, configuration[ ii ] ));
+      DIP_STACK_TRACE_THIS( configuration[ ii ].Complete( input[ static_cast< dip::sint >( ii ) ], mask ));
       lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
@@ -348,8 +369,8 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
 
 void Histogram::JointImageHistogram( Image const& input1, Image const& input2, Image const& c_mask, Histogram::ConfigurationArray& configuration ) {
    DIP_START_STACK_TRACE
-      CompleteConfiguration( input1, c_mask, configuration[ 0 ] );
-      CompleteConfiguration( input2, c_mask, configuration[ 1 ] );
+      configuration[ 0 ].Complete( input1, c_mask );
+      configuration[ 1 ].Complete( input2, c_mask );
    DIP_END_STACK_TRACE
    lowerBounds_ = { configuration[ 0 ].lowerBound, configuration[ 1 ].lowerBound };
    binSizes_ = { configuration[ 0 ].binSize, configuration[ 1 ].binSize };
@@ -394,7 +415,7 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
       DIP_START_STACK_TRACE
          Measurement::IteratorFeature featureColumn = featureValues;
          featureColumn.Subset( ii );
-         CompleteConfiguration( featureColumn, configuration[ ii ] );
+         configuration[ ii ].Complete( featureColumn );
       DIP_END_STACK_TRACE
       lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
       binSizes_[ ii ] = configuration[ ii ].binSize;
@@ -411,14 +432,11 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
       dip::sint offset = 0;
       bool include = true;
       for( dip::uint jj = 0; jj < ndims; ++jj ) {
-         if( configuration[ jj ].excludeOutOfBoundValues ) {
-            if(( *tin < configuration[ jj ].lowerBound ) || ( *tin >= configuration[ jj ].upperBound )) {
-               include = false;
-               break;
-            }
+         if( configuration[ jj ].IsOutOfRange( *tin )) {
+            include = false;
+            break;
          }
-         offset += data_.Stride( jj ) *
-                   detail::FindBin( *tin, configuration[ jj ].lowerBound, configuration[ jj ].binSize, configuration[ jj ].nBins );
+         offset += data_.Stride( jj ) * configuration[ jj ].FindBin( *tin );
          ++tin;
       }
       if( include ) {
@@ -434,7 +452,7 @@ void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
    binSizes_.resize( ndims );
    UnsignedArray sizes( ndims );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      DIP_STACK_TRACE_THIS( CompleteConfiguration( configuration[ ii ], false ));
+      DIP_STACK_TRACE_THIS( configuration[ ii ].Complete( false ));
       lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
@@ -466,19 +484,16 @@ class dip__ReverseLookup : public Framework::ScanLineFilter {
             bool include = true;
             TPI const* in_t = in;
             for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
-               if( configuration_[ jj ].excludeOutOfBoundValues ) {
-                  if(( *in_t < configuration_[ jj ].lowerBound ) || ( *in_t >= configuration_[ jj ].upperBound )) {
-                     include = false;
-                     break;
-                  }
+               if( configuration_[ jj ].IsOutOfRange( *in_t )) {
+                  include = false;
+                  break;
                }
             }
             if( include ) {
                dip::sint offset = 0;
                in_t = in;
                for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
-                  offset += histogram_.Stride( jj ) *
-                            detail::FindBin( *in_t, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                  offset += histogram_.Stride( jj ) * configuration_[ jj ].FindBin( *in_t );
                }
                *out = data[ offset ];
             } else {
