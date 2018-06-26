@@ -88,7 +88,7 @@ available if it is not; this target will fail to build if additional tools are n
 
 ### Windows
 
-Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Sudio 2017*
+Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Studio 2017*
 (version 15). You'll also need *CMake*.
 
 Using *CMake-gui*, choose where the source directory is and where to build the binaries. Then
@@ -101,14 +101,24 @@ See below for optional dependencies that you can install to improve your *DIPlib
 
 ### Dependencies
 
+Below we list all external dependencies needed to compile the various parts of the project. *DIPlib*
+also depends on a few other external projects, whose sources are included in this repository (see
+below under "License" for more information). Note that, with the exception of dynamic linking to
+a few external libraries, none of these dependencies are required when using the *DIPlib* library
+(that is, *DIPlib*'s public header files do not import headers from other projects).
+
 *DIPlib* supports two image file formats: ICS and TIFF. ICS support is built-in, it is
 recommended that you have [*ZLib*](http://www.zlib.net) installed for this. For TIFF support,
 you will need to have [*LibTIFF*](http://www.simplesystems.org/libtiff/) installed.
 
-If you have [*FFTW3*](http://www.fftw.org) intalled, you can set the `DIP_ENABLE_FFTW`
+If you have [*FFTW3*](http://www.fftw.org) installed, you can set the `DIP_ENABLE_FFTW`
 *CMake* variable to have *DIPlib* use *FFTW3* instead of the built-in FFT algorithm.
 *FFTW3* is more efficient, especially for image sizes that do not factor into small
 numbers, but it has a copyleft license.
+
+*DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
+as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
+On Windows, [*GLEW*](http://glew.sourceforge.net) is also required.
 
 *DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
 for compilation and execution (of course).
@@ -116,20 +126,16 @@ Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/b
 enable *DIPimage* to read many microscopy image file formats (type `help readim` in *MATLAB*,
 after installing *DIPimage*, to learn more).
 
+*PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
+
+To build the *DIPlib* documentation, [*Doxygen*](http://www.doxygen.org) is needed.
+There is a chance it will only work on Unix-like systems (not yet tested under Windows).
+
 The *DIPimage* User Manual requires [*Pandoc*](https://pandoc.org),
 [*pandoc-crossref*](https://hackage.haskell.org/package/pandoc-crossref), and
 [*LaTeX*](http://www.tug.org/texlive/). Note that you'll need certain *LaTeX* packages,
 such as `upquote`, that are not in the most basic set of packages. You can install these
 through the *TeX Live* package manager.
-
-*PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
-
-*DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
-as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
-On Windows, [*GLEW*](http://glew.sourceforge.net) is also required.
-
-To build the documentation, [*Doxygen*](http://www.doxygen.org) is needed.
-There is a chance it will only work on Unix-like systems (not yet tested under Windows).
 
 
 ## License
@@ -213,7 +219,7 @@ to the Apache License, except for *OME Bio-Formats*.
   Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology  
   GNU General Public License, Version 2 (not compatible with the Apache License)
 
-*DIPviewer* links agains the following libraries:
+*DIPviewer* links against the following libraries:
 
 - *FreeGLUT* (as installed on your system, alternative to *GLFW*)  
   Copyright 1999-2000 Pawel W. Olszta  

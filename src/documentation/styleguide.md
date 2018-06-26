@@ -34,9 +34,9 @@ Specifically:
 - Do explicitly state the namespace for identifiers from every other library, including
   `std::`. This makes it easier to find references to specific types or functions.
 
-- All functions local to a translation unit must be declared `static` to prevent
-  name space pollution. This also prevents them for being exported out of the library.
-  Alternatively, declare them in an unnamed (anonymous) namespace.
+- All functions local to a translation unit must either be declared `static` or within
+  an unnamed (anonymous) namespace, to prevent name space pollution and to prevent
+  them from being exported out of the library.
 
 - Prefer `using` over `typedef`.
 
@@ -53,9 +53,11 @@ Specifically:
 - Use camel case for variable, function and class names. Variable names start with
   a lowercase letter, function and class names start with an uppercase letter. Don't
   use underscores except for in a few special cases. Private class member variables
-  end in an underscore. Enumerator constants are in all uppercase letters. Internal
-  names (the ones that are not meant to be used directly by library users), if public,
-  start with `dip__`; internal names inside an unnamed namespace do not need the prefix.
+  end in an underscore. Constants are in all uppercase letters, with underscores to
+  separate words if necessary. Internal names (the ones that are not meant to be used
+  directly by library users), if public, start with `dip__`, or are declared in the
+  `dip::detail` namespace; private internal names (declared static or inside an unnamed
+  namespace) do not need the prefix.
 
 - Setter member functions start with `Set`. But getter member functions do not start
   with `Get`. Query functions that return a boolean start with `Is`. Member functions
@@ -97,9 +99,10 @@ Specifically:
   to translate to scripted languages.
 
 - Option parameters to low-level functions (those that are meant to be called only from
-  C++ code) should be defined through `DIP_DECLARE_OPTIONS`/`DIP_DEFINE_OPTION` or as
-  `enum class`, preferably in `dip::Option::` or another sub-namespace. These are simpler
-  and more efficient than strings.
+  C++ code) should be defined as `enum class`, these are simpler and more efficient than
+  strings. Use the `DIP_DECLARE_OPTIONS` macro to turn the enumerator into a flag set.
+  Declare these option types within the `dip::Option::` namespace or another sub-namespace
+  if more appropriate.
 
 - Don't use `bool` as a function parameter, prefer meaningful strings in high-level functions
   (e.g. "black"/"white"), and `enum class` with two options defined in `dip::Option::`
@@ -152,4 +155,8 @@ Specifically:
 
 - Some STL containers such as `std::vector` and `std::set` are defined when including
   `diplib.h`. There is no need to explicitly include the corresponding standard headers
-   for these.
+  for these. The current list of headers guaranteed to be included by `diplib.h` is:
+  `<algorithm>`, `<cctype>`, `<cmath>`, `<complex>`, `<cstddef>`, `<cstdint>`, `<cstdlib>`,
+  `<cstring>`, `<exception>`, `<functional>`, `<initializer_list>`, `<iostream>`,
+  `<iterator>`, `<limits>`, `<memory>`, `<numeric>`, `<set>`, `<string>`, `<type_traits>`,
+  `<utility>`, `<vector>`.

@@ -146,7 +146,7 @@ Or start the GUI:
 
 ## Using *PyDIP*
 
-Once the `install` taget has finished building and installing, start *Python*.
+Once the `install` target has finished building and installing, start *Python*.
 Type the following commands:
 ```python
     import os

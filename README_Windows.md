@@ -65,7 +65,7 @@ ZIP file and note the location.
 Open the *CMake* program. Enter the name of the directory you cloned the repository
 in (in your example, `C:\Users\<name>\src\DIPlib`); you can browse to this directory.
 Under "Where to build the binaries" enter a different, new directory. For example
-`target\DIPlib` in your user directroy. Click on "Configure". A pop-up window will
+`target\DIPlib` in your user directory. Click on "Configure". A pop-up window will
 ask you for which generator to use. You should select your version of *Visual Studio*
 here. Make sure you select the **Win64** version. If you select the default version,
 you will build 32-bit binaries (really, in 2017 we're still building 32-bit binaries
@@ -87,7 +87,7 @@ building 32-bit binaries.
 - If `DIP_BUILD_DIPVIEWER` is not on the list, you need to specify the locations for
 *GLFW* and *GLEW*. Click the "Advanced" check box, this will show additional parameters.
 Look for `GLFW_INCLUDE_DIR` and `GLFW_LIBRARY`. For both of these, click the "..." button
-at the right and navitage to where you extracted the *GLFW* ZIP file. Select the "include"
+at the right and navigate to where you extracted the *GLFW* ZIP file. Select the "include"
 directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second. Next, do
 the same for `GLEW_INCLUDE_DIR` and `GLEW_LIBRARY_RELEASE`: select "include" for the
 first parameter and "lib\Release\x64\glew32.lib" for the second. If the `GLEW_` parameters
@@ -96,7 +96,7 @@ location. This should populate the *GLEW* parameters.
 
 - If you have *ZLib* compiled, look for `ZLIB_INCLUDE_DIR` and `ZLIB_LIBRARY_RELEASE`
 (again, select the "Advanced" check box to see these). Set the first to the directory
-that contains the *Zlib* sources, and the second to the static libary that you compiled.
+that contains the *Zlib* sources, and the second to the static library that you compiled.
 Check the box next to `LIBICS_USE_ZLIB`.
 
 - If you have *LibTIFF* compiled, look for `TIFF_INCLUDE_DIR` and `TIFF_LIBRARY_RELEASE`
@@ -151,7 +151,7 @@ Or start the GUI:
 
 ## Using *PyDIP*
 
-Once the `INSTALL` taget has finished building and installing, start *Python*.
+Once the `INSTALL` target has finished building and installing, start *Python*.
 Type the following commands:
 ```python
     import os
