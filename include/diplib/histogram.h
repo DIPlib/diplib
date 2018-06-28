@@ -729,6 +729,40 @@ DIP_EXPORT LookupTable MatchingLookupTable(
 );
 
 
+class DIP_NO_EXPORT Distribution;
+
+/// \brief Computes a histogram of grey values in `grey` for each object in `label`.
+///
+/// `label` is a labelled image. For each object, the corresponding pixels in `grey` are
+/// used to build a histogram. `mask` can optionally be used to further constrain which
+/// pixels are used. `grey` must be a real-valued image, but does not need to be scalar.
+///
+/// `configuration` describes the histogram. The same configuration is applied to each
+/// of the histograms, they all use the same bins. Percentiles are computed over all tensor
+/// components of `grey` (and masked by `mask`).
+///
+/// `mode` can be `"fraction"` (the default) or `"count"`. The former yields normalized
+/// distributions, whereas the latter yields an integer pixel count per bin.
+///
+/// If `background` is `"include"`, the label ID 0 will be included in the result if present in the image.
+/// Otherwise, `background` is `"exclude"`, and the label ID 0 will be ignored.
+///
+/// The output `dip::Distribution` has bin centers as the *x* values, and one *y* value
+/// per object and per tensor component. These are accessed as
+/// `distribution[bin].Y(objectID, tensor)`, where `objectID` is the pixel values in `label`,
+/// but subtract one if `background` is `"exclude"`.
+///
+/// Note that you will need to also include `<diplib/distribution.h>` to use this function.
+DIP_EXPORT Distribution PerObjectHistogram(
+      Image const& grey,
+      Image const& label,
+      Image const& mask = {},
+      Histogram::Configuration configuration = {},
+      String const& mode = S::FRACTION,
+      String const& background = S::EXCLUDE
+);
+
+
 /// \}
 
 } // namespace dip

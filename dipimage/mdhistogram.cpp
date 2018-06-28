@@ -21,74 +21,6 @@
 #include "dip_matlab_interface.h"
 #include "diplib/histogram.h"
 
-namespace {
-
-dip::Histogram::Configuration GetConf(
-      mxArray const* mxConf // A cell array
-) {
-   dip::Histogram::Configuration out;
-   out.lowerIsPercentile = true;
-   out.upperIsPercentile = true;
-   DIP_THROW_IF( !mxIsCell( mxConf ), "SPECS parameter must be a cell array of cell arrays" );
-   dip::uint N = mxGetNumberOfElements( mxConf );
-   dip::uint ii = 0;
-   bool hasLower = false;
-   bool hasUpper = false;
-   bool hasNBins = false;
-   bool hasBinSize = false;
-   while( ii < N ) {
-      dip::String key = dml::GetString( mxGetCell( mxConf, ii ));
-      ++ii;
-      if( key == "lower" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
-         out.lowerBound = dml::GetFloat( mxGetCell( mxConf, ii ));
-         hasLower = true;
-         ++ii;
-      } else if( key == "upper" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
-         out.upperBound = dml::GetFloat( mxGetCell( mxConf, ii ));
-         hasUpper = true;
-         ++ii;
-      } else if( key == "bins" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
-         out.nBins = dml::GetUnsigned( mxGetCell( mxConf, ii ));
-         hasNBins = true;
-         ++ii;
-      } else if( key == "binsize" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
-         out.binSize = dml::GetFloat( mxGetCell( mxConf, ii ));
-         hasBinSize = true;
-         ++ii;
-      } else if( key == "lower_abs" ) {
-         out.lowerIsPercentile = false;
-      } else if( key == "upper_abs" ) {
-         out.upperIsPercentile = false;
-      } else if( key == "exclude_out_of_bounds_values" ) {
-         out.excludeOutOfBoundValues = true;
-      } else {
-         DIP_THROW( "SPECS key not recognized" );
-      }
-   }
-   N = 0;
-   if( hasLower ) ++N;
-   if( hasUpper ) ++N;
-   if( hasNBins ) ++N;
-   if( hasBinSize ) ++N;
-   DIP_THROW_IF( N != 3, "SPECS requires exactly 3 of the 4 core value-pairs to be given" );
-   if( !hasLower ) {
-      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_LOWER;
-   } else if( !hasUpper ) {
-      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_UPPER;
-   } else if( !hasNBins ) {
-      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINS;
-   } else if( !hasBinSize ) {
-      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
-   }
-   return out;
-}
-
-} // namespace
-
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    try {
@@ -104,12 +36,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          DIP_THROW_IF( !mxIsCell( prhs[ 2 ] ), "SPECS parameter must be a cell array" );
          if( !mxIsCell( mxGetCell( prhs[ 2 ], 0 ))) {
             conf.resize( 1 );
-            conf[ 0 ] = GetConf( prhs[ 2 ] );
+            conf[ 0 ] = dml::GetHistogramConfiguration( prhs[ 2 ] );
          } else {
             dip::uint N = mxGetNumberOfElements( prhs[ 2 ] );
             conf.resize( N );
             for( dip::uint ii = 0; ii < N; ++ii ) {
-               conf[ ii ] = GetConf( mxGetCell( prhs[ 2 ], ii ));
+               conf[ ii ] = dml::GetHistogramConfiguration( mxGetCell( prhs[ 2 ], ii ));
             }
          }
       } else {

@@ -18,10 +18,10 @@
 % Each cell array in the SPECS argument is a set of keyword-value pairs
 % and individual keywords. It should contain three out of the four
 % following keyword-value pairs:
-%  'lower'    lower limit value.
-%  'upper'    upper limit value.
-%  'bins'     the number of bins.
-%  'binsize'  the size of these bins.
+%  'lower':   lower limit value.
+%  'upper':   upper limit value.
+%  'bins':    the number of bins.
+%  'binsize': the size of these bins.
 % Note that the fourth value can always be computed from the three given
 % values. By default, 'lower' and 'upper' indicate percentiles, meaning
 % that the lower and upper bounds of the histogram are given in relation
@@ -29,15 +29,14 @@
 % to be stretched to the image range.
 %
 % Additionally, the following keywords can be given to change how the
-% hisotgram is computed:
-%  'lower_abs'  Changes the meaning of the argument of 'lower'. Instead of
+% histogram is computed:
+%  'lower_abs': Changes the meaning of the argument of 'lower'. Instead of
 %               a percentile it is directly interpreted as the lower limit
 %               of the data range.
-%  'upper_abs'  Same as 'lower_abs', but for 'upper'.
-%  'exclude_out_of_bounds_values' Values below 'lower' and above 'upper'
-%                                 are excluded from the histogram. By
-%                                 default, they are put into the first or
-%                                 last bin.
+%  'upper_abs': Same as 'lower_abs', but for 'upper'.
+%  'exclude_out_of_bounds_values': Values below 'lower' and above 'upper'
+%               are excluded from the histogram. By default, they are put
+%               into the first or last bin.
 %
 % The HISTOGRAM output argument is an image where the first dimension (x)
 % corresponds to the first tensor element of IMAGE, etc.
@@ -48,7 +47,7 @@
 %
 % DEFAULTS:
 %  mask = [] (all pixels are used)
-%  channelspecs = {{'lower',0,'upper',100,'bins',100}}
+%  specs = {{'lower',0,'upper',100,'bins',100}}
 %
 % EXAMPLE:
 %  mchim1 = xx([256 256],'corner');

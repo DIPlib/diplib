@@ -104,6 +104,7 @@ geometry/tile.cpp
 histogram/distribution.cpp
 histogram/equalization.cpp
 histogram/histogram.cpp
+histogram/per_object_hist.cpp
 histogram/statistics.cpp
 histogram/threshold_algorithms.cpp
 library/boundary.cpp

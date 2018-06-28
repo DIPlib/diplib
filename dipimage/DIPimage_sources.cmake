@@ -83,6 +83,7 @@ overlay.cpp
 paircorrelation.cpp
 pathopening.cpp
 percf.cpp
+perobjecthist.cpp
 pmd.cpp
 private/compute_derivatives.cpp
 private/imagedisplay.cpp

@@ -44,6 +44,10 @@
 %  length = 100
 %  estimator = 'random'
 %  options = {} (equivalent to covariance = 'no', normalisation = 'none')
+%
+% DIPlib:
+%  This function calls the DIPlib functions dip::PairCorrelation and
+%  dip::ProbabilisticPairCorrelation.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

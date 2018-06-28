@@ -60,9 +60,9 @@ extern "C" {
 }
 
 #include "diplib.h"
-#include "diplib/file_io.h" // Definition of dip::FileInformation
+#include "diplib/file_io.h"      // Definition of dip::FileInformation
 #include "diplib/distribution.h" // Definition of dip::Distribution
-
+#include "diplib/histogram.h"    // Definition of dip::Histogram::Configuration
 
 /// \file
 /// \brief This file should be included in each MEX-file. It defines the `#dml` namespace.
@@ -515,6 +515,69 @@ inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
       }
       return out;
    }
+}
+
+/// \brief Reads a histogram Configuration struct from a cell `mxArray` with key-value pairs.
+dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* mx ) {
+   dip::Histogram::Configuration out;
+   out.lowerIsPercentile = true;
+   out.upperIsPercentile = true;
+   DIP_THROW_IF( !mxIsCell( mx ), "SPECS parameter must be a cell array" );
+   dip::uint N = mxGetNumberOfElements( mx );
+   dip::uint ii = 0;
+   bool hasLower = false;
+   bool hasUpper = false;
+   bool hasNBins = false;
+   bool hasBinSize = false;
+   while( ii < N ) {
+      dip::String key = dml::GetString( mxGetCell( mx, ii ));
+      ++ii;
+      if( key == "lower" ) {
+         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         out.lowerBound = dml::GetFloat( mxGetCell( mx, ii ));
+         hasLower = true;
+         ++ii;
+      } else if( key == "upper" ) {
+         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         out.upperBound = dml::GetFloat( mxGetCell( mx, ii ));
+         hasUpper = true;
+         ++ii;
+      } else if( key == "bins" ) {
+         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         out.nBins = dml::GetUnsigned( mxGetCell( mx, ii ));
+         hasNBins = true;
+         ++ii;
+      } else if( key == "binsize" ) {
+         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         out.binSize = dml::GetFloat( mxGetCell( mx, ii ));
+         hasBinSize = true;
+         ++ii;
+      } else if( key == "lower_abs" ) {
+         out.lowerIsPercentile = false;
+      } else if( key == "upper_abs" ) {
+         out.upperIsPercentile = false;
+      } else if( key == "exclude_out_of_bounds_values" ) {
+         out.excludeOutOfBoundValues = true;
+      } else {
+         DIP_THROW( "SPECS key not recognized" );
+      }
+   }
+   N = 0;
+   if( hasLower ) ++N;
+   if( hasUpper ) ++N;
+   if( hasNBins ) ++N;
+   if( hasBinSize ) ++N;
+   DIP_THROW_IF( N != 3, "SPECS requires exactly 3 of the 4 core value-pairs to be given" );
+   if( !hasLower ) {
+      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_LOWER;
+   } else if( !hasUpper ) {
+      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_UPPER;
+   } else if( !hasNBins ) {
+      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINS;
+   } else if( !hasBinSize ) {
+      out.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
+   }
+   return out;
 }
 
 

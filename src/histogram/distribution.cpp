@@ -79,8 +79,10 @@ Distribution& Distribution::NormalizeSum() {
    dip::uint nValues = ValuesPerSample();
    for( dip::uint index = 0; index < nValues; ++index ) {
       dfloat sum = Sum( index );
-      for( auto it = Ybegin( index ); it != Yend( index ); ++it ) {
-         *it /= sum;
+      if( sum != 0 ) {
+         for( auto it = Ybegin( index ); it != Yend( index ); ++it ) {
+            *it /= sum;
+         }
       }
    }
    return *this;

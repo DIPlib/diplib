@@ -52,6 +52,8 @@ constexpr char const* OPEN = "open";
 constexpr char const* CLOSED = "closed";
 constexpr char const* RANDOM = "random";
 constexpr char const* GRID = "grid";
+constexpr char const* FRACTION = "fraction";
+constexpr char const* COUNT = "count";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";
