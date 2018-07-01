@@ -516,7 +516,7 @@ DIP_EXPORT Distribution PairCorrelation(
 ///
 /// `phases` is a real-valued image of a floating-point type, with one or more channels (tensor elements).
 /// Each channel represents the probability per pixel of one of the phases.
-/// The function assumes, but does not check, that these values are with the [0 1] range, and add up to
+/// The function assumes, but does not check, that these values are with the [0,1] range, and add up to
 /// 1 or less.
 ///
 /// All other parameters are as in `dip::PairCorrelation`.
@@ -568,7 +568,25 @@ DIP_EXPORT Distribution Semivariogram(
 
 DIP_EXPORT Distribution ChordLength(); // TODO: length distribution of chords -- random lines through the image, measure length of intercept through objects
 
-DIP_EXPORT Distribution RadialDistribution(); // TODO: distribution, per object, of the distance to the background
+/// \brief Computes the distribution of distances to the background of `region` for the different phases in `object`.
+///
+/// If `object` is a binary image, the image is a regarded as a two-phase image.
+/// In case `object` is of an unsigned integer type, the image is regarded as a labeled image,
+/// with each integer value encoding a phase (note that 0 is included here).
+///
+/// The `region` image is a binary image, the distances to its background will be computed.
+/// If `region` is a labeled image, the distances to the zero-valued pixels will be computed.
+/// These distances will take the pixels sizes of `region` into account. If `region` does not
+/// have pixels sizes, those of `object` will be used instead.
+///
+/// The output `dip::Distribution` has *x* value increments given by the pixel size. That is,
+/// the distribution has one sample per pixel. `length` is the length of the distribution, and
+/// thus limits the distances taken into account.
+DIP_EXPORT Distribution DistanceDistribution(
+      Image const& object,
+      Image const& region_c,
+      dip::uint length = 100
+);
 
 /// \brief Computes the granulometric function for an image
 ///

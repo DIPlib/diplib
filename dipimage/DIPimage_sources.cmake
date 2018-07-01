@@ -38,6 +38,7 @@ coordinates.cpp
 countneighbors.cpp
 derivative.cpp
 dilation.cpp
+distancedistribution.cpp
 drawline.cpp
 drawpolygon.cpp
 drawshape.cpp
