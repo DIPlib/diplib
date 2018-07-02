@@ -24,7 +24,7 @@ This is a list of tasks that still need to be done, not in any particular order.
 document's source</a> for the most up-to-date version.
 
 (2017/06/05) We just passed the 2000 documented entities (functions, classes, constants) mark!
-
+(2018/05/23) We now have well over 3000 documented entities and close to 100k lines of code.
 
 ## Gaps in infrastructure:
 
@@ -115,11 +115,6 @@ it should not be ported (or already is ported).
 Some of the following functions already have their prototype written in the new library.
 
 - diplib/analysis.h
-    - dip_PairCorrelation (dip_analysis.h)
-    - dip_ProbabilisticPairCorrelation (dip_analysis.h)
-    - dip_ChordLength (dip_analysis.h)
-    - dip_RadialDistribution (dip_analysis.h)
-    - dip_StructureAnalysis (dip_analysis.h)
     - dip_OrientationSpace (dip_structure.h)
     - dip_ExtendedOrientationSpace (dip_structure.h)
     - dip_CurvatureFromTilt (dip_structure.h)
@@ -210,7 +205,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `backgroundoffset`
 - `bilateralf`
 - `cal_readnoise`
-- `chordlength`
 - `correctshift`
 - `countingframe`
 - `cpf`
@@ -224,7 +218,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `findospeaks`
 - `fmmatch`
 - `frc`
-- `granulometry`
 - `hist2image`
 - `ht`
 - `hybridf`
@@ -241,7 +234,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `opticflow`
 - `orientationplot`
 - `orientationspace`
-- `paircorrelation`
 - `percf_adap`
 - `percf_adap_banana`
 - `pst`

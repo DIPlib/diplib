@@ -303,6 +303,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
 
+- `dip::RadialDistribution` renamed to `dip::DistanceDistribution`.
+
 - Lots of new algorithms, some previously only available in *DIPimage*, some completely new.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
@@ -368,6 +370,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - New methods: `clone`, `cosh`, `cumsum`, `erfc`, `flip`, `gammaln`, `iscomplex`, `issigned`, `isunsigned`,
     `numArgumentsFromSubscript`, `numberchannels`, `numpixels`, `numtensorel`, `sinh`, `slice_ex`, `slice_in`,
     `slice_op`, `spatialtotensor`, `swapdim`, `tanh`, `tensorfun`, `tensorsize`, `tensortospatial`.
+
+  - `eig_largest` has been moved to the toolbox directory.
 
   - `besselj`, `length` and `unique` are no longer methods of `dip_image`.
 
@@ -505,16 +509,18 @@ code that used *DIPlib* or *DIPimage* to the new version.
     number of dimensions (with special support for 2D and 3D images).
 
   - `curvature_thirion` and `isophote_curvature` have been moved to the `alias` directory. The function
-    `curvature` now takes `'thirion'` and `'isophote'` as options.
+    `curvature` now takes `'thirion'` and `'isophote'` as options. `orientation4d` has been moved to the
+    `alias` directory. A new function `orientation` generalizes it to arbitrary dimensionality.
 
   - `granulometry` has changed, but it is still possible to call it the old way. However, the parameters
-    in this old syntax are interpreted to match the new possibilities of this function. ``'usegrey'` and
+    in this old syntax are interpreted to match the new capabilities of this function. ``'usegrey'` and
     ``'verbose'` options no longer have an effect. Default values have changed a bit.
 
-- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cluster`, `coordinates`, `drawshape`,
-  `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`,
-  `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`. Use `help <functionname>` in MATLAB to
-  learn what these functions provide.
+- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
+  `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
+  `im2cell`, `lee`, `pathopening`, `perobjecthist`, `quantize`, `select`, `setborder`, `skew`,
+  `smallobjectsremove`, `thetatheta`, `traceobjects`.
+  Use `help <functionname>` in MATLAB to learn what these functions provide.
 
 - `jacobi` moved to the `alias` directory, `eig` does it better now.
 
