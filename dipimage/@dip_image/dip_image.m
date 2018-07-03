@@ -2454,6 +2454,11 @@ classdef dip_image
          n = colorspacemanager(col);
       end
 
+      function varargout = empty(varargin)
+         error('Cannot create empty dip_image object')
+      end
+      % The function above defined to prevent its use.
+
    end
 
 end
