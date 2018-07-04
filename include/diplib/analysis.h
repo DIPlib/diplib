@@ -459,18 +459,18 @@ DIP_EXPORT Distribution StructureAnalysis(
       dfloat truncation = 3
 );
 
-/// \brief Computes the pair correlation function of the different phases in `object`.
+/// \brief Estimates the pair correlation function of the different phases in `object`.
 ///
 /// If `object` is a binary image, the image is a regarded as a two-phase image.
 /// In case `object` is of an unsigned integer type, the image is regarded as a labeled image,
 /// with each integer value encoding a phase (note that 0 is included here).
 ///
 /// Optionally a `mask` image can be provided to select which pixels in `object`
-/// should be used to compute the pair correlation.
+/// should be used to estimate the pair correlation.
 ///
-/// `probes` specifies how many random point pairs should be drawn to compute the function.
+/// `probes` specifies how many random point pairs should be drawn to estimate the function.
 /// `length` specifies the maximum correlation length in pixels.
-/// The correlation function can be computed using a random sampling method (`sampling` is
+/// The correlation function can be estimated using a random sampling method (`sampling` is
 /// `"random"`), or a grid sampling method (`"grid"`). For grid sampling, `probes` can be 0,
 /// in which case all possible pairs along all image axes are used. Otherwise, the grid covers
 /// a subset of points, with all possible pairs along all image axes; the actual number of pairs
@@ -487,7 +487,7 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// phase number `i`. When normalized using the `"normalize volume"` option, the probability given is
 /// that of the second point hitting phase `i`, given that the first point hits phase `i`. This normalization
 /// is computed by dividing all values (distances) for element `i` by the volume fraction of phase `i`
-/// (which is given by the computed probability at distance equal to 0). When normalized using the
+/// (which is given by the estimated probability at distance equal to 0). When normalized using the
 /// `"normalize volume^2"` option, the values given are expected to tends towards 1, as the square of the
 /// volume fraction of phase `i` is the probability of two random points hitting phase `i`.
 ///
@@ -512,7 +512,7 @@ DIP_EXPORT Distribution PairCorrelation(
       StringSet const& options = {}
 );
 
-/// \brief Computes the probabilistic pair correlation function of the different phases in `phases`.
+/// \brief Estimates the probabilistic pair correlation function of the different phases in `phases`.
 ///
 /// `phases` is a real-valued image of a floating-point type, with one or more channels (tensor elements).
 /// Each channel represents the probability per pixel of one of the phases.
@@ -529,7 +529,7 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
       StringSet const& options = {}
 );
 
-/// \brief Computes the expected value of half the square difference between field values at a distance `d`.
+/// \brief Estimates the expected value of half the square difference between field values at a distance `d`.
 ///
 /// The input image `in` must be scalar and real-valued. An isotropic semivariogram is computed as a function
 /// of the distance, which is varied from 0 to `length` (in pixels). Therefore, the field in `in` is assumed isotropic
@@ -541,12 +541,12 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
 /// value is called the sill. The distance at which the sill is reached (or, more robustly, the distance at which
 /// 0.95 times the sill is reached) is called range, and provides a meaningful description of the field.
 ///
-/// Optionally a `mask` image can be provided to select which pixels in `in` should be used to compute the
+/// Optionally a `mask` image can be provided to select which pixels in `in` should be used to estimate the
 /// semivariogram.
 ///
-/// `probes` specifies how many random point pairs should be drawn to compute the function.
-/// `length` specifies the maximum correlation length in pixels.
-/// The semivariogram can be computed using a random sampling method (`sampling` is `"random"`), or a grid sampling
+/// `probes` specifies how many random point pairs should be drawn to estimate the semivariogram.
+/// `length` specifies the maximum pair distance in pixels.
+/// The semivariogram can be estimated using a random sampling method (`sampling` is `"random"`), or a grid sampling
 /// method (`"grid"`). For grid sampling, `probes` can be 0, in which case all possible pairs along all image
 /// axes are used. Otherwise, the grid covers a subset of points, with all possible pairs along all image axes;
 /// the actual number of pairs is approximate. In general, the grid method needs a lot more probes to be precise,
@@ -566,7 +566,38 @@ DIP_EXPORT Distribution Semivariogram(
       String const& sampling = S::RANDOM
 );
 
-DIP_EXPORT Distribution ChordLength(); // TODO: length distribution of chords -- random lines through the image, measure length of intercept through objects
+/// \brief Estimates the chord length distribution of the different phases in `object`.
+///
+/// If `object` is a binary image, the image is a regarded as a two-phase image.
+/// In case `object` is of an unsigned integer type, the image is regarded as a labeled image,
+/// with each integer value encoding a phase (note that 0 is included here).
+///
+/// Optionally a `mask` image can be provided to select which pixels in `object`
+/// should be used for the estimation.
+///
+/// `probes` specifies how many random lines should be drawn to estimate the distribution.
+/// `length` specifies the maximum chord length in pixels.
+/// The chord length distribution can be estimated using a random sampling method (`sampling` is
+/// `"random"`), or a grid sampling method (`"grid"`). For grid sampling, `probes` can be 0,
+/// in which case all lines along all image axes are used. Otherwise, the grid covers
+/// a subset of lines; the actual number of lines is approximate. In general, the grid method
+/// needs a lot more probes to be precise, but it is faster for a given number of probes because
+/// it uses sequential memory access.
+///
+/// The output has `N` values, with `N` the number of phases in the image. Element `i` gives the
+/// probability of a chord of length `len` pixels within phase number `i`. The chord length is the
+/// length of an intersection of a line with the phase.
+/// These values are read from the output `distribution` by `distribution[len].Y(i)`, and the
+/// corresponding length in physical units is given by `distribution[len].X()`. If `object` does not
+/// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
+/// are in pixels. `len` runs from 0 to `length` (inclusive).
+DIP_EXPORT Distribution ChordLength(
+      Image const& object,
+      Image const& mask,
+      dip::uint probes = 100000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM
+);
 
 /// \brief Computes the distribution of distances to the background of `region` for the different phases in `object`.
 ///
@@ -584,7 +615,7 @@ DIP_EXPORT Distribution ChordLength(); // TODO: length distribution of chords --
 /// thus limits the distances taken into account.
 DIP_EXPORT Distribution DistanceDistribution(
       Image const& object,
-      Image const& region_c,
+      Image const& region,
       dip::uint length = 100
 );
 

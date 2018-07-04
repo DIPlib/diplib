@@ -30,6 +30,7 @@ bpropagation.cpp
 bskeleton.cpp
 canny.cpp
 ced.cpp
+chordlength.cpp
 clip.cpp
 closing.cpp
 cluster.cpp

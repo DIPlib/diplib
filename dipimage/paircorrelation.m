@@ -39,7 +39,7 @@
 %  Pixel values are expected to be in the range [0,1].
 %
 % DEFAULTS:
-%  image_mask = []
+%  mask = []
 %  probes = 1000000
 %  length = 100
 %  estimator = 'random'

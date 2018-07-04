@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for pairwise correlation functions
+ * This file contains definitions for pixel pair estimation functions
  *
  * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -139,7 +139,7 @@ void GridPixelPairSampler(
    UnsignedArray coords( nDims );
    dip::uint nPixels = object.Sizes().product();
    dip::uint nGridPoints = nPixels;
-   dip::uint step = 1; // how many lines to
+   dip::uint step = 1; // how many lines to skip
    if( nProbes > 0 ) {
       nGridPoints = div_ceil( nProbes, nDims * ( maxLength + 1 ));
       dfloat fraction = std::sqrt( static_cast< dfloat >( nPixels ) / static_cast< dfloat >( nGridPoints ));
@@ -150,7 +150,7 @@ void GridPixelPairSampler(
    for( dip::uint dim = 0; dim < nDims; ++dim ) {
       GenericJointImageIterator< 2 > it( { object, mask }, dim );
       dip::uint size = it.ProcessingDimensionSize();
-      dip::sint dataStride = it.ProcessingDimensionStride< 0 >() * static_cast< dip::sint >( object.DataType().SizeOf());
+      dip::sint dataStride = it.ProcessingDimensionStride< 0 >() * static_cast< dip::sint >( object.DataType().SizeOf() );
       dip::sint maskStride = hasMask ? it.ProcessingDimensionStride< 1 >() : 0;
       dip::uint nLinesInGrid = div_floor( nPixels / size, step );
       dip::uint nPointsPerLine = div_ceil( nGridPoints, nLinesInGrid );
@@ -180,7 +180,7 @@ void GridPixelPairSampler(
             maskPtr += maskStride;
          }
          for( dip::uint ii = 0; ( ii < step ) && it; ++ii ) {
-            ++it;
+            ++it; // TODO: this does not skip appropriately in 3D and higher dims.
          }
       } while( it );
    }
@@ -210,6 +210,8 @@ void NormalizeDistribution(
 //
 
 namespace {
+
+using PhaseLookupTable = std::unordered_map< dip::uint, dip::uint >;
 
 class PairCorrelationFunction : public PixelPairFunction {
    public:
@@ -250,7 +252,7 @@ class PairCorrelationFunction : public PixelPairFunction {
             Image const& object,
             Distribution& distribution,         // distribution.Rows()==nPhases
             std::vector< dip::uint >& counts,
-            std::unordered_map< dip::uint, dip::uint > const& phaseLookupTable,
+            PhaseLookupTable const& phaseLookupTable,
             bool covariance                     // if true, distribution.Columns()==nPhases, otherwise distribution.Columns()==1
       ) : object_( object ), distribution_( distribution ), counts_( counts ), phaseLookupTable_( phaseLookupTable ),
           covariance_( covariance ) {
@@ -261,7 +263,7 @@ class PairCorrelationFunction : public PixelPairFunction {
       Image const& object_;
       Distribution& distribution_;
       std::vector< dip::uint >& counts_;
-      std::unordered_map< dip::uint, dip::uint > const& phaseLookupTable_;
+      PhaseLookupTable const& phaseLookupTable_;
       bool covariance_;
       UIntPixelValueReaderFunction GetUIntPixelValue_;
 };
@@ -345,13 +347,14 @@ Distribution PairCorrelation(
    DIP_THROW_IF( !c_object.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_object.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_object.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( c_object.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image object = c_object.QuickCopy();
    if( object.DataType().IsBinary() ) {
       object.Convert( DT_UINT8 );
    }
    UnsignedArray phases;
    DIP_STACK_TRACE_THIS( phases = GetObjectLabels( object, mask, S::INCLUDE )); // Will test mask for us -- doesn't allow singleton expansion, so we don't need to here either
-   std::unordered_map< dip::uint, dip::uint > phaseLookupTable;
+   PhaseLookupTable phaseLookupTable;
    for( dip::uint ii = 0; ii < phases.size(); ++ii ) {
       phaseLookupTable.emplace( phases[ ii ], ii );
    }
@@ -457,6 +460,7 @@ Distribution ProbabilisticPairCorrelation(
 ) {
    DIP_THROW_IF( !phases.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !phases.DataType().IsFloat(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( phases.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Parse options
    bool random;
@@ -489,7 +493,7 @@ Distribution ProbabilisticPairCorrelation(
 }
 
 //
-// --- Probabilistic Pair Correlation ---
+// --- Semivariogram ---
 //
 
 namespace {
@@ -541,6 +545,7 @@ Distribution Semivariogram(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Parse options
    bool random;

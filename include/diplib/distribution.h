@@ -410,10 +410,12 @@ class DIP_NO_EXPORT Distribution {
          return ( *this *= ( 1.0 / scale ));
       }
 
-      /// Fills the values for the *x* axis, starting with 0, and linear increments of `pixelSize[0].magnitude * scaling`,
-      /// if the `pixelSize` is isotropic and has physical units. The `XUnits` are also set.
+      /// \brief Fills the values for the *x* axis, starting with `pixelSize[0].magnitude * offset`,
+      /// and linear increments of `pixelSize[0].magnitude * scaling`, if the `pixelSize` is isotropic and has
+      /// physical units. The `XUnits` are also set.
       DIP_EXPORT void SetSampling(
             PixelSize const& pixelSize = {},
+            dfloat offset = 0.0,
             dfloat scaling = 1.0
       );
 

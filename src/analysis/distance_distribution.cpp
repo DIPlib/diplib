@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for pairwise correlation functions
+ * This file contains the definition for dip::DistanceDistribution
  *
  * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -34,6 +34,8 @@ Distribution DistanceDistribution(
    DIP_THROW_IF( !object_c.IsForged() || !region_c.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !object_c.IsScalar() || !region_c.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !object_c.DataType().IsUnsigned() || !region_c.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( object_c.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( object_c.Sizes() != region_c.Sizes(), E::SIZES_DONT_MATCH );
    Image object = object_c.QuickCopy();
    if( object.DataType().IsBinary() ) {
       object.Convert( DT_UINT8 ); // the binary image can be a labeled image with labels 0 and 1.

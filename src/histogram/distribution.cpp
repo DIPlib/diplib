@@ -205,17 +205,19 @@ Distribution& Distribution::operator*=( dfloat scale ) {
 
 void Distribution::SetSampling(
       PixelSize const& pixelSize,
+      dfloat offset,
       dfloat scaling
 ) {
    if( pixelSize.IsPhysical() && pixelSize.IsIsotropic() ) {
       XUnits() = pixelSize[ 0 ].units;
       scaling *= pixelSize[ 0 ].magnitude;
+      offset *= pixelSize[ 0 ].magnitude;
    } else {
       XUnits() = Units::Pixel();
    }
    dfloat value = 0;
    for( auto it = Xbegin(); it != Xend(); ++it, ++value ) {
-      *it = value * scaling;
+      *it = offset + value * scaling;
    }
 }
 
