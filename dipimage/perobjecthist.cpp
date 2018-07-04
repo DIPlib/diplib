@@ -21,7 +21,7 @@
 #include "dip_matlab_interface.h"
 #include "diplib/histogram.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    try {
 
