@@ -357,6 +357,22 @@ class DIP_NO_EXPORT DimensionArray {
          }
       }
 
+      /// Multiplies each element in the array by a constant.
+      DimensionArray& operator*=( T const& v ) {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] *= v;
+         }
+         return *this;
+      }
+
+      /// Divides each element in the array by a constant.
+      DimensionArray& operator/=( T const& v ) {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] /= v;
+         }
+         return *this;
+      }
+
       /// Sort the contents of the array from smallest to largest, and keeping `other` in the same order.
       template< typename S >
       void sort( DimensionArray< S >& other ) {
