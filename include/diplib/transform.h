@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the Fourier and other transforms
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,9 +103,44 @@ inline Image FourierTransform(
 DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
 
 
-// TODO: port dip_HartleyTransform (dip_transform.h)
-// TODO: add wavelet transforms
+/// \brief Computes the Riesz transform of a scalar image.
+///
+/// The Riesz transform is the multi-dimensional generalization of the Hilbert transform, and identical to it for
+/// one-dimensional images. It is computed through the Fourier domain by
+///
+/// \f[ R_j f = \mathcal{F}^{-1} \left\{ -i\frac{x_j}{|x|}(\mathcal{F}f) \right\} \; , \f]
+///
+/// where \f$f\f$ is the input image and \f$x\f$ is the coordinate vector.
+///
+/// `out` is a vector image with one element per image dimension. If `process` is given, it specifies which
+/// dimensions to include in the output vector image. `in` must be scalar.
+///
+/// `inRepresentation` and `outRepresentation` can be `"spatial"` or `"frequency"`, and indicate in which domain
+/// the input image is, and in which domain the output image should be.
+/// If `inRepresentation` is `"frequency"`, the input image must already be in the frequency domain, and will not
+/// be transformed again. Likewise, if `outRepresentation` is `"frequency"`, the output image will not be transformed
+/// to the spatial domain. Use these flags to prevent redundant back-and-forth transformations if other processing
+/// in the frequency domain is necessary.
+DIP_EXPORT void RieszTransform(
+      Image const& in,
+      Image& out,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL,
+      BooleanArray process = {}
+);
+inline Image RieszTransform(
+      Image const& in,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL,
+      BooleanArray const& process = {}
+) {
+   Image out;
+   RieszTransform( in, out, inRepresentation, outRepresentation, process );
+   return out;
+}
 
+
+// TODO: document this function
 DIP_EXPORT void HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
@@ -121,6 +156,11 @@ inline Image HoughTransformCircleCenters(
    HoughTransformCircleCenters( in, gv, out, range);
    return out;
 }
+
+
+// TODO: port dip_HartleyTransform (dip_transform.h)
+// TODO: add wavelet transforms
+
 
 /// \}
 

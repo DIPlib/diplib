@@ -19,7 +19,8 @@
 %  truncation: Determines the size of the Gaussian filters.
 %
 % DEFAULTS:
-%  sigma = 1
+%  dsigma = 1
+%  tsigma = 5
 %  outputs = {}
 %  metod = 'best'
 %  bounary_condition = 'mirror'

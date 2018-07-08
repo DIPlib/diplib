@@ -130,6 +130,8 @@ void init_filtering( py::module& m ) {
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a );
+   m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray const& >( &dip::RieszTransform ),
+          "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
 }

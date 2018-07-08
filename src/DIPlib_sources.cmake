@@ -232,4 +232,5 @@ support/matrix.cpp
 transform/fourier.cpp
 transform/hough.cpp
 transform/opencv_dxt.cpp
+transform/riesz.cpp
 )

@@ -104,6 +104,7 @@ readtiff.cpp
 reconstruction.cpp
 relabel.cpp
 resample.cpp
+riesz.cpp
 rotation.cpp
 select.cpp
 selectionf.cpp
