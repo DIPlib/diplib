@@ -183,6 +183,11 @@ limitations under the License.
   3-Clause BSD License  
   see include/diplib/regions/labelingGranan2016.h
 
+- A few color maps from *colorcet*
+  Copyright 2017 Peter Kovesi
+  1-Clause BSD-like License
+  see src/display/colormap.cpp
+
 - *libics* (its use can be disabled)  
   Copyright 2015-2017 Scientific Volume Imaging Holding B.V.  
   Copyright 2000-2013 Cris Luengo and others  
