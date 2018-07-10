@@ -25,6 +25,7 @@
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
 #include "diplib/mapping.h"
+#include "diplib/math.h"
 
 namespace dip {
 
