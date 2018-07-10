@@ -37,13 +37,13 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          if( str == "help" ) {
             DML_MAX_ARGS( 1 );
             auto features = measurementTool.Features();
-            std::cout << features.size() << " measurement features available:" << std::endl;
+            std::cout << features.size() << " measurement features available:\n";
             for( auto const& feature : features ) {
                std::cout << " - '" << feature.name << "': " << feature.description;
                if( feature.needsGreyValue ) {
                   std::cout << " *";
                }
-               std::cout << std::endl;
+               std::cout << '\n';
             }
             std::cout << "Features marked with a \"*\" require a grey-value input image.\n";
             return;

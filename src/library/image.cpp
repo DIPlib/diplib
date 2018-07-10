@@ -200,44 +200,43 @@ std::ostream& operator<<(
 ) {
    // Shape and other main properties
    if( img.IsColor() ) {
-      os << "Color image (" << img.Tensor() << ", " << img.ColorSpace() << "):";
+      os << "Color image (" << img.Tensor() << ", " << img.ColorSpace() << "):\n";
    } else if( !img.IsScalar() ) {
-      os << "Tensor image (" << img.Tensor() << "):";
+      os << "Tensor image (" << img.Tensor() << "):\n";
    } else {
-      os << "Scalar image:";
+      os << "Scalar image:\n";
    }
-   os << std::endl;
    // Image size and pixel size
-   os << "    data type " << img.DataType() << std::endl;
+   os << "    data type " << img.DataType() << '\n';
    if( img.Dimensionality() == 0 ) {
-      os << "    sizes {} (0D)" << std::endl;
+      os << "    sizes {} (0D)\n";
    } else {
-      os << "    sizes " << img.Sizes() << " (" << img.Dimensionality() << "D)" << std::endl;
+      os << "    sizes " << img.Sizes() << " (" << img.Dimensionality() << "D)\n";
       if( img.HasPixelSize() ) {
          os << "    pixel size " << img.PixelSize( 0 );
          for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
             os << " x " << img.PixelSize( ii );
          }
-         os << std::endl;
+         os << '\n';
       }
    }
    // Data storage
-   os << "    strides " << img.Strides() << ", tensor stride " << img.TensorStride() << std::endl;
+   os << "    strides " << img.Strides() << ", tensor stride " << img.TensorStride() << '\n';
    if( img.IsForged() ) {
-      os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
-      os << "    origin pointer: " << img.Origin() << std::endl;
+      os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)\n";
+      os << "    origin pointer: " << img.Origin() << '\n';
       /*
       dip::sint sstride;
       void* porigin;
       img.GetSimpleStrideAndOrigin( sstride, porigin );
       if( porigin ) {
-         os << "    simple stride: " << sstride << ", origin: " << porigin << std::endl;
+         os << "    simple stride: " << sstride << ", origin: " << porigin << '\n';
       } else {
-         os << "    no simple stride" << std::endl;
+         os << "    no simple stride\n";
       }
       */
    } else {
-      os << "    not forged" << std::endl;
+      os << "    not forged\n";
    }
    return os;
 }

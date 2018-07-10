@@ -117,7 +117,7 @@ void PrintPixelValues( Image const& img ) {
       while( ++lit ) {
          std::cout << ", " << std::setw( DIGITS ) << detail::Round( *lit, DIGITS );
       }
-      std::cout << std::endl;
+      std::cout << '\n';
    } while( ++it );
 }
 
@@ -159,7 +159,7 @@ inline bool CompareImages(
    if( mode == Option::CompareImagesMode::APPROX ) {
       dfloat mae = MaximumAbsoluteError( img1, img2 );
       if( mae > epsilon ) {
-         std::cout << "[dip::testing::CompareImages] Maximum absolute error = " << mae << " > " << epsilon << std::endl;
+         std::cout << "[dip::testing::CompareImages] Maximum absolute error = " << mae << " > " << epsilon << '\n';
       }
       return mae <= epsilon;
    }
@@ -221,7 +221,7 @@ inline bool CompareImages(
 ///     dip::Timer timer;
 ///     // do some computation
 ///     timer.Stop();
-///     std::cout << "Computation 1: " << timer << std::endl;
+///     std::cout << "Computation 1: " << timer << '\n';
 /// ```
 /// The stream output reports both the wall time and the CPU time, and uses meaningful units (minutes, seconds,
 /// millisecons or microseconds).

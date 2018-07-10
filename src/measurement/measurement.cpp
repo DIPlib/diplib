@@ -31,6 +31,10 @@ std::ostream& operator<<(
       std::ostream& os,
       Measurement const& msr
 ) {
+   if( !msr.IsForged() ) {
+      os << "(Raw dip::Measurement object)\n";
+      return os;
+   }
    // Figure out column widths
    const std::string sep{ " | " };
    constexpr int separatorWidth = 3;
@@ -59,19 +63,19 @@ std::ostream& operator<<(
    for( dip::uint ii = 0; ii < features.size(); ++ii ) {
       os << std::setw( featureWidths[ ii ] ) << features[ ii ].name << " | ";
    }
-   os << std::endl;
+   os << '\n';
    // Write out the header: horizontal line
    os << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
    for( dip::uint ii = 0; ii < features.size(); ++ii ) {
       os << std::setw( featureWidths[ ii ] ) << "-" << " | ";
    }
-   os << std::setfill( ' ' ) << std::endl;
+   os << std::setfill( ' ' ) << '\n';
    // Write out the header: value names
    os << std::setw( firstColumnWidth ) << " " << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
       os << std::setw( valueWidths[ ii ] ) << values[ ii ].name << " | ";
    }
-   os << std::endl;
+   os << '\n';
    // Write out the header: value units
    os << std::setw( firstColumnWidth ) << " " << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
@@ -84,13 +88,13 @@ std::ostream& operator<<(
          os << std::setw( valueWidths[ ii ] ) << " " << " | ";
       }
    }
-   os << std::endl;
+   os << '\n';
    // Write out the header: horizontal line
    os << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
       os << std::setw( valueWidths[ ii ] ) << "-" << " | ";
    }
-   os << std::setfill( ' ' ) << std::endl;
+   os << std::setfill( ' ' ) << '\n';
    // Write out the object IDs and associated values
    auto const& objects = msr.Objects();
    Measurement::ValueIterator data = msr.Data();
@@ -100,7 +104,7 @@ std::ostream& operator<<(
          os << std::setw( valueWidths[ ii ] ) << std::setprecision( 4 ) << std::showpoint << *data << " | ";
          ++data;
       }
-      os << std::endl;
+      os << '\n';
    }
    return os;
 }
@@ -110,6 +114,7 @@ void WriteCSV(
       String const& filename,
       StringSet const& options
 ) {
+   DIP_THROW_IF( !msr.IsForged(), E::MEASUREMENT_NOT_FORGED );
    bool simple = false;
    bool unicode = false;
    for( auto& option : options ) {
@@ -140,7 +145,7 @@ void WriteCSV(
             ++values;
          }
       }
-      file << std::endl;
+      file << '\n';
    } else {
       // Write out the header: feature names
       file << "ObjectID";
@@ -150,17 +155,17 @@ void WriteCSV(
             file << ", "; // Empty columns for feature values past the first one
          }
       }
-      file << std::endl;
+      file << '\n';
       // Write out the header: value names
       for( auto& value : msr.Values() ) {
          file << ", " << value.name;
       }
-      file << std::endl;
+      file << '\n';
       // Write out the header: value units
       for( auto& value : msr.Values() ) {
          file << ", " << ( unicode ? value.units.StringUnicode() : value.units.String() );
       }
-      file << std::endl;
+      file << '\n';
    }
    // Write out the object IDs and associated values
    auto const& objects = msr.Objects();
@@ -170,7 +175,7 @@ void WriteCSV(
       for( dip::uint ii = 0; ii < msr.NumberOfValues(); ++ii ) {
          file << ", " << *data++;
       }
-      file << std::endl;
+      file << '\n';
    }
    file.close(); // Not really necessary, but we're used to it...
 }
@@ -210,7 +215,7 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
       }
    }
    //for( dip::uint ii = 0; ii < lhsColumnIndex.size(); ++ii ) {
-   //   std::cout << "ii = " << ii << ", lhsColumnIndex[ii] = " << lhsColumnIndex[ii] << ", rhsColumnIndex[ii] = " << rhsColumnIndex[ii] << std::endl;
+   //   std::cout << "ii = " << ii << ", lhsColumnIndex[ii] = " << lhsColumnIndex[ii] << ", rhsColumnIndex[ii] = " << rhsColumnIndex[ii] << '\n';
    //}
    std::vector< dip::uint > lhsRowIndex( lhs.objects_.size(), NOT_THERE );
    std::vector< dip::uint > rhsRowIndex( lhs.objects_.size(), NOT_THERE );
@@ -231,7 +236,7 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
       }
    }
    //for( dip::uint ii = 0; ii < lhsRowIndex.size(); ++ii  ) {
-   //   std::cout << "ii = " << ii << ", lhsRowIndex[ii] = " << lhsRowIndex[ii] << ", rhsRowIndex[ii] = " << rhsRowIndex[ii] << std::endl;
+   //   std::cout << "ii = " << ii << ", lhsRowIndex[ii] = " << lhsRowIndex[ii] << ", rhsRowIndex[ii] = " << rhsRowIndex[ii] << '\n';
    //}
    out.Forge();
    // Copy data over from the two inputs

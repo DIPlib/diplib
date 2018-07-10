@@ -145,7 +145,7 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 ///     for( auto f : it ) {
 ///        std::cout << " " << f;
 ///     }
-///     std::cout << std::endl;
+///     std::cout << '\n';
 /// ```
 class DIP_NO_EXPORT Measurement {
    public:
@@ -427,16 +427,28 @@ class DIP_NO_EXPORT Measurement {
       bool IsForged() const { return !data_.empty(); }
 
       /// \brief Creates an iterator (view) to the first object
-      IteratorObject FirstObject() const { return { *this, 0 }; }
+      IteratorObject FirstObject() const {
+         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
+         return { *this, 0 };
+      }
 
       /// \brief Creates and iterator (view) to the given object
-      IteratorObject operator[]( dip::uint objectID ) const { return { *this, ObjectIndex( objectID )}; }
+      IteratorObject operator[]( dip::uint objectID ) const {
+         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
+         return { *this, ObjectIndex( objectID )};
+      }
 
       /// \brief Creates and iterator (view) to the first feature
-      IteratorFeature FirstFeature() const { return { *this, 0 }; }
+      IteratorFeature FirstFeature() const {
+         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
+         return { *this, 0 };
+      }
 
       /// \brief Creates and iterator (view) to the given feature
-      IteratorFeature operator[]( String const& name ) const { return { *this, FeatureIndex( name )}; }
+      IteratorFeature operator[]( String const& name ) const {
+         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
+         return { *this, FeatureIndex( name )};
+      }
 
       /// \brief Creates and iterator (view) to a subset of feature values
       ///
@@ -447,6 +459,7 @@ class DIP_NO_EXPORT Measurement {
       ///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
       /// ```
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
+         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
          return { *this, startValue, numberValues };
       }
@@ -776,7 +789,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
 ///     dip::Image img = ...
 ///     dip::Image label = Label( Threshold( img ), 2 );
 ///     dip::Measurement msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
-///     std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << std::endl;
+///     std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << '\n';
 /// ```
 ///
 /// By default, the features in the following table are defined:
