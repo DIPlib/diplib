@@ -195,14 +195,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 // Test and throw exception
 //
 
-#if DIP__HAS_PRETTY_FUNCTION
-// This is a better thing to use than __func__, if available
-#define DIP__FUNC__ __PRETTY_FUNCTION__
-#else
-// This is in the C++11 standard, so should always be available
-#define DIP__FUNC__ __func__
-#endif
-
+/// \def DIP_ADD_STACK_TRACE(error)
 /// \brief Adds information from current function (including source file and location within file) to the `dip::Error`.
 ///
 /// This macro is useful for building a stack trace. If you want a stack trace, each function must catch `dip::Error`,
@@ -220,8 +213,29 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 ///     }
 /// ```
 ///
-/// The `#DIP_START_STACK_TRACE` and `#DIP_END_STACK_TRACE` macros help build this code.
+/// The `#DIP_START_STACK_TRACE`, `#DIP_END_STACK_TRACE` and `DIP_STACK_TRACE_THIS` macros help build this code.
+/// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
+/// option off if your application would make no use of the stack trace, as building the stack trace does incur some
+/// runtime cost.
+
+#ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
+
+#if DIP__HAS_PRETTY_FUNCTION
+// This is a better thing to use than __func__, if available
+#define DIP__FUNC__ __PRETTY_FUNCTION__
+#else
+// This is in the C++11 standard, so should always be available
+#define DIP__FUNC__ __func__
+#endif
+
 #define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
+
+#else // DIP__EXCEPTIONS_RECORD_STACK_TRACE
+
+#define DIP_ADD_STACK_TRACE( error )
+
+#endif // DIP__EXCEPTIONS_RECORD_STACK_TRACE
+
 
 /// \brief Throw a `dip::ParameterError`.
 #define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
@@ -255,11 +269,11 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 #define DIP_ASSERT( test ) do { if( !( test ) ) DIP_THROW_ASSERTION( "Failed assertion: " #test ); } while( false )
 
-#else
+#else // DIP__ENABLE_ASSERT
 
 #define DIP_ASSERT( test )
 
-#endif
+#endif // DIP__ENABLE_ASSERT
 
 
 /// \def DIP_START_STACK_TRACE
@@ -318,13 +332,13 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 #define DIP_STACK_TRACE_THIS( statement ) do { DIP_START_STACK_TRACE statement; DIP_END_STACK_TRACE } while( false )
 
-#else
+#else // DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
-#define DIP_START_STACK_TRACE
-#define DIP_END_STACK_TRACE
+#define DIP_START_STACK_TRACE {
+#define DIP_END_STACK_TRACE }
 #define DIP_STACK_TRACE_THIS( statement ) statement
 
-#endif
+#endif // DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
 /// \}
 
