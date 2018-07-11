@@ -324,30 +324,68 @@ inline Image GaussianLineClip(
    return out;
 }
 
-
 // Create 1D Gaussian
-DIP_EXPORT FloatArray CreateGaussian1D(
-   dfloat sigma,
-   dip::uint order,
-   dfloat truncation
+DIP_EXPORT std::vector< dfloat > MakeGaussian(
+      dfloat sigma,
+      dip::uint order,
+      dfloat truncation
 );
 
-// Create multi-dimensional Gaussian
+/// \brief Creates a Gaussian kernel.
+///
+/// `out` is reforged to the required size to hold the kernel. These sizes are always odd. `sigmas` determines
+/// the number of dimensions. `order` and `exponents` will be adjusted if necessary to match.
+///
+/// `derivativeOrder` is the derivative order, and can be a value between 0 and 3 for each dimension.
+///
+/// If `derivativeOrder` is 0, the size of the kernel is given by `2 * std::ceil( truncation * sigma ) + 1`.
+/// The default value for `truncation` is 3, which assures a good approximation of the Gaussian kernel without
+/// unnecessary expense. For derivatives, the value of `truncation` is increased by `0.5 * derivativeOrder`.
+///
+/// By setting `exponents` to a positive value for each dimension, the created kernel will be multiplied by
+/// the coordinates to the power of `exponents`.
 DIP_EXPORT void CreateGauss(
       Image& out,
       FloatArray const& sigmas,
-      UnsignedArray order = { 0 },
+      UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3.0,
       UnsignedArray exponents = { 0 }
 );
 inline Image CreateGauss(
       FloatArray const& sigmas,
-      UnsignedArray order = { 0 },
+      UnsignedArray const& order = { 0 },
       dfloat truncation = 3.0,
-      UnsignedArray exponents = { 0 }
+      UnsignedArray const& exponents = { 0 }
 ) {
    Image out;
    CreateGauss( out, sigmas, order, truncation, exponents );
+   return out;
+}
+
+/// \brief Creates a Gabor kernel.
+///
+/// `out` is reforged to the required size to hold the kernel. These sizes are always odd. `sigmas` determines
+/// the number of dimensions. `frequencies` must have the same number of elements as `sigmas`.
+///
+/// Frequencies are in the range [0, 0.5), with 0.5 being the frequency corresponding to a period of the
+/// size of the image.
+///
+/// The size of the kernel is given by `2 * std::ceil( truncation * sigma ) + 1`.
+/// The default value for `truncation` is 3, which assures a good approximation of the kernel without
+/// unnecessary expense.
+DIP_EXPORT void CreateGabor(
+      Image& out,
+      FloatArray const& sigmas,
+      FloatArray const& frequencies,
+      dfloat truncation = 3.0
+);
+inline Image CreateGabor(
+      FloatArray const& sigmas,
+      FloatArray const& frequencies,
+      dfloat truncation = 3.0
+) {
+   Image out;
+   CreateGabor( out, sigmas, frequencies, truncation );
    return out;
 }
 

@@ -46,6 +46,11 @@ add_executable(select_objects select_objects.cpp)
 target_compile_definitions(select_objects PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(select_objects DIP DIPviewer)
 
+# An example program that shows how to apply a convolution with a custom kernel to an image
+add_executable(filter_image filter_image.cpp)
+target_compile_definitions(filter_image PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+target_link_libraries(filter_image DIP DIPviewer)
+
 endif(DIP_BUILD_DIPVIEWER)
 
 # A program to time functions with and without multithreading, useful to fine-tune the cost value that determines
@@ -77,6 +82,7 @@ add_dependencies(examples
       display
       fileviewer
       select_objects
+      filter_image
 )
 
 endif(DIP_BUILD_DIPVIEWER)

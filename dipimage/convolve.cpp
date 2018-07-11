@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `convolve` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -24,6 +24,29 @@
 
 namespace {
 
+// Convert a real or complex floating-point array for `mxArray` to `std::vector<dip::dfloat>` by copy.
+// If the array was complex, the output contains real and imaginary elements interleaved.
+inline std::vector< dip::dfloat > GetRealOrComplexArray( mxArray const* mx ) {
+   if( mxIsDouble( mx ) && dml::IsVector( mx )) {
+      bool isComplex = mxIsComplex( mx );
+      dip::uint k = isComplex ? 2 : 1;
+      dip::uint n = mxGetNumberOfElements( mx );
+      std::vector< dip::dfloat > out( k * n );
+      double* data = mxGetPr( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ k * ii ] = data[ ii ];
+      }
+      if( isComplex ) {
+         data = mxGetPi( mx );
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            out[ k * ii + 1 ] = data[ ii ];
+         }
+      }
+      return out;
+   }
+   DIP_THROW( "Real- or complex-valued floating-point array expected" );
+}
+
 dip::OneDimensionalFilter GetFilter(
       mxArray const* mxFilter, // A struct array
       dip::uint ii
@@ -31,7 +54,8 @@ dip::OneDimensionalFilter GetFilter(
    dip::OneDimensionalFilter out;
    mxArray const* elem = mxGetField( mxFilter, ii, "filter" );
    DIP_THROW_IF( !elem, "" );
-   out.filter = dml::GetFloatArray( elem );
+   out.filter = GetRealOrComplexArray( elem );
+   out.isComplex = mxIsComplex( elem );
 
    elem = mxGetField( mxFilter, ii, "origin" );
    if( elem ) {
@@ -73,12 +97,17 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          dip::Image const filter = dml::GetImage( mxFilter );
          filterArray = dip::SeparateFilter( filter );
          if( filterArray.empty() ) {
-            if( filter.NumberOfPixels() > 7 * 7 ) {
+
+            if( filter.NumberOfPixels() > 7 * 7 ) { // note that this is an arbitrary threshold, and should probably depend also on log2(image size)
                dip::ConvolveFT( in, filter, out );
             } else {
                dip::GeneralConvolution( in, filter, out, bc );
             }
-            goto fin;
+
+         } else {
+
+            dip::SeparableConvolution( in, out, filterArray, bc );
+
          }
 
       } else {
@@ -90,7 +119,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             for( dip::uint ii = 0; ii < n; ++ii ) {
                mxArray const* elem = mxGetCell( mxFilter, ii );
                try {
-                  filterArray[ ii ].filter = dml::GetFloatArray( elem );
+                  filterArray[ ii ].filter = GetRealOrComplexArray( elem );
+                  filterArray[ ii ].isComplex = mxIsComplex( elem );
                } catch( dip::Error& ) {
                   DIP_THROW( wrongFilter );
                }
@@ -107,11 +137,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             }
          }
 
+         dip::SeparableConvolution( in, out, filterArray, bc );
+
       }
 
-      dip::SeparableConvolution( in, out, filterArray, bc );
-
-      fin:
       plhs[ 0 ] = dml::GetArray( out );
 
    } DML_CATCH

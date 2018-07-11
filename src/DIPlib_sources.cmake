@@ -131,6 +131,7 @@ library/unit_tests.cpp
 linear/convolution.cpp
 linear/derivative.cpp
 linear/finitediff.cpp
+linear/gabor.cpp
 linear/gaboriir.cpp
 linear/gauss.cpp
 linear/gaussiir.cpp

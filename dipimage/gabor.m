@@ -1,20 +1,29 @@
 %GABOR   Gabor filter
 %
 % SYNOPSIS:
-%  image_out = gabor(image_in,sigma,frequency,direction,boundaryCondition,process,truncation)
-%  image_out = gabor(image_in,sigma,frequencies,boundaryCondition,process,truncation)
+%  image_out = gabor(image_in,sigma,frequency,direction,method,boundaryCondition,process,truncation)
+%  image_out = gabor(image_in,sigma,frequencies,method,boundaryCondition,process,truncation)
 %
 % PARAMETERS:
 %  sigma:       Sigma in the spatial domain
 %  frequency:   Magnitude of the frequency in pixel, [0,0.5]
 %  direction:   Direction in the fourier domain where to filter, [0,2pi]
 %  frequencies: Frequencies in cartesian coordinates, [-0.5,0.5]
+%  method:      Method used to compute the filter. One of:
+%    - 'fir':     Finite Impulse Resonse filter (convolution with a kernel).
+%    - 'iir':     Infinte Impulse Response filter (recursive filtering).
+%    - 'kernel':  The convolution kernel is returned, rather than the result
+%                 of the convolution.
 %  boundary_condition: Defines how the boundary of the image is handled.
 %                      See HELP BOUNDARY_CONDITION
 %  process:     Dimensions to process, set to [] to process all dimensions
 %  truncation:  Determines the size of the Gaussian filters.
 %
 % DEFAULTS:
+%  sigma = 5
+%  frequency = 0.15
+%  direction = pi
+%  method = 'iir'
 %  bounary_condition = 'mirror'
 %  process = []
 %  truncation = 3
@@ -25,6 +34,8 @@
 %
 %  The second form is for arbitrary dimensionality, and specifies the
 %  frequencies as a vector with coordinates in the frequency domain.
+%  Note that the default values are suitable only for 1D and 2D images,
+%  for higher-dimensional images you need to specify FREQUENCIES.
 %
 %  The coordinate system in the Fourier domain is as follows:
 %  The origin is at IMSIZE(IMAGE_IN)/2. Positive frequencies are to the
@@ -32,14 +43,12 @@
 %  0 degrees along the positive x-axis (to the right), and 90 degrees
 %  along the positive y-axis (downwards).
 %
-% DEFAULTS:
-%  sigma = 5
-%  frequency = 0.15
-%  direction = pi
-%
+%  The IIR method is faster than the FIR method for all filter sizes.
+%  Use the FIR method only if more precision is required.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GaborIIR.
+%  This function calls the DIPlib function dip::GaborIIR, dip::GaborFIR,
+%  and dip::CreateGabor.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

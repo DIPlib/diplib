@@ -21,6 +21,7 @@
 
 #include "dip_matlab_interface.h"
 #include "diplib/linear.h"
+#include "diplib/generation.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
@@ -54,8 +55,13 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
       }
 
-      DML_MAX_ARGS( index + 3 );
+      DML_MAX_ARGS( index + 4 );
 
+      dip::String method = dip::S::BEST;
+      if( nrhs > index ) {
+         method = dml::GetString( prhs[ index ] );
+         ++index;
+      }
       dip::StringArray bc = {};
       if( nrhs > index ) {
          bc = dml::GetStringArray( prhs[ index ] );
@@ -71,7 +77,18 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          truncation = dml::GetFloat( prhs[ index ] );
       }
 
-      dip::GaborIIR( in, out, sigmas, frequencies, bc, process, {}, truncation );
+      if( method == "iir" ) {
+         dip::GaborIIR( in, out, sigmas, frequencies, bc, process, {}, truncation );
+      } else if( method == "fir" ) {
+         dip::GaborFIR( in, out, sigmas, frequencies, bc, process, truncation );
+      } else if( method == "kernel" ) {
+         if( sigmas.size() == 1 ) {
+            sigmas.resize( in.Dimensionality(), sigmas[ 0 ] );
+         }
+         dip::CreateGabor( out, sigmas, frequencies, truncation );
+      } else {
+         DIP_THROW_INVALID_FLAG( method );
+      }
 
       plhs[ 0 ] = dml::GetArray( out );
 

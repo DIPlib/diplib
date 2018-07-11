@@ -333,7 +333,7 @@ template< typename TPI >
 class SeparableBilateralLineFilter : public Framework::SeparableLineFilter
 {
 public:
-   SeparableBilateralLineFilter( Image const& estimate, std::vector< FloatArray > const& spatialFilters, dfloat tonalSigma ) :
+   SeparableBilateralLineFilter( Image const& estimate, std::vector< std::vector< dfloat >> const& spatialFilters, dfloat tonalSigma ) :
       estimate_( estimate ), spatialFilters_( spatialFilters ) {
       // Create tonal Gauss and store scaling
       CreateTonalGauss( tonalGauss_, tonalSigma, DT_DFLOAT, tonalGaussScaling_ );   // Create dfloats because buffer data type is SuggestDouble (see SeparableBilateralFilter)
@@ -357,7 +357,7 @@ public:
       TPI* tonalGauss = static_cast<TPI*>(tonalGauss_.Origin());
 
       // Select filter for this dimension
-      FloatArray const& filter = spatialFilters_[ params.dimension ];
+      std::vector< dfloat > const& filter = spatialFilters_[ params.dimension ];
 
       dfloat const* filterSrc = static_cast< dfloat const* >(filter.data());
       dip::uint filterSize = filter.size();
@@ -388,7 +388,7 @@ public:
    }
 private:
    Image const& estimate_; // Estimate of tonal center
-   std::vector< FloatArray > const& spatialFilters_;
+   std::vector< std::vector< dfloat >> const& spatialFilters_;
    Image tonalGauss_;
    dfloat tonalGaussScaling_;
 };
@@ -417,11 +417,11 @@ void SeparableBilateralFilter(
    DataType outputDataType = DataType::SuggestFlex( in.DataType() );
 
    // Create 1D gaussian for each dimension
-   std::vector< FloatArray > gaussians;
+   std::vector< std::vector< dfloat >> gaussians;
    UnsignedArray borders;
    gaussians.reserve( in.Dimensionality() );
    for( dip::uint ii = 0; ii < in.Dimensionality(); ++ii ) {
-      DIP_STACK_TRACE_THIS( gaussians.emplace_back( CreateGaussian1D( spatialSigmas[ ii ], 0, truncation ) ) );
+      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( spatialSigmas[ ii ], 0, truncation ) ) );
       dip::uint gaussianLength = gaussians.back().size();
       borders.push_back( (gaussianLength - 1) / 2 );
    }

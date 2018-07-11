@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the convolution.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,20 +35,51 @@ enum class FilterSymmetry {
       GENERAL,
       EVEN,
       ODD,
+      CONJ,
       D_EVEN,
-      D_ODD
+      D_ODD,
+      D_CONJ
 };
 
+template< typename inT, typename outT >
+void CopyReverseData( inT const* src, outT* dest, dip::uint n ) {
+   for( dip::uint ii = n; ii > 0; ) {
+      --ii;
+      *dest = static_cast< outT >( src[ ii ] );
+      ++dest;
+   }
+}
+template<> // template specialization to avoid a compiler warning for scomplex(dfloat).
+void CopyReverseData( dfloat const* src, scomplex* dest, dip::uint n ) {
+   for( dip::uint ii = n; ii > 0; ) {
+      --ii;
+      *dest = static_cast< sfloat >( src[ ii ] );
+      ++dest;
+   }
+}
+
 struct InternOneDimensionalFilter {
-   void* filter = nullptr; // Now that the filter is a void*, can we extend this to complex-valued filters?
-   dip::uint size = 0;
-   dip::uint dataSize = 0;
-   dip::uint origin = 0;
-   bool isDouble = true; // If this is false, filter is sfloat*, it it is true, filter is dfloat*.
+   std::vector< uint8 > filter; // the data: pointer must be cast to correct type, see below
+   dip::uint size = 0;     // the size of the filter
+   dip::uint dataSize = 0; // the number of samples we store -- size can be larger if the filter is symmetric
+   dip::uint origin = 0;   // filter origin, index
+   bool isDouble = true;   // If this is false, filter is sfloat*, it it is true, filter is dfloat*
+   bool isComplex = false; // If this is false, filter is as above. If it is true, it is scomplex* or dcomplex* instead
    FilterSymmetry symmetry = FilterSymmetry::GENERAL;
 
-   InternOneDimensionalFilter( OneDimensionalFilter const& in, bool useDouble = true ) : isDouble( useDouble ) {
+   InternOneDimensionalFilter( OneDimensionalFilter const& in, bool useDouble = true, bool useComplex = false )
+         : isDouble( useDouble ), isComplex( useComplex ) {
       dataSize = size = in.filter.size();
+      dip::uint sampleSize = isDouble ? sizeof( dfloat ) : sizeof( sfloat );
+      if( in.isComplex ) {
+         DIP_THROW_IF( dataSize & 1, "Complex filter must have an even number of values." );
+         DIP_THROW_IF( !isComplex, "Found a complex filter where none was expected." );
+         dataSize /= 2;
+         size /= 2;
+      }
+      if( isComplex ) {
+         sampleSize *= 2;
+      }
       if( size != 0 ) {
          if( in.symmetry.empty() || ( in.symmetry == "general" )) {
             symmetry = FilterSymmetry::GENERAL;
@@ -58,11 +89,17 @@ struct InternOneDimensionalFilter {
          } else if( in.symmetry == S::ODD ) {
             symmetry = FilterSymmetry::ODD;
             size += size - 1;
+         } else if( in.symmetry == S::CONJ ) {
+            symmetry = isComplex ? FilterSymmetry::CONJ : FilterSymmetry::EVEN;
+            size += size - 1;
          } else if( in.symmetry == "d-even" ) {
             symmetry = FilterSymmetry::D_EVEN;
             size += size;
          } else if( in.symmetry == "d-odd" ) {
             symmetry = FilterSymmetry::D_ODD;
+            size += size;
+         } else if( in.symmetry == "d-conj" ) {
+            symmetry = isComplex ? FilterSymmetry::D_CONJ : FilterSymmetry::D_EVEN;
             size += size;
          } else {
             DIP_THROW( "Symmetry string not recognized: " + in.symmetry );
@@ -73,69 +110,73 @@ struct InternOneDimensionalFilter {
             origin = static_cast< dip::uint >( in.origin );
             DIP_THROW_IF( origin >= size, "Origin outside of filter" );
          }
+         // Allocate memory
+         filter.resize( dataSize * sampleSize );
          // Copy filter and reverse it
-         if( isDouble ) {
-            filter = std::malloc( dataSize * sizeof( dfloat ));
-            DIP_THROW_IF( !filter, "Failed to allocate memory" );
-            dfloat* ptr = static_cast< dfloat* >( filter );
-            //std::cout << "Allocated dfloat buffer" << std::endl;
-            for( dip::uint ii = dataSize; ii > 0; ) {
-               --ii;
-               *ptr = in.filter[ ii ];
-               ++ptr;
+         if( isComplex ) {
+            if( isDouble ) {
+               dcomplex* ptr = reinterpret_cast< dcomplex* >( filter.data() );
+               if( in.isComplex ) {
+                  dcomplex const* src = reinterpret_cast< dcomplex const* >( in.filter.data() );
+                  CopyReverseData( src, ptr, dataSize );
+               } else {
+                  CopyReverseData( in.filter.data(), ptr, dataSize );
+               }
+            } else {
+               scomplex* ptr = reinterpret_cast< scomplex* >( filter.data() );
+               if( in.isComplex ) {
+                  dcomplex const* src = reinterpret_cast< dcomplex const* >( in.filter.data() );
+                  CopyReverseData( src, ptr, dataSize );
+                  //for( dip::uint ii = dataSize; ii > 0; ) {
+                  //   --ii;
+                  //   *ptr = { static_cast< sfloat >( src[ ii ].real() ), static_cast< sfloat >( src[ ii ].imag() ) };
+                  //   ++ptr;
+                  //}
+               } else {
+                  CopyReverseData( in.filter.data(), ptr, dataSize );
+               }
             }
          } else {
-            filter = std::malloc( dataSize * sizeof( sfloat ));
-            DIP_THROW_IF( !filter, "Failed to allocate memory" );
-            sfloat* ptr = static_cast< sfloat* >( filter );
-            //std::cout << "Allocated sfloat buffer" << std::endl;
-            for( dip::uint ii = dataSize; ii > 0; ) {
-               --ii;
-               *ptr = static_cast< sfloat >( in.filter[ ii ] );
-               ++ptr;
+            if( isDouble ) {
+               dfloat* ptr = reinterpret_cast< dfloat* >( filter.data() );
+               CopyReverseData( in.filter.data(), ptr, dataSize );
+            } else {
+               sfloat* ptr = reinterpret_cast< sfloat* >( filter.data() );
+               CopyReverseData( in.filter.data(), ptr, dataSize );
             }
          }
          // Reverse origin also
          origin = size - origin - 1;
       }
    }
-   ~InternOneDimensionalFilter() {
-      if( filter ) {
-         //std::cout << "Freed buffer" << std::endl;
-         std::free( filter );
-      }
-   }
    InternOneDimensionalFilter( const InternOneDimensionalFilter& ) = delete;
    InternOneDimensionalFilter& operator=( const InternOneDimensionalFilter& ) = delete;
-   InternOneDimensionalFilter( InternOneDimensionalFilter&& other ) noexcept {
-      filter = other.filter;
-      isDouble = other.isDouble;
-      size = other.size;
-      dataSize = other.dataSize;
-      origin = other.origin;
-      symmetry = other.symmetry;
-      other.filter = nullptr;
-   }
-   InternOneDimensionalFilter& operator=( InternOneDimensionalFilter&& other ) noexcept {
-      filter = other.filter;
-      isDouble = other.isDouble;
-      size = other.size;
-      dataSize = other.dataSize;
-      origin = other.origin;
-      symmetry = other.symmetry;
-      other.filter = nullptr;
-      return *this;
-   }
+   InternOneDimensionalFilter( InternOneDimensionalFilter&& other ) = default;
+   InternOneDimensionalFilter& operator=( InternOneDimensionalFilter&& other ) = default;
 };
 
 using InternOneDimensionalFilterArray = std::vector< InternOneDimensionalFilter >;
 
-template< typename TPI >
+template< typename T > struct IsComplexType { static constexpr bool value = false; };
+template<> struct IsComplexType< scomplex > { static constexpr bool value = true; };
+template<> struct IsComplexType< dcomplex > { static constexpr bool value = true; };
+
+template< typename T >
+T conjugate( T value ) { return value; }
+template< typename T >
+std::complex< T > conjugate( std::complex< T > value ) { return std::conj( value ); }
+
+template< typename TPI, typename TPF >
 class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
    public:
-      SeparableConvolutionLineFilter( InternOneDimensionalFilterArray const& filter ) : filter_( filter ) {}
+      SeparableConvolutionLineFilter( InternOneDimensionalFilterArray const& filter ) : filter_( filter ) {
+         // If one is single, so is the other.
+         static_assert( std::is_same< RealType< TPI >, RealType< TPF >>::value, "Filter type and image type don't match" );
+         // If TPF is complex, so is TPI.
+         static_assert( !( IsComplexType< TPF >::value && !IsComplexType< TPI >::value ), "Complex filter applied to non-complex data" );
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         TPI const* in = static_cast< TPI const* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          DIP_ASSERT( params.inBuffer.stride == 1 );
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -144,7 +185,9 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          if( filter_.size() > 1 ) {
             procDim = params.dimension;
          }
-         auto filter = static_cast< FloatType< TPI > const* >( filter_[ procDim ].filter );
+         auto filter = reinterpret_cast< TPF const* >( filter_[ procDim ].filter.data() );
+         DIP_ASSERT( DataType( TPF( 0 )).IsComplex() == filter_[ procDim ].isComplex );
+         DIP_ASSERT(( DataType( RealType< TPF >( 0 )) == DT_DFLOAT ) == filter_[ procDim ].isDouble );
          dip::uint dataSize = filter_[ procDim ].dataSize;
          auto filterEnd = filter + dataSize;
          dip::uint origin = filter_[ procDim ].origin;
@@ -153,7 +196,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
             case FilterSymmetry::GENERAL:
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI sum = 0;
-                  TPI* in_t = in;
+                  TPI const* in_t = in;
                   for( auto f = filter; f != filterEnd; ++f, ++in_t ) {
                      sum += *f * *in_t;
                   }
@@ -166,8 +209,8 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI sum = *filter * *in;
-                  TPI* in_r = in + 1;
-                  TPI* in_l = in - 1;
+                  TPI const* in_r = in + 1;
+                  TPI const* in_l = in - 1;
                   for( auto f = filter + 1; f != filterEnd; ++f, --in_l, ++in_r ) {
                      sum += *f * ( *in_r + *in_l );
                   }
@@ -180,10 +223,24 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI sum = *filter * *in;
-                  TPI* in_r = in + 1;
-                  TPI* in_l = in - 1;
+                  TPI const* in_r = in + 1;
+                  TPI const* in_l = in - 1;
                   for( auto f = filter + 1; f != filterEnd; ++f, --in_l, ++in_r ) {
                      sum += *f * ( *in_r - *in_l );
+                  }
+                  *out = sum;
+                  ++in;
+                  out += outStride;
+               }
+               break;
+            case FilterSymmetry::CONJ: // Always an odd-sized filter
+               in += dataSize - 1;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  TPI sum = *filter * *in;
+                  TPI const* in_r = in + 1;
+                  TPI const* in_l = in - 1;
+                  for( auto f = filter + 1; f != filterEnd; ++f, --in_l, ++in_r ) {
+                     sum += *f * *in_r + conjugate( *f ) * *in_l; // hopefully the compiler will optimize this computation...
                   }
                   *out = sum;
                   ++in;
@@ -193,9 +250,9 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
             case FilterSymmetry::D_EVEN: // Always an even-sized filter
                in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
-                  TPI* in_r = in;
                   TPI sum = 0;
-                  TPI* in_l = in_r - 1;
+                  TPI const* in_r = in;
+                  TPI const* in_l = in_r - 1;
                   for( auto f = filter; f != filterEnd; ++f, --in_l, ++in_r ) {
                      sum += *f * ( *in_r + *in_l );
                   }
@@ -207,11 +264,25 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
             case FilterSymmetry::D_ODD: // Always an even-sized filter
                in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
-                  TPI* in_r = in;
                   TPI sum = 0;
-                  TPI* in_l = in_r - 1;
+                  TPI const* in_r = in;
+                  TPI const* in_l = in_r - 1;
                   for( auto f = filter; f != filterEnd; ++f, --in_l, ++in_r ) {
                      sum += *f * ( *in_r - *in_l );
+                  }
+                  *out = sum;
+                  ++in;
+                  out += outStride;
+               }
+               break;
+            case FilterSymmetry::D_CONJ: // Always an even-sized filter
+               in += dataSize - 1;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  TPI sum = 0;
+                  TPI const* in_r = in;
+                  TPI const* in_l = in_r - 1;
+                  for( auto f = filter; f != filterEnd; ++f, --in_l, ++in_r ) {
+                     sum += *f * *in_r + conjugate( *f ) * *in_l; // hopefully the compiler will optimize this computation...
                   }
                   *out = sum;
                   ++in;
@@ -226,9 +297,13 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
 
 inline bool IsMeaninglessFilter( InternOneDimensionalFilter const& filter ) {
    return ( filter.size == 0 ) || (( filter.size == 1 ) && (
-         filter.isDouble
-         ? ( *static_cast< dfloat* >( filter.filter ) == 1.0 )
-         : ( *static_cast< sfloat* >( filter.filter ) == 1.0 )
+         filter.isComplex
+         ? ( filter.isDouble
+             ? ( *reinterpret_cast< dcomplex const* >( filter.filter.data() ) == 1.0 )
+             : ( *reinterpret_cast< scomplex const* >( filter.filter.data() ) == 1.0f ))
+         : ( filter.isDouble
+             ? ( *reinterpret_cast< dfloat const* >( filter.filter.data() ) == 1.0 )
+             : ( *reinterpret_cast< sfloat const* >( filter.filter.data() ) == 1.0f ))
    ));
 }
 
@@ -246,15 +321,31 @@ void SeparableConvolution(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF(( filterArray.size() != 1 ) && ( filterArray.size() != nDims ), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   bool useDouble = in.DataType().IsA( DataType::Class_DComplex + DataType::Class_DFloat );
+
+   // Is it a complex or a real filter?
+   bool isComplexFilter = false;
+   for( auto const& f : filterArray ) {
+      if( f.isComplex ) {
+         isComplexFilter = true;
+         break;
+      }
+   }
+
+   // What is the data type we'll use?
+   DataType dtype = isComplexFilter ? DataType::SuggestComplex( in.DataType() ) : DataType::SuggestFlex( in.DataType() );
+   //std::cout << "dtype = " << dtype << std::endl;
+   bool useDouble = dtype.IsA( DataType::Class_DComplex + DataType::Class_DFloat );
    //std::cout << "useDouble = " << useDouble << std::endl;
+
+   // Copy filter data over to internal representation, using the correct types
    InternOneDimensionalFilterArray filterData;
    DIP_START_STACK_TRACE
       for( auto const& f : filterArray ) {
-         filterData.emplace_back( f, useDouble );
+         filterData.emplace_back( f, useDouble, isComplexFilter );
       }
    DIP_END_STACK_TRACE
-   // Handle `filterArray` and create `border` array
+
+   // Create `border` array
    UnsignedArray border( nDims );
    if( filterData.size() == 1 ) {
       dip::uint sz = filterData[ 0 ].size;
@@ -269,6 +360,7 @@ void SeparableConvolution(
          border[ ii ] = b;
       }
    }
+
    // Handle `process` array
    if( process.empty() ) {
       process.resize( nDims, true );
@@ -287,14 +379,36 @@ void SeparableConvolution(
          }
       }
    }
+
    DIP_START_STACK_TRACE
       // handle boundary condition array (checks are made in Framework::Separable, no need to repeat them here)
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       // Get callback function
-      DataType dtype = DataType::SuggestFlex( in.DataType() );
-      //std::cout << "dtype = " << dtype << std::endl;
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_FLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
+      switch( dtype ) {
+         case dip::DT_SFLOAT:
+            lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::sfloat, dip::sfloat >( filterData ));
+            break;
+         case dip::DT_DFLOAT:
+            lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::dfloat, dip::dfloat >( filterData ));
+            break;
+         case dip::DT_SCOMPLEX:
+            if( isComplexFilter ) {
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::scomplex, dip::scomplex >( filterData ));
+            } else {
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::scomplex, dip::sfloat >( filterData ));
+            }
+            break;
+         case dip::DT_DCOMPLEX:
+            if( isComplexFilter ) {
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::dcomplex, dip::dcomplex >( filterData ));
+            } else {
+               lineFilter = static_cast< decltype( lineFilter ) >( new SeparableConvolutionLineFilter< dip::dcomplex, dip::dfloat >( filterData ));
+            }
+            break;
+         default:
+            DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED ); // This will never happen
+      }
       Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::SeparableOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }

@@ -37,53 +37,84 @@
 
 namespace dip {
 
+namespace {
+
+template< typename T > // T is either dfloat or dcomplex
+void dip__SeparateFilter(
+      Image& filter,
+      std::vector< dfloat >& out,
+      dip::uint nPixels,
+      dip::uint length
+) {
+   constexpr bool isComplex = std::is_same< T, dcomplex >::value;
+   using Matrix = Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >;
+   using Vector = Eigen::Matrix< T, Eigen::Dynamic, 1 >;
+   // Make a matrix out of `filter` that has `nPixel` rows and `length` columns
+   Eigen::Map< Matrix > matrix( static_cast< T* >( filter.Origin() ),
+                                static_cast< Eigen::Index >( nPixels ),
+                                static_cast< Eigen::Index >( length ));
+   // Compute SVD
+   Eigen::JacobiSVD< Matrix > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
+   // Expect all but first singular value to be close to 0. If not, it's not separable, and we return {}.
+   auto S = svd.singularValues();
+   dfloat s1 = S( 0 );
+   dfloat s2 = S( 1 );
+   dfloat tolerance = 1e-7 * static_cast< dfloat >( std::max( nPixels, length )) * std::abs( s1 );
+   //std::cout << "s1 = " << s1 << ", s2 = " << s2 << ", tol = " << tolerance << std::endl;
+   if( s2 > tolerance ) {
+      // Not separable!
+      return;
+   }
+   // 1D filter is first column of V -- write V into 1D filter buffer
+   out.resize( length * ( isComplex ? 2 : 1 ));
+   Eigen::Map< Vector > oneDFilter( reinterpret_cast< T* >( out.data() ), static_cast< Eigen::Index >( length ));
+   oneDFilter = svd.matrixV().col( 0 );
+   // The ndims-1--dimensional remainder is the first column of U * singular value --
+   // write U * s1 back into input image, we'll use fewer pixels than before
+   Eigen::Map< Vector > remainder( static_cast< T* >( filter.Origin() ),
+                                   static_cast< Eigen::Index >( nPixels ));
+   remainder = svd.matrixU().col( 0 ) * s1;
+}
+
+} // namespace
+
 OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint ndims = c_in.Dimensionality();
    DIP_THROW_IF( ndims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    OneDimensionalFilterArray out( ndims );
-   Image filter = Convert( c_in, DT_DFLOAT ); // Filter is DFLOAT and has normal strides
+   // Complex data is handled a little differently from real data
+   bool isComplex = c_in.DataType().IsComplex();
+   // Copy the input image, we will need it as a scratch pad
+   Image filter = Convert( c_in, isComplex ? DT_DCOMPLEX : DT_DFLOAT ); // Filter is DFLOAT or DCOMPLEX and has normal strides
    DIP_ASSERT( filter.HasNormalStrides() );
-   dfloat* data = static_cast< dfloat* >( filter.Origin() );
    UnsignedArray sizes = filter.Sizes();
    dip::uint nPixels = sizes.product();
    // Shave dimensions off the filter from the end
    while( ndims > 1 ) {
       dip::uint dim = ndims - 1; // Current dimension
       dip::uint length = sizes[ dim ]; // Number of pixels in 1D filter for this dimension
-      nPixels /= length; // Number of pixels in remainder
       if( length > 1 ) {
-         // Make a matrix out of `filter` that has `nPixel` rows and `length` columns
-         Eigen::Map< Eigen::MatrixXd > matrix( data, static_cast< Eigen::Index >( nPixels ),
-                                                     static_cast< Eigen::Index >( length ));
-         // Compute SVD
-         Eigen::JacobiSVD< Eigen::MatrixXd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
-         // Expect all but first singular value to be close to 0. If not, it's not separable, and we return {}.
-         auto S = svd.singularValues();
-         dfloat s1 = S( 0 );
-         dfloat s2 = S( 1 );
-         dfloat tolerance = 1e-7 * static_cast< dfloat >( std::max( nPixels, length )) * std::abs( s1 );
-         //std::cout << "s1 = " << s1 << ", s2 = " << s2 << ", tol = " << tolerance << std::endl;
-         if( s2 > tolerance ) {
-            // Not separable!
-            return {};
+         nPixels /= length; // Number of pixels in remainder
+         if( isComplex ) {
+            dip__SeparateFilter< dcomplex >( filter, out[ dim ].filter, nPixels, length );
+            out[ dim ].isComplex = true;
+         } else {
+            dip__SeparateFilter< dfloat >( filter, out[ dim ].filter, nPixels, length );
          }
-         // 1D filter is first column of V -- write V into 1D filter buffer
-         out[ dim ].filter.resize( length );
-         Eigen::Map< Eigen::VectorXd > oneDFilter( out[ dim ].filter.data(), static_cast< Eigen::Index >( length ));
-         oneDFilter = svd.matrixV().col( 0 );
-         // The ndims-1--dimensional remainder is the first column of U * singular value --
-         // write U * s1 back into input image, we'll use fewer pixels than before
-         Eigen::Map< Eigen::VectorXd > remainder( data, static_cast< Eigen::Index >( nPixels ));
-         remainder = svd.matrixU().col( 0 ) * s1;
+         if( out[ dim ].filter.empty() ) {
+            return {}; // The filter is not separable
+         }
       }
       // else: the output filter will have size 0, and we continue as usual.
       --ndims;
    }
-   out[ 0 ].filter.resize( nPixels );
-   std::copy( data, data + nPixels, out[ 0 ].filter.data() );
+   out[ 0 ].filter.resize( nPixels * ( isComplex ? 2 : 1 ));
+   std::copy( static_cast< dfloat* >( filter.Origin() ),
+              static_cast< dfloat* >( filter.Origin() ) + nPixels * ( isComplex ? 2 : 1 ), // for complex data, copy two values per pixel
+              out[ 0 ].filter.data() );
+   out[ 0 ].isComplex = isComplex;
    return out;
 }
 

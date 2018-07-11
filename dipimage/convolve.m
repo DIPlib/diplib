@@ -53,8 +53,8 @@
 %  negative or not given, the origin will be placed at the middle of the
 %  filter, or the pixel to the right if the size is even. The 'flags' field
 %  contains one of the strings 'general' (or '', or not present), 'even',
-%  'odd', 'd-even', or 'd-odd'. These cause the filter weights to be
-%  repeated to obtain an even or odd symmetry in the filter. The 'd-'
+%  'odd', 'conj', 'd-even', 'd-odd' or 'd-conj'. These cause the filter weights to be
+%  repeated to obtain an even, odd or conjugate symmetry in the filter. The 'd-'
 %  prefix creates an even-sized filter by repeating all weights, otherwise
 %  an odd-sized filter is created, in which the right-most weight is not
 %  repeated.
@@ -63,7 +63,7 @@
 %  This function calls the DIPlib functions dip::SeparableConvolution,
 %  dip::ConvolveFT or dip::GeneralConvolution, depending on the input.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

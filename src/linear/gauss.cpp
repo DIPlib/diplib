@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
+#include "diplib/generation.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/transform.h"
@@ -38,27 +39,31 @@ inline dip::uint HalfGaussianSize(
 }
 
 // Creates a half Gaussian kernel, with the x=0 at the right end (last element) of the output array.
-FloatArray MakeHalfGaussian(
+std::vector< dfloat > MakeHalfGaussian(
       dfloat sigma,
       dip::uint order,
-      dip::uint length // the length of the array
+      dfloat truncation
 ) {
-   FloatArray filter( length );
-   dip::uint r0 = length - 1;
+   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, order, truncation );
+   if( order > 2 && halfFilterSize < 2 ) {
+      halfFilterSize = 2;
+   }
+   std::vector< dfloat > filter( halfFilterSize );
+   dip::uint r0 = halfFilterSize - 1;
    switch( order ) {
       case 0: {
          dfloat factor = -1.0 / ( 2.0 * sigma * sigma );
          //dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ); // There's no point in computing this if we normalize later!
          dfloat normalization = 0;
          filter[ r0 ] = 1.0;
-         for( dip::uint rr = 1; rr < length; rr++ ) {
+         for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             dfloat g = std::exp( factor * ( rad * rad ));
             filter[ r0 - rr ] = g;
             normalization += g;
          }
          normalization = 1.0 / ( normalization * 2 + 1 );
-         for( dip::uint rr = 0; rr < length; rr++ ) {
+         for( dip::uint rr = 0; rr < halfFilterSize; rr++ ) {
             filter[ rr ] *= normalization;
          }
          break;
@@ -67,14 +72,14 @@ FloatArray MakeHalfGaussian(
          dfloat factor = -1.0 / ( 2.0 * sigma * sigma );
          dfloat moment = 0.0;
          filter[ r0 ] = 0.0;
-         for( dip::uint rr = 1; rr < length; rr++ ) {
+         for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             dfloat g = rad * std::exp( factor * ( rad * rad ));
             filter[ r0 - rr ] = g;
             moment += rad * g;
          }
          dfloat normalization = 1.0 / ( 2.0 * moment );
-         for( dip::uint rr = 0; rr < length - 1; rr++ ) {
+         for( dip::uint rr = 0; rr < halfFilterSize - 1; rr++ ) {
             filter[ rr ] *= normalization;
          }
          break;
@@ -85,7 +90,7 @@ FloatArray MakeHalfGaussian(
          dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma );
          dfloat mean = 0.0;
          filter[ r0 ] = ( -1.0 / sigma2 ) * norm;
-         for( dip::uint rr = 1; rr < length; rr++ ) {
+         for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             dfloat rr2 = rad * rad;
             dfloat g = (( -1.0 / sigma2 ) + ( rr2 ) / sigma4 ) * norm * std::exp( -( rr2 ) / ( 2.0 * sigma2 ));
@@ -95,13 +100,13 @@ FloatArray MakeHalfGaussian(
          mean = ( mean * 2.0 + filter[ r0 ] ) / ( static_cast< dfloat >( r0 ) * 2.0 + 1.0 );
          filter[ r0 ] -= mean;
          dfloat moment = 0.0;
-         for( dip::uint rr = 1; rr < length; rr++ ) {
+         for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             filter[ r0 - rr ] -= mean;
             moment += rad * rad * filter[ r0 - rr ];
          }
          dfloat normalization = 1.0 / moment;
-         for( dip::uint rr = 0; rr < length; rr++ ) {
+         for( dip::uint rr = 0; rr < halfFilterSize; rr++ ) {
             filter[ rr ] *= normalization;
          }
          break;
@@ -113,7 +118,7 @@ FloatArray MakeHalfGaussian(
          dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma );
          filter[ r0 ] = 0.0;
          dfloat moment = 0.0;
-         for( dip::uint rr = 1; rr < length; rr++ ) {
+         for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             dfloat r2 = rad * rad;
             dfloat g = norm * std::exp( -r2 / ( 2.0 * sigma2 )) * ( rad * ( 3.0 * sigma2 - r2 ) / sigma6 );
@@ -121,7 +126,7 @@ FloatArray MakeHalfGaussian(
             moment += g * r2 * rad;
          }
          dfloat normalization = 3.0 / moment;
-         for( dip::uint rr = 0; rr < length; rr++ ) {
+         for( dip::uint rr = 0; rr < halfFilterSize; rr++ ) {
             filter[ rr ] *= normalization;
          }
          break;
@@ -134,8 +139,8 @@ FloatArray MakeHalfGaussian(
 
 } // namespace
 
-  // Create 1D full Gaussian
-FloatArray CreateGaussian1D(
+// Create 1D full Gaussian
+std::vector< dfloat > MakeGaussian(
       dfloat sigma,
       dip::uint order,
       dfloat truncation
@@ -144,24 +149,15 @@ FloatArray CreateGaussian1D(
    if( sigma == 0.0 ) {
       return { 1.0 };
    }
-
-   // Determine filter size
-   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, order, truncation );
-   // Create actual Gauss
-   if( halfFilterSize < 1 ) {
-      halfFilterSize = 1;
-   }
-   if( order > 2 && halfFilterSize < 2 ) {
-      halfFilterSize = 2;
-   }
-
-   FloatArray gaussian;
-   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, order, halfFilterSize ));
-   dfloat symmetrySign = order & 1 ? -1.0 : 1.0;
-   // Complete the gaussian
-   for( dip::uint iHG = gaussian.size() - 1; iHG > 0; ) {
-      --iHG;
-      gaussian.push_back( symmetrySign * gaussian[ iHG ] );
+   // Create half Gaussian
+   std::vector< dfloat > gaussian;
+   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, order, truncation ));
+   dip::uint halfFilterSize = gaussian.size() - 1;
+   // Complete the Gaussian
+   gaussian.resize( halfFilterSize * 2 + 1 );
+   dfloat symmetrySign = ( order & 1 ) ? -1.0 : 1.0;
+   for( dip::uint ii = 1; ii <= halfFilterSize; ++ii ) {
+      gaussian[ halfFilterSize + ii ] = symmetrySign * gaussian[ halfFilterSize - ii ];
    }
    return gaussian;
 }
@@ -175,24 +171,21 @@ void CreateGauss(
 ) {
    // Verify dimensionality
    dip::uint nDims = sigmas.size();
-   std::vector< FloatArray > gaussians;
-   gaussians.reserve( nDims );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( orders, nDims, dip::uint( 0 )));
    DIP_STACK_TRACE_THIS( ArrayUseParameter( exponents, nDims, dip::uint( 0 )));
-
-   // Adjust truncation to default if needed
    if( truncation <= 0.0 ) {
-      truncation = 3.0;
+      truncation = 3;   // Default truncation
    }
 
-   UnsignedArray outSizes;
-   UnsignedArray centers;
+   std::vector< std::vector< dfloat >> gaussians( nDims );
+   UnsignedArray outSizes( nDims );
+   UnsignedArray centers( nDims );
    // Create 1D gaussian for each dimension
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      DIP_STACK_TRACE_THIS( gaussians.emplace_back( CreateGaussian1D( sigmas[ ii ], orders[ ii ], truncation )));
-      dip::uint gaussianLength = gaussians.back().size();
-      outSizes.push_back( gaussianLength );
-      centers.push_back(( gaussianLength - 1 ) / 2 );
+      DIP_STACK_TRACE_THIS( gaussians[ ii ] = MakeGaussian( sigmas[ ii ], orders[ ii ], truncation ));
+      dip::uint gaussianLength = gaussians[ ii ].size();
+      outSizes[ ii ] = gaussianLength;
+      centers[ ii ] = ( gaussianLength - 1 ) / 2;
    }
 
    // Create output image
@@ -203,7 +196,7 @@ void CreateGauss(
       // Multiply Gaussians
       dfloat value = 1.0;
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         value *= gaussians[ ii ][ coords[ ii ] ];
+         value *= gaussians[ ii ][ coords[ ii ]];
          // Add moments
          if( exponents[ ii ] > 0 ) {
             dfloat v = static_cast< dfloat >( coords[ ii ] ) - static_cast< dfloat >( centers[ ii ] );
@@ -228,6 +221,9 @@ void GaussFIR(
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
    DIP_END_STACK_TRACE
+   if( truncation <= 0.0 ) {
+      truncation = 3;   // Default truncation
+   }
    OneDimensionalFilterArray filter( nDims );
    BooleanArray process( nDims, true );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -253,9 +249,7 @@ void GaussFIR(
                default:
                   DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
             }
-            filter[ ii ].filter = MakeHalfGaussian(
-                  sigmas[ ii ], order[ ii ],
-                  HalfGaussianSize( sigmas[ ii ], order[ ii ], truncation ) + 1 );
+            filter[ ii ].filter = MakeHalfGaussian( sigmas[ ii ], order[ ii ], truncation );
             // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
          }
       } else {
@@ -370,6 +364,9 @@ void GaussFT(
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
    DIP_END_STACK_TRACE
+   if( truncation <= 0.0 ) {
+      truncation = 3;   // Default truncation
+   }
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( in.Size( ii ) == 1 ) {
          sigmas[ ii ] = 0;

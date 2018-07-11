@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for linear image filters
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,9 +40,13 @@ namespace dip {
 
 /// \brief Describes a 1D filter
 ///
-/// The weights are in `filter`. The origin is placed either at the index given by `origin`, if it's non-negative, or
-/// at index `filter.size() / 2` if `origin` is negative. This location is either the middle pixel if the filter is
-/// odd in length, or the pixel to the right of the center if it is even in length:
+/// The weights are in `filter`. If `isComplex`, then the values in `filter` are interpreted as real/imaginary
+/// pairs. In this case, `filter` must have an even length, with each two consecutive elements representing a
+/// single filter weight. The `filter.data()` pointer can thus be cast to `dcomplex`.
+///
+/// The origin is placed either at the index given by `origin`, if it's non-negative, or at index
+/// `filter.size() / 2` if `origin` is negative. This location is either the middle pixel if the filter
+/// is odd in length, or the pixel to the right of the center if it is even in length:
 ///
 ///     filter size is odd :      filter data :  x x x x x        origin = -1
 ///                                                  ^
@@ -58,9 +62,10 @@ namespace dip {
 /// Note that `origin` must be an index to one of the samples in the `filter` array
 ///
 /// `symmetry` indicates the filter shape: `"general"` (or an empty string) indicates no symmetry.
-/// `"even"` indicates even symmetry, and `"odd"` indicates odd symmetry. In both cases, the filter represents
-/// the left half of the full filter, with the rightmost element at the origin (and not repeated). The full filter
-/// is thus always odd in size. `"d-even"` and `"d-odd"` are similar, but duplicate the rightmost element, yielding
+/// `"even"` indicates even symmetry, `"odd"` indicates odd symmetry, and `"conj"` indicates complex conjugate
+/// symmetry. In these three cases, the filter represents the left half of the full filter,
+/// with the rightmost element at the origin (and not repeated). The full filter is thus always odd in size.
+/// `"d-even"`, `"d-odd"` and `"d-conj"` are similar, but duplicate the rightmost element, yielding
 /// an even-sized filter. The origin for the symmetric filters is handled identically to the general filter case.
 ///
 ///     filter array:                a  b  c              array has N elements
@@ -68,15 +73,18 @@ namespace dip {
 ///     symmetry = "general":        a  b  c              filter size = N
 ///     symmetry = "even":           a  b  c  b  a        filter size = N + N - 1
 ///     symmetry = "odd":            a  b  c -b -a        filter size = N + N - 1
+///     symmetry = "conj":           a  b  c  b* a*        filter size = N + N - 1
 ///     symmetry = "d-even":         a  b  c  c  b  a     filter size = N + N
 ///     symmetry = "d-odd":          a  b  c -c -b -a     filter size = N + N
+///     symmetry = "d-conj":         a  b  c  c* b* a*    filter size = N + N
 ///
 /// The convolution is applied to each tensor component separately, which is always the correct behavior for linear
 /// filters.
 struct DIP_NO_EXPORT OneDimensionalFilter {
-   FloatArray filter;            ///< Filter weights
+   std::vector< dfloat > filter; ///< Filter weights
    dip::sint origin = -1;        ///< Origin of the filter if non-negative
    String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"d-even"` or `"d-odd"`
+   bool isComplex = false;       ///< If true, use `complexFilter`, otherwise use `filter`
 };
 
 /// \brief An array of 1D filters
@@ -1124,28 +1132,67 @@ DIP_EXPORT void OrientedGauss( // TODO: port dip_OrientedGauss (from dip_linear.
 );
 
 
-DIP_EXPORT void GaborFIR( // TODO: implement a separable FIR Gabor filter
+/// \brief Finite impulse response implementation of the Gabor filter
+///
+/// Convolves the image with an FIR 1D Gabor kernel along each dimension. For each dimension,
+/// provide a value in `sigmas` and `frequencies`.
+/// The value of sigma determines the amount of local averaging. For smaller values, the result is more
+/// precise spatially, but less selective of frequencies. Dimensions where sigma is 0 or negative are not processed.
+///
+/// Frequencies are in the range [0, 0.5), with 0.5 being the frequency corresponding to a period of 2 pixels.
+///
+/// The output is complex-valued. Typically, the magnitude is the interesting part of the result.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// Set `process` to false for those dimensions that should not be filtered. This is equivalent to setting
+/// `sigmas` to 0 for those dimensions.
+///
+/// This function is relatively slow compared to `dip::GaborIIR`, even for small sigmas. Prefer to use the IIR
+/// implementation.
+///
+/// \see dip::Gabor2D, dip::GaborIIR.
+DIP_EXPORT void GaborFIR(
       Image const& in,
       Image& out,
       FloatArray sigmas,
-      FloatArray frequencies,
+      FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
       dfloat truncation = 3
 );
+inline Image GaborFIR(
+      Image const& in,
+      FloatArray const& sigmas,
+      FloatArray const& frequencies,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   GaborFIR( in, out, sigmas, frequencies, boundaryCondition, process, truncation );
+   return out;
+}
 
 /// \brief Recursive infinite impulse response implementation of the Gabor filter
 ///
-/// `sigmas` defines sigma for each dimension.
-/// `frequencies` defines the frequency for each dimension, a value for each dimension must be given.
+/// Convolves the image with an IIR 1D Gabor kernel along each dimension. For each dimension,
+/// provide a value in `sigmas` and `frequencies`.
+/// The value of sigma determines the amount of local averaging. For smaller values, the result is more
+/// precise spatially, but less selective of frequencies. Dimensions where sigma is 0 or negative are not processed.
+///
+/// Frequencies are in the range [0, 0.5), with 0.5 being the frequency corresponding to a period of 2 pixels.
+///
+/// The output is complex-valued. Typically, the magnitude is the interesting part of the result.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// Set `process` to false for those dimensions that should not be filtered.
+/// Set `process` to false for those dimensions that should not be filtered. This is equivalent to setting
+/// `sigmas` to 0 for those dimensions.
 ///
 /// The `order` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
 ///
-/// \see dip::Gabor.
+/// \see dip::Gabor2D, dip::GaborFIR.
 DIP_EXPORT void GaborIIR(
       Image const& in,
       Image& out,
@@ -1153,7 +1200,7 @@ DIP_EXPORT void GaborIIR(
       FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
-      IntegerArray order = {},
+      IntegerArray filterOrder = {},
       dfloat truncation = 3
 );
 inline Image GaborIIR(
@@ -1162,19 +1209,26 @@ inline Image GaborIIR(
    FloatArray const& frequencies,
    StringArray const& boundaryCondition = {},
    BooleanArray const& process = {},
-   IntegerArray const& order = {},
+   IntegerArray const& filterOrder = {},
    dfloat truncation = 3
 ) {
    Image out;
-   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, order, truncation );
+   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, filterOrder, truncation );
    return out;
 }
 
 /// \brief 2D Gabor filter with direction parameter
 ///
-/// `sigma` is sigma in the spatial domain.
-/// `frequency` is the frequency magnitude in pixel, in the range [0, 0.5).
-/// `direction` is the filter direction [0, 2*pi] (compare polar coordinates)
+/// Convolves the 2D image with a Gabor kernel.
+/// The value of sigma determines the amount of local averaging, and can be different for each dimension.
+/// For smaller values, the result is more precise spatially, but less selective of frequencies.
+///
+/// `frequency` is in the range [0, 0.5), with 0.5 being the frequency corresponding to a period of 2 pixels.
+/// `direction` is the filter direction, in the range [0, 2&pi;].
+///
+/// The output is complex-valued. Typically, the magnitude is the interesting part of the result.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// To use cartesian frequency coordinates, see `dip::GaborIIR`.
 inline void Gabor2D(
@@ -1184,13 +1238,12 @@ inline void Gabor2D(
    dfloat frequency = 0.1,
    dfloat direction = dip::pi,
    StringArray const& boundaryCondition = {},
-   BooleanArray const& process = {},
    dfloat truncation = 3
 ) {
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( frequency >= 0.5, "Frequency must be < 0.5" );
    FloatArray frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
-   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, {}, truncation );
+   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, {}, {}, truncation );
 }
 inline Image Gabor2D(
    Image const& in,
@@ -1198,11 +1251,10 @@ inline Image Gabor2D(
    dfloat frequency = 0.1,
    dfloat direction = dip::pi,
    StringArray const& boundaryCondition = {},
-   BooleanArray const& process = {},
    dfloat truncation = 3
 ) {
    Image out;
-   Gabor2D( in, out, sigmas, frequency, direction, boundaryCondition, process, truncation );
+   Gabor2D( in, out, sigmas, frequency, direction, boundaryCondition, truncation );
    return out;
 }
 

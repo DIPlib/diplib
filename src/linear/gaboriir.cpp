@@ -52,7 +52,7 @@ dip__GaborIIRParams dip__FillGaborIIRParams(
    dip__GaborIIRParams params;
    params.sigma = sigma;
    params.frequency = frequency;
-   params.border = static_cast< dip::uint >(sigma * truncation + 0.5);
+   params.border = static_cast< dip::uint >( std::round( sigma * truncation ));
 
    params.iir_order_num = {{ 0, 0, 0, 0, 0, 0 }};
    params.iir_order_den = {{ 3, 1, 3, 3, 1, 3 }};
@@ -232,7 +232,7 @@ void GaborIIR(
    FloatArray const& frequencies,
    StringArray const& boundaryCondition,
    BooleanArray process,
-   IntegerArray, // order is ignored, treated as 0
+   IntegerArray, // filterOrder is ignored, treated as 0
    dfloat truncation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -251,7 +251,7 @@ void GaborIIR(
    std::vector< dip__GaborIIRParams > filterParams( nDims );
    UnsignedArray border( nDims );
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
-      if(( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
+      if( process[ ii ] && ( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
          bool found = false;
          for( dip::uint jj = 0; jj < ii; ++jj ) {
             if( process[ jj ] && ( sigmas[ jj ] == sigmas[ ii ] ) && ( frequencies[ jj ] == frequencies[ ii ] )) {
