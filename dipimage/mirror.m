@@ -50,6 +50,9 @@ if ~isa(in,'dip_image')
    in = dip_image(in);
 end
 di = ndims(in);
+if nargin<2
+   mir = 'point';
+end
 if ischar(mir)
    mir_para = zeros(1,di);
    switch mir
