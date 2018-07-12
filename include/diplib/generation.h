@@ -286,7 +286,28 @@ DIP_EXPORT void DrawBandlimitedBox(
       dfloat truncation = 3.0
 );
 
-// TODO: document
+/// \brief Maps input values through an error function, can be used to generate arbitrary band-limited objects.
+///
+/// `in` is a scalar, real-valued function whose zero level set represents the edges of an object. The function
+/// indicates the Euclidean distance to these edges, with positive values inside the object. `out` will have a
+/// value of `value` inside the object, zero outside the object, and a Gaussian profile in the transition. If
+/// `sigma` is larger or equal to about 0.8, and the input image is well formed, the output will be approximately
+/// bandlimited.
+///
+/// The error function mapping is computed in band around the zero crossings where the input image has values
+/// smaller than `sigma * truncation`.
+///
+/// If `value` has more than one element, the output will be a tensor image with the same number of elements.
+///
+/// The following example draws a band-limited cross, where the horizontal and vertical bars both have 20.5 pixels
+/// width, and different sub-pixel shifts. The foreground has a value of 255, and the background of 0.
+///
+/// ```cpp
+///     dip::UnsignedArray outSize{ 256, 256 };
+///     dip::Image xx = 20.5 - dip::Abs( dip::CreateXCoordinate( outSize ) + 21.3 );
+///     dip::Image yy = 20.5 - dip::Abs( dip::CreateYCoordinate( outSize ) - 7.8 );
+///     dip::Image cross = dip::GaussianEdgeClip( dip::Supremum( xx, yy ), { 255 } );
+/// ```
 DIP_EXPORT void GaussianEdgeClip(
       Image const& in,
       Image& out,
@@ -305,7 +326,29 @@ inline Image GaussianEdgeClip(
    return out;
 }
 
-// TODO: document
+/// \brief Maps input values through a Gaussian function, can be used to generate arbitrary band-limited lines.
+///
+/// `in` is a scalar, real-valued function whose zero level set represents the lines to be drawn. The function
+/// indicates the Euclidean distance to these edges. `out` will have lines with a Gaussian profile and a weight
+/// of `value` (the integral perpendicular to the line is `value`), and a value of zero away from the lines. If
+/// `sigma` is larger or equal to about 0.8, and the input image is well formed, the output will be approximately
+/// bandlimited.
+///
+/// The Gaussian function mapping is computed in band around the zero crossings where the input image has values
+/// smaller than `sigma * truncation`.
+///
+/// If `value` has more than one element, the output will be a tensor image with the same number of elements.
+///
+/// The following example draws a band-limited cross outline, where the horizontal and vertical bars both have
+/// 20.5 pixels width, and different sub-pixel shifts. The lines have a weight of 1500, and the background has
+/// a value of 0.
+///
+/// ```cpp
+///     dip::UnsignedArray outSize{ 256, 256 };
+///     dip::Image xx = 20.5 - dip::Abs( dip::CreateXCoordinate( outSize ) + 21.3 );
+///     dip::Image yy = 20.5 - dip::Abs( dip::CreateYCoordinate( outSize ) - 7.8 );
+///     dip::Image cross = dip::GaussianLineClip( dip::Supremum( xx, yy ), { 1500 } );
+/// ```
 DIP_EXPORT void GaussianLineClip(
       Image const& in,
       Image& out,
