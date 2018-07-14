@@ -132,8 +132,10 @@ FloatArray MakeHalfGaussian(
    return filter;
 }
 
-// Create 1D full Gaussian
-FloatArray MakeGaussian(
+} // namespace
+
+  // Create 1D full Gaussian
+FloatArray CreateGaussian1D(
       dfloat sigma,
       dip::uint order,
       dfloat truncation
@@ -164,8 +166,6 @@ FloatArray MakeGaussian(
    return gaussian;
 }
 
-} // namespace
-
 void CreateGauss(
       Image& out,
       FloatArray const& sigmas,
@@ -189,7 +189,7 @@ void CreateGauss(
    UnsignedArray centers;
    // Create 1D gaussian for each dimension
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( sigmas[ ii ], orders[ ii ], truncation )));
+      DIP_STACK_TRACE_THIS( gaussians.emplace_back( CreateGaussian1D( sigmas[ ii ], orders[ ii ], truncation )));
       dip::uint gaussianLength = gaussians.back().size();
       outSizes.push_back( gaussianLength );
       centers.push_back(( gaussianLength - 1 ) / 2 );

@@ -112,6 +112,12 @@ class DIP_NO_EXPORT LookupTable{
          std::copy( begin, end, dest );
       }
 
+      // Variant that takes an array of value images
+      explicit LookupTable( ImageArray const& values, FloatArray index ) : valueImages_( CreateImageConstRefArray(values) ), index_( std::move( index) ) {
+         DIP_THROW_IF( index_.empty(), "Index cannot be empty when using multiple value images" );
+         // `values_` is not used
+      }
+
       /// \brief True if the LUT has an index.
       bool HasIndex() const { return !index_.empty(); }
 
@@ -182,6 +188,7 @@ class DIP_NO_EXPORT LookupTable{
 
    private:
       Image values_;       // The table containing the output values. 1D image, any type, possibly tensor-valued.
+      ImageConstRefArray valueImages_; // Array of images, effectively creating a per-pixel LUT
       FloatArray index_;   // This is where the input value is looked up, has same number of elements as `values_`, strictly monotonic.
       // If `index_` is empty, the input value is directly used as an index into `values_`.
       // Otherwise, the input value is looked up in `index_`, using interpolation, and the corresponding value in

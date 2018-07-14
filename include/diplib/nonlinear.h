@@ -612,6 +612,110 @@ inline Image AdaptiveBanana(
    return out;
 }
 
+DIP_EXPORT void ImageArrayLUT(
+   Image const& in,
+   Image& out,
+   FloatArray bins,       /* if NULL -> default to [0 1 2 ... nbins-1] */
+   ImageArray const& vals,
+   String const& interpolationMethod
+);
+
+/// \brief Full bilateral filter
+DIP_EXPORT void BilateralFilter(
+   Image const& in,
+   Image const& estimate,
+   Image& out,
+   FloatArray spatialSigmas,
+   dfloat tonalSigma,
+   dfloat truncation
+);
+inline Image BilateralFilter(
+   Image const& in,
+   Image const& estimate,
+   FloatArray spatialSigmas,
+   dfloat tonalSigma,
+   dfloat truncation
+) {
+   Image out;
+   BilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation );
+   return out;
+}
+
+/// \brief Quantized (piecewise linear) bilateral filter
+DIP_EXPORT void QuantizedBilateralFilter(
+   Image const& in,
+   Image const& estimate,
+   Image& out,
+   FloatArray spatialSigmas,
+   dfloat tonalSigma,
+   FloatArray const& tonalBins,
+   dfloat truncation
+);
+inline Image QuantizedBilateralFilter(
+   Image const& in,
+   Image const& estimate,
+   FloatArray spatialSigmas,
+   dfloat tonalSigma,
+   FloatArray const& tonalBins,
+   dfloat truncation
+) {
+   Image out;
+   QuantizedBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, tonalBins, truncation );
+   return out;
+}
+
+/// \brief Separable bilateral filter (fast)
+DIP_EXPORT void SeparableBilateralFilter(
+   Image const& in,
+   Image const& estimate,
+   Image& out,
+   BooleanArray process,
+   FloatArray spatialSigmas = { 2.0 },
+   dfloat tonalSigma = 30.0,
+   dfloat truncation = 2.0
+);
+inline Image SeparableBilateralFilter(
+   Image const& in,
+   Image const& estimate,
+   BooleanArray process,
+   FloatArray spatialSigmas = { 2.0 },
+   dfloat tonalSigma = 30.0,
+   dfloat truncation = 2.0
+) {
+   Image out;
+   SeparableBilateralFilter( in, estimate, out, process, spatialSigmas, tonalSigma, truncation );
+   return out;
+}
+
+/// \brief Bilateral filter with method selection
+/// The `method` can be set to one of the following:
+/// - "full": full kernel, calls dip::BilateralFilter.
+/// - "pwlinear": piecewise linear (quantized), calls dip::QuantizedBilateralFilter. The bins are automatically computed.
+/// - "xysep" (default): xy-separable, calls dip::SeparableBilateralFilter.
+///
+/// \see dip::BilateralFilter, dip::QuantizedBilateralFilter, dip::SeparableBilateralFilter
+DIP_EXPORT void Bilateral(
+   Image const& in,
+   Image const& estimate,
+   Image& out,
+   FloatArray spatialSigmas = { 2.0 },
+   dfloat tonalSigma = 30.0,
+   dfloat truncation = 2.0,
+   String const& method = "xysep"
+);
+inline Image Bilateral(
+   Image const& in,
+   Image const& estimate,
+   FloatArray spatialSigmas = { 2.0 },
+   dfloat tonalSigma = 30.0,
+   dfloat truncation = 2.0,
+   String const& method = "xysep"
+) {
+   Image out;
+   Bilateral( in, estimate, out, spatialSigmas, tonalSigma, truncation, method );
+   return out;
+}
+
 // TODO: functions to port:
 /*
    dip_RankContrastFilter (dip_rankfilters.h)
@@ -620,9 +724,6 @@ inline Image AdaptiveBanana(
    dip_GaussianSigma (dip_filtering.h) (compare dip_BilateralFilter)
    dip_NonMaximumSuppression (dip_filtering.h)
    dip_ArcFilter (dip_bilateral.h)
-   dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
-   dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
-   dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
    dip_StructureAdaptiveGauss (dip_adaptive.h)
    dip_AdaptivePercentile (dip_adaptive.h)
    dip_AdaptivePercentileBanana (dip_adaptive.h)

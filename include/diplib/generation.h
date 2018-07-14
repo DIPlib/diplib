@@ -324,7 +324,15 @@ inline Image GaussianLineClip(
    return out;
 }
 
-// TODO: document
+
+// Create 1D Gaussian
+DIP_EXPORT FloatArray CreateGaussian1D(
+   dfloat sigma,
+   dip::uint order,
+   dfloat truncation
+);
+
+// Create multi-dimensional Gaussian
 DIP_EXPORT void CreateGauss(
       Image& out,
       FloatArray const& sigmas,

@@ -281,6 +281,109 @@ class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
       LookupTable::InterpolationMode interpolation_;
 };
 
+template< typename TPI >
+class dip__IndexedArrayLUT_Float : public Framework::ScanLineFilter
+{
+   // Applies the LUT consisting of an array of value images with data type TPI, and an index, to an input image of type dfloat.
+public:
+   virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      return interpolation_ == LookupTable::InterpolationMode::LINEAR ? 9 : 3;
+   }
+   virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      // inBuffer[0] is the input image; the remaining inBuffer elements contain the value images
+      Framework::ScanBuffer const& inBuffer = params.inBuffer[ 0 ];
+      Framework::ScanBuffer const& firstValueBuffer = params.inBuffer[ 1 ];
+      dfloat const* in = static_cast< dfloat const* >(inBuffer.buffer);
+      std::vector< TPI > values( 2 * inBuffer.tensorLength ); // Contains two pixels
+      dip::uint numValueImages = params.inBuffer.size() - 1;
+      auto bufferLength = params.bufferLength;
+      auto inStride = inBuffer.stride;
+      TPI* out = static_cast< TPI* >(params.outBuffer[ 0 ].buffer);
+      auto outStride = params.outBuffer[ 0 ].stride;
+      auto tensorLength = params.outBuffer[ 0 ].tensorLength;
+      auto outTensorStride = params.outBuffer[ 0 ].tensorStride;
+      auto valuesStride = firstValueBuffer.stride;
+      dip::sint valueImageOffset = 0;
+      auto valuesTensorStride = firstValueBuffer.tensorStride;
+      DIP_ASSERT( firstValueBuffer.tensorLength == tensorLength );
+      dip::uint maxIndex = numValueImages - 1;
+      for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+         if( (*in < index_.front()) || (*in > index_.back()) ) {
+            switch( outOfBoundsMode_ ) {
+            case LookupTable::OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE:
+               FillPixel( out, tensorLength, outTensorStride, *in < index_.front() ? outOfBoundsLowerValue_ : outOfBoundsUpperValue_ );
+               break;
+            case LookupTable::OutOfBoundsMode::KEEP_INPUT_VALUE:
+               FillPixel( out, tensorLength, outTensorStride, clamp_cast< TPI >(*in) );
+               break;
+               //case LookupTable::OutOfBoundsMode::CLAMP_TO_RANGE:
+            default:
+               dip::uint index = (*in < index_.front() ? 0 : maxIndex);
+               FetchValues( params.inBuffer, values, index, valueImageOffset, tensorLength, valuesTensorStride );
+               CopyPixel( values.data(), out, tensorLength, valuesTensorStride, outTensorStride );
+               break;
+            }
+         } else {
+            auto upper = std::upper_bound( index_.begin(), index_.end(), *in ); // index_[upper] > *in
+            dip::uint index = static_cast< dip::uint >(std::distance( index_.begin(), upper )) - 1; // index_[index] <= *in
+                                                                                                    // Because *in >= index_.front(), we can always subtract 1 from the distance.
+            switch( interpolation_ ) {
+            case LookupTable::InterpolationMode::LINEAR:
+               if( *in == index_[ index ] ) {
+                  FetchValues( params.inBuffer, values, index, valueImageOffset, tensorLength, valuesTensorStride );
+                  CopyPixel( values.data(), out, tensorLength, valuesTensorStride, outTensorStride );
+               } else {
+                  dfloat fraction = (*in - index_[ index ]) / (index_[ index + 1 ] - index_[ index ]);
+                  FetchValuesForInterpolation( params.inBuffer, values, index, valueImageOffset, tensorLength, valuesTensorStride );
+                  CopyPixelWithInterpolation( values.data(),
+                     out, tensorLength, valuesTensorStride, outTensorStride,
+                     fraction, valuesStride );
+               }
+               break;
+            case LookupTable::InterpolationMode::NEAREST_NEIGHBOR:
+               if( (*in != index_[ index ]) && ((*in - index_[ index ]) > (index_[ index + 1 ] - *in)) ) {
+                  // (the `!=` test above is to avoid out-of-bounds indexing with `index+1`)
+                  ++index;
+               }
+               // fallthrough
+            case LookupTable::InterpolationMode::ZERO_ORDER_HOLD:
+               FetchValues( params.inBuffer, values, index, valueImageOffset, tensorLength, valuesTensorStride );
+               CopyPixel( values.data(), out, tensorLength, valuesTensorStride, outTensorStride );
+               break;
+            }
+         }
+         in += inStride;
+         out += outStride;
+         valueImageOffset += valuesStride;
+      }
+   }
+   dip__IndexedArrayLUT_Float( FloatArray const& index, LookupTable::OutOfBoundsMode outOfBoundsMode,
+      dfloat outOfBoundsLowerValue, dfloat outOfBoundsUpperValue, LookupTable::InterpolationMode interpolation )
+      : index_( index ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsLowerValue_( clamp_cast< TPI >(outOfBoundsLowerValue) ),
+      outOfBoundsUpperValue_( clamp_cast< TPI >(outOfBoundsUpperValue) ), interpolation_( interpolation ) {}
+private:
+   FloatArray const& index_;
+   LookupTable::OutOfBoundsMode outOfBoundsMode_;
+   TPI outOfBoundsLowerValue_;
+   TPI outOfBoundsUpperValue_;
+   LookupTable::InterpolationMode interpolation_;
+
+   void FetchValues( std::vector<Framework::ScanBuffer> const& valueImages, std::vector< TPI >& values, dip::uint valueImageIndex, dip::sint valueImageOffset, dip::uint tensorLength, dip::sint tensorStride, dip::uint localValueIndex = 0 ) {
+      dip::uint scanBufferIndex = valueImageIndex + 1;   // The first image is the in-image; all others are value images
+      TPI const* valuePtr = static_cast< TPI const* >( valueImages[ scanBufferIndex ].buffer ) + valueImageOffset;
+      dip::uint valIndex = localValueIndex * tensorLength;
+      for( dip::uint iT = 0; iT < tensorLength; ++iT ) {
+         values[ valIndex ] = *valuePtr;
+         ++valIndex;
+         valuePtr += tensorStride;
+      }
+   }
+   void FetchValuesForInterpolation( std::vector<Framework::ScanBuffer> const& valueImages, std::vector< TPI >& values, dip::uint valueImageIndex, dip::sint valueImageOffset, dip::uint tensorLength, dip::sint tensorStride ) {
+      FetchValues( valueImages, values, valueImageIndex, valueImageOffset, tensorLength, tensorStride, 0 );
+      FetchValues( valueImages, values, valueImageIndex + 1, valueImageOffset, tensorLength, tensorStride, 1 );
+   }
+};
+
 }
 
 void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpolation ) const {
@@ -290,19 +393,43 @@ void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpol
    ImageRefArray outar{ out };
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    dip::DataType inBufType;
-   if( HasIndex() ) {
-      DIP_OVL_NEW_ALL( scanLineFilter, dip__IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), values_.DataType() );
-      inBufType = DT_DFLOAT;
-   } else {
-      if( in.DataType().IsUnsigned() ) {
-         DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Integer, ( values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_ ), values_.DataType() );
-         inBufType = DT_UINT32;
-      } else {
-         DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), values_.DataType() );
+   if( valueImages_.empty() ) {
+
+      if( HasIndex() ) {
+         DIP_OVL_NEW_ALL( scanLineFilter, dip__IndexedLUT_Float, (values_, index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
          inBufType = DT_DFLOAT;
+      } else {
+         if( in.DataType().IsUnsigned() ) {
+            DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Integer, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_), values_.DataType() );
+            inBufType = DT_UINT32;
+         } else {
+            DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Float, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
+            inBufType = DT_DFLOAT;
+         }
       }
+      DIP_STACK_TRACE_THIS( Scan( { in }, outar, { inBufType }, { values_.DataType() }, { values_.DataType() }, { values_.TensorElements() }, *scanLineFilter ) );
+   } else {
+      // Input images: [ in, valueImages_... ]
+      dip::DataType valuesDataType = valueImages_.front().get().DataType();
+      ImageConstRefArray inRefs = valueImages_;
+      inRefs.insert( inRefs.begin(), in );
+      // Input buffer data types: [ DFLOAT, valsDataType... ]
+      // The input buffer type for `in` is chosen as DFLOAT so that these values can be easily looked up in the bins array
+      DataTypeArray inBufferTypes( valueImages_.size(), valuesDataType );
+      inBufferTypes.insert( 0, DT_DFLOAT );
+      //inBufferTypes.insert( 0, in.DataType() );
+
+      // Obtain output data type that can hold interpolated values between vals
+      dip::DataType outDataType = DataType::SuggestFlex( valuesDataType );
+      DataTypeArray outBufferTypes( { outDataType } );
+      ImageRefArray outRefs{ out };
+
+      // Call Scan framework
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_NEW_ALL( scanLineFilter, dip__IndexedArrayLUT_Float, (index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), outDataType );
+      DIP_STACK_TRACE_THIS( Scan( inRefs, outRefs, inBufferTypes, outBufferTypes, { outDataType }, { valueImages_.front().get().TensorElements() }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim /*+ Framework::ScanOption::NoMultiThreading*/));
+
    }
-   DIP_STACK_TRACE_THIS( Scan( { in }, outar, { inBufType }, { values_.DataType() }, { values_.DataType() }, { values_.TensorElements() }, *scanLineFilter ));
    out.ReshapeTensor( values_.Tensor() );
    out.SetColorSpace( values_.ColorSpace() );
 }

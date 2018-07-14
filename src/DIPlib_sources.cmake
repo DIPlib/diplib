@@ -214,6 +214,8 @@ morphology/watershed_support.cpp
 morphology/watershed_support.h
 nonlinear/adaptivegauss.cpp
 nonlinear/anisotropic_diffusion.cpp
+nonlinear/bilateral.cpp
+nonlinear/imarlut.cpp
 nonlinear/kuwahara.cpp
 nonlinear/nonmaximumsuppression.cpp
 nonlinear/percentile.cpp
