@@ -661,7 +661,7 @@ void DrawBandlimitedBox(
 ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = out.Dimensionality();
-   DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sizes, nDims, 7.0 ));
    for( auto s: sizes ) {

@@ -144,7 +144,7 @@ DIP_EXPORT void DrawPolygon2D(
 /// The origin does not need to be within the image.
 /// Pixels in `out` within the ellipsoid are set to `value`, other pixels are not touched.
 ///
-/// `out` must have at least two dimensions.
+/// `out` must have at least one dimension.
 DIP_EXPORT void DrawEllipsoid(
       Image& out,
       FloatArray const& sizes,
@@ -161,7 +161,7 @@ DIP_EXPORT void DrawEllipsoid(
 /// The origin does not need to be within the image.
 /// Pixels in `out` within the diamond are set to `value`, other pixels are not touched.
 ///
-/// `out` must have at least two dimensions.
+/// `out` must have at least one dimension.
 DIP_EXPORT void DrawDiamond(
       Image& out,
       FloatArray const& sizes,
@@ -178,7 +178,7 @@ DIP_EXPORT void DrawDiamond(
 /// The origin does not need to be within the image.
 /// Pixels in `out` within the box are set to `value`, other pixels are not touched.
 ///
-/// `out` must have at least two dimensions.
+/// `out` must have at least one dimension.
 DIP_EXPORT void DrawBox(
       Image& out,
       FloatArray const& sizes,
