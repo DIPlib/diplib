@@ -166,7 +166,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   their name.
 
 - `dip_MultiDimensionalHistogram` and `dip_ImageToHistogram` have been merged into the
-  constructor for `dip::Histogram`, which replaces both `dip_Distribution` and `dip_Histogram`.
+  constructor for `dip::Histogram`, which replaces `dip_Histogram`.
+
+- `dip::Distribution` is a new class that replaces `dip_Distribution`. `dip_Distribution` was
+  identical to `dip_Histogram`. `dip::Distribution` is very different from `dip::Histogram`.
 
 - The `dip_ImageLookup` function has been merged with the `dip::LookupTable` object, and
   includes the functionality of `dip_ImageLut`.
@@ -202,6 +205,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip_PaintBox`, `dip_PaintDiamond` and `dip_PaintEllipsoid` are now called `dip::DrawBox`,
   `dip::DrawDiamond` and `dip::DrawEllipsoid`, respectively (for consistency).
+
+- `dip::RadialDistribution` renamed to `dip::DistanceDistribution`.
 
 [//]: # (--------------------------------------------------------------)
 
@@ -303,8 +308,6 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
 
-- `dip::RadialDistribution` renamed to `dip::DistanceDistribution`.
-
 - Lots of new algorithms, some previously only available in *DIPimage*, some completely new.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
@@ -388,7 +391,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - Fixed a bug: `msr.featureID` now returns an array that is transposed w.r.t. previous versions.
     This was a bug that we never fixed because of backwards compatibility, we took this
-    opportunity to fix it. Now we have total consistency: no matter how the measurement data is
+    opportunity to fix it. Now we have total consistency: no matter how the measurement data are
     extracted or converted, objects are always rows, and features are always columns.
 
   - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
@@ -518,8 +521,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
   `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
-  `im2cell`, `lee`, `pathopening`, `perobjecthist`, `quantize`, `select`, `setborder`, `skew`,
-  `smallobjectsremove`, `thetatheta`, `traceobjects`.
+  `im2cell`, `lee`, `pathopening`, `perobjecthist`, `quantize`, `riesz`, `select`, `semivariogram`,
+  `setborder`, `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.
 
 - `jacobi` moved to the `alias` directory, `eig` does it better now.

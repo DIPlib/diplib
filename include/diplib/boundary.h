@@ -46,10 +46,10 @@ namespace dip {
 ///
 /// `BoundaryCondition` constant | String                 | Definition
 /// -------------------------- | ------------------------ | ----------
-/// `SYMMETRIC_MIRROR`         | "mirror"                 | The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
-/// `ASYMMETRIC_MIRROR`        | "asym mirror"            | The data is mirrored and inverted.
-/// `PERIODIC`                 | "periodic"               | The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
-/// `ASYMMETRIC_PERIODIC`      | "asym periodic"          | The data is repeated periodically and inverted.
+/// `SYMMETRIC_MIRROR`         | "mirror"                 | The data are mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
+/// `ASYMMETRIC_MIRROR`        | "asym mirror"            | The data are mirrored and inverted.
+/// `PERIODIC`                 | "periodic"               | The data are repeated periodically, with the value at -1 equal to the value of the last pixel.
+/// `ASYMMETRIC_PERIODIC`      | "asym periodic"          | The data are repeated periodically and inverted.
 /// `ADD_ZEROS`                | "add zeros"              | The boundary is filled with zeros.
 /// `ADD_MAX_VALUE`            | "add max"                | The boundary is filled with the max value for the data type.
 /// `ADD_MIN_VALUE`            | "add min"                | The boundary is filled with the min value for the data type.

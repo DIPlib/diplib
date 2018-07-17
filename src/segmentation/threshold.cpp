@@ -39,7 +39,7 @@ FloatArray IsodataThreshold(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   // TODO: if the input image is not scalar, we can apply KMeansClustering to the histogram, then do an inverse mapping (not yet implemented).
+   // TODO: if the input image is not scalar, we can apply KMeansClustering to the histogram, then do an inverse mapping.
    DIP_START_STACK_TRACE
       FloatArray thresholds = IsodataThreshold( Histogram( in, mask ), nThresholds );
       if( nThresholds == 1 ) {
@@ -58,6 +58,7 @@ dfloat OtsuThreshold(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   // TODO: if the input image is not scalar, we can apply MinimumVariancePartitioning to the histogram, then do an inverse mapping.
    DIP_START_STACK_TRACE
       dfloat threshold = OtsuThreshold( Histogram( in, mask ) );
       FixedThreshold( in, out, threshold );

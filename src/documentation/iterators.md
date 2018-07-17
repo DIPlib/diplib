@@ -252,7 +252,7 @@ to compose full filters.
 ```
 
 We first create a copy of the input image with expanded domain. The image `in` is identical to
-`img`, but we can read outside the bounds where data has been filled in. Not having to check for
+`img`, but we can read outside the bounds where data have been filled in. Not having to check for
 reads being within the image domain saves a lot of time, more than making up for creating the
 copy of the input image.
 The outer loop iterates over all lines in the image (in this case, the lines lie along dimension

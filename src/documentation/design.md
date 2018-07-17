@@ -205,46 +205,46 @@ in use and equally convenient if limited to the C++ code.
 
 When an image object is marked `const`, the compiler will prevent modifications
 to it, it cannot be assigned to, and it cannot be used as the output argument
-to a filter function. However, it is possible to create a non-const image that
-points to the same data as a const image. The assignment operator, the
+to a filter function. However, it is possible to create a non-`const` image that
+points to the same data segment as a `const` image. The assignment operator, the
 `dip::Image::QuickCopy` method, and most indexing operations will do this.
 There were two important reasons for this design decision:
 
-1. Making a const and a non-const version of most of these indexing
+1. Making a `const` and a non-`const` version of most of these indexing
    operators is possible, but some are functions (such as `dip::DefineROI`) taking
    an output image object as function argument. This argument cannot be marked
    `const` because the function needs to modify it. However, the function must
-   assign the data pointer from a const image into it.
+   assign the data pointer from a `const` image into it.
 
 2. Functions such as the framework functions need to make certain type of modifications
    to an input image, such as converting the tensor dimension to a spatial dimension,
    or applying singleton expansion. The simplest way of accomplishing this is to
    create a copy of the input image, and modify the copy. However, it would make no
-   sense to make a copy of the data also, since the data is not modified. Thus,
-   we need to make a non-const copy of a const image that shares its data pointer.
+   sense to make a copy of the data also, since the data are not modified. Thus,
+   we need to make a non-`const` copy of a `const` image that shares its data pointer.
 
-Thus, strictly forbidding data pointers from const images to be assigned to non-const
+Thus, strictly forbidding data pointers from `const` images to be assigned to non-`const`
 images would make it impossible to write certain types of functions, and would make
 other types of functions much more complicated.
 
-Because a copy of a const image can provide non-const access to its pixels, we felt
+Because a copy of a `const` image can provide non-`const` access to its pixels, we felt
 that it did not really make sense either to have the `dip::Image::Data`,
 `dip::Image::Origin`, and `dip::Image::Pointer`
-methods return const pointers when applied to a const image. That is, all accesses
+methods return `const` pointers when applied to a `const` image. That is, all accesses
 to pixel data ignore the constness of the image object. The constness of the image
 object applies only to the image's properties (size, strides, tensor shape, color space,
 etc.), not to its pixel values.
 
-However, none of the functions in *DIPlib* will modify pixel values of a const image.
-Input images to functions are always const references, and even though it would be
+However, none of the functions in *DIPlib* will modify pixel values of a `const` image.
+Input images to functions are always `const` references, and even though it would be
 technically possible to modify its pixel values, we have an explicit policy to not do so.
 
 The same applies to the `dip::Measurement` object, but for a different reason:
-Implementing correct handling of const objects would require two versions of all
-iterators (a const one and a non-const one). Since these iterators are quire complex,
-and the benefit of correct const handling is limited, we decided to follow the same
-principle as with the `dip::Image` object: non-const data access is always allowed, but
-*DIPlib* has an explicit policy to not to change data of a const object.
+Implementing correct handling of `const` objects would require two versions of all
+iterators (a `const` one and a non-`const` one). Since these iterators are quite complex,
+and the benefit of correct `const` handling is limited, we decided to follow the same
+principle as with the `dip::Image` object: non-`const` data access is always allowed, but
+*DIPlib* has an explicit policy to not to change data of a `const` object.
 
 
 [//]: # (--------------------------------------------------------------)

@@ -138,7 +138,7 @@ DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 ///     dip::Mean( img ).As< double >();
 /// ```
 ///
-/// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
+/// If `mode` is `"directional"`, the data in `in` are assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
 /// For directional statistics, the input must be floating point.
 ///
@@ -279,7 +279,7 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray co
 /// is used that avoids catastrophic cancellation, but is slower (see `dip::VarianceAccumulator` and
 /// `dip::FastVarianceAccumulator`). For 8 and 16-bit integer images, the fast algorithm is always used.
 ///
-/// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
+/// If `mode` is `"directional"`, the data in `in` are assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex, and for
@@ -308,7 +308,7 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 /// stable algorithm is used that avoids catastrophic cancellation, but is slower (see `dip::VarianceAccumulator`
 /// and `dip::FastVarianceAccumulator`). For 8 and 16-bit integer images, the fast algorithm is always used.
 ///
-/// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
+/// If `mode` is `"directional"`, the data in `in` are assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex, and for
@@ -601,7 +601,7 @@ inline Image PositionMedian( Image const& in, Image const& mask, dip::uint dim, 
 /// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
-/// The output datatype is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
+/// The output data type is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
 ///
 /// \see dip::RadialMean, dip::GetCenter, dip::Sum
 DIP_EXPORT void RadialSum( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
@@ -623,7 +623,7 @@ inline Image RadialSum( Image const& in, Image const& mask, dfloat binSize, Stri
 /// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
-/// The output datatype is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
+/// The output data type is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
 ///
 /// \see dip::RadialSum, dip::GetCenter, dip::Mean
 DIP_EXPORT void RadialMean( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
@@ -645,7 +645,7 @@ inline Image RadialMean( Image const& in, Image const& mask, dfloat binSize, Str
 /// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
-/// The output datatype is equal to the input datatype.
+/// The output data type is equal to the input data type.
 ///
 /// \see dip::RadialMaximum, dip::GetCenter, dip::Minimum
 DIP_EXPORT void RadialMinimum( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
@@ -667,7 +667,7 @@ inline Image RadialMinimum( Image const& in, Image const& mask, dfloat binSize, 
 /// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
-/// The output datatype is equal to the input datatype.
+/// The output data type is equal to the input data type.
 ///
 /// \see dip::RadialMinimum, dip::GetCenter, dip::Maximum
 DIP_EXPORT void RadialMaximum( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );

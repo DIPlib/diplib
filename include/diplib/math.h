@@ -265,7 +265,7 @@ inline Image Hypot( Image const& a, Image const& b ) {
 /// \brief Operators specific to tensor images.
 /// \{
 
-/// \brief Transposes the tensor image, the data is not copied.
+/// \brief Transposes the tensor image, the data are not copied.
 inline Image Transpose( Image const& in ) {
    Image out = in;
    out.Transpose();

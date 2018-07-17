@@ -782,7 +782,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// output buffer without invalidating the input buffer, even when the filter is
 /// being applied in-place.
 /// With the `dip::FrameWork::SeparableOption::UseInputBuffer` option, the input buffer
-/// never points to the input image, the input data is always copied to a temporary
+/// never points to the input image, the input data are always copied to a temporary
 /// buffer. This allows the `lineFilter` to modify the input, which is useful for,
 /// for example, computing the median of the input data by sorting.
 ///

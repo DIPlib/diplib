@@ -494,7 +494,7 @@ class DIP_NO_EXPORT ImageDisplay {
    private:
 
       // A copy of the original image, so we're not dependent on the original image still existing. This is where
-      // data is fetched when slice mode, direction or location is changed.
+      // data are fetched when slice mode, direction or location is changed.
       Image image_;
       // The 1D/2D slice to be displayed (could be either shared data with the image, or in case of a projection,
       // owning its own data). This is where intensity lookup is performed. Contains all the same tensor elements

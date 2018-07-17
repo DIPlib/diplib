@@ -37,7 +37,7 @@ document's source</a> for the most up-to-date version.
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
 
-    For R2018a and newer, complex data is no longer stored in two separate data segments.
+    For R2018a and newer, complex data are no longer stored in two separate data segments.
     This is good overall, but requires changes to the DIPlib-MATLAB interface. Additionally,
     there is a new C++ API for MEX-files. So, since we need to make changes to the interface
     anyway, for MATLAB R2018a and newer we will use the C++ API. A CMake flag will select

@@ -40,7 +40,7 @@ namespace dip {
 ///
 /// Many of the functions in this group resample the image using an interpolation method. They all perform
 /// interpolation separately (i.e. along one dimension at the time). These functions have an input argument
-/// called `interpolationMethod`, which determines how image data is interpolated. It can be set to one of
+/// called `interpolationMethod`, which determines how image data are interpolated. It can be set to one of
 /// the following strings:
 ///
 ///  - `"3-cubic"` (or `""`): Third-order cubic spline interpolation (Keys, 1981), using 4 input samples to
@@ -114,7 +114,7 @@ inline Image Wrap(
 /// \brief Subsamples the input image.
 ///
 /// The input image is subsampled by `sample[ ii ]` along dimension `ii`. The output image shares
-/// the data segment of the input image, meaning that no data is copied. If a data copy is required,
+/// the data segment of the input image, meaning that no data are copied. If a data copy is required,
 /// calling `dip::Image::ForceContiguousData` after subsampling should trigger a data copy.
 ///
 /// If `out` has an external interface different from that of `in`, the data will be copied.
@@ -271,7 +271,7 @@ DIP_EXPORT dip::UnsignedArray Skew(
 /// the sub-pixel shift of a line in the direction `ii` with respect to the previous line along `axis`.
 /// Each image sub-volume perpendicular
 /// to `axis` is shifted by a different amount. The output image has the same dimension as `in` in the `axis`
-/// direction, and larger dimensions in all other dimensions, such that no data is lost. The value of `shearArray[ axis ]`
+/// direction, and larger dimensions in all other dimensions, such that no data are lost. The value of `shearArray[ axis ]`
 /// is ignored. The origin of the skew is the origin pixel (as defined in `dip::FourierTransform` and other other
 /// places).
 ///
@@ -279,7 +279,7 @@ DIP_EXPORT dip::UnsignedArray Skew(
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
-/// `boundaryCondition` determines how data outside of the input image domain is filled in. See
+/// `boundaryCondition` determines how data outside of the input image domain are filled in. See
 /// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.
@@ -321,7 +321,7 @@ inline Image Skew(
 /// The image is skewed such that a straight line along dimension `axis` is tilted by an
 /// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
 /// `skew` is shifted by a different amount. The output image has the same dimensions as
-/// `in`, except for dimension `skew`, which will be larger, such that no data is lost.
+/// `in`, except for dimension `skew`, which will be larger, such that no data are lost.
 /// The origin of the skew is the origin pixel (as defined in `dip::FourierTransform` and other other
 /// places).
 ///
@@ -332,7 +332,7 @@ inline Image Skew(
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
-/// `boundaryCondition` determines how data outside of the input image domain is filled in. See
+/// `boundaryCondition` determines how data outside of the input image domain are filled in. See
 /// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.

@@ -479,7 +479,6 @@ void dip__SeededWatershed(
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
-   // TODO: StandardizeStrides() across multiple images?
    JointImageIterator< TPI, LabelType, bin > it( { c_grey, c_labels, c_mask } );
    bool hasMask = c_mask.IsForged();
    dip::uint order = 0;

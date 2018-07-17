@@ -715,8 +715,8 @@ Another typical example:
 There is a large collection of methods to reshape the image without physically
 moving samples around in memory. These functions accomplish their goal simply
 by modifying the sizes and strides arrays, and the tensor representation
-values. All of these functions modify the object directly, and return a reference
-so that they can be chained.
+values. Thus, they are very cheap. All of these functions modify the object
+directly, and return a reference so that they can be chained.
 
 For example, `dip::Image::Rotation90` rotates the image in 90 degree increments
 by mirroring and swapping dimensions. More generic methods are `dip::Image::Mirror`,
@@ -743,7 +743,7 @@ and sorting them from smallest to largest. It also removes singleton dimensions
 The `dip::Image::Flatten` method converts the image to 1D (though if the image
 does not have contiguous data, it will have to be copied to form a 1D image).
 `dip::Image::FlattenAsMuchAsPossible` does the same thing, but never copies.
-If there data is not contiguous, the image will not be 1D, though it will likely
+If the data is not contiguous, the image will not be 1D, though it will hopefully
 have fewer dimensions than before the method call.
 
 A group of methods manipulate the image's tensor shape:
@@ -755,35 +755,12 @@ The `dip::Image::Transpose` method belongs in this set, though it has a mathemat
 meaning. `%Transpose` changes the row-major matrix into a column-major matrix and
 vice-versa, thereby transposing the tensor.
 
-TODO: Fix the example below to something more meaningful, now that we've got MaximumTensorElement().
-
 It is also possible to turn the tensor dimension into a spatial dimension and
 back, using `dip::Image::TensorToSpatial` and `dip::Image::SpatialToTensor`.
 Turning the tensor dimension into a spatial dimension can be useful for example
-to compute the maximum tensor element per pixel. The complex method is:
-
-```cpp
-    out = dip::Supremum( { image[ 0 ], image[ 1 ], image[ 2 ] } );
-```
-
-Though short to type, it is a complex method if the number of tensor elements is
-not known at compile time. In this case, a loop needs to create the
-`dip::ImageConstRefArray` that is the input to `dip::Supremum`.
-The easier alternative is:
-
-```cpp
-    dip::Image tmp = image.QuickCopy().TensorToSpatial( 0 );
-    dip::BooleanArray process( tmp.Dimensionality(), false );
-    process[ 0 ] = true;
-    out = dip::Maximum( tmp, {}, process ).Squeeze( 0 );
-```
-
-The first line creates a temporary copy of the input image, which is modified
-such that the tensor elements are along the first spatial dimension. The next
-two lines create a *process* array, which specifies that only the first
-dimension should be processed. Next, the maximum projection along the first
-dimension is computed, and the resulting singleton dimension is removed. The
-result is then a scalar image of the same sizes as `image`.
+to apply the same operation to all samples in a vector image: it is easier to loop
+over a scalar image with a single `dip::ImageIterator` loop than to loop over a
+tensor image using a double loop over pixels and over tensor elements.
 
 Similar in purpose and function to `dip::Image::TensorToSpatial` are functions
 that split the complex-valued samples into two floating-point--valued samples,
@@ -1160,7 +1137,7 @@ process does not require a data copy. Next, all singleton dimensions
 are expanded to match the size of the corresponding dimension in the other
 image. This expansion simply repeats the value all along that dimension,
 and is accomplished by setting the image's size in that dimension to
-the expected value, and the corresponding stride to 0 (again, no data is
+the expected value, and the corresponding stride to 0 (again, no data are
 physically copied). This will cause an algorithm to read the same value,
 no matter how many steps it takes along this dimension. For example:
 

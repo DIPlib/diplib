@@ -509,7 +509,7 @@ class DIP_NO_EXPORT Measurement {
       }
 
       /// \brief Returns an array with names and units for each of the values for the feature.
-      /// (Note: data is copied to output array, not a trivial function).
+      /// (Note: data are copied to output array, not a trivial function).
       Feature::ValueInformationArray Values( String const& name ) const {
          auto feature = features_[ FeatureIndex( name ) ];
          Feature::ValueInformationArray values( feature.numberValues );

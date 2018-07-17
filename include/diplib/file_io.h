@@ -69,7 +69,7 @@ struct FileInformation {
 /// interface set it might also be impossible to dictate what the strides will look like. In these cases,
 /// the flag is ignored.
 ///
-/// Information about the file and all metadata is returned in the `FileInformation` output argument.
+/// Information about the file and all metadata are returned in the `FileInformation` output argument.
 // TODO: read sensor information also into the history strings
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
@@ -152,7 +152,7 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 ///    The ICS file contains only the header, the IDS file contains only the pixel data. ICS v2 combines
 ///    these two pieces into a single '.ics' file. `"v2"` is the default.
 ///  - '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
-///  - `"fast"`: Writes data in the order in which it is in memory, which is faster.
+///  - `"fast"`: Writes data in the order in which they are in memory, which is faster.
 ///
 /// Note that the `"fast"` option yields a file with permuted dimensions. The software reading the file must be
 /// aware of the possibility of permuted dimensions, and check the "order" tag in the file. If the image has
@@ -279,7 +279,7 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// will set the pixels per centimeter value in the TIFF file.
 ///
 /// The samples of `image` are written direclty to the TIFF file, no matter what their data type is. Complex data
-/// is not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
+/// are not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
 /// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format.
 ///
 /// If `filename` does not have an extension, ".tif" will be added. Overwrites any other file with the same name.

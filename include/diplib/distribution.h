@@ -386,17 +386,17 @@ class DIP_NO_EXPORT Distribution {
       DIP_EXPORT Distribution& NormalizeSum();
 
       /// \brief Converts the distribution to a cumulative distribution, where each element is the integral of
-      /// the original distribution up to that element. Make sure the data is sorted (see `Sort`).
+      /// the original distribution up to that element. Make sure the data are sorted (see `Sort`).
       DIP_EXPORT Distribution& Integrate();
 
-      /// Computes the integral of the distribution. Make sure the data is sorted (see `Sort`).
+      /// Computes the integral of the distribution. Make sure the data are sorted (see `Sort`).
       DIP_EXPORT dfloat Integral( dip::uint index = 0 ) const;
 
-      /// Normalizes the integral of the distribution values. Make sure the data is sorted (see `Sort`).
+      /// Normalizes the integral of the distribution values. Make sure the data are sorted (see `Sort`).
       DIP_EXPORT Distribution& NormalizeIntegral();
 
       /// \brief Converts the cumulative distribution to a distribution, where each element is the derivative of
-      /// the original distribution at that element. Make sure the data is sorted (see `Sort`).
+      /// the original distribution at that element. Make sure the data are sorted (see `Sort`).
       DIP_EXPORT Distribution& Differentiate();
 
       /// Adds two distributions. Their *x* values must match exactly.

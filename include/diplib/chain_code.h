@@ -705,7 +705,7 @@ struct DIP_NO_EXPORT ChainCode {
                                                  {  0,  1 },
                                                  {  1,  1 } };
 
-   /// \brief Provides data that is helpful when processing chain codes.
+   /// \brief Provides data that are helpful when processing chain codes.
    ///
    /// The table is prepared using the `dip::ChainCode::PrepareCodeTable` method. The method takes a stride array,
    /// which is expected to have exactly two elements (as chain codes only work with 2D images). The returned
