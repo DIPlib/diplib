@@ -54,10 +54,19 @@ void init_filtering( py::module& m ) {
    py::implicitly_convertible< py::list, dip::Kernel >();
 
    // diplib/linear.h
+   // TODO: SeparableConvolution, SeparateFilter
+   m.def( "ConvolveFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const& >( &dip::ConvolveFT ),
+          "in"_a, "filter"_a, "inRepresentation"_a = dip::S::SPATIAL, "filterRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
+   m.def( "GeneralConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::StringArray const& >( &dip::GeneralConvolution ),
+          "in"_a, "filter"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),
           "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Gauss", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::UnsignedArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Gauss ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "FiniteDifference", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const& >( &dip::FiniteDifference ),
+          "in"_a, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "smoothFlag"_a = dip::S::SMOOTH, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
+   m.def( "SobelGradient", py::overload_cast< dip::Image const&, dip::uint, dip::StringArray const& >( &dip::SobelGradient ),
+          "in"_a, "dimension"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Derivative", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Derivative ),
           "in"_a, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "Dx", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dx( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
@@ -89,6 +98,10 @@ void init_filtering( py::module& m ) {
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
    m.def( "LaplaceMinusDgg", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::LaplaceMinusDgg ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "Sharpen", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Sharpen ),
+          "in"_a, "weight"_a = 1.0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "UnsharpMask", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::UnsharpMask ),
+          "in"_a, "weight"_a = 1.0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "GaborFIR", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::GaborFIR ),
           "in"_a, "sigmas"_a, "frequencies"_a, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
    m.def( "GaborIIR", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::StringArray const&, dip::BooleanArray const&, dip::IntegerArray const&, dip::dfloat >( &dip::GaborIIR ),
