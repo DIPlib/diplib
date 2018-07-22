@@ -289,7 +289,8 @@ class DIP_NO_EXPORT DimensionArray {
          *( data_ + index ) = value;
       }
 
-      /// Adds a value to the back.
+      /// \brief Adds a value to the back. Not efficient -- prefer `std::vector` if you need
+      /// to use this repeatedly.
       void push_back( T const& value ) {
          resize( size_ + 1, value );
       }
