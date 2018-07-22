@@ -2459,6 +2459,40 @@ classdef dip_image
       end
       % The function above defined to prevent its use.
 
+      function img = loadobj(img)
+         %LOADOBJ   This function is called when loading dip_image objects from file
+         if isa(img,'dip_image')
+            return
+         end
+         % It's a struct. Likely because the MAT-file was saved with a DIPimage 2 object
+         in = img;
+         img = cell(1,numel(in));
+         for ii = 1:numel(in)
+            img{ii} = expanddim(dip_image(in(ii).data),in(ii).dims);
+            img{ii}.PixelSize = struct('magnitude',num2cell(in(ii).physDims.PixelSize),'units',in(ii).physDims.PixelUnits);
+         end
+         if numel(img) == 1
+            % Scalar image
+            img = img{1};
+            return
+         end
+         try
+            % Try to convert the cell array to a tensor image
+            img = dip_image(img);
+         catch
+            % We can't. Let's leave it as a cell array
+            return
+         end
+         % It was a tensor image. Let's try to recover the color space
+         if isfield(in,'color') && isfield(in(1).color,'space')
+            img.ColorSpace = in(1).color.space;
+         end
+         % And let's try to recover the tensor shape
+         if numel(size(in)) <= 2
+            img.TensorShape = size(in);
+         end
+      end
+
    end
 
 end
