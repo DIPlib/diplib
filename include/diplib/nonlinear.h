@@ -520,8 +520,8 @@ inline Image CoherenceEnhancingDiffusion(
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
 /// 
 /// **Literature**
-/// - T.Q. Pham, L.J. van Vliet, and K. Schutte. Robust fusion of irregularly sampled data using adaptive normalized convolution.
-///   EURASIP Journal on Applied Signal Processing, article ID 83268, 2006, 1-12.
+/// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
+///   convolution," EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
 ///
 /// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
 DIP_EXPORT void AdaptiveGauss(
@@ -582,20 +582,20 @@ inline Image AdaptiveGauss(
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
 /// 
 /// **Literature**
-/// - T.Q. Pham, L.J. van Vliet, and K. Schutte. Robust fusion of irregularly sampled data using adaptive normalized convolution.
-///   EURASIP Journal on Applied Signal Processing, article ID 83268, 2006, 1-12.
+/// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
+///   convolution," EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
 ///
 /// \see dip::AdaptiveGauss, dip::StructureTensorAnalysis2D
 DIP_EXPORT void AdaptiveBanana(
-   Image const& in,
-   ImageConstRefArray const& params,
-   Image& out,
-   FloatArray const& sigmas = { 5.0, 1.0 },
-   UnsignedArray const& orders = { 0 },
-   dfloat truncation = 2.0,
-   UnsignedArray const& exponents = { 0 },
-   String const& interpolationMethod = S::LINEAR,
-   String const& boundaryCondition = S::SYMMETRIC_MIRROR
+      Image const& in,
+      ImageConstRefArray const& params,
+      Image& out,
+      FloatArray const& sigmas = { 5.0, 1.0 },
+      UnsignedArray const& orders = { 0 },
+      dfloat truncation = 2.0,
+      UnsignedArray const& exponents = { 0 },
+      String const& interpolationMethod = S::LINEAR,
+      String const& boundaryCondition = S::SYMMETRIC_MIRROR
 );
 inline Image AdaptiveBanana(
       Image const& in,
@@ -612,107 +612,159 @@ inline Image AdaptiveBanana(
    return out;
 }
 
-DIP_EXPORT void ImageArrayLUT(
-   Image const& in,
-   Image& out,
-   FloatArray bins,       /* if NULL -> default to [0 1 2 ... nbins-1] */
-   ImageArray const& vals,
-   String const& interpolationMethod
+/// \brief Bilateral filter, brute-force full kernel implementation
+///
+/// The bilateral filter is a non-linear edge-preserving smoothing filter. It locally averages input pixels,
+/// weighting them with both the spatial distance to the origin as well as the intensity difference with the
+/// pixel at the origin. The weights are Gaussian, and therefore there are two sigmas as parameters. The
+/// spatial sigma can be defined differently for each image dimension in `spatialSigma`. `tonalSigma` determines
+/// what similar intensities are. `truncation` applies to the spatial dimension only, and determines, together
+/// with `spatialSigma`, the size of the neighborhood and thus its computational cost.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// **Literature**
+/// - C. Tomasi and R. Manduchi, "Bilateral filtering for Gray and Color Images," Proceedings of the 1998 IEEE
+///   International Conference on Computer Vision, Bombay, India.
+DIP_EXPORT void FullBilateralFilter(
+      Image const& in,
+      Image const& estimate,
+      Image& out,
+      FloatArray spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      dfloat truncation = 2.0,
+      StringArray const& boundaryCondition = {}
 );
-
-/// \brief Full bilateral filter
-DIP_EXPORT void BilateralFilter(
-   Image const& in,
-   Image const& estimate,
-   Image& out,
-   FloatArray spatialSigmas,
-   dfloat tonalSigma,
-   dfloat truncation
-);
-inline Image BilateralFilter(
-   Image const& in,
-   Image const& estimate,
-   FloatArray spatialSigmas,
-   dfloat tonalSigma,
-   dfloat truncation
+inline Image FullBilateralFilter(
+      Image const& in,
+      Image const& estimate = {},
+      FloatArray const& spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      dfloat truncation = 2.0,
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   BilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation );
+   FullBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation, boundaryCondition );
    return out;
 }
 
 /// \brief Quantized (piecewise linear) bilateral filter
+///
+/// The bilateral filter is a non-linear edge-preserving smoothing filter. It locally averages input pixels,
+/// weighting them with both the spatial distance to the origin as well as the intensity difference with the
+/// pixel at the origin. The weights are Gaussian, and therefore there are two sigmas as parameters. The
+/// spatial sigma can be defined differently for each image dimension in `spatialSigma`. `tonalSigma` determines
+/// what similar intensities are. `truncation` applies to the spatial dimension only, and determines, together
+/// with `spatialSigma`, the size of the neighborhood and thus its computational cost.
+///
+/// This version of the filter applies a piece-wise linear approximation as described by Durand and Dorsey,
+/// but without subsampling. This requires a significant amount of memory, and is efficient only for larger
+/// spatial sigmas.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// **Literature**
+/// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images,"
+///   ACM Transactions on Graphics 21(3), 2002.
 DIP_EXPORT void QuantizedBilateralFilter(
-   Image const& in,
-   Image const& estimate,
-   Image& out,
-   FloatArray spatialSigmas,
-   dfloat tonalSigma,
-   FloatArray const& tonalBins,
-   dfloat truncation
+      Image const& in,
+      Image const& estimate,
+      Image& out,
+      FloatArray spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      FloatArray tonalBins = {},
+      dfloat truncation = 2.0,
+      StringArray const& boundaryCondition = {}
 );
 inline Image QuantizedBilateralFilter(
-   Image const& in,
-   Image const& estimate,
-   FloatArray spatialSigmas,
-   dfloat tonalSigma,
-   FloatArray const& tonalBins,
-   dfloat truncation
+      Image const& in,
+      Image const& estimate = {},
+      FloatArray const& spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      FloatArray const& tonalBins = {},
+      dfloat truncation = 2.0,
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   QuantizedBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, tonalBins, truncation );
+   QuantizedBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, tonalBins, truncation, boundaryCondition );
    return out;
 }
 
-/// \brief Separable bilateral filter (fast)
+/// \brief Separable bilateral filter, a very fast approximation
+///
+/// The bilateral filter is a non-linear edge-preserving smoothing filter. It locally averages input pixels,
+/// weighting them with both the spatial distance to the origin as well as the intensity difference with the
+/// pixel at the origin. The weights are Gaussian, and therefore there are two sigmas as parameters. The
+/// spatial sigma can be defined differently for each image dimension in `spatialSigma`. `tonalSigma` determines
+/// what similar intensities are. `truncation` applies to the spatial dimension only, and determines, together
+/// with `spatialSigma`, the size of the neighborhood and thus its computational cost.
+///
+/// This version of the filter applies a 1D bilateral filter along each of the image dimensions, approximating
+/// the result of the bilateral filter with a much reduced computational cost.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// **Literature**
+/// - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing," IEEE International
+///   Conference on Multimedia and Expo, 2005.
 DIP_EXPORT void SeparableBilateralFilter(
-   Image const& in,
-   Image const& estimate,
-   Image& out,
-   BooleanArray process,
-   FloatArray spatialSigmas = { 2.0 },
-   dfloat tonalSigma = 30.0,
-   dfloat truncation = 2.0
+      Image const& in,
+      Image const& estimate,
+      Image& out,
+      BooleanArray const& process = {},
+      FloatArray spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      dfloat truncation = 2.0,
+      StringArray const& boundaryCondition = {}
 );
 inline Image SeparableBilateralFilter(
-   Image const& in,
-   Image const& estimate,
-   BooleanArray process,
-   FloatArray spatialSigmas = { 2.0 },
-   dfloat tonalSigma = 30.0,
-   dfloat truncation = 2.0
+      Image const& in,
+      Image const& estimate = {},
+      BooleanArray const& process = {},
+      FloatArray const& spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      dfloat truncation = 2.0,
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   SeparableBilateralFilter( in, estimate, out, process, spatialSigmas, tonalSigma, truncation );
+   SeparableBilateralFilter( in, estimate, out, process, spatialSigmas, tonalSigma, truncation, boundaryCondition );
    return out;
 }
 
-/// \brief Bilateral filter with method selection
-/// The `method` can be set to one of the following:
-/// - "full": full kernel, calls dip::BilateralFilter.
-/// - "pwlinear": piecewise linear (quantized), calls dip::QuantizedBilateralFilter. The bins are automatically computed.
-/// - "xysep" (default): xy-separable, calls dip::SeparableBilateralFilter.
+/// \brief Bilateral filter, convenience function that allows selecting an implementation
 ///
-/// \see dip::BilateralFilter, dip::QuantizedBilateralFilter, dip::SeparableBilateralFilter
-DIP_EXPORT void Bilateral(
-   Image const& in,
-   Image const& estimate,
-   Image& out,
-   FloatArray spatialSigmas = { 2.0 },
-   dfloat tonalSigma = 30.0,
-   dfloat truncation = 2.0,
-   String const& method = "xysep"
+/// The `method` can be set to one of the following:
+/// - `"full"`: the brute-force implementation, using the full kernel, calls `dip::FullBilateralFilter`.
+/// - `"xysep"` (default): xy-separable approximation, calls `dip::SeparableBilateralFilter`.
+/// - `"pwlinear"`: piecewise linear approximation (quantized), calls `dip::QuantizedBilateralFilter`.
+///   The bins are automatically computed.
+///
+/// See the linked functions for details on the other parameters.
+// TODO: Implement Paris and Durand (2006): http://people.csail.mit.edu/sparis/bf/
+// https://people.csail.mit.edu/sparis/publi/2009/ijcv/Paris_09_Fast_Approximation.pdf
+// TODO: Implement cross-bilateral filter
+// TODO: Implement bilateral filters correctly for tensor images (how to define distance? Simple answer: weigh all tensor elements equally. Is there a reason to do it differently?)
+DIP_EXPORT void BilateralFilter(
+      Image const& in,
+      Image const& estimate,
+      Image& out,
+      FloatArray const& spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      dfloat truncation = 2.0,
+      String const& method = "xysep",
+      StringArray const& boundaryCondition = {}
 );
-inline Image Bilateral(
-   Image const& in,
-   Image const& estimate,
-   FloatArray spatialSigmas = { 2.0 },
-   dfloat tonalSigma = 30.0,
-   dfloat truncation = 2.0,
-   String const& method = "xysep"
+inline Image BilateralFilter(
+      Image const& in,
+      Image const& estimate = {},
+      FloatArray const& spatialSigmas = { 2.0 },
+      dfloat tonalSigma = 30.0,
+      dfloat truncation = 2.0,
+      String const& method = "xysep",
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   Bilateral( in, estimate, out, spatialSigmas, tonalSigma, truncation, method );
+   BilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation, method, boundaryCondition );
    return out;
 }
 
@@ -722,7 +774,6 @@ inline Image Bilateral(
    dip_Sigma (dip_filtering.h)
    dip_BiasedSigma (dip_filtering.h)
    dip_GaussianSigma (dip_filtering.h) (compare dip_BilateralFilter)
-   dip_NonMaximumSuppression (dip_filtering.h)
    dip_ArcFilter (dip_bilateral.h)
    dip_StructureAdaptiveGauss (dip_adaptive.h)
    dip_AdaptivePercentile (dip_adaptive.h)

@@ -112,10 +112,18 @@ class DIP_NO_EXPORT LookupTable{
          std::copy( begin, end, dest );
       }
 
-      // Variant that takes an array of value images
-      explicit LookupTable( ImageArray const& values, FloatArray index ) : valueImages_( CreateImageConstRefArray(values) ), index_( std::move( index) ) {
+      // Variant that takes an array of value images, which must have the same size as the image the LUT will
+      // be applied to. For each input pixel, the corresponding pixels in the LUT images will be queried.
+      // That is, the LUT is spread across the images in the array, and each pixel gets a different LUT.
+      // This mode is undocumented for the time being.
+      // TODO: this should be a vector input image!
+      explicit LookupTable( ImageArray const& values, FloatArray index )
+            : valueImages_( CreateImageConstRefArray( values )), index_( std::move( index )) {
          DIP_THROW_IF( index_.empty(), "Index cannot be empty when using multiple value images" );
-         // `values_` is not used
+         for( dip::uint ii = 1; ii < valueImages_.size(); ++ii ) {
+            DIP_STACK_TRACE_THIS( valueImages_[ ii ].get().CompareProperties( valueImages_[ 0 ].get(), Option::CmpProp::Samples ));
+         }
+         // NOTE: `values_` is not used
       }
 
       /// \brief True if the LUT has an index.
@@ -158,9 +166,7 @@ class DIP_NO_EXPORT LookupTable{
       ///  - `"zero order"`: uses zero order hold interpolation (i.e. uses the `floor` of the input value).
       void Apply( Image const& in, Image& out, String const& interpolation ) const {
          InterpolationMode mode;
-         DIP_START_STACK_TRACE
-            mode = DecodeInterpolationMode( interpolation );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( mode = DecodeInterpolationMode( interpolation ));
          Apply( in, out, mode );
       }
       Image Apply( Image const& in, String const& interpolation = S::LINEAR ) const {
@@ -174,9 +180,7 @@ class DIP_NO_EXPORT LookupTable{
       /// \brief Apply the LUT to a scalar value.
       Image::Pixel Apply( dfloat value, String const& interpolation ) const {
          InterpolationMode mode;
-         DIP_START_STACK_TRACE
-            mode = DecodeInterpolationMode( interpolation );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( mode = DecodeInterpolationMode( interpolation ));
          return Apply( value, mode );
       }
 

@@ -123,6 +123,8 @@ void init_filtering( py::module& m ) {
           "in"_a, "params"_a, "sigmas"_a = dip::FloatArray{ 5.0, 1.0 }, "orders"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 2.0, "exponents"_a = dip::UnsignedArray{ 0 }, "interpolationMethod"_a = dip::S::LINEAR, "boundaryCondition"_a = dip::S::SYMMETRIC_MIRROR );
    m.def( "AdaptiveBanana", py::overload_cast< dip::Image const&, dip::ImageConstRefArray const&, dip::FloatArray const&, dip::UnsignedArray const&, dip::dfloat, dip::UnsignedArray const&, dip::String const&, dip::String const& >( &dip::AdaptiveBanana ),
           "in"_a, "params"_a, "sigmas"_a = dip::FloatArray{ 5.0, 1.0 }, "orders"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 2.0, "exponents"_a = dip::UnsignedArray{ 0 }, "interpolationMethod"_a = dip::S::LINEAR, "boundaryCondition"_a = dip::S::SYMMETRIC_MIRROR );
+   m.def( "BilateralFilter", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::BilateralFilter ),
+          "in"_a, "estimate"_a = dip::Image{}, "spatialSigmas"_a = dip::FloatArray{ 2.0 }, "tonalSigma"_a = 30.0, "truncation"_a = 2.0, "method"_a = "xysep", "boundaryCondition"_a = dip::StringArray{} );
 
    // diplib/transform.h
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),

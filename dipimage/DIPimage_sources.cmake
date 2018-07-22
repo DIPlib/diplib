@@ -25,6 +25,7 @@ asf.cpp
 bclosing.cpp
 bdilation.cpp
 berosion.cpp
+bilateralf.cpp
 bopening.cpp
 bpropagation.cpp
 bskeleton.cpp
