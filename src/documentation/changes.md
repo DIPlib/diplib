@@ -206,7 +206,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip_PaintBox`, `dip_PaintDiamond` and `dip_PaintEllipsoid` are now called `dip::DrawBox`,
   `dip::DrawDiamond` and `dip::DrawEllipsoid`, respectively (for consistency).
 
-- `dip::RadialDistribution` renamed to `dip::DistanceDistribution`.
+- `dip_RadialDistribution` renamed to `dip::DistanceDistribution`.
+
+- `dip_Bilateral` renamed to `dip::SeparableBilateralFilter`, and `dip_BilateralFilter`
+  renamed to `dip::FullBilateralFilter`. Added new function `dip::BilateralFilter` as
+  an interface to all bilateral filter variants.
 
 [//]: # (--------------------------------------------------------------)
 

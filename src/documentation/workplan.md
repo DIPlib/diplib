@@ -179,9 +179,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_BiasedSigma (dip_filtering.h)
     - dip_GaussianSigma (dip_filtering.h)
     - dip_ArcFilter (dip_bilateral.h)
-    - dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
-    - dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
-    - dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
     - dip_StructureAdaptiveGauss (dip_adaptive.h)
     - dip_AdaptivePercentile (dip_adaptive.h)
     - dip_AdaptivePercentileBanana (dip_adaptive.h)
@@ -203,7 +200,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `afm_flatten`
 - `arcf`
 - `backgroundoffset`
-- `bilateralf`
 - `cal_readnoise`
 - `correctshift`
 - `countingframe`

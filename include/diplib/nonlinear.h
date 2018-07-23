@@ -623,6 +623,9 @@ inline Image AdaptiveBanana(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
+/// If `in` is not scalar, each tensor element will be filtered independently. For color images, this leads to
+/// false colors at edges.
+///
 /// **Literature**
 /// - C. Tomasi and R. Manduchi, "Bilateral filtering for Gray and Color Images," Proceedings of the 1998 IEEE
 ///   International Conference on Computer Vision, Bombay, India.
@@ -662,6 +665,8 @@ inline Image FullBilateralFilter(
 /// spatial sigmas.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// `in` must be scalar.
 ///
 /// **Literature**
 /// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images,"
@@ -703,6 +708,9 @@ inline Image QuantizedBilateralFilter(
 /// the result of the bilateral filter with a much reduced computational cost.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// If `in` is not scalar, each tensor element will be filtered independently. For color images, this leads to
+/// false colors at edges.
 ///
 /// **Literature**
 /// - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing," IEEE International
