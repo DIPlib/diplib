@@ -150,9 +150,9 @@ void init_morphology( py::module& m ) {
    m.def( "HMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMaxima ),
           "in"_a, "h"_a, "connectivity"_a = 1 );
    m.def( "AreaOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::AreaOpening ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a, "connectivity"_a = 1, "polarity"_a = dip::S::OPENING );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 1, "polarity"_a = dip::S::OPENING );
    m.def( "AreaClosing", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint >( &dip::AreaClosing ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a, "connectivity"_a = 1 );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 1 );
    m.def( "PathOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::PathOpening ),
           "in"_a, "mask"_a = dip::Image{}, "length"_a = 7, "polarity"_a = dip::S::OPENING, "mode"_a = dip::S::NORMAL );
    m.def( "DirectedPathOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntegerArray const&, dip::String const&, dip::String const& >( &dip::DirectedPathOpening ),
@@ -185,14 +185,14 @@ void init_morphology( py::module& m ) {
          "in"_a, "connectivity"_a = 1 );
 
    m.def( "ConditionalThickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThickening2D ),
-         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
+         "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "ConditionalThinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThinning2D ),
-         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
+         "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "BinaryAreaOpening", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::BinaryAreaOpening ),
-          "in"_a, "filterSize"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
+          "in"_a, "filterSize"_a = 50, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "BinaryAreaClosing", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::BinaryAreaClosing ),
-          "in"_a, "filterSize"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
+          "in"_a, "filterSize"_a = 50, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
           "in"_a, "endPixelCondition"_a = dip::S::NATURAL, "edgeCondition"_a = dip::S::BACKGROUND );
@@ -233,13 +233,13 @@ void init_morphology( py::module& m ) {
    m.def( "IntersectionInfGenerating2D", py::overload_cast< dip::Image const&, dip::Interval const&, dip::uint, dip::String const&, dip::String const& >( &dip::IntersectionInfGenerating2D ),
           "in"_a, "interval"_a, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
    m.def( "Thickening", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntervalArray const&, dip::uint, dip::String const& >( &dip::Thickening ),
-          "in"_a, "mask"_a, "intervals"_a, "iterations"_a = 0, "boundaryCondition"_a = "" );
+          "in"_a, "mask"_a = dip::Image{}, "intervals"_a, "iterations"_a = 0, "boundaryCondition"_a = "" );
    m.def( "Thickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Interval const&, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Thickening2D ),
-          "in"_a, "mask"_a, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
+          "in"_a, "mask"_a = dip::Image{}, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
    m.def( "Thinning", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntervalArray const&, dip::uint, dip::String const& >( &dip::Thinning ),
-          "in"_a, "mask"_a, "intervals"_a, "iterations"_a = 0, "boundaryCondition"_a = "" );
+          "in"_a, "mask"_a = dip::Image{}, "intervals"_a, "iterations"_a = 0, "boundaryCondition"_a = "" );
    m.def( "Thinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Interval const&, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Thinning2D ),
-          "in"_a, "mask"_a, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
+          "in"_a, "mask"_a = dip::Image{}, "interval"_a, "iterations"_a = 0, "rotationAngle"_a = 45, "rotationDirection"_a = "interleaved clockwise", "boundaryCondition"_a = "" );
    m.def( "HomotopicThinningInterval2D", &dip::HomotopicThinningInterval2D, "connectivity"_a = 2 );
    m.def( "HomotopicThickeningInterval2D", &dip::HomotopicThickeningInterval2D, "connectivity"_a = 2 );
    m.def( "EndPixelInterval2D", &dip::EndPixelInterval2D, "connectivity"_a = 2 );
