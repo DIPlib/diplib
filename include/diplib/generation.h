@@ -367,11 +367,11 @@ inline Image GaussianLineClip(
    return out;
 }
 
-// Create 1D Gaussian
+// Create 1D Gaussian, used in linear/gauss.cpp (where it is defined) and in nonlinear/bilateral.cpp
 DIP_EXPORT std::vector< dfloat > MakeGaussian(
       dfloat sigma,
-      dip::uint order,
-      dfloat truncation
+      dip::uint derivativeOrder = 0,
+      dfloat truncation = 3.0
 );
 
 /// \brief Creates a Gaussian kernel.

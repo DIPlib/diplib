@@ -32,28 +32,27 @@ namespace {
 
 inline dip::uint HalfGaussianSize(
       dfloat sigma,
-      dip::uint order,
+      dip::uint derivativeOrder,
       dfloat truncation
 ) {
-   return clamp_cast< dip::uint >( std::ceil(( truncation + 0.5 * static_cast< dfloat >( order )) * sigma ));
+   return clamp_cast< dip::uint >( std::ceil(( truncation + 0.5 * static_cast< dfloat >( derivativeOrder )) * sigma ));
 }
 
 // Creates a half Gaussian kernel, with the x=0 at the right end (last element) of the output array.
 std::vector< dfloat > MakeHalfGaussian(
       dfloat sigma,
-      dip::uint order,
+      dip::uint derivativeOrder,
       dfloat truncation
 ) {
-   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, order, truncation );
-   if( order > 2 && halfFilterSize < 2 ) {
+   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, derivativeOrder, truncation );
+   if( derivativeOrder > 2 && halfFilterSize < 2 ) {
       halfFilterSize = 2;
    }
    std::vector< dfloat > filter( halfFilterSize );
    dip::uint r0 = halfFilterSize - 1;
-   switch( order ) {
+   switch( derivativeOrder ) {
       case 0: {
          dfloat factor = -1.0 / ( 2.0 * sigma * sigma );
-         //dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ); // There's no point in computing this if we normalize later!
          dfloat normalization = 0;
          filter[ r0 ] = 1.0;
          for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
@@ -142,7 +141,7 @@ std::vector< dfloat > MakeHalfGaussian(
 // Create 1D full Gaussian
 std::vector< dfloat > MakeGaussian(
       dfloat sigma,
-      dip::uint order,
+      dip::uint derivativeOrder,
       dfloat truncation
 ) {
    // Handle sigma == 0.0
@@ -151,11 +150,11 @@ std::vector< dfloat > MakeGaussian(
    }
    // Create half Gaussian
    std::vector< dfloat > gaussian;
-   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, order, truncation ));
+   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, derivativeOrder, truncation ));
    dip::uint halfFilterSize = gaussian.size() - 1;
    // Complete the Gaussian
    gaussian.resize( halfFilterSize * 2 + 1 );
-   dfloat symmetrySign = ( order & 1 ) ? -1.0 : 1.0;
+   dfloat symmetrySign = ( derivativeOrder & 1 ) ? -1.0 : 1.0;
    for( dip::uint ii = 1; ii <= halfFilterSize; ++ii ) {
       gaussian[ halfFilterSize + ii ] = symmetrySign * gaussian[ halfFilterSize - ii ];
    }
