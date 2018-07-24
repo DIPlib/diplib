@@ -483,6 +483,37 @@ class DIP_NO_EXPORT DimensionArray {
          return p;
       }
 
+      /// Find the minimum element in the array, returns the index or 0 if the array is empty.
+      size_type minimum() const {
+         if( size_ == 0 ) {
+            return 0;
+         }
+         size_type result = 0;
+         size_type ii = 0;
+         while( ++ii != size_ ) {
+            if( data_[ ii ] < data_[ result ] ) {
+               result = ii;
+            }
+         }
+         return result;
+      }
+
+      /// Find the minimum element in the array, returns the index or 0 if the array is empty.
+      size_type maximum() const {
+         if( size_ == 0 ) {
+            return 0;
+         }
+         size_type result = 0;
+         size_type ii = 0;
+         while( ++ii != size_ ) {
+            if( data_[ ii ] > data_[ result ] ) {
+               result = ii;
+            }
+         }
+         return result;
+      }
+
+
       /// True if all elements are non-zero.
       bool all() const {
          for( size_type ii = 0; ii < size_; ++ii ) {
