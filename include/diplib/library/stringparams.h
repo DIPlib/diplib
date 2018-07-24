@@ -150,7 +150,7 @@ constexpr char const* FORWARD_BACKWARD = "forward backward";
 // Fourier
 constexpr char const* INVERSE = "inverse";
 constexpr char const* REAL = "real";
-constexpr char const* SYMMETRIC = "SYMMETRIC";
+constexpr char const* SYMMETRIC = "symmetric";
 constexpr char const* CORNER = "corner";
 //constexpr char const* FAST = "fast";
 
