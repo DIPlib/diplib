@@ -57,7 +57,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       DML_MAX_ARGS( index + 4 );
 
-      dip::String method = dip::S::BEST;
+      dip::String method = "iir";
       if( nrhs > index ) {
          method = dml::GetString( prhs[ index ] );
          ++index;

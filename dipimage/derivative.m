@@ -12,6 +12,8 @@
 %    - 'gaussft':      Convolution via a multiplication in the Fourier Domain.
 %    - 'finitediff':   Finite difference derivative approximation.
 %    - 'best':         Chooses the best option above for your kernel.
+%    - 'kernel':       The Gaussian convolution kernel is returned, rather than
+%                      the result of the convolution.
 %  boundary_condition: Defines how the boundary of the image is handled.
 %                      See HELP BOUNDARY_CONDITION
 %  truncation: Determines the size of the Gaussian filters.

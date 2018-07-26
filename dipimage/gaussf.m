@@ -6,10 +6,12 @@
 % PARAMETERS:
 %  sigma: Gaussian parameter for each dimension
 %  method: Method used to compute the Gaussian. One of:
-%    - 'fir':  Finite Impulse Resonse filter (convolution with a kernel).
-%    - 'iir':  Infinte Impulse Response filter (recursive filtering).
-%    - 'ft':   Convolution via a multiplication in the Fourier Domain.
-%    - 'best': Chooses the best option above for your kernel.
+%    - 'fir':    Finite Impulse Resonse filter (convolution with a kernel).
+%    - 'iir':    Infinte Impulse Response filter (recursive filtering).
+%    - 'ft':     Convolution via a multiplication in the Fourier Domain.
+%    - 'best':   Chooses the best option above for your kernel.
+%    - 'kernel': The convolution kernel is returned, rather than the result
+%                of the convolution.
 %  boundary_condition: Defines how the boundary of the image is handled.
 %                      See HELP BOUNDARY_CONDITION
 %  truncation: Determines the size of the Gaussian filters.

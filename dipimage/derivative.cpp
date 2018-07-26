@@ -21,6 +21,7 @@
 
 #include "dip_matlab_interface.h"
 #include "diplib/linear.h"
+#include "diplib/generation.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
@@ -54,7 +55,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          truncation = dml::GetFloat( prhs[ 5 ] );
       }
 
-      dip::Derivative( in, out, order, sigmas, method, bc, truncation );
+      if( method == "kernel" ) {
+         dip::CreateGauss( out, sigmas, order, truncation );
+      } else {
+         dip::Derivative( in, out, order, sigmas, method, bc, truncation );
+      }
 
       plhs[ 0 ] = dml::GetArray( out );
 
