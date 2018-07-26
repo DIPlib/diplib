@@ -666,7 +666,7 @@ inline Image FullBilateralFilter(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// `in` must be scalar.
+/// `in` must be scalar and real-valued.
 ///
 /// **Literature**
 /// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images,"

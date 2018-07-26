@@ -882,7 +882,7 @@ inline Image Divergence(
 /// The input image must be scalar.
 ///
 /// \see dip::Derivative, dip::Gradient, dip::Laplace
-DIP_EXPORT void Hessian (
+DIP_EXPORT void Hessian(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
@@ -925,7 +925,7 @@ inline Image Hessian(
 /// ```
 ///
 /// \see dip::Derivative, dip::Gradient, dip::Hessian, dip::Trace.
-DIP_EXPORT void Laplace (
+DIP_EXPORT void Laplace(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
@@ -1069,13 +1069,13 @@ inline Image LaplaceMinusDgg(
 ///
 /// \see dip::Laplace, dip::UnsharpMask
 DIP_EXPORT void Sharpen(
-         Image const& in,
-         Image& out,
-         dfloat weight = 1.0,
-         FloatArray const& sigmas = { 1.0 },
-         String const& method = S::BEST,
-         StringArray const& boundaryCondition = {},
-         dfloat truncation = 3
+      Image const& in,
+      Image& out,
+      dfloat weight = 1.0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
 );
 inline Image Sharpen(
       Image const& in,
@@ -1102,13 +1102,13 @@ inline Image Sharpen(
 ///
 /// \see dip::Gauss, dip::Sharpen
 DIP_EXPORT void UnsharpMask(
-         Image const& in,
-         Image& out,
-         dfloat weight = 1.0,
-         FloatArray const& sigmas = { 1.0 },
-         String const& method = S::BEST,
-         StringArray const& boundaryCondition = {},
-         dfloat truncation = 3
+      Image const& in,
+      Image& out,
+      dfloat weight = 1.0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
 );
 inline Image UnsharpMask(
       Image const& in,
@@ -1204,13 +1204,13 @@ DIP_EXPORT void GaborIIR(
       dfloat truncation = 3
 );
 inline Image GaborIIR(
-   Image const& in,
-   FloatArray const& sigmas,
-   FloatArray const& frequencies,
-   StringArray const& boundaryCondition = {},
-   BooleanArray const& process = {},
-   IntegerArray const& filterOrder = {},
-   dfloat truncation = 3
+      Image const& in,
+      FloatArray const& sigmas,
+      FloatArray const& frequencies,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      IntegerArray const& filterOrder = {},
+      dfloat truncation = 3
 ) {
    Image out;
    GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, filterOrder, truncation );
@@ -1232,13 +1232,13 @@ inline Image GaborIIR(
 ///
 /// To use cartesian frequency coordinates, see `dip::GaborIIR`.
 inline void Gabor2D(
-   Image const& in,
-   Image& out,
-   FloatArray const& sigmas = { 5.0, 5.0 },
-   dfloat frequency = 0.1,
-   dfloat direction = dip::pi,
-   StringArray const& boundaryCondition = {},
-   dfloat truncation = 3
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas = { 5.0, 5.0 },
+      dfloat frequency = 0.1,
+      dfloat direction = dip::pi,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
 ) {
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( frequency >= 0.5, "Frequency must be < 0.5" );
@@ -1246,15 +1246,73 @@ inline void Gabor2D(
    GaborIIR( in, out, sigmas, frequencies, boundaryCondition, {}, {}, truncation );
 }
 inline Image Gabor2D(
-   Image const& in,
-   FloatArray const& sigmas = { 5.0, 5.0 },
-   dfloat frequency = 0.1,
-   dfloat direction = dip::pi,
-   StringArray const& boundaryCondition = {},
-   dfloat truncation = 3
+      Image const& in,
+      FloatArray const& sigmas = { 5.0, 5.0 },
+      dfloat frequency = 0.1,
+      dfloat direction = dip::pi,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
 ) {
    Image out;
    Gabor2D( in, out, sigmas, frequency, direction, boundaryCondition, truncation );
+   return out;
+}
+
+/// \brief Applies a log-Gabor filter bank
+///
+/// A log-Gabor filter is a Gabor filter computed on the logarithm of the frequency, leading to a shorter tail of
+/// the Gaussian, in the frequency domain, towards the lower frequencies. The origin (DC component) is thus never
+/// included in the filter. This gives it better scale selection properties than the traditional Gabor filter.
+///
+/// This function generates a filter bank with `wavelengths.size()` times `nOrientations` filters. The width of
+/// the filters in the angular axis is determined by the number of orientations used, and their locations are
+/// always equally distributed over \f$pi\f$ radian, starting at 0. The radial location (scales) of the filters
+/// is determined by `wavelengths` (in pixels), which determines the center for each scale filter. The widths of
+/// the filters in this direction are determined by the `bandwidth` parameter; the default value of 0.75 corresponds
+/// approximately to one octave, 0.55 to two octaves, and 0.41 to three octaves.
+///
+/// `wavelengths.size()` and `nOrientations` must be at least 1.
+/// If `nOrientations` is 1, no orientation filtering is applied, the filters become purely real. These filters
+/// can be defined for images of any dimensionality. For more than one orientation, the filters are complex-valued
+/// in the spatial domain, and can only be created for 2D images. See `dip::MonogenicSignal` for a generalization
+/// to arbitrary dimensionality.
+///
+/// If `in` is not forged, its sizes will be used to generate the filters, which will be returned. Thus, this is
+/// identical to (but slightly cheaper than) using a delta pulse image as input.
+///
+/// The filters are always generated in the frequency domain. If `outRepresentation` is `"spatial"`, the inverse
+/// Fourier transform will be applied to bring the result back to the spatial domain. Otherwise, it should be
+/// `"frequency"`, and no inverse transform will be applied. Likewise, `inRepresentation` specifies whether `in`
+/// has already been converted to the frequency domain or not.
+///
+/// Out will be a tensor image with `wavelengths.size()` tensor rows and `nFrequencyScales` tensor columns.
+/// The data type will be either single-precision float or single-precision complex, depending on the selected
+/// parameters.
+///
+/// **Literature**
+/// - D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells,"
+///   Journal of the Optical Society of America A 4(12):2379-2394, 1987.
+/// - P. Kovesi, "What Are Log-Gabor Filters and Why Are They Good?"
+///   https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html (retrieved July 25, 2018).
+DIP_EXPORT void LogGaborFilterBank(
+      Image const& in,
+      Image& out,
+      FloatArray const& wavelengths = { 3.0, 6.0, 12.0, 24.0 },
+      dfloat bandwidth = 0.75, // ~1 octave
+      dip::uint nOrientations = 6,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
+);
+inline Image LogGaborFilterBank(
+      Image const& in,
+      FloatArray const& wavelengths = { 3.0, 6.0, 12.0, 24.0 },
+      dfloat bandwidth = 0.75,
+      dip::uint nOrientations = 6,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
+) {
+   Image out;
+   LogGaborFilterBank( in, out, wavelengths, bandwidth, nOrientations, inRepresentation, outRepresentation );
    return out;
 }
 

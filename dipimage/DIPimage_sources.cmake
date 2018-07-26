@@ -72,6 +72,7 @@ hminima.cpp
 kuwahara.cpp
 label.cpp
 lee.cpp
+loggabor.cpp
 lut.cpp
 maxima.cpp
 mdhistogram.cpp

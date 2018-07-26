@@ -47,10 +47,9 @@ void RieszTransform(
       FourierIn = FourierTransform( in );
    } else {
       FourierIn = in.QuickCopy();
-      if( &in == &out ) {
+      if( in.Aliases( out )) {
          out.Strip(); // We cannot work in-place.
       }
-      // If input is in frequency domain, the output will not be forced to real.
    }
    // Reforge filtered to have `tElems` tensor elements and complex values.
    Image tmp;
