@@ -60,8 +60,8 @@ for ii=1:sz(1)
       catch
          tmp2 = clone(in,'tensorsize',1);
       end
-      tmp{ii} = cat(2,tmp{ii},tmp2);
+      tmp{ii} = cat(1,tmp{ii},tmp2);
    end
 end
 % Cat cell array into a single image
-out = cat(1,tmp{:});
+out = cat(2,tmp{:});
