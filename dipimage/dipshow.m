@@ -1148,15 +1148,15 @@ if isbin
           @(~,~)dipshow(gcbf,'ch_mappingmode','normal'));
 else
    uimenu(h,'Label','Unit [0,1]','Tag','unit','Callback',...
-          @(~,~)dipshow(gcbf,'ch_mappingmode','unit'));
+          @(~,~)dipshow(gcbf,'ch_mappingmode','unit'),'Accelerator','u');
    uimenu(h,'Label','Normal [0,255]','Tag','normal','Callback',...
-          @(~,~)dipshow(gcbf,'ch_mappingmode','normal'));
+          @(~,~)dipshow(gcbf,'ch_mappingmode','normal'),'Accelerator','n');
    uimenu(h,'Label','12-bit [0,4095]','Tag','12bit','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','12bit'));
    uimenu(h,'Label','16-bit [0,65535]','Tag','16bit','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','16bit'));
    uimenu(h,'Label','Linear stretch','Tag','lin','Callback',...
-          @(~,~)dipshow(gcbf,'ch_mappingmode','lin'),'Accelerator','L');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','lin'),'Accelerator','l');
    uimenu(h,'Label','Percentile stretch','Tag','percentile','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','percentile'));
    uimenu(h,'Label','Log stretch','Tag','log','Callback',...
@@ -1189,13 +1189,13 @@ else
    end
    if iscomp
       uimenu(h,'Label','Magnitude','Tag','magnitude','Callback',...
-             @(~,~)dipshow(gcbf,'ch_complexmapping','magnitude'),'Separator','on');
+             @(~,~)dipshow(gcbf,'ch_complexmapping','magnitude'),'Accelerator','m','Separator','on');
       uimenu(h,'Label','Phase','Tag','phase','Callback',...
              @(~,~)dipshow(gcbf,'ch_complexmapping','phase'));
       uimenu(h,'Label','Real part','Tag','real','Callback',...
-             @(~,~)dipshow(gcbf,'ch_complexmapping','real'));
+             @(~,~)dipshow(gcbf,'ch_complexmapping','real'),'Accelerator','r');
       uimenu(h,'Label','Imaginary part','Tag','imag','Callback',...
-             @(~,~)dipshow(gcbf,'ch_complexmapping','imag'));
+             @(~,~)dipshow(gcbf,'ch_complexmapping','imag'),'Accelerator','g');
    end
 end
 if nD>=3
@@ -1258,8 +1258,11 @@ if nD > 1 && exist('view5d','file') && exist('javachk','file') && isempty(javach
       added_separator = true;
    end
 end
-h2 = uimenu(h,'Label','Enable keyboard','Tag','keyboard','Separator','on',...
+h2 = uimenu(h,'Label','Enable keyboard','Tag','keyboard',...
          'Callback',@(~,~)change_keyboard_state(gcbf,'toggle'),'Accelerator','k');
+if(~added_separator)
+   set(h2,'Separator','on');
+end
 % Work around a bug in MATLAB 7.1 (R14SP3) (solution # 1-1XPN82).
 h = uimenu(fig); drawnow; delete(h);
 
@@ -1796,13 +1799,16 @@ end
 %
 % Callback function for keyboard event
 %
-function KeyPressFcn(fig,~)
+function KeyPressFcn(fig,event)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    nD = imagedisplay(udata.handle,'dimensionality');
-   ch = get(fig,'CurrentCharacter');
+   if ~isempty(event.Modifier)
+      return
+   end
+   ch = event.Character; %get(fig,'CurrentCharacter');
    if ~isempty(ch)
-      udata.lastkeypress=upper(ch);
+      udata.lastkeypress = upper(ch);
       set(fig,'UserData',[]);
       set(fig,'UserData',udata);
       switch ch
