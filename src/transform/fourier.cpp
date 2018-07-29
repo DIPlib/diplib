@@ -766,7 +766,7 @@ void FourierTransform(
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    // Read `options` set
    bool inverse = false; // forward or inverse transform?
-   bool real = false; // real-valued output?
+   bool real = out.IsProtected() && !out.DataType().IsComplex(); // real-valued output?
    bool fast = false; // pad the image to a "nice" size?
    bool corner = false;
    bool symmetric = false;
@@ -844,7 +844,7 @@ void FourierTransform(
    if( real ) {
       tmp.ReForge( outSize, in_copy.TensorElements(), dtype );
    } else {
-      out.ReForge( outSize, in_copy.TensorElements(), dtype );
+      DIP_STACK_TRACE_THIS( out.ReForge( outSize, in_copy.TensorElements(), dtype, Option::AcceptDataTypeChange::DO_ALLOW ));
       tmp = out.QuickCopy();
    }
    tmp.Protect(); // make sure it won't be reforged by the framework function.
@@ -872,6 +872,9 @@ void FourierTransform(
    }
 
 #endif // DIP__HAS_FFTW
+
+   // Set output tensor shape
+   out.ReshapeTensor( in_copy.Tensor() );
 
    // Set output pixel sizes
    PixelSize pixelSize = in_copy.PixelSize();

@@ -34,11 +34,15 @@ void RieszTransform(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    // Which dimensions to process?
    DIP_STACK_TRACE_THIS( ArrayUseParameter( process, in.Dimensionality(), true ));
+   bool inIsSpatial;
+   DIP_STACK_TRACE_THIS( inIsSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
+   bool outIsSpatial;
+   DIP_STACK_TRACE_THIS( outIsSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    dip::uint tElems = process.count();
    // Compute Fourier transform of `in`, before reforging `out` in case `&in==&out`.
    bool isReal = false;
    Image FourierIn;
-   if( BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY )) {
+   if( inIsSpatial ) {
       isReal = !in.DataType().IsComplex();
       FourierIn = FourierTransform( in );
    } else {
@@ -48,12 +52,14 @@ void RieszTransform(
       }
       // If input is in frequency domain, the output will not be forced to real.
    }
-   // Reforge out to have `tElems` tensor elements and complex values.
+   // Reforge filtered to have `tElems` tensor elements and complex values.
+   Image tmp;
+   Image& filtered = outIsSpatial ? tmp : out; // Write directly in out if we won't do inverse Fourier transform
    UnsignedArray sizes = in.Sizes();
-   out.ReForge( sizes, tElems, DataType::SuggestComplex( in.DataType() ), Option::AcceptDataTypeChange::DONT_ALLOW );
-   out.Fill( 0 );
+   DIP_STACK_TRACE_THIS( filtered.ReForge( sizes, tElems, DataType::SuggestComplex( in.DataType() ), Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( filtered.Real().Fill( 0 )); // Will throw if the reforge above failed to produce a complex type
    // Fill imaginary part of `out` with coordinates (this is x_j in the equation).
-   Image coord = out.Imaginary();
+   Image coord = filtered.Imaginary();
    dip::uint jj = 0;
    for( dip::uint ii = 0; ii < process.size(); ++ii ) {
       if( process[ ii ] ) {
@@ -67,16 +73,16 @@ void RieszTransform(
    norm *= -1;
    sizes /= 2;
    norm.At( sizes ) = 1; // Avoid division by zero by setting the center pixel to 1 (the origin has norm 0)
-   out /= norm;
+   filtered /= norm;
    // Compute -i x_j / |x| F(f)
-   out *= FourierIn;
+   filtered *= FourierIn;
    // Compute inverse Fourier transform
-   if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
+   if( outIsSpatial ) {
       StringSet options = { S::INVERSE };
       if( isReal ) {
          options.insert( S::REAL );
       }
-      FourierTransform( out, out, options );
+      DIP_STACK_TRACE_THIS( FourierTransform( filtered, out, options ));
    }
 }
 
