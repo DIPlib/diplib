@@ -384,7 +384,11 @@ inline T Sum( dip::uint n, ConstSampleIterator< T > input ) {
 /// `input` is a pointer to `n` values.
 template< typename T >
 inline FloatType< T > SumAbsSquare( dip::uint n, ConstSampleIterator< T > input ) {
-   return std::accumulate( input, input + n, FloatType< T >( 0 ), []( FloatType< T > a, T b ){ return a + std::abs( b ) * std::abs( b ); } );
+   return std::accumulate( input, input + n, FloatType< T >( 0 ), []( FloatType< T > a, T b ){ return a + b * b; } );
+}
+template< typename T >
+inline T SumAbsSquare( dip::uint n, ConstSampleIterator< std::complex< T >> input ) {
+   return std::accumulate( input, input + n, T( 0 ), []( T a, std::complex< T > b ){ return a + ( b * std::conj( b )).real(); } );
 }
 
 /// \brief Computes the sum of the values of a vector.
@@ -401,6 +405,14 @@ inline T Product( dip::uint n, ConstSampleIterator< T > input ) {
 template< typename T >
 inline FloatType< T > Norm( dip::uint n, ConstSampleIterator< T > input ) {
    return std::sqrt( SumAbsSquare( n, input ));
+}
+
+/// \brief Computes the square norm of a vector.
+///
+/// `input` is a pointer to `n` values.
+template< typename T >
+inline FloatType< T > SquareNorm( dip::uint n, ConstSampleIterator< T > input ) {
+   return SumAbsSquare( n, input );
 }
 
 /// \brief Computes the determinant of a square real matrix.

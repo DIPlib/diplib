@@ -215,12 +215,16 @@ void Abs( Image const& in, Image& out ) {
 void SquareModulus( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DataType dtype = in.DataType();
-   DataType otype = DataType::SuggestFloat( dtype );
-   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-   DIP_OVL_NEW_COMPLEX( scanLineFilter, SquareModulusLineFilter, (), dtype );
-   ImageRefArray outar{ out };
-   DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
-          Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ));
+   if( dtype.IsComplex() ) {
+      DataType otype = DataType::SuggestFloat( dtype );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_NEW_COMPLEX( scanLineFilter, SquareModulusLineFilter, ( ), dtype );
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
+            Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ));
+   } else {
+      MultiplySampleWise( in, in, out );
+   }
 }
 
 void Phase( Image const& in, Image& out ) {

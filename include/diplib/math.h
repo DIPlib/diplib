@@ -310,6 +310,14 @@ inline Image Norm( Image const& in ) {
    return out;
 }
 
+/// \brief Computes the square of the norm of the vector at each pixel in image `in`.
+DIP_EXPORT void SquareNorm( Image const& in, Image& out );
+inline Image SquareNorm( Image const& in ) {
+   Image out;
+   SquareNorm( in, out );
+   return out;
+}
+
 /// \brief Computes the angle of the vector at each pixel in image `in`.
 ///
 /// `in` must be a 2-vector or a 3-vector. For a 2-vector, `out` is a scalar image representing

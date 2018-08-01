@@ -244,7 +244,7 @@ inline Image MeanSquare( Image const& in, Image const& mask = {}, BooleanArray c
    return out;
 }
 
-/// \brief Calculates the mean of the square pixel values over all those dimensions which are specified by `process`.
+/// \brief Calculates the sum of the square pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
 /// the sum square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,

@@ -289,6 +289,32 @@ void Norm( Image const& in, Image& out ) {
    }
 }
 
+void SquareNorm( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      DIP_STACK_TRACE_THIS( SquareModulus( in, out ));
+   } else {
+      DIP_THROW_IF( !in.IsVector(), E::IMAGE_NOT_VECTOR );
+      dip::uint n = in.TensorElements();
+      DataType outtype = DataType::SuggestFloat( in.DataType() );
+      DataType intype;
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      if( in.DataType().IsComplex() ) {
+         scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dfloat >(
+               [ n ]( auto const& pin, auto const& pout ) { *pout = SquareNorm( n, pin ); }, 2 * n
+         );
+         intype = DT_DCOMPLEX;
+      } else {
+         scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+               [ n ]( auto const& pin, auto const& pout ) { *pout = SquareNorm( n, pin ); }, 2 * n
+         );
+         intype = DT_DFLOAT;
+      }
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { intype }, { DT_DFLOAT }, { outtype }, { 1 }, *scanLineFilter ));
+   }
+}
+
 void Angle( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = in.TensorElements();
