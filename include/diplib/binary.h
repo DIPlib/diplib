@@ -191,12 +191,11 @@ inline Image BinaryPropagation(
    return out;
 }
 
-/// \brief Remove binary edge objects.
+/// \brief Remove edge objects from binary image.
 ///
 /// Removes those binary objects from `in` that are connected to the edges of the image.
-/// The connectivity of the objects is determined by `connectivity`. This function
-/// calls `dip::BinaryPropagation` with no seed image and `edgeCondition` set to `"object"`.
-/// The result of the propagation is xor-ed with the input image.
+/// This function calls `dip::BinaryPropagation` with no seed image and `edgeCondition` set to
+/// `"object"`. The result of the propagation is xor-ed with the input image.
 ///
 /// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity).
@@ -219,6 +218,37 @@ inline Image EdgeObjectsRemove(
 ) {
    Image out;
    EdgeObjectsRemove( in, out, connectivity );
+   return out;
+}
+
+/// \brief Fill holes in binary image.
+///
+/// Removes holes in binary objects in `in` that are not connected to the edges of the image.
+/// This function calls `dip::BinaryPropagation` using the inverted `in`, with no seed image, and
+/// `edgeCondition` set to `"object"`. This finds the background connected to the edge, which is
+/// the only background to be preserved.
+///
+/// The `connectivity` parameter defines the metric, that is, the shape of
+/// the structuring element (see \ref connectivity).
+inline void FillHoles(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 1
+){
+   DIP_START_STACK_TRACE
+      // Propagate from boundary with empty seed mask into inverted image
+      Invert( in, out );
+      BinaryPropagation( Image(), out, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
+      // Result is only outside background, invert to get filled objects
+      Invert( out, out );
+   DIP_END_STACK_TRACE
+}
+inline Image FillHoles(
+      Image const& in,
+      dip::uint connectivity = 1
+) {
+   Image out;
+   FillHoles( in, out, connectivity );
    return out;
 }
 

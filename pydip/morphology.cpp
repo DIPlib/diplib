@@ -183,6 +183,8 @@ void init_morphology( py::module& m ) {
          "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "EdgeObjectsRemove", py::overload_cast< dip::Image const&, dip::uint >( &dip::EdgeObjectsRemove ),
          "in"_a, "connectivity"_a = 1 );
+   m.def( "FillHoles", py::overload_cast< dip::Image const&, dip::uint >( &dip::FillHoles ),
+         "in"_a, "connectivity"_a = 1 );
 
    m.def( "ConditionalThickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThickening2D ),
          "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
