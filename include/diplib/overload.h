@@ -129,55 +129,45 @@
    DIP__OVL__SINT( assign_name, paramlist )
 
 #define DIP__OVL__INT_OR_BIN( assign_name, paramlist ) \
-   DIP__OVL__BIN( assign_name, paramlist )  \
-   DIP__OVL__UINT( assign_name, paramlist ) \
-   DIP__OVL__SINT( assign_name, paramlist )
+   DIP__OVL__BIN( assign_name, paramlist ) \
+   DIP__OVL__INTEGER( assign_name, paramlist )
 
 #define DIP__OVL__UNSIGNED( assign_name, paramlist ) \
-   DIP__OVL__BIN( assign_name, paramlist )  \
+   DIP__OVL__BIN( assign_name, paramlist ) \
    DIP__OVL__UINT( assign_name, paramlist )
 
 #define DIP__OVL__SIGNED( assign_name, paramlist ) \
-   DIP__OVL__SINT( assign_name, paramlist )   \
-   DIP__OVL__FLOAT( assign_name, paramlist )  \
+   DIP__OVL__SINT( assign_name, paramlist )  \
+   DIP__OVL__FLOAT( assign_name, paramlist ) \
    DIP__OVL__COMPLEX( assign_name, paramlist )
 
 #define DIP__OVL__REAL( assign_name, paramlist ) \
-   DIP__OVL__UINT( assign_name, paramlist )  \
-   DIP__OVL__SINT( assign_name, paramlist )  \
+   DIP__OVL__INTEGER( assign_name, paramlist ) \
    DIP__OVL__FLOAT( assign_name, paramlist )
 
 #define DIP__OVL__SIGNEDREAL( assign_name, paramlist ) \
-   DIP__OVL__SINT( assign_name, paramlist )   \
-   DIP__OVL__FLOAT( assign_name, paramlist )
-
-#define DIP__OVL__NONCOMPLEX( assign_name, paramlist ) \
-   DIP__OVL__BIN( assign_name, paramlist )  \
-   DIP__OVL__UINT( assign_name, paramlist ) \
    DIP__OVL__SINT( assign_name, paramlist ) \
    DIP__OVL__FLOAT( assign_name, paramlist )
 
+#define DIP__OVL__NONCOMPLEX( assign_name, paramlist ) \
+   DIP__OVL__BIN( assign_name, paramlist ) \
+   DIP__OVL__REAL( assign_name, paramlist )
+
 #define DIP__OVL__FLEX( assign_name, paramlist ) \
-   DIP__OVL__FLOAT( assign_name, paramlist )  \
+   DIP__OVL__FLOAT( assign_name, paramlist ) \
    DIP__OVL__COMPLEX( assign_name, paramlist )
 
 #define DIP__OVL__FLEXBIN( assign_name, paramlist ) \
-   DIP__OVL__BIN( assign_name, paramlist )  \
-   DIP__OVL__FLOAT( assign_name, paramlist )  \
-   DIP__OVL__COMPLEX( assign_name, paramlist )
+   DIP__OVL__BIN( assign_name, paramlist ) \
+   DIP__OVL__FLEX( assign_name, paramlist )
 
 #define DIP__OVL__NONBINARY( assign_name, paramlist ) \
-   DIP__OVL__UINT( assign_name, paramlist )   \
-   DIP__OVL__SINT( assign_name, paramlist )   \
-   DIP__OVL__FLOAT( assign_name, paramlist )  \
+   DIP__OVL__REAL( assign_name, paramlist ) \
    DIP__OVL__COMPLEX( assign_name, paramlist )
 
 #define DIP__OVL__ALL( assign_name, paramlist ) \
-   DIP__OVL__BIN( assign_name, paramlist )    \
-   DIP__OVL__UINT( assign_name, paramlist )   \
-   DIP__OVL__SINT( assign_name, paramlist )   \
-   DIP__OVL__FLOAT( assign_name, paramlist )  \
-   DIP__OVL__COMPLEX( assign_name, paramlist )
+   DIP__OVL__BIN( assign_name, paramlist ) \
+   DIP__OVL__NONBINARY( assign_name, paramlist )
 
 //
 // DIP_OVL_CALL_xxx

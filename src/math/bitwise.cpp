@@ -72,8 +72,12 @@ void Not(
       Image& out
 ) {
    DataType dt = in.DataType();
+   if( dt == DT_BIN ) {
+      DIP_STACK_TRACE_THIS( Invert( in, out ));
+      return;
+   }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewMonadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( ~*its[ 0 ] ); } // integer promotion causes compiler warnings
    ), dt );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));

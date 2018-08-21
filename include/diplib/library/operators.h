@@ -267,6 +267,8 @@ DIP__DEFINE_DYADIC_OVERLOADS( Xor )
 /// \brief Applies bit-wise negation to each sample of the input image, yielding an
 /// image of the same type.
 ///
+/// For binary images, this is identical to `dip::Invert`.
+///
 /// \see operator!(Image const&), operator~(Image const&), Invert
 DIP_EXPORT void Not( Image const& in, Image& out );
 inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
