@@ -226,9 +226,9 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Power )
 /// \brief Inverts each sample of the input image, yielding an image of the same type.
 ///
 /// For unsigned images, the output is `std::numeric_limits::max() - in`. For
-/// signed and complex types, it is `0 - in`. For binary types it is the same as `dip::Not`.
+/// signed and complex types, it is `0 - in`. For binary images it is the logical NOT.
 ///
-/// \see operator-(Image const&), Not
+/// \see operator-(Image const&), operator!(Image const&), Not
 DIP_EXPORT void Invert( Image const& in, Image& out );
 inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return out; }
 
@@ -237,7 +237,7 @@ inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return ou
 // Functions for bit-wise operations
 //
 
-/// \brief Bit-wise and of two binary or integer images, sample-wise, with singleton expansion.
+/// \brief Bit-wise AND of two integer images, or logical AND of two binary images, sample-wise, with singleton expansion.
 ///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation. `lhs` must be an image, but `rhs` can also be a pixel or a sample
@@ -246,7 +246,7 @@ inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return ou
 /// \see Or, Xor, operator&(Image const&, T const&)
 DIP__DEFINE_DYADIC_OVERLOADS( And )
 
-/// \brief Bit-wise or of two binary or integer images, sample-wise, with singleton expansion.
+/// \brief Bit-wise OR of two integer images, or logical OR of two binary images, sample-wise, with singleton expansion.
 ///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation. `lhs` must be an image, but `rhs` can also be a pixel or a sample
@@ -255,7 +255,9 @@ DIP__DEFINE_DYADIC_OVERLOADS( And )
 /// \see And, Xor, operator|(Image const&, T const&)
 DIP__DEFINE_DYADIC_OVERLOADS( Or )
 
-/// \brief Bit-wise exclusive-or of two binary or integer images, sample-wise, with singleton expansion.
+/// \brief Bit-wise XOR of two integer images, or logical XOR of two binary images, sample-wise, with singleton expansion.
+///
+/// XOR is "exclusive or".
 ///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation. `lhs` must be an image, but `rhs` can also be a pixel or a sample
@@ -264,12 +266,13 @@ DIP__DEFINE_DYADIC_OVERLOADS( Or )
 /// \see And, Or, operator^(Image const&, T const&)
 DIP__DEFINE_DYADIC_OVERLOADS( Xor )
 
-/// \brief Applies bit-wise negation to each sample of the input image, yielding an
-/// image of the same type.
+/// \brief Bit-wise NOT of an integer image, or logical NOT of a binary image, sample-wise.
 ///
-/// For binary images, this is identical to `dip::Invert`.
+/// Out will have the type of `in`.
 ///
-/// \see operator!(Image const&), operator~(Image const&), Invert
+/// For binary images, this function calls `dip::Invert`.
+///
+/// \see operator~(Image const&), Invert
 DIP_EXPORT void Not( Image const& in, Image& out );
 inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 
@@ -308,19 +311,19 @@ inline Image operator%( T1 const& lhs, T2 const& rhs ) {
    return Modulo( lhs, rhs );
 }
 
-/// \brief Bit-wise operator, calls `dip::And`.
+/// \brief Bit-wise and logical operator, calls `dip::And`.
 template< typename T >
 inline Image operator&( Image const& lhs, T const& rhs ) {
    return And( lhs, rhs );
 }
 
-/// \brief Bit-wise operator, calls `dip::Or`.
+/// \brief Bit-wise and logical operator, calls `dip::Or`.
 template< typename T >
 inline Image operator|( Image const& lhs, T const& rhs ) {
    return Or( lhs, rhs );
 }
 
-/// \brief Bit-wise operator, calls `dip::Xor`.
+/// \brief Bit-wise and logical operator, calls `dip::Xor`.
 template< typename T >
 inline Image operator^( Image const& lhs, T const& rhs ) {
    return Xor( lhs, rhs );
@@ -331,16 +334,19 @@ inline Image operator-( Image const& in ) {
    return Invert( in );
 }
 
-/// \brief Bit-wise unary operator, calls `dip::Not` for integer images.
+/// \brief Bit-wise and logical unary operator, calls `dip::Not`.
 inline Image operator~( Image const& in ) {
-   DIP_THROW_IF( !in.DataType().IsInteger(), "Bit-wise unary not operator only applicable to integer images" );
    return Not( in );
 }
 
-/// \brief Boolean unary operator, calls `dip::Not` for binary images.
+/// \brief Logical unary operator. The input is converted to a binary image, then calls `dip::Invert`.
 inline Image operator!( Image const& in ) {
-   DIP_THROW_IF( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
-   return Not( in );
+   if( in.DataType().IsBinary() ) {
+      return Invert( in );
+   }
+   Image out = Convert( in, DT_BIN );
+   Invert( out, out );
+   return out;
 }
 
 
