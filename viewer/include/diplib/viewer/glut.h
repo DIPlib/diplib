@@ -44,11 +44,11 @@ class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager
   protected:
     std::thread thread_;
     std::recursive_mutex mutex_;
-    bool continue_;
+    bool continue_, active_;
   
     WindowMap windows_;
     
-    WindowPtr new_window_, destroyed_window_;
+    WindowPtr new_window_;
     
     static GLUTManager *instance_;
     

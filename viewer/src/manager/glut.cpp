@@ -73,8 +73,17 @@ void GLUTManager::createWindow(WindowPtr window)
   
   new_window_ = window;
   
-  mutex_.unlock();
+  // If called from event handler, don't wait for window to be created.
+  // Note that this means only one window can be created per
+  // glutMainLoopEvent() call.
+  if (active_)
+  {
+    mutex_.unlock();
+    return;
+  }
   
+  mutex_.unlock();
+
   while (new_window_)
     std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
@@ -102,6 +111,8 @@ void GLUTManager::run()
   while (continue_)
   {
     mutex_.lock();
+    
+    active_ = true;
 
     glutMainLoopEvent();
     
@@ -145,6 +156,8 @@ void GLUTManager::run()
     }
     
     idle();
+    
+    active_ = false;
     
     mutex_.unlock();
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
