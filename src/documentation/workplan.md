@@ -215,7 +215,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `fmmatch`
 - `frc`
 - `hist2image`
-- `ht`
 - `hybridf`
 - `jpeg_quality_score`
 - `lfmse`

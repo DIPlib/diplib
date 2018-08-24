@@ -73,8 +73,9 @@ void StructureTensorAnalysis2D(
    Image tempOrientation;
    if( orientation || curvature) {
       // Curvature needs orientation
-      if( !orientation )
+      if( !orientation ) {
          orientation = &tempOrientation;
+      }
       // Compute eigenvectors also
       Image vv;
       EigenDecomposition( in, ll, vv );

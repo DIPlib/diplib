@@ -459,6 +459,131 @@ DIP_EXPORT Distribution StructureAnalysis(
       dfloat truncation = 3
 );
 
+
+/// \brief Computes the monogenic signal, a multi-dimensional generalization of the analytic signal.
+///
+/// The monogenic signal of an *n*-dimensional image has *n*+1 components. The first component has been
+/// filtered with the even (symmetric) filter component, and the other *n* components have been filtered
+/// with the odd (antisymmetric) fitler components, where each of those filter components is antisymmetric
+/// along a different dimension.
+///
+/// This function splits the frequency spectrum of the image into `wavelengths.size()` components. The radial
+/// component of a log-Gabor filter bank will be used. These radial frequency filters are defined by
+/// `wavelengths` (in pixels) and `bandwidth`. See `dip::LogGaborFilterBank` for details.
+///
+/// The filters are always applied in the frequency domain. If `outRepresentation` is `"spatial"`, the inverse
+/// Fourier transform will be applied to bring the result back to the spatial domain. Otherwise, it should be
+/// `"frequency"`, and no inverse transform will be applied. Likewise, `inRepresentation` specifies whether `in`
+/// has already been converted to the frequency domain or not.
+///
+/// `in` must be scalar and real-valued if given in the spatial domain. If `in` is in the frequency domain, it is
+/// expected to be conjugate symmetric, and thus have a real-valued inverse transform (the imaginary part of the
+/// inverse transform will be discarded).
+/// Out will be a tensor image with `wavelengths.size()` tensor columns and *n*+1 tensor rows. The data type will be
+/// single-precision float for spatial-domain output, or single-precision complex for frequency-domain output.
+///
+/// **Literature**:
+///  - M. Felsberg and G. Sommer, "The Monogenic Signal", IEEE Transactions on Signal Processing 49(12):3136-3144, 2001.
+DIP_EXPORT void MonogenicSignal(
+      Image const& in,
+      Image& out,
+      FloatArray const& wavelengths = { 3.0, 24.0 },
+      dfloat bandwidth = 0.41, // ~3 octaves
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
+);
+inline Image MonogenicSignal(
+      Image const& in,
+      FloatArray const& wavelengths = { 3.0, 24.0 },
+      dfloat bandwidth = 0.41, // ~3 octaves
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
+) {
+   Image out;
+   MonogenicSignal( in, out, wavelengths, bandwidth, inRepresentation, outRepresentation );
+   return out;
+}
+
+/// \brief Computes useful image parameters from the monogenic signal.
+///
+/// `in` is a tensor image produced by `dip::MonogenicSignal`, for which `in.TensorRows() == in.Dimensionality() + 1`,
+/// and `in.TensorColumns() > 1`. In the case of a single column (a single wavelength was given), the congruency output
+/// is not possible. `in` is real-valued (single-precision float) and in the spatial domain.
+/// `out` is an array with references to output images. It should have exactly as many elements as `outputs`.
+///
+/// `outputs` is an array with one or more of the following strings, indicating which outputs are needed:
+///
+/// %Image          | Description
+/// ----------------|------------
+/// `"congruency"`  | **Phase congruency**, a measure of line/edge significace
+/// `"orientation"` | Line/edge orientation (in the range [-pi/2, pi/2]), 2D only
+/// `"phase"`       | Phase angle (pi/2 is a white line, 0 is an edge, -pi/2 is a black line)
+/// `"enery"`       | Raw phase congruency energy
+/// `"symmetry"`    | **Phase symmetry**, a constrast invariant measure of symmetry
+/// `"symenergy"`   | Raw phase symmetry energy
+///
+/// The order of the strings in `outputs` indicates the order they will be written to the `out` array.
+///
+/// The output images will be reallocated to be the same size as the input image. They will be scalar and of a
+/// floating-point type.
+///
+/// `noiseThreshold` indicates the noise threshold to use on the energy images when computing phase congruency
+/// or symmetry.
+///
+/// Two different algorithms for phase conguency are implemented:
+///
+/// - Kovesi's method works for images in 2D only, and requires several scales (>2) to be present in the monogenic
+///   signal. This method will use the following input arguments:
+///     - `frequencySpreadThreshold` is a threshold that avoids high phase congurency values if the frequency
+///       spread is not large enough.
+///     - `sigmoidParameter` is the parameter to the sigmoid function that weighs congruency with the frequency
+///       spread.
+///     - `deviationGain` determines how much the calculated phase deviation should be magnified. Larger values
+///       create a sharper response to edges, but also reduces this respone's magnitude. Sensible values are in
+///       the range [1,2].
+///
+/// - Felsberg's method works in any number of dimensions, and requires exactly two scales to be present in the
+///   monogenic signal. This method ignores the three input arguments specified above.
+///
+/// Phase symmetry can be computed with any number of dimensions and any number of scales. The `polarity` input
+/// argument will be used. It is the string `"white"`, `"black"` or `"both"`, indicating which symmetry features
+/// to find.
+///
+/// The other outputs are computed as part of the computation of phase congruency or phase symmetry. These outputs
+/// can be requested without requesting the two main parameters, but might require some of the input arguments
+/// discussed above to be set.
+///
+/// **Literature**
+/// - P. Kovesi, "Image features from phase information", Videre: Journal of Computer Vision Research 1(3), 1999.
+/// - M. Felsberg and G. Sommer, "A New Extension of Linear Signal Processing for Estimating Local Properties and
+///   Detecting Features", DAGM Symposium, 2000.
+DIP_EXPORT void MonogenicSignalAnalysis(
+      Image const& in,
+      ImageRefArray& out,
+      StringArray const& outputs,
+      dfloat noiseThreshold = 0.2,
+      dfloat frequencySpreadThreshold = 0.5,
+      dfloat sigmoidParameter = 10,
+      dfloat deviationGain = 1.5,
+      String const& polarity = S::BOTH
+);
+inline ImageArray MonogenicSignalAnalysis(
+      Image const& in,
+      StringArray const& outputs,
+      dfloat noiseThreshold = 0.2,
+      dfloat frequencySpreadThreshold = 0.5,
+      dfloat sigmoidParameter = 10,
+      dfloat deviationGain = 1.5,
+      String const& polarity = S::BOTH
+) {
+   dip::uint nOut = outputs.size();
+   ImageArray out( nOut );
+   ImageRefArray refOut = CreateImageRefArray( out );
+   DIP_STACK_TRACE_THIS( MonogenicSignalAnalysis( in, refOut, outputs, noiseThreshold, frequencySpreadThreshold, sigmoidParameter, deviationGain, polarity ));
+   return out;
+}
+
+
 /// \brief Estimates the pair correlation function of the different phases in `object`.
 ///
 /// If `object` is a binary image, the image is a regarded as a two-phase image.
@@ -566,6 +691,7 @@ DIP_EXPORT Distribution Semivariogram(
       String const& sampling = S::RANDOM
 );
 
+
 /// \brief Estimates the chord length distribution of the different phases in `object`.
 ///
 /// If `object` is a binary image, the image is a regarded as a two-phase image.
@@ -599,6 +725,7 @@ DIP_EXPORT Distribution ChordLength(
       String const& sampling = S::RANDOM
 );
 
+
 /// \brief Computes the distribution of distances to the background of `region` for the different phases in `object`.
 ///
 /// If `object` is a binary image, the image is a regarded as a two-phase image.
@@ -618,6 +745,7 @@ DIP_EXPORT Distribution DistanceDistribution(
       Image const& region,
       dip::uint length = 100
 );
+
 
 /// \brief Computes the granulometric function for an image
 ///
@@ -674,7 +802,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 ///
 /// **Literature**:
 ///  - C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
-///    Pattern Recognition Letters 28(7):865–872, 2007.
+///    Pattern Recognition Letters 28(7):865-872, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
 ///    IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
 DIP_EXPORT Distribution Granulometry(
@@ -685,6 +813,7 @@ DIP_EXPORT Distribution Granulometry(
       String const& polarity = S::OPENING,
       StringSet const& options = {}
 );
+
 
 /// \brief Estimates the fractal dimension of the binary image `in` the sliding box method.
 ///
@@ -704,6 +833,7 @@ DIP_EXPORT dfloat FractalDimension(
       Image const& in,
       dfloat eta = 0.5
 );
+
 
 // TODO: functions to port:
 /*

@@ -523,9 +523,12 @@ code that used *DIPlib* or *DIPimage* to the new version.
     in this old syntax are interpreted to match the new capabilities of this function. ``'usegrey'` and
     ``'verbose'` options no longer have an effect. Default values have changed a bit.
 
+  - `ht` no longer exists. Use `riesz` instead. The Riesz transform is the multi-dimensional generalization
+    of the 1D Hilbert transform. See also the new function `monogenicsignal`.
+
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
   `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
-  `im2cell`, `lee`, `pathopening`, `perobjecthist`, `quantize`, `riesz`, `select`, `semivariogram`,
+  `im2cell`, `lee`, `loggabor`, `pathopening`, `perobjecthist`, `quantize`, `select`, `semivariogram`,
   `setborder`, `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.
 

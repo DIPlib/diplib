@@ -79,6 +79,7 @@ mdhistogram.cpp
 mdhistogrammap.cpp
 measure.cpp
 minima.cpp
+monogenicsignal.cpp
 noise.cpp
 noisestd.cpp
 nonmaximumsuppression.cpp
