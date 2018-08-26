@@ -83,6 +83,7 @@ monogenicsignal.cpp
 noise.cpp
 noisestd.cpp
 nonmaximumsuppression.cpp
+normconv.cpp
 opening.cpp
 overlay.cpp
 paircorrelation.cpp

@@ -526,6 +526,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `ht` no longer exists. Use `riesz` instead. The Riesz transform is the multi-dimensional generalization
     of the 1D Hilbert transform. See also the new function `monogenicsignal`.
 
+  - `nconv` no longer exists, the new function `normconv` will compute the normalized convolution with
+    a Gaussian, as well as estimate first derivatives using a Gaussian normalized convolution.
+
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
   `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
   `im2cell`, `lee`, `loggabor`, `pathopening`, `perobjecthist`, `quantize`, `select`, `semivariogram`,
