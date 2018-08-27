@@ -208,6 +208,7 @@ measurement/measure_convex_hull.cpp
 measurement/measurement.cpp
 measurement/measurement_tool.cpp
 measurement/object_to_measurement.cpp
+microscopy/psf.cpp
 microscopy/unmix_stains.cpp
 morphology/areaopening.cpp
 morphology/basic.cpp

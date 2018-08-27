@@ -96,6 +96,7 @@ private/imagedisplay.cpp
 private/libraryinformation.cpp
 private/numberofthreads.cpp
 private/readtiffseries.cpp
+psf.cpp
 radialmax.cpp
 radialmean.cpp
 radialmin.cpp

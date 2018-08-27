@@ -538,7 +538,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
   `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
-  `im2cell`, `lee`, `loggabor`, `pathopening`, `perobjecthist`, `quantize`, `select`, `semivariogram`,
+  `im2cell`, `lee`, `loggabor`, `pathopening`, `perobjecthist`, `psf`, `quantize`, `select`, `semivariogram`,
   `setborder`, `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.
 

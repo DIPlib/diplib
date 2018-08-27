@@ -243,10 +243,76 @@ inline Image MixStains(
 }
 
 
+/// \brief Generates an incoherent OTF (optical transfer function)
+///
+/// This function implements the formulae for a (defocused) incoherent OTF as described by Castleman.
+///
+/// The `defocus` is defined as the maximum defocus path length error divided by the wave length
+/// (See Castleman for details).
+/// When `defocus` is unequal to zero, either the Stokseth approximation or the Hopkins approximation
+/// is used, depending on the value of `method` (which can be either `"Stokseth"` or `"Hopkins"`).
+/// The summation over the Bessel functions in the Hopkins formluation is stopped when the change is
+/// smaller than 0.0001 (this is a compile-time constant).
+///
+/// `oversampling` is the oversampling rate. If set to 1, the OTF is sampled at the Nyquist rate. Increase
+/// the value to sample more densely.
+///
+/// `amplitude` is the value of the OTF at the origin, and thus equivalent to the integral over the PSF.
+///
+/// `out` will be scalar and of type `DT_SFLOAT`. It should have 1 or 2 dimensions, its sizes will be preserved.
+/// If `out` has no sizes, a 256x256 image will be generated.
+///
+/// **Literature**
+/// - K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
+DIP_EXPORT void IncoherentOTF(
+      Image& out,
+      dfloat defocus = 0,
+      dfloat oversampling = 1,
+      dfloat amplitude = 1,
+      String const& method = "Stokseth"
+);
+inline Image IncoherentOTF(
+      dfloat defocus = 0,
+      dfloat oversampling = 1,
+      dfloat amplitude = 1,
+      String const& method = "Stokseth"
+) {
+   Image out;
+   IncoherentOTF( out, defocus, oversampling, amplitude, method );
+   return out;
+}
+
+/// \brief Generates an incoherent PSF (point spread function)
+///
+/// This function generates an incoherent in-focus point spread function of a diffraction limited objective.
+///
+/// `oversampling` is the oversampling rate. If set to 1, the OTF is sampled at the Nyquist rate. Increase
+/// the value to sample more densely.
+///
+/// `amplitude` is the integral over the PSF.
+///
+/// `out` will be scalar and of type `DT_SFLOAT`. It should have 1 or 2 dimensions, its sizes will be preserved.
+/// For 1D images, the PSF returned is a single line through the middle of a 2D PSF.
+/// If `out` has no sizes, a square image of size `ceil(19*oversampling)` will be generated.
+///
+/// **Literature**
+/// - K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
+DIP_EXPORT void IncoherentPSF(
+      Image& out,
+      dfloat oversampling = 1,
+      dfloat amplitude = 1
+);
+inline Image IncoherentPSF(
+      dfloat oversampling = 1,
+      dfloat amplitude = 1
+) {
+   Image out;
+   IncoherentPSF( out, oversampling, amplitude );
+   return out;
+}
+
 // TODO: functions to port:
 /*
-   dip_IncoherentPSF (dip_microscopy.h)
-   dip_IncoherentOTF (dip_microscopy.h)
    dip_ExponentialFitCorrection (dip_microscopy.h)
    dip_AttenuationCorrection (dip_microscopy.h)
    dip_SimulatedAttenuation (dip_microscopy.h)

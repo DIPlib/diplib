@@ -119,6 +119,10 @@ void init_analysis( py::module& m ) {
           "in"_a, "stains"_a );
    m.def( "MixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
           "in"_a, "stains"_a );
+   m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
+          "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = "Stokseth" );
+   m.def( "IncoherentPSF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
+          "out"_a, "oversampling"_a = 1.0, "amplitude"_a = 1.0 );
 
    // diplib/regions.h
 
