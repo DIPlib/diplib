@@ -186,9 +186,9 @@ void RangeThreshold(
       Image& out,
       dfloat lowerBound,
       dfloat upperBound,
+      String const& output,
       dfloat foreground,
-      dfloat background,
-      String const& output
+      dfloat background
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( output == S::BINARY ) {

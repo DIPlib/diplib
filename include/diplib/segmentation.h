@@ -274,10 +274,16 @@ inline Image FixedThreshold(
 
 /// \brief Thresholds an image at two values, equivalent to `lowerBound <= in && in <= upperBound`.
 ///
-/// If `output` is `"binary"` (the default), `%RangeThreshold` will produce a binary image. Otherwise an
-/// image of the same type as the input image is produced, with the pixels set to either
-/// `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is applied:
-/// `out = ( lowerBound <= in && in <= upperBound ) ? foreground : background`.
+/// If `output` is `"binary"` (the default), `%RangeThreshold` will produce a binary image. If `foreground == 0.0`,
+/// foreground will be set to `false` and background to `true`, otherwise the foreground will be `true` (this is the
+/// default).
+///
+/// If `output` is not `"binary"`, an image of the same type as the input image is produced, with the pixels
+/// set to either `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is
+/// applied:
+/// ```cpp
+///     out = ( lowerBound <= in && in <= upperBound ) ? foreground : background
+/// ```
 ///
 /// `in` must be real-valued, each tensor element is thresholded independently.
 ///
@@ -287,20 +293,20 @@ DIP_EXPORT void RangeThreshold(
       Image& out,
       dfloat lowerBound,
       dfloat upperBound,
+      String const& output = S::BINARY,
       dfloat foreground = 1.0,
-      dfloat background = 0.0,
-      String const& output = S::BINARY
+      dfloat background = 0.0
 );
 inline Image RangeThreshold(
       Image const& in,
       dfloat lowerBound,
       dfloat upperBound,
+      String const& output = S::BINARY,
       dfloat foreground = 1.0,
-      dfloat background = 0.0,
-      String const& output = S::BINARY
+      dfloat background = 0.0
 ) {
    Image out;
-   RangeThreshold( in, out, lowerBound, upperBound, foreground, background, output );
+   RangeThreshold( in, out, lowerBound, upperBound, output, foreground, background );
    return out;
 }
 

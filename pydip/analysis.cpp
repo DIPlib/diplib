@@ -153,8 +153,8 @@ void init_analysis( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "volumeFraction"_a = 0.5 );
    m.def( "FixedThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::FixedThreshold ),
           "in"_a, "threshold"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = dip::S::BINARY );
-   m.def( "RangeThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::RangeThreshold ),
-          "in"_a, "lowerBound"_a, "upperBound"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = dip::S::BINARY );
+   m.def( "RangeThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::RangeThreshold ),
+          "in"_a, "lowerBound"_a, "upperBound"_a, "output"_a = dip::S::BINARY, "foreground"_a = 1.0, "background"_a = 0.0 );
    m.def( "HysteresisThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat >( &dip::HysteresisThreshold ),
           "in"_a, "lowThreshold"_a, "highThreshold"_a );
    m.def( "MultipleThresholds", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::MultipleThresholds ),
