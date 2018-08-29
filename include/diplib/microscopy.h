@@ -311,9 +311,52 @@ inline Image IncoherentPSF(
    return out;
 }
 
+/// \brief 3D fluorescence attenuation correction using an exponential fit
+///
+/// This routine implements a simple correction of absorption, reflection and bleaching in 3D fluorescence
+/// imaging based upon the assumption that the sum of these effects result in a exponential extinction of
+/// the signal as a function of depth. Only pixels within `mask`, if given are taken into account to determine
+/// this attenuation, but the whole image is corrected.
+///
+/// The attenuation is estimated based on the mean of the non-masked pixels as a function of depth. If
+/// `percentile` is in the valid range [0, 100], the corresponding percentile is used instead of the mean.
+/// An exponential function is fitted to these values. The starting point of the fit is determined by `fromWhere`,
+/// which can be `"first plane"`, `"first max"`, or `"global max"`. In the case of `"first max"`, the first maximum
+/// is found with `point[z+1] > hysteresis * point[z]`.
+///
+/// If the mean variant is chosen, one can choose to apply a variance weighting to the fit by setting `weighting`
+/// to `"variance"`.
+///
+/// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
+/// unchanged.
+///
+/// **Literature**
+/// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+/// "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+DIP_EXPORT void ExponentialFitCorrection(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dfloat percentile = -1.0,
+      String const& fromWhere = "first plane",
+      dfloat hysteresis = 0.0,
+      String const& weighting = "none"
+);
+inline Image ExponentialFitCorrection(
+      Image const& in,
+      Image const& mask,
+      dfloat percentile = -1.0,
+      String const& fromWhere = "first plane",
+      dfloat hysteresis = 0.0,
+      String const& weighting = "none"
+) {
+   Image out;
+   ExponentialFitCorrection( in, mask, out, percentile, fromWhere, hysteresis, weighting );
+   return out;
+}
+
 // TODO: functions to port:
 /*
-   dip_ExponentialFitCorrection (dip_microscopy.h)
    dip_AttenuationCorrection (dip_microscopy.h)
    dip_SimulatedAttenuation (dip_microscopy.h)
    dip_RestorationTransform (dip_restoration.h)
