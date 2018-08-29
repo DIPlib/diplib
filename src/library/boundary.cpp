@@ -138,11 +138,13 @@ void ExtendImage(
 
    // Produce output by either using `out` directly or making a window of the original size over it.
    if( options.Contains( Option::ExtendImage::Masked )) {
+      UnsignedArray sizes = out.Sizes();
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
-         ranges[ ii ] = Range{ b, -b-1 };
+         sizes[ ii ] -= 2 * borderSizes[ ii ];
+
       }
-      out = out.At( ranges );
+      out.dip__ShiftOrigin( out.Offset( borderSizes )); // TODO: offset calculation does tests that are not necessary.
+      out.dip__SetSizes( sizes );
    }
 }
 

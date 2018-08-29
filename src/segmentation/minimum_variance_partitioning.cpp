@@ -340,14 +340,14 @@ class dip__PaintClusters : public Framework::ScanLineFilter {
 };
 
 void PaintClusters( Image& labs, KDTree const& clusters ) {
-   labs.Protect();
+   bool prot = labs.Protect();
    ImageRefArray outImage{ labs };
    DataTypeArray outBufferTypes{ DT_LABEL };
    DataTypeArray outImageTypes{ DT_LABEL };
    dip__PaintClusters lineFilter( clusters );
    DIP_STACK_TRACE_THIS( Framework::Scan( {}, outImage, {}, outBufferTypes, outImageTypes, { 1 }, lineFilter,
                                           Framework::ScanOption::NeedCoordinates + Framework::ScanOption::NoMultiThreading ));
-   labs.Protect( false );
+   labs.Protect( prot );
 }
 
 } // namespace

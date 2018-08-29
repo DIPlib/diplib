@@ -860,6 +860,7 @@ void FourierTransform(
             Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
       );
    DIP_END_STACK_TRACE
+   tmp.Protect( false );
    // Produce real-valued output
    // TODO: OpenCV has code for a DFT that takes complex data but reads only half the array, assumes symmetry, and produces a real ouput. We should use that here.
    // TODO: We should also use the code that takes real data in.

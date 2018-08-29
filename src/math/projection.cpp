@@ -97,7 +97,7 @@ void ProjectionScan(
 
    // Is there anything to do?
    if( !process.any() ) {
-      //std::cout << "Projection framework: nothing to do!" << std::endl;
+      //std::cout << "Projection framework: nothing to do!\n";
       out = c_in; // This ignores the mask image
       return;
    }
@@ -130,7 +130,7 @@ void ProjectionScan(
 
    // Do we need to loop at all?
    if( process.all() ) {
-      //std::cout << "Projection framework: no need to loop!" << std::endl;
+      //std::cout << "Projection framework: no need to loop!\n";
       function.SetNumberOfThreads( 1 );
       if( output.DataType() != outImageType ) {
          Image outBuffer( {}, 1, outImageType );

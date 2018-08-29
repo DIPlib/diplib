@@ -348,14 +348,14 @@ To create a new image with same sizes and tensor shape as another one,
 use the `dip::Image::Similar` method:
 
 ```cpp
-    img2 = img1.Similar();
+    dip::Image img2 = img1.Similar();
 ```
 
 Again, the new image will have uninitialized pixel data. An optional second
 argument can be used to specify the data type of the new image:
 
 ```cpp
-    img2 = img1.Similar( dip::DT_SCOMPLEX );
+    dip::Image img2 = img1.Similar( dip::DT_SCOMPLEX );
 ```
 
 Both methods copy all image properties, including the strides array and the
@@ -408,10 +408,11 @@ of scope, `img2` will still point at a valid data segment, which will not
 be freed until `img2` goes out of scope (or is stripped). This is useful
 behavior, but can cause unexpected results at times. See \ref aliasing
 for how to write image filters that are robust against images with shared
-data. However, if the image assigned into has an external interface set, a
-data copy might be triggered, see \ref external_interface.
+data. However, if the image assigned into is protected or has an external
+interface set, a data copy might be triggered, see \ref protect and
+\ref external_interface.
 
-`dip::Image::QuickCopy` can be used here if the image copy does need any of
+`dip::Image::QuickCopy` can be used here if the image copy does not need any of
 the image metadata (color space and pixel size). The overhead of copying
 the metadata information is small, but we often use this function
 internally when the input image to a function needs to be reshaped for
@@ -776,18 +777,24 @@ operation is accomplished with `dip::Image::MergeComplex` and
 
 An image carries a "protect" flag. When set, the `dip::Image::Strip` function
 throws an exception. That is, when the flag is set, the data segment cannot
-be stripped (freed) or reforged (reallocated). It does not, however, protect
-the image from being assigned into. For example:
+be stripped (freed) or reforged (reallocated). Furthermore, when the protect
+flag is set, the assignment operator will perform a deep copy. For example:
 
 ```cpp
     dip::Image img1( UnsignedArray{ 256, 256 }, 3, dip::DT_SFLOAT );
     img1.Protect();
     //img1.Strip();  // Throws!
-    img1 = img2;     // OK
+    img1 = img2;     // Equivalent to:  img1.Copy( img2 )
 ```
 
-The main purpose of the protect flag is to provide a simple means of specifying
-the data type for the output image or a filter. Most filters and operations in
+The protect flag has two purposes:
+
+1. To prevent an image from being reforged, for example when the data segment
+is allocated in a special way and one needs to ensure it stays that way. In this
+case, it functions as a warning.
+
+2. To provide a simple means of specifying the data type for the output image
+or a filter. Most filters and operations in
 *DIPlib* choose a specific data type for their output based on the input data
 type, and in such a way that little precision is lost. For example, the Gaussian
 filter will produce a single-precision floating point output image by default

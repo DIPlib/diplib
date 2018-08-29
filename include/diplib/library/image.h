@@ -238,12 +238,19 @@ class DIP_NO_EXPORT Image {
       Image( Image&& ) = default;
       ~Image() = default;
 
-      /// \brief The copy assignment does not copy pixel data, the LHS shares the data pointer with the RHS, except
-      /// in the case where the LHS image has an external interface set. See \ref external_interface.
+      /// \brief Copy assignment
+      ///
+      /// Copies the data if the LHS (`this`) is protected or has an external interface set, and this external
+      /// interface is different from the one in `rhs` (see \ref protect and \ref external_interface).
+      /// In this case, `rhs` will not be modified.
+      ///
+      /// Otherwise, `this` and `rhs` will share the data segment. See \ref assignment.
+      ///
+      /// The `protect` flag will not be copied over.
       Image& operator=( Image const& rhs ) {
-         if( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ )) {
+         if( protect_ || ( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ ))) {
             // Copy pixel data too
-            this->Copy( rhs );
+            DIP_STACK_TRACE_THIS( this->Copy( rhs ));
          } else {
             // Do what the default copy assignment would do
             dataType_ = rhs.dataType_;
@@ -251,7 +258,6 @@ class DIP_NO_EXPORT Image {
             strides_ = rhs.strides_;
             tensor_ = rhs.tensor_;
             tensorStride_ = rhs.tensorStride_;
-            protect_ = rhs.protect_;
             colorSpace_ = rhs.colorSpace_;
             pixelSize_ = rhs.pixelSize_;
             dataBlock_ = rhs.dataBlock_;
@@ -262,12 +268,17 @@ class DIP_NO_EXPORT Image {
          return *this;
       }
 
-      /// \brief The move assignment copies the data in the case where the LHS image has an external interface set.
-      /// See \ref external_interface.
+      /// \brief Move assignment
+      ///
+      /// Copies the data if the LHS (`this`) is protected or has an external interface set, and this external
+      /// interface is different from the one in `rhs` (see \ref protect and \ref external_interface).
+      /// In this case, `rhs` will not be modified.
+      ///
+      /// Otherwise, `this` will become exactly what `rhs` was, and `rhs` will become raw.
       Image& operator=( Image&& rhs ) {
-         if( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ )) {
+         if( protect_ || ( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ ))) {
             // Copy pixel data too
-            this->Copy( rhs );
+            DIP_STACK_TRACE_THIS( this->Copy( rhs ));
          } else {
             // Do what the default move assignment would do
             this->move( std::move( rhs ));
@@ -904,7 +915,7 @@ class DIP_NO_EXPORT Image {
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
-      /// \brief Copy all image properties from `src`. The image must be raw.
+      /// \brief Copy all image properties from `src`, including strides. The image must be raw.
       void CopyProperties( Image const& src ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          dataType_ = src.dataType_;
@@ -2283,17 +2294,18 @@ class DIP_NO_EXPORT Image {
          }
       }
 
-      /// \brief moves data from `other` to this.
+      /// \brief Moves data from `other` to `this`. `this` will be identical to what `other` was, `other` will
+      /// become a raw image.
       void move( Image&& other ) {
          using std::swap;
          dataType_ = other.dataType_;
-         sizes_ = other.sizes_;
-         strides_ = other.strides_;
+         sizes_ = std::move( other.sizes_ );
+         strides_ = std::move( other.strides_ );
          tensor_ = other.tensor_;
          tensorStride_ = other.tensorStride_;
          protect_ = other.protect_;
-         colorSpace_ = other.colorSpace_;
-         pixelSize_ = other.pixelSize_;
+         colorSpace_ = std::move( other.colorSpace_ );
+         pixelSize_ = std::move( other.pixelSize_ );
          swap( dataBlock_, other.dataBlock_ );  // prevent incrementing and decrementing counters
          other.dataBlock_ = nullptr;            // free previous data block, if any
          origin_ = other.origin_;

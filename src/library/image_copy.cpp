@@ -224,7 +224,7 @@ void Image::Copy( Image const& src ) {
       if( !CompareProperties( src, Option::CmpProp::Sizes + Option::CmpProp::TensorElements,
                               Option::ThrowException::DONT_THROW ) || IsOverlappingView( src )) {
          // We cannot reuse the data segment
-         Strip();
+         DIP_STACK_TRACE_THIS( Strip() );
       } else {
          // We've got the data segment covered. Copy over additional properties
          CopyNonDataProperties( src );
@@ -232,7 +232,7 @@ void Image::Copy( Image const& src ) {
    }
    if( !IsForged() ) {
       CopyProperties( src );
-      Forge();
+      DIP_STACK_TRACE_THIS( Forge() );
    }
    // A single CopyBuffer call if both images have simple strides and same dimension order
    dip::sint sstride_d;

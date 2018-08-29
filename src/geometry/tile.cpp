@@ -128,6 +128,7 @@ void Tile(
    // We do this in case `c_out` is the same as one of the images in `in`, reforging it would destroy
    // one of the inputs. Not initializing `out` to `c_out` would mean not being able to re-use a pixel
    // buffer already allocated for `c_out`, and would mean not using any external interface set in it.
+   // TODO: what if `out` aliases one of the images in `in` (could happen if `c_out` had the right sizes).
    Image out( c_out ); //
    out.ReForge( outSize, nTElems, dataType );
    out.ReshapeTensor( tensor );
