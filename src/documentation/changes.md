@@ -312,6 +312,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
 
+- `dip::EuclideanDistanceTransform` has a new algorithm which produces exact distances in nD, and is parallelized
+  and very fast. This new algorithm is the default.
+
 - Lots of new algorithms, some previously only available in *DIPimage*, some completely new.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
@@ -528,6 +531,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - `nconv` no longer exists, the new function `normconv` will compute the normalized convolution with
     a Gaussian, as well as estimate first derivatives using a Gaussian normalized convolution.
+
+  - `dt` has a new algorithm, which is used by default. It gives exact results and works for any number of
+    dimensions, and it should be faster than the previous default algorithm. The old default algorithm can
+    be executed with `dt(...,'fast')`.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
   `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,

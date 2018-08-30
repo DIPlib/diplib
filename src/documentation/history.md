@@ -82,6 +82,7 @@ The DIPlib 3 project was initiated and is directed by Cris Luengo, with support 
 The following people have contributed to the *DIPlib 3* project:
 
 * Cris Luengo
-* Ronald Ligteringen
 * Wouter Caarls
+* Ronald Ligteringen
 * Erik Schuitema
+* Erik Wernersson

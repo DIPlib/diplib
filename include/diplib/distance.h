@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for distance transforms
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,9 +39,9 @@ namespace dip {
 
 /// \brief Euclidean distance transform
 ///
-/// This function computes the Euclidean distance transform of a 2D or 3D input binary image using the vector-based
-/// method as opposed to the chamfer method. This method computes distances from the objects (binary 1's) to
-/// the nearest background (binary 0's) of `in` and stored the result in `out`. `out` is of type `dip::DT_SFLOAT`.
+/// This function computes the Euclidean distance transform with one of several different methods. The distance
+/// transform `out` indicates the distances from the objects (binary 1's) to the nearest background (binary 0's) of
+/// `in`. `out` is of type `dip::DT_SFLOAT`, and is zero everywhere where `in` is zero.
 ///
 /// Computed distances use the pixel sizes (ignoring any units). To compute distances in pixels, reset the pixel
 /// size (dip::Image::ResetPixelSize). Note that, when pixels sizes are correctly set, this function handles
@@ -50,20 +50,42 @@ namespace dip {
 /// The `border` parameter specifies whether the edge of the image should be treated as objects (`"object"`) or
 /// as background (`"background"`).
 ///
-/// The `method` parameter specifies the method to use to compute the distances:
-///  - `"fast"`: fastest, but most errors.
-///  - `"ties"`: slower, but fewer errors.
-///  - `"true"`: slow, uses lots of memory, but is "error free".
-///  - `"brute force"`: gives a result from which errors are calculated for the other methods. This method is
-///                     extremely slow and should only be used for testing purposes.
+/// The `method` parameter specifies the method to use to compute the distances. There are three general algorithms
+/// implemented:
 ///
-/// Individual vector components of the Euclidean distance transform can be obtained with `dip::VectorDistanceTransform`.
+///  - A separable algorithm based on parabolic erosions as first described by van den Boomgaard and later by
+///    Meijster et al. This is a very fast algorithm of linear time complexity, it is parallelized, and produces
+///    exact Euclidean distances in any number of dimensions. `method` must be `"separable"`, which is the default,
+///    or `"square"`, in which case squared distances are returned.
+///
+///  - A vector distance transform, which propagates vectors to the nearest background pixel instead of propagating
+///    distances as the chamfer method does. This leads to a fairly fast algorithm that can yield exact results.
+///    This algorithm was described by Mullikin, based on previous work by Danielsson and Ye.
+///
+///    `method` must be one of `"fast"`, `"ties"` or `"true"`. The difference is in how vectors of equal length are
+///    propagated. The `"fast"` method chooses one of them, which can lead to errors of around 0.2 pixels. The
+///    `"ties"` method stores all vectors of equal length, which reduces the average errors but can still lead to
+///    significant errors. The `"true"` method stores also vectors close in length, which leads to exact distances
+///    in all cases. These three methods are listed in increasing computational complexity.
+///
+///    This method works with 2D and 3D images only. The `"fast"` method can have a time advantage over the
+///    `"separable"` method in situations where parallelism is not an option. When exact distances are needed,
+///    the separable algorithm is always fastest.
+///
+///    Individual vector components of the Euclidean distance transform can be obtained with
+///    `dip::VectorDistanceTransform`.
+///
+///  - A brute force algorithm that scales quadratically with the number of pixels. The results are always exact.
+///    Use only with small images to determine a ground-truth result. For 2D and 3D inputs only.
+///    `method` must be `"brute force"`.
+///
 ///
 /// **Literature**
+///  - R. van den Boomgaard, "Mathematical Morphology--Extensions towards Computer Vision", PhD Thesis, University of Amsterdam, 1992.
+///  - A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time", Mathematical Morphology and its Applications to Image and Signal Processing, Springer, 2002.
 ///  - P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and Image Processing 14:227-248, 1980.
-///  - J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and Image Processing 54(6):526-535, 1992.
-///  - I. Ragnemalm, "Generation of Euclidean Distance Maps", Licentiate thesis, No. 206, Link&ouml;ping University, Sweden, 1990.
 ///  - Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
+///  - J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and Image Processing 54(6):526-535, 1992.
 ///
 /// **Known bugs**
 ///  - The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger (almost)
@@ -73,12 +95,12 @@ DIP_EXPORT void EuclideanDistanceTransform(
       Image const& in,
       Image& out,
       String const& border = S::BACKGROUND,
-      String const& method = S::FAST
+      String const& method = S::SEPARABLE
 );
 inline Image EuclideanDistanceTransform(
       Image const& in,
       String const& border = S::BACKGROUND,
-      String const& method = S::FAST
+      String const& method = S::SEPARABLE
 ) {
    Image out;
    EuclideanDistanceTransform( in, out, border, method );
@@ -90,8 +112,10 @@ inline Image EuclideanDistanceTransform(
 /// This function produces the vector components of the Euclidean distance transform, in the form of a vector image.
 /// The norm of `out` is identical to the result of `dip::EuclideanDistanceTransform`.
 ///
-/// See `dip::EuclideanDistanceTransform` for detailed information about the parameters. `in` should not have any
-/// dimension larger than 1e7 pixels, otherwise the vector components will underflow.
+/// See `dip::EuclideanDistanceTransform` for detailed information about the parameters. Valid `method` strings are
+/// `"fast"`, `"ties"`, `"true"` and `"brute force"`. That is, `"separable"` or `"square"` are not allowed.
+///
+/// `in` should not have any dimension larger than 1e7 pixels, otherwise the vector components will underflow.
 DIP_EXPORT void VectorDistanceTransform(
       Image const& in,
       Image& out,
@@ -165,12 +189,6 @@ inline Image GreyWeightedDistanceTransform(
    GreyWeightedDistanceTransform( grey, bin, mask, out, metric, outputMode );
    return out;
 }
-
-// TODO: functions to port:
-/*
-   dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
-   dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
-*/
 
 /// \}
 

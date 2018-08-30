@@ -9,7 +9,7 @@
 #include "diplib/generation.h"
 #include "diplib/testing.h"
 
-#include "diplib/histogram.h"
+#include "diplib/distance.h"
 
 dip::Random rndGen( 0 );
 
@@ -47,7 +47,7 @@ dip::dfloat TimeIt( dip::Image const& img, dip::Image& out ) {
          //dip::CreateRadiusCoordinate( img.Sizes(), out );
          //dip::CreatePhiCoordinate( img.Sizes(), out );
          //dip::CreateCoordinates( img.Sizes(), out, {}, "cartesian" );
-         auto h = dip::Histogram( img );
+         auto h = dip::EuclideanDistanceTransform( img, dip::S::BACKGROUND, dip::S::SEPARABLE );
       }
       timer.Stop();
       time = std::min( time, timer.GetWall());
@@ -71,11 +71,14 @@ int main() {
    dip::Image out;
    for( auto sz : sizes ) {
 
-      img = dip::Image{ dip::UnsignedArray{ sz, sz }, 2, dip::DT_SFLOAT };
+      //img = dip::Image{ dip::UnsignedArray{ sz, sz }, 2, dip::DT_SFLOAT };
       //img.ReshapeTensor( dip::Tensor{ "symmetric matrix", 2, 2 } );
       //img.ReshapeTensor( 2, 2 );
-      img.Fill( 50 );
-      dip::GaussianNoise( img, img, rndGen, 400.0 );
+      //img.Fill( 50 );
+      //dip::GaussianNoise( img, img, rndGen, 400.0 );
+      img = dip::Image{ dip::UnsignedArray{ sz, sz }, 1, dip::DT_BIN };
+      img.Fill( 0 );
+      dip::BinaryNoise( img, img, rndGen, 0, 0.9 );
 
       try {
          dip::SetNumberOfThreads( 1 );

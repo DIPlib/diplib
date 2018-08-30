@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `dt` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -43,7 +43,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          }
       }
 
-      dip::String method = dip::S::FAST;
+      dip::String method = dip::S::SEPARABLE;
       if( nrhs > 2 ) {
          method = dml::GetString( prhs[ 2 ] );
          if( method == "bruteforce" ) {

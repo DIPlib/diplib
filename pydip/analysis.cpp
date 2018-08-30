@@ -103,7 +103,7 @@ void init_analysis( py::module& m ) {
    // diplib/distance.h
 
    m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),
-          "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
+          "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::SEPARABLE );
    m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
           "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
    m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),

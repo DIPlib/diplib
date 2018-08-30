@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for distance transforms
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,8 @@
 #include "diplib.h"
 #include "diplib/distance.h"
 #include "diplib/math.h"
+
+#include "separable_dt.h"
 
 namespace dip {
 
@@ -61,7 +63,7 @@ static void EDTFast2D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -264,7 +266,7 @@ void EDTFast3D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -277,7 +279,7 @@ void EDTFast3D(
          fsdy[ ii ] = d * d * dyy;
       }
    }
-   sfloat* fsdz = 0;
+   sfloat* fsdz = nullptr;
    std::vector< sfloat> thirdBuffer;
    if(( dx == dz ) && ( nx == nz )) {
       fsdz = fsdx;
@@ -288,7 +290,7 @@ void EDTFast3D(
          thirdBuffer.resize( static_cast< dip::uint >( 2 * nz + 1 ));
          fsdz = thirdBuffer.data();
          sfloat dzz = dz * dz;
-         for( dip::uint ii = 0; ii < secondBuffer.size(); ii++ ) {
+         for( dip::uint ii = 0; ii < thirdBuffer.size(); ii++ ) {
             sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nz );
             fsdz[ ii ] = d * d * dzz;
          }
@@ -631,7 +633,7 @@ static void EDTTies2D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -658,7 +660,7 @@ static void EDTTies2D(
    dip::sint** d1 = d.data();
    dip::sint** d2 = d1 + ( nx + 2 );
    dip::sint zero = 0;
-   dip::sint* bp = ( border ? &zero : NULL );
+   dip::sint* bp = ( border ? &zero : nullptr );
 
    dip::sint py, px;
    dip::sint xx, yy, ii, jj, kk;
@@ -686,7 +688,7 @@ static void EDTTies2D(
             kk = 0;
             pnbp = pnb;
             tnbp = *dbl;
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = 0;
                pnbp->y = -1;
                kk++;
@@ -700,7 +702,7 @@ static void EDTTies2D(
                }
             }
             tnbp = *( dcl - 1 );
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = -1;
                pnbp->y = 0;
                kk++;
@@ -725,13 +727,13 @@ static void EDTTies2D(
                nbp += kk * dim;
             }
          } else {
-            *dcl = NULL;
+            *dcl = nullptr;
          }
       }
 
       *dcl-- = bp;
       for( ii = 0, px = py + nx1sx; ii < nx; ii++, dcl--, px -= sx ) {
-         if( *dcl != NULL ) {
+         if( *dcl != nullptr ) {
             kk = **dcl;
             nbs = reinterpret_cast< XYPosition* >( *dcl + 1 );
             pnbp = pnb;
@@ -739,7 +741,7 @@ static void EDTTies2D(
                *pnbp = *nbs;
             }
             tnbp = *( dcl + 1 );
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = 1;
                pnbp->y = 0;
                kk++;
@@ -789,7 +791,7 @@ static void EDTTies2D(
             kk = 0;
             pnbp = pnb;
             tnbp = *dbl;
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = 0;
                pnbp->y = 1;
                kk++;
@@ -803,7 +805,7 @@ static void EDTTies2D(
                }
             }
             tnbp = *( dcl + 1 );
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = 1;
                pnbp->y = 0;
                kk++;
@@ -828,13 +830,13 @@ static void EDTTies2D(
                nbp += kk * dim;
             }
          } else {
-            *dcl = NULL;
+            *dcl = nullptr;
          }
       }
 
       *dcl++ = bp;
       for( xx = 0, px = py; xx < nx; xx++, dcl++, px += sx ) {
-         if( *dcl != NULL ) {
+         if( *dcl != nullptr ) {
             kk = **dcl;
             nbs = reinterpret_cast< XYPosition* >( *dcl + 1 );
             pnbp = pnb;
@@ -842,7 +844,7 @@ static void EDTTies2D(
                *pnbp = *nbs;
             }
             tnbp = *( dcl - 1 );
-            if( tnbp == NULL ) {
+            if( tnbp == nullptr ) {
                pnbp->x = -1;
                pnbp->y = 0;
                kk++;
@@ -979,7 +981,7 @@ static void EDTTies3D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -992,7 +994,7 @@ static void EDTTies3D(
          fsdy[ ii ] = d * d * dyy;
       }
    }
-   sfloat* fsdz = 0;
+   sfloat* fsdz = nullptr;
    std::vector< sfloat> thirdBuffer;
    if(( dx == dz ) && ( nx == nz )) {
       fsdz = fsdx;
@@ -1003,7 +1005,7 @@ static void EDTTies3D(
          thirdBuffer.resize( static_cast< dip::uint >( 2 * nz + 1 ));
          fsdz = thirdBuffer.data();
          sfloat dzz = dz * dz;
-         for( dip::uint ii = 0; ii < secondBuffer.size(); ii++ ) {
+         for( dip::uint ii = 0; ii < thirdBuffer.size(); ii++ ) {
             sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nz );
             fsdz[ ii ] = d * d * dzz;
          }
@@ -1023,7 +1025,7 @@ static void EDTTies3D(
    dip::sint** d1 = d.data();
    dip::sint** d2 = d1 + ( nx + 2 ) * ( ny + 2 );
    dip::sint zero = 0;
-   dip::sint* bp = ( border ? &zero : NULL );
+   dip::sint* bp = ( border ? &zero : nullptr );
 
    dip::sint px, pz, py;
    dip::sint xx, yy, zz, ii, jj, kk;
@@ -1055,7 +1057,7 @@ static void EDTTies3D(
                kk = 0;
                pnbp = pnb;
                tnbp = *dbp;
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 0;
                   pnbp->z = -1;
@@ -1071,7 +1073,7 @@ static void EDTTies3D(
                   }
                }
                tnbp = *( dcp - nx - 2 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = -1;
                   pnbp->z = 0;
@@ -1087,7 +1089,7 @@ static void EDTTies3D(
                   }
                }
                tnbp = *( dcp - 1 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = -1;
                   pnbp->y = 0;
                   pnbp->z = 0;
@@ -1114,13 +1116,13 @@ static void EDTTies3D(
                   nbp += kk * dim;
                }
             } else {
-               *dcp = NULL;
+               *dcp = nullptr;
             }
          }
 
          *dcp-- = bp;
          for( xx = 0; xx < nx; xx++, dcp-- ) {
-            if( *dcp != NULL ) {
+            if( *dcp != nullptr ) {
                kk = **dcp;
                nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
                pnbp = pnb;
@@ -1130,7 +1132,7 @@ static void EDTTies3D(
                   pnbp->z = nbs->z;
                }
                tnbp = *( dcp + 1 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 1;
                   pnbp->y = 0;
                   pnbp->z = 0;
@@ -1168,7 +1170,7 @@ static void EDTTies3D(
 
       for( yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2, py -= sy ) {
          for( xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, px -= sx ) {
-            if( *dcp != NULL ) {
+            if( *dcp != nullptr ) {
                kk = **dcp;
                nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
                pnbp = pnb;
@@ -1178,7 +1180,7 @@ static void EDTTies3D(
                   pnbp->z = nbs->z;
                }
                tnbp = *( dcp + nx + 2 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 1;
                   pnbp->z = 0;
@@ -1238,7 +1240,7 @@ static void EDTTies3D(
                kk = 0;
                pnbp = pnb;
                tnbp = *( dbp );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 0;
                   pnbp->z = 1;
@@ -1254,7 +1256,7 @@ static void EDTTies3D(
                   }
                }
                tnbp = *( dcp + nx + 2 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = 1;
                   pnbp->z = 0;
@@ -1270,7 +1272,7 @@ static void EDTTies3D(
                   }
                }
                tnbp = *( dcp + 1 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 1;
                   pnbp->y = 0;
                   pnbp->z = 0;
@@ -1297,13 +1299,13 @@ static void EDTTies3D(
                   nbp += kk * dim;
                }
             } else {
-               *dcp = NULL;
+               *dcp = nullptr;
             }
          }
 
          *dcp++ = bp;
          for( xx = 0; xx < nx; xx++, dcp++ ) {
-            if( *dcp != NULL ) {
+            if( *dcp != nullptr ) {
                kk = **dcp;
                nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
                pnbp = pnb;
@@ -1311,7 +1313,7 @@ static void EDTTies3D(
                   *pnbp = *nbs;
                }
                tnbp = *( dcp - 1 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = -1;
                   pnbp->y = 0;
                   pnbp->z = 0;
@@ -1348,7 +1350,7 @@ static void EDTTies3D(
 
       for( yy = 0, py = 0; yy < ny; yy++, dcp += 2, py += sy ) {
          for( xx = 0, px = pz + py; xx < nx; xx++, dcp++, px += sx ) {
-            if( *dcp != NULL ) {
+            if( *dcp != nullptr ) {
                kk = **dcp;
                nbs = reinterpret_cast< XYZPosition* >( *dcp + 1 );
                pnbp = pnb;
@@ -1356,7 +1358,7 @@ static void EDTTies3D(
                   *pnbp = *nbs;
                }
                tnbp = *( dcp - nx - 2 );
-               if( tnbp == NULL ) {
+               if( tnbp == nullptr ) {
                   pnbp->x = 0;
                   pnbp->y = -1;
                   pnbp->z = 0;
@@ -1418,7 +1420,7 @@ static void EDTBruteForce2D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -1440,8 +1442,8 @@ static void EDTBruteForce2D(
       dip::sint px = py;
       for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
          if( oi[ px ] == 0.0 ) {
-            if(( oi[ px - sy ] != 0.0 ) ||
-               ( oi[ px - sx ] != 0.0 ) ||
+            if((( yy > 0 )      && ( oi[ px - sy ] != 0.0 )) ||
+               (( xx > 0 )      && ( oi[ px - sx ] != 0.0 )) ||
                (( yy < ny - 1 ) && ( oi[ px + sy ] != 0.0 )) ||
                (( xx < nx - 1 ) && ( oi[ px + sx ] != 0.0 ))) {
                bp->x = xx;
@@ -1499,7 +1501,7 @@ static void EDTBruteForce3D(
       sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nx );
       fsdx[ ii ] = d * d * dxx;
    }
-   sfloat* fsdy = 0;
+   sfloat* fsdy = nullptr;
    std::vector< sfloat> secondBuffer;
    if(( dx == dy ) && ( nx == ny )) {
       fsdy = fsdx;
@@ -1512,7 +1514,7 @@ static void EDTBruteForce3D(
          fsdy[ ii ] = d * d * dyy;
       }
    }
-   sfloat* fsdz = 0;
+   sfloat* fsdz = nullptr;
    std::vector< sfloat> thirdBuffer;
    if(( dx == dz ) && ( nx == nz )) {
       fsdz = fsdx;
@@ -1523,7 +1525,7 @@ static void EDTBruteForce3D(
          thirdBuffer.resize( static_cast< dip::uint >( 2 * nz + 1 ));
          fsdz = thirdBuffer.data();
          sfloat dzz = dz * dz;
-         for( dip::uint ii = 0; ii < secondBuffer.size(); ii++ ) {
+         for( dip::uint ii = 0; ii < thirdBuffer.size(); ii++ ) {
             sfloat d = static_cast< sfloat >( ii ) - static_cast< sfloat >( nz );
             fsdz[ ii ] = d * d * dzz;
          }
@@ -1540,9 +1542,9 @@ static void EDTBruteForce3D(
          dip::sint px = pz + py;
          for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
             if( oi[ px ] == 0.0 ) {
-               if(( oi[ px - sz ] != 0.0 ) ||
-                  ( oi[ px - sy ] != 0.0 ) ||
-                  ( oi[ px - sx ] != 0.0 ) ||
+               if((( zz > 0 )      && ( oi[ px - sz ] != 0.0 )) ||
+                  (( yy > 0 )      && ( oi[ px - sy ] != 0.0 )) ||
+                  (( xx > 0 )      && ( oi[ px - sx ] != 0.0 )) ||
                   (( zz < nz - 1 ) && ( oi[ px + sz ] != 0.0 )) ||
                   (( yy < ny - 1 ) && ( oi[ px + sy ] != 0.0 )) ||
                   (( xx < nx - 1 ) && ( oi[ px + sx ] != 0.0 ))) {
@@ -1591,14 +1593,12 @@ void EuclideanDistanceTransform(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   dip::uint dim = in.Dimensionality();
-   DIP_THROW_IF(( dim > 3 ) || ( dim < 2 ), E::DIMENSIONALITY_NOT_SUPPORTED );
-   UnsignedArray sizes = in.Sizes();
 
    bool objectBorder;
    DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, S::OBJECT, S::BACKGROUND ));
 
    // Distances to neighboring pixels
+   dip::uint dim = in.Dimensionality();
    FloatArray dist( dim, 1 );
    if( in.HasPixelSize() ) {
       for( dip::uint ii = 0; ii < dim; ++ii ) {
@@ -1606,34 +1606,46 @@ void EuclideanDistanceTransform(
       }
    }
 
-   // Convert in to out and get data pointer of out
-   Convert( in, out, DT_SFLOAT );
-   IntegerArray stride = out.Strides();
-   sfloat* data = static_cast< sfloat* >( out.Origin() );
+   if( method == S::SEPARABLE ) {
 
-   // Call the real guts function
-   if( method == S::FAST ) {
-      if( dim == 2 ) {
-         EDTFast2D( data, sizes, stride, dist, objectBorder );
-      } else {
-         EDTFast3D( data, sizes, stride, dist, objectBorder );
-      }
-      Sqrt( out, out );
-   } else if(( method == S::TIES ) || ( method == S::TRUE )) {
-      bool useTrue = method == S::TRUE;
-      if( dim == 2 ) {
-         EDTTies2D( data, sizes, stride, dist, objectBorder, useTrue );
-      } else {
-         EDTTies3D( data, sizes, stride, dist, objectBorder, useTrue );
-      }
-   } else if( method == S::BRUTE_FORCE ) {
-      if( dim == 2 ) {
-         EDTBruteForce2D( data, sizes, stride, dist, objectBorder );
-      } else {
-         EDTBruteForce3D( data, sizes, stride, dist, objectBorder );
-      }
+      SeparableDistanceTransform( in, out, dist, objectBorder, false );
+
+   } else if( method == S::SQUARE ) {
+
+      SeparableDistanceTransform( in, out, dist, objectBorder, true );
+
    } else {
-      DIP_THROW_INVALID_FLAG( method );
+      DIP_THROW_IF(( dim > 3 ) || ( dim < 2 ), E::DIMENSIONALITY_NOT_SUPPORTED );
+
+      // Convert in to out and get data pointer of out
+      Convert( in, out, DT_SFLOAT );
+      IntegerArray stride = out.Strides();
+      sfloat* data = static_cast< sfloat* >( out.Origin() );
+
+      // Call the real guts function
+      if( method == S::FAST ) {
+         if( dim == 2 ) {
+            EDTFast2D( data, out.Sizes(), stride, dist, objectBorder );
+         } else {
+            EDTFast3D( data, out.Sizes(), stride, dist, objectBorder );
+         }
+         Sqrt( out, out );
+      } else if(( method == S::TIES ) || ( method == S::TRUE )) {
+         bool useTrue = method == S::TRUE;
+         if( dim == 2 ) {
+            EDTTies2D( data, out.Sizes(), stride, dist, objectBorder, useTrue );
+         } else {
+            EDTTies3D( data, out.Sizes(), stride, dist, objectBorder, useTrue );
+         }
+      } else if( method == S::BRUTE_FORCE ) {
+         if( dim == 2 ) {
+            EDTBruteForce2D( data, out.Sizes(), stride, dist, objectBorder );
+         } else {
+            EDTBruteForce3D( data, out.Sizes(), stride, dist, objectBorder );
+         }
+      } else {
+         DIP_THROW_INVALID_FLAG( method );
+      }
    }
 }
 

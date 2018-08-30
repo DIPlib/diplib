@@ -89,6 +89,8 @@ display/colormap.cpp
 display/image_display.cpp
 distance/edt.cpp
 distance/gdt.cpp
+distance/separable_dt.cpp
+distance/separable_dt.h
 distance/vdt.cpp
 file_io/file_io_support.cpp
 file_io/file_io_support.h

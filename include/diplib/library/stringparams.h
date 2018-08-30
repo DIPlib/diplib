@@ -165,6 +165,8 @@ constexpr char const* TIES = "ties";
 #endif
 constexpr char const* TRUE = "true";
 constexpr char const* BRUTE_FORCE  = "brute force";
+constexpr char const* SEPARABLE = "separable";
+constexpr char const* SQUARE = "square";
 
 // Crop location
 constexpr char const* CENTER = "center";
