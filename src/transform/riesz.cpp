@@ -19,6 +19,7 @@
 
 #include "diplib.h"
 #include "diplib/transform.h"
+#include "diplib/math.h"
 #include "diplib/generation.h"
 
 namespace dip {

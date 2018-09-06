@@ -19,7 +19,9 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
+#include "diplib/math.h"
 #include "diplib/generation.h"
+#include "diplib/transform.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
