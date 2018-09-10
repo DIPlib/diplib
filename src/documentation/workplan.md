@@ -155,8 +155,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_EmGaussTest (dip_numerical.h)
 
 - diplib/microscopy.h
-    - dip_AttenuationCorrection (dip_microscopy.h)
-    - dip_SimulatedAttenuation (dip_microscopy.h)
     - dip_RestorationTransform (dip_restoration.h)
     - dip_TikhonovRegularizationParameter (dip_restoration.h)
     - dip_TikhonovMiller (dip_restoration.h)

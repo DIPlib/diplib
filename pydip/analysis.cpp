@@ -125,6 +125,10 @@ void init_analysis( py::module& m ) {
           "out"_a, "oversampling"_a = 1.0, "amplitude"_a = 1.0 );
    m.def( "ExponentialFitCorrection", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::dfloat, dip::String const& >( &dip::ExponentialFitCorrection ),
           "in"_a, "mask"_a = dip::Image{}, "percentile"_a = -1.0, "fromWhere"_a = "first plane", "hysteresis"_a = 0.0, "weighting"_a = "none" );
+   m.def( "AttenuationCorrection", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::AttenuationCorrection ),
+          "in"_a, "fAttenuation"_a = 0.01, "bAttenuation"_a = 0.01, "background"_a = 0.0, "threshold"_a = 0.0, "NA"_a = 1.4, "refIndex"_a = 1.518, "method"_a = "DET" );
+   m.def( "SimulatedAttenuation", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::uint, dip::dfloat >( &dip::SimulatedAttenuation ),
+          "in"_a, "fAttenuation"_a = 0.01, "bAttenuation"_a = 0.01, "NA"_a = 1.4, "refIndex"_a = 1.518, "oversample"_a = 1, "rayStep"_a = 1 );
 
    // diplib/regions.h
 

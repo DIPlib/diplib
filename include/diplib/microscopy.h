@@ -355,10 +355,101 @@ inline Image ExponentialFitCorrection(
    return out;
 }
 
+/// \brief 3D fluorescence attenuation correction using one of three iterative algorithms
+///
+/// This function implements an attenuation correction using three different recursive attenuation correction
+/// algorithms. The method is selected with the `method` parameter, which must be one of `"DET"`, `"LT2"` or `"LT1"`.
+/// DET stands for Directional Extinction Tracking. LT2 is the Two Light Cone convolutions method, and LT1 is the
+/// One Light Cone convolution.
+///
+/// The DET algorithm is the most accurate one, since it takes both forward and backward attenuation
+/// into account (specified through the `fAttenuation` and `bAttenuation` parameters). It is however considerably
+/// slower that the LT2 and LT1 algorithms, which take only forward attenuation into account (`fAttenuation`).
+/// These last two algorithms assume a constant attenuation (`background`) for pixels with an intensity lower
+/// than the `threshold`.
+///
+/// The system is characterized by parameters `NA` (numerical aperture) and `refIndex` (refractive index of the
+/// medium), as well as the pixel size information in `in` (the x and y pixel size must be the same, the z size
+/// must be have the same units, but can be different).
+///
+/// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
+/// unchanged.
+///
+/// **Literature**
+/// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+/// "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+DIP_EXPORT void AttenuationCorrection(
+      Image const& in,
+      Image& out,
+      dfloat fAttenuation = 0.01,
+      dfloat bAttenuation = 0.01,
+      dfloat background = 0.0,
+      dfloat threshold = 0.0,
+      dfloat NA = 1.4,           // typical 63x oil immersion lens
+      dfloat refIndex = 1.518,   // ideal immersion oil
+      String const& method = "DET"
+);
+inline Image AttenuationCorrection(
+      Image const& in,
+      dfloat fAttenuation = 0.01,
+      dfloat bAttenuation = 0.01,
+      dfloat background = 0.0,
+      dfloat threshold = 0.0,
+      dfloat NA = 1.4,           // typical 63x oil immersion lens
+      dfloat refIndex = 1.518,   // ideal immersion oil
+      String const& method = "DET"
+) {
+   Image out;
+   AttenuationCorrection( in, out, fAttenuation, bAttenuation, background, threshold, NA, refIndex, method );
+   return out;
+}
+
+/// \brief 3D fluorescence attenuation simulation
+///
+/// Simulates an attenuation based on the model of a CSLM, using a ray tracing method. **NOTE:** this function is
+/// extremely slow, and its running time grows exponentially with the number of slices.
+///
+/// The system is characterized by parameters `NA` (numerical aperture) and `refIndex` (refractive index of the
+/// medium), as well as the pixel size information in `in` (the x and y pixel size must be the same, the z size
+/// must be have the same units, but can be different).
+///
+/// `fAttenuation` and `bAttenuation` are the forward and backward attentuation factors, respectively.
+///
+/// The ray tracing method uses a step size of `rayStep`, and a ray casting oversampling of `oversample`.
+///
+/// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
+/// unchanged.
+///
+/// **Literature**
+/// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+/// "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+DIP_EXPORT void SimulatedAttenuation(
+      Image const& in,
+      Image& out,
+      dfloat fAttenuation = 0.01,
+      dfloat bAttenuation = 0.01,
+      dfloat NA = 1.4,           // typical 63x oil immersion lens
+      dfloat refIndex = 1.518,   // ideal immersion oil
+      dip::uint oversample = 1,
+      dfloat rayStep = 1
+);
+inline Image SimulatedAttenuation(
+      Image const& in,
+      dfloat fAttenuation = 0.01,
+      dfloat bAttenuation = 0.01,
+      dfloat NA = 1.4,           // typical 63x oil immersion lens
+      dfloat refIndex = 1.518,   // ideal immersion oil
+      dip::uint oversample = 1,
+      dfloat rayStep = 1
+) {
+   Image out;
+   SimulatedAttenuation( in, out, fAttenuation, bAttenuation, NA, refIndex, oversample, rayStep );
+   return out;
+}
+
+
 // TODO: functions to port:
 /*
-   dip_AttenuationCorrection (dip_microscopy.h)
-   dip_SimulatedAttenuation (dip_microscopy.h)
    dip_RestorationTransform (dip_restoration.h)
    dip_TikhonovRegularizationParameter (dip_restoration.h)
    dip_TikhonovMiller (dip_restoration.h)

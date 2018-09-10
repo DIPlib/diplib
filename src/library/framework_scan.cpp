@@ -439,7 +439,7 @@ void Scan(
    Error error;
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    try {
-      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num());
+      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
       std::vector< std::vector< uint8 >> buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
 
       // Create input buffer data structs and allocate buffers
