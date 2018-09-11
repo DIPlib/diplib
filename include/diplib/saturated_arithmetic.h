@@ -263,40 +263,4 @@ constexpr inline bin saturated_inv( bin const& v ) {
 
 } // namespace dip
 
-
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
-   // Addition
-   DOCTEST_CHECK( dip::saturated_add( dip::uint8(50), dip::uint8(20) ) == dip::uint8(70) );
-   DOCTEST_CHECK( dip::saturated_add( dip::uint8(250), dip::uint8(20) ) == dip::uint8(255) );
-   DOCTEST_CHECK( dip::saturated_add( dip::sint16(250), dip::sint16(20) ) == dip::sint16(270) );
-   DOCTEST_CHECK( dip::saturated_add( dip::sint16(30000), dip::sint16(10000) ) == dip::sint16(32767) );
-   // Subtraction
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint16(20), dip::uint16(10) ) == dip::uint16(10) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint16(10), dip::uint16(20) ) == dip::uint16(0) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::sint16(10), dip::sint16(20) ) == dip::sint16(-10) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint8(10), dip::uint8(20) ) == dip::uint8(0) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint32(10000), dip::uint32(5000) ) == dip::uint32(5000) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint32(10000), dip::uint32(10000) ) == dip::uint32(0) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint32(10000), dip::uint32(20000) ) == dip::uint32(0) );
-   // Multiplication
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(100) ) == dip::sint16(30000) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(-100) ) == dip::sint16(-30000) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(1000) ) == dip::sint16(32767) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(-1000) ) == dip::sint16(-32768) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::uint16(300), dip::uint16(1000) ) == dip::uint16(65535) );
-   // Division
-   DOCTEST_CHECK( dip::saturated_div( dip::sint16(300), dip::sint16(10) ) == dip::sint16(30) );
-   // Inversion
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(300) ) == dip::sint16(-300) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(-32768) ) == dip::sint16(32767) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(-32767) ) == dip::sint16(32767) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(-32766) ) == dip::sint16(32766) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::uint16(300) ) == dip::uint16(65235) );
-}
-
-#endif // DIP__ENABLE_DOCTEST
-
 #endif // DIP_SATURATED_ARITHMETIC_H

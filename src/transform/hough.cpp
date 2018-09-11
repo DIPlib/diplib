@@ -148,6 +148,7 @@ void HoughTransformCircleCenters(
 #include "doctest.h"
 #include "diplib/linear.h"
 #include "diplib/segmentation.h"
+#include "diplib/math.h"
 #include "diplib/statistics.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the HoughTransformCircleCenters function") {

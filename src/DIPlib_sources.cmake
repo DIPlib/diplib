@@ -126,10 +126,12 @@ library/image_indexing.cpp
 library/image_manip.cpp
 library/image_views.cpp
 library/information.cpp
+library/iterators.cpp
 library/multithreading.cpp
 library/neighborhood.cpp
 library/physical_dimensions.cpp
 library/pixel_table.cpp
+library/types.cpp
 library/unit_tests.cpp
 linear/convolution.cpp
 linear/derivative.cpp
@@ -231,8 +233,9 @@ segmentation/canny.cpp
 segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
 segmentation/threshold.cpp
-support/math_functions.cpp
+support/accumulators.cpp
 support/matrix.cpp
+support/numeric.cpp
 transform/fourier.cpp
 transform/hough.cpp
 transform/opencv_dxt.cpp
