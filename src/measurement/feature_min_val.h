@@ -30,7 +30,7 @@ class FeatureMinVal : public LineBased {
       virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          nTensor_ = grey.TensorElements();
          data_.clear();
-         data_.resize( nObjects * nTensor_, std::numeric_limits< dfloat >::max() );
+         data_.resize( nObjects * nTensor_, infinity );
          ValueInformationArray out( nTensor_ );
          if( nTensor_ == 1 ) {
             out[ 0 ].name = "";

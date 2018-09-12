@@ -182,9 +182,11 @@ measurement/feature_grey_mu.h
 measurement/feature_inertia.h
 measurement/feature_major_axes.h
 measurement/feature_mass.h
+measurement/feature_max_pos.h
 measurement/feature_max_val.h
 measurement/feature_maximum.h
 measurement/feature_mean.h
+measurement/feature_min_pos.h
 measurement/feature_min_val.h
 measurement/feature_minimum.h
 measurement/feature_mu.h

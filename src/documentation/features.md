@@ -218,6 +218,7 @@ The `grey` image can be a tensor image, one value per tensor element (channel) i
 \subsection intensity_features_StandardDeviation StandardDeviation
 The standard deviation of the grey-value image intensities across the object.
 The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
+
 A fast algorithm is used that could result in catastrophic cancellation if
 the mean is much larger than the variance, see `dip::FastVarianceAccumulator`.
 If there is a potential for this to happen, choose the \ref intensity_features_Statistics
@@ -227,6 +228,7 @@ feature instead.
 The mean, standard deviation, skewness and excess kurtosis of the grey-value image intensities
 across the object.
 This feature has 4 values, `grey` must be scalar.
+
 A stable algorithm is used that prevents catastrophic cancellation, see `dip::StatisticsAccumulator`.
 
 \subsection intensity_features_DirectionalStatistics DirectionalStatistics
@@ -242,6 +244,28 @@ The `grey` image can be a tensor image, one value per tensor element (channel) i
 \subsection intensity_features_MinVal MinVal
 The minimum grey-value image intensity within the object.
 The `grey` image can be a tensor image, one value per tensor element (channel) is produced.
+
+\subsection intensity_features_MaxPos MaxPos
+The position of the pixel with maximum intensity within the object. There is one value per
+image dimension. If the image has a known pixel size, the values represent the distances
+to the lower image edge along each dimension.
+
+If multiple pixels have the same minimum value, the position of the first one encountered
+is returned. Note that the order in which pixels are examined depends on the image sizes and
+strides, and is not given by the linear index.
+
+The `grey` image must be a scalar image.
+
+\subsection intensity_features_MinPos MinPos
+The position of the pixel with minimum intensity within the object. There is one value per
+image dimension. If the image has a known pixel size, the values represent the distances
+to the lower image edge along each dimension.
+
+If multiple pixels have the same minimum value, the position of the first one encountered
+is returned. Note that the order in which pixels are examined depends on the image sizes and
+strides, and is not given by the linear index.
+
+The `grey` image must be a scalar image.
 
 [//]: # (--------------------------------------------------------------)
 

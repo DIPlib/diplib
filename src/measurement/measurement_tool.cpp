@@ -57,6 +57,8 @@
 #include "feature_directional_statistics.h"
 #include "feature_max_val.h"
 #include "feature_min_val.h"
+#include "feature_max_pos.h"
+#include "feature_min_pos.h"
 // Binary moments
 #include "feature_center.h"
 #include "feature_mu.h"
@@ -107,6 +109,8 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeatureDirectionalStatistics );
    Register( new Feature::FeatureMaxVal );
    Register( new Feature::FeatureMinVal );
+   Register( new Feature::FeatureMaxPos );
+   Register( new Feature::FeatureMinPos );
    // Binary moments
    Register( new Feature::FeatureCenter );
    Register( new Feature::FeatureMu );

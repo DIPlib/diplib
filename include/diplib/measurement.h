@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for measurement-related classes
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -820,13 +820,15 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// <tr><td> "Eccentricity"            <td> Aspect ratio of best fit ellipse <td> 2D (CC)
 /// <tr><td> "BendingEnergy"           <td> Bending energy of object perimeter <td> 2D (CC)
 /// <tr><td colspan="3"> **Intensity features**
-/// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Tensor grey
-/// <tr><td> "Mean"                    <td> Mean object intensity <td> Tensor grey
-/// <tr><td> "StandardDeviation"       <td> Standard deviation of object intensity <td> Tensor grey
+/// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> %Tensor grey
+/// <tr><td> "Mean"                    <td> Mean object intensity <td> %Tensor grey
+/// <tr><td> "StandardDeviation"       <td> Standard deviation of object intensity <td> %Tensor grey
 /// <tr><td> "Statistics"              <td> Mean, standard deviation, skewness and excess kurtosis of object intensity <td> Scalar grey
 /// <tr><td> "DirectionalStatistics"   <td> Directional mean and standard deviation of object intensity <td> Scalar grey
-/// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> Tensor grey
-/// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Tensor grey
+/// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> %Tensor grey
+/// <tr><td> "MinVal"                  <td> Minimum object intensity <td> %Tensor grey
+/// <tr><td> "MaxPos"                  <td> Position of pixel with maximum intensity <td> Scalar grey
+/// <tr><td> "MinPos"                  <td> Position of pixel with minimum intensity <td> Scalar grey
 /// <tr><td colspan="3"> **Moments of binary object**
 /// <tr><td> "Center"                  <td> Coordinates of the geometric mean of the object <td>
 /// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td>
@@ -836,9 +838,9 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// <tr><td> "DimensionsEllipsoid"     <td> Extent along the principal axes of an ellipsoid <td> 2D & 3D
 /// <tr><td colspan="3"> **Moments of grey-value object**
 /// <tr><td> "Gravity"                 <td> Coordinates of the center of mass of the object <td> Scalar grey
-/// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> scalar grey
-/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of the object <td> scalar grey
-/// <tr><td> "GreyMajorAxes"           <td> Grey-weighted principal axes of the object <td> scalar grey
+/// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> Scalar grey
+/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of the object <td> Scalar grey
+/// <tr><td> "GreyMajorAxes"           <td> Grey-weighted principal axes of the object <td> Scalar grey
 /// <tr><td> "GreyDimensionsCube"      <td> Extent along the principal axes of a cube (grey-weighted) <td> 2D & 3D, scalar grey
 /// <tr><td> "GreyDimensionsEllipsoid" <td> Extent along the principal axes of an ellipsoid (grey-weighted) <td> 2D & 3D, scalar grey
 /// </table>

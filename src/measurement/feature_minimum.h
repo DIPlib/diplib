@@ -66,7 +66,7 @@ class FeatureMinimum : public LineBased {
                      data = nullptr;
                   } else {
                      data = &( data_[ it->second * nD_ ] );
-                     for( dip::uint ii = 0; ii < nD_; ii++ ) {
+                     for( dip::uint ii = 0; ii < nD_; ++ii ) {
                         data[ ii ] = std::min( data[ ii ], coordinates[ ii ] );
                      }
                   }
