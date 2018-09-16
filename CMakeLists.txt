@@ -143,7 +143,12 @@ if(DIP_SHARED_LIBRARY)
    # We will not build DIPimage without a shared DIPlib -- technically possible, but not desireable.
    # (This would also require solving linker warnings because of Doctest.)
 
-   #set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # A line like this might be necessary if your version of MATLAB is more recent than your version of CMake.
+   # Current version of CMake does not recognize these MATLAB versions. You migh have to add to this list
+   # depending on your MATLAB and CMake versions.
+   set(MATLAB_ADDITIONAL_VERSIONS
+         "R2018b=9.5"
+         "R2018a=9.4")
+   #set(MATLAB_FIND_DEBUG On)
    find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY MAIN_PROGRAM)
    if(Matlab_FOUND)
       set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
@@ -253,7 +258,6 @@ message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
 
 if(DOXYGEN_FOUND)
    message(" * Documentation installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}")
-   message("   => use the 'apidoc' target")
 else()
    message(" * Doxygen documentation not configured")
 endif()
@@ -305,7 +309,6 @@ endif()
 
 if(DIP_ENABLE_DOCTEST)
    message(" * Unit test code included")
-   message("   => use the 'check' target")
 else()
    message(" * Unit test code excluded")
 endif()
@@ -331,6 +334,8 @@ endif()
 
 if(DIP_BUILD_DIPIMAGE)
    message(" * DIPimage toolbox added to 'all' target")
+   matlab_get_release_name_from_version(${Matlab_VERSION_STRING} Matlab_RELEASE_NAME)
+   message(" * DIPimage toolbox compiled for MATLAB ${Matlab_RELEASE_NAME}")
    message(" * DIPimage toolbox installed to: ${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}")
    if(TARGET dum)
       message(" * DIPimage User Manual installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}")
@@ -343,7 +348,14 @@ endif()
 
 if(CMAKE_GENERATOR MATCHES "Unix Makefiles")
    message("")
-   message("Next, type 'make; make check; make install'")
+   if(DIP_ENABLE_DOCTEST)
+      message("Next, type 'make; make check; make install'")
+   else()
+      message("Next, type 'make; make install'")
+   endif()
+   if(DOXYGEN_FOUND)
+      message("Type 'make apidoc' to build the documentation")
+   endif()
 endif()
 
 message("")

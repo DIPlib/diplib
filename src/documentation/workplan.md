@@ -38,16 +38,15 @@ document's source</a> for the most up-to-date version.
     are written.
 
     For R2018a and newer, complex data are no longer stored in two separate data segments.
-    This is good overall, but requires changes to the DIPlib-MATLAB interface. Additionally,
-    there is a new C++ API for MEX-files. So, since we need to make changes to the interface
-    anyway, for MATLAB R2018a and newer we will use the C++ API. A CMake flag will select
-    with which DIPlib-MATLAB interface the MEX-files will be built. It is not yet clear how
-    complicated all of this will be:
-    - We'll need to wrap the existing `mexFunction` declaration in a preprocessor macro,
-    since the C++ API uses a very different way of declaring the entry point.
-    - `prhs` will be of type `mxArray*[]` or `matlab::mex::ArgumentList` depending on the
-    interface. `nrhs` should be set to `matlab::mex::ArgumentList.size()` within that
-    declaration macro. Idem for LHS arguments.
+    This is good overall, but requires changes to the DIPlib-MATLAB interface. It is possible
+    to compile *DIPimage* for R2018a or newer, but passing complex matrices in and out of
+    the MEX-files causes two copies of the data, instead of none. `dip_image` objects never
+    contain complex data (complex images are stored as real arrays to prevent copies).
+
+    Another issue with R2018a and newer is that `mxGetPropertyShared` is no longer supported.
+    This means that image data will get copied when used as input to DIPimage MEX-files.
+    The only way around this is to use the new C++ interface. This might mean we'd need to
+    rewrite all MEX-files.
 
 -   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
     to be added as these functions are written. Make the module more "Pythonic"?

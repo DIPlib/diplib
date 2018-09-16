@@ -35,7 +35,7 @@
 #include <mex.h>
 
 // If compiling MEX-files with the -R2018a flag, the code in this file will not work as intended.
-#ifdef MX_HAS_INTERLEAVED_COMPLEX
+#if MX_HAS_INTERLEAVED_COMPLEX
 #error "This DIPlib-MATLAB interface does not support compiling MEX-files with the -R2018a flag"
 #endif
 
