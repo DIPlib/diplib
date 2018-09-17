@@ -835,17 +835,6 @@ DIP_EXPORT dfloat FractalDimension(
 );
 
 
-// TODO: functions to port:
-/*
-   dip_OrientationSpace (dip_structure.h)
-   dip_ExtendedOrientationSpace (dip_structure.h)
-
-   dip_CurvatureFromTilt (dip_structure.h)
-
-   dip_OSEmphasizeLinearStructures (dip_structure.h)
-   dip_DanielsonLineDetector (dip_structure.h)
-*/
-
 /// \}
 
 } // namespace dip

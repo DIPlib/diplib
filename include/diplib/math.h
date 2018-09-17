@@ -246,13 +246,6 @@ inline Image Hypot( Image const& a, Image const& b ) {
    return out;
 }
 
-// TODO: functions to port:
-/*
-   dip_AmplitudeModulation (dip_math.h)
-   dip_CosinAmplitudeModulation (dip_math.h)
-   dip_CosinAmplitudeDemodulation (dip_math.h)
-*/
-
 /// \}
 
 
@@ -680,15 +673,6 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
 
 /// \}
 
-
-// TODO: functions to port:
-/*
-   dip_RemapOrientation (dip_point.h)
-   dip_ChangeByteOrder (dip_manipulation.h)
-   dip_SimpleGaussFitImage (dip_numerical.h)
-   dip_EmFitGaussians (dip_numerical.h)
-   dip_EmGaussTest (dip_numerical.h)
-*/
 
 } // namespace dip
 

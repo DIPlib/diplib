@@ -1514,15 +1514,6 @@ inline Image HitAndMiss(
    return out;
 }
 
-// TODO: functions to port:
-/*
-dip_UpperEnvelope (dip_morphology.h)
-dip_UpperSkeleton2D (dip_binary.h)
-*/
-
-// TODO: levelling
-// TODO: granulometries (isotropic and path opening)
-
 /// \}
 
 } // namespace dip

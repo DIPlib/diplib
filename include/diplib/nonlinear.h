@@ -776,20 +776,6 @@ inline Image BilateralFilter(
    return out;
 }
 
-// TODO: functions to port:
-/*
-   dip_RankContrastFilter (dip_rankfilters.h)
-   dip_Sigma (dip_filtering.h)
-   dip_BiasedSigma (dip_filtering.h)
-   dip_GaussianSigma (dip_filtering.h) (compare dip_BilateralFilter)
-   dip_ArcFilter (dip_bilateral.h)
-   dip_StructureAdaptiveGauss (dip_adaptive.h)
-   dip_AdaptivePercentile (dip_adaptive.h)
-   dip_AdaptivePercentileBanana (dip_adaptive.h)
-   dip_PGST3DLine (dip_pgst.h) (this could have a better name!)
-   dip_PGST3DSurface (dip_pgst.h) (this could have a better name!)
-*/
-
 /// \}
 
 } // namespace dip

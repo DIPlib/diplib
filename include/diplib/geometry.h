@@ -529,9 +529,6 @@ inline Image Rotation3D(
 }
 
 
-// TODO: port rot_euler_low.c and affine_trans_low.c from DIPimage
-
-
 /// \brief Tiles a set of images to form a single image.
 ///
 /// Input images are arranged according to `tiling`. For example, if `tiling = { 3, 2 }, will generate an

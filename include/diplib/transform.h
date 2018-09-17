@@ -157,11 +157,6 @@ inline Image HoughTransformCircleCenters(
    return out;
 }
 
-
-// TODO: port dip_HartleyTransform (dip_transform.h)
-// TODO: add wavelet transforms
-
-
 /// \}
 
 } // namespace dip

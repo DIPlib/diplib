@@ -447,17 +447,6 @@ inline Image SimulatedAttenuation(
    return out;
 }
 
-
-// TODO: functions to port:
-/*
-   dip_RestorationTransform (dip_restoration.h)
-   dip_TikhonovRegularizationParameter (dip_restoration.h)
-   dip_TikhonovMiller (dip_restoration.h)
-   dip_Wiener (dip_restoration.h)
-   dip_PseudoInverse (dip_restoration.h)
-*/
-
-
 /// \}
 
 } // namespace dip

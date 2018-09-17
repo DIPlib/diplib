@@ -470,11 +470,6 @@ inline Image Canny(
    return out;
 }
 
-
-// TODO: Add 2D snakes from diptree/dipimage/mfiles/snakeminimize.m
-// TODO: Add level-set segmentation and graph-cut segmentation
-
-
 /// \}
 
 } // namespace dip

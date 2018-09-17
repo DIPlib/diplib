@@ -83,7 +83,7 @@ document's source</a> for the most up-to-date version.
 
 -   Morphological levellings.
 
--   Radon transform for lines and circles, Hough transform for lines.
+-   Radon transform for lines and circles, Hough transform for lines (Wouter already did the one for circles).
 
 -   Level-set segmentation, graph-cut segmentation.
 
@@ -94,11 +94,20 @@ document's source</a> for the most up-to-date version.
 
 -   Wavelet transforms.
 
+-   Comparison of segmentations: F-factor, Dice coefficient, etc.
+
+-   Colocalization measurements.
+
+-   Line detectors: Frangi, matched filters, etc. and port dip_DanielsonLineDetector.
+    Corner detectors: Harris & Shi–Tomasi, Wang & Brady, etc.
+
+-   Scalespace analysis?
+
 -   A function to write text into an image, using the
     [*FreeType*](https://www.freetype.org) library.
 
 
-## List of *DIPlib 2* functions that still need to be ported
+## List of *DIPlib 2* functions that are not yet ported
 
 Between brackets is the name of the old header file it's declared in. They are grouped by
 the new header file they should be declared in.
