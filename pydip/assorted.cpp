@@ -173,6 +173,13 @@ void init_assorted( py::module& m ) {
    m.def( "FillCoordinates", &dip::FillCoordinates, "out"_a, "mode"_a = dip::StringSet{}, "system"_a = "" );
    m.def( "CreateCoordinates", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const&, dip::String const& >( &dip::CreateCoordinates ),
           "sizes"_a, "mode"_a = dip::StringSet{}, "system"_a = "" );
+   m.def( "FillDistanceToPoint", &dip::FillDistanceToPoint, "out"_a, "point"_a, "distance"_a = dip::S::EUCLIDEAN, "scaling"_a = dip::FloatArray{} );
+   m.def( "DistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::String const&, dip::FloatArray const& >( &dip::DistanceToPoint ),
+         "sizes"_a, "point"_a, "distance"_a = dip::S::EUCLIDEAN, "scaling"_a = dip::FloatArray{} );
+   m.def( "EuclideanDistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::FloatArray const& >( &dip::EuclideanDistanceToPoint ),
+         "sizes"_a, "point"_a, "scaling"_a = dip::FloatArray{} );
+   m.def( "CityBlockDistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::FloatArray const& >( &dip::CityBlockDistanceToPoint ),
+         "sizes"_a, "point"_a, "scaling"_a = dip::FloatArray{} );
 
    m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ){ return dip::UniformNoise( in, randomNumberGenerator, lowerBound, upperBound ); },
           "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 1.0 );

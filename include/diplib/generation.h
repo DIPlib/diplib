@@ -53,7 +53,7 @@ struct DIP_NO_EXPORT Polygon;
 ///  - `"corner"`: The origin is on the first pixel. This is the default if no other option is given.
 DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
 
-/// \brief Creates a delta function image of the given sizes.
+/// \brief Creates a delta function image.
 ///
 /// All pixels will be zero except at the origin, where it will be 1.
 /// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
@@ -440,7 +440,7 @@ inline Image CreateGabor(
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode = {} );
 
-/// \brief Creates a ramp function image of the same size as `in`.
+/// \brief Creates a ramp function image.
 ///
 /// The ramp function increases along dimension `dimension`, and is equivalent to the cartesian
 /// coordinate for dimension `dimension`. `dimension` must be smaller than `sizes.size()`.
@@ -450,7 +450,12 @@ DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode
 /// output image only stores `sizes[dimension]` pixels.
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateRamp( Image& out, UnsignedArray const& sizes, dip::uint dimension, StringSet const& mode = {} ) {
+inline void CreateRamp(
+      Image& out,
+      UnsignedArray const& sizes,
+      dip::uint dimension,
+      StringSet const& mode = {}
+) {
    UnsignedArray trueSizes( sizes.size(), 1 );
    if( dimension < sizes.size() ) {
       trueSizes[ dimension ] = sizes[ dimension ];
@@ -459,7 +464,11 @@ inline void CreateRamp( Image& out, UnsignedArray const& sizes, dip::uint dimens
    FillRamp( out, dimension, mode );
    out.ExpandSingletonDimensions( sizes );
 }
-inline Image CreateRamp( UnsignedArray const& sizes, dip::uint dimension, StringSet const& mode = {} ) {
+inline Image CreateRamp(
+      UnsignedArray const& sizes,
+      dip::uint dimension,
+      StringSet const& mode = {}
+) {
    Image out;
    CreateRamp( out, sizes, dimension, mode );
    return out;
@@ -474,7 +483,7 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
    FillRamp( out, 0, mode );
 }
 
-/// \brief Creates a ramp function image of the same size as `in`.
+/// \brief Creates a ramp function image.
 ///
 /// The ramp function increases along the x-axis, and is equivalent to the cartesian coordinate
 /// for the x-axis.
@@ -502,7 +511,7 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
    FillRamp( out, 1, mode );
 }
 
-/// \brief Creates a ramp function image of the same size as `in`.
+/// \brief Creates a ramp function image.
 ///
 /// The ramp function increases along the y-axis, and is equivalent to the cartesian coordinate
 /// for the y-axis. `size` must have at least two elements.
@@ -530,7 +539,7 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
    FillRamp( out, 2, mode );
 }
 
-/// \brief Creates a ramp function image of the same size as `in`.
+/// \brief Creates a ramp function image.
 ///
 /// The ramp function increases along the z-axis, and is equivalent to the cartesian coordinate
 /// for the z-axis. `sizes` must have at least three elements.
@@ -558,7 +567,7 @@ inline Image CreateZCoordinate( UnsignedArray const& sizes, StringSet const& mod
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 DIP_EXPORT void FillRadiusCoordinate( Image& out, StringSet const& mode = {} );
 
-/// \brief Creates an image of the same size as `in`, filled with the distance to the origin.
+/// \brief Creates an image filled with the distance to the origin.
 ///
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
@@ -583,7 +592,7 @@ inline Image CreateRadiusCoordinate( UnsignedArray const& sizes, StringSet const
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 DIP_EXPORT void FillRadiusSquareCoordinate( Image& out, StringSet const& mode = {} );
 
-/// \brief Creates an image of the same size as `in`, filled with the square distance to the origin.
+/// \brief Creates an image filled with the square distance to the origin.
 ///
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
@@ -608,8 +617,7 @@ inline Image CreateRadiusSquareCoordinate( UnsignedArray const& sizes, StringSet
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 DIP_EXPORT void FillPhiCoordinate( Image& out, StringSet const& mode = {} );
 
-/// \brief Creates an image of the same size as `in`, filled with the angle to the x-axis
-/// within the x-y plane.
+/// \brief Creates an image filled with the angle to the x-axis within the x-y plane.
 ///
 /// The angle function is equivalent to the phi component of the polar or spherical
 /// coordinate system. `size` must have two or three elements.
@@ -633,7 +641,7 @@ inline Image CreatePhiCoordinate( UnsignedArray const& sizes, StringSet const& m
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 DIP_EXPORT void FillThetaCoordinate( Image& out, StringSet const& mode = {} );
 
-/// \brief Creates an image of the same size as `in`, filled with the angle to the z-axis.
+/// \brief Creates an image filled with the angle to the z-axis.
 ///
 /// The angle function is equivalent to the theta component of the spherical coordinate
 /// system. `size` must have three elements.
@@ -684,20 +692,125 @@ inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const&
 ///    not make sense.
 ///    In combination with `"frequency"`, yields the same result as in combination with `"right"`.
 /// The string `"radfreq"` is equivalent to both `"frequency"` and `"radial"`.
-DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String const& system = "cartesian" );
+DIP_EXPORT void FillCoordinates(
+      Image& out,
+      StringSet const& mode = {},
+      String const& system = S::CARTESIAN
+);
 
-/// \brief Creates an image of the same size as `in`, filled with the coordinates of each pixel.
+/// \brief Creates an image filled with the coordinates of each pixel.
 ///
 /// `out` will be of size `sizes`, with `sizes.size()` vector elements, and of type `dip::DT_SFLOAT`.
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode` and `system`.
-inline void CreateCoordinates( Image& out, UnsignedArray const& sizes, StringSet const& mode = {}, String const& system = "cartesian" ) {
+inline void CreateCoordinates(
+      Image& out,
+      UnsignedArray const& sizes,
+      StringSet const& mode = {},
+      String const& system = S::CARTESIAN
+) {
    out.ReForge( sizes, sizes.size(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillCoordinates( out, mode, system );
 }
-inline Image CreateCoordinates( UnsignedArray const& sizes, StringSet const& mode = {}, String const& system = "cartesian" ) {
+inline Image CreateCoordinates(
+      UnsignedArray const& sizes,
+      StringSet const& mode = {},
+      String const& system = S::CARTESIAN
+) {
    Image out;
    CreateCoordinates( out, sizes, mode, system );
+   return out;
+}
+
+
+/// \brief Fills an image with the distance to a given point.
+///
+/// Computes the distance from each pixel in `out` to the coordinates specified through `point`, which can be
+/// outside of the image. The `scale` parameter may be used to specify the relative distance between pixels
+/// in each dimension (the pixel sizes in `out` are ignored). Both `point` and `scaling` must have the same
+/// number of elements as `out.Size()`, but `scaling` can also be empty (no scaling) or have a single element
+/// (isotropic scaling).
+///
+/// `distance` indicates how the distance is computed, and can be `"Euclidean"`, `"square"` (for square Euclidean
+/// distance), `"city"` (for city block or L1 distance), or `"chess"` (for chessboard or L-infinity distance).
+///
+/// `out` must be forged, real-valued and scalar.
+DIP_EXPORT void FillDistanceToPoint(
+      Image& out,
+      FloatArray const& point,
+      String const& distance = S::EUCLIDEAN,
+      FloatArray scaling = {}
+);
+
+/// \brief Creates an image filled with the distance to a given point.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// See `dip::FillDistanceToPoint` for the meaning of `point`, `distance` and `scaling`.
+inline void DistanceToPoint(
+      Image& out,
+      UnsignedArray const& sizes,
+      FloatArray const& point,
+      String const& distance = S::EUCLIDEAN,
+      FloatArray const& scaling = {}
+) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   FillDistanceToPoint( out, point, distance, scaling );
+}
+inline Image DistanceToPoint(
+      UnsignedArray const& sizes,
+      FloatArray const& point,
+      String const& distance = S::EUCLIDEAN,
+      FloatArray const& scaling = {}
+) {
+   Image out;
+   DistanceToPoint( out, sizes, point, distance, scaling );
+   return out;
+}
+
+/// \brief Creates an image filled with the Euclidean distance to a given point.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// See `dip::FillDistanceToPoint` for the meaning of `point` and `scaling`.
+inline void EuclideanDistanceToPoint(
+      Image& out,
+      UnsignedArray const& sizes,
+      FloatArray const& point,
+      FloatArray const& scaling = {}
+) {
+   DistanceToPoint( out, sizes, point, S::EUCLIDEAN, scaling );
+}
+inline Image EuclideanDistanceToPoint(
+      UnsignedArray const& sizes,
+      FloatArray const& point,
+      FloatArray const& scaling = {}
+) {
+   Image out;
+   EuclideanDistanceToPoint( out, sizes, point, scaling );
+   return out;
+}
+
+/// \brief Creates an image filled with the city block distance to a given point.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// See `dip::FillDistanceToPoint` for the meaning of `point` and `scaling`.
+inline void CityBlockDistanceToPoint(
+      Image& out,
+      UnsignedArray const& sizes,
+      FloatArray const& point,
+      FloatArray const& scaling = {}
+) {
+   DistanceToPoint( out, sizes, point, S::CITY, scaling );
+}
+inline Image CityBlockDistanceToPoint(
+      UnsignedArray const& sizes,
+      FloatArray const& point,
+      FloatArray const& scaling = {}
+) {
+   Image out;
+   CityBlockDistanceToPoint( out, sizes, point, scaling );
    return out;
 }
 
@@ -715,8 +828,19 @@ inline Image CreateCoordinates( UnsignedArray const& sizes, StringSet const& mod
 /// threads used.
 ///
 /// \see dip::UniformRandomGenerator.
-DIP_EXPORT void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBound = 0.0, dfloat upperBound = 1.0 );
-inline Image UniformNoise( Image const& in, Random& random, dfloat lowerBound = 0.0, dfloat upperBound = 1.0 ) {
+DIP_EXPORT void UniformNoise(
+      Image const& in,
+      Image& out,
+      Random& random,
+      dfloat lowerBound = 0.0,
+      dfloat upperBound = 1.0
+);
+inline Image UniformNoise(
+      Image const& in,
+      Random& random,
+      dfloat lowerBound = 0.0,
+      dfloat upperBound = 1.0
+) {
    Image out;
    UniformNoise( in, out, random, lowerBound, upperBound );
    return out;
@@ -816,8 +940,19 @@ inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 
 /// threads used.
 ///
 /// \see dip::BinaryRandomGenerator.
-DIP_EXPORT void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10 = 0.05, dfloat p01 = 0.05 );
-inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, dfloat p01 = 0.05 ) {
+DIP_EXPORT void BinaryNoise(
+      Image const& in,
+      Image& out,
+      Random& random,
+      dfloat p10 = 0.05,
+      dfloat p01 = 0.05
+);
+inline Image BinaryNoise(
+      Image const& in,
+      Random& random,
+      dfloat p10 = 0.05,
+      dfloat p01 = 0.05
+) {
    Image out;
    BinaryNoise( in, out, random, p10, p01 );
    return out;
@@ -841,8 +976,21 @@ inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, df
 /// threads used.
 ///
 /// \see dip::UniformRandomGenerator.
-DIP_EXPORT void SaltPepperNoise( Image const& in, Image& out, Random& random, dfloat p0 = 0.05, dfloat p1 = 0.05, dfloat white = 1.0 );
-inline Image SaltPepperNoise( Image const& in, Random& random, dfloat p0 = 0.05, dfloat p1 = 0.05, dfloat white = 1.0 ) {
+DIP_EXPORT void SaltPepperNoise(
+      Image const& in,
+      Image& out,
+      Random& random,
+      dfloat p0 = 0.05,
+      dfloat p1 = 0.05,
+      dfloat white = 1.0
+);
+inline Image SaltPepperNoise(
+      Image const& in,
+      Random& random,
+      dfloat p0 = 0.05,
+      dfloat p1 = 0.05,
+      dfloat white = 1.0
+) {
    Image out;
    SaltPepperNoise( in, out, random, p0, p1, white );
    return out;
@@ -872,19 +1020,35 @@ inline Image SaltPepperNoise( Image const& in, Random& random, dfloat p0 = 0.05,
 /// With blue and violet noise, nearby pixels will be negatively correlated. That is, large-scale changes across
 /// the image are weaker. The resulting noise looks more uniform than white noise. Because of this, the computed
 /// population variance in the output will be much closer to `variance` than with white noise.
-DIP_EXPORT void FillColoredNoise( Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2.0 );
+DIP_EXPORT void FillColoredNoise(
+      Image& out,
+      Random& random,
+      dfloat variance = 1.0,
+      dfloat color = -2.0
+);
 
 /// \brief Adds colored (Brownian, pink, blue, violet) noise to `in`.
 ///
 /// Equivalent to adding the output of `dip::FillColoredNoise` to `in`. See the reference for that function for
 /// information on the input parameters. `out` will have the data type of `in`.
-inline void ColoredNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2.0 ) {
+inline void ColoredNoise(
+      Image const& in,
+      Image& out,
+      Random& random,
+      dfloat variance = 1.0,
+      dfloat color = -2.0
+) {
    out.ReForge( in.Sizes(), in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
    out.CopyNonDataProperties( in );
    FillColoredNoise( out, random, variance, color );
    out += in;
 }
-inline Image ColoredNoise( Image const& in, Random& random, dfloat variance = 1.0, dfloat color = -2.0 ) {
+inline Image ColoredNoise(
+      Image const& in,
+      Random& random,
+      dfloat variance = 1.0,
+      dfloat color = -2.0
+) {
    Image out;
    ColoredNoise( in, out, random, variance, color );
    return out;

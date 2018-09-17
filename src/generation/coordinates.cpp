@@ -24,6 +24,7 @@
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
 #include "diplib/geometry.h"
+#include "diplib/math.h"
 
 namespace dip {
 
@@ -542,6 +543,57 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
       dip__Coordinates scanLineFilter( spherical, transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
+}
+
+
+void FillDistanceToPoint(
+      Image& out,
+      FloatArray const& point,
+      String const& distance,
+      FloatArray scaling
+) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( out.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
+   dip::uint nDims = out.Dimensionality();
+   Image::Pixel center( DT_SFLOAT, nDims );
+   if( point.empty() ) {
+      FloatArray pt = out.GetCenter();
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         center[ ii ] = pt[ ii ];
+      }
+   } else {
+      DIP_THROW_IF( point.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         center[ ii ] = point[ ii ];
+      }
+   }
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( scaling, nDims, 1.0 ));
+   Image::Pixel scale( DT_SFLOAT, nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      scale[ ii ] = scaling[ ii ];
+   }
+
+   bool protect = out.Protect( true );
+   PixelSize ps = out.PixelSize();
+
+   Image coords = CreateCoordinates( out.Sizes(), { S::CORNER }, S::CARTESIAN );
+   coords -= center;
+   MultiplySampleWise( coords, scale, coords, coords.DataType() );
+   if( distance == S::EUCLIDEAN ) {
+      Norm( coords, out );
+   } else if( distance == S::SQUARE ) {
+      SquareNorm( coords, out );
+   } else if( distance == S::CITY ) {
+      Abs( coords, coords );
+      SumTensorElements( coords, out );
+   } else if( distance == S::CHESS ) {
+      Abs( coords, coords );
+      MaximumTensorElement( coords, out );
+   }
+
+   out.Protect( protect );
+   out.SetPixelSize( ps );
 }
 
 } // namespace dip
