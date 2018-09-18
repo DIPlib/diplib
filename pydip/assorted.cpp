@@ -154,6 +154,15 @@ void init_assorted( py::module& m ) {
    m.def( "CreateGabor", py::overload_cast< dip::FloatArray const&, dip::FloatArray const&, dip::dfloat >( &dip::CreateGabor ),
           "sigmas"_a, "frequencies"_a, "truncation"_a = 3.0 );
 
+   m.def( "FTEllipsoid", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat >( &dip::FTEllipsoid ),
+         "sizes"_a, "radius"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
+   m.def( "FTBox", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat >( &dip::FTBox ),
+          "sizes"_a, "length"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
+   m.def( "FTCross", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat >( &dip::FTCross ),
+         "sizes"_a, "length"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
+   m.def( "FTGaussian", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat, dip::dfloat >( &dip::FTGaussian ),
+         "sizes"_a, "sigma"_a, "amplitude"_a = 1, "truncation"_a = 3 );
+
    m.def( "FillRamp", &dip::FillRamp, "out"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
    m.def( "CreateRamp", py::overload_cast< dip::UnsignedArray const&, dip::uint, dip::StringSet const& >( &dip::CreateRamp ), "sizes"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillXCoordinate", &dip::FillXCoordinate, "out"_a, "mode"_a = dip::StringSet{} );

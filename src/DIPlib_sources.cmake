@@ -100,6 +100,7 @@ file_io/tiff_write.cpp
 generation/coordinates.cpp
 generation/draw_bandlimited.cpp
 generation/draw_discrete.cpp
+generation/draw_fourier.cpp
 generation/draw_support.h
 generation/noise.cpp
 geometry/interpolation.h

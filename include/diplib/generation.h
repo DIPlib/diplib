@@ -387,6 +387,7 @@ DIP_EXPORT std::vector< dfloat > MakeGaussian(
 ///
 /// By setting `exponents` to a positive value for each dimension, the created kernel will be multiplied by
 /// the coordinates to the power of `exponents`.
+// Defined in src/linear/gauss.cpp
 DIP_EXPORT void CreateGauss(
       Image& out,
       FloatArray const& sigmas,
@@ -416,6 +417,7 @@ inline Image CreateGauss(
 /// The size of the kernel is given by `2 * std::ceil( truncation * sigma ) + 1`.
 /// The default value for `truncation` is 3, which assures a good approximation of the kernel without
 /// unnecessary expense.
+// Defined in src/linear/gabor.cpp
 DIP_EXPORT void CreateGabor(
       Image& out,
       FloatArray const& sigmas,
@@ -431,6 +433,99 @@ inline Image CreateGabor(
    CreateGabor( out, sigmas, frequencies, truncation );
    return out;
 }
+
+
+/// \brief Generates the Fourier transform of an ellipsoid.
+///
+/// The length of the axes of the ellipsoid are specified through `radius`, which indicates the half-length
+/// of the axes along each dimension. `amplitude` specifies the brightness of the ellipsoid.
+///
+/// The function is defined for images between 1 and 3 dimensions. `out` must be forged, scalar, and of a
+/// floating-point type.
+///
+/// **Literature**
+/// L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis Delft University of
+/// Technology, 1993.
+DIP_EXPORT void FTEllipsoid(
+      Image& out,
+      FloatArray radius = { 1 },
+      dfloat amplitude = 1
+);
+inline Image FTEllipsoid(
+      UnsignedArray const& sizes,
+      FloatArray const& radius = { 1 },
+      dfloat amplitude = 1
+) {
+   Image out( sizes, 1, DT_SFLOAT );
+   FTEllipsoid( out, radius, amplitude );
+   return out;
+}
+
+/// \brief Generates the Fourier transform of a box.
+///
+/// The length of the sides of the box are specified through `length`, which indicates the half-length
+/// of the sides along each dimension. `amplitude` specifies the brightness of the box.
+///
+/// `out` must be forged, scalar, and of a floating-point type.
+DIP_EXPORT void FTBox(
+      Image& out,
+      FloatArray length = { 1 },
+      dfloat amplitude = 1
+);
+inline Image FTBox(
+      UnsignedArray const& sizes,
+      FloatArray const& length = { 1 },
+      dfloat amplitude = 1
+) {
+   Image out( sizes, 1, DT_SFLOAT );
+   FTBox( out, length, amplitude );
+   return out;
+}
+
+/// \brief Generates the Fourier transform of a cross.
+///
+/// The length of the sides of the cross are specified through `length`, which indicates the half-length
+/// of the sides along each dimension. `amplitude` specifies the brightness of the cross.
+///
+/// `out` must be forged, scalar, and of a floating-point type.
+DIP_EXPORT void FTCross(
+      Image& out,
+      FloatArray length = { 1 },
+      dfloat amplitude = 1
+);
+inline Image FTCross(
+      UnsignedArray const& sizes,
+      FloatArray const& length = { 1 },
+      dfloat amplitude = 1
+) {
+   Image out( sizes, 1, DT_SFLOAT );
+   FTCross( out, length, amplitude );
+   return out;
+}
+
+/// \brief Generates the Fourier transform of a Gaussian.
+///
+/// The size of the Gaussian is specified with `sigma` (note that the Fourier transform of a Gaussian is also a
+/// Gaussian). `volume` is the integral of the Gaussian in the spatial domain.
+///
+/// `out` must be forged, scalar, and of a floating-point type.
+DIP_EXPORT void FTGaussian(
+      Image& out,
+      FloatArray sigma,
+      dfloat amplitude = 1,
+      dfloat truncation = 3
+);
+inline Image FTGaussian(
+      UnsignedArray const& sizes,
+      FloatArray const& sigma,
+      dfloat amplitude = 1,
+      dfloat truncation = 3
+) {
+   Image out( sizes, 1, DT_SFLOAT );
+   FTGaussian( out, sigma, amplitude, truncation );
+   return out;
+}
+
 
 /// \brief Fills an image with a ramp function.
 ///

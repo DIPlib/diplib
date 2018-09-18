@@ -131,12 +131,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
 
 - diplib/generation.h
-    - dip_FTSphere (dip_generation.h)
-    - dip_FTBox (dip_generation.h)
-    - dip_FTCube (dip_generation.h)
-    - dip_FTGaussian (dip_generation.h)
-    - dip_FTEllipsoid (dip_generation.h)
-    - dip_FTCross (dip_generation.h)
     - dip_TestObjectCreate (dip_generation.h)
     - dip_TestObjectModulate (dip_generation.h)
     - dip_TestObjectBlur (dip_generation.h)
