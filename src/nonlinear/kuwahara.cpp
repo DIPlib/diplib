@@ -51,6 +51,7 @@ struct SelectionLineFilterParameters {
 class SelectionLineFilterBase {
    public:
       virtual void Filter( SelectionLineFilterParameters const& params ) = 0;
+      virtual ~SelectionLineFilterBase() {};
 };
 
 template< typename TPI >

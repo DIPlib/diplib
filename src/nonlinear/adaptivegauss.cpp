@@ -275,7 +275,7 @@ public:
       ParamImageQuickCopyAndExpandTensor( phi3, phi3_, inputTensorElements );
       ParamImageQuickCopyAndExpandTensor( theta3, theta3_, inputTensorElements );
       T_.resize( inputTensorElements );
-      }
+   }
 
    virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationXY( *this ); }
 
@@ -410,6 +410,7 @@ class InputInterpolator
 {
 public:
    InputInterpolator( Image const& in ) : in_( in ), inOrigin_( static_cast<TPI*>(in_.Origin()) ), inTensorStride_( in_.TensorStride() ) {}
+   virtual ~InputInterpolator() {}
 
    virtual TPO GetInputValue( FloatArray& /*coords*/, dip::uint /*tensorIndex*/, bool /*mirrorAtImageBoundaries*/ ) const { return 0; }
 
