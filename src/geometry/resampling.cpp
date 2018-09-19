@@ -313,6 +313,100 @@ void Resampling(
 
 namespace {
 
+template< typename TPI > // TPI is a complex type
+class ShiftFTLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+         return 40 + nTensorElements; // TODO: is this OK?
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI* in = static_cast< TPI* >( params.inBuffer[ 0 ].buffer );
+         dip::sint nTensor = static_cast< dip::sint >( params.inBuffer[ 0 ].tensorLength );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;
+         dip::sint inTStride = params.inBuffer[ 0 ].tensorStride;
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::sint outTStride = params.outBuffer[ 0 ].tensorStride;
+
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint dim = params.dimension;
+         dip::uint nDims = params.position.size();
+         DIP_ASSERT( shift_.size() == nDims );
+
+         dfloat phase = 0;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            if( ii != dim ) {
+               phase -= shift_[ ii ] * ( static_cast< dfloat >( params.position[ ii ] ) - static_cast< dfloat >( sizes_[ ii ] / 2 )) * 2.0 * pi / static_cast< dfloat >( sizes_[ ii ] );
+            }
+         }
+         dfloat offset = static_cast< dfloat >( sizes_[ dim ] / 2 );
+         dfloat scale = shift_[ dim ] *  2.0 * pi / static_cast< dfloat >( sizes_[ dim ] );
+
+         dfloat pp = static_cast< dfloat >( params.position[ dim ] ) - offset;
+         for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp, in += inStride, out += outStride ) {
+            dfloat ph = phase - pp * scale;
+            TPI mul{ static_cast< FloatType< TPI >>( std::cos( ph )),
+                     static_cast< FloatType< TPI >>( std::sin( ph )) };
+            for( dip::sint jj = 0; jj < nTensor; ++jj ) {
+               out[ jj * outTStride ] = in[ jj * inTStride ] * mul;
+            }
+         }
+         // TODO: We can speed up this code
+         // by computing the cos and sin once outside the loop, and tabulating cos and sin values to be used inside
+         // the loop. To create the tables, we need a function like SetNumberOfThreads to receive also the processing
+         // dimension. Mike's description of this:
+         //
+         //  >   Below we need the quantities:
+         //  >
+         //  >   cos( Fx X + Fy Y + ... ) and sin( Fx X + ... )
+         //  >
+         //  >   Using exp( ja ) exp( jb ) = exp( j ( a + b ))    ->
+         //  >
+         //  >   ( cos( a ) + j sin( a ) ) * ( cos( b ) + j sin( b ) ) =
+         //  >   cos( a + b ) + j sin( a + b )    ->
+         //  >
+         //  >   cos( a + b ) = cos( a ) cos( b ) - sin( a ) sin( b )
+         //  >   sin( a + b ) = sin( a ) cos( b ) + cos( a ) sin( b )
+         //  >
+         //  >   Therefore:
+         //  >
+         //  >   cos( Fx X + Fy Y ... ) =
+         //  >   cos( Fx X ) cos( Fy Y + Fz Z + ... ) -
+         //  >   sin( Fx X ) sin( Fy Y + Fz Z + ... )
+         //  >
+         //  >   These formulas are separable in the X and the other dimensions. The
+         //  >   cos( Fx X ) and sin( Fx X ) can be tabulated, while the other terms
+         //  >   are evaluated on the fly. This is sort of an optimal balance between
+         //  >   speed and memory usage.
+      }
+      ShiftFTLineFilter( FloatArray const& shift, UnsignedArray const& sizes )
+            : shift_( shift ), sizes_( sizes ) {}
+   private:
+      FloatArray const& shift_;
+      UnsignedArray const& sizes_;
+};
+
+} // namespace
+
+void ShiftFT(
+      Image const& in,
+      Image& out,
+      FloatArray shift
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( shift, nDims, 0.0 );
+   DIP_END_STACK_TRACE
+   DataType dt = DataType::SuggestComplex( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > lineFilter;
+   DIP_OVL_NEW_COMPLEX( lineFilter, ShiftFTLineFilter, ( shift, in.Sizes() ), dt );
+   Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), *lineFilter, Framework::ScanOption::NeedCoordinates );
+}
+
+namespace {
+
 template< typename TPI >
 class SkewLineFilter : public Framework::SeparableLineFilter {
    public:
@@ -534,3 +628,404 @@ void Rotation(
 }
 
 } // namespace dip
+
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/generation.h"
+#include "diplib/transform.h"
+#include "diplib/testing.h"
+#include <numeric>
+
+template< typename T >
+T abs_diff( T a, T b ) {
+   return std::abs( a - b );
+}
+template< typename T >
+T abs_diff( std::complex< T > a, std::complex< T > b ) {
+   return std::abs( a - b );
+}
+
+
+DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions (except Fourier)") {
+
+   // 1- Test all methods (except FOURIER) using sfloat, and unit zoom
+
+   std::vector< dip::sfloat > buffer( 100 );
+   std::vector< dip::sfloat > tmpSpline( 200 );
+   std::iota( buffer.begin(), buffer.end(), 0.0f );
+   dip::sfloat* input = buffer.data() + 20; // we use the elements 20-80, and presume 20 elements as boundary on either side
+   dip::uint inSize = 60;
+
+   dip::sfloat shift = 4.3f;
+   dip::uint outSize = inSize;
+   std::vector< dip::sfloat > output( outSize, -1e6f );
+   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), outSize, 1.0, shift, tmpSpline.data() );
+   bool error = false;
+   dip::sfloat offset = 20.0f + shift;
+   for( dip::uint ii = 2; ii < outSize - 11; ++ii ) { // BSpline is not as precise near the edges. Do we need a larger boundary?
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii )) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::FourthOrderCubicSpline< dip::sfloat >( input, output.data(), outSize, 1.0, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii )) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::ThirdOrderCubicSpline< dip::sfloat >( input, output.data(), outSize, 1.0, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii )) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Linear< dip::sfloat >( input, output.data(), outSize, 1.0, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii )) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::NearestNeighbor< dip::sfloat >( input, output.data(), outSize, 1.0, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], std::round( offset + static_cast< dip::sfloat >( ii ))) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::sfloat, 2 >( input, output.data(), outSize, 1.0, shift );
+   error = false;
+   //std::cout << "\nLanczos 2: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ));
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii )) > 3e-2; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::sfloat, 5 >( input, output.data(), outSize, 1.0, shift );
+   error = false;
+   //std::cout << "\nLanczos 5: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ));
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii )) > 1.1e-2; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   // 2- Test all methods (except FOURIER) using sfloat, and zoom > 1
+
+   shift = -3.4f;
+   dip::sfloat scale = 3.3f;
+   outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+   output.resize( outSize );
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), outSize, scale, shift, tmpSpline.data() );
+   offset = 20.0f + shift;
+   dip::sfloat step = 1.0f / scale;
+   error = false;
+   for( dip::uint ii = 2; ii < outSize - 11; ++ii ) { // BSpline is not as precise near the edges. Do we need a larger boundary?
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::FourthOrderCubicSpline< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::ThirdOrderCubicSpline< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Linear< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::NearestNeighbor< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], std::round( offset + static_cast< dip::sfloat >( ii ) * step )) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::sfloat, 2 >( input, output.data(), outSize, scale, shift );
+   error = false;
+   //std::cout << "\nLanczos 2: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step );
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 3.2e-2; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::sfloat, 8 >( input, output.data(), outSize, scale, shift );
+   error = false;
+   //std::cout << "\nLanczos 8: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step );
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 7.2e-3; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   // 3- Test all methods (except FOURIER) using sfloat, and zoom < 1
+
+   shift = 10.51f;
+   scale = 0.41f;
+   outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+   output.resize( outSize );
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), outSize, scale, shift, tmpSpline.data() );
+   offset = 20.0f + shift;
+   step = 1.0f / scale;
+   error = false;
+   for( dip::uint ii = 2; ii < outSize - 11; ++ii ) { // BSpline is not as precise near the edges. Do we need a larger boundary?
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::FourthOrderCubicSpline< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::ThirdOrderCubicSpline< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Linear< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::NearestNeighbor< dip::sfloat >( input, output.data(), outSize, scale, shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( output[ ii ], std::round( offset + static_cast< dip::sfloat >( ii ) * step )) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::sfloat, 2 >( input, output.data(), outSize, scale, shift );
+   error = false;
+   //std::cout << "\nLanczos 2: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step );
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 3.2e-2; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::sfloat, 8 >( input, output.data(), outSize, scale, shift );
+   error = false;
+   //std::cout << "\nLanczos 8: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step );
+      error |= abs_diff( output[ ii ], offset + static_cast< dip::sfloat >( ii ) * step ) > 7.2e-3; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   // 4- Test all methods (except FOURIER) using dcomplex
+
+   std::vector< dip::dcomplex > d_buffer( 100 );
+   std::vector< dip::dcomplex > d_tmpSpline( 200 );
+   for( dip::uint ii = 0; ii < d_buffer.size(); ++ii ) {
+      d_buffer[ ii ] = dip::dcomplex{ dip::dfloat( ii ), 200.0 - dip::dfloat( ii ) };
+   }
+   dip::dcomplex* d_input = d_buffer.data() + 20; // we use the elements 20-80, and presume 20 elements as boundary on either side
+
+   dip::dfloat d_shift = -3.4;
+   dip::dfloat d_scale = 5.23;
+   outSize = dip::interpolation::ComputeOutputSize( inSize, d_scale );
+   std::vector< dip::dcomplex > d_output( outSize, -1e6 );
+   dip::interpolation::BSpline< dip::dcomplex >( d_input, d_output.data(), outSize, d_scale, d_shift, d_tmpSpline.data() );
+   dip::dcomplex d_offset{ 20.0 + d_shift, 200.0 - 20.0 - d_shift };
+   dip::dfloat d_step = 1.0 / d_scale;
+   error = false;
+   for( dip::uint ii = 2; ii < outSize - 11; ++ii ) { // BSpline is not as precise near the edges. Do we need a larger boundary?
+      error |= abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( d_output.begin(), d_output.end(), -1e6f );
+   dip::interpolation::FourthOrderCubicSpline< dip::dcomplex >( d_input, d_output.data(), outSize, d_scale, d_shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( d_output.begin(), d_output.end(), -1e6f );
+   dip::interpolation::ThirdOrderCubicSpline< dip::dcomplex >( d_input, d_output.data(), outSize, d_scale, d_shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( d_output.begin(), d_output.end(), -1e6f );
+   dip::interpolation::Linear< dip::dcomplex >( d_input, d_output.data(), outSize, d_scale, d_shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      error |= abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( d_output.begin(), d_output.end(), -1e6f );
+   dip::interpolation::NearestNeighbor< dip::dcomplex >( d_input, d_output.data(), outSize, d_scale, d_shift );
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      dip::dcomplex res = d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step };
+      error |= abs_diff( d_output[ ii ], { std::round( res.real() ), std::round( res.imag() ) } ) > 1e-4;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( d_output.begin(), d_output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::dcomplex, 2 >( d_input, d_output.data(), outSize, d_scale, d_shift );
+   error = false;
+   //std::cout << "\nLanczos 2: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } );
+      error |= abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } ) > 4.5e-2; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( d_output.begin(), d_output.end(), -1e6f );
+   dip::interpolation::Lanczos< dip::dcomplex, 8 >( d_input, d_output.data(), outSize, d_scale, d_shift );
+   error = false;
+   //std::cout << "\nLanczos 8: ";
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      //std::cout << ", " << abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } );
+      error |= abs_diff( d_output[ ii ], d_offset + dip::dcomplex{ dip::dfloat( ii ) * d_step, -dip::dfloat( ii ) * d_step } ) > 1.1e-2; // input data is worst-case for Lanczos interpolation...
+   }
+   //std::cout << "\n\n";
+   DOCTEST_CHECK_FALSE( error );
+
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
+
+   // 1- Test using unit zoom (shift only)
+
+   std::vector< dip::scomplex > input( 100 );
+   dip::uint inSize = input.size();
+   for( dip::uint ii = 0; ii < inSize; ++ii ) {
+      auto x = static_cast< dip::dfloat >( ii ) / static_cast< dip::dfloat >( inSize );
+      input[ ii ] = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+   }
+   dip::dfloat shift = 4.3;
+   dip::uint outSize = inSize;
+   std::vector< dip::scomplex > output( outSize, -1e6f );
+
+   dip::DFT< dip::sfloat > ft( inSize, false );
+   dip::DFT< dip::sfloat > ift( outSize, true );
+   std::vector< dip::scomplex > buffer( dip::interpolation::FourierBufferSize( ft, ift ));
+   dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+   bool error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      auto x = ( static_cast< dip::dfloat >( ii ) - shift ) / static_cast< dip::dfloat >( outSize );
+      dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+      error |= abs_diff( output[ ii ], expected ) > 1e-6;
+      //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   // 2- Test using zoom > 1
+
+   shift = -3.4;
+   dip::dfloat scale = 3.3;
+   outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+   scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
+   output.resize( outSize );
+   std::fill( output.begin(), output.end(), -1e6f );
+   ft.Initialize( inSize, false );
+   ift.Initialize( outSize, true );
+   buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
+   dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
+      dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+      error |= abs_diff( output[ ii ], expected ) > 1e-6;
+      //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   // 3- Test using zoom < 1
+
+   shift = 10.51;
+   scale = 0.41;
+   outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+   scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
+   output.resize( outSize );
+   std::fill( output.begin(), output.end(), -1e6f );
+
+   ft.Initialize( inSize, false );
+   ift.Initialize( outSize, true );
+   buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
+   dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+   error = false;
+   for( dip::uint ii = 0; ii < outSize; ++ii ) {
+      auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
+      dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+      error |= abs_diff( output[ ii ], expected ) > 1e-6;
+      //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::ShiftFT() against dip::Shift()") {
+   dip::Image img( { 83, 120 }, 1, dip::DT_SFLOAT );
+   img.Fill( 0 );
+   dip::DrawBandlimitedBall( img, 30, img.GetCenter(), { 255 }, dip::S::FILLED, 5 );
+   dip::Image ft = dip::FourierTransform( img );
+   dip::ShiftFT( ft, ft, { -10.3, 15.2 } );
+   dip::Image shifted = dip::FourierTransform( ft, { "inverse", "real" } );
+   dip::Image shifted2 = dip::Shift( img, { -10.3, 15.2 }, "fourier" );
+   DOCTEST_CHECK( dip::testing::CompareImages( shifted, shifted2, 0.015 ));
+}
+
+#endif // DIP__ENABLE_DOCTEST

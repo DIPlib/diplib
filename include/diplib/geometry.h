@@ -209,6 +209,36 @@ inline Image Shift(
 }
 
 
+/// \brief Modulates the input Fourier spectrum to introduce a shift in the spatial domain
+///
+/// `in` is the Fourier transform of an image `img`. It will be multiplied with a complex quantity
+/// to change its phase in such a way that the image `img` will be shifted. For example:
+/// ```cpp
+///     dip::Image img = dip::ImageReadTIFF( "erika" );
+///     dip::Image ft = dip::FourierTransform( img );
+///     dip::ShiftFT( ft, ft, { 10.3, -5.2 } );
+///     dip::Image shifted = dip::FourierTransform( img, { "inverse", "real" } );
+/// ```
+/// Produces the same output as:
+/// ```cpp
+///     dip::Image img = dip::ImageReadTIFF( "erika" );
+///     dip::Image shifted = dip::Shift( img, { 10.3, -5.2 }, "fourier" );
+/// ```
+DIP_EXPORT void ShiftFT(
+      Image const& in,
+      Image& out,
+      FloatArray shift = { 0.0 }
+);
+inline Image ShiftFT(
+      Image const& in,
+      FloatArray const& shift = { 0.0 }
+) {
+   Image out;
+   ShiftFT( in, out, shift );
+   return out;
+}
+
+
 /// \brief Finds the values of the image at sub-pixel locations `coordinates` by linear interpolation.
 ///
 /// The array `coordinates` must have all elements be array of the same length as the image dimensionality.
