@@ -447,7 +447,7 @@ inline Image Threshold(
 /// Here we provide an obvious extension to arbitrary dimensions. The final homotopic thinning is
 /// only applied in 2D and 3D, since `dip::EuclideanSkeleton` is not defined for other dimensionalities.
 ///
-/// **Literature**:
+/// **Literature**
 /// - J. Canny, "A Computational Approach to Edge Detection", IEEE Transactions on Pattern Analysis
 ///   and Machine Intelligence, 8(6):679-697, 1986.
 DIP_EXPORT void Canny(

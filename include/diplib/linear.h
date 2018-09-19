@@ -314,10 +314,10 @@ inline Image GaussFT(
 ///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
 ///
-/// See: I.T. Young and L.J. van Vliet, Recursive implementation of the Gaussian filter, Signal Processing,
+/// **Literature**
+///  - I.T. Young and L.J. van Vliet, Recursive implementation of the Gaussian filter, Signal Processing,
 /// 44(2):139-151, 1995.
-///
-/// See: L.J. van Vliet, I.T. Young and P.W. Verbeek, Recursive Gaussian Derivative Filters,
+///  - L.J. van Vliet, I.T. Young and P.W. Verbeek, Recursive Gaussian Derivative Filters,
 /// in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
 DIP_EXPORT void GaussIIR(
       Image const& in,
@@ -1192,6 +1192,10 @@ inline Image GaborFIR(
 ///
 /// The `order` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
 ///
+/// **Literature**
+///  - I.T. Young, L.J. van Vliet and M. van Ginkel, "Recursive Gabor filtering",
+///    IEEE Transactions on Signal Processing 50(11):2798-2805, 2002.
+///
 /// \see dip::Gabor2D, dip::GaborFIR.
 DIP_EXPORT void GaborIIR(
       Image const& in,
@@ -1219,7 +1223,7 @@ inline Image GaborIIR(
 
 /// \brief 2D Gabor filter with direction parameter
 ///
-/// Convolves the 2D image with a Gabor kernel.
+/// Convolves the 2D image with a Gabor kernel. This is a convenience wrapper around `dip::GaborIIR`.
 /// The value of sigma determines the amount of local averaging, and can be different for each dimension.
 /// For smaller values, the result is more precise spatially, but less selective of frequencies.
 ///

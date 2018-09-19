@@ -140,7 +140,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 /// `out` will be real-valued if `outRepresentation` is `"spatial"`, under the assumption that
 /// `in1` and `in2` are similar except for a shift.
 ///
-/// **Literature**:
+/// **Literature**
 ///  - C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
 ///    Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
 DIP_EXPORT void CrossCorrelationFT(
@@ -223,7 +223,7 @@ inline Image CrossCorrelationFT(
 ///    low SNR. `parameter` is passed unchanged to the ITER method. This method supports images with any number of
 ///    dimensions.
 ///
-/// **Literature**:
+/// **Literature**
 ///  - C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
 ///    Delft University of Technology, The Netherlands, 1998.
 ///  - T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
@@ -482,7 +482,7 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// Out will be a tensor image with `wavelengths.size()` tensor columns and *n*+1 tensor rows. The data type will be
 /// single-precision float for spatial-domain output, or single-precision complex for frequency-domain output.
 ///
-/// **Literature**:
+/// **Literature**
 ///  - M. Felsberg and G. Sommer, "The Monogenic Signal", IEEE Transactions on Signal Processing 49(12):3136-3144, 2001.
 DIP_EXPORT void MonogenicSignal(
       Image const& in,
@@ -681,7 +681,7 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
 /// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
 /// are in pixels.
 ///
-/// **Literature**:
+/// **Literature**
 ///  - G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
 DIP_EXPORT Distribution Semivariogram(
       Image const& in,
@@ -800,7 +800,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 /// `in` must be scalar and real-valued. `mask` must have the same sizes, and limits the region
 /// in which objects are measured.
 ///
-/// **Literature**:
+/// **Literature**
 ///  - C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
 ///    Pattern Recognition Letters 28(7):865-872, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",

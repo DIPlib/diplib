@@ -444,8 +444,8 @@ inline Image CreateGabor(
 /// floating-point type.
 ///
 /// **Literature**
-/// L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis Delft University of
-/// Technology, 1993.
+///  - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images",
+///    Ph.D. thesis Delft University of Technology, 1993.
 DIP_EXPORT void FTEllipsoid(
       Image& out,
       FloatArray radius = { 1 },
