@@ -59,6 +59,14 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "SumSquare", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::SumSquare ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
+   m.def( "MeanModulus", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::MeanModulus ),
+          "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
+   m.def( "SumModulus", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::SumModulus ),
+          "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
+   m.def( "MeanSquareModulus", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::MeanSquareModulus ),
+          "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
+   m.def( "SumSquareModulus", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::SumSquareModulus ),
+          "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "Variance", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::BooleanArray const& >( &dip::Variance ),
           "in"_a, "mask"_a = dip::Image{}, "mode"_a = dip::S::FAST, "process"_a = dip::BooleanArray{} );
    m.def( "StandardDeviation", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::BooleanArray const& >( &dip::StandardDeviation ),

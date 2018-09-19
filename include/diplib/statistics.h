@@ -206,6 +206,14 @@ inline Image MeanAbs( Image const& in, Image const& mask = {}, BooleanArray cons
    return out;
 }
 
+/// \brief Calculates the mean of the modulus of the pixel values. Alias to `dip::MeanAbs`.
+inline void MeanModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
+   MeanAbs( in, mask, out, process );
+}
+inline Image MeanModulus( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
+   return MeanAbs( in, mask, process );
+}
+
 /// \brief Calculates the sum of the absolute pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
@@ -222,6 +230,14 @@ inline Image SumAbs( Image const& in, Image const& mask = {}, BooleanArray const
    Image out;
    SumAbs( in, mask, out, process );
    return out;
+}
+
+/// \brief Calculates the sum of the modulus of the pixel values. Alias to `dip::SumAbs`.
+inline void SumModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
+   SumAbs( in, mask, out, process );
+}
+inline Image SumModulus( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
+   return SumAbs( in, mask, process );
 }
 
 /// \brief Calculates the mean of the square pixel values over all those dimensions which are specified by `process`.
@@ -261,6 +277,48 @@ DIP_EXPORT void SumSquare( Image const& in, Image const& mask, Image& out, Boole
 inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    SumSquare( in, mask, out, process );
+   return out;
+}
+
+/// \brief Calculates the mean of the square modulus of the pixel values over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// the mean square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the mean square projection along the processing dimensions. To get the mean square modulus value of all
+/// pixels in the image:
+/// ```cpp
+///     dip::MeanSquareModulus( img ).As< double >();
+/// ```
+///
+/// For tensor images, the result is computed for each element independently. If `img` is complex, `out` is of the
+/// corresponding floating-point type. For other input data types, this function is identical to `dip::MeanSquare`.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+DIP_EXPORT void MeanSquareModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
+inline Image MeanSquareModulus( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
+   Image out;
+   MeanSquareModulus( in, mask, out, process );
+   return out;
+}
+
+/// \brief Calculates the sum of the square modulus of the pixel values over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// the sum square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the sum square projection along the processing dimensions. To get the sum square modulus value of all
+/// pixels in the image:
+/// ```cpp
+///     dip::SumSquareModulus( img ).As< double >();
+/// ```
+///
+/// For tensor images, the result is computed for each element independently. If `img` is complex, `out` is of the
+/// corresponding floating-point type. For other input data types, this function is identical to `dip::SumSquare`.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+DIP_EXPORT void SumSquareModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
+inline Image SumSquareModulus( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
+   Image out;
+   SumSquareModulus( in, mask, out, process );
    return out;
 }
 

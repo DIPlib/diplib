@@ -255,16 +255,17 @@ namespace {
 
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMean : public ProjectionScanFunction {
+      using TPO = FlexType< TPI >;
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
-         FlexType< TPI > sum = 0;
+         TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  sum += static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
+                  sum += static_cast< TPO >( it.template Sample< 0 >() );
                   if( ComputeMean_ ) {
                      ++n;
                   }
@@ -274,18 +275,17 @@ class ProjectionSumMean : public ProjectionScanFunction {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               sum += static_cast< FlexType< TPI >>( *it );
+               sum += static_cast< TPO >( *it );
             } while( ++it );
             if( ComputeMean_ ) {
                n = in.NumberOfPixels();
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< FlexType< TPI >* >( out ) = ( n > 0 )
-                                                      ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                      : ( sum );
+            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( sum / static_cast< FloatType< TPI >>( n ))
+                                                    : ( sum );
          } else {
-            *static_cast< FlexType< TPI >* >( out ) = sum;
+            *static_cast< TPO* >( out ) = sum;
          }
       }
 };
@@ -392,6 +392,7 @@ namespace {
 
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMeanAbs : public ProjectionScanFunction {
+      using TPO = FlexType< TPI >;
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
@@ -401,7 +402,7 @@ class ProjectionSumMeanAbs : public ProjectionScanFunction {
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  sum += std::abs( static_cast< FlexType< TPI >>( it.template Sample< 0 >() ));
+                  sum += std::abs( static_cast< TPO >( it.template Sample< 0 >() ));
                   if ( ComputeMean_ ) {
                      ++n;
                   }
@@ -411,18 +412,17 @@ class ProjectionSumMeanAbs : public ProjectionScanFunction {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               sum += std::abs( static_cast< FlexType< TPI >>( *it ));
+               sum += std::abs( static_cast< TPO >( *it ));
             } while( ++it );
             if( ComputeMean_ ) {
                n = in.NumberOfPixels();
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< FlexType< TPI >* >( out ) = ( n > 0 )
-                                                      ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                      : ( sum );
+            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( sum / static_cast< FloatType< TPI >>( n ))
+                                                    : ( sum );
          } else {
-            *static_cast< FlexType< TPI >* >( out ) = sum;
+            *static_cast< TPO* >( out ) = sum;
          }
       }
 };
@@ -469,16 +469,17 @@ namespace {
 
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMeanSquare : public ProjectionScanFunction {
+      using TPO = FlexType< TPI >;
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
-         FlexType< TPI > sum = 0;
+         TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  FlexType< TPI > v = static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
+                  TPO v = static_cast< TPO >( it.template Sample< 0 >() );
                   sum += v * v;
                   if( ComputeMean_ ) {
                      ++n;
@@ -489,7 +490,7 @@ class ProjectionSumMeanSquare : public ProjectionScanFunction {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               FlexType< TPI > v = static_cast< FlexType< TPI >>( *it );
+               TPO v = static_cast< TPO >( *it );
                sum += v * v;
             } while( ++it );
             if( ComputeMean_ ) {
@@ -497,11 +498,10 @@ class ProjectionSumMeanSquare : public ProjectionScanFunction {
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< FlexType< TPI >* >( out ) = ( n > 0 )
-                                                      ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                      : ( sum );
+            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( sum / static_cast< FloatType< TPI >>( n ))
+                                                    : ( sum );
          } else {
-            *static_cast< FlexType< TPI >* >( out ) = sum;
+            *static_cast< TPO* >( out ) = sum;
          }
       }
 };
@@ -542,6 +542,88 @@ void SumSquare(
       DIP_OVL_NEW_NONBINARY( lineFilter, ProjectionSumSquare, (), in.DataType() );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
+}
+
+namespace {
+
+template< typename TPI, bool ComputeMean_ >
+class ProjectionSumMeanSquareModulus : public ProjectionScanFunction {
+      // TPI is a complex type.
+      using TPO = FloatType< TPI >;
+   public:
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+         dip::uint n = 0;
+         TPO sum = 0;
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( { in, mask } );
+            it.OptimizeAndFlatten();
+            do {
+               if( it.template Sample< 1 >() ) {
+                  TPI v = it.template Sample< 0 >();
+                  //sum += ( v * std::conj( v )).real();
+                  sum += v.real() * v.real() + v.imag() * v.imag();
+                  if( ComputeMean_ ) {
+                     ++n;
+                  }
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            it.OptimizeAndFlatten();
+            do {
+               TPI v = *it;
+               //sum += ( v * std::conj( v )).real();
+               sum += v.real() * v.real() + v.imag() * v.imag();
+            } while( ++it );
+            if( ComputeMean_ ) {
+               n = in.NumberOfPixels();
+            }
+         }
+         if( ComputeMean_ ) {
+            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( sum / static_cast< TPO >( n ))
+                                                    : ( sum );
+         } else {
+            *static_cast< TPO* >( out ) = sum;
+         }
+      }
+};
+
+template< typename TPI >
+using ProjectionSumSquareModulus = ProjectionSumMeanSquareModulus< TPI, false >;
+
+template< typename TPI >
+using ProjectionMeanSquareModulus = ProjectionSumMeanSquareModulus< TPI, true >;
+
+} // namespace
+
+void MeanSquareModulus(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      BooleanArray const& process
+) {
+   if( in.DataType().IsComplex() ) {
+      std::unique_ptr< ProjectionScanFunction > lineFilter;
+      DIP_OVL_NEW_COMPLEX( lineFilter, ProjectionMeanSquareModulus, (), in.DataType() );
+      ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
+      return;
+   }
+   MeanSquare( in, mask, out, process );
+}
+
+void SumSquareModulus(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      BooleanArray const& process
+) {
+   if( in.DataType().IsComplex() ) {
+      std::unique_ptr< ProjectionScanFunction > lineFilter;
+      DIP_OVL_NEW_COMPLEX( lineFilter, ProjectionSumSquareModulus, (), in.DataType() );
+      ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
+      return;
+   }
+   SumSquare( in, mask, out, process );
 }
 
 namespace {
