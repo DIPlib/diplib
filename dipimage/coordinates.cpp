@@ -66,7 +66,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          out.Forge();
          dip::uint dim = dml::GetUnsigned( prhs[ 1 ] );
          if( dim == 0 ) {
-            DIP_THROW( dip::E::PARAMETER_OUT_OF_RANGE );
+            DIP_THROW( dip::E::INVALID_PARAMETER );
          }
          dip::FillRamp( out, dim - 1, mode );
       } else {

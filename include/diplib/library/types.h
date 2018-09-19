@@ -511,7 +511,7 @@ struct DIP_NO_EXPORT Range {
    /// out of bounds.
    void Fix( dip::uint size ) {
       // Check step is non-zero
-      DIP_THROW_IF( step == 0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( step == 0, E::INVALID_PARAMETER );
       // Compute indices from end
       dip::sint sz = static_cast< dip::sint >( size );
       if( start < 0 ) { start += sz; }

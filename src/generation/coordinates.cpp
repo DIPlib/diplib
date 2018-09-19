@@ -203,7 +203,7 @@ void FillRamp( Image& out, dip::uint dimension, StringSet const& mode ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( dimension >= out.Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( dimension >= out.Dimensionality(), E::INVALID_PARAMETER );
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );
       Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode, out.PixelSize( dimension ));

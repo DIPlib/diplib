@@ -40,7 +40,7 @@ void MonogenicSignal(
    DIP_THROW_IF( c_in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nFrequencyScales = wavelengths.size();
    DIP_THROW_IF( nFrequencyScales < 1, E::ARRAY_PARAMETER_EMPTY );
-   DIP_THROW_IF( bandwidth <= 0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( bandwidth <= 0, E::INVALID_PARAMETER );
    dip::uint nDims = c_in.Dimensionality();
    bool spatialDomainInput;
    DIP_STACK_TRACE_THIS( spatialDomainInput = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
@@ -143,14 +143,14 @@ void MonogenicSignalAnalysis(
       }
    }
    if( congruency || symmetry ) {
-      DIP_THROW_IF( noiseThreshold <= 0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( noiseThreshold <= 0, E::INVALID_PARAMETER );
    }
    bool kovesi = false;
    if( congruency ) {
       if(( nDims == 2 ) && ( nScales > 2 )) {
-         DIP_THROW_IF( frequencySpreadThreshold <= 0, E::PARAMETER_OUT_OF_RANGE );
-         DIP_THROW_IF( sigmoidParameter <= 0, E::PARAMETER_OUT_OF_RANGE );
-         DIP_THROW_IF( deviationGain <= 0, E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( frequencySpreadThreshold <= 0, E::INVALID_PARAMETER );
+         DIP_THROW_IF( sigmoidParameter <= 0, E::INVALID_PARAMETER );
+         DIP_THROW_IF( deviationGain <= 0, E::INVALID_PARAMETER );
          kovesi = true;
       } else {
          DIP_THROW_IF( nScales != 2, "Phase congruency for dimensionalities other than 2 can only be computed when given two scales." );

@@ -473,7 +473,7 @@ inline void Rotation3D(
          dim2 = 1;
          break;
       default:
-         DIP_THROW( E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW( E::INVALID_PARAMETER );
    }
    Rotation( in, out, angle, dim1, dim2, interpolationMethod, boundaryCondition );
 }

@@ -68,7 +68,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                   dimension2 = 1;
                   break;
                default:
-                  DIP_THROW( dip::E::PARAMETER_OUT_OF_RANGE );
+                  DIP_THROW( dip::E::INVALID_PARAMETER );
             }
          }
          if( nrhs > 3 ) {
@@ -82,12 +82,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          DML_MAX_ARGS( 6 );
          if( nrhs > 2 ) {
             dimension1 = dml::GetUnsigned( prhs[ 2 ] );
-            DIP_THROW_IF( dimension1 == 0, dip::E::PARAMETER_OUT_OF_RANGE );
+            DIP_THROW_IF( dimension1 == 0, dip::E::INVALID_PARAMETER );
             --dimension1;
          }
          if( nrhs > 3 ) {
             dimension2 = dml::GetUnsigned( prhs[ 3 ] );
-            DIP_THROW_IF( dimension2 == 0, dip::E::PARAMETER_OUT_OF_RANGE );
+            DIP_THROW_IF( dimension2 == 0, dip::E::INVALID_PARAMETER );
             --dimension2;
          }
          if( nrhs > 4 ) {

@@ -262,7 +262,7 @@ inline void ExtendRegion(
    DIP_END_STACK_TRACE
    RangeArray ranges( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      DIP_THROW_IF( sizes[ ii ] < 1, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( sizes[ ii ] < 1, E::INVALID_PARAMETER );
       ranges[ ii ] = { static_cast< dip::sint >( origin[ ii ] ),
                        static_cast< dip::sint >( origin[ ii ] + sizes[ ii ] - 1 ) };
    }

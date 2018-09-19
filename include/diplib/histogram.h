@@ -326,31 +326,31 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the number of bins along dimension `dim`
       dip::uint Bins( dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return data_.Size( dim );
       }
 
       /// \brief Returns the size of the bins along dimension `dim`
       dfloat BinSize( dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return binSizes_[ dim ];
       }
 
       /// \brief Returns the lower bound of the histogram for dimension `dim`
       dfloat LowerBound( dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return lowerBounds_[ dim ];
       }
 
       /// \brief Returns the upper bound of the histogram for dimension `dim`
       dfloat UpperBound( dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return lowerBounds_[ dim ] + static_cast< dfloat >( data_.Size( dim )) * binSizes_[ dim ];
       }
 
       /// \brief Returns the bin boundaries along dimension `dim` (`Bins(dim)+1` values).
       FloatArray BinBoundaries( dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          FloatArray boundaries( data_.Size( dim ) + 1 );
          dfloat offset = lowerBounds_[ dim ];
          dfloat scale = binSizes_[ dim ];
@@ -363,7 +363,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the bin centers along dimension `dim`
       FloatArray BinCenters( dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          FloatArray centers( data_.Size( dim ) );
          dfloat scale = binSizes_[ dim ];
          dfloat offset = lowerBounds_[ dim ] + scale / 2;
@@ -375,7 +375,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the bin center for the given `bin` along dimension `dim`
       dfloat BinCenter( dip::uint bin, dip::uint dim = 0 ) const {
-         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return lowerBounds_[ dim ] + ( static_cast< dfloat >( bin ) + 0.5 ) * binSizes_[ dim ];
       }
 

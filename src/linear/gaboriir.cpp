@@ -236,7 +236,7 @@ void GaborIIR(
    dfloat truncation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( sigmas.empty(), E::INVALID_PARAMETER ); // This must be given, but can be a scalar
+   DIP_THROW_IF( sigmas.empty(), E::ARRAY_PARAMETER_EMPTY ); // This must be given, but can be a scalar
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( frequencies.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_START_STACK_TRACE

@@ -181,6 +181,12 @@ constexpr char const* NOT_IMPLEMENTED = "Functionality has not (yet) been implem
 // function parameter errors
 constexpr char const* INVALID_PARAMETER = "Parameter has invalid value";
 constexpr char const* PARAMETER_OUT_OF_RANGE = "Parameter value out of range";
+// Usage guide, since these two errors are similar:
+//  - INVALID_PARAMETER means that the parameter has a value that is illegal. For example a dimension that does
+//    not exist, a negative length, or zero iterations.
+//  - PARAMETER_OUT_OF_RANGE means that the parameter has a value that is outside of the allowed range. For example
+//    a sigma below 0.8 where 0.8 is the lowest allowed value, or an angle of 3*pi where the range is (-pi,pi].
+//  - Also don't forget to use INDEX_OUT_OF_RANGE where the parameter is an index.
 constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wrong number of elements";
 constexpr char const* ARRAY_PARAMETER_EMPTY = "Array parameter is empty";
 constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";

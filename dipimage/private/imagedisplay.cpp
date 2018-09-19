@@ -273,7 +273,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                      } else {
                         dip::UnsignedArray dims = dml::GetUnsignedArray( prhs[ 2 ] );
                         DIP_THROW_IF( dims.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
-                        DIP_THROW_IF(( dims[ 0 ] == 0 ) || ( dims[ 1 ] == 0 ), dip::E::PARAMETER_OUT_OF_RANGE );
+                        DIP_THROW_IF(( dims[ 0 ] == 0 ) || ( dims[ 1 ] == 0 ), dip::E::INVALID_PARAMETER );
                         object->SetDirection( dims[ 0 ] - 1, dims[ 1 ] - 1 );
                      }
                   } else if( key == "slicemode" ) {

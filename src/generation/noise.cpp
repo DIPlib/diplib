@@ -277,7 +277,7 @@ class SaltPepperScanLineFilter : public Framework::ScanLineFilter {
 void SaltPepperNoise( Image const& in, Image& out, Random& random, dfloat p0, dfloat p1, dfloat white ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( p0 < 0.0 || p1 < 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( p0 < 0.0 || p1 < 0.0, E::INVALID_PARAMETER );
    dfloat s = p0 + p1;
    if( s > 1.0 ) {
       p0 /= s;

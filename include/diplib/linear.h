@@ -436,7 +436,7 @@ inline void SobelGradient(
       dip::uint dimension = 0,
       StringArray const& boundaryCondition = {}
 ) {
-   DIP_THROW_IF( dimension >= in.Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( dimension >= in.Dimensionality(), E::INVALID_PARAMETER );
    UnsignedArray derivativeOrder( in.Dimensionality(), 0 );
    derivativeOrder[ dimension ] = 1;
    FiniteDifference( in, out, derivativeOrder, S::SMOOTH, boundaryCondition );

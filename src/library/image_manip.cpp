@@ -241,7 +241,7 @@ bool Image::IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const 
 
 Image& Image::ExpandSingletonTensor( dip::uint sz ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( tensor_.Elements() != 1, E::INVALID_PARAMETER );
+   DIP_THROW_IF( tensor_.Elements() != 1, E::IMAGE_NOT_SCALAR );
    tensor_.SetVector( sz );
    tensorStride_ = 0;
    return *this;
@@ -265,7 +265,7 @@ Image& Image::Mirror( BooleanArray process ) {
 Image& Image::Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension2 ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   DIP_THROW_IF(( dimension1 >= nd ) || ( dimension2 >= nd ) || ( dimension1 == dimension2 ), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF(( dimension1 >= nd ) || ( dimension2 >= nd ) || ( dimension1 == dimension2 ), E::INVALID_PARAMETER );
    n = n % 4;
    if( n < 0 ) {
       n += 4;
@@ -370,7 +370,7 @@ Image& Image::SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols ) {
    } else if( cols == 0 ) {
       cols = sizes_[ dim ] / rows;
    }
-   DIP_THROW_IF( sizes_[ dim ] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sizes_[ dim ] != rows * cols, E::INVALID_PARAMETER );
    tensor_.SetMatrix( rows, cols );
    tensorStride_ = strides_[ dim ];
    sizes_.erase( dim );

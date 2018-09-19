@@ -34,12 +34,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::dfloat shear = dml::GetFloat( prhs[ 1 ] );
       dip::uint skew = dml::GetUnsigned( prhs[ 2 ] );
-      DIP_THROW_IF( skew == 0, dip::E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( skew == 0, dip::E::INVALID_PARAMETER );
       --skew;
       dip::uint axis;
       if( nrhs > 3 ) {
          axis = dml::GetUnsigned( prhs[ 3 ] );
-         DIP_THROW_IF( axis == 0, dip::E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( axis == 0, dip::E::INVALID_PARAMETER );
          --axis;
       } else {
          axis = skew == 0 ? 1 : 0;

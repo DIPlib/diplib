@@ -222,8 +222,8 @@ void LogGaborFilterBank(
    DIP_THROW_IF( !in.Sizes().all(), "Raw image sizes not valid" ); // must test valid sizes in case it's not forged
    dip::uint nFrequencyScales = wavelengths.size();
    DIP_THROW_IF( nFrequencyScales < 1, E::ARRAY_PARAMETER_EMPTY );
-   DIP_THROW_IF( nOrientations < 1, E::PARAMETER_OUT_OF_RANGE );
-   DIP_THROW_IF( bandwidth <= 0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( nOrientations < 1, E::INVALID_PARAMETER );
+   DIP_THROW_IF( bandwidth <= 0, E::INVALID_PARAMETER );
    bool onlyScale = nOrientations == 1;
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( !onlyScale && ( nDims != 2 ), E::DIMENSIONALITY_NOT_SUPPORTED );

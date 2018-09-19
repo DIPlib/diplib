@@ -549,7 +549,7 @@ Histogram& Histogram::Cumulative() {
 }
 
 Histogram Histogram::GetMarginal( dip::uint dim ) const {
-   DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
    Histogram out = Copy();
    BooleanArray ps( Dimensionality(), true );
    ps[ dim ] = false;

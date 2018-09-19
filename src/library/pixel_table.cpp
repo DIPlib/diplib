@@ -52,7 +52,7 @@ PixelTable::PixelTable(
 ) {
    dip::uint nDims = size.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( procDim >= nDims, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( procDim >= nDims, E::INVALID_PARAMETER );
    procDim_ = procDim;
 
    if( shape == S::LINE ) {
@@ -328,7 +328,7 @@ PixelTable::PixelTable(
    DIP_THROW_IF( mask.DataType() != DT_BIN, E::IMAGE_NOT_BINARY );
    dip::uint nDims = mask.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( procDim >= nDims, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( procDim >= nDims, E::INVALID_PARAMETER );
    procDim_ = procDim;
    sizes_ = mask.Sizes();
    if( origin.empty() ) {

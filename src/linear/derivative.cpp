@@ -536,7 +536,7 @@ void NormalizedDifferentialConvolution(
    DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
    DataType dt = DataType::SuggestFlex( in.DataType());
-   DIP_THROW_IF( dimension >= in.Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( dimension >= in.Dimensionality(), E::INVALID_PARAMETER );
 
    // We compute here:
    //    out = SafeDivide( Derivative( a * m ), Gauss( m )) - SafeDivide( Gauss( a * m ), Gauss( m )) * SafeDivide( Derivative( m ), Gauss( m ))

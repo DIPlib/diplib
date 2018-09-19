@@ -96,7 +96,7 @@ class DIP_NO_EXPORT Metric {
       ///    of Technology, The Netherlands, 1991.
       Metric( String const& type, dip::uint param = 1, dip::PixelSize const& pixelSize = {} ) {
          if( type == S::CHAMFER ) {
-            DIP_THROW_IF( param < 1, E::PARAMETER_OUT_OF_RANGE );
+            DIP_THROW_IF( param < 1, E::INVALID_PARAMETER );
             type_ = TypeCode::CHAMFER;
             param_ = param;
          } else {

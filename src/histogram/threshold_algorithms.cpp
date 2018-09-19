@@ -304,7 +304,7 @@ dfloat BackgroundThreshold(
       Histogram const& in,
       dfloat distance
 ) {
-   DIP_THROW_IF( distance <= 0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( distance <= 0, E::INVALID_PARAMETER );
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();

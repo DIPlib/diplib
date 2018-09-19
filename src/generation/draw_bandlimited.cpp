@@ -117,7 +117,7 @@ void DrawBandlimitedPoint(
    DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    FloatArray sizes = sigmas;
    for( auto& s: sizes ) {
-      DIP_THROW_IF( s <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( s <= 0.0, E::INVALID_PARAMETER );
       s *= truncation * 2.0;
    }
    dip::Image tmp = out;
@@ -237,8 +237,8 @@ void DrawBandlimitedLine(
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( start.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( end.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
-   DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
+   DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    dfloat margin = sigma * truncation;
    FloatArray sizes( nDims );
    FloatArray origin( nDims );
@@ -447,11 +447,11 @@ void DrawBandlimitedBall(
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_THROW_IF( diameter <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( diameter <= 0.0, E::INVALID_PARAMETER );
    bool filled;
    DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
-   DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
-   DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
+   DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    dfloat margin = sigma * truncation;
    FloatArray roiSizes( nDims, diameter + 2 * margin );
    dip::Image tmp = out;
@@ -665,13 +665,13 @@ void DrawBandlimitedBox(
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sizes, nDims, 7.0 ));
    for( auto s: sizes ) {
-      DIP_THROW_IF( s <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( s <= 0.0, E::INVALID_PARAMETER );
    }
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    bool filled;
    DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
-   DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
-   DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
+   DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    dfloat margin = sigma * truncation;
    FloatArray roiSizes = sizes;
    for( auto& s: roiSizes ) {
@@ -751,8 +751,8 @@ void GaussianEdgeClip(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
-   DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
+   DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    DataType ovlDataType = DataType::SuggestFloat( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_FLOAT( lineFilter, dip__GaussianEdgeClipLineFilter, ( value, sigma, truncation ), ovlDataType );
@@ -816,8 +816,8 @@ void GaussianLineClip(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
-   DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
+   DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    DataType ovlDataType = DataType::SuggestFloat( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_FLOAT( lineFilter, dip__GaussianLineClipLineFilter, ( value, in.Dimensionality(), sigma, truncation ), ovlDataType );

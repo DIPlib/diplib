@@ -292,12 +292,12 @@ class DIP_NO_EXPORT Distribution {
 
       /// Gets the *x* and *y* values at location `index`
       Sample operator[]( dip::uint index ) {
-         DIP_THROW_IF( index >= Size(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( index >= Size(), E::INDEX_OUT_OF_RANGE );
          return { this, index };
       }
       /// Gets the *x* and *y* values at location `index`
       Sample const operator[]( dip::uint index ) const {
-         DIP_THROW_IF( index >= Size(), E::PARAMETER_OUT_OF_RANGE );
+         DIP_THROW_IF( index >= Size(), E::INDEX_OUT_OF_RANGE );
          return { this, index };
       }
 

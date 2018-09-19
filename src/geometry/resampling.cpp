@@ -259,7 +259,7 @@ void Resampling(
       ArrayUseParameter( shift, nDims, 0.0 );
    DIP_END_STACK_TRACE
    for( auto z : zoom ) {
-      DIP_THROW_IF( z <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( z <= 0.0, E::INVALID_PARAMETER );
    }
    interpolation::Method method;
    if( c_in.DataType().IsBinary() ) {

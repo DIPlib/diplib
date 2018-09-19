@@ -501,7 +501,7 @@ void dip__DrawEllipsoid(
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sizes, nDims, 7.0 ));
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      DIP_THROW_IF( sizes[ ii ] <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( sizes[ ii ] <= 0.0, E::INVALID_PARAMETER );
    }
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    dip::Image tmp = out;

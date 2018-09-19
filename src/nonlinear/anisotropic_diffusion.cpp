@@ -96,7 +96,7 @@ void PeronaMalikDiffusion(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( iterations < 1, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( iterations < 1, E::INVALID_PARAMETER );
    DIP_THROW_IF( K <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF(( lambda <= 0.0 ) || ( lambda > 1.0 ), E::PARAMETER_OUT_OF_RANGE );
 
@@ -186,7 +186,7 @@ void GaussianAnisotropicDiffusion(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( iterations < 1, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( iterations < 1, E::INVALID_PARAMETER );
    DIP_THROW_IF( K <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF(( lambda <= 0.0 ) || ( lambda > 1.0 ), E::PARAMETER_OUT_OF_RANGE );
 
@@ -246,7 +246,7 @@ void CoherenceEnhancingDiffusion(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( iterations < 1, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( iterations < 1, E::INVALID_PARAMETER );
    DIP_THROW_IF(( derivativeSigma < 0.4 ) || ( regularizationSigma < 1.0 ), E::PARAMETER_OUT_OF_RANGE );
    bool variable = true;
    bool first = true;
