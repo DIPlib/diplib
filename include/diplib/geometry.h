@@ -559,6 +559,79 @@ inline Image Rotation3D(
 }
 
 
+/// \brief Creates a 0D (one pixel) 2x2 matrix image containing a 2D rotation matrix.
+///
+/// Multiplying the output of `dip::CreateCoordinates` by this rotation matrix will produce
+/// an image with a rotated coordinate system. The rotation matrix must be on the left-hand-side
+/// of the multiplication operator.
+///
+/// The rotation is over `angle` radian. Note that when transforming a coordinate system
+/// (a passive transformation), then the transpose of the matrix must be used.
+///
+/// `out` is of type `dip::DT_SFLOAT` by default.
+///
+/// Example:
+/// ```cpp
+///     dip::Image coords = dip::CreateCoordinates( { 256, 256 }, { "frequency" } );
+///     dip::Image rotatedCoords = dip::RotationMatrix2D( dip::pi/4 ) * coords;
+/// ```
+DIP_EXPORT void RotationMatrix2D( Image& out, dfloat angle );
+inline Image RotationMatrix2D( dfloat angle ) {
+   Image out;
+   RotationMatrix2D( out, angle );
+   return out;
+}
+
+/// \brief Creates a 0D (one pixel) 3x3 matrix image containing a 3D rotation matrix.
+///
+/// Multiplying the output of `dip::CreateCoordinates` by this rotation matrix will produce
+/// an image with a rotated coordinate system. The rotation matrix must be on the left-hand-side
+/// of the multiplication operator.
+///
+/// The rotation is over the Euler angles `alpha`, `beta` and `gamma`: the first rotation is over `alpha`
+/// radian around the initial z-axis. The second rotation is over `beta` radian around the intermediate
+/// y-axis. The last rotation is over `gamma` radian around the final z-axis. Note that when transforming
+/// a coordinate system (a passive transformation), then the transpose of the matrix must be used.
+///
+/// `out` is of type `dip::DT_SFLOAT` by default.
+///
+/// Example:
+/// ```cpp
+///     dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
+///     dip::Image rotatedCoords = dip::RotationMatrix3D( dip::pi/4, 0, dip::pi ) * coords;
+/// ```
+DIP_EXPORT void RotationMatrix3D( Image& out, dfloat alpha, dfloat beta, dfloat gamma );
+inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
+   Image out;
+   RotationMatrix3D( out, alpha, beta, gamma );
+   return out;
+}
+
+/// \brief Creates a 0D (one pixel) 3x3 matrix image containing a 3D rotation matrix.
+///
+/// Multiplying the output of `dip::CreateCoordinates` by this rotation matrix will produce
+/// an image with a rotated coordinate system. The rotation matrix must be on the left-hand-side
+/// of the multiplication operator.
+///
+/// The rotation is over `angle` radian about the axis defined by `vector`. That is, `vector` will
+/// not be affected by the rotation. Note that when transforming a coordinate system (a passive
+/// transformation), then the transpose of the matrix must be used.
+///
+/// `out` is of type `dip::DT_SFLOAT` by default.
+///
+/// Example:
+/// ```cpp
+///     dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
+///     dip::Image rotatedCoords = dip::RotationMatrix3D( { 1.0, 0.0, 0.0 }, dip::pi/4 ) * coords;
+/// ```
+DIP_EXPORT void RotationMatrix3D( Image& out, FloatArray const& vector, dfloat angle );
+inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
+   Image out;
+   RotationMatrix3D( out, vector, angle );
+   return out;
+}
+
+
 /// \brief Tiles a set of images to form a single image.
 ///
 /// Input images are arranged according to `tiling`. For example, if `tiling = { 3, 2 }, will generate an

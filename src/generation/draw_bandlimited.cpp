@@ -139,11 +139,11 @@ class dip__DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
    public:
       dip__DrawBandlimitedLineLineFilter( FloatArray const& start, FloatArray const& end, Image::Pixel const& value,
                                           dip::uint nTensor, dfloat sigma, dfloat margin ):
-            A_( start ), B_( end ), sigma_( sigma ), norm_( -0.5 / ( sigma_ * sigma_ )), margin2_( margin * margin ) {
+            A_( start ), B_( end ), sigma_( sigma ), scale_( -0.5 / ( sigma_ * sigma_ )), margin2_( margin * margin ) {
          CopyPixelToVector( value, value_, nTensor );
-         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ );
+         FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ ));
          for( auto& v: value_ ) {
-            v = clamp_cast< TPI >( static_cast< FlexType< TPI >>( v ) * static_cast< FloatType< TPI >>( norm ));
+            v *= norm;
          }
          // Closest point on line AB to point P: C = A + t * BA, t = dot(PA,BA) / dot(BA,BA)
          // Distance of point P to line AB: norm(PC) = norm(PA - t * BA)
@@ -196,7 +196,7 @@ class dip__DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
             }
             if( distance2 <= margin2_ ) {
                dip::sint offset = 0;
-               dfloat weight = std::exp( distance2 * norm_ );
+               dfloat weight = std::exp( distance2 * scale_ );
                for( dip::uint ii = 0; ii < nTensor; ++ii ) {
                   FlexType< TPI > x = static_cast< FloatType< TPI >>( weight ) * value_[ ii ];
                   out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] ) + x );
@@ -210,10 +210,10 @@ class dip__DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
       FloatArray const& B_;
       FloatArray BA_;
       dfloat dot_BA_BA_;
-      std::vector< TPI > value_;    // scaling of the blob for each channel.
+      std::vector< FlexType< TPI >> value_; // scaling of the blob for each channel.
       dfloat sigma_;
-      dfloat norm_;
-      dfloat margin2_; // = sigma * truncation
+      dfloat scale_;
+      dfloat margin2_; // = ( sigma * truncation )^2
 };
 
 } // namespace
@@ -271,7 +271,7 @@ void dip__AddLine(
       dip::sint end,
       dip::sint length, // line length
       dip::sint stride,
-      std::vector< TPI > value,
+      std::vector< FlexType< TPI >> value,
       dip::sint tensorStride
 ) {
    if(( start > length - 1 ) || ( end < 0 )) {
@@ -283,7 +283,7 @@ void dip__AddLine(
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
-         out[ offset ] = saturated_add< TPI >( out[ offset ], value[ ii ] );
+         out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] ) + value[ ii ] );
          offset += tensorStride;
       }
    }
@@ -296,7 +296,7 @@ void dip__BallBlurredEdge(
       dip::sint end,
       dip::sint length, // line length
       dip::sint stride,
-      std::vector< TPI > value,
+      std::vector< FlexType< TPI >> value,
       dip::sint tensorStride,
       dfloat distance2,
       dfloat origin,
@@ -317,7 +317,7 @@ void dip__BallBlurredEdge(
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
          out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] )
-                                            + static_cast< FloatType< TPI >>( weight ) * static_cast< FlexType< TPI >>( value[ ii ] ));
+                                            + static_cast< FloatType< TPI >>( weight ) * value[ ii ] );
          offset += tensorStride;
       }
    }
@@ -330,7 +330,7 @@ void dip__BallBlurredLine(
       dip::sint end,
       dip::sint length, // line length
       dip::sint stride,
-      std::vector< TPI > value,
+      std::vector< FlexType< TPI >> value,
       dip::sint tensorStride,
       dfloat distance2,
       dfloat origin,
@@ -342,16 +342,16 @@ void dip__BallBlurredLine(
    }
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
-   dfloat norm = -0.5 / ( sigma * sigma );
+   dfloat scale = -0.5 / ( sigma * sigma );
    out += static_cast< dip::sint >( start ) * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dfloat d = ( static_cast< dfloat >( jj ) - origin );
       d = std::sqrt( distance2 + d * d ) - radius;
-      dfloat weight = std::exp( d * d * norm );
+      dfloat weight = std::exp( d * d * scale );
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
          out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] )
-                                            + static_cast< FloatType< TPI >>( weight ) * static_cast< FlexType< TPI >>( value[ ii ] ));
+                                            + static_cast< FloatType< TPI >>( weight ) * value[ ii ] );
          offset += tensorStride;
       }
    }
@@ -365,9 +365,9 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
             radius_( diameter / 2.0 ), origin_( origin ), filled_( filled ), sigma_( sigma ), margin_( margin ) {
          CopyPixelToVector( value, value_, nTensor );
          if( !filled_ ) {
-            dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ );
+            FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ ));
             for( auto& v: value_ ) {
-               v = clamp_cast< TPI >( static_cast< FlexType< TPI >>( v ) * static_cast< FloatType< TPI >>( norm ));
+               v *= norm;
             }
          }
       }
@@ -425,7 +425,7 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
    private:
       dfloat radius_;
       FloatArray const& origin_;
-      std::vector< TPI > value_;
+      std::vector< FlexType< TPI >> value_;
       bool filled_;
       dfloat sigma_;
       dfloat margin_; // = sigma * truncation
@@ -476,7 +476,7 @@ void dip__AddWeightedLine(
       dip::sint length, // line length
       dip::sint stride,
       dfloat weight,
-      std::vector< TPI > value,
+      std::vector< FlexType< TPI >> value,
       dip::sint tensorStride
 ) {
    if(( start > length - 1 ) || ( end < 0 )) {
@@ -489,7 +489,7 @@ void dip__AddWeightedLine(
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
          out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] )
-                                            + static_cast< FloatType< TPI >>( weight ) * static_cast< FlexType< TPI >>( value[ ii ] ));
+                                            + static_cast< FloatType< TPI >>( weight ) * value[ ii ] );
          offset += tensorStride;
       }
    }
@@ -503,7 +503,7 @@ void dip__BoxBlurredEdge(
       dip::sint length, // line length
       dip::sint stride,
       dfloat distance,
-      std::vector< TPI > value,
+      std::vector< FlexType< TPI >> value,
       dip::sint tensorStride,
       dfloat origin,
       dfloat sigma,
@@ -523,7 +523,7 @@ void dip__BoxBlurredEdge(
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
          out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] )
-                                            + static_cast< FloatType< TPI >>( weight ) * static_cast< FlexType< TPI >>( value[ ii ] ));
+                                            + static_cast< FloatType< TPI >>( weight ) * value[ ii ] );
          offset += tensorStride;
       }
    }
@@ -537,7 +537,7 @@ void dip__BoxBlurredLine(
       dip::sint length, // line length
       dip::sint stride,
       dfloat distance,
-      std::vector< TPI > value,
+      std::vector< FlexType< TPI >> value,
       dip::sint tensorStride,
       dfloat origin,
       dfloat sigma,
@@ -548,16 +548,16 @@ void dip__BoxBlurredLine(
    }
    start = std::max( start, dip::sint( 0 ));
    end = std::min( end, length - 1 );
-   dfloat norm = -0.5 / ( sigma * sigma );
+   dfloat scale = -0.5 / ( sigma * sigma );
    out += static_cast< dip::sint >( start ) * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
       dfloat d = std::abs( static_cast< dfloat >( jj ) - origin ) - radius;
       d = std::max( d, distance );
-      dfloat weight = std::exp( d * d * norm );
+      dfloat weight = std::exp( d * d * scale );
       dip::sint offset = 0;
       for( dip::uint ii = 0; ii < value.size(); ++ii ) {
          out[ offset ] = clamp_cast< TPI >( static_cast< FlexType< TPI >>( out[ offset ] )
-                                            + static_cast< FloatType< TPI >>( weight ) * static_cast< FlexType< TPI >>( value[ ii ] ));
+                                            + static_cast< FloatType< TPI >>( weight ) * value[ ii ] );
          offset += tensorStride;
       }
    }
@@ -571,9 +571,9 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
             halfSizes_( halfSizes ), origin_( origin ), filled_( filled ), sigma_( sigma ), margin_( margin ) {
          CopyPixelToVector( value, value_, nTensor );
          if( !filled_ ) {
-            dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ );
+            FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ ));
             for( auto& v: value_ ) {
-               v = clamp_cast< TPI >( static_cast< FlexType< TPI >>( v ) * static_cast< FloatType< TPI >>( norm ));
+               v *= norm;
             }
          }
       }
@@ -642,7 +642,7 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
    private:
       FloatArray const& halfSizes_;
       FloatArray const& origin_;
-      std::vector< TPI > value_;
+      std::vector< FlexType< TPI >> value_;
       bool filled_;
       dfloat sigma_;
       dfloat margin_; // = sigma * truncation
@@ -699,10 +699,10 @@ template< typename TPI >
 class dip__GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
    public:
       dip__GaussianEdgeClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
-            norm_( 1.0 / ( sigma * std::sqrt( 2.0 ))), margin_( sigma * truncation ) {
+            scale_( 1.0 / ( sigma * std::sqrt( 2.0 ))), margin_( sigma * truncation ) {
          CopyPixelToVector( value, value_, value.TensorElements());
          for( auto& v: value_ ) {
-            v *= TPI( 0.5 );
+            v *= FloatType< TPI >( 0.5 );
          }
       }
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
@@ -722,11 +722,11 @@ class dip__GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
             } else if( weight > margin_ ) {
                weight = 2.0;
             } else {
-               weight = ( 1.0 + std::erf( weight * norm_ )); // in [0.0,2.0]. Note that value_ is divided by 2.
+               weight = ( 1.0 + std::erf( weight * scale_ )); // in [0.0,2.0]. Note that value_ is divided by 2.
             }
             dip::sint offset = 0;
             for( auto value: value_ ) {
-               out[ offset ] = static_cast< TPI >( weight * value );
+               out[ offset ] = clamp_cast< TPI >( static_cast< FloatType< TPI >>( weight ) * value );
                offset += tensorStride;
             }
             in += inStride;
@@ -734,8 +734,8 @@ class dip__GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
          }
       }
    private:
-      std::vector< TPI > value_;
-      dfloat norm_;
+      std::vector< FlexType< TPI >> value_;
+      dfloat scale_;
       dfloat margin_;
 };
 
@@ -764,12 +764,12 @@ namespace {
 template< typename TPI >
 class dip__GaussianLineClipLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__GaussianLineClipLineFilter( Image::Pixel const& value, dip::uint nDims, dfloat sigma, dfloat truncation ) :
-            norm_( -0.5 / ( sigma * sigma )), margin_( sigma * truncation ) {
+      dip__GaussianLineClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
+            scale_( -0.5 / ( sigma * sigma )), margin_( sigma * truncation ) {
          CopyPixelToVector( value, value_, value.TensorElements());
-         TPI norm = static_cast< TPI >( 1.0 / std::pow( 2.0 * pi * sigma * sigma, static_cast< dfloat >( nDims ) / 2.0 ));
+         FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ));
          for( auto& v: value_ ) {
-            v = v * norm;
+            v *= norm;
          }
       }
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
@@ -787,11 +787,11 @@ class dip__GaussianLineClipLineFilter : public Framework::ScanLineFilter {
             if( std::abs( weight ) > margin_ ) {
                weight = 0.0;
             } else {
-               weight = std::exp( weight * weight * norm_ );
+               weight = std::exp( weight * weight * scale_ );
             }
             dip::sint offset = 0;
             for( auto value: value_ ) {
-               out[ offset ] = static_cast< TPI >( weight * value );
+               out[ offset ] = clamp_cast< TPI >( static_cast< FloatType< TPI >>( weight ) * value );
                offset += tensorStride;
             }
             in += inStride;
@@ -799,8 +799,8 @@ class dip__GaussianLineClipLineFilter : public Framework::ScanLineFilter {
          }
       }
    private:
-      std::vector< TPI > value_;
-      dfloat norm_;
+      std::vector< FlexType< TPI >> value_;
+      dfloat scale_;
       dfloat margin_;
 };
 
@@ -820,7 +820,7 @@ void GaussianLineClip(
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    DataType ovlDataType = DataType::SuggestFloat( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_FLOAT( lineFilter, dip__GaussianLineClipLineFilter, ( value, in.Dimensionality(), sigma, truncation ), ovlDataType );
+   DIP_OVL_NEW_FLOAT( lineFilter, dip__GaussianLineClipLineFilter, ( value, sigma, truncation ), ovlDataType );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, ovlDataType, ovlDataType, value.TensorElements(), *lineFilter ));
 }
 

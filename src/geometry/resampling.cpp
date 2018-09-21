@@ -627,6 +627,63 @@ void Rotation(
    out.SetColorSpace( colorSpace );
 }
 
+void RotationMatrix2D( Image& out, dfloat angle ) {
+   out.ReForge( {}, 4, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.ReshapeTensor( 2, 2 );
+   dfloat cosA = std::cos( angle );
+   dfloat sinA = std::sin( angle );
+   // Note! column-major ordering, meaning the display here is transposed wrt what we actually build
+   out.Fill( {  cosA, sinA,
+               -sinA, cosA } );
+}
+
+void RotationMatrix3D( Image& out, dfloat alpha, dfloat beta, dfloat gamma ) {
+   out.ReForge( {}, 9, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.ReshapeTensor( 3, 3 );
+   dfloat cosA = std::cos( gamma );
+   dfloat sinA = std::sin( gamma );
+   // Note! column-major ordering, meaning the display here is transposed wrt what we actually build
+   out.Fill( {  cosA, sinA, 0.0
+               -sinA, cosA, 0.0,
+                0.0,  0.0,  1.0 } );
+   // Now we have: out = Q_gamma
+   Image tmp( {}, 9, DT_SFLOAT );
+   cosA = std::cos( beta );
+   sinA = std::sin( beta );
+   // Note! column-major ordering, meaning the display here is transposed wrt what we actually build
+   tmp.Fill( {  cosA, 0.0, sinA,
+                0.0,  1.0,  0.0,
+               -sinA, 0.0, cosA } );
+   out *= tmp; // Now we have: out = Q_gamma * Q_beta
+   cosA = std::cos( alpha );
+   sinA = std::sin( alpha );
+   // Note! column-major ordering, meaning the display here is transposed wrt what we actually build
+   tmp.Fill( {  cosA, sinA, 0.0
+               -sinA, cosA, 0.0,
+                0.0,  0.0,  1.0 } );
+   out *= tmp; // Now we have: out = Q_gamma * Q_beta * Q_alpha
+}
+
+void RotationMatrix3D( Image& out, FloatArray const& vector, dfloat angle ) {
+   DIP_THROW_IF( vector.size() != 3, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   out.ReForge( {}, 9, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.ReshapeTensor( 3, 3 );
+   dfloat x = vector[ 0 ];
+   dfloat y = vector[ 1 ];
+   dfloat z = vector[ 2 ];
+   dfloat norm = std::sqrt( x * x + y * y + z * z );
+   x /= norm;
+   y /= norm;
+   z /= norm;
+   dfloat cosA = std::cos( angle );
+   dfloat sinA = std::sin( angle );
+   dfloat ICosA = 1.0 - cosA;
+   // Note! column-major ordering, meaning the display here is transposed wrt what we actually build
+   out.Fill( { x * x * ICosA +     cosA, x * y * ICosA + z * sinA, x * z * ICosA - y * sinA,
+               x * y * ICosA - z * sinA, y * y * ICosA +     cosA, y * z * ICosA + x * sinA,
+               x * z * ICosA + y * sinA, y * z * ICosA - x * sinA, z * z * ICosA +     cosA } );
+}
+
 } // namespace dip
 
 

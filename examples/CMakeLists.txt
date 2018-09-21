@@ -25,6 +25,10 @@ add_executable(radial_mean radial_mean.cpp)
 target_compile_definitions(radial_mean PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(radial_mean DIP)
 
+# This is a program that demonstates how to generate various shapes
+add_executable(generate_shapes generate_shapes.cpp)
+target_link_libraries(generate_shapes DIP)
+
 if(DIP_BUILD_DIPVIEWER)
 
 # A test program that demonstrates some of the low-level functionality of DIPviewer
