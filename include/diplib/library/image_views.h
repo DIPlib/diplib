@@ -874,7 +874,7 @@ class Image::CastPixel : public Image::Pixel {
 ///
 /// See \ref indexing for more information.
 ///
-/// Compount assignment operators are defined, but they currently do not do the computation in-place.
+/// Compound assignment operators are defined, but they currently do not do the computation in-place.
 ///
 /// \see dip::Image::Pixel, dip::Image::Sample
 class Image::View {
@@ -889,6 +889,7 @@ class Image::View {
       // Assignment into `dip::Image::View`:
       View& operator=( View&& ) = delete;       // No move assignment
       View& operator=( View const& ) = delete;  // Copy assignment through cast to dip::Image
+      // TODO: Assignment operators should call appropriate Copy function.
 
       /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view.
       ///
@@ -922,6 +923,9 @@ class Image::View {
       /// number of pixels as the view, its shape is ignored.
       /// `source` pixel values are cast in the usual way to the type of `this`.
       DIP_EXPORT void Copy( Image const& source );
+      // TODO: Copy( View const& source ); -> would prevent one copy
+      //    Note that currently View is cast to Image (copies pixels if view is irregular), and then the image
+      //    pixels are copied to the view.
 
       /// \brief Sets all pixels in the view to the value `pixel`.
       ///

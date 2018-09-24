@@ -81,8 +81,6 @@ document's source</a> for the most up-to-date version.
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
     This should be an optional module, as *Bio-Formats* is GPL.
 
--   Morphological levellings.
-
 -   Radon transform for lines and circles, Hough transform for lines (Wouter already did the one for circles).
 
 -   Level-set segmentation, graph-cut segmentation.

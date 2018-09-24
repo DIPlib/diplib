@@ -1196,6 +1196,46 @@ inline Image HMaxima(
    return out;
 }
 
+/// \brief The leveling of `in` imposed by `marker`.
+///
+/// The leveling introduces flat zones in the image, in such a way that, if \f$g_p > g_q\f$, then \f$f_p \geq g_p\f$
+/// and \f$g_q \geq f_q\f$, with \f$g\f$ the leveling of \f$f\f$, and \f$p, q\f$ any two locations within the image.
+/// That is, for any edge remaining in \f$g\f$, there exists an edge of equal or larger magnitude in \f$f\f$.
+///
+/// The leveling can be obtained by initializing \f$g\f$ to the `marker` image and iteratively applying
+///
+/// \f[ g = (f \wedge \delta g) \vee \epsilon g \f]
+///
+/// until idempotence (\f$g\f$ doesn't change any further). However, here it is implemented more efficiently
+/// using `dip::MorphologicalReconstruction`.
+///
+/// The `marker` image can be a smoothed version of `in`, then the leveling yields a similar simplification as
+/// the smoothing, but preserving sharp edges.
+///
+/// **Literature**
+///  - F. Meyer, "The levelings", Mathematical Morphology and its Applications to Image and Signal Processing
+///    (proceedings of ISSM'98), pp. 199-206, 1998.
+inline void Leveling(
+      Image const& in,
+      Image const& marker,
+      Image& out,
+      dip::uint connectivity = 0
+) {
+   Image tmp = MorphologicalReconstruction( marker, in, connectivity, S::DILATION );
+   Image mask = marker < in;
+   MorphologicalReconstruction( marker, in, out, connectivity, S::EROSION );
+   out.At( mask ).Copy( tmp.At( mask ));
+}
+inline Image Leveling(
+      Image const& in,
+      Image const& marker,
+      dip::uint connectivity = 0
+) {
+   Image out;
+   Leveling( in, marker, out, connectivity );
+   return out;
+}
+
 /// \brief Computes the area opening or closing
 ///
 /// The area opening removes all local maxima that have an area smaller than the given parameter `filterSize`,
