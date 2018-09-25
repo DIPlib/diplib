@@ -585,7 +585,7 @@ class dip__CenterOfMass : public dip__CenterOfMassBase {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return nD_ + 1; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         FloatArray vars;
+         FloatArray vars( nD_ + 1, 0.0 );
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          UnsignedArray pos = params.position;
@@ -630,16 +630,13 @@ class dip__CenterOfMass : public dip__CenterOfMassBase {
          for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
             out += accArray_[ ii ];
          }
-         if( out[ nD_ ] != 0 ) {
-            for( dip::uint jj = 0; jj < nD_; ++jj ) {
-               out[ jj ] /= out[ nD_ ];
-            }
-         } else {
-            for( dip::uint jj = 0; jj < nD_; ++jj ) {
-               out[ jj ] = 0.0;
-            }
-         }
+         dfloat n = out[ nD_ ];
          out.resize( nD_ );
+         if( n != 0 ) {
+            out /= n;
+         } else {
+            out.fill( 0.0 );
+         }
          return out;
       }
    private:
