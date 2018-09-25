@@ -57,7 +57,7 @@
 % Note that 'anisotropy' is an alias for 'anisotropy1' for backwards compatibility.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::StructureTensor, and
+%  This function calls the DIPlib functions dip::StructureTensor, and
 %  dip::StructureTensorAnalysis.
 
 % (c)2017, Cris Luengo.

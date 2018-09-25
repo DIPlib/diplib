@@ -3,7 +3,7 @@
 % SYNOPSIS:
 %  image_out = autocorrelation(image_in)
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,5 +19,9 @@
 % limitations under the License.
 
 function out = autocorrelation(in)
+opts = {};
+if isreal(in)
+   opts = {'real'};
+end
 fa = ft(in);
-out = real(ift(fa*conj(fa)));
+out = ift(fa*conj(fa),opts);

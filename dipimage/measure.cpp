@@ -64,7 +64,6 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       DML_MAX_ARGS( 5 );
 
-      dml::MatlabInterface mi;
       dip::Image label = dml::GetImage( prhs[ 0 ] ); // Non-const, we might want to modify the image (not the data pointed at)
       dip::Image const grey = nrhs > 1 ? dml::GetImage( prhs[ 1 ] ) : dip::Image();
       dip::StringArray features;
