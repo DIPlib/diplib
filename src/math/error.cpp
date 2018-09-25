@@ -24,6 +24,7 @@
 #include "diplib/statistics.h"
 #include "diplib/math.h"
 #include "diplib/linear.h"
+#include "diplib/mapping.h"
 #include "diplib/histogram.h"
 #include "diplib/framework.h"
 
@@ -296,5 +297,125 @@ dfloat EstimateNoiseVariance( Image const& in, Image const& c_mask ) {
    }
    return error.As< dfloat >() / 36.0;
 }
+
+namespace {
+
+dfloat Measure( Image const& in ) {
+   if( in.DataType().IsBinary() ) {
+      return static_cast< dfloat >( Count( in ));
+   }
+   return Sum( in ).As< dfloat >();
+}
+
+dfloat TruePositives( Image const& in, Image const& reference ) {
+   return Measure( Infimum( in, reference ));
+}
+dfloat TrueNegatives( Image const& in, Image const& reference ) {
+   Image tmp = Supremum( in, reference );
+   return static_cast< dfloat >( in.NumberOfPixels() ) - Measure( tmp );
+}
+dfloat FalsePositives( Image const& in, Image const& reference ) {
+   Image tmp;
+   if( in.DataType().IsBinary() && reference.DataType().IsBinary() ) {
+      tmp = !reference;
+      And( in, tmp, tmp );    // writing it this way instead of `in & !reference` to avoid a memory allocation.
+   } else {
+      tmp = Subtract( in, reference );
+      Clip( tmp, tmp, 0.0, 1.0, S::LOW );
+   }
+   return Measure( tmp );
+}
+dfloat FalseNegatives( Image const& in, Image const& reference ) {
+   Image tmp;
+   if( in.DataType().IsBinary() && reference.DataType().IsBinary() ) {
+      tmp = !in;
+      And( tmp, reference, tmp );    // writing it this way instead of `!in & reference` to avoid a memory allocation.
+   } else {
+      tmp = Subtract( reference, in );
+      Clip( tmp, tmp, 0.0, 1.0, S::LOW );
+   }
+   return Measure( tmp );
+}
+
+} // namespace
+
+SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   SpatialOverlapMetrics out;
+   out.truePositives = TruePositives( in, reference );
+   out.trueNegatives = TrueNegatives( in, reference );
+   out.falsePositives = FalsePositives( in, reference );
+   out.falseNegatives = FalseNegatives( in, reference );
+   out.diceCoefficient = 2 * out.truePositives / ( 2 * out.truePositives + out.falsePositives + out.falseNegatives );
+   out.jaccardIndex = out.truePositives / ( out.truePositives + out.falsePositives + out.falseNegatives );
+   out.sensitivity = out.truePositives / ( out.truePositives + out.falseNegatives );
+   out.specificity = out.trueNegatives / ( out.trueNegatives + out.falsePositives );
+   out.fallout = out.falsePositives / ( out.trueNegatives + out.falsePositives );
+   out.accuracy = ( out.truePositives + out.trueNegatives ) / ( out.truePositives + out.falsePositives + out.trueNegatives + out.falseNegatives );
+   out.precision = out.truePositives / ( out.truePositives + out.falsePositives );
+   return out;
+}
+
+DIP_EXPORT dfloat DiceCoefficient( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   return 2 * TruePositives( in, reference ) / ( Measure( in ) + Measure( reference ) );
+}
+
+DIP_EXPORT dfloat JaccardIndex( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   return TruePositives( in, reference ) / Measure( Supremum( in, reference ) );
+}
+
+DIP_EXPORT dfloat Specificity( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   return TrueNegatives( in, reference ) / ( static_cast< dfloat >( in.NumberOfPixels() ) - Measure( reference ));
+}
+
+DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   return TruePositives( in, reference ) / Measure( reference );
+}
+
+DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   dfloat total = static_cast< dfloat >( in.NumberOfPixels() );
+   Image tmp;
+   if( in.DataType().IsBinary() && reference.DataType().IsBinary() ) {
+      tmp = in == reference;
+   } else {
+      tmp = in - reference;
+      Abs( tmp, tmp );
+      Subtract( 1.0, tmp, tmp, tmp.DataType() );
+      Clip( tmp, tmp, 0.0, 1.0, S::LOW );
+   }
+   return Measure( tmp ) / total;
+}
+
+DIP_EXPORT dfloat Precision( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   return TruePositives( in, reference ) / Measure( in );
+}
+
 
 } // namespace dip

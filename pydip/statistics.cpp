@@ -128,6 +128,15 @@ void init_statistics( py::module& m ) {
           "in1"_a, "in2"_a, "mask"_a = dip::Image{}, "sigma"_a = 1.5, "K1"_a = 0.01, "K2"_a = 0.03 );
    m.def( "MutualInformation", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::uint >( &dip::MutualInformation ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
+
+   m.def( "SpatialOverlap", &dip::SpatialOverlap, "in"_a, "reference"_a ); // TODO: return type?
+   m.def( "DiceCoefficient", &dip::DiceCoefficient, "in"_a, "reference"_a );
+   m.def( "JaccardIndex", &dip::JaccardIndex, "in"_a, "reference"_a );
+   m.def( "Specificity", &dip::Specificity, "in"_a, "reference"_a );
+   m.def( "Sensitivity", &dip::Sensitivity, "in"_a, "reference"_a );
+   m.def( "Accuracy", &dip::Accuracy, "in"_a, "reference"_a );
+   m.def( "Precision", &dip::Precision, "in"_a, "reference"_a );
+
    m.def( "Entropy", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Entropy ),
           "in"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
    m.def( "EstimateNoiseVariance", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::EstimateNoiseVariance ),

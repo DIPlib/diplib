@@ -309,3 +309,43 @@ pp.clf()
 a.Show('labels')
 pp.plot(pol[:,0],pol[:,1],'w-')
 pp.show(block=False)
+
+###
+
+import math
+
+a = dip.ImageReadICS('cermet')
+b = dip.ImageReadTIFF('erika')
+a = a / dip.Maximum(a)
+b = b / dip.Maximum(b)
+
+dice = dip.DiceCoefficient(a, b)
+jaccard = dip.JaccardIndex(a, b)
+sensitivity = dip.Sensitivity(a, b)
+specificity = dip.Specificity(a, b)
+accuracy = dip.Accuracy(a, b)
+precision = dip.Precision(a, b)
+overlap = dip.SpatialOverlap(a, b)
+assert math.isclose(overlap.diceCoefficient, dice, abs_tol=1e-4)
+assert math.isclose(overlap.jaccardIndex, jaccard, abs_tol=1e-4)
+assert math.isclose(overlap.sensitivity, sensitivity, abs_tol=1e-4)
+assert math.isclose(overlap.specificity, specificity, abs_tol=1e-4)
+assert math.isclose(overlap.accuracy, accuracy, abs_tol=1e-4)
+assert math.isclose(overlap.precision, precision, abs_tol=1e-4)
+
+a = a>0.5
+b = b>0.5
+
+dice = dip.DiceCoefficient(a, b)
+jaccard = dip.JaccardIndex(a, b)
+sensitivity = dip.Sensitivity(a, b)
+specificity = dip.Specificity(a, b)
+accuracy = dip.Accuracy(a, b)
+precision = dip.Precision(a, b)
+overlap = dip.SpatialOverlap(a, b)
+assert math.isclose(overlap.diceCoefficient, dice)
+assert math.isclose(overlap.jaccardIndex, jaccard)
+assert math.isclose(overlap.sensitivity, sensitivity)
+assert math.isclose(overlap.specificity, specificity)
+assert math.isclose(overlap.accuracy, accuracy)
+assert math.isclose(overlap.precision, precision)

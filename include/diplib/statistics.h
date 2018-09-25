@@ -865,6 +865,101 @@ DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& ma
 /// \see dip::MutualInformation(Histogram const&)
 DIP_EXPORT dfloat MutualInformation( Image const& in, Image const& reference, Image const& mask = {}, dip::uint nBins = 256 );
 
+/// \brief Holds return values for the function `dip::SpatialOverlap`.
+struct SpatialOverlapMetrics {
+   dfloat truePositives;   ///< Number of true positives
+   dfloat trueNegatives;   ///< Number of true negatives
+   dfloat falsePositives;  ///< Number of false positives
+   dfloat falseNegatives;  ///< Number of false negatives
+   dfloat diceCoefficient; ///< The F1-measure, harmonic mean between `precision` (PPV) and `sensitivity` (recall, TPR).
+   dfloat jaccardIndex;    ///< The ratio of the intersection to the union.
+   dfloat sensitivity;     ///< Also called recall, true positive rate (TPR).
+   dfloat specificity;     ///< Also called true negative rate (TNR).
+   dfloat fallout;         ///< Also called false positive rate (FPR), equal to 1-specificity.
+   dfloat accuracy;        ///< Fraction of correctly segmented pixels.
+   dfloat precision;       ///< Also called positive predictive value (PPV).
+};
+/// \brief Compares a segmentation result `in` to the ground truth `reference`.
+///
+/// Both `in` and `reference` are expected to be either binary images, or real-valued images in the range [0,1]
+/// indicating likelihoods (i.e. a fuzzy segmentation). If images contain values outside that range, the results
+/// will be meaningless. Both images must be scalar and of the same sizes.
+///
+/// If only one measure is of interest, it will be more efficient to use one of the specialized functions:
+/// `dip::DiceCoefficient`, `dip::JaccardIndex`, `dip::Specificity`, `dip::Sensitivity`, `dip::Accuracy`,
+/// or `dip::Precision`.
+DIP_EXPORT SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference );
+
+/// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the Dice coefficient.
+///
+/// The Dice coefficient (also known as Sørensen–Dice coefficient) is defined as twice the area of the intersection
+/// of `in` and `reference` divided by the sum of their areas:
+///
+/// \f[ \text{Dice} = \frac{2 |A \cap B|}{|A|+|B|} = \frac{2\text{TP}}{2\text{TP}+\text{FP}+\text{FN}} \f]
+///
+/// Note that this is equivalent to the harmonic mean between precision and sensitivity or recall:
+/// ```cpp
+///     dfloat dice = dip::DiceCoefficient( a, b );
+///     dfloat alsoDice = 2.0 / ( 1.0 / dip::Precision( a, b ) + 1.0 / dip::Sensitivity( a, b ));
+/// ```
+///
+/// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
+/// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
+DIP_EXPORT dfloat DiceCoefficient( Image const& in, Image const& reference );
+
+/// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the Jaccard index.
+///
+/// The Jaccard index is defined as the area of the intersection of `in` and `reference` divided by their union:
+///
+/// \f[ \text{Jaccard} = \frac{|A \cap B|}{|A \cup B|} = \frac{\text{TP}}{\text{TP}+\text{FP}+\text{FN}} \f]
+///
+/// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
+/// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
+DIP_EXPORT dfloat JaccardIndex( Image const& in, Image const& reference );
+
+/// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the specificity of the segmentation.
+///
+/// Specificity is also referred to as True Negative Rate, and is computed as the ratio of true negatives to the
+/// total amount of negatives in the `reference` image:
+///
+/// \f[ \text{specificity} = \frac{|\neg A \cap \neg B|}{|\neg B|} = \frac{\text{TN}}{\text{TN}+\text{FP}} \f]
+///
+/// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
+/// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
+DIP_EXPORT dfloat Specificity( Image const& in, Image const& reference );
+
+/// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the sensitivity of the segmentation.
+///
+/// Sensitivity, also referred to as recall or True Positive Rate, is computed as the ratio of the true positives
+/// to the total amount of positives in the `reference` image:
+///
+/// \f[ \text{sensitivity} = \frac{|A \cap B|}{|B|} = \frac{\text{TP}}{\text{TP}+\text{FN}} \f]
+///
+/// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
+/// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
+DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference );
+
+/// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the accuracy of the segmentation.
+///
+/// Accuracy is defined as the ratio of correctly classified pixels to the total number of pixels:
+///
+/// \f[ \text{accuracy} = \frac{|A \cap B| + |\neg A \cap \neg B|}{|A| + |\neg A|} = \frac{\text{TP}+\text{TN}}{\text{TP}+\text{FP}+\text{TN}+\text{FN}} \f]
+///
+/// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
+/// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
+DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference );
+
+/// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the precision of the segmentation.
+///
+/// Precision, or Positive Predictive Value, is defined as the ratio of the true positives to the total amount of
+/// positives in the `in` image:
+///
+/// \f[ \text{precision} = \frac{|A \cap B|}{|A|} = \frac{\text{TP}}{\text{TP}+\text{FP}} \f]
+///
+/// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
+/// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
+DIP_EXPORT dfloat Precision( Image const& in, Image const& reference );
+
 /// \brief Calculates the entropy, in bits, using a histogram with `nBins` bins.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
