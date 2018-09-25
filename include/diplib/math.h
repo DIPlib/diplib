@@ -120,11 +120,15 @@ inline Image Supremum( ImageConstRefArray const& in ) {
 /// \brief Computes the sample-wise supremum (maximum) of the two input images. For binary images, this is the same
 /// as the union.
 inline void Supremum( Image const& a, Image const& b, Image& out ) {
-   Supremum( { a, b }, out );
+   if( a.DataType().IsBinary() && b.DataType().IsBinary() ) {
+      Or( a, b, out );
+   } else {
+      Supremum( { a, b }, out );
+   }
 }
 inline Image Supremum( Image const& a, Image const& b ) {
    Image out;
-   Supremum( { a, b }, out );
+   Supremum( a, b, out );
    return out;
 }
 
@@ -140,11 +144,15 @@ inline Image Infimum( ImageConstRefArray const& in ) {
 /// \brief Computes the sample-wise infimum (minimum) of the two input images. For binary images, this is the same
 /// as the intersection.
 inline void Infimum( Image const& a, Image const& b, Image& out ) {
-   Infimum( { a, b }, out );
+   if( a.DataType().IsBinary() && b.DataType().IsBinary() ) {
+      And( a, b, out );
+   } else {
+      Infimum( { a, b }, out );
+   }
 }
 inline Image Infimum( Image const& a, Image const& b ) {
    Image out;
-   Infimum( { a, b }, out );
+   Infimum( a, b, out );
    return out;
 }
 
