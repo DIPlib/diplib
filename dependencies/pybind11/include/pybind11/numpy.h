@@ -34,7 +34,7 @@
    upon the library user. */
 static_assert(sizeof(ssize_t) == sizeof(Py_intptr_t), "ssize_t != Py_intptr_t");
 
-NAMESPACE_BEGIN(pybind11)
+NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
 class array; // Forward declaration
 
@@ -288,7 +288,9 @@ template <typename T> using remove_all_extents_t = typename array_info<T>::type;
 
 template <typename T> using is_pod_struct = all_of<
     std::is_standard_layout<T>,     // since we're accessing directly in memory we need a standard layout type
-#if !defined(__GNUG__) || defined(__clang__) || __GNUC__ >= 5
+#if !defined(__GNUG__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI)
+    // _GLIBCXX_USE_CXX11_ABI indicates that we're using libstdc++ from GCC 5 or newer, independent
+    // of the actual compiler (Clang can also use libstdc++, but it always defines __GNUC__ == 4).
     std::is_trivially_copyable<T>,
 #else
     // GCC 4 doesn't implement is_trivially_copyable, so approximate it
@@ -342,7 +344,7 @@ public:
      * dimensionality, this is not checked (and so is up to the caller to use safely).
      */
     template <typename... Ix> const T &operator()(Ix... index) const {
-        static_assert(sizeof...(Ix) == Dims || Dynamic,
+        static_assert(ssize_t{sizeof...(Ix)} == Dims || Dynamic,
                 "Invalid number of indices for unchecked array reference");
         return *reinterpret_cast<const T *>(data_ + byte_offset_unsafe(strides_, ssize_t(index)...));
     }
@@ -391,7 +393,7 @@ class unchecked_mutable_reference : public unchecked_reference<T, Dims> {
 public:
     /// Mutable, unchecked access to data at the given indices.
     template <typename... Ix> T& operator()(Ix... index) {
-        static_assert(sizeof...(Ix) == Dims || Dynamic,
+        static_assert(ssize_t{sizeof...(Ix)} == Dims || Dynamic,
                 "Invalid number of indices for unchecked array reference");
         return const_cast<T &>(ConstBase::operator()(index...));
     }
@@ -689,7 +691,7 @@ public:
      * care: the array must not be destroyed or reshaped for the duration of the returned object,
      * and the caller must take care not to access invalid dimensions or dimension indices.
      */
-    template <typename T, ssize_t Dims = -1> detail::unchecked_mutable_reference<T, Dims> mutable_unchecked() {
+    template <typename T, ssize_t Dims = -1> detail::unchecked_mutable_reference<T, Dims> mutable_unchecked() & {
         if (Dims >= 0 && ndim() != Dims)
             throw std::domain_error("array has incorrect number of dimensions: " + std::to_string(ndim()) +
                     "; expected " + std::to_string(Dims));
@@ -703,7 +705,7 @@ public:
      * reshaped for the duration of the returned object, and the caller must take care not to access
      * invalid dimensions or dimension indices.
      */
-    template <typename T, ssize_t Dims = -1> detail::unchecked_reference<T, Dims> unchecked() const {
+    template <typename T, ssize_t Dims = -1> detail::unchecked_reference<T, Dims> unchecked() const & {
         if (Dims >= 0 && ndim() != Dims)
             throw std::domain_error("array has incorrect number of dimensions: " + std::to_string(ndim()) +
                     "; expected " + std::to_string(Dims));
@@ -762,8 +764,9 @@ protected:
     static std::vector<ssize_t> c_strides(const std::vector<ssize_t> &shape, ssize_t itemsize) {
         auto ndim = shape.size();
         std::vector<ssize_t> strides(ndim, itemsize);
-        for (size_t i = ndim - 1; i > 0; --i)
-            strides[i - 1] = strides[i] * shape[i];
+        if (ndim > 0)
+            for (size_t i = ndim - 1; i > 0; --i)
+                strides[i - 1] = strides[i] * shape[i];
         return strides;
     }
 
@@ -876,7 +879,7 @@ public:
      * care: the array must not be destroyed or reshaped for the duration of the returned object,
      * and the caller must take care not to access invalid dimensions or dimension indices.
      */
-    template <ssize_t Dims = -1> detail::unchecked_mutable_reference<T, Dims> mutable_unchecked() {
+    template <ssize_t Dims = -1> detail::unchecked_mutable_reference<T, Dims> mutable_unchecked() & {
         return array::mutable_unchecked<T, Dims>();
     }
 
@@ -887,7 +890,7 @@ public:
      * for the duration of the returned object, and the caller must take care not to access invalid
      * dimensions or dimension indices.
      */
-    template <ssize_t Dims = -1> detail::unchecked_reference<T, Dims> unchecked() const {
+    template <ssize_t Dims = -1> detail::unchecked_reference<T, Dims> unchecked() const & {
         return array::unchecked<T, Dims>();
     }
 
@@ -944,9 +947,9 @@ struct format_descriptor<T, detail::enable_if_t<std::is_enum<T>::value>> {
 template <typename T>
 struct format_descriptor<T, detail::enable_if_t<detail::array_info<T>::is_array>> {
     static std::string format() {
-        using detail::_;
-        PYBIND11_DESCR extents = _("(") + detail::array_info<T>::extents() + _(")");
-        return extents.text() + format_descriptor<detail::remove_all_extents_t<T>>::format();
+        using namespace detail;
+        PYBIND11_DESCR extents = _("(") + array_info<T>::extents() + _(")");
+        return extents.text() + format_descriptor<remove_all_extents_t<T>>::format();
     }
 };
 
@@ -1571,10 +1574,10 @@ vectorize(Return (*f) (Args ...)) {
 }
 
 // lambda vectorizer:
-template <typename Func, typename FuncType = typename detail::remove_class<decltype(&detail::remove_reference_t<Func>::operator())>::type>
+template <typename Func, detail::enable_if_t<detail::is_lambda<Func>::value, int> = 0>
 auto vectorize(Func &&f) -> decltype(
-        detail::vectorize_extractor(std::forward<Func>(f), (FuncType *) nullptr)) {
-    return detail::vectorize_extractor(std::forward<Func>(f), (FuncType *) nullptr);
+        detail::vectorize_extractor(std::forward<Func>(f), (detail::function_signature_t<Func> *) nullptr)) {
+    return detail::vectorize_extractor(std::forward<Func>(f), (detail::function_signature_t<Func> *) nullptr);
 }
 
 // Vectorize a class method (non-const):
@@ -1584,14 +1587,14 @@ Helper vectorize(Return (Class::*f)(Args...)) {
     return Helper(std::mem_fn(f));
 }
 
-// Vectorize a class method (non-const):
+// Vectorize a class method (const):
 template <typename Return, typename Class, typename... Args,
           typename Helper = detail::vectorize_helper<decltype(std::mem_fn(std::declval<Return (Class::*)(Args...) const>())), Return, const Class *, Args...>>
 Helper vectorize(Return (Class::*f)(Args...) const) {
     return Helper(std::mem_fn(f));
 }
 
-NAMESPACE_END(pybind11)
+NAMESPACE_END(PYBIND11_NAMESPACE)
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

@@ -44,11 +44,11 @@
         }
  \endrst */
 #define PYBIND11_EMBEDDED_MODULE(name, variable)                              \
-    static void pybind11_init_##name(pybind11::module &);                     \
-    static PyObject *pybind11_init_wrapper_##name() {                         \
-        auto m = pybind11::module(#name);                                     \
+    static void PYBIND11_CONCAT(pybind11_init_, name)(pybind11::module &);    \
+    static PyObject PYBIND11_CONCAT(*pybind11_init_wrapper_, name)() {        \
+        auto m = pybind11::module(PYBIND11_TOSTRING(name));                   \
         try {                                                                 \
-            pybind11_init_##name(m);                                          \
+            PYBIND11_CONCAT(pybind11_init_, name)(m);                         \
             return m.ptr();                                                   \
         } catch (pybind11::error_already_set &e) {                            \
             PyErr_SetString(PyExc_ImportError, e.what());                     \
@@ -59,11 +59,12 @@
         }                                                                     \
     }                                                                         \
     PYBIND11_EMBEDDED_MODULE_IMPL(name)                                       \
-    pybind11::detail::embedded_module name(#name, pybind11_init_impl_##name); \
-    void pybind11_init_##name(pybind11::module &variable)
+    pybind11::detail::embedded_module name(PYBIND11_TOSTRING(name),           \
+                               PYBIND11_CONCAT(pybind11_init_impl_, name));   \
+    void PYBIND11_CONCAT(pybind11_init_, name)(pybind11::module &variable)
 
 
-NAMESPACE_BEGIN(pybind11)
+NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 NAMESPACE_BEGIN(detail)
 
 /// Python 2.7/3.x compatible version of `PyImport_AppendInittab` and error checks.
@@ -144,7 +145,7 @@ inline void finalize_interpreter() {
     // Get the internals pointer (without creating it if it doesn't exist).  It's possible for the
     // internals to be created during Py_Finalize() (e.g. if a py::capsule calls `get_internals()`
     // during destruction), so we get the pointer-pointer here and check it after Py_Finalize().
-    detail::internals **internals_ptr_ptr = &detail::get_internals_ptr();
+    detail::internals **internals_ptr_ptr = detail::get_internals_pp();
     // It could also be stashed in builtins, so look there too:
     if (builtins.contains(id) && isinstance<capsule>(builtins[id]))
         internals_ptr_ptr = capsule(builtins[id]);
@@ -190,4 +191,4 @@ private:
     bool is_valid = true;
 };
 
-NAMESPACE_END(pybind11)
+NAMESPACE_END(PYBIND11_NAMESPACE)

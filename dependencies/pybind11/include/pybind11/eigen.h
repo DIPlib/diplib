@@ -22,20 +22,21 @@
 #  endif
 #endif
 
-#include <Eigen/Core>
-#include <Eigen/SparseCore>
-
 #if defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable: 4127) // warning C4127: Conditional expression is constant
+#  pragma warning(disable: 4996) // warning C4996: std::unary_negate is deprecated in C++17
 #endif
+
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
 
 // Eigen prior to 3.2.7 doesn't have proper move constructors--but worse, some classes get implicit
 // move constructors that break things.  We could detect this an explicitly copy, but an extra copy
 // of matrices seems highly undesirable.
 static_assert(EIGEN_VERSION_AT_LEAST(3,2,7), "Eigen support in pybind11 requires Eigen >= 3.2.7");
 
-NAMESPACE_BEGIN(pybind11)
+NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
 // Provide a convenience alias for easier pass-by-ref usage with fully dynamic strides:
 using EigenDStride = Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>;
@@ -272,6 +273,7 @@ struct type_caster<Type, enable_if_t<is_eigen_dense_plain<Type>::value>> {
         value = Type(fits.rows, fits.cols);
         auto ref = reinterpret_steal<array>(eigen_ref_array<props>(value));
         if (dims == 1) ref = ref.squeeze();
+        else if (ref.ndim() == 1) buf = buf.squeeze();
 
         int result = detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
 
@@ -346,14 +348,6 @@ public:
 
 private:
     Type value;
-};
-
-// Eigen Ref/Map classes have slightly different policy requirements, meaning we don't want to force
-// `move` when a Ref/Map rvalue is returned; we treat Ref<> sort of like a pointer (we care about
-// the underlying data, not the outer shell).
-template <typename Return>
-struct return_value_policy_override<Return, enable_if_t<is_eigen_dense_map<Return>::value>> {
-    static return_value_policy policy(return_value_policy p) { return p; }
 };
 
 // Base class for casting reference/map/block/etc. objects back to python.
@@ -601,7 +595,7 @@ struct type_caster<Type, enable_if_t<is_eigen_sparse<Type>::value>> {
 };
 
 NAMESPACE_END(detail)
-NAMESPACE_END(pybind11)
+NAMESPACE_END(PYBIND11_NAMESPACE)
 
 #if defined(__GNUG__) || defined(__clang__)
 #  pragma GCC diagnostic pop

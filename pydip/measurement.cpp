@@ -201,7 +201,7 @@ void init_measurement( py::module& m ) {
 
    // dip::Polygon
    auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(), "A polygon representing a 2D object." );
-   poly.def( "__init__", []( dip::Polygon& self, py::buffer& buf ) { new( &self ) dip::Polygon(); self = BufferToPolygon( buf ); } );
+   poly.def( py::init([]( py::buffer& buf ) { return BufferToPolygon( buf ); } ));
    py::implicitly_convertible< py::buffer, dip::Polygon >();
    poly.def_buffer( []( dip::Polygon& self ) -> py::buffer_info { return PolygonToBuffer( self ); } );
    poly.def( "__repr__", []( dip::Polygon const& self ) {

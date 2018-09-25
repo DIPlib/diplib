@@ -18,7 +18,7 @@ find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION} REQUIRED)
 include(CheckCXXCompilerFlag)
 include(CMakeParseArguments)
 
-if(NOT PYBIND11_CPP_STANDARD)
+if(NOT PYBIND11_CPP_STANDARD AND NOT CMAKE_CXX_STANDARD)
   if(NOT MSVC)
     check_cxx_compiler_flag("-std=c++14" HAS_CPP14_FLAG)
 
@@ -135,9 +135,23 @@ function(pybind11_add_module target_name)
     PRIVATE ${pybind11_INCLUDE_DIR}  # from pybind11Config
     PRIVATE ${PYTHON_INCLUDE_DIRS})
 
+  # Python debug libraries expose slightly different objects
+  # https://docs.python.org/3.6/c-api/intro.html#debugging-builds
+  # https://stackoverflow.com/questions/39161202/how-to-work-around-missing-pymodule-create2-in-amd64-win-python35-d-lib
+  if(PYTHON_IS_DEBUG)
+    target_compile_definitions(${target_name} PRIVATE Py_DEBUG)
+  endif()
+
   # The prefix and extension are provided by FindPythonLibsNew.cmake
   set_target_properties(${target_name} PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}")
   set_target_properties(${target_name} PROPERTIES SUFFIX "${PYTHON_MODULE_EXTENSION}")
+
+  # -fvisibility=hidden is required to allow multiple modules compiled against
+  # different pybind versions to work properly, and for some features (e.g.
+  # py::module_local).  We force it on everything inside the `pybind11`
+  # namespace; also turning it on for a pybind module compilation here avoids
+  # potential warnings or issues from having mixed hidden/non-hidden types.
+  set_target_properties(${target_name} PROPERTIES CXX_VISIBILITY_PRESET "hidden")
 
   if(WIN32 OR CYGWIN)
     # Link against the Python shared library on Windows
@@ -175,9 +189,6 @@ function(pybind11_add_module target_name)
   _pybind11_add_lto_flags(${target_name} ${ARG_THIN_LTO})
 
   if (NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug)
-    # Set the default symbol visibility to hidden (very important to obtain small binaries)
-    target_compile_options(${target_name} PRIVATE "-fvisibility=hidden")
-
     # Strip unnecessary sections of the binary on Linux/Mac OS
     if(CMAKE_STRIP)
       if(APPLE)

@@ -222,7 +222,7 @@ void init_image( py::module& m ) {
    img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
    img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
    // Constructor that takes a Python raw buffer
-   img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
+   img.def( py::init([]( py::buffer& buf ) { return BufferToImage( buf ); } ));
    py::implicitly_convertible< py::buffer, dip::Image >();
    // Export a Python raw buffer
    img.def_buffer( []( dip::Image& self ) -> py::buffer_info { return ImageToBuffer( self ); } );
