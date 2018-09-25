@@ -560,14 +560,14 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
    /// and each of the vertices.
-   DIP_EXPORT RadiusValues RadiusStatistics() const {
+   RadiusValues RadiusStatistics() const {
       VertexFloat g = Centroid();
       return RadiusStatistics( g );
    }
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the given centroid
    /// and each of the vertices.
-   DIP_EXPORT RadiusValues RadiusStatistics( VertexFloat const& g ) const {
+   RadiusValues RadiusStatistics( VertexFloat const& g ) const {
       RadiusValues radius;
       if( vertices.size() < 3 ) {
          return radius;
@@ -594,7 +594,7 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Compares a polygon to the ellipse described by the given centroid and covariance matrix, returning
    /// the coefficient of variation of the distance of vertices to the ellipse.
-   DIP_EXPORT dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
+   dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
       // Inverse of covariance matrix
       dip::CovarianceMatrix U = C.Inv();
       // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v

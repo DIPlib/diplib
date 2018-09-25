@@ -119,7 +119,7 @@ void init_measurement( py::module& m ) {
    vInfo.def_readonly( "units", &dip::Feature::ValueInformation::units );
 
    // dip::Measurement::IteratorFeature
-   auto feat = py::class_< dip::Measurement::IteratorFeature >( mm, "Feature", "A Measurement table column group representing the results for one\nfeature." );
+   auto feat = py::class_< dip::Measurement::IteratorFeature >( mm, "MeasurementFeature", "A Measurement table column group representing the results for one\nfeature." );
    feat.def( "__repr__", []( dip::Measurement::IteratorFeature const& self ) {
                 std::ostringstream os;
                 os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
@@ -132,7 +132,7 @@ void init_measurement( py::module& m ) {
    feat.def( "Objects", &dip::Measurement::IteratorFeature::Objects );
 
    // dip::Measurement::IteratorObject
-   auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "Object", "A Measurement table row representing the results for one object." );
+   auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "MeasurementObject", "A Measurement table row representing the results for one object." );
    obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
                std::ostringstream os;
                os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << ">";
@@ -194,10 +194,7 @@ void init_measurement( py::module& m ) {
              dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( featureValues );
              return py::make_tuple( acc.Minimum(), acc.Maximum() ).release();
           }, "featureValues"_a );
-   m.def( "SampleStatistics", []( dip::Measurement::IteratorFeature const& featureValues ) {
-             dip::StatisticsAccumulator acc = dip::SampleStatistics( featureValues );
-             return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() ).release();
-          }, "featureValues"_a );
+   m.def( "SampleStatistics", &dip::SampleStatistics, "featureValues"_a );
 
    // dip::Polygon
    auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(), "A polygon representing a 2D object." );
@@ -222,23 +219,14 @@ void init_measurement( py::module& m ) {
                 return py::make_tuple( centroid.x, centroid.y ).release();
              } );
    poly.def( "Length", &dip::Polygon::Length ); // is the perimeter
-   poly.def( "EllipseParameters", []( dip::Polygon const& self ) {
-                auto ellipseParams = self.CovarianceMatrix().Ellipse();
-                return py::make_tuple( ellipseParams.majorAxis, ellipseParams.minorAxis, ellipseParams.orientation, ellipseParams.eccentricity ).release();
-             } );
-   poly.def( "RadiusStatistics", []( dip::Polygon const& self ) {
-                auto radiusStats = self.RadiusStatistics();
-                return py::make_tuple( radiusStats.Mean(), radiusStats.StandardDeviation(), radiusStats.Maximum(), radiusStats.Minimum(), radiusStats.Circularity() ).release();
-             } );
+   poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrix().Ellipse(); } );
+   poly.def( "RadiusStatistics", py::overload_cast<>( &dip::Polygon::RadiusStatistics, py::const_ ));
    poly.def( "EllipseVariance", py::overload_cast<>( &dip::Polygon::EllipseVariance, py::const_ ));
    poly.def( "ConvexHull", []( dip::Polygon const& self ) {
                 auto out = self.ConvexHull().Polygon(); // Make a copy of the polygon, sadly. Otherwise we'd have to return the ConvexHull object. We can't extract that data from it trivially.
                 return out;
              } );
-   poly.def( "Feret", []( dip::Polygon const& self ) {
-                auto feretValues = self.ConvexHull().Feret();
-                return py::make_tuple( feretValues.maxDiameter, feretValues.minDiameter, feretValues.maxPerpendicular, feretValues.maxAngle, feretValues.minAngle ).release();
-             } );
+   poly.def( "Feret", []( dip::Polygon const& self ) { return self.ConvexHull().Feret(); } );
 
    // dip::ChainCode
    auto chain = py::class_< dip::ChainCode >( m, "ChainCode", "" );
@@ -252,10 +240,7 @@ void init_measurement( py::module& m ) {
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );
    chain.def( "ConvertTo8Connected", &dip::ChainCode::ConvertTo8Connected );
    chain.def( "Length", &dip::ChainCode::Length );
-   chain.def( "Feret", []( dip::ChainCode const& self, dip::dfloat angleStep ) {
-                 auto feretValues = self.Feret( angleStep );
-                 return py::make_tuple( feretValues.maxDiameter, feretValues.minDiameter, feretValues.maxPerpendicular, feretValues.maxAngle, feretValues.minAngle ).release();
-              }, "angleStep"_a = 5.0 / 180.0 * dip::pi );
+   chain.def( "Feret", &dip::ChainCode::Feret, "angleStep"_a = 5.0 / 180.0 * dip::pi );
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy );
    chain.def( "BoundingBox", []( dip::ChainCode const& self ){
       auto bb = self.BoundingBox();
@@ -271,4 +256,59 @@ void init_measurement( py::module& m ) {
    // Chain code functions
    m.def( "GetImageChainCodes", &dip::GetImageChainCodes, "labels"_a, "objectIDs"_a = dip::UnsignedArray{}, "connectivity"_a = 2 );
    m.def( "GetSingleChainCode", &dip::GetSingleChainCode, "labels"_a, "startCoord"_a, "connectivity"_a = 2 );
+
+   // dip::CovarianceMatrix::EllipseParameters
+   auto ellipseParams = py::class_< dip::CovarianceMatrix::EllipseParameters >( m, "EllipseParameters", "Parameters of the best fit ellipse." );
+   ellipseParams.def( "__repr__", []( dip::CovarianceMatrix::EllipseParameters const& s ) {
+                         std::ostringstream os;
+                         os << "<EllipseParameters: ";
+                         os << "majorAxis=" << s.majorAxis;
+                         os << ", minorAxis=" << s.minorAxis;
+                         os << ", orientation=" << s.orientation;
+                         os << ", eccentricity=" << s.eccentricity;
+                         os << ">";
+                         return os.str();
+                      } );
+   ellipseParams.def_readonly( "majorAxis", &dip::CovarianceMatrix::EllipseParameters::majorAxis );
+   ellipseParams.def_readonly( "minorAxis", &dip::CovarianceMatrix::EllipseParameters::minorAxis );
+   ellipseParams.def_readonly( "orientation", &dip::CovarianceMatrix::EllipseParameters::orientation );
+   ellipseParams.def_readonly( "eccentricity", &dip::CovarianceMatrix::EllipseParameters::eccentricity );
+
+   // dip::FeretValues
+   auto feretVals = py::class_< dip::FeretValues >( m, "FeretValues", "Values of the various Feret diameters." );
+   feretVals.def( "__repr__", []( dip::FeretValues const& s ) {
+                         std::ostringstream os;
+                         os << "<FeretValues: ";
+                         os << "maxDiameter=" << s.maxDiameter;
+                         os << ", minDiameter=" << s.minDiameter;
+                         os << ", maxPerpendicular=" << s.maxPerpendicular;
+                         os << ", maxAngle=" << s.maxAngle;
+                         os << ", minAngle=" << s.minAngle;
+                         os << ">";
+                         return os.str();
+                      } );
+   feretVals.def_readonly( "maxDiameter", &dip::FeretValues::maxDiameter );
+   feretVals.def_readonly( "minDiameter", &dip::FeretValues::minDiameter );
+   feretVals.def_readonly( "maxPerpendicular", &dip::FeretValues::maxPerpendicular );
+   feretVals.def_readonly( "maxAngle", &dip::FeretValues::maxAngle );
+   feretVals.def_readonly( "minAngle", &dip::FeretValues::minAngle );
+
+   // dip::RadiusValues
+   auto radiusVals = py::class_< dip::RadiusValues >( m, "RadiusValues", "Statistics on the radii of an object." );
+   radiusVals.def( "__repr__", []( dip::RadiusValues const& s ) {
+                         std::ostringstream os;
+                         os << "<RadiusValues: ";
+                         os << "mean=" << s.Mean();
+                         os << ", standardDev=" << s.StandardDeviation();
+                         os << ", maximum=" << s.Maximum();
+                         os << ", minimum=" << s.Minimum();
+                         os << ", circularity=" << s.Circularity();
+                         os << ">";
+                         return os.str();
+                      } );
+   radiusVals.def_property_readonly( "mean", &dip::RadiusValues::Mean );
+   radiusVals.def_property_readonly( "standardDev", &dip::RadiusValues::StandardDeviation );
+   radiusVals.def_property_readonly( "maximum", &dip::RadiusValues::Maximum );
+   radiusVals.def_property_readonly( "minimum", &dip::RadiusValues::Minimum );
+   radiusVals.def_property_readonly( "circularity", &dip::RadiusValues::Circularity );
 }
