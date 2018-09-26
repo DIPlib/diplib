@@ -119,6 +119,7 @@ smallobjectsremove.cpp
 stretch.cpp
 structuretensor.cpp
 subpixlocation.cpp
+testobject.cpp
 threshold.cpp
 tophat.cpp
 traceobjects.cpp

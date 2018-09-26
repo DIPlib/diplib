@@ -128,24 +128,11 @@ Some of the following functions already have their prototype written in the new 
     - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
     - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
 
-- diplib/generation.h
-    - dip_TestObjectCreate (dip_generation.h)
-    - dip_TestObjectModulate (dip_generation.h)
-    - dip_TestObjectBlur (dip_generation.h)
-    - dip_TestObjectAddNoise (dip_generation.h)
-    - dip_ObjectCylinder (dip_generation.h)
-    - dip_ObjectEdge (dip_generation.h)
-    - dip_ObjectPlane (dip_generation.h)
-    - dip_ObjectEllipsoid (dip_generation.h)
-
 - diplib/linear.h
     - dip_OrientedGauss (dip_linear.h)
 
 - diplib/math.h
     - dip_RemapOrientation (dip_point.h)
-    - dip_AmplitudeModulation (dip_math.h)
-    - dip_CosinAmplitudeModulation (dip_math.h)
-    - dip_CosinAmplitudeDemodulation (dip_math.h)
     - dip_ChangeByteOrder (dip_manipulation.h)
     - dip_SimpleGaussFitImage (dip_numerical.h)
     - dip_EmFitGaussians (dip_numerical.h)
@@ -173,9 +160,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_AdaptivePercentileBanana (dip_adaptive.h)
     - dip_PGST3DLine (dip_pgst.h) (this could have a better name!)
     - dip_PGST3DSurface (dip_pgst.h) (this could have a better name!)
-
-- diplib/regions.h
-    - dip_RegionConnectivity (dip_regions.h) (is experimental code)
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)
@@ -229,7 +213,6 @@ Some functions that haven't been ported are not listed here -- these will not be
 - `setlabels`
 - `splitandmerge`
 - `structf`
-- `testobject`
 - `tikhonovmiller`
 - `transform`
 - `umbra`

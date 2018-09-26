@@ -527,6 +527,96 @@ inline Image FTGaussian(
 }
 
 
+/// \brief Describes the parameters for a test object.
+struct TestObjectParams {
+   // Object description
+   String objectShape = S::ELLIPSOID;        ///< Can be `"ellipsoid"`, `"ellipsoid shell"`, `"box"`, `"box shell"`, or `"custom"`.
+   FloatArray objectSizes = { 10 };          ///< Sizes of the object along each dimension.
+   dfloat objectAmplitude = 1;               ///< Brightness of object pixels.
+   bool randomShift = false;                 ///< If true, add a random sub-pixel shift in the range [-0.5,0.5].
+   String generationMethod = S::GAUSSIAN;    ///< Can be `"gaussian"` (spatial domain method) or `"fourier"` (frequency domain method).
+   // Optional sine modulation
+   dfloat modulationDepth = 0;               ///< Strength of modulation, if 0 no modulation is applied.
+   FloatArray modulationFrequency = {};      ///< Frequency of a sine modulation added to the object, units are periods/pixel.
+   // Optional PDF blurring
+   String pointSpreadFunction = S::NONE;     ///< PSF, can be `"gaussian"`, `"incoherent"`, or `"none"`.
+   dfloat oversampling = 1;                  ///< Determines size of PSF (Gaussian PSF has sigma = 0.9*oversampling).
+   // Optional noise added
+   dfloat backgroundValue = 0.01;            ///< Background intensity, must be non-negative.
+   dfloat signalNoiseRatio = 0;              ///< SNR = average object energy divided by average noise power. If SNR > 0, adds a mixture of Gaussian and Poisson noise.
+   dfloat gaussianNoise = 1;                 ///< Relative amount of Gaussian noise.
+   dfloat poissonNoise = 1;                  ///< Relative amount of Poisson noise.
+};
+
+/// \brief Generates a test object according to `params`.
+///
+/// Generates a test object in the center of `out`, which must be forged, scalar and of a floating-point type.
+/// The test object can optionally be modulated using a sine function, blurred, and have noise added.
+///
+/// `params` describes how the object is generated:
+///  - `params.generationMethod` can be one of:
+///      - `"gaussian"`: creates the shape directly in the spatial domain, the shape will have Gaussian edges with
+///        a sigma of 0.9.
+///      - `"fourier"`: creates the shape in the frequency domain, the shape will be truly bandlimited.
+///  - `params.objectShape` can be one of:
+///      - `"ellipsoid"` or `"ellipsoid shell"`: the shape is drawn with `dip::DrawBandlimitedBall` or
+///        `dip::FTEllipsoid`, depending on the generation method. In the case of `"gaussian"` (spatial-domain
+///        generation), the shape must be isotropic (have same sizes in all dimensions). In the case of `"fourier"`,
+///        the image cannot have more than three dimensions.
+///      - `"box"` or `"box shell"`: the shape is drawn with `dip::DrawBandlimitedBox` or
+///        `dip::FTBox`, depending on the generation method.
+///      - `"custom"`: `out` already contains a shape, which is used as-is. In the case that `params.generationMethod`
+///        is `"gaussian"`, `out` is taken to be in the spatial domain, and in the case of `"fourier"`, in the
+///        frequency domain.
+///  - `params.objectSizes` determines the extent of the object along each dimension. Must have either one element
+///    or as many elements as image dimensions in `out`.
+///  - `params.objectAmplitude` determines the brightness of the object.
+///  - `params.randomShift`, if `true`, shifts the object with a random sub-pixel shift in the range [-0.5,0.5].
+///    This sub-pixel shift can be used to avoid bias due to digitization error over a sequence of generated objects.
+///
+/// `params` also describes what effects are applied to the image:
+///
+/// Modulation is an additive sine wave along each dimension, and is controlled by:
+///  - `params.modulationDepth` controls the strenght of the modulation. If this value is zero, no modulation is applied.
+///  - `params.modulationFrequency` controls the frequency along each image axis. The units are number of periods per
+///    pixel, and hence values below 0.5 should be given to prevent aliasing.
+///
+/// Blurring is controlled by:
+///  - `params.pointSpreadFunction` determines the point spread function (PSF) used. It can be `"gaussian"` for
+///     Gaussian blurring, `"incoherent"` for a 2D, in-focus, diffraction limited incoherent PSF (applied through
+///     Fourier domain filtering), or `"none"` for no blurring.
+///  - `params.oversampling` determines the size of the PSF. In the case of `"gaussian"`, the sigma used for blurring
+///    is `0.9 * params.oversampling`. In the case of `"incoherent"`, this is the `oversampling` parameter passed to
+///    `dip::IncoherentOTF`.
+///
+/// Noise is controlled by:
+///  - `params.backgroundValue` determines the background intensity added to the image. This is relevant for the
+///    Poisson noise.
+///  - `params.signalNoiseRatio` determines the signal to noise ratio (SNR), which we define as the average object
+///    energy divided by average noise power (i.e. not in dB). If the SNR is larger than 0, a mixture of Gaussian
+///    and Poisson noise is added to the whole image.
+///  - `params.gaussianNoise` determines the relative amount of Gaussian noise used.
+///  - `params.poissonNoise` determines the relative amount of Poisson noise used. The magnitude of these two
+///    quantities is not relevant, only their relative values are. If they are equal, the requested SNR is divided
+///    equally between the Gaussian and the Poisson noise.
+///
+/// `random` is the random number generator used for both the sub-pixel shift and the noise added to the image.
+DIP_EXPORT void TestObject(
+      Image& out,
+      TestObjectParams const& params,
+      Random& random
+);
+inline Image TestObject(
+      UnsignedArray const& sizes,
+      TestObjectParams const& params,
+      Random& random
+) {
+   Image out( sizes, 1, DT_SFLOAT );
+   TestObject( out, params, random );
+   return out;
+}
+
+
 /// \brief Fills an image with a ramp function.
 ///
 /// The ramp function increases along dimension `dimension`, and is

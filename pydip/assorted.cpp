@@ -162,6 +162,51 @@ void init_assorted( py::module& m ) {
          "sizes"_a, "length"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
    m.def( "FTGaussian", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat, dip::dfloat >( &dip::FTGaussian ),
          "sizes"_a, "sigma"_a, "amplitude"_a = 1, "truncation"_a = 3 );
+   m.def( "TestObject", [](
+               dip::UnsignedArray const& sizes,
+               dip::String objectShape,
+               dip::FloatArray const& objectSizes,
+               dip::dfloat objectAmplitude,
+               bool randomShift,
+               dip::String generationMethod,
+               dip::dfloat modulationDepth,
+               dip::FloatArray const& modulationFrequency,
+               dip::String pointSpreadFunction,
+               dip::dfloat oversampling,
+               dip::dfloat backgroundValue,
+               dip::dfloat signalNoiseRatio,
+               dip::dfloat gaussianNoise,
+               dip::dfloat poissonNoise
+          ) {
+               dip::TestObjectParams params;
+               params.objectShape = objectShape;
+               params.objectSizes = objectSizes;
+               params.objectAmplitude = objectAmplitude;
+               params.randomShift = randomShift;
+               params.generationMethod = generationMethod;
+               params.modulationDepth = modulationDepth;
+               params.modulationFrequency = modulationFrequency;
+               params.pointSpreadFunction = pointSpreadFunction;
+               params.oversampling = oversampling;
+               params.backgroundValue = backgroundValue;
+               params.signalNoiseRatio = signalNoiseRatio;
+               params.gaussianNoise = gaussianNoise;
+               params.poissonNoise = poissonNoise;
+               return dip::TestObject( sizes, params, randomNumberGenerator );
+          }, "sizes"_a,
+             "objectShape"_a = dip::S::ELLIPSOID,
+             "objectSizes"_a = dip::FloatArray{ 10 },
+             "objectAmplitude"_a = 1.0,
+             "randomShift"_a = false,
+             "generationMethod"_a = dip::S::GAUSSIAN,
+             "modulationDepth"_a = 0.0,
+             "modulationFrequency"_a = dip::FloatArray{},
+             "pointSpreadFunction"_a = dip::S::NONE,
+             "oversampling"_a = 1.0,
+             "backgroundValue"_a = 0.01,
+             "signalNoiseRatio"_a = 0.0,
+             "gaussianNoise"_a = 1.0,
+             "poissonNoise"_a = 1.0 );
 
    m.def( "FillRamp", &dip::FillRamp, "out"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
    m.def( "CreateRamp", py::overload_cast< dip::UnsignedArray const&, dip::uint, dip::StringSet const& >( &dip::CreateRamp ), "sizes"_a, "dimension"_a, "mode"_a = dip::StringSet{} );

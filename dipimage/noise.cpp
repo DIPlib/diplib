@@ -25,6 +25,8 @@
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
+      static dip::Random random;
+
       DML_MIN_ARGS( 1 );
       DML_MAX_ARGS( 4 );
 
@@ -44,8 +46,6 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if( nrhs > 3 ) {
          param2 = dml::GetFloat( prhs[ 3 ] );
       }
-
-      dip::Random random;
 
       if( type == "gaussian" ) {
          dip::GaussianNoise( in, out, random, param1 * param1 );

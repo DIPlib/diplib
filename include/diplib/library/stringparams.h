@@ -54,6 +54,8 @@ constexpr char const* RANDOM = "random";
 constexpr char const* GRID = "grid";
 constexpr char const* FRACTION = "fraction";
 constexpr char const* COUNT = "count";
+constexpr char const* NONE = "none";
+constexpr char const* INCOHERENT = "incoherent";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";
@@ -234,6 +236,13 @@ constexpr char const* ALREADY_EXPANDED = "already expanded";
 // Blend modes
 constexpr char const* ASSIGN = "assign";
 constexpr char const* ADD = "add";
+
+// Object shapes
+constexpr char const* ELLIPSOID = "ellipsoid";
+constexpr char const* ELLIPSOID_SHELL = "ellipsoid shell";
+constexpr char const* BOX = "box";
+constexpr char const* BOX_SHELL = "box shell";
+constexpr char const* CUSTOM = "custom";
 
 } // namespace S
 

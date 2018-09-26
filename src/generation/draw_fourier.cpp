@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for image drawing functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,12 @@
 #include "diplib.h"
 #include "diplib/generation.h"
 #include "diplib/math.h"
+#include "diplib/statistics.h"
+#include "diplib/geometry.h"
+#include "diplib/transform.h"
+#include "diplib/linear.h"
+#include "diplib/microscopy.h"
+#include "diplib/mapping.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -119,6 +125,20 @@ void FTEllipsoid(
    DIP_THROW_IF( !radius.empty() && ( radius <= 0.0 ).any(), E::INVALID_PARAMETER );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( radius, nDims, 1.0 ));
 
+   switch( nDims ) {
+      case 1:
+         amplitude *= 2 * radius[ 0 ];
+         break;
+      case 2:
+         amplitude *= pi * radius[ 0 ] * radius[ 1 ];
+         break;
+      case 3:
+         amplitude *= 4.0 / 3.0 * pi * radius[ 0 ] * radius[ 1 ] * radius[ 2 ];
+         break;
+      default:
+         DIP_THROW( E::DIMENSIONALITY_NOT_SUPPORTED );
+   }
+
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       radius[ ii ] = radius[ ii ] * 2 * pi / static_cast< dfloat >( out.Size( ii ) );
    }
@@ -129,6 +149,7 @@ void FTEllipsoid(
    switch( nDims ) {
       case 1:
          Sinc( rr, out );
+         out *= amplitude;
          break;
       case 2:
          // 2 * amplitude * BesselJ1( rr ) / rr
@@ -224,6 +245,222 @@ void FTGaussian(
    }
    out.Fill( 0 );
    DrawBandlimitedPoint( out, out.GetCenter(), { amplitude }, sigma, truncation );
+}
+
+namespace {
+
+void ToSpatial(
+      Image& out,
+      Image& outFT,
+      bool& isFT
+){
+   if( isFT ) {
+      if( outFT.IsForged() ) {
+         DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, { S::INVERSE, S::REAL } ));
+      } else {
+         DIP_STACK_TRACE_THIS( FourierTransform( out, out, { S::INVERSE, S::REAL } ));
+      }
+      isFT = false;
+   }
+}
+
+}
+
+void TestObject(
+      Image& out,
+      TestObjectParams const& params,
+      Random& random
+) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.DataType().IsFloat(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( out.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
+
+   bool protect = out.Protect( true );
+
+   // -- Stage 1: generate shape --
+
+   DIP_THROW_IF( params.objectSizes.empty(), E::ARRAY_PARAMETER_EMPTY );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF(( params.objectSizes.size() != 1 ) && ( params.objectSizes.size() != nDims ), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   bool isFT;
+   DIP_STACK_TRACE_THIS( isFT = BooleanFromString( params.generationMethod, S::FOURIER, S::GAUSSIAN ));
+
+   // Origin for "gauss" method
+   FloatArray origin = out.GetCenter();
+   if( !isFT && params.randomShift ) {
+      UniformRandomGenerator rng( random );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         origin[ ii ] += rng( -0.5, 0.5 );
+      }
+   }
+
+   // Generate shape
+   if( params.objectShape == S::ELLIPSOID ) {
+      if( isFT ) {
+         auto sizes = params.objectSizes;
+         sizes /= 2;
+         DIP_STACK_TRACE_THIS( FTEllipsoid( out, sizes, params.objectAmplitude ));
+      } else {
+         for( dip::uint ii = 1; ii < params.objectSizes.size(); ++ii ) {
+            DIP_THROW_IF( params.objectSizes[ ii ] != params.objectSizes[ 0 ], "The combination of \"ellipsoid\" and \"gauss\" requires isotropic object sizes" );
+         }
+         out.Fill( 0 );
+         DIP_STACK_TRACE_THIS( DrawBandlimitedBall( out, params.objectSizes[ 0 ], origin, { params.objectAmplitude }, S::FILLED, 0.9 ));
+      }
+   } else if( params.objectShape == S::ELLIPSOID_SHELL ) {
+      if( isFT ) {
+         auto sizes = params.objectSizes;
+         sizes /= 2;
+         DIP_STACK_TRACE_THIS( FTEllipsoid( out, sizes, params.objectAmplitude ));
+         Image inner = out.Similar();
+         sizes -= 2;
+         DIP_STACK_TRACE_THIS( FTEllipsoid( inner, sizes, params.objectAmplitude ));
+         out -= inner;
+      } else {
+         for( dip::uint ii = 1; ii < params.objectSizes.size(); ++ii ) {
+            DIP_THROW_IF( params.objectSizes[ ii ] != params.objectSizes[ 0 ], "The combination of \"ellipsoid shell\" and \"gauss\" requires isotropic object sizes" );
+         }
+         out.Fill( 0 );
+         DIP_STACK_TRACE_THIS( DrawBandlimitedBall( out, params.objectSizes[ 0 ], origin, { params.objectAmplitude }, S::EMPTY, 0.9 ));
+      }
+   } else if( params.objectShape == S::BOX ) {
+      if( isFT ) {
+         auto sizes = params.objectSizes;
+         sizes /= 2;
+         DIP_STACK_TRACE_THIS( FTBox( out, sizes, params.objectAmplitude ));
+      } else {
+         out.Fill( 0 );
+         DIP_STACK_TRACE_THIS( DrawBandlimitedBox( out, params.objectSizes, origin, { params.objectAmplitude }, S::FILLED, 0.9 ));
+      }
+   } else if( params.objectShape == S::BOX_SHELL ) {
+      if( isFT ) {
+         auto sizes = params.objectSizes;
+         sizes /= 2;
+         DIP_STACK_TRACE_THIS( FTBox( out, sizes, params.objectAmplitude ));
+         Image inner = out.Similar();
+         sizes -= 2;
+         DIP_STACK_TRACE_THIS( FTBox( inner, sizes, params.objectAmplitude ));
+         out -= inner;
+      } else {
+         out.Fill( 0 );
+         DIP_STACK_TRACE_THIS( DrawBandlimitedBox( out, params.objectSizes, origin, { params.objectAmplitude }, S::EMPTY, 0.9 ));
+      }
+   } else if( params.objectShape == S::CUSTOM ) {
+      // Don't do anything, `out` already contains the shape
+      // TODO: call Shift if params.randomShift
+   } else {
+      DIP_THROW_INVALID_FLAG( params.objectShape );
+   }
+
+   // Random shift to origin for "ft" method
+   Image outFT;
+   if( isFT && params.randomShift ) {
+      UniformRandomGenerator rng( random );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         origin[ ii ] = rng( -0.5, 0.5 );
+      }
+      DIP_STACK_TRACE_THIS( ShiftFT( out, outFT, origin ));
+   }
+
+   // -- Stage 2: modulate --
+
+   if( params.modulationDepth != 0 ) {
+
+      DIP_THROW_IF( params.modulationFrequency.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+
+      // We modulate in the spatial domain
+      ToSpatial( out, outFT, isFT );
+
+      // Modulate along one dimension at the time
+      dfloat amplitude = params.modulationDepth / static_cast< dfloat >( params.modulationFrequency.count() );
+      auto m = MaximumAndMinimum( out );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         // TODO: This is an inefficient way of computing the modulation, but I presume this is not going to be used a whole lot.
+         //       That this is related to ShiftFT, and in the original code both were handled using the same functions.
+         if( params.modulationFrequency[ ii ] != 0 ) {
+            Image tmp = CreateRamp( out.Sizes(), ii );
+            tmp *= 2.0 * pi * params.modulationFrequency[ ii ];
+            Cos( tmp, tmp );
+            m = MaximumAndMinimum( tmp );
+            LinearCombination( out, tmp, out, 1.0, amplitude );
+            m = MaximumAndMinimum( out );
+         }
+      }
+
+   }
+
+   // -- Stage 3: blur --
+
+   if( params.pointSpreadFunction != S::NONE ) {
+      DIP_THROW_IF( params.oversampling <= 0, E::INVALID_PARAMETER );
+
+      if( params.pointSpreadFunction == S::GAUSSIAN ) {
+
+         ToSpatial( out, outFT, isFT );
+         DIP_STACK_TRACE_THIS( GaussFIR( out, out, { 0.9 * params.oversampling } ));
+
+      } else if( params.pointSpreadFunction == S::INCOHERENT ) {
+
+         if( !isFT ) {
+            DIP_STACK_TRACE_THIS( FourierTransform( out, outFT ));
+            isFT = true; // to mark we're in the frequency domain now
+         }
+         Image otf = out.Similar( DT_SFLOAT );
+         DIP_STACK_TRACE_THIS( IncoherentOTF( otf, 0.0, params.oversampling, 1.0 ));
+         if( outFT.IsForged() ) {
+            outFT *= otf;
+         } else {
+            out *= otf;
+         }
+
+      } else {
+         DIP_THROW_INVALID_FLAG( params.pointSpreadFunction );
+      }
+   }
+
+   // We're done with the frequency domain now, transform to spatial domain if we're not there yet
+   ToSpatial( out, outFT, isFT );
+
+   // -- Stage 4: noise --
+
+   DIP_THROW_IF( params.backgroundValue < 0.0, E::PARAMETER_OUT_OF_RANGE );
+
+   if( params.signalNoiseRatio > 0 ) {
+      DIP_THROW_IF( params.gaussianNoise < 0.0, E::INVALID_PARAMETER );
+      DIP_THROW_IF( params.poissonNoise < 0.0, E::PARAMETER_OUT_OF_RANGE );
+
+      // Determine image energy and mean intensity
+      dfloat objEnergy = MeanSquareModulus( out ).As< dfloat >();
+
+      // Add background
+      if( params.backgroundValue != 0.0 ) {
+         out += params.backgroundValue;
+      }
+
+      // Add Poisson Noise
+      if( params.poissonNoise != 0.0 ) {
+         dfloat pn = params.signalNoiseRatio / params.poissonNoise * ( params.gaussianNoise + params.poissonNoise );
+         DIP_STACK_TRACE_THIS( Clip( out, out, 0.0, 0.0, S::LOW ));
+         dfloat objIntensity = MeanModulus( out ).As< dfloat >();
+         dfloat cnv = pn * objIntensity / objEnergy;
+         DIP_STACK_TRACE_THIS( PoissonNoise( out, out, random, cnv ));
+      }
+
+      // Add Gaussian Noise
+      if( params.gaussianNoise != 0.0 ) {
+         dfloat gn = params.signalNoiseRatio / params.gaussianNoise * ( params.gaussianNoise + params.poissonNoise );
+         dfloat var = objEnergy / gn;
+         DIP_STACK_TRACE_THIS( GaussianNoise( out, out, random, var ));
+      }
+
+   } else {
+      // We're not adding noise, but we still want to add the background
+      if( params.backgroundValue != 0.0 ) {
+         out += params.backgroundValue;
+      }
+   }
+
+   out.Protect( protect );
 }
 
 } // namespace

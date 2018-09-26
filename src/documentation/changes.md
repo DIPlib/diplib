@@ -212,6 +212,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
   renamed to `dip::FullBilateralFilter`. Added new function `dip::BilateralFilter` as
   an interface to all bilateral filter variants.
 
+- `dip_TestObjectCreate`, `dip_TestObjectModulate`, `dip_TestObjectBlur` and
+  `dip_TestObjectAddNoise` have been merged into a single function: `dip::TestObject`.
+  The new function additionally has the option to generate test objects with Gaussian
+  edges directly in the spatial domain.
+
 [//]: # (--------------------------------------------------------------)
 
 \section changes_functionality Changes in functionality
@@ -535,6 +540,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `dt` has a new algorithm, which is used by default. It gives exact results and works for any number of
     dimensions, and it should be faster than the previous default algorithm. The old default algorithm can
     be executed with `dt(...,'fast')`.
+
+  - `testobject` has a changed interface, the input argument order has changed and most arguments are now
+    name-value pairs. Its functionality has been greatly extended.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
   `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
