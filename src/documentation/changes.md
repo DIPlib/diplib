@@ -504,7 +504,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
     two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
     two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
     to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
-    always given by the image, use `dip_image/pixelsize` to set it.
+    always given by the image, use `dip_image/pixelsize` to set it. `readics` and `readtiff` are
+    the interfaces to the corresponding *DIPlib* file reading functions.
 
   - `countneighbours` has been renamed to `countneighbors` for consistency in spelling.
 

@@ -169,56 +169,59 @@ Some of the following functions already have their prototype written in the new 
 
 Some functions that haven't been ported are not listed here -- these will not be ported.
 
-- `affine_trans`
+Pure M-files:
 - `afm_flatten`
-- `arcf`
 - `backgroundoffset`
-- `cal_readnoise`
 - `correctshift`
 - `countingframe`
 - `cpf`
-- `deblock`
-- `distancebetweenpointsets`
 - `dpr`
-- `find_affine_trans`
 - `find_lambda`
 - `findlocalshift`
 - `findlocmax`
-- `findospeaks`
 - `fmmatch`
 - `frc`
-- `hist2image`
-- `hybridf`
 - `jpeg_quality_score`
 - `lfmse`
-- `localshift`
 - `mappg`
 - `mcd`
 - `morphscales`
 - `msr_remap`
-- `nufft_type1`
-- `nufft_type2`
 - `opticflow`
 - `orientationplot`
+- `quadraturetensor`
+- `scale2rgb`
+- `scalespace`
+- `setlabels`
+- `tikhonovmiller`
+- `umbra`
+- `wiener`
+
+Requiring C++ code:
+- `affine_trans`
+- `arcf`
+- `cal_readnoise`
+- `deblock`    (depends on `arcf`)
+- `distancebetweenpointsets`
+- `find_affine_trans`
+- `findospeaks`
+- `hybridf`    (depends on `arcf`)
+- `localshift`
+- `nufft_type1`
+- `nufft_type2`
 - `orientationspace`
 - `percf_adap`
 - `percf_adap_banana`
 - `pst`
-- `quadraturetensor`
 - `radoncircle`
-- `readrawim`
 - `rotation3d`
-- `scale2rgb`
-- `scalespace`
-- `setlabels`
 - `splitandmerge`
 - `structf`
-- `tikhonovmiller`
 - `transform`
-- `umbra`
-- `view5d`
-- `wiener`
 - `write_add`
+
+Interface to Rainer Heintzmann's 5D Viewer written in Java:
+- `view5d`
 
 Color stuff, which needs lots of work to bring in shape:
 - `change_chroma`
