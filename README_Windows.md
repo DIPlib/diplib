@@ -154,13 +154,13 @@ Or start the GUI:
 Once the `INSTALL` target has finished building and installing, start *Python*.
 Type the following commands:
 ```python
-    import os
-    os.chdir(r'C:\Users\<name>\DIPlib\lib')
+    import sys
+    sys.path.append(r'C:\Program Files\DIPlib\lib')
     os.environ["PATH"] = os.environ["PATH"] + r'C:\Program Files\DIPlib\lib'
     import PyDIP as dip
     import PyDIP.PyDIPviewer as dv
 ```
-(Replace `C:\Users\<name>\DIPlib` with the actual path you installed to.)
+(Replace `C:\Program Files\DIPlib\lib` with the actual path you installed to.)
 The `os.chdir` command is necessary because we haven't installed *PyDIP* to a
 directory that *Python* knows about. This will be fixed at some point.
 

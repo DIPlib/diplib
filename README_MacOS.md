@@ -149,8 +149,8 @@ Or start the GUI:
 Once the `install` target has finished building and installing, start *Python*.
 Type the following commands:
 ```python
-    import os
-    os.chdir(r'/Users/<name>/dip')
+    import sys
+    sys.path.append(r'/Users/<name>/dip')
     import PyDIP as dip
     import PyDIP.PyDIPviewer as dv
 ```
