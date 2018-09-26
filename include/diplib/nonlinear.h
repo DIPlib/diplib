@@ -211,11 +211,11 @@ inline Image SelectionFilter(
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// **Literature**
-/// - M. Kuwahara, K. Hachimura and M. Kinoshita, "Image Enhancement and Left Ventricular Contour Extraction Techniques
-///   Applied to Radioisotope Angiocardiograms", Automedica 3:107-119, 1980.
-/// - M. Nagao and T. Matsuyama, "Edge Preserving Smoothing", Computer Graphics and Image Processing 9:394-407, 1979.
+/// - M. Kuwahara, K. Hachimura and M. Kinoshita, "%Image enhancement and left ventricular contour extraction techniques
+///   applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
+/// - M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and %Image Processing 9:394-407, 1979.
 /// - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
-/// - P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
+/// - P. Bakker, "%Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
 ///   The Netherlands, 2002.
 ///
 /// \see dip::SelectionFilter.
@@ -297,7 +297,7 @@ inline Image NonMaximumSuppression(
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
 /// **Literature**
-/// - P. Perona and J. Malik, "Scale-Space and Edge Detection Using Anisotropic Diffusion",
+/// - P. Perona and J. Malik, "Scale-space and edge detection using anisotropic diffusion",
 ///   IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
 DIP_EXPORT void PeronaMalikDiffusion(
       Image const& in,
@@ -367,7 +367,7 @@ inline Image GaussianAnisotropicDiffusion(
 ///
 /// \f[ I^{t+1} = I^t + \lambda \sum_\eta \psi ( \nabla_\eta I^t, \sigma ) \; , \f]
 ///
-/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\eta\f$ are the each of the cardinal directions,
+/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\eta\f$ are each of the cardinal directions,
 /// \f$\nabla_\eta\f$ is the finite difference in direction \f$\eta\f$, and
 ///
 /// \f[
@@ -383,8 +383,8 @@ inline Image GaussianAnisotropicDiffusion(
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
 /// **Literature**
-/// - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust Anisotropic Diffusion,"
-///   IEEE Transactions on Image Processing 7(3):421-432, 1998.
+/// - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion,"
+///   IEEE Transactions on %Image Processing 7(3):421-432, 1998.
 inline void RobustAnisotropicDiffusion(
       Image const& in,
       Image& out,
@@ -428,9 +428,9 @@ inline Image RobustAnisotropicDiffusion(
 ///
 /// This function can be applied to images with two or more dimensions. `in` must be scalar and real-valued.
 /// The `"first"` flag is only supported for 2D images, if `in` has more dimensions, the `"first"` flag is
-/// isnored and `"all"` is assumed.
+/// ignored and `"all"` is assumed.
 ///
-/// In `"all"` mode, \f$D\f$ is composed from the eigen decoposition of the structure tensor \f$S\f$:
+/// In `"all"` mode, \f$D\f$ is composed from the eigen decomposition of the structure tensor \f$S\f$:
 ///
 /// \f[ S = V \, E \, V^T \; \rightarrow \; D = V \, E' \, V^T \; , \f]
 ///
@@ -478,19 +478,24 @@ inline Image CoherenceEnhancingDiffusion(
 /// \brief Adaptive Gaussian filtering.
 ///
 /// One or more parameter images control the adaptivity.
-/// The meaning of the parameter images depends on the dimensionality of the input image.
+/// The meaning of the parameter images depend on the dimensionality of the input image.
 /// The current implementation only supports 2D and 3D images.
 ///
 /// - 2D:
-///     - params[0] is the angle of the orientation
-///     - params[1] (optional) is a tensor image with the local kernel scale
+///     - `params[0]` is the angle of the orientation
+///     - `params[1]` (optional) is a tensor image with the local kernel scale
 ///
-/// - 3D:
-///     - params[0] is the polar coordinate phi of the first orientation
-///     - params[1] is the polar coordinate theta of the first orientation
-///     - params[2] (optional) is the polar coordinate phi of the second orientation
-///     - params[3] (optional) is the polar coordinate theta of the second orientation
-///     - params[3 or 5] (optional) is a tensor image with the local kernel scale
+/// - 3D (with 1D structures):
+///     - `params[0]` is the polar coordinate phi of the first orientation
+///     - `params[1]` is the polar coordinate theta of the first orientation
+///     - `params[2]` (optional) is a tensor image with the local kernel scale
+///
+/// - 3D (with 2D structures):
+///     - `params[0]` is the polar coordinate phi of the first orientation
+///     - `params[1]` is the polar coordinate theta of the first orientation
+///     - `params[2]` is the polar coordinate phi of the second orientation
+///     - `params[3]` is the polar coordinate theta of the second orientation
+///     - `params[4]` (optional) is a tensor image with the local kernel scale
 ///
 /// For intrinsic 1D strutures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
 /// 
@@ -554,9 +559,9 @@ inline Image AdaptiveGauss(
 ///
 /// The parameter images control the adaptivity.
 /// The current implementation only supports 2D images:
-/// - params[0] is the angle of the orientation
-/// - params[1] is the curvature
-/// - params[2] (optional) is a tensor image with the local kernel scale
+/// - `params[0]` is the angle of the orientation
+/// - `params[1]` is the curvature
+/// - `params[2]` (optional) is a tensor image with the local kernel scale
 ///
 /// The kernel scale parameter image is interpreted as follows.
 /// Each input tensor element corresponds with a tensor row in the scale image.
@@ -627,7 +632,7 @@ inline Image AdaptiveBanana(
 /// false colors at edges.
 ///
 /// **Literature**
-/// - C. Tomasi and R. Manduchi, "Bilateral filtering for Gray and Color Images," Proceedings of the 1998 IEEE
+/// - C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images," Proceedings of the 1998 IEEE
 ///   International Conference on Computer Vision, Bombay, India.
 DIP_EXPORT void FullBilateralFilter(
       Image const& in,
