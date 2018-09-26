@@ -26,6 +26,7 @@
 #include "diplib/linear.h"
 #include "diplib/mapping.h"
 #include "diplib/histogram.h"
+#include "diplib/distance.h"
 #include "diplib/framework.h"
 
 namespace dip {
@@ -359,7 +360,7 @@ SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference ) 
    return out;
 }
 
-DIP_EXPORT dfloat DiceCoefficient( Image const& in, Image const& reference ) {
+dfloat DiceCoefficient( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -367,7 +368,7 @@ DIP_EXPORT dfloat DiceCoefficient( Image const& in, Image const& reference ) {
    return 2 * TruePositives( in, reference ) / ( Measure( in ) + Measure( reference ) );
 }
 
-DIP_EXPORT dfloat JaccardIndex( Image const& in, Image const& reference ) {
+dfloat JaccardIndex( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -375,7 +376,7 @@ DIP_EXPORT dfloat JaccardIndex( Image const& in, Image const& reference ) {
    return TruePositives( in, reference ) / Measure( Supremum( in, reference ) );
 }
 
-DIP_EXPORT dfloat Specificity( Image const& in, Image const& reference ) {
+dfloat Specificity( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -383,7 +384,7 @@ DIP_EXPORT dfloat Specificity( Image const& in, Image const& reference ) {
    return TrueNegatives( in, reference ) / ( static_cast< dfloat >( in.NumberOfPixels() ) - Measure( reference ));
 }
 
-DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference ) {
+dfloat Sensitivity( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -391,7 +392,7 @@ DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference ) {
    return TruePositives( in, reference ) / Measure( reference );
 }
 
-DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference ) {
+dfloat Accuracy( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -409,13 +410,17 @@ DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference ) {
    return Measure( tmp ) / total;
 }
 
-DIP_EXPORT dfloat Precision( Image const& in, Image const& reference ) {
+dfloat HausdorffDistance( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !in.DataType().IsBinary() || !reference.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
-   return TruePositives( in, reference ) / Measure( in );
+   Image dt;
+   EuclideanDistanceTransform( !in, dt, S::OBJECT );
+   dfloat distance1 = Maximum( dt, reference ).As< dfloat >();
+   EuclideanDistanceTransform( !reference, dt, S::OBJECT );
+   dfloat distance2 = Maximum( dt, in ).As< dfloat >();
+   return std::max( distance1, distance2 );
 }
-
 
 } // namespace dip

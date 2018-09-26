@@ -897,11 +897,14 @@ DIP_EXPORT SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& r
 ///
 /// \f[ \text{Dice} = \frac{2 |A \cap B|}{|A|+|B|} = \frac{2\text{TP}}{2\text{TP}+\text{FP}+\text{FN}} \f]
 ///
-/// Note that this is equivalent to the harmonic mean between precision and sensitivity or recall:
+/// The Dice coefficient is equivalent to the harmonic mean between precision and sensitivity or recall (i.e. the
+/// F<sub>1</sub> score):
 /// ```cpp
 ///     dfloat dice = dip::DiceCoefficient( a, b );
 ///     dfloat alsoDice = 2.0 / ( 1.0 / dip::Precision( a, b ) + 1.0 / dip::Sensitivity( a, b ));
 /// ```
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
 ///
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
@@ -912,6 +915,8 @@ DIP_EXPORT dfloat DiceCoefficient( Image const& in, Image const& reference );
 /// The Jaccard index is defined as the area of the intersection of `in` and `reference` divided by their union:
 ///
 /// \f[ \text{Jaccard} = \frac{|A \cap B|}{|A \cup B|} = \frac{\text{TP}}{\text{TP}+\text{FP}+\text{FN}} \f]
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
 ///
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
@@ -935,6 +940,9 @@ DIP_EXPORT dfloat Specificity( Image const& in, Image const& reference );
 ///
 /// \f[ \text{sensitivity} = \frac{|A \cap B|}{|B|} = \frac{\text{TP}}{\text{TP}+\text{FN}} \f]
 ///
+/// Note that precision and sensitivity are each others mirror, that is, precision yields the same result as
+/// sensitivity with switched input images.
+///
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
 DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference );
@@ -944,6 +952,8 @@ DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference );
 /// Accuracy is defined as the ratio of correctly classified pixels to the total number of pixels:
 ///
 /// \f[ \text{accuracy} = \frac{|A \cap B| + |\neg A \cap \neg B|}{|A| + |\neg A|} = \frac{\text{TP}+\text{TN}}{\text{TP}+\text{FP}+\text{TN}+\text{FN}} \f]
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
 ///
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
@@ -956,9 +966,24 @@ DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference );
 ///
 /// \f[ \text{precision} = \frac{|A \cap B|}{|A|} = \frac{\text{TP}}{\text{TP}+\text{FP}} \f]
 ///
+/// Note that precision and sensitivity are each others mirror, that is, precision yields the same result as
+/// sensitivity with switched input images.
+///
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
-DIP_EXPORT dfloat Precision( Image const& in, Image const& reference );
+inline dfloat Precision( Image const& in, Image const& reference ) {
+   return Sensitivity( reference, in );
+}
+
+/// \brief Computes the Hausdorff distance between two binary images.
+///
+/// The Hausdorff distance is the largest distance one can find between a point in one set and the nearest point
+/// in the other set.
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
+///
+/// The two input images must have the same sizes, be scalar, and binary.
+DIP_EXPORT dfloat HausdorffDistance( Image const& in, Image const& reference );
 
 /// \brief Calculates the entropy, in bits, using a histogram with `nBins` bins.
 ///

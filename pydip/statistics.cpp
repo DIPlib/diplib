@@ -128,6 +128,7 @@ void init_statistics( py::module& m ) {
    m.def( "Sensitivity", &dip::Sensitivity, "in"_a, "reference"_a );
    m.def( "Accuracy", &dip::Accuracy, "in"_a, "reference"_a );
    m.def( "Precision", &dip::Precision, "in"_a, "reference"_a );
+   m.def( "HausdorffDistance", &dip::HausdorffDistance, "in"_a, "reference"_a );
 
    m.def( "Entropy", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Entropy ),
           "in"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );

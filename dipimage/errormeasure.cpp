@@ -31,37 +31,46 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image const reference = dml::GetImage( prhs[ 1 ] );
 
-      dip::Image mask;
-      dip::String method = "MSE";
+      dip::Image mask = ( nrhs > 2 ) ? dml::GetImage( prhs[ 2 ] ) : dip::Image{};
 
-      if( nrhs > 2 ) {
-         mask = dml::GetImage( prhs[ 2 ] );
-      }
-      if( nrhs > 3 ) {
-         method = dml::GetString( prhs[ 3 ] );
-      }
+      dip::String method = ( nrhs > 3 ) ? dml::GetString( prhs[ 3 ] ) : "mse";
+      dml::ToLower( method );
 
       dip::dfloat error;
-      if( method == "MSE" ) {
+      if( method == "mse" ) {
          error = dip::MeanSquareError( in, reference, mask );
-      } else if( method == "RMSE" ) {
+      } else if( method == "rmse" ) {
          error = dip::RootMeanSquareError( in, reference, mask );
-      } else if( method == "ME" ) {
+      } else if( method == "me" ) {
          error = dip::MeanError( in, reference, mask );
-      } else if( method == "MAE" ) {
+      } else if( method == "mae" ) {
          error = dip::MeanAbsoluteError( in, reference, mask );
-      } else if( method == "IDivergence" ) {
+      } else if( method == "idivergence" ) {
          error = dip::IDivergence( in, reference, mask );
-      } else if( method == "InProduct" ) {
+      } else if( method == "inproduct" ) {
          error = dip::InProduct( in, reference, mask );
-      } else if( method == "LnNormError" ) {
+      } else if( method == "lnnormerror" ) {
          error = dip::LnNormError( in, reference, mask );
-      } else if( method == "PSNR" ) {
+      } else if( method == "psnr" ) {
          error = dip::PSNR( in, reference, mask );
-      } else if( method == "SSIM" ) {
+      } else if( method == "ssim" ) {
          error = dip::SSIM( in, reference, mask );
-     } else if( method == "MutualInformation" ) {
+      } else if( method == "mutualinformation" ) {
          error = dip::MutualInformation( in, reference, mask );
+      } else if( method == "dice" ) {
+         error = dip::DiceCoefficient( in, reference );
+      } else if( method == "jaccard" ) {
+         error = dip::JaccardIndex( in, reference );
+      } else if( method == "specificity" ) {
+         error = dip::Specificity( in, reference );
+      } else if( method == "sensitivity" ) {
+         error = dip::Sensitivity( in, reference );
+      } else if( method == "accuracy" ) {
+         error = dip::Accuracy( in, reference );
+      } else if( method == "precision" ) {
+         error = dip::Precision( in, reference );
+      } else if( method == "hausdorff" ) {
+         error = dip::HausdorffDistance( in, reference );
       } else {
          DIP_THROW_INVALID_FLAG( method );
       }
