@@ -20,10 +20,10 @@
 This is a list of tasks that still need to be done, not in any particular order.
 
 **NOTE:** The online documentation is not updated continuously, please see
-<a href="https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md">this
-document's source</a> for the most up-to-date version.
+[this document's source](https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md)
+for the most up-to-date version.
 
-(2017/06/05) We just passed the 2000 documented entities (functions, classes, constants) mark!
+(2017/06/05) We just passed the 2000 documented entities (functions, classes, constants) mark!  
 (2018/05/23) We now have well over 3000 documented entities and close to 100k lines of code.
 
 ## Gaps in infrastructure:
