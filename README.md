@@ -62,6 +62,7 @@ Important `cmake` command-line arguments:
     -DDIP_ENABLE_STACK_TRACE=Off       # disable stack trace generation on exception
     -DDIP_ENABLE_ASSERT=Off            # disable asserts
     -DDIP_ENABLE_DOCTEST=Off           # disable doctest within DIPlib
+    -DDIP_ENABLE_MULTITHREADING=Off    # disable OpenMP multithreading
     -DDIP_ENABLE_ICS=Off               # disable ICS file format support
     -DDIP_ENABLE_TIFF=Off              # disable TIFF file format support
     -DDIP_ENABLE_FFTW=On               # enable the use of FFTW3
@@ -137,6 +138,26 @@ The *DIPimage* User Manual requires [*Pandoc*](https://pandoc.org),
 [*LaTeX*](http://www.tug.org/texlive/). Note that you'll need certain *LaTeX* packages,
 such as `upquote`, that are not in the most basic set of packages. You can install these
 through the *TeX Live* package manager.
+
+
+## Linking against the library
+
+When using CMake, and importing the `DIP` target into your project in the right way, you will just need
+to link against the `DIP` target and everything will be configured correctly. Otherise, there are several
+macros that you should define when building any program that links against DIPlib:
+
+If DIPlib was build with the `DIP_SHARED_LIBRARY` flag was not set, then you need to define the `DIP__IS_STATIC`
+macro when compiling the code that links against it. Likewise, if the `DIP_ALWAYS_128_PRNG` flag was set,
+then you must define a `DIP__ALWAYS_128_PRNG` macro when compiling your program. Mismatching this flag
+could cause your program to not link, or worse, crash at runtime.
+
+The following flags do not need to be matched, but they should be if you want the inline functions to behave
+the same as the pre-compiled ones:
+ - `DIP_ENABLE_STACK_TRACE`: `DIP__EXCEPTIONS_RECORD_STACK_TRACE`
+ - `DIP_ENABLE_ASSERT`: `DIP__ENABLE_ASSERT`
+
+For DIPviewer, if `DIP_SHARED_LIBRARY` was not set, define the `DIP__VIEWER_IS_STATIC` macro. Also define
+`DIP__HAS_FREEGLUT` or `DIP__HAS_GLFW` depending on which back-end is used.
 
 
 ## License
