@@ -1038,10 +1038,13 @@ inline dip::Image GetImage(
    } else {
       dip::DataSegment dataSegment;
       if( mode == GetImageMode::SHARED_COPY ) {
+         //std::cout << "Creating shared copy -- input data pointer = " << mxGetData( mxdata );
          mxArray *copy = mxCreateSharedDataCopy( mxdata );
+         //std::cout << " -- copy data pointer = " << mxGetData( copy ) << '\n';
          mexMakeArrayPersistent( copy );
          dataSegment = dip::DataSegment{ copy, []( void* ptr ){ mxDestroyArray( static_cast< mxArray* >( ptr )); }};
       } else {
+         //std::cout << "Input data pointer = " << mxGetData( mxdata ) << '\n';
          dataSegment = dip::NonOwnedRefToDataSegment( mxdata );
       }
       void* origin;
@@ -1512,9 +1515,12 @@ mxArray* GetArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    // Create a MATLAB `dip_image` object with the `mxArray` inside.
    // We create an empty object, then set the Array property, because calling the constructor
    // with the `mxArray` for some reason causes a deep copy of the `mxArray`.
+   //std::cout << "Output data pointer = " << mxGetData( mat );
    mxArray* out;
    mexCallMATLAB( 1, &out, 0, nullptr, imageClassName );
    mxSetPropertyShared( out, 0, arrayPropertyName, mat );
+   //mxArray* tmp = mxGetPropertyShared( out, 0, arrayPropertyName );
+   //std::cout << " -- output data pointer = " << mxGetData( tmp ) << '\n';
    // Set NDims property
    mxArray* ndims = mxCreateDoubleScalar( static_cast< double >( img.Dimensionality() ));
    mxSetPropertyShared( out, 0, ndimsPropertyName, ndims );
