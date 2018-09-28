@@ -20,8 +20,8 @@
 This is a list of tasks that still need to be done, not in any particular order.
 
 **NOTE:** The online documentation is not updated continuously, please see
-[this document's source](https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md)
-for the most up-to-date version.
+<a href="https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md">this
+document's source</a> for the most up-to-date version.
 
 (2017/06/05) We just passed the 2000 documented entities (functions, classes, constants) mark!  
 (2018/05/23) We now have well over 3000 documented entities and close to 100k lines of code.
@@ -115,54 +115,52 @@ low priority in the porting process, and some might not be ported at all. It bei
 here is not an indication that the function needs to be ported, but if it's not listed here,
 it should not be ported (or already is ported).
 
-Some of the following functions already have their prototype written in the new library.
-
 - diplib/analysis.h
-    - dip_OrientationSpace (dip_structure.h)
-    - dip_ExtendedOrientationSpace (dip_structure.h)
-    - dip_CurvatureFromTilt (dip_structure.h)
-    - dip_OSEmphasizeLinearStructures (dip_structure.h)
-    - dip_DanielsonLineDetector (dip_structure.h)
+    - `dip_OrientationSpace` (`dip_structure.h`)
+    - `dip_ExtendedOrientationSpace` (`dip_structure.h`)
+    - `dip_CurvatureFromTilt` (`dip_structure.h`)
+    - `dip_OSEmphasizeLinearStructures` (`dip_structure.h`)
+    - `dip_DanielsonLineDetector` (`dip_structure.h`)
 
 - diplib/distance.h
-    - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
-    - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
+    - `dip_FastMarching_PlaneWave` (`dip_distance.h`) (this function needs some input image checking!)
+    - `dip_FastMarching_SphericalWave` (`dip_distance.h`) (this function needs some input image checking!)
 
 - diplib/linear.h
-    - dip_OrientedGauss (dip_linear.h)
+    - `dip_OrientedGauss` (`dip_linear.h`)
 
 - diplib/math.h
-    - dip_RemapOrientation (dip_point.h)
-    - dip_ChangeByteOrder (dip_manipulation.h)
-    - dip_SimpleGaussFitImage (dip_numerical.h)
-    - dip_EmFitGaussians (dip_numerical.h)
-    - dip_EmGaussTest (dip_numerical.h)
+    - `dip_RemapOrientation` (`dip_point.h`)
+    - `dip_ChangeByteOrder` (`dip_manipulation.h`)
+    - `dip_SimpleGaussFitImage` (`dip_numerical.h`)
+    - `dip_EmFitGaussians` (`dip_numerical.h`)
+    - `dip_EmGaussTest` (`dip_numerical.h`)
 
 - diplib/microscopy.h
-    - dip_RestorationTransform (dip_restoration.h)
-    - dip_TikhonovRegularizationParameter (dip_restoration.h)
-    - dip_TikhonovMiller (dip_restoration.h)
-    - dip_Wiener (dip_restoration.h)
-    - dip_PseudoInverse (dip_restoration.h) (this name is wrong, maybe InverseFilterRestoration?)
+    - `dip_RestorationTransform` (`dip_restoration.h`)
+    - `dip_TikhonovRegularizationParameter` (`dip_restoration.h`)
+    - `dip_TikhonovMiller` (`dip_restoration.h`)
+    - `dip_Wiener` (`dip_restoration.h`)
+    - `dip_PseudoInverse` (`dip_restoration.h`) (this name is wrong, maybe InverseFilterRestoration?)
 
 - diplib/morphology.h
-    - dip_UpperEnvelope (dip_morphology.h)
-    - dip_UpperSkeleton2D (dip_binary.h)
+    - `dip_UpperEnvelope` (`dip_morphology.h`)
+    - `dip_UpperSkeleton2D` (`dip_binary.h`)
 
 - diplib/nonlinear.h
-    - dip_RankContrastFilter (dip_rankfilters.h)
-    - dip_Sigma (dip_filtering.h)
-    - dip_BiasedSigma (dip_filtering.h)
-    - dip_GaussianSigma (dip_filtering.h)
-    - dip_ArcFilter (dip_bilateral.h)
-    - dip_StructureAdaptiveGauss (dip_adaptive.h)
-    - dip_AdaptivePercentile (dip_adaptive.h)
-    - dip_AdaptivePercentileBanana (dip_adaptive.h)
-    - dip_PGST3DLine (dip_pgst.h) (this could have a better name!)
-    - dip_PGST3DSurface (dip_pgst.h) (this could have a better name!)
+    - `dip_RankContrastFilter` (`dip_rankfilters.h`)
+    - `dip_Sigma` (`dip_filtering.h`)
+    - `dip_BiasedSigma` (`dip_filtering.h`)
+    - `dip_GaussianSigma` (`dip_filtering.h`)
+    - `dip_ArcFilter` (`dip_bilateral.h`)
+    - `dip_StructureAdaptiveGauss` (`dip_adaptive.h`)
+    - `dip_AdaptivePercentile` (`dip_adaptive.h`)
+    - `dip_AdaptivePercentileBanana` (`dip_adaptive.h`)
+    - `dip_PGST3DLine` (`dip_pgst.h`) (this could have a better name!)
+    - `dip_PGST3DSurface` (`dip_pgst.h`) (this could have a better name!)
 
 - diplib/transform.h
-    - dip_HartleyTransform (dip_transform.h)
+    - `dip_HartleyTransform` (`dip_transform.h`)
 
 
 ## List of *DIPimage 2* functions that still need to be ported
