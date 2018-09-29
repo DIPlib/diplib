@@ -48,6 +48,10 @@ if nargin<4
    sh = sg;
 end
 
+if ~isa(in,'dip_image')
+   in = dip_image(in);
+end
+
 if ndims(in)==1
    out = dxx(in,sg);
 else

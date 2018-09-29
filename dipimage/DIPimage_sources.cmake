@@ -106,7 +106,6 @@ rankmin_closing.cpp
 readics.cpp
 readtiff.cpp
 reconstruction.cpp
-relabel.cpp
 resample.cpp
 riesz.cpp
 rotation.cpp

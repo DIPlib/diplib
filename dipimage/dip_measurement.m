@@ -41,6 +41,7 @@
 %
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+% Based on original DIPimage code: (c)2008, Michael van Ginkel.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -313,7 +314,7 @@ classdef dip_measurement
          end
          out = table(data{:},'VariableNames',variableNames);
       end
-      
+
       function [m,id] = min(obj,name)
          %MIN   Finds the minimum value for each measurement.
          %   MIN(M) returns a row vector with the minimum value for each
@@ -339,7 +340,7 @@ classdef dip_measurement
             m = min(values);
          end
       end
-      
+
       function [m,id] = max(obj,name)
          %MAX   Finds the maximum value for each measurement.
          %   MAX(M) returns a row vector with the maximum value for each
@@ -365,7 +366,6 @@ classdef dip_measurement
             m = max(values);
          end
       end
-      
 
       % ------- INDEXING -------
 
@@ -490,7 +490,7 @@ classdef dip_measurement
             if strcmpi(name,'ID')
                % Change object IDs for the measured objects.
                % All must change at the same time:
-               if ~isnumeric(b) || numel(b)~=length(a.Objects) || any(mod(b,1)) || any(b<1)
+               if ~isnumeric(b) || numel(b)~=numel(a.Objects) || any(mod(b,1)) || any(b<1) || numel(b)~=numel(unique(b))
                   error('Invalid object ID array')
                end
                a.Objects = b(:);
@@ -583,6 +583,124 @@ classdef dip_measurement
             out.Data = [out.Data;varargin{ii}.Data(:,J)];
             out.Objects = [out.Objects;varargin{ii}.Objects];
          end
+      end
+
+      % ------- MODIFICATION -------
+
+      function [msr,map_array] = remap(msr,t_lut,msr_ref)
+         %REMAP   Remap label IDs in a measurement object
+         %  Maps a measurement structure corresponding to a particular label
+         %  image to a measurement structure corresponding to a re-mapped
+         %  version of that label image.
+         %
+         % SYNOPSIS:
+         %  [msr_new,map_array] = msr_remap(msr_org,t_lut,msr_mapped)
+         %
+         % PARAMETERS:
+         %  msr_org:    The measurement structure as measured on the original label image
+         %  t_lut:      the look-up table [from setlabels()] used to re-map the label
+         %              image. Remapping two different labels onto the same label is not
+         %              allowed.
+         %  msr_mapped: A measurement structure obtained on the new label image may
+         %              have a different ordering of the measurement ID's. If you
+         %              have performed a measurement on the new label image, provide
+         %              it as the third argument and the measurement ID's in msr_new
+         %              will be put in the same order. Optional.
+         %
+         % OUTPUT:
+         %  map_array:  Is such that msr_new.Size == msr_org.Size(map_array).
+         %              Careful though: msr_new ~= msr_org(map_array)
+         %
+         % EXAMPLE:
+         %   % Create test image and measure:
+         %   iml = label(threshold(gaussf(noise(newim([200,200])),5)))
+         %   msr_org = measure(iml,[],'Size');
+         %   n_obj = max(iml);
+         %   % Randomly select half objects to remove:
+         %   remove_ids = unique(randi(n_obj,1,floor(n_obj/2)));
+         %
+         %   % Remove objects and measure again:
+         %   [iml_new,t_lut] = setlabels(iml,remove_ids,'clear');
+         %   msr_size = measure(iml_new,[],'Size');
+         %
+         %   % Remap first measurement, it is now identical to the second one:
+         %   [msr_new,map] = remap(msr_org,t_lut);
+         %   all(msr_new.Size == msr_size.Size)       % is true
+         %   all(msr_new.Size == msr_org.Size(map))   % is true
+         %
+         % EXAMPLE (with reordering of labels):
+         %   t_lut = uint32(0):n_obj;
+         %   t_lut(remove_ids) = 0;
+         %   t_lut(t_lut>0) = nnz(t_lut):-1:1; % assign reversed labels to these
+         %   iml_new = lut(iml,t_lut);
+         %   msr_size = measure(iml_new,[],'Size');
+         %
+         %   % Remap first measurement, it contains same objects, but in a different
+         %   % order compared to the second one:
+         %   [msr_new,map] = remap(msr_org,t_lut);
+         %   all(msr_new.Size == msr_size.Size)       % is false
+         %   all(msr_new.Size == msr_org.Size(map))   % is true
+         %
+         %   % Remap first measurement, and put objects in same order as second
+         %   % measurement. It is now identical to the second one:
+         %   [msr_new,map] = remap(msr_org,t_lut,msr_size);
+         %   all(msr_new.size == msr_size.size)       % is true
+         %   all(msr_new.size == msr_org.size(map))   % is true
+         %
+         % SEE ALSO:
+         %  setlabels, relabel
+
+         % Based on original DIPimage code: (c)2008, Michael van Ginkel.
+
+         if ~isa(msr,'dip_measurement')
+            error('Illegal arguments to dip_measurement.remap')
+         end
+         if ~isnumeric(t_lut) || ~isvector(t_lut)
+            error('T_LUT argument must be a numeric vector')
+         end
+         t_lut = double(t_lut);
+         % t_lut is an array that maps input IDs (index-1) to output IDs (value)
+
+         % Sanity check
+         if numel(msr.Objects) ~= numel(unique(msr.Objects))
+            error('dip_measurement object has non-unique IDs; this should not have happened')
+         end
+
+         % Assign new object IDs
+         old_ids = msr.Objects;
+         new_ids = t_lut(old_ids+1);
+         msr.Objects = new_ids;
+
+         % Get the mapping for fields, i.e. msr.Size
+         map_array = find(new_ids);
+
+         % Remove objects that now have ID==0
+         del = new_ids == 0;
+
+         % Test for skullduggery
+         new_ids(del) = [];
+         if numel(new_ids) ~= numel(unique(new_ids))
+            error('dip_measurement.remap can only deal with unique remappings or deletions');
+         end
+
+         % Remove objects that now have ID==0
+         msr.Objects(del) = [];
+         msr.Data(del,:) = [];
+
+         % Reorder remaining objects to be same order as in msr_ref
+         if nargin>=3
+            if ~isa(msr_ref,'dip_measurement')
+               error('MSR_MAPPED must be a dip_measurement structure')
+            end
+            [~,I] = ismember(msr_ref.Objects,msr.Objects);
+            if any(I==0)
+               error('MSR_MAPPED contains object IDs not in the mapped MSR')
+            end
+            msr.Objects = msr.Objects(I);
+            msr.Data = msr.Data(I,:);
+            map_array = map_array(I);
+         end
+
       end
 
    end

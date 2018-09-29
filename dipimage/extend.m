@@ -55,6 +55,10 @@ function out = extend(in,newsz,location,value,clip)
 
 borderextension = 'value';
 
+if ~isa(in,'dip_image')
+   in = dip_image(in);
+end
+
 if nargin < 5
    clip = false;
 elseif ischar(clip)

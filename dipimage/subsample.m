@@ -34,6 +34,9 @@ if nargin<2 || isempty(step)
 elseif ~isnumeric(step) || any(mod(step,1)) || any(step<1)
    error('SUBSAMPLE_FACTOR must be a positive integer array');
 end
+if ~isa(in,'dip_image')
+   in = dip_image(in);
+end
 nd = ndims(in);
 if numel(step)==1
    step = repmat(step,1,nd);
@@ -43,7 +46,7 @@ end
 sz = imsize(in)-1;
 subs = cell(1,nd);
 for ii=1:nd
-   subs{ii} = 0:step(ii):(sz(ii)-1);
+   subs{ii} = 0:step(ii):sz(ii);
 end
 subs = substruct('()',subs);
 in = subsref(in,subs);

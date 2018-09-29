@@ -66,6 +66,9 @@ elseif ischar(location)
    end
 end
 
+if ~isa(in,'dip_image')
+   in = dip_image(in);
+end
 sz = imsize(in);
 N = length(sz);
 if ~isnumeric(newsz) || ~isvector(newsz)

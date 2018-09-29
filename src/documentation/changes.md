@@ -408,6 +408,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
 
+  - A new method, `remap`, implements what used to be the independent function `msr_remap`.
+    `msr_remap` is in the `alias` subdirectory.
+
 - The interactive image display window from `dipshow` has had some internal changes.
   User-visible changes are:
 
@@ -529,8 +532,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
     `alias` directory. A new function `orientation` generalizes it to arbitrary dimensionality.
 
   - `granulometry` has changed, but it is still possible to call it the old way. However, the parameters
-    in this old syntax are interpreted to match the new capabilities of this function. ``'usegrey'` and
-    ``'verbose'` options no longer have an effect. Default values have changed a bit.
+    in this old syntax are interpreted to match the new capabilities of this function. `'usegrey'` and
+    `'verbose'` options no longer have an effect. Default values have changed a bit.
 
   - `ht` no longer exists. Use `riesz` instead. The Riesz transform is the multi-dimensional generalization
     of the 1D Hilbert transform. See also the new function `monogenicsignal`.
