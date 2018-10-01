@@ -44,13 +44,13 @@ int main() {
 
    dip::Image label( dip::UnsignedArray{ 10, 10 }, 1, dip::DT_UINT8 );
 
-   dip::Measurement msr = measurementTool.Measure( label, dip::Image{}, { "Test" }, { 1, 2, 10, 12 } );
+   dip::Measurement msr = measurementTool.Measure( label, {}, { "Test" }, { 1, 2, 10, 12 } );
    std::cout << msr;
 
    measurementTool.Configure( "Test", "bla", 0 ); // Writes "Unknown parameter!" to stdout.
    measurementTool.Configure( "Test", "Value", 10 );
 
-   msr = measurementTool.Measure( label, dip::Image{}, { "Test" }, { 1, 2, 100, 18, 4 } );
+   msr = measurementTool.Measure( label, {}, { "Test" }, { 1, 2, 100, 18, 4 } );
    std::cout << msr;
 
    return 0;

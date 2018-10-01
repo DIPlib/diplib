@@ -51,7 +51,7 @@ object of type `dip_image`, then
     a = newim(b);
 ```
 creates an image of the same size (this is the same as
-`newim(size(b))`). The functions `xx`, `yy`, `zz`, `rr` and `phiphi` all
+`newim(imsize(b))`). The functions `xx`, `yy`, `zz`, `rr` and `phiphi` all
 create an image containing the coordinates of its pixels, and can be
 used in formulas that need them. For example, `rr([256,256])<64` creates a
 binary image with a disk of radius 64. The expression
@@ -496,7 +496,7 @@ These functions examine the tensor shape, not the image shape. A scalar
 image (it has a single channel) tests true with `isscalar`, no matter
 how many spatial dimensions it has.
 
-### `max`, `min`, `mean`, `median`, `std`, `var`, `prod`, `sum`
+### `max`, `min`, `mean`, `median`, `std`, `var`, `prod`, `sum`, `all`, `any`
 
 The built-in *MATLAB* versions of these always operate along matrix columns,
 yielding a row vector where each element is the max/min/mean/etc. of the

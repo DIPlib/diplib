@@ -41,7 +41,9 @@ int main( void ) {
 
    dip::sfloat offset = 40;
 
-   // Complex dyadic, following example in documentation to `class VariadicScanLineFilter`. Does the computation
+   // --- Dyadic computation (two input images, one output image) ---
+
+   // Following example in documentation to `class VariadicScanLineFilter`. Does the computation
    // using SFLOAT type, input images are converted to that type for computation.
 
    dip::testing::Timer timer;
@@ -90,8 +92,8 @@ int main( void ) {
    std::cout << "trivial version: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
 
-   dip::Image tmp_in1; tmp_in1.Copy( in1 ); // Copy in1 and in2 so we can modify them below
-   dip::Image tmp_in2; tmp_in2.Copy( in2 );
+   dip::Image tmp_in1 = in1.Copy(); // Copy in1 and in2 so we can modify them below
+   dip::Image tmp_in2 = in2.Copy();
 
    timer.Reset();
    tmp_in1 *= 100;
@@ -102,9 +104,11 @@ int main( void ) {
    std::cout << "efficient trivial version: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp_in1 );
 
-   // Monadic, following example in documentation to `class VariadicScanLineFilter`
-
    std::cout << std::endl;
+
+   // --- Monadic computation (one input images, one output image) ---
+
+   // Following example in documentation to `class VariadicScanLineFilter`
 
    timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > monadicLineFilter;
