@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,6 +145,8 @@ void init_morphology( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "MorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::MorphologicalReconstruction ),
           "marker"_a, "in"_a, "connectivity"_a = 1, "direction"_a = dip::S::DILATION );
+   m.def( "LimitedMorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint, dip::String const& >( &dip::LimitedMorphologicalReconstruction ),
+          "marker"_a, "in"_a, "maxDistance"_a = 20, "connectivity"_a = 1, "direction"_a = dip::S::DILATION );
    m.def( "HMinima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMinima ),
           "in"_a, "h"_a, "connectivity"_a = 1 );
    m.def( "HMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMaxima ),

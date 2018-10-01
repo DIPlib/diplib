@@ -1119,6 +1119,9 @@ DIP_EXPORT void UpperEnvelope(
 /// (note that alternating connectivity does not yield any advantages when reconstructing until idempotence, as this
 /// function does).
 ///
+/// This functions is used by `dip::LimitedMorphologicalReconstruction`, `dip::HMinima`, `dip::HMaxima`,
+/// `dip::Leveling`, `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`
+///
 /// **Literature**
 ///  - K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter, Pattern Recognition
 ///    Letters 25:1759-1767, 2004.
@@ -1137,6 +1140,34 @@ inline Image MorphologicalReconstruction(
 ) {
    Image out;
    MorphologicalReconstruction( marker, in, out, connectivity, direction );
+   return out;
+}
+
+/// \brief Reconstruction by dilation or erosion, but with a limited reach.
+///
+/// Performs the same function as `dip::MorphologicalReconstruction`, but limiting the
+/// reach of the operation to `maxDistance` pixels. This is an Euclidean distance, and
+/// determines the zone of influence of each value in `marker`.
+///
+/// See `dip::MorphologicalReconstruction` for the meaning of the rest of the parameters,
+/// and more information about the algorithm.
+DIP_EXPORT void LimitedMorphologicalReconstruction(
+      Image const& marker,
+      Image const& in,
+      Image& out,
+      dfloat maxDistance = 20,
+      dip::uint connectivity = 0,
+      String const& direction = S::DILATION
+);
+inline Image LimitedMorphologicalReconstruction(
+      Image const& marker,
+      Image const& in,
+      dfloat maxDistance = 20,
+      dip::uint connectivity = 0,
+      String const& direction = S::DILATION
+) {
+   Image out;
+   LimitedMorphologicalReconstruction( marker, in, out, maxDistance, connectivity, direction );
    return out;
 }
 

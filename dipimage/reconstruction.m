@@ -2,6 +2,7 @@
 %
 % SYNOPSIS:
 %  out = reconstruction(marker,mask,connectivity,polarity)
+%  out = reconstruction(marker,mask,maxDistance,connectivity,polarity)
 %
 % PARAMETERS:
 %  marker:       seed image for reconstruction
@@ -12,10 +13,16 @@
 %     * 2 indicates chessboard metric, or a square structuring element in 2D.
 %     For 3D images use 1, 2 or 3.
 %  polarity:     a string, either 'dilation' or 'erosion'.
+%  maxDistance:  the maximum distance over which MARKER will influence OUT.
+%                The reconstruction will not proceed past this distance.
+%                This is an Euclidean distance in pixels. If this parameter
+%                is given, then CONNECTIVITY must be given too (as a way to
+%                disambiguate syntax).
 %
 % DEFAULTS:
 %  connectivity = 1
 %  polarity = 'dilation'
+%  maxDistance = Inf
 %
 % NOTE:
 %  See the user guide for the definition of connectivity in DIPimage.
@@ -29,14 +36,16 @@
 %  c = reconstruction(b,a)
 %
 % EXAMPLE:
-%  a = readim('cermet')<128
-%  b = label(bskeleton(a,0,'looseendsaway'))
-%  c = reconstruction(b,a*1000)
+%  a = readim('cermet')
+%  b = bskeleton(a>120,0,'looseendsaway')*255
+%  c = reconstruction(b,a)
+%  d = reconstruction(b,a,6,1)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::MorphologicalReconstruction.
+%  This function calls the DIPlib functions dip::MorphologicalReconstruction
+%  and dip::LimitedMorphologicalReconstruction.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

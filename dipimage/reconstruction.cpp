@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `reconstruction` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -26,24 +26,37 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 4 );
 
       dml::MatlabInterface mi;
       dip::Image const marker = dml::GetImage( prhs[ 0 ] );
       dip::Image const in = dml::GetImage( prhs[ 1 ] );
       dip::Image out = mi.NewImage();
 
+      dip::dfloat maxDistance = 0;
+      int index = 2;
+      if( nrhs > 3 && dml::IsScalar( prhs[ 3 ] ) && mxIsDouble( prhs[ 3 ] )) {
+         // maxDistance is given
+         maxDistance = dml::GetFloat( prhs[ index ] );
+         ++index;
+      }
+      DML_MAX_ARGS( index + 2 );
+
       dip::uint connectivity = 1;
-      if( nrhs > 2 ) {
-         connectivity = dml::GetUnsigned( prhs[ 2 ] );
+      if( nrhs > index ) {
+         connectivity = dml::GetUnsigned( prhs[ index ] );
+         ++index;
       }
 
       dip::String flag = dip::S::DILATION;
-      if( nrhs > 3 ) {
-         flag = dml::GetString( prhs[ 3 ] );
+      if( nrhs > index ) {
+         flag = dml::GetString( prhs[ index ] );
       }
 
-      dip::MorphologicalReconstruction( marker, in, out, connectivity, flag );
+      if( maxDistance >= 1 ) {
+         dip::LimitedMorphologicalReconstruction( marker, in, out, maxDistance, connectivity, flag );
+      } else {
+         dip::MorphologicalReconstruction( marker, in, out, connectivity, flag );
+      }
 
       plhs[ 0 ] = dml::GetArray( out );
 

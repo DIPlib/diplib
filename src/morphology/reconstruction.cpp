@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the morphological reconstruction and related functions.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@
 
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
@@ -180,6 +181,28 @@ void MorphologicalReconstruction (
    DIP_OVL_CALL_NONCOMPLEX( dip__MorphologicalReconstruction, ( in, out, done,
          neighborOffsetsIn, neighborOffsetsOut, neighborOffsetsDone, neighborList,
          minval, dilation ), in.DataType() );
+}
+
+void LimitedMorphologicalReconstruction(
+      Image const& marker,
+      Image const& in,
+      Image& out,
+      dfloat maxDistance,
+      dip::uint connectivity,
+      String const& direction
+) {
+   DIP_THROW_IF( maxDistance < 1, E::INVALID_PARAMETER );
+   bool dilation;
+   DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, S::DILATION, S::EROSION ));
+   Image mask;
+   if( dilation ) {
+      DIP_STACK_TRACE_THIS( Dilation( marker, mask, { 2 * maxDistance, S::ELLIPTIC } ));
+      Infimum( mask, in, mask );
+   } else {
+      DIP_STACK_TRACE_THIS( Erosion( marker, mask, { 2 * maxDistance, S::ELLIPTIC } ));
+      Supremum( mask, in, mask );
+   }
+   DIP_STACK_TRACE_THIS( MorphologicalReconstruction( marker, mask, out, connectivity, direction ));
 }
 
 } // namespace dip

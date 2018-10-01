@@ -164,6 +164,13 @@ timeit.timeit("dip.MorphologicalReconstruction(seed,mask,1)", number=1000, globa
 
 ###
 
+a = dip.ImageReadICS('cermet')
+b = dip.Label(dip.EuclideanSkeleton(a < 120, 0, 'loose ends away'))
+dip.MorphologicalReconstruction(b*1000,a).Show()
+dip.LimitedMorphologicalReconstruction(b*1000,a,6).Show()
+
+###
+
 a = dip.Image([10,11],1,'UINT8')
 a.Fill(0)
 a[1,1] = 255
