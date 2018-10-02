@@ -2237,27 +2237,42 @@ classdef dip_image
 
       function in = round(in)
          %ROUND   Round to nearest integer.
-         in = dip_operators('md',in);
+         if isfloat(in)
+            in = dip_operators('md',in);
+         end
       end
 
       function in = ceil(in)
          %CEIL   Round up.
-         in = dip_operators('me',in);
+         if isfloat(in)
+            in = dip_operators('me',in);
+         end
       end
 
       function in = floor(in)
          %FLOOR   Round down.
-         in = dip_operators('mf',in);
+         if isfloat(in)
+            in = dip_operators('mf',in);
+         end
       end
 
       function in = fix(in)
          %FIX   Round towards zero.
-         in = dip_operators('mg',in);
+         if isfloat(in)
+            in = dip_operators('mg',in);
+         end
       end
 
       function in = sign(in)
          %SIGN   Signum function.
-         in = dip_operators('mh',in);
+         if ~isreal(in)
+            error('SIGN defined only for real-valued images')
+         end
+         if issigned(in) || isfloat(in)
+            in = dip_operators('mh',in);
+         else
+            in.Data(:) = 1;
+         end
       end
 
       function in = isnan(in)
