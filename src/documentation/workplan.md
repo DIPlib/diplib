@@ -189,7 +189,6 @@ Pure M-files:
 - `scale2rgb`
 - `scalespace`
 - `tikhonovmiller`
-- `umbra`
 - `wiener`
 
 Requiring C++ code:
