@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains functionality for the MATLAB interface.
+ * This file contains functionality for the MMorph interface.
  *
  * (c)2017, Flagship Biosciences. Written by Cris Luengo.
  * Based on dip_matlab_interface.h: (c)2015-2017, Cris Luengo.
@@ -18,8 +18,9 @@
  * limitations under the License.
  */
 
-#ifndef DIP_MMORPH_H
-#define DIP_MMORPH_H
+
+#ifndef DIP_MMORPH_INTERFACE_H
+#define DIP_MMORPH_INTERFACE_H
 
 #include <map>
 #include <utility>
@@ -36,7 +37,8 @@
 
 /// \brief The `%dip_mmorph` namespace contains the interface between *MMorph* and *DIPlib*.
 ///
-/// *MMorph* is the *[SDC Morphology Toolbox for C++](http://www.mmorph.com/)*.
+/// *MMorph* is the *[SDC Morphology Toolbox for C++](http://www.mmorph.com/)* (**note:** broken link, this library
+/// has been discontinued).
 ///
 /// This namespace defines the functions needed to convert between *MMorph* `::%Image` objects and *DIPlib*
 /// `dip::Image` objects. Note that *MMorph* is pretty old code that does not use namespaces.
@@ -48,8 +50,8 @@
 /// **Note** the difference between how *DIPlib* and *MMorph* represent binary images. For *DIPlib*, any non-zero
 /// value is foreground, but foreground is always stored as a 1; some functions in `diplib/binary.h` will expect
 /// other bits to be 0, as they use those bit planes for intermediate data. For *MMorph*, foreground is always
-/// stored as 255, and some of its functions will expect foreground to be 255. `dip_mmorph::FixBinaryImageForDIP`
-/// and `dip_mmorph::FixBinaryImageForMM` fix up binary images for processing in either library.
+/// stored as 255, and some of its functions will expect foreground to be 255. `dip_mmorph::FixBinaryImageForDip`
+/// and `dip_mmorph::FixBinaryImageForMm` fix up binary images for processing in either library.
 namespace dip_mmorph {
 
 
@@ -123,7 +125,7 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
 }
 
 /// \brief Fixes the binary image `img` to match expectations of *DIPlib* (i.e. only the bottom bit is used).
-inline void FixBinaryImageForDIP( dip::Image& img ) {
+inline void FixBinaryImageForDip( dip::Image& img ) {
    dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
    do {
       if( *it ) {
@@ -133,7 +135,7 @@ inline void FixBinaryImageForDIP( dip::Image& img ) {
 }
 
 /// \brief Fixes the binary image `img` to match expectations of *MMorph* (i.e. all bits have the same value).
-inline void FixBinaryImageForMM( dip::Image& img ) {
+inline void FixBinaryImageForMm( dip::Image& img ) {
    dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
    do {
       if( *it ) {
@@ -142,7 +144,7 @@ inline void FixBinaryImageForMM( dip::Image& img ) {
    } while( ++it );
 }
 
-inline std::pair< dip::UnsignedArray, char const* > GetMMImageProperties(
+inline std::pair< dip::UnsignedArray, char const* > GetMmImageProperties(
         dip::DataType datatype,
         dip::UnsignedArray const& sizes,
         dip::uint tensorElements
@@ -180,16 +182,16 @@ inline std::pair< dip::UnsignedArray, char const* > GetMMImageProperties(
 
 
 /// \brief Copies a *DIPlib* image to an *MMorph* image.
-inline Image DipToMm( dip::Image const& img ) {
+inline ::Image DipToMm( dip::Image const& img ) {
    dip::UnsignedArray mmSizes;
    char const* typestr;
-   DIP_STACK_TRACE_THIS( std::tie( mmSizes, typestr ) = GetMMImageProperties( img.DataType(), img.Sizes(), img.TensorElements() ));
+   DIP_STACK_TRACE_THIS( std::tie( mmSizes, typestr ) = GetMmImageProperties( img.DataType(), img.Sizes(), img.TensorElements() ));
    ::Image mmImg( static_cast< int >( mmSizes[ 0 ] ), static_cast< int >( mmSizes[ 1 ] ),
                   static_cast< int >( mmSizes[ 2 ] ), typestr, 0.0 );
    dip::Image ref = MmToDip( mmImg );
    ref.Copy( img );
    if( mmImg.isbinary() ) {
-      FixBinaryImageForMM( ref );
+      FixBinaryImageForMm( ref );
    }
    return mmImg;
 }
@@ -203,9 +205,9 @@ using ImagePtr = std::unique_ptr< ::Image >;
 ///
 /// Use the following code when declaring images to be used as the output to a function:
 /// ```cpp
-///     dip_mmorph::ExternalInterface mm;
-///     dip::Image img_out0 = mm.NewImage();
-///     dip::Image img_out1 = mm.NewImage();
+///     dip_mmorph::ExternalInterface mmei;
+///     dip::Image img_out0 = mmei.NewImage();
+///     dip::Image img_out1 = mmei.NewImage();
 /// ```
 /// This configures the images `img_out0` and `img_out1` such that, when they are
 /// forged later on, an `::%Image` object will be created to hold the pixel data.
@@ -216,14 +218,14 @@ using ImagePtr = std::unique_ptr< ::Image >;
 /// to non-existing data segments.
 ///
 /// To retrieve the `::%Image` object inside such a `dip::Image`, use the
-/// `dip_mmorph::ExternalInterface::DipToMM` method:
+/// `dip_mmorph::ExternalInterface::DipToMm` method:
 /// ```cpp
-///     dip_mmorph::ImagePtr img0 = mm.DipToMM( img_out0 );
-///     dip_mmorph::ImagePtr img1 = mm.DipToMM( img_out1 );
+///     dip_mmorph::ImagePtr img0 = mmei.DipToMm( img_out0 );
+///     dip_mmorph::ImagePtr img1 = mmei.DipToMm( img_out1 );
 ///     mmEro( *img0 ); // you need to dereference the pointer to the image...
 /// ```
-/// If you don't use the `DipToMM` method, the `::%Image` that contains the pixel data
-/// will be destroyed when the dip::Image object goes out of scope. The `DipToMM` method
+/// If you don't use the `DipToMm` method, the `::%Image` that contains the pixel data
+/// will be destroyed when the dip::Image object goes out of scope. The `DipToMm` method
 /// changes ownership of the `::%Image` object from the `%ExternalInterface` to the
 /// `dip_mmorph::ImagePtr` object returned. In this case, the `dip::Image` object is still
 /// valid, and shares the data segment with the extracted `::%Image`. If the
@@ -235,8 +237,8 @@ using ImagePtr = std::unique_ptr< ::Image >;
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
 /// ```cpp
-///     img_out0 = in1 + in2;           // Bad!
-///     dip::Add( in1, in2, img_out0 ); // Correct
+///     img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
+///     dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
 /// ```
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
 /// pixels are then copied into the `::%Image` created for `img_out0`. In the
@@ -251,7 +253,7 @@ class ExternalInterface : public dip::ExternalInterface {
          private:
             ExternalInterface& interface;
          public:
-            StripHandler( ExternalInterface& mm ) : interface{ mm } {};
+            StripHandler( ExternalInterface& ei ) : interface{ ei } {};
             void operator()( void const* p ) {
                interface.images_.erase( p );
             };
@@ -276,7 +278,7 @@ class ExternalInterface : public dip::ExternalInterface {
       ) override {
          dip::UnsignedArray mmSizes;
          char const* typestr;
-         DIP_STACK_TRACE_THIS( std::tie( mmSizes, typestr ) = GetMMImageProperties( datatype, sizes, tensor.Elements() ));
+         DIP_STACK_TRACE_THIS( std::tie( mmSizes, typestr ) = GetMmImageProperties( datatype, sizes, tensor.Elements() ));
          dip::uint ndims = sizes.size();
          strides.resize( ndims );
          strides[ 0 ] = 1;
@@ -288,8 +290,8 @@ class ExternalInterface : public dip::ExternalInterface {
             tstride = sizes[ 0 ] * sizes[ 1 ]; // tensor dimension is last ('depth')
          }
          // Create ::Image
-         ImagePtr mm = std::make_unique< Image >( static_cast< int >( mmSizes[ 0 ] ), static_cast< int >( mmSizes[ 1 ] ),
-                                                  static_cast< int >( mmSizes[ 2 ] ), typestr, 0.0 );
+         ImagePtr mm = std::make_unique< ::Image >( static_cast< int >( mmSizes[ 0 ] ), static_cast< int >( mmSizes[ 1 ] ),
+                                                    static_cast< int >( mmSizes[ 2 ] ), typestr, 0.0 );
          origin = mm->raster();
          images_.emplace( origin, std::move( mm ));
          return dip::DataSegment{ origin, StripHandler( *this ) };
@@ -313,9 +315,9 @@ class ExternalInterface : public dip::ExternalInterface {
       ///     // Make a copy, then extract the *MMorph* image:
       ///     dip::Image tmp = mm.NewImage();
       ///     tmp.Copy( img );                        // `tmp` now is a new image where the pixels have been copied from `img`
-      ///     dip_mmorph::ImagePtr pImgMM = mm.DipToMM( tmp );
+      ///     dip_mmorph::ImagePtr pImgMm = mm.DipToMm( tmp );
       /// ```
-      ImagePtr DipToMM( dip::Image const& img ) {
+      ImagePtr DipToMm( dip::Image const& img ) {
          DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          // TODO: We should check for strides exactly matching image dimensions, and make a copy if not a match.
          void const* ptr = img.Data();
@@ -348,4 +350,4 @@ class ExternalInterface : public dip::ExternalInterface {
 
 } // namespace dip_mmorph
 
-#endif // DIP_MMORPH_H
+#endif // DIP_MMORPH_INTERFACE_H

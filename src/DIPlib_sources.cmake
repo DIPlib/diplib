@@ -2,6 +2,7 @@
 set(DIPlib_sources_bogus
 ../include/dip_matlab_interface.h
 ../include/dip_mmorph_interface.h
+../include/dip_opencv_interface.h
 ../include/diplib.h
 ../include/diplib/accumulators.h
 ../include/diplib/analysis.h

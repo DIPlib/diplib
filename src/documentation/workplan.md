@@ -56,8 +56,9 @@ document's source</a> for the most up-to-date version.
 -   Other interfaces. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
     as well as functions to convert a `dip::Image` to an image of that library
-    (either as a view over the same data segment, or by copying the data). We'll
-    do this for: *OpenCV*, *ITK*, *SimpleITK*. Any other libraries of interest?
+    (either as a view over the same data segment, or by copying the data). We have
+    this for *OpenCV* and *MMorph*. We can add *ITK* and/or *SimpleITK*, *Vigra*.
+    Are there any other libraries of interest?
 
 -   Improve style sheets for the documentation.
 
@@ -91,8 +92,6 @@ document's source</a> for the most up-to-date version.
     Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
 
 -   Wavelet transforms.
-
--   Comparison of segmentations: F-factor, Dice coefficient, etc.
 
 -   Colocalization measurements.
 

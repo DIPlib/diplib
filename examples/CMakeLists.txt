@@ -29,6 +29,30 @@ target_link_libraries(radial_mean DIP)
 add_executable(generate_shapes generate_shapes.cpp)
 target_link_libraries(generate_shapes DIP)
 
+# A program to time functions with and without multithreading, useful to fine-tune the cost value that determines
+# for what size image it is worth using multithreading.
+add_executable(time_openmp time_openmp.cpp)
+target_link_libraries(time_openmp DIP)
+
+# A program that tests the binary morphology functions
+add_executable(test_binary test_binary.cpp)
+target_compile_definitions(test_binary PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+target_link_libraries(test_binary DIP)
+
+# The `examples` target builds them all
+add_custom_target(examples DEPENDS
+                  image_arithmetic
+                  register_measurement_feature
+                  time_dilations
+                  variance
+                  fractal_dimension
+                  radial_mean
+                  time_openmp
+                  test_binary
+                  )
+
+## A set of examples that need DIPviewer, compile only if DIPviewer is available
+
 if(DIP_BUILD_DIPVIEWER)
 
 # A test program that demonstrates some of the low-level functionality of DIPviewer
@@ -55,32 +79,6 @@ add_executable(filter_image filter_image.cpp)
 target_compile_definitions(filter_image PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(filter_image DIP DIPviewer)
 
-endif(DIP_BUILD_DIPVIEWER)
-
-# A program to time functions with and without multithreading, useful to fine-tune the cost value that determines
-# for what size image it is worth using multithreading.
-add_executable(time_openmp time_openmp.cpp)
-target_link_libraries(time_openmp DIP)
-
-# A program that tests the binary morphology functions
-add_executable(test_binary test_binary.cpp)
-target_compile_definitions(test_binary PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
-target_link_libraries(test_binary DIP)
-
-# The `examples` target builds them all
-add_custom_target(examples DEPENDS
-      image_arithmetic
-      register_measurement_feature
-      time_dilations
-      variance
-      fractal_dimension
-      radial_mean
-      time_openmp
-      test_binary
-)
-
-if(DIP_BUILD_DIPVIEWER)
-
 add_dependencies(examples
       viewer
       display
@@ -88,5 +86,15 @@ add_dependencies(examples
       select_objects
       filter_image
 )
+
+find_package(OpenCV COMPONENTS core imgproc highgui)
+if(OpenCV_FOUND)
+
+# An example program that uses both DIPlib and OpenCV
+add_executable(opencv_with_dip opencv_with_dip.cpp)
+target_compile_definitions(opencv_with_dip PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+target_link_libraries( opencv_with_dip DIP DIPviewer ${OpenCV_LIBS} )
+
+endif()
 
 endif(DIP_BUILD_DIPVIEWER)

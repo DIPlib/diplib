@@ -81,7 +81,10 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
 - *Python*: \ref PyDIP is a thin wrapper of most functionality in *DIPlib*.
 
-- *MMorph* (SDC Morphology Toolbox for C++): \ref dip_mmorph_interface.h
+- *OpenCV*: `dip_opencv` provides copyless conversion to and from
+  *OpenCV* images, for *OpenCV* version 2 and newer.
+
+- *MMorph* (SDC Morphology Toolbox for C++): `dip_mmorph`
   provides copyless conversion to and from *MMorph* images.
 
 ## Support

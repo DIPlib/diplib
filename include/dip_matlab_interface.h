@@ -19,8 +19,8 @@
  */
 
 
-#ifndef DIP_MATLAB_H
-#define DIP_MATLAB_H
+#ifndef DIP_MATLAB_INTERFACE_H
+#define DIP_MATLAB_INTERFACE_H
 
 #include <map>
 #include <utility>
@@ -1377,8 +1377,8 @@ inline bool MatchSizes(
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
 /// ```cpp
-///     img_out0 = in1 + in2;           // Bad!
-///     dip::Add( in1, in2, img_out0 ); // Correct
+///     img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
+///     dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
 /// ```
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
 /// pixels are then copied into the `mxArray` created for `img_out0`. In the
@@ -1662,4 +1662,4 @@ void ToLower( dip::String& str ) {
 
 } // namespace dml
 
-#endif
+#endif // DIP_MATLAB_INTERFACE_H
