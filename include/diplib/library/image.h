@@ -290,9 +290,9 @@ class DIP_NO_EXPORT Image {
       ///
       /// Note that to call this constructor with a single parameter, you need to explicitly type the parameter,
       /// an initializer list by itself will be considered a a pixel, see the constructor below.
-      explicit Image( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
+      explicit Image( UnsignedArray sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
             dataType_( dt ),
-            sizes_( sizes ),
+            sizes_( std::move( sizes )),
             tensor_( tensorElems ) {
          TestSizes( sizes_ );
          Forge();
@@ -394,15 +394,15 @@ class DIP_NO_EXPORT Image {
             DataSegment const& data,
             void* origin,
             dip::DataType dataType,
-            UnsignedArray const& sizes,
-            IntegerArray const& strides = {},
+            UnsignedArray sizes,
+            IntegerArray strides = {},
             dip::Tensor const& tensor = {},
             dip::sint tensorStride = 1,
             dip::ExternalInterface* externalInterface = nullptr
       ) :
             dataType_( dataType ),
-            sizes_( sizes ),
-            strides_( strides ),
+            sizes_( std::move( sizes )),
+            strides_( std::move( strides )),
             tensor_( tensor ),
             tensorStride_( tensorStride ),
             dataBlock_( data ),
@@ -436,11 +436,8 @@ class DIP_NO_EXPORT Image {
       /// function to create an image around const data, and then write to that data. Use images pointing to
       /// const data only as input images!
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
-      Image(
-            T const* data,
-            UnsignedArray const& sizes
-      ) {
-         Image tmp{ NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), sizes };
+      Image( T const* data, UnsignedArray sizes ) {
+         Image tmp{ NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes ) };
          this->move( std::move( tmp )); // a way of calling a different constructor.
       }
 
