@@ -84,9 +84,6 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 - *OpenCV*: `dip_opencv` provides copyless conversion to and from
   *OpenCV* images, for *OpenCV* version 2 and newer.
 
-- *MMorph* (SDC Morphology Toolbox for C++): `dip_mmorph`
-  provides copyless conversion to and from *MMorph* images.
-
 ## Support
 
 The *DIPlib* project was originally developed at the Pattern Recognition
