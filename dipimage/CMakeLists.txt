@@ -1,14 +1,3 @@
-# Fix some stuff, CMake currently doesn't properly include the version source file, and doesn't work with R2018a and later.
-set(MEX_VERSION_FILE "")
-if(NOT ${Matlab_VERSION_STRING} VERSION_LESS "9.1") # For 9.1 (R2016b) and newer, add version source file
-   set(MEX_VERSION_FILE "${Matlab_ROOT_DIR}/extern/version/cpp_mexapi_version.cpp")
-endif()
-set(MEX_API_MACRO "")
-if(NOT ${Matlab_VERSION_STRING} VERSION_LESS "9.4") # For 9.4 (R2018a) and newer, add API macro
-   set(MEX_API_MACRO "MATLAB_DEFAULT_RELEASE=R2017b")
-   #set(MEX_API_MACRO "MATLAB_DEFAULT_RELEASE=R2018a") # Once we've fixed our MEX-interface to correctly handle the new API.
-endif()
-
 # A function that compiles a series of MEX-files
 function(compile_mex_files FILE_LIST LIB_REL_PATH OUTPUT_VAR)
    if(APPLE)
@@ -20,7 +9,8 @@ function(compile_mex_files FILE_LIST LIB_REL_PATH OUTPUT_VAR)
    foreach(file ${FILE_LIST})
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} ${MEX_VERSION_FILE} OUTPUT_NAME ${target} LINK_TO DIP)
-      set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+      set_target_properties(MEX_${target} PROPERTIES
+                            INSTALL_RPATH "${LIB_REL_PATH}")
       target_compile_definitions(MEX_${target} PRIVATE ${MEX_API_MACRO})
       if(DIP_ENABLE_UNICODE)
          target_compile_definitions(MEX_${target} PRIVATE DIP__ENABLE_UNICODE)

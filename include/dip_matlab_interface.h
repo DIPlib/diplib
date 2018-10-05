@@ -103,9 +103,10 @@ static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one 
 #define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < ( n ), "Too few input arguments" )
 #define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > ( n ), "Too many input arguments" )
 
-#define DML_CATCH catch( const dip::ParameterError& e ) { mexErrMsgIdAndTxt( "DIPlib:ParameterError", e.what() ); } \
-                  catch( const dip::RunTimeError& e ) { mexErrMsgIdAndTxt( "DIPlib:RunTimeError", e.what() ); } \
-                  catch( const dip::AssertionError& e ) { mexErrMsgIdAndTxt( "DIPlib:AssertionError", e.what() ); }
+#define DML_CATCH catch( dip::ParameterError const& e ) { mexErrMsgIdAndTxt( "DIPlib:ParameterError", e.what() ); } \
+                  catch( dip::RunTimeError const& e ) { mexErrMsgIdAndTxt( "DIPlib:RunTimeError", e.what() ); } \
+                  catch( dip::AssertionError const& e ) { mexErrMsgIdAndTxt( "DIPlib:AssertionError", e.what() ); } \
+                  catch( std::exception const& e ) { mexErrMsgIdAndTxt( "DIPlib:StandardException", e.what() ); }
 
 
 /// \brief True if array is scalar (has single value)

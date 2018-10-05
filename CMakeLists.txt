@@ -58,6 +58,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    # using Visual Studio C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
+   add_definitions(/wd4180) # Disable "qualifier applied to function type has no meaning; ignored" that happens in union_find.h as used in maxima.cpp
 endif()
 
 # RPATH
@@ -143,13 +144,10 @@ if(DIP_SHARED_LIBRARY)
    # We will not build DIPimage without a shared DIPlib -- technically possible, but not desireable.
    # (This would also require solving linker warnings because of Doctest.)
 
-   # Current version of CMake does not recognize these MATLAB versions. You migh have to add to this list
-   # depending on your MATLAB and CMake versions.
-   set(MATLAB_ADDITIONAL_VERSIONS
-         "R2018b=9.5"
-         "R2018a=9.4")
+   #set(MATLAB_ADDITIONAL_VERSIONS "R2018b=9.5") # You might need to add a line like this if your version of MATLAB is not recognized
    #set(MATLAB_FIND_DEBUG On)
-   find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY MAIN_PROGRAM)
+   #find_package(Matlab COMPONENTS MAIN_PROGRAM)
+   find_package(Matlab_new COMPONENTS MAIN_PROGRAM) # NOTE! Here we use the local copy of the FindMatlab.cmake script
    if(Matlab_FOUND)
       set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
    endif()
@@ -243,10 +241,12 @@ message("--------------------------------------")
 message("   DIPlib CONFIGURATION REPORT")
 message("")
 
-string(TOUPPER ${CMAKE_BUILD_TYPE} UPPERCASE_BUILD_TYPE)
 message(" * C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
-message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${UPPERCASE_BUILD_TYPE}}")
-message(" * Build type: ${CMAKE_BUILD_TYPE}")
+if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+   string(TOUPPER ${CMAKE_BUILD_TYPE} UPPERCASE_BUILD_TYPE)
+   message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${UPPERCASE_BUILD_TYPE}}")
+   message(" * Build type: ${CMAKE_BUILD_TYPE}")
+endif()
 
 if(DIP_SHARED_LIBRARY)
    message(" * Building shared library")
