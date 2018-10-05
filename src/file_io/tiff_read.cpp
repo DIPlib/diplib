@@ -1137,7 +1137,25 @@ namespace dip {
 
 static const char* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
 
-FileInformation ImageReadTIFF( Image&, String const&, Range ) {
+FileInformation ImageReadTIFF(
+   Image&,
+   String const&,
+   Range,
+   RangeArray const&,
+   Range const&
+) {
+   DIP_THROW( NOT_AVAILABLE );
+}
+
+FileInformation ImageReadTIFF(
+      Image&,
+      String const&,
+      Range const&,
+      UnsignedArray const&,
+      UnsignedArray const&,
+      UnsignedArray const&,
+      Range const&
+) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
