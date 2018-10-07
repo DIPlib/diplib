@@ -184,7 +184,7 @@ void init_measurement( py::module& m ) {
 
    // Other functions
    m.def( "ObjectToMeasurement", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const& >( &dip::ObjectToMeasurement ), "label"_a, "featureValues"_a );
-   m.def( "WriteCSV", &dip::WriteCSV, "measurement"_a, "filename"_a, "options"_a = dip::StringSet{} );
+   m.def( "MeasurementWriteCSV", &dip::MeasurementWriteCSV, "measurement"_a, "filename"_a, "options"_a = dip::StringSet{} );
    m.def( "Minimum", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Minimum ), "featureValues"_a  );
    m.def( "Maximum", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Maximum ), "featureValues"_a  );
    m.def( "Percentile", py::overload_cast< dip::Measurement::IteratorFeature const&, dip::dfloat >( &dip::Percentile ), "featureValues"_a, "percentile"_a  );

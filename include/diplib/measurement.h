@@ -1034,7 +1034,7 @@ inline Image ObjectToMeasurement(
 ///    characters are used.
 ///  - `"simple"`: There will only be a single header line, combining the three strings as
 ///    follows: "Feature value (units)". For example: "Size (um^2)", "Feret Max (um)", etc.
-DIP_EXPORT void WriteCSV(
+DIP_EXPORT void MeasurementWriteCSV(
       Measurement const& measurement,
       String const& filename,
       StringSet const& options = {}

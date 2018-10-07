@@ -109,7 +109,7 @@ std::ostream& operator<<(
    return os;
 }
 
-void WriteCSV(
+void MeasurementWriteCSV(
       Measurement const& msr,
       String const& filename,
       StringSet const& options
