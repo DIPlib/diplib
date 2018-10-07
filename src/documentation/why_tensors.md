@@ -169,6 +169,8 @@ Note again that is is possible to compute `corners` more efficiently
 by \ref iterators. That way, one can run through the image `S` only once,
 and avoid the temporary intermediate images.
 
+The above is implemented in the function `dip::HarrisCornerDetector`.
+
 [//]: # (--------------------------------------------------------------)
 
 \section optical_flow Lucas-Kanade optical flow

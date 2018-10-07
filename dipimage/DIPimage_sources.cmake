@@ -37,6 +37,7 @@ closing.cpp
 cluster.cpp
 convolve.cpp
 coordinates.cpp
+cornerdetector.cpp
 countneighbors.cpp
 derivative.cpp
 dilation.cpp
