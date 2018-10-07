@@ -36,9 +36,9 @@ namespace dip {
 class DIP_NO_EXPORT Kernel;
 
 
-/// \defgroup morphology Mathematical morphology
+/// \defgroup morphology Morphological filtering
 /// \ingroup filtering
-/// \brief Morphological filters for smoothing, sharpening, detection and more, and the watershed transform.
+/// \brief Morphological filters for smoothing, sharpening, detection and more.
 /// \{
 
 
@@ -837,11 +837,16 @@ inline Image RankMaxOpening(
    return out;
 }
 
+/// \}
+
 
 //
 // Priority-queue--based algorithms
 //
 
+
+/// \addtogroup segmentation
+/// \{
 
 /// \brief Computes the watershed of `in` within `mask`, with on-line merging of regions.
 ///
@@ -1102,6 +1107,12 @@ DIP_EXPORT void UpperEnvelope(
       dfloat maxDepth = 1,
       dip::uint maxSize = 0
 );
+
+/// \}
+
+
+/// \addtogroup morphology
+/// \{
 
 /// \brief Reconstruction by dilation or erosion, also known as inf-reconstruction and sup-reconstruction
 ///

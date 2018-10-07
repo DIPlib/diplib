@@ -29,7 +29,7 @@
 /// \see diplib/library/operators.h, math
 
 
-/// \defgroup math Image math and statistics
+/// \defgroup math Math and statistics
 /// \brief The image math and statistics functions and operators.
 
 

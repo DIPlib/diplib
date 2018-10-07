@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for image statistics functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
  *
@@ -34,15 +34,12 @@
 namespace dip {
 
 
-/// \addtogroup math
-/// \{
-
-
 //
 // Basic image queries
 //
 
 /// \defgroup math_statistics Statistics
+/// \ingroup math
 /// \brief %Image sample statistics, see also \ref math_projection.
 /// \{
 
@@ -125,6 +122,7 @@ DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 //
 
 /// \defgroup math_projection Projection operators
+/// \ingroup math
 /// \brief Operators that project the image data onto fewer spatial dimensions, computing image statistics.
 /// \{
 
@@ -743,6 +741,7 @@ inline Image RadialMaximum( Image const& in, Image const& mask, dfloat binSize, 
 //
 
 /// \defgroup math_error Error operators
+/// \ingroup math
 /// \brief Quantifying the difference between images.
 /// \{
 
@@ -1005,8 +1004,6 @@ DIP_EXPORT dfloat Entropy( Image const& in, Image const& mask = {}, dip::uint nB
 /// **Literature**
 /// - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and Image Understanding 64(2):300-302, 1996.
 DIP_EXPORT dfloat EstimateNoiseVariance( Image const& in, Image const& mask = {} );
-
-/// \}
 
 /// \}
 

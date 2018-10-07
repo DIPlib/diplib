@@ -34,8 +34,6 @@ namespace dip {
 
 /// \defgroup segmentation Segmentation
 /// \brief Segmentation and binarization algorithms.
-///
-/// See also watershed functions in the \ref morphology group: `dip::Watershed`, `dip::SeededWatershed`.
 /// \{
 
 

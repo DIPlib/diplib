@@ -28,7 +28,7 @@
 #define DIP_EXPORT_H
 
 /// \file
-/// \brief Declares the DIP_EXPORT and DIP_NO_EXPORT macros.
+/// \brief Declares the `DIP_EXPORT` and `DIP_NO_EXPORT` macros.
 
 /// \def DIP_EXPORT
 /// \brief Indicates that the function or class is exported from the shared/dynamic-load library.

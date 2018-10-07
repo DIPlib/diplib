@@ -35,39 +35,14 @@ namespace dip {
 // Forward declaration, defined in chain_code.h
 struct DIP_NO_EXPORT Polygon;
 
-/// \defgroup generation Image generation
+/// \defgroup generation Generation
 /// \brief Filling images with generated data, and creating test images.
+
+
+/// \defgroup generation_drawing Drawing
+/// \ingroup generation
+/// \brief Drawing in images
 /// \{
-
-
-/// \brief Fills an image with a delta function.
-///
-/// All pixels will be zero except at the origin, where it will be 1.
-/// `out` must be forged, and scalar.
-///
-/// `origin` specifies where the origin lies:
-///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
-///    `size/2`). This is the default.
-///  - `"left"`: The origin is on the pixel left of the center (at integer division result of
-///    `(size-1)/2`).
-///  - `"corner"`: The origin is on the first pixel. This is the default if no other option is given.
-DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
-
-/// \brief Creates a delta function image.
-///
-/// All pixels will be zero except at the origin, where it will be 1.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
-/// See `dip::FillDelta` for the meaning of `origin`.
-inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& origin = "" ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillDelta( out, origin );
-}
-inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
-   Image out;
-   CreateDelta( out, sizes, origin );
-   return out;
-}
-
 
 /// \brief Sets the pixels at the border of `out` to `value`.
 ///
@@ -286,6 +261,14 @@ DIP_EXPORT void DrawBandlimitedBox(
       dfloat truncation = 3.0
 );
 
+/// \}
+
+
+/// \defgroup generation_shapes Shape generation
+/// \ingroup generation
+/// \brief Generating images with test objects or functions
+/// \{
+
 /// \brief Maps input values through an error function, can be used to generate arbitrary band-limited objects.
 ///
 /// `in` is a scalar, real-valued function whose zero level set represents the edges of an object. The function
@@ -366,6 +349,35 @@ inline Image GaussianLineClip(
    GaussianLineClip( in, out, value, sigma, truncation );
    return out;
 }
+
+/// \brief Fills an image with a delta function.
+///
+/// All pixels will be zero except at the origin, where it will be 1.
+/// `out` must be forged, and scalar.
+///
+/// `origin` specifies where the origin lies:
+///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
+///    `size/2`). This is the default.
+///  - `"left"`: The origin is on the pixel left of the center (at integer division result of
+///    `(size-1)/2`).
+///  - `"corner"`: The origin is on the first pixel. This is the default if no other option is given.
+DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
+
+/// \brief Creates a delta function image.
+///
+/// All pixels will be zero except at the origin, where it will be 1.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+/// See `dip::FillDelta` for the meaning of `origin`.
+inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& origin = "" ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   FillDelta( out, origin );
+}
+inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
+   Image out;
+   CreateDelta( out, sizes, origin );
+   return out;
+}
+
 
 // Create 1D Gaussian, used in linear/gauss.cpp (where it is defined) and in nonlinear/bilateral.cpp
 DIP_EXPORT std::vector< dfloat > MakeGaussian(
@@ -616,6 +628,13 @@ inline Image TestObject(
    return out;
 }
 
+/// \}
+
+
+/// \defgroup generation_coordinates Coordinate generation
+/// \ingroup generation
+/// \brief Generating images with coordinates
+/// \{
 
 /// \brief Fills an image with a ramp function.
 ///
@@ -999,6 +1018,13 @@ inline Image CityBlockDistanceToPoint(
    return out;
 }
 
+/// \}
+
+
+/// \defgroup generation_noise Noise generation
+/// \ingroup generation
+/// \brief Adding noise to an image
+/// \{
 
 /// \brief Adds uniformly distributed white noise to the input image.
 ///
@@ -1238,7 +1264,6 @@ inline Image ColoredNoise(
    ColoredNoise( in, out, random, variance, color );
    return out;
 }
-
 
 /// \}
 

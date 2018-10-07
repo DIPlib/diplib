@@ -10,6 +10,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/boundary.h
 ../include/diplib/chain_code.h
 ../include/diplib/color.h
+../include/diplib/detection.h
 ../include/diplib/dft.h
 ../include/diplib/display.h
 ../include/diplib/distance.h
@@ -60,6 +61,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/transform.h
 ../include/diplib/union_find.h
 analysis/chord_length.cpp
+analysis/corners.cpp
 analysis/distance_distribution.cpp
 analysis/findshift.cpp
 analysis/fractal_dimension.cpp

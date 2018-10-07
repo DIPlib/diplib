@@ -32,7 +32,7 @@
 namespace dip {
 
 
-/// \defgroup file_io Image File I/O
+/// \defgroup file_io File I/O
 /// \brief Reading images from files and writing them to files.
 /// \{
 
