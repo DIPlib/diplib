@@ -68,6 +68,40 @@ inline Image Clip(
    return out;
 }
 
+/// \brief Clips the sample values in `in`, putting all values below `low` to `low`.
+inline void ClipLow(
+      Image const& in,
+      Image& out,
+      dfloat low = 0.0
+) {
+   Clip( in, out, low, infinity, S::LOW );
+}
+inline Image ClipLow(
+      Image const& in,
+      dfloat low = 0.0
+) {
+   Image out;
+   ClipLow( in, out, low );
+   return out;
+}
+
+/// \brief Clips the sample values in `in`, putting all values above `high` to `high`.
+inline void ClipHigh(
+      Image const& in,
+      Image& out,
+      dfloat high = 255.0
+) {
+   Clip( in, out, -infinity, high, S::HIGH );
+}
+inline Image ClipHigh(
+      Image const& in,
+      dfloat high = 255.0
+) {
+   Image out;
+   ClipHigh( in, out, high );
+   return out;
+}
+
 /// \brief Clips the sample values in `in` to a specified range, using the error function.
 ///
 /// The input values are mapped through the error function. This leads to values in the middle of the range

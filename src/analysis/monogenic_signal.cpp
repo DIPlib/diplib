@@ -255,11 +255,11 @@ void MonogenicSignalAnalysis(
          Acos( *congruency, *congruency );
          *congruency *= deviationGain;
          Subtract( 1, *congruency, *congruency );
-         Clip( *congruency, *congruency, 0, 0, S::LOW );
+         ClipLow( *congruency, *congruency, 0 );
          MultiplySampleWise( weight, *congruency, *congruency );
 
          Image excessEnergy = *energy - noiseThreshold;
-         Clip( excessEnergy, excessEnergy, 0, 0, S::LOW );
+         ClipLow( excessEnergy, excessEnergy, 0 );
          SafeDivide( excessEnergy, *energy, excessEnergy );
 
          MultiplySampleWise( *congruency, excessEnergy, *congruency );
@@ -279,7 +279,7 @@ void MonogenicSignalAnalysis(
          sinphi *= prodAmplitude;
 
          Subtract( dot, noiseThreshold, *congruency );
-         Clip( *congruency, *congruency, 0, 0, S::LOW );
+         ClipLow( *congruency, *congruency, 0 );
          *congruency /= sinphi;
 
       }
@@ -288,7 +288,7 @@ void MonogenicSignalAnalysis(
    if( symmetry ) {
       // Phase symmetry
       Subtract( *symenergy, noiseThreshold, *symmetry, DT_SFLOAT );
-      Clip( *symmetry, *symmetry, 0, 0, S::LOW );
+      ClipLow( *symmetry, *symmetry, 0 );
       SafeDivide( *symmetry, sumAmplitude, *symmetry );
    }
 }

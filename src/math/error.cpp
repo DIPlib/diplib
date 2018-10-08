@@ -322,7 +322,7 @@ dfloat FalsePositives( Image const& in, Image const& reference ) {
       And( in, tmp, tmp );    // writing it this way instead of `in & !reference` to avoid a memory allocation.
    } else {
       tmp = Subtract( in, reference );
-      Clip( tmp, tmp, 0.0, 1.0, S::LOW );
+      ClipLow( tmp, tmp, 0.0 );
    }
    return Measure( tmp );
 }
@@ -333,7 +333,7 @@ dfloat FalseNegatives( Image const& in, Image const& reference ) {
       And( tmp, reference, tmp );    // writing it this way instead of `!in & reference` to avoid a memory allocation.
    } else {
       tmp = Subtract( reference, in );
-      Clip( tmp, tmp, 0.0, 1.0, S::LOW );
+      ClipLow( tmp, tmp, 0.0 );
    }
    return Measure( tmp );
 }
@@ -405,7 +405,7 @@ dfloat Accuracy( Image const& in, Image const& reference ) {
       tmp = in - reference;
       Abs( tmp, tmp );
       Subtract( 1.0, tmp, tmp, tmp.DataType() );
-      Clip( tmp, tmp, 0.0, 1.0, S::LOW );
+      ClipLow( tmp, tmp, 0.0 );
    }
    return Measure( tmp ) / total;
 }

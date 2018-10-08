@@ -510,7 +510,7 @@ void HitAndMiss(
       Erosion( in, out, hit, boundaryCondition );
       out -= dil;
       if( out.DataType().IsSigned() ) {
-         Clip( out, out, 0, 0, S::LOW ); // set negative values to 0.
+         ClipLow( out, out, 0 ); // set negative values to 0.
       } // If `out` is an unsigned type, the subtractions above are saturated, negative values automatically become 0.
    }
 }

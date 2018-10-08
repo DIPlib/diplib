@@ -94,10 +94,10 @@ void Clip(
          }
       }
       if( !options.clipLow ) {
-         low = std::numeric_limits< dfloat >::lowest();
+         low = -infinity;
       }
       if( !options.clipHigh ) {
-         high = std::numeric_limits< dfloat >::max();
+         high = infinity;
       }
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;

@@ -440,7 +440,7 @@ void TestObject(
       // Add Poisson Noise
       if( params.poissonNoise != 0.0 ) {
          dfloat pn = params.signalNoiseRatio / params.poissonNoise * ( params.gaussianNoise + params.poissonNoise );
-         DIP_STACK_TRACE_THIS( Clip( out, out, 0.0, 0.0, S::LOW ));
+         DIP_STACK_TRACE_THIS( ClipLow( out, out, 0.0 ));
          dfloat objIntensity = MeanModulus( out ).As< dfloat >();
          dfloat cnv = pn * objIntensity / objEnergy;
          DIP_STACK_TRACE_THIS( PoissonNoise( out, out, random, cnv ));
