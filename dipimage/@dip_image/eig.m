@@ -10,11 +10,10 @@
 %  D is sorted large to small only of A is a real-valued symmetric matrix.
 %
 %  V1 = EIG(A,'largest') returns a vector image V1 for the eigenvector of A
-%  that corresponds to the largest eigenvalue of A. VN = EIG(A,'smallest')
-%  does the same but returns the smallest eigenvector VN. Compared to the
-%  V output of the previous syntax, V1 = V{:,1} and VN = V{:,N}, with
-%  N = NDIMS(A). This syntax is only valid for real-valued symmetric
-%  matrices.
+%  that corresponds to the eigenvalue of A with largest magnitude.
+%  VN = EIG(A,'smallest') does the same but for the eigenvalue with smallest
+%  magnitude. Compared to the V output of the previous syntax, V1 = V{:,1}
+%  and VN = V{:,N}, with N = NDIMS(A).
 %
 %  See also: EIG_LARGEST, DIP_IMAGE/SVD
 

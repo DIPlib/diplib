@@ -35,13 +35,24 @@
 
 namespace dip {
 
+namespace {
+
+template< class T >
+struct GreaterMagnitude {
+   bool operator()( T const& a, T const& b ) const {
+      return std::abs( a ) > std::abs( b );
+   }
+};
+
+} // namespace
+
 void SymmetricEigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   DIP_ASSERT( input.Stride() >= 0 ); // TODO: (here and other asserts in this file) Eigen doesn't support negative strides, but there's a ticket for that: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=747
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
@@ -50,7 +61,7 @@ void SymmetricEigenDecomposition(
       Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
       std::vector< dip::uint > indices( n );
       std::iota( indices.begin(), indices.end(), 0 );
-      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
       for( dip::uint ii = 0; ii < n; ++ii ) {
          dip::uint kk = indices[ ii ];
          lambdas[ ii ] = eigenvalues[ kk ];
@@ -63,7 +74,7 @@ void SymmetricEigenDecomposition(
       DIP_ASSERT( lambdas.Stride() >= 0 );
       Eigen::Map< Eigen::VectorXd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
-      std::sort( lambdas, lambdas + n, std::greater< dfloat >() );
+      std::sort( lambdas, lambdas + n, GreaterMagnitude< dfloat >() );
    }
 }
 
@@ -80,7 +91,7 @@ void LargestEigenVector(
    Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
    std::vector< dip::uint > indices( n );
    std::iota( indices.begin(), indices.end(), 0 );
-   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
    dip::uint kk = indices[ 0 ];
    for( dip::uint jj = 0; jj < n; ++jj ) {
       vector[ jj ] = eigenvectors( jj, kk );
@@ -100,7 +111,7 @@ void SmallestEigenVector(
    Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
    std::vector< dip::uint > indices( n );
    std::iota( indices.begin(), indices.end(), 0 );
-   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
    dip::uint kk = indices.back();
    for( dip::uint jj = 0; jj < n; ++jj ) {
       vector[ jj ] = eigenvectors( jj, kk );
@@ -115,16 +126,26 @@ void EigenDecomposition(
 ) {
    DIP_ASSERT( input.Stride() >= 0 );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
-   DIP_ASSERT( lambdas.Stride() >= 0 );
-   Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
    if( vectors ) {
       Eigen::EigenSolver< Eigen::MatrixXd > eigensolver( matrix );
-      DIP_ASSERT( vectors.Stride() >= 0 );
-      Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > eigenvectors( vectors.Pointer(), n, n, Eigen::InnerStride<>( vectors.Stride() ));
-      eigenvalues = eigensolver.eigenvalues();
-      eigenvectors = eigensolver.eigenvectors();
+      Eigen::VectorXcd eigenvalues = eigensolver.eigenvalues();
+      Eigen::MatrixXcd eigenvectors = eigensolver.eigenvectors();
+      std::vector< dip::uint > indices( n );
+      std::iota( indices.begin(), indices.end(), 0 );
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         dip::uint kk = indices[ ii ];
+         lambdas[ ii ] = eigenvalues[ kk ];
+         dip::uint offset = ii * n;
+         for( dip::uint jj = 0; jj < n; ++jj ) {
+            vectors[ jj + offset ] = eigenvectors( jj, kk );
+         }
+      }
    } else {
+      DIP_ASSERT( lambdas.Stride() >= 0 );
+      Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.eigenvalues();
+      std::sort( lambdas, lambdas + n, GreaterMagnitude< dcomplex >() );
    }
 }
 
@@ -136,16 +157,26 @@ void EigenDecomposition(
 ) {
    DIP_ASSERT( input.Stride() >= 0 );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
-   DIP_ASSERT( lambdas.Stride() >= 0 );
-   Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
    if( vectors ) {
       Eigen::ComplexEigenSolver< Eigen::MatrixXcd > eigensolver( matrix );
-      DIP_ASSERT( vectors.Stride() >= 0 );
-      Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > eigenvectors( vectors.Pointer(), n, n, Eigen::InnerStride<>( vectors.Stride() ));
-      eigenvalues = eigensolver.eigenvalues();
-      eigenvectors = eigensolver.eigenvectors();
+      Eigen::VectorXcd eigenvalues = eigensolver.eigenvalues();
+      Eigen::MatrixXcd eigenvectors = eigensolver.eigenvectors();
+      std::vector< dip::uint > indices( n );
+      std::iota( indices.begin(), indices.end(), 0 );
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         dip::uint kk = indices[ ii ];
+         lambdas[ ii ] = eigenvalues[ kk ];
+         dip::uint offset = ii * n;
+         for( dip::uint jj = 0; jj < n; ++jj ) {
+            vectors[ jj + offset ] = eigenvectors( jj, kk );
+         }
+      }
    } else {
+      DIP_ASSERT( lambdas.Stride() >= 0 );
+      Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.eigenvalues();
+      std::sort( lambdas, lambdas + n, GreaterMagnitude< dcomplex >() );
    }
 }
 

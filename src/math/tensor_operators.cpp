@@ -152,10 +152,20 @@ std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F c
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorTriadicScanLineFilter< TPI, TPO, F >( func, cost ));
 }
 
+template< class T >
+struct GreaterMagnitude {
+   bool operator()( T const& a, T const& b ) const {
+      return std::abs( a ) > std::abs( b );
+   }
+};
+
+} // namespace
+
+
 void SortTensorElements( Image& out ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    if( !out.IsScalar() ) {
       DataType outtype = out.DataType();
-      DIP_THROW_IF( outtype.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
       dip::uint n = out.TensorElements();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewTensorMonadicScanLineFilter, (
@@ -170,7 +180,24 @@ void SortTensorElements( Image& out ) {
    }
 }
 
-} // namespace
+void SortTensorElementsByMagnitude( Image& out ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   if( !out.IsScalar() ) {
+      DataType outtype = out.DataType();
+      dip::uint n = out.TensorElements();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            // Note that pin and pout will point to the same data:
+            // `Scan` is called with the same image as input and output, and the buffer and output types
+            // are all the same as the image's type, so no intermediate buffers will be made.
+            [ n ]( auto const& /*pin*/, auto const& pout ) { std::sort( pout, pout + n, GreaterMagnitude< decltype( *pout ) >() ); },
+            static_cast< dip::uint >( 2 * static_cast< dfloat >( n ) * std::log2( n ))
+      ), outtype );
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { out }, outar, { outtype }, { outtype }, { outtype }, { n }, *scanLineFilter ));
+   }
+}
+
 
 void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_THROW_IF( !lhs.IsForged() || !rhs.IsForged(), E::IMAGE_NOT_FORGED );
@@ -189,7 +216,6 @@ void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_STACK_TRACE_THIS( Multiply( a, b, out ));
 }
 
-//
 namespace {
 template< typename TPI >
 class CrossProductLineFilter : public Framework::ScanLineFilter {
@@ -500,16 +526,8 @@ void Eigenvalues( Image const& in, Image& out ) {
    if( in.IsScalar() ) {
       out = in;
    } else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
-      if( in.DataType().IsComplex() ) {
-         out = in.Diagonal();
-      } else {
-         if( &in == &out ) {
-            out = in.Diagonal();
-         } else {
-            out.Copy( in.Diagonal() );
-         }
-         DIP_STACK_TRACE_THIS( SortTensorElements( out ));
-      }
+      DIP_STACK_TRACE_THIS( out.Copy( in.Diagonal() ));
+      DIP_STACK_TRACE_THIS( SortTensorElementsByMagnitude( out ));
    } else {
       dip::uint n = in.TensorRows();
       DataType intype = in.DataType();
@@ -542,6 +560,105 @@ void Eigenvalues( Image const& in, Image& out ) {
       DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype }, { outtype }, { n }, *scanLineFilter,
                                              Framework::ScanOption::ExpandTensorInBuffer ));
    }
+}
+
+namespace {
+
+template< typename TPI, typename TPO, typename F >
+class SelectEigenvalueLineFilter : public Framework::ScanLineFilter {
+   public:
+      SelectEigenvalueLineFilter( F function, dip::uint n, bool first ) : function_( function ), n_( n ), first_( first ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+         return ( typeid( TPI ) == typeid( dfloat ) ? 400 : 800 ) * tensorElements;
+      }
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         buffers_.resize( threads );
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint const bufferLength = params.bufferLength;
+         ConstLineIterator< TPI > in(
+               static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.inBuffer[ 0 ].stride,
+               params.inBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorStride
+         );
+         LineIterator< TPO > out(
+               static_cast< TPO* >( params.outBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength, // == 1
+               params.outBuffer[ 0 ].tensorStride
+         );
+         // Allocate buffer if it's not yet there.
+         std::vector< TPO >& buf = buffers_[ params.thread ];
+         if( buf.size() != n_ ) {
+            std::cout << "resizing buffer!\n";
+            buf.resize( n_ );
+         }
+         // Compute
+         do {
+            function_( n_, in.begin(), buf.data(), nullptr );
+            *out = first_ ? buf.front() : buf.back();
+         } while( ++in, ++out );
+      }
+   private:
+      F function_;
+      dip::uint n_;
+      bool first_;
+      std::vector< std::vector< TPO >> buffers_; // one for each thread
+};
+
+void SelectEigenvalue( Image const& in, Image& out, bool first ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
+   if( in.IsScalar() ) {
+      out = in;
+   } else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
+      DIP_STACK_TRACE_THIS( MaximumAbsTensorElement( in, out ));
+   } else {
+      dip::uint n = in.TensorRows();
+      DataType intype = in.DataType();
+      DataType inbuffertype;
+      DataType outbuffertype;
+      DataType outtype;
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
+         using funcType = void ( * )( dip::uint, ConstSampleIterator< dfloat >, SampleIterator< dfloat >, SampleIterator< dfloat > );
+         scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
+               new SelectEigenvalueLineFilter< dfloat, dfloat, funcType >( &SymmetricEigenDecomposition, n, first ));
+         inbuffertype = DT_DFLOAT;
+         outbuffertype = DT_DFLOAT;
+         outtype = DataType::SuggestFlex( intype );
+      } else {
+         if( intype.IsComplex() ) {
+            using funcType = void ( * )( dip::uint, ConstSampleIterator< dcomplex >, SampleIterator< dcomplex >, SampleIterator< dcomplex > );
+            scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
+                  new SelectEigenvalueLineFilter< dcomplex, dcomplex, funcType >( &EigenDecomposition, n, first ));
+            inbuffertype = DT_DCOMPLEX;
+         } else {
+            using funcType = void ( * )( dip::uint, ConstSampleIterator< dfloat >, SampleIterator< dcomplex >, SampleIterator< dcomplex > );
+            scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
+                  new SelectEigenvalueLineFilter< dfloat, dcomplex, funcType >( &EigenDecomposition, n, first ));
+            inbuffertype = DT_DFLOAT;
+         }
+         outbuffertype = DT_DCOMPLEX;
+         outtype = DataType::SuggestComplex( intype );
+      }
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype }, { outtype }, { 1 }, *scanLineFilter,
+                                             Framework::ScanOption::ExpandTensorInBuffer ));
+   }
+}
+
+} // namespace
+
+void LargestEigenvalue( Image const& in, Image& out ) {
+   SelectEigenvalue( in, out, true );
+}
+
+void SmallestEigenvalue( Image const& in, Image& out ) {
+   SelectEigenvalue( in, out, false );
 }
 
 void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
@@ -859,6 +976,29 @@ void MaximumTensorElement( Image const& in, Image& out ) {
    }
 }
 
+void MaximumAbsTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.DataType().IsBinary() ) {
+      DIP_STACK_TRACE_THIS( AnyTensorElement( in, out ));
+   } else if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = in.DataType();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = *pin;
+               for( dip::uint ii = 1; ii < n; ++ii ) {
+                  *pout = std::max( std::abs( *pout ), std::abs( pin[ ii ] ));
+               }
+            }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
+   }
+}
+
 void MinimumTensorElement( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    if( in.DataType().IsBinary() ) {
@@ -874,6 +1014,29 @@ void MinimumTensorElement( Image const& in, Image& out ) {
                *pout = *pin;
                for( dip::uint ii = 1; ii < n; ++ii ) {
                   *pout = std::min( *pout, pin[ ii ] );
+               }
+            }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
+   }
+}
+
+void MinimumAbsTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.DataType().IsBinary() ) {
+      DIP_STACK_TRACE_THIS( AllTensorElements( in, out ));
+   } else if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = in.DataType();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = *pin;
+               for( dip::uint ii = 1; ii < n; ++ii ) {
+                  *pout = std::min( std::abs( *pout ), std::abs( pin[ ii ] ));
                }
             }, n
       ), dtype );

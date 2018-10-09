@@ -119,18 +119,22 @@ void init_math( py::module& m ) {
           static_cast< dip::Image ( * )( dip::Image const& ) >( &dip::Trace ), "in"_a );
    m.def( "Rank", py::overload_cast< dip::Image const& >( &dip::Rank ), "in"_a );
    m.def( "Eigenvalues", py::overload_cast< dip::Image const& >( &dip::Eigenvalues ), "in"_a );
+   m.def( "LargestEigenvalue", py::overload_cast< dip::Image const& >( &dip::LargestEigenvalue ), "in"_a );
+   m.def( "SmallestEigenvalue", py::overload_cast< dip::Image const& >( &dip::SmallestEigenvalue ), "in"_a );
    m.def( "EigenDecomposition", []( dip::Image const& in ){
              dip::Image out, eigenvectors;
              dip::EigenDecomposition( in, out, eigenvectors );
-             py::make_tuple( out, eigenvectors ).release();
+             return py::make_tuple( out, eigenvectors ).release();
           }, "in"_a );
+   m.def( "LargestEigenVector", py::overload_cast< dip::Image const& >( &dip::LargestEigenVector ), "in"_a );
+   m.def( "SmallestEigenVector", py::overload_cast< dip::Image const& >( &dip::SmallestEigenVector ), "in"_a );
    m.def( "Inverse", py::overload_cast< dip::Image const& >( &dip::Inverse ), "in"_a );
    m.def( "PseudoInverse", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::PseudoInverse ), "in"_a, "tolerance"_a = 1e-7 );
    m.def( "SingularValues", py::overload_cast< dip::Image const& >( &dip::SingularValues ), "in"_a );
    m.def( "SingularValueDecomposition", []( dip::Image const& in ){
              dip::Image U, S, V;
              dip::SingularValueDecomposition( in, U, S, V );
-             py::make_tuple( U, S, V ).release();
+             return py::make_tuple( U, S, V ).release();
           }, "in"_a );
    m.def( "Identity", py::overload_cast< dip::Image const& >( &dip::Identity ), "in"_a );
 

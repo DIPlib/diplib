@@ -419,12 +419,34 @@ inline Image Rank( Image const& in ) {
 /// \brief Computes the eigenvalues of the square matrix at each pixel in image `in`.
 ///
 /// `out` is a vector image containing the eigenvalues. If `in` is symmetric and
-/// real-valued, then `out` is real-valued, and the eigenvalues are in descending
-/// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
+/// real-valued, then `out` is real-valued, otherwise, `out` is complex-valued.
+/// The eigenvalues are sorted by magnitude, in descending order.
 DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
 inline Image Eigenvalues( Image const& in ) {
    Image out;
    Eigenvalues( in, out );
+   return out;
+}
+
+/// \brief Finds the largest eigenvalue of the square matrix at each pixel in image `in`.
+///
+/// Computes the eigenvalues in the same way as `dip::Eigenvalues`, but
+/// outputs only the eigenvector with the largest magnitude.
+DIP_EXPORT void LargestEigenvalue( Image const& in, Image& out );
+inline Image LargestEigenvalue( Image const& in ) {
+   Image out;
+   LargestEigenvalue( in, out );
+   return out;
+}
+
+/// \brief Finds the smallest eigenvalue of the square matrix at each pixel in image `in`.
+///
+/// Computes the eigenvalues in the same way as `dip::Eigenvalues`, but
+/// outputs only the eigenvector with the smallest magnitude.
+DIP_EXPORT void SmallestEigenvalue( Image const& in, Image& out );
+inline Image SmallestEigenvalue( Image const& in ) {
+   Image out;
+   SmallestEigenvalue( in, out );
    return out;
 }
 
@@ -435,8 +457,8 @@ inline Image Eigenvalues( Image const& in ) {
 /// `in == eigenvectors * out * Inverse( eigenvectors )`.
 ///
 /// `out` is a diagonal matrix image containing the eigenvalues. If `in` is symmetric and
-/// real-valued, then `out` is real-valued, and the eigenvalues are in descending
-/// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
+/// real-valued, then `out` is real-valued, otherwise, `out` is complex-valued.
+/// The eigenvalues are sorted by magnitude, in descending order.
 ///
 /// The eigenvectors are the columns `eigenvectors`. It has the same data type as `out`.
 DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
@@ -444,7 +466,7 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 /// \brief Finds the largest eigenvector of the symmetric matrix at each pixel in image `in`.
 ///
 /// Computes the eigen decomposition in the same way as `dip::EigenDecomposition`, but
-/// outputs only the eigenvector that corresponds to the largest eigenvalue.
+/// outputs only the eigenvector that corresponds to the eigenvalue with largest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
 DIP_EXPORT void LargestEigenVector( Image const& in, Image& out );
@@ -457,13 +479,13 @@ inline Image LargestEigenVector( Image const& in ) {
 /// \brief Finds the smallest eigenvector of the symmetric matrix at each pixel in image `in`.
 ///
 /// Computes the eigen decomposition in the same way as `dip::EigenDecomposition`, but
-/// outputs only the eigenvector that corresponds to the smallest eigenvalue.
+/// outputs only the eigenvector that corresponds to the eigenvalue with smallest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
 DIP_EXPORT void SmallestEigenVector( Image const& in, Image& out );
 inline Image SmallestEigenVector( Image const& in ) {
    Image out;
-   LargestEigenVector( in, out );
+   SmallestEigenVector( in, out );
    return out;
 }
 
@@ -580,11 +602,27 @@ inline Image MaximumTensorElement( Image const& in ) {
    return out;
 }
 
-/// \brief Takes the maximum tensor element at each pixel, producing a scalar image.
+/// \brief Takes the maximum absolute tensor element at each pixel, producing a scalar image. For float and complex images only.
+DIP_EXPORT void MaximumAbsTensorElement( Image const& in, Image& out );
+inline Image MaximumAbsTensorElement( Image const& in ) {
+   Image out;
+   MaximumAbsTensorElement( in, out );
+   return out;
+}
+
+/// \brief Takes the minimum tensor element at each pixel, producing a scalar image.
 DIP_EXPORT void MinimumTensorElement( Image const& in, Image& out );
 inline Image MinimumTensorElement( Image const& in ) {
    Image out;
    MinimumTensorElement( in, out );
+   return out;
+}
+
+/// \brief Takes the minimum absolute tensor element at each pixel, producing a scalar image. For float and complex images only.
+DIP_EXPORT void MinimumAbsTensorElement( Image const& in, Image& out );
+inline Image MinimumAbsTensorElement( Image const& in ) {
+   Image out;
+   MinimumAbsTensorElement( in, out );
    return out;
 }
 
@@ -595,6 +633,14 @@ inline Image MeanTensorElement( Image const& in ) {
    MeanTensorElement( in, out );
    return out;
 }
+
+/// \brief Sorts the tensor elements within each pixel from largest to smallest. Works in-place. `out` must be
+/// real-valued.
+DIP_EXPORT void SortTensorElements( Image& out );
+
+/// \brief Sorts the tensor elements within each pixel by magnitude from largest to smallest. Works in-place.
+/// `out` must be of a floating point or complex type.
+DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 
 
 /// \}

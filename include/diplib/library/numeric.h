@@ -265,7 +265,7 @@ inline dfloat Sinc( dfloat x ) {
 ///
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
-/// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
+/// `lambdas` is a pointer to space for `n` values, which will be written sorted by magnitude, largest to smallest.
 ///
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
@@ -282,7 +282,7 @@ DIP_EXPORT void SymmetricEigenDecomposition(
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
 /// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
-/// largest eigenvalue. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
+/// largest eigenvalue by magnitude. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
 /// but only one eigenvector is written to the output.
 void LargestEigenVector(
       dip::uint n,
@@ -295,7 +295,7 @@ void LargestEigenVector(
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
 /// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
-/// smallest eigenvalue. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
+/// smallest eigenvalue by magnitude. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
 /// but only one eigenvector is written to the output.
 void SmallestEigenVector(
       dip::uint n,
@@ -343,7 +343,7 @@ inline void SymmetricEigenDecompositionPacked(
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
 ///
-/// `lambdas` is a pointer to space for `n` values, which don't have any specific ordering.
+/// `lambdas` is a pointer to space for `n` values, sorted by magnitude, largest to smallest
 ///
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
@@ -359,7 +359,7 @@ DIP_EXPORT void EigenDecomposition(
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
 ///
-/// `lambdas` is a pointer to space for `n` values, which don't have any specific ordering.
+/// `lambdas` is a pointer to space for `n` values, sorted by magnitude, largest to smallest
 ///
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
