@@ -117,6 +117,19 @@ void Image::View::Copy( Image const& source ) {
    }
 }
 
+Image Image::View::Copy() const {
+   // This is similar to `Image out = *this`, except in the case of no mask or offsets, we copy the pixels too.
+   Image out;
+   if( mask_.IsForged() ) {
+      CopyFrom( reference_, out, mask_ );
+   } else if( !offsets_.empty() ) {
+      CopyFrom( reference_, out, offsets_ );
+   } else {
+      out = reference_.Copy();
+   }
+   return out;
+}
+
 void Image::View::Fill( Pixel const& pixel ) {
    if( pixel.TensorElements() == 1 ) {
       Fill( pixel[ 0 ] );

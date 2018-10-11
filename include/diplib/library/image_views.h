@@ -927,6 +927,9 @@ class Image::View {
       //    Note that currently View is cast to Image (copies pixels if view is irregular), and then the image
       //    pixels are copied to the view.
 
+      /// \brief Creates a copy of the view as a new image. The output will not share data with the view.
+      DIP_EXPORT Image Copy() const;
+
       /// \brief Sets all pixels in the view to the value `pixel`.
       ///
       /// `pixel` must have the same number of tensor elements as the image, or be a scalar.
@@ -1167,11 +1170,11 @@ class Image::View::Iterator {
 // dip::Image methods that depend on the definition of the classes in this file
 //
 
-inline Image::Image( Image::Pixel const& pixel ) : dataType_( pixel.DataType()),
-                                                   tensor_( pixel.Tensor()),
+inline Image::Image( Image::Pixel const& pixel ) : dataType_( pixel.DataType() ),
+                                                   tensor_( pixel.Tensor() ),
                                                    tensorStride_( 1 ) {
    Forge();
-   uint8 const* src = static_cast< uint8 const* >( pixel.Origin());
+   uint8 const* src = static_cast< uint8 const* >( pixel.Origin() );
    uint8* dest = static_cast< uint8* >( origin_ );
    dip::uint sz = dataType_.SizeOf();
    dip::sint srcStep = pixel.TensorStride() * static_cast< dip::sint >( sz );
@@ -1184,7 +1187,7 @@ inline Image::Image( Image::Pixel const& pixel ) : dataType_( pixel.DataType()),
 }
 
 inline Image::Image( Image::Pixel const& pixel, dip::DataType dt ) : dataType_( dt ),
-                                                                     tensor_( pixel.Tensor()),
+                                                                     tensor_( pixel.Tensor() ),
                                                                      tensorStride_( 1 ) {
    Forge();
    uint8 const* src = static_cast< uint8 const* >( pixel.Origin() );
@@ -1212,9 +1215,9 @@ inline Image::Image( Image::Sample const& sample, dip::DataType dt ) : dataType_
 
 inline Image::Image( Image::View const& view ) {
    if( view.mask_.IsForged() ) {
-      dip::CopyFrom( view.reference_, *this, view.mask_ );
+      CopyFrom( view.reference_, *this, view.mask_ );
    } else if( !view.offsets_.empty() ) {
-      dip::CopyFrom( view.reference_, *this, view.offsets_ );
+      CopyFrom( view.reference_, *this, view.offsets_ );
    } else {
       *this = view.reference_;
    }
@@ -1222,9 +1225,9 @@ inline Image::Image( Image::View const& view ) {
 
 inline Image::Image( Image::View&& view ) {
    if( view.mask_.IsForged() ) {
-      dip::CopyFrom( view.reference_, *this, view.mask_ );
+      CopyFrom( view.reference_, *this, view.mask_ );
    } else if( !view.offsets_.empty() ) {
-      dip::CopyFrom( view.reference_, *this, view.offsets_ );
+      CopyFrom( view.reference_, *this, view.offsets_ );
    } else {
       this->move( std::move( view.reference_ ));
    }
