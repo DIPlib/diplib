@@ -1356,14 +1356,14 @@ DIP_EXPORT void PathOpening(
       Image& out,
       dip::uint length = 7,
       String const& polarity = S::OPENING,
-      String const& mode = S::NORMAL
+      StringSet const& mode = {}
 );
 inline Image PathOpening(
       Image const& in,
       Image const& mask,
       dip::uint length = 7,
       String const& polarity = S::OPENING,
-      String const& mode = S::NORMAL
+      StringSet const& mode = {}
 ) {
    Image out;
    PathOpening( in, mask, out, length, polarity, mode );
@@ -1388,16 +1388,18 @@ inline Image PathOpening(
 /// the `filterParam` argument, see below. Note that the path length is given by the number of pixels in the path,
 /// not the Euclidean length of the path.
 ///
-/// When `mode` is `"constrained"`, the path construction described above is modified such that, after every alternate
+/// When `mode` contains `"constrained"`, the path construction described above is modified such that, after every alternate
 /// step, a step in the main direction must be taken. This constraint avoids a zig-zag line that causes the path
 /// opening to yield much shorter lines for the diagonal directions if the lines in the image are thicker than one pixel.
 /// See the paper by Luengo referenced below. It also reduces the cone size from 90 degrees to 45 degrees, making the
 /// algorithm more directionally-selective. The constrained mode increases computation time a little, but is highly
-/// recommended when using the path opening in a granulometry.
+/// recommended when using the path opening in a granulometry. The alternate flag is `"unconstrained"`, which is the
+/// default and does not need to be given.
 ///
-/// Path openings can be sensitive to noise. A robust path opening is obtained by dilating the image with a 2x2
-/// rectangular structuring element, applying the path opening, then eroding the result. For a path closing,
-/// reverse these operations.
+/// Path openings can be sensitive to noise. If `mode` contains `"robust"`, a robust path opening or closing is
+/// obtained. A robust path opening is computed by dilating the image with a 2x2 rectangular structuring element,
+/// applying the path opening, then taking the infimum of the result and the input (Merveille, 2018). For a path
+/// closing, the erosion and the supremum are used instead.
 ///
 /// **Definition of `filterSize`:** `length = max(abs(filterSize))` is the number of pixels in the line.
 /// The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using
@@ -1408,20 +1410,21 @@ inline Image PathOpening(
 ///  - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
 ///  - H. Talbot, B. Appleton, "Efficient complete and incomplete path openings and closings", Image and Vision Computing 25:416-425, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
+///  - O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
 DIP_EXPORT void DirectedPathOpening(
       Image const& in,
       Image const& mask,
       Image& out,
       IntegerArray filterParam,
       String const& polarity = S::OPENING,
-      String const& mode = S::NORMAL
+      StringSet const& mode = {}
 );
 inline Image DirectedPathOpening(
       Image const& in,
       Image const& mask,
       IntegerArray const& filterParam,
       String const& polarity = S::OPENING,
-      String const& mode = S::NORMAL
+      StringSet const& mode = {}
 ) {
    Image out;
    DirectedPathOpening( in, mask, out, filterParam, polarity, mode );

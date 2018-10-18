@@ -1257,6 +1257,12 @@ class DIP_NO_EXPORT Image {
          externalInterface_ = ei;
       }
 
+      /// \brief Remove external interface pointer. The image behaves like a native one (for assignment, reforging,
+      /// etc.), but the current pixel buffer (if forged) is not affected. See \ref external_interface.
+      void ResetExternalInterface() {
+         externalInterface_ = nullptr;
+      }
+
       /// \brief Get external interface pointer. See \ref external_interface
       dip::ExternalInterface* ExternalInterface() const {
          return externalInterface_;

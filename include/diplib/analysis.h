@@ -789,7 +789,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 ///      - `"subsample"`: subsamples for larger scales, such that the largest SE diameter is 64. This speeds up
 ///        computation, at the expense of precision.
 ///  - For `"length"` granulometries:
-///      - `"non-constrained"`: by default, we use constrained path openings or closings, which improves the precision
+///      - `"unconstrained"`: by default, we use constrained path openings or closings, which improves the precision
 ///        of the measurement, but is a little bit more expensive (see Luengo, 2010). This option causes the use
 ///        of normal path openings or closings.
 ///      - `"robust"`: applies path openings or closings in such a way that they are less sensitive to noise.

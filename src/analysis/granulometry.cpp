@@ -48,7 +48,7 @@ Distribution Granulometry(
    DIP_THROW_IF( scales[ 0 ] <= 1.0, E::PARAMETER_OUT_OF_RANGE ); // all scales must be larger than 1
    // Type
    bool isotropic;
-   DIP_STACK_TRACE_THIS( isotropic = BooleanFromString( type, "isotropic", "length" ));
+   DIP_STACK_TRACE_THIS( isotropic = BooleanFromString( type, S::ISOTROPIC, S::LENGTH ));
    // Polarity
    bool opening;
    DIP_STACK_TRACE_THIS( opening = BooleanFromString( polarity, S::OPENING, S::CLOSING ));
@@ -60,17 +60,17 @@ Distribution Granulometry(
    bool constrained = true;
    bool robust = false;
    for( auto& option : options ) {
-      if( isotropic && ( option == "reconstruction" )) {
+      if( isotropic && ( option == S::RECONSTRUCTION )) {
          reconstruction = true;
-      } else if( isotropic && ( option == "shifted" )) {
+      } else if( isotropic && ( option == S::SHIFTED )) {
          shifted = true;
-      } else if( isotropic && ( option == "interpolate" )) {
+      } else if( isotropic && ( option == S::INTERPOLATE )) {
          interpolate = true;
-      } else if( isotropic && ( option == "subsample" )) {
+      } else if( isotropic && ( option == S::SUBSAMPLE )) {
          subsample = true;
-      } else if( !isotropic && ( option == "non-constrained" )) {
+      } else if( !isotropic && ( option == S::UNCONSTRAINED )) {
          constrained = false;
-      } else if( !isotropic && ( option == "robust" )) {
+      } else if( !isotropic && ( option == S::ROBUST )) {
          robust = true;
       } else {
          DIP_THROW_INVALID_FLAG( option );
@@ -142,9 +142,9 @@ Distribution Granulometry(
             if( zoom != currentZoom ) {
                // Subsample
                if( opening ) {
-                  Erosion( in, scaledIn, { 1 / zoom, "rectangular" } );
+                  Erosion( in, scaledIn, { 1 / zoom, S::RECTANGULAR } );
                } else {
-                  Dilation( in, scaledIn, { 1 / zoom, "rectangular" } );
+                  Dilation( in, scaledIn, { 1 / zoom, S::RECTANGULAR } );
                }
                Subsampling( scaledIn, scaledIn, { static_cast< dip::uint >( 1 / zoom ) } );
                if( mask.IsForged()) {
@@ -197,19 +197,16 @@ Distribution Granulometry(
    } else {
       // Path opening/closing
 
-      String mode = constrained ? S::CONSTRAINED : S::NORMAL;
+      StringSet mode;
+      if( constrained ) {
+         mode.insert( S::CONSTRAINED );
+      }
+      if( robust ) {
+         mode.insert( S::ROBUST );
+      }
       Image tmp;
-      StructuringElement robustSE{ 2, "rectangular" };
       for( dip::uint ii = 0; ii < scales.size(); ++ii ) {
-         if( robust ) {
-            opening ? Dilation( in, tmp, robustSE ) : Erosion( in, tmp, robustSE );
-            PathOpening( tmp, {}, tmp, static_cast< dip::uint >( scales[ ii ] ), polarity, mode );
-            opening ? Erosion( tmp, tmp, robustSE ) : Dilation( tmp, tmp, robustSE );
-            //std::cout << "Robust path, scale = " << scales[ ii ] << ", mode = " << mode << '\n';
-         } else {
-            PathOpening( in, {}, tmp, static_cast< dip::uint >( scales[ ii ] ), polarity, mode );
-            //std::cout << "Path, scale = " << scales[ ii ] << ", mode = " << mode << '\n';
-         }
+         PathOpening( in, {}, tmp, static_cast< dip::uint >( scales[ ii ] ), polarity, mode );
          dfloat result = Mean( tmp, mask ).As< dfloat >();
          out[ ii ].Y() = ( result - offset ) * gain;
       }

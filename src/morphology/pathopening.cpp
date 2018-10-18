@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the various watershed implementations and related functions.
  *
- * (c)2008-2009, 2017, Cris Luengo.
+ * (c)2008-2009, 2017-2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -358,6 +358,29 @@ void dip__PathOpening(
 #pragma GCC diagnostic pop
 #endif
 
+void ParsePathMode(
+      String const& polarity,
+      StringSet const& mode,
+      bool& opening,
+      bool& constrained,
+      bool& robust
+) {
+   opening = BooleanFromString( polarity, S::OPENING, S::CLOSING );
+   constrained = false;
+   robust = false;
+   for( auto& m : mode ) {
+      if( m == S::CONSTRAINED ) {
+         constrained = true;
+      } else if( m == S::UNCONSTRAINED ) {
+         constrained = false;
+      } else if( m == S::ROBUST ) {
+         robust = true;
+      } else {
+         DIP_THROW_INVALID_FLAG( m );
+      }
+   }
+}
+
 } // namespace
 
 void PathOpening(
@@ -366,7 +389,7 @@ void PathOpening(
       Image& out,
       dip::uint length,
       String const& polarity,
-      String const& mode
+      StringSet const& mode
 ) {
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -378,11 +401,8 @@ void PathOpening(
       DIP_THROW_IF( c_in.Size( ii ) < 3, "Input image is too small." );
    }
 
-   bool opening, constrained;
-   DIP_START_STACK_TRACE
-      opening = BooleanFromString( polarity, S::OPENING, S::CLOSING );
-      constrained = BooleanFromString( mode, S::CONSTRAINED, S::NORMAL );
-   DIP_END_STACK_TRACE
+   bool opening, constrained, robust;
+   DIP_STACK_TRACE_THIS( ParsePathMode( polarity, mode, opening, constrained, robust ));
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
@@ -390,6 +410,7 @@ void PathOpening(
    // the input pixel data.
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
+   in.ResetExternalInterface(); // Assure we can do `in = ...` without copying data into our input image.
 
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
@@ -407,6 +428,19 @@ void PathOpening(
    if( out.Aliases( in ) || out.Aliases( mask ) || ( out.DataType() != in.DataType() )) {
       out.Strip();
       // It will be forged later when we do the first copy.
+   }
+
+   // First part of robustness
+   // Here we create a new pixel buffer for `in`, separate from the true `in`.
+   Image orig_in;
+   if( robust ) {
+      orig_in = in.QuickCopy(); // Save a reference to the input data buffer (note that `c_in` could lose that reference if it is the same object as `out`)
+      StructuringElement robustSE{ 2, S::RECTANGULAR };
+      if( opening ) {
+         in = Dilation( in, robustSE );
+      } else {
+         in = Erosion( in, robustSE );
+      }
    }
 
    // Prepare temporary images
@@ -526,6 +560,15 @@ void PathOpening(
          break;
       }
    }
+
+   // Finalize the robust method
+   if( robust ) {
+      if( opening ) {
+         Infimum( orig_in, out, out );
+      } else {
+         Supremum( orig_in, out, out );
+      }
+   }
 }
 
 void DirectedPathOpening(
@@ -534,7 +577,7 @@ void DirectedPathOpening(
       Image& out,
       IntegerArray filterParam,
       String const& polarity,
-      String const& mode
+      StringSet const& mode
 ) {
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -547,11 +590,8 @@ void DirectedPathOpening(
    }
    DIP_THROW_IF( filterParam.size() != ndims, E::ARRAY_PARAMETER_WRONG_LENGTH );
 
-   bool opening, constrained;
-   DIP_START_STACK_TRACE
-      opening = BooleanFromString( polarity, S::OPENING, S::CLOSING );
-      constrained = BooleanFromString( mode, S::CONSTRAINED, S::NORMAL );
-   DIP_END_STACK_TRACE
+   bool opening, constrained, robust;
+   DIP_STACK_TRACE_THIS( ParsePathMode( polarity, mode, opening, constrained, robust ));
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
@@ -587,7 +627,19 @@ void DirectedPathOpening(
    if( out.IsForged() && ( !out.HasContiguousData() || ( out.DataType() != in.DataType() ) || out.Aliases( mask ) )) {
       out.Strip();
    }
-   out.Copy( in );
+   if( robust ) {
+      if( out.Aliases( in )) {
+         out.Strip(); // We cannot work in-place in this case.
+      }
+      StructuringElement robustSE{ 2, S::RECTANGULAR };
+      if( opening ) {
+         Dilation( in, out, robustSE );
+      } else {
+         Erosion( in, out, robustSE );
+      }
+   } else {
+      out.Copy( in );
+   }
    DIP_ASSERT( out.HasContiguousData() );
    DataType ovlType = out.DataType();
    if( ovlType.IsBinary() ) {
@@ -648,6 +700,15 @@ void DirectedPathOpening(
       DIP_OVL_CALL_REAL( dip__PathOpening,
                          ( out, active, len1, len2, offsets, offsetUp, offsetDown, length ),
                          ovlType );
+   }
+
+   // Finalize the robust method
+   if( robust ) {
+      if( opening ) {
+         Infimum( in, out, out );
+      } else {
+         Supremum( in, out, out );
+      }
    }
 }
 

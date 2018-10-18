@@ -97,6 +97,11 @@ constexpr char const* UNCONSTRAINED = "unconstrained";
 constexpr char const* STRUCTURAL = "structural";
 constexpr char const* RECONSTRUCTION = "reconstruction";
 constexpr char const* AREA = "area";
+constexpr char const* ROBUST = "robust";
+constexpr char const* SHIFTED = "shifted";
+constexpr char const* SUBSAMPLE = "subsample";
+constexpr char const* ISOTROPIC = "isotropic";
+constexpr char const* LENGTH = "length";
 
 // Watershed flags
 constexpr char const* CORRECT = "correct";

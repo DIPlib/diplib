@@ -4,15 +4,16 @@
 %  image_out = pathopening(image_in,filterParams,polarity,mode)
 %
 % PARAMETERS:
-%  filterParams: either a scalar value or an array with as many elements as
+%  filterParams: Either a scalar value or an array with as many elements as
 %                dimensions in IMAGE_IN. See below.
 %  polarity:     'opening' or 'closing'.
-%  mode:         'normal' or 'constrained'. See below.
+%  mode:         Cell array with one of 'unconstrained' or 'constrained',
+%                and/or 'robust'. See below.
 %
 % DEFAULTS:
 %  filterParams = 7
 %  polarity = 'opening'
-%  mode = 'normal'
+%  mode = {'unconstrained'}
 %
 %  The path opening is an opening over all possible paths of a specific length
 %  and general direction. A path direction represents a 90 degree cone within
@@ -33,7 +34,7 @@
 %  There are 4 possible path directions in 2D, and 13 in 3D. Both length and
 %  direction are specified through the FILTERPARAM argument, see below.
 %
-%  When MODE is 'constrained', the path construction described above is
+%  When MODE constains 'constrained', the path construction described above is
 %  modified such that, after every alternate step, a step in the main direction
 %  must be taken. This constraint avoids a zig-zag line that causes the path
 %  opening to yield much shorter lines for the diagonal directions if the lines
@@ -42,6 +43,8 @@
 %  the algorithm more directionally-selective. The constrained mode increases
 %  computation time a little, but is highly recommended when using the path
 %  opening in a granulometry.
+%
+%  When MODE constains 'robust', single-pixel gaps in lines are bridged.
 %
 %  Definition of FILTERSIZE: LENGTH = MAX(ABS(FILTERSIZE)) is the number of
 %  pixels in the line. The path direction is determined by translating
@@ -59,7 +62,7 @@
 %  This function calls the DIPlib functions dip::PathOpening and
 %  dip::DirectedPathOpening.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

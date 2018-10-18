@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `pathopening` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if( nrhs > 2 ) {
          polarity = dml::GetString( prhs[ 2 ] );
       }
-      dip::String mode = dip::S::NORMAL;
+      dip::StringSet mode;
       if( nrhs > 3 ) {
-         mode = dml::GetString( prhs[ 3 ] );
+         mode = dml::GetStringSet( prhs[ 3 ] );
+         mode.erase( "normal" ); // Allow this flag, for backwards compatibility.
       }
 
       if( params.size() < 2 ) {
