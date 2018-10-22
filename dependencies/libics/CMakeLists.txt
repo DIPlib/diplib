@@ -144,8 +144,10 @@ endif()
 
 
 # Unit tests
-enable_testing()
-
+option(ENABLE_ICS_TESTS "Enable libics tests" OFF)
+if (${ENABLE_ICS_TESTS})
+    enable_testing()
+endif()
 add_executable(test_ics1 EXCLUDE_FROM_ALL test_ics1.c)
 target_link_libraries(test_ics1 libics)
 add_executable(test_ics2a EXCLUDE_FROM_ALL test_ics2a.c)
