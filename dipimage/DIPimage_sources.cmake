@@ -73,6 +73,7 @@ hminima.cpp
 kuwahara.cpp
 label.cpp
 lee.cpp
+linedetector.cpp
 loggabor.cpp
 lut.cpp
 maxima.cpp

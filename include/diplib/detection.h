@@ -40,6 +40,7 @@ namespace dip {
 /// - `dip::MorphologicalGradientMagnitude`
 /// - `dip::MultiScaleMorphologicalGradient`
 /// - `dip::Canny`
+/// - `dip::MonogenicSignalAnalysis`
 ///
 /// For dot detection see:
 ///  - `dip::Laplace`
@@ -215,19 +216,159 @@ inline Image WangBradyCornerDetector(
 /// \defgroup detection_lines Line detectors
 /// \ingroup detection
 /// \brief Line detection algorithms
+///
+/// See `dip::MonogenicSignalAnalysis` for yet another way to detect lines.
 /// \{
 
-/// \brief Frangi vessel detector
-DIP_EXPORT void FrangiVesselDetector();
+/// \brief Frangi vessel detector, single scale (Hessian based)
+///
+/// Frangi's vesselness measure is based on the eigenvalues of the Hessian matrix. The core concept is that
+/// one eigenvalue must be significantly smaller than the others for a local region to resemble a line.
+///
+/// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see `dip::Hessian`),
+/// and determine the scale. To detect wider vessels, increase `sigmas`.
+///
+/// `parameters` are the two (*&beta;* and *c* in 2D) or three (*&alpha;*, *&beta;* and *c* in 3D) thresholds used
+/// in the method. An empty array indicates the default values (`{0.5, 15}` in 2D and `{0.5, 0.5, 500}` in 3D).
+///
+/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// background (`"black"`). The sign of the one (2D) or two (3D) larger eigenvalues are examined at each pixel to
+/// determine the polarity of the line, if the signs don't match, the pixel is set to 0.
+///
+/// `in` must be scalar, real-valued, and either 2D or 3D. This function has not been generalized to
+/// other dimensionalities.
+///
+/// The complete multi-scale vessel detector simply applies this function at multiple scales and takes the maximum
+/// response at each scale. Even though the original paper didn't mention this, best restuls are obtained when
+/// scaling the input image with the square of the sigma:
+/// ```cpp
+///     std::vector<double> scales = { 1, 2, 4, 8 };
+///     dip::Image out = dip::FrangiVesselness( in * ( scales[ 0 ] * scales[ 0 ] ), { scales[ 0 ] } );
+///     for( size_t ii = 1; ii < scales.size(); ++ii ) {
+///        dip::Supremum( out,  dip::FrangiVesselness( in * ( scales[ ii ] * scales[ ii ] ), { scales[ ii ] } ), out );
+///     }
+/// ```
+///
+/// **Literature**
+/// - A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
+///   in: Medical %Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
+DIP_EXPORT void FrangiVesselness(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas = { 2.0 },
+      FloatArray parameters = {},
+      String const& polarity = S::WHITE,
+      StringArray const& boundaryCondition = {}
+);
+inline Image FrangiVesselness(
+      Image const& in,
+      FloatArray const& sigmas = { 2.0 },
+      FloatArray const& parameters = {}, // for 3D: { 0.5, 0.5, 500 }; for 2D: { 0.5, 15 }
+      String const& polarity = S::WHITE,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   FrangiVesselness( in, out, sigmas, parameters, polarity, boundaryCondition );
+   return out;
+}
 
-/// \brief Matched filters for line detection
-DIP_EXPORT void MatchedFilters();
+/// \brief Matched filters for line detection in 2D
+///
+/// Matched filters are a filter bank designed to match the shape being detected. In this case, it is a line-line
+/// filter of length `length`, with a Gaussian profile (`sigma` determines the width). The filter has an average of
+/// zero so that it yields a zero response in flat areas. It is created at 12 different orientations (thus using 15
+/// degree steps to cover the full 180 degree half-circle), and the maximum response over all orientations is returned.
+///
+/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// background (`"black"`). `in` must be scalar, real-valued, and 2D.
+///
+/// **Literature**
+/// - S. Chaudhuri, S. Chatterjee, N. Katz, M. Nelson, and M. Goldbaum, "Detection of Blood Vessels in Retinal Images
+///   Using Two-Dimensional Matched Filters", IEEE Transactions on Medical Imaging 8(3):263-269, 1989
+DIP_EXPORT void MatchedFiltersLineDetector2D(
+      Image const& in,
+      Image& out,
+      dip::dfloat sigma = 2.0,
+      dip::dfloat length = 10.0,
+      String const& polarity = S::WHITE,
+      StringArray const& boundaryCondition = {}
+);
+inline Image MatchedFiltersLineDetector2D(
+      Image const& in,
+      dip::dfloat sigma = 2.0,
+      dip::dfloat length = 10.0,
+      String const& polarity = S::WHITE,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   MatchedFiltersLineDetector2D( in, out, sigma, length, polarity, boundaryCondition );
+   return out;
+}
 
-/// \brief Danielson line detector
-DIP_EXPORT void DanielsonLineDetector();
+/// \brief Danielsson's Hessian-based line detector
+///
+/// This is a different approach to detecting lines based on the Hessian matrix (2nd order derivatives) compared
+/// to Frangi's vesselness measure (`dip::FrangiVesselness`). It is perfectly isotropic, but has some response
+/// also to edges, especially in 2D.
+///
+/// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see `dip::Hessian`),
+/// and determine the scale. To detect wider lines, increase `sigmas`.
+///
+/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
+///
+/// **Literature**
+/// - P.E. Danielson, Q. Lin and Q.Z. Ye, "Efficient detection of second degree variations in 2D and 3D images",
+///   Journal of Visual Communication and %Image Representation 12, 255–305, 2001.
+DIP_EXPORT void DanielssonLineDetector(
+      Image const& in,
+      Image& out,
+      dip::FloatArray const& sigmas = { 2.0 },
+      String const& polarity = S::WHITE,
+      StringArray const& boundaryCondition = {}
+);
+inline Image DanielssonLineDetector(
+      Image const& in,
+      dip::FloatArray const& sigmas = { 2.0 },
+      String const& polarity = S::WHITE,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   DanielssonLineDetector( in, out, sigmas, polarity, boundaryCondition );
+   return out;
+}
 
-/// \brief Morphological line detector (based on top hat and path opening)
-DIP_EXPORT void MorphologicalLineDetector();
+/// \brief Line detector based on robust path openings
+///
+/// RORPO stands for Ranking the Orientation Responses of Path Operators. It filters `in` with 4 (2D)
+/// or 7 (3D) different directions of path openings, ranks the results point-wise, and compares appropriate
+/// ranks to determine if a pixel belongs to a line or not.
+///
+/// `length` is the length of the path operator. Longer paths make for a more selective filter that requires
+/// lines to be straighter.
+///
+/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
+///
+/// **Literature**
+/// - O. Merveille, H. Talbot, L. Najman, and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation
+///   Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
+DIP_EXPORT void RORPOLineDetector(
+      Image const& in,
+      Image& out,
+      dip::uint length = 15,
+      String const& polarity = S::WHITE
+);
+inline Image RORPOLineDetector(
+      Image const& in,
+      dip::uint length = 15,
+      String const& polarity = S::WHITE
+) {
+   Image out;
+   RORPOLineDetector( in, out, length, polarity );
+   return out;
+}
+
 
 /// \}
 

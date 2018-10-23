@@ -95,9 +95,6 @@ document's source</a> for the most up-to-date version.
 
 -   Colocalization measurements.
 
--   Line detectors: Frangi, matched filters, etc. and port dip_DanielsonLineDetector.
-    Corner detectors: Harris & Shi–Tomasi, Wang & Brady, etc.
-
 -   Scalespace analysis?
 
 -   A function to write text into an image, using the

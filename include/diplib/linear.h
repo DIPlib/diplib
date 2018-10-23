@@ -1124,14 +1124,6 @@ inline Image UnsharpMask(
 }
 
 
-DIP_EXPORT void OrientedGauss( // TODO: port dip_OrientedGauss (from dip_linear.h)
-      Image const& in,
-      Image& out,
-      FloatArray,
-      FloatArray
-);
-
-
 /// \brief Finite impulse response implementation of the Gabor filter
 ///
 /// Convolves the image with an FIR 1D Gabor kernel along each dimension. For each dimension,

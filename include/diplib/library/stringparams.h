@@ -18,14 +18,18 @@
  * limitations under the License.
  */
 
+
 //
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
 
-#pragma once
+
+#ifndef DIP_STRINGPARAMS_H
+#define DIP_STRINGPARAMS_H
 
 #include "diplib/library/types.h"
+
 
 namespace dip {
 
@@ -252,3 +256,5 @@ constexpr char const* CUSTOM = "custom";
 } // namespace S
 
 } // namespace dip
+
+#endif // DIP_STRINGPARAMS_H

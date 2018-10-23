@@ -112,6 +112,15 @@ void init_analysis( py::module& m ) {
    m.def( "WangBradyCornerDetector", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::WangBradyCornerDetector ),
           "in"_a, "threshold"_a = 0.1, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
 
+   m.def( "FrangiVesselness", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::FrangiVesselness ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "parameters"_a = dip::FloatArray{}, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "MatchedFiltersLineDetector2D", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::MatchedFiltersLineDetector2D ),
+          "in"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "DanielssonLineDetector", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::DanielssonLineDetector ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "RORPOLineDetector", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::RORPOLineDetector ),
+          "in"_a, "length"_a = 15, "polarity"_a = dip::S::WHITE );
+
    // diplib/distance.h
 
    m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),
