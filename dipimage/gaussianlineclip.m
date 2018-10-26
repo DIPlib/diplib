@@ -5,7 +5,7 @@
 %
 % DEFAULTS:
 %  sigma =  1
-%  normalisetoone = 0
+%  normalisetoone = false
 %  truncation = 3
 %
 % DESCRIPTION:
@@ -21,7 +21,7 @@
 %  computation. Set truncation to Inf to avoid this.
 %
 %  By default the peak value of the line is 1/(sqrt(2*pi)*sigma). The peak
-%  value is set to one if the parameter 'normalisetoone' is set to one.
+%  value is set to one if the parameter 'normalisetoone' is set to TRUE.
 %
 % EXAMPLE:
 %  a = gaussianlineclip(rr-40)

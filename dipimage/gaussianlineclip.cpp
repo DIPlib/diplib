@@ -46,7 +46,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::dfloat value = 1.0;
       if( normalisetoone ) {
-         value = std::pow( 2.0 * dip::pi * sigma * sigma, static_cast< dip::dfloat >( in.Dimensionality() ) / 2.0 );
+         value = std::sqrt( 2.0 * dip::pi ) * sigma;
       }
 
       dip::GaussianLineClip( in, out, { value }, sigma, truncation );
