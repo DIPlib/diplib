@@ -161,7 +161,7 @@ void GridPixelPairSampler(
       do {
          // Iterate over `fraction` pixels in this image line
          void const* dataPtr = it.Pointer< 0 >();
-         bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >()) : nullptr;
+         bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >() ) : nullptr;
          for( dip::uint ii = 0; ii < lastPoint; ii += lineStep ) {
             if( !hasMask || *maskPtr ) {
                // Iterate over pixels at all distances from this pixel

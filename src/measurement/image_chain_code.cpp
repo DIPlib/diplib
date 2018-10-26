@@ -305,7 +305,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Offset") {
    cc1 = cc1.Offset();
    img = dip::Dilation( img, { 3, "diamond" } );
    dip::ChainCode cc2 = dip::GetSingleChainCode( img, { 16, 1 }, 2 );
-   DOCTEST_REQUIRE( cc1.codes.size() == cc2.codes.size());
+   DOCTEST_REQUIRE( cc1.codes.size() == cc2.codes.size() );
    for( dip::uint ii = 0; ii < cc1.codes.size(); ++ii ) {
       DOCTEST_CHECK( cc1.codes[ ii ] == cc2.codes[ ii ] );
    }

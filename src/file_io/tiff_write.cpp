@@ -337,7 +337,7 @@ void ImageWriteTIFF(
    if( !image.DataType().IsBinary() ) {
       WRITE_TIFF_TAG( tiff, TIFFTAG_BITSPERSAMPLE, bitsPerSample );
       WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLEFORMAT, sampleFormat );
-      WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements()));
+      WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements() ));
       if( image.TensorElements() > 1 ) {
          WRITE_TIFF_TAG( tiff, TIFFTAG_PLANARCONFIG, uint16( PLANARCONFIG_CONTIG ));
          // This is the standard way of writing channels (planes), PLANARCONFIG_SEPARATE is not required to be

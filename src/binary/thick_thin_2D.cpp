@@ -202,8 +202,8 @@ void ConditionalThickeningThinning2D(
       JointImageIterator< bin, bin > it( { mask, out } );
       it.OptimizeAndFlatten();
       do {
-         if( it.Sample< 0 >()) {
-            SetBits( static_cast< uint8& >( it.Sample< 1 >()), maskBitmask );
+         if( it.Sample< 0 >() ) {
+            SetBits( static_cast< uint8& >( it.Sample< 1 >() ), maskBitmask );
          }
       } while( ++it );
    } else {

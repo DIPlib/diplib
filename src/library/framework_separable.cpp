@@ -243,7 +243,7 @@ void Separable(
    Error error;
    #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    try {
-      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num());
+      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // The temporary buffers, if needed, will be stored here (each thread their own!)
       std::vector< uint8 > inBufferStorage;
@@ -345,7 +345,7 @@ void Separable(
             if( !outUseBuffer && opts.Contains( SeparableOption::UseOutputBuffer )) {
                // We can cheat a little here if UseOutputBuffer is given: if the samples are contiguous, there's no need to actually use the buffer.
                outUseBuffer = !((( outImage.TensorElements() == 1 ) || ( outImage.TensorStride() == 1 ))
-                     && ( outImage.Stride( processingDim ) == static_cast< dip::sint >( outImage.TensorElements())));
+                     && ( outImage.Stride( processingDim ) == static_cast< dip::sint >( outImage.TensorElements() )));
             }
             if( !inUseBuffer && !outUseBuffer && ( inImage.Origin() == outImage.Origin() )) {
                // If input and output images are the same, we need to use at least one buffer!
@@ -357,7 +357,7 @@ void Separable(
             inBuffer.length = inLength;
             inBuffer.border = inBorder;
             if( inUseBuffer ) {
-               if( lookUpTable.empty()) {
+               if( lookUpTable.empty() ) {
                   inBuffer.tensorLength = inImage.TensorElements();
                } else {
                   inBuffer.tensorLength = lookUpTable.size();

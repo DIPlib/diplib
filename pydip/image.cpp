@@ -115,7 +115,7 @@ dip::Image BufferToImage( py::buffer& buf ) {
 
 py::buffer_info ImageToBuffer( dip::Image const& image ) {
    dip::String format;
-   switch( image.DataType()) {
+   switch( image.DataType() ) {
       case dip::DT_BIN:
          format = py::format_descriptor< bool >::format();
          break;

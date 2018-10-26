@@ -31,22 +31,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
       do {
          *it = static_cast< dip::uint16 >( counter++ );
       } while( ++it );
-      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( !it.HasProcessingDimension() );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
       DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
       it.OptimizeAndFlatten();
-      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( !it.HasProcessingDimension() );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2*4 } );
       DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1 } );
    }
    {
       dip::ImageIterator< dip::uint16 > it( img, 0 );
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
       DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
       it.OptimizeAndFlatten();
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
       DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3 } );
@@ -105,12 +105,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
    }
    {
       dip::GenericImageIterator<> it( img, 0 );
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
       DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3 * 2 } );
       it.OptimizeAndFlatten();
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2 * 4 } );
       DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3 } );
@@ -199,25 +199,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing JointImageIterator and GenericJointImageIter
       do {
          it.Sample< 0 >() = static_cast< dip::uint16 >( counter++ );
       } while( ++it );
-      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( !it.HasProcessingDimension() );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
       DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
       DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
       it.OptimizeAndFlatten();
-      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( !it.HasProcessingDimension() );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2*4 } );
       DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1 } );
       DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1 } );
    }
    {
       dip::JointImageIterator< dip::uint16, dip::sint8 > it( { imgA, imgB }, 0 );
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
       DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
       DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
       it.OptimizeAndFlatten();
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
       DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3 } );
@@ -274,7 +274,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing JointImageIterator and GenericJointImageIter
       dip::GenericJointImageIterator< 2 > it( { imgA, imgB } );
       dip::sint32 counter = 0;
       do {
-         DOCTEST_CHECK( (dip::sint32)(it.Sample< 0 >()) == counter++ );
+         DOCTEST_CHECK( (dip::sint32)(it.Sample< 0 >() ) == counter++ );
       } while( ++it );
       DOCTEST_CHECK( !it.HasProcessingDimension() );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
@@ -287,13 +287,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing JointImageIterator and GenericJointImageIter
    }
    {
       dip::GenericJointImageIterator< 2 > it( { imgA, imgB }, 0 );
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
       DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3 * 2 } );
       DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3 * 2 } );
       it.OptimizeAndFlatten();
-      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.HasProcessingDimension() );
       DOCTEST_CHECK( it.ProcessingDimension() == 0 );
       DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2 * 4 } );
       DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3 } );

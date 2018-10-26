@@ -33,7 +33,7 @@ dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
       DIP_THROW_IF( image_.Dimensionality() > nDims, E::DIMENSIONALITIES_DONT_MATCH );
       Image kernel = image_.QuickCopy();
       kernel.ExpandDimensionality( nDims );
-      if( kernel.DataType().IsBinary()) {
+      if( kernel.DataType().IsBinary() ) {
          DIP_START_STACK_TRACE
             pixelTable = dip::PixelTable{ kernel, {}, procDim };
          DIP_END_STACK_TRACE

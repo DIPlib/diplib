@@ -146,7 +146,7 @@ dfloat OtsuThreshold(
 ) {
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
-   DIP_ASSERT( hist.IsForged());
+   DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
@@ -190,7 +190,7 @@ dfloat MinimumErrorThreshold(
 ) {
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
-   DIP_ASSERT( hist.IsForged());
+   DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
@@ -265,7 +265,7 @@ dfloat TriangleThreshold(
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();
-   DIP_ASSERT( hist.IsForged());
+   DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
@@ -308,7 +308,7 @@ dfloat BackgroundThreshold(
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();
-   DIP_ASSERT( hist.IsForged());
+   DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );

@@ -63,7 +63,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       }
 
       // Operation mode
-      if( !in2.IsForged() || in2.DataType().IsBinary()) {
+      if( !in2.IsForged() || in2.DataType().IsBinary() ) {
          // Maximum pixel projection
          dip::Maximum( in1, in2, out, process );
          if( hasProcess ) {

@@ -167,7 +167,7 @@ std::vector< int > DFTFactorize( int n ) {
    }
 
    f = ( factors[ 0 ] & 1 ) == 0;
-   for( int i = f; i < ( int( factors.size()) + f ) / 2; i++ ) {
+   for( int i = f; i < ( int( factors.size() ) + f ) / 2; i++ ) {
       std::swap( factors[ i ], factors[ factors.size() - i - 1 + f ] );
    }
 
@@ -314,7 +314,7 @@ void DFT< T >::Apply(
 ) const {
    int n = nfft_;
    int const* itab = itab_.data();
-   int nf = int( factors_.size());
+   int nf = int( factors_.size() );
    int tab_size = n;
    int n0 = n;
    int dw0 = tab_size;
@@ -383,7 +383,7 @@ void DFT< T >::Apply(
          }
 
          if( i < n ) {
-            destination[ n - 1 ].imag( -destination[ n - 1 ].imag());
+            destination[ n - 1 ].imag( -destination[ n - 1 ].imag() );
          }
       }
    }
@@ -478,8 +478,8 @@ void DFT< T >::Apply(
             std::complex< T > t1 = v[ nx ] + v[ nx * 2 ];
             std::complex< T > t0 = v[ 0 ];
             std::complex< T > t2 = {
-                  sin_120 * ( v[ nx ].imag() - v[ nx * 2 ].imag()),
-                  sin_120 * ( v[ nx * 2 ].real() - v[ nx ].real())
+                  sin_120 * ( v[ nx ].imag() - v[ nx * 2 ].imag() ),
+                  sin_120 * ( v[ nx * 2 ].real() - v[ nx ].real() )
             };
             v[ 0 ] = t0 + t1;
             t0 -= T( 0.5 ) * t1;
@@ -541,7 +541,7 @@ void DFT< T >::Apply(
                v0[ 0 ] = t0 + t5;
                t0 -= T( 0.25 ) * t5;
                t1 = fft5_2 * ( t1 - t2 );
-               t2 = { -fft5_3 * ( t3.imag() + t4.imag()), fft5_3 * ( t3.real() + t4.real()) };
+               t2 = { -fft5_3 * ( t3.imag() + t4.imag() ), fft5_3 * ( t3.real() + t4.real() ) };
                t3 = { fft5_5 * t3.real(), -fft5_5 * t3.imag() };
                t4 = { fft5_4 * t4.real(), -fft5_4 * t4.imag() };
                t5 = { t2.real() + t3.imag(), t2.imag() + t3.real() };
@@ -631,7 +631,7 @@ void DFT< T >::Apply(
          destination[ i + 1 ].imag( t1 );
       }
       if( i < n0 ) {
-         destination[ n0 - 1 ].imag( -destination[ n0 - 1 ].imag());
+         destination[ n0 - 1 ].imag( -destination[ n0 - 1 ].imag() );
       }
    }
 }

@@ -141,7 +141,7 @@ public:
          for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
             dip::uint scaleTensorColIndex = iDim; // The scale tensor has a column for each kernel/input dimension ( 0 for X, 1 for Y ).
             dip::sint offset = scaleOffset + scaleTensorLUT_[ scaleTensorColIndex  * inputTensorElements_ + scaleTensorRowIndex ];
-            void* scalePtr = static_cast<uint8*>(kernelScale_.Origin()) + offset * static_cast<dip::sint>(kernelScale_.DataType().SizeOf());
+            void* scalePtr = static_cast<uint8*>(kernelScale_.Origin() ) + offset * static_cast<dip::sint>(kernelScale_.DataType().SizeOf() );
             scaleAtImgCoords_[ iTE ][ iDim ] = *static_cast<dfloat*>(scalePtr);   // TODO: either assert that kernelScale_ is of type dfloat or support multiple types
          }
       }
@@ -409,7 +409,7 @@ template< typename TPI, typename TPO >
 class InputInterpolator
 {
 public:
-   InputInterpolator( Image const& in ) : in_( in ), inOrigin_( static_cast<TPI*>(in_.Origin()) ), inTensorStride_( in_.TensorStride() ) {}
+   InputInterpolator( Image const& in ) : in_( in ), inOrigin_( static_cast<TPI*>(in_.Origin() )), inTensorStride_( in_.TensorStride() ) {}
    virtual ~InputInterpolator() {}
 
    virtual TPO GetInputValue( FloatArray& /*coords*/, dip::uint /*tensorIndex*/, bool /*mirrorAtImageBoundaries*/ ) const { return 0; }
@@ -656,7 +656,7 @@ public:
          ConstructKernelTransform3D( transform, params, in.TensorElements() );
       }
       else {
-         DIP_THROW( "No transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality()));
+         DIP_THROW( "No transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality() ));
       }
 
       // Store boundary condition. We only support mirroring or zeros for now.

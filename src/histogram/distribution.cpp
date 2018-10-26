@@ -176,7 +176,7 @@ Distribution& Distribution::Differentiate() {
 
 Distribution& Distribution::operator+=( Distribution const& other ) {
    DIP_THROW_IF( Size() != other.Size(), E::SIZES_DONT_MATCH );
-   DIP_THROW_IF(( Rows() != other.Rows()) || ( Columns() != other.Columns()), E::ARRAY_SIZES_DONT_MATCH );
+   DIP_THROW_IF(( Rows() != other.Rows() ) || ( Columns() != other.Columns() ), E::ARRAY_SIZES_DONT_MATCH );
    dip::uint nValues = ValuesPerSample();
    dfloat* thisPtr = data_.data();
    dfloat const* otherPtr = other.data_.data();

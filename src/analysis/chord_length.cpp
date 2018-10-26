@@ -211,7 +211,7 @@ void GridPixelPairSampler(
       // Iterate over `fraction` image lines
       do {
          void const* dataPtr = it.Pointer< 0 >();
-         bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >()) : nullptr;
+         bin const* maskPtr = hasMask ? static_cast< bin const* >( it.Pointer< 1 >() ) : nullptr;
          // Walk along this line and find phase changes
          dip::uint d1 = GetUIntPixelValue( dataPtr );
          bin m1 = hasMask ? *maskPtr : bin( true );

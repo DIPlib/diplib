@@ -37,8 +37,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             out.SetSizes( dml::GetUnsignedArray( prhs[ 0 ] ));
          } else {
             dip::Image tmp = dml::GetImage( prhs[ 0 ] );
-            out.SetSizes( tmp.Sizes());
-            out.SetPixelSize( tmp.PixelSize());
+            out.SetSizes( tmp.Sizes() );
+            out.SetPixelSize( tmp.PixelSize() );
          }
       } else {
          out.SetSizes( { 256, 256 } );

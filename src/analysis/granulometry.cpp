@@ -147,7 +147,7 @@ Distribution Granulometry(
                   Dilation( in, scaledIn, { 1 / zoom, S::RECTANGULAR } );
                }
                Subsampling( scaledIn, scaledIn, { static_cast< dip::uint >( 1 / zoom ) } );
-               if( mask.IsForged()) {
+               if( mask.IsForged() ) {
                   Subsampling( mask, scaledMask, { static_cast< dip::uint >( 1 / zoom ) } );
                }
                currentZoom = zoom;
@@ -159,7 +159,7 @@ Distribution Granulometry(
                // Interpolate
                Resampling( in, scaledIn, { zoom }, { 0 }, S::CUBIC_ORDER_3 );
                Clip( scaledIn, scaledIn, maxmin.Minimum(), maxmin.Maximum(), S::BOTH );
-               if( mask.IsForged()) {
+               if( mask.IsForged() ) {
                   Resampling( mask, scaledMask, { zoom }, { 0 }, S::NEAREST );
                }
                currentZoom = zoom;
@@ -167,7 +167,7 @@ Distribution Granulometry(
             }
          } else if( currentZoom != 1 ) {
             scaledIn = in.QuickCopy();
-            if( mask.IsForged()) {
+            if( mask.IsForged() ) {
                scaledMask = mask.QuickCopy();
             }
             currentZoom = 1;

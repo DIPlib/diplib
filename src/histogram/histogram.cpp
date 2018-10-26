@@ -684,7 +684,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( bounds[ 1 ] == binSize );
    DOCTEST_CHECK( bounds[ 2 ] == binSize * 2.0 );
    DOCTEST_CHECK( bounds.back() == upperBound );
-   DOCTEST_CHECK( tensorM.At( bin1000 ) == tensorIm.NumberOfPixels());
+   DOCTEST_CHECK( tensorM.At( bin1000 ) == tensorIm.NumberOfPixels() );
    auto tensorMean = dip::Mean( tensorH );
    DOCTEST_CHECK( std::abs( tensorMean[ 0 ] - meanval ) < 5.0 );
    DOCTEST_CHECK( std::abs( tensorMean[ 1 ] - meanval ) < 5.0 );

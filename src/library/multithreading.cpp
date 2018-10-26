@@ -30,9 +30,9 @@ dip::uint maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() )
 
 void SetNumberOfThreads( dip::uint nThreads ) {
    if( nThreads == 0 ) {
-      maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads());
+      maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() );
    } else {
-      maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads()));
+      maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads() ));
    }
 }
 

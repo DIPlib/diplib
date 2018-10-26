@@ -394,7 +394,7 @@ class DIP_NO_EXPORT Measurement {
          DIP_THROW_IF( name.empty(), "No feature name given" );
          if( !FeatureExists( name )) {
             DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
-            AddFeature_( name, values.cbegin(), values.cend());
+            AddFeature_( name, values.cbegin(), values.cend() );
          }
       }
 

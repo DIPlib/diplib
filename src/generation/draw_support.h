@@ -30,8 +30,8 @@ namespace {
 // Copy `value` into an array with the right number of elements, and of the right data type
 template< typename TPI >
 void CopyPixelToVector( Image::Pixel const& in, std::vector <TPI>& out, dip::uint nTensor ) {
-   out.resize( nTensor, in[ 0 ].As< TPI >());
-   if( !in.IsScalar()) {
+   out.resize( nTensor, in[ 0 ].As< TPI >() );
+   if( !in.IsScalar() ) {
       for( dip::uint ii = 1; ii < nTensor; ++ii ) {
          out[ ii ] = in[ ii ].As< TPI >();
       }

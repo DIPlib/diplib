@@ -103,7 +103,7 @@ void RankFilter(
    dip::uint nPixels;
    DIP_START_STACK_TRACE
       kernel = se.Kernel();
-      nPixels = kernel.NumberOfPixels( in.Dimensionality());
+      nPixels = kernel.NumberOfPixels( in.Dimensionality() );
    DIP_END_STACK_TRACE
    DIP_THROW_IF(( rank < 1 ) || ( rank > nPixels ), E::PARAMETER_OUT_OF_RANGE );
    DIP_START_STACK_TRACE
@@ -141,7 +141,7 @@ void PercentileFilter(
    DIP_THROW_IF( kernel.HasWeights(), E::KERNEL_NOT_BINARY );
    DIP_THROW_IF(( percentile < 0.0 ) || ( percentile > 100.0 ), E::PARAMETER_OUT_OF_RANGE );
    DIP_START_STACK_TRACE
-      dip::uint nPixels = kernel.NumberOfPixels( in.Dimensionality());
+      dip::uint nPixels = kernel.NumberOfPixels( in.Dimensionality() );
       dip::uint rank = static_cast< dip::uint >( std::round( static_cast< dfloat >( nPixels - 1 ) * percentile / 100.0 ));
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       ComputeRankFilter( in, out, kernel, rank, bc );

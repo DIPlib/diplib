@@ -305,7 +305,7 @@ void dip__DrawFilledPolygon(
    if( y >= maxY ) {
       return; // Nothing to do!
    }
-   while(( kk < edges.size()) && ( edges[ kk ].yMin == y )) {
+   while(( kk < edges.size() ) && ( edges[ kk ].yMin == y )) {
       active.emplace_back( edges[ kk ] );
       ++kk;
    }
@@ -349,7 +349,7 @@ void dip__DrawFilledPolygon(
          ++a;
       }
       // Add new edges, if any
-      while(( kk < edges.size()) && ( edges[ kk ].yMin == y )) {
+      while(( kk < edges.size() ) && ( edges[ kk ].yMin == y )) {
          active.emplace_back( edges[ kk ] );
          ++kk;
       }
@@ -395,7 +395,7 @@ void DrawPolygon2D(
       }
       DIP_THROW_IF( edges.size() < 2, "The polygon has a bad shape" );
       std::sort( edges.begin(), edges.end() );
-      DIP_OVL_CALL_ALL( dip__DrawFilledPolygon, ( out, edges, value, horizontalScanLines ), out.DataType());
+      DIP_OVL_CALL_ALL( dip__DrawFilledPolygon, ( out, edges, value, horizontalScanLines ), out.DataType() );
    } else {
       // Test all points to be within the image
       BoundingBoxInteger bb{ VertexInteger{ 0, 0 },
@@ -406,7 +406,7 @@ void DrawPolygon2D(
          DIP_THROW_IF( !bb.Contains( point ), E::COORDINATES_OUT_OF_RANGE );
       }
       // Draw polygon as a set of Bresenham lines
-      DIP_OVL_CALL_ALL( dip__DrawPolygon, ( out, polygon, value, open ), out.DataType());
+      DIP_OVL_CALL_ALL( dip__DrawPolygon, ( out, polygon, value, open ), out.DataType() );
    }
 }
 

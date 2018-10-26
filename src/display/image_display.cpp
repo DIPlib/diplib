@@ -62,7 +62,7 @@ void ImageDisplay::ComputeLimits( bool set ) {
          lims->lower = 0.0;
          lims->upper = 1.0;
       } else {
-         if( tmp.DataType().IsComplex()) {
+         if( tmp.DataType().IsComplex() ) {
             switch( complexMode_ ) {
                //case ComplexMode::MAGNITUDE:
                default:

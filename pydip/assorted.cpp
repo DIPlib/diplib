@@ -53,7 +53,7 @@ dip::Image Display(
    if( input.Dimensionality() > 2 ) {
       imageDisplay.SetGlobalStretch( true );
       imageDisplay.SetProjectionMode( projectionMode );
-      if( !coordinates.empty()) {
+      if( !coordinates.empty() ) {
          imageDisplay.SetCoordinates( coordinates );
       }
    }

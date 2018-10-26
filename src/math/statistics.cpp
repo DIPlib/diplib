@@ -98,7 +98,7 @@ class dip__MaxPixel : public dip__MaxMinPixel {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         UnsignedArray coord( params.position.size());
+         UnsignedArray coord( params.position.size() );
          TPI value = std::numeric_limits< TPI >::lowest();
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -187,7 +187,7 @@ class dip__MinPixel : public dip__MaxMinPixel {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         UnsignedArray coord( params.position.size());
+         UnsignedArray coord( params.position.size() );
          TPI value = std::numeric_limits< TPI >::max();
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;

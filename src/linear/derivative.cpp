@@ -440,7 +440,7 @@ void DggFamily(
    Image g, H;
    DIP_STACK_TRACE_THIS( Gradient( in, g, sigmas, method, boundaryCondition, process, truncation ));
    DIP_STACK_TRACE_THIS( Hessian( in, H, sigmas, method, boundaryCondition, process, truncation ));
-   DIP_ASSERT( g.TensorElements() == H.TensorRows());
+   DIP_ASSERT( g.TensorElements() == H.TensorRows() );
 
    // The easy way to compute this:
    //    out = Transpose( g ) * H * g;
@@ -535,7 +535,7 @@ void NormalizedDifferentialConvolution(
    DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
-   DataType dt = DataType::SuggestFlex( in.DataType());
+   DataType dt = DataType::SuggestFlex( in.DataType() );
    DIP_THROW_IF( dimension >= in.Dimensionality(), E::INVALID_PARAMETER );
 
    // We compute here:

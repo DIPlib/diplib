@@ -64,7 +64,7 @@ class dip__DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
          for( dip::uint ii = 0; ii < origin_.size(); ++ii ) {
             if( ii != dim ) {
                dip::sint p = static_cast< dip::sint >( params.position[ ii ] ) - origin_[ ii ];
-               if(( p < 0 ) || ( p >= static_cast< dip::sint >( blob1d_[ ii ].size()))) {
+               if(( p < 0 ) || ( p >= static_cast< dip::sint >( blob1d_[ ii ].size() ))) {
                   return; // we're outside of the blob's box
                }
                weight *= blob1d_[ ii ][ static_cast< dip::uint >( p ) ];
@@ -700,7 +700,7 @@ class dip__GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
    public:
       dip__GaussianEdgeClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
             scale_( 1.0 / ( sigma * std::sqrt( 2.0 ))), margin_( sigma * truncation ) {
-         CopyPixelToVector( value, value_, value.TensorElements());
+         CopyPixelToVector( value, value_, value.TensorElements() );
          for( auto& v: value_ ) {
             v *= FloatType< TPI >( 0.5 );
          }
@@ -766,7 +766,7 @@ class dip__GaussianLineClipLineFilter : public Framework::ScanLineFilter {
    public:
       dip__GaussianLineClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
             scale_( -0.5 / ( sigma * sigma )), margin_( sigma * truncation ) {
-         CopyPixelToVector( value, value_, value.TensorElements());
+         CopyPixelToVector( value, value_, value.TensorElements() );
          FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ));
          for( auto& v: value_ ) {
             v *= norm;

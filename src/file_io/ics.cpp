@@ -690,7 +690,7 @@ void ImageWriteICS(
    // find info on image
    Ics_DataType dt;
    dip::uint maxSignificantBits;
-   switch( c_image.DataType()) {
+   switch( c_image.DataType() ) {
       case DT_BIN:      dt = Ics_uint8;     maxSignificantBits = 1;  break;
       case DT_UINT8:    dt = Ics_uint8;     maxSignificantBits = 8;  break;
       case DT_UINT16:   dt = Ics_uint16;    maxSignificantBits = 16; break;

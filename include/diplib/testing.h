@@ -166,12 +166,12 @@ inline bool CompareImages(
    if( img1.TensorElements() > 1 ) {
       Image tmp1 = img1.QuickCopy(); tmp1.TensorToSpatial();
       Image tmp2 = img2.QuickCopy(); tmp2.TensorToSpatial();
-      if( !All( tmp1 == tmp2 ).As< bool >()) {
+      if( !All( tmp1 == tmp2 ).As< bool >() ) {
          std::cout << "[dip::testing::CompareImages] At least one sample value differs\n";
          return false;
       }
    } else {
-      if( !All( img1 == img2 ).As< bool >()) {
+      if( !All( img1 == img2 ).As< bool >() ) {
          std::cout << "[dip::testing::CompareImages] At least one sample value differs\n";
          return false;
       }

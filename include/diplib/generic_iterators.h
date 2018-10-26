@@ -917,7 +917,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
                }
             }
          }
-         coords_.resize( sizes_.size());
+         coords_.resize( sizes_.size() );
          return *this;
       }
 

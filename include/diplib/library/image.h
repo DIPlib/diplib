@@ -1059,7 +1059,7 @@ class DIP_NO_EXPORT Image {
                 ( origin_ == other.origin_ ) &&
                 ( dataType_ == other.dataType_ ) &&
                 ( sizes_ == other.sizes_ ) &&
-                ( tensor_.Elements() == other.tensor_.Elements()) &&
+                ( tensor_.Elements() == other.tensor_.Elements() ) &&
                 ( strides_ == other.strides_ ) &&
                 ( tensorStride_ == other.tensorStride_ );
       }

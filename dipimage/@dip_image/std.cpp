@@ -52,7 +52,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
          if(( nrhs == 3 ) && mxIsChar( prhs[ 2 ] )) {
             mode = dml::GetString( prhs[ 2 ] );
          } else {
-            process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality());
+            process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality() );
          }
       }
 

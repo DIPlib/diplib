@@ -211,7 +211,7 @@ dfloat SSIM( Image const& in, Image const& reference, Image const& mask, dfloat 
    }
    auto m1 = MaximumAndMinimum( in, mask );
    auto m2 = MaximumAndMinimum( reference, mask );
-   dfloat L = std::max( m1.Maximum() - m1.Minimum(), m2.Maximum() - m2.Minimum());
+   dfloat L = std::max( m1.Maximum() - m1.Minimum(), m2.Maximum() - m2.Minimum() );
    dfloat C1 = ( K1 * K1 * L * L );
    dfloat C2 = ( K2 * K2 * L * L );
    Image inMean = Gauss( in, { sigma } );

@@ -33,7 +33,7 @@ int main( void ) {
    in1 = 10;
    dip::Image in2( { 5000, 4000 }, 1, dip::DT_SFLOAT );
    in2 = 40;
-   dip::DataType dt = dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType());
+   dip::DataType dt = dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType() );
    dip::Image out = in1.Similar( dt );
    out = 0; // initialize memory, forcing it to be available
    dip::Image tmp = in1.Similar( dt );

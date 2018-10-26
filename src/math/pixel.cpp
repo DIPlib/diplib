@@ -101,8 +101,8 @@ Image::Pixel MonadicOperator(
    out.ReshapeTensor( in1.Tensor() );
    dip::sint in1Sz = static_cast< dip::sint >( in1.DataType().SizeOf() );
    dip::sint outSz = static_cast< dip::sint >( out.DataType().SizeOf() );
-   uint8* in1Ptr = static_cast< uint8* >( in1.Origin());
-   uint8* outPtr = static_cast< uint8* >( out.Origin());
+   uint8* in1Ptr = static_cast< uint8* >( in1.Origin() );
+   uint8* outPtr = static_cast< uint8* >( out.Origin() );
    for( dip::uint ii = 0; ii < N; ++ii ) {
       CallMonadicOperator< classes >(
             in1.DataType(), in1Ptr, outType, outPtr, computeType, function );
@@ -192,9 +192,9 @@ Image::Pixel DyadicOperator(
    dip::sint in1Sz = static_cast< dip::sint >( in1.DataType().SizeOf() );
    dip::sint in2Sz = static_cast< dip::sint >( in2.DataType().SizeOf() );
    dip::sint outSz = static_cast< dip::sint >( out.DataType().SizeOf() );
-   uint8* in1Ptr = static_cast< uint8* >( in1.Origin());
-   uint8* in2Ptr = static_cast< uint8* >( in2.Origin());
-   uint8* outPtr = static_cast< uint8* >( out.Origin());
+   uint8* in1Ptr = static_cast< uint8* >( in1.Origin() );
+   uint8* in2Ptr = static_cast< uint8* >( in2.Origin() );
+   uint8* outPtr = static_cast< uint8* >( out.Origin() );
    for( dip::uint ii = 0; ii < N; ++ii ) {
       CallDyadicOperator< classes >(
             in1.DataType(), in1Ptr, in2.DataType(), in2Ptr, outType, outPtr, computeType, function );
@@ -335,7 +335,7 @@ bool operator==( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
       return false; // tests false if different number of tensor elements
    }
    // Compare element-wise
-   dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType());
+   dip::DataType dt = SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    Image::Pixel res = DyadicOperator< ComputationType::Class_Flex >( lhs, rhs, dt, DT_BIN,
                                                                      [ = ]( auto in1, auto in2 ) { return in1 == in2; }
    );

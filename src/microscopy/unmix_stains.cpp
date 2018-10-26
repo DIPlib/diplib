@@ -30,7 +30,7 @@ void BeerLambertMapping(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsReal() || !background.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements()), E::NTENSORELEM_DONT_MATCH );
+   DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DataType dt = DataType::SuggestFloat( in.DataType() );
    Divide( in, background, out, dt );
    dip::Subtract( 1, out, out, dt );
@@ -45,7 +45,7 @@ void InverseBeerLambertMapping(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsReal() || !background.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements()), E::NTENSORELEM_DONT_MATCH );
+   DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    dip::Invert( in, out );
    dip::Exp10( out, out );
    dip::Subtract( 1, out, out, out.DataType() );

@@ -37,7 +37,7 @@
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
-   if( !mexIsLocked()) {
+   if( !mexIsLocked() ) {
       mexLock(); // We don't keep any data in memory, we lock the MEX-file so that DIPlib is locked in memory
    }
 

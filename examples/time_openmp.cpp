@@ -50,7 +50,7 @@ dip::dfloat TimeIt( dip::Image const& img, dip::Image& out ) {
          auto h = dip::EuclideanDistanceTransform( img, dip::S::BACKGROUND, dip::S::SEPARABLE );
       }
       timer.Stop();
-      time = std::min( time, timer.GetWall());
+      time = std::min( time, timer.GetWall() );
    }
    return time;
 }

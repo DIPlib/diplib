@@ -153,7 +153,7 @@ void GrowRegions(
 
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
-   if( c_mask.IsForged()) {
+   if( c_mask.IsForged() ) {
       mask = c_mask.QuickCopy();
       DIP_START_STACK_TRACE
          mask.CheckIsMask( c_label.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );

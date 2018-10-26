@@ -264,8 +264,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    img2 = dip::FourierTransform( dip::MultiplyConjugate( FT1, FT2 ), { "corner", "inverse", "real" } );
    DOCTEST_REQUIRE( img1.DataType() == dip::DT_DFLOAT );
    DOCTEST_REQUIRE( img2.DataType() == dip::DT_DFLOAT );
-   data1 = static_cast< dip::dfloat* >( img1.Origin());
-   data2 = static_cast< dip::dfloat* >( img2.Origin());
+   data1 = static_cast< dip::dfloat* >( img1.Origin() );
+   data2 = static_cast< dip::dfloat* >( img2.Origin() );
    dip::dfloat norm = std::abs( *( data1++ )); // value of auto-correlation for 0 shift
    dip::dfloat max = std::abs( *( data2++ ));
    for( dip::uint ii = 1; ii < N; ++ii ) {

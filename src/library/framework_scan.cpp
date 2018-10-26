@@ -372,7 +372,7 @@ void Scan(
          nThreads = std::min( GetNumberOfThreads(), nLines );
          if( nThreads > 1 ) {
             dip::uint operations;
-            DIP_STACK_TRACE_THIS( operations = nLines * lineLength * lineFilter.GetNumberOfOperations( nIn, nOut, ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).TensorElements()));
+            DIP_STACK_TRACE_THIS( operations = nLines * lineLength * lineFilter.GetNumberOfOperations( nIn, nOut, ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).TensorElements() ));
             // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
             if( operations < threadingThreshold ) {
                nThreads = 1;
@@ -446,7 +446,7 @@ void Scan(
       std::vector< ScanBuffer > inBuffers( nIn );  // We don't use DimensionArray here either, but we could
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
          if( inUseBuffer[ ii ] ) {
-            if( lookUpTables[ ii ].empty()) {
+            if( lookUpTables[ ii ].empty() ) {
                inBuffers[ ii ].tensorLength = in[ ii ].TensorElements();
             } else {
                inBuffers[ ii ].tensorLength = lookUpTables[ ii ].size();
@@ -619,7 +619,7 @@ void Scan(
                   // Continue loop to increment along next dimension
                }
             }
-            if( dd == sizes.size()) {
+            if( dd == sizes.size() ) {
                break;            // We're done!
             }
          }

@@ -307,7 +307,7 @@ class dip__IndexedArrayLUT_Float : public Framework::ScanLineFilter {
          DIP_ASSERT( firstValueBuffer.tensorLength == tensorLength );
          dip::uint maxIndex = numValueImages - 1;
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            if(( *in < index_.front()) || ( *in > index_.back() )) {
+            if(( *in < index_.front() ) || ( *in > index_.back() )) {
                switch( outOfBoundsMode_ ) {
                   case LookupTable::OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE:
                      FillPixel( out, tensorLength, outTensorStride, *in < index_.front() ? outOfBoundsLowerValue_ : outOfBoundsUpperValue_ );
@@ -474,7 +474,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::LookupTable" ) {
    } while( ++lutIt );
    dip::LookupTable lut1( lutIm );
    lut1.SetOutOfBoundsValue( 255 );
-   DOCTEST_CHECK( !lut1.HasIndex());
+   DOCTEST_CHECK( !lut1.HasIndex() );
    DOCTEST_CHECK( lut1.DataType() == dip::DT_SFLOAT );
 
    // Case 1: uint image
@@ -534,7 +534,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::LookupTable" ) {
                            dip::ImageIterator< dip::sfloat >(),
                            index ); // note that this is inefficient, this is just to test the functionality.
    lut2.SetOutOfBoundsValue( 255 );
-   DOCTEST_CHECK( lut2.HasIndex());
+   DOCTEST_CHECK( lut2.HasIndex() );
    DOCTEST_CHECK( lut2.DataType() == dip::DT_SFLOAT );
 
    // Case 3: float image with index

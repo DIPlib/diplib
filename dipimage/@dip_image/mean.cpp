@@ -52,7 +52,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       // Get optional process array
       dip::BooleanArray process;
       if( nrhs > 2 ) {
-         process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality());
+         process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality() );
       }
 
       // Do the thing
