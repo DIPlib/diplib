@@ -459,7 +459,7 @@ inline void Rotation2D(
       Image& out,
       dfloat angle,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    Rotation( in, out, angle, 0, 1, interpolationMethod, boundaryCondition );
@@ -468,7 +468,7 @@ inline Image Rotation2D(
       Image const& in,
       dfloat angle,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
    Rotation2D( in, out, angle, interpolationMethod, boundaryCondition );
@@ -485,7 +485,7 @@ inline void Rotation3D(
       dfloat angle,
       dip::uint axis = 2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_THROW_IF( in.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint dim1, dim2;
@@ -512,7 +512,7 @@ inline Image Rotation3D(
       dfloat angle,
       dip::uint axis = 2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
    Rotation3D( in, out, angle, axis, interpolationMethod, boundaryCondition );
@@ -539,7 +539,7 @@ inline void Rotation3D(
       dfloat beta,
       dfloat gamma,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Rotation( in,  out, alpha, 0, 1, interpolationMethod, boundaryCondition );
    Rotation( out, out, beta,  2, 0, interpolationMethod, boundaryCondition );
@@ -551,7 +551,7 @@ inline Image Rotation3D(
       dfloat beta,
       dfloat gamma,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
    Rotation3D( in, out, alpha, beta, gamma, interpolationMethod, boundaryCondition );

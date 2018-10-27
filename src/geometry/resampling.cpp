@@ -573,8 +573,35 @@ void Rotation(
    // NOTE: The rotation above swaps and flips dimensions, it doesn't keep the origin pixel in its place.
    //       This means that even-sized dimensions with a negative stride now need to be shifted up by 1 pixel
    //       `origin1` and `origin2` are the location of the pixel that shouldn't move in the rotation.
-   dip::uint origin1 = in.Size( dimension1 ) / 2 - ( !( in.Size( dimension1 ) & 1 ) && ( in.Stride( dimension1 ) < 0 ));
-   dip::uint origin2 = in.Size( dimension2 ) / 2 - ( !( in.Size( dimension2 ) & 1 ) && ( in.Stride( dimension2 ) < 0 ));
+   bool shiftOrigin1 = (( in.Size( dimension1 ) & 1 ) == 0 ) && ( in.Stride( dimension1 ) < 0 );
+   bool shiftOrigin2 = (( in.Size( dimension2 ) & 1 ) == 0 ) && ( in.Stride( dimension2 ) < 0 );
+   dip::uint origin1 = in.Size( dimension1 ) / 2 - ( shiftOrigin1 ? 1 : 0 );
+   dip::uint origin2 = in.Size( dimension2 ) / 2 - ( shiftOrigin2 ? 1 : 0 );
+   dfloat maxDisplacement = std::abs( std::sin( angle )) * static_cast< dfloat >( std::max( origin1, origin2 ));
+   if( maxDisplacement < 1e-3 ) {
+      // For very small rotations, let's not bother interpolating
+      //    But we do need to take care of the correct location of the origin, see the more complex case below
+      //    for details on why and how this works.
+      RangeArray region( nDims );
+      UnsignedArray newSize = in.Sizes();
+      if( shiftOrigin1 ) {
+         newSize[ dimension1 ] += 2;
+         region[ dimension1 ].start = 2;
+      }
+      if( shiftOrigin2 ) {
+         newSize[ dimension2 ] += 2;
+         region[ dimension2 ].start = 2;
+      }
+      if( shiftOrigin1 || shiftOrigin2 ) {
+         out.ReForge( newSize, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+         out.CopyNonDataProperties( in );
+         DIP_STACK_TRACE_THIS( out.At( region ).Copy( in ));
+         ExtendRegion( out, region, bc );
+      } else {
+         out.Copy( in );
+      }
+      return;
+   }
    // Do the last rotation, in the range [-45,45], with three skews
    //    As origin we take the pixel that was at the origin *before* the `Rotation90` call.
    FloatArray skewArray1( nDims, 0.0 );
@@ -597,25 +624,71 @@ void Rotation(
    newSize[ dimension1 ] = std::min(
          out.Size( dimension1 ),
          2 * static_cast< dip::uint >( std::ceil(( size1 * cos_angle + size2 * sin_angle ) / 2.0 )) + ( in.Size( dimension1 ) & 1 ));
-   if ( origin1 < ( newSize[ dimension1 ] / 2 )) {
-      // if `newSize` is too large to be symmetric around the origin, make it smaller.
-      newSize[ dimension1 ] = origin1 * 2 + ( newSize[ dimension1 ] & 1 ); // keep odd if it was odd.
-   }
    newSize[ dimension2 ] = std::min(
          out.Size( dimension2 ),
          2 * static_cast< dip::uint >( std::ceil(( size1 * sin_angle + size2 * cos_angle ) / 2.0 )) + ( in.Size( dimension2 ) & 1 ));
-   if ( origin2 < ( newSize[ dimension2 ] / 2 )) {
-      // if `newSize` is too large to be symmetric around the origin, make it smaller.
-      newSize[ dimension2 ] = origin2 * 2 + ( newSize[ dimension2 ] & 1 ); // keep odd if it was odd.
+   // Next, check for the case where we shifted the origin, which means we need to adjust the size of `out`
+   // so that the pixel at the origin of `in` is also at the origin of `out`.
+   // If `newSize` is too large to allow this shift by cropping alone, we need to add two pixels to the
+   // left and/or top. This happens when rotating very close to 90, 180 or 270 degrees, when `newSize`
+   // is the same as `in.Sizes()`, but the origin shifted.
+   bool extend1 = false;
+   bool extend2 = false;
+   RangeArray region( nDims );
+   if( origin1 < ( newSize[ dimension1 ] / 2 )) {
+      DIP_ASSERT( shiftOrigin1 );   // This can happen only if the origin was shifted
+      if( newSize[ dimension1 ] < out.Size( dimension1 )) {
+         // We can solve this case by adding an extra pixel, the skewing already gave that to us.
+         newSize[ dimension1 ] = origin1 * 2;
+         DIP_ASSERT( newSize[ dimension1 ] <= out.Size( dimension1 ));
+      } else {
+         // We need to extend `out`
+         extend1 = true;
+         newSize[ dimension1 ] += 2;
+         region[ dimension1 ].start = 2;
+         ++origin1;
+      }
    }
+   if( origin2 < ( newSize[ dimension2 ] / 2 )) {
+      DIP_ASSERT( shiftOrigin2 );   // This can happen only if the origin was shifted
+      if( newSize[ dimension2 ] < out.Size( dimension2 )) {
+         // We can solve this case by adding an extra pixel, the skewing already gave that to us.
+         newSize[ dimension2 ] = origin2 * 2;
+         DIP_ASSERT( newSize[ dimension2 ] <= out.Size( dimension2 ));
+      } else {
+         // We need to extend `out`
+         extend2 = true;
+         newSize[ dimension2 ] += 2;
+         region[ dimension2 ].start = 2;
+         ++origin2;
+      }
+   }
+   // First cut the dimensions we don't need to extend
    // The section below is similar to out.Crop( newSize ), except we use `origin1` and `origin2` to determine where to cut.
    UnsignedArray origin( nDims, 0 );
-   origin[ dimension1 ] = origin1 - ( newSize[ dimension1 ] / 2 );
-   DIP_ASSERT( origin[ dimension1 ] <= out.Size( dimension1 ) - newSize[ dimension1 ] );
-   origin[ dimension2 ] = origin2 - ( newSize[ dimension2 ] / 2 );
-   DIP_ASSERT( origin[ dimension2 ] <= out.Size( dimension2 ) - newSize[ dimension2 ] );
+   UnsignedArray cropSize = out.Sizes();
+   if( !extend1 ) {
+      cropSize[ dimension1 ] = newSize[ dimension1 ];
+      origin[ dimension1 ] = origin1 - ( newSize[ dimension1 ] / 2 );
+      DIP_ASSERT( origin[ dimension1 ] <= out.Size( dimension1 ) - newSize[ dimension1 ] );
+   }
+   if( !extend2 ) {
+      cropSize[ dimension2 ] = newSize[ dimension2 ];
+      origin[ dimension2 ] = origin2 - ( newSize[ dimension2 ] / 2 );
+      DIP_ASSERT( origin[ dimension2 ] <= out.Size( dimension2 ) - newSize[ dimension2 ] );
+   }
    out.dip__SetOrigin( out.Pointer( origin ));
-   out.dip__SetSizes( newSize );
+   out.dip__SetSizes( cropSize );
+   // Next, extend as needed
+   if( extend1 || extend2 ) {
+      Image newOut;
+      newOut.CopyProperties( out );
+      newOut.SetSizes( newSize );
+      newOut.Forge();
+      DIP_STACK_TRACE_THIS( newOut.At( region ).Copy( out )); // This will throw if sizes don't match -- it means our assumption is wrong!
+      ExtendRegion( newOut, region, bc );
+      out.swap( newOut );
+   }
    // Fix pixel sizes
    if( pixelSize.IsDefined() ) {
       if( pixelSize[ dimension1 ] != pixelSize[ dimension2 ] ) {
@@ -1072,6 +1145,79 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
    }
    DOCTEST_CHECK_FALSE( error );
 
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::Rotation() preserves the origin location") {
+   dip::Image out;
+   // 1- Even sized image
+   dip::Image img( { 64, 64 }, 1, dip::DT_SFLOAT );
+   img.Fill( 0 );
+   dip::DrawBandlimitedPoint( img, { 32, 32 } );
+   // Rotations of 0, 90, 180 and 270 degrees -- no interpolation
+   dip::Rotation2D( img, out, 0 ); // Note that dip::Rotation2D() calls dip::Rotation()
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out ));
+   dip::Rotation2D( img, out, dip::pi / 2 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1e-6 ));
+   dip::Rotation2D( img, out, dip::pi );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1e-6 ));
+   dip::Rotation2D( img, out, 3 * dip::pi / 2 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1e-6 ));
+   // Rotations close to 0, 90, 180 and 270 -- yes interpolation
+   dip::Rotation2D( img, out, 0 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   dip::Rotation2D( img, out, dip::pi / 2 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   dip::Rotation2D( img, out, dip::pi + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   dip::Rotation2D( img, out, 3 * dip::pi / 2 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   // Larger rotations
+   dip::Rotation2D( img, out, dip::pi/4 - 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 0.008 ));
+   dip::Rotation2D( img, out, dip::pi/4 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 0.008 ));
+
+   // 2- Odd sized image
+   img.Crop( { 63, 63 } );
+   // Rotations of 0, 90, 180 and 270 degrees -- no interpolation -- an no need to crop
+   dip::Rotation2D( img, out, 0 );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out ));
+   dip::Rotation2D( img, out, dip::pi / 2 );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1e-6 ));
+   dip::Rotation2D( img, out, dip::pi );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1e-6 ));
+   dip::Rotation2D( img, out, 3 * dip::pi / 2 );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1e-6 ));
+   // Rotations close to 0, 90, 180 and 270 -- yes interpolation
+   dip::Rotation2D( img, out, 0 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   dip::Rotation2D( img, out, dip::pi / 2 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   dip::Rotation2D( img, out, dip::pi + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   dip::Rotation2D( img, out, 3 * dip::pi / 2 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 1.1e-5 ));
+   // Larger rotations
+   dip::Rotation2D( img, out, dip::pi/4 - 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 0.008 ));
+   dip::Rotation2D( img, out, dip::pi/4 + 1e-3 );
+   out.Crop( img.Sizes() );
+   DOCTEST_CHECK( dip::testing::CompareImages( img, out, 0.008 ));
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::ShiftFT() against dip::Shift()") {

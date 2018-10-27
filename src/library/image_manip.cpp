@@ -465,7 +465,7 @@ Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocatio
       case Option::CropLocation::CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             dip::uint diff = sizes_[ ii ] - sizes[ ii ];
-            origin[ ii ] = diff / 2 + (!( sizes_[ ii ] & 1 ) && ( sizes[ ii ] & 1 )); // add one if input is even in size and output is odd in size
+            origin[ ii ] = diff / 2 + ( !( sizes_[ ii ] & 1 ) && ( sizes[ ii ] & 1 )); // add one if input is even in size and output is odd in size
          }
          break;
       case Option::CropLocation::MIRROR_CENTER:
