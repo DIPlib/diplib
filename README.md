@@ -162,7 +162,7 @@ For DIPviewer, if `DIP_SHARED_LIBRARY` was not set, define the `DIP__VIEWER_IS_S
 
 ## License
 
-Copyright 2014-2018 Cris Luengo  
+Copyright 2014-2018 Cris Luengo and contributors  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");

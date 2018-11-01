@@ -195,7 +195,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   two additional integers to specify the rotation plane. `dip_Rotation3d_Axis` and
   `dip_Rotation3d` are now both called `dip::Rotation3D`, their argument types are different.
   `dip::Resampling`, `dip::Skew`, `dip::Rotation` and similar now take a boundary condition
-  as optional argument.
+  as optional argument. `dip::Skew` has a new parameter that allows selection of the image
+  line that has 0 shift. `dip::Rotation` now rotates around the pixel at the origin (this is
+  the pixel to the right of the geometric center for even-sized images), rather than the geometric
+  center of the image.
 
 - `dip_KuwaharaImproved` is now called `dip::Kuwahara`, and `dip_Kuwahara` is no longer
   (C++ default values make it redundant).
@@ -317,8 +320,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
 
-- `dip::EuclideanDistanceTransform` has a new algorithm which produces exact distances in nD, and is parallelized
-  and very fast. This new algorithm is the default.
+- `dip::EuclideanDistanceTransform` has a new algorithm which produces exact distances in nD, and
+  is parallelized and very fast. This new algorithm is the default.
 
 - Lots of new algorithms, some previously only available in *DIPimage*, some completely new.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
@@ -548,10 +551,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `testobject` has a changed interface, the input argument order has changed and most arguments are now
     name-value pairs. Its functionality has been greatly extended.
 
-- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`, `coordinates`,
-  `distancedistribution`, `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`,
-  `im2cell`, `lee`, `loggabor`, `pathopening`, `perobjecthist`, `psf`, `quantize`, `select`, `semivariogram`,
-  `setborder`, `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`.
+- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`,
+  `cornerdetector`, `coordinates`, `distancedistribution`, `drawshape`, `extendregion`,
+  `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `lee`, `linedetector`, `loggabor`,
+  `pathopening`, `perobjecthist`, `psf`, `quantize`, `select`, `semivariogram`, `setborder`,
+  `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.
 
 - `jacobi` moved to the `alias` directory, `eig` does it better now.
