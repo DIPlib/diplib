@@ -1162,7 +1162,7 @@ else
    uimenu(h,'Label','Log stretch','Tag','log','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','log'));
    uimenu(h,'Label','Based at 0','Tag','based','Callback',...
-          @(~,~)dipshow(gcbf,'ch_mappingmode','based'));
+          @(~,~)dipshow(gcbf,'ch_mappingmode','based'),'Accelerator','b');
    uimenu(h,'Label','Angle','Tag','angle','Callback',...
           @(~,~)dipshow(gcbf,'ch_mappingmode','angle'));
    uimenu(h,'Label','Orientation','Tag','orientation','Callback',...
@@ -1171,7 +1171,7 @@ else
           @(~,~)dipmapping(gcbf,'manual'));
    if nD>=3
       uimenu(h,'Label','Global stretch','Tag','globalstretch','Callback',...
-             @(~,~)dipshow(gcbf,'ch_globalstretch',true),'Separator','on');
+             @(~,~)dipshow(gcbf,'ch_globalstretch',true),'Accelerator','g','Separator','on');
    end
    if ~iscol && nD>1
       uimenu(h,'Label','Grey','Tag','grey','Callback',...
@@ -1195,7 +1195,7 @@ else
       uimenu(h,'Label','Real part','Tag','real','Callback',...
              @(~,~)dipshow(gcbf,'ch_complexmapping','real'),'Accelerator','r');
       uimenu(h,'Label','Imaginary part','Tag','imag','Callback',...
-             @(~,~)dipshow(gcbf,'ch_complexmapping','imag'),'Accelerator','g');
+             @(~,~)dipshow(gcbf,'ch_complexmapping','imag'),'Accelerator','t');
    end
 end
 if nD>=3
