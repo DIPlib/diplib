@@ -154,9 +154,7 @@ if(DIP_SHARED_LIBRARY)
    # (This would also require solving linker warnings because of Doctest.)
 
    #set(MATLAB_ADDITIONAL_VERSIONS "R2018b=9.5") # You might need to add a line like this if your version of MATLAB is not recognized
-   #set(MATLAB_FIND_DEBUG On)
-   #find_package(Matlab COMPONENTS MAIN_PROGRAM)
-   find_package(Matlab_new COMPONENTS MAIN_PROGRAM) # NOTE! Here we use the local copy of the FindMatlab.cmake script
+   find_package(Matlab COMPONENTS MAIN_PROGRAM) # NOTE! Here we use the local copy of the FindMatlab.cmake script
    if(Matlab_FOUND)
       set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
    endif()

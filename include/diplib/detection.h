@@ -239,7 +239,7 @@ inline Image WangBradyCornerDetector(
 /// other dimensionalities.
 ///
 /// The complete multi-scale vessel detector simply applies this function at multiple scales and takes the maximum
-/// response at each scale. Even though the original paper didn't mention this, best restuls are obtained when
+/// response at each scale. Even though the original paper didn't mention this, best results are obtained when
 /// scaling the input image with the square of the sigma:
 /// ```cpp
 ///     std::vector<double> scales = { 1, 2, 4, 8 };
