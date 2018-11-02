@@ -510,7 +510,8 @@ inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e-7 ) {
    return out;
 }
 
-// TODO: void Solve( Image const& A, Image const& b, Image& x ) : solves `A x = b`
+// \brief Solves the matrix equation `A x = b` for real-valued `A` and `b`.
+//DIP_EXPORT void Solve( Image const& A, Image const& b, Image& x )
 //       If `A` is a 0D image, compute SVD, and do `SVD.solve(b)`. Otherwise compute SVD for each pixel and do `SVD.solve(b)`.
 //       In reality, SVD is only a good choice if `A` is not square. Should we implement other possible options? For
 //       example specific cases for `A` is symmetric, diagonal, etc.

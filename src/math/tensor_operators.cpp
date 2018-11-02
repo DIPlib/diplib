@@ -536,9 +536,23 @@ void Eigenvalues( Image const& in, Image& out ) {
       DataType outtype;
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
-         scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-               [ n ]( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition( n, pin, pout ); }, 400 * n // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
-         );
+         switch( n ) {
+            case 2:
+               scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+                     []( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition2( pin, pout ); }, 400 * 2 // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
+               );
+               break;
+            case 3:
+               scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+                     []( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition3( pin, pout ); }, 400 * 3 // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
+               );
+               break;
+            default:
+               scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+                     [ n ]( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition( n, pin, pout ); }, 400 * n // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
+               );
+               break;
+         }
          inbuffertype = outbuffertype = DT_DFLOAT;
          outtype = DataType::SuggestFlex( intype );
       } else {
@@ -593,7 +607,6 @@ class SelectEigenvalueLineFilter : public Framework::ScanLineFilter {
          // Allocate buffer if it's not yet there.
          std::vector< TPO >& buf = buffers_[ params.thread ];
          if( buf.size() != n_ ) {
-            std::cout << "resizing buffer!\n";
             buf.resize( n_ );
          }
          // Compute
@@ -607,6 +620,44 @@ class SelectEigenvalueLineFilter : public Framework::ScanLineFilter {
       dip::uint n_;
       bool first_;
       std::vector< std::vector< TPO >> buffers_; // one for each thread
+};
+
+template< typename TPI, typename TPO, typename F >
+class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
+   public:
+      SelectEigenvalueLineFilterN( F function, dip::uint n, bool first ) : function_( function ), n_( n ), first_( first ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+         return ( typeid( TPI ) == typeid( dfloat ) ? 400 : 800 ) * tensorElements;
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint const bufferLength = params.bufferLength;
+         ConstLineIterator< TPI > in(
+               static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.inBuffer[ 0 ].stride,
+               params.inBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorStride
+         );
+         LineIterator< TPO > out(
+               static_cast< TPO* >( params.outBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength, // == 1
+               params.outBuffer[ 0 ].tensorStride
+         );
+         std::array< TPO, 3 > buf; // NOTE!!! `function_` is either `SymmetricEigenDecomposition2` or `SymmetricEigenDecomposition3`
+         TPO* bufFront = buf.data();
+         TPO* bufBack = bufFront + ( n_ - 1 );
+         // Compute
+         do {
+            function_( in.begin(), buf.data(), nullptr );
+            *out = first_ ? *bufFront : *bufBack;
+         } while( ++in, ++out );
+      }
+   private:
+      F function_;
+      dip::uint n_;
+      bool first_;
 };
 
 void SelectEigenvalue( Image const& in, Image& out, bool first ) {
@@ -624,9 +675,22 @@ void SelectEigenvalue( Image const& in, Image& out, bool first ) {
       DataType outtype;
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
+         using funcType0 = void ( * )( ConstSampleIterator< dfloat >, SampleIterator< dfloat >, SampleIterator< dfloat > );
          using funcType = void ( * )( dip::uint, ConstSampleIterator< dfloat >, SampleIterator< dfloat >, SampleIterator< dfloat > );
-         scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
-               new SelectEigenvalueLineFilter< dfloat, dfloat, funcType >( &SymmetricEigenDecomposition, n, first ));
+         switch( n ) {
+            case 2:
+               scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
+                     new SelectEigenvalueLineFilterN< dfloat, dfloat, funcType0 >( &SymmetricEigenDecomposition2, 2, first ));
+               break;
+            case 3:
+               scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
+                     new SelectEigenvalueLineFilterN< dfloat, dfloat, funcType0 >( &SymmetricEigenDecomposition3, 3, first ));
+               break;
+            default:
+               scanLineFilter = static_cast< std::unique_ptr< Framework::ScanLineFilter >>(
+                     new SelectEigenvalueLineFilter< dfloat, dfloat, funcType >( &SymmetricEigenDecomposition, n, first ));
+               break;
+         }
          inbuffertype = DT_DFLOAT;
          outbuffertype = DT_DFLOAT;
          outtype = DataType::SuggestFlex( intype );
@@ -669,7 +733,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
       eigenvectors.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
       eigenvectors.Fill( 1.0 );
    //} else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
-      //SortTensorElements( in, out );
+      //SortTensorElementsByMagnitude( in, out );
       //Identity( in, eigenvectors );
       // TODO: the `eigenvectors` have to be sorted in the same way as `out`.
    } else {
@@ -680,9 +744,23 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
       DataType outtype;
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
-         scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dfloat >(
-               [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition( n, pin, pout1, pout2 ); }, 600 * n // cost of decomposition???
-         );
+         switch( n ) {
+            case 2:
+               scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dfloat >(
+                     []( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition2( pin, pout1, pout2 ); }, 600 * n // cost of decomposition???
+               );
+               break;
+            case 3:
+               scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dfloat >(
+                     []( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition3( pin, pout1, pout2 ); }, 600 * n // cost of decomposition???
+               );
+               break;
+            default:
+               scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dfloat >(
+                     [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition( n, pin, pout1, pout2 ); }, 600 * n // cost of decomposition???
+               );
+               break;
+         }
          inbuffertype = outbuffertype = DT_DFLOAT;
          outtype = DataType::SuggestFlex( intype );
       } else {

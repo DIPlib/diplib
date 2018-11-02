@@ -261,7 +261,7 @@ inline dfloat Sinc( dfloat x ) {
    return x == 0.0 ? 1.0 : std::sin( x ) / x;
 }
 
-/// \brief Finds the eigenvalues and eigenvectors of a symmetric real matrix.
+/// \brief Finds the eigenvalues and eigenvectors of a symmetric, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
@@ -277,7 +277,21 @@ DIP_EXPORT void SymmetricEigenDecomposition(
       SampleIterator< dfloat > vectors = nullptr
 );
 
-/// \brief Finds the largest eigenvector of a symmetric real matrix.
+/// \brief Finds the eigenvalues and eigenvectors of a 2x2 symmetric, real-valued matrix.
+DIP_EXPORT void SymmetricEigenDecomposition2(
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > lambdas,
+      SampleIterator< dfloat > vectors = nullptr
+);
+
+/// \brief Finds the eigenvalues and eigenvectors of a 3x3 symmetric, real-valued matrix.
+DIP_EXPORT void SymmetricEigenDecomposition3(
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > lambdas,
+      SampleIterator< dfloat > vectors = nullptr
+);
+
+/// \brief Finds the largest eigenvector of a symmetric, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
@@ -290,7 +304,7 @@ void LargestEigenVector(
       SampleIterator< dfloat > vector
 );
 
-/// \brief Finds the smallest eigenvector of a symmetric real matrix.
+/// \brief Finds the smallest eigenvector of a symmetric, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
@@ -303,7 +317,7 @@ void SmallestEigenVector(
       SampleIterator< dfloat > vector
 );
 
-/// \brief Finds the eigenvalues and eigenvectors of a symmetric real matrix, where only the unique values are given.
+/// \brief Finds the eigenvalues and eigenvectors of a symmetric, real-valued matrix, where only the unique values are given.
 ///
 /// Calls `dip::SymmetricEigenDecomposition` after copying over the input values to a temporary buffer.
 ///
@@ -339,7 +353,7 @@ inline void SymmetricEigenDecompositionPacked(
    SymmetricEigenDecomposition( n, matrix.data(), lambdas, vectors );
 }
 
-/// \brief Finds the eigenvalues and eigenvectors of a square real matrix.
+/// \brief Finds the eigenvalues and eigenvectors of a square, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
 ///
@@ -355,7 +369,7 @@ DIP_EXPORT void EigenDecomposition(
       SampleIterator< dcomplex > vectors = nullptr
 );
 
-/// \brief Finds the eigenvalues and eigenvectors of a square complex matrix.
+/// \brief Finds the eigenvalues and eigenvectors of a square, complex-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
 ///
@@ -415,12 +429,12 @@ inline FloatType< T > SquareNorm( dip::uint n, ConstSampleIterator< T > input ) 
    return SumAbsSquare( n, input );
 }
 
-/// \brief Computes the determinant of a square real matrix.
+/// \brief Computes the determinant of a square, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
 DIP_EXPORT dfloat Determinant( dip::uint n, ConstSampleIterator< dfloat > input );
 
-/// \brief Computes the determinant of a square complex matrix.
+/// \brief Computes the determinant of a square, complex-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
 DIP_EXPORT dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > input );
@@ -449,7 +463,7 @@ inline T TraceDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
    return Sum( n, input );
 }
 
-/// \brief Computes the "thin" singular value decomposition of a real matrix
+/// \brief Computes the "thin" singular value decomposition of a real-valued matrix
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 ///
@@ -471,7 +485,7 @@ DIP_EXPORT void SingularValueDecomposition(
       SampleIterator< dfloat > V = nullptr
 );
 
-/// \brief Computes the "thin" singular value decomposition of a complex matrix
+/// \brief Computes the "thin" singular value decomposition of a complex-valued matrix
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 ///
@@ -493,21 +507,21 @@ DIP_EXPORT void SingularValueDecomposition(
       SampleIterator< dcomplex > V = nullptr
 );
 
-/// \brief Computes the inverse of a square real matrix.
+/// \brief Computes the inverse of a square, real-valued matrix.
 ///
 /// `input` and `output` are pointers to `n*n` values, in column-major order.
 ///
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
 
-/// \brief Computes the inverse of a square complex matrix.
+/// \brief Computes the inverse of a square, complex-valued matrix.
 ///
 /// `input` and `output` are pointers to `n*n` values, in column-major order.
 ///
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
 
-/// \brief Computes the Moore-Penrose pseudo-inverse of a real matrix, using the Jacobi SVD decomposition.
+/// \brief Computes the Moore-Penrose pseudo-inverse of a real-valued matrix, using the Jacobi SVD decomposition.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 ///
@@ -523,7 +537,7 @@ DIP_EXPORT void PseudoInverse(
       dfloat tolerance = 1e-7
 );
 
-/// \brief Computes the Moore-Penrose pseudo-inverse of a complex matrix, using the Jacobi SVD decomposition.
+/// \brief Computes the Moore-Penrose pseudo-inverse of a complex-valued matrix, using the Jacobi SVD decomposition.
 ///
 /// `input` and `output` are pointers to `m*n` values, in column-major order.
 ///
@@ -539,12 +553,12 @@ DIP_EXPORT void PseudoInverse(
       dfloat tolerance = 1e-7
 );
 
-/// \brief Computes the rank of a real matrix.
+/// \brief Computes the rank of a real-valued matrix.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input );
 
-/// \brief Computes the rank of a complex matrix.
+/// \brief Computes the rank of a complex-valued matrix.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input );

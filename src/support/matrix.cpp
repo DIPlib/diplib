@@ -18,6 +18,7 @@
  * limitations under the License.
  */
 
+#include <array>
 #include "diplib/library/numeric.h"
 
 #if defined(__GNUG__) || defined(__clang__)
@@ -57,8 +58,8 @@ void SymmetricEigenDecomposition(
    if( vectors ) {
       Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
       //if( eigensolver.info() != Eigen::Success ) { abort(); }
-      Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
-      Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
+      Eigen::VectorXd const& eigenvalues = eigensolver.eigenvalues();
+      Eigen::MatrixXd const& eigenvectors = eigensolver.eigenvectors();
       std::vector< dip::uint > indices( n );
       std::iota( indices.begin(), indices.end(), 0 );
       std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
@@ -78,6 +79,70 @@ void SymmetricEigenDecomposition(
    }
 }
 
+void SymmetricEigenDecomposition2(
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > lambdas,
+      SampleIterator< dfloat > vectors
+) {
+   DIP_ASSERT( input.Stride() >= 0 );
+   Eigen::Map< Eigen::Matrix2d const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), Eigen::InnerStride<>( input.Stride() ));
+   if( vectors ) {
+      Eigen::SelfAdjointEigenSolver< Eigen::Matrix2d > eigensolver( matrix );
+      //if( eigensolver.info() != Eigen::Success ) { abort(); }
+      Eigen::Vector2d const& eigenvalues = eigensolver.eigenvalues();
+      Eigen::Matrix2d const& eigenvectors = eigensolver.eigenvectors();
+      dip::uint indices0 = 0;
+      dip::uint indices1 = 1;
+      if( std::abs( eigenvalues[ 0 ] ) < std::abs( eigenvalues[ 1 ] )) {
+         indices0 = 1;
+         indices1 = 0;
+      }
+      lambdas[ 0 ] = eigenvalues[ indices0 ];
+      lambdas[ 1 ] = eigenvalues[ indices1 ];
+      vectors[ 0 ] = eigenvectors( 0, indices0 );
+      vectors[ 1 ] = eigenvectors( 1, indices0 );
+      vectors[ 2 ] = eigenvectors( 0, indices1 );
+      vectors[ 3 ] = eigenvectors( 1, indices1 );
+   } else {
+      DIP_ASSERT( lambdas.Stride() >= 0 );
+      Eigen::Map< Eigen::Vector2d, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), Eigen::InnerStride<>( lambdas.Stride() ));
+      eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
+      if( std::abs( lambdas[ 0 ] ) < std::abs( lambdas[ 1 ] )) {
+         std::swap( lambdas[ 0 ], lambdas[ 1 ] );
+      }
+   }
+}
+
+void SymmetricEigenDecomposition3(
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > lambdas,
+      SampleIterator< dfloat > vectors
+) {
+   DIP_ASSERT( input.Stride() >= 0 );
+   Eigen::Map< Eigen::Matrix3d const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), Eigen::InnerStride<>( input.Stride() ));
+   if( vectors ) {
+      Eigen::SelfAdjointEigenSolver< Eigen::Matrix3d > eigensolver( matrix );
+      //if( eigensolver.info() != Eigen::Success ) { abort(); }
+      Eigen::Vector3d const& eigenvalues = eigensolver.eigenvalues();
+      Eigen::Matrix3d const& eigenvectors = eigensolver.eigenvectors();
+      std::array< dip::uint, 3 > indices{{ 0, 1, 2 }};
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::uint ii = 0; ii < 3; ++ii ) {
+         dip::uint kk = indices[ ii ];
+         lambdas[ ii ] = eigenvalues[ kk ];
+         dip::uint offset = ii * 3;
+         for( dip::uint jj = 0; jj < 3; ++jj ) {
+            vectors[ jj + offset ] = eigenvectors( jj, kk );
+         }
+      }
+   } else {
+      DIP_ASSERT( lambdas.Stride() >= 0 );
+      Eigen::Map< Eigen::Vector3d, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), Eigen::InnerStride<>( lambdas.Stride() ));
+      eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
+      std::sort( lambdas, lambdas + 3, GreaterMagnitude< dfloat >() );
+   }
+}
+
 void LargestEigenVector(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
@@ -87,8 +152,8 @@ void LargestEigenVector(
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
    //if( eigensolver.info() != Eigen::Success ) { abort(); }
-   Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
-   Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
+   Eigen::VectorXd const& eigenvalues = eigensolver.eigenvalues();
+   Eigen::MatrixXd const& eigenvectors = eigensolver.eigenvectors();
    std::vector< dip::uint > indices( n );
    std::iota( indices.begin(), indices.end(), 0 );
    std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
@@ -107,8 +172,8 @@ void SmallestEigenVector(
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
    //if( eigensolver.info() != Eigen::Success ) { abort(); }
-   Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
-   Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
+   Eigen::VectorXd const& eigenvalues = eigensolver.eigenvalues();
+   Eigen::MatrixXd const& eigenvectors = eigensolver.eigenvectors();
    std::vector< dip::uint > indices( n );
    std::iota( indices.begin(), indices.end(), 0 );
    std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
@@ -128,8 +193,8 @@ void EigenDecomposition(
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::EigenSolver< Eigen::MatrixXd > eigensolver( matrix );
-      Eigen::VectorXcd eigenvalues = eigensolver.eigenvalues();
-      Eigen::MatrixXcd eigenvectors = eigensolver.eigenvectors();
+      Eigen::VectorXcd const& eigenvalues = eigensolver.eigenvalues();
+      Eigen::MatrixXcd const& eigenvectors = eigensolver.eigenvectors();
       std::vector< dip::uint > indices( n );
       std::iota( indices.begin(), indices.end(), 0 );
       std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
@@ -159,8 +224,8 @@ void EigenDecomposition(
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::ComplexEigenSolver< Eigen::MatrixXcd > eigensolver( matrix );
-      Eigen::VectorXcd eigenvalues = eigensolver.eigenvalues();
-      Eigen::MatrixXcd eigenvectors = eigensolver.eigenvectors();
+      Eigen::VectorXcd const& eigenvalues = eigensolver.eigenvalues();
+      Eigen::MatrixXcd const& eigenvectors = eigensolver.eigenvectors();
       std::vector< dip::uint > indices( n );
       std::iota( indices.begin(), indices.end(), 0 );
       std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
@@ -338,6 +403,7 @@ void Solve(
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
+   // Test generic symmetric code with 2x2 matrix
    dip::dfloat matrix2[] = { 4, 8, 0 };
    dip::dfloat lambdas[ 3 ];
    dip::dfloat vectors[ 9 ];
@@ -377,6 +443,46 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  std::sin( dip::pi/4 )));
    DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  std::cos( dip::pi/4 )));
 
+   // Test 2x2-specific symmetric code
+   dip::dfloat matrix2f[] = { 4, 0, 0, 8 };
+   dip::SymmetricEigenDecomposition2( matrix2f, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   dip::SymmetricEigenDecomposition2( matrix2f, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   DOCTEST_CHECK( vectors[ 0 ] == 0 );
+   DOCTEST_CHECK( vectors[ 1 ] == 1 );
+   DOCTEST_CHECK( vectors[ 2 ] == 1 );
+   DOCTEST_CHECK( vectors[ 3 ] == 0 );
+   matrix2f[ 0 ] = 8;
+   matrix2f[ 3 ] = 4;
+   dip::SymmetricEigenDecomposition2( matrix2f, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   dip::SymmetricEigenDecomposition2( matrix2f, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   DOCTEST_CHECK( vectors[ 0 ] == 1 );
+   DOCTEST_CHECK( vectors[ 1 ] == 0 );
+   DOCTEST_CHECK( vectors[ 2 ] == 0 );
+   DOCTEST_CHECK( vectors[ 3 ] == 1 );
+   matrix2f[ 0 ] = 3;
+   matrix2f[ 1 ] = -1;
+   matrix2f[ 2 ] = -1;
+   matrix2f[ 3 ] = 3;
+   dip::SymmetricEigenDecomposition2( matrix2f, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 4 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   dip::SymmetricEigenDecomposition2( matrix2f, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 4 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  std::cos( dip::pi/4 ))); // signs might be different here...
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -std::sin( dip::pi/4 )));
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  std::sin( dip::pi/4 )));
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  std::cos( dip::pi/4 )));
+
+   // Test generic symmetric code with 3x3 matrix
    dip::dfloat matrix3[] = { 3, 1.5, 1.5, 0.0, 0.0, -0.5 };
    dip::SymmetricEigenDecompositionPacked( 3, matrix3, lambdas );
    DOCTEST_CHECK( lambdas[ 0 ] == 3 );
@@ -396,6 +502,27 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    DOCTEST_CHECK( vectors[ 7 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
    DOCTEST_CHECK( vectors[ 8 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
 
+   // Test 3x3-specific symmetric code
+   dip::dfloat matrix3f[] = { 3, 0.0, 0.0, 0.0, 1.5, -0.5, 0.0, -0.5, 1.5 };
+   dip::SymmetricEigenDecomposition3( matrix3f, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 3 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   DOCTEST_CHECK( lambdas[ 2 ] == 1 );
+   dip::SymmetricEigenDecomposition3( matrix3f, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 3 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   DOCTEST_CHECK( lambdas[ 2 ] == 1 );
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  1.0 ));
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 4 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
+   DOCTEST_CHECK( vectors[ 5 ] == doctest::Approx( -1.0 / std::sqrt( 2.0 )));
+   DOCTEST_CHECK( vectors[ 6 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 7 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
+   DOCTEST_CHECK( vectors[ 8 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
+
+   // Test generic non-symmetric code with 2x2 matrix
    dip::dfloat matrix22[] = { 3, -1, -1, 3 };
    dip::dcomplex c_lambdas[ 2 ];
    dip::dcomplex c_vectors[ 4 ];
