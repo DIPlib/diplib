@@ -81,22 +81,22 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
 
    m.def( "PositionMaximum", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::PositionMaximum ),
-          "in"_a, "mask"_a = dip::Image{}, "dim"_a, "mode"_a = dip::S::FIRST );
+          "in"_a, "mask"_a = dip::Image{}, "dim"_a = 0, "mode"_a = dip::S::FIRST );
    m.def( "PositionMinimum", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::PositionMinimum ),
-          "in"_a, "mask"_a = dip::Image{}, "dim"_a, "mode"_a = dip::S::FIRST );
+          "in"_a, "mask"_a = dip::Image{}, "dim"_a = 0, "mode"_a = dip::S::FIRST );
    m.def( "PositionPercentile", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint, dip::String const& >( &dip::PositionPercentile ),
-          "in"_a, "mask"_a = dip::Image{}, "percentile"_a, "dim"_a, "mode"_a = dip::S::FIRST );
+          "in"_a, "mask"_a = dip::Image{}, "percentile"_a = 50, "dim"_a = 0, "mode"_a = dip::S::FIRST );
    m.def( "PositionMedian", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::PositionMedian ),
-          "in"_a, "mask"_a = dip::Image{}, "dim"_a, "mode"_a = dip::S::FIRST );
+          "in"_a, "mask"_a = dip::Image{}, "dim"_a = 0, "mode"_a = dip::S::FIRST );
 
    m.def( "RadialSum", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::FloatArray const& >( &dip::RadialSum ),
-          "in"_a, "mask"_a = dip::Image{}, "binSize"_a, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
+          "in"_a, "mask"_a = dip::Image{}, "binSize"_a = 1, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
    m.def( "RadialMean", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::FloatArray const& >( &dip::RadialMean ),
-          "in"_a, "mask"_a = dip::Image{}, "binSize"_a, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
+          "in"_a, "mask"_a = dip::Image{}, "binSize"_a = 1, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
    m.def( "RadialMinimum", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::FloatArray const& >( &dip::RadialMinimum ),
-          "in"_a, "mask"_a = dip::Image{}, "binSize"_a, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
+          "in"_a, "mask"_a = dip::Image{}, "binSize"_a = 1, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
    m.def( "RadialMaximum", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::FloatArray const& >( &dip::RadialMaximum ),
-          "in"_a, "mask"_a = dip::Image{}, "binSize"_a, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
+          "in"_a, "mask"_a = dip::Image{}, "binSize"_a = 1, "maxRadius"_a = dip::S::OUTERRADIUS, "center"_a = dip::FloatArray{} );
 
    m.def( "MeanError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MeanError ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
