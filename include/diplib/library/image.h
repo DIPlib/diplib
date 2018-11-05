@@ -1179,8 +1179,13 @@ class DIP_NO_EXPORT Image {
             dip::DataType dt,
             Option::AcceptDataTypeChange acceptDataTypeChange = Option::AcceptDataTypeChange::DONT_ALLOW
       ) {
+         auto tensor = src.tensor_;          // If `&src == this`, the `ReForge` will delete the non-data properties.
+         auto colorSpace = src.colorSpace_;
+         auto pixelSize = src.pixelSize_;
          ReForge( src.sizes_, src.tensor_.Elements(), dt, acceptDataTypeChange );
-         CopyNonDataProperties( src );
+         tensor_ = tensor;
+         colorSpace_ = std::move(colorSpace);
+         pixelSize_ = std::move(pixelSize);
       }
 
       /// \brief Modify image properties and forge the image.
