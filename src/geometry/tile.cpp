@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for geometric transformations that use interpolation
+ * This file contains definitions for image tiling functions
  *
  * (c)2018, Cris Luengo.
  *

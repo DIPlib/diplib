@@ -188,7 +188,6 @@ Pure M-files:
 - `wiener`
 
 Requiring C++ code:
-- `affine_trans`
 - `arcf`
 - `cal_readnoise`
 - `deblock`    (depends on `arcf`)

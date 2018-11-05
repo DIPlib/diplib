@@ -106,10 +106,11 @@ generation/draw_discrete.cpp
 generation/draw_fourier.cpp
 generation/draw_support.h
 generation/noise.cpp
+geometry/interpolation.cpp
 geometry/interpolation.h
 geometry/resampleat.cpp
-geometry/resampling.cpp
 geometry/tile.cpp
+geometry/wrap.cpp
 histogram/distribution.cpp
 histogram/equalization.cpp
 histogram/histogram.cpp

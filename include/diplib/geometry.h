@@ -241,12 +241,13 @@ inline Image ShiftFT(
 
 /// \brief Finds the values of the image at sub-pixel locations `coordinates` by linear interpolation.
 ///
-/// The array `coordinates` must have all elements be array of the same length as the image dimensionality.
+/// The array `coordinates` must have all elements be arrays of the same length as the image dimensionality.
 /// Any coordinates outside of the image domain are returned as zero values. That is, no extrapolation is
-/// performed.
+/// performed. Coordinates match image indexing: the first pixel on a line has coordinate 0.
 ///
 /// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
-/// See \ref interpolation_methods for their definition.
+/// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
+/// ignored, nearest neighbor interpolation will be used.
 ///
 /// `out` will be a 1D image with the same size as the `coordinates` array, and the same data type and tensor
 /// shape as `in`. To obtain results in a floating-point type, set the data type of `out` and protect it,
@@ -302,8 +303,7 @@ DIP_EXPORT dip::UnsignedArray Skew(
 /// Each image sub-volume perpendicular
 /// to `axis` is shifted by a different amount. The output image has the same dimension as `in` in the `axis`
 /// direction, and larger dimensions in all other dimensions, such that no data are lost. The value of `shearArray[ axis ]`
-/// is ignored. The origin of the skew is the origin pixel (as defined in `dip::FourierTransform` and other other
-/// places).
+/// is ignored. The origin of the skew is the central pixel (see \ref coordinates_origin).
 ///
 /// The output image has the same data type as the input image.
 ///
@@ -322,7 +322,7 @@ DIP_EXPORT dip::UnsignedArray Skew(
 inline void Skew(
       Image const& in,
       Image& out,
-      FloatArray shearArray,
+      FloatArray const& shearArray,
       dip::uint axis,
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
@@ -336,7 +336,7 @@ inline void Skew(
 }
 inline Image Skew(
       Image const& in,
-      FloatArray shearArray, // value along `axis` is ignored
+      FloatArray const& shearArray, // value along `axis` is ignored
       dip::uint axis,
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
@@ -352,8 +352,7 @@ inline Image Skew(
 /// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
 /// `skew` is shifted by a different amount. The output image has the same dimensions as
 /// `in`, except for dimension `skew`, which will be larger, such that no data are lost.
-/// The origin of the skew is the origin pixel (as defined in `dip::FourierTransform` and other other
-/// places).
+/// The origin of the skew is the central pixel (see \ref coordinates_origin).
 ///
 /// The output image has the same data type as the input image.
 ///
@@ -413,8 +412,7 @@ inline Image Skew(
 /// \brief Rotates an image in one orthogonal plane, over the center of the image.
 ///
 /// Rotates an image in the plane defined by `dimension1` and `dimension2`, over an angle `angle`, in radian.
-/// The origin of the rotation is the origin pixel (as defined in `dip::FourierTransform` and other other
-/// places).
+/// The origin of the rotation is the central pixel (see \ref coordinates_origin).
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
 /// The output image has the same data type as the input image.
@@ -528,7 +526,7 @@ inline Image Rotation3D(
 ///
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
-/// The rotation is over the center of the image.
+/// The rotation is over the center of the image, see \ref coordinates_origin.
 // TODO: Implement the rotation using 4 skews as described by Chen and Kaufman, Graphical Models 62:308-322, 2000.
 //       This method uses either 4 "2D slice shears" (what dip::Skew does), or 4 "2D beam shears" (which is more
 //       efficient in our case because each step only requires interpolation in 1D, not in 2D as dip::Skew does).
@@ -631,6 +629,49 @@ inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
    return out;
 }
 
+/// \brief Applies an arbitrary affine transformation to the 2D or 3D image.
+///
+/// `matrix` contains 4 values (`in` is 2D) or 9 values (`in` is 3D) representing a linear
+/// transformation matrix. Optionally, a translation can be represented by 2 (2D) or 3 (3D)
+/// values added to the end of `matrix`. In this case, the matrix is an affine transform
+/// matrix using homogeneous coordinates, but with the bottom row removed (which is expected
+/// to be `{0,0,1}` in 2D or `{0,0,0,1}` in 3D). The values are stored in column-major order:
+///
+/// ```
+///            ⎡ matrix[0]  matrix[2]  matrix[4] ⎤
+///     T_2D = ⎢ matrix[1]  matrix[3]  matrix[5] ⎥
+///            ⎣    0          0          1      ⎦
+///
+///            ⎡ matrix[0]  matrix[3]  matrix[6]  matrix[ 9] ⎤
+///     T_3D = ⎢ matrix[1]  matrix[4]  matrix[7]  matrix[10] ⎥
+///            ⎢ matrix[2]  matrix[5]  matrix[8]  matrix[11] ⎥
+///            ⎣    0          0          0          1       ⎦
+/// ```
+///
+/// The coordinates of each pixel in `in` (the origin of the coordinate system is the central pixel,
+/// see \ref coordinates_origin) is mapped through the transformation matrix to obtain its location
+/// in `out`. Although the algorithm actually uses the inverse of the matrix to transform
+/// each coordinate in `out` to obtain the location where to interpolate a value from. `out` is given
+/// the same size as `in`.
+///
+/// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
+/// See \ref interpolation_methods for their definition.  If `in` is binary, `interpolationMethod` will be
+/// ignored, nearest neighbor interpolation will be used.
+DIP_EXPORT void AffineTransform(
+      Image const& in,
+      Image& out,
+      FloatArray const& matrix,
+      String const& interpolationMethod = S::NEAREST
+);
+inline Image AffineTransform(
+      Image const& in,
+      FloatArray const& matrix,
+      String const& interpolationMethod = S::NEAREST
+) {
+   Image out;
+   AffineTransform( in, out, matrix, interpolationMethod );
+   return out;
+}
 
 /// \brief Tiles a set of images to form a single image.
 ///

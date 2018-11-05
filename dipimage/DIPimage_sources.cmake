@@ -20,6 +20,7 @@ set(DIPimage_sources_bogus
 @dip_image/sum.cpp
 @dip_image/svd.cpp
 @dip_image/var.cpp
+affine_trans.cpp
 areaopening.cpp
 asf.cpp
 bclosing.cpp

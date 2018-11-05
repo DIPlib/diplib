@@ -506,6 +506,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `resample` and `shift` shift the image in the opposite direction from what it did in
     *DIPimage 2*, where the shift was unintuitive.
 
+  - `affine_trans` rotates in the opposite direction it did before, to match the interpretation
+    of angles in the rest of the toolbox. The function now also accepts an affine transformation
+    matrix to direct the transformation.
+
   - `readim` and `writeim` work differently now, in part because *DIPlib* natively only supports
     two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
     two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):

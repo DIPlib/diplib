@@ -261,7 +261,7 @@ void init_assorted( py::module& m ) {
           "in"_a, "coordinates"_a, "method"_a = dip::S::LINEAR );
    m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const& >( &dip::ResampleAt ),
           "in"_a, "coordinates"_a, "method"_a = dip::S::LINEAR );
-   m.def( "Skew", py::overload_cast< dip::Image const&, dip::FloatArray, dip::uint, dip::String const&, dip::StringArray const& >( &dip::Skew ),
+   m.def( "Skew", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::uint, dip::String const&, dip::StringArray const& >( &dip::Skew ),
           "in"_a, "shearArray"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Skew", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Skew ),
           "in"_a, "shear"_a, "skew"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
@@ -279,6 +279,8 @@ void init_assorted( py::module& m ) {
           "alpha"_a, "beta"_a, "gamma"_a );
    m.def( "RotationMatrix3D", py::overload_cast< dip::FloatArray const&, dip::dfloat >( &dip::RotationMatrix3D ),
           "vector"_a, "angle"_a );
+   m.def( "AffineTransform", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const& >( &dip::AffineTransform ),
+          "in"_a, "matrix"_a, "interpolationMethod"_a = dip::S::NEAREST );
 
    m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray const& >( &dip::Tile ),
           "in"_a, "tiling"_a = dip::UnsignedArray{} );

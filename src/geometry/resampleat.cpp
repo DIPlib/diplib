@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for geometric transformations that use interpolation
+ * This file contains definitions for funtions that sample a single location
  *
  * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -83,7 +83,7 @@ TPD ThirdOrderCubicSpline1D( TPD a, TPD b, TPD c, TPD d, dfloat pos ) {
 
 template< typename TPI >
 DoubleType< TPI > LinearND( TPI* src, IntegerArray const& srcStride,
-               UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
+                            UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
    using TPD = DoubleType< TPI >;
    --nDims;
    dip::sint stride = srcStride[ nDims ];
@@ -91,7 +91,7 @@ DoubleType< TPI > LinearND( TPI* src, IntegerArray const& srcStride,
    // If there's only one dimension, directly compute and be done
    if( nDims == 0 ) {
       TPD a = static_cast< TPD >( src[ 0 ] );
-      TPD b = static_cast< TPD >( src[ stride] );
+      TPD b = static_cast< TPD >( src[ stride ] );
       return Linear1D( a, b, subpos[ 0 ] );
    }
    // Otherwise, recursively compute result at two points along the last dimension and linearly interpolate them
@@ -102,7 +102,7 @@ DoubleType< TPI > LinearND( TPI* src, IntegerArray const& srcStride,
 
 template< typename TPI >
 DoubleType< TPI > ThirdOrderCubicSplineND( TPI* src, UnsignedArray const& srcSizes, IntegerArray const& srcStride,
-                              UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
+                                           UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
    using TPD = DoubleType< TPI >;
    --nDims;
    bool start = coords[ nDims ] == 0;
@@ -170,9 +170,13 @@ using InterpolationFunctionPointer = void ( * )( Image const&, Image::Pixel cons
 
 InterpolationFunctionPointer GetInterpFunctionPtr( String const& method, DataType dt ) {
    InterpolationFunctionPointer function;
-   switch( ParseMethod( method ) ) {
+   auto m = ParseMethod( method );
+   if( dt == DT_BIN ) {
+      m = Method::NEAREST_NEIGHBOR;
+   }
+   switch( m ) {
       case Method::NEAREST_NEIGHBOR:
-         DIP_OVL_ASSIGN_NONBINARY( function, NearestNeighborInterpolationFunction, dt );
+         DIP_OVL_ASSIGN_ALL( function, NearestNeighborInterpolationFunction, dt );
          break;
       default:
       //case Method::LINEAR:
@@ -194,7 +198,6 @@ void ResampleAt(
       String const& method
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( coordinates.empty(), E::ARRAY_PARAMETER_EMPTY );
@@ -208,6 +211,9 @@ void ResampleAt(
    String colorSpace = c_in.ColorSpace();
 
    // Create output
+   if( out.Aliases( in )) {
+      out.Strip();
+   }
    UnsignedArray outSize( 1, coordinates.size() );
    out.ReForge( outSize, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
    out.SetPixelSize( pixelSize );
@@ -234,7 +240,6 @@ Image::Pixel ResampleAt(
       String const& method
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( coordinates.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
@@ -255,6 +260,93 @@ Image::Pixel ResampleAt(
    }
 
    return out;
+}
+
+
+namespace {
+
+// Computes p := R * p + T, where T is an nxn matrix in column-major order, and p and T are an n vector, with n in {2,3}.
+FloatArray ApplyTransformation( FloatArray const& R, FloatArray const& p, FloatArray const& T ) {
+   dip::uint n = p.size();
+   FloatArray out( n );
+   if( n == 2 ) {
+      out[ 0 ] = R[ 0 ] * p[ 0 ] + R[ 2 ] * p[ 1 ] + T[ 0 ];
+      out[ 1 ] = R[ 1 ] * p[ 0 ] + R[ 3 ] * p[ 1 ] + T[ 1 ];
+   } else { // n == 3
+      out[ 0 ] = R[ 0 ] * p[ 0 ] + R[ 3 ] * p[ 1 ] + R[ 6 ] * p[ 2 ] + T[ 0 ];
+      out[ 1 ] = R[ 1 ] * p[ 0 ] + R[ 4 ] * p[ 1 ] + R[ 7 ] * p[ 2 ] + T[ 1 ];
+      out[ 2 ] = R[ 2 ] * p[ 0 ] + R[ 5 ] * p[ 1 ] + R[ 8 ] * p[ 2 ] + T[ 2 ];
+   }
+   return out;
+}
+
+} // namespace
+
+void AffineTransform(
+      Image const& c_in,
+      Image& out,
+      FloatArray const& matrix,
+      String const& method
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = c_in.Dimensionality();
+   DIP_THROW_IF(( nDims < 2 || nDims > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF(( matrix.size() != nDims * nDims ) && ( matrix.size() != nDims * ( nDims + 1 )), E::ARRAY_PARAMETER_WRONG_LENGTH );
+
+   // Find interpolator
+   InterpolationFunctionPointer function;
+   DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, c_in.DataType() ));
+
+   // Preserve input
+   Image in = c_in.QuickCopy();
+   PixelSize pixelSize = c_in.PixelSize();
+   String colorSpace = c_in.ColorSpace();
+
+   // Create output
+   if( out.Aliases( in )) {
+      out.Strip();
+   }
+   out.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.SetPixelSize( pixelSize );
+   out.SetColorSpace( colorSpace );
+   out.Fill( 0 );
+
+   // For forward transformation: forward_transform * coord + translation
+   // For inverse transformation: inverse_transform * ( coord - translation )
+
+   // Find inverse matrix (convert forward_transform into inverse_transform)
+   FloatArray transform( nDims * nDims );
+   Inverse( nDims, matrix.begin(), transform.begin() );
+
+   // Get translation
+   FloatArray translation( nDims, 0 );
+   if( matrix.size() > nDims * nDims ) {
+      dfloat const* ptr = matrix.data() + nDims * nDims;
+      std::copy( ptr, ptr + nDims, translation.begin() );
+   }
+
+   // Coordinate offset (so that the origin is in the middle of the image)
+   //    we want to compute: transform * ( coord - offset - translation ) + offset
+   //                      = transform * coord - transform * ( offset + translation ) + offset
+   FloatArray offset = out.GetCenter();
+   translation += offset;
+   translation = ApplyTransformation( transform, translation, FloatArray( nDims, 0 ));
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      translation[ ii ] = offset[ ii ] - translation[ ii ];
+   }
+
+   // Iterate over out and interpolate in in
+   // TODO: This would be better if parallelized.
+   GenericImageIterator<> it( out );
+   do {
+      FloatArray coord( it.Coordinates() );
+      coord = ApplyTransformation( transform, coord, translation );
+      if( in.IsInside( coord ) ) {
+         function( in, *it, coord );
+      } else {
+         *it = 0;
+      }
+   } while( ++it );
 }
 
 } // namespace dip

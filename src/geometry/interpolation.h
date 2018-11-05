@@ -19,7 +19,7 @@
  */
 
 
-// NOTE!!! This file only to be included by `resampling.cpp`.
+// NOTE!!! This file only to be included by `interpolation.cpp`.
 
 
 #include "diplib/library/types.h"
