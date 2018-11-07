@@ -1184,8 +1184,8 @@ class DIP_NO_EXPORT Image {
          auto pixelSize = src.pixelSize_;
          ReForge( src.sizes_, src.tensor_.Elements(), dt, acceptDataTypeChange );
          tensor_ = tensor;
-         colorSpace_ = std::move(colorSpace);
-         pixelSize_ = std::move(pixelSize);
+         colorSpace_ = std::move( colorSpace );
+         pixelSize_ = std::move( pixelSize );
       }
 
       /// \brief Modify image properties and forge the image.
@@ -1411,7 +1411,6 @@ class DIP_NO_EXPORT Image {
          }
          return offset;
       }
-
 
       /// \brief Compute offset given coordinates.
       ///
@@ -2083,7 +2082,7 @@ class DIP_NO_EXPORT Image {
       /// \}
 
       //
-      // Getting/setting pixel values
+      // Getting/setting pixel values, data copies
       // Defined in src/library/image_data.cpp
       //
 
@@ -2152,6 +2151,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// `dip::Image::QuickCopy` does the same, but without copying the data, its output image shares
       /// the data segment with `this`.
+      ///
+      /// Any external interface is not preserved. Use `dip::Copy` to control the data allocation for the output image.
       Image Copy() const {
          Image out;
          out.Copy( *this );
@@ -2189,12 +2190,8 @@ class DIP_NO_EXPORT Image {
       /// \see HasNormalStrides, ForceContiguousData.
       void ForceNormalStrides() {
          if( !HasNormalStrides() ) {
-            Image tmp;
-            tmp.externalInterface_ = externalInterface_;
-            tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
-            DIP_THROW_IF( !tmp.HasNormalStrides(), "Cannot force strides to normal" );
-            tmp.Copy( *this );
-            this->move( std::move( tmp ));
+            CopyDataToNewDataSegment();
+            DIP_THROW_IF( !HasNormalStrides(), "Cannot force strides to normal" );
          }
       }
 
@@ -2205,12 +2202,20 @@ class DIP_NO_EXPORT Image {
       /// \see HasContiguousData, ForceNormalStrides.
       void ForceContiguousData() {
          if( !HasContiguousData() ) {
-            Image tmp;
-            tmp.externalInterface_ = externalInterface_;
-            tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
-            DIP_ASSERT( tmp.HasContiguousData() );
-            tmp.Copy( *this );
-            this->move( std::move( tmp ));
+            CopyDataToNewDataSegment();
+            DIP_ASSERT( HasContiguousData() );
+         }
+      }
+
+      /// \brief If the image shares its data segment with another image, create a data copy so it no longer
+      /// shares data.
+      ///
+      /// The image must be forged.
+      ///
+      /// \see IsShared, Copy, ForceNormalStrides, ForceContiguousData
+      void Separate() {
+         if( IsShared() ) {
+            CopyDataToNewDataSegment();
          }
       }
 
@@ -2323,6 +2328,19 @@ class DIP_NO_EXPORT Image {
          externalInterface_ = other.externalInterface_;
       }
 
+      /// \brief Allocates a new data segment and copies the data over. The image will be the same as before, but
+      /// have normal strides and not share data with another image.
+      ///
+      /// Don't call this function if the image is not forged.
+      void CopyDataToNewDataSegment() {
+         DIP_ASSERT( IsForged() );
+         Image tmp;
+         tmp.externalInterface_ = externalInterface_;
+         tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
+         tmp.Copy( *this );
+         this->move( std::move( tmp ));
+      }
+
 }; // class Image
 
 
@@ -2374,7 +2392,8 @@ inline Image DefineROI(
    return dest;
 }
 
-/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method.
+/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method, except `dest` can
+/// have an external interface.
 inline void Copy( Image const& src, Image& dest ) {
    dest.Copy( src );
 }
@@ -2433,11 +2452,9 @@ inline void Convert( Image const& src, Image& dest, dip::DataType dt ) {
       dest.Copy( src );
    }
 }
-inline Image Convert( Image const& src, dip::DataType dt ) {
-   Image dest;
-   dest.ReForge( src, dt );
-   dest.Copy( src );
-   return dest;
+inline Image Convert( Image src, dip::DataType dt ) { // taking `src` by value
+   src.Convert( dt );
+   return src;
 }
 
 /// \brief Creates a `dip::ImageRefArray` from a `dip::ImageArray`.

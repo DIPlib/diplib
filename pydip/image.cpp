@@ -447,5 +447,5 @@ void init_image( py::module& m ) {
 
    m.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Copy ), "src"_a );
    m.def( "ExpandTensor", py::overload_cast< dip::Image const& >( &dip::ExpandTensor ), "src"_a );
-   m.def( "Convert", py::overload_cast< dip::Image const&, dip::DataType >( &dip::Convert ), "src"_a, "dt"_a );
+   m.def( "Convert", py::overload_cast< dip::Image, dip::DataType >( &dip::Convert ), "src"_a, "dt"_a );
 }
