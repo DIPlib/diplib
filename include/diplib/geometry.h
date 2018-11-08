@@ -661,17 +661,44 @@ DIP_EXPORT void AffineTransform(
       Image const& in,
       Image& out,
       FloatArray const& matrix,
-      String const& interpolationMethod = S::NEAREST
+      String const& interpolationMethod = S::LINEAR
 );
 inline Image AffineTransform(
       Image const& in,
       FloatArray const& matrix,
-      String const& interpolationMethod = S::NEAREST
+      String const& interpolationMethod = S::LINEAR
 ) {
    Image out;
    AffineTransform( in, out, matrix, interpolationMethod );
    return out;
 }
+
+/// \brief Computes the log-polar transform of the 2D image.
+///
+/// By default, `out` will be a square image with side equal to the smaller of the two sides of `in`. However,
+/// if `out` is protected (see `dip::Image::Protect`), its sizes will be preserved, even if not forged.
+///
+/// The x-axis (horizontal) of `out` is the logarithm of the radius, and the y-axis is the angle.
+///
+/// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
+/// See \ref interpolation_methods for their definition.  If `in` is binary, `interpolationMethod` will be
+/// ignored, nearest neighbor interpolation will be used.
+///
+/// This function is an integral part of the Fourier-Mellin transform, see `dip::FourierMellinMatch2D`.
+DIP_EXPORT void LogPolarTransform2D(
+      Image const& in,
+      Image& out,
+      String const& interpolationMethod = S::LINEAR
+);
+inline Image LogPolarTransform2D(
+      Image const& in,
+      String const& interpolationMethod = S::LINEAR
+) {
+   Image out;
+   LogPolarTransform2D( in, out, interpolationMethod );
+   return out;
+}
+
 
 /// \brief Tiles a set of images to form a single image.
 ///

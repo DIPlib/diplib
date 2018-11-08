@@ -280,7 +280,9 @@ void init_assorted( py::module& m ) {
    m.def( "RotationMatrix3D", py::overload_cast< dip::FloatArray const&, dip::dfloat >( &dip::RotationMatrix3D ),
           "vector"_a, "angle"_a );
    m.def( "AffineTransform", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const& >( &dip::AffineTransform ),
-          "in"_a, "matrix"_a, "interpolationMethod"_a = dip::S::NEAREST );
+          "in"_a, "matrix"_a, "interpolationMethod"_a = dip::S::LINEAR );
+   m.def( "LogPolarTransform2D", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LogPolarTransform2D ),
+          "in"_a, "interpolationMethod"_a = dip::S::LINEAR );
 
    m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray const& >( &dip::Tile ),
           "in"_a, "tiling"_a = dip::UnsignedArray{} );

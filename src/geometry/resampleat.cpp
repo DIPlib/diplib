@@ -1,9 +1,10 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for funtions that sample a single location
+ * This file contains definitions for functions that sample a single location
  *
  * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +21,8 @@
 
 #include "diplib.h"
 #include "diplib/geometry.h"
+#include "diplib/generation.h"
+#include "diplib/math.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
 
@@ -298,17 +301,13 @@ void AffineTransform(
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, c_in.DataType() ));
 
    // Preserve input
-   Image in = c_in.QuickCopy();
-   PixelSize pixelSize = c_in.PixelSize();
-   String colorSpace = c_in.ColorSpace();
+   Image in = c_in;
 
    // Create output
    if( out.Aliases( in )) {
       out.Strip();
    }
    out.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
    out.Fill( 0 );
 
    // For forward transformation: forward_transform * coord + translation
@@ -343,6 +342,94 @@ void AffineTransform(
       coord = ApplyTransformation( transform, coord, translation );
       if( in.IsInside( coord ) ) {
          function( in, *it, coord );
+      } else {
+         *it = 0;
+      }
+   } while( ++it );
+}
+
+
+void LogPolarTransform2D(
+      Image const& c_in,
+      Image& out,
+      String const& method
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( c_in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+
+   // Find interpolator
+   InterpolationFunctionPointer function;
+   DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, c_in.DataType() ));
+
+   // Preserve input
+   Image in = c_in;
+
+   // Determine output size
+   UnsignedArray outSizes;
+   if( out.IsProtected() ) {
+      DIP_THROW_IF( out.Dimensionality() != 2, "Protected output image of wrong dimensionality" );
+      outSizes = out.Sizes();
+   } else {
+      outSizes.resize( 2 );
+      outSizes.fill( in.Sizes().minimum_value() );
+   }
+
+   // Create output
+   if( out.Aliases( in )) {
+      if( out.IsProtected() ) {
+         // We cannot work in place, to be able to write directly in out, aliasing in, we need to make a deep copy of in
+         in.Separate();
+      } else {
+         out.Strip();
+      }
+   }
+   out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+   out.ReshapeTensor( in.Tensor() );
+   out.SetColorSpace( in.ColorSpace() );
+   out.SetPixelSize( in.PixelSize() );
+   out.Fill( 0 );
+
+   // Compute Log-polar grid
+   Image logrIm = CreateXCoordinate( { outSizes[ 0 ], 1 }, { S::CORNER } );
+   logrIm *= 1.0 / static_cast< dfloat >( outSizes[ 0 ] - 1 );
+   auto center = in.GetCenter();
+   dfloat maxr = center.minimum_value();
+   Power( maxr, logrIm, logrIm, DT_SFLOAT );
+   logrIm -= 1;
+   DIP_ASSERT( logrIm.DataType() == DT_SFLOAT );
+   DIP_ASSERT( logrIm.Size( 0 ) == logrIm.NumberOfPixels() );
+   DIP_ASSERT( logrIm.Stride( 0 ) == 1 );
+   sfloat const* logr = static_cast< sfloat const* >( logrIm.Origin() );
+
+   Image phi = CreateYCoordinate( { 1, outSizes[ 1 ] }, { S::CORNER } );
+   phi *= 2 * pi / static_cast< dfloat >( outSizes[ 1 ] );
+
+   Image cosPhiIm = Cos( phi );
+   DIP_ASSERT( cosPhiIm.DataType() == DT_SFLOAT );
+   DIP_ASSERT( cosPhiIm.Size( 1 ) == cosPhiIm.NumberOfPixels() );
+   DIP_ASSERT( cosPhiIm.Stride( 1 ) == 1 );
+   sfloat const* cosPhi = static_cast< sfloat const* >( cosPhiIm.Origin() );
+
+   Image sinPhiIm = Sin( phi );
+   DIP_ASSERT( sinPhiIm.DataType() == DT_SFLOAT );
+   DIP_ASSERT( sinPhiIm.Size( 1 ) == sinPhiIm.NumberOfPixels() );
+   DIP_ASSERT( sinPhiIm.Stride( 1 ) == 1 );
+   sfloat const* sinPhi = static_cast< sfloat const* >( sinPhiIm.Origin() );
+
+   // U = logr[x] * cosPhi[y] + center[0];
+   // V = logr[x] * sinPhi[y] + center[1];
+
+   // Iterate over out and interpolate in in
+   // TODO: This would be better if parallelized.
+   GenericImageIterator<> it( out );
+   do {
+      UnsignedArray r_phi( it.Coordinates() );
+      FloatArray u_v = {
+            logr[ r_phi[ 0 ]] * cosPhi[ r_phi[ 1 ]] + center[ 0 ],
+            logr[ r_phi[ 0 ]] * sinPhi[ r_phi[ 1 ]] + center[ 1 ]
+      };
+      if( in.IsInside( u_v ) ) {
+         function( in, *it, u_v );
       } else {
          *it = 0;
       }
