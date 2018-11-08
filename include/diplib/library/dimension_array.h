@@ -412,7 +412,7 @@ class DIP_NO_EXPORT DimensionArray {
          return out;
       }
 
-      /// Order the elements in the array according to the `order` array, such as returned by `sorted_indices`.
+      /// \brief Order the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
       /// ```cpp
@@ -426,7 +426,7 @@ class DIP_NO_EXPORT DimensionArray {
          return out;
       }
 
-      /// Inverse orders the elements in the array according to the `order` array, such as returned by `sorted_indices`.
+      /// \brief Inverse orders the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
       /// ```cpp
@@ -498,7 +498,7 @@ class DIP_NO_EXPORT DimensionArray {
          return result;
       }
 
-      /// Find the minimum element in the array, returns the index or 0 if the array is empty.
+      /// Find the maximum element in the array, returns the index or 0 if the array is empty.
       size_type maximum() const {
          if( size_ == 0 ) {
             return 0;
@@ -511,6 +511,25 @@ class DIP_NO_EXPORT DimensionArray {
             }
          }
          return result;
+      }
+
+      /// \brief Find the minimum element in the array, returns the value. The array must not be empty.
+      T minimum_value() const {
+         // If the array is empty, returns `data[0]`, which is OK but contains unspecified data.
+         return data_[ minimum() ];
+      }
+      /// \brief Find the minimum element in the array, returns the value. The array must not be empty.
+      T& minimum_value() {
+         return data_[ minimum() ];
+      }
+
+      /// \brief Find the maximum element in the array, returns the value. The array must not be empty.
+      T maximum_value() const {
+         return data_[ maximum() ];
+      }
+      /// \brief Find the maximum element in the array, returns the value. The array must not be empty.
+      T& maximum_value() {
+         return data_[ maximum() ];
       }
 
 
