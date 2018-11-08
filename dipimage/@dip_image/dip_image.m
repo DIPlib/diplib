@@ -2848,14 +2848,15 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
             if islogical(ind)
                error('Illegal indexing')
             elseif isa(ind,'dip_image')
-               if ndims(squeeze(ind))==0 %added for Piet (BR)
+               if ndims(squeeze(ind))==0 % Added for Piet (BR)
                   ind=double(ind);
                else
                   error('Illegal indexing');
                end
             end
             if isnumeric(ind)
-               ind = ind+1;
+               ind = ind(:)+1; % Linearized the indices, so the next line doesn't error. Output doesn't have the right shape anyway.
+                               % TODO: Make it so that the output has the same shape as the matrix `ind`.
                if any(ind > sz(ii)) || any(ind < 1)
                   error('Index exceeds image dimensions')
                end
