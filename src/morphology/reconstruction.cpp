@@ -72,21 +72,29 @@ void dip__MorphologicalReconstruction(
    JointImageIterator< TPI, TPI, bin > it( { c_in, c_out, c_done } );
    if( dilation ) {
       do {
-         it.Out() = std::min( it.Out(), it.In() );
+         if( it.Out() > it.In() ) {
+            it.Out() = it.In();
+            it.template Sample< 2 >() = true;
+         } else {
+            it.template Sample< 2 >() = false;
+         }
          if( it.Out() > minval ) {
             Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 2 >() } ); // offset pushed is that of `done`, so we can test it fast.
             //std::cout << " - Pushed " << it.Out();
          }
-         it.template Sample< 2 >() = false;
       } while( ++it );
    } else {
       do {
-         it.Out() = std::max( it.Out(), it.In() );
+         if( it.Out() < it.In() ) {
+            it.Out() = it.In();
+            it.template Sample< 2 >() = true;
+         } else {
+            it.template Sample< 2 >() = false;
+         }
          if( it.Out() < minval ) {
             Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 2 >() } ); // offset pushed is that of `done`, so we can test it fast.
             //std::cout << " - Pushed " << it.Out();
          }
-         it.template Sample< 2 >() = false;
       } while( ++it );
    }
 
@@ -99,42 +107,41 @@ void dip__MorphologicalReconstruction(
    while( !Q.empty() ) {
       dip::sint offsetDone = Q.top().offset;
       Q.pop();
-      if( !done[ offsetDone ] ) {
-         UnsignedArray coords = coordinatesComputer( offsetDone );
-         dip::sint offsetIn = c_in.Offset( coords );
-         dip::sint offsetOut = c_out.Offset( coords );
-         //std::cout << " - Popped " << offsetDone << " (" << out[ offsetOut ] << ")";
-         // Iterate over all neighbors
-         auto lit = neighborList.begin();
-         for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
-            if( lit.IsInImage( coords, imsz )) {
-               // Propagate this pixel's value to its unfinished neighbours
-               if( !done[ offsetDone + neighborOffsetsDone[ jj ]] ) {
-                  TPI newval = in[ offsetIn + neighborOffsetsIn[ jj ]];
-                  if( dilation ) {
-                     newval = std::min( newval, out[ offsetOut ] );
-                     if( out[ offsetOut + neighborOffsetsOut[ jj ]] < newval ) {
-                        out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
-                        // Add the updated neighbours to the heap
-                        Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
-                        //std::cout << " - Pushed " << newval;
-                     }
-                  } else {
-                     newval = std::max( newval, out[ offsetOut ] );
-                     if( out[ offsetOut + neighborOffsetsOut[ jj ]] > newval ) {
-                        out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
-                        // Add the updated neighbours to the heap
-                        Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
-                        //std::cout << " - Pushed " << newval;
-                     }
+      UnsignedArray coords = coordinatesComputer( offsetDone );
+      dip::sint offsetIn = c_in.Offset( coords );
+      dip::sint offsetOut = c_out.Offset( coords );
+      //std::cout << " - Popped " << offsetDone << " (" << out[ offsetOut ] << ")";
+      // Iterate over all neighbors
+      auto lit = neighborList.begin();
+      for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
+         if( lit.IsInImage( coords, imsz )) {
+            // Propagate this pixel's value to its unfinished neighbours
+            if( !done[ offsetDone + neighborOffsetsDone[ jj ]] ) {
+               TPI newval = in[ offsetIn + neighborOffsetsIn[ jj ]];
+               if( dilation ) {
+                  newval = std::min( newval, out[ offsetOut ] );
+                  if( out[ offsetOut + neighborOffsetsOut[ jj ]] < newval ) {
+                     out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
+                     // Add the updated neighbours to the heap
+                     Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
+                     //std::cout << " - Pushed " << newval;
+                  }
+               } else {
+                  newval = std::max( newval, out[ offsetOut ] );
+                  if( out[ offsetOut + neighborOffsetsOut[ jj ]] > newval ) {
+                     out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
+                     // Add the updated neighbours to the heap
+                     Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
+                     //std::cout << " - Pushed " << newval;
                   }
                }
             }
          }
-         // Mark this pixels done
-         done[ offsetDone ] = true;
       }
+      // Mark this pixels done
+      done[ offsetDone ] = true;
    }
+
 }
 
 } // namespace
@@ -165,6 +172,9 @@ void MorphologicalReconstruction (
    PixelSize pixelSize = c_in.PixelSize();
 
    // Prepare output image
+   if( out.Aliases( in )) {
+      out.Strip(); // We can work in-place if c_marker and out are the same image, but c_in must be separate from out.
+   }
    Convert( c_marker, out, in.DataType() );
    Image minval = dilation ? Minimum( out ) : Maximum( out ); // same data type as `out`
 
