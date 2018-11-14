@@ -52,6 +52,30 @@ struct DIP_NO_EXPORT Polygon;
 /// `out` must not be 0D.
 DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, UnsignedArray const& sizes = { 1 } );
 
+/// \brief Multiplies the image with a windowing function.
+///
+/// `type` can be one of the following windowing functions:
+///  - "Hamming": A cosine window. Set `parameter to 0.5 to get a Hann window, and to 0.53836 to get a Hamming window.
+///  - "Gaussian": A Gaussian window, this is the only one that is isotropic. `parameter` is the sigma, as a function
+///    of the image half-width. Choose a value smaller or equal to 0.5. At 0.5, 4 sigmas fit in the image width.
+///  - "Tukey": A rectangular window convolved with a Hann window. `parameter` is the fraction of image
+///    width occupied by the cosine lobe. If `parameter` is 1.0, it is a Hann window, if it is 0.0 it is a rectangular
+///    window.
+///  - "GaussianTukey": A rectangular window convolved with a Gaussian window. `parameter` is the sigma in pixels,
+///    a value of the order of 10 is a good choice. The rectangular window is of the size of the image minus 3 sigma
+///    on each edge.
+///    This is the only window where the tapering is independent of the image width, and thus equal along each image
+///    dimension even if the image is not square. If the image size along one dimension is too small to accomodate
+///    the window shape, a Gaussian window is created instead.
+///
+/// In all these cases, the window is applied to each dimension independently, meaning that the multi-dimensional
+/// window is the outer product of the 1D windows.
+DIP_EXPORT void ApplyWindow( Image const& in, Image& out, String const& type = "Hamming", dfloat parameter = 0.5 );
+inline Image ApplyWindow( Image const& in, String const& type = "Hamming", dfloat parameter = 0.5 ) {
+   Image out;
+   ApplyWindow( in, out, type, parameter );
+   return out;
+}
 
 /// \brief Draws a Bresenham line in an image.
 ///

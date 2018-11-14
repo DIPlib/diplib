@@ -106,6 +106,7 @@ generation/draw_discrete.cpp
 generation/draw_fourier.cpp
 generation/draw_support.h
 generation/noise.cpp
+generation/windowing.cpp
 geometry/interpolation.cpp
 geometry/interpolation.h
 geometry/resampleat.cpp

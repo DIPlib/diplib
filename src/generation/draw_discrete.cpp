@@ -20,39 +20,14 @@
 
 #include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/border.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/chain_code.h" // Polygon
+#include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/saturated_arithmetic.h"
 #include "draw_support.h"
 
 namespace dip {
-
-namespace {
-
-template< typename TPI >
-void dip__SetBorder( Image& out, Image::Pixel const& value, UnsignedArray const& sizes ) {
-   std::vector< TPI > value_;
-   CopyPixelToVector( value, value_, out.TensorElements() );
-   detail::ProcessBorders< TPI >(
-         out,
-         [ &value_ ]( auto* ptr, dip::sint tStride ) {
-            for( auto v : value_ ) {
-               *ptr = v;
-               ptr += tStride;
-            }
-         }, sizes );
-}
-
-} // namespace
-
-void SetBorder( Image& out, Image::Pixel const& value, UnsignedArray const& sizes ) {
-   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( out.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
-   DIP_OVL_CALL_ALL( dip__SetBorder, ( out, value, sizes ), out.DataType() );
-}
 
 
 //

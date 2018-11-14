@@ -311,7 +311,7 @@ void dip__BallBlurredEdge(
    dfloat norm = -1.0 / ( sigma * std::sqrt( 2.0 ));
    out += static_cast< dip::sint >( start ) * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
-      dfloat d = ( static_cast< dfloat >( jj ) - origin );
+      dfloat d = static_cast< dfloat >( jj ) - origin;
       d = std::sqrt( distance2 + d * d ) - radius;
       dfloat weight = 0.5 + 0.5 * std::erf( d * norm );
       dip::sint offset = 0;
@@ -345,7 +345,7 @@ void dip__BallBlurredLine(
    dfloat scale = -0.5 / ( sigma * sigma );
    out += static_cast< dip::sint >( start ) * stride;
    for( dip::sint jj = start; jj <= end; ++jj, out += stride ) {
-      dfloat d = ( static_cast< dfloat >( jj ) - origin );
+      dfloat d = static_cast< dfloat >( jj ) - origin;
       d = std::sqrt( distance2 + d * d ) - radius;
       dfloat weight = std::exp( d * d * scale );
       dip::sint offset = 0;
@@ -384,7 +384,7 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
          dfloat distance2 = 0;
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if( ii != dim ) {
-               dfloat d = ( static_cast< dfloat >( params.position[ ii ] ) - origin_[ ii ] );
+               dfloat d = static_cast< dfloat >( params.position[ ii ] ) - origin_[ ii ];
                distance2 += d * d;
             }
          }
