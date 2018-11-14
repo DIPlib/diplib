@@ -37,7 +37,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 if (NOT "cxx_generic_lambdas" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-   message(SEND_ERROR "Your compiler does not CMAKE_CXX_COMPILE_FEATURES generic lambdas. You need a compiler with full C++14 support to build DIPlib.")
+   message(SEND_ERROR "Your compiler does not support generic lambdas. You need a compiler with full C++14 support to build DIPlib.")
 endif()
 if (NOT "cxx_relaxed_constexpr" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
    message(SEND_ERROR "Your compiler does not support relaxed constexpr functions. You need a compiler with full C++14 support to build DIPlib.")
