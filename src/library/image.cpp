@@ -151,7 +151,7 @@ bool Image::CheckProperties(
       Option::ThrowException throwException
 ) const {
    if( sizes_ != sizes ) {
-      DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::DIMENSIONALITY_NOT_SUPPORTED );
+      DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::SIZES_DONT_MATCH );
       return false;
    }
    if( tensor_.Elements() != tensorElements ) {
@@ -174,7 +174,7 @@ bool Image::CheckIsMask(
    if( sizes_ != sizes ) {
       if( allowSingletonExpansion == Option::AllowSingletonExpansion::DO_ALLOW ) {
          if( IsSingletonExpansionPossible( sizes )) {
-            DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::MASK_DIMENSIONS_NOT_COMPATIBLE );
+            DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::MASK_SIZES_NOT_COMPATIBLE );
             return false;
          }
       } else {

@@ -164,7 +164,7 @@ constexpr char const* INCONSISTENT_COLORSPACE = "Image's number of tensor elemen
 // mask image properties errors
 constexpr char const* MASK_NOT_BINARY = "Mask image not binary";
 constexpr char const* MASK_NOT_SCALAR = "Mask image not scalar";
-constexpr char const* MASK_DIMENSIONS_NOT_COMPATIBLE = "Mask image dimensions not compatible";
+constexpr char const* MASK_SIZES_NOT_COMPATIBLE = "Mask image sizes not compatible";
 
 // measurement errors
 constexpr char const* MEASUREMENT_NOT_RAW = "Measurement object is not raw";
