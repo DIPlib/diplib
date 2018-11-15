@@ -172,7 +172,6 @@ Pure M-files:
 - `find_lambda`
 - `findlocalshift`
 - `findlocmax`
-- `fmmatch`
 - `frc`
 - `jpeg_quality_score`
 - `lfmse`

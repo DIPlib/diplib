@@ -64,6 +64,7 @@ analysis/chord_length.cpp
 analysis/corners.cpp
 analysis/distance_distribution.cpp
 analysis/findshift.cpp
+analysis/fouriermellin.cpp
 analysis/fractal_dimension.cpp
 analysis/granulometry.cpp
 analysis/lines.cpp

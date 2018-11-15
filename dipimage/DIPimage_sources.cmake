@@ -55,6 +55,7 @@ extendregion.cpp
 findmaxima.cpp
 findminima.cpp
 findshift.cpp
+fmmatch.cpp
 ft.cpp
 gabor.cpp
 gaussf_adap.cpp

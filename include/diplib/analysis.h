@@ -124,8 +124,8 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 /// cross-correlations is computed. The method is instead related to the "phase correlation"
 /// as proposed by Kuglin and Hines (1975), except that they divide by the modulus of each
 /// of the images in the Fourier Domain, instead of the square modulus of the first image
-/// as we do here. The difference is not important if the two images are obtained under
-/// identical circumstances.
+/// as we do here. This is computationally cheaper, and the difference is not important if
+/// the two images are obtained under identical circumstances.
 ///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image. Thus, for `in1==in2`, only this pixel will be set.
@@ -223,6 +223,8 @@ inline Image CrossCorrelationFT(
 ///    low SNR. `parameter` is passed unchanged to the ITER method. This method supports images with any number of
 ///    dimensions.
 ///
+/// `in1` and `in2` must be scalar images with the same dimensionality and sizes.
+///
 /// **Literature**
 ///  - C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
 ///    Delft University of Technology, The Netherlands, 1998.
@@ -235,6 +237,42 @@ DIP_EXPORT FloatArray FindShift(
       dfloat parameter = 0,
       UnsignedArray maxShift = {}
 );
+
+
+/// \brief Finds the scaling, translation and rotation between two 2D images using the Fourier Mellin transform
+///
+/// The output array represents a 2x3 affine transform matrix (in column-major order) that can be used as input
+/// to `dip::AffineTransform` to transform `in2` to match `in1`. `out` is the `in2` image transformed in this way.
+///
+/// The two images must be real-valued, scalar and two-dimensional, and have the same sizes.
+///
+/// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
+/// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
+/// ignored, nearest neighbor interpolation will be used.
+///
+/// Example:
+/// ```cpp
+///     dip::Image in1, in2, out;
+///     // assign to in1 and in2 two similar images
+///     auto T = FourierMellinMatch2D( in1, in2, out );
+///     // out is a transformed version of in2, as per
+///     dip::AffineTransform( in2, out, T );
+/// ```
+DIP_EXPORT FloatArray FourierMellinMatch2D(
+      Image const& in1,
+      Image const& in2,
+      Image& out,
+      String const& interpolationMethod = S::LINEAR
+);
+inline Image FourierMellinMatch2D(
+      Image const& in1,
+      Image const& in2,
+      String const& interpolationMethod = S::LINEAR
+) {
+   Image out;
+   FourierMellinMatch2D( in1, in2, out, interpolationMethod );
+   return out;
+}
 
 
 /// \brief Computes the structure tensor.
