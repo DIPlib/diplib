@@ -25,7 +25,7 @@ std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
    return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F >( func ));
 }
 
-int main( void ) {
+int main() {
 
    // Two large input images to do the computations on
 
@@ -43,33 +43,29 @@ int main( void ) {
 
    // --- Dyadic computation (two input images, one output image) ---
 
-   // Following example in documentation to `class VariadicScanLineFilter`. Does the computation
-   // using SFLOAT type, input images are converted to that type for computation.
+   // Trivial implementation, data-type agnostic.
 
    dip::testing::Timer timer;
-   auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) {
-      return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset ));
-   };
-   dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > diadicLineFilter( sampleOperator );
-   dip::Framework::ScanDyadic( in1, in2, out, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter );
+   out = ( in1 * 100.0f ) / ( in2 * 10.0f ) + offset;
+   // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
    timer.Stop();
-   std::cout << "diadicLineFilter: " << timer << std::endl;
+   std::cout << "trivial version: " << timer << std::endl;
 
-   // Idem, but with dynamic dispatch (i.e. does the computation in data type `dt`)
+   // Trivial implementation, but more efficient as we re-use memory
 
+   dip::Image tmp_in1 = in1.Copy(); // Copy in1 and in2 so we can modify them below
+   dip::Image tmp_in2 = in2.Copy();
    timer.Reset();
-   std::unique_ptr< dip::Framework::ScanLineFilter > diadicLineFilter2;
-   DIP_OVL_CALL_ASSIGN_REAL( diadicLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
-         [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset )); }
-   ), dt );
-   dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, *diadicLineFilter2 );
+   tmp_in1 *= 100;
+   tmp_in2 *= 10;
+   tmp_in1 /= tmp_in2;
+   tmp_in1 += offset;
    timer.Stop();
-   std::cout << "diadicLineFilter2: " << timer << std::endl;
-   dip::testing::CompareImages( out, tmp );
+   std::cout << "efficient trivial version: " << timer << std::endl;
+   dip::testing::CompareImages( out, tmp_in1 );
 
    // Implementation using an iterator. Does the computation in SFLOAT type.
 
-   tmp = 0; // reset to show we're really doing the computation
    timer.Reset();
    dip::JointImageIterator< dip::sfloat, dip::sfloat, dip::sfloat > it( { in1, in2, tmp } );
    it.OptimizeAndFlatten();
@@ -82,48 +78,81 @@ int main( void ) {
    std::cout << "JointImageIterator: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
 
-   // Trivial implementation of the same, data-type agnostic.
+   // Following example in documentation to `class VariadicScanLineFilter`. Does the computation
+   // using SFLOAT type, input images are converted to that type for computation.
 
    tmp = 0; // reset to show we're really doing the computation
    timer.Reset();
-   tmp = ( in1 * 100.0f ) / ( in2 * 10.0f ) + offset;
-   // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
+   auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) {
+      return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset ));
+   };
+   dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > diadicLineFilter( sampleOperator );
+   dip::Framework::ScanDyadic( in1, in2, tmp, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter );
    timer.Stop();
-   std::cout << "trivial version: " << timer << std::endl;
+   std::cout << "diadicLineFilter: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
 
-   dip::Image tmp_in1 = in1.Copy(); // Copy in1 and in2 so we can modify them below
-   dip::Image tmp_in2 = in2.Copy();
+   // Idem, but with dynamic dispatch (i.e. does the computation in data type `dt`)
 
+   tmp = 0; // reset to show we're really doing the computation
    timer.Reset();
-   tmp_in1 *= 100;
-   tmp_in2 *= 10;
-   tmp_in1 /= tmp_in2;
-   tmp_in1 += offset;
+   std::unique_ptr< dip::Framework::ScanLineFilter > diadicLineFilter2;
+   DIP_OVL_CALL_ASSIGN_REAL( diadicLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
+         [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset )); }
+   ), dt );
+   dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, *diadicLineFilter2 );
    timer.Stop();
-   std::cout << "efficient trivial version: " << timer << std::endl;
-   dip::testing::CompareImages( out, tmp_in1 );
+   std::cout << "diadicLineFilter2: " << timer << std::endl;
+   dip::testing::CompareImages( out, tmp );
 
    std::cout << std::endl;
 
    // --- Monadic computation (one input images, one output image) ---
 
-   // Following example in documentation to `class VariadicScanLineFilter`
+   // Trivial implementation
 
+   timer.Reset();
+   out = ( dip::Cos( in1 ) * 100.0f ) + offset;
+   // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
+   timer.Stop();
+   std::cout << "trivial version: " << timer << std::endl;
+
+   // Trivial implementation, but more efficient as we re-use memory
+
+   tmp_in1.Copy( in1 ); // Copy in1 so we can modify it below
+   timer.Reset();
+   dip::Cos( tmp_in1, tmp_in1 );
+   tmp_in1 *= 100;
+   tmp_in1 += offset;
+   timer.Stop();
+   std::cout << "efficient trivial version: " << timer << std::endl;
+   dip::testing::CompareImages( out, tmp_in1 );
+
+   // Implementation using an iterator. Does the computation in SFLOAT type.
+
+   timer.Reset();
+   dip::JointImageIterator< dip::sfloat, dip::sfloat > it1( { in1, tmp } );
+   it1.OptimizeAndFlatten();
+   do {
+      it1.Out() = std::cos( it1.In() ) * 100 + offset;
+      // Note that for tensor images, it is necessary to iterate over tensor elements here.
+      // The ScanDyadic function takes care of that, applying the same operation to each of the tensor elements.
+   } while( ++it1 );
+   timer.Stop();
+   std::cout << "JointImageIterator: " << timer << std::endl;
+   dip::testing::CompareImages( out, tmp );
+
+   // Following example in documentation to `class VariadicScanLineFilter` (using dynamic dispatch)
+
+   tmp = 0; // reset to show we're really doing the computation
    timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > monadicLineFilter;
    DIP_OVL_CALL_ASSIGN_REAL( monadicLineFilter, NewFilter, (
          [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( std::cos( *its[ 0 ] ) * 100 ) + offset ); }
    ), dt );
-   dip::Framework::ScanMonadic( in1, out, dt, dt, in1.TensorElements(), *monadicLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim );
+   dip::Framework::ScanMonadic( in1, tmp, dt, dt, in1.TensorElements(), *monadicLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim );
    timer.Stop();
    std::cout << "monadicLineFilter: " << timer << std::endl;
-
-   timer.Reset();
-   tmp = ( dip::Cos( in1 ) * 100.0f ) + offset;
-   // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
-   timer.Stop();
-   std::cout << "trivial version: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
 
    return 0;

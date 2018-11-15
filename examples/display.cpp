@@ -1,5 +1,5 @@
 /*
- * dip::viewer::ShowSimple() shows a 3-channel, UINT8 image as an RGB image on the screen.
+ * dip::viewer::ShowSimple() shows a UINT8 image with 1 or 3 channels as an RGB image on the screen.
  * This example program shows different ways to create such an image.
  *
  * It also shows some simple image manipulations: thresholding, labeling, and indexing using a mask image.
@@ -11,36 +11,26 @@
 #include "diplib/display.h"
 #include "dipviewer.h"
 
-dip::Image GreyToRGB( dip::Image const& in ) { // Assume `in` is a grey-value (scalar) image
-   // Create a new image so it has the right data type for ShowSimple
-   dip::Image out( in.Sizes(), 3, dip::DT_UINT8 );
-   // Copy the data over, repeating the single input sample for each of the three channels.
-   // Note that this can be done without initializing out, but then the input data type is used for `out`.
-   out.Copy( in.QuickCopy().ExpandSingletonTensor( 3 ));
-   return out;
-}
-
 int main() {
    try {
 
       // Read a 2D grey-value image
       auto grey = dip::ImageReadICS( DIP__EXAMPLES_DIR "/cermet.ics" );
-      // Convert to RGB, and show it
-      dip::Image coloredGrey = GreyToRGB( grey );
-      DIP_STACK_TRACE_THIS( dip::viewer::ShowSimple( coloredGrey ));
+      // Show it
+      DIP_STACK_TRACE_THIS( dip::viewer::ShowSimple( grey ));
 
       // Threshold
       auto bin = grey < 120;
       // Create an RGB image, paint the pixels selected by `bin` in red; show it
       dip::Image coloredBin( bin.Sizes(), 3, dip::DT_UINT8 );
       coloredBin.Fill( 0 );
-      coloredBin.At( bin )[ 0 ] = 255;
+      coloredBin.At( bin )[ 0 ] = 255; // assigning 255 to the first channel, the other channels remain 0
       DIP_STACK_TRACE_THIS( dip::viewer::ShowSimple( coloredBin ));
 
-      // Label the image, convert to RGB, and show it
+      // Label the image, and show it
       auto label = dip::Label( bin );
-      dip::Image coloredLabel = GreyToRGB( label );
-      DIP_STACK_TRACE_THIS( dip::viewer::ShowSimple( coloredLabel ));
+      dip::Image labelUInt8 = Convert( label, dip::DT_UINT8 );
+      DIP_STACK_TRACE_THIS( dip::viewer::ShowSimple( labelUInt8 ));
 
       // Apply the "label" color map, and show it again
       auto color1 = dip::ApplyColorMap( label, "label" );
