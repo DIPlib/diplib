@@ -101,7 +101,7 @@ class DIP_NO_EXPORT PixelTableOffsets {
       /// Returns the size of the bounding box of the neighborhood
       UnsignedArray const& Sizes() const { return sizes_; }
 
-      /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
+      /// Returns the coordinates of the top-left corner of the bounding box w.r.t. the origin of the neighborhood
       IntegerArray const& Origin() const { return origin_; }
 
       /// Returns the number of pixels in the neighborhood

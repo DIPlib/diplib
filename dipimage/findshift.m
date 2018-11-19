@@ -8,6 +8,7 @@
 %     'integer only': find integer shift only (nD)
 %     'cc': cross-correlation with sub-pixel location of peak (nD)
 %     'ncc': normalized cross-correlation with sub-pixel location (nD)
+%     'pc': phase correlation with sub-pixel location (nD)
 %     'cpf' or 'ffts': phase of normalized cross-correlation (2D only)
 %     'mts' or 'grs': gradient based (first order Taylor, 1D-3D)
 %     'iter': very accurate (iterative 'mts', 1D-3D)

@@ -152,6 +152,7 @@ constexpr char const* EVEN = "even";
 constexpr char const* ODD = "odd";
 constexpr char const* CONJ = "conj";
 constexpr char const* NORMALIZE = "normalize";
+constexpr char const* PHASE = "phase";
 constexpr char const* DONT_NORMALIZE = "don't normalize";
 constexpr char const* SMOOTH = "smooth";
 constexpr char const* FINITEDIFF = "finitediff";

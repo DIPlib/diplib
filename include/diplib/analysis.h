@@ -111,38 +111,40 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 
 /// \brief Calculates the cross-correlation between two images of equal size.
 ///
-/// The returned image is the cross-correlation normalized in such a way that only
-/// the phase information is of importance. The computation performed is
-/// `out = (%Conjugate(in1)*in2)/%SquareModulus(in1)` in the Fourier Domain
-/// (see `dip::Conjugate`, `dip::SquareModulus`).
-/// This results as a very sharp peak in the spatial domain. If `normalize` is set
-/// to `"don't normalize"`, the regular cross-correlation (not normalized by the square
-/// modulus) is returned.
+/// The `normalize` flag determines whether to compute the regular cross-correlation (`"don't normalize"`)
+/// or to normalize the frequency-domain inputs so that only the phase information is of importance
+/// (`"normalize"` or `"phase"`). This results as a very sharp peak in the spatial domain.
+/// Note that this normalization is not related to what is commonly referred to as "normalized cross-correlation",
+/// where the input images are whitened (in the spatial domain) before the cross-correlations is computed. The
+/// method is instead related to the "phase correlation" as proposed by Kuglin and Hines (1975).
 ///
-/// Note that this normalization is not related to what is commonly referred to as
-/// "normalized cross-correlation", where the input images are whitened before the
-/// cross-correlations is computed. The method is instead related to the "phase correlation"
-/// as proposed by Kuglin and Hines (1975), except that they divide by the modulus of each
-/// of the images in the Fourier Domain, instead of the square modulus of the first image
-/// as we do here. This is computationally cheaper, and the difference is not important if
-/// the two images are obtained under identical circumstances.
+/// When `normalize` is `"normalize"`, the computation performed in the Fourier Domain is
+/// `out = (in1*dip::Conjugate(in2))/dip::SquareModulus(in1)` (as per Luengo & van Vliet, 2000).
+///  (see `dip::Conjugate`, `dip::SquareModulus`).
+/// When `normalize` is set to `"phase"`, the computation is
+/// `out = (in1*dip::Conjugate(in2))/(dip::Modulus(in1)*dip::Modulus(in2))` (as per Kuglin & Hines, 1975).
+/// These two approaches are identical if the only difference between `in1` and `in2` is a shift, except that
+/// `"normalize"` is computationally cheaper than `"phase"`. If the images are obtained with different
+/// modalities, or if important differences exist in the images, the `"phase"` method might be the better choice.
 ///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image. Thus, for `in1==in2`, only this pixel will be set.
-/// See `dip::FindShift` with the `"NCC"` or `"CC"` method for localizing this peak.
+/// See `dip::FindShift` with the `"CC"`, `"NCC"` or `"PC"`  methods for localizing this peak.
 ///
 /// If `in1` or `in2` is already Fourier transformed, set `in1Representation` or `in2Representation`
 /// to `"frequency"`. Similarly, if `outRepresentation` is `"frequency"`, the output will not be
 /// inverse-transformed, so will be in the frequency domain.
 ///
-/// `in1` and `in2` must be scalar images with the same dimensionality and sizes.
-///
-/// `out` will be real-valued if `outRepresentation` is `"spatial"`, under the assumption that
-/// `in1` and `in2` are similar except for a shift.
+/// `in1` and `in2` must be scalar images with the same dimensionality and sizes. Spatial-domain
+/// images must be real-valued, and frequency-domain images are assumed (but not tested) to be
+/// conjugate-symmetric (i.e. be Fourier transforms of real-valued images).
+/// `out` will be real-valued if `outRepresentation` is `"spatial"`.
 ///
 /// **Literature**
 ///  - C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
 ///    Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
+///  - C.L. Luengo Hendriks and L.J. van Vliet, "Improving resolution to reduce aliasing in an undersampled image sequence",
+///    in: Proceedings of SPIE 3965:214–222, 2000.
 DIP_EXPORT void CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
@@ -191,8 +193,12 @@ inline Image CrossCorrelationFT(
 ///
 ///  - `"NCC"`: As `"CC"`, but using the normalized cross-correlation, which makes the peak much sharper
 ///    (Luengo Hendriks, 1998). This method works for any number of dimensions. `parameter` is ignored.
-///    See the notes in `dip::CrossCorrelationFT` regarding the normalization of the cross-correlation, which
-///    is not as what is commonly referred to as NCC.
+///    See the notes in `dip::CrossCorrelationFT` regarding the normalization of the cross-correlation using the
+///    `"normalize"` flag, which is not as what is commonly referred to as "normalized cross-correlation".
+///
+///  - `"PC"`: As `"CC"`, but using phase correlation. This method works for any number of dimensions.
+///    `parameter` is ignored. See the notes in `dip::CrossCorrelationFT` regarding the normalization of the
+///    cross-correlation using the `"phase"` flag.
 ///
 ///  - `"CPF"`: The CPF method (see Luengo Hendriks (1998), where it is called FFTS) uses the phase of the
 ///    cross-correlation (as calculated by `dip::CrossCorrelationFT`) to estimate the shift. `parameter` sets

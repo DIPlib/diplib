@@ -39,31 +39,42 @@ void CrossCorrelationFT(
 ) {
    DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in1.IsScalar() || !in2.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( in1.DataType().IsBinary() || in2.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in1.Sizes() != in2.Sizes(), E::SIZES_DONT_MATCH );
    DIP_START_STACK_TRACE
       Image in1FT;
       if( BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY )) {
+         DIP_THROW_IF( !in1.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          FourierTransform( in1, in1FT );
       } else {
          in1FT = in1.QuickCopy();
       }
       Image in2FT;
       if( BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY )) {
+         DIP_THROW_IF( !in1.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          FourierTransform( in2, in2FT );
       } else {
          in2FT = in2.QuickCopy();
       }
       DataType dt = in1FT.DataType();
       MultiplyConjugate( in1FT, in2FT, out, dt );
-      if( BooleanFromString( normalize, S::NORMALIZE, S::DONT_NORMALIZE )) {
+      if( normalize == S::NORMALIZE ) {
          if( in2FT.IsShared() ) {
             in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
          }
          SquareModulus( in1FT, in2FT );
          SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
+      } else if( normalize == S::PHASE ) {
+         Image tmp;
+         Modulus( in1FT, tmp );
+         SafeDivide( out, tmp, out, out.DataType() );
+         Modulus( in2FT, tmp );
+         SafeDivide( out, tmp, out, out.DataType() );
+      } else if( normalize != S::DONT_NORMALIZE ) {
+         DIP_THROW_INVALID_FLAG( normalize );
       }
       if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
-         FourierTransform( out, out, { "inverse", "real" } );
+         FourierTransform( out, out, { S::INVERSE, S::REAL } );
       }
    DIP_END_STACK_TRACE
 }
@@ -252,8 +263,9 @@ FloatArray FindShift_CC(
    UnsignedArray sizes = cross.Sizes();
    bool crop = false;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( sizes[ ii ] > maxShift[ ii ] ) {
-         sizes[ ii ] = 2 * maxShift[ ii ] + 1;
+      dip::uint maxSz = 2 * maxShift[ ii ] + 1;
+      if( sizes[ ii ] > maxSz ) {
+         sizes[ ii ] = maxSz;
          crop = true;
       }
    }
@@ -328,6 +340,8 @@ FloatArray FindShift(
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, true ));
    } else if( method == "NCC" ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::NORMALIZE, true ));
+   } else if( method == "PC" ) {
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::PHASE, true ));
    } else {
       Image in1 = c_in1.QuickCopy();
       Image in2 = c_in2.QuickCopy();
