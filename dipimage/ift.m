@@ -49,13 +49,9 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ift(in,options,process)
+function out = ift(in,options,varargin)
 if(nargin<2)
    options = {};
 end
 options = [options,{'inverse'}];
-if(nargin<3)
-   out = ft(in,options);
-else
-   out = ft(in,options,process);
-end
+out = filtering('ft',in,options,varargin{:});

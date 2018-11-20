@@ -3,7 +3,7 @@
 % This function works like PMD, but uses Gaussian derivatives instead.
 %
 % SYNOPSIS:
-%  outimage = pmd(in,iterations,K,lambda,g)
+%  outimage = pmd_gaussian(in,iterations,K,lambda,g)
 %
 % PARAMETERS:
 %  in:         Image with equal sampling rates in all dimensions
@@ -41,17 +41,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = pmd_gaussian(in,iterations,K,lambda,g)
-if nargin<5
-   g = 'Gauss';
-end
-if nargin<4
-   lambda = 0.25;
-end
-if nargin<3
-   K = 10;
-end
-if nargin<2
-   iterations = 5;
-end
-out = pmd(in,iterations,K,lambda,g,0); % Add a secret last parameter.
+function out = pmd_gaussian(varargin)
+out = filtering('pmd_gaussian',varargin{:});

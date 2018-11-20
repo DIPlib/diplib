@@ -35,4 +35,4 @@
 % limitations under the License.
 
 function out = hessian(varargin)
-out = compute_derivatives('hessian',varargin{:});
+out = filtering('hessian',varargin{:});

@@ -35,10 +35,10 @@
 %  gaussf, dx, dy, etc.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Derivative, which calls dip::GaussFIR,
-%  dip::GaussIIR, dip::GaussFT and dip::FiniteDifference.
+%  This function calls the DIPlib function dip::Derivative (which calls dip::GaussFIR,
+%  dip::GaussIIR, dip::GaussFT and dip::FiniteDifference) and dip::CreateGauss.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -53,3 +53,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = derivative(varargin)
+out = filtering('derivative',varargin{:});

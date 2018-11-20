@@ -50,7 +50,7 @@
 %  This function calls the DIPlib function dip::GaborIIR, dip::GaborFIR,
 %  and dip::CreateGabor.
 
-% (c)2018, Cris Luengo.
+% (c)2018-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -65,3 +65,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = gabor(varargin)
+out = filtering('gabor',varargin{:});

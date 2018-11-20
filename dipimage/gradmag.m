@@ -34,4 +34,4 @@
 % limitations under the License.
 
 function out = gradmag(varargin)
-out = compute_derivatives('gradmag',varargin{:});
+out = filtering('gradmag',varargin{:});

@@ -9,7 +9,7 @@
 % SEE ALSO:
 %  derivative
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -31,4 +31,4 @@ order = zeros(1,ndims(image_in));
 if length(order)>=3
    order(3) = 1;
 end
-image_out = derivative(image_in,order,sigma);
+image_out = filtering('derivative',image_in,order,sigma);

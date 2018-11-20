@@ -169,6 +169,7 @@ Pure M-files:
 - `correctshift`
 - `cpf`
 - `dpr`
+- `find_affine_trans`
 - `find_lambda`
 - `findlocalshift`
 - `findlocmax`
@@ -180,18 +181,17 @@ Pure M-files:
 - `morphscales`
 - `opticflow`
 - `orientationplot`
-- `quadraturetensor`
+- `quadraturetensor` (could be based on loggabor?)
 - `scale2rgb`
 - `scalespace`
 - `tikhonovmiller`
 - `wiener`
 
 Requiring C++ code:
-- `arcf`
+- `arcf`       (depends on `dip_arcfilter`)
 - `cal_readnoise`
 - `deblock`    (depends on `arcf`)
 - `distancebetweenpointsets`
-- `find_affine_trans`
 - `findospeaks`
 - `hybridf`    (depends on `arcf`)
 - `localshift`
@@ -204,8 +204,7 @@ Requiring C++ code:
 - `radoncircle`
 - `rotation3d`
 - `splitandmerge`
-- `structf`
-- `transform`
+- `structf`    (depends on `dip_arcfilter`)
 - `write_add`
 
 Interface to Rainer Heintzmann's 5D Viewer written in Java:

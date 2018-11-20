@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `closing` function
+ * This MEX-file implements the `asf` function
  *
  * (c)2018, Cris Luengo.
  *

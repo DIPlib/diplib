@@ -31,4 +31,4 @@
 % limitations under the License.
 
 function out = laplace(varargin)
-out = compute_derivatives('laplace',varargin{:});
+out = filtering('laplace',varargin{:});

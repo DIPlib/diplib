@@ -38,4 +38,4 @@
 % limitations under the License.
 
 function out = gradientvector(varargin)
-out = compute_derivatives('gradientvector',varargin{:});
+out = filtering('gradientvector',varargin{:});
