@@ -1,25 +1,23 @@
-%GRADIENTVECTOR   Gradient vector
+%DIVERGENCEVECTOR   Divergence of a vector field
 %
 % SYNOPSIS:
-%  image_out = gradientvector(image_in,sigma,method,boundary_condition,process,truncation)
+%  image_out = divergencevector(image_in,sigma,method,boundary_condition,process,truncation)
 %
-%  IMAGE_IN is a scalar image with N dimensions.
-%  IMAGE_OUT is a N-by-1 tensor image, where each image component
-%  is the Gaussian derivative along one dimensions. That is, each
-%  pixel contains the gradient vector of the image at that point.
+%  IMAGE_IN is a M-by-1 tensor image with N dimensions. M must be 2 or 3.
+%  IMAGE_OUT is a M-by-1 tensor image.
 %
-%  PROCESS determines along which dimensions to take the derivative.
-%  For the N-dimensional image above, if PROCESS==1, then the output
-%  is a scalar image with only the derivative along the first
-%  dimension.
+%  PROCESS determines along which dimensions to apply the operation.
+%  If A has N dimensions but only M tensor elements, and PROCESS has
+%  M unique elements, then the operation is correctly defined as
+%  M-dimensional divergence.
 %
 %  See DERIVATIVE for a description of the parameters and the defaults.
 %
-%  This function is identical to DIP_IMAGE/GRADIENT if IMAGE_IN is
+%  This function is identical to DIP_IMAGE/DIVERGENCE if IMAGE_IN is
 %  a DIP_IMAGE object.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Gradient.
+%  This function calls the DIPlib function dip::Divergence.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -37,5 +35,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = gradientvector(varargin)
-out = filtering('gradient',varargin{:});
+function out = divergencevector(varargin)
+out = filtering('divergence',varargin{:});

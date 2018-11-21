@@ -163,7 +163,15 @@ DerivativeArguments GetDerivativeArguments(
    return args;
 }
 
-void gradientvector( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
+void curl( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
+   auto args = GetDerivativeArguments( nrhs, prhs, in.Dimensionality() );
+   dip::Curl( in, out, args.sigmas, args.method, args.bc, args.process, args.truncation );
+}
+void divergence( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
+   auto args = GetDerivativeArguments( nrhs, prhs, in.Dimensionality() );
+   dip::Divergence( in, out, args.sigmas, args.method, args.bc, args.process, args.truncation );
+}
+void gradient( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
    auto args = GetDerivativeArguments( nrhs, prhs, in.Dimensionality() );
    dip::Gradient( in, out, args.sigmas, args.method, args.bc, args.process, args.truncation );
 }
@@ -456,8 +464,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          convolve( in, out, nrhs, prhs );
       } else if( function == "derivative" ) {
          derivative( in, out, nrhs, prhs );
-      } else if( function == "gradientvector" ) {
-         gradientvector( in, out, nrhs, prhs );
+      } else if( function == "curl" ) {
+         curl( in, out, nrhs, prhs );
+      } else if( function == "divergence" ) {
+         divergence( in, out, nrhs, prhs );
+      } else if( function == "gradient" ) {
+         gradient( in, out, nrhs, prhs );
       } else if( function == "gradmag" ) {
          gradmag( in, out, nrhs, prhs );
       } else if( function == "hessian" ) {

@@ -29,5 +29,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = gradient(in,varargin)
-out = gradientvector(in,varargin{:});
+function out = gradient(varargin)
+out = gradientvector(varargin{:});
