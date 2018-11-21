@@ -42,4 +42,4 @@
 % limitations under the License.
 
 function out = pmd_gaussian(varargin)
-out = filtering('pmd_gaussian',varargin{:});
+out = dip_filtering('pmd_gaussian',varargin{:});

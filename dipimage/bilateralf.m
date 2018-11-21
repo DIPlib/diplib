@@ -60,4 +60,4 @@
 % limitations under the License.
 
 function out = bilateralf(varargin)
-out = filtering('bilateralf',varargin{:});
+out = dip_filtering('bilateralf',varargin{:});

@@ -67,4 +67,4 @@
 % limitations under the License.
 
 function out = gabor(varargin)
-out = filtering('gabor',varargin{:});
+out = dip_filtering('gabor',varargin{:});

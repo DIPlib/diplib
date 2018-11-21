@@ -69,7 +69,7 @@ overlay.cpp
 paircorrelation.cpp
 pathopening.cpp
 perobjecthist.cpp
-private/filtering.cpp
+private/dip_filtering.cpp
 private/imagedisplay.cpp
 private/libraryinformation.cpp
 private/numberofthreads.cpp

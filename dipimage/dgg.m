@@ -39,4 +39,4 @@
 % limitations under the License.
 
 function out = dgg(varargin)
-out = filtering('dgg',varargin{:});
+out = dip_filtering('dgg',varargin{:});

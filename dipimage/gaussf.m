@@ -53,9 +53,9 @@
 function image_out = gaussf(image_in,sigma,method,varargin)
 % The code below looks a little silly, but it's an easy way to not parse input arguments twice.
 if nargin < 2
-   image_out = filtering('derivative',image_in);
+   image_out = dip_filtering('derivative',image_in);
 elseif nargin < 3
-   image_out = filtering('derivative',image_in,0,sigma);
+   image_out = dip_filtering('derivative',image_in,0,sigma);
 else
    if ~ischar(method) && ~isvector(method)
       error('METHOD argument must be a string');
@@ -63,5 +63,5 @@ else
    if ~strcmp(method,'best') && ~strcmp(method,'kernel')
       method = ['gauss',method];
    end
-   image_out = filtering('derivative',image_in,0,sigma,method,varargin{:});
+   image_out = dip_filtering('derivative',image_in,0,sigma,method,varargin{:});
 end

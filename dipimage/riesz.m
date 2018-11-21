@@ -24,4 +24,4 @@
 % limitations under the License.
 
 function out = riesz(varargin)
-out = filtering('riesz',varargin{:});
+out = dip_filtering('riesz',varargin{:});

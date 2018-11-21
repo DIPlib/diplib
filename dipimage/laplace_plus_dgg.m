@@ -34,4 +34,4 @@
 % limitations under the License.
 
 function out = laplace_plus_dgg(varargin)
-out = filtering('laplace_plus_dgg',varargin{:});
+out = dip_filtering('laplace_plus_dgg',varargin{:});

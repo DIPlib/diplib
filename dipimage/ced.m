@@ -55,4 +55,4 @@
 % limitations under the License.
 
 function out = ced(varargin)
-out = filtering('ced',varargin{:});
+out = dip_filtering('ced',varargin{:});

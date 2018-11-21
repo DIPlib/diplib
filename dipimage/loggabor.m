@@ -47,4 +47,4 @@
 % limitations under the License.
 
 function out = loggabor(varargin)
-out = filtering('loggabor',varargin{:});
+out = dip_filtering('loggabor',varargin{:});

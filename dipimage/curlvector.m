@@ -36,4 +36,4 @@
 % limitations under the License.
 
 function out = curlvector(varargin)
-out = filtering('curl',varargin{:});
+out = dip_filtering('curl',varargin{:});

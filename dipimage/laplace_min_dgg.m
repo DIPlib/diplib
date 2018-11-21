@@ -32,4 +32,4 @@
 % limitations under the License.
 
 function out = laplace_min_dgg(varargin)
-out = filtering('laplace_min_dgg',varargin{:});
+out = dip_filtering('laplace_min_dgg',varargin{:});

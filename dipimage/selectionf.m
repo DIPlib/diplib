@@ -46,4 +46,4 @@
 % limitations under the License.
 
 function out = selectionf(varargin)
-out = filtering('selectionf',varargin{:});
+out = dip_filtering('selectionf',varargin{:});

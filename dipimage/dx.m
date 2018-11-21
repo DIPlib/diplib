@@ -29,4 +29,4 @@ function image_out = dx(image_in,sigma)
 if nargin < 2, sigma = 1; end
 order = zeros(1,ndims(image_in));
 order(1) = 1;
-image_out = filtering('derivative',image_in,order,sigma);
+image_out = dip_filtering('derivative',image_in,order,sigma);

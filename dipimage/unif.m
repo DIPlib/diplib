@@ -43,4 +43,4 @@
 % limitations under the License.
 
 function out = unif(varargin)
-out = filtering('unif',varargin{:});
+out = dip_filtering('unif',varargin{:});

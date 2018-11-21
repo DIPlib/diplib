@@ -52,4 +52,4 @@
 % limitations under the License.
 
 function out = ft(varargin)
-out = filtering('ft',varargin{:});
+out = dip_filtering('ft',varargin{:});

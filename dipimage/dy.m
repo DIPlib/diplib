@@ -31,4 +31,4 @@ order = zeros(1,ndims(image_in));
 if length(order)>=2
    order(2) = 1;
 end
-image_out = filtering('derivative',image_in,order,sigma);
+image_out = dip_filtering('derivative',image_in,order,sigma);

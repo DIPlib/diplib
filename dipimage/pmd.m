@@ -45,4 +45,4 @@
 % limitations under the License.
 
 function out = pmd(varargin)
-out = filtering('pmd',varargin{:});
+out = dip_filtering('pmd',varargin{:});

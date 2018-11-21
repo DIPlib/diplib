@@ -36,4 +36,4 @@
 % limitations under the License.
 
 function out = divergencevector(varargin)
-out = filtering('divergence',varargin{:});
+out = dip_filtering('divergence',varargin{:});

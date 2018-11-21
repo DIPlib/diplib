@@ -40,4 +40,4 @@
 % limitations under the License.
 
 function out = varif(varargin)
-out = filtering('varif',varargin{:});
+out = dip_filtering('varif',varargin{:});

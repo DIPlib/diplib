@@ -80,4 +80,4 @@
 % limitations under the License.
 
 function out = convolve(varargin)
-out = filtering('convolve',varargin{:});
+out = dip_filtering('convolve',varargin{:});

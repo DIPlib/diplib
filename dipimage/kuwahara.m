@@ -42,4 +42,4 @@
 % limitations under the License.
 
 function out = kuwahara(varargin)
-out = filtering('kuwahara',varargin{:});
+out = dip_filtering('kuwahara',varargin{:});

@@ -32,4 +32,4 @@ order(1) = 1;
 if length(order)>=3
    order(3) = 1;
 end
-image_out = filtering('derivative',image_in,order,sigma);
+image_out = dip_filtering('derivative',image_in,order,sigma);

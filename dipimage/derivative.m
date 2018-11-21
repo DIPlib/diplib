@@ -55,4 +55,4 @@
 % limitations under the License.
 
 function out = derivative(varargin)
-out = filtering('derivative',varargin{:});
+out = dip_filtering('derivative',varargin{:});

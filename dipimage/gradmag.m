@@ -34,4 +34,4 @@
 % limitations under the License.
 
 function out = gradmag(varargin)
-out = filtering('gradmag',varargin{:});
+out = dip_filtering('gradmag',varargin{:});

@@ -42,4 +42,4 @@
 % limitations under the License.
 
 function out = percf(varargin)
-out = filtering('percf',varargin{:});
+out = dip_filtering('percf',varargin{:});

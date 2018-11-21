@@ -56,4 +56,4 @@
 % limitations under the License.
 
 function out = gaussf_adap_banana(varargin)
-out = filtering('gaussf_adap_banana',varargin{:});
+out = dip_filtering('gaussf_adap_banana',varargin{:});

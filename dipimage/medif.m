@@ -39,4 +39,4 @@
 % limitations under the License.
 
 function image_out = medif(image_in,varargin)
-filtering('percf',image_in,50,varargin{:});
+image_out = dip_filtering('percf',image_in,50,varargin{:});

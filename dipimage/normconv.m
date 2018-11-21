@@ -51,4 +51,4 @@
 % limitations under the License.
 
 function out = normconv(varargin)
-out = filtering('normconv',varargin{:});
+out = dip_filtering('normconv',varargin{:});

@@ -54,4 +54,4 @@ if(nargin<2)
    options = {};
 end
 options = [options,{'inverse'}];
-out = filtering('ft',in,options,varargin{:});
+out = dip_filtering('ft',in,options,varargin{:});

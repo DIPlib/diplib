@@ -38,4 +38,4 @@
 % limitations under the License.
 
 function out = gradientvector(varargin)
-out = filtering('gradient',varargin{:});
+out = dip_filtering('gradient',varargin{:});

@@ -72,4 +72,4 @@
 % limitations under the License.
 
 function out = gaussf_adap(varargin)
-out = filtering('gaussf_adap',varargin{:});
+out = dip_filtering('gaussf_adap',varargin{:});
