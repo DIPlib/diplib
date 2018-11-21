@@ -332,8 +332,10 @@ void Mean(
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionMeanDirectional, (), in.DataType() );
-   } else {
+   } else if( mode.empty() ) {
       DIP_OVL_NEW_ALL( lineFilter, ProjectionMean, (), in.DataType() );
+   } else {
+      DIP_THROW_INVALID_FLAG( mode );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
 }
