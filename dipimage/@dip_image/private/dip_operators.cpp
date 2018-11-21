@@ -62,7 +62,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image lhs = dml::GetImage( prhs[ 1 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
       dip::Image rhs;
       if( *ch == 'm' ) {
-         DIP_THROW_IF( nrhs != 2, "Wrong number of input arguments." );
+         DIP_THROW_IF( nrhs != ( ch[ 1 ] == 'p' ? 3 : 2 ), "Wrong number of input arguments." ); // pinv has an optional 2nd input argument
       } else {
          DIP_THROW_IF(( nrhs < 3 ) || ( nrhs > 4 ), "Wrong number of input arguments." );
          rhs = dml::GetImage( prhs[ 2 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
@@ -195,6 +195,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
                case 'o': // trace
                   dip::Trace( lhs, out );
                   break;
+               case 'p': { // pinv
+                  dip::dfloat tolerance = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 1e-7;
+                  dip::PseudoInverse( lhs, out, tolerance );
+                  break; }
                case 'A': // cos
                   dip::Cos( lhs, out );
                   break;

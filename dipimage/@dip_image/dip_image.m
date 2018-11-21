@@ -2046,12 +2046,12 @@ classdef dip_image
          out = dip_operators('x',lhs,rhs);
       end
 
-      function in = not(in)
+      function out = not(in)
          %NOT   Overload for unary operator ~
          if ~islogical(in)
             in = dip_image(in,'bin');
          end
-         in = dip_operators('m~',in);
+         out = dip_operators('m~',in);
       end
 
       function out = bitand(lhs,rhs)
@@ -2129,19 +2129,19 @@ classdef dip_image
          out = dip_operators('x',lhs,rhs);
       end
 
-      function in = bitcmp(in)
+      function out = bitcmp(in)
          %BITCMP   Bitwise complement for integer-valued images
          dt = class(in.Data);
          if ~isintclass(dt)
             error('BITCMP only defined for integer-valued images')
          end
-         in = dip_operators('m~',in);
+         out = dip_operators('m~',in);
       end
 
-      function in = uminus(in)
+      function out = uminus(in)
          %UMINUS   Overload for unary operator -
          %   For unsigned integer types, -A is the same as INTMAX(DATATYPE(A))-A.
-         in = dip_operators('m-',in);
+         out = dip_operators('m-',in);
       end
 
       function in = uplus(in)
@@ -2209,13 +2209,13 @@ classdef dip_image
          end
       end
 
-      function in = abs(in)
+      function out = abs(in)
          %ABS   Absolute value.
          %   See also DIP_IMAGE/HYPOT and DIP_IMAGE/NORM.
-         in = dip_operators('ma',in);
+         out = dip_operators('ma',in);
       end
 
-      function in = angle(in)
+      function out = angle(in)
          %ANGLE   Phase angle of complex values or angle of vector.
          %   ANGLE(C), with C a complex-valued image, returns the phase angle of the
          %   values in C.
@@ -2227,39 +2227,39 @@ classdef dip_image
          %   (azimuth), and THETA being the angle to the z-axis (inclination).
          %
          %   See also DIP_IMAGE/ATAN2.
-         in = dip_operators('mc',in);
+         out = dip_operators('mc',in);
       end
 
-      function in = phase(in)
+      function out = phase(in)
          %PHASE   Phase angle of complex values, alias to DIP_IMAGE/ANGLE.
-         in = dip_operators('mc',in);
+         out = dip_operators('mc',in);
       end
 
-      function in = round(in)
+      function out = round(in)
          %ROUND   Round to nearest integer.
          if isfloat(in)
-            in = dip_operators('md',in);
+            out = dip_operators('md',in);
          end
       end
 
-      function in = ceil(in)
+      function out = ceil(in)
          %CEIL   Round up.
          if isfloat(in)
-            in = dip_operators('me',in);
+            out = dip_operators('me',in);
          end
       end
 
-      function in = floor(in)
+      function out = floor(in)
          %FLOOR   Round down.
          if isfloat(in)
-            in = dip_operators('mf',in);
+            out = dip_operators('mf',in);
          end
       end
 
-      function in = fix(in)
+      function out = fix(in)
          %FIX   Round towards zero.
          if isfloat(in)
-            in = dip_operators('mg',in);
+            out = dip_operators('mg',in);
          end
       end
 
@@ -2275,29 +2275,29 @@ classdef dip_image
          end
       end
 
-      function in = isnan(in)
+      function out = isnan(in)
          %ISNAN   True for samples that are NaN.
-         in = dip_operators('mi',in);
+         out = dip_operators('mi',in);
       end
 
-      function in = isinf(in)
+      function out = isinf(in)
          %ISINF   True for samples that are +/- Inf.
-         in = dip_operators('mj',in);
+         out = dip_operators('mj',in);
       end
 
-      function in = isfinite(in)
+      function out = isfinite(in)
          %ISFINITE   True for samples that are not NaN nor Inf.
-         in = dip_operators('mk',in);
+         out = dip_operators('mk',in);
       end
 
-      function in = det(in)
+      function out = det(in)
          %DET   Determinant of a tensor image.
          %   DET(A) returns the determinant of the square tensors in the
          %   tensor image A.
-         in = dip_operators('ml',in);
+         out = dip_operators('ml',in);
       end
 
-      function in = inv(in)
+      function out = inv(in)
          %INV   Inverse of a square tensor image.
          %   INV(A) returns the inverse of A in the sense that INV(A)*A is equal
          %   to EYE(A). A must be a square matrix image.
@@ -2307,114 +2307,126 @@ classdef dip_image
          %   inverse, which also works for non-square matrices.
          %
          %   See also: DIP_IMAGE/PINV
-         in = dip_operators('mm',in);
+         out = dip_operators('mm',in);
       end
 
-      function in = norm(in)
+      function out = norm(in)
          %NORM   Computes the Eucledian norm of a vector image.
          %   NORM(V) returns the norm of the vectors in V.
-         in = dip_operators('mn',in);
+         out = dip_operators('mn',in);
       end
 
-      function in = trace(in)
+      function out = trace(in)
          %TRACE   Sum of the diagonal elements.
          %   TRACE(A) is the sum of the diagonal elements of the tensor image.
-         in = dip_operators('mo',in);
+         out = dip_operators('mo',in);
       end
 
-      function in = cos(in)
+      function out = pinv(varargin)
+         %PINV   Pseudoinverse or a tensor image
+         %   X = PINV(A,TOL)
+         %
+         %   X is of dimension A' and fullfills A*X*A = A, X*A*X = X. The computation
+         %   is based on SVD(A) and any singular values less than a TOL are treated
+         %   as zero.
+         %
+         %   See also: DIP_IMAGE/INV, DIP_IMAGE/SVD
+         out = dip_operators('mp',varargin{:});
+      end
+
+      function out = cos(in)
          %COS   Cosine.
-         in = dip_operators('mA',in);
+         out = dip_operators('mA',in);
       end
 
-      function in = sin(in)
+      function out = sin(in)
          %SIN   Sine.
-         in = dip_operators('mB',in);
+         out = dip_operators('mB',in);
       end
 
-      function in = tan(in)
+      function out = tan(in)
          %TAN   Tangent.
-         in = dip_operators('mC',in);
+         out = dip_operators('mC',in);
       end
 
-      function in = acos(in)
+      function out = acos(in)
          %ACOS   Inverse cosine.
-         in = dip_operators('mD',in);
+         out = dip_operators('mD',in);
       end
 
-      function in = asin(in)
+      function out = asin(in)
          %ASIN   Inverse sine.
-         in = dip_operators('mE',in);
+         out = dip_operators('mE',in);
       end
 
-      function in = atan(in)
+      function out = atan(in)
          %ATAN   Inverse tangent.
-         in = dip_operators('mF',in);
+         out = dip_operators('mF',in);
       end
 
-      function in = cosh(in)
+      function out = cosh(in)
          %COSH   Hyperbolic cosine.
-         in = dip_operators('mG',in);
+         out = dip_operators('mG',in);
       end
 
-      function in = sinh(in)
+      function out = sinh(in)
          %SINH   Hyperbolic sine.
-         in = dip_operators('mH',in);
+         out = dip_operators('mH',in);
       end
 
-      function in = tanh(in)
+      function out = tanh(in)
          %TANH   Hyperbolic tangent.
-         in = dip_operators('mI',in);
+         out = dip_operators('mI',in);
       end
 
-      function in = sqrt(in)
+      function out = sqrt(in)
          %SQRT   Square root.
-         in = dip_operators('m1',in);
+         out = dip_operators('m1',in);
       end
 
-      function in = exp(in)
+      function out = exp(in)
          %EXP   Base e power.
-         in = dip_operators('m2',in);
+         out = dip_operators('m2',in);
       end
 
-      function in = pow10(in)
+      function out = pow10(in)
          %POW10   Base 10 power.
-         in = dip_operators('m3',in);
+         out = dip_operators('m3',in);
       end
 
-      function in = pow2(in)
+      function out = pow2(in)
          %POW2   Base 2 power.
-         in = dip_operators('m4',in);
+         out = dip_operators('m4',in);
       end
 
-      function in = log(in)
+      function out = log(in)
          %LOG   Natural (base e) logarithm.
-         in = dip_operators('m5',in);
+         out = dip_operators('m5',in);
       end
 
-      function in = log10(in)
+      function out = log10(in)
          %LOG10   Base 10 logarithm.
-         in = dip_operators('m6',in);
+         out = dip_operators('m6',in);
       end
 
-      function in = log2(in)
+      function out = log2(in)
          %LOG2   Base 2 logarithm.
-         in = dip_operators('m7',in);
+         out = dip_operators('m7',in);
       end
 
-      function in = erf(in)
+      function out = erf(in)
          %ERF   Error function.
-         in = dip_operators('m!',in);
+         out = dip_operators('m!',in);
       end
 
-      function in = erfc(in)
+      function out = erfc(in)
          %ERFC   Complementary error function.
-         in = dip_operators('m@',in);
+         out = dip_operators('m@',in);
       end
 
-      function in = gammaln(in)
+      function out = gammaln(in)
          %GAMMALN   Logarithm of gamma function.
-         in = dip_operators('m#',in);
+         out = dip_operators('m#',in);
       end
 
       function res = atan2(y,x)
