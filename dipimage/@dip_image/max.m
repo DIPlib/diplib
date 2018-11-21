@@ -1,6 +1,9 @@
 %MAX   Get the first maximum in an image.
+%   VALUE = MAX(B) gets the value of the first maximum in image B. It
+%   works independently on each tensor element.
+%
 %   [VALUE,POSITION] = MAX(B) gets the value and postion of the first
-%   maximum in image B. It works independently on each tensor element.
+%   maximum in image B. This syntax is only valid for scalar images.
 %
 %   [VALUE,POSITION] = MAX(B,M) gets the value and postion of the first
 %   maximum in image B masked by M. M may be [] for no mask.
@@ -11,6 +14,7 @@
 %
 %   [VALUE,POSITION] = MAX(B,M,DIM) gets the value and position of
 %   the first maximum along dimension DIM. DIM is a single dimension.
+%   This syntax is also valid for tensor images.
 %
 %   VALUE = MAX(B,C) is the pixel-by-pixel maximum operator. It returns
 %   an image with each pixel the largest taken from B or C. C must not
@@ -40,3 +44,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function varargout = max(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_projection('max',varargin{:});

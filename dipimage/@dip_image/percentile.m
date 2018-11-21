@@ -17,8 +17,8 @@
 %   the 10th percentile over the pixel values along the third dimension (z).
 %   DIM can be an array with any number of dimensions. M can be [].
 %
-%   [VALUE,POSITION] = PERCENTILE(B,...) returns the position of the found
-%   values as well. With this syntax, DIM can specify just one dimension.
+%   [VALUE,POSITION] = PERCENTILE(B,P,M,DIM) returns the position of the found
+%   values as well. With this syntax, DIM must specify just one dimension.
 %
 %   VALUE = PERCENTILE(B,P,'tensor') works over the tensor elements, returning
 %   a scalar image of the same size as B.
@@ -43,3 +43,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function varargout = percentile(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_projection('percentile',varargin{:});

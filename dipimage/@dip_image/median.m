@@ -10,8 +10,8 @@
 %   the third dimension (z). DIM can be an array with any number of
 %   dimensions. M can be [].
 %
-%   [VALUE,POSITION] = MEDIAN(B,...) returns the position of the found values
-%   as well. With this syntax, DIM can specify just one dimension.
+%   [VALUE,POSITION] = MEDIAN(B,M,DIM) returns the position of the found values
+%   as well. With this syntax, DIM must specify just one dimension.
 %
 %   VALUE = MEDIAN(B,'tensor') works over the tensor elements, returning
 %   a scalar image of the same size as B.
@@ -37,6 +37,6 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function varargout = median(varargin)
+function varargout = median(in,varargin)
 varargout = cell(1,max(nargout,1));
-[varargout{:}] = percentile(varargin{1},50,varargin{2:end});
+[varargout{:}] = dip_projection('percentile',in,50,varargin{:});

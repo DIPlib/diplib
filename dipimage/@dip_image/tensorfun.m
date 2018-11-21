@@ -95,21 +95,21 @@ if strncmpi(fun,'im',2)
    end
    switch fun
       case 'imsum'
-         out = sum(in,'tensor');
+         out = dip_projection('sum',in,'tensor');
       case 'improd'
-         out = prod(in,'tensor');
+         out = dip_projection('prod',in,'tensor');
       case 'imor'
-         out = any(in,'tensor');
+         out = dip_projection('any',in,'tensor');
       case 'imand'
-         out = all(in,'tensor');
+         out = dip_projection('all',in,'tensor');
       case 'immax'
-         out = max(in,'tensor');
+         out = dip_projection('max',in,'tensor');
       case 'immin'
-         out = min(in,'tensor');
+         out = dip_projection('min',in,'tensor');
       case 'immean'
-         out = mean(in,'tensor');
+         out = dip_projection('mean',in,'tensor');
       case 'immedian'
-         out = median(in,'tensor');
+         out = dip_projection('median',in,'tensor');
       case 'imeq'
          indx = repmat({':'},1,ndims(in));
          base = in;
