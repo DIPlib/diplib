@@ -1,7 +1,7 @@
 %SHIFT   Shift an image using interpolation
 %
 % SYNOPSIS:
-%  image_out = shift(image_in, shift, interpolation_method, boundary_condition)
+%  image_out = shift(image_in,shift,interpolation_method,boundary_condition)
 %
 % PARAMETERS:
 %  shift: array containing a shift for each dimension
@@ -25,7 +25,7 @@
 %  boundary_condition = ''
 %
 % SEE ALSO:
-%  RESAMPLE, SKEW
+%  RESAMPLE, SKEW, WRAP
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

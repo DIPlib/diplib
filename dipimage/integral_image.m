@@ -1,14 +1,26 @@
-%CUMSUM   Cumulative sum of pixels.
-%   C = CUMSUM(B) returns an image with the same size as B, where each pixel
-%   is the cumulative sum of all pixels with equal or smaller indices in image
-%   B. That is, C(I,J) = SUM(B(0:I,0:J).
+%INTEGRAL_IMAGE   Compute the integral image.
 %
-%   C = CUMSUM(B,M) presumes that the pixels not selected by the mask image M are
-%   zero.
+% SYNOPSIS:
+%  image_out = integral_image(image_in,mask,process)
 %
-%   C = CUMSUM(B,M,DIM) performs the computation over the dimensions specified in
-%   DIM. DIM can be an array with any number of dimensions. M can be [].
-%   If DIM==1, then C(I,J) = SUM(B(0:I,J).
+% PARAMETERS:
+%  mask:    Any pixels not selected by the mask are presumed to be zero.
+%  process: Array specifying over which dimensions the integral is computed.
+%
+% DEFAULTS:
+%  mask = []
+%  process = [] (all dimensions are processed)
+%
+% EXAMPLE:
+%  img = readim;
+%  intim = integral_image(img);
+%  x = 10; y = 63;
+%  w = 92; h = 8;
+%  s1 = sum(img(x+(0:w-1),y+(0:h-1)))
+%  s2 = intim(x+w-1,y+h-1) + intim(x-1,y-1) - intim(x+w-1,y-1) - intim(x-1,y+h-1)
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::CumulativeSum.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -25,6 +37,3 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
-
-function out = cumsum(varargin)
-out = integral_image(varargin{:});

@@ -1,7 +1,7 @@
 %RESAMPLE   Shift and a scale an image using interpolation
 %
 % SYNOPSIS:
-%  image_out = resample(image_in, zoom, shift, interpolation_method, boundary_condition)
+%  image_out = resample(image_in,zoom,shift,interpolation_method,boundary_condition)
 %
 % PARAMETERS:
 %  zoom: array containing a zoom for each dimension

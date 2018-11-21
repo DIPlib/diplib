@@ -1,13 +1,20 @@
-%CIRCSHIFT   Shift image circularly.
-%   B = CIRCSHIFT(A,N) shifts the image by N(D) in each dimension D.
-%   N must be an array with integer values, and contain one value
-%   per image dimension. Positive shifts are to the right or down,
-%   negative shifts the other way. The image is assumed to have
-%   periodic boundary conditions.
+%WRAP   Wraps (circular shifts) an image
+%  Equivalent (but faster) to SHIFT with the 'nearest' interpolation method
+%  and the 'periodic' boundary condition.
 %
-%   See also WRAP, SHIFT, RESAMPLE
+% SYNOPSIS:
+%  image_out = wrap(image_in,shift)
+%
+% PARAMETERS:
+%  shift: array containing an integer shift for each dimension
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::Wrap.
+%
+% SEE ALSO:
+%  SHIFT, DIP_IMAGE/CIRCSHIFT
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)2010-2011, Cris Luengo
 %
@@ -22,6 +29,3 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
-
-function out = circshift(varargin)
-out = wrap(varargin{:});

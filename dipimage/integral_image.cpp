@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `circshift` function
+ * This MEX-file implements the 'integral_image' function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -20,21 +20,31 @@
  */
 
 #include "dip_matlab_interface.h"
-#include "diplib/geometry.h"
+#include "diplib/statistics.h"
 
-void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
-      DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 2 );
+      DML_MIN_ARGS( 1 );
+      DML_MAX_ARGS( 3 );
 
       dml::MatlabInterface mi;
-      dip::Image const in = dml::GetImage( prhs[ 0 ] );
+
+      dip::Image in;
+      dip::Image mask;
       dip::Image out = mi.NewImage();
 
-      dip::IntegerArray shift = dml::GetIntegerArray( prhs[ 1 ] );
+      in = dml::GetImage( prhs[ 0 ] );
+      if( nrhs > 1 ) {
+         mask = dml::GetImage( prhs[ 1 ] );
+      }
 
-      dip::Wrap( in, out, shift );
+      dip::BooleanArray process;
+      if( nrhs > 2 ) {
+         process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality() );
+      }
+
+      dip::CumulativeSum( in, mask, out, process );
 
       plhs[ 0 ] = dml::GetArray( out );
 
