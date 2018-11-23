@@ -196,7 +196,7 @@ class DIP_NO_EXPORT StructuringElement {
 
       /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
       /// parameter of the SE for all dimensions. A second argument specifies the shape.
-      StructuringElement( FloatArray const& params, String const& shape = S::ELLIPTIC ) : params_( params ) {
+      StructuringElement( FloatArray params, String const& shape = S::ELLIPTIC ) : params_( std::move( params )) {
          SetShape( shape );
       }
 
@@ -1443,11 +1443,12 @@ inline void OpeningByReconstruction(
       dip::uint connectivity = 0,
       StringArray const& boundaryCondition = {}
 ) {
-   DIP_START_STACK_TRACE
-      Erosion( in, out, se, boundaryCondition );
-      MorphologicalReconstruction( out, in, out, connectivity, S::DILATION );
-   DIP_END_STACK_TRACE
-
+   Image in_c = in;
+   if( out.Aliases( in_c )) {
+      out.Strip(); // Make sure we don't overwrite `in` in the first step
+   }
+   DIP_STACK_TRACE_THIS( Erosion( in_c, out, se, boundaryCondition ));
+   DIP_STACK_TRACE_THIS( MorphologicalReconstruction( out, in_c, out, connectivity, S::DILATION ));
 }
 inline Image OpeningByReconstruction(
       Image const& in,
@@ -1472,10 +1473,12 @@ inline void ClosingByReconstruction(
       dip::uint connectivity = 0,
       StringArray const& boundaryCondition = {}
 ) {
-   DIP_START_STACK_TRACE
-      Dilation( in, out, se, boundaryCondition );
-      MorphologicalReconstruction( out, in, out, connectivity, S::EROSION );
-   DIP_END_STACK_TRACE
+   Image in_c = in;
+   if( out.Aliases( in_c )) {
+      out.Strip(); // Make sure we don't overwrite `in` in the first step
+   }
+   DIP_STACK_TRACE_THIS( Dilation( in_c, out, se, boundaryCondition ));
+   DIP_STACK_TRACE_THIS( MorphologicalReconstruction( out, in_c, out, connectivity, S::EROSION ));
 }
 inline Image ClosingByReconstruction(
       Image const& in,

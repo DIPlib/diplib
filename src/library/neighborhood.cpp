@@ -43,6 +43,7 @@ dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
             pixelTable.AddWeights( kernel );
          DIP_END_STACK_TRACE
       }
+      DIP_THROW_IF( pixelTable.NumberOfPixels() == 0, "Custom kernel is empty" );
    } else {
       FloatArray sz = params_;
       DIP_START_STACK_TRACE

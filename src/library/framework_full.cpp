@@ -169,7 +169,7 @@ void Full(
       if( nThreads > 1 ) {
          dip::uint operations;
          DIP_STACK_TRACE_THIS( operations = nLines *
-               lineFilter.GetNumberOfOperations( lineLength, input.TensorElements(), pixelTable.NumberOfPixels(), pixelTable.Runs().size() ));
+               lineFilter.GetNumberOfOperations( lineLength, input.TensorElements(), pixelTableOffsets.NumberOfPixels(), pixelTableOffsets.Runs().size() ));
          // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
          if( operations < threadingThreshold ) {
             nThreads = 1;

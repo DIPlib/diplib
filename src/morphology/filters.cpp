@@ -485,8 +485,10 @@ void HitAndMiss(
    }
    if( constrained ) {
       // Constrained HMT
-      Image ero = Erosion( in, hit, boundaryCondition );
-      Image dil = Dilation( in, miss, boundaryCondition );
+      Image ero;
+      DIP_STACK_TRACE_THIS( ero = Erosion( in, hit, boundaryCondition ));
+      Image dil;
+      DIP_STACK_TRACE_THIS( dil = Dilation( in, miss, boundaryCondition ));
       DataType dt = in.DataType();
       std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
       DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewTriadicScanLineFilter, (
@@ -503,14 +505,15 @@ void HitAndMiss(
                return static_cast< decltype( *its[ 0 ] ) >( 0 );
             } ), dt );
       ImageRefArray outar{ out };
-      Framework::Scan( { in, ero, dil }, outar, { dt, dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter );
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in, ero, dil }, outar, { dt, dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter ));
    } else {
       // Unconstrained HMT
-      Image dil = Dilation( in, miss, boundaryCondition );
-      Erosion( in, out, hit, boundaryCondition );
+      Image dil;
+      DIP_STACK_TRACE_THIS( dil = Dilation( in, miss, boundaryCondition ));
+      DIP_STACK_TRACE_THIS( Erosion( in, out, hit, boundaryCondition ));
       out -= dil;
       if( out.DataType().IsSigned() ) {
-         ClipLow( out, out, 0 ); // set negative values to 0.
+         DIP_STACK_TRACE_THIS( ClipLow( out, out, 0 )); // set negative values to 0.
       } // If `out` is an unsigned type, the subtractions above are saturated, negative values automatically become 0.
    }
 }

@@ -169,13 +169,14 @@ void MorphologicalReconstruction (
    // at the same data, but we can strip the output image without destroying
    // the input pixel data.
    Image in = c_in.QuickCopy();
-   PixelSize pixelSize = c_in.PixelSize();
+   Image marker = c_marker.QuickCopy();
+   PixelSize pixelSize = c_in.HasPixelSize() ? c_in.PixelSize() : c_marker.PixelSize();
 
    // Prepare output image
    if( out.Aliases( in )) {
       out.Strip(); // We can work in-place if c_marker and out are the same image, but c_in must be separate from out.
    }
-   Convert( c_marker, out, in.DataType() );
+   DIP_STACK_TRACE_THIS( Convert( marker, out, in.DataType() ));
    Image minval = dilation ? Minimum( out ) : Maximum( out ); // same data type as `out`
 
    // Intermediate image
@@ -191,6 +192,8 @@ void MorphologicalReconstruction (
    DIP_OVL_CALL_NONCOMPLEX( dip__MorphologicalReconstruction, ( in, out, done,
          neighborOffsetsIn, neighborOffsetsOut, neighborOffsetsDone, neighborList,
          minval, dilation ), in.DataType() );
+
+   out.SetPixelSize( pixelSize );
 }
 
 void LimitedMorphologicalReconstruction(

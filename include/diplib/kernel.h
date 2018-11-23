@@ -152,7 +152,7 @@ class DIP_NO_EXPORT Kernel {
 
       /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel, given the dimensionality
       /// `nDim`. Pixel table runs will be along dimension `procDim`.
-      dip::PixelTable PixelTable( dip::uint nDims, dip::uint procDim ) const;
+      DIP_EXPORT dip::PixelTable PixelTable( dip::uint nDims, dip::uint procDim ) const;
 
       /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing required
       /// boundary extension, use `Boundary` instead.
