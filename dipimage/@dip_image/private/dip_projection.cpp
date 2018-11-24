@@ -134,7 +134,7 @@ void MaxMinProjection(
    }
 }
 
-void PercentileProjectionTensor( dip::Image& in, int nlhs, mxArray** plhs, int nrhs, mxArray const** prhs ) {
+void PercentileProjectionTensor( dip::Image& in, mxArray** plhs, int nrhs, mxArray const** prhs ) {
    DML_MIN_ARGS( 1 );
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
@@ -218,7 +218,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          }
       } else if( function == "percentile" ) {
          if( doTensor ) {
-            PercentileProjectionTensor( in, nlhs, plhs, nrhs, prhs );
+            PercentileProjectionTensor( in, plhs, nrhs, prhs );
          } else {
             PercentileProjection( in, nlhs, plhs, nrhs, prhs );
          }

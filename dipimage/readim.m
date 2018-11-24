@@ -55,7 +55,7 @@
 % SEE ALSO:
 %  writeim, readics, readtiff, imread, readtimeseries
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -127,19 +127,19 @@ function [image,file_info] = readim_core(filename,format)
 
 switch upper(format)
   case 'ICS'
-     [image,file_info] = readics(filename);
+     [image,file_info] = dip_fileio('readics',filename);
   case 'TIFF'
-     [image,file_info] = readtiff(filename);
+     [image,file_info] = dip_fileio('readtiff',filename);
   case 'BIOFORMATS'
      [image,file_info] = bfread(filename);
   case ''
      % If no format is given, try each of the readers in turn
      try
-        [image,file_info] = readics(filename);
+        [image,file_info] = dip_fileio('readics',filename);
         return
      end
      try
-        [image,file_info] = readtiff(filename);
+        [image,file_info] = dip_fileio('readtiff',filename);
         return
      end
      try

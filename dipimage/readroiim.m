@@ -124,17 +124,17 @@ error('Could not open the file for reading')
 function [image,file_info] = readroiim_core(filename,origin,sizes,spacing,format)
 switch format
   case 'ICS'
-     [image,file_info] = readics(filename,origin,sizes,spacing);
+     [image,file_info] = dip_fileio('readics',filename,origin,sizes,spacing);
   case 'TIFF'
-     [image,file_info] = readtiff(filename,0,origin,sizes,spacing);
+     [image,file_info] = dip_fileio('readtiff',filename,0,origin,sizes,spacing);
   case ''
      % If no format is given, try each of the readers in turn
      try
-        [image,file_info] = readics(filename,origin,sizes,spacing);
+        [image,file_info] = dip_fileio('readics',filename,origin,sizes,spacing);
         return
      end
      try
-        [image,file_info] = readtiff(filename,0,origin,sizes,spacing);
+        [image,file_info] = dip_fileio('readtiff',filename,0,origin,sizes,spacing);
         return
      end
      error('The file is not an ICS or TIFF file')

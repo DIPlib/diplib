@@ -40,7 +40,7 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::ImageReadTIFFSeries.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -111,13 +111,13 @@ if M==1
    if range==[0,0]
       range = [0,-1];
    end
-   out = readtiff(fns{1},range);
+   out = dip_fileio('readtiff',fns{1},range);
 else
    if verbose
       disp('Reading the following files:');
       disp(char(fns(:)));
    end
-   out = readtiffseries(fns);
+   out = dip_fileio('readtiffseries',fns);
 end
 if ~color
    out = colorspace(out,'grey');

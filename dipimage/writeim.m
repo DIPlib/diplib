@@ -26,7 +26,7 @@
 % SEE ALSO:
 %  readim, writeics, writetiff, imwrite
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -81,12 +81,16 @@ if isempty(ext)
    end
 end
 
+if ~isa(image,'dip_image')
+   image = dip_image(image); % So that DATATYPE and COLORSPACE work
+end
+
 % Write
 switch upper(format)
   case 'ICSV1'
-      writeics(image,filename,{},0,{'v1','fast'});
+      dip_fileio('writeics',image,filename,{},0,{'v1','fast'});
   case 'ICSV2'
-      writeics(image,filename);
+      dip_fileio('writeics',image,filename);
   case 'TIFF'
      if dipgetpref('FileWriteWarning')
         warning('You are writing a ZIP compressed TIFF. Older image viewers may not be able to read this compression.');
@@ -95,12 +99,14 @@ switch upper(format)
            warning(['You are writing a ',dt,' TIFF. This is not supported by most image viewers.'])
         end
      end
-     writetiff(image,filename);
+     dip_fileio('writetiff',image,filename);
   otherwise
      % For any other format, relay to MATLAB's built-in file writing
      warning('Converting the image to uint8 for writing using MATLAB''s imwrite function')
      if iscolor(image)
         image = colorspace(image,'rgb');
+     end
+     if ~isscalar(image)s
         image = tensortospatial(image,ndims(image)+1);
      end
      image = uint8(image);

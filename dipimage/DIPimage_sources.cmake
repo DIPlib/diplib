@@ -49,19 +49,17 @@ nonmaximumsuppression.cpp
 overlay.cpp
 paircorrelation.cpp
 perobjecthist.cpp
+private/dip_fileio.cpp
 private/dip_filtering.cpp
 private/dip_morphology.cpp
 private/imagedisplay.cpp
 private/libraryinformation.cpp
 private/numberofthreads.cpp
-private/readtiffseries.cpp
 psf.cpp
 radialmax.cpp
 radialmean.cpp
 radialmin.cpp
 radialsum.cpp
-readics.cpp
-readtiff.cpp
 resample.cpp
 rotation.cpp
 select.cpp
@@ -77,6 +75,4 @@ threshold.cpp
 traceobjects.cpp
 vdt.cpp
 wrap.cpp
-writeics.cpp
-writetiff.cpp
 )
