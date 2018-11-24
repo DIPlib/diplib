@@ -32,10 +32,10 @@ void ApplyBinaryBorderMask( Image& out, uint8 const borderMask ) {
    detail::ProcessBorders< bin, true, true >(
          out,
          [ borderMask ]( bin* ptr, dip::sint ) { // Set border mask bits within the border
-            SetBits( static_cast< uint8& >( *ptr ), borderMask );
+            SetBits( *reinterpret_cast< uint8* >( ptr ), borderMask );
          },
          [ borderMask ]( bin* ptr, dip::sint ) { // Reset border mask bits elsewhere
-            ResetBits( static_cast< uint8& >( *ptr ), borderMask );
+            ResetBits( *reinterpret_cast< uint8* >( ptr ), borderMask );
          } );
 }
 
@@ -46,7 +46,7 @@ void ClearBinaryBorderMask( Image& out, uint8 const borderMask ) {
    detail::ProcessBorders< bin >(
          out,
          [ borderMask ]( auto* ptr, dip::sint ) { // Reset border mask bits within the border
-            ResetBits( static_cast< uint8& >( *ptr ), borderMask );
+            ResetBits( *reinterpret_cast< uint8* >( ptr ), borderMask );
          } );
 }
 
@@ -101,7 +101,7 @@ void FindBinaryEdgePixels(
    ImageIterator< bin > itImage( in );
    itImage.OptimizeAndFlatten(); // we get coordinates from the offset, this is not affected by the flattening.
    do {
-      uint8& pixelByte = static_cast< uint8& >( *itImage );
+      uint8 pixelByte = static_cast< uint8 >( *itImage );
       bool isObjectPixel = TestAnyBit( pixelByte, dataMask );   // Does pixel have non-zero data value, i.e., is it part of the object and not the background?
       // Check if the pixel is of the correct type: object or background
       if( isObjectPixel == findObjectPixels ) {

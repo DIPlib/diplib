@@ -55,8 +55,9 @@ void BinaryPropagation(
    DIP_STACK_TRACE_THIS( outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Make out equal to inMask
-   Image inMask = c_inMask; // temporary copy of input image headers, so we can strip/reforge out
-   Image inSeed = c_inSeed;
+   Image inMask = c_inMask.QuickCopy(); // temporary copy of input image headers, so we can strip/reforge out
+   Image inSeed = c_inSeed.QuickCopy();
+   PixelSize pixelSize = inSeed.HasPixelSize() ? inSeed.PixelSize() : inMask.PixelSize();
    if( out.Aliases( inMask )) { // make sure we don't overwrite the mask image
       out.Strip();
    }
@@ -68,11 +69,7 @@ void BinaryPropagation(
    } else {
       out = 0; // No seed data means: initialize all samples with false
    }
-   if( inSeed.HasPixelSize() ) {
-      out.SetPixelSize( inSeed.PixelSize() );
-   } else {
-      out.SetPixelSize( inMask.PixelSize() );
-   }
+   out.SetPixelSize( pixelSize );
 
    // Zero iterations means: continue until propagation is done
    if( iterations == 0 ) {
@@ -93,8 +90,9 @@ void BinaryPropagation(
    JointImageIterator< dip::bin, dip::bin > itInMaskOut( { inMask, out } );
    itInMaskOut.OptimizeAndFlatten();
    do {
-      if ( itInMaskOut.In() )
-         SetBits( static_cast< uint8& >( itInMaskOut.Out() ), maskBitmask );
+      if( itInMaskOut.In() ) {
+         SetBits( *reinterpret_cast< uint8* >( itInMaskOut.OutPointer() ), maskBitmask );
+      }
    } while( ++itInMaskOut );
 
    // The edge pixel queue
@@ -120,7 +118,7 @@ void BinaryPropagation(
    dip::uint count = edgePixels.size();
    for( dip::uint jj = 0; jj < count; ++jj ) {
       dip::bin* pPixel = edgePixels.front();
-      uint8& pixelByte = static_cast< uint8& >( *pPixel );
+      uint8& pixelByte = *reinterpret_cast< uint8* >( pPixel );
       if(( pixelByte & maskOrSeedBitmask ) == maskBitmask ) {
          SetBits( pixelByte, seedBitmask );
          edgePixels.push_back( pPixel );
@@ -144,7 +142,7 @@ void BinaryPropagation(
          // Get front pixel from the queue
          dip::bin* pPixel = edgePixels.front();
          edgePixels.pop_front();
-         uint8& pixelByte = static_cast< uint8& >( *pPixel );
+         uint8& pixelByte = *reinterpret_cast< uint8* >( pPixel );
          bool isBorderPixel = TestAnyBit( pixelByte, borderBitmask );
 
          // Propagate to all neighbours which are not yet processed
@@ -152,7 +150,7 @@ void BinaryPropagation(
          for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
             if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast< dip::bin* >( out.Origin() )), out.Sizes() ) ) { // IsInImage() is not evaluated for non-border pixels
                dip::bin* pNeighbor = pPixel + *itNeighborOffset;
-               uint8& neighborByte = static_cast< uint8& >( *pNeighbor );
+               uint8& neighborByte = *reinterpret_cast< uint8* >( pNeighbor );
                //bool neighborIsObject = neighborByte & dataBitmask;
                // If the neighbor has the mask-bit (means: propagation allowed)
                // but not the seed-bit (means: not yet processed),

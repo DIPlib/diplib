@@ -184,7 +184,7 @@ void EuskSetFromPlane(
       for( dip::sint jj = 0; jj < sizey; ++jj ) {
          uint8* pim = pimb + jj * strideY + kk * strideZ;
          for( dip::sint ii = 0; ii < sizex; ++ii ) {
-            *pim = *pim & mi;
+            *pim = ( *pim & mi ) != 0;
             pim += strideX;
          }
       }
