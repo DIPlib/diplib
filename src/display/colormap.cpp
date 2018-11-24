@@ -1693,10 +1693,6 @@ void Overlay(
       out.Strip();
    }
    Image in = c_in;
-   if( in.DataType().IsBinary() ) {
-      Convert( in, out, DT_UINT8 );
-      in *= 255;
-   }
    if( overlay.DataType().IsUInt() || !in.IsScalar() || !color.IsScalar() ) {
       // This code is not run in the case that `overlay` is binary, and `in` and `color` are scalar. In this case,
       //    we create a grey-value output.
@@ -1709,7 +1705,12 @@ void Overlay(
          in.SetColorSpace( "RGB" );
       }
    }
-   out.Copy( in );
+   if( in.DataType().IsBinary() ) {
+      Convert( in, out, DT_UINT8 );
+      out *= 255;
+   } else {
+      Copy( in, out );
+   }
    if( overlay.DataType().IsBinary() ) {
       // A binary overlay
       DIP_THROW_IF( !color.IsScalar() && ( color.TensorElements() != 3 ), "Color must have 1 or 3 tensor elements" );
