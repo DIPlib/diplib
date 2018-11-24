@@ -29,7 +29,7 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::AreaOpening.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -42,3 +42,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = areaopening(varargin)
+out = dip_morphology('areaopening',varargin{:});

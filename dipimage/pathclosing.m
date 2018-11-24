@@ -1,15 +1,13 @@
-%ENTROPY   Computes the entropy (in bits) of an image
+%PATHCLOSING   Path closing or opening
 %
 % SYNOPSIS:
-%  image_out = entropy(image_in, nBin)
+%  image_out = pathclosing(image_in,filterParams,polarity,mode)
 %
-% DEFAULT:
-%  nBin = 256;
-%
-% DIPlib:
-%  This function calls the DIPlib function dip::Entropy.
+% See PATHOPENING for documentation. This function is identical but has
+% POLARITY set to 'closing' by default.
 
 % (c)2017-2018, Cris Luengo.
+% Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,3 +21,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = pathopening(varargin)
+out = dip_morphology('pathclosing',varargin{:});

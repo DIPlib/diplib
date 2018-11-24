@@ -1,4 +1,4 @@
-%PATHOPENING   Path opening and closing
+%PATHOPENING   Path opening or closing
 %
 % SYNOPSIS:
 %  image_out = pathopening(image_in,filterParams,polarity,mode)
@@ -77,3 +77,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = pathopening(varargin)
+out = dip_morphology('pathopening',varargin{:});

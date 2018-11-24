@@ -19,7 +19,7 @@
 %                      See HELP BOUNDARY_CONDITION
 %
 % DEFAULTS:
-%  size_range = [3, 7, 2]
+%  size_range = [3,7,2]
 %  filter_shape = 'elliptic'
 %  filter_type = 'structural'
 %  polarity = 'open-close'
@@ -42,3 +42,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = asf(varargin)
+out = dip_morphology('asf',varargin{:});

@@ -15,7 +15,7 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::ErfClip.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

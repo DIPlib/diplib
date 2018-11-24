@@ -435,7 +435,7 @@ void ft( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] 
    dip::FourierTransform( in, out, options, process );
 }
 
-void riesz( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
+void riesz( dip::Image const& in, dip::Image& out, int nrhs ) {
    DML_MAX_ARGS( 0 );
    dip::RieszTransform( in, out );
 }
@@ -515,7 +515,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       } else if( function == "ft" ) {
          ft( in, out, nrhs, prhs );
       } else if( function == "riesz" ) {
-         riesz( in, out, nrhs, prhs );
+         riesz( in, out, nrhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );

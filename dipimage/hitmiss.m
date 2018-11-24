@@ -51,7 +51,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = hitmiss(in,se)
-tmp1 = ~dilation(in,se==0);
-tmp2 = erosion(in,se==1);
-out = tmp1 & tmp2;
+function out = hitmiss(varargin)
+out = dip_morphology('hitmiss',varargin{:});

@@ -20,7 +20,8 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::HMaxima.
 
-% (c)2013, 2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
+% Based on original DIPimage code: (c)2013, Cris Luengo.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -33,3 +34,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = hmaxima(varargin)
+out = dip_morphology('hmaxima',varargin{:});
