@@ -28,7 +28,6 @@ set(BUILD_SHARED_LIBS ${DIP_SHARED_LIBRARY})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT share/doc/DIPlib)
 set(DIPIMAGE_INSTALL_PATH share/DIPimage)
-set(PYDIP_INSTALL_PATH lib/PyDIP)
 
 # Compiler flags
 set(CMAKE_CXX_STANDARD 14)
@@ -140,6 +139,7 @@ find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION})
 
 if(PYTHONLIBS_FOUND)
    set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
+   set(PYDIP_INSTALL_PATH ${PYTHON_SITE_PACKAGES}/PyDIP CACHE PATH "PyDIP install path")
 endif()
 
 if(DIP_BUILD_PYDIP)
@@ -334,7 +334,7 @@ endif()
 
 if(DIP_BUILD_PYDIP)
    message(" * PyDIP module added to 'all' target")
-   message(" * PyDIP installed to: ${CMAKE_INSTALL_PREFIX}/${PYDIP_INSTALL_PATH}")
+   message(" * PyDIP installed to: ${PYDIP_INSTALL_PATH}")
 else()
    message(" * PyDIP module not configured")
 endif()

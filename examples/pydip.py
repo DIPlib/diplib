@@ -5,13 +5,7 @@
 # You will need to close the windows when exiting the interactive
 # session (either before or after ^D, doesn't matter).
 
-import sys, os, threading, code, time
-
-# Modify the path here to point to where you installed PyDIP:
-# TODO: we need to install PyDIP to a place where Python will find it.
-dipdir = os.getcwd() + '/../target/dip/lib'
-sys.path.append( dipdir )
-
+import threading, code, time
 import PyDIP as dip
 
 

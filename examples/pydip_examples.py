@@ -1,5 +1,3 @@
-import sys
-sys.path.append('/Users/cris/newdip/target/dip/lib') # Adjust to where you've installed PyDIP
 import PyDIP as dip
 
 ###
