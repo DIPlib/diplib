@@ -13,7 +13,7 @@
 %    - 'MAE':          Mean absolute error
 %    - 'IDivergence':  I-divergence measure from Csiszar (1991) (real-valued
 %                      images only)
-%    - 'InProduct':    Cross-correlation for zero translation (sum of prduct)
+%    - 'InProduct':    Cross-correlation for zero translation (sum of product)
 %                      (real-valued images only)
 %    - 'LnNormError':  2nd order norm difference
 %    - 'PSNR':         Peak signal-to-noise ratio, in dB.
@@ -74,3 +74,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = errormeasure(varargin)
+out = dip_math('errormeasure',varargin{:});
