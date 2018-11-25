@@ -224,8 +224,8 @@ class dip__JointImageHistogram : public dip__HistogramBase {
          return ( tensorInput_ ? tensorElements : 2 ) * 6;
       }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         std::vector< TPI const* >in;
-         std::vector< dip::sint >stride;
+         std::vector< TPI const* > in;
+         std::vector< dip::sint > stride;
          dip::uint nDims;
          dip::uint maskBuffer;
          if( tensorInput_ ) {
@@ -251,15 +251,17 @@ class dip__JointImageHistogram : public dip__HistogramBase {
          if( !image.IsForged() ) {
             image.Forge();
             image.Fill( 0 );
-#if defined(_OPENMP) && defined(DIP__DUILDING_DIPIMAGE)
-            // For some reason, MATLAB crashes the second time that `mdhistogram` is called
-            // (only when using multi-threading). This tiny sleep prevents the crash. Don't ask.
-            // Note: A `std::cout <<` call also prevented the crash. Is it about the timing or
-            // about calling a library function? Some people say that these crashes are an issue
-            // of compatibility between OpenMP libraries (MATLAB links against Intel's they say).
-            using namespace std::chrono_literals;
-            std::this_thread::sleep_for(10ns);
-#endif
+//#if defined(_OPENMP) && defined(DIP__DUILDING_DIPIMAGE)
+            // For some reason, MATLAB crashes the second time that `mdhistogram` is called,
+            // when using multi-threading. This tiny sleep prevented the crash in the past.
+            // A `std::cout <<` call also prevented the crash. However, MATLAB is crashing again.
+            // Now we are simply never calling this function multi-threaded in DIPimage. Keeping
+            // this hack here in comments for future reference.
+            // Some people say that these crashes are an issue of compatibility between OpenMP
+            // libraries (MATLAB links against Intel's they say).
+            //using namespace std::chrono_literals;
+            //std::this_thread::sleep_for(10ns);
+//#endif
          }
          CountType* data = static_cast< CountType* >( image.Origin() );
          if( params.inBuffer.size() > maskBuffer ) {

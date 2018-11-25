@@ -121,9 +121,9 @@ class DIP_NO_EXPORT Histogram {
          /// \brief A constructor takes an image data type, yielding a default histogram configuration for that data type.
          explicit Configuration( DataType dataType ) {
             if( dataType == DT_UINT8 ) {
-               // 256 bins between 0 and 255, this is the default:
+               // 256 bins between 0 and 255, this is the default.
             } else if ( dataType == DT_SINT8 ) {
-               // 256 bins between -128 and 128:
+               // 256 bins between -128 and 128.
                lowerBound = -128.0;
                upperBound = 128.0;
             } else if( dataType.IsInteger() ) {

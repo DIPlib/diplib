@@ -22,6 +22,8 @@
 #include "dip_matlab_interface.h"
 #include "diplib/statistics.h"
 
+#include "diplib/multithreading.h"
+
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
@@ -56,7 +58,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       } else if( method == "ssim" ) {
          error = dip::SSIM( in, reference, mask );
       } else if( method == "mutualinformation" ) {
-         error = dip::MutualInformation( in, reference, mask );
+         dip::uint nThreads = dip::GetNumberOfThreads();
+         dip::SetNumberOfThreads( 1 );                            // Make sure we're not using OpenMP
+         error = dip::MutualInformation( in, reference, mask );   // Can crash if using OpenMP
+         dip::SetNumberOfThreads( nThreads );
       } else if( method == "dice" ) {
          error = dip::DiceCoefficient( in, reference );
       } else if( method == "jaccard" ) {

@@ -252,6 +252,9 @@ dfloat SSIM( Image const& in, Image const& reference, Image const& mask, dfloat 
 }
 
 dfloat MutualInformation( Image const& in, Image const& reference, Image const& mask, dip::uint nBins ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsReal() || !reference.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    Histogram::ConfigurationArray configuration( 2 );
    configuration[ 0 ] = Histogram::Configuration( in.DataType() );
    configuration[ 1 ] = Histogram::Configuration( reference.DataType() );
@@ -264,6 +267,9 @@ dfloat MutualInformation( Image const& in, Image const& reference, Image const& 
 }
 
 dfloat Entropy( Image const& in, Image const& mask, dip::uint nBins ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    Histogram::Configuration configuration( in.DataType() );
    configuration.nBins = nBins;
    configuration.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;

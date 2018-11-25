@@ -21,6 +21,8 @@
 #include "dip_matlab_interface.h"
 #include "diplib/histogram.h"
 
+#include "diplib/multithreading.h"
+
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    try {
@@ -52,7 +54,10 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          conf[ 0 ].upperIsPercentile = true;
       }
 
-      dip::Histogram hist( in, mask, conf );
+      dip::uint nThreads = dip::GetNumberOfThreads();
+      dip::SetNumberOfThreads( 1 );          // Make sure we're not using OpenMP
+      dip::Histogram hist( in, mask, conf ); // Can crash if using OpenMP
+      dip::SetNumberOfThreads( nThreads );
 
       // Copy the histogram bins to an output array.
       dip::Image const& bins = hist.GetImage();

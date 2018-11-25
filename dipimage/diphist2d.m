@@ -63,33 +63,33 @@ if numtensorel(ch1)~=1 || numtensorel(ch2)~=1
 end
 if nargin<12
    Nl = -1;
-   if nargin<11
-      contourlab = false;
-      if nargin<10
-         contourfill = false;
-         if nargin<9
-            logdisp = 'none';
-            if nargin<8
-               contourhist = false;
-               if nargin<7
-                  bins2 = 100;
-                  if nargin<6
-                     bins1 = 100;
-                     if nargin<5
-                        range2 = [];
-                        if nargin<4
-                           range1 = [];
-                           if nargin<3
-                              mask = [];
-                           end
-                        end
-                     end
-                  end
-               end
-            end
-         end
-      end
-   end
+end
+if nargin<11
+   contourlab = false;
+end
+if nargin<10
+   contourfill = false;
+end
+if nargin<9
+   logdisp = 'none';
+end
+if nargin<8
+   contourhist = false;
+end
+if nargin<7
+   bins2 = 100;
+end
+if nargin<6
+   bins1 = 100;
+end
+if nargin<5
+   range2 = [];
+end
+if nargin<4
+   range1 = [];
+end
+if nargin<3
+   mask = [];
 end
 if ~isempty(mask) && ~islogical(mask)
    error('MASK must be binary')

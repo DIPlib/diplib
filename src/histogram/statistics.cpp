@@ -154,10 +154,10 @@ dfloat MutualInformation( Histogram const& hist ) {
 
    dfloat norm = 1.0 / static_cast< dfloat >( hist.Count() );
    dfloat out = 0.0;
-   Histogram::CountType* hPtr = static_cast< Histogram::CountType* >( histImg.Origin() );
-   Histogram::CountType* c2Ptr = static_cast< Histogram::CountType* >( c2Img.Origin() );
+   Histogram::CountType const* hPtr = static_cast< Histogram::CountType const* >( histImg.Origin() );
+   Histogram::CountType const* c2Ptr = static_cast< Histogram::CountType const* >( c2Img.Origin() );
    for( dip::uint jj = 0; jj < n2; jj++ ) {
-      Histogram::CountType* c1Ptr = static_cast< Histogram::CountType* >( c1Img.Origin() );
+      Histogram::CountType const* c1Ptr = static_cast< Histogram::CountType const* >( c1Img.Origin() );
       for( dip::uint ii = 0; ii < n1; ii++ ) {
          if( *hPtr > 0 ) { // This means that c1 and c2 both have data here also
             // out += h * norm * log2( h * norm / ( c1 * norm * c2 * norm ) )
