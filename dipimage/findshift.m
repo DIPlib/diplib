@@ -14,12 +14,12 @@
 %     'iter': very accurate (iterative 'mts', 1D-3D)
 %     'proj': fast, good for high SNR ('iter' on projections, nD)
 %  parameter: Scalar parameter:
-%     - For 'integer only': ignored
-%     - For 'cpf' : Sets the amount of frequencies used in this estimation.
-%     - The maximum value that makes sense is sqrt(1/2). Choose smaller values
+%     - For 'cpf': Sets the amount of frequencies used in this estimation.
+%       The maximum value that makes sense is sqrt(1/2). Choose smaller values
 %       to ignore more high frequencies. The default value is 0.2.
 %     - For 'mts', 'iter', 'proj': Sigma for the Gaussian smoothing. Defaults
 %       to 1.
+%     - For other methods: ignored.
 %  maxshift: Array, for the integer shift estimation only shifts up to this
 %     range are considered. Values can be larger when using subpixel
 %     refinement. Useful for periodic structures
@@ -46,10 +46,13 @@
 %    Hendriks, Performance of optimal registration estimators, in: Visual
 %    Information Processing XIV, Proc. SPIE, vol. 5817, 2005, p.133-144.
 %
+% SEE ALSO:
+%  shift, affine_trans
+%
 % DIPlib:
 %  This function calls the DIPlib function dip::FindShift.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -64,3 +67,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = findshift(varargin)
+out = dip_geometry('findshift',varargin{:});

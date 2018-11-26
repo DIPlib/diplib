@@ -34,7 +34,8 @@
 %  The rotation is performed around the central pixel of the image. This
 %  is the pixel to the right of the true center if the image is even-sized.
 %
-% SEE ALSO: rotation, resample, fmmatch
+% SEE ALSO:
+%  rotation, resample, fmmatch
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::AffineTransform.
@@ -53,3 +54,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function varargout = affine_trans(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_geometry('affine_trans',varargin{:});

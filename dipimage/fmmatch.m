@@ -24,7 +24,8 @@
 %  disp(n)
 %  d = affine_trans(b,n) % -> d should be approximately identical to c
 %
-% SEE ALSO: affine_trans
+% SEE ALSO:
+%  affine_trans, findshift
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::FourierMellinMatch2D.
@@ -43,3 +44,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function varargout = fmmatch(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_geometry('fmmatch',varargin{:});

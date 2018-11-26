@@ -36,11 +36,11 @@
 % image lines are shifted using a periodic boundary condition, and wrap around. The
 % output image does not grow along dimension SKEW.
 %
+% SEE ALSO:
+%  shift, resample
+%
 % DIPlib:
 %  This function calls the DIPlib function dip::Skew.
-%
-% SEE ALSO:
-%  SHIFT, RESAMPLE
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -57,3 +57,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = skew(varargin)
+out = dip_geometry('skew',varargin{:});

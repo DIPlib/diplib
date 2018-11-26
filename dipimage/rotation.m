@@ -42,6 +42,9 @@
 %  instead. Note that rot90 reverses the sign of the angle as compared to
 %  this function.
 %
+% SEE ALSO:
+%  skew, affine_trans
+%
 % DIPlib:
 %  This function calls the DIPlib function dip::Rotation.
 
@@ -60,3 +63,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = rotation(varargin)
+out = dip_geometry('rotation',varargin{:});
