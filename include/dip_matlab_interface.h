@@ -1283,13 +1283,13 @@ inline bool MatchSizes(
       return false;
    }
    // After squeezing, are we dealing with a 1D image?
-   bool dipIs1D = false;
+   bool dipIs1D = nDimsDip < 1;
    for( dip::uint ii = 0; ii < nDimsDip; ++ii ) {
       if( dipSizes[ ii ] == totalDip ) {
          dipIs1D = true;
       }
    }
-   bool mexIs1D = false;
+   bool mexIs1D = nDimsMex < 3;
    for( dip::uint ii = 2; ii < nDimsMex; ++ii ) {
       if( mexSizes[ ii ] == totalMex ) {
          mexIs1D = true;
@@ -1318,7 +1318,8 @@ inline bool MatchSizes(
                needAdjustment = true;
                ++iiMex;
                continue;
-            } else if( dipSizes[ iiDip ] == 1 ) {
+            }
+            if( dipSizes[ iiDip ] == 1 ) {
                needAdjustment = true;
                ++iiDip;
                continue;
@@ -1481,7 +1482,9 @@ mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    }
    // If the image points to a modified view, or a non-MATLAB array, make a copy
    if( needCopy ) {
-      //mexPrintf( "GetArrayAsArray: Copying data from dip::Image to mxArray\n" );
+#ifdef DIP__ENABLE_ASSERT // Or use NDEBUG instead?
+      mexPrintf( "GetArrayAsArray: Copying data from dip::Image to mxArray\n" );
+#endif
       dip::IntegerArray strides;
       dip::sint tStride = 1;
       mxArray* newmat = detail::CreateMxArray( img.DataType(), img.Sizes(), strides, img.Tensor(), tStride );
