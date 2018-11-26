@@ -1,7 +1,7 @@
 %PEROBJECTHIST   Compute a histogram for each object in a labeled image
 %
 % SYNOPSIS:
-%  distribution = paircorrelation(image_in,labels,specs,mode,background)
+%  distribution = perobjecthist(image_in,labels,specs,mode,background)
 %
 % PARAMETERS:
 %  specs: cell array as described in MDHISTOGRAM
@@ -45,3 +45,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = perobjecthist(varargin)
+out = dip_analysis('perobjecthist',varargin{:});

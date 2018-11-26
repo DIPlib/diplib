@@ -10,7 +10,7 @@
 %
 %  The output DISTRIBUTION is an array where the first column is the distance
 %  sample locations. Subsequent columns represent the distribution of distances
-%  to the background of REGION for each of the labels (zeero included) of OBJECT.
+%  to the background of REGION for each of the labels (zero included) of OBJECT.
 %  That is, column 2 is the distribution for label 0, column 3 for label 1, etc.
 %
 % DEFAULTS:
@@ -45,3 +45,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = distancedistribution(varargin)
+out = dip_analysis('distancedistribution',varargin{:});
