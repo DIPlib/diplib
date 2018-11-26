@@ -13,8 +13,7 @@
 %   YY1(...,ORIGIN,OPTIONS) allows specifying the origin and additional
 %   options, see COORDINATES for details.
 %
-% SEE ALSO:
-%  coordinates, ramp1, xx1, yy, zz1, rr, phiphi, thetatheta
+%   SEE ALSO: coordinates, ramp1, xx1, yy, zz1, rr, phiphi, thetatheta
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

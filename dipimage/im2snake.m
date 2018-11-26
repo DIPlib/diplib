@@ -14,7 +14,8 @@
 %
 %     snake = im2snake(label(img)==3)
 %
-% SEE ALSO: snake2im, snakeminimize, snakedraw
+% SEE ALSO:
+%  snake2im, snakeminimize, snakedraw
 
 % (c)2009, 2018, Cris Luengo.
 %

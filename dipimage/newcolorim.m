@@ -19,7 +19,7 @@
 %
 %   See DIP_IMAGE/COLORSPACE for known color spaces
 %
-%  SEE ALSO: newim, newtensorim, dip_image, dip_image.colorspace
+%   SEE ALSO: newim, newtensorim, dip_image, dip_image.colorspace
 %   dip_image.clone
 
 % (c)2017, Cris Luengo.

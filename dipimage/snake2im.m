@@ -10,7 +10,8 @@
 % DEFAULTS:
 %  imagesize = ceil(max(snake))+1
 %
-% SEE ALSO: im2snake, snakeminimize, snakedraw
+% SEE ALSO:
+%  im2snake, snakeminimize, snakedraw
 
 % (c)2009, 2018, Cris Luengo.
 %

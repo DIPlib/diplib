@@ -16,7 +16,8 @@
 % EXAMPLE:
 %  See the example in SNAKEMINIMIZE
 %
-% SEE ALSO: snakeminimize, snake2im
+% SEE ALSO:
+%  snakeminimize, snake2im
 
 % (c)2009, 2018, Cris Luengo.
 %

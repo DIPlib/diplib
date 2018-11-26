@@ -13,7 +13,7 @@
 %  coord2image(co,[256 256])
 %
 % SEE ALSO:
-%  DIP_IMAGE/FINDCOORD, DIP_IMAGE/SUB2IND.
+%  dip_image.findcoord, dip_image.sub2ind
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

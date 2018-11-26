@@ -19,7 +19,8 @@
 %  st = 3
 %  sh = sg
 %
-% SEE ALSO: Dgg, Dcc
+% SEE ALSO:
+%  dgg, dcc
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

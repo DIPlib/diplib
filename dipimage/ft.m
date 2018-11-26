@@ -30,7 +30,7 @@
 %  process = [] (equivalent to all dimensions)
 %
 % SEE ALSO:
-%  FT, CONVOLVE
+%  ft, convolve
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::FourierTransform.

@@ -20,7 +20,7 @@
 %  detile(G1,[2,2]) % identical to G
 %
 % SEE ALSO:
-%   tile, arrangeslices
+%  tile, arrangeslices
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

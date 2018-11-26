@@ -22,7 +22,7 @@
 %   NEWIM(B,DATATYPE(B)) creates an empty image with the same size
 %   and data type as B.
 %
-%  SEE ALSO: newtensorim, newcolorim, dip_image, dip_image.clone
+%   SEE ALSO: newtensorim, newcolorim, dip_image, dip_image.clone
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.

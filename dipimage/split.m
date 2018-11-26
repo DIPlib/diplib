@@ -17,10 +17,10 @@
 % SEE ALSO:
 %  rebin, subsample
 %
-% Note that REBIN is equal to the sum along the new dimension of the
-% output of SPLIT:
-%  a = readim;
-%  all(sum(split(a),[],3) == rebin(a))
+% NOTE:
+%  REBIN is equal to the sum along the new dimension of the output of SPLIT:
+%     a = readim;
+%     all(sum(split(a),[],3) == rebin(a))
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

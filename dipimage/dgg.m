@@ -17,7 +17,8 @@
 %     H = hessian(in,...);
 %     dgg = ( g.' * H * g ) / ( g.' * g );
 %
-% SEE ALSO: TFRAMEHESSIAN for reguralised 2nd derivative
+% SEE ALSO:
+%  tframehessian
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Dgg.

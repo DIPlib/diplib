@@ -37,7 +37,8 @@
 %  W.T. Freeman, Steerable Filters and Local Analysis of Image Structure,
 %   PhD Thesis, MIT, USA, 1992
 %
-% SEE ALSO: gaussf_adap, percf_adap, percf_adap_banana
+% SEE ALSO:
+%  gaussf_adap, percf_adap, percf_adap_banana
 
 % (c)2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

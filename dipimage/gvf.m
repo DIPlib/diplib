@@ -27,7 +27,8 @@
 %  C. Xu, J.L. Prince, "Snakes, Shapes and Gradient Vector Flow",
 %     IEEE-TIP 7(3):359-369 (1998)
 %
-% SEE ALSO: snakeminimize, vfc, gradientvector
+% SEE ALSO:
+%  snakeminimize, vfc, gradientvector
 
 % (c)2009, 2018, Cris Luengo.
 %

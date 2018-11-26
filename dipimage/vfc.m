@@ -28,7 +28,8 @@
 %  B. Li, S.T. Acton, "Active Contour External Force Using Vector Field
 %     Convolution for Image Segmentation", IEEE-TIP 16(8):2096-2106 (2007)
 %
-% SEE ALSO: snakeminimize, gvf, gradientvector
+% SEE ALSO:
+%  snakeminimize, gvf, gradientvector
 
 % (c)2009, 2018, Cris Luengo.
 %

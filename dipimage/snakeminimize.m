@@ -49,7 +49,8 @@
 %  L.D. Cohen, I. Cohen, "Finite-element methods for active contour models and
 %     balloons for 2-D and 3-D images", IEEE TPAMI 15(11):1131-1147 (1993)
 %
-% SEE ALSO: snakedraw, snake2im, vfc, gvf, gradientvector, im2snake, dipdrawpolygon
+% SEE ALSO:
+%  snakedraw, snake2im, vfc, gvf, gradientvector, im2snake, dipdrawpolygon
 
 % (c)2009, 2018, Cris Luengo.
 %

@@ -38,7 +38,8 @@
 %  F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images,"
 %    ACM Transactions on Graphics 21(3), 2002.
 %
-% SEE ALSO: arcf
+% SEE ALSO:
+%  arcf, pmd
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::BilateralFilter

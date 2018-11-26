@@ -33,8 +33,8 @@
 %             the histogram
 %  histsel:   Binary image containing the histogram bins selected by COORDS
 %
-%  SEE ALSO:
-%   hist2d, mdhistogram, mdhistogrammap, diproi
+% SEE ALSO:
+%  hist2d, mdhistogram, mdhistogrammap, diproi
 
 % (c)2007, Max-Planck-Institute for Biophysical Chemistry (Göttingen), written by Bernd Rieger.
 % (c)2018, Cris Luengo.
