@@ -180,8 +180,10 @@ void ConditionalThickeningThinning2D(
    if( iterations == 0 ) {
       iterations = std::numeric_limits< dip::uint >::max();
    }
-   bool endPixelCondition = BooleanFromString( s_endPixelCondition, S::KEEP, S::LOSE );
-   bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
+   bool endPixelCondition;
+   DIP_STACK_TRACE_THIS( endPixelCondition = BooleanFromString( s_endPixelCondition, S::KEEP, S::LOSE ));
+   bool edgeCondition;
+   DIP_STACK_TRACE_THIS( edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Make out equal to in
    Image mask = c_mask; // temporary copy of input image headers, so we can strip/reforge out

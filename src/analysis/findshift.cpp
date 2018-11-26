@@ -41,42 +41,44 @@ void CrossCorrelationFT(
    DIP_THROW_IF( !in1.IsScalar() || !in2.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in1.DataType().IsBinary() || in2.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in1.Sizes() != in2.Sizes(), E::SIZES_DONT_MATCH );
-   DIP_START_STACK_TRACE
-      Image in1FT;
-      if( BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY )) {
-         DIP_THROW_IF( !in1.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-         FourierTransform( in1, in1FT );
-      } else {
-         in1FT = in1.QuickCopy();
+   bool in1spatial;
+   DIP_STACK_TRACE_THIS( in1spatial = BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY ));
+   bool in2spatial;
+   DIP_STACK_TRACE_THIS( in2spatial = BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY ));
+   Image in1FT;
+   if( in1spatial ) {
+      DIP_THROW_IF( !in1.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_STACK_TRACE_THIS( FourierTransform( in1, in1FT ));
+   } else {
+      in1FT = in1.QuickCopy();
+   }
+   Image in2FT;
+   if( in2spatial ) {
+      DIP_THROW_IF( !in2.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_STACK_TRACE_THIS( FourierTransform( in2, in2FT ));
+   } else {
+      in2FT = in2.QuickCopy();
+   }
+   DataType dt = in1FT.DataType();
+   DIP_STACK_TRACE_THIS( MultiplyConjugate( in1FT, in2FT, out, dt ));
+   if( normalize == S::NORMALIZE ) {
+      if( in2FT.IsShared() ) {
+         in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
       }
-      Image in2FT;
-      if( BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY )) {
-         DIP_THROW_IF( !in1.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-         FourierTransform( in2, in2FT );
-      } else {
-         in2FT = in2.QuickCopy();
-      }
-      DataType dt = in1FT.DataType();
-      MultiplyConjugate( in1FT, in2FT, out, dt );
-      if( normalize == S::NORMALIZE ) {
-         if( in2FT.IsShared() ) {
-            in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
-         }
-         SquareModulus( in1FT, in2FT );
-         SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
-      } else if( normalize == S::PHASE ) {
-         Image tmp;
-         Modulus( in1FT, tmp );
-         SafeDivide( out, tmp, out, out.DataType() );
-         Modulus( in2FT, tmp );
-         SafeDivide( out, tmp, out, out.DataType() );
-      } else if( normalize != S::DONT_NORMALIZE ) {
-         DIP_THROW_INVALID_FLAG( normalize );
-      }
-      if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
-         FourierTransform( out, out, { S::INVERSE, S::REAL } );
-      }
-   DIP_END_STACK_TRACE
+      SquareModulus( in1FT, in2FT );
+      SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
+   } else if( normalize == S::PHASE ) {
+      Image tmp;
+      Modulus( in1FT, tmp );
+      SafeDivide( out, tmp, out, out.DataType() );
+      Modulus( in2FT, tmp );
+      SafeDivide( out, tmp, out, out.DataType() );
+   } else if( normalize != S::DONT_NORMALIZE ) {
+      DIP_THROW_INVALID_FLAG( normalize );
+   }
+   if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
+      DIP_STACK_TRACE_THIS( FourierTransform( out, out, { S::INVERSE, S::REAL } ));
+   }
 }
 
 namespace {

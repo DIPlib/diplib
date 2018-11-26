@@ -424,38 +424,42 @@ void ConvolveFT(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_START_STACK_TRACE
-      bool real = true;
-      Image inFT;
-      if( BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY )) {
-         real &= in.DataType().IsReal();
-         FourierTransform( in, inFT );
-      } else {
-         real = false;
-         inFT = in.QuickCopy();
+   bool inSpatial;
+   DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
+   bool filterSpatial;
+   DIP_STACK_TRACE_THIS( filterSpatial = BooleanFromString( filterRepresentation, S::SPATIAL, S::FREQUENCY ));
+   bool outSpatial;
+   DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
+   bool real = true;
+   Image inFT;
+   if( inSpatial ) {
+      real &= in.DataType().IsReal();
+      DIP_STACK_TRACE_THIS( FourierTransform( in, inFT ));
+   } else {
+      real = false;
+      inFT = in.QuickCopy();
+   }
+   Image filterFT = filter.QuickCopy();
+   if( filterFT.Dimensionality() < in.Dimensionality() ) {
+      filterFT.ExpandDimensionality( in.Dimensionality() );
+   }
+   DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
+   filterFT = filterFT.Pad( in.Sizes() );
+   if( filterSpatial ) {
+      real &= filterFT.DataType().IsReal();
+      DIP_STACK_TRACE_THIS( FourierTransform( filterFT, filterFT ));
+   } else {
+      real = false;
+   }
+   DataType dt = inFT.DataType();
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( inFT, filterFT, out, dt ));
+   if( outSpatial ) {
+      StringSet options{ S::INVERSE };
+      if( real ) {
+         options.insert( S::REAL );
       }
-      Image filterFT = filter.QuickCopy();
-      if( filterFT.Dimensionality() < in.Dimensionality() ) {
-         filterFT.ExpandDimensionality( in.Dimensionality() );
-      }
-      DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
-      filterFT = filterFT.Pad( in.Sizes() );
-      if( BooleanFromString( filterRepresentation, S::SPATIAL, S::FREQUENCY )) {
-         real &= filterFT.DataType().IsReal();
-         FourierTransform( filterFT, filterFT );
-      } else {
-         real = false;
-      }
-      DataType dt = inFT.DataType();
-      MultiplySampleWise( inFT, filterFT, out, dt );
-      if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
-         StringSet options{ S::INVERSE };
-         if( real ) {
-            options.insert( S::REAL );
-         }
-         FourierTransform( out, out, options );
-      }
-   DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( FourierTransform( out, out, options ));
+   }
 }
 
 
