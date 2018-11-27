@@ -237,7 +237,7 @@ void structuretensor( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    }
 }
 
-using EDTFunction = void (*)( dip::Image const&, dip::Image&, dip::String const&, dip::String const& );
+using EDTFunction = void ( * )( dip::Image const&, dip::Image&, dip::String const&, dip::String const& );
 void EDT( EDTFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* defaultMethod ) {
    DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );

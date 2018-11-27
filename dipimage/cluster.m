@@ -9,7 +9,7 @@
 % of the partitions.
 %
 % SYNOPSIS:
-%  image_out = Cluster(image_in,nClusters,method)
+%  [image_out,coordinates] = cluster(image_in,nClusters,method)
 %
 % PARAMETERS:
 %  nClusters: number of clusters to generate
@@ -17,7 +17,12 @@
 %
 % DEFAULTS:
 %  nClusters = 2
-%  method = 'kmeans'
+%  method = 'minvariance'
+%
+% NOTE:
+%  The optional second output argument lists the coordinates of the cluster
+%  centroids.
+%  The first output argument is a labeled image representing the clusters.
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::KMeansClustering and
@@ -37,3 +42,7 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function varargout = cluster(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_segmentation('cluster',varargin{:});

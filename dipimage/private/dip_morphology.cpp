@@ -25,7 +25,7 @@
 
 namespace {
 
-using BasicFilterFunction = void (*)( dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::StringArray const& );
+using BasicFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip::StructuringElement const&, dip::StringArray const& );
 void BasicFilter( BasicFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 4 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -87,7 +87,7 @@ void hitmiss( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
-using ScalarParamFilterFunction = void (*)( dip::Image const&, dip::Image&, dip:: dfloat, dip::uint );
+using ScalarParamFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip:: dfloat, dip::uint );
 void ScalarParamFilter( ScalarParamFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    DML_MAX_ARGS( 3 );
@@ -114,7 +114,7 @@ void lee( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
-using FlagParamFilterFunction = void (*)( dip::Image const&, dip::Image&, dip::uint, dip::String const& );
+using FlagParamFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip::uint, dip::String const& );
 void FlagParamFilter( FlagParamFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 1 );
    DML_MAX_ARGS( 3 );
@@ -244,7 +244,7 @@ dip::String GetEdgeCondition( int index, int nrhs, const mxArray* prhs[], char c
    return edgeCondition;
 }
 
-using BinaryBasicFilterFunction = void (*)( dip::Image const&, dip::Image&, dip::sint, dip::uint, dip::String const& );
+using BinaryBasicFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip::sint, dip::uint, dip::String const& );
 void BinaryBasicFilter( BinaryBasicFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* defaultValue ) {
    DML_MAX_ARGS( 4 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
