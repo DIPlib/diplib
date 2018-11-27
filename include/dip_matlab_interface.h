@@ -519,7 +519,7 @@ inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
 }
 
 /// \brief Reads a histogram Configuration struct from a cell `mxArray` with key-value pairs.
-dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* mx ) {
+inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* mx ) {
    dip::Histogram::Configuration out;
    out.lowerIsPercentile = true;
    out.upperIsPercentile = true;
@@ -564,10 +564,10 @@ dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* mx ) {
       }
    }
    N = 0;
-   if( hasLower ) ++N;
-   if( hasUpper ) ++N;
-   if( hasNBins ) ++N;
-   if( hasBinSize ) ++N;
+   if( hasLower ) { ++N; };
+   if( hasUpper ) { ++N; };
+   if( hasNBins ) { ++N; };
+   if( hasBinSize ) { ++N; };
    DIP_THROW_IF( N != 3, "SPECS requires exactly 3 of the 4 core value-pairs to be given" );
    if( !hasLower ) {
       out.mode = dip::Histogram::Configuration::Mode::COMPUTE_LOWER;
@@ -796,7 +796,7 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 
 // Return `img` or `img` cast to a single-float type if it doesn't underflow or overflow.
 // Note `img` is always a single sample, of a double-float type.
-void MaybeCastScalar( dip::Image& img ) {
+inline void MaybeCastScalar( dip::Image& img ) {
    if( img.DataType() == dip::DT_DCOMPLEX ) {
       // Will we underflow or overflow?
       dip::dcomplex imgValue = *static_cast< dip::dcomplex* >( img.Origin() );
@@ -1445,7 +1445,7 @@ class MatlabInterface : public dip::ExternalInterface {
 // The *UNDOCUMENTED* `doNotSetToTrue` flag tells this function that the data shared pointer in the image
 // is an `mxArray`. This is true only if `img` was created by `dml::GetImage`. You should not need this
 // functionality, it is used in `dipimage/private/imagedisplay.cpp`.
-mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = false ) {
+inline mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
    mxArray* mat = nullptr;
    // Make sure that `img` has external data and the correct external interface set
@@ -1513,7 +1513,7 @@ mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = false ) {
 /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
 /// and create a MATLAB dip_image object around it.
 // See `dml::GetArrayAsArray` above for the meaning of `doNotSetToTrue`.
-mxArray* GetArray( dip::Image const& img, bool doNotSetToTrue = false ) {
+inline mxArray* GetArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    mxArray* mat;
    DIP_STACK_TRACE_THIS( mat = GetArrayAsArray( img, doNotSetToTrue ));
    // Create a MATLAB `dip_image` object with the `mxArray` inside.
@@ -1648,14 +1648,14 @@ class streambuf : public std::streambuf {
 };
 
 /// \brief Convert a string to all upper-case letters, using current locale. Will not work with Unicode strings.
-void ToUpper( dip::String& str ) {
+inline void ToUpper( dip::String& str ) {
    for( auto& c : str ) {
       c = static_cast< char >( std::toupper( static_cast< unsigned char >( c )));
    }
 }
 
 /// \brief Convert a string to all lower-case letters, using current locale. Will not work with Unicode strings.
-void ToLower( dip::String& str ) {
+inline void ToLower( dip::String& str ) {
    for( auto& c : str ) {
       c = static_cast< char >( std::tolower( static_cast< unsigned char >( c )));
    }
