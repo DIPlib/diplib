@@ -40,7 +40,7 @@ set(DIP_ENABLE_STACK_TRACE ON CACHE BOOL "Stack trace information is added to ex
 if(DIP_ENABLE_STACK_TRACE)
    target_compile_definitions(DIP PUBLIC DIP__EXCEPTIONS_RECORD_STACK_TRACE)
 endif()
-set(DIP_ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
+set(DIP_ENABLE_ASSERT OFF CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
 if(DIP_ENABLE_ASSERT)
    target_compile_definitions(DIP PUBLIC DIP__ENABLE_ASSERT)
 endif()

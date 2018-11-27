@@ -61,7 +61,7 @@ Important `cmake` command-line arguments:
     -DCMAKE_CXX_FLAGS="-march=native"  # specify additional C++ compiler flags
 
     -DDIP_ENABLE_STACK_TRACE=Off       # disable stack trace generation on exception
-    -DDIP_ENABLE_ASSERT=Off            # disable asserts
+    -DDIP_ENABLE_ASSERT=On             # enable asserts
     -DDIP_ENABLE_DOCTEST=Off           # disable doctest within DIPlib
     -DDIP_ENABLE_MULTITHREADING=Off    # disable OpenMP multithreading
     -DDIP_ENABLE_ICS=Off               # disable ICS file format support
