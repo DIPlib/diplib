@@ -680,7 +680,7 @@ function(matlab_get_version_from_matlab_run matlab_binary_program matlab_list_ve
     endif()
     file(REMOVE "${_matlab_temporary_folder}/matlabVersionLog.cmaketmp")
   endif()
-
+  file(WRITE "${_matlab_temporary_folder}/startup.m" "") # Override any user startup scripts, we want to keep this as quick as possible.
 
   # the log file is needed since on windows the command executes in a new
   # window and it is not possible to get back the answer of Matlab
@@ -1124,6 +1124,9 @@ function(_Matlab_get_version_from_root matlab_root matlab_or_mcr matlab_known_ve
   #endif()
 
   if(NOT ${matlab_known_version} STREQUAL "NOTFOUND")
+    if(MATLAB_FIND_DEBUG)
+      message(STATUS "[MATLAB] Version already known: ${matlab_known_version}")
+    endif()
     # the version is known, we just return it
     set(${matlab_final_version} ${matlab_known_version} PARENT_SCOPE)
     set(Matlab_VERSION_STRING_INTERNAL ${matlab_known_version} CACHE INTERNAL "Matlab version (automatically determined)" FORCE)
@@ -1132,7 +1135,7 @@ function(_Matlab_get_version_from_root matlab_root matlab_or_mcr matlab_known_ve
 
   if("${matlab_or_mcr}" STREQUAL "UNKNOWN")
     if(MATLAB_FIND_DEBUG)
-      message(WARNING "[MATLAB] Determining Matlab or MCR")
+      message(STATUS "[MATLAB] Determining Matlab or MCR")
     endif()
 
     if(EXISTS "${matlab_root}/appdata/version.xml")
@@ -1155,7 +1158,7 @@ function(_Matlab_get_version_from_root matlab_root matlab_or_mcr matlab_known_ve
     endif()
 
     if(MATLAB_FIND_DEBUG)
-      message(WARNING "[MATLAB] '${matlab_root}' contains the '${matlab_or_mcr}'")
+      message(STATUS "[MATLAB] '${matlab_root}' contains the '${matlab_or_mcr}'")
     endif()
   endif()
 
@@ -1217,7 +1220,7 @@ function(_Matlab_get_version_from_root matlab_root matlab_or_mcr matlab_known_ve
     if(${list_of_all_versions_length} GREATER 0)
       list(GET matlab_list_of_all_versions 0 _matlab_version_tmp)
     else()
-      set(_matlab_version_tmp "unknown")
+      set(_matlab_version_tmp "UNKNOWN")
     endif()
 
     # set the version into the cache
@@ -1234,7 +1237,7 @@ function(_Matlab_get_version_from_root matlab_root matlab_or_mcr matlab_known_ve
     # MCR
     # we cannot run anything in order to extract the version. We assume that the file
     # VersionInfo.xml exists under the MatlabRoot, we look for it and extract the version from there
-    set(_matlab_version_tmp "unknown")
+    set(_matlab_version_tmp "UNKNOWN")
     file(STRINGS "${matlab_root}/VersionInfo.xml" versioninfo_string NEWLINE_CONSUME)
 
     if(versioninfo_string)
