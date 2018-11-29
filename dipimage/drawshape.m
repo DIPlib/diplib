@@ -27,8 +27,8 @@
 %  profiles. The shape is added to existing values in IMAGE_IN to create
 %  IMAGE_OUT. 'circle'/'sphere' and 'box shell' are always bandlimited shapes.
 %
-%  SIZES and ORIGIN are given as floating-point values.ORIGIN does not need to
-%  be within the image domain.
+%  SIZES and ORIGIN are given as floating-point values. ORIGIN does not need
+%  to be within the image domain.
 %
 %  Shape description:
 %   - 'ellipse' or 'ellipsoid': this is always a discrete shape, SIGMA is
@@ -55,7 +55,7 @@
 %  This function calls the DIPlib functions dip::DrawEllipsoid, dip::DrawBox,
 %  dip::DrawDiamond, dip::DrawBandlimitedBall, and dip::DrawBandlimitedBox.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -70,3 +70,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = drawshape(varargin)
+out = dip_generation('drawshape',varargin{:});

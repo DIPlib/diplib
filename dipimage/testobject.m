@@ -1,10 +1,10 @@
 %TESTOBJECT   Creates bandlimited test objects
 %  The test object is in the center of the output image. It can optionally
 %  be modulated using a sine function, blurred, and have noise added.
-
+%
 % SYNOPSIS:
-%  image_out = testobject(object, imgSizes, objSizes, [name-value pairs])
-%  image_out = testobject(image, [name-value pairs])
+%  image_out = testobject(object,imgSizes,objSizes,[name-value pairs])
+%  image_out = testobject(image,[name-value pairs])
 %
 % PARAMETER:
 %  object:   'ellipsoid', 'box', 'ellipsoid shell', 'box shell'.
@@ -88,3 +88,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function out = testobject(varargin)
+out = dip_generation('testobject',varargin{:});
