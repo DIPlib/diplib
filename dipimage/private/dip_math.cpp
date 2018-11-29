@@ -512,7 +512,3 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    } DML_CATCH
 }
-
-// TODO:
-// @dip_image/eig.cpp
-// @dip_image/svd.cpp

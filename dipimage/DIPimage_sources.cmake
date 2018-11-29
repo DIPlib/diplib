@@ -1,11 +1,10 @@
 # Automatically generated, don't edit!
 set(DIPimage_sources_bogus
-@dip_image/eig.cpp
 @dip_image/private/colorspacemanager.cpp
+@dip_image/private/dip_eig_svd.cpp
 @dip_image/private/dip_operators.cpp
 @dip_image/private/dip_projection.cpp
 @dip_image/private/dip_tensor_indices.cpp
-@dip_image/svd.cpp
 measure.cpp
 private/dip_analysis.cpp
 private/dip_fileio.cpp
