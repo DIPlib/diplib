@@ -380,6 +380,15 @@ void kuwahara( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* p
    dip::Kuwahara( in, out, kernel, threshold, bc );
 }
 
+void nonmaximumsuppression( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 1 );
+   DML_MAX_ARGS( 3 );
+   dip::Image const gradient = dml::GetImage( prhs[ 0 ] );
+   dip::Image const mask = nrhs > 1 ? dml::GetImage( prhs[ 1 ] ) : dip::Image{};
+   dip::String mode = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::String{ "interpolate" };
+   dip::NonMaximumSuppression( in, gradient, mask, out, mode );
+}
+
 void percf( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 4 );
    dip::dfloat percentile = nrhs > 0 ? dml::GetFloat( prhs[ 0 ] ) : 50.0;
@@ -501,6 +510,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          gaussf_adap_banana( in, out, nrhs, prhs );
       } else if( function == "kuwahara" ) {
          kuwahara( in, out, nrhs, prhs );
+      } else if( function == "nonmaximumsuppression" ) {
+         nonmaximumsuppression( in, out, nrhs, prhs );
       } else if( function == "percf" ) {
          percf( in, out, nrhs, prhs );
       } else if( function == "pmd" ) {

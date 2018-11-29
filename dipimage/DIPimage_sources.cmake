@@ -7,7 +7,6 @@ set(DIPimage_sources_bogus
 @dip_image/private/dip_tensor_indices.cpp
 @dip_image/svd.cpp
 measure.cpp
-nonmaximumsuppression.cpp
 private/dip_analysis.cpp
 private/dip_fileio.cpp
 private/dip_filtering.cpp
