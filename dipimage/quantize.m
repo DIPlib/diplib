@@ -54,9 +54,15 @@ else
    [hist,bins] = mdhistogram(in,[],{'lower',0,'upper',100,'bins',64});
    [hist,centers] = cluster(hist,levels,method);
    labs = mdhistogrammap(in,hist,bins,false);
-   for ii=1:size(centers,2)
-      centers(:,ii) = bins{ii}(centers(:,ii)+1);
+   N = 1;
+   if iscell(bins)
+      N = numel(bins);
+      for ii=1:N
+         centers(:,ii) = bins{ii}(centers(:,ii)+1);
+      end
+   else
+      centers(:,1) = bins(centers+1);
    end
-   centers = [zeros(1,size(centers,2));centers];
+   centers = [zeros(1,N);centers];
    out = lut(labs,centers);
 end
