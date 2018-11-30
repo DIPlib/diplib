@@ -521,6 +521,18 @@ void testobject( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void window( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 1 );
+   DML_MAX_ARGS( 3 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::String type = nrhs > 1 ? dml::GetString( prhs[ 1 ] ) : "Hamming";
+   dip::dfloat parameter = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.5;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::ApplyWindow( in, out, type, parameter );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void extendregion( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -615,6 +627,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          setborder( plhs, nrhs, prhs );
       } else if( function == "testobject" ) {
          testobject( plhs, nrhs, prhs );
+      } else if( function == "window" ) {
+         window( plhs, nrhs, prhs );
 
       } else if( function == "extendregion" ) {
          extendregion( plhs, nrhs, prhs );
