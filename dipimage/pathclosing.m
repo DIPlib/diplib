@@ -1,10 +1,10 @@
-%PATHCLOSING   Path closing or opening
+%PATHCLOSING   Path closing
 %
 % SYNOPSIS:
-%  image_out = pathclosing(image_in,filterParams,polarity,mode)
+%  image_out = pathclosing(image_in,filterParams,mode)
 %
-% See PATHOPENING for documentation. This function is identical but has
-% POLARITY set to 'closing' by default.
+% See PATHOPENING for documentation. This function is identical but
+% computes the path closing instead of the opening.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

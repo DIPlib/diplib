@@ -1,18 +1,16 @@
-%PATHOPENING   Path opening or closing
+%PATHOPENING   Path opening
 %
 % SYNOPSIS:
-%  image_out = pathopening(image_in,filterParams,polarity,mode)
+%  image_out = pathopening(image_in,filterParams,mode)
 %
 % PARAMETERS:
 %  filterParams: Either a scalar value or an array with as many elements as
 %                dimensions in IMAGE_IN. See below.
-%  polarity:     'opening' or 'closing'.
 %  mode:         Cell array with one of 'unconstrained' or 'constrained',
 %                and/or 'robust'. See below.
 %
 % DEFAULTS:
 %  filterParams = 7
-%  polarity = 'opening'
 %  mode = {'unconstrained'}
 %
 %  The path opening is an opening over all possible paths of a specific length
@@ -55,8 +53,7 @@
 %
 %  If FILTERSIZE is scalar, then the path opening is applied under all possible
 %  directions, using the FILTERSIZE as length. The supremum over the openings
-%  (or infimum over the closings, if POLARITY is 'closing') is the final
-%  result.
+%  is the final result.
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::PathOpening and

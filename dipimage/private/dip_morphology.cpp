@@ -38,12 +38,11 @@ void BasicFilter( BasicFilterFunction function, mxArray* plhs[], int nrhs, const
    plhs[ 0 ] = dml::GetArray( out );
 }
 
-void areaopening( mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* defaultPolarity ) {
-   DML_MAX_ARGS( 5 );
+void areaopening( mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* polarity ) {
+   DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::uint filterSize = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 50;
    dip::uint connectivity = nrhs > 2 ? dml::GetUnsigned( prhs[ 2 ] ) : 1;
-   dip::String polarity = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : defaultPolarity;
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
    dip::AreaOpening( in, {}, out, filterSize, connectivity, polarity );
@@ -127,12 +126,11 @@ void FlagParamFilter( FlagParamFilterFunction function, mxArray* plhs[], int nrh
    plhs[ 0 ] = dml::GetArray( out );
 }
 
-void pathopening( mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* defaultPolarity ) {
-   DML_MAX_ARGS( 4 );
+void pathopening( mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* polarity ) {
+   DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::IntegerArray params = nrhs > 1 ? dml::GetIntegerArray( prhs[ 1 ] ) : dip::IntegerArray{ 7 };
-   dip::String polarity = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : defaultPolarity;
-   dip::StringSet mode = nrhs > 3 ? dml::GetStringSet( prhs[ 3 ] ) : dip::StringSet{};
+   dip::StringSet mode = nrhs > 2 ? dml::GetStringSet( prhs[ 2 ] ) : dip::StringSet{};
    mode.erase( "normal" ); // Allow this flag, for backwards compatibility.
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();

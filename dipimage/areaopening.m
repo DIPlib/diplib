@@ -1,7 +1,7 @@
-%AREAOPENING   Area opening or closing
+%AREAOPENING   Area opening
 %
 % SYNOPSIS:
-%  image_out = areaopening(image_in,filterSize,connectivity,polarity)
+%  image_out = areaopening(image_in,filterSize,connectivity)
 %
 % PARAMETERS:
 %  filterSize:   the size (area) of the structuring element.
@@ -10,12 +10,10 @@
 %     * 1 indicates city-block metric, or a diamond-shaped S.E in 2D.
 %     * 2 indicates chessboard metric, or a square structuring element in 2D.
 %     For 3D images use 1, 2 or 3.
-%  polarity:     'opening' or 'closing'.
 %
 % DEFAULTS:
 %  filterSize = 50
 %  connectivity = 1
-%  polarity = 'opening'
 %
 %  The area opening is an opening over all possible structuring elements of a
 %  specific area (number of pixels) given by FILTERSIZE. The structuring element
@@ -23,8 +21,6 @@
 %
 %  The result is an image where the local maxima with an area smaller than the
 %  FILTERSIZE have been removed.
-%
-%  If POLARITY is 'closing', the closing is computed instead.
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::AreaOpening.
