@@ -1,7 +1,25 @@
 %CROSSCORRELATION   Computes the cross-correlation between two images
 %
 % SYNOPSIS:
-%  image_out = crosscorrelation(image1, image2)
+%  image_out = crosscorrelation(image1,image2,normalize,rep1,rep2,rep_out)
+%
+% PARAMETERS:
+%  normalize: Choose whether to normalize the cross correlation. One of:
+%    - '':          No normalization
+%    - 'normalize': A normalization similar to phase correlation, but cheaper.
+%    - 'phase':     Computes phase correlation.
+%  rep1:      'spatial' or 'frequency', for IMAGE1
+%  rep2:      'spatial' or 'frequency', for IMAGE2
+%  rep_out:   'spatial' or 'frequency', for IMAGE_OUT
+%
+% DEFAULTS:
+%  normalize = ''
+%  rep1 = 'spatial'
+%  rep2 = 'spatial'
+%  rep_out = 'spatial'
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::CrossCorrelationFT.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -18,9 +36,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = crosscorrelation(in1,in2)
-opts = {};
-if isreal(in1) && isreal(in2)
-   opts = {'real'};
-end
-out = ift(ft(in1)*conj(ft(in2)),opts);
+function out = crosscorrelation(varargin)
+out = dip_geometry('crosscorrelation',varargin{:});

@@ -207,6 +207,24 @@ void wrap( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void crosscorrelation( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 6 );
+   dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
+   dip::Image const in2 = dml::GetImage( prhs[ 1 ] );
+   dip::String normalize = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : "";
+   if( normalize.empty() ) {
+      normalize = dip::S::DONT_NORMALIZE;
+   }
+   dip::String in1rep = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : dip::S::SPATIAL;
+   dip::String in2rep = nrhs > 4 ? dml::GetString( prhs[ 4 ] ) : dip::S::SPATIAL;
+   dip::String outrep = nrhs > 5 ? dml::GetString( prhs[ 5 ] ) : dip::S::SPATIAL;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::CrossCorrelationFT( in1, in2, out, in1rep, in2rep, outrep, normalize );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void findshift( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    DML_MAX_ARGS( 5 );
@@ -358,6 +376,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       } else if( function == "wrap" ) {
          wrap( plhs, nrhs, prhs );
 
+      } else if( function == "crosscorrelation" ) {
+         crosscorrelation( plhs, nrhs, prhs );
       } else if( function == "findshift" ) {
          findshift( plhs, nrhs, prhs );
       } else if( function == "fmmatch" ) {
