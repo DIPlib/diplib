@@ -5,10 +5,11 @@
 %                       inRepresentation,outRepresentation)
 %
 % PARAMETERS:
-%  wavelengths:       Frequency scales, selected as wavelengths in pixels
-%  bandwidth:         Width of each frequency scale, with 0.75, 0.55 and
-%                     0.41 corresponding approximately 1, 2 and 3 octaves
-%  nOrientations:     Number of orientations
+%  wavelengths:       Frequency scales, selected as wavelengths in pixels.
+%  bandwidth:         Width of each frequency scale, with 0.75, 0.55 and 0.41
+%                     corresponding approximately 1, 2 and 3 octaves.
+%  nOrientations:     Number of orientations. For other than a 2D image, this
+%                     must be set to 1.
 %  inRepresentation:  One of 'spatial' or 'frequency'
 %  outRepresentation: One of 'spatial' or 'frequency'
 %
@@ -20,8 +21,8 @@
 %  outRepresentation = 'spatial'
 %
 % NOTES:
-%  IMAGE_IN can be a vector of image sizes, the function will behave
-%  as if the input image were DELTAIM(IMAGE_IN).
+%  IMAGE_IN can be a vector of image sizes, the function will behave as if
+%  the input image were DELTAIM(IMAGE_IN).
 %
 %  IMAGE_OUT is a tensor image with nOrientations x length(wavelengths)
 %  tensor components. Its data type will be either SFLOAT or SCOMPLEX

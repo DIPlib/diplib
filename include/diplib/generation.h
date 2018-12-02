@@ -55,7 +55,7 @@ DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, Unsign
 /// \brief Multiplies the image with a windowing function.
 ///
 /// `type` can be one of the following windowing functions:
-///  - "Hamming": A cosine window. Set `parameter to 0.5 to get a Hann window, and to 0.53836 to get a Hamming window.
+///  - "Hamming": A cosine window. Set `parameter` to 0.5 to get a Hann window, and to 0.53836 to get a Hamming window.
 ///  - "Gaussian": A Gaussian window, this is the only one that is isotropic. `parameter` is the sigma, as a function
 ///    of the image half-width. Choose a value smaller or equal to 0.5. At 0.5, 4 sigmas fit in the image width.
 ///  - "Tukey": A rectangular window convolved with a Hann window. `parameter` is the fraction of image

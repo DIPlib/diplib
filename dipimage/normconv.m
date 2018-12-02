@@ -1,13 +1,17 @@
 %NORMCONV   Normalized convolution with a Gaussian kernel
 %
 % SYNOPSIS:
-%  image_out = normconv(image_in,dimension,sigma,method,boundary_condition,truncation)
+%  image_out = normconv(image_in,confidence,dimension,sigma,method,boundary_condition,truncation)
 %
 % PARAMETERS:
-%  dimension: Either [] for smoothing with a Gaussian, or a dimension index
-%             for estimating the derivative along that dimension.
-%  sigma:     Gaussian parameter for each dimension.
-%  method:    Method used to compute the derivative. One of:
+%  image_in:   An image with missing or uncertain samples.
+%  confidence: A scalar, real-valued image indicating the confidence in each
+%              sample of IMAGE_IN. All values should be in the range [0,1].
+%              A binary image is allowed as well.
+%  dimension:  Either [] for smoothing with a Gaussian, or a dimension index
+%              for estimating the derivative along that dimension.
+%  sigma:      Gaussian parameter for each dimension.
+%  method:     Method used to compute the derivative. One of:
 %    - 'fir':     Finite Impulse Resonse filter (convolution with a kernel).
 %    - 'iir':     Infinte Impulse Response filter (recursive filtering).
 %    - 'ft':      Convolution via a multiplication in the Fourier Domain.

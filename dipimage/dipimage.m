@@ -303,6 +303,7 @@ delete(findobj(fig,'Tag','mainmenu'));
 
 % read in the default menus and command ordering, and the exclude list
 try
+   clear dipmenus
    [menulist,functionlist] = dipmenus();
 catch ME
    disp([13,13,'Warning: Call to DIPMENUS failed:',13,13,ME.message,13,13])

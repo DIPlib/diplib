@@ -77,7 +77,7 @@ can try out later). Let's do some background correction. The idea is to
 use a low-pass filter that removes the objects while keeping the slow
 change in the background. Choose "Filters" and "Gaussian filter". Select
 `a` as the input image, and choose a name for your background image (we
-use `bg`). Finally, choose a suitable value for the filter parameter,
+use `bg`). Finally, choose a suitable value for the "Sigma" parameter,
 such that the objects are removed and the background shading is left.
 Try different settings until you are satisfied with the result.
 
@@ -182,19 +182,19 @@ the area of the grains. Let's start by plotting the length of the grains
 against their width:
 ```matlab
     figure;
-    scatter(feret(1,:),feret(2,:))
+    scatter(feret(:,1),feret(:,2))
 ```
 Apparently, they are mostly unrelated. Let's try a relation between the
 length and the surface area:
 ```matlab
-    scatter(feret(1,:),sz)
+    scatter(feret(:,1),sz)
 ```
 These appear to be more related, but, of course, the area also depends
 on the width of the grains. If we assume that the grains are elliptic,
 we know that the area is $\frac{1}{4}\pi d_1 d_2$. Let's plot the
 calculated area against the measured area:
 ```matlab
-    calc = pi*feret(1,:).*feret(2,:)/4;
+    calc = pi/4 * feret(:,1) .* feret(:,2);
     scatter(sz,calc)
 ```
 Wow! That is a linear relation. We can add a line along the diagonal to
@@ -212,11 +212,9 @@ the figure look prettier):
 
 The actual slope can be computed by:
 ```matlab
-    f = sz'\calc'
+    f = sz\calc
 ```
-(this is the lest-squares solution to the linear equation
-`sz'*f = calc'`; the apostrophes transpose the vectors to create column
-vectors).
+(this is the lest-squares solution to the linear equation `sz*f = calc`).
 
 Where to Go from Here
 ---------------------

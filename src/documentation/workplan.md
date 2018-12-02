@@ -169,7 +169,6 @@ Pure M-files:
 - `correctshift`
 - `cpf`
 - `dpr`
-- `find_affine_trans`
 - `find_lambda`
 - `findlocalshift`
 - `findlocmax`

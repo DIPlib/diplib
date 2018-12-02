@@ -12,6 +12,9 @@
 %  matrix:     Affine transformation matrix (2x3, the bottom row is [0,0,1])
 %              that can be used to transform image_in2 to yield image_out.
 %
+% DEFAULTS:
+%  method = 'linear'
+%
 % EXAMPLE:
 %  a = readim('trui');
 %  phi = pi/8;
