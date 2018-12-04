@@ -145,15 +145,15 @@ DIP_EXPORT void HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
       Image& out,
-      UnsignedArray const& range = { }
+      UnsignedArray const& range = {}
 );
 inline Image HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
-      UnsignedArray const& range = { }
+      UnsignedArray const& range = {}
 ) {
    Image out;
-   HoughTransformCircleCenters( in, gv, out, range);
+   HoughTransformCircleCenters( in, gv, out, range );
    return out;
 }
 

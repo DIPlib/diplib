@@ -25,42 +25,59 @@ namespace dip {
 
 namespace {
 
+struct IntegerCoords{
+   dip::sint x;
+   dip::sint y;
+
+   operator UnsignedArray() {
+      return { static_cast< dip::uint >( x ), static_cast< dip::uint >( y ) };
+   }
+};
+
+IntegerCoords operator+( IntegerCoords lhs, IntegerCoords rhs ) {
+   lhs.x += rhs.x;
+   lhs.y += rhs.y;
+   return lhs;
+}
+
+IntegerCoords operator-( IntegerCoords lhs, IntegerCoords rhs ) {
+   lhs.x -= rhs.x;
+   lhs.y -= rhs.y;
+   return lhs;
+}
+
 // Cohen–Sutherland Algorithm
 // https://gist.githubusercontent.com/maxkarelov/293b5e4235c1e7dcdb40/raw/d92f331556ff74067a49b0676c35dbbc611ee25a/cohen-sutherland-algorithm.cp
-bool clip(IntegerArray &A, IntegerArray &B, IntegerArray const &Pmax) {
-   while (true) {
+bool clip( IntegerCoords& A, IntegerCoords& B, IntegerCoords Pmax ) {
+   while( true ) {
       unsigned int C1 = 0;
-      if (A[ 0 ] < 0)         C1 += 1;
-      if (A[ 0 ] > Pmax[ 0 ]) C1 += 2;
-      if (A[ 1 ] < 0)         C1 += 4;
-      if (A[ 1 ] > Pmax[ 1 ]) C1 += 8;
+      if( A.x < 0 )      { C1 += 1; }
+      if( A.x > Pmax.x ) { C1 += 2; }
+      if( A.y < 0 )      { C1 += 4; }
+      if( A.y > Pmax.y ) { C1 += 8; }
 
       unsigned int C2 = 0;
-      if (B[ 0 ] < 0)         C2 += 1;
-      if (B[ 0 ] > Pmax[ 0 ]) C2 += 2;
-      if (B[ 1 ] < 0)         C2 += 4;
-      if (B[ 1 ] > Pmax[ 1 ]) C2 += 8;
+      if( B.x < 0 )      { C2 += 1; }
+      if( B.x > Pmax.x ) { C2 += 2; }
+      if( B.y < 0 )      { C2 += 4; }
+      if( B.y > Pmax.y ) { C2 += 8; }
 
-      if ((C1 == C2) && (C1 == 0)) return true;
+      if(( C1 == C2 ) && ( C1 == 0 )) { return true; }
+      if(( C1 & C2 ) != 0) { return false; }
+      if( C1 == 0 ) { std::swap( A, B ); }
 
-      if ((C1 & C2) != 0) return false;
-
-      if (C1 == 0) {
-         std::swap(A, B);
-      }
-
-      if ((C1 & 1) != 0) {
-         A[ 1 ] = B[ 1 ] - (B[ 0 ]            ) * (B[ 1 ] - A[ 1 ]) / (B[ 0 ] - A[ 0 ]);
-         A[ 0 ] = 0;
-      } else if ((C1 & 2) != 0) {
-         A[ 1 ] = B[ 1 ] - (B[ 0 ] - Pmax[ 0 ]) * (B[ 1 ] - A[ 1 ]) / (B[ 0 ] - A[ 0 ]);
-         A[ 0 ] = Pmax[ 0 ];
-      } else if ((C1 & 4) != 0) {
-         A[ 0 ] = B[ 0 ] - (B[ 1 ]            ) * (B[ 0 ] - A[ 0 ]) / (B[ 1 ] - A[ 1 ]);
-         A[ 1 ] = 0;
-      } else if ((C1 & 8) != 0) {
-         A[ 0 ] = B[ 0 ] - (B[ 1 ] - Pmax[ 1 ]) * (B[ 0 ] - A[ 0 ]) / (B[ 1 ] - A[ 1 ]);
-         A[ 1 ] = Pmax[ 1 ];
+      if(( C1 & 1 ) != 0 ) {
+         A.y = B.y - ( B.x          ) * ( B.y - A.y ) / ( B.x - A.x );
+         A.x = 0;
+      } else if(( C1 & 2 ) != 0 ) {
+         A.y = B.y - ( B.x - Pmax.x ) * ( B.y - A.y ) / ( B.x - A.x );
+         A.x = Pmax.x;
+      } else if(( C1 & 4 ) != 0 ) {
+         A.x = B.x - ( B.y          ) * ( B.x - A.x ) / ( B.y - A.y );
+         A.y = 0;
+      } else if(( C1 & 8 ) != 0 ) {
+         A.x = B.x - ( B.y - Pmax.y ) * ( B.x - A.x ) / ( B.y - A.y );
+         A.y = Pmax.y;
       }
    }
 }
@@ -71,7 +88,7 @@ void HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
       Image& out,
-      UnsignedArray const &range
+      UnsignedArray const& range
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !gv.IsForged(), E::IMAGE_NOT_FORGED );
@@ -82,61 +99,57 @@ void HoughTransformCircleCenters(
    DIP_THROW_IF( in.DataType() != DT_BIN, E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( gv.Dimensionality() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
    DIP_THROW_IF( gv.TensorElements() != 2, "Only defined for 2-vector images" );
-   
-   dip::IntegerArray sz{ static_cast< dip::sint >( in.Size(0) - 1), 
-                         static_cast< dip::sint >( in.Size(1) - 1) };
-   dip::dfloat minsz, maxsz;
-   if ( range.empty() ) {
+
+   IntegerCoords sz{ static_cast< dip::sint >( in.Size( 0 ) - 1 ),
+                     static_cast< dip::sint >( in.Size( 1 ) - 1 ) };
+   dfloat minsz;
+   dfloat maxsz;
+   if( range.empty() ) {
       minsz = 0;
-      maxsz = std::sqrt( sz[ 0] * sz[ 0 ] + sz[ 1 ] * sz[ 1 ] );
+      maxsz = std::hypot( sz.x, sz.y );
    } else {
       DIP_THROW_IF( range.size() != 2, E::DIMENSIONALITIES_DONT_MATCH );
-      minsz = static_cast< dip::dfloat >( range[ 0 ] );
-      maxsz = static_cast< dip::dfloat >( range[ 1 ] );
+      minsz = static_cast< dfloat >( range[ 0 ] );
+      maxsz = static_cast< dfloat >( range[ 1 ] );
    }
-   
+
    // Initialize accumulator
    out.ReForge( in.Sizes(), 1, DT_SFLOAT );
-   out.Fill(0);
-   
+   out.Fill( 0 );
+
    auto coordComp = gv.OffsetToCoordinatesComputer();
 
    // Iterate over on pixels
    // NOTE: calling end() on View does not work
-   for (auto it = gv.At( in ).begin(); it; ++it) {
+   for( auto it = gv.At( in ).begin(); it; ++it ) {
       auto coord = coordComp( it.Offset() );
-      dip::sint x = static_cast< dip::sint >( coord[ 0 ] ),
-                y = static_cast< dip::sint >( coord[ 1 ] );
-      
-      dip::dfloat angle = std::atan2( static_cast< dip::dfloat >( it[ 1 ] ), static_cast< dip::dfloat >( it[ 0 ] ) );
-
+      IntegerCoords c{ static_cast< dip::sint >( coord[ 0 ] ),
+                       static_cast< dip::sint >( coord[ 1 ] ) };
+      dfloat angle = std::atan2( static_cast< dfloat >( it[ 1 ] ), static_cast< dfloat >( it[ 0 ] ));
       // TODO: option to select inside or outside
-      if (minsz == 0) {
+      IntegerCoords max = { static_cast< dip::sint >( std::round( std::cos( angle ) * maxsz )),
+                            static_cast< dip::sint >( std::round( std::sin( angle ) * maxsz )) };
+      if( minsz == 0 ) {
          // Draw single line
-         dip::sint cmax = static_cast< dip::sint >( std::cos( angle ) * maxsz ),
-                   smax = static_cast< dip::sint >( std::sin( angle ) * maxsz );
-         
-         IntegerArray start{ x - cmax, y - smax }, end{ x + cmax, y + smax };
-         
-         if ( clip( start, end, sz ) ) {
+         IntegerCoords start = c - max;
+         IntegerCoords end = c + max;
+         if( clip( start, end, sz )) {
             // Note that after clipping we can be sure that all coordinates are positive
-            DrawLine( out, UnsignedArray(std::move(start)), UnsignedArray(std::move(end)), { 1 }, S::ADD );
+            DrawLine( out, start, end, { 1 }, S::ADD );
          }
       } else {
          // Draw two line segments
-         dip::sint cmin = static_cast< dip::sint >( std::cos( angle ) * minsz ),
-                   smin = static_cast< dip::sint >( std::sin( angle ) * minsz ),
-                   cmax = static_cast< dip::sint >( std::cos( angle ) * maxsz ),
-                   smax = static_cast< dip::sint >( std::sin( angle ) * maxsz );
-         
-         IntegerArray start1{ x - cmin, y - smin }, end1{ x - cmax, y - smax },
-                      start2{ x + cmin, y + smin }, end2{ x + cmax, y + smax };
-         
-         if ( clip( start1, end1, sz ) ) {
-            DrawLine( out, UnsignedArray(std::move(start1)), UnsignedArray(std::move(end1)), { 1 }, S::ADD );
+         IntegerCoords min = { static_cast< dip::sint >( std::round( std::cos( angle ) * minsz )),
+                               static_cast< dip::sint >( std::round( std::sin( angle ) * minsz )) };
+         IntegerCoords start = c - min;
+         IntegerCoords end = c - max;
+         if( clip( start, end, sz )) {
+            DrawLine( out, start, end, { 1 }, S::ADD );
          }
-         if ( clip( start2, end2, sz ) ) {
-            DrawLine( out, UnsignedArray(std::move(start2)), UnsignedArray(std::move(end2)), { 1 }, S::ADD );
+         start = c + min;
+         end = c + max;
+         if( clip( start, end, sz )) {
+            DrawLine( out, start, end, { 1 }, S::ADD );
          }
       }
    }
@@ -153,21 +166,21 @@ void HoughTransformCircleCenters(
 
 DOCTEST_TEST_CASE("[DIPlib] testing the HoughTransformCircleCenters function") {
    // Draw a circle
-   auto a = dip::Image( {1024, 1024}, 1, dip::DT_SFLOAT );
+   auto a = dip::Image( { 512, 512 }, 1, dip::DT_SFLOAT );
    a.Fill( 0 );
-   dip::DrawEllipsoid( a, {200, 200}, {512, 512} );
-   
+   dip::DrawEllipsoid( a, { 200, 200 }, { 256, 256 } );
+
    // Try to find it
    auto gv  = dip::Gradient( a );
    auto gm  = dip::Norm( gv );
-   auto bin = dip::IsodataThreshold( gm, { } );
+   auto bin = dip::IsodataThreshold( gm, {} );
    auto h   = dip::HoughTransformCircleCenters( bin, gv );
    auto f   = dip::Gauss( h, { 5 } );
    auto m   = dip::MaximumPixel( f );
 
-   // Check result   
-   DOCTEST_CHECK( m[0] == 512 );
-   DOCTEST_CHECK( m[1] == 512 );
+   // Check result
+   DOCTEST_CHECK( m[0] == 256 );
+   DOCTEST_CHECK( m[1] == 256 );
 }
 
 #endif // DIP__ENABLE_DOCTEST
