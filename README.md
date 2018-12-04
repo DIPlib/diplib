@@ -52,7 +52,8 @@ The following `make` targets are part of the `all` target:
 
 Important `cmake` command-line arguments:
 
-    -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location
+    -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location for DIPlib, DIPimage and the docs
+    -DPYDIP_INSTALL_PATH=$HOME/python  # choose an instal location for PyDIP
     -DCMAKE_BUILD_TYPE=Debug           # by default it is release
     -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library
     -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics)
@@ -73,7 +74,7 @@ Important `cmake` command-line arguments:
     -DDIP_BUILD_DIPVIEWER=Off          # don't build/install the DIPviewer module
     -DDIP_BUILD_PYDIP=Off              # don't build/install the PyDIP Python module
     -DDIP_BUILD_DIPIMAGE=Off           # don't build/install the DIPimage MATLAB toolbox
-    -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP agains Python 3.6
+    -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
     -DMatlab_ROOT_DIR=<path>           # compile DIPimage against MATLAB in <path>
 
 Some of these options might not be available on your system. For example, if you don't have

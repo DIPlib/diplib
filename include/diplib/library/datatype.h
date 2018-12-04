@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the DataType class and support functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,22 +42,50 @@ namespace dip {
 /// \defgroup types Pixel data types
 /// \brief Types used for image samples (pixels), and related support functionality
 ///
-/// The following table lists all supported sample data types, together with `dip::DataType` constants and type
-/// groups (see `dip::DataType::Classes`) that they belong to.
+/// The following table lists all supported sample data types, together with `dip::DataType` constants
+/// and type groups (see `dip::DataType::Classes`) that they belong to.
 ///
 /// C++ type        | Constant                 | Type groups
 /// --------------- | ------------------------ | -------------------------------------------------
 /// `dip::bin`      | `dip::DT_BIN`            | `Binary`, `IntOrBin`, `FlexBin`, `Unsigned`
 /// `dip::uint8`    | `dip::DT_UINT8`          | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
-/// `dip::uint16`   | `dip::DT_UINT16`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
-/// `dip::uint32`   | `dip::DT_UINT32`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
 /// `dip::sint8`    | `dip::DT_SINT8`          | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
+/// `dip::uint16`   | `dip::DT_UINT16`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
 /// `dip::sint16`   | `dip::DT_SINT16`         | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
+/// `dip::uint32`   | `dip::DT_UINT32`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
 /// `dip::sint32`   | `dip::DT_SINT32`         | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
 /// `dip::sfloat`   | `dip::DT_SFLOAT`         | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`
 /// `dip::dfloat`   | `dip::DT_DFLOAT`         | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`
 /// `dip::scomplex` | `dip::DT_SCOMPLEX`       | `Complex`, `Flex`, `FlexBin`, `Signed`
 /// `dip::dcomplex` | `dip::DT_DCOMPLEX`       | `Complex`, `Flex`, `FlexBin`, `Signed`
+///
+/// Note that some functions require specific data types for their input images, and will throw an
+/// exception if the data type doesn't match. However, type restrictions typically are meaningful,
+/// in the sense that any data type that makes sense for the given operation should be accepted,
+/// and is rejected only when an operation is not possible on a given type. For example, it is not
+/// possible to find the maximum of a set of complex values, therefore `dip::Maximum` does not accept
+/// complex-valued images as input.
+///
+/// The output images are typically set to a suitable type, which is selected using functions
+/// such as `dip::DataType::SuggestComplex` and `dip::DataType::SuggestFlex`. The table below lists
+/// these functions and their output. See also `dip::DataType::SuggestArithmetic` and
+/// `dip::DataType::SuggestDyadicOperation`, which help select a suitable data type when combining
+/// two images. To manually select an output data type, see \ref protect.
+///
+/// <table>
+/// <tr style='font-size:70%;'><th>Input data type <th> \ref dip::DataType::SuggestInteger "SuggestInteger" <th> \ref dip::DataType::SuggestSigned "SuggestSigned" <th> \ref dip::DataType::SuggestAbs "SuggestAbs" <th> \ref dip::DataType::SuggestFloat "SuggestFloat" <th> \ref dip::DataType::SuggestDouble "SuggestDouble" <th> \ref dip::DataType::SuggestReal "SuggestReal" <th> \ref dip::DataType::SuggestComplex "SuggestComplex" <th> \ref dip::DataType::SuggestFlex "SuggestFlex" <th> \ref dip::DataType::SuggestFlexBin "SuggestFlexBin"
+/// <tr style='font-size:70%;'><th>`DT_BIN`      <td> `DT_UINT8`  <td> `DT_SINT8`    <td> `DT_BIN`    <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_BIN`
+/// <tr style='font-size:70%;'><th>`DT_UINT8`    <td> `DT_UINT8`  <td> `DT_SINT8`    <td> `DT_UINT8`  <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_SINT8`    <td> `DT_SINT8`  <td> `DT_SINT8`    <td> `DT_UINT8`  <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16` <td> `DT_SINT16`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_SINT16`   <td> `DT_SINT16` <td> `DT_SINT16`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32` <td> `DT_SINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_SINT32`   <td> `DT_SINT32` <td> `DT_SINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SINT32` <td> `DT_SFLOAT`   <td> `DT_SFLOAT` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SFLOAT` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_SINT32` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_SCOMPLEX` <td> `DT_SINT32` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT` <td> `DT_SFLOAT` <td> `DT_DCOMPLEX` <td> `DT_SFLOAT` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX`
+/// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_SINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+/// </table>
 ///
 /// \ingroup infrastructure
 /// \{
@@ -91,6 +119,8 @@ namespace dip {
 /// ```cpp
 ///     dip::DT_BIN.SizeOf();
 /// ```
+///
+/// See \ref types for more information about image sample data types.
 struct DIP_NO_EXPORT DataType {
 
    enum class DT {
@@ -423,37 +453,70 @@ struct DIP_NO_EXPORT DataType {
    // Functions to suggest an output data type for all types of filters and operators
    //
 
-   /// \brief Returns an integer type that is most suitable to hold samples of `type`.
+   /// \brief Returns an integer type that is most suitable to hold samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestInteger( DataType type );
 
-   /// \brief Returns an integer type that is most suitable to hold samples of `type`.
+   /// \brief Returns an integer type that is most suitable to hold samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestSigned( DataType type );
 
-   /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
+   /// \brief Returns a suitable floating-point type that can hold the samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestFloat( DataType type );
 
-   /// \brief Returns a suitable double precision floating-point type (real or complex) that can hold large sums of `type`.
+   /// \brief Returns a suitable double precision floating-point type (real or complex) that can hold large sums of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestDouble( DataType type );
 
-   /// \brief Returns a suitable complex type that can hold the samples of `type`.
+   /// \brief Returns a suitable complex type that can hold the samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestComplex( DataType type );
 
-   /// \brief Returns a suitable floating-point or complex type that can hold the samples of `type`.
+   /// \brief Returns a suitable floating-point or complex type that can hold the samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestFlex( DataType type );
 
-   /// \brief Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
+   /// \brief Returns a suitable floating-point, complex or binary type that can hold the samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestFlexBin( DataType type );
 
-   /// \brief Returns a suitable type that can hold samples of type `abs(type)`.
+   /// \brief Returns a suitable type that can hold samples of type `abs(type)`. See \ref types.
    DIP_EXPORT static DataType SuggestAbs( DataType type );
 
-   /// \brief Returns a suitable real type that can hold the samples of `type`.
+   /// \brief Returns a suitable real type that can hold the samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestReal( DataType type );
 
-   /// \brief Returns a suitable floating-point, complex or binary type (FlexBin) that can hold the result of an arithmetic computation performed with the two data types.
+   /// \brief Returns a suitable floating-point, complex or binary type (FlexBin) that can hold the result of an
+   /// arithmetic computation performed with the two data types.
+   ///
+   /// The output value given `type1` and `type2` is as follows. First the two arguments are promoted using
+   /// `dip::DataType::SuggestFlexBin` (which converts 8 and 16-bit integers to `DT_SFLOAT` and 32-bit integers
+   /// to `DT_DFLOAT`), and the resulting two types are looked up in this table (note that the order of the two
+   /// inputs is irrelevant, and the table is symmetric):
+   ///
+   /// <table>
+   /// <tr style='font-size:70%;'><th>&nbsp;        <th> `DT_BIN`      <th> `DT_SFLOAT`   <th> `DT_DFLOAT`   <th> `DT_SCOMPLEX` <th> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_BIN`      <td> `DT_BIN`      <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// </table>
    DIP_EXPORT static DataType SuggestArithmetic( DataType type1, DataType type2 );
 
    /// \brief Returns a suitable type that can hold any samples of the two data types.
+   ///
+   /// The output value given `type1` and `type2` is as follows (note that the order of the two inputs is
+   /// irrelevant, and the table is symmetric):
+   ///
+   /// <table>
+   /// <tr style='font-size:70%;'><th>&nbsp;        <th> `DT_BIN`      <th> `DT_UINT8`    <th> `DT_SINT8`    <th> `DT_UINT16`   <th> `DT_SINT16`   <th> `DT_UINT32`   <th> `DT_SINT32`   <th> `DT_SFLOAT`   <th> `DT_DFLOAT`   <th> `DT_SCOMPLEX` <th> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_BIN`      <td> `DT_BIN`      <td> `DT_UINT8`    <td> `DT_SINT8`    <td> `DT_UINT16`   <td> `DT_SINT16`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT8`    <td> `DT_UINT8`    <td> `DT_UINT8`    <td> `DT_SINT16`   <td> `DT_UINT16`   <td> `DT_SINT16`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT8`    <td> `DT_SINT8`    <td> `DT_SINT16`   <td> `DT_SINT8`    <td> `DT_SINT32`   <td> `DT_SINT16`   <td> `DT_DFLOAT`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16`   <td> `DT_UINT16`   <td> `DT_SINT32`   <td> `DT_UINT16`   <td> `DT_SINT32`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT32`   <td> `DT_SINT16`   <td> `DT_DFLOAT`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32`   <td> `DT_UINT32`   <td> `DT_DFLOAT`   <td> `DT_UINT32`   <td> `DT_DFLOAT`   <td> `DT_UINT32`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_DFLOAT`   <td> `DT_SINT32`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// </table>
    DIP_EXPORT static DataType SuggestDyadicOperation( DataType type1, DataType type2 );
 
 };

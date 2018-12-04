@@ -21,7 +21,7 @@
 #include "diplib.h"
 
 
-/* These are the dip_DataTypeGetInfo() functions actually used, and what to use in the new infrastructure:
+/* These are the dip_DataTypeGetInfo() functions actually used in the old DIPlib, and what to use in the new infrastructure:
 DIP_DT_INFO_SIZEOF                  // DataType::SizeOf
 DIP_DT_INFO_C2R                     // DataType::SuggestFloat, FloatType
 DIP_DT_INFO_R2C                     // DataType::SuggestComplex, ComplexType
@@ -30,8 +30,8 @@ DIP_DT_INFO_MAXIMUM_VALUE           // std::numeric_limits<T>::max()
 DIP_DT_INFO_MINIMUM_VALUE           // std::numeric_limits<T>::lowest()
 DIP_DT_INFO_PROPS                   // DataType::IsReal, DataType::IsComplex, etc.
 DIP_DT_INFO_SUGGEST_2               // DataType::SuggestComplex
-DIP_DT_INFO_SUGGEST_5               // A non-binary type that can hold the data (bin->sint8, others don't change) -- we don't have this yet
-DIP_DT_INFO_SUGGEST_6               // A double-precision type that can hold the data -- we don't have this yet
+DIP_DT_INFO_SUGGEST_5               // A non-binary type that can hold the data (bin->sint8, others don't change) => `if (dt.IsBinary()) { dt = dip::DT_SINT8; }`
+DIP_DT_INFO_SUGGEST_6               // DataType::SuggestDouble
 DIP_DT_INFO_TO_FLEX                 // DataType::SuggestFlex, FlexType
 DIP_DT_INFO_TO_DIPIMAGE             // DataType::SuggestFlexBin, FlexBinType
 DIP_DT_INFO_TO_FLOAT                // DataType::SuggestFloat, FloatType
@@ -167,63 +167,87 @@ DataType DataType::SuggestReal( DataType type ) {
 DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
    type1 = DataType::SuggestFlexBin( type1 );
    type2 = DataType::SuggestFlexBin( type2 );
-   if( type2 > type1 )
-      dip::swap( type1, type2 );    // sort the two, it saves us lots of tests
-   if( type1 == DT_DCOMPLEX )
+   if( type2 > type1 ) {
+      dip::swap( type1, type2 ); // sort the two, it saves us lots of tests
+   }
+   if( type1 == DT_DCOMPLEX ) {
       return DT_DCOMPLEX;
-   if( ( type1 == DT_SCOMPLEX ) && ( type2 == DT_DFLOAT ) )
+   }
+   if(( type1 == DT_SCOMPLEX ) && ( type2 == DT_DFLOAT )) {
       return DT_DCOMPLEX;
-   if( type1 == DT_SCOMPLEX )
+   }
+   if( type1 == DT_SCOMPLEX ) {
       return DT_SCOMPLEX;
-   if( type1 == DT_DFLOAT )
+   }
+   if( type1 == DT_DFLOAT ) {
       return DT_DFLOAT;
-   if( type1 == DT_SFLOAT )
+   }
+   if( type1 == DT_SFLOAT ) {
       return DT_SFLOAT;
+   }
    return DT_BIN;
 }
 
 DataType DataType::SuggestDyadicOperation( DataType type1, DataType type2 ) {
-   if( type1 == type2 )
+   if( type1 == type2 ) {
       return type1;                 // short-cut
-   if( type2 > type1 )
+   }
+   if( type2 > type1 ) {            // compares after casting to integer, see `enum class DT` for order
       dip::swap( type1, type2 );    // sort the two, it saves us lots of tests
+   }
 
-   if( type1 == DT_DCOMPLEX )
+   if( type1 == DT_DCOMPLEX ) {
       return DT_DCOMPLEX;
-   if( ( type1 == DT_SCOMPLEX ) && ( type2 == DT_DFLOAT ) )
+   }
+   if(( type1 == DT_SCOMPLEX ) && (( type2 == DT_DFLOAT ) || ( type2 == DT_UINT32 ) || ( type2 == DT_SINT32 ))) {
       return DT_DCOMPLEX;
-   if( type1 == DT_SCOMPLEX )
+   }
+   if( type1 == DT_SCOMPLEX ) {
       return DT_SCOMPLEX;
+   }
 
-   if( type1 == DT_DFLOAT )
+   if( type1 == DT_DFLOAT ) {
       return DT_DFLOAT;
-   if( ( type1 == DT_SFLOAT ) && ( ( type2 == DT_UINT32 ) || ( type2 == DT_SINT32 ) ) )
+   }
+   if(( type1 == DT_SFLOAT ) && (( type2 == DT_UINT32 ) || ( type2 == DT_SINT32 ))) {
       return DT_DFLOAT;
-   if( type1 == DT_SFLOAT )
+   }
+   if( type1 == DT_SFLOAT ) {
       return DT_SFLOAT;
+   }
 
-   if( ( type1 == DT_SINT32 ) && ( type2 == DT_UINT32 ) )
+   if(( type1 == DT_SINT32 ) && ( type2 == DT_UINT32 )) {
       return DT_DFLOAT;
-   if( type1 == DT_SINT32 )
+   }
+   if( type1 == DT_SINT32 ) {
       return DT_SINT32;
-   if( ( type1 == DT_UINT32 ) && ( ( type2 == DT_SINT16 ) || ( type2 == DT_SINT8 ) ) )
+   }
+   if(( type1 == DT_UINT32 ) && (( type2 == DT_SINT16 ) || ( type2 == DT_SINT8 ))) {
       return DT_DFLOAT;
-   if( type1 == DT_UINT32 )
+   }
+   if( type1 == DT_UINT32 ) {
       return DT_UINT32;
+   }
 
-   if( ( type1 == DT_SINT16 ) && ( type2 == DT_UINT16 ) )
+   if(( type1 == DT_SINT16 ) && ( type2 == DT_UINT16 )) {
       return DT_SINT32;
-   if( type1 == DT_SINT16 )
+   }
+   if( type1 == DT_SINT16 ) {
       return DT_SINT16;
-   if( ( type1 == DT_UINT16 ) && ( type2 == DT_SINT8 ) )
+   }
+   if(( type1 == DT_UINT16 ) && ( type2 == DT_SINT8 )) {
       return DT_SINT32;
-   if( type1 == DT_UINT16 )
+   }
+   if( type1 == DT_UINT16 ) {
       return DT_UINT16;
+   }
 
-   if( ( type1 == DT_SINT8 ) && ( type2 == DT_UINT8 ) )
+   if(( type1 == DT_SINT8 ) && ( type2 == DT_UINT8 )) {
       return DT_SINT16;
-   if( type1 == DT_SINT8 )
+   }
+   if( type1 == DT_SINT8 ) {
       return DT_SINT8;
+   }
    //if( type1 == DT_UINT8 ) // is always the case: if it's DT_BIN, then type2 is also DT_BIN, and we returned at the first test in this function.
    return DT_UINT8;
 }

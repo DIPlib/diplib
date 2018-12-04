@@ -4,7 +4,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2014-2017, Cris Luengo.)
+[//]: # ([c]2014-2018, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -64,7 +64,7 @@ on how tensor elements are stored, see the section on \ref tensors.
 
 A `%dip::Image` object can contain samples of a wide variety of numeric types,
 including binary, unsigned and signed integers, floating point, and
-complex. For a complete list see the description of the `dip::DataType` class.
+complex. For a complete list see \ref types.
 All the image's samples must have the same type.
 
 All of these image properties are dynamic. That is, they can be
@@ -814,7 +814,7 @@ data type, protect it, and receive the result of the filter in that data type:
     // out is forged with correct sizes to receive filter result, and as 16-bit integer.
 ```
 
-This is especially simple for in-place operations where we want to receive the
+This is especially suitable for in-place operations where we want to receive the
 output in the same data segment as the input:
 
 ```cpp
@@ -828,6 +828,9 @@ in the last code snipped above, the filter will not be able to strip and re-forg
 the image, meaning that the image must have the correct sizes and tensor elements
 to receive the output. However, if the image is not forged, as in the first
 code snippet, then the filter can set its sizes and forge it.
+
+Note, however, that some functions require specific data types for their output image,
+and will throw an error if the wrong output data type is requested.
 
 
 [//]: # (--------------------------------------------------------------)
