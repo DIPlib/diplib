@@ -53,7 +53,7 @@ The following `make` targets are part of the `all` target:
 Important `cmake` command-line arguments:
 
     -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location for DIPlib, DIPimage and the docs
-    -DPYDIP_INSTALL_PATH=$HOME/python  # choose an instal location for PyDIP
+    -DPYDIP_INSTALL_PATH=$HOME/...     # choose an instal location for PyDIP (see below)
     -DCMAKE_BUILD_TYPE=Debug           # by default it is release
     -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library
     -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics)
@@ -83,6 +83,14 @@ it to `Off` will yield a warning message when running CMake.
 
 Note that on some platforms, the Python module requires the *DIPlib* library to build as
 a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
+
+The `PYDIP_INSTALL_PATH` option defaults to the system-wide site packages directory for the
+selected version of Python. To obtain the user-specific site packages directory, use the
+following shell command: `python3 -m site --user-site`. The output can be used for the PyDIP
+installation path for users that cannot or do not want to install in the system-wide directory.
+For example:
+
+    cmake /path/to/dip/root/directory -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
 
 The `apidoc` target requires that *Doxygen* be installed, the target will not be available
 if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be

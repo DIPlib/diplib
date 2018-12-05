@@ -81,6 +81,14 @@ directory to your liking here. Note that the default directory requires administ
 privileges (I was not able to install there, even though I have the administrator
 password). Let's say we select `C:\Users\<name>\DIPlib`.
 
+- `PYDIP_INSTALL_PATH` should be set to a place where Python will find the PyDIP module.
+If defaults to the correct system-wide location for your version of Python. You might
+need administrator privileges to install there. You can set this to
+`%APPDATA%\Python\PythonXY\site-packages` (where `XY` is the Python version number),
+this directory name can be obtained by executing `python3 -m site --user-site` on the
+command line.
+Alternatively, `DIP_BUILD_PYDIP` can be set to `Off` to not build the PyDIP module.
+
 - If `DIP_BUILD_DIPIMAGE` is not on the list, you don't have MATLAB installed, or you are
 building 32-bit binaries.
 
@@ -152,17 +160,11 @@ Or start the GUI:
 ## Using *PyDIP*
 
 Once the `INSTALL` target has finished building and installing, start *Python*.
-Type the following commands:
+The following command will import the PyDIP package as `dip`, which is shorter to
+type and mimics the namespace used in the C++ library:
 ```python
-    import sys
-    sys.path.append(r'C:\Program Files\DIPlib\lib')
-    os.environ["PATH"] = os.environ["PATH"] + r'C:\Program Files\DIPlib\lib'
     import PyDIP as dip
-    import PyDIP.PyDIPviewer as dv
 ```
-(Replace `C:\Program Files\DIPlib\lib` with the actual path you installed to.)
-The `os.chdir` command is necessary because we haven't installed *PyDIP* to a
-directory that *Python* knows about. This will be fixed at some point.
 
 To get started using *PyDIP*, look through the help, starting at
 ```python

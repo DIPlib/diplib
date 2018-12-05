@@ -104,19 +104,23 @@ As explained in the `README.md` file, type
 This will install to `/usr/local`. This is also where *Homebrew* puts its stuff.
 If you prefer to install elsewhere, change the `cmake` line with the following:
 ```bash
-    cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip
+    cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
 ```
-This will install everything under the `dip` directory in your home directory.
+This will install DIPlib, DIPimage and the documentation under the `dip` directory
+in your home directory, and PyDIP in the user site packages directory.
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
 to your computer. Note that the resuling binaries will likely be slower on another
-computer.
+computer, and possibly not work at all.
 
 Finally, if you installed the `gcc` package because you want to use *OpenMP*,
-add `-DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7` to the `cmake` command
+add `-DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8` to the `cmake` command
 line. By default, `cmake` will find the compiler that came with `XCode`. These
 two options specify that you want to use the *GCC* compilers instead.
+(**Note**: at the time of this writing, `gcc-7` was the executable installed by
+the `gcc` package. This will change over time, as new versions of GCC are adopted
+by HomeBrew. Adjust as necessary.)
 
 You can also do
 ```bash
@@ -147,16 +151,11 @@ Or start the GUI:
 ## Using *PyDIP*
 
 Once the `install` target has finished building and installing, start *Python*.
-Type the following commands:
+The following command will import the PyDIP package as `dip`, which is shorter to
+type and mimics the namespace used in the C++ library:
 ```python
-    import sys
-    sys.path.append(r'/Users/<name>/dip')
     import PyDIP as dip
-    import PyDIP.PyDIPviewer as dv
 ```
-(Replace `/Users/<name>/dip` with the actual path you installed to.)
-The `os.chdir` command is necessary because we haven't installed *PyDIP* to a
-directory that *Python* knows about. This will be fixed at some point.
 
 To get started using *PyDIP*, look through the help, starting at
 ```python
