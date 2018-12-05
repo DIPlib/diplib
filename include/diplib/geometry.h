@@ -801,6 +801,25 @@ inline Image Concatenate(
    return out;
 }
 
+/// \brief Concatenates a set of scalar images along the tensor dimension.
+///
+/// Input images are individual tensor components in the output vector image. They must all have the same sizes
+/// and be scalar.
+///
+/// If images are differing data types, the output will be of a type that best can represent the input
+/// (see `dip::DataType::SuggestDyadicOperation`). `out` will be a vector image with `in.size()` samples per pixel.
+DIP_EXPORT void JoinChannels(
+      ImageConstRefArray const& in,
+      Image& out
+);
+inline Image JoinChannels(
+      ImageConstRefArray const& in
+) {
+   Image out;
+   JoinChannels( in, out );
+   return out;
+}
+
 
 /// \}
 

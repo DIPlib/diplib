@@ -954,7 +954,7 @@ inline Image CreateCoordinates(
 /// \brief Fills an image with the distance to a given point.
 ///
 /// Computes the distance from each pixel in `out` to the coordinates specified through `point`, which can be
-/// outside of the image. The `scale` parameter may be used to specify the relative distance between pixels
+/// outside of the image. The `scaling` parameter may be used to specify the relative distance between pixels
 /// in each dimension (the pixel sizes in `out` are ignored). Both `point` and `scaling` must have the same
 /// number of elements as `out.Size()`, but `scaling` can also be empty (no scaling) or have a single element
 /// (isotropic scaling).

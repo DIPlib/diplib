@@ -20,6 +20,7 @@
 #include "diplib.h"
 #include "diplib/geometry.h"
 #include "diplib/iterators.h"
+#include "diplib/generic_iterators.h"
 
 namespace dip {
 
@@ -128,7 +129,9 @@ void Tile(
    // We do this in case `c_out` is the same as one of the images in `in`, reforging it would destroy
    // one of the inputs. Not initializing `out` to `c_out` would mean not being able to re-use a pixel
    // buffer already allocated for `c_out`, and would mean not using any external interface set in it.
-   // TODO: what if `out` aliases one of the images in `in` (could happen if `c_out` had the right sizes).
+   // NOTE that there is no way for `ReForge` to keep the data segment if `c_out` is the same as one of
+   // the images in `in`, because out will always be larger than each of the images in `in` (the case
+   // where the is one one image to tile has already been taken care of).
    Image out( c_out ); //
    out.ReForge( outSize, nTElems, dataType );
    out.ReshapeTensor( tensor );
@@ -221,6 +224,53 @@ void TileTensorElements(
    }
    // Call `dip::Tile` and be done!
    Tile( imrefar, out, { N, M } );
+}
+
+void JoinChannels(
+      ImageConstRefArray const& in,
+      Image& c_out
+) {
+   dip::uint nImages = in.size();
+   DIP_THROW_IF( nImages == 0, E::ARRAY_PARAMETER_EMPTY ); // If you want to create an empty image, just do that directly...
+   DIP_THROW_IF( !in[ 0 ].get().IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in[ 0 ].get().IsScalar(), E::IMAGE_NOT_SCALAR );
+   if( nImages == 1 ) {
+      c_out = in[ 0 ].get();
+      return;
+   }
+   // All inputs must be forged and of the same sizes
+   auto const& first = in[ 0 ].get();
+   auto sizes = first.Sizes();
+   auto dataType = first.DataType();
+   auto pixelSize = first.PixelSize();
+   for( dip::uint ii = 1; ii < nImages; ++ii ) {
+      auto const& img = in[ ii ].get();
+      DIP_THROW_IF( !img.IsForged(), E::IMAGE_NOT_FORGED );
+      DIP_THROW_IF( !img.IsScalar(), E::IMAGE_NOT_SCALAR );
+      DIP_THROW_IF( sizes != img.Sizes(), E::SIZES_DONT_MATCH );
+      dataType = DataType::SuggestDyadicOperation( dataType, img.DataType() );
+      if( !pixelSize.IsDefined() ) {
+         pixelSize = img.PixelSize(); // We use the first pixel size that we come across
+      }
+   }
+   // Create temporary output image, initialized to the actual output image
+   // We do this in case `c_out` is the same as one of the images in `in`, reforging it would destroy
+   // one of the inputs. Not initializing `out` to `c_out` would mean not being able to re-use a pixel
+   // buffer already allocated for `c_out`, and would mean not using any external interface set in it.
+   // NOTE that there is no way for `ReForge` to keep the data segment if `c_out` is the same as one of
+   // the images in `in`, because out will always be larger than each of the images in `in` (the case
+   // where the is one one image to tile has already been taken care of).
+   Image out( c_out ); //
+   out.ReForge( sizes, nImages, dataType );
+   out.SetPixelSize( pixelSize );
+   // Copy the input images over
+   auto it_out = dip::ImageTensorIterator( out );
+   auto it_in = in.begin();
+   do {
+      it_out->Copy( it_in->get() );
+   } while( ++it_in, ++it_out );
+   // We're done, now swap `out` and `c_out`.
+   c_out.swap( out );
 }
 
 } // namespace dip
