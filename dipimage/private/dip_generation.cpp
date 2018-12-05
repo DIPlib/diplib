@@ -22,7 +22,6 @@
 
 #include "diplib/generation.h"
 #include "diplib/boundary.h"
-#include "diplib/microscopy.h"
 
 #include "diplib/chain_code.h"
 
@@ -566,36 +565,6 @@ void extendregion( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
-void psf( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   DML_MAX_ARGS( 5 );
-   dml::MatlabInterface mi;
-   dip::Image out = mi.NewImage();
-   out.DataType() = dip::DT_SFLOAT;
-   if( nrhs > 0 ) {
-      if( mxIsNumeric( prhs[ 0 ] ) && dml::IsVector( prhs[ 0 ] )) {
-         out.SetSizes( dml::GetUnsignedArray( prhs[ 0 ] ));
-      } else {
-         dip::Image tmp = dml::GetImage( prhs[ 0 ] );
-         out.SetSizes( tmp.Sizes() );
-         out.SetPixelSize( tmp.PixelSize() );
-      }
-   }
-   dip::String method = nrhs > 1 ? dml::GetString( prhs[ 1 ] ) : "PSF";
-   dip::dfloat oversampling = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 1.0;
-   dip::dfloat amplitude = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 1.0;
-   if(( method == "PSF" ) || ( method == "psf" )) { // We're allowing lowercase here because the MATLAB help command forces the string in the documentation to lowercase.
-      dip::IncoherentPSF( out, oversampling, amplitude );
-   } else {
-      if(( method == "OTF" ) || ( method == "otf" )) {
-         method = "Stokseth";
-      }
-      dip::dfloat defocus = nrhs > 4 ? dml::GetFloat( prhs[ 4 ] ) : 0.0;
-      dip::IncoherentOTF( out, defocus, oversampling, amplitude, method );
-   }
-   plhs[ 0 ] = dml::GetArray( out );
-}
-
-
 } // namespace
 
 // Gateway function
@@ -632,9 +601,6 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       } else if( function == "extendregion" ) {
          extendregion( plhs, nrhs, prhs );
-
-      } else if( function == "psf" ) {
-         psf( plhs, nrhs, prhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );

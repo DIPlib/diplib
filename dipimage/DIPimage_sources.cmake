@@ -12,6 +12,7 @@ private/dip_filtering.cpp
 private/dip_generation.cpp
 private/dip_geometry.cpp
 private/dip_math.cpp
+private/dip_microscopy.cpp
 private/dip_morphology.cpp
 private/dip_segmentation.cpp
 private/imagedisplay.cpp

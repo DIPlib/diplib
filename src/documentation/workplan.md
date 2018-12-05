@@ -40,13 +40,16 @@ document's source</a> for the most up-to-date version.
     For R2018a and newer, complex data are no longer stored in two separate data segments.
     This is good overall, but requires changes to the DIPlib-MATLAB interface. It is possible
     to compile *DIPimage* for R2018a or newer, but passing complex matrices in and out of
-    the MEX-files causes two copies of the data, instead of none. `dip_image` objects never
-    contain complex data (complex images are stored as real arrays to prevent copies).
+    the MEX-files causes two copies of the data, instead of none. However, becase `dip_image`
+    objects never contain complex data (complex images are stored as real arrays to prevent
+    copies), the problems with this are limited.
 
-    Another issue with R2018a and newer is that `mxGetPropertyShared` is no longer supported.
-    This means that image data will get copied when used as input to DIPimage MEX-files.
-    The only way around this is to use the new C++ interface. This might mean we'd need to
-    rewrite all MEX-files.
+    If we want to use the new complex-interleaved API that comes with R2018a, then we'd be
+    able to take any complex matrix from MATLAB without copy. However, `mxGetPropertyShared`
+    is no longer supported. This means that all image data will get copied when used as input
+    to DIPimage MEX-files. This is very bad! The only way around this is to use the new C++
+    interface. This means we would need to rewrite all MEX-files, and maintain separate source
+    code for R2017b and earlier, and for R2018a and newer.
 
 -   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
     to be added as these functions are written. Make the module more "Pythonic"?
@@ -71,7 +74,7 @@ document's source</a> for the most up-to-date version.
 
 -   Stuff that is in *DIPimage*:
     - 2D snakes
-    - general 2D affine transformation, 3D rotation (is already C code)
+    - general 3D rotation (is already C code)
     - ...and many more, see the *DIPimage 2* M-files for inspiration.
 
 -   Image I/O: Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats),
@@ -116,7 +119,6 @@ it should not be ported (or already is ported).
     - `dip_ExtendedOrientationSpace` (`dip_structure.h`)
     - `dip_CurvatureFromTilt` (`dip_structure.h`)
     - `dip_OSEmphasizeLinearStructures` (`dip_structure.h`)
-    - `dip_DanielsonLineDetector` (`dip_structure.h`)
 
 - diplib/distance.h
     - `dip_FastMarching_PlaneWave` (`dip_distance.h`) (this function needs some input image checking!)
@@ -136,7 +138,6 @@ it should not be ported (or already is ported).
     - `dip_RestorationTransform` (`dip_restoration.h`)
     - `dip_TikhonovRegularizationParameter` (`dip_restoration.h`)
     - `dip_TikhonovMiller` (`dip_restoration.h`)
-    - `dip_Wiener` (`dip_restoration.h`)
     - `dip_PseudoInverse` (`dip_restoration.h`) (this name is wrong, maybe InverseFilterRestoration?)
 
 - diplib/morphology.h
@@ -145,9 +146,9 @@ it should not be ported (or already is ported).
 
 - diplib/nonlinear.h
     - `dip_RankContrastFilter` (`dip_rankfilters.h`)
-    - `dip_Sigma` (`dip_filtering.h`)
-    - `dip_BiasedSigma` (`dip_filtering.h`)
-    - `dip_GaussianSigma` (`dip_filtering.h`)
+    - `dip_Sigma` (`dip_filtering.h`) (sigma filters are superseded by the bilateral filter, only useful for historical context)
+    - `dip_BiasedSigma` (`dip_filtering.h`) (idem)
+    - `dip_GaussianSigma` (`dip_filtering.h`) (idem)
     - `dip_ArcFilter` (`dip_bilateral.h`)
     - `dip_StructureAdaptiveGauss` (`dip_adaptive.h`)
     - `dip_AdaptivePercentile` (`dip_adaptive.h`)
@@ -184,7 +185,6 @@ Pure M-files:
 - `scale2rgb`
 - `scalespace`
 - `tikhonovmiller`
-- `wiener`
 
 Requiring C++ code:
 - `arcf`       (depends on `dip_arcfilter`)

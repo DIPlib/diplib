@@ -218,6 +218,7 @@ measurement/object_to_measurement.cpp
 microscopy/attenuation_correction.cpp
 microscopy/psf.cpp
 microscopy/unmix_stains.cpp
+microscopy/wiener.cpp
 morphology/areaopening.cpp
 morphology/basic.cpp
 morphology/filters.cpp

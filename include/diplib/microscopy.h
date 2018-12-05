@@ -311,6 +311,82 @@ inline Image IncoherentPSF(
    return out;
 }
 
+
+/// \brief Wiener Deconvolution using estimates of signal and noise power
+///
+/// If \f$G\f$ is the Fourier transform of `in`, \f$H\f$ is the Fourier transform of `psf`,
+/// and \f$F\f$ is the Fourier transform of `out`, then this function estimates the \f$F\f$ that optimally
+/// (in the least squares sense) satisfies \f$G = FH\f$ (that is, `in` is the result of the convolution of
+/// `out` with `psf`).
+///
+/// Finding `out` requires knowledge of the power spectrum of the signal and the noise. The Wiener deconvolution
+/// filter is defined in the frequency domain as
+/// \f[ H_\text{inv} = \frac{H^* S}{ H^* H S + N } \;, \f]
+/// where \f$S\f$ is `signalPower`, and \f$N\f$ is `noisePower`. These functions are typically not known, but:
+///
+///  - `signalPower` can be estimated as the Fourier transform of the autocorrelation of `in`. If a raw image
+///    is passed for this argument (`%dip::Image{}`), then it will be computed as such.
+///
+///  - `noisePower` can be estimated as a flat function. A 0D image can be given here, it will be expanded to
+///    the size of the other images. `noisePower` should not be zero anywhere, as that might lead to division
+///    by zero and consequently meaningless results.
+///
+/// The other syntax for `%dip::WienerDeconvolution` takes an estimate of the noise-to-signal
+/// ratio instead of the signal and noise power spectra. Note that \f$H_\text{inv}\f$ can be rewritten as
+/// \f[ H_\text{inv} = \frac{H^*}{ H^* H  + \frac{N}{S} } = \frac{H^*}{ H^* H  + K } \;, \f]
+/// where \f$K\f$ is the noise-to-signal ratio.
+///
+/// `psf` is given in the spatial domain, and will be zero-padded to the size of `in` and Fourier transformed.
+/// The PSF (point spread function) should sum to one in order to preserve the mean image intensity.
+/// If the OTF (optical transfer function, the Fourier transform of the PSF) is known, it is possible to pass
+/// that as `psf`; add the string `"OTF"` to `options`.
+///
+/// All input images must be real-valued and scalar, except if the OFT is given instead of the PSF, in which
+/// case `psf` could be complex-valued.
+DIP_EXPORT void WienerDeconvolution(
+      Image const& in,
+      Image const& psf,
+      Image const& signalPower,
+      Image const& noisePower,
+      Image& out,
+      StringSet const& options = {}
+);
+inline Image WienerDeconvolution(
+      Image const& in,
+      Image const& psf,
+      Image const& signalPower,
+      Image const& noisePower,
+      StringSet const& options = {}
+) {
+   Image out;
+   WienerDeconvolution( in, psf, signalPower, noisePower, out, options );
+   return out;
+}
+
+/// \brief Wiener Deconvolution using an estimate of noise-to-signal ratio
+///
+/// See the description of the function with the same name above. The difference here is that a single number,
+/// `regularization`, is given instead of the signal and noise power spectra. We then set \f$K\f$ (the
+/// noise-to-signal ratio) to `regularization * dip::Maximum(P)`, with `P` equal to \f$H^* H\f$.
+DIP_EXPORT void WienerDeconvolution(
+      Image const& in,
+      Image const& psf,
+      Image& out,
+      dfloat regularization = 1e-4,
+      StringSet const& options = {}
+);
+inline Image WienerDeconvolution(
+      Image const& in,
+      Image const& psf,
+      dfloat regularization = 1e-4,
+      StringSet const& options = {}
+) {
+   Image out;
+   WienerDeconvolution( in, psf, out, regularization, options );
+   return out;
+}
+
+
 /// \brief 3D fluorescence attenuation correction using an exponential fit
 ///
 /// This routine implements a simple correction of absorption, reflection and bleaching in 3D fluorescence

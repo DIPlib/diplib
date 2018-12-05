@@ -49,4 +49,4 @@
 % limitations under the License.
 
 function out = psf(varargin)
-out = dip_generation('psf',varargin{:});
+out = dip_microscopy('psf',varargin{:});
