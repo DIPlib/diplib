@@ -44,8 +44,7 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
-         dip::sint inStride = params.inBuffer.stride;
-         DIP_ASSERT( inStride == 1 ); // Guaranteed because we use an input buffer
+         DIP_ASSERT( params.inBuffer.stride == 1 ); // Guaranteed because we use an input buffer
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          const TPI spacing = static_cast< TPI >( spacing_[ params.dimension ] );
