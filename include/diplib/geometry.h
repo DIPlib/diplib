@@ -275,6 +275,20 @@ DIP_EXPORT Image::Pixel ResampleAt(
       String const& interpolationMethod = S::LINEAR
 );
 
+using InterpolationFunctionPointer = void ( * )( Image const&, Image::Pixel const&, FloatArray );
+/// \brief Prepare for repeated calls to `dip::ResampleAtUnchecked`. See `dip::ResampleAt`.
+DIP_EXPORT InterpolationFunctionPointer PrepareResampleAtUnchecked(
+      Image const& in,
+      String const& interpolationMethod
+);
+/// \brief Similar to `dip::ResampleAt`, but optimized for repeated calls using the same parameters.
+///  See `dip::ResampleAt`. `function` comes from `PrepareResampleAtUnchecked`.
+DIP_EXPORT Image::Pixel ResampleAtUnchecked(
+      Image const& in,
+      FloatArray const& coordinates,
+      InterpolationFunctionPointer function
+);
+
 
 // Undocumented internal function called by the other forms of Skew.
 // Each sub-volume perpendicular to axis is shifted with sub-pixel precision, according to `shearArray`.

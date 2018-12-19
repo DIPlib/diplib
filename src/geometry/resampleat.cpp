@@ -169,8 +169,6 @@ void ThirdOrderCubicSplineInterpolationFunction( Image const& in, Image::Pixel c
    }
 }
 
-using InterpolationFunctionPointer = void ( * )( Image const&, Image::Pixel const&, FloatArray );
-
 InterpolationFunctionPointer GetInterpFunctionPtr( String const& method, DataType dt ) {
    InterpolationFunctionPointer function;
    auto m = ParseMethod( method );
@@ -262,6 +260,35 @@ Image::Pixel ResampleAt(
       out = 0;
    }
 
+   return out;
+}
+
+InterpolationFunctionPointer PrepareResampleAtUnchecked(
+      Image const& in,
+      String const& method
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
+   // Find interpolator
+   InterpolationFunctionPointer function;
+   DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, in.DataType() ));
+   return function;
+}
+Image::Pixel ResampleAtUnchecked(
+      Image const& in,
+      FloatArray const& coordinates,
+      InterpolationFunctionPointer function
+) {
+   // Create output
+   Image::Pixel out( in.DataType(), in.TensorElements());
+   out.ReshapeTensor( in.Tensor());
+   // Call interpolator
+   if( in.IsInside( coordinates )) {
+      function( in, out, coordinates );
+   } else {
+      out = 0;
+   }
    return out;
 }
 

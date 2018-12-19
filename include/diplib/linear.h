@@ -1329,7 +1329,7 @@ inline Image LogGaborFilterBank(
 /// **Literature**
 /// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
 ///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
-inline void NormalizedConvolution(
+DIP_EXPORT void NormalizedConvolution(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -1337,17 +1337,7 @@ inline void NormalizedConvolution(
       String const& method = S::BEST,
       StringArray const& boundaryCondition = { S::ADD_ZEROS },
       dfloat truncation = 3
-) {
-   DIP_THROW_IF( !in.IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
-   Image denominator;
-   DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
-   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, out ));
-   DIP_STACK_TRACE_THIS( Gauss( out, out, sigmas, { 0 }, method, boundaryCondition, truncation ));
-   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, out.DataType() ));
-}
+);
 inline Image NormalizedConvolution(
       Image const& in,
       Image const& mask,
@@ -1410,6 +1400,57 @@ inline Image NormalizedDifferentialConvolution(
    NormalizedDifferentialConvolution( in, mask, out, dimension, sigmas, method, boundaryCondition, truncation );
    return out;
 }
+
+
+/// \brief Computes the mean shift vector for each pixel in the image
+///
+/// The output image is a vector image, indicating the step to take to move the window center to its center of
+/// mass. Repeatedly following the vector will lead to a local maximum of the image `in`. `in` must be scalar
+/// and real-valued.
+///
+/// The mean shift at a given location \f$x\f$ is then given by
+/// \f[ s = \frac{ \sum_i{(x-x_i) w(x-x_i) f(x_i)} }{ \sum_i{w(x-x_i) f(x_i)} }
+///       = \frac{ \left ( -x w \right) * f }{ w * f } \;,
+/// \f]
+/// where \f$f\f$ is the image, \f$w\f$ is a windowing function, and \f$*\f$ indicates convolution.
+///
+/// We use a Gaussian window with sizes given by `sigmas`. A Gaussian window causes slower convergence than a
+/// uniform window, but yields a smooth trajectory and more precise results (according to Comaniciu
+/// and Meer, 2002). It also allows us to rewrite the above (with \f$g_\sigma\f$ the Gaussian window with
+/// parameter \f$\sigma\f$) as
+/// \f[ s = \frac{ \left ( -x g_\sigma \right) * f }{ g_\sigma * f }
+///       = \frac{ \left ( \sigma^2 \nabla g_\sigma \right) * f }{ g_\sigma * f } \;.
+/// \f]
+///
+/// Thus, we can write this filter as `dip::Gradient(in, sigmas) / dip::Gauss(in, sigmas) * sigmas * sigmas`.
+/// See `dip::Derivative` for more information on the parameters. Do not use `method = "finitediff"`,
+/// as it will lead to nonsensical results.
+///
+/// \see dip::MeanShift, dip::Gradient, dip::Gauss
+///
+/// **Literature**
+/// - D. Comaniciu and P. Meer, "Mean Shift: A Robust Approach Toward Feature Space Analysis",
+///   IEEE Transactions on Pattern Analysis and Machine Intelligence 24(5):603-619, 2002.
+DIP_EXPORT void MeanShiftVector(
+      Image const& in,
+      Image& out,
+      FloatArray sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
+);
+inline Image MeanShiftVector(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   MeanShiftVector( in, out, sigmas, method, boundaryCondition, truncation );
+   return out;
+}
+
 
 /// \}
 

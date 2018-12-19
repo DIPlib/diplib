@@ -72,6 +72,10 @@ void init_analysis( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::PARABOLIC_SEPARABLE );
    m.def( "SubpixelMinima", &dip::SubpixelMinima,
           "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::PARABOLIC_SEPARABLE );
+   m.def( "MeanShift", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat >( &dip::MeanShift ),
+          "meanShiftVectorResult"_a, "start"_a, "epsilon"_a = 1e-3 );
+   m.def( "MeanShift", py::overload_cast< dip::Image const&, dip::FloatCoordinateArray const&, dip::dfloat >( &dip::MeanShift ),
+          "meanShiftVectorResult"_a, "startArray"_a, "epsilon"_a = 1e-3 );
    m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
           "in1"_a, "in2"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
    m.def( "FindShift", &dip::FindShift,

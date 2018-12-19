@@ -521,6 +521,26 @@ void LaplaceMinusDgg(
    DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::LaplaceMinusDgg ));
 }
 
+void NormalizedConvolution(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !in.IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( mask.Sizes() != in.Sizes(), E::SIZES_DONT_MATCH );
+   Image denominator;
+   DIP_STACK_TRACE_THIS( Gauss( mask, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( in, mask, out ));
+   DIP_STACK_TRACE_THIS( Gauss( out, out, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, out.DataType() ));
+}
+
 void NormalizedDifferentialConvolution(
       Image const& in,
       Image const& mask,
@@ -562,6 +582,30 @@ void NormalizedDifferentialConvolution(
    DIP_STACK_TRACE_THIS( Subtract( out, NC, out, dt ));
    NC.Strip();
    DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, dt ));
+}
+
+void MeanShiftVector(
+      Image const& in,
+      Image& out,
+      FloatArray sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = in.Dimensionality();
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( sigmas, nDims, 1.0 ));
+   Image denominator;
+   DIP_STACK_TRACE_THIS( Gauss( in, denominator, sigmas, { 0 }, method, boundaryCondition, truncation ));
+   DIP_STACK_TRACE_THIS( Gradient( in, out, sigmas, method, boundaryCondition, {}, truncation ));
+   DIP_STACK_TRACE_THIS( SafeDivide( out, denominator, out, out.DataType() ));
+   for( auto& s : sigmas ) {
+      s *= s;
+   }
+   Image normalization( sigmas, out.DataType() );
+   DIP_STACK_TRACE_THIS( MultiplySampleWise( out, normalization, out, out.DataType() ));
 }
 
 } // namespace dip

@@ -114,6 +114,8 @@ void init_filtering( py::module& m ) {
           "in"_a, "mask"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray { dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
    m.def( "NormalizedDifferentialConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::NormalizedDifferentialConvolution ),
           "in"_a, "mask"_a, "dimension"_a = 0, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray { dip::S::ADD_ZEROS }, "truncation"_a = 3.0 );
+   m.def( "MeanShiftVector", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::MeanShiftVector ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
 
    // diplib/nonlinear.h
    m.def( "Kuwahara", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::dfloat, dip::StringArray const& >( &dip::Kuwahara ),

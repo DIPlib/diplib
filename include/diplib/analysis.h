@@ -108,6 +108,38 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
       String const& method = dip::S::PARABOLIC_SEPARABLE
 );
 
+/// \brief Finds the coordinates of a local maximum close to `start`
+///
+/// The mean shift method iteratively finds the center of gravity of a Gaussian-shaped neighborhood around `start`,
+/// moving `start` to this location, until convergence. The location that the process converges to is a local
+/// maximum. Convergence is assumed when the magnitude of the shift is smaller than `epsilon`.
+///
+/// To speed up the computation within this function, the output of `dip::MeanShiftVector` is used. This filter
+/// pre-computes the center of gravity of all neighborhoods in the image. Specify the neighborhood sizes in that
+/// function.
+DIP_EXPORT FloatArray MeanShift(
+      Image const& meanShiftVectorResult,
+      FloatArray const& start,
+      dfloat epsilon = 1e-3
+);
+
+/// \brief Finds the coordinates of local a maximum close to each point in `start`.
+///
+/// Repeatedly calls the `dip::MeanShift` function described above, for each point in `start`. Duplicate maxima
+/// are not removed, such that `out[ii]` is the local maximum arrived to from `startArray[ii]`.
+inline FloatCoordinateArray MeanShift(
+      Image const& meanShiftVectorResult,
+      FloatCoordinateArray const& startArray,
+      dfloat epsilon = 1e-3
+) {
+   FloatCoordinateArray out;
+   out.reserve( startArray.size() );
+   for( auto& start : startArray ) {
+      out.push_back( MeanShift( meanShiftVectorResult, start, epsilon ));
+   }
+   return out;
+}
+
 
 /// \brief Calculates the cross-correlation between two images of equal size.
 ///

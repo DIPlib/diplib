@@ -22,6 +22,7 @@
 #include "diplib/analysis.h"
 #include "diplib/morphology.h" // Maxima, Minima
 #include "diplib/generation.h" // SetBorder
+#include "diplib/geometry.h" // ResampleAtUnchecked
 #include "diplib/measurement.h" // MeasurementTool
 #include "diplib/overload.h"
 
@@ -544,6 +545,32 @@ SubpixelLocationArray SubpixelMinima(
       String const& method
 ) {
    return SubpixelExtrema( in, mask, method, true );
+}
+
+FloatArray MeanShift(
+      Image const& meanShiftVectorResult,
+      FloatArray const& start,
+      dfloat epsilon
+) {
+   DIP_THROW_IF( !meanShiftVectorResult.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = meanShiftVectorResult.Dimensionality();
+   DIP_THROW_IF( meanShiftVectorResult.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
+   DIP_THROW_IF( !meanShiftVectorResult.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( start.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( epsilon <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   epsilon *= epsilon; // epsilon square
+   auto interpFunc = PrepareResampleAtUnchecked( meanShiftVectorResult, S::CUBIC_ORDER_3 );
+   auto pt = start;
+   dfloat distance;
+   std::cout << "pt = " << pt << ":\n";
+   do {
+      auto meanShift = static_cast< FloatArray >( ResampleAtUnchecked( meanShiftVectorResult, pt, interpFunc ));
+      std::cout << "     " << meanShift << '\n';
+      pt += meanShift;
+      distance = meanShift.norm_square();
+   } while( distance > epsilon );
+   std::cout << '\n';
+   return pt;
 }
 
 } // namespace dip
