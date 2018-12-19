@@ -461,7 +461,7 @@ constexpr inline void CastSample( DataType srcType, void const* src, DataType de
       case dip::DT_DFLOAT   : *static_cast< dfloat* >( dest ) = CastSample< dfloat >( srcType, src ); break;
       case dip::DT_SCOMPLEX : *static_cast< scomplex* >( dest ) = CastSample< scomplex >( srcType, src ); break;
       case dip::DT_DCOMPLEX : *static_cast< dcomplex* >( dest ) = CastSample< dcomplex >( srcType, src ); break;
-      // default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+      default: return; // DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
    }
 }
 } // namespace detail

@@ -25,11 +25,45 @@
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/overload.h"
 #include "diplib/library/copy_buffer.h"
-
 
 namespace dip {
 
+namespace {
+
+template< typename T >
+void WriteSamples( dfloat const* src, void* destination, dip::uint n ) {
+   T* dest = static_cast< T* >( destination );  // dest stride is always 1 (we created the pixel like that)
+   dfloat const* end = src + n;                 // src stride is always 1 (it's an array)
+   for( ; src != end; ++src, ++dest ) {
+      *dest = clamp_cast< T >( *src );
+   }
+}
+
+template< typename T >
+void ReadSamples( void const* source, dfloat* dest, dip::uint n, dip::sint stride ) {
+   T const* src = static_cast< T const* >( source );
+   dfloat* end = dest + n;                            // dest stride is always 1 (it's an array)
+   for( ; dest != end; src += stride, ++dest ) {
+      *dest = clamp_cast< dfloat >( *src );
+   }
+}
+
+} // namespace
+
+Image::Pixel::Pixel( FloatArray const& values, dip::DataType dt ) : dataType_( dt ), tensor_( values.size() ) {
+   SetInternalData();
+   DIP_OVL_CALL_ALL( WriteSamples, ( values.data(), origin_, values.size()), dataType_ );
+}
+
+Image::Pixel::operator FloatArray() const {
+   FloatArray out( TensorElements() );
+   DIP_OVL_CALL_ALL( ReadSamples, ( origin_, out.data(), out.size(), tensorStride_ ), dataType_ );
+   return out;
+}
+
+//
 
 void CopyFrom( Image const& src, Image& dest, Image const& mask ) {
    // Check input
@@ -193,6 +227,7 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets ) {
 }
 
 //
+
 Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = sizes_.size();
@@ -209,6 +244,7 @@ Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation 
 }
 
 //
+
 void Image::Copy( Image const& src ) {
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    if( &src == this ) {
@@ -288,8 +324,8 @@ void Image::Copy( Image const& src ) {
    } while( ++it );
 }
 
-
 //
+
 void Image::ExpandTensor() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( !Tensor().HasNormalOrder() ) {
@@ -368,8 +404,8 @@ void Image::ExpandTensor() {
    }
 }
 
-
 //
+
 void Image::Convert( dip::DataType dt ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( dt != dataType_ ) {

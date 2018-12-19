@@ -289,7 +289,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Forged image of given sizes and data type. The data is left uninitialized.
       ///
       /// Note that to call this constructor with a single parameter, you need to explicitly type the parameter,
-      /// an initializer list by itself will be considered a a pixel, see the constructor below.
+      /// an initializer list by itself will be considered a pixel, see the constructor below.
       explicit Image( UnsignedArray sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
             dataType_( dt ),
             sizes_( std::move( sizes )),
@@ -310,7 +310,7 @@ class DIP_NO_EXPORT Image {
       /// The image in the example above will be of type `dip::DT_SFLOAT`.
       explicit Image( Pixel const& pixel );
 
-      /// \brief Create a 0-D image with with data type `dt`, and tensor shape and values of `pixel`.
+      /// \brief Create a 0-D image with data type `dt`, and tensor shape and values of `pixel`.
       ///
       /// Note that `pixel` can be created through an initializer list. Thus, the following
       /// is a valid way of creating a 0-D tensor image with 3 tensor components:
@@ -347,19 +347,23 @@ class DIP_NO_EXPORT Image {
       /// The image in the example above will be of type `dip::DT_SFLOAT`.
       explicit Image( Sample const& sample, dip::DataType dt );
 
-      // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
-      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
-      explicit Image( std::initializer_list< T > values ) {
-         Image tmp{ Pixel( values ) };
-         this->move( std::move( tmp )); // a way of calling a different constructor.
-      }
+      /// \brief Create a 0-D vector image with data type `dt`, and values of `values`.
+      ///
+      /// Note that if `values` is specified as an initializer list, the constructor `Image( Pixel const& pixel )`
+      /// is called instead.
+      ///
+      /// Note also that this constructor is specifically with a `FloatArray`. If the array is of type
+      /// `UnsignedArray`, a different constructor will be called, and the array will be interpreted as image
+      /// sizes, not sample values.
+      explicit Image( FloatArray const& values, dip::DataType dt = DT_SFLOAT );
 
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
-      explicit Image( std::initializer_list< T > values, dip::DataType dt ) {
-         Image tmp{ Pixel( values ), dt };
-         this->move( std::move( tmp )); // a way of calling a different constructor.
-      }
+      explicit Image( std::initializer_list< T > values ) : Image( Pixel( values )) {}
+
+      // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
+      template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
+      explicit Image( std::initializer_list< T > values, dip::DataType dt ) : Image( Pixel( values ), dt ) {}
 
       /// \brief A `dip::Image::View` implicitly converts to an `%Image`.
       Image( View const& view );
@@ -2265,6 +2269,10 @@ class DIP_NO_EXPORT Image {
       /// Returns the value of the first sample in the first pixel in the image as the given numeric type.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       T As() const { return detail::CastSample< T >( dataType_, origin_ ); }
+
+      /// \brief Returns a FloatArray containing the sample values of the first pixel in the image.
+      /// For a complex-valued image, the modulus (absolute value) is returned.
+      operator FloatArray() const;
 
       /// \}
 

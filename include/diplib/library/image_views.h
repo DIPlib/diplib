@@ -307,8 +307,7 @@ class Image::Pixel {
 
       // Default copy constructor doesn't do what we need
       Pixel( Pixel const& pixel ) : dataType_( pixel.dataType_ ), tensor_( pixel.tensor_ ) {
-         buffer_.resize( dataType_.SizeOf() * tensor_.Elements() );
-         origin_ = buffer_.data();
+         SetInternalData();
          operator=( pixel );
       }
 
@@ -323,18 +322,19 @@ class Image::Pixel {
       /// Construct a new `%Pixel` by giving data type and number of tensor elements. Initialized to 0.
       explicit Pixel( dip::DataType dataType = DT_SFLOAT, dip::uint tensorElements = 1 ) :
             dataType_( dataType ), tensor_( tensorElements ) {
-         buffer_.resize( dataType_.SizeOf() * tensor_.Elements() );
+         SetInternalData();
          std::fill( buffer_.begin(), buffer_.end(), 0 );
-         origin_ = buffer_.data();
       }
 
       /// \brief A `%Pixel` can be constructed from a single sample, yielding a scalar pixel with the same
       /// data type as the sample.
       Pixel( Sample const& sample ) : dataType_( sample.DataType() ) { // tensor_ is scalar by default
-         buffer_.resize( dataType_.SizeOf() );
-         origin_ = buffer_.data();
+         SetInternalData();
          std::memcpy( buffer_.data(), sample.Origin(), dataType_.SizeOf() );
       }
+
+      /// \brief A `%Pixel` can be constructed from a `dip::FloatArray`. The pixel will be a column vector.
+      DIP_EXPORT explicit Pixel( FloatArray const& values, dip::DataType dt = DT_SFLOAT );
 
       /// \brief A `%Pixel` can be constructed from an initializer list, yielding a pixel with the same data
       /// type and number of tensor elements as the initializer list. The pixel will be a column vector.
@@ -343,9 +343,8 @@ class Image::Pixel {
          dip::uint N = values.size();
          tensor_.SetVector( N );
          dataType_ = dip::DataType( T( 0 ));
+         SetInternalData();
          dip::uint sz = dataType_.SizeOf();
-         buffer_.resize( sz * N );
-         origin_ = buffer_.data();
          uint8* dest = buffer_.data();
          for( auto it = values.begin(); it != values.end(); ++it ) {
             std::memcpy( dest, &*it, sz );
@@ -409,6 +408,10 @@ class Image::Pixel {
       explicit operator scomplex() const { return As< scomplex >(); }
       /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator dcomplex() const { return As< dcomplex >(); }
+
+      /// \brief Returns a FloatArray containing the sample values of the pixel.
+      /// For a complex-valued pixel, the modulus (absolute value) is returned.
+      DIP_EXPORT operator FloatArray() const;
 
       /// Assigning a number or sample to a `%Pixel` copies the value over each of the samples in the pixel.
       Pixel& operator=( Sample const& sample ) {
@@ -676,6 +679,11 @@ class Image::Pixel {
       dip::DataType dataType_;
       dip::Tensor tensor_;
       dip::sint tensorStride_ = 1;
+
+      void SetInternalData() {
+         buffer_.resize( dataType_.SizeOf() * tensor_.Elements() );
+         origin_ = buffer_.data();
+      }
 };
 
 inline void swap( Image::Pixel& v1, Image::Pixel& v2 ) { v1.swap( v2 ); }
@@ -1301,6 +1309,9 @@ inline Image::View Image::AtIndices( UnsignedArray const& indices ) const {
    DIP_STACK_TRACE_THIS( return Image::View( *this, indices ));
 }
 
+inline Image::Image( FloatArray const& values, dip::DataType dt ) : Image( Pixel( values, dt )) {}
+
+inline Image::operator FloatArray() const { return static_cast< Pixel >( *this ); }
 
 } // namespace dip
 

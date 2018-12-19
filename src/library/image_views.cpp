@@ -515,6 +515,12 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
    DOCTEST_CHECK( p[ 0 ] == 4 );
    DOCTEST_CHECK( p[ 1 ] == 4 );
    DOCTEST_CHECK( p[ 2 ] == 4 );
+
+   // Conversion to/from FloatArray
+   dip::FloatArray array{ 10.2, 564535.65, -432.12, 0.004563 };
+   dip::Image::Pixel newPixel{ array, dip::DT_DFLOAT };
+   auto newArray = static_cast< dip::FloatArray >( newPixel );
+   DOCTEST_CHECK( newArray == array );
 }
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
