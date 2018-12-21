@@ -359,6 +359,9 @@ void init_image( py::module& m ) {
    // Assignment into single pixel using linear index
    img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::Image::Sample const& v ) { image.At( index ) = v; } );
    img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::Image::Pixel const& v ) { image.At( index ) = v; } );
+   // Indexing into single pixel using coordinates
+   img.def( "__setitem__", []( dip::Image& image, dip::UnsignedArray const& coords, dip::Image::Sample const& v ) { image.At( coords ) = v; } );
+   img.def( "__setitem__", []( dip::Image& image, dip::UnsignedArray const& coords, dip::Image::Pixel const& v ) { image.At( coords ) = v; } );
    // Assignment into slice for 1D image
    img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image const& source ) { image.At( range ).Copy( source ); } );
    img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image::Sample const& sample ) { image.At( range ).Fill( sample ); } );
