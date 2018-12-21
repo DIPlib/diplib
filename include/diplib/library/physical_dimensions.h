@@ -641,7 +641,7 @@ class DIP_NO_EXPORT PixelSize {
       };
 
       /// Returns the pixel size for the given dimension.
-      PhysicalQuantity const Get( dip::uint d ) const {
+      PhysicalQuantity Get( dip::uint d ) const {
          if( size_.empty() ) {
             return PhysicalQuantity::Pixel(); // because this is a temporary, Get cannot return a reference.
          } else if( d >= size_.size() ) {
@@ -652,7 +652,7 @@ class DIP_NO_EXPORT PixelSize {
       }
       /// \brief Returns the pixel size for the given dimension.
       /// Cannot be used to write to the array, see `Set`.
-      PhysicalQuantity const operator[]( dip::uint d ) const {
+      PhysicalQuantity operator[]( dip::uint d ) const {
          return Get( d );
       }
 
@@ -909,9 +909,11 @@ class DIP_NO_EXPORT PixelSize {
       FloatArray ToPixels( PhysicalQuantityArray const& in ) const {
          FloatArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
-            PhysicalQuantity v = Get( ii );
-            DIP_THROW_IF( in[ ii ].units != v.units, "Units don't match" );
-            out[ ii ] = in[ ii ].magnitude / v.magnitude;
+            PhysicalQuantity denom = Get( ii ).RemovePrefix();
+            PhysicalQuantity value = in[ ii ];
+            value.RemovePrefix();
+            DIP_THROW_IF( value.units != denom.units, "Units don't match" );
+            out[ ii ] = value.magnitude / denom.magnitude;
          }
          return out;
       }

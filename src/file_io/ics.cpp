@@ -357,19 +357,30 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
          pixelSize.Set( ii, PhysicalQuantity::Pixel() );
          origin[ ii ] = offset * PhysicalQuantity::Pixel();
       } else {
+         Units u;
          try {
-            PhysicalQuantity ps{ scale, Units{ units }};
-            ps.Normalize();
-            pixelSize.Set( ii, ps );
-            
-            PhysicalQuantity o{ offset, Units{ units }};
-            o.Normalize();
-            origin[ ii ] = o;
+            u = Units{ units };
          } catch( Error const& ) {
-            // `Units` failed to parse the string
-            pixelSize.Set( ii, scale );
-            origin[ ii ] = offset * PhysicalQuantity::Pixel();
+            // `Units` failed to parse the string, these are some fall-back strings
+            // TODO: dip::Units should be able to recognize these strings
+            if( strcasecmp( units, "meters" ) == 0 ) {
+               u = Units::Meter();
+            } else if( strcasecmp( units, "millimeters" ) ==  0 ) {
+               u = Units::Millimeter();
+            } else if( strcasecmp( units, "micrometers" ) == 0 ) {
+               u = Units::Micrometer();
+            } else if( strcasecmp( units, "nanometers" ) == 0 ) {
+               u = Units::Nanometer();
+            } else {
+               u = Units::Pixel();
+            }
          }
+         PhysicalQuantity ps{ scale, u };
+         ps.Normalize();
+         pixelSize.Set( ii, ps );
+         PhysicalQuantity o{ offset, u };
+         o.Normalize();
+         origin[ ii ] = o;
       }
    }
 
