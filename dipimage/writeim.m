@@ -52,25 +52,26 @@ if nargin < 2
    error('The first two input arguments are required')
 end
 
-% If we don't have a format, look for the file name extension
-ext = '';
 if isempty(format)
+   % If we don't have a format, look for the file name extension
    [~,~,ext] = fileparts(filename);
    if isempty(ext)
       format = 'ICSv2';
-   elseif ext(1)=='.'
-      ext = ext(2:end);
+   else
+      if ext(1)=='.'
+         ext = ext(2:end);
+      end
+      switch upper(ext)
+         case 'ICS'
+            format = 'ICSv2';
+         case {'TIF','TIFF'}
+            format = 'TIFF';
+         otherwise
+            format = ext;
+      end
    end
-   switch upper(ext)
-      case 'ICS'
-         format = 'ICSv2';
-      case {'TIF','TIFF'}
-         format = 'TIFF';
-   end
-end
-
-% Format aliases. Don't check for these if we found format trough the file name extension
-if isempty(ext)
+else
+   % Format aliases. Don't check for these if we found format trough the file name extension
    switch upper(format)
       case {'ICS','ICS2'}
          format = 'ICSv2';
