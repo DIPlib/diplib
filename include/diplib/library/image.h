@@ -2460,9 +2460,10 @@ inline void Convert( Image const& src, Image& dest, dip::DataType dt ) {
       dest.Copy( src );
    }
 }
-inline Image Convert( Image src, dip::DataType dt ) { // taking `src` by value
-   src.Convert( dt );
-   return src;
+inline Image Convert( Image const& src, dip::DataType dt ) {
+   Image dest;
+   Convert( src, dest, dt );
+   return dest;
 }
 
 /// \brief Creates a `dip::ImageRefArray` from a `dip::ImageArray`.
