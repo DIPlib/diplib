@@ -455,7 +455,7 @@ class DIP_NO_EXPORT ImageDisplay {
 
       /// \brief Returns the array of dimensions orthogonal to those returned by `GetDirection`. These are the
       /// dimensions not displayed.
-      UnsignedArray const& GetOrhthogonal() const { return orthogonal_; }
+      UnsignedArray const& GetOrthogonal() const { return orthogonal_; }
 
       /// \brief Get the current coordinates.
       UnsignedArray const& GetCoordinates() const { return coordinates_; }

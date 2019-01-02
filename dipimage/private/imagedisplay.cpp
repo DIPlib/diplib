@@ -231,7 +231,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                   plhs[ 0 ] = dml::GetArray( object->SizeIsDirty() );
                } else if( key == "orthogonal" ) {
                   DML_MAX_ARGS( 2 );
-                  plhs[ 0 ] = dml::GetArray( object->GetOrhthogonal() );
+                  plhs[ 0 ] = dml::GetArray( object->GetOrthogonal() );
                   auto data = mxGetPr( plhs[ 0 ] );
                   for( dip::uint ii = 0; ii < mxGetNumberOfElements( plhs[ 0 ] ); ++ii ) {
                      ++( data[ ii ] );
