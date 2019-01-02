@@ -117,6 +117,43 @@ void Image::View::Copy( Image const& source ) {
    }
 }
 
+void Image::View::Copy( View const& source ) {
+   DIP_THROW_IF( reference_.TensorElements() != source.TensorElements(), E::NTENSORELEM_DONT_MATCH );
+   if( source.IsRegular() ) {
+      Copy( source.reference_ );
+      return;
+   }
+   if( IsRegular() ) {
+      Image dest = reference_.QuickCopy();
+      dest.Protect();
+      if( source.mask_.IsForged() ) {
+         DIP_STACK_TRACE_THIS( CopyFrom( source.reference_, dest, source.mask_ ));
+      } else if( !source.offsets_.empty() ) {
+         DIP_STACK_TRACE_THIS( CopyFrom( source.reference_, dest, source.offsets_ ));
+      } else {
+         Image src = source.reference_.QuickCopy();
+         while( src.Size( src.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
+            src.Squeeze( src.Dimensionality() - 1 );
+         }
+         while( dest.Size( dest.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
+            dest.Squeeze( dest.Dimensionality() - 1 );
+         }
+         DIP_THROW_IF( dest.Sizes() != src.Sizes(), E::SIZES_DONT_MATCH );
+         DIP_STACK_TRACE_THIS( dest.Copy( src )); // This should always work.
+      }
+      return;
+   }
+   // Neither `source` nor `this` is regular
+   Copy( static_cast< Image >( source ));
+   // TODO: Implement this more efficiently.
+   //  We need separate code for each possible combination. For these, we'll write CopyFromTo() functions:
+   //      CopyFromTo( Image const& src, Image& dest, Image const& srcMask, Image const& destMask )
+   //      CopyFromTo( Image const& src, Image& dest, Image const& srcMask, IntegerArray const& destOffsets )
+   //      CopyFromTo( Image const& src, Image& dest, IntegerArray const& srcOffsets, Image const& destMask )
+   //      CopyFromTo( Image const& src, Image& dest, IntegerArray const& srcOffsets, IntegerArray const& destOffsets )
+   //
+}
+
 Image Image::View::Copy() const {
    // This is similar to `Image out = *this`, except in the case of no mask or offsets, we copy the pixels too.
    Image out;
@@ -622,6 +659,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
 
    // Indexing using mask image
+   img.Fill( 0 );
    it.Reset();
    do {
       it[ 0 ] += 500.0f;
@@ -632,6 +670,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
 
    // Indexing using coordinate array
+   img.Fill( 0 );
    src.ReForge( dip::UnsignedArray{ 4 }, 3 );
    it = dip::ImageIterator< dip::sfloat >( src );
    for( dip::uint ii = 1; it; ++ii, ++it ) {
@@ -664,6 +703,99 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    }
    img.At( dip::Range(), dip::Range(), dip::Range( 3 ) ) = slice;
    DOCTEST_CHECK( dip::testing::CompareImages( dip::Image( img.At( dip::Range(), dip::Range(), dip::Range( 3 ))).Squeeze(), slice ));
+
+   // -- Writing a view into a view
+
+   // Regular indexing / regular indexing
+   src = img.Similar();
+   src.Fill( 0 );
+   auto srcR = src.At( dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } );
+   srcR = 1; // already checked that it works
+   img.Fill( 0 );
+   viewR = srcR;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK_THROWS( viewR = src.At( dip::Range{ 3, 9, 1 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ));
+
+   // Regular indexing / indexing using mask image
+   src.Fill( 0 );
+   auto srcM = src.At( mask );
+   srcM = 1; // already checked that it works
+   img.Fill( 0 );
+   viewR = srcM;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK_THROWS( img.At( dip::Range{ 3, 9, 1 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ) = srcM );
+
+   // Regular indexing / indexing using coordinate array
+   src.Fill( 0 );
+   auto srcC = src.At( coords );
+   srcC = 1;
+   img.Fill( 0 );
+   DOCTEST_CHECK_THROWS( viewR = srcC );
+   img.At( dip::Range{ 1, 8, 2 }, dip::Range{ 4 }, dip::Range{ 5 } ) = srcC;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 4 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 4 );
+   auto mask4 = img[ 0 ] > 0;
+
+   // Indexing using mask image / regular indexing
+   src.Fill( 0 );
+   srcR = 1; // already checked that it works
+   img.Fill( 0 );
+   viewM = srcR;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   DOCTEST_CHECK_THROWS( viewM = src.At( dip::Range{ 3, 9, 1 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ));
+
+   // Indexing using mask image / indexing using mask image
+   src.Fill( 0 );
+   srcM = 1; // already checked that it works
+   img.Fill( 0 );
+   viewM = srcM;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   dip::Image altMask = mask.Similar();
+   altMask.Fill( 0 );
+   DOCTEST_CHECK_THROWS( viewM = src.At( altMask ));
+
+   // Indexing using mask image / indexing using coordinate array
+   src.Fill( 0 );
+   srcC = 1;
+   img.Fill( 0 );
+   img.At( mask4 ) = srcC;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 4 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 4 );
+   DOCTEST_CHECK_THROWS( viewM = srcC );
+
+   // Indexing using coordinate array / regular indexing
+   src.Fill( 0 );
+   auto srcR4 = src.At( dip::Range{ 1, 8, 2 }, dip::Range{ 4 }, dip::Range{ 5 } );
+   srcR4 = 1;
+   img.Fill( 0 );
+   viewC = srcR4;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 4 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 4 );
+   DOCTEST_CHECK_THROWS( viewC = srcR );
+
+   // Indexing using coordinate array / indexing using mask image
+   src.Fill( 0 );
+   auto srcM4 = src.At( mask4 );
+   srcM4 = 1;
+   img.Fill( 0 );
+   viewC = srcM4;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 4 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 4 );
+   DOCTEST_CHECK_THROWS( viewC = srcM );
+
+   // Indexing using coordinate array / indexing using coordinate array
+   src.Fill( 0 );
+   srcC = 1;
+   img.Fill( 0 );
+   viewC = srcC;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 4 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 4 );
+   coords.pop_back();
+   DOCTEST_CHECK_THROWS( viewC = src.At( coords ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

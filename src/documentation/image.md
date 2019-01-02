@@ -544,7 +544,7 @@ which can be assigned to to modify the referenced pixels:
     colorIm[ 0 ] = colorIm[ 1 ];
 ```
 
-When cast tack to an image, the image created shares the pixels with the original image,
+When cast back to an image, the image created shares the pixels with the original image,
 meaning that it is possible to write to a channel in this way:
 
 ```cpp

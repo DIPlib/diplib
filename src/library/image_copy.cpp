@@ -54,7 +54,7 @@ void ReadSamples( void const* source, dfloat* dest, dip::uint n, dip::sint strid
 
 Image::Pixel::Pixel( FloatArray const& values, dip::DataType dt ) : dataType_( dt ), tensor_( values.size() ) {
    SetInternalData();
-   DIP_OVL_CALL_ALL( WriteSamples, ( values.data(), origin_, values.size()), dataType_ );
+   DIP_OVL_CALL_ALL( WriteSamples, ( values.data(), origin_, values.size() ), dataType_ );
 }
 
 Image::Pixel::operator FloatArray() const {
@@ -65,82 +65,111 @@ Image::Pixel::operator FloatArray() const {
 
 //
 
-void CopyFrom( Image const& src, Image& dest, Image const& mask ) {
+void CopyFrom( Image const& src, Image& dest, Image const& srcMask ) {
    // Check input
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( mask.CheckIsMask( src.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
-   dip::uint N = Count( mask );
-   DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { N } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DONT_ALLOW ));
-   dest.CopyNonDataProperties( src );
-   // Samples
-   dip::uint telems = src.TensorElements();
-   dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
-   if(( src.TensorStride() == 1 ) && ( dest.TensorStride() == 1 )) {
-      // We copy the whole tensor as a single data block
-      bytes *= telems;
-      telems = 1;
+   DIP_THROW_IF( !srcMask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( srcMask.CheckIsMask( src.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
+   dip::uint N = Count( srcMask );
+   if( !dest.IsForged() || ( dest.NumberOfPixels() != N ) || ( dest.TensorElements() != src.TensorElements() )) {
+      DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { N } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
+      dest.CopyNonDataProperties( src );
    }
-   // Iterate over *this and mask, copying pixels to destination
-   GenericJointImageIterator< 2 > srcIt( { src, mask } );
-   GenericImageIterator<> destIt( dest );
-   if( telems == 1 ) { // most frequent case, really.
-      do {
-         if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ))) {
-            std::memcpy( destIt.Pointer(), srcIt.Pointer< 0 >(), bytes );
-            ++destIt;
-         }
-      } while( ++srcIt );
-   } else {
-      do {
-         if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ))) {
-            for( dip::uint ii = 0; ii < telems; ++ii ) {
-               std::memcpy( destIt.Pointer( ii ), srcIt.Pointer< 0 >( ii ), bytes );
+   if( DataType() == src.DataType() ) {
+      // Samples
+      dip::uint telems = src.TensorElements();
+      dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+      if(( src.TensorStride() == 1 ) && ( dest.TensorStride() == 1 )) {
+         // We copy the whole tensor as a single data block
+         bytes *= telems;
+         telems = 1;
+      }
+      // Iterate over *this and srcMask, copying pixels to destination
+      GenericJointImageIterator< 2 > srcIt( { src, srcMask } );
+      GenericImageIterator<> destIt( dest );
+      if( telems == 1 ) { // most frequent case, really.
+         do {
+            if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ))) {
+               std::memcpy( destIt.Pointer(), srcIt.Pointer< 0 >(), bytes );
+               ++destIt;
             }
+         } while( ++srcIt );
+      } else {
+         do {
+            if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ))) {
+               for( dip::uint ii = 0; ii < telems; ++ii ) {
+                  std::memcpy( destIt.Pointer( ii ), srcIt.Pointer< 0 >( ii ), bytes );
+               }
+               ++destIt;
+            }
+         } while( ++srcIt );
+      }
+   } else {
+      // Iterate over *this and srcMask, copying pixels to destination
+      GenericJointImageIterator< 2 > srcIt( { src, srcMask } );
+      GenericImageIterator<> destIt( dest );
+      do {
+         if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ))) {
+            DIP_ASSERT( destIt );
+            srcIt.Pixel< 0 >() = *destIt;
             ++destIt;
          }
       } while( ++srcIt );
+
    }
 }
 
-void CopyFrom( Image const& src, Image& dest, IntegerArray const& offsets ) {
+void CopyFrom( Image const& src, Image& dest, IntegerArray const& srcOffsets ) {
    // Check input
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( offsets.empty(), E::ARRAY_PARAMETER_EMPTY );
-   DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { offsets.size() } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DONT_ALLOW ));
-   dest.CopyNonDataProperties( src );
-   // Samples
-   dip::uint telems = src.TensorElements();
-   dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
-   if(( src.TensorStride() == 1 ) && ( dest.TensorStride() == 1 )) {
-      // We copy the whole tensor as a single data block
-      bytes *= telems;
-      telems = 1;
+   DIP_THROW_IF( srcOffsets.empty(), E::ARRAY_PARAMETER_EMPTY );
+   if( !dest.IsForged() || ( dest.NumberOfPixels() != srcOffsets.size() ) || ( dest.TensorElements() != src.TensorElements() )) {
+      DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { srcOffsets.size() } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
+      dest.CopyNonDataProperties( src );
    }
-   // Iterate over coordinates and destination, copying pixels to destination
-   auto arrIt = offsets.begin();
-   GenericImageIterator<> destIt( dest );
-   if( telems == 1 ) { // most frequent case, really.
-      do {
-         std::memcpy( destIt.Pointer(), src.Pointer( *arrIt ), bytes );
-      } while( ++arrIt, ++destIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
+   if( DataType() == src.DataType() ) {
+      // Samples
+      dip::uint telems = src.TensorElements();
+      dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+      if(( src.TensorStride() == 1 ) && ( dest.TensorStride() == 1 )) {
+         // We copy the whole tensor as a single data block
+         bytes *= telems;
+         telems = 1;
+      }
+      // Iterate over srcOffsets and destination, copying pixels to destination
+      auto arrIt = srcOffsets.begin();
+      GenericImageIterator<> destIt( dest );
+      if( telems == 1 ) { // most frequent case, really.
+         do {
+            std::memcpy( destIt.Pointer(), src.Pointer( *arrIt ), bytes );
+         } while( ++arrIt, ++destIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
+      } else {
+         do {
+            dip::sint offset = *arrIt;
+            for( dip::uint ii = 0; ii < telems; ++ii ) {
+               std::memcpy( destIt.Pointer( ii ), src.Pointer( offset ), bytes );
+               offset += src.TensorStride();
+            }
+         } while( ++arrIt, ++destIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
+      }
    } else {
+      // Iterate over srcOffsets and destination, copying pixels to destination
+      auto arrIt = srcOffsets.begin();
+      GenericImageIterator<> destIt( dest );
       do {
-         dip::sint offset = *arrIt;
-         for( dip::uint ii = 0; ii < telems; ++ii ) {
-            std::memcpy( destIt.Pointer( ii ), src.Pointer( offset ), bytes );
-            offset += src.TensorStride();
-         }
+         Image::Pixel d( src.Pointer( *arrIt ), src.DataType(), src.Tensor(), src.TensorStride() );
+         d = *destIt;
       } while( ++arrIt, ++destIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
+
    }
 }
 
-void CopyTo( Image const& src, Image& dest, Image const& mask ) {
+void CopyTo( Image const& src, Image& dest, Image const& destMask ) {
    // Check input
    DIP_THROW_IF( !src.IsForged() || !dest.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( src.TensorElements() != dest.TensorElements(), E::NTENSORELEM_DONT_MATCH );
-   DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( mask.CheckIsMask( dest.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
+   DIP_THROW_IF( !destMask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( destMask.CheckIsMask( dest.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
    if( dest.DataType() == src.DataType() ) {
       dip::uint telems = dest.TensorElements();
       dip::uint bytes = dest.DataType().SizeOf();
@@ -149,8 +178,8 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
          bytes *= telems;
          telems = 1;
       }
-      // Iterate over dest and mask, copying pixels from source
-      GenericJointImageIterator< 2 > destIt( { dest, mask } );
+      // Iterate over dest and destMask, copying pixels from source
+      GenericJointImageIterator< 2 > destIt( { dest, destMask } );
       GenericImageIterator<> srcIt( src );
       if( telems == 1 ) { // most frequent case, really.
          do {
@@ -171,9 +200,10 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
             }
          } while( ++destIt );
       }
+      DIP_THROW_IF( srcIt, E::SIZES_DONT_MATCH );
    } else {
-      // Iterate over dest and mask, copying pixels from source
-      GenericJointImageIterator< 2 > destIt( { dest, mask } );
+      // Iterate over dest and destMask, copying pixels from source
+      GenericJointImageIterator< 2 > destIt( { dest, destMask } );
       GenericImageIterator<> srcIt( src );
       do {
          if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
@@ -182,15 +212,16 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
             ++srcIt;
          }
       } while( ++destIt );
+      DIP_THROW_IF( srcIt, E::SIZES_DONT_MATCH );
    }
 }
 
-void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets ) {
+void CopyTo( Image const& src, Image& dest, IntegerArray const& destOffsets ) {
    // Check input
    DIP_THROW_IF( !src.IsForged() || !dest.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( src.TensorElements() != dest.TensorElements(), E::NTENSORELEM_DONT_MATCH );
-   DIP_THROW_IF( offsets.empty(), E::ARRAY_PARAMETER_EMPTY );
-   DIP_THROW_IF( src.NumberOfPixels() != offsets.size(), "Number of pixels does not match offset list" );
+   DIP_THROW_IF( destOffsets.empty(), E::ARRAY_PARAMETER_EMPTY );
+   DIP_THROW_IF( src.NumberOfPixels() != destOffsets.size(), "Number of pixels does not match offset list" );
    if( DataType() == src.DataType() ) {
       dip::uint telems = dest.TensorElements();
       dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
@@ -199,30 +230,30 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets ) {
          bytes *= telems;
          telems = 1;
       }
-      // Iterate over offsets and src, copying pixels to dest
-      auto indIt = offsets.begin();
+      // Iterate over destOffsets and src, copying pixels to dest
+      auto arrIt = destOffsets.begin();
       GenericImageIterator<> srcIt( src );
       if( telems == 1 ) { // most frequent case, really.
          do {
-            std::memcpy( dest.Pointer( *indIt ), srcIt.Pointer(), bytes );
-         } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
+            std::memcpy( dest.Pointer( *arrIt ), srcIt.Pointer(), bytes );
+         } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
       } else {
          do {
-            dip::sint offset = *indIt;
+            dip::sint offset = *arrIt;
             for( dip::uint ii = 0; ii < telems; ++ii ) {
                std::memcpy( dest.Pointer( offset ), srcIt.Pointer( ii ), bytes );
                offset += dest.TensorStride();
             }
-         } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
+         } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
       }
    } else {
-      // Iterate over offsets and src, copying pixels to dest
-      auto arrIt = offsets.begin();
+      // Iterate over destOffsets and src, copying pixels to dest
+      auto arrIt = destOffsets.begin();
       GenericImageIterator<> srcIt( src );
       do {
          Image::Pixel d( dest.Pointer( *arrIt ), dest.DataType(), dest.Tensor(), dest.TensorStride() );
          d = *srcIt;
-      } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
+      } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
    }
 }
 

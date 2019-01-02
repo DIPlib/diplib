@@ -1997,7 +1997,11 @@ class DIP_NO_EXPORT Image {
       /// and tensor shape as `this`, but have only one dimension. Pixels will be read from `mask` in the linear
       /// index order.
       ///
-      /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
+      /// If `mask` is a non-scalar image, it must have the same number of tensor elements as `this`. The created
+      /// `%View` will be scalar, as we're selecting individual samples, not pixels. Samples will be read in the
+      /// linear index order, reading all samples for the first pixel, then all samples for the second pixel, etc.
+      ///
+      /// `this` must be forged and be of equal size as `mask`. `mask` is a binary image.
       View At( Image const& mask ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `coordinates`.
@@ -2409,17 +2413,25 @@ inline Image Copy( Image const& src ) {
    return src.Copy();
 }
 
-/// \brief Copies the pixels selected by `mask` in `src` over to `dest`. `dest` will be a 1D image.
-DIP_EXPORT void CopyFrom( Image const& src, Image& dest, Image const& mask );
+/// \brief Copies the pixels selected by `srcMask` in `src` over to `dest`. `dest` will be a 1D image.
+///
+/// If `dest` is already forged and has the right number of pixels and tensor elements, it will not be reforged.
+/// In this case, the copy will apply data type conversion, where values are clipped to the target range and/or
+/// truncated, as applicable, and complex values are converted to non-complex values by taking the absolute value.
+DIP_EXPORT void CopyFrom( Image const& src, Image& dest, Image const& srcMask );
 
-/// \brief Copies the pixels selected by `offsets` over from `src` to `dest`. `dest` will be a 1D image.
-DIP_EXPORT void CopyFrom( Image const& src, Image& dest, IntegerArray const& offsets );
+/// \brief Copies the pixels selected by `srcOffsets` over from `src` to `dest`. `dest` will be a 1D image.
+///
+/// If `dest` is already forged and has the right number of pixels and tensor elements, it will not be reforged.
+/// In this case, the copy will apply data type conversion, where values are clipped to the target range and/or
+/// truncated, as applicable, and complex values are converted to non-complex values by taking the absolute value.
+DIP_EXPORT void CopyFrom( Image const& src, Image& dest, IntegerArray const& srcOffsets );
 
-/// \brief Copies all pixels from `src` over to the pixels selected by `mask` in `dest`. `dest` must be forged.
-DIP_EXPORT void CopyTo( Image const& src, Image& dest, Image const& mask );
+/// \brief Copies all pixels from `src` over to the pixels selected by `destMask` in `dest`. `dest` must be forged.
+DIP_EXPORT void CopyTo( Image const& src, Image& dest, Image const& destMask );
 
-/// \brief Copies all pixels from `src` over to the pixels selected by `offsets` in `dest`. `dest` must be forged.
-DIP_EXPORT void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets );
+/// \brief Copies all pixels from `src` over to the pixels selected by `destOffsets` in `dest`. `dest` must be forged.
+DIP_EXPORT void CopyTo( Image const& src, Image& dest, IntegerArray const& destOffsets );
 
 /// \brief Copies samples over from `src` to `dest`, expanding the tensor so it's a standard, column-major matrix.
 ///

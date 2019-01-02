@@ -894,46 +894,53 @@ class Image::View {
       View( View const& ) = default;            // Default copy constructor is OK
       View( View&& ) = default;                 // Default move constructor is OK
 
-      // Assignment into `dip::Image::View`:
-      View& operator=( View&& ) = delete;       // No move assignment
-      View& operator=( View const& ) = delete;  // Copy assignment through cast to dip::Image
-      // TODO: Assignment operators should call appropriate Copy function.
+      /// \brief Move assignment doesn't move, this behaves in the same way as the copy assignment.
+      View& operator=( View&& source ) {
+         Copy( source );
+         return *this;
+      }
 
-      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view.
-      ///
-      /// `source` must have the same number of tensor elements as the image, and be forged.
-      /// For the case of a regular view, the view and `src` must have identical sizes, except that
-      /// trailing singleton dimensions are ignored. For non-regular views, `src` must have the same
-      /// number of pixels as the view, its shape is ignored.
-      /// `source` pixel values are cast in the usual way to the type of `this`.
+      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view. See `dip::Image::View::Copy(View const&)`.
+      View& operator=( View const& source ) {
+         Copy( source );
+         return *this;
+      }
+
+      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view. See `dip::Image::View::Copy(Image const&)`.
       View& operator=( Image const& source ) {
          Copy( source );
          return *this;
       }
 
-      /// \brief Assigning a pixel to a view causes all pixels in the view to be set to the same value.
+      /// \brief Assigning a pixel to a view causes all pixels in the view to be set to the same value. See `dip::Image::View::Fill(Pixel const&)`.
       View& operator=( Pixel const& pixel ) {
          Fill( pixel );
          return *this;
       }
 
-      /// \brief Assigning a sample to a view causes all samples in the view to be set to the same value.
+      /// \brief Assigning a sample to a view causes all samples in the view to be set to the same value. See `dip::Image::View::Fill(Sample const&)`.
       View& operator=( Sample const& sample ) {
          Fill( sample );
          return *this;
       }
 
-      /// \brief Copy the pixels from `src` to the view.
+      /// \brief Copy the pixels from `source` to the view.
       ///
-      /// `source` must have the same number of tensor elements as the image, and be forged.
-      /// For the case of a regular view, the view and `src` must have identical sizes, except that
-      /// trailing singleton dimensions are ignored. For non-regular views, `src` must have the same
+      /// `source` must have the same number of tensor elements as `this`.
+      /// If both `source` and `this` are a regular view, they must have identical sizes, except that
+      /// trailing singleton dimensions are ignored. If either is a non-regular view, both views must have
+      /// the same number of pixels, shapes are ignored.
+      /// `source` pixel values are cast in the usual way to the type of `this`.
+      DIP_EXPORT void Copy( View const& source );
+
+      /// \brief Copy the pixels from `source` to the view.
+      ///
+      /// `source` must have the same number of tensor elements as `this`, and be forged.
+      /// For the case of a regular view, the view and `source` must have identical sizes, except that
+      /// trailing singleton dimensions are ignored. For non-regular views, `source` must have the same
       /// number of pixels as the view, its shape is ignored.
       /// `source` pixel values are cast in the usual way to the type of `this`.
       DIP_EXPORT void Copy( Image const& source );
-      // TODO: Copy( View const& source ); -> would prevent one copy
-      //    Note that currently View is cast to Image (copies pixels if view is irregular), and then the image
-      //    pixels are copied to the view.
 
       /// \brief Creates a copy of the view as a new image. The output will not share data with the view.
       DIP_EXPORT Image Copy() const;
@@ -1082,6 +1089,8 @@ class Image::View {
       DIP_EXPORT View( Image const& reference, Image const& mask );                 // index pixels or samples using mask
       DIP_EXPORT View( Image const& reference, UnsignedArray const& indices );      // index pixels using linear indices
       DIP_EXPORT View( Image const& reference, CoordinateArray const& coordinates );// index pixels using coordinates
+
+      bool IsRegular() const { return !mask_.IsForged() && offsets_.empty(); }
 };
 
 

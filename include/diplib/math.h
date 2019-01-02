@@ -668,8 +668,8 @@ DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 /// An alternative (slower) implementation would be:
 /// ```cpp
 ///     dip::Image mask = in1 <selector> in2;
-///     out = in4;
-///     out.CopyAt( in3.CopyAt( mask ), mask );
+///     out = in4.Copy();
+///     out.At( mask ) = in3.At( mask );
 /// ```
 ///
 /// Note that all input images are singleton-expanded to match in size, so the function can e.g. be used with scalar
@@ -702,17 +702,17 @@ inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image
 ///
 /// An alternative (slower) implementation would be:
 /// ```cpp
-///     out = in2;
-///     out.CopyAt( in1.CopyAt( mask ), mask );
+///     out = in2.Copy();
+///     out.At( mask ) = in1.At( mask );
 /// ```
 ///
-/// When `out` is the same image as `in1`, the operation becomes similar to:
+/// When `out` is the same image as `in1`, the operation becomes similar to (but faster than):
 /// ```cpp
-///     in1.CopyAt( in2, !mask );
+///     in1.At( !mask ) = in2.At( !mask );
 /// ```
-/// Conversely, when `out` is the same image as `in2`, the operation becomes similar to:
+/// Conversely, when `out` is the same image as `in2`, the operation becomes similar to (but faster than):
 /// ```cpp
-///     in2.CopyAt( in1, mask );
+///     in2.At( mask) = in1.At( mask );
 /// ```
 ///
 /// The output image has the same type as `in1` and `in2`. If these types are different, the output type is given by
