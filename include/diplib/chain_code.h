@@ -282,9 +282,10 @@ inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
 template< typename T >
 struct DIP_NO_EXPORT BoundingBox {
-   using VertexType = Vertex< T >;
-   VertexType topLeft;
-   VertexType bottomRight;
+   using VertexType = Vertex< T >;  ///< The bounding box is defined in terms of two vertices
+   VertexType topLeft;     ///< Top-left corner of the box
+   VertexType bottomRight; ///< Bottom-right corner of the box
+
    /// Default constructor, yields a bounding box of a single pixel at `{0,0}`
    constexpr BoundingBox() = default;
    /// Constructor, yields a bounding box of a single pixel at `pt`
@@ -801,7 +802,7 @@ struct DIP_NO_EXPORT ChainCode {
    ///
    /// **Literature**
    /// - A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
-   ///   of straight lines of finite length," Computer Graphics and Image Processing 20(4):347-364, 1982.
+   ///   of straight lines of finite length", Computer Graphics and %Image Processing 20(4):347-364, 1982.
    DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
@@ -811,9 +812,9 @@ struct DIP_NO_EXPORT ChainCode {
    /// Computes the bending energy.
    ///
    /// **Literature**
-   /// - I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I,"
+   /// - I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
    ///   Information and Control 25(4):357-370, 1974.
-   /// - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II,"
+   /// - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
    ///   Acta Cytologica 21(5):455-464, 1977.
    DIP_EXPORT dfloat BendingEnergy() const;
 

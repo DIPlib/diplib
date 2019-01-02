@@ -39,8 +39,8 @@ namespace dip {
 
 /// \brief Contains the result of the function `dip::SubpixelLocation`.
 struct SubpixelLocationResult {
-   FloatArray coordinates;
-   dfloat value;
+   FloatArray coordinates; ///< Coordinates of local extremum
+   dfloat value;           ///< Interpolated value at local extremum
 };
 
 /// \brief Contains the result of the functions `dip::SubpixelMaxima` and `dip::SubpixelMinima`.
@@ -267,7 +267,7 @@ inline Image CrossCorrelationFT(
 ///  - C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
 ///    Delft University of Technology, The Netherlands, 1998.
 ///  - T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
-///    Registration Estimators", In: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
+///    Registration Estimators", in: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
 DIP_EXPORT FloatArray FindShift(
       Image const& in1,
       Image const& in2,
@@ -342,9 +342,8 @@ inline Image FourierMellinMatch2D(
 /// **Literature**
 ///  - B. Jahne, "Practical Handbook on Image Processing for Scientific Applications", chapter 13, CRC Press, 1997.
 ///  - L.J. van Vliet and P.W. Verbeek, "Estimators for Orientation and Anisotropy in Digitized Images",
-///     in: J. van Katwijk, J.J. Gerbrands, M.R. van Steen, J.F.M. Tonino (eds.), Proc. First Annual Conference of the
-///     Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
-///  - C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Linkoping University, Sweden, 1994.
+///    in: Proceedings First Annual Conference of the Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
+///  - C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Link&ouml;ping University, Sweden, 1994.
 DIP_EXPORT void StructureTensor(
       Image const& in,
       Image const& mask,
@@ -880,7 +879,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 ///  - C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
 ///    Pattern Recognition Letters 28(7):865-872, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
-///    IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
+///    IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
 DIP_EXPORT Distribution Granulometry(
       Image const& in,
       Image const& mask,

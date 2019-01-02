@@ -26,8 +26,8 @@ of intermediate results. Its main purpose is as a debugging tool. It existis
 in its own library, which must be linked separately if used. The
 viewer contains two main classes
 
-1. `dip::viewer::ImageViewer`, to visualize 2d 8-bit RGB images
-2. `dip::viewer::SliceViewer`, to visualize 2d slices of n-d (tensor) images
+1. `dip::viewer::ImageViewer`, to visualize 2D 8-bit RGB images
+2. `dip::viewer::SliceViewer`, to visualize 2D slices of nD (tensor) images
 
 More than one viewer can be active at the same time, and the separate
 windows are managed by a primitive window manager. Two libraries are
@@ -96,7 +96,7 @@ main parts
      - *MEA*: Mean over dimensions perpendicular to slice
      - *MAX*: Maximum over dimensions perpendicular to slice
 
-3. **Histogram**
+3. **%Histogram**
 
   The histogram shows both the frequency of intensities (100 bins between
   global minimum and maximum values), as well as the minimum and maximum
@@ -153,7 +153,7 @@ on where it occurs
 
   Zooming near the slice labels only zooms that dimension.
 
-- *Histogram*
+- *%Histogram*
 
   Left-dragging in the histogram changes the mapping range limits.
 

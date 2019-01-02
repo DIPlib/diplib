@@ -187,7 +187,7 @@ inline Image InverseBeerLambertMapping(
 /// Ponceau-Fuchsin   | 0.107, 0.368, 0.923
 ///
 /// **Literature**
-///  - A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution,"
+///  - A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution",
 ///    Analytical and Quantitative Cytology and Histology 23(4):291-299, 2001.
 ///  - Stain color triplets taken from CellProfiler, [`unmixcolors.py`](https://github.com/CellProfiler/CellProfiler/blob/master/cellprofiler/modules/unmixcolors.py) module.
 DIP_EXPORT void UnmixStains(
@@ -408,7 +408,7 @@ inline Image WienerDeconvolution(
 ///
 /// **Literature**
 /// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-/// "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+///   "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
 DIP_EXPORT void ExponentialFitCorrection(
       Image const& in,
       Image const& mask,
@@ -453,7 +453,7 @@ inline Image ExponentialFitCorrection(
 ///
 /// **Literature**
 /// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-/// "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+///   "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
 DIP_EXPORT void AttenuationCorrection(
       Image const& in,
       Image& out,
@@ -498,7 +498,7 @@ inline Image AttenuationCorrection(
 ///
 /// **Literature**
 /// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-/// "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+///   "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
 DIP_EXPORT void SimulatedAttenuation(
       Image const& in,
       Image& out,

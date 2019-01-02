@@ -903,7 +903,7 @@ DIP_EXPORT dfloat PSNR( Image const& in, Image const& reference, Image const& ma
 ///
 /// **Literature**
 /// - Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
-///   structural similarity", IEEE Transactions on Image Processing 13(4):600-612, 2004.
+///   structural similarity", IEEE Transactions on %Image Processing 13(4):600-612, 2004.
 DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& mask = {}, dfloat sigma = 1.5, dfloat K1 = 0.01, dfloat K2 = 0.03 );
 
 /// \brief Calculates the mutual information, in bits, using a histogram with `nBins`-by-`nBins` bins.
@@ -1054,7 +1054,7 @@ DIP_EXPORT dfloat Entropy( Image const& in, Image const& mask = {}, dip::uint nB
 /// If `mask` is not given, creates a mask that avoids edge regions.
 ///
 /// **Literature**
-/// - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and Image Understanding 64(2):300-302, 1996.
+/// - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and %Image Understanding 64(2):300-302, 1996.
 DIP_EXPORT dfloat EstimateNoiseVariance( Image const& in, Image const& mask = {} );
 
 /// \}

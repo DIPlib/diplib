@@ -211,11 +211,11 @@ inline Image SelectionFilter(
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// **Literature**
-/// - M. Kuwahara, K. Hachimura and M. Kinoshita, "%Image enhancement and left ventricular contour extraction techniques
+/// - M. Kuwahara, K. Hachimura and M. Kinoshita, "Image enhancement and left ventricular contour extraction techniques
 ///   applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
 /// - M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and %Image Processing 9:394-407, 1979.
 /// - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
-/// - P. Bakker, "%Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
+/// - P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
 ///   The Netherlands, 2002.
 ///
 /// \see dip::SelectionFilter.
@@ -383,7 +383,7 @@ inline Image GaussianAnisotropicDiffusion(
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
 /// **Literature**
-/// - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion,"
+/// - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion",
 ///   IEEE Transactions on %Image Processing 7(3):421-432, 1998.
 inline void RobustAnisotropicDiffusion(
       Image const& in,
@@ -454,7 +454,7 @@ inline Image RobustAnisotropicDiffusion(
 /// values across the image (as proposed by Lucas van Vliet).
 ///
 /// **Literature**
-/// - J. Weickert, "Anisotropic diffusion in image processing," Teubner (Stuttgart), pages 95 and 127, 1998.
+/// - J. Weickert, "Anisotropic diffusion in image processing", Teubner (Stuttgart), pages 95 and 127, 1998.
 DIP_EXPORT void CoherenceEnhancingDiffusion(
       Image const& in,
       Image& out,
@@ -526,7 +526,7 @@ inline Image CoherenceEnhancingDiffusion(
 /// 
 /// **Literature**
 /// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///   convolution," EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+///   convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
 ///
 /// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
 DIP_EXPORT void AdaptiveGauss(
@@ -588,7 +588,7 @@ inline Image AdaptiveGauss(
 /// 
 /// **Literature**
 /// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///   convolution," EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+///   convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
 ///
 /// \see dip::AdaptiveGauss, dip::StructureTensorAnalysis2D
 DIP_EXPORT void AdaptiveBanana(
@@ -632,7 +632,7 @@ inline Image AdaptiveBanana(
 /// false colors at edges.
 ///
 /// **Literature**
-/// - C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images," Proceedings of the 1998 IEEE
+/// - C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images", Proceedings of the 1998 IEEE
 ///   International Conference on Computer Vision, Bombay, India.
 DIP_EXPORT void FullBilateralFilter(
       Image const& in,
@@ -674,7 +674,7 @@ inline Image FullBilateralFilter(
 /// `in` must be scalar and real-valued.
 ///
 /// **Literature**
-/// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images,"
+/// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images",
 ///   ACM Transactions on Graphics 21(3), 2002.
 DIP_EXPORT void QuantizedBilateralFilter(
       Image const& in,
@@ -718,7 +718,7 @@ inline Image QuantizedBilateralFilter(
 /// false colors at edges.
 ///
 /// **Literature**
-/// - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing," IEEE International
+/// - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing", IEEE International
 ///   Conference on Multimedia and Expo, 2005.
 DIP_EXPORT void SeparableBilateralFilter(
       Image const& in,

@@ -315,10 +315,10 @@ inline Image GaussFT(
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
 ///
 /// **Literature**
-///  - I.T. Young and L.J. van Vliet, Recursive implementation of the Gaussian filter, Signal Processing,
-/// 44(2):139-151, 1995.
-///  - L.J. van Vliet, I.T. Young and P.W. Verbeek, Recursive Gaussian Derivative Filters,
-/// in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
+///  - I.T. Young and L.J. van Vliet, "Recursive implementation of the Gaussian filter", Signal Processing,
+///    44(2):139-151, 1995.
+///  - L.J. van Vliet, I.T. Young and P.W. Verbeek, "Recursive Gaussian Derivative Filters",
+///    in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
 DIP_EXPORT void GaussIIR(
       Image const& in,
       Image& out,
@@ -1001,9 +1001,9 @@ inline Image Dgg(
 /// See `dip::Laplace` and `dip::Dgg` for more information.
 ///
 /// **Literature**
-/// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images," PhD Thesis, Delft University
+/// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", PhD Thesis, Delft University
 ///   of Technology, 1993.
-/// - P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images,"
+/// - P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images",
 ///   IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
 DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
@@ -1286,10 +1286,9 @@ inline Image Gabor2D(
 /// parameters.
 ///
 /// **Literature**
-/// - D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells,"
+/// - D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells",
 ///   Journal of the Optical Society of America A 4(12):2379-2394, 1987.
-/// - P. Kovesi, "What Are Log-Gabor Filters and Why Are They Good?"
-///   https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html (retrieved July 25, 2018).
+/// - P. Kovesi, ["What Are Log-Gabor Filters and Why Are They Good?"](https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html) (retrieved July 25, 2018).
 DIP_EXPORT void LogGaborFilterBank(
       Image const& in,
       Image& out,
@@ -1327,7 +1326,7 @@ inline Image LogGaborFilterBank(
 /// outside of the image domain as missing values.
 ///
 /// **Literature**
-/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
+/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
 ///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
 DIP_EXPORT void NormalizedConvolution(
       Image const& in,
@@ -1375,7 +1374,7 @@ inline Image NormalizedConvolution(
 /// to `"add zeros"`, the normalized convolution then takes pixels outside of the image domain as missing values.
 ///
 /// **Literature**
-/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution," Proceedings of IEEE Conference on
+/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
 ///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
 DIP_EXPORT void NormalizedDifferentialConvolution(
       Image const& in,

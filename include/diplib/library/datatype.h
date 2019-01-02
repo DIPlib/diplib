@@ -45,19 +45,19 @@ namespace dip {
 /// The following table lists all supported sample data types, together with `dip::DataType` constants
 /// and type groups (see `dip::DataType::Classes`) that they belong to.
 ///
-/// C++ type        | Constant                 | Type groups
-/// --------------- | ------------------------ | -------------------------------------------------
-/// `dip::bin`      | `dip::DT_BIN`            | `Binary`, `IntOrBin`, `FlexBin`, `Unsigned`
-/// `dip::uint8`    | `dip::DT_UINT8`          | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
-/// `dip::sint8`    | `dip::DT_SINT8`          | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
-/// `dip::uint16`   | `dip::DT_UINT16`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
-/// `dip::sint16`   | `dip::DT_SINT16`         | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
-/// `dip::uint32`   | `dip::DT_UINT32`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
-/// `dip::sint32`   | `dip::DT_SINT32`         | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
-/// `dip::sfloat`   | `dip::DT_SFLOAT`         | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`
-/// `dip::dfloat`   | `dip::DT_DFLOAT`         | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`
-/// `dip::scomplex` | `dip::DT_SCOMPLEX`       | `Complex`, `Flex`, `FlexBin`, `Signed`
-/// `dip::dcomplex` | `dip::DT_DCOMPLEX`       | `Complex`, `Flex`, `FlexBin`, `Signed`
+/// C++ type        | Constant            | String       | Type groups                                       | Size (bytes)
+/// --------------- | ------------------- | ------------ | ------------------------------------------------- | ------------
+/// `dip::bin`      | `dip::DT_BIN`       | `"BIN"`      | `Binary`, `IntOrBin`, `FlexBin`, `Unsigned`       | 1
+/// `dip::uint8`    | `dip::DT_UINT8`     | `"UINT8"`    | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned` | 1
+/// `dip::sint8`    | `dip::DT_SINT8`     | `"SINT8"`    | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`   | 1
+/// `dip::uint16`   | `dip::DT_UINT16`    | `"UINT16"`   | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned` | 2
+/// `dip::sint16`   | `dip::DT_SINT16`    | `"SINT16"`   | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`   | 2
+/// `dip::uint32`   | `dip::DT_UINT32`    | `"UINT32"`   | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned` | 4
+/// `dip::sint32`   | `dip::DT_SINT32`    | `"SINT32"`   | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`   | 4
+/// `dip::sfloat`   | `dip::DT_SFLOAT`    | `"SFLOAT"`   | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`      | 4
+/// `dip::dfloat`   | `dip::DT_DFLOAT`    | `"DFLOAT"`   | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`      | 8
+/// `dip::scomplex` | `dip::DT_SCOMPLEX`  | `"SCOMPLEX"` | `Complex`, `Flex`, `FlexBin`, `Signed`            | 8 (4 x2)
+/// `dip::dcomplex` | `dip::DT_DCOMPLEX`  | `"DCOMPLEX"` | `Complex`, `Flex`, `FlexBin`, `Signed`            | 16 (8 x2)
 ///
 /// Note that some functions require specific data types for their input images, and will throw an
 /// exception if the data type doesn't match. However, type restrictions typically are meaningful,
@@ -98,23 +98,11 @@ namespace dip {
 /// \brief `%DataType` objects are used to indicate what the data type of
 /// an image is.
 ///
-/// It is a simple enumeration type, but with some added
-/// member functions that can be used to query the data type. A series
-/// of constant expressions have been defined that should be used when
-/// specifying a data type or testing for specific data types:
-/// * `dip::DT_BIN`
-/// * `dip::DT_UINT8`
-/// * `dip::DT_UINT16`
-/// * `dip::DT_UINT32`
-/// * `dip::DT_SINT8`
-/// * `dip::DT_SINT16`
-/// * `dip::DT_SINT32`
-/// * `dip::DT_SFLOAT`
-/// * `dip::DT_DFLOAT`
-/// * `dip::DT_SCOMPLEX`
-/// * `dip::DT_DCOMPLEX`
-///
-/// It is possible to call `%DataType` member functions on these constants:
+/// It is a simple enumeration type, but with some added member functions that can be used
+/// to query the data type. A series of constant expressions (`dip::DT_XXX`) have been defined
+/// that should be used when specifying a data type, there is never a need to call the
+/// constructors to this class explicitly. It is possible to call `%DataType` member functions
+/// on these constants:
 ///
 /// ```cpp
 ///     dip::DT_BIN.SizeOf();
@@ -123,6 +111,7 @@ namespace dip {
 /// See \ref types for more information about image sample data types.
 struct DIP_NO_EXPORT DataType {
 
+   // Not documented because the user doesn't need these.
    enum class DT {
          BIN,
          UINT8,
@@ -166,7 +155,7 @@ struct DIP_NO_EXPORT DataType {
       static_assert( assert_false< T >::value, "You need to cast your constant to one of the known data types" );
    }
 
-   /// \brief A string can be cast to a data type. The recognized names are identical to the enumerator names in `dip::DataType::DT`.
+   /// \brief A string can be cast to a data type. See \ref types for recognized strings.
    explicit DataType( String name ) {
       if( name == DTString::BIN      ) { dt = DT::BIN;      } else
       if( name == DTString::UINT8    ) { dt = DT::UINT8;    } else
@@ -196,7 +185,7 @@ struct DIP_NO_EXPORT DataType {
    /// \brief `%DataType` objects can be compared.
    bool operator==( DataType other ) const { return dt == other.dt; }
 
-   /// \brief Returns a C-style string constant with a representation of the data type name.
+   /// \brief Returns a C-style string constant with a representation of the data type name. See \ref types for returned strings.
    char const* Name() const {
       switch( dt ) {
          case DT::BIN:      return DTString::BIN;
@@ -521,8 +510,8 @@ struct DIP_NO_EXPORT DataType {
 
 };
 
-/// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
-/// information about the image is printed.
+/// \brief You can output a `dip::DataType` to `std::cout` or any other stream. The result of `type.Name()`
+/// is written. See `dip::DataType::Name`.
 inline std::ostream& operator<<( std::ostream& os, DataType type ) {
    os << type.Name();
    return os;

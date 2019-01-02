@@ -164,9 +164,9 @@ class DIP_NO_EXPORT Kernel;
 ///
 /// **Literature**
 ///  - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
-///    at arbitrary angles," IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+///    at arbitrary angles", IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
 ///  - C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
-///    measurements," IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
+///    measurements", IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
 class DIP_NO_EXPORT StructuringElement {
    public:
       enum class ShapeCode {
@@ -1134,7 +1134,7 @@ DIP_EXPORT void UpperEnvelope(
 /// `dip::Leveling`, `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`
 ///
 /// **Literature**
-///  - K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter, Pattern Recognition
+///  - K. Robinson and P.F. Whelan, "Efficient morphological reconstruction: a downhill filter", Pattern Recognition
 ///    Letters 25:1759-1767, 2004.
 DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
@@ -1255,7 +1255,7 @@ inline Image HMaxima(
 /// the smoothing, but preserving sharp edges.
 ///
 /// **Literature**
-///  - F. Meyer, "The levelings", Mathematical Morphology and its Applications to Image and Signal Processing
+///  - F. Meyer, "The levelings", Mathematical Morphology and its Applications to %Image and Signal Processing
 ///    (proceedings of ISSM'98), pp. 199-206, 1998.
 inline void Leveling(
       Image const& in,
@@ -1408,8 +1408,8 @@ inline Image PathOpening(
 ///
 /// **Literature**
 ///  - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
-///  - H. Talbot, B. Appleton, "Efficient complete and incomplete path openings and closings", Image and Vision Computing 25:416-425, 2007.
-///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
+///  - H. Talbot, B. Appleton, "Efficient complete and incomplete path openings and closings", %Image and Vision Computing 25:416-425, 2007.
+///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
 ///  - O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
 DIP_EXPORT void DirectedPathOpening(
       Image const& in,

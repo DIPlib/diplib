@@ -121,7 +121,7 @@ inline Image ClipHigh(
 ///
 /// **Literature**
 /// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis, Delft University
-///   of Technology, The Netherlands, 1993
+///   of Technology, The Netherlands, 1993.
 DIP_EXPORT void ErfClip(
       Image const& in,
       Image& out,

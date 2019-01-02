@@ -28,7 +28,23 @@ revolves around images. Some image manipulation is provided as class
 methods, but most image processing and analysis functionality is provided
 in functions defined in the `#dip` namespace.
 
-\tableofcontents
+Jump to:
+ - \ref image_representation
+ - \ref strides
+ - \ref tensors
+ - \ref pointers
+ - \ref assignment
+ - \ref indexing
+ - \ref reshaping
+ - \ref protect
+ - \ref const_correctness
+ - \ref arithmetic
+ - \ref color
+ - \ref pixel_size
+ - \ref external_data_segment
+ - \ref singleton_expansion
+ - <a href="#nested-classes"><strong>Nested classes</strong></a>
+ - <a href="#pub-methods"><strong>Public member functions</strong></a>
 
 [//]: # (--------------------------------------------------------------)
 

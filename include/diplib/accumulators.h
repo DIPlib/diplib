@@ -54,14 +54,13 @@ namespace dip {
 /// \see VarianceAccumulator, FastVarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// **Literature**
-/// - Code modified from <a href="http://www.johndcook.com/blog/skewness_kurtosis/">John D. Cook</a>
-/// - <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance">Wikipedia</a> has the same code.
-/// - <a href="http://people.xiph.org/~tterribe/notes/homs.html">T. B. Terriberry, "Computing higher-order moments online", 2008</a>.
-/// - <a href="http://infoserve.sandia.gov/sand_doc/2008/086212.pdf">Philippe P. Pébay, "Formulas for Robust,
-///   One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
-///   Technical Report SAND2008-6212, Sandia National Laboratories, September 2008</a>.
-/// - <a href="https://en.wikipedia.org/wiki/Skewness#Sample_skewness">Wikipedia on Skewness</a>.
-/// - <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis">Wikipedia on Kurtosis</a>.
+/// - Code modified from [John D. Cook](http://www.johndcook.com/blog/skewness_kurtosis/)
+///   ([Wikipedia](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) has the same code).
+/// - T. B. Terriberry, ["Computing higher-order moments online"](http://people.xiph.org/~tterribe/notes/homs.html), 2008.
+/// - Philippe P. Pébay, "Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
+///   Technical Report [SAND2008-6212](http://infoserve.sandia.gov/sand_doc/2008/086212.pdf), Sandia National Laboratories, September 2008.
+/// - Wikipedia: ["Skewness", section "Sample skewness"](https://en.wikipedia.org/wiki/Skewness#Sample_skewness).
+/// - Wikipedia: ["Kurtosis", section "Estimators of population kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis).
 class DIP_NO_EXPORT StatisticsAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -179,7 +178,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// \see StatisticsAccumulator, FastVarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// **Literature**
-/// - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
+/// - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3<sup>rd</sup> Ed., 1998.
 class DIP_NO_EXPORT VarianceAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -356,7 +355,7 @@ inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVaria
 /// \see StatisticsAccumulator, VarianceAccumulator, FastVarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// **Literature**
-/// - <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance">Wikipedia</a>.
+/// - Wikipedia: ["Algorithms for calculating variance", section "Covariance"](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance).
 class DIP_NO_EXPORT CovarianceAccumulator {
       // TODO: rewrite this for arbitrary number of variables
    public:

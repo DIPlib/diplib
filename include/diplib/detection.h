@@ -74,7 +74,7 @@ namespace dip {
 /// ```
 ///
 /// **Literature**
-/// - C. Harris and M. Stephens, "A combined corner and edge detector", Proceedings of the 4th Alvey Vision Conference, pp. 147–151, 1988.
+/// - C. Harris and M. Stephens, "A combined corner and edge detector", Proceedings of the 4<sup>th</sup> Alvey Vision Conference, pp. 147–151, 1988.
 DIP_EXPORT void HarrisCornerDetector(
       Image const& in,
       Image& out,
@@ -112,7 +112,7 @@ inline Image HarrisCornerDetector(
 /// ```
 ///
 /// **Literature**
-/// - J. Shi and C. Tomasi, "Good features to track", 9th IEEE Conference on Computer Vision and Pattern Recognition, pp. 593–600, 1994.
+/// - J. Shi and C. Tomasi, "Good features to track", 9<sup>th</sup> IEEE Conference on Computer Vision and Pattern Recognition, pp. 593–600, 1994.
 DIP_EXPORT void ShiTomasiCornerDetector(
       Image const& in,
       Image& out,

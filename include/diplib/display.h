@@ -56,12 +56,32 @@ namespace dip {
 class DIP_NO_EXPORT ImageDisplay {
    public:
 
-      enum class ProjectionMode : unsigned char { SLICE, MAX, MEAN };
-      enum class ComplexMode : unsigned char { MAGNITUDE, PHASE, REAL, IMAG };
-      enum class MappingMode : unsigned char { MANUAL, MAXMIN, PERCENTILE, BASED, LOGARITHMIC, MODULO };
+      /// Enumerator for the projection mode
+      enum class ProjectionMode : unsigned char {
+         SLICE,      ///< A slice is prepared for display
+         MAX,        ///< The max projection is prepared for display
+         MEAN        ///< The mean projection is prepared for display
+      };
+      /// Enumerator for the complex mapping mode
+      enum class ComplexMode : unsigned char {
+         MAGNITUDE,  ///< The magnitude is prepared for display
+         PHASE,      ///< The complex phase is prepared for display
+         REAL,       ///< The real component is prepared for display
+         IMAG        ///< The imaginary component is prepared for display
+      };
+      /// Enumerator for the intensity mapping mode
+      enum class MappingMode : unsigned char {
+         MANUAL,     ///< `Limits` are used as-is
+         MAXMIN,     ///< The max and min values are taken as the display limits
+         PERCENTILE, ///< The 5% and 95% values are taken as the display limits
+         BASED,      ///< 0 should remain at the middle of the output range
+         LOGARITHMIC,///< A logarithmic mapping is applied
+         MODULO      ///< The integer input values are mapped modulo the output range
+      };
+      /// Intensity mapping limits
       struct Limits {
-         dfloat lower;
-         dfloat upper;
+         dfloat lower; ///< This value is mapped to 0.
+         dfloat upper; ///< This value is mapped to 255.
       };
 
       // No default constructor, no copy construction or assignment. We do allow move!
@@ -211,7 +231,7 @@ class DIP_NO_EXPORT ImageDisplay {
             dim1_ = dim1;
             dim2_ = dim2;
             sliceIsDirty_ = true;
-            // Make sure projection mode is always "slice" if ndims(img)==ndims(out)
+            // Make sure projection mode is always `"slice"` if `ndims(img)==ndims(out)`
             if( twoDimOut_ && nDim == 2 ) {
                projectionMode_ = ProjectionMode::SLICE;
             }
@@ -264,15 +284,16 @@ class DIP_NO_EXPORT ImageDisplay {
 
       /// \brief Sets the projection mode. Has no effect if image dimensionality is equal to projection dimensionality.
       ///
-      /// Valid projection modes are:
-      /// - "slice": the 1D/2D image shown is a slice through the nD image.
-      /// - "max": the 1D/2D image shown is the max projection of the nD image.
-      /// - "mean": the 1D/2D image shown is the mean projection of the nD image.
+      /// | `projectionMode` value   | Meaning |
+      /// | ------------------------ | ------- |
+      /// | `"slice"`                | the 1D/2D image shown is a slice through the nD image |
+      /// | `"max"`                  | the 1D/2D image shown is the max projection of the nD image |
+      /// | `"mean"`                 | the 1D/2D image shown is the mean projection of the nD image |
       ///
-      /// For an image with complex samples, setting the projection mode to "max"
-      /// forces the complex to real mapping mode to "magnitude".
+      /// For an image with complex samples, setting the projection mode to `"max"`
+      /// forces the complex to real mapping mode to `"magnitude"`.
       ///
-      /// For projection modes other than "slice", turns off global stretch mode.
+      /// For projection modes other than `"slice"`, turns off global stretch mode.
       void SetProjectionMode( String const& projectionMode ) {
          if( projectionMode == "slice" ) {
             SetProjectionMode( ProjectionMode::SLICE );
@@ -285,7 +306,7 @@ class DIP_NO_EXPORT ImageDisplay {
          }
       }
 
-      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max", or for
+      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to `"max"`, or for
       /// non-complex images.
       void SetComplexMode( ComplexMode complexMode ) {
          if( IsComplex() && ( projectionMode_ != ProjectionMode::MAX ) && ( complexMode_ != complexMode )) {
@@ -294,15 +315,16 @@ class DIP_NO_EXPORT ImageDisplay {
          }
       }
 
-      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max", or for
+      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to `"max"`, or for
       /// non-complex images.
       ///
-      /// Valid complex to real mapping modes are:
-      /// - "magnitude": the intensity displayed is the magnitude of the complex values
-      /// - "abs": synonym for "magnitude".
-      /// - "phase": the intensity displayed is the phase of the complex values.
-      /// - "real": the intensity displayed is the real component of the complex values.
-      /// - "imag": the intensity displayed is the imaginary component of the complex values.
+      /// | `complexMode` value   | Meaning |
+      /// | --------------------- | ------- |
+      /// | `"magnitude"`         | the intensity displayed is the magnitude of the complex values |
+      /// | `"abs"`               | synonym for `"magnitude"` |
+      /// | `"phase"`             | the intensity displayed is the phase of the complex values |
+      /// | `"real"`              | the intensity displayed is the real component of the complex values |
+      /// | `"imag"`              | the intensity displayed is the imaginary component of the complex values |
       void SetComplexMode( String const& complexMode )  {
          if( complexMode == "abs" ) {
             SetComplexMode( ComplexMode::MAGNITUDE );
@@ -343,28 +365,31 @@ class DIP_NO_EXPORT ImageDisplay {
          }
       }
 
-      /// \brief Sets the range of intensities to be mapped to the output range. Forces intensity mapping mode to linear.
+      /// \brief Sets the mapping mode and the range of intensities to be mapped to the output range.
       /// Has no effect for binary images.
       ///
-      /// Valid range modes are:
-      /// - "unit": [0, 1].
-      /// - "normal": same as "8bit".
-      /// - "8bit": [0, 255].
-      /// - "12bit": [0, 4095].
-      /// - "16bit": [0, 65535].
-      /// - "s8bit": [-128, 127].
-      /// - "s12bit": [-2048, 2047].
-      /// - "s16bit": [-32768, 32767].
-      /// - "angle": [-pi, pi].
-      /// - "orientation": [-pi/2, pi/2].
-      /// - "lin": uses the full range of the image (or slice).
-      /// - "all": same as "lin".
-      /// - "percentile": uses the 5% to 95% range of the image.
-      /// - "base": uses the full range of the image (or slice), but keeps 0 at the middle of the output range.
-      /// - "based": same as "base".
-      /// - "log": the logarithm of the intensities are mapped to the full output range.
-      /// - "modulo": the integer input values are mapped modulo the output range.
-      /// - "labels": same as "modulo".
+      /// | `range` value   | Meaning |
+      /// | --------------- | ------- |
+      /// | `"unit"`        | [0, 1] |
+      /// | `"8bit"`        | [0, 255] |
+      /// | `"12bit"`       | [0, 4095] |
+      /// | `"16bit"`       | [0, 65535] |
+      /// | `"s8bit"`       | [-128, 127] |
+      /// | `"s12bit"`      | [-2048, 2047] |
+      /// | `"s16bit"`      | [-32768, 32767] |
+      /// | `"angle"`       | [-pi, pi] |
+      /// | `"orientation"` | [-pi/2, pi/2] |
+      /// | `"lin"`         | uses the full range of the image (or slice) |
+      /// | `"percentile"`  | uses the 5% to 95% range of the image |
+      /// | `"base"`        | uses the full range of the image (or slice), but keeps 0 at the middle of the output range |
+      /// | `"log"`         | the logarithm of the intensities are mapped to the full output range |
+      /// | `"modulo"`      | the integer input values are mapped modulo the output range |
+      /// | Additionally, the following aliases are defined: ||
+      /// | `"normal"`      | same as `"8bit"` |
+      /// | `"linear"`      | same as `"lin"` |
+      /// | `"all"`         | same as `"lin"` |
+      /// | `"based"`       | same as `"base"` |
+      /// | `"labels"`      | same as `"modulo"` |
       void SetRange( String const& range ) {
          if( range == "unit" ) {
             SetRange( Limits{ 0.0, 1.0 } );
@@ -384,7 +409,7 @@ class DIP_NO_EXPORT ImageDisplay {
             SetRange( Limits{ -pi, pi } );
          } else if( range == "orientation" ) {
             SetRange( Limits{ -pi / 2.0, pi / 2.0 } );
-         } else if(( range == "lin" ) || ( range == "all" )) {
+         } else if(( range == "lin" ) || ( range == "linear" ) || ( range == "all" )) {
             SetMappingMode( MappingMode::MAXMIN );
          } else if( range == "percentile" ) {
             SetMappingMode( MappingMode::PERCENTILE );
@@ -399,7 +424,7 @@ class DIP_NO_EXPORT ImageDisplay {
          }
       }
 
-      /// \brief Sets the global stretch mode. Has no effect on 2D images or when the projection mode is not "slice"
+      /// \brief Sets the global stretch mode. Has no effect on 2D images or when the projection mode is not `"slice"`
       void SetGlobalStretch( bool globalStretch ) {
          if(( projectionMode_ == ProjectionMode::SLICE ) &&
             ( image_.Dimensionality() > 2 ) &&
@@ -409,11 +434,12 @@ class DIP_NO_EXPORT ImageDisplay {
          }
       };
 
-      /// \brief Sets the global stretch mode. Has no effect on 2D images or when the projection mode is not "slice"
+      /// \brief Sets the global stretch mode. Has no effect on 2D images or when the projection mode is not `"slice"`
       ///
-      /// Valid global stretch modes are:
-      /// - "yes"/"on": intensity stretching is computed using all values in the image.
-      /// - "no"/"off": intensity stretching is computed using only values visible in the current slice.
+      /// | `globalStretch` value | Meaning |
+      /// | --------------------- | ------- |
+      /// | `"yes"` or `"on"` | intensity stretching is computed using all values in the image |
+      /// | `"no"` or `"off"` | intensity stretching is computed using only values visible in the current slice |
       void SetGlobalStretch( String const& globalStretch ) {
          if(( globalStretch == "yes" ) || ( globalStretch == "on" )) {
             SetGlobalStretch( true );
@@ -484,7 +510,7 @@ class DIP_NO_EXPORT ImageDisplay {
       /// \brief Get the current intensity range.
       Limits GetRange() const { return range_; }
 
-      /// \brief Gets the image intensity range (that selected with "lin") for the current slicing and complex
+      /// \brief Gets the image intensity range (that selected with `"lin"`) for the current slicing and complex
       /// mapping modes. If `compute` is true, it computes them if they're not yet computed.
       DIP_EXPORT Limits GetLimits( bool compute );
 
@@ -596,7 +622,7 @@ class DIP_NO_EXPORT ImageDisplay {
 /// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](http://peterkovesi.com/projects/colourmaps/index.html).
 ///
 /// **Literature**
-///  - Peter Kovesi, "Good Colour Maps: How to Design Them", arXiv:1509.03700 [cs.GR], 2015
+///  - Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
 DIP_EXPORT void ApplyColorMap(
       Image const& in,
       Image& out,
