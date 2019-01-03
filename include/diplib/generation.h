@@ -55,7 +55,9 @@ DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, Unsign
 /// \brief Multiplies the image with a windowing function.
 ///
 /// `type` can be one of the following windowing functions:
-///  - "Hamming": A cosine window. Set `parameter` to 0.5 to get a Hann window, and to 0.53836 to get a Hamming window.
+///  - "Hamming": A cosine window. Set `parameter` to 0.5 to get a Hann window, and to 25.0/46.0 to get
+///    a Hamming window. With 0.53836, a small refinement to the Hamming optimum, yields the minimum peak
+///    side-lobe level.
 ///  - "Gaussian": A Gaussian window, this is the only one that is isotropic. `parameter` is the sigma, as a function
 ///    of the image half-width. Choose a value smaller or equal to 0.5. At 0.5, 4 sigmas fit in the image width.
 ///  - "Tukey": A rectangular window convolved with a Hann window. `parameter` is the fraction of image
@@ -65,7 +67,7 @@ DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, Unsign
 ///    a value of the order of 10 is a good choice. The rectangular window is of the size of the image minus 3 sigma
 ///    on each edge.
 ///    This is the only window where the tapering is independent of the image width, and thus equal along each image
-///    dimension even if the image is not square. If the image size along one dimension is too small to accomodate
+///    dimension even if the image is not square. If the image size along one dimension is too small to accommodate
 ///    the window shape, a Gaussian window is created instead.
 ///
 /// In all these cases, the window is applied to each dimension independently, meaning that the multi-dimensional
