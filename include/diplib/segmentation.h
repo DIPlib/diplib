@@ -113,7 +113,7 @@ DIP_EXPORT FloatArray IsodataThreshold(
 );
 inline Image IsodataThreshold(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint nThresholds = 1 // output is binary if nThresholds==1, labeled otherwise
 ) {
    Image out;
@@ -136,7 +136,7 @@ DIP_EXPORT dfloat OtsuThreshold(
 );
 inline Image OtsuThreshold(
       Image const& in,
-      Image const& mask
+      Image const& mask = {}
 ) {
    Image out;
    OtsuThreshold( in, mask, out );
@@ -158,7 +158,7 @@ DIP_EXPORT dfloat MinimumErrorThreshold(
 );
 inline Image MinimumErrorThreshold(
       Image const& in,
-      Image const& mask
+      Image const& mask = {}
 ) {
    Image out;
    MinimumErrorThreshold( in, mask, out );
@@ -181,7 +181,7 @@ DIP_EXPORT dfloat TriangleThreshold(
 );
 inline Image TriangleThreshold(
       Image const& in,
-      Image const& mask
+      Image const& mask = {}
 ) {
    Image out;
    TriangleThreshold( in, mask, out );
@@ -204,7 +204,7 @@ DIP_EXPORT dfloat BackgroundThreshold(
 );
 inline Image BackgroundThreshold(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dfloat distance = 2.0
 ) {
    Image out;
@@ -226,7 +226,7 @@ DIP_EXPORT dfloat VolumeThreshold(
 );
 inline Image VolumeThreshold(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dfloat volumeFraction = 0.5
 ) {
    Image out;
