@@ -693,18 +693,18 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 /// \brief The contour of an object as a chain code sequence.
 struct DIP_NO_EXPORT ChainCode {
 
-   static constexpr VertexInteger deltas4[4] = { {  1,  0 },
-                                                 {  0, -1 },
-                                                 { -1,  0 },
-                                                 {  0,  1 } };
-   static constexpr VertexInteger deltas8[8] = { {  1,  0 },
-                                                 {  1, -1 },
-                                                 {  0, -1 },
-                                                 { -1, -1 },
-                                                 { -1,  0 },
-                                                 { -1,  1 },
-                                                 {  0,  1 },
-                                                 {  1,  1 } };
+   DIP_EXPORT static constexpr VertexInteger deltas4[4] = {{  1,  0 },
+                                                           {  0, -1 },
+                                                           { -1,  0 },
+                                                           {  0,  1 }};
+   DIP_EXPORT static constexpr VertexInteger deltas8[8] = {{  1,  0 },
+                                                           {  1, -1 },
+                                                           {  0, -1 },
+                                                           { -1, -1 },
+                                                           { -1,  0 },
+                                                           { -1,  1 },
+                                                           {  0,  1 },
+                                                           {  1,  1 }};
 
    /// \brief Provides data that are helpful when processing chain codes.
    ///
