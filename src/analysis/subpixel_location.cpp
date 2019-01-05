@@ -500,6 +500,9 @@ SubpixelLocationArray SubpixelExtrema(
    // Allocate output
    dip::uint nExtrema = measurement.NumberOfObjects();
    SubpixelLocationArray out( nExtrema );
+   if( nExtrema == 0 ) {
+      return out;
+   }
 
    // Find the version of `dip__SubpixelLocation` to call, depending on input data type.
    auto SubpixelLocationFunction = dip__SubpixelLocation< sfloat >; // any of them, for the sake of finding out the type.
