@@ -140,23 +140,6 @@ inline Image RieszTransform(
 }
 
 
-// TODO: document this function
-DIP_EXPORT void HoughTransformCircleCenters(
-      Image const& in,
-      Image const& gv,
-      Image& out,
-      UnsignedArray const& range = {}
-);
-inline Image HoughTransformCircleCenters(
-      Image const& in,
-      Image const& gv,
-      UnsignedArray const& range = {}
-) {
-   Image out;
-   HoughTransformCircleCenters( in, gv, out, range );
-   return out;
-}
-
 /// \}
 
 } // namespace dip

@@ -61,13 +61,11 @@ set(DIPlib_sources_bogus
 ../include/diplib/transform.h
 ../include/diplib/union_find.h
 analysis/chord_length.cpp
-analysis/corners.cpp
 analysis/distance_distribution.cpp
 analysis/findshift.cpp
 analysis/fouriermellin.cpp
 analysis/fractal_dimension.cpp
 analysis/granulometry.cpp
-analysis/lines.cpp
 analysis/monogenic_signal.cpp
 analysis/pixel_pair_sampling.cpp
 analysis/structure_tensor.cpp
@@ -89,6 +87,10 @@ color/ish.h
 color/lab.h
 color/rgb.h
 color/xyz.h
+detection/corners.cpp
+detection/hough.cpp
+detection/lines.cpp
+detection/radon.cpp
 display/colormap.cpp
 display/image_display.cpp
 distance/edt.cpp
@@ -249,7 +251,6 @@ support/accumulators.cpp
 support/matrix.cpp
 support/numeric.cpp
 transform/fourier.cpp
-transform/hough.cpp
 transform/opencv_dxt.cpp
 transform/riesz.cpp
 )

@@ -261,6 +261,32 @@ inline dfloat Sinc( dfloat x ) {
    return x == 0.0 ? 1.0 : std::sin( x ) / x;
 }
 
+/// \brief Computes the surface area of an `n`-dimensional hypershpere with radius `r`.
+constexpr inline dfloat HypersphereSurface( dip::uint n, dfloat r ) {
+   // See https://en.wikipedia.org/wiki/N-sphere#Recurrences
+   // (but note that we're calculating S_{n-1}, not S_n)
+   // We're using the recursive definition because `n` is always small, and Gamma functions would be way more expensive to compute.
+   switch( n ) {
+      case 0:
+         return 0;
+      case 1:
+         return 2;
+      case 2:
+         return 2 * pi * r;
+      case 3:
+         return pi * r * r; // This case is not necessary, but it saves a function call.
+      default:
+         n -= 2;
+         return 2 * pi * r * r / static_cast< dfloat >( n ) * HypersphereSurface( n, r );
+   }
+}
+
+/// \brief Computes the volume of an `n`-dimensional hypershpere with radius `r`.
+constexpr inline dfloat HypersphereVolume( dip::uint n, dfloat r ) {
+   // For simplicity, we base this one on the surface area.
+   return HypersphereSurface( n, r ) * r / static_cast< dfloat >( n );
+}
+
 /// \brief Finds the eigenvalues and eigenvectors of a symmetric, real-valued matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.

@@ -82,10 +82,10 @@ namespace dip {
 ///
 /// **Literature**
 ///  - R. van den Boomgaard, "Mathematical Morphology--Extensions towards Computer Vision", PhD Thesis, University of Amsterdam, 1992.
-///  - A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time", Mathematical Morphology and its Applications to Image and Signal Processing, Springer, 2002.
-///  - P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and Image Processing 14:227-248, 1980.
+///  - A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time", Mathematical Morphology and its Applications to %Image and Signal Processing, Springer, 2002.
+///  - P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and %Image Processing 14:227-248, 1980.
 ///  - Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
-///  - J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and Image Processing 54(6):526-535, 1992.
+///  - J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and %Image Processing 54(6):526-535, 1992.
 ///
 /// **Known bugs**
 ///  - The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger (almost)
@@ -168,7 +168,7 @@ inline Image VectorDistanceTransform(
 ///    of Technology, The Netherlands, 1991.
 ///  - K.C. Strasters, A.W.M. Smeulders and H.T.M. van der Voort, "3-D Texture characterized by accessibility
 ///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
-///  - K.C. Strasters, "Quantitative Analysis in Confocal Image Cytometry", Ph.D. thesis, Delft University of
+///  - K.C. Strasters, "Quantitative Analysis in Confocal %Image Cytometry", Ph.D. thesis, Delft University of
 ///    Technology, The Netherlands, 1994.
 DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,

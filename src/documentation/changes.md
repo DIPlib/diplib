@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2018, Cris Luengo.)
+[//]: # ([c]2016-2019, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 [//]: # (Based on original DIPimage code: [c]1999-2014, Delft University of Technology.)
 
@@ -554,6 +554,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - `testobject` has a changed interface, the input argument order has changed and most arguments are now
     name-value pairs. Its functionality has been greatly extended.
+
+  - `radoncircle` has a different implementation with different capabilities and a different interface.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`,
   `cornerdetector`, `coordinates`, `distancedistribution`, `drawshape`, `extendregion`,

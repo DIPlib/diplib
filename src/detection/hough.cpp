@@ -18,7 +18,7 @@
  */
 
 #include "diplib.h"
-#include "diplib/transform.h"
+#include "diplib/detection.h"
 #include "diplib/generation.h"
 
 namespace dip {

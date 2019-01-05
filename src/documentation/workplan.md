@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2018, Cris Luengo.)
+[//]: # ([c]2016-2019, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -85,7 +85,7 @@ document's source</a> for the most up-to-date version.
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
     This should be an optional module, as *Bio-Formats* is GPL.
 
--   Radon transform for lines and circles, Hough transform for lines (Wouter already did the one for circles).
+-   Radon transform for lines, Hough transform for lines.
 
 -   Level-set segmentation, graph-cut segmentation.
 
@@ -135,7 +135,6 @@ it should not be ported (or already is ported).
     - `dip_EmGaussTest` (`dip_numerical.h`)
 
 - diplib/microscopy.h
-    - `dip_RestorationTransform` (`dip_restoration.h`)
     - `dip_TikhonovRegularizationParameter` (`dip_restoration.h`)
     - `dip_TikhonovMiller` (`dip_restoration.h`)
     - `dip_PseudoInverse` (`dip_restoration.h`) (this name is wrong, maybe InverseFilterRestoration?)

@@ -254,6 +254,17 @@ constexpr char const* BOX = "box";
 constexpr char const* BOX_SHELL = "box shell";
 constexpr char const* CUSTOM = "custom";
 
+// Radon
+constexpr char const* FULL = "full";
+constexpr char const* PROJECTION = "projection";
+constexpr char const* SUBPIXEL_PROJECTION = "subpixel projection";
+//constexpr char const* NORMALIZE = "normalize";
+//constexpr char const* CORRECT = "correct";
+constexpr char const* HOLLOW = "hollow";
+//constexpr char const* FILLED = "filled";
+constexpr char const* NO_MAXIMA_DETECTION = "no maxima detection";
+constexpr char const* NO_PARAMETER_SPACE = "no parameter space";
+
 } // namespace S
 
 } // namespace dip

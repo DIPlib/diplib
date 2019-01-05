@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,23 @@ void init_analysis( py::module& m ) {
    m.def( "FractalDimension", &dip::FractalDimension, "in"_a, "eta"_a = 0.5 );
 
    // diplib/detection.h
+
+   auto rcp = py::class_< dip::RadonCircleParameters >( m, "RadonCircleParameters", "The result of a call to PyDIP.SubpixelLocation." );
+   rcp.def_readonly( "origin", &dip::RadonCircleParameters::origin );
+   rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius );
+   rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {
+      std::ostringstream os;
+      os << "<RadonCircleParameters at " << self.origin << " with radius " << self.radius << ">";
+      return os.str();
+   } );
+
+   m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
+          "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
+   m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
+             dip::Image out;
+             dip::RadonCircleParametersArray params = RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
+             return py::make_tuple( out, params ).release();
+          }, "in"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT } );
 
    m.def( "HarrisCornerDetector", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::HarrisCornerDetector ),
           "in"_a, "kappa"_a = 0.04, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );

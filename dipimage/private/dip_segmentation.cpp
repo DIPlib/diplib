@@ -1,7 +1,7 @@
 /*
  * DIPimage 3.0
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -253,6 +253,51 @@ void linedetector( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+mxArray* GetArray( dip::RadonCircleParametersArray const& params ) {
+   dip::uint n = params.size();
+   if( n == 0 ) {
+      return mxCreateDoubleMatrix( 0, 0, mxREAL );
+   }
+   dip::uint nDims = params[ 0 ].origin.size();
+   mxArray* mx = mxCreateDoubleMatrix( n, nDims + 1, mxREAL );
+   double* data = mxGetPr( mx );
+   for( auto& p : params ) {
+      DIP_ASSERT( p.origin.size() == nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         data[ ii * n ] = p.origin[ ii ];
+      }
+      data[ nDims * n ] = p.radius;
+      ++data;
+   }
+   return mx;
+}
+
+void radoncircle( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 6 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::Range radii = ( nrhs > 1 ) ? dml::GetRange( prhs[ 1 ] ) : dip::Range{ 10, 30 };
+   dip::dfloat sigma = ( nrhs > 2 ) ? dml::GetFloat( prhs[ 2 ] ) : 1.0;
+   dip::dfloat threshold = ( nrhs > 3 ) ? dml::GetFloat( prhs[ 3 ] ) : 1.0;
+   dip::String mode = ( nrhs > 4 ) ? dml::GetString( prhs[ 4 ] ) : dip::S::FULL;
+   dip::StringSet options = ( nrhs > 5 ) ? dml::GetStringSet( prhs[ 5 ] ) : dip::StringSet{  dip::S::NORMALIZE, dip::S::CORRECT };
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::RadonCircleParametersArray params = dip::RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
+   if( nlhs > 1 ) {
+      // Return both `out` and `params`
+      plhs[ 0 ] = dml::GetArray( out );
+      plhs[ 1 ] = GetArray( params );
+   } else {
+      if( out.IsForged() ) {
+         // we're returning `out` only
+         plhs[ 0 ] = dml::GetArray( out );
+      } else {
+         // we're returning `params` only
+         plhs[ 0 ] = GetArray( params );
+      }
+   }
+}
+
 using FindExtremaFunction = dip::SubpixelLocationArray ( * )( dip::Image const&, dip::Image const&, dip::String const& );
 void FindExtrema( FindExtremaFunction function, int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 3 );
@@ -327,6 +372,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          cornerdetector( plhs, nrhs, prhs );
       } else if( function == "linedetector" ) {
          linedetector( plhs, nrhs, prhs );
+      } else if( function == "radoncircle" ) {
+         radoncircle( nlhs, plhs, nrhs, prhs );
 
       } else if( function == "findmaxima" ) {
          FindExtrema( dip::SubpixelMaxima, nlhs, plhs, nrhs, prhs );

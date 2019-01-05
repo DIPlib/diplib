@@ -1,8 +1,9 @@
 Source files are spread out over subdirectories just to keep some order.
 
-analysis/         Analysis (diplib/analysis.h, diplib/detection.h)
+analysis/         Analysis (diplib/analysis.h)
 binary/           Binary image processing (diplib/binary.h)
 color/            Color spaces and transforms (diplib/color.h)
+detection/        Feature detection (diplib/detection.h)
 display/          Preparing images for display (diplib/display.h)
 distance/         Distance transforms (diplib/distance.h)
 file_io/          Image file I/O (diplib/file_io.h)
@@ -21,7 +22,7 @@ nonlinear/        Non-linear filters (diplib/nonlinear.h)
 regions/          Labeling and labeled image processing (diplib/regions.h)
 segmentation/     Segmentation (diplib/segmentation.h)
 support/          Functions that don't work on images (diplib/library/numeric.h)
-transform/        Fourier and other transforms (diplib/transform.h, diplib/dft.h)
+transform/        Fourier and related transforms (diplib/transform.h, diplib/dft.h)
 
 documentation/    Markdown files
 
