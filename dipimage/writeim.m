@@ -107,9 +107,9 @@ switch upper(format)
      if iscolor(image)
         image = colorspace(image,'rgb');
      end
-     if ~isscalar(image)s
+     if ~isscalar(image)
         image = tensortospatial(image,ndims(image)+1);
      end
      image = uint8(image);
-     imwrite(image,filename);
+     imwrite(image,filename,format);
 end
