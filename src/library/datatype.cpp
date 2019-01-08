@@ -56,12 +56,13 @@ DataType DataType::SuggestInteger( DataType type ) {
 DataType DataType::SuggestSigned( DataType type ) {
    switch( type ) {
       case DT_BIN:
-      case DT_UINT8:
          return DT_SINT8;
-      case DT_UINT16:
+      case DT_UINT8:
          return DT_SINT16;
-      case DT_UINT32:
+      case DT_UINT16:
          return DT_SINT32;
+      case DT_UINT32:
+         return DT_DFLOAT;
       default:
          return type;
    }

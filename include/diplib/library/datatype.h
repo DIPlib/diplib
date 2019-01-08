@@ -75,11 +75,11 @@ namespace dip {
 /// <table>
 /// <tr style='font-size:70%;'><th>Input data type <th> \ref dip::DataType::SuggestInteger "SuggestInteger" <th> \ref dip::DataType::SuggestSigned "SuggestSigned" <th> \ref dip::DataType::SuggestAbs "SuggestAbs" <th> \ref dip::DataType::SuggestFloat "SuggestFloat" <th> \ref dip::DataType::SuggestDouble "SuggestDouble" <th> \ref dip::DataType::SuggestReal "SuggestReal" <th> \ref dip::DataType::SuggestComplex "SuggestComplex" <th> \ref dip::DataType::SuggestFlex "SuggestFlex" <th> \ref dip::DataType::SuggestFlexBin "SuggestFlexBin"
 /// <tr style='font-size:70%;'><th>`DT_BIN`      <td> `DT_UINT8`  <td> `DT_SINT8`    <td> `DT_BIN`    <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_BIN`
-/// <tr style='font-size:70%;'><th>`DT_UINT8`    <td> `DT_UINT8`  <td> `DT_SINT8`    <td> `DT_UINT8`  <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT8`    <td> `DT_UINT8`  <td> `DT_SINT16`   <td> `DT_UINT8`  <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SINT8`    <td> `DT_SINT8`  <td> `DT_SINT8`    <td> `DT_UINT8`  <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
-/// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16` <td> `DT_SINT16`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16` <td> `DT_SINT32`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SINT16`   <td> `DT_SINT16` <td> `DT_SINT16`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
-/// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32` <td> `DT_SINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SINT32`   <td> `DT_SINT32` <td> `DT_SINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SINT32` <td> `DT_SFLOAT`   <td> `DT_SFLOAT` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SFLOAT` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_SINT32` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
@@ -445,7 +445,7 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns an integer type that is most suitable to hold samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestInteger( DataType type );
 
-   /// \brief Returns an integer type that is most suitable to hold samples of `type`. See \ref types.
+   /// \brief Returns a signed type that is most suitable to hold samples of `type`. See \ref types.
    DIP_EXPORT static DataType SuggestSigned( DataType type );
 
    /// \brief Returns a suitable floating-point type that can hold the samples of `type`. See \ref types.
