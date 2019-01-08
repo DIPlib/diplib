@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the Fourier and other transforms
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
 
 
 /// \file
-/// \brief The Fourier and other transforms.
+/// \brief The Fourier and related transforms.
 /// \see transform
 
 
@@ -136,6 +136,54 @@ inline Image RieszTransform(
 ) {
    Image out;
    RieszTransform( in, out, inRepresentation, outRepresentation, process );
+   return out;
+}
+
+
+/// \brief Computes a stationary wavelet transform (also called à-trous wavelet decomposition).
+///
+/// For an *n*-dimensional input image, creates an (*n*+1)-dimensional output image where each
+/// slice corresponds to one level of the wavelet transform. The first slice is the lowest level
+/// (finest detail), and subsequent slices correspond to increasingly coarser levels. The last
+/// slice corresponds to the residue. There are `nLevels + 1` slices in total.
+///
+/// The filter used to smooth the image for the first level is `[1/16, 1/4, 3/8, 1/4, 1/16]`,
+/// applied to each dimension in sequence through `dip::SeparableConvolution`.
+/// For subsequent levels, zeros are inserted into this filter.
+///
+/// `boundaryCondition` is passed to `dip::SeparableConvolution` to determine how to extend the
+/// input image past its boundary. `process` can be used to exclude some dimensions from the
+/// filtering.
+///
+/// `in` can have any number of dimensions, any number of tensor elements, and any data type.
+/// `out` will have the smallest signed data type that can hold all values if `in` (see
+/// `dip::DataType::SuggestSigned`. Note that the first `nLevels` slices will contain negative
+/// values, even if `in` is purely positive, as these levels are the difference between two
+/// differently smoothed images.
+///
+/// Summing the output image along its last dimension will yield the input image:
+/// ```cpp
+///     dip::Image img = ...;
+///     dip::Image swt = StationaryWaveletTransform( img );
+///     dip::BooleanArray process( swt.Dimensionality(), false );
+///     process.back() = true;
+///     img == dip.Sum( swt, {}, process ).Squeeze();
+/// ```
+DIP_EXPORT void StationaryWaveletTransform(
+      Image const& in,
+      Image& out,
+      dip::uint nLevels = 4,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {}
+);
+inline Image StationaryWaveletTransform(
+      Image const& in,
+      dip::uint nLevels = 4,
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {}
+) {
+   Image out;
+   StationaryWaveletTransform( in, out, nLevels, boundaryCondition, process );
    return out;
 }
 

@@ -253,4 +253,5 @@ support/numeric.cpp
 transform/fourier.cpp
 transform/opencv_dxt.cpp
 transform/riesz.cpp
+transform/swt.cpp
 )
