@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition of grey-value mapping functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2017, 2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,27 +50,6 @@ ClipOptions ParseClipOptions( String const& mode ) {
    return options;
 }
 
-template< typename TPI >
-class ClipLineFilter: public Framework::ScanLineFilter {
-   public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         auto inStride = params.inBuffer[ 0 ].stride;
-         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
-         auto outStride = params.outBuffer[ 0 ].stride;
-         for( dip::uint ii = 0; ii < params.bufferLength; ++ii ) {
-            *out = clamp( *in, low_, high_ );
-            in += inStride;
-            out += outStride;
-         }
-      }
-      ClipLineFilter( dfloat low, dfloat high ): low_( clamp_cast< TPI >( low )), high_( clamp_cast< TPI >( high )) {}
-   private:
-      TPI low_;
-      TPI high_;
-};
-
 } // namespace
 
 void Clip(
@@ -80,30 +59,31 @@ void Clip(
       dfloat high,
       String const& mode
 ) {
-   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_START_STACK_TRACE
-      ClipOptions options = ParseClipOptions( mode );
-      if( options.range ) {
-         dfloat tmp = low - high / 2.0;
-         high = low + high / 2.0;
-         low = tmp;
+   DataType dtype = in.DataType();
+   DIP_THROW_IF( !dtype.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   ClipOptions options;
+   DIP_STACK_TRACE_THIS( options = ParseClipOptions( mode ));
+   if( options.range ) {
+      dfloat tmp = low - high / 2.0;
+      high = low + high / 2.0;
+      low = tmp;
+   }
+   if( options.clipLow && options.clipHigh ) {
+      if( low > high ) {
+         std::swap( low, high );
       }
-      if( options.clipLow && options.clipHigh ) {
-         if( low > high ) {
-            std::swap( low, high );
-         }
-      }
-      if( !options.clipLow ) {
-         low = -infinity;
-      }
-      if( !options.clipHigh ) {
-         high = infinity;
-      }
-      DataType dtype = in.DataType();
-      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_REAL( scanLineFilter, ClipLineFilter, ( low, high ), dtype );
-      Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
-   DIP_END_STACK_TRACE
+   }
+   if( !options.clipLow ) {
+      low = -infinity;
+   }
+   if( !options.clipHigh ) {
+      high = infinity;
+   }
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+         [ = ]( auto its ) { return clamp( *its[ 0 ], static_cast< decltype( *its[ 0 ] ) >( low ), decltype( *its[ 0 ] )( high )); }, 2
+   ), dtype );
+   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 namespace {
@@ -150,23 +130,36 @@ void ErfClip(
       String const& mode
 ) {
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_START_STACK_TRACE
-      ClipOptions options = ParseClipOptions( mode );
-      dfloat threshold, range;
-      if( options.range ) {
-         threshold = low;
-         range = high;
-      } else {
-         if( low > high ) {
-            std::swap( low, high );
-         }
-         threshold = ( low + high ) / 2.0;
-         range = high - low;
+   ClipOptions options;
+   DIP_STACK_TRACE_THIS( options = ParseClipOptions( mode ));
+   dfloat threshold, range;
+   if( options.range ) {
+      threshold = low;
+      range = high;
+   } else {
+      if( low > high ) {
+         std::swap( low, high );
       }
-      ErfClipLineFilter scanLineFilter( threshold, range, options );
-      DataType outType = DataType::SuggestFloat( in.DataType() );
-      Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
-   DIP_END_STACK_TRACE
+      threshold = ( low + high ) / 2.0;
+      range = high - low;
+   }
+   ErfClipLineFilter scanLineFilter( threshold, range, options );
+   DataType outType = DataType::SuggestFloat( in.DataType() );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
+}
+
+void Zero(
+      Image const& in,
+      Image& out,
+      dfloat threshold
+) {
+   DataType dtype = in.DataType();
+   DIP_THROW_IF( !dtype.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+         [ = ]( auto its ) { return *its[ 0 ] < threshold ? static_cast< decltype( *its[ 0 ] ) >( 0 ) : *its[ 0 ]; }, 2
+   ), dtype );
+   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 namespace {

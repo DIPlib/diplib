@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for grey-value mapping functions.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017, 2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -137,6 +137,27 @@ inline Image ErfClip(
 ) {
    Image out;
    ErfClip( in, out, low, high, mode );
+   return out;
+}
+
+/// \brief Zeros the sample values in `in` that are below `threshold`.
+///
+/// The input values are written unmodified to `out` if they are larger or equal to `threshold`. Otherwise,
+/// zero is substituted. This operation is also referred to as thresholding, though in *DIPlib* we
+/// use "thresholding" for the process that yields a binary image.
+///
+/// `in` must be real-valued.
+DIP_EXPORT void Zero(
+      Image const& in,
+      Image& out,
+      dfloat threshold = 128.0
+);
+inline Image Zero(
+      Image const& in,
+      dfloat threshold = 128.0
+) {
+   Image out;
+   Zero( in, out, threshold );
    return out;
 }
 
