@@ -512,6 +512,34 @@ inline Image Median( Image const& in, Image const& mask = {}, BooleanArray const
    return out;
 }
 
+/// \brief Computes the median absolute deviation (MAD)
+///
+/// The MAD is a measure of statistical dispersion. It can be used as a robust estimate of the standard deviation.
+/// For normally distributed data, the standard deviation equals `1.4826 * MAD`. It is computed as if by
+/// ```cpp
+///     dip::Median( dip::Abs( img - dip::Median( img )));
+/// ```
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// the MAD of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the MAD projection along the processing dimensions. To get the MAD of all pixels in the
+/// image:
+/// ```cpp
+///     dip::MedianAbsoluteDeviation( img ).As< double >();
+/// ```
+///
+/// For tensor images, the result is computed for each element independently. Input must be not complex.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+///
+/// \see dip::Median
+DIP_EXPORT void MedianAbsoluteDeviation( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
+inline Image MedianAbsoluteDeviation( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
+   Image out;
+   MedianAbsoluteDeviation( in, mask, out, process );
+   return out;
+}
+
 /// \brief Determines if all pixels have non-zero values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing

@@ -75,6 +75,8 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "percentile"_a = 50.0, "process"_a = dip::BooleanArray{} );
    m.def( "Median", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::Median ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
+   m.def( "MedianAbsoluteDeviation", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::MedianAbsoluteDeviation ),
+          "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "All", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::All ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "Any", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::Any ),

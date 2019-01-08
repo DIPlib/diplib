@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/statistics.h"
+#include "diplib/math.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
@@ -976,6 +977,19 @@ void Percentile(
       DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionPercentile, ( percentile ), in.DataType() );
       ProjectionScan( in, mask, out, in.DataType(), process, *lineFilter );
    }
+}
+
+void MedianAbsoluteDeviation(
+      Image const& c_in,
+      Image const& mask,
+      Image& out,
+      BooleanArray const& process
+) {
+   Image in = c_in;
+   Median( in, mask, out, process );
+   Image tmp = Subtract( in, out, DataType::SuggestSigned( out.DataType() ));
+   Abs( tmp, tmp );
+   Median( tmp, mask, out, process ); // Might need to reallocate `out` again, as `tmp` has a different data type than `out`.
 }
 
 namespace {
