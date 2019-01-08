@@ -166,7 +166,7 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
    }
    if( !image.IsScalar() ) {
       sizes.push_back( image.TensorElements() );
-      strides.push_back( image.TensorStride() );
+      strides.push_back( image.TensorStride() * itemsize );
    }
    py::buffer_info info{ image.Origin(), itemsize, format, static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Image object.\n";
