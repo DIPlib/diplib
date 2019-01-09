@@ -23,10 +23,16 @@ This is a list of tasks that still need to be done, not in any particular order.
 <a href="https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md">this
 document's source</a> for the most up-to-date version.
 
-(2017/06/05) We just passed the 2000 documented entities (functions, classes, constants) mark!  
+(2017/06/05) We just passed the 2000 documented entities (functions, classes, constants) mark!
+
 (2018/05/23) We now have well over 3000 documented entities and close to 100k lines of code.
 
 ## Gaps in infrastructure:
+
+-   Move details out of `README.md` (put an introduction there, plus a link to other files).
+    Post clear directions for how to submit issues and contribute, create an issues template
+    and a pull request template, and write a code of conduct
+    (see https://github.com/DIPlib/diplib/community).
 
 -   Test framework: We need to add more tests for some stuff that was implemented before
     the test framework was integrated.
@@ -38,7 +44,7 @@ document's source</a> for the most up-to-date version.
     are written.
 
     For R2018a and newer, complex data are no longer stored in two separate data segments.
-    This is good overall, but requires changes to the DIPlib-MATLAB interface. It is possible
+    This is good overall, but requires changes to the *DIPlib*-MATLAB interface. It is possible
     to compile *DIPimage* for R2018a or newer, but passing complex matrices in and out of
     the MEX-files causes two copies of the data, instead of none. However, becase `dip_image`
     objects never contain complex data (complex images are stored as real arrays to prevent
@@ -51,10 +57,17 @@ document's source</a> for the most up-to-date version.
     interface. This means we would need to rewrite all MEX-files, and maintain separate source
     code for R2017b and earlier, and for R2018a and newer.
 
--   *PyDIP* Python module: Write GUI as exists in *MATLAB*. Interface *DIPlib* functions
+-   *PyDIP* Python module: Write GUI as exists in MATLAB. Interface *DIPlib* functions
     to be added as these functions are written. Make the module more "Pythonic"?
     Find a way to automatically generate documentation from Doxygen, one approach is
     [here](https://stackoverflow.com/q/34896122/7328782).
+
+    Some things here are still rather awkward. `dip.Image` doesn't have an iterator,
+    conversion of an RGB image read through pyplot yields a vector image without color
+    space information (solutions: assume RGB if there are 3 tensor elements? write a
+    `dip.readim` function?), parameters that require an array (e.g. `dip.Gauss`' `sigma`
+    input) cannot handle a scalar, etc. etc. In short, we need lots of usage, lots of
+    feedback from users, and lots of time polishing the interface.
 
 -   Other interfaces. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
@@ -70,7 +83,7 @@ document's source</a> for the most up-to-date version.
     paths already exist.
 
 
-## Functionality currently not in *DIPlib* that would be important to include
+## Functionality currently not in the old *DIPlib* that would be good to include
 
 -   Stuff that is in *DIPimage*:
     - 2D snakes
@@ -85,23 +98,20 @@ document's source</a> for the most up-to-date version.
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
     This should be an optional module, as *Bio-Formats* is GPL.
 
+-   Colocalization measurements.
+
 -   Radon transform for lines, Hough transform for lines.
 
 -   Level-set segmentation, graph-cut segmentation.
+
+-   Stochastic watershed.
 
 -   Super pixels.
 
 -   Building a graph out of a labeled image (e.g. from watershed). Graph format?
     Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
 
--   Wavelet transforms.
-
--   Colocalization measurements.
-
--   Scalespace analysis?
-
--   A function to write text into an image, using the
-    [*FreeType*](https://www.freetype.org) library.
+-   Scalespace analysis.
 
 
 ## List of *DIPlib 2* functions that are not yet ported
@@ -109,10 +119,9 @@ document's source</a> for the most up-to-date version.
 Between brackets is the name of the old header file it's declared in. They are grouped by
 the new header file they should be declared in.
 
-Many of the following functions are not documented. Undocumented functions have a very
-low priority in the porting process, and some might not be ported at all. It being listed
-here is not an indication that the function needs to be ported, but if it's not listed here,
-it should not be ported (or already is ported).
+Most of the following functions are not documented, and hence nobody will miss them.
+
+Only a few of these functions are really worth the effort.
 
 - diplib/analysis.h
     - `dip_OrientationSpace` (`dip_structure.h`)
@@ -175,6 +184,8 @@ Pure M-files:
 - `frc`
 - `jpeg_quality_score`
 - `lfmse`
+- `luminance_steered_dilation`
+- `luminance_steered_erosion`
 - `mappg`
 - `mcd`
 - `morphscales`
@@ -208,29 +219,29 @@ Requiring C++ code:
 Interface to Rainer Heintzmann's 5D Viewer written in Java:
 - `view5d`
 
-Color stuff, which needs lots of work to bring in shape:
+Color stuff, some of which needs lots of work to bring in shape:
 - `change_chroma`
 - `change_gamma`
 - `change_xyz`
 - `color_rotation`
-- `gamut_destretch`
-- `gamut_mapping`
-- `gamut_stretch`
+- `gamut_destretch` (uses some MEX-files)
+- `gamut_mapping`   (uses some MEX-files)
+- `gamut_stretch`   (uses some MEX-files)
 - `huecorr`
 - `iso_luminance_lines`
-- `luminance_steered_dilation`
-- `luminance_steered_erosion`
 - `make_gamut`
-- `measure_gamma_monitor`
+- `out_of_gamut`
+- `plot_gamut`      (uses a MEX-file)
+- `rgb_to_border`
+
+Stuff related to calibrating monitors and scanners:
 - `mon_rgb2xyz`
 - `mon_xyz2rgb`
-- `out_of_gamut`
-- `plot_gamut`
 - `print_cmy2xyz`
 - `print_xyz2cmy`
-- `rgb_to_border`
 - `scan_rgb2xyz`
 - `scan_xyz2rgb`
+- `measure_gamma_monitor`
 - `scanner_calibration`
 - `spectra2xyz`
 

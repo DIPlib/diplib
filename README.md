@@ -1,15 +1,20 @@
-# DIPlib 3
+# *DIPlib 3*
 
 *DIPlib* is a library for quantitative image analysis. It has been in development
 at Delft University of Technology in The Netherlands since 1995. The 3.0 release
 represents a complete rewrite in modern C++ of the library infrastructure, with most of
-the image processing and analysis algorithms ported unmodified from the previous
-version.
+the image processing and analysis algorithms ported from the previous version, and
+some of them improved significantly. See the [change log](src/documentation/changes.md)
+for a summary of changes.
 
-[Status](src/documentation/workplan.md):
-we have built most of the new infrastructure, and are in the process of
-porting algorithms over. It's a slow process, but
-[you can help](src/documentation/workplan.md)!
+*DIPlib 3* comes with MATLAB bindings (in a toolbox called *DIPimage*, in development
+since 1999), and new Python bindings (called PyDIP). Many of the improvements to *DIPlib*
+are a result of porting over concepts and ideas first implemented in *DIPimage*.
+
+**Status**: We are in the process of creating the first beta release for the 3.0 branch.
+However, not all functionality from the old *DIPlib* and *DIPimage* is (yet) present in
+this branch. See our [work plan](src/documentation/workplan.md) to find out what work is
+still planned.
 
 See the [documentation](https://diplib.github.io/diplib-docs/) for more information.
 
@@ -19,8 +24,6 @@ See the [documentation](https://diplib.github.io/diplib-docs/) for more informat
 ### Linux, MacOS, Cygwin and other Unix-like systems
 
 To build the library you will need a C++14 compliant compiler and *CMake*.
-See below under "Dependencies" for optional dependencies that you can install to
-improve your *DIPlib* experience.
 Use the following commands to build:
 
     mkdir target
@@ -28,74 +31,7 @@ Use the following commands to build:
     cmake /path/to/dip/root/directory
     make -j install
 
-(The `-j` option to `make` enables a multi-threaded build. Limit the number of
-concurrent jobs to, for example, 4 with `-j4`.)
-
-For step-by-step instructions for MacOS, see `README_MacOS.md`.
-
-Available `make` targets:
-
-    all (default) # builds DIPlib, DIPimage and PyDIP, if configured
-    install       # builds and installs target 'all'
-    check         # builds the unit_tests program and runs it
-    check_memory  # ...and runs it under valgrind
-    apidoc        # builds the HTML documentation for the library API
-    examples      # builds the examples
-    package       # creates a distributable package
-
-The following `make` targets are part of the `all` target:
-
-    DIP           # builds the DIPlib library
-    DIPviewer     # builds the DIPviewer module (plus the DIPlib library)
-    PyDIP         # builds the PyDIP Python module (includes DIP and DIPviewer targets)
-    dum           # builds the DIPimage User Manual PDF
-
-Important `cmake` command-line arguments:
-
-    -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location for DIPlib, DIPimage and the docs
-    -DPYDIP_INSTALL_PATH=$HOME/...     # choose an instal location for PyDIP (see below)
-    -DCMAKE_BUILD_TYPE=Debug           # by default it is release
-    -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library
-    -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics)
-    -DCMAKE_CXX_COMPILER=g++-6         # specify a C++ compiler (for everything else)
-    -DCMAKE_CXX_FLAGS="-march=native"  # specify additional C++ compiler flags
-
-    -DDIP_ENABLE_STACK_TRACE=Off       # disable stack trace generation on exception
-    -DDIP_ENABLE_ASSERT=On             # enable asserts
-    -DDIP_ENABLE_DOCTEST=Off           # disable doctest within DIPlib
-    -DDIP_ENABLE_MULTITHREADING=Off    # disable OpenMP multithreading
-    -DDIP_ENABLE_ICS=Off               # disable ICS file format support
-    -DDIP_ENABLE_TIFF=Off              # disable TIFF file format support
-    -DDIP_ENABLE_FFTW=On               # enable the use of FFTW3
-    -DDIP_ENABLE_UNICODE=Off           # disable UFT-8 strings within DIPlib
-    -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
-                                       #    integers are not natively supported
-
-    -DDIP_BUILD_DIPVIEWER=Off          # don't build/install the DIPviewer module
-    -DDIP_BUILD_PYDIP=Off              # don't build/install the PyDIP Python module
-    -DDIP_BUILD_DIPIMAGE=Off           # don't build/install the DIPimage MATLAB toolbox
-    -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
-    -DMatlab_ROOT_DIR=<path>           # compile DIPimage against MATLAB in <path>
-
-Some of these options might not be available on your system. For example, if you don't have
-MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
-it to `Off` will yield a warning message when running CMake.
-
-Note that on some platforms, the Python module requires the *DIPlib* library to build as
-a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
-
-The `PYDIP_INSTALL_PATH` option defaults to the system-wide site packages directory for the
-selected version of Python. To obtain the user-specific site packages directory, use the
-following shell command: `python3 -m site --user-site`. The output can be used for the PyDIP
-installation path for users that cannot or do not want to install in the system-wide directory.
-For example:
-
-    cmake /path/to/dip/root/directory -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
-
-The `apidoc` target requires that *Doxygen* be installed, the target will not be available
-if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be
-available if it is not; this target will fail to build if additional tools are not installed
-(see below under "Dependencies").
+For detailed instructions, see [`INSTALL.md`](INSTALL.md).
 
 ### Windows
 
@@ -106,72 +42,56 @@ Using *CMake-gui*, choose where the source directory is and where to build the b
 press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
 a *Visual Studio* solution file that you can open in *Visual Studio* and build as usual.
 
-For step-by-step instructions, see `README_Windows.md`.
-
-See below for optional dependencies that you can install to improve your *DIPlib* experience.
-
-### Dependencies
-
-Below we list all external dependencies needed to compile the various parts of the project. *DIPlib*
-also depends on a few other external projects, whose sources are included in this repository (see
-below under "License" for more information). Note that, with the exception of dynamic linking to
-a few external libraries, none of these dependencies are required when using the *DIPlib* library
-(that is, *DIPlib*'s public header files do not import headers from other projects).
-
-*DIPlib* supports two image file formats: ICS and TIFF. ICS support is built-in, it is
-recommended that you have [*ZLib*](http://www.zlib.net) installed for this. For TIFF support,
-you will need to have [*LibTIFF*](http://www.simplesystems.org/libtiff/) installed.
-
-If you have [*FFTW3*](http://www.fftw.org) installed, you can set the `DIP_ENABLE_FFTW`
-*CMake* variable to have *DIPlib* use *FFTW3* instead of the built-in FFT algorithm.
-*FFTW3* is more efficient, especially for image sizes that do not factor into small
-numbers, but it has a copyleft license.
-
-*DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
-as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
-On Windows, [*GLEW*](http://glew.sourceforge.net) is also required.
-
-*DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
-for compilation and execution (of course).
-Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) to
-enable *DIPimage* to read many microscopy image file formats (type `help readim` in *MATLAB*,
-after installing *DIPimage*, to learn more).
-
-*PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
-
-To build the *DIPlib* documentation, [*Doxygen*](http://www.doxygen.org) is needed.
-There is a chance it will only work on Unix-like systems (not yet tested under Windows).
-
-The *DIPimage* User Manual requires [*Pandoc*](https://pandoc.org),
-[*pandoc-crossref*](https://hackage.haskell.org/package/pandoc-crossref), and
-[*LaTeX*](http://www.tug.org/texlive/). Note that you'll need certain *LaTeX* packages,
-such as `upquote`, that are not in the most basic set of packages. You can install these
-through the *TeX Live* package manager.
+For step-by-step instructions, see [`INSTALL_Windows.md`](INSTALL_Windows.md). See also
+[`INSTALL.md`](INSTALL.md) for additional information and optional dependencies you might want
+to install.
 
 
 ## Linking against the library
 
-When using CMake, and importing the `DIP` target into your project in the right way, you will just need
+When using *CMake*, and importing the `DIP` target into your project in the right way, you will just need
 to link against the `DIP` target and everything will be configured correctly. Otherise, there are several
-macros that you should define when building any program that links against DIPlib:
+macros that you should define when building any program that links against *DIPlib*:
 
-If DIPlib was build with the `DIP_SHARED_LIBRARY` flag was not set, then you need to define the `DIP__IS_STATIC`
+If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag was not set, then you need to define the `DIP__IS_STATIC`
 macro when compiling the code that links against it. Likewise, if the `DIP_ALWAYS_128_PRNG` flag was set,
 then you must define a `DIP__ALWAYS_128_PRNG` macro when compiling your program. Mismatching this flag
 could cause your program to not link, or worse, crash at runtime.
 
 The following flags do not need to be matched, but they should be if you want the inline functions to behave
 the same as the pre-compiled ones:
- - `DIP_ENABLE_STACK_TRACE`: `DIP__EXCEPTIONS_RECORD_STACK_TRACE`
- - `DIP_ENABLE_ASSERT`: `DIP__ENABLE_ASSERT`
+ - flag: `DIP_ENABLE_STACK_TRACE` -- macro: `DIP__EXCEPTIONS_RECORD_STACK_TRACE`
+ - flag: `DIP_ENABLE_ASSERT` -- macro: `DIP__ENABLE_ASSERT`
 
 For DIPviewer, if `DIP_SHARED_LIBRARY` was not set, define the `DIP__VIEWER_IS_STATIC` macro. Also define
 `DIP__HAS_FREEGLUT` or `DIP__HAS_GLFW` depending on which back-end is used.
 
 
+## Contributing
+
+### Reporting a bug
+
+We use the [issue tracker on GitHub](https://github.com/DIPlib/diplib/issues) to manage bug reports.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for instructions on how to report a bug.
+
+### Bug fixes, algorithm improvements, new algorithms
+
+Feel free to submit a [pull request on GitHub](https://github.com/DIPlib/diplib/pulls). Please follow
+our [style guide](https://diplib.github.io/diplib-docs/styleguide.html) and make sure to read
+[`CONTRIBUTING.md`](CONTRIBUTING.md) first.
+
+### Documentation, tutorials
+
+Documentation can always be improved (also, *PyDIP* has hardy any at all!). If you want to help write documentation,
+or create tutorials for how to use the library, read [`CONTRIBUTING.md`](CONTRIBUTING.md), then submit a
+[pull request on GitHub](https://github.com/DIPlib/diplib/pulls).
+
+If you found an error in the documentation, we consider this a bug. See above how to report it.
+
+
 ## License
 
-Copyright 2014-2018 Cris Luengo and contributors  
+Copyright 2014-2019 Cris Luengo and contributors  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -179,7 +99,7 @@ you may not use this library except in compliance with the License.
 You may obtain a copy of the License at
 
    http://www.apache.org/licenses/LICENSE-2.0  
-   (or see the LICENSE.txt file in this distribution)
+   (or see the [`LICENSE.txt`](LICENSE.txt) file in this distribution)
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -191,49 +111,49 @@ limitations under the License.
 
 - *Eigen 3*  
   Mozilla Public License Version 2.0  
-  see dependencies/eigen3/LICENSE.txt  
+  see [`dependencies/eigen3/LICENSE.txt`](dependencies/eigen3/LICENSE.txt)  
   (we do not use any of the components with more restrictive licenses)
 
 - *DocTest* (its use can be disabled)  
   Copyright 2016-2017 Viktor Kirilov  
   The MIT License (MIT)  
-  see dependencies/doctest/LICENSE.txt
+  see [`dependencies/doctest/LICENSE.txt`](dependencies/doctest/LICENSE.txt)
 
 - The DFT algorithm out of *OpenCV* 3.1  
   Copyright 2000 Intel Corporation  
   Intel License Agreement For Open Source Computer Vision Library  
-  see src/transform/opencv_dxt.h
+  see [`src/transform/opencv_dxt.cpp`](src/transform/opencv_dxt.cpp)
 
 - *PCG Random Number Generation for C++*  
   Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors  
   Apache 2.0 License, or The MIT License, at your option  
-  see include/diplib/private/pcg_*.hpp
+  see [`include/diplib/private/pcg_*.hpp`](include/diplib/private/pcg_random.hpp)
 
 - A fast 2D labeling algorithm out of *YACCLAB*  
   Copyright 2016-2017 Costantino Grana, Federico Bolelli, Lorenzo Baraldi and Roberto Vezzani  
   3-Clause BSD License  
-  see include/diplib/regions/labelingGranan2016.h
+  see [`src/regions/labelingGrana2016.h`](src/regions/labelingGrana2016.h)
 
-- A few color maps from *colorcet*
-  Copyright 2017 Peter Kovesi
-  1-Clause BSD-like License
-  see src/display/colormap.cpp
+- A few color maps from *colorcet*  
+  Copyright 2017 Peter Kovesi  
+  1-Clause BSD-like License  
+  see [`src/display/colormap.cpp`](src/display/colormap.cpp) (about half-way down the file)
 
 - *libics* (its use can be disabled)  
   Copyright 2015-2017 Scientific Volume Imaging Holding B.V.  
   Copyright 2000-2013 Cris Luengo and others  
   GNU Lesser General Public License, Version 2.1  
-  see dependencies/libics/GNU_LICENSE
+  see [`dependencies/libics/GNU_LICENSE`](dependencies/libics/GNU_LICENSE)
 
 - *pybind11* (only used in the *Python* bindings)  
   Copyright 2016 Wenzel Jakob  
   3-Clause BSD License  
-  see dependencies/pybind11/LICENSE
+  see [`dependencies/pybind11/LICENSE`](dependencies/pybind11/LICENSE)
 
 - A few *MATLAB* scripts from *OME Bio-Formats*  
   Copyright 2012-2017 Open Microscopy Environment  
   GNU General Public License, Version 2  
-  see dipimage/private/bf*.m  
+  see [`dipimage/private/bf*.m`](dipimage/private/bfGetReader.m)  
   (the full *Bio-Formats* library needs to be installed for these to be useful)
 
 Note that all of these have permissive open-source licenses similar in spirit

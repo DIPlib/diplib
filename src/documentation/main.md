@@ -108,19 +108,23 @@ ways of doing so:
 - Write new algorithms. If you have an algorithm that you'd like to contribute
   to the project, we'll be happy to see it!
 
-- Create an interface to another library or scripting language
+- Create an interface to another library or scripting language.
 
-- Fix bugs, improve documentation, add code to the unit tests
+- Create tutorials for how to use *DIPlib*, *DIPimage* and/or *PyDIP*.
 
-- Create a nice *Doxygen* theme for the documentation, create a logo for the project
+- Fix bugs or improve documentation.
 
-In any of these cases, fork the project, create a new branch for your contribution,
-and send a pull request. Do also read \ref styleguide, and make sure
-you adhere to it. Don't be offended if you receive requests for modifications
-before your work is merged with the project.
+- Add code to the unit tests.
 
-Your contributions will carry the same licencing terms as the rest of the library,
-you keep the copyright to any substantial contribution.
+- Create a nice *Doxygen* theme for the documentation, or create a logo for the project.
+
+In any of these cases, see [the `CONTRIBUTING` file](https://github.com/DIPlib/diplib/blob/master/CONTRIBUTING.md)
+to learn how to make optimal use of your time.
+Don't be offended if you receive requests for modifications before your work is merged
+with the project.
+
+Your documentation and code contributions will carry the same licencing terms as the rest
+of the library, you keep the copyright to any substantial contribution.
 
 ## License
 

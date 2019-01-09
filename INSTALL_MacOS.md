@@ -92,7 +92,7 @@ This creates a directory `src/diplib` in your home directory.
 
 ## Building
 
-As explained in the `README.md` file, type
+As explained in the [`INSTALL.md`](INSTALL.md) file, type
 ```bash
     mkdir ~/src/diplib/target
     cd ~/src/diplib/target
@@ -118,7 +118,7 @@ Finally, if you installed the `gcc` package because you want to use *OpenMP*,
 add `-DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8` to the `cmake` command
 line. By default, `cmake` will find the compiler that came with `XCode`. These
 two options specify that you want to use the *GCC* compilers instead.
-(**Note**: at the time of this writing, `gcc-7` was the executable installed by
+(**Note**: at the time of this writing, `gcc-8` was the executable installed by
 the `gcc` package. This will change over time, as new versions of GCC are adopted
 by HomeBrew. Adjust as necessary.)
 

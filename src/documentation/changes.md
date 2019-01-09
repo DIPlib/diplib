@@ -333,7 +333,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 \section changes_dipimage Changes from DIPimage 2
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
-  tensor images have all samples in the same *MATLAB* array. Complex images are stored as a
+  tensor images have all samples in the same MATLAB array. Complex images are stored as a
   single real matrix, with real and complex samples next to each other (this translates
   much more nicely to *DIPlib*, where complex data is stored in that same way).
 
