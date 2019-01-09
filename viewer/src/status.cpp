@@ -63,7 +63,7 @@ void StatusViewPort::render()
         std::ostringstream oss;
         PhysicalQuantity p = opp[ii] + o.offset_[ii];
         p.Normalize();
-        oss << "=" << p;
+        oss << "=" << p.magnitude << p.units.String();
         rx += viewer()->drawString(oss.str().c_str());
       }
         
