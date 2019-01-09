@@ -118,7 +118,7 @@ ways of doing so:
 
 - Create a nice *Doxygen* theme for the documentation, or create a logo for the project.
 
-In any of these cases, see [the `CONTRIBUTING` file](https://github.com/DIPlib/diplib/blob/master/CONTRIBUTING.md)
+In any of these cases, see <a href="https://github.com/DIPlib/diplib/blob/master/CONTRIBUTING.md">`CONTRIBUTING.md`</a>
 to learn how to make optimal use of your time.
 Don't be offended if you receive requests for modifications before your work is merged
 with the project.

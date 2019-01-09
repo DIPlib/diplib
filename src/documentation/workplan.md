@@ -29,10 +29,7 @@ document's source</a> for the most up-to-date version.
 
 ## Gaps in infrastructure:
 
--   Move details out of `README.md` (put an introduction there, plus a link to other files).
-    Post clear directions for how to submit issues and contribute, create an issues template
-    and a pull request template, and write a code of conduct
-    (see https://github.com/DIPlib/diplib/community).
+-   Write a code of conduct and a pull request template (see https://github.com/DIPlib/diplib/community).
 
 -   Test framework: We need to add more tests for some stuff that was implemented before
     the test framework was integrated.
@@ -90,13 +87,25 @@ document's source</a> for the most up-to-date version.
     - general 3D rotation (is already C code)
     - ...and many more, see the *DIPimage 2* M-files for inspiration.
 
--   Image I/O: Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats),
-    using [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
-    to interface between C++ and Java, see for example
-    [this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
-    See also [this ITK module](https://github.com/scifio/scifio-imageio) for
+-   Image I/O: Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats).
+    This should be an optional module, as *Bio-Formats* is GPL. We already have the interface set up
+    in MATLAB, and for Python it should be relatively straight-forward too. But we'd like access from
+    the C++ library, and that is a bit more involved:
+
+    [This document](https://loci.wisc.edu/software/interfacing-non-java-code) describes ways to interface
+    the Java *Bio-Formats* library from C++. None of that seems trivial.
+
+    There is a discontinued [C++ wrapper for *Bio-Formats*](https://github.com/ome/bio-formats-jace),
+    and another [C++ wrapper using *Blitz++*](https://www.sybit.net/LibBlitzBioformats/).
+
+    There is a [C++ version of the *Bio-Formats* library](https://www-legacy.openmicroscopy.org/site/support/bio-formats5.1/developers/cpp/overview.html),
+    but it currently only reads TIFF files. This page no longer exists in the docs for the latest version
+    of *Bio-Formats*, not sure what happened.
+
+    There is a also an [ITK module](https://github.com/scifio/scifio-imageio) for
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
-    This should be an optional module, as *Bio-Formats* is GPL.
+
+-   Colocalization measurements.
 
 -   Colocalization measurements.
 
@@ -210,7 +219,6 @@ Requiring C++ code:
 - `percf_adap`
 - `percf_adap_banana`
 - `pst`
-- `radoncircle`
 - `rotation3d`
 - `splitandmerge`
 - `structf`    (depends on `dip_arcfilter`)
