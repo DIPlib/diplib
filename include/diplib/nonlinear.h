@@ -259,8 +259,8 @@ inline Image Kuwahara(
 /// mode rounds the angles to point to the nearest neighbor.
 /// For higher-dimensional images, gradients are always rounded.
 DIP_EXPORT void NonMaximumSuppression(
-      Image const& c_gradmag,
-      Image const& c_gradient,
+      Image const& gradmag,
+      Image const& gradient,
       Image const& mask,
       Image& out,
       String const& mode = S::INTERPOLATE

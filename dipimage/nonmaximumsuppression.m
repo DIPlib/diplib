@@ -10,10 +10,6 @@
 %  mask:     Binary image to select where to apply the filter.
 %  mode:     'interpolate' or 'round'.
 %
-%  The filter kernel can be specified in two ways: through FILTERSIZE
-%  and FILTERSHAPE, specifying one of the default shapes, or through NEIGHBORHOOD,
-%  providing a custom binary shape.
-%
 % DEFAULTS:
 %  mask = []
 %  mode = 'interpolate'
@@ -35,7 +31,7 @@
 %  the shape of the function along the gradient direction.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Kuwahara.
+%  This function calls the DIPlib function dip::NonMaximumSuppression.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
