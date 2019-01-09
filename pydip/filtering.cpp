@@ -41,17 +41,18 @@ dip::String KernelRepr( dip::Kernel const& s ) {
 void init_filtering( py::module& m ) {
    auto kernel = py::class_< dip::Kernel >( m, "Kernel", "Represents the kernel to use in filtering operations." );
    kernel.def( py::init<>() );
-   kernel.def( py::init< dip::Image const& >(), "image"_a );
    kernel.def( py::init< dip::String const& >(), "shape"_a );
    kernel.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
    kernel.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
+   kernel.def( py::init< dip::Image const& >(), "image"_a );
    kernel.def( "Mirror", &dip::Kernel::Mirror );
    kernel.def( "__repr__", &KernelRepr );
-   py::implicitly_convertible< py::buffer, dip::Kernel >();
    py::implicitly_convertible< py::str, dip::Kernel >();
    py::implicitly_convertible< py::float_, dip::Kernel >();
    py::implicitly_convertible< py::int_, dip::Kernel >();
    py::implicitly_convertible< py::list, dip::Kernel >();
+   py::implicitly_convertible< dip::Image, dip::Kernel >();
+   py::implicitly_convertible< py::buffer, dip::Kernel >();
 
    // diplib/linear.h
    // TODO: SeparableConvolution, SeparateFilter

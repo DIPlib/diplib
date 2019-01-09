@@ -82,18 +82,18 @@ dip::String StructuringElementRepr( dip::StructuringElement const& s ) {
 void init_morphology( py::module& m ) {
    auto se = py::class_< dip::StructuringElement >( m, "SE", "Represents the structuring element to use in morphological operations\n(dip::StructuringElement in DIPlib)." );
    se.def( py::init<>() );
-   se.def( py::init< dip::Image const& >(), "image"_a );
    se.def( py::init< dip::String const& >(), "shape"_a );
    se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
    se.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
+   se.def( py::init< dip::Image const& >(), "image"_a );
    se.def( "Mirror", &dip::StructuringElement::Mirror );
    se.def( "__repr__", &StructuringElementRepr );
-   py::implicitly_convertible< dip::Image, dip::StructuringElement >();
-   py::implicitly_convertible< py::buffer, dip::StructuringElement >();
    py::implicitly_convertible< py::str, dip::StructuringElement >();
    py::implicitly_convertible< py::float_, dip::StructuringElement >();
    py::implicitly_convertible< py::int_, dip::StructuringElement >();
    py::implicitly_convertible< py::list, dip::StructuringElement >();
+   py::implicitly_convertible< dip::Image, dip::StructuringElement >();
+   py::implicitly_convertible< py::buffer, dip::StructuringElement >();
 
    // diplib/morphology.h
    m.def( "Dilation", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::Dilation ),
