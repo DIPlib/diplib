@@ -22,7 +22,7 @@
 #define DIP_DETECTION_H
 
 #include "diplib.h"
-
+#include "distribution.h"
 
 /// \file
 /// \brief Functions for feature detection.
@@ -47,12 +47,12 @@ namespace dip {
 ///  - `dip::Tophat`
 
 
-/// \defgroup detection_shapes Shape detectors
+/// \defgroup detection_circles Circle detectors
 /// \ingroup detection
-/// \brief Shape detection algorithms
+/// \brief Circle detection algorithms
 /// \{
 
-/// \brief Hough transform form circles in 2D binary images,
+/// \brief Hough transform for circles in 2D binary images.
 ///
 /// Computes the Hough parameter space for circles in 2D images, with the radius dimension collapsed.
 /// The parameter space `out` has the same sizes as the binary input image `in`. `gv` is a vector image
@@ -76,14 +76,54 @@ inline Image HoughTransformCircleCenters(
    return out;
 }
 
-/// \brief Stores the parametes for one hypersphere (circle, sphere).
+/// \brief Find local maxima in Hough parameter space.
+///
+/// Finds the local maxima (using `dip::WatershedMaxima`) in the given Hough parameter space. Maxima
+/// `distance` pixels away from a higher maximum are filtered out.
+DIP_EXPORT CoordinateArray FindHoughMaxima(
+      Image const& in,
+      dfloat distance
+);
+
+/// \brief Compute distance distribution for a set of points.
+///
+/// Computes the distance distributions from `points` to all 'on' pixels in the binary image `in`.
+/// The returned (multi-valued) distribution indicates, for every integer distance, how many 'on' pixels
+/// are found at that distance for that point.
+///
+/// `range` must be empty, or have exactly two elements representing the minimum and maximum distance to
+/// be considered. If empty, the minimum distance is 0, and the maximum is the length of the image diagonal.
+DIP_EXPORT Distribution PointDistanceDistribution(
+      Image const& in,
+      CoordinateArray const& points,
+      UnsignedArray range = {}
+);
+
+/// \brief Find circles in 2D binary images.
+///
+/// Finds circles in 2D binary images using the 2-1 Hough transform. First, circle centers are computed
+/// using `HoughTransformCircleCenters`, and then a radius is calculated for each center. Note that
+/// only a single radius is returned per center coordinates.
+///
+/// `gv` is a vector image of the same sizes as `in`, with the gradient vector for each pixel of `in`.
+/// `range` must be empty, or have exactly two elements representing the minimum and maximum radius to
+/// be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
+/// `distance` is the minimum distance between centers, used to suppress noisy results.
+DIP_EXPORT FloatCoordinateArray FindHoughCircles(
+      Image const& in,
+      Image const& gv,
+      UnsignedArray const& range,
+      dfloat distance
+);
+
+/// \brief Stores the parameters for one hypersphere (circle, sphere).
 struct RadonCircleParameters{
    FloatArray origin;   ///< Coordinates of the origin of the hypersphere
    dfloat radius;       ///< Radius of the hypersphere
 };
 using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 
-/// \brief Detects hypershperes (circles, spheres) using the generalized Radon transform.
+/// \brief Detects hyperspheres (circles, spheres) using the generalized Radon transform.
 ///
 /// This function can obtain highly precise values for the origin and the radius.
 ///

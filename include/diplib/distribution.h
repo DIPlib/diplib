@@ -398,6 +398,10 @@ class DIP_NO_EXPORT Distribution {
       /// \brief Converts the cumulative distribution to a distribution, where each element is the derivative of
       /// the original distribution at that element. Make sure the data are sorted (see `Sort`).
       DIP_EXPORT Distribution& Differentiate();
+      
+      /// \brief Computes the most likely *x* values. In essence, returns the *x* values which maximize
+      /// the corresponding *y* value.
+      DIP_EXPORT Container MaximumLikelihood();
 
       /// Adds two distributions. Their *x* values must match exactly.
       DIP_EXPORT Distribution& operator+=( Distribution const& other );

@@ -20,6 +20,9 @@
 #include "diplib.h"
 #include "diplib/detection.h"
 #include "diplib/generation.h"
+#include "diplib/distribution.h"
+#include "diplib/morphology.h"
+#include "diplib/measurement.h"
 
 namespace dip {
 
@@ -45,6 +48,26 @@ IntegerCoords operator-( IntegerCoords lhs, IntegerCoords rhs ) {
    lhs.y -= rhs.y;
    return lhs;
 }
+
+struct Candidate {
+   UnsignedArray pos;
+   dfloat val;
+   bool valid;
+
+   Candidate( UnsignedArray _pos = {}, dfloat _val = 0. ) : pos( std::move( _pos )), val( _val ), valid( true ) {}
+
+   bool operator>( const Candidate& other ) const {
+      return val > other.val;
+   }
+};
+
+/*
+std::ostream& operator<<(std::ostream& os, const Candidate& obj)
+{
+   os << "{" << obj.pos << ": " << obj.val << (obj.valid?"":" (invalid)") << "}";
+   return os;
+}
+*/
 
 // Cohen–Sutherland Algorithm
 // https://gist.githubusercontent.com/maxkarelov/293b5e4235c1e7dcdb40/raw/d92f331556ff74067a49b0676c35dbbc611ee25a/cohen-sutherland-algorithm.cp
@@ -80,6 +103,18 @@ bool clip( IntegerCoords& A, IntegerCoords& B, IntegerCoords Pmax ) {
          A.y = Pmax.y;
       }
    }
+}
+
+dfloat norm_square(
+      const UnsignedArray& a,
+      const UnsignedArray& b
+) {
+   dfloat n = 0;
+   dip::uint sz = std::min( a.size(), b.size() );
+   for( dip::uint ii = 0; ii != sz; ++ii ) {
+      n += pow( static_cast< dfloat >( a[ ii ] ) - static_cast< dfloat >( b[ ii ] ), 2 );
+   }
+   return n;
 }
 
 } // namespace
@@ -155,6 +190,124 @@ void HoughTransformCircleCenters(
    }
 }
 
+CoordinateArray FindHoughMaxima(
+      Image const& in,
+      dfloat distance
+) {
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+
+   dfloat distancesq = distance * distance;
+
+   // Find local maxima
+   // TODO: Watershed parameters?
+   Image lma;
+   DIP_STACK_TRACE_THIS( lma = WatershedMaxima( in, {}, 1, 0, 0, S::LABELS ));
+   MeasurementTool msrTool;
+   auto measurement = msrTool.Measure( lma, in, { "MaxPos", "MaxVal" } );
+
+   // Copy to candidate array
+   std::vector< Candidate > candidates( measurement.NumberOfObjects(), Candidate( UnsignedArray( in.Dimensionality() )));
+   auto it = measurement.FirstObject();
+   for( dip::uint ii = 0; ii < candidates.size(); ++ii, ++it ) {
+      auto c = it[ "MaxPos" ];
+      std::copy( c.begin(), c.end(), candidates[ ii ].pos.begin() );
+      candidates[ ii ].val = *it[ "MaxVal" ];
+   }
+
+   // Sort in descending order
+   std::sort( candidates.begin(), candidates.end(), std::greater<>() );
+
+   // Filter
+   for( dip::uint ii = 0; ii < candidates.size(); ++ii ) {
+      // Invalidate all candidates smaller than this one within given distance
+      for( dip::uint jj = ii + 1; jj < candidates.size(); ++jj ) {
+         if( candidates[ jj ].valid ) {
+            if( norm_square( candidates[ ii ].pos, candidates[ jj ].pos ) < distancesq ) {
+               candidates[ jj ].valid = false;
+            }
+         }
+      }
+   }
+
+   // Copy to output
+   CoordinateArray maxima;
+   for( dip::uint ii = 0; ii < candidates.size(); ++ii ) {
+      if( candidates[ ii ].valid ) {
+         maxima.push_back( candidates[ ii ].pos );
+      }
+   }
+
+   return maxima;
+}
+
+Distribution PointDistanceDistribution(
+      Image const& in,
+      CoordinateArray const& points,
+      UnsignedArray range
+) {
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+
+   if( range.empty() ) {
+      range = { 0, static_cast< dip::uint >( std::ceil( std::sqrt( in.Sizes().norm_square() ))) };
+   }
+
+   auto coordComp = in.OffsetToCoordinatesComputer();
+   dip::uint steps = range[ 1 ] - range[ 0 ] + 1;
+
+   Distribution distribution( steps, points.size(), 1 );
+   distribution.SetSampling( {}, static_cast< dfloat >( range[ 0 ] ), 1. );
+
+   // Iterate over on pixels
+   // NOTE: calling end() on View does not work
+   for( auto pit = in.At( in ).begin(); pit; ++pit ) {
+      auto coord = coordComp( pit.Offset() );
+
+      // Iterate over points
+      dip::uint cid = 0;
+      for( auto cit = points.begin(); cit != points.end(); ++cit, ++cid ) {
+         double dist = std::sqrt( norm_square( coord, *cit ));
+
+         dip::sint bin = round_cast( dist - static_cast< dfloat >( range[ 0 ] ));
+         if( bin >= 0 && bin < static_cast< dip::sint >( steps )) {
+            distribution[ static_cast< dip::uint >( bin ) ].Y( cid )++;
+         }
+      }
+   }
+
+   return distribution;
+}
+
+FloatCoordinateArray FindHoughCircles(
+      Image const& in,
+      Image const& gv,
+      UnsignedArray const& range,
+      dfloat distance
+) {
+   // Perform Hough transform for circle centers
+   Image hough;
+   DIP_STACK_TRACE_THIS( hough = HoughTransformCircleCenters( in, gv, range ));
+
+   // Find centers
+   CoordinateArray centers;
+   DIP_STACK_TRACE_THIS( centers = FindHoughMaxima( hough, distance ));
+
+   // Get radius distributions
+   Distribution dist;
+   DIP_STACK_TRACE_THIS( dist = PointDistanceDistribution( in, centers ));
+
+   // Find radii
+   std::vector< dfloat > radii;
+   DIP_STACK_TRACE_THIS( radii = dist.MaximumLikelihood() );
+
+   // Copy to coordinate array
+   FloatCoordinateArray circles( radii.size() );
+   for( dip::uint ii = 0; ii < radii.size(); ++ii ) {
+      circles[ ii ] = { static_cast< dfloat >( centers[ ii ][ 0 ] ), static_cast< dfloat >( centers[ ii ][ 1 ] ), radii[ ii ] };
+   }
+
+   return circles;
+}
+
 } // namespace dip
 
 #ifdef DIP__ENABLE_DOCTEST
@@ -181,6 +334,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing the HoughTransformCircleCenters function") {
    // Check result
    DOCTEST_CHECK( m[0] == 256 );
    DOCTEST_CHECK( m[1] == 256 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the FindHoughCircles function") {
+   // Draw some circles
+   auto a = dip::Image( {512, 512}, 1, dip::DT_SFLOAT );
+   a.Fill( 0 );
+   dip::DrawEllipsoid( a, {200, 200}, {256, 256} );
+   dip::DrawEllipsoid( a, {50, 50}, {350, 350} );
+
+   // Try to find them
+   auto gv  = dip::Gradient( a );
+   auto gm  = dip::Norm( gv );
+   auto bin = dip::IsodataThreshold( gm, { } );
+   auto cir = dip::FindHoughCircles( bin, gv, { }, 10 );
+
+   // Check result
+   DOCTEST_REQUIRE( cir.size() == 2 );
+   DOCTEST_CHECK( cir[0] == dip::FloatArray{256, 256, 100} );
+   DOCTEST_CHECK( cir[1] == dip::FloatArray{350, 350, 25} );
 }
 
 #endif // DIP__ENABLE_DOCTEST

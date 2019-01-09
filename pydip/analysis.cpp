@@ -54,6 +54,7 @@ void init_analysis( py::module& m ) {
    distr.def( "Integral", &dip::Distribution::Integral, "index"_a = 0 );
    distr.def( "NormalizeIntegral", &dip::Distribution::NormalizeIntegral );
    distr.def( "Differentiate", &dip::Distribution::Differentiate );
+   distr.def( "MaximumLikelihood", &dip::Distribution::MaximumLikelihood );
 
    // diplib/analysis.h
 
@@ -122,6 +123,13 @@ void init_analysis( py::module& m ) {
 
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
+   m.def( "FindHoughMaxima", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::FindHoughMaxima ),
+          "in"_a, "distance"_a );
+   m.def( "PointDistanceDistribution", py::overload_cast< dip::Image const&, dip::CoordinateArray const&, dip::UnsignedArray >( &dip::PointDistanceDistribution ),
+          "in"_a, "points"_a, "range"_a = dip::UnsignedArray{} );
+   m.def( "FindHoughCircles", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const&, dip::dfloat >( &dip::FindHoughCircles ),
+          "in"_a, "gv"_a, "range"_a, "distance"_a );
+          
    m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
              dip::Image out;
              dip::RadonCircleParametersArray params = RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
