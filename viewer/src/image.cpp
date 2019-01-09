@@ -80,4 +80,20 @@ void ImageViewer::create()
   setWindowTitle("");
 }
 
+void ImageViewer::reshape(int /*width*/, int /*height*/)
+{
+  Guard guard(*this);
+  viewport_->place(0, 0, width(), height());
+  refresh();
+}
+
+void ImageViewer::draw()
+{
+  Guard guard(*this);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  viewport_->rebuild();
+  viewport_->render();
+  swap();
+}
+
 }} // namespace dip::viewer

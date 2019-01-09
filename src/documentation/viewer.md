@@ -22,7 +22,7 @@
 ## Introduction
 
 *DIPlib* includes an *OpenGL*-based image viewer to help in the visualization
-of intermediate results. Its main purpose is as a debugging tool. It existis
+of intermediate results. Its main purpose is as a debugging tool. It exists
 in its own library, which must be linked separately if used. The
 viewer contains two main classes
 
@@ -65,36 +65,40 @@ main parts
 2. **Control panel**
 
   The control panel allows the user to select different ways of visualizing
-  the image. It consists of four lists of options
+  the image. It consists of four lists of options:
 
   1. *Colorspace*, being
 
      - *SPA*: image colorspace; this disregards the mapping.
-     - *RGB*: RGB colorspace, from any 3 tensor elements
-     - *GRY*: Single grey value
-     - *JET*: Single value mapped to the Jet (blue-red) colormap
+     - *RGB*: RGB colorspace, from any 3 tensor elements.
+     - *GRY*: Single grey value.
+     - *SEQ*: Single value mapped to a sequential blue-yellow colormap.
+     - *DIV*: Single value mapped to a divergent blue-red colormap. Use for symmetric mappings.
+     - *CYC*: Single value mapped to a cyclic colormap. Use for angles.
+     - *LBL*: Single value mapped to sequentially disparate colors. Use for labels.
 
   2. *Mapping*, being
 
-     - *0-1*: Unit values
-     - *255*: 8-bit data
-     - *LIN*: Linear interpolation between the global minimum and maximum values
-     - *SYM*: Linear interpolation that is symmetric around 0
-     - *LOG*: Logarithmic mapping
+     - *0-1*: Unit values.
+     - *ANG*: Data between [-pi, pi].
+     - *255*: 8-bit data.
+     - *LIN*: Linear interpolation between the global minimum and maximum values.
+     - *SYM*: Linear interpolation that is symmetric around 0.
+     - *LOG*: Logarithmic mapping.
 
   3. *Complex mapping*, being
 
-     - *REA*: Real part
-     - *IMG*: Imaginary part
-     - *MAG*: Magnitude
-     - *PHA*: Phase
+     - *REA*: Real part.
+     - *IMG*: Imaginary part.
+     - *MAG*: Magnitude.
+     - *PHA*: Phase.
 
   4. *Projection*, being
 
-     - *SLC*: Single slice around operating point
-     - *MIN*: Minimum over dimensions perpendicular to slice
-     - *MEA*: Mean over dimensions perpendicular to slice
-     - *MAX*: Maximum over dimensions perpendicular to slice
+     - *SLC*: Single slice around operating point.
+     - *MIN*: Minimum over dimensions perpendicular to slice.
+     - *MEA*: Mean over dimensions perpendicular to slice.
+     - *MAX*: Maximum over dimensions perpendicular to slice.
 
 3. **%Histogram**
 
@@ -114,7 +118,7 @@ main parts
   after you change them.
 
 Interaction occurs mainly within the main visualization window, and depends
-on where it occurs
+on where it occurs:
 
 - *%Tensor elements*
 
@@ -189,7 +193,7 @@ There are also a few keyboard shortcuts:
 
 - *Control-N*
 
-  Creates a linked clone of the current viewer. Handy when wanting to
+  Creates a linked clone of the current viewer. Convenient when wanting to
   display different tensor elements, mappings, etc.
 
 - *Control-R*
@@ -217,7 +221,7 @@ all images have been shown this way, you can call
 ```
 
 to enable mouse interaction. If you wish to continue your program, you must
-call
+instead call
 
 ```cpp
     dip::viewer::Draw();

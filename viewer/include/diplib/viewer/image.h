@@ -143,20 +143,8 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     }
     
     DIPVIEWER_EXPORT void create() override;
-    void reshape(int /*width*/, int /*height*/) override
-    {
-      Guard guard(*this);
-      viewport_->place(0, 0, width(), height());
-      refresh();
-    }
-    
-    void draw() override
-    {
-      Guard guard(*this);
-      viewport_->rebuild();
-      viewport_->render();
-      swap();
-    }
+    DIPVIEWER_EXPORT void reshape(int /*width*/, int /*height*/) override;
+    DIPVIEWER_EXPORT void draw() override;
 };
 
 /// \}
