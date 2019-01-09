@@ -23,15 +23,15 @@ those in DIPlib. Please see the documentation for DIPlib to learn how
 to use these functions, as we haven't ported the documentation yet.
    https://diplib.github.io/diplib-docs/
 
-One addition specific to Python is the Show() function and the
+One addition specific to Python is the dip.Show() function and the
 Image.Show() method (these are identical). They display an image to the
 current matplotlib window, if matplotlib is installed:
    import PyDIP as dip
    img = dip.ImageReadTIFF('cameraman')
    img.Show()
 
-If DIPviewer is installed, its functionality will be in hte PyDIP.viewer
-namespace.
+If DIPviewer is installed, its functionality will be in the PyDIP.viewer
+namespace. Use dip.viewer.Show(img).
 
 # Indexing:
 
@@ -48,11 +48,12 @@ Unlike in the C++ API, the square brackets index into spatial dimensions.
 To index into tensor dimensions, use the Image.TensorElement method:
    img.TensorElement(0)
    img.TensorElement(0,2)
-   img.TensorElement(0:3)
+   img.TensorElement(slice(0,3))
 
-The output of all these indexing operations shares data with the original
+The output of any of these indexing operations shares data with the original
 image, so writing to that output also changes the original image:
    img.TensorElement(0).Fill(100)
+   img.TensorElement(1).Copy(img.TensorElement(0))
 
 Irregular indexing using a mask image is also supported. This indexing
 returns a copy of the data, but an assignment form is also available:
@@ -60,6 +61,11 @@ returns a copy of the data, but an assignment form is also available:
    img2.Fill(0)     # does not affect img
    img[mask] = 0    # sets all pixels in mask to 0
 """
+
+# (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
+import os
+if os.name == 'nt':
+   os.environ["PATH"] += os.pathsep + "@CMAKE_INSTALL_PREFIX@/lib"
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
@@ -69,8 +75,6 @@ from PyDIP.PyDIP_py import *
 # Here we import PyDIPviewer if it exists
 hasDIPviewer = False
 import importlib.util
-
-if importlib.util.find_spec( 'PyDIP.PyDIPviewer' ) is not None:
+if importlib.util.find_spec('PyDIP.PyDIPviewer') is not None:
    import PyDIP.PyDIPviewer as viewer
-
    hasDIPviewer = True
