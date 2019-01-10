@@ -68,14 +68,14 @@ extern "C" {
 /// \brief This file should be included in each MEX-file. It defines the `#dml` namespace.
 
 
-/// \brief The `%dml` namespace contains the interface between *MATLAB* and *DIPlib*.
+/// \brief The `%dml` namespace contains the interface between MATLAB and *DIPlib*.
 ///
-/// The functions and classes defined in this namespace are meant to be used in *MATLAB* MEX-files.
+/// The functions and classes defined in this namespace are meant to be used in MATLAB MEX-files.
 namespace dml {
 
 
-/// \defgroup dip_matlab_interface *DIPlib*--*MATLAB* interface
-/// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
+/// \defgroup dip_matlab_interface DIPlib--MATLAB interface
+/// \brief Functions to convert image data, function parameters and other arrays to and from MATLAB.
 ///
 /// \{
 
@@ -849,7 +849,7 @@ enum class ArrayConversionMode {
 /// This function "converts" an `mxArray` with image data to a dip::Image object.
 /// The dip::Image object will point to the data in the `mxArray`, unless
 /// the array contains complex numbers. Complex data needs to be copied because
-/// *MATLAB* represents it internally as two separate data blocks. In that
+/// MATLAB represents it internally as two separate data blocks. In that
 /// case, the dip::Image object will own its own data block.
 ///
 /// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
@@ -1347,7 +1347,7 @@ inline bool MatchSizes(
 
 } // namespace detail
 
-/// \brief This class is the dip::ExternalInterface for the *MATLAB* interface.
+/// \brief This class is the dip::ExternalInterface for the MATLAB interface.
 ///
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
@@ -1358,8 +1358,8 @@ inline bool MatchSizes(
 /// ```
 /// This configures the images `img_out0` and `img_out1` such that, when they are
 /// forged later on, an `mxArray` structure will be created to hold the pixel data.
-/// `mxArray` is *MATLAB*'s representation of arrays.
-/// To return those images back to *MATLAB*, use `dml::GetArray`, which returns
+/// `mxArray` is MATLAB's representation of arrays.
+/// To return those images back to MATLAB, use `dml::GetArray`, which returns
 /// the `mxArray` created when the image was forged:
 /// ```cpp
 ///     plhs[ 0 ] = dm::GetArray( img_out0 );
@@ -1375,7 +1375,7 @@ inline bool MatchSizes(
 /// images hold a pointer to it.
 ///
 /// Remember to not assign a result into the images created with `NewImage`,
-/// as the pixel data will be copied in the assignment into a *MATLAB* array.
+/// as the pixel data will be copied in the assignment into a MATLAB array.
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
 /// ```cpp
@@ -1406,7 +1406,7 @@ class MatlabInterface : public dip::ExternalInterface {
 
       /// This function overrides dip::ExternalInterface::AllocateData().
       /// It is called when an image with this `ExternalInterface` is forged.
-      /// It allocates a *MATLAB* `mxArray` and returns a `dip::DataSegment`
+      /// It allocates a MATLAB `mxArray` and returns a `dip::DataSegment`
       /// containing a pointer to the  `mxArray` data pointer, with a custom
       /// deleter functor. It also adjusts strides to match the `mxArray` storage.
       ///
@@ -1430,7 +1430,7 @@ class MatlabInterface : public dip::ExternalInterface {
       }
 
       /// \brief Constructs a dip::Image object with the external interface set so that,
-      /// when forged, a *MATLAB* `mxArray` will be allocated to hold the samples.
+      /// when forged, a MATLAB `mxArray` will be allocated to hold the samples.
       ///
       /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
       /// it as a `lhs` argument to your MEX-file.
@@ -1616,7 +1616,7 @@ inline K GetKernel( int nrhs, const mxArray* prhs[], int& index, dip::uint nDims
 /// stream buffer is replaced.
 ///
 /// Create an object of this class at the beginning of any MEX-file that uses `std::cout` to
-/// print information to the *MATLAB* terminal. *DIPlib* defines several classes with a stream
+/// print information to the MATLAB terminal. *DIPlib* defines several classes with a stream
 /// insertion operator that would be cumbersome to use with a `std::stringstream` and `mexPrintf`.
 /// This class simplifies their use.
 class streambuf : public std::streambuf {

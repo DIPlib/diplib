@@ -233,10 +233,12 @@ class DIP_NO_EXPORT Image {
       /// and raw (it has no data segment).
       Image() = default;
 
+      /// \cond
       // Copy constructor, move constructor and destructor are all default.
       Image( Image const& ) = default;
       Image( Image&& ) = default;
       ~Image() = default;
+      /// \endcond
 
       /// \brief Copy assignment
       ///
@@ -357,6 +359,8 @@ class DIP_NO_EXPORT Image {
       /// sizes, not sample values.
       explicit Image( FloatArray const& values, dip::DataType dt = DT_SFLOAT );
 
+      /// \cond
+
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       explicit Image( std::initializer_list< T > values ) : Image( Pixel( values )) {}
@@ -364,6 +368,8 @@ class DIP_NO_EXPORT Image {
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       explicit Image( std::initializer_list< T > values, dip::DataType dt ) : Image( Pixel( values ), dt ) {}
+
+      /// \endcond
 
       /// \brief A `dip::Image::View` implicitly converts to an `%Image`.
       Image( View const& view );
@@ -503,10 +509,12 @@ class DIP_NO_EXPORT Image {
          sizes_ = d;
       }
 
+      /// \cond
       // Sets the sizes of the image. Do not use this function unless you know what you're doing.
       void dip__SetSizes( UnsignedArray const& d ) {
          sizes_ = d;
       }
+      /// \endcond
 
       /// \}
 
@@ -716,10 +724,12 @@ class DIP_NO_EXPORT Image {
          tensor_.SetVector( nelems );
       }
 
+      /// \cond
       // Sets the tensor sizes. Do not use this function unless you know what you're doing.
       void dip__SetTensorSizes( dip::uint nelems ) {
          tensor_.SetVector( nelems );
       }
+      /// \endcond
 
       /// \}
 
@@ -1299,6 +1309,8 @@ class DIP_NO_EXPORT Image {
          return origin_;
       }
 
+      /// \cond
+
       // Sets the pointer to the first sample in the image. Do not use this function
       // unless you know what you're doing.
       void dip__SetOrigin( void* origin ) {
@@ -1310,6 +1322,8 @@ class DIP_NO_EXPORT Image {
       void dip__ShiftOrigin( dip::sint offset ) {
          origin_ = static_cast< uint8* >( origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
       }
+
+      /// \endcond
 
       /// \brief Get a pointer to the pixel given by the offset.
       ///
@@ -1827,6 +1841,7 @@ class DIP_NO_EXPORT Image {
       /// defaults to the image dimensionality, meaning that the new dimension will
       /// be the last one. The image must be forged.
       DIP_EXPORT Image& TensorToSpatial( dip::uint dim );
+      /// \overload
       inline Image& TensorToSpatial() {
          return TensorToSpatial( Dimensionality() );
       }
@@ -1838,12 +1853,15 @@ class DIP_NO_EXPORT Image {
       /// is created. `dim` defaults to the last spatial dimension. The image must
       /// be forged.
       DIP_EXPORT Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols );
+      /// \overload
       inline Image& SpatialToTensor( dip::uint rows, dip::uint cols ) {
          return SpatialToTensor( Dimensionality() - 1, rows, cols );
       }
+      /// \overload
       inline Image& SpatialToTensor( dip::uint dim ) {
          return SpatialToTensor( dim, 0, 0 );
       }
+      /// \overload
       inline Image& SpatialToTensor() {
          return SpatialToTensor( Dimensionality() - 1, 0, 0 );
       }
@@ -1857,6 +1875,7 @@ class DIP_NO_EXPORT Image {
       /// image dimensionality, meaning that the new dimension will be the last one.
       /// The image must be forged.
       DIP_EXPORT Image& SplitComplex( dip::uint dim );
+      /// \overload
       inline Image& SplitComplex() {
          return SplitComplex( Dimensionality() );
       }
@@ -1866,6 +1885,7 @@ class DIP_NO_EXPORT Image {
       /// Dimension `dim` must have size 2 and a stride of 1. `dim` defaults to the last
       /// spatial dimension. The image must be forged.
       DIP_EXPORT Image& MergeComplex( dip::uint dim );
+      /// \overload
       inline Image& MergeComplex() {
          return MergeComplex( Dimensionality() - 1 );
       }
@@ -2263,12 +2283,14 @@ class DIP_NO_EXPORT Image {
          return *this;
       }
 
+      /// \cond
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
       Image& operator=( std::initializer_list< T > values ) {
          Fill( Pixel( values ));
          return *this;
       }
+      /// \endcond
 
       /// Returns the value of the first sample in the first pixel in the image as the given numeric type.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>

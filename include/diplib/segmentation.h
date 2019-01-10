@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for segmentation functions
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -104,7 +104,8 @@ inline Image MinimumVariancePartitioning(
 ///
 /// The output array contains the thresholds used.
 ///
-/// See `dip::IsodataThreshold(Histogram const&,dip::uint)` for more information on the algorithm used.
+/// See <tt>\ref dip::IsodataThreshold(Histogram const&, dip::uint) "dip::IsodataThreshold"</tt>
+/// for more information on the algorithm used.
 DIP_EXPORT FloatArray IsodataThreshold(
       Image const& in,
       Image const& mask,
@@ -128,7 +129,8 @@ inline Image IsodataThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See `dip::OtsuThreshold(Histogram const&)` for more information on the algorithm used.
+/// See <tt>\ref dip::OtsuThreshold(Histogram const&) "dip::OtsuThreshold"</tt>
+/// for more information on the algorithm used.
 DIP_EXPORT dfloat OtsuThreshold(
       Image const& in,
       Image const& mask,
@@ -150,7 +152,8 @@ inline Image OtsuThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See `dip::MinimumErrorThreshold(Histogram const&)` for more information on the algorithm used.
+/// See <tt>\ref dip::MinimumErrorThreshold(Histogram const&) "dip::MinimumErrorThreshold"</tt>
+/// for more information on the algorithm used.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& in,
       Image const& mask,
@@ -173,7 +176,8 @@ inline Image MinimumErrorThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See `dip::TriangleThreshold(Histogram const&)` for more information on the algorithm used.
+/// See <tt>\ref dip::TriangleThreshold(Histogram const&) "dip::TriangleThreshold"</tt>
+/// for more information on the algorithm used.
 DIP_EXPORT dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,
@@ -195,7 +199,8 @@ inline Image TriangleThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See `dip::BackgroundThreshold(Histogram const&,dfloat)` for more information on the algorithm used.
+/// See <tt>\ref dip::BackgroundThreshold(Histogram const&, dfloat) "dip::BackgroundThreshold"</tt>
+/// for more information on the algorithm used.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,
@@ -360,14 +365,15 @@ inline Image MultipleThresholds(
 /// threshold value. `in` must be scalar and real-valued.
 ///
 /// `method` can be one of:
-///  - "isodata": the Isodata algorithm by Ridler and Calvard (1978), i.e. 2-means clustering.
-///  - "otsu": the maximal inter-class variance method by Otsu (1979). This is the default method.
-///  - "minerror": the minimal error method by Kittler and Illingworth (1986).
-///  - "triangle": the chord method (a.k.a. skewed bi-modality, maximum distance to triangle) by Zack, Rogers and Latt (1977).
-///  - "background": using the unimodal background-symmetry method. `parameter` is the distance to the peak
-///    where we cut off, in terms of the half-width at half the maximum.
-///  - "volume": such that the output has a given volume fraction. `parameter` is the required volume fraction.
-///  - "fixed": using the given threshold value. `parameter` is the threshold value.
+///  - "isodata": see <tt>\ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint) "dip::IsodataThreshold"</tt>.
+///  - "otsu": see <tt>\ref dip::OtsuThreshold(Image const&, Image const&, Image&) "dip::OtsuThreshold"</tt>. This is the default method
+///  - "minerror": see <tt>\ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&) "dip::MinimumErrorThreshold"</tt>.
+///  - "triangle": see <tt>\ref dip::TriangleThreshold(Image const&, Image const&, Image&) "dip::TriangleThreshold"</tt>.
+///  - "background": see <tt>\ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat) "dip::BackgroundThreshold"</tt>.
+///  - "volume": see <tt>\ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat) "dip::VolumeThreshold"</tt>.
+///  - "fixed": see <tt>\ref dip::FixedThreshold(Image const&, Image&, dfloat, dfloat, dfloat, String const&) "dip::FixedThreshold"</tt>. The default parameter value is 128.
+///
+/// If `parameter` is `dip::infinity`, the default parameter value for the method will be used.
 inline dfloat Threshold(
       Image const& in,
       Image& out,

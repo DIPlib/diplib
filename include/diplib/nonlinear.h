@@ -498,7 +498,7 @@ inline Image CoherenceEnhancingDiffusion(
 ///     - `params[4]` (optional) is a tensor image with the local kernel scale
 ///
 /// For intrinsic 1D strutures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
-/// 
+///
 /// The kernel scale parameter image is interpreted as follows.
 /// Each input tensor element corresponds with a tensor row in the scale image.
 /// Each tensor column in the scale image corresponds with a convolution kernel dimension.
@@ -514,7 +514,7 @@ inline Image CoherenceEnhancingDiffusion(
 /// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
 /// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
 /// For more information on scaling, also see "Structure-adaptive applicability function" in Pham et al. (2006).
-/// 
+///
 /// The sigma for each kernel dimension is passed by `sigmas`.
 /// For intrinsic 1D structures, the first value is along the contour, the second perpendicular to it.
 /// For intrinsic 2D structures, the first two are in the plane, whereas the other is perpendicular to them.
@@ -523,7 +523,15 @@ inline Image CoherenceEnhancingDiffusion(
 /// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel.
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
-/// 
+///
+/// **Example**
+/// ```cpp
+///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
+///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
+///     dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation" } );
+///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
+/// ```
+///
 /// **Literature**
 /// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
 ///   convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
@@ -578,14 +586,22 @@ inline Image AdaptiveGauss(
 /// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
 /// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
 /// For more information on scaling, also see "Structure-adaptive applicability function" in in Pham et al. (2006).
-/// 
+///
 /// The sigma for each kernel dimension is passed by `sigmas`. The first value is along the contour,
 /// the second perpendicular to it. If a value is zero, no convolution is done is this direction.
 ///
 /// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel.
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
-/// 
+///
+/// **Example**
+/// ```cpp
+///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
+///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
+///     dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation", "curvature" } );
+///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
+/// ```
+///
 /// **Literature**
 /// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
 ///   convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
@@ -631,6 +647,11 @@ inline Image AdaptiveBanana(
 /// If `in` is not scalar, each tensor element will be filtered independently. For color images, this leads to
 /// false colors at edges.
 ///
+/// The optional image `estimate`, if forged, is used as the tonal center when computing the kernel at each pixel.
+/// That is, each point in the kernel is computed based on the distance of the corresponding pixel value in `in`
+/// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
+/// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
+///
 /// **Literature**
 /// - C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images", Proceedings of the 1998 IEEE
 ///   International Conference on Computer Vision, Bombay, India.
@@ -672,6 +693,11 @@ inline Image FullBilateralFilter(
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// `in` must be scalar and real-valued.
+///
+/// The optional image `estimate`, if forged, is used as the tonal center when computing the kernel at each pixel.
+/// That is, each point in the kernel is computed based on the distance of the corresponding pixel value in `in`
+/// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
+/// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
 /// **Literature**
 /// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images",
@@ -716,6 +742,11 @@ inline Image QuantizedBilateralFilter(
 ///
 /// If `in` is not scalar, each tensor element will be filtered independently. For color images, this leads to
 /// false colors at edges.
+///
+/// The optional image `estimate`, if forged, is used as the tonal center when computing the kernel at each pixel.
+/// That is, each point in the kernel is computed based on the distance of the corresponding pixel value in `in`
+/// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
+/// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
 /// **Literature**
 /// - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing", IEEE International

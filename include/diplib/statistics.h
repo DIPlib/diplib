@@ -825,52 +825,52 @@ inline Image RadialMaximum(
 /// \brief Quantifying the difference between images.
 /// \{
 
-/// \brief Calculates the mean error difference between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the mean error difference between corresponding sample values of `in` and `reference`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed, use `dip::MeanAbsoluteError` instead.
-DIP_EXPORT dfloat MeanError( Image const& in1, Image const& in2, Image const& mask = {} );
+DIP_EXPORT dfloat MeanError( Image const& in, Image const& reference, Image const& mask = {} );
 
-/// \brief Calculates the mean square error difference between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the mean square error difference between corresponding sample values of `in` and `reference`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
 /// For complex input, uses the modulus of the differences.
-DIP_EXPORT dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask = {} );
+DIP_EXPORT dfloat MeanSquareError( Image const& in, Image const& reference, Image const& mask = {} );
 
-/// \brief Calculates the root mean square (RMS) error difference between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the root mean square (RMS) error difference between corresponding sample values of `in` and `reference`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
 /// For complex input, uses the modulus of the differences.
-inline dfloat RootMeanSquareError( Image const& in1, Image const& in2, Image const& mask = {} ) {
-   return std::sqrt( MeanSquareError( in1, in2, mask ));
+inline dfloat RootMeanSquareError( Image const& in, Image const& reference, Image const& mask = {} ) {
+   return std::sqrt( MeanSquareError( in, reference, mask ));
 }
 
-/// \brief Calculates the mean absolute error difference between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the mean absolute error difference between corresponding sample values of `in` and `reference`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
-DIP_EXPORT dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask = {} );
+DIP_EXPORT dfloat MeanAbsoluteError( Image const& in, Image const& reference, Image const& mask = {} );
 
-/// \brief Calculates the maximum absolute error difference between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the maximum absolute error difference between corresponding sample values of `in` and `reference`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
-DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& mask = {} );
+DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in, Image const& reference, Image const& mask = {} );
 
-/// \brief Calculates the I-divergence between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the I-divergence between corresponding sample values of `in` and `reference`.
 ///
 /// The I-Divergence is defined as \f$I(x,y) = x \ln(x/y) - (x - y)\f$ and is divided by the number of pixels.
 /// It is the -log of a Poisson distribution \f$p(x,y) = e^{-y} / x! - y^x\f$ with the stirling approximation for
@@ -885,11 +885,11 @@ DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Imag
 /// **Literature**
 /// - I. Csiszar, "Why Least Squares and Maximum Entropy? An axiomatic approach to inference for linear inverse problems",
 ///   The Annals of Statistics 19:2032-2066, 1991.
-DIP_EXPORT dfloat IDivergence( Image const& in1, Image const& in2, Image const& mask = {} );
+DIP_EXPORT dfloat IDivergence( Image const& in, Image const& reference, Image const& mask = {} );
 
-/// \brief Calculates the sum of the product of corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the sum of the product of corresponding sample values of `in` and `reference`.
 ///
-/// The sum of the product of `in1` and `in2` corresponds to the value of the cross-correlation function at zero
+/// The sum of the product of `in` and `reference` corresponds to the value of the cross-correlation function at zero
 /// displacement (see `dip::CrossCorrelation`) and is a measure of correlation between the two images.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
@@ -897,16 +897,16 @@ DIP_EXPORT dfloat IDivergence( Image const& in1, Image const& in2, Image const& 
 ///
 /// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed.
-DIP_EXPORT dfloat InProduct( Image const& in1, Image const& in2, Image const& mask = {} );
+DIP_EXPORT dfloat InProduct( Image const& in, Image const& reference, Image const& mask = {} );
 
-/// \brief Calculates the `order` norm difference between corresponding sample values of `in1` and `in2`.
+/// \brief Calculates the `order` norm difference between corresponding sample values of `in` and `reference`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
 /// For complex input, uses the modulus of the differences.
-DIP_EXPORT dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask = {}, dfloat order = 2.0 );
+DIP_EXPORT dfloat LnNormError( Image const& in, Image const& reference, Image const& mask = {}, dfloat order = 2.0 );
 
 /// \brief Calculates the peak signal-to-noise ratio, in dB.
 ///

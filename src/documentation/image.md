@@ -20,6 +20,7 @@
 [//]: # (limitations under the License.)
 
 \class dip::Image diplib.h
+\nosubgrouping
 
 \brief Represents an image with all associated information.
 
@@ -44,7 +45,7 @@ Jump to:
  - \ref external_data_segment
  - \ref singleton_expansion
  - <a href="#nested-classes"><strong>Nested classes</strong></a>
- - <a href="#pub-methods"><strong>Public member functions</strong></a>
+ - <a href="#member-group"><strong>Public member functions</strong></a>
 
 [//]: # (--------------------------------------------------------------)
 
@@ -352,7 +353,7 @@ the two following images are the same:
     img1.SetTensorSizes( 1 );
     img1.Forge();
 
-    dip::Image img2( UnsingedArray{ 256, 256 }, 1, dip::DT_UINT8 );
+    dip::Image img2( dip::UnsingedArray{ 256, 256 }, 1, dip::DT_UINT8 );
 ```
 
 The first method is more flexible, as it allows to set all properties
@@ -504,7 +505,7 @@ have one element for each tensor element. Each pixel in the image will then
 be set to the tensor values in the initializer list:
 
 ```cpp
-    img2 = dip::Image( UnsignedArray{ 256, 256 }, 10, dip::DT_SFLOAT );
+    img2 = dip::Image( dip::UnsignedArray{ 256, 256 }, 10, dip::DT_SFLOAT );
     img2 = { 1, 2, 3, 4 };
 ```
 
@@ -797,7 +798,7 @@ be stripped (freed) or reforged (reallocated). Furthermore, when the protect
 flag is set, the assignment operator will perform a deep copy. For example:
 
 ```cpp
-    dip::Image img1( UnsignedArray{ 256, 256 }, 3, dip::DT_SFLOAT );
+    dip::Image img1( dip::UnsignedArray{ 256, 256 }, 3, dip::DT_SFLOAT );
     img1.Protect();
     //img1.Strip();  // Throws!
     img1 = img2;     // Equivalent to:  img1.Copy( img2 )
@@ -1168,8 +1169,8 @@ physically copied). This will cause an algorithm to read the same value,
 no matter how many steps it takes along this dimension. For example:
 
 ```cpp
-    dip::Image img1( UnsignedArray{ 50, 1, 60 } );
-    dip::Image img2( UnsignedArray{ 50, 30 } );
+    dip::Image img1( dip::UnsignedArray{ 50, 1, 60 } );
+    dip::Image img2( dip::UnsignedArray{ 50, 30 } );
     dip::Image img3 = img1 + img2;
 ```
 
