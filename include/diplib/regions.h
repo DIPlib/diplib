@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for functions that work with labeled images.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,6 +84,18 @@ DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& mask,
       String const& background = S::EXCLUDE
 );
+inline UnsignedArray GetObjectLabels(
+      Image::View const& label,
+      String const& background = S::EXCLUDE
+) {
+   if( label.Offsets().empty() ) {
+      // This code works if either the view is regular or has a mask.
+      return GetObjectLabels( label.Reference(), label.Mask(), background );
+   } else {
+      // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
+      return GetObjectLabels( Image( label ), {}, background );
+   }
+}
 
 /// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.
 DIP_EXPORT void Relabel( Image const& label, Image& out );

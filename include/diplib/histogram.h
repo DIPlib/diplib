@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for histograms and related functionality
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -189,6 +189,15 @@ class DIP_NO_EXPORT Histogram {
             }
          DIP_END_STACK_TRACE
       }
+      explicit Histogram( Image::View const& input, ConfigurationArray configuration = {} ) {
+         if( input.Offsets().empty() ) {
+            // This code works if either the view is regular or has a mask.
+            *this = Histogram( input.Reference(), input.Mask(), std::move( configuration ));
+         } else {
+            // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
+            *this = Histogram( Image( input ), {}, std::move( configuration ));
+         }
+      }
 
       /// \brief This version of the constructor is identical to the previous one, but with a single configuration
       /// parameter instead of an array.
@@ -203,6 +212,15 @@ class DIP_NO_EXPORT Histogram {
                TensorImageHistogram( input, mask, newConfig );
             }
          DIP_END_STACK_TRACE
+      }
+      explicit Histogram( Image::View const& input, Configuration configuration ) {
+         if( input.Offsets().empty() ) {
+            // This code works if either the view is regular or has a mask.
+            *this = Histogram( input.Reference(), input.Mask(), configuration );
+         } else {
+            // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
+            *this = Histogram( Image( input ), {}, configuration );
+         }
       }
 
       /// \brief A version of the constructor that takes two scalar input images, and constructs their joint histogram
@@ -264,6 +282,14 @@ class DIP_NO_EXPORT Histogram {
       /// but it is possible to modify the values in the bins (modify the pixel values of this image).
       explicit Histogram( Configuration const& configuration ) {
          DIP_STACK_TRACE_THIS( EmptyHistogram( ConfigurationArray{ configuration } ));
+      }
+
+      /// \brief Swaps `this` and `other`.
+      void swap( Histogram& other ) {
+         using std::swap;
+         swap( data_, other.data_ );
+         swap( lowerBounds_, other.lowerBounds_ );
+         swap( binSizes_, other.binSizes_ );
       }
 
       /// \brief Deep copy, returns a copy of `this` with its own data segment.
@@ -510,6 +536,10 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
       DIP_EXPORT void EmptyHistogram( ConfigurationArray configuration );
 };
+
+inline void swap( Histogram& v1, Histogram& v2 ) {
+   v1.swap( v2 );
+}
 
 
 //

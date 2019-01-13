@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2018, Cris Luengo.
+ * (c)2014-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2083,6 +2083,12 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Extracts the imaginary component of a complex-typed image. The image must be forged.
       DIP_EXPORT View Imaginary() const;
+
+      /// \brief Creates a scalar view of the image, where the tensor dimension is converted to a new spatial
+      /// dimension. See `dip::Image::TensorToSpatial`.
+      View AsScalar( dip::uint dim ) const;
+      /// \overload
+      View AsScalar() const;
 
       /// \brief Quick copy, returns a new image that points at the same data as `this`,
       /// and has mostly the same properties.

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for the various projection functions.
  *
- * (c)2017-2018, Cris Luengo, Erik Schuitema.
+ * (c)2017-2019, Cris Luengo, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1357,9 +1357,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
 
    // Project over two dimensions
-   dip::BooleanArray ps( 3, true );
-   ps[ 0 ] = false;
-   out = dip::Maximum( img, {}, ps );
+   out = dip::Maximum( img, {}, { false, true, true } );
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 3 );
    DOCTEST_CHECK( out.Size( 0 ) == 3 );
@@ -1369,9 +1367,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.At( 2, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
 
    // Project over another two dimensions
-   ps[ 0 ] = true;
-   ps[ 1 ] = false;
-   out = dip::Maximum( img, {}, ps );
+   out = dip::Maximum( img, {}, { true, false, true } );
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 4 );
    DOCTEST_CHECK( out.Size( 1 ) == 4 );
@@ -1398,6 +1394,24 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.TensorElements() == 1 );
    DOCTEST_CHECK( out.As< dip::dfloat >() == doctest::Approx(
          std::atan2( std::sin( 1 ), std::cos( 1 ) + ( 3 * 4 * 2 - 1 ))));
+
+   // Using a mask
+   img = dip::Image{ dip::UnsignedArray{ 3, 4, 2 }, 3, dip::DT_UINT8 };
+   img = { 1, 1, 1 };
+   img.At( 0, 0, 0 ) = { 2, 3, 4 };
+   img.At( 0, 1, 0 ) = { 3, 2, 2 };
+   img.At( 0, 0, 1 ) = { 4, 2, 3 };
+   img.At( 1, 0, 0 ) = { 4, 2, 1 };
+   dip::Image mask{ img.Sizes(), 1, dip::DT_BIN };
+   mask = 1;
+   img.At( 0, 0, 0 ) = 0;
+   out = dip::Maximum( img, mask, { true, true, false } );
+   DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 4, 2, 2 } )); // not {4,3,4}
+   DOCTEST_CHECK( out.At( 0, 0, 1 ) == dip::Image::Pixel( { 4, 2, 3 } ));
+
+   // Using a view
+   out = dip::Maximum( img.At( mask ));
+   DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 4, 2, 3 } )); // not {4,3,4}
 }
 
 #endif // DIP__ENABLE_DOCTEST

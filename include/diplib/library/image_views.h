@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for support classes for the Image class.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1055,6 +1055,24 @@ class Image::View {
       /// \brief Returns an iterator to one past the last pixel in the view.
       Iterator end() const;
 
+      /// \brief Returns true if the view was obtained by regular indexing. If `true`, `Mask` and `Offset` will
+      /// be empty.
+      bool IsRegular() const { return !mask_.IsForged() && offsets_.empty(); }
+
+      /// \brief Returns the image being referenced.
+      ///
+      /// If `IsRegular` is true, the image contains only the referenced set of pixels, it is a subset of the
+      /// image referenced. In this case, the returned image will be the same as that obtained from casting the
+      /// view to an image.
+      Image const& Reference() const { return reference_; }
+
+      /// \brief Returns the view's mask image. Will only be forged if the view was created with a mask image.
+      Image const& Mask() const { return mask_; }
+
+      /// \brief Returns the view's offsets into the referenced image. Will be empty if the view was not created
+      /// using offsets.
+      IntegerArray const& Offsets() const { return offsets_; }
+
    private:
       Image reference_;       // The image being indexed.
       Image mask_;            // A mask image to indicate which samples are indexed
@@ -1078,10 +1096,10 @@ class Image::View {
       //    appear together in the sample list.
 
       // Private constructors, only `dip::Image` can construct one of these:
-      View( Image const& reference ) : reference_( reference ) {                    // a view over the full image
+      explicit View( Image const& reference ) : reference_( reference ) {           // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
       }
-      View( Image&& reference ) : reference_( std::move( reference )) {             // a view over the full image
+      explicit View( Image&& reference ) : reference_( std::move( reference )) {    // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
       }
       DIP_EXPORT View( Image const& reference, Range range );                       // index tensor elements using range
@@ -1089,8 +1107,6 @@ class Image::View {
       DIP_EXPORT View( Image const& reference, Image const& mask );                 // index pixels or samples using mask
       DIP_EXPORT View( Image const& reference, UnsignedArray const& indices );      // index pixels using linear indices
       DIP_EXPORT View( Image const& reference, CoordinateArray const& coordinates );// index pixels using coordinates
-
-      bool IsRegular() const { return !mask_.IsForged() && offsets_.empty(); }
 };
 
 
@@ -1316,6 +1332,17 @@ inline Image::View Image::At( CoordinateArray const& coordinates ) const {
 
 inline Image::View Image::AtIndices( UnsignedArray const& indices ) const {
    DIP_STACK_TRACE_THIS( return Image::View( *this, indices ));
+}
+
+inline Image::View Image::AsScalar( dip::uint dim ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   Image::View out( *this );
+   out.reference_.TensorToSpatial( dim );
+   return out;
+}
+
+inline Image::View Image::AsScalar() const {
+   return AsScalar( Dimensionality() );
 }
 
 inline Image::Image( FloatArray const& values, dip::DataType dt ) : Image( Pixel( values, dt )) {}
