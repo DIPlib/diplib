@@ -144,16 +144,23 @@ ConvexHull::ConvexHull( dip::Polygon&& polygon ) {
       return;
    }
 
+   // Find shortest vertex for scale
+   dfloat minLength = Distance( pv.front(), pv.back() );
+   for( dip::uint ii = 1; ii < pv.size(); ++ii ) {
+      minLength = std::min( minLength, Distance( pv[ ii ], pv[ ii - 1 ] ));
+   }
+   dfloat eps = minLength * 1e-9;
+   // We ignore parallelogram distances that are 9 orders of magnitude smaller than the minimum distance
+   // between vertices, to prevent numerical precision errors (vertex locations are rounded to floating-point
+   // precision, and there are other numerical errors too).
+
    // Melkman's algorithm for the convex hull
    std::deque< VertexFloat > deque;
    auto v1 = pv.begin();
    auto v2 = v1 + 1;
    auto v3 = v2 + 1;         // these elements exist for sure -- we have more than 3 elements!
-   dfloat eps = std::max( Distance( *v1, *v2 ), Distance( *v2, *v3 )) * 1e-12;
    while( std::abs( ParallelogramSignedArea( *v1, *v2, *v3 )) < eps ) {
       // While the first three vertices are colinear, we discard the middle one and continue.
-      // We ignore a distance that is 12 orders of magnitude smaller than the distance between vertices,
-      // to prevent numerical precision errors in this calculation.
       v2 = v3;
       ++v3;
       DIP_THROW_IF( v3 == pv.end(), "All vertices are colinear, cannot compute convex hull" );
