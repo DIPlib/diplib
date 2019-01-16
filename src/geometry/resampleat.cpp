@@ -23,8 +23,10 @@
 #include "diplib/geometry.h"
 #include "diplib/generation.h"
 #include "diplib/math.h"
+#include "diplib/mapping.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
+#include "diplib/framework.h"
 
 namespace dip {
 
@@ -83,6 +85,16 @@ TPD ThirdOrderCubicSpline1D( TPD a, TPD b, TPD c, TPD d, dfloat pos ) {
 //
 // Recursive nD interpolation functions, call the 1D versions. TPI is the input image type.
 //
+
+template< typename TPI >
+TPI NearestNeighborND( TPI* src, IntegerArray const& srcStride,
+                       UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      src += ( static_cast< dip::sint >( coords[ ii ] ) + ( ( subpos[ ii ] > 0.5) ? 1 : 0 ) ) * srcStride[ ii ];
+   }
+
+   return *src;
+}
 
 template< typename TPI >
 DoubleType< TPI > LinearND( TPI* src, IntegerArray const& srcStride,
@@ -292,6 +304,130 @@ Image::Pixel ResampleAtUnchecked(
    return out;
 }
 
+
+namespace {
+
+template< typename TPI, typename Func >
+class ResampleAtLineFilter : public Framework::ScanLineFilter
+{
+   protected:
+      Image in_;
+      Func interpolate_;
+
+   public:
+      ResampleAtLineFilter(Image const &in, Func interpolate) : in_(in), interpolate_(interpolate) { }
+
+      void Filter( Framework::ScanLineFilterParameters const &params )
+      {
+         auto dims = in_.Dimensionality();
+         auto elements = in_.TensorElements();
+         auto intstride = in_.TensorStride();
+         auto map = params.inBuffer[0];
+         auto mapstride = map.stride;
+         auto maptstride = map.tensorStride;
+         auto out = params.outBuffer[0];
+         auto outstride = out.stride;
+         auto outtstride = out.tensorStride;
+         uint length = params.bufferLength;
+
+         UnsignedArray coords(dims);
+         FloatArray subpos(dims);
+         FloatArray limit(dims);
+         for (dip::uint dd=0; dd < dims; ++dd ) {
+            limit[dd] = (dip::dfloat)in_.Size(dd)-2;
+         }
+
+         TPI *io = (TPI*) in_.Origin();
+         dip::dfloat *mo = (dip::dfloat*) map.buffer;
+         TPI *oo = (TPI*) out.buffer;
+         for ( dip::uint ii=0; ii < length; ++ii, mo += mapstride, oo += outstride ) {
+            dip::dfloat *mt = mo;
+            bool valid = true;
+            for ( dip::uint dd=0; dd < dims; ++dd, mt += maptstride ) {
+               dip::dfloat pos = *mt;
+               if ( pos >= 0 && pos < limit[dd] ) {
+                  coords[dd] = (dip::uint)pos;
+                  subpos[dd] = pos - (dip::dfloat)coords[dd];
+               } else {
+                  valid = false;
+                  break;
+               }
+            }
+
+            TPI *ot = oo;
+            if ( valid ) {
+               TPI *it = io;
+               for ( dip::uint tt=0; tt < elements; ++tt, ot += outtstride, it += intstride ) {
+                  *ot = (TPI) interpolate_( it, coords, subpos );
+              }
+            } else {
+               for ( dip::uint tt=0; tt < elements; ++tt, ot += outtstride) {
+                  *ot = (TPI) 0;
+               }
+            }
+         }
+      }
+};
+
+template< typename TPI, typename Func >
+std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image const &in, Func interpolate ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new ResampleAtLineFilter< TPI, Func >( in, interpolate ));
+}
+
+} // namespace
+
+void ResampleAt(
+      Image const &in,
+      Image &out,
+      Image const &map,
+      String const &method
+)
+{
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !map.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( map.DataType() != DT_DFLOAT, E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Dimensionality() != map.TensorElements(), E::NTENSORELEM_DONT_MATCH  );
+
+   DataType dt = in.DataType();
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+
+   auto m = ParseMethod( method );
+   if( dt == DT_BIN ) {
+      m = Method::NEAREST_NEIGHBOR;
+   }
+   switch( m ) {
+      case Method::NEAREST_NEIGHBOR:
+         DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, NewResampleAtLineFilter, (
+            in,
+            [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
+               return NearestNeighborND(src, in.Strides(), coords, subpos, in.Dimensionality() );
+            }
+            ), dt );
+         break;
+      default:
+      //case Method::LINEAR:
+         DIP_OVL_CALL_ASSIGN_NONBINARY( scanLineFilter, NewResampleAtLineFilter, (
+            in,
+            [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
+               return LinearND(src, in.Strides(), coords, subpos, in.Dimensionality() );
+            }
+            ), dt );
+         break;
+      case Method::CUBIC_ORDER_3:
+         DIP_OVL_CALL_ASSIGN_NONBINARY( scanLineFilter, NewResampleAtLineFilter, (
+            in,
+            [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
+               return ThirdOrderCubicSplineND(src, in.Sizes(), in.Strides(), coords, subpos, in.Dimensionality() );
+            }
+            ), dt );
+         break;
+   }
+
+   // ScanMonadic has output buffer type equal to input buffer type. We have output buffer type
+   // equal to output image type (= input image type). Both have drawbacks.
+   ImageRefArray outar{ out };
+   DIP_STACK_TRACE_THIS( Framework::Scan( { map }, outar, { DT_DFLOAT }, { dt }, { dt }, { in.TensorElements() }, *scanLineFilter ) );
+}
 
 namespace {
 

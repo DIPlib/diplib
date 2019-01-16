@@ -289,6 +289,34 @@ DIP_EXPORT Image::Pixel ResampleAtUnchecked(
       InterpolationFunctionPointer function
 );
 
+/// \brief Resamples an image with sub-pixel locations specified by a coordinate map.
+///
+/// Returns an image of the same size as `map` with pixels taken from `in` at the subpixel coordinates
+/// specified by `map`. Each tensor element of `map` specifies the location for an input dimension. As such,
+/// it must have a number of tensor elements equal to `in`'s dimensionality.
+/// Any coordinates outside of the image domain are returned as zero values. That is, no extrapolation is
+/// performed. Coordinates match image indexing: the first pixel on a line has coordinate 0.
+///
+/// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
+/// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
+/// ignored, nearest neighbor interpolation will be used.
+///
+/// `out` will have the same size as `map`, and the same data type and tensor shape as `in`.
+DIP_EXPORT void ResampleAt(
+      Image const &in,
+      Image &out,
+      Image const &map,
+      String const &interpolationMethod = S::LINEAR
+);
+inline DIP_EXPORT Image ResampleAt(
+      Image const &in,
+      Image const &map,
+      String const &interpolationMethod = S::LINEAR
+) {
+  Image out;
+  ResampleAt( in, out, map, interpolationMethod );
+  return out;
+}
 
 // Undocumented internal function called by the other forms of Skew.
 // Each sub-volume perpendicular to axis is shifted with sub-pixel precision, according to `shearArray`.

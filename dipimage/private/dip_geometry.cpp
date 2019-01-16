@@ -300,6 +300,21 @@ void get_subpixel( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    mxSetDimensions( plhs[ 0 ], newDims, 2 );
 }
 
+void warp_subpixel( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 3 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::Image const map = dml::GetImage( prhs[ 1] );
+   dip::String mode = "linear";
+   if( nrhs > 2 ) {
+      mode = dml::GetString( prhs[ 2 ] );
+   }
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::ResampleAt( in, out, map, mode );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void subpixlocation( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    DML_MAX_ARGS( 4 );
@@ -385,6 +400,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       } else if( function == "get_subpixel" ) {
          get_subpixel( plhs, nrhs, prhs );
+      } else if( function == "warp_subpixel" ) {
+         warp_subpixel( plhs, nrhs, prhs );
       } else if( function == "subpixlocation" ) {
          subpixlocation( nlhs, plhs, nrhs, prhs );
 
