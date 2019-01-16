@@ -343,24 +343,24 @@ void gaussf_adap_banana( dip::Image const& in, dip::Image& out, int nrhs, const 
    DIP_THROW_IF( nDims != 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
    int index = 0;
    dip::ImageArray params;
-   if(( nrhs < 2 ) || mxIsEmpty( prhs[ 1 ] )) {
+   if(( nrhs < 2 ) || mxIsEmpty( prhs[ 0 ] )) {
       // Compute orientation
       params = StructureTensorAnalysis( dip::StructureTensor( in ), { "orientation", "curvature" } );
       ++index;
-   } else if( mxIsCell( prhs[ 1 ] )) {
+   } else if( mxIsCell( prhs[ 0 ] )) {
       // It's a params_im
-      params = dml::GetImageArray( prhs[ 1 ] );
+      params = dml::GetImageArray( prhs[ 0 ] );
       ++index;
    } else {
       // It's orien_im, curv_im, {scale_im}
       DML_MIN_ARGS( 3 );
       params.resize( 2 );
-      params[ 0 ] = dml::GetImage( prhs[ 1 ] );
-      params[ 1 ] = dml::GetImage( prhs[ 2 ] );
+      params[ 0 ] = dml::GetImage( prhs[ 0 ] );
+      params[ 1 ] = dml::GetImage( prhs[ 1 ] );
       index += 2;
       // Is there a scaling image?
       if(( nrhs > index ) && !( mxIsDouble( prhs[ index ] ) && ( mxGetNumberOfElements( prhs[ index ] ) <= 2 ))) {
-         params.emplace_back( dml::GetImage( prhs[ 3 ] ));
+         params.emplace_back( dml::GetImage( prhs[ index ] ));
          ++index;
       }
    }
@@ -369,7 +369,8 @@ void gaussf_adap_banana( dip::Image const& in, dip::Image& out, int nrhs, const 
    dip::UnsignedArray order = nrhs > index + 1 ? dml::GetUnsignedArray( prhs[ index + 1 ] ) : dip::UnsignedArray{ 0 };
    dip::UnsignedArray exponents = nrhs > index + 2 ? dml::GetUnsignedArray( prhs[ index + 2 ] ) : dip::UnsignedArray{ 0 };
    dip::dfloat truncation = nrhs > index + 3 ? dml::GetFloat( prhs[ index + 3 ] ) : 2.0;
-   dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), out, sigmas, order, truncation, exponents );}
+   dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), out, sigmas, order, truncation, exponents );
+}
 
 void kuwahara( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 4 );

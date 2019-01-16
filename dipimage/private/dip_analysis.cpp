@@ -185,7 +185,7 @@ void monogenicsignal( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    dip::Image ms = mi.NewImage();
    dip::MonogenicSignal( in, ms, wavelengths, bandwidth, dip::S::SPATIAL, dip::S::SPATIAL);
    if( outputs.empty() ) {
-      // If no outputs were requested, just return the structure tensor itself
+      // If no outputs were requested, just return the monogenic signal itself
       plhs[ 0 ] = dml::GetArray( ms );
    } else {
       // Otherwise, compute requested outputs

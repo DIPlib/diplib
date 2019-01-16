@@ -76,5 +76,6 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = structuretensor(varargin)
-out = dip_analysis('structuretensor',varargin{:});
+function varargout = structuretensor(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_analysis('structuretensor',varargin{:});

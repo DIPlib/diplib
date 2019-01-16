@@ -79,5 +79,6 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = monogenicsignal(varargin)
-out = dip_analysis('monogenicsignal',varargin{:});
+function varargout = monogenicsignal(varargin)
+varargout = cell(1,max(nargout,1));
+[varargout{:}] = dip_analysis('monogenicsignal',varargin{:});
