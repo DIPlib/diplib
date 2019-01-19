@@ -1139,4 +1139,20 @@ void MeanTensorElement( Image const& in, Image& out ) {
    }
 }
 
+void GeometricMeanTensorElement( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   if( in.IsScalar() ) {
+      out = in;
+   } else {
+      dip::uint n = in.TensorElements();
+      DataType dtype = DataType::SuggestFlex( in.DataType() );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+            [ n ]( auto const& pin, auto const& pout ) { *pout = std::pow( Product( n, pin ), 1 / static_cast< FloatType< decltype( *pout ) >>( n )); }, n
+      ), dtype );
+      ImageRefArray outar{ out };
+      DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter ));
+   }
+}
+
 } // namespace dip

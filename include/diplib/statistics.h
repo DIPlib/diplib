@@ -154,7 +154,7 @@ inline void name( Image::View const& in, Image& out, String const& mode = defaul
 inline Image name( Image::View const& in, String const& mode = default_mode ) { \
    Image out; name( in, out, mode ); return out; }
 
-/// \brief Calculates the mean of the pixel values over all those dimensions which are specified by `process`.
+/// \brief Calculates the (arithmetic) mean of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
 /// the mean pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
@@ -189,6 +189,24 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 /// An alias is defined such that `dip::Sum( img.At( mask ))` is the same as `dip::Sum( img, mask )`.
 DIP_EXPORT void Sum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 DIP__DEFINE_PROJECTION_FUNCTIONS( Sum )
+
+/// \brief Calculates the geometric mean of the pixel values over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// the product of pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the product projection along the processing dimensions. To get the product of all pixel values in the
+/// image:
+/// ```cpp
+///     dip::GeometricMean( img ).As< double >();
+/// ```
+///
+/// For tensor images, the geometric mean is computed for each element independently.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+///
+/// An alias is defined such that `dip::GeometricMean( img.At( mask ))` is the same as `dip::GeometricMean( img, mask )`.
+DIP_EXPORT void GeometricMean( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
+DIP__DEFINE_PROJECTION_FUNCTIONS( GeometricMean )
 
 /// \brief Calculates the product of the pixel values over all those dimensions which are specified by `process`.
 ///

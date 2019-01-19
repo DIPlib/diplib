@@ -635,6 +635,14 @@ inline Image MeanTensorElement( Image const& in ) {
    return out;
 }
 
+/// \brief Computes the geometric mean tensor element value at each pixel, producing a scalar image.
+DIP_EXPORT void GeometricMeanTensorElement( Image const& in, Image& out );
+inline Image GeometricMeanTensorElement( Image const& in ) {
+   Image out;
+   GeometricMeanTensorElement( in, out );
+   return out;
+}
+
 /// \brief Sorts the tensor elements within each pixel from largest to smallest. Works in-place. `out` must be
 /// real-valued.
 DIP_EXPORT void SortTensorElements( Image& out );

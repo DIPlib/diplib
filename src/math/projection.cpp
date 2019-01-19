@@ -354,31 +354,56 @@ void Sum(
 
 namespace {
 
-template< typename TPI >
-class ProjectionProduct : public ProjectionScanFunction {
+template< typename TPI, bool ComputeMean_  >
+class ProjectionProductGeomMean : public ProjectionScanFunction {
+      using TPO = FlexType< TPI >;
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         FlexType< TPI > product = 1.0;
+         dip::uint n = 0;
+         TPO product = 1.0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  product *= static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
+                  product *= static_cast< TPO >( it.template Sample< 0 >() );
+                  if( ComputeMean_ ) {
+                     ++n;
+                  }
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               product *= static_cast< FlexType< TPI >>( *it );
+               product *= static_cast< TPO >( *it );
             } while( ++it );
+            if( ComputeMean_ ) {
+               n = in.NumberOfPixels();
+            }
          }
-         *static_cast< FlexType< TPI >* >( out ) = product;
+         if( ComputeMean_ ) {
+            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( std::pow( product, 1 / static_cast< FloatType< TPO >>( n )))
+                                                    : ( product );
+         } else {
+            *static_cast< TPO* >( out ) = product;
+         }
       }
 };
 
+template< typename TPI >
+using ProjectionProduct = ProjectionProductGeomMean< TPI, false >;
+
+template< typename TPI >
+using ProjectionGeometricMean = ProjectionProductGeomMean< TPI, true >;
+
 } // // namespace
+
+void GeometricMean( Image const& in, Image const& mask, Image& out, BooleanArray const& process ) {
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DIP_OVL_NEW_ALL( lineFilter, ProjectionGeometricMean, (), in.DataType() );
+   ProjectionScan( in, mask, out, DataType::SuggestFlex( in.DataType() ), process, *lineFilter );
+}
 
 void Product(
       Image const& in,

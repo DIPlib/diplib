@@ -431,7 +431,7 @@ inline T SumAbsSquare( dip::uint n, ConstSampleIterator< std::complex< T >> inpu
    return std::accumulate( input, input + n, T( 0 ), []( T a, std::complex< T > b ){ return a + ( b * std::conj( b )).real(); } );
 }
 
-/// \brief Computes the sum of the values of a vector.
+/// \brief Computes the product of the values of a vector.
 ///
 /// `input` is a pointer to `n` values.
 template< typename T >

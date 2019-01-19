@@ -40,6 +40,8 @@ void init_statistics( py::module& m ) {
    m.def( "Sum", //py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::Sum ), // Fails to resolve!
           static_cast< dip::Image( * )( dip::Image const&, dip::Image const&, dip::BooleanArray const& ) >( &dip::Sum ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
+   m.def( "GeometricMean", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::GeometricMean ),
+          "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "Product", //py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::Product ), // Fails to resolve!
           static_cast< dip::Image( * )( dip::Image const&, dip::Image const&, dip::BooleanArray const& ) >( &dip::Product ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );

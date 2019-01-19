@@ -123,9 +123,9 @@ DIP_EXPORT FloatArray MeanShift(
       dfloat epsilon = 1e-3
 );
 
-/// \brief Finds the coordinates of local a maximum close to each point in `start`.
+/// \brief Finds the coordinates of local a maximum close to each point in `startArray`.
 ///
-/// Repeatedly calls the `dip::MeanShift` function described above, for each point in `start`. Duplicate maxima
+/// Repeatedly calls the `dip::MeanShift` function described above, for each point in `startArray`. Duplicate maxima
 /// are not removed, such that `out[ii]` is the local maximum arrived to from `startArray[ii]`.
 inline FloatCoordinateArray MeanShift(
       Image const& meanShiftVectorResult,

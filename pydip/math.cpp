@@ -145,6 +145,7 @@ void init_math( py::module& m ) {
    m.def( "MaximumTensorElement", py::overload_cast< dip::Image const& >( &dip::MaximumTensorElement ), "in"_a );
    m.def( "MinimumTensorElement", py::overload_cast< dip::Image const& >( &dip::MinimumTensorElement ), "in"_a );
    m.def( "MeanTensorElement", py::overload_cast< dip::Image const& >( &dip::MeanTensorElement ), "in"_a );
+   m.def( "GeometricMeanTensorElement", py::overload_cast< dip::Image const& >( &dip::GeometricMeanTensorElement ), "in"_a );
 
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::String const& >( &dip::Select ),
           "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
