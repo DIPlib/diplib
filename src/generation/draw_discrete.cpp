@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for image drawing functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -521,6 +521,295 @@ void DrawBox(
       Image::Pixel const& value
 ) {
    DIP_STACK_TRACE_THIS( dip__DrawEllipsoid( out, sizes, origin, value, EllipsoidNorm::Lmax ));
+}
+
+
+//
+// Discrete grids
+//
+
+
+namespace {
+
+enum class GridType { RECTANGULAR, HEXAGONAL, BCC, FCC };
+
+GridType GetGridType( String const& type ) {
+   if( type == S::RECTANGULAR ) {
+      return GridType::RECTANGULAR;
+   }
+   if( type == S::HEXAGONAL ) {
+      return GridType::HEXAGONAL;
+   }
+   if( type == S::BCC ) {
+      return GridType::BCC;
+   }
+   if( type == S::FCC ) {
+      return GridType::FCC;
+   }
+   DIP_THROW_INVALID_FLAG( type );
+}
+
+void MatrixMultiplyWithRound( std::vector< dfloat > const& M, FloatArray const& v, FloatArray& p ) {
+   // Computes p = round(M * v)
+   dip::uint nDims = v.size(); // p.size() == nDims; M.size() == nDims*nDims;
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      dfloat res = 0.0;
+      for( dip::uint jj = 0; jj < nDims; ++jj ) {
+         res += M[ ii + jj * nDims ] * v[ jj ];
+      }
+      p[ ii ] = std::round( res );
+   }
+}
+
+// Generic grid in arbitrary dimensions
+
+class FillRandomGridnDLineFilter : public Framework::ScanLineFilter {
+   public:
+      FillRandomGridnDLineFilter( std::vector< dfloat > const& M, FloatArray const& offset ) : M_( M ), offset_( offset ) {
+         DIP_ASSERT( offset_.size() * offset_.size() == M_.size() );
+         inv_M_.resize( M_.size() );
+         Inverse( offset_.size(), M_.data(), inv_M_.data() );
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
+         dip::sint stride = params.outBuffer[ 0 ].stride;
+         dip::uint length = params.bufferLength;
+         dip::uint dim = params.dimension;
+         dip::uint nDims = offset_.size();
+         DIP_ASSERT( params.position.size() == nDims );
+         FloatArray position{ params.position };
+         position += offset_;
+         FloatArray grid_index( nDims );
+         FloatArray grid_position( nDims );
+         for( dip::uint jj = 0; jj < length; ++jj, out += stride, position[ dim ] += 1.0 ) {
+            // round( M * round( inv_M_ * position )) == position -> this is a grid point
+            MatrixMultiplyWithRound( inv_M_, position, grid_index );
+            MatrixMultiplyWithRound( M_, grid_index, grid_position );
+            if( grid_position == position ) {
+               *out = true;
+            }
+         }
+      }
+   private:
+      std::vector< dfloat > const& M_;
+      std::vector< dfloat > inv_M_;
+      FloatArray const& offset_;
+};
+
+void FillRandomGridnD( Image& out, UniformRandomGenerator& uniform, dfloat distance, GridType type, bool isRotated ) {
+   dip::uint nDims = out.Dimensionality();
+   std::vector< dfloat > M;
+   if( type == GridType::RECTANGULAR ) {
+      M.resize( nDims * nDims, 0.0 );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         M[ ii * ( nDims + 1 ) ] = distance;
+      }
+   } else {
+      DIP_ASSERT( nDims == 3 );
+      if( type == GridType::FCC ) {
+         M = { distance, distance,      0.0,
+               distance,      0.0, distance,
+                    0.0, distance, distance }; // Representation here is transposed, but M==M'.
+      } else if( type == GridType::BCC ) {
+         M = {  distance,  distance, -distance,
+                distance, -distance,  distance,
+               -distance,  distance,  distance }; // Representation here is transposed, but M==M'.
+      }
+   }
+   if( isRotated ) {
+      DIP_ASSERT( nDims == 3 );
+      dfloat phi = uniform( 0, 2 * pi );
+      dfloat theta = std::acos( uniform( -1.0, 1.0 ));
+      dfloat psi = uniform( 0, pi );
+      // Symbolic MATLAB code to generate the rotation matrix from our three angles:
+      // syms phi theta psi
+      // R1 = [ cos(phi),sin(phi),0 ; -sin(phi),cos(phi),0 ; 0,0,1 ]
+      // R2 = [ cos(theta),0,-sin(theta) ; 0,1,0 ; sin(theta),0,cos(theta) ]
+      // R3 = [ 1,0,0 ; 0,cos(psi),sin(psi) ; 0,-sin(psi),cos(psi) ]
+      // R = R1 * R2 * R3
+      //    [  cos(phi)*cos(theta), cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta), sin(phi)*sin(psi) - cos(phi)*cos(psi)*sin(theta)]
+      //    [ -cos(theta)*sin(phi), cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta), cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)]
+      //    [           sin(theta),                             -cos(theta)*sin(psi),                              cos(psi)*cos(theta)]
+      dfloat cos_phi = std::cos( phi );
+      dfloat sin_phi = std::sin( phi );
+      dfloat cos_theta = std::cos( theta );
+      dfloat sin_theta = std::sin( theta );
+      dfloat cos_psi = std::cos( psi );
+      dfloat sin_psi = std::sin( psi );
+      std::vector< dfloat > R = {
+            // Column 1
+            cos_phi * cos_theta,
+            -cos_theta * sin_phi,
+            sin_theta,
+            // Column 2
+            cos_psi * sin_phi + cos_phi * sin_psi * sin_theta,
+            cos_phi * cos_psi - sin_phi * sin_psi * sin_theta,
+            -cos_theta * sin_psi,
+            // Column 3
+            sin_phi * sin_psi - cos_phi * cos_psi * sin_theta,
+            cos_phi * sin_psi + cos_psi * sin_phi * sin_theta,
+            cos_psi * cos_theta,
+      };
+      std::vector< dfloat > RM( 9, 0.0 );
+      for( dip::uint ii = 0; ii < 3; ++ii ) {
+         for( dip::uint jj = 0; jj < 3; ++jj ) {
+            for( dip::uint kk = 0; kk < 3; ++kk ) {
+               RM[ ii + 3 * jj ] += R[ ii + 3 * kk ] * M[ kk + 3 * jj ];
+            }
+         }
+      }
+      M = std::move( RM );
+   }
+   // Offset (random within grid unit)
+   FloatArray offset;
+   if( nDims == 3 ) {
+      dfloat x = uniform( 0, 1 );
+      dfloat y = uniform( 0, 1 );
+      dfloat z = uniform( 0, 1 );
+      offset = {
+            std::round( M[ 0 ] * x + M[ 3 ] * y + M[ 6 ] * z ),
+            std::round( M[ 1 ] * x + M[ 4 ] * y + M[ 7 ] * z ),
+            std::round( M[ 2 ] * x + M[ 5 ] * y + M[ 8 ] * z )
+      };
+   } else {
+      // It's always a rectangular grid, ignore M
+      offset.resize( nDims );
+      for( auto& o : offset ) {
+         o = std::round( uniform( 0, distance ));
+      }
+   }
+   FillRandomGridnDLineFilter lineFilter( M, offset );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( out, DT_BIN, lineFilter, Framework::ScanOption::NeedCoordinates ));
+}
+
+// Specialization for 1D, for simplicity
+
+void FillRandomGrid1D( Image& out, UniformRandomGenerator& uniform, dfloat distance ) {
+   dfloat offset = uniform( 0, distance );
+   dip::sint stride = out.Stride( 0 );
+   bin* data = static_cast< bin* >( out.Origin() );
+   dip::sint end = static_cast< dip::sint >( out.Size( 0 ));
+   while( true ) {
+      dip::sint index = round_cast( offset );
+      if( index >= end ) {
+         break;
+      }
+      data[ index * stride ] = true;
+      offset += distance;
+   }
+}
+
+// Specialization for 2D, for efficiency
+
+class FillRandomGrid2DLineFilter : public Framework::ScanLineFilter {
+   public:
+      FillRandomGrid2DLineFilter( std::array< dfloat, 4 > const& M, VertexFloat offset ) : M_( M ), offset_( offset ) {
+         Inverse( 2, M_.data(), inv_M_.data() );
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
+         dip::sint stride = params.outBuffer[ 0 ].stride;
+         dip::uint length = params.bufferLength;
+         dip::uint dim = params.dimension;
+         DIP_ASSERT( params.position.size() == 2 );
+         VertexFloat position = VertexFloat{ static_cast< dfloat >( params.position[ 0 ] ),
+                                             static_cast< dfloat >( params.position[ 1 ] ) } + offset_;
+         VertexFloat increment{ 1.0, 0.0 };
+         if( dim == 1 ) {
+            increment = { 0.0, 1.0 };
+         }
+         for( dip::uint jj = 0; jj < length; ++jj, out += stride, position += increment ) {
+            // round( M * round( inv_M_ * position )) == position -> this is a grid point
+            VertexFloat v = { std::round( inv_M_[ 0 ] * position.x + inv_M_[ 2 ] * position.y ),
+                              std::round( inv_M_[ 1 ] * position.x + inv_M_[ 3 ] * position.y ) };
+            v = { std::round( M_[ 0 ] * v.x + M_[ 2 ] * v.y ),
+                  std::round( M_[ 1 ] * v.x + M_[ 3 ] * v.y ) };
+            if( v == position ) {
+               *out = true;
+            }
+         }
+      }
+   private:
+      std::array< dfloat, 4 > const& M_;
+      std::array< dfloat, 4 > inv_M_;
+      VertexFloat offset_;
+};
+
+void FillRandomGrid2D( Image& out, UniformRandomGenerator& uniform, dfloat distance, bool isRectangular, bool isRotated ) {
+   std::array< dfloat, 4 > M;
+   dfloat x = 1;
+   dfloat y = 0;
+   if( isRotated ) {
+      dfloat angle = uniform( 0, pi );
+      x = std::cos( angle );
+      y = std::sin( angle );
+   }
+   M[ 0 ] = x * distance;
+   M[ 1 ] = y * distance;
+   if( isRectangular ) {
+      M[ 2 ] = -y * distance;
+      M[ 3 ] =  x * distance;
+   } else {
+      M[ 2 ] = ( 0.5 * x - std::sqrt( 3 ) * 0.5 * y ) * distance;
+      M[ 3 ] = ( 0.5 * y + std::sqrt( 3 ) * 0.5 * x ) * distance;
+   }
+   x = uniform( 0, 1 );
+   y = uniform( 0, 1 );
+   VertexFloat offset = {
+      std::round( M[ 0 ] * x + M[ 2 ] * y ),
+      std::round( M[ 1 ] * x + M[ 3 ] * y )
+   };
+   FillRandomGrid2DLineFilter lineFilter( M, offset );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( out, DT_BIN, lineFilter, Framework::ScanOption::NeedCoordinates ));
+}
+
+} // namespace
+
+void FillRandomGrid(
+      Image& out,
+      Random& random,
+      dfloat density,
+      String const& type_s,
+      String const& mode
+) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   GridType type;
+   DIP_STACK_TRACE_THIS( type = GetGridType( type_s ));
+   DIP_THROW_IF(( type == GridType::HEXAGONAL ) && ( nDims != 2 ), "Hexagonal grid requires a 2D image" );
+   DIP_THROW_IF((( type == GridType::FCC ) || ( type == GridType::BCC )) && ( nDims != 3 ), "FCC and BCC grids require a 3D image" );
+   bool isRotated = false;
+   if(( nDims == 2 ) || ( nDims == 3 )) {
+      DIP_STACK_TRACE_THIS( isRotated = BooleanFromString( mode, S::ROTATION, S::TRANSLATION ));
+   }
+   // Grid point distances
+   dfloat distance = std::pow( 1.0 / density, 1.0 / static_cast< dfloat >( nDims ));
+   if( type == GridType::HEXAGONAL ) {
+      distance *= std::sqrt( 2.0 / std::sqrt( 3.0 ));
+   } else if( type == GridType::FCC ) {
+      distance *= 1.0 / std::cbrt( 2.0 );
+   } else if( type == GridType::BCC ) {
+      distance *= std::cbrt( 2.0 ) / 2.0;
+   }
+   DIP_THROW_IF( distance < 2.0, E::PARAMETER_OUT_OF_RANGE );
+   // Initialize output to zeros
+   out.Fill( 0 );
+   // Draw grid
+   UniformRandomGenerator uniform( random );
+   switch( nDims ) {
+      case 1:
+         FillRandomGrid1D( out, uniform, distance );
+         break;
+      case 2:
+         FillRandomGrid2D( out, uniform, distance, type == GridType::RECTANGULAR, isRotated );
+         break;
+      default:
+         FillRandomGridnD( out, uniform, distance, type, isRotated );
+         break;
+   }
 }
 
 } // namespace dip

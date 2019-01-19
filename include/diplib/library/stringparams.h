@@ -60,6 +60,8 @@ constexpr char const* FRACTION = "fraction";
 constexpr char const* COUNT = "count";
 constexpr char const* NONE = "none";
 constexpr char const* INCOHERENT = "incoherent";
+constexpr char const* TRANSLATION = "translation";
+constexpr char const* ROTATION = "rotation";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";
@@ -264,6 +266,12 @@ constexpr char const* HOLLOW = "hollow";
 //constexpr char const* FILLED = "filled";
 constexpr char const* NO_MAXIMA_DETECTION = "no maxima detection";
 constexpr char const* NO_PARAMETER_SPACE = "no parameter space";
+
+// Grids
+//constexpr char const* RECTANGULAR = "rectangular";
+constexpr char const* HEXAGONAL = "hexagonal";
+constexpr char const* BCC = "BCC";
+constexpr char const* FCC = "FCC";
 
 } // namespace S
 

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for functions that generate image data
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -654,6 +654,43 @@ inline Image TestObject(
    return out;
 }
 
+
+/// \brief Fills the binary image `out` with a Poisson point process of `density`.
+///
+/// `out` must be forged, binary and scalar. On average, one of every `1/density` pixels will be set.
+void FillPoissonPointProcess(
+      Image& out,
+      Random& random,
+      dfloat density = 0.01
+);
+
+/// \brief Fills the binary image `out` with a grid that is randomly placed over the image.
+///
+/// This grid can be useful for random systematic sampling.
+///
+/// `type` determines the grid type. It can be `"rectangular"` in any number of dimensions, this is the default grid.
+/// For 2D images it can be `"hexagonal"`. In 3D it can be `"FCC"` or `"BCC"` for face-centered cubic and body-centered
+/// cubic, respectively.
+///
+/// `density` determines the grid density. On average, one of every `1/density` pixels will be set. The grid is
+/// sampled equally densely along all dimensions. If the density doesn't lead to an integer grid spacing, the grid
+/// locations will be rounded, leading to an uneven spacing. `density` must be such that the grid spacing is at
+/// least 2. Therefore, `density` must be smaller than \f$\frac{1}{2^d}\f$, with \f$d\f$ the image dimensionality,
+/// in the rectangular case. In the hexagonal case, this is \f$\frac{1}{2 \sqrt 3} \approx 0.2887\f$.
+///
+/// `mode` determines how the random grid location is determined. It can be either `"translation"` or `"rotation"`.
+/// In the first case, only a random translation is applied to the grid, it will be aligned with the image axes.
+/// In the second case, the grid will also be randomly rotated. This option is used only for 2D and 3D grids.
+///
+/// `out` must be forged, binary and scalar.
+DIP_EXPORT void FillRandomGrid(
+      Image& out,
+      Random& random,
+      dfloat density = 0.01,
+      String const& type = S::RECTANGULAR,
+      String const& mode = dip::S::TRANSLATION
+);
+
 /// \}
 
 
@@ -1292,6 +1329,19 @@ inline Image ColoredNoise(
 }
 
 /// \}
+
+
+inline void FillPoissonPointProcess(
+      Image& out,
+      Random& random,
+      dfloat density
+) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   out.Fill( 0 );
+   BinaryNoise( out, out, random, 0, density );
+}
 
 
 } // namespace dip

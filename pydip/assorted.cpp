@@ -207,6 +207,10 @@ void init_assorted( py::module& m ) {
              "signalNoiseRatio"_a = 0.0,
              "gaussianNoise"_a = 1.0,
              "poissonNoise"_a = 1.0 );
+   m.def( "FillPoissonPointProcess", []( dip::Image& out, dip::dfloat density ){ return dip::FillPoissonPointProcess( out, randomNumberGenerator, density ); },
+          "in"_a, "density"_a = 0.01 );
+   m.def( "FillRandomGrid", []( dip::Image& out, dip::dfloat density, dip::String const& type, dip::String const& mode ){ return dip::FillRandomGrid( out, randomNumberGenerator, density, type, mode ); },
+          "in"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION );
 
    m.def( "FillRamp", &dip::FillRamp, "out"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
    m.def( "CreateRamp", py::overload_cast< dip::UnsignedArray const&, dip::uint, dip::StringSet const& >( &dip::CreateRamp ), "sizes"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
