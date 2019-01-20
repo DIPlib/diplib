@@ -977,6 +977,68 @@ inline Image SeededWatershed(
    return out;
 }
 
+/// \brief Computes the stochastic watershed of `in`.
+///
+/// The stochastic watershed is computed by applying a watershed with randomly placed seeds `nIterations` times,
+/// and adding the results. The output is an image where each pixel's value is the likelyhood that it belongs to
+/// an edge in the image, the values are in the range [0,`nIterations`]. The input image `in` should contain high
+/// gray values at the edges of the regions to be segmented. Thresholding `out` at an appropriate value will yield
+/// the relevant edges in the image. Alternatively, apply `dip::Watershed` to the result, with `maxDepth` set to
+/// the appropriate threshold value.
+///
+/// The number of seeds used is given by `nSeeds`. Actually seeds are chosen with a density of
+/// `nSeeds / in.NumberOfPixels()`, the random process causes the actual number of seeds to differ between
+/// runs. Seeds are placed either through a Poisson point process (`seeds` is `"poisson"`) or a randomly
+/// translated and rotated grid (`seeds` is `"rectangular"` (any number of dimensions), `"hexagonal"` (2D only),
+/// or `"bcc"` or `"fcc"` (3D only)). In these cases
+///
+/// If `seeds` is `"exact"`, or if `nIterations` is 0, then the exact probabilities are computed
+/// (Malmberg and Luengo, 2014). The ouput contains probabilities, in the range [0,1].
+///
+/// The stochastic watershed expects the image to contain roughly equally-sized regions. `nSeeds` should be
+/// approximately equal to the number of expected regions. If there is a strong difference in region sizes, larger
+/// regions will be split into smaller ones.
+///
+/// If the image contains regions with different sizes, it is recommended to set `noise` to a value that is larger
+/// than the variation within regions, but smaller than the height of the barrier between regions. Uniform noise
+/// will be added to the input image for every iteration of the process, causing non-significant edges to be
+/// strongly suppressed (Bernander et al., 2013). In the case of the exact stochastic watershed, the
+/// operation is applied three times with random noise added to the input, and the geometric mean of the results
+/// is returned (Selig et al., 2015).
+///
+/// `in` must be real-valued and scalar. `out` will be of a suitable unsigned integer type (depending on the number
+/// of iterations, but typically `dip::DT_UINT8`), or of type `dip::DT_SFLOAT` if the exact stochastic watershed
+/// is computed.
+///
+/// **Literature**
+/// - J. Angulo and D. Jeulin, "Stochastic watershed segmentation", Proceedings of the 8th International Symposium on
+///   Mathematical Morphology, Instituto Nacional de Pesquisas Espaciais (INPE), São José dos Campos, pp. 265–276, 2007.
+/// - K.B. Bernander, K. Gustavsson, B. Selig, I.-M. Sintorn, and C.L. Luengo Hendriks, "Improving the stochastic watershed",
+///   Pattern Recognition Letters 34:993-1000, 2013.
+/// - F. Malmberg and C.L. Luengo Hendriks, "An efficient algorithm for exact evaluation of stochastic watersheds",
+///   Pattern Recognition Letters 47:80-84, 2014.
+/// - B. Selig, F, Malmberg and C.L. Luengo Hendriks, "Fast evaluation of the robust stochastic watershed",
+///   Proceedings of ISMM 2015, LNCS 9082:705-716, 2015.
+DIP_EXPORT void StochasticWatershed(
+      Image const& in,
+      Image& out,
+      dip::uint nSeeds = 100,
+      dip::uint nIterations = 50,
+      dfloat noise = 0,
+      String const& seeds = S::HEXAGONAL
+);
+inline Image StochasticWatershed(
+      Image const& in,
+      dip::uint nSeeds = 100,
+      dip::uint nIterations = 50,
+      dfloat noise = 0,
+      String const& seeds = S::HEXAGONAL
+) {
+   Image out;
+   StochasticWatershed( in, out, nSeeds, nIterations, noise, seeds );
+   return out;
+}
+
 /// \brief Marks significant local minima.
 ///
 /// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. All pixels with a value
@@ -1097,6 +1159,12 @@ inline Image Maxima(
    return out;
 }
 
+/// \}
+
+
+/// \addtogroup morphology
+/// \{
+
 // TODO: Port and document UpperEnvelope
 DIP_EXPORT void UpperEnvelope(
       Image const& in,
@@ -1107,12 +1175,6 @@ DIP_EXPORT void UpperEnvelope(
       dfloat maxDepth = 1,
       dip::uint maxSize = 0
 );
-
-/// \}
-
-
-/// \addtogroup morphology
-/// \{
 
 /// \brief Reconstruction by dilation or erosion, also known as inf-reconstruction and sup-reconstruction
 ///
@@ -1408,7 +1470,7 @@ inline Image PathOpening(
 ///
 /// **Literature**
 ///  - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
-///  - H. Talbot, B. Appleton, "Efficient complete and incomplete path openings and closings", %Image and Vision Computing 25:416-425, 2007.
+///  - H. Talbot and B. Appleton, "Efficient complete and incomplete path openings and closings", %Image and Vision Computing 25:416-425, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
 ///  - O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
 DIP_EXPORT void DirectedPathOpening(

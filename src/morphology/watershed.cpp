@@ -24,6 +24,7 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/regions.h"
+#include "diplib/generation.h"
 #include "diplib/statistics.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
@@ -786,6 +787,63 @@ void WatershedMaxima(
       String const& output
 ) {
    DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, S::HIGHFIRST }, FastWatershedOperation::EXTREMA ));
+}
+
+
+namespace {
+
+void ExactStochasticWatershed(
+      Image const& in,
+      Image& out,
+      dfloat density,
+      dfloat noise
+) {
+   (void)in; (void)out; (void)density; (void)noise;
+   DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+} // namespace
+
+void StochasticWatershed(
+      Image const& c_in,
+      Image& out,
+      dip::uint nSeeds,
+      dip::uint nIterations,
+      dfloat noise,
+      String const& seeds
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( nSeeds == 0, E::INVALID_PARAMETER );
+   dfloat density = static_cast< dfloat >( nSeeds ) / static_cast< dfloat >( c_in.NumberOfPixels() );
+   if(( seeds == S::EXACT ) || ( nIterations == 0 )) {
+      ExactStochasticWatershed( c_in, out, density, noise );
+      return;
+   }
+   bool poisson = seeds == S::POISSON;
+   Image in = c_in;
+   if( out.Aliases( in )) {
+      out.Strip();
+   }
+   out.ReForge( in, DT_UINT32, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.Fill( 0 );
+   Image grid = in.Similar( DT_BIN );
+   Image edges = in.Similar( DT_BIN );
+   Image noisy = noise > 0.0 ? in.Similar( DataType::SuggestFloat( in.DataType() )) : in.QuickCopy();
+   Random random;
+   for( dip::uint iter = 0; iter < nIterations; ++iter ) {
+      if( poisson ) {
+         FillPoissonPointProcess( grid, random, density );
+      } else {
+         FillRandomGrid( grid, random, density, seeds, S::ROTATION );
+      }
+      if( noise > 0.0 ) {
+         UniformNoise( in, noisy, random, 0.0, noise );
+      }
+      SeededWatershed( noisy, grid, {}, edges, 1, -1 /* no merging */ );
+      out += edges;
+   }
 }
 
 } // namespace dip

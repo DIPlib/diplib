@@ -669,7 +669,7 @@ void FillPoissonPointProcess(
 /// This grid can be useful for random systematic sampling.
 ///
 /// `type` determines the grid type. It can be `"rectangular"` in any number of dimensions, this is the default grid.
-/// For 2D images it can be `"hexagonal"`. In 3D it can be `"FCC"` or `"BCC"` for face-centered cubic and body-centered
+/// For 2D images it can be `"hexagonal"`. In 3D it can be `"fcc"` or `"bcc"` for face-centered cubic and body-centered
 /// cubic, respectively.
 ///
 /// `density` determines the grid density. On average, one of every `1/density` pixels will be set. The grid is
@@ -688,7 +688,7 @@ DIP_EXPORT void FillRandomGrid(
       Random& random,
       dfloat density = 0.01,
       String const& type = S::RECTANGULAR,
-      String const& mode = dip::S::TRANSLATION
+      String const& mode = S::TRANSLATION
 );
 
 /// \}

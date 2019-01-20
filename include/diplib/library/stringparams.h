@@ -62,6 +62,7 @@ constexpr char const* NONE = "none";
 constexpr char const* INCOHERENT = "incoherent";
 constexpr char const* TRANSLATION = "translation";
 constexpr char const* ROTATION = "rotation";
+constexpr char const* EXACT = "exact";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";
@@ -270,8 +271,9 @@ constexpr char const* NO_PARAMETER_SPACE = "no parameter space";
 // Grids
 //constexpr char const* RECTANGULAR = "rectangular";
 constexpr char const* HEXAGONAL = "hexagonal";
-constexpr char const* BCC = "BCC";
-constexpr char const* FCC = "FCC";
+constexpr char const* BCC = "bcc";
+constexpr char const* FCC = "fcc";
+constexpr char const* POISSON = "poisson";
 
 } // namespace S
 
