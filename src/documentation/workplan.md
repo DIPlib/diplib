@@ -105,6 +105,11 @@ document's source</a> for the most up-to-date version.
     but it currently only reads TIFF files. This page no longer exists in the docs for the latest version
     of *Bio-Formats*, not sure what happened.
 
+    The [*i3d* library](https://cbia.fi.muni.cz/software/i3d-library.html) has C++ code that uses *Bio-Formats*
+    to read image files. It used the [*Java 4 C++* tool](https://github.com/wshackle/java4cpp) to generate
+    C++ wrappers of the Java classes, but these are no longer included in the distribution. Not sure what wrappers
+    they use now.
+
     There is a also an [ITK module](https://github.com/scifio/scifio-imageio) for
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
 
