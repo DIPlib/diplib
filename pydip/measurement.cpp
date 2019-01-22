@@ -35,6 +35,63 @@ py::handle MeasurementValuesToList( MeasurementValues values ) {
    return list.release();
 }
 
+py::buffer_info MeasurementFeatureToBuffer( dip::Measurement::IteratorFeature& feature ) {
+   dip::sint itemsize = static_cast< dip::sint >( sizeof( dip::dfloat ));
+   dip::UnsignedArray sizes = { feature.NumberOfObjects(), feature.NumberOfValues() };
+   dip::IntegerArray strides = { feature.Stride() * itemsize, itemsize };
+   py::buffer_info info{ feature.Data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
+                         static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
+   //std::cout << "--Constructed Python buffer for dip::Measurement::IteratorFeature object.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndim = " << info.ndim << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   return info;
+}
+
+py::buffer_info MeasurementObjectToBuffer( dip::Measurement::IteratorObject& object ) {
+   dip::sint itemsize = static_cast< dip::sint >( sizeof( dip::dfloat ));
+   dip::UnsignedArray sizes = { 1, object.NumberOfValues() };
+   dip::IntegerArray strides = { itemsize, itemsize };
+   py::buffer_info info{ object.Data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
+                         static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
+   //std::cout << "--Constructed Python buffer for dip::Measurement::IteratorObject object.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndim = " << info.ndim << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   return info;
+}
+
+py::buffer_info MeasurementToBuffer( dip::Measurement& msr ) {
+   dip::sint itemsize = static_cast< dip::sint >( sizeof( dip::dfloat ));
+   dip::UnsignedArray sizes = { msr.NumberOfObjects(), msr.NumberOfValues() };
+   dip::IntegerArray strides = { msr.Stride() * itemsize, itemsize };
+   py::buffer_info info{ msr.Data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
+                         static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
+   //std::cout << "--Constructed Python buffer for dip::Measurement object.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndim = " << info.ndim << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   return info;
+}
+
 dip::Polygon BufferToPolygon( py::buffer& buf ) {
    py::buffer_info info = buf.request();
    //std::cout << "--Constructing dip::Polygon from Python buffer.\n";
@@ -79,10 +136,10 @@ py::buffer_info PolygonToBuffer( dip::Polygon& polygon ) {
    dip::UnsignedArray sizes = { polygon.vertices.size(), 2 };
    py::buffer_info info{ polygon.vertices.data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
-   //std::cout << "--Constructed Python buffer for dip::Image object.\n";
+   //std::cout << "--Constructed Python buffer for dip::Polygon object.\n";
    //std::cout << "   info.ptr = " << info.ptr << std::endl;
    //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndims = " << info.ndims << std::endl;
+   //std::cout << "   info.ndim = " << info.ndim << std::endl;
    //std::cout << "   info.size = " << info.size << std::endl;
    //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
    //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
@@ -119,7 +176,8 @@ void init_measurement( py::module& m ) {
    vInfo.def_readonly( "units", &dip::Feature::ValueInformation::units );
 
    // dip::Measurement::IteratorFeature
-   auto feat = py::class_< dip::Measurement::IteratorFeature >( mm, "MeasurementFeature", "A Measurement table column group representing the results for one\nfeature." );
+   auto feat = py::class_< dip::Measurement::IteratorFeature >( mm, "MeasurementFeature", py::buffer_protocol(), "A Measurement table column group representing the results for one\nfeature." );
+   feat.def_buffer( []( dip::Measurement::IteratorFeature& self ) -> py::buffer_info { return MeasurementFeatureToBuffer( self ); } );
    feat.def( "__repr__", []( dip::Measurement::IteratorFeature const& self ) {
                 std::ostringstream os;
                 os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
@@ -127,12 +185,15 @@ void init_measurement( py::module& m ) {
              } );
    feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) { return MeasurementValuesToList( self[ objectID ] ); }, "objectID"_a );
    feat.def( "FeatureName", &dip::Measurement::IteratorFeature::FeatureName );
+   feat.def( "Values", &dip::Measurement::IteratorFeature::Values );
    feat.def( "NumberOfValues", &dip::Measurement::IteratorFeature::NumberOfValues );
-   feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );
+   feat.def( "ObjectExists", &dip::Measurement::IteratorFeature::ObjectExists );
    feat.def( "Objects", &dip::Measurement::IteratorFeature::Objects );
+   feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );
 
    // dip::Measurement::IteratorObject
-   auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "MeasurementObject", "A Measurement table row representing the results for one object." );
+   auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "MeasurementObject", py::buffer_protocol(), "A Measurement table row representing the results for one object." );
+   obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info { return MeasurementObjectToBuffer( self ); } );
    obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
                std::ostringstream os;
                os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << ">";
@@ -140,11 +201,17 @@ void init_measurement( py::module& m ) {
             } );
    obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) { return MeasurementValuesToList( self[ name ] ); }, "name"_a );
    obj.def( "ObjectID", &dip::Measurement::IteratorObject::ObjectID );
-   obj.def( "NumberOfFeatures", &dip::Measurement::IteratorObject::NumberOfFeatures );
+   obj.def( "FeatureExists", &dip::Measurement::IteratorObject::FeatureExists );
    obj.def( "Features", &dip::Measurement::IteratorObject::Features );
+   obj.def( "NumberOfFeatures", &dip::Measurement::IteratorObject::NumberOfFeatures );
+   obj.def( "Values", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::Values, py::const_ ), "name"_a );
+   obj.def( "Values", py::overload_cast<>( &dip::Measurement::IteratorObject::Values, py::const_ ));
+   obj.def( "NumberOfValues", py::overload_cast< dip::String const& >( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ), "name"_a );
+   obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ));
 
    // dip::Measurement
-   auto meas = py::class_< dip::Measurement >( mm, "Measurement", "The result of a call to PyDIP.MeasurementTool.Measure, a table with a column group for\neach feature and a row for each object." );
+   auto meas = py::class_< dip::Measurement >( mm, "Measurement", py::buffer_protocol(), "The result of a call to PyDIP.MeasurementTool.Measure, a table with a column group for\neach feature and a row for each object." );
+   meas.def_buffer( []( dip::Measurement& self ) -> py::buffer_info { return MeasurementToBuffer( self ); } );
    meas.def( "__repr__", []( dip::Measurement const& self ) {
                 std::ostringstream os;
                 os << "<Measurement with " << self.NumberOfFeatures() << " features for " << self.NumberOfObjects() << " objects>";

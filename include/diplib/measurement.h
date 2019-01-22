@@ -266,14 +266,31 @@ class DIP_NO_EXPORT Measurement {
             explicit operator bool() const { return !IsAtEnd(); }
             /// \brief Name of the feature
             String const& FeatureName() const { return Feature().name; }
+            /// \brief Returns an array with names and units for each of the values for the feature.
+            /// (Note: data are copied to output array, not a trivial function).
+            Feature::ValueInformationArray Values() const {
+               Feature::ValueInformationArray values( numberValues_ );
+               for( dip::uint ii = 0; ii < numberValues_; ++ii ) {
+                  values[ ii ] = measurement_->values_[ ii + startColumn_ ];
+               }
+               return values;
+            }
             /// \brief Number of values
             dip::uint NumberOfValues() const { return numberValues_; }
-            /// \brief Number of objects
-            dip::uint NumberOfObjects() const { return measurement_->NumberOfObjects(); }
-            /// \brief Returns a list of object IDs
-            UnsignedArray const& Objects() const { return measurement_->Objects(); }
+            /// \brief True if the object ID is available in `this`.
+            bool ObjectExists( dip::uint objectID ) const { return measurement_->ObjectExists( objectID ); }
             /// \brief Finds the index for the given object ID
             dip::uint ObjectIndex( dip::uint objectID ) const { return measurement_->ObjectIndex( objectID ); }
+            /// \brief Returns the map that links object IDs to row indices.
+            ObjectIdToIndexMap const& ObjectIndices() const { return measurement_->ObjectIndices(); }
+            /// \brief Returns a list of object IDs
+            UnsignedArray const& Objects() const { return measurement_->Objects(); }
+            /// \brief Number of objects
+            dip::uint NumberOfObjects() const { return measurement_->NumberOfObjects(); }
+            /// \brief A raw pointer to the data of the feature. All values for one object are contiguous.
+            ValueType* Data() const { return measurement_->Data() + static_cast< dip::sint >( startColumn_ ); }
+            /// \brief The stride to use to access the next row of data (next object).
+            dip::sint Stride() const { return measurement_->Stride(); }
 
          private:
             IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), featureIndex_( index ) {
@@ -362,14 +379,27 @@ class DIP_NO_EXPORT Measurement {
             explicit operator bool() const { return !IsAtEnd(); }
             /// \brief ID of the object
             dip::uint ObjectID() const { return measurement_->objects_[ objectIndex_ ]; }
-            /// \brief Index of the object (row number)
-            dip::uint ObjectIndex() const { return objectIndex_; }
-            /// \brief Number of features
-            dip::uint NumberOfFeatures() const { return measurement_->NumberOfFeatures(); }
+            /// \brief True if the feature is available in `this`.
+            bool FeatureExists( String const& name ) const { return measurement_->FeatureExists( name ); }
             /// \brief Returns an array of feature names
             std::vector< FeatureInformation > const& Features() const { return measurement_->Features(); }
+            /// \brief Number of features
+            dip::uint NumberOfFeatures() const { return measurement_->NumberOfFeatures(); }
             /// \brief Returns the index to the first columns for the feature
             dip::uint ValueIndex( String const& name ) const { return measurement_->ValueIndex( name ); }
+            /// \brief Returns an array with names and units for each of the values for the feature.
+            /// (Note: data are copied to output array, not a trivial function).
+            Feature::ValueInformationArray Values( String const& name ) const { return measurement_->Values( name ); }
+            /// \brief Returns an array with names and units for each of the values (for all features)
+            Feature::ValueInformationArray const& Values() const { return measurement_->Values(); }
+            /// \brief Returns the total number of feature values
+            dip::uint NumberOfValues() const { return measurement_->NumberOfValues(); }
+            /// \brief Returns the number of values for the given feature
+            dip::uint NumberOfValues( String const& name ) const { return measurement_->NumberOfValues( name ); }
+            /// \brief Index of the object (row number)
+            dip::uint ObjectIndex() const { return objectIndex_; }
+            /// \brief A raw pointer to the data of the object. All values are contiguous.
+            ValueType* Data() const { return measurement_->Data() + static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride(); }
 
          private:
             IteratorObject( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), objectIndex_( index ) {}
