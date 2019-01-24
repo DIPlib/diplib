@@ -226,6 +226,31 @@ void watershed( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void stochasticwatershed( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 5 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::uint nSeeds = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 100;
+   dip::uint nIterations = nrhs > 2 ? dml::GetUnsigned( prhs[ 2 ] ) : 50;
+   dip::dfloat noise = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 0.0;
+   dip::String seeds;
+   if( nrhs > 4 ) {
+      seeds = dml::GetString( prhs[ 4 ] );
+   } else {
+      if( in.Dimensionality() == 2 ) {
+         seeds = dip::S::HEXAGONAL;
+      } else if( in.Dimensionality() == 3 ) {
+         seeds = dip::S::FCC;
+      } else {
+         seeds = dip::S::RECTANGULAR;
+      }
+
+   }
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::StochasticWatershed( in, out, nSeeds, nIterations, noise, seeds );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 dip::String GetEdgeCondition( int index, int nrhs, const mxArray* prhs[], char const* defaultValue ) {
    dip::String edgeCondition = defaultValue;
    if( nrhs > index ) {
@@ -368,6 +393,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          waterseed( plhs, nrhs, prhs );
       } else if( function == "watershed" ) {
          watershed( plhs, nrhs, prhs );
+      } else if( function == "stochasticwatershed" ) {
+         stochasticwatershed( plhs, nrhs, prhs );
 
       } else if( function == "bclosing" ) {
          BinaryBasicFilter( dip::BinaryClosing, plhs, nrhs, prhs, dip::S::SPECIAL );

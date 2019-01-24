@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for mathematical morphology functions
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -990,10 +990,11 @@ inline Image SeededWatershed(
 /// `nSeeds / in.NumberOfPixels()`, the random process causes the actual number of seeds to differ between
 /// runs. Seeds are placed either through a Poisson point process (`seeds` is `"poisson"`) or a randomly
 /// translated and rotated grid (`seeds` is `"rectangular"` (any number of dimensions), `"hexagonal"` (2D only),
-/// or `"bcc"` or `"fcc"` (3D only)). In these cases
+/// or `"bcc"` or `"fcc"` (3D only)). The output contains counts, in the range [0,`nIterations`].
 ///
 /// If `seeds` is `"exact"`, or if `nIterations` is 0, then the exact probabilities are computed
-/// (Malmberg and Luengo, 2014). The ouput contains probabilities, in the range [0,1].
+/// (Malmberg and Luengo, 2014). The ouput contains probabilities, in the range [0,1]. Note that this algorithm
+/// requires O(n<sup>2</sup>) space, and is not suitable for very large images.
 ///
 /// The stochastic watershed expects the image to contain roughly equally-sized regions. `nSeeds` should be
 /// approximately equal to the number of expected regions. If there is a strong difference in region sizes, larger

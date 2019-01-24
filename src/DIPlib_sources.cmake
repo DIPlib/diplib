@@ -20,6 +20,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/generation.h
 ../include/diplib/generic_iterators.h
 ../include/diplib/geometry.h
+../include/diplib/graph.h
 ../include/diplib/histogram.h
 ../include/diplib/iterators.h
 ../include/diplib/kernel.h
@@ -128,6 +129,7 @@ library/framework.cpp
 library/framework_full.cpp
 library/framework_scan.cpp
 library/framework_separable.cpp
+library/graph.cpp
 library/image.cpp
 library/image_copy.cpp
 library/image_data.cpp
