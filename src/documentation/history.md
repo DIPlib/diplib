@@ -86,3 +86,4 @@ The following people have contributed to the *DIPlib 3* project:
 * Ronald Ligteringen
 * Erik Schuitema
 * Erik Wernersson
+* Filip Malmberg
