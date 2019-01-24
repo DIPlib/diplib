@@ -116,6 +116,7 @@ if(DIP_ENABLE_FFTW)
    target_compile_definitions(DIP PRIVATE DIP__HAS_FFTW)
 endif()
 
+
 # Install
 install(TARGETS DIP DESTINATION lib EXPORT DIPlibTargets)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/" DESTINATION include)

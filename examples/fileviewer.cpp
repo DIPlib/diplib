@@ -6,7 +6,9 @@
 
 #include <diplib.h>
 #include <diplib/file_io.h>
-#include <diplib/generation.h>
+#ifdef DIP__HAS_JAVAIO
+  #include <diplib/javaio.h>
+#endif
 
 #include <dipviewer.h>
 #include <diplib/viewer/slice.h>
@@ -25,8 +27,12 @@ int main( int argc, char** argv ) {
          } else if( dip::FileCompareExtension( arg, "tiff" ) || dip::FileCompareExtension( arg, "tif" )) {
             info = dip::ImageReadTIFF( img, arg );
          } else {
+#ifdef DIP__HAS_JAVAIO
+            info = dip::ImageReadJavaIO( img, arg );
+#else
             std::cerr << "Unrecognized image extension " << dip::FileGetExtension( arg ) << std::endl;
             return -1;
+#endif
          }
          std::cout << arg << ": " << img;
          auto wdw = dip::viewer::Show( img, arg );

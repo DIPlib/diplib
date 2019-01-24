@@ -96,8 +96,22 @@ include(tools/update_deps_file.cmake)
 
 ### DIPlib library
 
-add_subdirectory(src)
+find_package(Java)
+find_package(JNI)
+if (JAVA_FOUND AND JNI_FOUND)
+   include(UseJava)
+   find_jar(BIOFORMATS_JAR "bioformats_package")
 
+   if (NOT BIOFORMATS_JAR)
+      message("-- Could NOT find bioformats_package.jar")
+   endif() 
+
+   if (BIOFORMATS_JAR)
+      set(DIP_ENABLE_BIOFORMATS ON CACHE BOOL "Enable Bio-Formats read support")
+   endif()
+endif()
+
+add_subdirectory(src)
 
 ### DIPviewer
 
@@ -129,6 +143,28 @@ if(DIP_BUILD_DIPVIEWER)
    endif()
 
    add_subdirectory(viewer)
+
+endif()
+
+
+### DIPjavaio
+
+find_package(Java)
+find_package(JNI)
+if (JAVA_FOUND AND JNI_FOUND)
+   set(DIP_BUILD_JAVAIO ON CACHE BOOL "Build the javaio module")
+
+   include(UseJava)
+   find_jar(BIOFORMATS_JAR bioformats_package)
+
+   if (BIOFORMATS_JAR)
+      list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
+   endif()
+endif()
+
+if(DIP_BUILD_JAVAIO)
+
+   add_subdirectory(javaio)
 
 endif()
 
@@ -338,6 +374,12 @@ if(DIP_BUILD_DIPVIEWER_JAVA)
    message(" * DIPviewer Java bindings added to 'all' target")
 else()
    message(" * DIPviewer Java bindings not configured")
+endif()
+
+if(DIP_BUILD_JAVAIO)
+   message(" * DIPjavaio module added to 'all' target with interfaces: " ${DIP_JAVAIO_INTERFACES})
+else()
+   message(" * DIPJavaio module not configured")
 endif()
 
 if(DIP_BUILD_PYDIP)

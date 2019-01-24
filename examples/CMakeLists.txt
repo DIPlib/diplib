@@ -68,6 +68,10 @@ if(DIP_BUILD_DIPVIEWER)
    # A simple tool that shows an image file using dip::viewer::Show
    add_executable(fileviewer fileviewer.cpp)
    target_link_libraries(fileviewer DIP DIPviewer)
+   if(DIP_BUILD_JAVAIO)
+      target_compile_definitions(fileviewer PRIVATE DIP__HAS_JAVAIO)
+      target_link_libraries(fileviewer DIPjavaio)
+   endif()
 
    # An example program that shows how to delete small objects from a grey-value image, and use dip::viewer::ShowSimple
    add_executable(select_objects select_objects.cpp)
