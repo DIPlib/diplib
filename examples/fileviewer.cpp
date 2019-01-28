@@ -28,7 +28,7 @@ int main( int argc, char** argv ) {
             info = dip::ImageReadTIFF( img, arg );
          } else {
 #ifdef DIP__HAS_JAVAIO
-            info = dip::ImageReadJavaIO( img, arg );
+            info = dip::javaio::ImageReadJavaIO( img, arg );
 #else
             std::cerr << "Unrecognized image extension " << dip::FileGetExtension( arg ) << std::endl;
             return -1;

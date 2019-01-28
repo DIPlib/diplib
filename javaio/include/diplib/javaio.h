@@ -25,6 +25,8 @@
 
 namespace dip {
 
+namespace javaio {
+
 /// \brief Reads the image in a file `filename` recognized by a Java `interface` and puts it in `out`.
 ///
 /// `interface` can be one of:
@@ -44,6 +46,8 @@ inline Image ImageReadBioFormats(
    ImageReadJavaIO( out, filename, interface );
    return out;
 }
+
+} // namespace javaio
 
 } // namespace dip
 

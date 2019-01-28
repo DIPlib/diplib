@@ -27,12 +27,6 @@ import java.lang.NullPointerException;
 /// JNI wrapper to dip::Image
 public class Image {
    long ptr_ = 0;
-
-   // Make sure we have our native library loaded when using this class
-   
-   static {
-      System.loadLibrary("DIPjavaio");
-   }
    
    // Constructors and destructor
    

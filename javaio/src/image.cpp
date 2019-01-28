@@ -163,3 +163,51 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_Destructor( JNIEnv *, jobject, jlon
 }
 
 } // extern "C"
+
+namespace dip {
+
+namespace javaio {
+
+/// C++ version of JNINativeMethod, with const char* strings.
+/// To avoid "ISO C++ forbids converting a string constant to ‘char*’"
+typedef struct {
+   const char *name; 
+   const char *signature; 
+   void *fnPtr;
+} JNINativeMethodCPP;
+
+static JNINativeMethodCPP image_natives__[] = {
+   {"Sizes",           "(J)[J",                    (void*)Java_org_diplib_Image_Sizes },
+   {"SetSizes",        "(J[J)V",                   (void*)Java_org_diplib_Image_SetSizes },
+   {"Strides",         "(J)[J",                    (void*)Java_org_diplib_Image_Strides },
+   {"SetStrides",      "(J[J)V",                   (void*)Java_org_diplib_Image_SetStrides },
+   {"TensorStride",    "(J)J",                     (void*)Java_org_diplib_Image_TensorStride },
+   {"SetTensorStride", "(JJ)V",                    (void*)Java_org_diplib_Image_SetTensorStride },
+   {"TensorSizes",     "(J)[J",                    (void*)Java_org_diplib_Image_TensorSizes },
+   {"SetTensorSizes",  "(J[J)V",                   (void*)Java_org_diplib_Image_SetTensorSizes },
+   {"DataType",        "(J)Ljava/lang/String;",    (void*)Java_org_diplib_Image_DataType },
+   {"SetDataType",     "(JLjava/lang/String;)V",   (void*)Java_org_diplib_Image_SetDataType },
+   {"Forge",           "(J)V",                     (void*)Java_org_diplib_Image_Forge },
+   {"Strip",           "(J)V",                     (void*)Java_org_diplib_Image_Strip },
+   {"Origin",          "(J)Ljava/nio/ByteBuffer;", (void*)Java_org_diplib_Image_Origin },
+   {"Constructor",     "([JJLjava/lang/String;)J", (void*)Java_org_diplib_Image_Constructor },
+   {"Destructor",      "(J)V",                     (void*)Java_org_diplib_Image_Destructor } };
+
+void RegisterImageNatives( JNIEnv *env ) {
+   jclass cls = env->FindClass( "org/diplib/Image" );
+   
+   if ( env->ExceptionOccurred() ) {
+      env->ExceptionDescribe();
+      env->ExceptionClear();
+      DIP_THROW_RUNTIME( "Registering native functions: cannot find org.diplib.Image" );
+   }   
+   
+   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives__, 15) < 0 ) {
+      DIP_THROW_RUNTIME( "Failed to register native functions for org.diplib.Image" );
+   }   
+}
+
+} // namespace javaio
+
+} // namespace dip
+

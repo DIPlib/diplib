@@ -71,4 +71,14 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_Destructor( JNIEnv *, jobject, jlon
 
 } // extern "C"
 
+namespace dip {
+
+namespace javaio {
+
+void RegisterImageNatives( JNIEnv *env );
+
+} // namespace javaio
+
+} // namespace dip
+
 #endif // DIP_BIOFORMATS_IMAGE_H

@@ -19,12 +19,15 @@
 
 #include "diplib.h"
 #include "diplib/javaio.h"
+#include "diplib/javaio/image.h"
 
 #include <jni.h>
 #include <dlfcn.h>
 #include <libgen.h>
 
 namespace dip {
+
+namespace javaio {
 
 namespace {
 
@@ -46,13 +49,7 @@ String GetLibraryPath()
    return path;
 }
 
-} // namespace
-
-FileInformation ImageReadJavaIO(
-      Image& out,
-      String const& filename,
-      String const& interface
-) {
+JNIEnv *GetEnv() {
    static JavaVM *jvm = NULL;
    static JNIEnv *env = NULL;
    
@@ -61,14 +58,12 @@ FileInformation ImageReadJavaIO(
      // Create JVM
      // NOTE: The JVM is not multi-threaded, so all calls must happen on this thread
      JavaVMInitArgs vm_args;
-     JavaVMOption* options = new JavaVMOption[ 2 ];
-     String libpathopt = "-Djava.library.path=" + GetLibraryPath();
+     JavaVMOption* options = new JavaVMOption[ 1 ];
      String classpathopt = "-Djava.class.path=" + GetLibraryPath() + "/DIPjavaio.jar:" DIP__CLASSPATH;
    
-     options[ 0 ].optionString = (char*) libpathopt.c_str();
-     options[ 1 ].optionString = (char*) classpathopt.c_str();
+     options[ 0 ].optionString = (char*) classpathopt.c_str();
      vm_args.version = JNI_VERSION_1_8;
-     vm_args.nOptions = 2;
+     vm_args.nOptions = 1;
      vm_args.options = options;
      vm_args.ignoreUnrecognized = false;
    
@@ -78,9 +73,23 @@ FileInformation ImageReadJavaIO(
      if ( rc != JNI_OK ) {
         jvm = NULL;
         env = NULL;
-        DIP_THROW_RUNTIME( "Reading JavaIO file: cannot create JVM" );
+        DIP_THROW_RUNTIME( "Initializing JavaIO: cannot create JVM" );
      }
+
+     RegisterImageNatives( env );
    }
+   
+   return env;
+}
+
+} // namespace
+
+FileInformation ImageReadJavaIO(
+      Image& out,
+      String const& filename,
+      String const& interface
+) {
+   JNIEnv *env = GetEnv();
    
    jclass cls = env->FindClass( interface.c_str() );
    
@@ -115,5 +124,7 @@ FileInformation ImageReadJavaIO(
    
    return info;
 }
+
+} // namespace javaio
 
 } // namespace dip
