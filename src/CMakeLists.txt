@@ -20,11 +20,15 @@ target_compile_definitions(DIP PRIVATE DIP_DEBUG_VERSION=$<CONFIG:Debug>)
 
 # Multithreading
 if(DIP_ENABLE_MULTITHREADING)
-   target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
-   if(OpenMP_CXX_LIB_NAMES)
-      target_link_libraries(DIP PRIVATE ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
+   if(TARGET OpenMP::OpenMP_CXX)
+      target_link_libraries(DIP PRIVATE OpenMP::OpenMP_CXX)
    else()
-      target_link_libraries(DIP PRIVATE ${OpenMP_CXX_FLAGS}) # This is the case for CMake <= 3.8
+      target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
+      if(OpenMP_CXX_LIB_NAMES)
+         target_link_libraries(DIP PRIVATE ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
+      else()
+         target_link_libraries(DIP PRIVATE ${OpenMP_CXX_FLAGS}) # This is the case for CMake <= 3.8
+      endif()
    endif()
 endif()
 
