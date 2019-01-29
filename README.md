@@ -25,11 +25,12 @@ See the [documentation](https://diplib.github.io/diplib-docs/) for more informat
 
 To build the library you will need a C++14 compliant compiler and *CMake*.
 Use the following commands to build:
-
-    mkdir target
-    cd target
-    cmake /path/to/dip/root/directory
-    make -j install
+```bash
+mkdir target
+cd target
+cmake /path/to/dip/root/directory
+make -j install
+```
 
 For detailed instructions, see [`INSTALL.md`](INSTALL.md).
 
@@ -195,3 +196,20 @@ to the Apache License, except for *OME Bio-Formats*.
   Copyright 2002-2008, Marcelo E. Magallon  
   Copyright 2002, Lev Povalahev  
   Modified BSD License
+
+*DIPjavaio* links against:
+
+- *JDK 8* (as installed on your system)  
+  Copyright, probably Sun and/or Oracle  
+  GNU General Public License, Version 2 (not compatible with the Apache License)
+
+- *OME Bio-Formats* (optional, as installed on your system)  
+  Copyright 2012-2017 Open Microscopy Environment  
+  GNU General Public License, Version 2
+
+Note that [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) is optional,
+but *DIPjavaio* is currently useless without it.
+The *DIPjavaio* sources provided with this project are shared unde the same licence
+as the rest of the project (Apache 2.0), but by linking with *Bio-Formats*, your
+whole program will become GPL. This modue is not suitable for use in commercial,
+closed-source software.

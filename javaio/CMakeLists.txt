@@ -16,7 +16,7 @@ endif()
 add_library(DIPjavaio ${DIP_JAVAIO_SRC})
 
 target_compile_definitions(DIPjavaio PRIVATE DIP__CLASSPATH="${DIP_JAVAIO_CLASSPATH}")
-target_link_libraries(DIPjavaio PRIVATE ${JNI_LIBRARIES})
+target_link_libraries(DIPjavaio PRIVATE DIP ${JNI_LIBRARIES})
 target_include_directories(DIPjavaio PRIVATE ${JNI_INCLUDE_DIRS})
 foreach (lib ${JNI_LIBRARIES})
    get_filename_component(path ${lib} DIRECTORY)

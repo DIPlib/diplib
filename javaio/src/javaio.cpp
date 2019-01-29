@@ -68,7 +68,7 @@ JNIEnv *GetEnv() {
      vm_args.ignoreUnrecognized = false;
    
      jint rc = JNI_CreateJavaVM( &jvm, (void**) &env, &vm_args );
-     delete options;
+     delete[] options;
    
      if ( rc != JNI_OK ) {
         jvm = NULL;

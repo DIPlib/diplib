@@ -5,19 +5,43 @@
 To build the library you will need a C++14 compliant compiler and *CMake*.
 See below under "Dependencies" for optional dependencies that you can install to
 improve your *DIPlib* experience.
+
 Use the following commands to build:
+```bash
+mkdir target
+cd target
+cmake /path/to/dip/root/directory
+make -j install
+```
 
-    mkdir target
-    cd target
-    cmake /path/to/dip/root/directory
-    make -j install
+The `-j` option to `make` enables a multi-threaded build. Limit the number of
+concurrent jobs to, for example, 4 with `-j4`. On system with limited memory,
+reduce the number of concurrent jobs if compilation stalls and the system thrashes.
 
-(The `-j` option to `make` enables a multi-threaded build. Limit the number of
-concurrent jobs to, for example, 4 with `-j4`.)
+See below under "*CMake* configuration" for other `make` targets and *CMake* configuration
+options.
 
 For step-by-step instructions for Linux, see [`INSTALL_Linux.md`](INSTALL_Linux.md).
 
 For step-by-step instructions for MacOS, see [`INSTALL_MacOS.md`](INSTALL_MacOS.md).
+
+## Windows
+
+Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Studio 2017*
+(version 15). You'll also need *CMake*.
+
+Using *CMake-gui*, choose where the source directory is and where to build the binaries. Then
+press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
+a *Visual Studio* solution file that you can open in *Visual Studio* and build as usual.
+
+See below under "*CMake* configuration" for generated targets, and *CMake* configuration
+options.
+
+For step-by-step instructions, see [`INSTALL_Windows.md`](INSTALL_Windows.md).
+
+See below for optional dependencies that you can install to improve your *DIPlib* experience.
+
+## *CMake* configuration
 
 Available `make` targets:
 
@@ -33,13 +57,18 @@ The following `make` targets are part of the `all` target:
 
     DIP           # builds the DIPlib library
     DIPviewer     # builds the DIPviewer module (plus the DIPlib library)
+    DIPjavaio     # builds the DIPjavaio module (plus the DIPlib library)
     PyDIP         # builds the PyDIP Python module (includes DIP and DIPviewer targets)
     dum           # builds the DIPimage User Manual PDF
 
-Important `cmake` command-line arguments:
+The `apidoc` target requires that *Doxygen* be installed, the target will not be available
+if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be
+available if it is not; this target will fail to build if additional tools are not installed
+(see below under "Dependencies").
+
+Important `cmake` command-line arguments controlling the build of *DIPlib*:
 
     -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location for DIPlib, DIPimage and the docs
-    -DPYDIP_INSTALL_PATH=$HOME/...     # choose an instal location for PyDIP (see below)
     -DCMAKE_BUILD_TYPE=Debug           # by default it is release
     -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library
     -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics)
@@ -57,11 +86,26 @@ Important `cmake` command-line arguments:
     -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
                                        #    integers are not natively supported
 
+Controlling the build of *DIPviewer*:
+
     -DDIP_BUILD_DIPVIEWER=Off          # don't build/install the DIPviewer module
-    -DDIP_BUILD_PYDIP=Off              # don't build/install the PyDIP Python module
+
+Controlling the build of *DIPjavaio*:
+
+    -DJAVA_HOME=<path>                 # use the JDK in <path>
+    -DBIOFORMATS_JAR=<path>/bioformats_package.jar
+                                       # specify location of the Bio-Formats JAR file
+
+Controlling the build of *DIPimage*:
+
     -DDIP_BUILD_DIPIMAGE=Off           # don't build/install the DIPimage MATLAB toolbox
-    -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
     -DMatlab_ROOT_DIR=<path>           # compile DIPimage against MATLAB in <path>
+
+Controlling the build of *PyDIP*:
+
+    -DDIP_BUILD_PYDIP=Off              # don't build/install the PyDIP Python module
+    -DPYDIP_INSTALL_PATH=$HOME/...     # choose an instal location for PyDIP (see below)
+    -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
 
 Some of these options might not be available on your system. For example, if you don't have
 MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
@@ -75,26 +119,9 @@ selected version of Python. To obtain the user-specific site packages directory,
 following shell command: `python3 -m site --user-site`. The output can be used for the PyDIP
 installation path for users that cannot or do not want to install in the system-wide directory.
 For example:
-
-    cmake /path/to/dip/root/directory -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
-
-The `apidoc` target requires that *Doxygen* be installed, the target will not be available
-if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be
-available if it is not; this target will fail to build if additional tools are not installed
-(see below under "Dependencies").
-
-## Windows
-
-Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Studio 2017*
-(version 15). You'll also need *CMake*.
-
-Using *CMake-gui*, choose where the source directory is and where to build the binaries. Then
-press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
-a *Visual Studio* solution file that you can open in *Visual Studio* and build as usual.
-
-For step-by-step instructions, see [`INSTALL_Windows.md`](INSTALL_Windows.md).
-
-See below for optional dependencies that you can install to improve your *DIPlib* experience.
+```bash
+cmake /path/to/dip/root/directory -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
+```
 
 ## Dependencies
 
@@ -117,6 +144,10 @@ numbers, but it has a copyleft license.
 as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
 On Windows, [*GLEW*](http://glew.sourceforge.net) is also required.
 
+*DIPjavaio* requires that the Java 8 SDK (JDK 8) be installed. This module is intended as a
+bridge to [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), which you will need
+to download separately. *Bio-Formats* has a copyleft license.
+
 *DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
 for compilation and execution (of course).
 Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) to
@@ -125,10 +156,10 @@ after installing *DIPimage*, to learn more).
 
 *PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
 
-To build the *DIPlib* documentation, [*Doxygen*](http://www.doxygen.org) is needed.
+To build the *DIPlib* documentation (HTML), [*Doxygen*](http://www.doxygen.org) is needed.
 There is a chance it will only work on Unix-like systems (not yet tested under Windows).
 
-The *DIPimage* User Manual requires [*Pandoc*](https://pandoc.org),
+Compiling the *DIPimage* User Manual (PDF) requires [*Pandoc*](https://pandoc.org),
 [*pandoc-crossref*](https://hackage.haskell.org/package/pandoc-crossref), and
 [*LaTeX*](http://www.tug.org/texlive/). Note that you'll need certain *LaTeX* packages,
 such as `upquote`, that are not in the most basic set of packages. You can install these

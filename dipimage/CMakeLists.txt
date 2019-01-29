@@ -77,7 +77,6 @@ update_deps_file("DIPimage_sources" "${DIPIMAGE_DEPS}")
 if(DIP_BUILD_DIPVIEWER)
 
    # The tool requires DIPviewer Java bindings
-   find_package(Java)
    if(JAVA_FOUND)
       set(DIP_BUILD_DIPVIEWER_JAVA ON CACHE BOOL "Build the viewer Java bindings (required for DIPviewer in MATLAB)")
    endif()

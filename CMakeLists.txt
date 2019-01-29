@@ -96,21 +96,6 @@ include(tools/update_deps_file.cmake)
 
 ### DIPlib library
 
-find_package(Java)
-find_package(JNI)
-if (JAVA_FOUND AND JNI_FOUND)
-   include(UseJava)
-   find_jar(BIOFORMATS_JAR "bioformats_package")
-
-   if (NOT BIOFORMATS_JAR)
-      message("-- Could NOT find bioformats_package.jar")
-   endif() 
-
-   if (BIOFORMATS_JAR)
-      set(DIP_ENABLE_BIOFORMATS ON CACHE BOOL "Enable Bio-Formats read support")
-   endif()
-endif()
-
 add_subdirectory(src)
 
 ### DIPviewer
@@ -149,7 +134,7 @@ endif()
 
 ### DIPjavaio
 
-find_package(Java)
+find_package(Java 1.8 COMPONENTS Development)
 find_package(JNI)
 if (JAVA_FOUND AND JNI_FOUND)
    set(DIP_BUILD_JAVAIO ON CACHE BOOL "Build the javaio module")

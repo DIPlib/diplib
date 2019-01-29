@@ -137,6 +137,33 @@ make apidoc
 ```
 if you want to compile the DIPlib documentation.
 
+## Enabling Bio-Formats
+
+First, make sure you have the Java 8 SDK (JDK 8) installed, you can obtain it from the
+[Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html). Next, download
+`bioformats_package.jar` from the [Bio-Formats website](https://www.openmicroscopy.org/bio-formats/).
+You need to add the location of this file to the `cmake` command line using the `-DBIOFORMATS_JAR=<path>`
+flag.
+
+When running *CMake* with the proper JDK installed, the *DIPjavaio* module becomes available.
+
+Check the *CMake* output to see which JNI was found. It should match the version of Java found.
+These two should be listed together, but the JNI output is only produced on first run. Delete the
+`CMakeCache.txt` file to run `cmake` fresh and see all its output.
+
+Sometimes the version of JNI found is not the one in the JDK. For example, on my Mac it finds the JNI
+that belongs to Java 6. In this case, add `-DJAVA_HOME=<path>` to the `cmake` command line:
+```bash
+cmake .. -DBIOFORMATS_JAR=$HOME/java/bioformats_package.jar -DJAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/
+```
+Note that these arguments to `cmake` must be combined with the arguments mentioned earlier, into a single,
+long command line argument.
+
+If an application that links to *DIPjavaio* pops up a message box saying that you need to install the
+legacy Java 6, then your Java 8 is not configured properly.
+[See here](https://oliverdowling.com.au/2014/03/28/java-se-8-on-mac-os-x/) for instructions
+on how to set it up.
+
 ## Using *DIPimage*
 
 Once the `install` target has finished building and installing the toolbox, start

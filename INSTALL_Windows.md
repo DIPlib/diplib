@@ -60,6 +60,8 @@ ZIP file and note the location.
 
 - TODO: *FFTW3*.
 
+- TODO: *Bio-Formats*.
+
 ## Creating *Visual Studio* project files
 
 Open the *CMake* program. Enter the name of the directory you cloned the repository
@@ -142,19 +144,19 @@ building your own C++ progrmas using *DIPlib*.
 Once the `INSTALL` target has finished building and installing the toolbox, start
 *MATLAB*. Type the following commands:
 ```matlab
-    addpath('C:\Users\<name>\DIPlib\share\DIPimage')
-    setenv('PATH',['C:\Users\<name>\DIPlib\lib',';',getenv('PATH')]);
+addpath('C:\Users\<name>\DIPlib\share\DIPimage')
+setenv('PATH',['C:\Users\<name>\DIPlib\lib',';',getenv('PATH')]);
 ```
 This will make the toolbox available (replace `C:\Users\<name>\DIPlib` with the
 actual path you installed to).
 
 To get started using *DIPimage*, look through the help, starting at
 ```matlab
-    help DIPimage
+help DIPimage
 ```
 Or start the GUI:
 ```matlab
-    dipimage
+dipimage
 ```
 
 ## Using *PyDIP*
@@ -163,10 +165,10 @@ Once the `INSTALL` target has finished building and installing, start *Python*.
 The following command will import the PyDIP package as `dip`, which is shorter to
 type and mimics the namespace used in the C++ library:
 ```python
-    import PyDIP as dip
+import PyDIP as dip
 ```
 
 To get started using *PyDIP*, look through the help, starting at
 ```python
-    help(dip)
+help(dip)
 ```
