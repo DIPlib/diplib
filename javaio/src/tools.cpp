@@ -24,8 +24,16 @@ namespace dip {
 
 namespace javaio {
 
-JavaString StringFromJava( JNIEnv *env, jstring str ) {
-   return JavaString( env, str );
+String StringFromJava( JNIEnv *env, jstring jstr ) {
+   if ( !jstr ) {
+      return String();
+   }
+   
+   const char *chars = env->GetStringUTFChars( jstr, NULL );
+   String str = String( chars );
+   env->ReleaseStringUTFChars( jstr, chars );
+   
+   return str;
 }
 
 jstring StringToJava( JNIEnv *env, String const &str ) {

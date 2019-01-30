@@ -61,7 +61,7 @@ FileInformation FileInformationFromJava( JNIEnv *env, jobject obj ) {
    info.name            = StringFromJava( env, name );
    info.fileType        = StringFromJava( env, fileType );
    if ( dataType )
-     info.dataType      = DataType( StringFromJava( env, dataType ).str() );
+     info.dataType      = DataType( StringFromJava( env, dataType ) );
    info.significantBits = (dip::uint) significantBits;
    info.sizes           = UnsignedArrayFromJava( env, sizes );
    info.tensorElements  = (dip::uint) tensorElements;

@@ -94,7 +94,7 @@ JNIEXPORT jstring JNICALL Java_org_diplib_Image_DataType( JNIEnv *env, jobject, 
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetDataType( JNIEnv *env, jobject, jlong ptr, jstring dt ) {
    Image *image = (Image*) ptr;
 
-   image->SetDataType( DataType( StringFromJava( env, dt ).str() ) );
+   image->SetDataType( DataType( StringFromJava( env, dt ) ) );
 }
 
 /// dip::Image::PixelSize( dip::uint )
@@ -146,7 +146,7 @@ JNIEXPORT jlong JNICALL Java_org_diplib_Image_Constructor( JNIEnv *env, jobject,
 
    env->GetLongArrayRegion( sizes, 0, length, (jlong*) szarr.data() );
 
-   return (jlong) new Image( szarr, (dip::uint) nelems, DataType( StringFromJava( env, dt ).str() ) );
+   return (jlong) new Image( szarr, (dip::uint) nelems, DataType( StringFromJava( env, dt ) ) );
 }
 
 // dip::Image::~Image()

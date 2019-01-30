@@ -36,41 +36,8 @@ typedef struct {
    void *fnPtr;
 } JNINativeMethodCPP;
 
-/// \brief Java string lifetime management
-class JavaString {
-   protected:
-      JNIEnv *env_;
-      jstring str_;
-      char const *chars_;
-      
-   public:
-      JavaString( JNIEnv *env, jstring str ) : env_( env ), str_( str ) {
-         if ( str_ ) {
-            chars_ = env_->GetStringUTFChars( str_, NULL );
-         }
-      }
-      
-      ~JavaString( ) {
-         if ( str_ ) {
-            env_->ReleaseStringUTFChars( str_, chars_ );
-         }
-      }
-
-      operator String( ) {
-         if ( str_ ) {
-            return String( chars_ );
-         } else {
-            return String();
-         }
-      }
-      
-      String str() {
-         return *this;
-      }
-};
-
 /// \brief Convert java.lang.String to dip::String
-JavaString StringFromJava( JNIEnv *env, jstring str );
+String StringFromJava( JNIEnv *env, jstring jstr );
 
 /// \brief Convert dip::String to java.lang.String
 jstring StringToJava( JNIEnv *env, String const &str );
