@@ -17,8 +17,8 @@
  * limitations under the License.
 */
 
-#ifndef DIP_BIOFORMATS_IMAGE_H
-#define DIP_BIOFORMATS_IMAGE_H
+#ifndef DIP_JAVAIO_IMAGE_H
+#define DIP_JAVAIO_IMAGE_H
 
 #include <jni.h>
 
@@ -54,6 +54,12 @@ JNIEXPORT jstring JNICALL Java_org_diplib_Image_DataType( JNIEnv *, jobject, jlo
 /// dip::Image::SetDataType( dip::String )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetDataType( JNIEnv *, jobject, jlong, jstring );
 
+/// dip::Image::PixelSize( dip::uint )
+JNIEXPORT jobject JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *, jobject, jlong, jlong );
+
+/// dip::Image::SetPixelSize( dip::uint, dip::PhysicalQuantity )
+JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *, jobject, jlong, jlong, jobject );
+
 /// dip::Image::Forge()
 JNIEXPORT void JNICALL Java_org_diplib_Image_Forge( JNIEnv *, jobject, jlong );
 
@@ -81,4 +87,4 @@ void RegisterImageNatives( JNIEnv *env );
 
 } // namespace dip
 
-#endif // DIP_BIOFORMATS_IMAGE_H
+#endif // DIP_JAVAIO_IMAGE_H

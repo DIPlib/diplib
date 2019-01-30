@@ -23,17 +23,23 @@ import java.nio.ByteBuffer;
 
 import loci.formats.ImageReader;
 import loci.formats.FormatTools;
+import ome.units.quantity.Length;
 
-import java.lang.NullPointerException;
-import java.io.IOException;
-import loci.formats.FormatException;
+import loci.common.services.ServiceFactory;
+import loci.formats.meta.IMetadata;
+import loci.formats.services.OMEXMLService;
 
 /// Main class called from embedded JVM to load file
 public class BioFormatsInterface {
-   public static void Read( String file, long pointer ) throws NullPointerException, IOException, FormatException {
+   public static FileInformation Read( String file, long pointer ) throws Exception {
       final Image image = new Image( pointer );
       final ImageReader reader = new ImageReader();
       
+      ServiceFactory factory = new ServiceFactory();
+      OMEXMLService service = factory.getInstance( OMEXMLService.class );
+      IMetadata meta = service.createOMEXMLMetadata();
+
+      reader.setMetadataStore( meta );
       reader.setId( file );
       
       if ( reader.getImageCount() == 1 ) {
@@ -41,6 +47,8 @@ public class BioFormatsInterface {
          long[] sizes = { reader.getSizeX(), reader.getSizeY() };
          image.SetSizes( sizes );
          image.SetTensorSizes( reader.getRGBChannelCount() );
+         image.SetPixelSize( 0, GetPhysicalQuantity( meta.getPixelsPhysicalSizeX( 0 ) ) );
+         image.SetPixelSize( 1, GetPhysicalQuantity( meta.getPixelsPhysicalSizeY( 0 ) ) );
          
          if ( reader.isInterleaved() ) {
             long[] strides = { reader.getRGBChannelCount(), reader.getSizeX()*reader.getRGBChannelCount() };
@@ -56,6 +64,9 @@ public class BioFormatsInterface {
          long[] sizes = { reader.getSizeX(), reader.getSizeY(), reader.getImageCount() };
          image.SetSizes( sizes );
          image.SetTensorSizes( reader.getRGBChannelCount() );
+         image.SetPixelSize( 0, GetPhysicalQuantity( meta.getPixelsPhysicalSizeX( 0 ) ) );
+         image.SetPixelSize( 1, GetPhysicalQuantity( meta.getPixelsPhysicalSizeY( 0 ) ) );
+         image.SetPixelSize( 2, GetPhysicalQuantity( meta.getPixelsPhysicalSizeZ( 0 ) ) );
          
          if ( reader.isInterleaved() ) {
             long[] strides = { reader.getRGBChannelCount(), reader.getSizeX()*reader.getRGBChannelCount(), reader.getSizeX()*reader.getSizeY()*reader.getRGBChannelCount() };
@@ -92,5 +103,19 @@ public class BioFormatsInterface {
       
       for (int ii=0; ii < reader.getImageCount(); ii++)
         buf.put( reader.openBytes( ii ) );
+        
+      FileInformation info = new FileInformation();
+      info.name = file;
+      info.fileType = reader.getFormat();
+      
+      return info;
+   }
+
+   protected static PhysicalQuantity GetPhysicalQuantity( Length length ) {
+      if ( length == null ) {
+         return new PhysicalQuantity( 1, "px" );
+      }
+      
+      return new PhysicalQuantity( length.value().doubleValue(), length.unit().getSymbol() );
    }
 }

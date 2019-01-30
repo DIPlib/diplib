@@ -20,6 +20,7 @@
 #include "diplib.h"
 #include "diplib/javaio.h"
 #include "diplib/javaio/image.h"
+#include "diplib/javaio/fileinformation.h"
 
 #include <jni.h>
 #include <dlfcn.h>
@@ -96,33 +97,29 @@ FileInformation ImageReadJavaIO(
    if ( env->ExceptionOccurred() ) {
       env->ExceptionDescribe();
       env->ExceptionClear();
-      DIP_THROW_RUNTIME( "Reading JavaIO file: cannot find interface class" );
+      DIP_THROW_RUNTIME( "Reading JavaIO file: cannot find interface class (is it supported?)" );
    }   
    
-   jmethodID mid = env->GetStaticMethodID( cls, "Read", "(Ljava/lang/String;J)V" );
+   jmethodID mid = env->GetStaticMethodID( cls, "Read", "(Ljava/lang/String;J)Lorg/diplib/FileInformation;" );
 
    if ( env->ExceptionOccurred() ) {
       env->ExceptionDescribe();
       env->ExceptionClear();
-      DIP_THROW_RUNTIME( "Reading JavaIO file: cannot find Read method" );
+      DIP_THROW_RUNTIME( "Reading JavaIO file: cannot find interface class's Read method" );
    }   
 
    // Call reader
    out.Strip();
-   env->CallStaticLongMethod( cls, mid, env->NewStringUTF( filename.c_str() ), &out );
+   jobject obj = env->CallStaticObjectMethod( cls, mid, env->NewStringUTF( filename.c_str() ), &out );
 
    if ( env->ExceptionOccurred() ) {
       env->ExceptionDescribe();
       env->ExceptionClear();
       out.Strip();
-      DIP_THROW_RUNTIME( "Reading JavaIO file: error calling Read method" );
-   }   
-
-   FileInformation info;
-   info.name = filename;
-   info.fileType = "JavaIO";
+      DIP_THROW_RUNTIME( "Reading JavaIO file: error calling interface class's Read method" );
+   }
    
-   return info;
+   return FileInformationFromJava( env, obj );
 }
 
 } // namespace javaio

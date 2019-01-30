@@ -18,117 +18,116 @@
  */
 
 #include "diplib.h"
+#include "diplib/javaio/tools.h"
 #include "diplib/javaio/image.h"
+#include "diplib/javaio/physicalquantity.h"
 
 extern "C" {
 
+using namespace dip;
+using namespace dip::javaio;
+
 // dip::Image::Sizes()
 JNIEXPORT jlongArray JNICALL Java_org_diplib_Image_Sizes( JNIEnv *env, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
-   dip::UnsignedArray szarr = image->Sizes();
-   jlongArray sizes = env->NewLongArray( (jsize) szarr.size() );
-
-   env->SetLongArrayRegion( sizes, 0, (jsize) szarr.size(), (jlong*) szarr.data() );
-   return sizes;
+   Image *image = (Image*) ptr;
+   
+   return UnsignedArrayToJava( env, image->Sizes() );
 }
 
 // dip::Image::SetSizes( dip::UnsignedArray )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetSizes( JNIEnv *env, jobject, jlong ptr, jlongArray sizes) {
-   dip::Image *image = (dip::Image*) ptr;
-   jsize length = env->GetArrayLength( sizes );
-   dip::UnsignedArray szarr( (dip::uint) length );
-
-   env->GetLongArrayRegion( sizes, 0, length, (jlong*) szarr.data() );
-   image->SetSizes( szarr );
+   Image *image = (Image*) ptr;
+   
+   image->SetSizes( UnsignedArrayFromJava( env, sizes ) );
 }
 
 // dip::Image::Strides()
 JNIEXPORT jlongArray JNICALL Java_org_diplib_Image_Strides( JNIEnv *env, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
-   dip::IntegerArray starr = image->Strides();
-   jlongArray strides = env->NewLongArray( (jsize) starr.size() );
-
-   env->SetLongArrayRegion( strides, 0, (jsize) starr.size(), (jlong*) starr.data() );
-   return strides;
+   Image *image = (Image*) ptr;
+   
+   return IntegerArrayToJava( env, image->Strides() );
 }
 
 // dip::Image::SetStrides( dip::IntegerArray )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetStrides( JNIEnv *env, jobject, jlong ptr, jlongArray strides) {
-   dip::Image *image = (dip::Image*) ptr;
-   jsize length = env->GetArrayLength( strides );
-   dip::IntegerArray starr( (dip::uint) length );
+   Image *image = (Image*) ptr;
 
-   env->GetLongArrayRegion( strides, 0, length, (jlong*) starr.data() );
-   image->SetStrides( starr );
+   image->SetStrides( IntegerArrayFromJava( env, strides ) );
 }
 
 // dip::Image::TensorStride()
 JNIEXPORT jlong JNICALL Java_org_diplib_Image_TensorStride( JNIEnv *, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
 
    return (jlong) image->TensorStride();
 }
 
 // dip::Image::SetTensorStride( dip::sint )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetTensorStride( JNIEnv *, jobject, jlong ptr, jlong stride ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
 
    image->SetTensorStride( (dip::sint) stride );
 }
 
 // dip::Image::TensorSizes()
 JNIEXPORT jlongArray JNICALL Java_org_diplib_Image_TensorSizes( JNIEnv *env, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
-   dip::UnsignedArray szarr = image->TensorSizes();
-   jlongArray sizes = env->NewLongArray( (jsize) szarr.size() );
+   Image *image = (Image*) ptr;
    
-   env->SetLongArrayRegion( sizes, 0, (jsize) szarr.size(), (jlong*) szarr.data() );
-   return sizes;
+   return UnsignedArrayToJava( env, image->TensorSizes() );
 }
 
 // dip::Image::SetTensorSizes( dip::UnsignedArray )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetTensorSizes( JNIEnv *env, jobject, jlong ptr, jlongArray sizes) {
-   dip::Image *image = (dip::Image*) ptr;
-   jsize length = env->GetArrayLength( sizes );
-   dip::UnsignedArray szarr( (dip::uint) length );
-
-   env->GetLongArrayRegion( sizes, 0, length, (jlong*) szarr.data() );
-   image->SetTensorSizes( szarr );
+   Image *image = (Image*) ptr;
+   
+   image->SetTensorSizes( UnsignedArrayFromJava( env, sizes ) );
 }
 
 // dip::Image::DataType()
 JNIEXPORT jstring JNICALL Java_org_diplib_Image_DataType( JNIEnv *env, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
    
-   return env->NewStringUTF( image->DataType().Name() );
+   return StringToJava( env, image->DataType().Name() );
 }
 
 // dip::Image::SetDataType( dip::String )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetDataType( JNIEnv *env, jobject, jlong ptr, jstring dt ) {
-   dip::Image *image = (dip::Image*) ptr;
-   const char *str = env->GetStringUTFChars( dt, NULL );
+   Image *image = (Image*) ptr;
 
-   image->SetDataType( dip::DataType( dip::String( str ) ) );
-   env->ReleaseStringUTFChars( dt, str );
+   image->SetDataType( DataType( StringFromJava( env, dt ).str() ) );
+}
+
+/// dip::Image::PixelSize( dip::uint )
+JNIEXPORT jobject JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *env, jobject, jlong ptr, jlong dim ) {
+   Image *image = (Image*) ptr;
+   
+   return PhysicalQuantityToJava( env, image->PixelSize( (dip::uint) dim ) );
+}
+
+/// dip::Image::SetPixelSize( dip::uint, dip::PhysicalQuantity )
+JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *env, jobject, jlong ptr, jlong dim, jobject size ) {
+   Image *image = (Image*) ptr;
+
+   image->SetPixelSize( (dip::uint) dim, PhysicalQuantityFromJava( env, size ) );
 }
 
 // dip::Image::Forge()
 JNIEXPORT void JNICALL Java_org_diplib_Image_Forge( JNIEnv *, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
 
    image->Forge();
 }
 
 // dip::Image::Strip()
 JNIEXPORT void JNICALL Java_org_diplib_Image_Strip( JNIEnv *, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
 
    image->Strip();
 }
 
 // dip::Image::Origin()
 JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *env, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
    dip::uint n = 1;
 
    for( auto sz : image->Sizes() ) {
@@ -142,22 +141,17 @@ JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *env, jobject, jl
 
 // dip::Image::Image( dip::UnsignedArray, dip::uint, dip::DataType )
 JNIEXPORT jlong JNICALL Java_org_diplib_Image_Constructor( JNIEnv *env, jobject, jlongArray sizes, jlong nelems, jstring dt) {
-   const char *str = env->GetStringUTFChars( dt, NULL );
    jsize length = env->GetArrayLength( sizes );
-   dip::UnsignedArray szarr( (dip::uint) length );
+   UnsignedArray szarr( (dip::uint) length );
 
    env->GetLongArrayRegion( sizes, 0, length, (jlong*) szarr.data() );
-      
-   dip::Image *image = new dip::Image( szarr, (dip::uint) nelems, dip::DataType( dip::String( str ) ) );
 
-   env->ReleaseStringUTFChars( dt, str );
-   
-   return (jlong) image;
+   return (jlong) new Image( szarr, (dip::uint) nelems, DataType( StringFromJava( env, dt ).str() ) );
 }
 
 // dip::Image::~Image()
 JNIEXPORT void JNICALL Java_org_diplib_Image_Destructor( JNIEnv *, jobject, jlong ptr ) {
-   dip::Image *image = (dip::Image*) ptr;
+   Image *image = (Image*) ptr;
 
    delete image;
 }
@@ -167,14 +161,6 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_Destructor( JNIEnv *, jobject, jlon
 namespace dip {
 
 namespace javaio {
-
-/// C++ version of JNINativeMethod, with const char* strings.
-/// To avoid "ISO C++ forbids converting a string constant to ‘char*’"
-typedef struct {
-   const char *name; 
-   const char *signature; 
-   void *fnPtr;
-} JNINativeMethodCPP;
 
 static JNINativeMethodCPP image_natives__[] = {
    {"Sizes",           "(J)[J",                    (void*)Java_org_diplib_Image_Sizes },
@@ -187,6 +173,8 @@ static JNINativeMethodCPP image_natives__[] = {
    {"SetTensorSizes",  "(J[J)V",                   (void*)Java_org_diplib_Image_SetTensorSizes },
    {"DataType",        "(J)Ljava/lang/String;",    (void*)Java_org_diplib_Image_DataType },
    {"SetDataType",     "(JLjava/lang/String;)V",   (void*)Java_org_diplib_Image_SetDataType },
+   {"PixelSize",       "(JJ)Lorg/diplib/PhysicalQuantity;",  (void*)Java_org_diplib_Image_PixelSize },
+   {"SetPixelSize",    "(JJLorg/diplib/PhysicalQuantity;)V", (void*)Java_org_diplib_Image_SetPixelSize },
    {"Forge",           "(J)V",                     (void*)Java_org_diplib_Image_Forge },
    {"Strip",           "(J)V",                     (void*)Java_org_diplib_Image_Strip },
    {"Origin",          "(J)Ljava/nio/ByteBuffer;", (void*)Java_org_diplib_Image_Origin },
@@ -202,7 +190,7 @@ void RegisterImageNatives( JNIEnv *env ) {
       DIP_THROW_RUNTIME( "Registering native functions: cannot find org.diplib.Image" );
    }   
    
-   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives__, 15) < 0 ) {
+   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives__, 17) < 0 ) {
       DIP_THROW_RUNTIME( "Failed to register native functions for org.diplib.Image" );
    }   
 }

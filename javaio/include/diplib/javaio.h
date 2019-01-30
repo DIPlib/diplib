@@ -38,7 +38,7 @@ DIP_EXPORT FileInformation ImageReadJavaIO(
       String const& filename,
       String const& interface="org/diplib/BioFormatsInterface"
 );
-inline Image ImageReadBioFormats(
+inline Image ImageReadJavaIO(
       String const& filename,
       String const& interface="org/diplib/BioFormatsInterface"
 ) {

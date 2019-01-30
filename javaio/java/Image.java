@@ -24,7 +24,7 @@ import java.nio.ByteBuffer;
 
 import java.lang.NullPointerException;
 
-/// JNI wrapper to dip::Image
+/// \brief JNI wrapper to dip::Image
 public class Image {
    long ptr_ = 0;
    
@@ -105,6 +105,14 @@ public class Image {
       verify();
       SetDataType( ptr_, dt );
    }
+   public PhysicalQuantity PixelSize( long dim ) {
+      verify();
+      return PixelSize( ptr_, dim );
+   }
+   public void SetPixelSize( long dim, PhysicalQuantity size ) {
+      verify();
+      SetPixelSize( ptr_, dim, size );
+   }
    public void Forge( ) {
       verify();
       Forge( ptr_ );
@@ -130,6 +138,8 @@ public class Image {
    protected native void SetTensorSizes( long ptr, long[] sizes);
    protected native String DataType( long ptr );
    protected native void SetDataType( long ptr, String dt );
+   protected native PhysicalQuantity PixelSize( long ptr, long dim );
+   protected native void SetPixelSize( long ptr, long dim, PhysicalQuantity size );
    protected native void Forge( long ptr );
    protected native void Strip( long ptr );
    protected native ByteBuffer Origin( long ptr );
