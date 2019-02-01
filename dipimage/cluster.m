@@ -1,4 +1,4 @@
-%CLUSTER   Cluster
+%CLUSTER   Spatial clustering
 %
 % Generates a labeled image that splits the image into contiguous clusters.
 % Two methods are supported: K-means clustering currently uses a random

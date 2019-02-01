@@ -251,7 +251,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
          if( !image.IsForged() ) {
             image.Forge();
             image.Fill( 0 );
-//#if defined(_OPENMP) && defined(DIP__DUILDING_DIPIMAGE)
+//#if defined(_OPENMP)
             // For some reason, MATLAB crashes the second time that `mdhistogram` is called,
             // when using multi-threading. This tiny sleep prevented the crash in the past.
             // A `std::cout <<` call also prevented the crash. However, MATLAB is crashing again.

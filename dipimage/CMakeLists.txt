@@ -20,14 +20,20 @@ function(compile_mex_files FILE_LIST LIB_REL_PATH OUTPUT_VAR)
 endfunction(compile_mex_files)
 
 # Install M-files
-file(GLOB FILE_LIST "${CMAKE_CURRENT_LIST_DIR}/*.m")
-install(FILES ${FILE_LIST} DESTINATION "${DIPIMAGE_INSTALL_PATH}")
+file(GLOB DIPIMAGE_MFILES "${CMAKE_CURRENT_LIST_DIR}/*.m")
+install(FILES ${DIPIMAGE_MFILES} DESTINATION "${DIPIMAGE_INSTALL_PATH}")
+
 file(GLOB FILE_LIST "${CMAKE_CURRENT_LIST_DIR}/private/*.m")
 install(FILES ${FILE_LIST} DESTINATION "${DIPIMAGE_INSTALL_PATH}/private")
+
 file(GLOB FILE_LIST "${CMAKE_CURRENT_LIST_DIR}/@dip_image/*.m")
 install(FILES ${FILE_LIST} DESTINATION "${DIPIMAGE_INSTALL_PATH}/@dip_image")
+
 file(GLOB FILE_LIST "${CMAKE_CURRENT_LIST_DIR}/alias/*.m")
 install(FILES ${FILE_LIST} DESTINATION "${DIPIMAGE_INSTALL_PATH}/alias")
+
+# Keep a file with all M-files to be written to the Contents.m file
+update_deps_file("DIPimage_Mfiles" "${DIPIMAGE_MFILES}")
 
 # Compile and install MEX-files in dipimage/@dip_image/private
 file(GLOB DIP_IMAGE_PRIVATE "${CMAKE_CURRENT_LIST_DIR}/@dip_image/private/*.cpp")
@@ -78,8 +84,11 @@ if(DIP_BUILD_DIPVIEWER)
    if(DIP_BUILD_DIPVIEWER_JAVA)
 
       # Install M-files in dipviewer/dipimage
-      file(GLOB FILE_LIST "${PROJECT_SOURCE_DIR}/viewer/dipimage/*.m")
-      install(FILES ${FILE_LIST} DESTINATION "${DIPIMAGE_INSTALL_PATH}")
+      file(GLOB DIPVIEWER_MFILES "${PROJECT_SOURCE_DIR}/viewer/dipimage/*.m")
+      install(FILES ${DIPVIEWER_MFILES} DESTINATION "${DIPIMAGE_INSTALL_PATH}")
+
+      # Keep a file with all M-files to be written to the Contents.m file
+      update_deps_file("DIPviewer_Mfiles" "${DIPVIEWER_MFILES}")
 
       # Compile and install MEX-files in dipviewer/dipimage/
       file(GLOB DIPVIEWER_DIPIMAGE "${PROJECT_SOURCE_DIR}/viewer/dipimage/*.cpp")
@@ -103,11 +112,16 @@ if(DIP_BUILD_DIPVIEWER)
    endif()
 endif()
 
-# Tell DIPlib library code that it might link against MATLAB (needed to fix a bug with MATLAB integration)
-target_compile_definitions(DIP PRIVATE DIP__DUILDING_DIPIMAGE)
-
 # Create the Contents.m file
-install(CODE "execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -r \"makecontents '${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}'; exit\" WORKING_DIRECTORY \"${PROJECT_SOURCE_DIR}/tools\")")
+#install(CODE "execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -r \"makecontents '${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}'; exit\" WORKING_DIRECTORY \"${PROJECT_SOURCE_DIR}/tools\")")
+add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
+      COMMAND ${Matlab_MAIN_PROGRAM}
+      -nojvm -nodisplay -r "try, makecontents\\(\\'${CMAKE_CURRENT_BINARY_DIR}\\'\\), catch ME, disp\\(ME.message\\), exit\\(1\\), end, exit\\(0\\)"
+      WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
+      DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
+add_custom_target(contents ALL DEPENDS Contents.m)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Contents.m DESTINATION ${DIPIMAGE_INSTALL_PATH})
 
 # DIPimage user manual
 find_program(PANDOC_EXECUTABLE pandoc)
@@ -143,8 +157,7 @@ if(PANDOC_EXECUTABLE AND PANDOC_CROSSREF_EXECUTABLE)
          --filter=pandoc-crossref
          --highlight-style=kate
          WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/user_manual"
-         DEPENDS "${CMAKE_CURRENT_LIST_DIR}/user_manual/*.md" "${CMAKE_CURRENT_LIST_DIR}/user_manual/template.tex"
-   )
+         DEPENDS "${CMAKE_CURRENT_LIST_DIR}/user_manual/*.md" "${CMAKE_CURRENT_LIST_DIR}/user_manual/template.tex")
    # Code hightlight style alternative: tango -- light background color, but colors are poorly chosen
    add_custom_target(dum ALL DEPENDS ${DUM_PDF_NAME})
    install(FILES ${DUM_PDF_NAME} DESTINATION ${DOCUMENTATION_OUTPUT})

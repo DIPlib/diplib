@@ -1,7 +1,7 @@
 %DIPINIT   Initialize the working environment
-%   DIPINIT is called by DIPIMAGE when starting up. It initializes
-%   the working environment. Since it is a script, it is possible
-%   to initialize variables too.
+%   DIPINIT is called by the DIPimage GUI when starting up. It initializes
+%   the working environment. Since it is a script, it is possible to
+%   initialize variables too.
 %   Note that you can also call this script yourself, to re-set the
 %   windows to their initial location.
 %

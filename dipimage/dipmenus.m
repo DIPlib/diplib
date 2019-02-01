@@ -1,7 +1,7 @@
-%DIPMENUS   Describes the menu system to DIPIMAGE
-%   DIPMENUS is used by DIPIMAGE to determine the location of the toolbox
-%   functions in the menu system, as well as the input parameters to each
-%   of those functions.
+%DIPMENUS   Describes the menu system to the DIPimage GUI
+%   DIPMENUS is used by the DIPimage GUI to determine the location of the
+%   toolbox functions in the menu system, as well as the input parameters
+%   to each of those functions.
 %
 %   To give your own functions a place in the menus system, create a
 %   function called LOCALDIPMENUS, and put it somewhere in the MATLAB

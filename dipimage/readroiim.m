@@ -26,7 +26,7 @@
 %
 % NOTE:
 %  For TIFF files, only the first image in the file is read. To control
-%  which image directroy to read, use the READTIFF function directly.
+%  which image directory to read, use the READTIFF function directly.
 
 % (c)2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

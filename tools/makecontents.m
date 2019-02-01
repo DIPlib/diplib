@@ -2,11 +2,13 @@
 %   Run this function from within the directory it is in:
 %      cd <root>/diplib/tools
 %      makecontents <install_dir>/share/DIPimage
-%   It will delete any Contents.m file in <install_dir>/share/DIPimage,
+%   It will delete any Contents.m file in 'outputdir',
 %   and create a new one based off of the H-1 lines in all M-files,
 %   using the groupings specified in DIPMENUS.
 
-function makecontents(toolboxdir)
+function makecontents(outputdir)
+
+disp(['Creating Contents.m in ',outputdir])
 
 % Get current date string
 ds = date;
@@ -49,28 +51,32 @@ fclose(f);
 vs = [t1{1}{1},'.',t2{1}{1},'.',t3{1}{1}];
 cc = cc{1}{1};
 
-% Go to the right directory
-cd(toolboxdir)
-disp(['Creating Contents.m in ',toolboxdir])
-
 % Load dipmenus
+dipimage_dir = fullfile('..','dipimage');
+addpath(dipimage_dir)
 menulist = dipmenus;
 menulist = [{'GUI',{'dipimage','dipshow','viewslice'}};...
             {'Configuration',{'dipgetpref','dipsetpref','dipinit','dipfig','dipmenus'}};...
             menulist];
 
 % Find functions to list
-mfiles = dir('*.m');
-mfiles = {mfiles.name};
-[~,I] = sort(lower(mfiles));
-mfiles = mfiles(I);
-I = strcmp('Contents.m',mfiles) | strncmp('dip_',mfiles,4);
-mfiles(I) = {''};
+mfiles = dir(fullfile(dipimage_dir,'*.m'));
+mfiles2 = dir(fullfile('..','viewer','dipimage','*.m'));
+mfiles = cat(1,mfiles,mfiles2);
+mfiles2 = [];
+mfilenames = {mfiles.name};
+mfiledirs = {mfiles.folder};
+mfiles = [];
+[mfilenames,I] = sort(lower(mfilenames));
+mfiledirs = mfiledirs(I);
+I = strncmp('dip_',mfilenames,4);
+mfilenames(I) = {''};
 
-% Create dipimage/Contents.m
-f = fopen('Contents.m','w');
+% Create Contents.m
+outputfile = fullfile(outputdir,'Contents.m');
+f = fopen(outputfile,'w');
 if f<0
-   error('Error opening "dipimage/Contents.m"')
+   error(['Error opening "',outputfile,'"'])
 end
 fprintf(f,'%% DIPimage toolbox for quantitative image analysis\n');
 fprintf(f,'%% Version %s   %s\n',vs,ds);
@@ -79,20 +85,20 @@ fprintf(f,'%% (c)1999-2014, Delft University of Technology\n');
 fprintf(f,'%%\n');
 
 % Formatting for function list
-l = max(cellfun(@length,mfiles));
+l = max(cellfun(@length,mfilenames));
 l = max(l,16);
 format = ['%%   %-',num2str(l),'s - %s\n'];
 
 % Write the functions in the menulist next
 for ii = 1:size(menulist,1)
-   functionlist = menulist{ii,2}(:)'; % reshape just in case...
+   functionlist = menulist{ii,2}(:).'; % reshape just in case...
    valid = false(size(functionlist));
    for jj=1:size(functionlist,2)
       if ~strcmp(functionlist{1,jj},'-') && functionlist{1,jj}(1)~='#'
-         I = strcmp([functionlist{1,jj},'.m'],mfiles);
+         I = strcmp([functionlist{1,jj},'.m'],mfilenames);
          if any(I)
-            mfiles(I) = {''};
-            functionlist{2,jj} = getdescription(functionlist{1,jj});
+            mfilenames(I) = {''};
+            functionlist{2,jj} = getdescription(functionlist{1,jj},mfiledirs{I});
             valid(jj) = true;
          end
       end
@@ -106,28 +112,28 @@ end
 
 % Write the functions related to the image display
 fprintf(f,'%% Interactive image display:\n');
-descr = getdescription('dipshow');
+descr = getdescription('dipshow',dipimage_dir);
 fprintf(f,format,'dipshow',descr); % we repeat this one here
-descr = getdescription('diptruesize');
+descr = getdescription('diptruesize',dipimage_dir);
 fprintf(f,format,'diptruesize',descr); % we repeat this one here
-descr = getdescription('dipclf');
+descr = getdescription('dipclf',dipimage_dir);
 fprintf(f,format,'dipclf',descr); % we repeat this one here
-for ii = 1:length(mfiles)
-   if strncmp('dip',mfiles{ii},3)
-      func = mfiles{ii}(1:end-2);
-      descr = getdescription(func);
+for ii = 1:length(mfilenames)
+   if strncmp('dip',mfilenames{ii},3)
+      func = mfilenames{ii}(1:end-2);
+      descr = getdescription(func,mfiledirs{ii});
       fprintf(f,format,func,descr);
-      mfiles{ii} = '';
+      mfilenames{ii} = '';
    end
 end
 fprintf(f,'%%\n');
 
 % Write the rest of the functions
 fprintf(f,'%% Other available functions are:\n');
-for ii = 1:length(mfiles)
-   if ~isempty(mfiles{ii})
-      func = mfiles{ii}(1:end-2);
-      descr = getdescription(func);
+for ii = 1:length(mfilenames)
+   if ~isempty(mfilenames{ii})
+      func = mfilenames{ii}(1:end-2);
+      descr = getdescription(func,mfiledirs{ii});
       fprintf(f,format,func,descr);
    end
 end
@@ -159,9 +165,9 @@ fclose(f);
 end
 
 %%%
-function descr = getdescription(fname)
+function descr = getdescription(funcname,dirname)
 descr = '';
-f = fopen([fname,'.m'],'r');
+f = fopen(fullfile(dirname,[funcname,'.m']),'r');
 if f < 0
    return
 end
@@ -178,8 +184,8 @@ tokens = regexp(descr,'^\s*%\s*(\S*)\s*(.*)','tokens','once','dotexceptnewline')
 if isempty(tokens)
    descr = '';
 else
-   if ~strcmp(tokens{1},upper(fname))
-      warning([fname,' doesn''t report the right name in the H-1 line'])
+   if ~strcmp(tokens{1},upper(funcname))
+      warning([funcname,' doesn''t report the right name in the H-1 line'])
    end
    descr = tokens{2};
 end

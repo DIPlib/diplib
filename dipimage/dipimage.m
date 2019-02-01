@@ -1,4 +1,4 @@
-%DIPIMAGE   Starts the interactive user interface DIPimage
+%DIPIMAGE   Starts the DIPimage GUI
 %   DIPIMAGE, on its own, starts DIPimage, an graphical user interface
 %   that gives easy access to the basic functionality of the DIPimage
 %   toolbox.
