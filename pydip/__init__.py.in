@@ -78,3 +78,9 @@ import importlib.util
 if importlib.util.find_spec('PyDIP.PyDIPviewer') is not None:
     import PyDIP.PyDIPviewer as viewer
     hasDIPviewer = True
+
+# Here we import PyDIPjavaio if it exists
+hasDIPjavaio = False
+if importlib.util.find_spec('PyDIP.PyDIPjavaio') is not None:
+    import PyDIP.PyDIPjavaio as javaio
+    hasDIPjavaio = True

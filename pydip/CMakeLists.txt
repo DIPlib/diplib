@@ -46,3 +46,21 @@ if(DIP_BUILD_DIPVIEWER)
    install(TARGETS PyDIPviewer DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
    add_dependencies(PyDIP PyDIPviewer)
 endif()
+
+# Repeat the above for PyDIPjavaio
+if(DIP_BUILD_JAVAIO)
+   # Find sources
+   file(GLOB DIP_PYTHON_JAVAIO_SRC "${CMAKE_CURRENT_LIST_DIR}/javaio/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/javaio/*.h")
+   update_deps_file("PyDIPjavaio_sources" "${DIP_PYTHON_JAVAIO_SRC}")
+   # Build PyDIPjavaio
+   pybind11_add_module(PyDIPjavaio ${DIP_PYTHON_JAVAIO_SRC})
+   target_link_libraries(PyDIPjavaio PRIVATE DIP DIPjavaio)
+   if(APPLE)
+      set_target_properties(PyDIPjavaio PROPERTIES INSTALL_RPATH "@loader_path/${diplib_dir}")
+   else()
+      set_target_properties(PyDIPjavaio PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
+   endif()
+   # Install PyDIPjavaio
+   install(TARGETS PyDIPjavaio DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
+   add_dependencies(PyDIP PyDIPjavaio)
+endif()
