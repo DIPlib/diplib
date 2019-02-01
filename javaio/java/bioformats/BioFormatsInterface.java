@@ -20,6 +20,7 @@
 package org.diplib;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import loci.formats.ImageReader;
 import loci.formats.FormatTools;
@@ -42,13 +43,16 @@ public class BioFormatsInterface {
       reader.setMetadataStore( meta );
       reader.setId( file );
       
+      PhysicalQuantity[] pixelSize = { GetPhysicalQuantity( meta.getPixelsPhysicalSizeX( 0 ) ), 
+                                       GetPhysicalQuantity( meta.getPixelsPhysicalSizeY( 0 ) ),
+                                       GetPhysicalQuantity( meta.getPixelsPhysicalSizeZ( 0 ) ) };
+      
       if ( reader.getImageCount() == 1 ) {
          // 2D
          long[] sizes = { reader.getSizeX(), reader.getSizeY() };
          image.SetSizes( sizes );
+         pixelSize = Arrays.copyOfRange( pixelSize, 0, 2 );
          image.SetTensorSizes( reader.getRGBChannelCount() );
-         image.SetPixelSize( 0, GetPhysicalQuantity( meta.getPixelsPhysicalSizeX( 0 ) ) );
-         image.SetPixelSize( 1, GetPhysicalQuantity( meta.getPixelsPhysicalSizeY( 0 ) ) );
          
          if ( reader.isInterleaved() ) {
             long[] strides = { reader.getRGBChannelCount(), reader.getSizeX()*reader.getRGBChannelCount() };
@@ -63,10 +67,8 @@ public class BioFormatsInterface {
          // More than 2D. Read only first series, and interpret all images as third dimension.
          long[] sizes = { reader.getSizeX(), reader.getSizeY(), reader.getImageCount() };
          image.SetSizes( sizes );
+         image.SetPixelSize( pixelSize );
          image.SetTensorSizes( reader.getRGBChannelCount() );
-         image.SetPixelSize( 0, GetPhysicalQuantity( meta.getPixelsPhysicalSizeX( 0 ) ) );
-         image.SetPixelSize( 1, GetPhysicalQuantity( meta.getPixelsPhysicalSizeY( 0 ) ) );
-         image.SetPixelSize( 2, GetPhysicalQuantity( meta.getPixelsPhysicalSizeZ( 0 ) ) );
          
          if ( reader.isInterleaved() ) {
             long[] strides = { reader.getRGBChannelCount(), reader.getSizeX()*reader.getRGBChannelCount(), reader.getSizeX()*reader.getSizeY()*reader.getRGBChannelCount() };
@@ -98,6 +100,13 @@ public class BioFormatsInterface {
                                   break;
       }
       
+      image.SetPixelSize( pixelSize );
+      
+      // Assume that 3-channel images are RGB
+      if ( reader.getRGBChannelCount() == 3 ) {
+         image.SetColorSpace( "RGB" );
+      }
+      
       image.Forge();
       ByteBuffer buf = image.Origin();
       
@@ -107,6 +116,18 @@ public class BioFormatsInterface {
       FileInformation info = new FileInformation();
       info.name = file;
       info.fileType = reader.getFormat();
+      info.dataType = image.DataType();
+      info.significantBits = meta.getPixelsSignificantBits( 0 ).getValue();
+      info.sizes = image.Sizes();
+      if ( image.TensorSizes().length > 0 ) {
+         info.tensorElements = image.TensorSizes()[ 0 ];
+      } else {
+         info.tensorElements = 1;
+      }
+      info.colorSpace = image.ColorSpace();
+      info.pixelSize = image.PixelSize();
+      info.numberOfImages = 1;
+      //info.history = {};
       
       return info;
    }

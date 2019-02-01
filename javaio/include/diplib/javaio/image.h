@@ -54,11 +54,17 @@ JNIEXPORT jstring JNICALL Java_org_diplib_Image_DataType( JNIEnv *, jobject, jlo
 /// dip::Image::SetDataType( dip::String )
 JNIEXPORT void JNICALL Java_org_diplib_Image_SetDataType( JNIEnv *, jobject, jlong, jstring );
 
-/// dip::Image::PixelSize( dip::uint )
-JNIEXPORT jobject JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *, jobject, jlong, jlong );
+/// dip::Image::ColorSpace()
+JNIEXPORT jstring JNICALL Java_org_diplib_Image_ColorSpace( JNIEnv *, jobject, jlong );
 
-/// dip::Image::SetPixelSize( dip::uint, dip::PhysicalQuantity )
-JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *, jobject, jlong, jlong, jobject );
+/// dip::Image::SetColorSpace( dip::String )
+JNIEXPORT void JNICALL Java_org_diplib_Image_SetColorSpace( JNIEnv *, jobject, jlong, jstring );
+
+/// dip::Image::PixelSize()
+JNIEXPORT jobjectArray JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *, jobject, jlong );
+
+/// dip::Image::SetPixelSize( dip::PixelSize( dip::PhysicalQuantityArray ) )
+JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *, jobject, jlong, jobjectArray );
 
 /// dip::Image::Forge()
 JNIEXPORT void JNICALL Java_org_diplib_Image_Forge( JNIEnv *, jobject, jlong );

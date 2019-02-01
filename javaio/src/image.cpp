@@ -97,18 +97,38 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_SetDataType( JNIEnv *env, jobject, 
    image->SetDataType( DataType( StringFromJava( env, dt ) ) );
 }
 
-/// dip::Image::PixelSize( dip::uint )
-JNIEXPORT jobject JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *env, jobject, jlong ptr, jlong dim ) {
+// dip::Image::ColorSpace()
+JNIEXPORT jstring JNICALL Java_org_diplib_Image_ColorSpace( JNIEnv *env, jobject, jlong ptr ) {
    Image *image = (Image*) ptr;
    
-   return PhysicalQuantityToJava( env, image->PixelSize( (dip::uint) dim ) );
+   return StringToJava( env, image->ColorSpace() );
 }
 
-/// dip::Image::SetPixelSize( dip::uint, dip::PhysicalQuantity )
-JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *env, jobject, jlong ptr, jlong dim, jobject size ) {
+// dip::Image::SetColorSpace( dip::String )
+JNIEXPORT void JNICALL Java_org_diplib_Image_SetColorSpace( JNIEnv *env, jobject, jlong ptr, jstring dt ) {
    Image *image = (Image*) ptr;
 
-   image->SetPixelSize( (dip::uint) dim, PhysicalQuantityFromJava( env, size ) );
+   image->SetColorSpace( StringFromJava( env, dt ) );
+}
+
+/// dip::Image::PixelSize( )
+JNIEXPORT jobjectArray JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *env, jobject, jlong ptr ) {
+   Image *image = (Image*) ptr;
+   
+   PixelSize ps = image->PixelSize();
+   PhysicalQuantityArray arr( image->Dimensionality() );
+   for (size_t ii=0; ii != arr.size(); ++ii) {
+      arr[ ii ] = ps[ ii ];
+   }
+   
+   return PhysicalQuantityArrayToJava( env, arr );
+}
+
+/// dip::Image::SetPixelSize( dip::PixelSize( dip::PhysicalQuantity ) )
+JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *env, jobject, jlong ptr, jobjectArray size ) {
+   Image *image = (Image*) ptr;
+   
+   image->SetPixelSize( PhysicalQuantityArrayFromJava( env, size ) );
 }
 
 // dip::Image::Forge()
@@ -173,8 +193,10 @@ static JNINativeMethodCPP image_natives__[] = {
    {"SetTensorSizes",  "(J[J)V",                   (void*)Java_org_diplib_Image_SetTensorSizes },
    {"DataType",        "(J)Ljava/lang/String;",    (void*)Java_org_diplib_Image_DataType },
    {"SetDataType",     "(JLjava/lang/String;)V",   (void*)Java_org_diplib_Image_SetDataType },
-   {"PixelSize",       "(JJ)Lorg/diplib/PhysicalQuantity;",  (void*)Java_org_diplib_Image_PixelSize },
-   {"SetPixelSize",    "(JJLorg/diplib/PhysicalQuantity;)V", (void*)Java_org_diplib_Image_SetPixelSize },
+   {"ColorSpace",      "(J)Ljava/lang/String;",    (void*)Java_org_diplib_Image_ColorSpace },
+   {"SetColorSpace",   "(JLjava/lang/String;)V",   (void*)Java_org_diplib_Image_SetColorSpace },
+   {"PixelSize",       "(J)[Lorg/diplib/PhysicalQuantity;",  (void*)Java_org_diplib_Image_PixelSize },
+   {"SetPixelSize",    "(J[Lorg/diplib/PhysicalQuantity;)V", (void*)Java_org_diplib_Image_SetPixelSize },
    {"Forge",           "(J)V",                     (void*)Java_org_diplib_Image_Forge },
    {"Strip",           "(J)V",                     (void*)Java_org_diplib_Image_Strip },
    {"Origin",          "(J)Ljava/nio/ByteBuffer;", (void*)Java_org_diplib_Image_Origin },
@@ -190,7 +212,7 @@ void RegisterImageNatives( JNIEnv *env ) {
       DIP_THROW_RUNTIME( "Registering native functions: cannot find org.diplib.Image" );
    }   
    
-   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives__, 17) < 0 ) {
+   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives__, 19) < 0 ) {
       DIP_THROW_RUNTIME( "Failed to register native functions for org.diplib.Image" );
    }   
 }

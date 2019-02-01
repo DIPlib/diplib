@@ -105,13 +105,21 @@ public class Image {
       verify();
       SetDataType( ptr_, dt );
    }
-   public PhysicalQuantity PixelSize( long dim ) {
+   public String ColorSpace() { 
       verify();
-      return PixelSize( ptr_, dim );
+      return ColorSpace( ptr_ );
    }
-   public void SetPixelSize( long dim, PhysicalQuantity size ) {
+   public void SetColorSpace( String cs ) { 
       verify();
-      SetPixelSize( ptr_, dim, size );
+      SetColorSpace( ptr_, cs );
+   }
+   public PhysicalQuantity[] PixelSize( ) {
+      verify();
+      return PixelSize( ptr_ );
+   }
+   public void SetPixelSize( PhysicalQuantity[] size ) {
+      verify();
+      SetPixelSize( ptr_, size );
    }
    public void Forge( ) {
       verify();
@@ -138,8 +146,10 @@ public class Image {
    protected native void SetTensorSizes( long ptr, long[] sizes);
    protected native String DataType( long ptr );
    protected native void SetDataType( long ptr, String dt );
-   protected native PhysicalQuantity PixelSize( long ptr, long dim );
-   protected native void SetPixelSize( long ptr, long dim, PhysicalQuantity size );
+   protected native String ColorSpace( long ptr );
+   protected native void SetColorSpace( long ptr, String cs );
+   protected native PhysicalQuantity[] PixelSize( long ptr );
+   protected native void SetPixelSize( long ptr, PhysicalQuantity[] size );
    protected native void Forge( long ptr );
    protected native void Strip( long ptr );
    protected native ByteBuffer Origin( long ptr );

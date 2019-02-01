@@ -41,9 +41,9 @@ PhysicalQuantity PhysicalQuantityFromJava( JNIEnv *env, jobject obj ) {
 
 jobject PhysicalQuantityToJava( JNIEnv *env, const PhysicalQuantity &quantity ) {
    jclass cls = env->FindClass( "org/diplib/PhysicalQuantity" );
-   jmethodID constructor = env->GetMethodID( cls, "<init>", "(JLjava/lang/String;)V" );
+   jmethodID constructor = env->GetMethodID( cls, "<init>", "(DLjava/lang/String;)V" );
    
-   return env->NewObject( cls, constructor, StringToJava( env, quantity.units.String().c_str() ) );
+   return env->NewObject( cls, constructor, quantity.magnitude, StringToJava( env, quantity.units.String().c_str() ) );
 }
 
 PhysicalQuantityArray PhysicalQuantityArrayFromJava( JNIEnv *env, jobjectArray jarr ) {
