@@ -10,15 +10,15 @@ import PyDIP as dip
 
 
 def replThread():
-   code.interact( local={ 'dip': dip, 'Show': dip.viewer.Show } )
+    code.interact(local={'dip': dip, 'Show': dip.viewer.Show})
 
 
-thread = threading.Thread( target=replThread )
+thread = threading.Thread(target=replThread)
 thread.start()
 
 while thread.is_alive():
-   dip.viewer.Draw()
-   time.sleep( 0.01 )
+    dip.viewer.Draw()
+    time.sleep(0.01)
 
 thread.join()
 

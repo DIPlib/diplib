@@ -1,9 +1,10 @@
-file(GLOB DIPLIB_SOURCES "${CMAKE_CURRENT_LIST_DIR}/*/*.h"
-                         "${CMAKE_CURRENT_LIST_DIR}/*/*.cpp"
-                         "${PROJECT_SOURCE_DIR}/include/*.h"
-                         "${PROJECT_SOURCE_DIR}/include/diplib/*.h"
-                         "${PROJECT_SOURCE_DIR}/include/diplib/library/*.h"
-                         "${PROJECT_SOURCE_DIR}/include/diplib/private/*.h")
+file(GLOB DIPLIB_SOURCES
+     "${CMAKE_CURRENT_LIST_DIR}/*/*.h"
+     "${CMAKE_CURRENT_LIST_DIR}/*/*.cpp"
+     "${PROJECT_SOURCE_DIR}/include/*.h"
+     "${PROJECT_SOURCE_DIR}/include/diplib/*.h"
+     "${PROJECT_SOURCE_DIR}/include/diplib/library/*.h"
+     "${PROJECT_SOURCE_DIR}/include/diplib/private/*.h")
 update_deps_file("DIPlib_sources" "${DIPLIB_SOURCES}")
 add_library(DIP "${CMAKE_CURRENT_LIST_DIR}/support/matrix.cpp" ${DIPLIB_SOURCES}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
 target_include_directories(DIP PUBLIC

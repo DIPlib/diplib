@@ -9,21 +9,21 @@ a = dip.Image((512, 512))
 dip.DrawEllipsoid(a, (200, 200), (256, 256))
 dip.DrawEllipsoid(a, (50, 50), (350, 350))
 
-gv = dip.Gradient( a );
-gm = dip.Norm( gv );
-bin = dip.IsodataThreshold( gm );
+gv = dip.Gradient(a)
+gm = dip.Norm(gv)
+bin = dip.IsodataThreshold(gm)
 
 # Find circles using low-level functions
-h = dip.HoughTransformCircleCenters( bin, gv )
-m = dip.FindHoughMaxima( h, 10 )
-d = dip.PointDistanceDistribution( bin, m )
+h = dip.HoughTransformCircleCenters(bin, gv)
+m = dip.FindHoughMaxima(h, 10)
+d = dip.PointDistanceDistribution(bin, m)
 r = d.MaximumLikelihood()
-print( m, r )
+print(m, r)
 
 # Find circles using integrated function
-c = dip.FindHoughCircles( bin, gv, (), 10 )
+c = dip.FindHoughCircles(bin, gv, (), 10)
 
-print( c )
+print(c)
 
 # Show original and transform
 dip.viewer.Show(bin, "Input")

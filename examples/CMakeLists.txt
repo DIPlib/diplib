@@ -55,46 +55,46 @@ add_custom_target(examples DEPENDS
 
 if(DIP_BUILD_DIPVIEWER)
 
-# A test program that demonstrates some of the low-level functionality of DIPviewer
-add_executable(viewer viewer.cpp)
-target_compile_definitions(viewer PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
-target_link_libraries(viewer DIP DIPviewer Threads::Threads)
+   # A test program that demonstrates some of the low-level functionality of DIPviewer
+   add_executable(viewer viewer.cpp)
+   target_compile_definitions(viewer PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(viewer DIP DIPviewer Threads::Threads)
 
-# An example program that does simple image manipulation and uses dip::viewer::ShowSimple
-add_executable(display display.cpp)
-target_compile_definitions(display PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
-target_link_libraries(display DIP DIPviewer)
+   # An example program that does simple image manipulation and uses dip::viewer::ShowSimple
+   add_executable(display display.cpp)
+   target_compile_definitions(display PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(display DIP DIPviewer)
 
-# A simple tool that shows an image file using dip::viewer::Show
-add_executable(fileviewer fileviewer.cpp)
-target_link_libraries(fileviewer DIP DIPviewer)
+   # A simple tool that shows an image file using dip::viewer::Show
+   add_executable(fileviewer fileviewer.cpp)
+   target_link_libraries(fileviewer DIP DIPviewer)
 
-# An example program that shows how to delete small objects from a grey-value image, and use dip::viewer::ShowSimple
-add_executable(select_objects select_objects.cpp)
-target_compile_definitions(select_objects PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
-target_link_libraries(select_objects DIP DIPviewer)
+   # An example program that shows how to delete small objects from a grey-value image, and use dip::viewer::ShowSimple
+   add_executable(select_objects select_objects.cpp)
+   target_compile_definitions(select_objects PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(select_objects DIP DIPviewer)
 
-# An example program that shows how to apply a convolution with a custom kernel to an image
-add_executable(filter_image filter_image.cpp)
-target_compile_definitions(filter_image PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
-target_link_libraries(filter_image DIP DIPviewer)
+   # An example program that shows how to apply a convolution with a custom kernel to an image
+   add_executable(filter_image filter_image.cpp)
+   target_compile_definitions(filter_image PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(filter_image DIP DIPviewer)
 
-add_dependencies(examples
-      viewer
-      display
-      fileviewer
-      select_objects
-      filter_image
-)
+   add_dependencies(examples
+                    viewer
+                    display
+                    fileviewer
+                    select_objects
+                    filter_image
+                    )
 
-find_package(OpenCV COMPONENTS core imgproc highgui)
-if(OpenCV_FOUND)
+   find_package(OpenCV COMPONENTS core imgproc highgui)
+   if(OpenCV_FOUND)
 
-# An example program that uses both DIPlib and OpenCV
-add_executable(opencv_with_dip opencv_with_dip.cpp)
-target_compile_definitions(opencv_with_dip PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
-target_link_libraries( opencv_with_dip DIP DIPviewer ${OpenCV_LIBS} )
+      # An example program that uses both DIPlib and OpenCV
+      add_executable(opencv_with_dip opencv_with_dip.cpp)
+      target_compile_definitions(opencv_with_dip PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+      target_link_libraries(opencv_with_dip DIP DIPviewer ${OpenCV_LIBS})
 
-endif()
+   endif()
 
 endif(DIP_BUILD_DIPVIEWER)

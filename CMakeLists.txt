@@ -17,7 +17,7 @@ add_definitions(-DDIP_COPYRIGHT_YEAR="2018")
 
 # Debug or Release?
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Static or shared?

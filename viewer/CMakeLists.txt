@@ -1,9 +1,10 @@
-file(GLOB DIP_VIEWER_SRC "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
-                         "${CMAKE_CURRENT_LIST_DIR}/src/*.h"
-                         "${CMAKE_CURRENT_LIST_DIR}/src/manager/*.cpp"
-                         "${CMAKE_CURRENT_LIST_DIR}/src/manager/*.h"
-                         "${CMAKE_CURRENT_LIST_DIR}/include/*.h"
-                         "${CMAKE_CURRENT_LIST_DIR}/include/diplib/viewer/*.h")
+file(GLOB DIP_VIEWER_SRC
+     "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
+     "${CMAKE_CURRENT_LIST_DIR}/src/*.h"
+     "${CMAKE_CURRENT_LIST_DIR}/src/manager/*.cpp"
+     "${CMAKE_CURRENT_LIST_DIR}/src/manager/*.h"
+     "${CMAKE_CURRENT_LIST_DIR}/include/*.h"
+     "${CMAKE_CURRENT_LIST_DIR}/include/diplib/viewer/*.h")
 update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
 add_library(DIPviewer ${DIP_VIEWER_SRC})
 if(DIP_SHARED_LIBRARY)

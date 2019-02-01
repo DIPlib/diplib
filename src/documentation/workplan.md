@@ -79,6 +79,9 @@ document's source</a> for the most up-to-date version.
     output, which could mean a small increase in performance. When compiled with *FFTW*, such
     paths already exist.
 
+-   Include zlib and LibTIFF under `dependencies/` so they're always available? This would simplify
+    compilation for others, avoid dynamically linked dependencies, etc. 
+
 
 ## Functionality currently not in the old *DIPlib* that would be good to include
 
@@ -107,18 +110,14 @@ document's source</a> for the most up-to-date version.
 
 -   Colocalization measurements.
 
--   Colocalization measurements.
-
 -   Radon transform for lines, Hough transform for lines.
 
 -   Level-set segmentation, graph-cut segmentation.
 
--   Stochastic watershed.
-
 -   Super pixels.
 
 -   Building a graph out of a labeled image (e.g. from watershed). Graph format?
-    Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
+    Graph manipulation functions, e.g. region merging.
 
 -   Scalespace analysis.
 
