@@ -48,7 +48,7 @@ namespace dip {
 ///
 /// This function applies the following mapping to the intensities \f$I\f$ in image `in`:
 ///
-/// \f[ A = -log_{10}(1-I/I_0) \f]
+/// \f[ A = -log_{10}(I/I_0) \f]
 ///
 /// with \f$I_0\f$ the intensity of the illumination (`background`), and \f$A\f$ the absorbance written to `out`).
 ///
@@ -391,7 +391,7 @@ inline Image WienerDeconvolution(
 ///
 /// This routine implements a simple correction of absorption, reflection and bleaching in 3D fluorescence
 /// imaging based upon the assumption that the sum of these effects result in a exponential extinction of
-/// the signal as a function of depth. Only pixels within `mask`, if given are taken into account to determine
+/// the signal as a function of depth. Only pixels within `mask`, if given, are taken into account to determine
 /// this attenuation, but the whole image is corrected.
 ///
 /// The attenuation is estimated based on the mean of the non-masked pixels as a function of depth. If
@@ -415,7 +415,7 @@ DIP_EXPORT void ExponentialFitCorrection(
       Image& out,
       dfloat percentile = -1.0,
       String const& fromWhere = "first plane",
-      dfloat hysteresis = 0.0,
+      dfloat hysteresis = 1.0,
       String const& weighting = "none"
 );
 inline Image ExponentialFitCorrection(
@@ -423,7 +423,7 @@ inline Image ExponentialFitCorrection(
       Image const& mask,
       dfloat percentile = -1.0,
       String const& fromWhere = "first plane",
-      dfloat hysteresis = 0.0,
+      dfloat hysteresis = 1.0,
       String const& weighting = "none"
 ) {
    Image out;
@@ -489,7 +489,7 @@ inline Image AttenuationCorrection(
 /// medium), as well as the pixel size information in `in` (the x and y pixel size must be the same, the z size
 /// must be have the same units, but can be different).
 ///
-/// `fAttenuation` and `bAttenuation` are the forward and backward attentuation factors, respectively.
+/// `fAttenuation` and `bAttenuation` are the forward and backward attenuation factors, respectively.
 ///
 /// The ray tracing method uses a step size of `rayStep`, and a ray casting oversampling of `oversample`.
 ///

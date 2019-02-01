@@ -33,7 +33,6 @@ void BeerLambertMapping(
    DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DataType dt = DataType::SuggestFloat( in.DataType() );
    Divide( in, background, out, dt );
-   dip::Subtract( 1, out, out, dt );
    dip::Log10( out, out );
    dip::Invert( out, out );
 }
@@ -48,7 +47,6 @@ void InverseBeerLambertMapping(
    DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    dip::Invert( in, out );
    dip::Exp10( out, out );
-   dip::Subtract( 1, out, out, out.DataType() );
    MultiplySampleWise( out, background, out, out.DataType() );
 }
 
