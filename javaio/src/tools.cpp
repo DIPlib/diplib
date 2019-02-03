@@ -18,7 +18,7 @@
  */
 
 #include "diplib.h"
-#include "diplib/javaio/tools.h"
+#include "tools.h"
 
 namespace dip {
 

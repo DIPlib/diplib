@@ -19,8 +19,8 @@
 
 #include "diplib.h"
 #include "diplib/javaio.h"
-#include "diplib/javaio/image.h"
-#include "diplib/javaio/fileinformation.h"
+#include "image.h"
+#include "fileinformation.h"
 
 #include <jni.h>
 #include <dlfcn.h>

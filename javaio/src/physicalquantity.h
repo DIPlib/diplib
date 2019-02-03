@@ -21,7 +21,6 @@
 #define DIP_JAVAIO_PHYSICALQUANTITY_H
 
 #include "diplib.h"
-#include "diplib/javaio/physicalquantity.h"
 
 #include <jni.h>
 

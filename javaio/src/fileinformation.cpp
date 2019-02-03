@@ -18,9 +18,9 @@
  */
 
 #include "diplib.h"
-#include "diplib/javaio/tools.h"
-#include "diplib/javaio/physicalquantity.h"
-#include "diplib/javaio/fileinformation.h"
+#include "tools.h"
+#include "physicalquantity.h"
+#include "fileinformation.h"
 
 namespace dip {
 

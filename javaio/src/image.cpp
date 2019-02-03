@@ -18,9 +18,9 @@
  */
 
 #include "diplib.h"
-#include "diplib/javaio/tools.h"
-#include "diplib/javaio/image.h"
-#include "diplib/javaio/physicalquantity.h"
+#include "tools.h"
+#include "image.h"
+#include "physicalquantity.h"
 
 extern "C" {
 
