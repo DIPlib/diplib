@@ -21,7 +21,7 @@
 #define DIP_VIEWER_EXPORT_H
 
 /// \file
-/// \brief Declares the DIPVIEWER_EXPORT and DIPVIEWER_NO_EXPORT macros.
+/// \brief Declares the `DIPVIEWER_EXPORT` and `DIPVIEWER_NO_EXPORT` macros.
 
 /// \def DIPVIEWER_EXPORT
 /// \brief Indicates that the function or class is exported from the shared library.

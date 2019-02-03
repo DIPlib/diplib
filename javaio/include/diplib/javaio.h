@@ -23,9 +23,17 @@
 #include "diplib.h"
 #include "diplib/file_io.h"
 
+/// \file
+/// \brief Declares the functionality in namespace `dip::javaio`.
+
 namespace dip {
 
+/// \brief Contains all functionality for \ref javaio.
 namespace javaio {
+
+/// \defgroup javaio DIPjavaio
+/// \brief An interface to Java file I/O functionality
+/// \{
 
 /// \brief Reads the image in a file `filename` recognized by a Java `interface` and puts it in `out`.
 ///
@@ -46,6 +54,8 @@ inline Image ImageReadJavaIO(
    ImageReadJavaIO( out, filename, interface );
    return out;
 }
+
+/// \}
 
 } // namespace javaio
 
