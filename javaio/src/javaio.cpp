@@ -60,7 +60,7 @@ JNIEnv *GetEnv() {
      // NOTE: The JVM is not multi-threaded, so all calls must happen on this thread
      JavaVMInitArgs vm_args;
      JavaVMOption* options = new JavaVMOption[ 1 ];
-     String classpathopt = "-Djava.class.path=" + GetLibraryPath() + "/DIPjavaio.jar:" DIP__CLASSPATH;
+     String classpathopt = "-Djava.class.path=" + GetLibraryPath() + "/DIPjavaio.jar";
    
      options[ 0 ].optionString = (char*) classpathopt.c_str();
      vm_args.version = JNI_VERSION_1_8;

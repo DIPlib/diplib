@@ -1,5 +1,6 @@
 # Automatically generated, don't edit!
 set(DIPjavaio_sources_bogus
+Manifest.txt.in
 java/FileInformation.java
 java/Image.java
 java/PhysicalQuantity.java
