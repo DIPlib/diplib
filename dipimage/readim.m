@@ -243,12 +243,15 @@ end
 % Read image data
 reader = bfGetReader(filename);
 sz = [reader.getSizeC(),reader.getSizeY(),reader.getSizeX(),reader.getSizeZ(),reader.getSizeT()];
-image = zeros(sz);
+image = [];
 for t=1:sz(5)
    for c=1:sz(1)
       for z=1:sz(4)
          index = reader.getIndex(z-1,c-1,t-1)+1;
          tmp = bfGetPlane(reader,index);
+         if isempty(image)
+            image = zeros(sz,class(tmp));
+         end
          image(c,:,:,z,t) = tmp;
       end
    end
@@ -257,6 +260,9 @@ newsz = sz(2:5);
 newsz(newsz==1) = [];
 image = reshape(image,[sz(1),newsz]);
 image = dip_image(image,sz(1));
+if numtensorel(image)==3
+   image = joinchannels('RGB',image);
+end
 
 % Read image metadata
 omeMeta = reader.getMetadataStore();
