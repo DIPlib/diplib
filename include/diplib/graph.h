@@ -92,12 +92,12 @@ class DIP_NO_EXPORT Graph {
 
       // TODO: Make a graph from a labelled image, where vertices are labeled regions.
 
-      /// \bried returns the number of vertices in the graph.
+      /// \brief returns the number of vertices in the graph.
       dip::uint NumberOfVertices() const {
          return vertices_.size();
       };
 
-      /// \bried returns the number of edges in the graph.
+      /// \brief returns the number of edges in the graph.
       dip::uint NumberOfEdges() const {
          return edges_.size();
       };
