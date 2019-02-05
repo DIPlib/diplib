@@ -87,6 +87,19 @@ target_compile_definitions(DIP PRIVATE
                            EIGEN_MPL2_ONLY # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
                            EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
 
+# zlib (for use in libics and libtiff)
+set(DIP_ENABLE_ZLIB ON CACHE BOOL "Enable zlib compression in ICS and TIFF (deflate)")
+if(DIP_ENABLE_ZLIB)
+   add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/zlib" "${PROJECT_BINARY_DIR}/zlib" EXCLUDE_FROM_ALL)
+endif()
+
+# libjpeg (for use in libtiff)
+set(DIP_ENABLE_JPEG ON CACHE BOOL "Enable JPEG compression in TIFF")
+if(DIP_ENABLE_JPEG)
+   add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libjpeg" "${PROJECT_BINARY_DIR}/libjpeg" EXCLUDE_FROM_ALL)
+   target_compile_definitions(DIP PRIVATE DIP__HAS_JPEG)
+endif()
+
 # libics
 set(DIP_ENABLE_ICS ON CACHE BOOL "Enable ICS file support")
 if(DIP_ENABLE_ICS)
@@ -96,12 +109,10 @@ if(DIP_ENABLE_ICS)
 endif()
 
 # libtiff
-find_package(TIFF)
-if(TIFF_FOUND)
-   set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
-endif()
+set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 if(DIP_ENABLE_TIFF)
-   target_link_libraries(DIP PRIVATE TIFF::TIFF)
+   add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libtiff" "${PROJECT_BINARY_DIR}/libtiff" EXCLUDE_FROM_ALL)
+   target_link_libraries(DIP PRIVATE tiff)
    target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
 endif()
 

@@ -46,12 +46,6 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Zlib
-find_package(ZLIB)
-if(ZLIB_FOUND)
-   set(LIBICS_USE_ZLIB TRUE CACHE BOOL "Use Zlib in libics")
-endif()
-
 # Reentrant string tokenization
 include(CheckFunctionExists)
 check_function_exists(strtok_r HAVE_STRTOK_R)
@@ -87,28 +81,26 @@ add_library(libics SHARED ${SOURCES} ${HEADERS})
 target_compile_definitions(libics PRIVATE BUILD_ICSLIB) # For Windows, when compiling DLL
 target_compile_definitions(libics INTERFACE USE_ICSLIB_DLL) # For Windows, when linking against DLL
 target_include_directories(libics PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+if(TARGET zlibstatic)
+   target_link_libraries(libics PRIVATE zlibstatic)
+   target_compile_definitions(libics PUBLIC -DICS_ZLIB)
+endif()
 if(UNIX)
    set_target_properties(libics PROPERTIES OUTPUT_NAME "ics")
-   target_link_libraries(libics PUBLIC m)
+   target_link_libraries(libics PRIVATE m)
 endif(UNIX)
 
 # Build a static library
 add_library(libics_static STATIC ${SOURCES} ${HEADERS})
 target_include_directories(libics_static PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-if(UNIX)
-   set_target_properties(libics_static PROPERTIES OUTPUT_NAME "ics")
-   target_link_libraries(libics PUBLIC m)
-endif(UNIX)
-
-# Link against zlib
-if(LIBICS_USE_ZLIB)
-   target_link_libraries(libics PUBLIC ${ZLIB_LIBRARIES})
-   target_include_directories(libics PRIVATE ${ZLIB_INCLUDE_DIRS})
-   target_compile_definitions(libics PUBLIC -DICS_ZLIB)
-   target_link_libraries(libics_static PUBLIC ${ZLIB_LIBRARIES})
-   target_include_directories(libics_static PRIVATE ${ZLIB_INCLUDE_DIRS})
+if(TARGET zlibstatic)
+   target_link_libraries(libics_static PRIVATE zlibstatic)
    target_compile_definitions(libics_static PUBLIC -DICS_ZLIB)
 endif()
+if(UNIX)
+   set_target_properties(libics_static PROPERTIES OUTPUT_NAME "ics")
+   target_link_libraries(libics_static PRIVATE m)
+endif(UNIX)
 
 # Reentrant string tokenization
 if (HAVE_STRTOK_R)

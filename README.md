@@ -146,6 +146,22 @@ limitations under the License.
   GNU Lesser General Public License, Version 2.1  
   see [`dependencies/libics/GNU_LICENSE`](dependencies/libics/GNU_LICENSE)
 
+- *LibTIFF* (its use can be disabled)  
+  Copyright 1988-1997 Sam Leffler  
+  Copyright 1991-1997 Silicon Graphics, Inc.  
+  2-Clause BSD-like Licence  
+  see [`dependencies/libtiff/COPYRIGHT`](dependencies/libtiff/COPYRIGHT)
+
+- *zlib* (used by *libics* and/or *LibTIFF*)  
+  Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
+  zlib Licence  
+  see [`dependencies/zlib/LICENSE.txt`](dependencies/zlib/LICENSE.txt)
+
+- *libjpeg* (used by *LibTIFF*)  
+  Copyright 1991-2018, Thomas G. Lane, Guido Vollbeding  
+  Custom BSD-like Licence  
+  see [`dependencies/libjpeg/README`](dependencies/libjpeg/README)
+
 - *pybind11* (only used in the *Python* bindings)  
   Copyright 2016 Wenzel Jakob  
   3-Clause BSD License  
@@ -161,15 +177,6 @@ Note that all of these have permissive open-source licenses similar in spirit
 to the Apache License, except for *OME Bio-Formats*.
 
 *DIPlib* also optionally links against:
-
-- *LibTIFF* (as installed on your system)  
-  Copyright 1988-1997 Sam Leffler  
-  Copyright 1991-1997 Silicon Graphics, Inc.  
-  MIT-style license
-
-- *ZLib* (as installed on your system)  
-  Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
-  MIT-style license
 
 - *FFTW3* (as installed on your system, not used by default)  
   Copyright (c) 2003, 2007-14 Matteo Frigo  

@@ -256,17 +256,12 @@ string(TIMESTAMP TODAYS_DATE "%Y%m%d" UTC)
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}-${TODAYS_DATE}")
 #CPACK_PACKAGE_ICON
 include(CPack)
-# TODO: The package doesn't contain any of the dependencies: libtiff, libz, OpenMP, C++ stdlib, etc.
+# TODO: The package doesn't contain any of the dependencies: OpenMP, C++ stdlib, etc.
 #       Including these is highly dependent on the configuration of the system used for compiling.
 #       Posible solutions:
-#        - `install(PROGRAMS ${TIFF_LIBRARIES} DESTINATION lib)`
+#        - `install(PROGRAMS ${libname} DESTINATION lib)`
 #          We'd then need to modify the library names and the search locations using `install_name_tool`,
 #          see http://doc.qt.io/qt-4.8/deployment-mac.html#linking-the-application-to-qt-as-frameworks
-#        - `set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})`
-#          to link against static libraries where possible, but this requires we also link against
-#          libjpeg libz, and who knows what else. And it doesn't fix the problems with OpenMP, stdlib, etc.
-#        - Include libtiff, libjpeg and libz in the repository, just like libics.
-#          (And if we include libjpeg any way, we might as well port the JPEG reader over from the old dipIO.)
 #        See also: https://cmake.org/cmake/help/v3.5/manual/cmake-packages.7.html#creating-relocatable-packages
 
 
@@ -327,12 +322,27 @@ else()
 endif()
 
 if(DIP_ENABLE_ICS)
-   message(" * ICS file IO enabled")
+   if(DIP_ENABLE_ZLIB)
+      message(" * ICS file IO enabled, with zlib")
+   else()
+      message(" * ICS file IO enabled, without zlib")
+   endif()
 else()
    message(" * ICS file IO disabled")
 endif()
 if(DIP_ENABLE_TIFF)
-   message(" * TIFF file IO enabled")
+   set(features "")
+   if(DIP_ENABLE_ZLIB)
+      set(features "${features}, with zlib")
+   else()
+      set(features "${features}, without zlib")
+   endif()
+   if(DIP_ENABLE_JPEG)
+      set(features "${features}, with JPEG")
+   else()
+      set(features "${features}, without JPEG")
+   endif()
+   message(" * TIFF file IO enabled${features}")
 else()
    message(" * TIFF file IO disabled")
 endif()
