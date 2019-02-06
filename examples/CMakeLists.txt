@@ -69,7 +69,6 @@ if(DIP_BUILD_DIPVIEWER)
    add_executable(fileviewer fileviewer.cpp)
    target_link_libraries(fileviewer DIP DIPviewer)
    if(DIP_BUILD_JAVAIO)
-      target_compile_definitions(fileviewer PRIVATE DIP__HAS_JAVAIO)
       target_link_libraries(fileviewer DIPjavaio)
    endif()
 

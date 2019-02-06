@@ -57,6 +57,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/regions.h
 ../include/diplib/saturated_arithmetic.h
 ../include/diplib/segmentation.h
+../include/diplib/simple_file_io.h
 ../include/diplib/statistics.h
 ../include/diplib/testing.h
 ../include/diplib/transform.h

@@ -187,12 +187,11 @@ DIP_EXPORT void ImageWriteICS(
 ///
 /// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
 /// more common ones. These are the most obvious limitations:
-///  - Tiled images are not supported.
 ///  - Only 1, 4, 8, 16 and 32 bits per pixel integer grayvalues are read, as well as 32-bit and 64-bit
 ///    floating point.
 ///  - Only 4 and 8 bits per pixel colormapped images are read.
 ///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
-// TODO: Support reading ROIs (especially from tiled images)
+///  - Some non-standard compression schemes are not recognized (most notably JPEG2000).
 // TODO: Option to read an indexed image without applying the color map, and reading in the color map separately.
 DIP_EXPORT FileInformation ImageReadTIFF(
       Image& out,
@@ -278,7 +277,7 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// Color space information and pixel size are not saved either, though the pixel size, if in units of length,
 /// will set the pixels per centimeter value in the TIFF file.
 ///
-/// The samples of `image` are written direclty to the TIFF file, no matter what their data type is. Complex data
+/// The samples of `image` are written directly to the TIFF file, no matter what their data type is. Complex data
 /// are not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
 /// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format.
 ///

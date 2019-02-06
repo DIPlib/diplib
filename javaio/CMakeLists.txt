@@ -18,6 +18,8 @@ foreach (lib ${JNI_LIBRARIES})
 endforeach()
 set_target_properties(DIPjavaio PROPERTIES INSTALL_RPATH "${JNI_LIBRARY_PATHS}")
 
+target_compile_definitions(DIPjavaio PUBLIC DIP__HAS_JAVAIO)
+
 if(DIP_SHARED_LIBRARY)
    target_compile_definitions(DIPjavaio PRIVATE DIP__JAVAIO_BUILD_SHARED)
 else()

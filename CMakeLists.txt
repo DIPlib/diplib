@@ -118,17 +118,13 @@ if(OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
 endif()
 
 if(DIP_BUILD_DIPVIEWER)
-
    set(THREADS_PREFER_PTHREAD_FLAG ON)
    find_package(Threads REQUIRED)
-
    if(WIN32)
       # On Windows, GLEW is required for OpenGL extensions
       find_package(GLEW REQUIRED)
    endif()
-
    add_subdirectory(viewer)
-
 endif()
 
 
@@ -138,19 +134,15 @@ find_package(Java 1.8 COMPONENTS Development)
 find_package(JNI)
 if (JAVA_FOUND AND JNI_FOUND)
    set(DIP_BUILD_JAVAIO ON CACHE BOOL "Build the javaio module")
-
    include(UseJava)
    find_jar(BIOFORMATS_JAR bioformats_package)
-
    if (BIOFORMATS_JAR)
       list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
    endif()
 endif()
 
 if(DIP_BUILD_JAVAIO)
-
    add_subdirectory(javaio)
-
 endif()
 
 
@@ -233,7 +225,7 @@ endif()
 # Package stuff
 if(CMAKE_HOST_WIN32)
    # On Windows we use the NSIS generator
-   # TODO: This must be tested and cofigured properly
+   # TODO: This must be tested and configured properly
    set(CPACK_GENERATOR "NSIS")
 #elseif(CMAKE_HOST_APPLE)
    # On MacOS we use the Bundle generator

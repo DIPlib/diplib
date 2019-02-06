@@ -35,6 +35,8 @@ namespace javaio {
 /// \brief An interface to Java file I/O functionality
 /// \{
 
+constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
+
 /// \brief Reads the image in a file `filename` recognized by a Java `interface` and puts it in `out`.
 ///
 /// `interface` can be one of:
@@ -44,11 +46,11 @@ namespace javaio {
 DIP_EXPORT FileInformation ImageReadJavaIO(
       Image& out,
       String const& filename,
-      String const& interface="org/diplib/BioFormatsInterface"
+      String const& interface = bioformatsInterface
 );
 inline Image ImageReadJavaIO(
       String const& filename,
-      String const& interface="org/diplib/BioFormatsInterface"
+      String const& interface = bioformatsInterface
 ) {
    Image out;
    ImageReadJavaIO( out, filename, interface );

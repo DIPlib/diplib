@@ -69,3 +69,6 @@ set(HEADERS
 # Build a static library
 add_library(jpeg STATIC ${SOURCES} ${HEADERS})
 target_include_directories(jpeg PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
+   target_compile_options(jpeg PRIVATE -Wno-shift-negative-value)
+endif()

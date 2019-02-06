@@ -5,10 +5,7 @@
 #include <iostream>
 
 #include <diplib.h>
-#include <diplib/file_io.h>
-#ifdef DIP__HAS_JAVAIO
-  #include <diplib/javaio.h>
-#endif
+#include <diplib/simple_file_io.h>
 
 #include <dipviewer.h>
 #include <diplib/viewer/slice.h>
@@ -17,29 +14,32 @@ int main( int argc, char** argv ) {
    if( argc < 2 ) {
       std::cerr << "Usage: fileviewer <image> [image ...]" << std::endl;
       return 1;
-   } else {
-      for( size_t ii = 1; ( int )ii < argc; ++ii ) {
-         std::string arg( argv[ ii ] );
-         dip::Image img;
-         dip::FileInformation info;
-         if( dip::FileCompareExtension( arg, "ics" )) {
-            info = dip::ImageReadICS( img, arg );
-         } else if( dip::FileCompareExtension( arg, "tiff" ) || dip::FileCompareExtension( arg, "tif" )) {
-            info = dip::ImageReadTIFF( img, arg );
-         } else {
-#ifdef DIP__HAS_JAVAIO
-            info = dip::javaio::ImageReadJavaIO( img, arg );
-#else
-            std::cerr << "Unrecognized image extension " << dip::FileGetExtension( arg ) << std::endl;
-            return -1;
-#endif
-         }
-         std::cout << arg << ": " << img;
-         auto wdw = dip::viewer::Show( img, arg );
+   }
 
-         dip::viewer::SliceViewer::Guard guard(*wdw);
-         wdw->options().offset_ = info.origin;
+   for( size_t ii = 1; ii < static_cast< size_t >( argc ); ++ii ) {
+      std::string arg( argv[ ii ] );
+      dip::Image img;
+      dip::FileInformation info = dip::ImageRead( img, arg, "" );
+      std::cout << info.name << ":\n";
+      std::cout << "   - fileType:        " << info.fileType        << '\n';
+      std::cout << "   - dataType:        " << info.dataType        << '\n';
+      std::cout << "   - significantBits: " << info.significantBits << '\n';
+      std::cout << "   - sizes:           " << info.sizes           << '\n';
+      std::cout << "   - tensorElements:  " << info.tensorElements  << '\n';
+      std::cout << "   - colorSpace:      " << info.colorSpace      << '\n';
+      std::cout << "   - pixelSize:       " << info.pixelSize       << '\n';
+      std::cout << "   - origin:          " << info.origin          << '\n';
+      std::cout << "   - numberOfImages:  " << info.numberOfImages  << '\n';
+      if( !info.history.empty() ) {
+         std::cout << "   - history:\n";
+         for( auto& line : info.history ) {
+            std::cout << "        " << line << '\n';
+         }
       }
+
+      auto wdw = dip::viewer::Show( img, arg );
+      dip::viewer::SliceViewer::Guard guard( *wdw );
+      wdw->options().offset_ = info.origin;
    }
 
    dip::viewer::Spin();
