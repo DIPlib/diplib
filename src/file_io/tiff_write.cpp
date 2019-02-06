@@ -56,7 +56,6 @@ class TiffFile {
       ~TiffFile() {
          if( tiff_ ) {
             TIFFClose( tiff_ );
-            tiff_ = nullptr;
          }
       }
       // Implicit cast to TIFF*

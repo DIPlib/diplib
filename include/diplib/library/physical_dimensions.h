@@ -356,28 +356,30 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    static PhysicalQuantity Micrometer() { return Units::Micrometer(); }
    /// One millimeter.
    static PhysicalQuantity Millimeter() { return Units::Millimeter(); }
+   /// One centimeter.
+   static PhysicalQuantity Centimeter() { return { 0.01, Units::Meter() }; }
    /// One meter.
    static PhysicalQuantity Meter() { return Units::Meter(); }
    /// One kilometer.
    static PhysicalQuantity Kilometer() { return Units::Kilometer(); }
    /// One inch.
-   static PhysicalQuantity Inch() { return PhysicalQuantity( 0.0254, Units::Meter() ); }
+   static PhysicalQuantity Inch() { return { 0.0254, Units::Meter() }; }
    /// One mile.
-   static PhysicalQuantity Mile() { return PhysicalQuantity( 1609.34, Units::Meter() ); }
+   static PhysicalQuantity Mile() { return { 1609.34, Units::Meter() }; }
    /// One millisecond
    static PhysicalQuantity Millisecond() { return Units::Millisecond(); }
    /// One second
    static PhysicalQuantity Second() { return Units::Second(); }
    /// One minute
-   static PhysicalQuantity Minute() { return PhysicalQuantity( 60, Units::Second() ); }
+   static PhysicalQuantity Minute() { return { 60, Units::Second() }; }
    /// One hour
-   static PhysicalQuantity Hour() { return PhysicalQuantity( 3600, Units::Second() ); }
+   static PhysicalQuantity Hour() { return { 3600, Units::Second() }; }
    /// One day
-   static PhysicalQuantity Day() { return PhysicalQuantity( 86400, Units::Second() ); }
+   static PhysicalQuantity Day() { return { 86400, Units::Second() }; }
    /// One radian
    static PhysicalQuantity Radian() { return Units::Radian(); }
    /// One degree
-   static PhysicalQuantity Degree() { return PhysicalQuantity( pi / 180, Units::Radian() ); }
+   static PhysicalQuantity Degree() { return { pi / 180, Units::Radian() }; }
    /// One pixel
    static PhysicalQuantity Pixel() { return Units::Pixel(); }
    /// One square pixel

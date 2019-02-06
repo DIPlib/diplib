@@ -21,7 +21,9 @@
 #include <pybind11/pybind11.h>
 
 using namespace pybind11::literals;
+namespace py = pybind11;
 
 PYBIND11_MODULE( PyDIPjavaio, m ) {
-   m.def( "ImageReadJavaIO", [](dip::String const& filename, dip::String const& interface) { return dip::javaio::ImageReadJavaIO(filename, interface); }, "filename"_a, "interface"_a = "org/diplib/BioFormatsInterface");
+   m.def( "ImageReadJavaIO", py::overload_cast< dip::String const&, dip::String const& >( dip::javaio::ImageReadJavaIO ),
+          "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
 }

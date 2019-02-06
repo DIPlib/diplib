@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,15 +120,17 @@ void init_assorted( py::module& m ) {
    m.def( "ImageReadICS", py::overload_cast< dip::String const&, dip::UnsignedArray const&, dip::UnsignedArray const&, dip::UnsignedArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadICS ),
           "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageIsICS", &dip::ImageIsICS, "filename"_a );
-   m.def( "ImageWriteICS", py::overload_cast< dip::Image const&, dip::String const&, dip::StringArray const&, dip::uint, dip::StringSet const& >( &dip::ImageWriteICS ),
-          "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
+   m.def( "ImageWriteICS", &dip::ImageWriteICS, "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
 
    m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const& >( &dip::ImageReadTIFF ),
           "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{} );
    m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const& >( &dip::ImageReadTIFFSeries ), "filenames"_a );
    m.def( "ImageIsTIFF", &dip::ImageIsTIFF, "filename"_a );
-   m.def( "ImageWriteTIFF", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::uint >( &dip::ImageWriteTIFF ),
-          "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
+   m.def( "ImageWriteTIFF", &dip::ImageWriteTIFF, "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
+
+   m.def( "ImageReadJPEG", py::overload_cast< dip::String const& >( &dip::ImageReadJPEG ), "filename"_a );
+   m.def( "ImageIsJPEG", &dip::ImageIsJPEG, "filename"_a );
+   m.def( "ImageWriteJPEG", &dip::ImageWriteJPEG, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
 
    // diplib/generation.h
    m.def( "FillDelta", &dip::FillDelta, "out"_a, "origin"_a = "" );

@@ -263,7 +263,6 @@ class IcsFile {
       ~IcsFile() {
          if( ics_ ) {
             IcsClose( ics_ ); // Don't check for failures, we cannot throw here anyway.
-            ics_ = nullptr;
          }
       }
       // Always call Close(), don't let the destructor close the file if all is OK -- it won't throw if there's an error.

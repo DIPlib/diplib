@@ -51,6 +51,7 @@ struct FileInformation {
       StringArray           history;           ///< Assorted metadata in the file, in the form of strings.
 };
 
+
 /// \brief Read the image in the ICS file `filename` and puts it in `out`.
 ///
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
@@ -297,6 +298,51 @@ DIP_EXPORT void ImageWriteTIFF(
       Image const& image,
       String const& filename,
       String const& compression = "",
+      dip::uint jpegLevel = 80
+);
+
+
+/// \brief Reads an image from the JPEG file `filename` and puts it in `out`.
+///
+/// The function tries to open `filename` as given first, and if that fails, it appends ".jpg" and ".jpeg" to the
+/// name and tries again.
+///
+/// The pixels per inch value in the JPEG file will be used to set the pixel size of `out`.
+DIP_EXPORT FileInformation ImageReadJPEG(
+      Image& out,
+      String const& filename
+);
+inline Image ImageReadJPEG(
+      String const& filename
+) {
+   Image out;
+   ImageReadJPEG( out, filename );
+   return out;
+}
+
+/// \brief Reads image information and metadata from the JPEG file `filename`, without reading the actual
+/// pixel data.
+DIP_EXPORT FileInformation ImageReadJPEGInfo( String const& filename );
+
+/// \brief Returns true if the file `filename` is a JPEG file.
+DIP_EXPORT bool ImageIsJPEG( String const& filename );
+
+/// \brief Writes `image` as a JPEG file.
+///
+/// `image` must be 2D, and either scalar or with three tensor elements.
+/// If the image has three tensor elements, it will be saved as an RGB image, even if the color space
+/// is not RGB (no color space conversion is done, the data is simply tagged as RGB).
+/// If the image is not `dip::DT_UINT8`, it will be converted to it (complex numbers are cast to real values
+/// by taking their magnitude, and real numbers are rounded and clamped to the output range), no scaling will
+/// be applied.
+///
+/// If `filename` does not have an extension, ".jpg" will be added. Overwrites any other file with the same name.
+///
+/// `jpegLevel` determines the amount of compression applied. `jpegLevel` is an integer between 1 and 100, with
+/// increasing numbers yielding larger files and fewer compression artifacts.
+DIP_EXPORT void ImageWriteJPEG(
+      Image const& image,
+      String const& filename,
       dip::uint jpegLevel = 80
 );
 

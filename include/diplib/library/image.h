@@ -823,7 +823,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Get the pixels' size along the given dimension in physical units.
-      PhysicalQuantity const PixelSize( dip::uint dim ) const {
+      PhysicalQuantity PixelSize( dip::uint dim ) const {
          // Returns a const to prevent errors like `img.PixelSize( 1 ) = 0`.
          // Indexing into a `dip::PixelSize` cannot return a reference.
          return pixelSize_[ dim ];
