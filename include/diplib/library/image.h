@@ -446,10 +446,8 @@ class DIP_NO_EXPORT Image {
       /// function to create an image around const data, and then write to that data. Use images pointing to
       /// const data only as input images!
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
-      Image( T const* data, UnsignedArray sizes ) {
-         Image tmp{ NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes ) };
-         this->move( std::move( tmp )); // a way of calling a different constructor.
-      }
+      Image( T const* data, UnsignedArray sizes )
+            : Image( NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes )) {}
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
       Image Similar() const {
