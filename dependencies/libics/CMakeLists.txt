@@ -33,8 +33,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion")
 elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unused-parameter")
-   # Allowing DIPlib to link against a static libics. Not necessary for Clang
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
    # TODO: compiler flags for Intel compiler
 elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
@@ -93,6 +91,7 @@ endif(UNIX)
 # Build a static library
 add_library(libics_static STATIC ${SOURCES} ${HEADERS})
 target_include_directories(libics_static PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+set_target_properties(libics_static PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
 if(TARGET zlibstatic)
    target_link_libraries(libics_static PRIVATE zlibstatic)
    target_compile_definitions(libics_static PUBLIC -DICS_ZLIB)

@@ -94,9 +94,10 @@ if(DIP_ENABLE_ZLIB)
 endif()
 
 # libjpeg (for use in libtiff)
-set(DIP_ENABLE_JPEG ON CACHE BOOL "Enable JPEG compression in TIFF")
+set(DIP_ENABLE_JPEG ON CACHE BOOL "Enable JPEG file support and compression in TIFF")
 if(DIP_ENABLE_JPEG)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libjpeg" "${PROJECT_BINARY_DIR}/libjpeg" EXCLUDE_FROM_ALL)
+   target_link_libraries(DIP PRIVATE jpeg)
    target_compile_definitions(DIP PRIVATE DIP__HAS_JPEG)
 endif()
 

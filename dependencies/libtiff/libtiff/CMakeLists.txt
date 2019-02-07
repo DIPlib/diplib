@@ -101,6 +101,7 @@ target_include_directories(tiff
         ${TIFF_INCLUDES}
 )
 target_link_libraries(tiff PRIVATE ${TIFF_LIBRARY_DEPS})
+set_target_properties(tiff PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
 
 install(TARGETS tiff
         RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
