@@ -1,6 +1,6 @@
 # PyDIP 3.0, Python bindings for DIPlib 3.0
 #
-# (c)2017, Flagship Biosciences, Inc., written by Cris Luengo.
+# (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-import PyDIP.PyDIP_bin
+import PyDIP
 import importlib.util
+import os.path
 
 hasMatPlotLib = True
 if importlib.util.find_spec('matplotlib') is None:
@@ -66,7 +67,7 @@ def _label_colormap():
     return None
 
 
-def Show( img, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap='' ):
+def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap=''):
     """Show an image in the current pyplot window
 
     Keyword arguments:
@@ -125,12 +126,12 @@ def Show( img, range=(), complexMode='abs', projectionMode='mean', coordinates=(
     projected as described above for higher-dimensional images.
     """
     if hasMatPlotLib:
-        out = PyDIP.PyDIP_bin.ImageDisplay( img, range, complexMode, projectionMode, coordinates, dim1, dim2 )
+        out = PyDIP.ImageDisplay(img, range, complexMode, projectionMode, coordinates, dim1, dim2)
         if out.Dimensionality() == 1:
             axes = pp.gca()
             axes.clear()
-            axes.plot( out )
-            axes.set_ylim(( 0, 255) )
+            axes.plot(out)
+            axes.set_ylim((0, 255))
             axes.set_xlim((0, out.Size(0) - 1))
         else:
             if colormap == '':
@@ -147,7 +148,123 @@ def Show( img, range=(), complexMode='abs', projectionMode='mean', coordinates=(
             else:
                 cmap = pp.get_cmap(colormap)
             pp.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none')
-        pp.show( block=False )
+        pp.show(block=False)
 
 
-PyDIP.PyDIP_bin.Image.Show = Show
+PyDIP.Image.Show = Show
+
+
+def ImageRead(filename, format=''):
+    """Reads the image from the file called filename.
+
+    format can be one of:
+    - 'ics': The file is an ICS file, use PyDIP.ImageReadICS.
+    - 'tiff': The file is a TIFF file, use PyDIP.ImageReadTIFF. Reads only
+      the first image plane.
+    - 'jpeg': The file is a JPEG file, use PyDIP.ImageReadJPEG.
+    - 'bioformats': Use PyDIP.javaio.ImageReadJavaIO to read the file with
+      the Bio-Formats library.
+    - '': Select the format by looking at the file name extension. This is
+      the default.
+
+    Use the filetype-specific functions directly for more control over how
+    the image is read.
+    """
+    if format == '':
+        base, ext = os.path.splitext(filename)
+        ext = ext.lower()
+        if ext == '.ics' or ext == '.ids':
+            format = 'ics'
+        elif ext == '.tif' or ext == '.tiff':
+            format = 'tiff'
+        elif ext == '.jpg' or ext == '.jpeg':
+            format = 'jpeg'
+        else:
+            format = 'bioformats'
+
+    if format == 'ics':
+        return PyDIP.ImageReadICS(filename)
+    if format == 'tiff':
+        return PyDIP.ImageReadTIFF(filename)
+    if format == 'jpeg':
+        return PyDIP.ImageReadJPEG(filename)
+    if format == 'bioformats':
+        if not PyDIP.hasDIPjavaio:
+            raise ValueError('Bio-Formats not available')
+        return PyDIP.javaio.ImageReadJavaIO(filename)
+    raise ValueError('Unknown format')
+
+
+def ImageWrite(image, filename, format='', compression=''):
+    """Writes image to a file called filename.
+
+    format can be one of:
+    - 'ics' or 'icsv2': Create an ICS version 2 file, use
+      PyDIP.ImageWriteICS.
+    - 'icsv1': Create an ICS version 1 file, use PyDIP.ImageWriteICS.
+    - 'tiff': Create a TIFF file, use PyDIP.ImageWriteTIFF.
+    - 'jpeg': Create a JPEG file, use PyDIP.ImageWriteJPEG.
+    - '': Select the format by looking at the file name extension.
+      If no extension is present, it defaults to ICS version 2.
+      This is the default.
+
+    The ICS format can store any image, with all its information, such that
+    reading the file using PyDIP.ImageRead or PyDIP.ImageReadICS yields an
+    image that is identical (except the strides might be different).
+
+    The TIFF format can store 2D images, as well as 3D images as a series
+    of 2D slides (not yet implemented). Most metadata will be lost. Complex
+    data is not supported, other data types are. But note that images other
+    than 8-bit or 16-bit unsigned integer lead to files that are not
+    recognized by most readers.
+
+    The JPEG format can store 2D images. Tensor images are always tagged as
+    RGB. Most metadata will be lost. Image data is converted to 8-bit
+    unsigned integer, without scaling.
+
+    compression determines the compression method used when writing
+    the pixel data. It can be one of the following strings:
+    - 'none': no compression.
+    - '': gzip compression (default). TIFF files with gzip compression are
+      not universally recognized.
+    - 'LZW', 'PackBits', 'JPEG': compression formats supported only by
+      the TIFF format.
+
+    For the JPEG format, compression is ignored.
+
+    Use the filetype-specific functions directly for more control over how
+    the image is written. See those functions for more information about
+    the file types.
+    """
+    if format == '':
+        base, ext = os.path.splitext(filename)
+        ext = ext.lower()
+        if ext == '.ics' or ext == '.ids':
+            format = 'ics'
+        elif ext == '.tif' or ext == '.tiff':
+            format = 'tiff'
+        elif ext == '.jpg' or ext == '.jpeg':
+            format = 'jpeg'
+        else:
+            raise ValueError('File extension not recognized')
+
+    options = set()
+    if format == 'icsv2':
+        format = 'ics'
+    elif format == 'icsv1':
+        format = 'ics'
+        options.add('v1')
+
+    if format == 'ics':
+        if compression == '':
+            options.add('gzip')
+        elif compression == 'none':
+            options.add('uncompressed')
+        else:
+            raise ValueError('Compression flag not valid for ICS file')
+        return PyDIP.ImageWriteICS(image, filename, options=options)
+    if format == 'tiff':
+        return PyDIP.ImageWriteTIFF(image, filename, compression)
+    if format == 'jpeg':
+        return PyDIP.ImageWriteJPEG(image, filename)
+    raise ValueError('Unknown format')
