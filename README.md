@@ -152,12 +152,12 @@ limitations under the License.
   2-Clause BSD-like Licence  
   see [`dependencies/libtiff/COPYRIGHT`](dependencies/libtiff/COPYRIGHT)
 
-- *zlib* (used by *libics* and/or *LibTIFF*)  
+- *zlib* (used by *libics* and *LibTIFF*, its use can be disabled)  
   Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
   zlib Licence  
   see [`dependencies/zlib/LICENSE.txt`](dependencies/zlib/LICENSE.txt)
 
-- *libjpeg* (used by *LibTIFF*)  
+- *libjpeg* (its use can be disabled)  
   Copyright 1991-2018, Thomas G. Lane, Guido Vollbeding  
   Custom BSD-like Licence  
   see [`dependencies/libjpeg/README`](dependencies/libjpeg/README)

@@ -40,16 +40,6 @@ Windows does not have a simple dependency installation system, so this step
 involves a lot of manual labor. Fortunately, all these dependencies are optional,
 so feel free to skip this section.
 
-- Download the *ZLib* sources from here: https://zlib.net/. Build the static library as
-per instructions, and note where it ends up.
-If you intend to build a 64-bit version of *DIPlib* (recommended!) build a 64-bit
-version of *ZLib*.
-
-- Download the *LibTIFF* sources from here: http://www.simplesystems.org/libtiff/.
-Build the static library as per instructions, and note where it ends up.
-If you intend to build a 64-bit version of *DIPlib* (recommended!) build a 64-bit
-version of *LibTIFF*.
-
 - Download the *GLFW* binaries from here: http://www.glfw.org/download.html.
 If you intend to build a 64-bit version of *DIPlib* (recommended!) get the 64-bit
 version of *GLFW*. Extract the ZIP file and note the location.
@@ -104,13 +94,7 @@ first parameter and "lib\Release\x64\glew32.lib" for the second. If the `GLEW_` 
 are not on the list, click on "Configure" again after entering the *GLFW* library
 location. This should populate the *GLEW* parameters.
 
-- If you have *ZLib* compiled, look for `ZLIB_INCLUDE_DIR` and `ZLIB_LIBRARY_RELEASE`
-(again, select the "Advanced" check box to see these). Set the first to the directory
-that contains the *Zlib* sources, and the second to the static library that you compiled.
-Check the box next to `LIBICS_USE_ZLIB`.
-
-- If you have *LibTIFF* compiled, look for `TIFF_INCLUDE_DIR` and `TIFF_LIBRARY_RELEASE`
-(again, select the "Advanced" check box to see these). Set them to the appropriate values.
+- TODO: `DIP_BUILD_DIPJAVAIO`, the Java SDK, and *Bio-Formats*.
 
 Finally, click on "Generate" to create a *Visual Studio* solution file.
 
@@ -131,13 +115,15 @@ build 32-bit binaries). Right-click on `INSTALL` and select "Build".
 
 If everything works correctly, you will have:
 
-- `C:\Users\<name>\DIPlib\lib`: `DIP.dll`, as well as `DIPviewer.dll` and `PyDIP` (the
-*Python* module) if built.
+- `C:\Users\<name>\DIPlib\lib`: `DIP.dll`, as well as `DIPviewer.dll` and `DIPjavaio.dll`. 
 
 - `C:\Users\<name>\DIPlib\include`: The *DIPlib* include files, which you'll need when
 building your own C++ progrmas using *DIPlib*.
 
 - `C:\Users\<name>\DIPlib\share\DIPimage`: The *DIPimage* toolbox for MATLAB.
+
+- In your selected Python package path: `PyDIP` (the *Python* module).
+
 
 ## Using *DIPimage*
 
@@ -150,7 +136,8 @@ setenv('PATH',['C:\Users\<name>\DIPlib\lib',';',getenv('PATH')]);
 This will make the toolbox available (replace `C:\Users\<name>\DIPlib` with the
 actual path you installed to).
 
-To get started using *DIPimage*, look through the help, starting at
+To get started using *DIPimage*, read the *DIPimage User Manual*, and look through
+the help, starting at
 ```matlab
 help DIPimage
 ```
@@ -162,7 +149,7 @@ dipimage
 ## Using *PyDIP*
 
 Once the `INSTALL` target has finished building and installing, start *Python*.
-The following command will import the PyDIP package as `dip`, which is shorter to
+The following command will import the *PyDIP* package as `dip`, which is shorter to
 type and mimics the namespace used in the C++ library:
 ```python
 import PyDIP as dip

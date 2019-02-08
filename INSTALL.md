@@ -58,7 +58,8 @@ The following `make` targets are part of the `all` target:
     DIP           # builds the DIPlib library
     DIPviewer     # builds the DIPviewer module (plus the DIPlib library)
     DIPjavaio     # builds the DIPjavaio module (plus the DIPlib library)
-    PyDIP         # builds the PyDIP Python module (includes DIP and DIPviewer targets)
+    PyDIP         # builds the PyDIP Python module (includes DIP, DIPviewer and
+                  #    DIPjavaio targets)
     dum           # builds the DIPimage User Manual PDF
 
 The `apidoc` target requires that *Doxygen* be installed, the target will not be available
@@ -71,7 +72,7 @@ Important `cmake` command-line arguments controlling the build of *DIPlib*:
     -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location for DIPlib, DIPimage and the docs
     -DCMAKE_BUILD_TYPE=Debug           # by default it is release
     -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library
-    -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics)
+    -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics, LibTIFF, libjpeg and zlib)
     -DCMAKE_CXX_COMPILER=g++-6         # specify a C++ compiler (for everything else)
     -DCMAKE_CXX_FLAGS="-march=native"  # specify additional C++ compiler flags
 
@@ -81,6 +82,8 @@ Important `cmake` command-line arguments controlling the build of *DIPlib*:
     -DDIP_ENABLE_MULTITHREADING=Off    # disable OpenMP multithreading
     -DDIP_ENABLE_ICS=Off               # disable ICS file format support
     -DDIP_ENABLE_TIFF=Off              # disable TIFF file format support
+    -DDIP_ENABLE_JPEG=Off              # disable JPEG file format support, also affects TIFF
+    -DDIP_ENABLE_ZLIB=Off              # disable zlib compression support in ICS and TIFF
     -DDIP_ENABLE_FFTW=On               # enable the use of FFTW3
     -DDIP_ENABLE_UNICODE=Off           # disable UFT-8 strings within DIPlib
     -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
@@ -92,6 +95,7 @@ Controlling the build of *DIPviewer*:
 
 Controlling the build of *DIPjavaio*:
 
+    -DIP_BUILD_JAVAIO=Off              # don't build/install the DIPjavaio module
     -DJAVA_HOME=<path>                 # use the JDK in <path>
     -DBIOFORMATS_JAR=<path>/bioformats_package.jar
                                        # specify location of the Bio-Formats JAR file
@@ -130,10 +134,6 @@ also depends on a few other external projects, whose sources are included in thi
 [`README.md`](README.md) under "License" for more information). Note that, with the exception of
 dynamic linking to a few external libraries, none of these dependencies are required when using the
 *DIPlib* library (that is, *DIPlib*'s public header files do not import headers from other projects).
-
-*DIPlib* supports two image file formats: ICS and TIFF. ICS support is built-in, it is
-recommended that you have [*ZLib*](http://www.zlib.net) installed for this. For TIFF support,
-you will need to have [*LibTIFF*](http://www.simplesystems.org/libtiff/) installed.
 
 If you have [*FFTW3*](http://www.fftw.org) installed, you can set the `DIP_ENABLE_FFTW`
 *CMake* variable to have *DIPlib* use *FFTW3* instead of the built-in FFT algorithm.

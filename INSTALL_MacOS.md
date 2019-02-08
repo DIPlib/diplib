@@ -38,13 +38,10 @@ Once *Homebrew* is installed, the following will install *CMake* (`cmake`):
 brew install cmake
 ```
 
-Since you're here, why not install some of the optional dependencies as well?
+If you want to compile *DIPviewer*, you need to install `glfw` as well:
 ```bash
-brew install libtiff glfw
+brew install glfw
 ```
-`libtiff` is needed for DIPlib to be able to read and write TIFF files, and
-`glfw` is needed to compile *DIPviewer*. Note that ZLib is also a dependency,
-but it comes with MacOS.
 
 To compile the documentation yourself (not really necessary, you can read the
 documentation directly in the header files), you need *Doxygen*:
@@ -52,7 +49,7 @@ documentation directly in the header files), you need *Doxygen*:
 brew install doxygen
 ```
 
-And to compile the DIPimage User Manual you'll need *Pandoc*:
+And to compile the *DIPimage User Manual* you'll need *Pandoc*:
 ```bash
 brew install pandoc pandoc-crossref
 ```
@@ -115,8 +112,9 @@ If you prefer to install elsewhere, change the `cmake` line with the following:
 ```bash
 cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
 ```
-This will install DIPlib, DIPimage and the documentation under the `dip` directory
-in your home directory, and PyDIP in the user site packages directory.
+This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documentation
+under the `dip` directory in your home directory, and *PyDIP* in the user site packages
+directory.
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
@@ -135,7 +133,7 @@ You can also do
 ```bash
 make apidoc
 ```
-if you want to compile the DIPlib documentation.
+if you want to compile the *DIPlib* documentation.
 
 ## Enabling Bio-Formats
 
@@ -174,7 +172,8 @@ addpath('/Users/<name>/dip/share/DIPimage')
 This will make the toolbox available (replace `/Users/<name>/dip` with the
 actual path you installed to).
 
-To get started using *DIPimage*, look through the help, starting at
+To get started using *DIPimage*, read the *DIPimage User Manual*, and look through
+the help, starting at
 ```matlab
 help DIPimage
 ```
@@ -186,7 +185,7 @@ dipimage
 ## Using *PyDIP*
 
 Once the `install` target has finished building and installing, start *Python*.
-The following command will import the PyDIP package as `dip`, which is shorter to
+The following command will import the *PyDIP* package as `dip`, which is shorter to
 type and mimics the namespace used in the C++ library:
 ```python
 import PyDIP as dip

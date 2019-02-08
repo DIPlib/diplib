@@ -90,29 +90,6 @@ document's source</a> for the most up-to-date version.
     - general 3D rotation (is already C code)
     - ...and many more, see the *DIPimage 2* M-files for inspiration.
 
--   Image I/O: Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats).
-    This should be an optional module, as *Bio-Formats* is GPL. We already have the interface set up
-    in MATLAB, and for Python it should be relatively straight-forward too. But we'd like access from
-    the C++ library, and that is a bit more involved:
-
-    [This document](https://loci.wisc.edu/software/interfacing-non-java-code) describes ways to interface
-    the Java *Bio-Formats* library from C++. None of that seems trivial.
-
-    There is a discontinued [C++ wrapper for *Bio-Formats*](https://github.com/ome/bio-formats-jace),
-    and another [C++ wrapper using *Blitz++*](https://www.sybit.net/LibBlitzBioformats/).
-
-    There is a [C++ version of the *Bio-Formats* library](https://www-legacy.openmicroscopy.org/site/support/bio-formats5.1/developers/cpp/overview.html),
-    but it currently only reads TIFF files. This page no longer exists in the docs for the latest version
-    of *Bio-Formats*, not sure what happened.
-
-    The [*i3d* library](https://cbia.fi.muni.cz/software/i3d-library.html) has C++ code that uses *Bio-Formats*
-    to read image files. It used the [*Java 4 C++* tool](https://github.com/wshackle/java4cpp) to generate
-    C++ wrappers of the Java classes, but these are no longer included in the distribution. Not sure what wrappers
-    they use now.
-
-    There is a also an [ITK module](https://github.com/scifio/scifio-imageio) for
-    interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
-
 -   Colocalization measurements.
 
 -   Radon transform for lines, Hough transform for lines.

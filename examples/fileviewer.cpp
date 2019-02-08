@@ -12,14 +12,22 @@
 
 int main( int argc, char** argv ) {
    if( argc < 2 ) {
-      std::cerr << "Usage: fileviewer <image> [image ...]" << std::endl;
+      std::cerr << "Usage: fileviewer [-b] <image> [<image> ...]\n";
+      std::cerr << "   The -b option forces the use of Bio-Formats for all file types.\n";
       return 1;
    }
 
-   for( size_t ii = 1; ii < static_cast< size_t >( argc ); ++ii ) {
+   int ii = 1;
+   dip::String format;
+   if( std::strcmp( argv[ ii ], "-b" ) == 0 ) {
+      ++ii;
+      format = "bioformats";
+   }
+
+   for( ; ii < argc; ++ii ) {
       std::string arg( argv[ ii ] );
       dip::Image img;
-      dip::FileInformation info = dip::ImageRead( img, arg, "" );
+      dip::FileInformation info = dip::ImageRead( img, arg, format );
       std::cout << info.name << ":\n";
       std::cout << "   - fileType:        " << info.fileType        << '\n';
       std::cout << "   - dataType:        " << info.dataType        << '\n';
