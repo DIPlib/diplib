@@ -1,7 +1,7 @@
 %MAKECONTENTS   Generates the Contents file for DIPimage.
 %   Run this function from within the directory it is in:
 %      cd <root>/diplib/tools
-%      makecontents <install_dir>/share/DIPimage
+%      makecontents <outputdir>
 %   It will delete any Contents.m file in 'outputdir',
 %   and create a new one based off of the H-1 lines in all M-files,
 %   using the groupings specified in DIPMENUS.
@@ -61,11 +61,11 @@ menulist = [{'GUI',{'dipimage','dipshow','viewslice'}};...
 
 % Find functions to list
 mfiles = dir(fullfile(dipimage_dir,'*.m'));
-mfiles2 = dir(fullfile('..','viewer','dipimage','*.m'));
-mfiles = cat(1,mfiles,mfiles2);
+dipviewer_dir = fullfile('..','viewer','dipimage');
+mfiles2 = dir(fullfile(dipviewer_dir,'*.m'));
+mfilenames = {mfiles.name,mfiles2.name};
+mfiledirs = [repmat({dipimage_dir},1,numel(mfiles)),repmat({dipviewer_dir},1,numel(mfiles2))];
 mfiles2 = [];
-mfilenames = {mfiles.name};
-mfiledirs = {mfiles.folder};
 mfiles = [];
 [mfilenames,I] = sort(lower(mfilenames));
 mfiledirs = mfiledirs(I);
