@@ -47,9 +47,10 @@ class DIPVIEWER_CLASS_EXPORT SliceView : public View
 
     dip::uint dimx_, dimy_;      ///< Indices in options.dims_.             
     unsigned int texture_;       ///< OpenGL texture identifier.
+    bool dirty_;                 ///< Texture needs to be rebuilt.
 
   public:
-    SliceView(ViewPort *viewport, dip::uint dimx, dip::uint dimy) : View(viewport), dimx_(dimx), dimy_(dimy), texture_(0) { }
+    SliceView(ViewPort *viewport, dip::uint dimx, dip::uint dimy) : View(viewport), dimx_(dimx), dimy_(dimy), texture_(0), dirty_(true) { }
 
     DIPVIEWER_EXPORT void project();
     DIPVIEWER_EXPORT void map();

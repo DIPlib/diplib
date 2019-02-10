@@ -104,6 +104,8 @@ void SliceView::map()
 {
   auto &o = viewport()->viewer()->options();
   
+  dirty_ = true;
+  
   if (projected_.Dimensionality() == 0)
   {
     // Point data
@@ -165,6 +167,11 @@ void SliceView::map()
 
 void SliceView::rebuild()
 {
+  if (!dirty_)
+    return;
+  else
+    dirty_ = false;
+
   if (!texture_)
     glGenTextures(1, &texture_);
     
