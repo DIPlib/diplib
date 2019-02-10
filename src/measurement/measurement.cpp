@@ -31,7 +31,7 @@ std::ostream& operator<<(
       std::ostream& os,
       Measurement const& msr
 ) {
-   if( !msr.IsForged() ) {
+   if( msr.Features().empty() ) {
       os << "(Raw dip::Measurement object)\n";
       return os;
    }
@@ -39,7 +39,7 @@ std::ostream& operator<<(
    const std::string sep{ " | " };
    constexpr int separatorWidth = 3;
    constexpr int minimumColumnWidth = 10; // we format numbers with at least this many spaces: '-' + 4 digits of precision + '.' + 'e+NN'
-   dip::uint maxID = *std::max_element( msr.Objects().begin(), msr.Objects().end() );
+   dip::uint maxID = msr.Objects().empty() ? 0 : *std::max_element( msr.Objects().begin(), msr.Objects().end() );
    const int firstColumnWidth = maxID > 0 ? static_cast< int >( std::floor( std::log10( maxID ))) + 1 : 1;
    auto const& values = msr.Values();
    std::vector< int > valueWidths( values.size(), 0 );
@@ -97,14 +97,16 @@ std::ostream& operator<<(
    os << std::setfill( ' ' ) << '\n';
    // Write out the object IDs and associated values
    auto const& objects = msr.Objects();
-   Measurement::ValueIterator data = msr.Data();
-   for( auto object : objects ) {
-      os << std::setw( firstColumnWidth ) << object << " | ";
-      for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-         os << std::setw( valueWidths[ ii ] ) << std::setprecision( 4 ) << std::showpoint << *data << " | ";
-         ++data;
+   if( !objects.empty() ) {
+      Measurement::ValueIterator data = msr.Data();
+      for( auto object : objects ) {
+         os << std::setw( firstColumnWidth ) << object << " | ";
+         for( dip::uint ii = 0; ii < values.size(); ++ii ) {
+            os << std::setw( valueWidths[ ii ] ) << std::setprecision( 4 ) << std::showpoint << *data << " | ";
+            ++data;
+         }
+         os << '\n';
       }
-      os << '\n';
    }
    return os;
 }
@@ -114,7 +116,6 @@ void MeasurementWriteCSV(
       String const& filename,
       StringSet const& options
 ) {
-   DIP_THROW_IF( !msr.IsForged(), E::MEASUREMENT_NOT_FORGED );
    bool simple = false;
    bool unicode = false;
    for( auto& option : options ) {
@@ -169,24 +170,27 @@ void MeasurementWriteCSV(
    }
    // Write out the object IDs and associated values
    auto const& objects = msr.Objects();
-   Measurement::ValueIterator data = msr.Data();
-   for( auto object : objects ) {
-      file << object;
-      for( dip::uint ii = 0; ii < msr.NumberOfValues(); ++ii ) {
-         file << ", " << *data++;
+   if( !objects.empty() ) {
+      Measurement::ValueIterator data = msr.Data();
+      for( auto object : objects ) {
+         file << object;
+         for( dip::uint ii = 0; ii < msr.NumberOfValues(); ++ii ) {
+            file << ", " << *data++;
+         }
+         file << '\n';
       }
-      file << '\n';
    }
    file.close(); // Not really necessary, but we're used to it...
 }
 
 Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
-   DIP_THROW_IF( !lhs.IsForged() || !rhs.IsForged(), E::MEASUREMENT_NOT_FORGED );
+   DIP_THROW_IF(( lhs.NumberOfObjects() > 0 ) && !lhs.IsForged(), E::MEASUREMENT_NOT_FORGED );
+   DIP_THROW_IF(( rhs.NumberOfObjects() > 0 ) && !rhs.IsForged(), E::MEASUREMENT_NOT_FORGED );
    constexpr dip::uint NOT_THERE = std::numeric_limits< dip::uint >::max();
    // Create output object with the union of rows and columns of the input objects
    Measurement out;
-   std::vector< dip::uint > lhsColumnIndex( lhs.values_.size(), NOT_THERE );
-   std::vector< dip::uint > rhsColumnIndex( lhs.values_.size(), NOT_THERE );
+   std::vector< dip::uint > lhsColumnIndex( lhs.NumberOfValues(), NOT_THERE );
+   std::vector< dip::uint > rhsColumnIndex( lhs.NumberOfValues(), NOT_THERE ); // Yes, `lhs`, this is not a typo!
    dip::uint index = 0;
    for( auto& f : lhs.features_ ) {
       auto b = lhs.values_.begin() + static_cast< dip::sint >( f.startColumn );
@@ -574,7 +578,43 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( objIt[ "Feature3" ][ 1 ] == ( 23 - 15 ) * 5 + 103 );
    DOCTEST_CHECK( objIt[ "Feature3" ][ 2 ] == ( 23 - 15 ) * 5 + 104 );
 
+   // Check the case of the raw measurement object
+
+   dip::Measurement msr3;
+   {
+      dip::Feature::ValueInformationArray values( 2 );
+      values[ 0 ].name = "Dim1";
+      values[ 0 ].units = dip::Units::Meter();
+      values[ 1 ].name = "Dim2";
+      values[ 1 ].units = dip::Units::Hertz();
+      msr3.AddFeature( "Feature1", values );
+
+      values.resize( 1 );
+      values[ 0 ].name = "Bla";
+      values[ 0 ].units = dip::Units::SquareMeter();
+      msr3.AddFeature( "Feature2", values );
+   }
+   DOCTEST_CHECK_NOTHROW( msr3.Forge() );
+
+   featIt = msr3.FirstFeature();
+   DOCTEST_CHECK( (bool)featIt );
+   while( featIt ) {
+      itB = featIt.FirstObject();
+      DOCTEST_CHECK( itB.IsAtEnd() );
+      ++featIt;
+   }
+
+   featIt = msr3[ "Feature1" ];
+   DOCTEST_CHECK( featIt.FeatureName() == "Feature1" );
+   DOCTEST_CHECK( featIt.NumberOfValues() == 2 );
+   DOCTEST_CHECK( featIt.NumberOfObjects() == 0 );
+   ++featIt;
+   DOCTEST_CHECK( featIt.FeatureName() == "Feature2" );
+   DOCTEST_CHECK( featIt.NumberOfValues() == 1 );
+   DOCTEST_CHECK( featIt.NumberOfObjects() == 0 );
+   ++featIt;
+   DOCTEST_CHECK( featIt.IsAtEnd() );
+
 }
 
 #endif // DIP__ENABLE_DOCTEST
-

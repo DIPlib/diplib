@@ -147,6 +147,13 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 ///     }
 ///     std::cout << '\n';
 /// ```
+///
+/// A `%Measurement` with zero object IDs will never be forged, it is possible to call `%Forge` on it, but
+/// nothing will happen. For such an object, it is possible to index with a feature name, and iterate over
+/// the features (column groups). However, each of the columns will be empty, such that `%FirstObject`
+/// returns an invalid iterator (evaluates to `false`). This means that, given a `%Measurement` obtained
+/// from an empty image, one can iterate as usual over features and over objects, without needing to write
+/// a special test for the case of an image without objects.
 class DIP_NO_EXPORT Measurement {
    public:
       using ValueType = dfloat;           ///< The type of the measurement data
@@ -445,24 +452,25 @@ class DIP_NO_EXPORT Measurement {
       }
 
       /// \brief Forges the table, allocating space to hold measurement values.
+      /// Will fail if there are no features defined.
       void Forge() {
          if( !IsForged() ) {
             dip::uint n = DataSize();
-            DIP_THROW_IF( n == 0, "Attempting to forge a zero-sized table" );
+            DIP_THROW_IF( NumberOfFeatures() == 0, "Attempting to forge a table with zero features" );
             data_.resize( n );
          }
       }
 
-      /// \brief Tests if the object is forged (has data segment allocated)
+      /// \brief Tests if the object is forged (has data segment allocated). A table with zero objects will
+      /// always appear raw (non-forged) even if `Forge` was called.
       bool IsForged() const { return !data_.empty(); }
 
       /// \brief Creates an iterator (view) to the first object
       IteratorObject FirstObject() const {
-         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          return { *this, 0 };
       }
 
-      /// \brief Creates and iterator (view) to the given object
+      /// \brief Creates and iterator (view) to the given object. The table must be forged.
       IteratorObject operator[]( dip::uint objectID ) const {
          DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          return { *this, ObjectIndex( objectID )};
@@ -470,13 +478,11 @@ class DIP_NO_EXPORT Measurement {
 
       /// \brief Creates and iterator (view) to the first feature
       IteratorFeature FirstFeature() const {
-         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          return { *this, 0 };
       }
 
       /// \brief Creates and iterator (view) to the given feature
       IteratorFeature operator[]( String const& name ) const {
-         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          return { *this, FeatureIndex( name )};
       }
 
@@ -489,12 +495,12 @@ class DIP_NO_EXPORT Measurement {
       ///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
       /// ```
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
-         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
          return { *this, startValue, numberValues };
       }
 
       /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
+      /// The table must be forged.
       ValueType* Data() const {
          DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          return data_.data();

@@ -33,8 +33,6 @@ void ObjectToMeasurement(
 ) {
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
-   UnsignedArray const& objects = featureValues.Objects();
-   dip::uint maxObject = *std::max_element( objects.begin(), objects.end() );
    dip::uint nElements = featureValues.NumberOfValues();
    bool protect = out.IsProtected();
    if( !protect ) {
@@ -42,19 +40,25 @@ void ObjectToMeasurement(
       out.ReForge( label.Sizes(), nElements, DT_SFLOAT );
       out.Protect();
    }
-   Image lutIm( { maxObject + 1 }, nElements, DT_DFLOAT );
-   lutIm.Fill( 0.0 );
-   DIP_ASSERT( lutIm.TensorStride() == 1 );
-   dfloat* data = static_cast< dfloat* >( lutIm.Origin() );
-   dip::sint stride = lutIm.Stride( 0 );
-   auto it = featureValues.FirstObject();
-   while( it ) {
-      dfloat* dest = data + static_cast< dip::sint >( it.ObjectID() ) * stride;
-      std::copy( it.begin(), it.end(), dest );
-      ++it;
+   UnsignedArray const& objects = featureValues.Objects();
+   if( objects.empty() ) {
+      out.Fill( 0 );
+   } else {
+      dip::uint maxObject = *std::max_element( objects.begin(), objects.end());
+      Image lutIm( { maxObject + 1 }, nElements, DT_DFLOAT );
+      lutIm.Fill( 0.0 );
+      DIP_ASSERT( lutIm.TensorStride() == 1 );
+      dfloat* data = static_cast< dfloat* >( lutIm.Origin());
+      dip::sint stride = lutIm.Stride( 0 );
+      auto it = featureValues.FirstObject();
+      while( it ) {
+         dfloat* dest = data + static_cast< dip::sint >( it.ObjectID()) * stride;
+         std::copy( it.begin(), it.end(), dest );
+         ++it;
+      }
+      LookupTable lut( lutIm );
+      lut.Apply( label, out );
    }
-   LookupTable lut( lutIm );
-   lut.Apply( label, out );
    out.Protect( protect );
 }
 

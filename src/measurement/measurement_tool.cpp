@@ -192,10 +192,6 @@ Measurement MeasurementTool::Measure(
    } else {
       measurement.AddObjectIDs( objectIDs );
    }
-   if( measurement.NumberOfObjects() == 0 ) {
-      // There's no objects to be measured. We're done.
-      return measurement;
-   }
 
    // Parse the features array and prepare measurements
    DIP_THROW_IF( features.empty(), "No features given" );
@@ -224,6 +220,10 @@ Measurement MeasurementTool::Measure(
 
    // Allocate memory for all features and objects
    measurement.Forge();
+   if( measurement.NumberOfObjects() == 0 ) {
+      // There's no objects to be measured. We're done.
+      return measurement;
+   }
 
    // Figure out which types of measurements we want to do
    bool doLineBased = false;

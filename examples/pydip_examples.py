@@ -115,8 +115,14 @@ dip.MeasurementTool.Features()
 m = dip.MeasurementTool.Measure(b, a, ['Size', 'Feret', 'Solidity', 'Statistics'])
 print(m)
 print(m['Feret'][50][2])
-dip.WriteCSV(m, 'test.csv')
-dip.WriteCSV(m, 'test2.csv', {'unicode', 'simple'})
+dip.MeasurementWriteCSV(m, 'test.csv')
+dip.MeasurementWriteCSV(m, 'test2.csv', {'unicode', 'simple'})
+
+import numpy as np
+
+np.array(m)
+np.array(m['Feret'])
+np.array(m[50])
 
 b = a < 120
 b = dip.EdgeObjectsRemove(b)

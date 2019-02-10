@@ -39,7 +39,8 @@ py::buffer_info MeasurementFeatureToBuffer( dip::Measurement::IteratorFeature& f
    dip::sint itemsize = static_cast< dip::sint >( sizeof( dip::dfloat ));
    dip::UnsignedArray sizes = { feature.NumberOfObjects(), feature.NumberOfValues() };
    dip::IntegerArray strides = { feature.Stride() * itemsize, itemsize };
-   py::buffer_info info{ feature.Data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
+   py::buffer_info info{ feature.NumberOfObjects() > 0 ? feature.Data() : nullptr,
+                         itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Measurement::IteratorFeature object.\n";
    //std::cout << "   info.ptr = " << info.ptr << std::endl;
@@ -77,7 +78,8 @@ py::buffer_info MeasurementToBuffer( dip::Measurement& msr ) {
    dip::sint itemsize = static_cast< dip::sint >( sizeof( dip::dfloat ));
    dip::UnsignedArray sizes = { msr.NumberOfObjects(), msr.NumberOfValues() };
    dip::IntegerArray strides = { msr.Stride() * itemsize, itemsize };
-   py::buffer_info info{ msr.Data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
+   py::buffer_info info{ msr.NumberOfObjects() > 0 ? msr.Data() : nullptr,
+                         itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Measurement object.\n";
    //std::cout << "   info.ptr = " << info.ptr << std::endl;
