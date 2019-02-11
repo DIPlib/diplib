@@ -79,9 +79,6 @@ document's source</a> for the most up-to-date version.
     output, which could mean a small increase in performance. When compiled with *FFTW*, such
     paths already exist.
 
--   Include zlib and LibTIFF under `dependencies/` so they're always available? This would simplify
-    compilation for others, avoid dynamically linked dependencies, etc. 
-
 
 ## Functionality currently not in the old *DIPlib* that would be good to include
 

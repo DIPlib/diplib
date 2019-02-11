@@ -52,6 +52,9 @@ DIP_EXPORT const LibraryInformation libraryInformation{
 #ifdef DIP__HAS_TIFF
             ", TIFF support"
 #endif
+#ifdef DIP__HAS_JPEG
+            ", JPEG support"
+#endif
 };
 
 } // namespace dip

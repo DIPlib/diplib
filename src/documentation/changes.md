@@ -89,8 +89,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
   functions is now based on C++ templates, yielding code that is easier to write and easier
   to read.
 
-- There is no longer a `dip_Initialise` function. There are no global variables. There are
-  no registries.
+- There is no longer a `dip_Initialise` function. There are no registries.
+  There is only one global variable: the number of threads to use with OpenMP (see
+  `dip::GetNumberOfThreads` and `dip::SetNumberOfThreads`).
 
 - There is no longer a `dip_ImagesSeparate` function. Its functionality can be accomplished
   using a simple image copy (the copy shares the image data with the original image, and
@@ -102,7 +103,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   function.
 
 - The *dipIO* library no longer exists. Some `dipio_Xxx` functions are now defined in the
-  `diplib/file_io.h` header file (reading and writing ICS and TIFF files).
+  `diplib/file_io.h` header file (reading and writing ICS, TIFF and JPEG files).
   `dipio_MeasurementWriteCSV` is is `diplib/measurement.h`.
   `dipio_Colour2Gray` functionality is replaced by `dip::ColorSpaceManager`.
   Other functionality no longer exists.
@@ -200,6 +201,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
   the pixel to the right of the geometric center for even-sized images), rather than the geometric
   center of the image.
 
+- `dip_Rotation2d90`, `dip_Rotation2d90`, `dip_Map`, `dip_Mirror`, and `dip_Crop` are now all
+  member functions of `dip::Image`, and modify the existing image (without copying data).
+  `dip_GetSlice`, `dip_PutSlice`, `dip_PutSubSpace`, `dip_GetLine`, `dip_PutLine`, `dip_Set`,
+  `dip_SetXxx`, `dip_Get`, `dip_GetXxx` are now all implemented through indexing operations
+  on the `dip::Image` object (see the many overloads of `dip::Image::At`) and assignment to
+  the output of these operations.
+
 - `dip_KuwaharaImproved` is now called `dip::Kuwahara`, and `dip_Kuwahara` is no longer
   (C++ default values make it redundant).
 
@@ -207,7 +215,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip_GeneralisedKuwahara` is no longer (C++ default values make it redundant).
 
 - `dip_PaintBox`, `dip_PaintDiamond` and `dip_PaintEllipsoid` are now called `dip::DrawBox`,
-  `dip::DrawDiamond` and `dip::DrawEllipsoid`, respectively (for consistency).
+  `dip::DrawDiamond` and `dip::DrawEllipsoid`, respectively (for consistency). `dip_DrawLineFloat` and
+  `dip_DrawLineComplex` are now a single function `dip::DrawLine`; the same is true for `dip::DrawLines`.
 
 - `dip_RadialDistribution` renamed to `dip::DistanceDistribution`.
 
@@ -219,6 +228,15 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip_TestObjectAddNoise` have been merged into a single function: `dip::TestObject`.
   The new function additionally has the option to generate test objects with Gaussian
   edges directly in the spatial domain.
+
+- `dip_GenerateRamp` is now `dip::CreateRamp`, and has convenience functions `dip::FillRamp`,
+  `dip::FillXCoordinate`, `dip::CreateXCoordinate`, `dip::FillYCoordinate`, `dip::CreateYCoordinate`,
+  `dip::FillZCoordinate`, `dip::CreateZCoordinate`.
+
+- `dip::EuclideanDistanceToPoint` and friends now take the sizes of the output image to create. They
+  are generalized in the functions `dip::DistanceToPoint` and `dip::FillDistanceToPoint`.
+
+- `dip::ClipLow` and `dip::ClipHigh` are convenience interfaces to `dip::Clip`.
 
 [//]: # (--------------------------------------------------------------)
 
@@ -254,13 +272,16 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - New measurement features: "SolidArea", "Circularity", "Convexity", "Eccentricity", "EllipseVariance",
   "Roundness", "DimensionsCube", "DimensionsEllipsoid", "GreyDimensionsCube" and "GreyDimensionsEllipsoid".
-  The features "Mu", "Inertia", "MajorAxes", and their grey-value versions have been generalized
+  Note that "Convexity" therefore is not the same as what it was in the previous version of the library.
+
+- The measurement features "Mu", "Inertia", "MajorAxes", and their grey-value versions have been generalized
   to arbitrary number of dimensions.
 
 - `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
   no longer are "left" and "right" options.
 
-- `dip::ImageDisplay` no longer does any spatial scaling. Also, it's a class, not a function.
+- `dip::ImageDisplay` no longer does any spatial scaling. Also, it's a class, not a function, and provides
+  much more functionality than the function of the same name in the old version of the library.
 
 - `dip::ColorSpaceManager` is functionality ported from MATLAB-code in *DIPimage 2*,
   with a few new color spaces added.
@@ -300,6 +321,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip::Skew` can now skew in multiple dimensions at the same time.
 
+- `dip::Shift` now calls `dip::Resampling`, shifting the image in the spatial domain. `dip::ShiftFT`
+  uses the frequency domain, as `dip_Shift` did.
+
 - `dip::Resampling` (and by extension `dip::Shift`) shifts the image in the opposite direction
   from what it did in *DIPlib 2*, where the shift was unintuitive.
 
@@ -323,10 +347,97 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip::EuclideanDistanceTransform` has a new algorithm which produces exact distances in nD, and
   is parallelized and very fast. This new algorithm is the default.
 
-- Lots of new algorithms, some previously only available in *DIPimage*, some completely new.
-  - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
-    and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
-  - TODO: try to list them all!
+- `dip::ResampleAt` has various signatures and a lot more flexibility than in the old library. There
+  is also a `dip::ResampleAtUnchecked`, to be used together with `dip::PrepareResampleAtUnchecked`,
+  for low-level use.
+
+[//]: # (--------------------------------------------------------------)
+
+\section new_functionality New functionality
+
+- New external library DIPviewer adds interactive image display, see \ref viewer.
+
+- New external library DIPjavaio adds the option to use *Bio-Formats* to read hundreds of image file formats,
+  see \ref javaio.
+
+- New analysis functions: `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
+  `dip::MonogenicSignalAnalysis`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
+
+- New detection functions: `dip::HoughTransformCircleCenters`, `dip::FindHoughMaxima`, `dip::PointDistanceDistribution`,
+  `dip::FindHoughCircles`, `dip::RadonTransformCircles`, `dip::HarrisCornerDetector`, `dip::ShiTomasiCornerDetector`,
+  `dip::NobleCornerDetector`, `dip::WangBradyCornerDetector`, `dip::FrangiVesselness`,
+  `dip::MatchedFiltersLineDetector2D`, `dip::DanielssonLineDetector`, `dip::RORPOLineDetector`.
+
+- New binary filtering functions: `dip::FillHoles`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`,
+  `dip::BinaryAreaOpening`, `dip::BinaryAreaClosing`, `dip::CountNeighbors`, `dip::MajorityVote`, `dip::GetSinglePixels`,
+  `dip::GetEndPixels`, `dip::GetLinkPixels`, `dip::GetBranchPixels`, `dip::SupGenerating`, `dip::InfGenerating`,
+  `dip::UnionSupGenerating`, `dip::UnionSupGenerating2D`, `dip::IntersectionInfGenerating`,
+  `dip::IntersectionInfGenerating2D`, `dip::Thickening`, `dip::Thickening2D`, `dip::Thinning`, `dip::Thinning2D`,
+  `dip::HomotopicThinningInterval2D`, `dip::HomotopicThickeningInterval2D`, `dip::EndPixelInterval2D`,
+  `dip::HomotopicEndPixelInterval2D`, `dip::HomotopicInverseEndPixelInterval2D`, `dip::SinglePixelInterval`,
+  `dip::BranchPixelInterval2D`, `dip::BoundaryPixelInterval2D`, `dip::ConvexHullInterval2D`.
+
+- New linear filtering functions: `dip::SeparateFilter`, `dip::Dx`, `dip::Dy`, `dip::Dz`, `dip::Dxx`, `dip::Dyy`,
+  `dip::Dzz`, `dip::Dxy`, `dip::Dxz`, `dip::Dyz`, `dip::Gradient`, `dip::GradientDirection`, `dip::Curl`,
+  `dip::Divergence`, `dip::Hessian`, `dip::UnsharpMask`, `dip::GaborFIR`, `dip::Gabor2D`, `dip::LogGaborFilterBank`,
+  `dip::NormalizedConvolution`, `dip::NormalizedDifferentialConvolution`, `dip::MeanShiftVector`.
+
+- New morphological functions: `dip::RankFilter`, `dip::RankMinClosing`, `dip::RankMaxOpening`,
+  `dip::LimitedMorphologicalReconstruction`, `dip::HMaxima`, `dip::HMinima`, `dip::Leveling`, `dip::AreaClosing`,
+  `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`, `dip::AlternatingSequentialFilter`,
+  `dip::HitAndMiss`.
+
+- New nonlinear filtering functions: `dip::PeronaMalikDiffusion`, `dip::GaussianAnisotropicDiffusion`,
+  `dip::RobustAnisotropicDiffusion`, `dip::CoherenceEnhancingDiffusion`.
+
+- New generation functions: `dip::FillRadiusCoordinate`, `dip::CreateRadiusCoordinate`,
+  `dip::FillRadiusSquareCoordinate`, `dip::CreateRadiusSquareCoordinate`, `dip::FillPhiCoordinate`,
+  `dip::CreatePhiCoordinate`, `dip::FillThetaCoordinate`, `dip::CreateThetaCoordinate`, `dip::FillCoordinates`,
+  `dip::CreateCoordinates`, `dip::ApplyWindow`, `dip::DrawPolygon2D`, `dip::DrawBandlimitedPoint`,
+  `dip::DrawBandlimitedLine`, `dip::DrawBandlimitedBall`, `dip::DrawBandlimitedBox`, `dip::SaltPepperNoise`,
+  `dip::FillColoredNoise`, `dip::ColoredNoise`, `dip::GaussianEdgeClip`, `dip::GaussianLineClip`, `dip::FillDelta`,
+  `dip::CreateDelta`, `dip::CreateGauss`, `dip::CreateGabor`, `dip::FillPoissonPointProcess`, `dip::FillRandomGrid`.
+
+- New geometric transformation functions: `dip::RotationMatrix2D`, `dip::RotationMatrix3D`, `dip::AffineTransform`,
+  `dip::LogPolarTransform2D`, `dip::Tile`, `dip::TileTensorElements`, `dip::Concatenate`, `dip::JoinChannels`.
+
+- New grey-value mapping functions: `dip::Zero`, `dip::HistogramEqualization`, `dip::HistogramMatching`.
+
+- New histogram functions: `dip::CumulativeHistogram`, `dip::Smooth`, `dip::Mean`, `dip::Covariance`,
+  `dip::MarginalMedian`, `dip::Mode`, `dip::MutualInformation`, `dip::Entropy`, `dip::IsodataThreshold`,
+  `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`, `dip::BackgroundThreshold`,
+  `dip::KMeansClustering`, `dip::MinimumVariancePartitioning`, `dip::EqualizationLookupTable`,
+  `dip::MatchingLookupTable`, `dip::PerObjectHistogram`.
+
+- New labeled regions function: `dip::Relabel`.
+
+- New math and statistics functions: `dip::IsNotANumber`, `dip::IsInfinite`, `dip::IsFinite`, `dip::InRange`,
+  `dip::OutOfRange`, `dip::MaximumAbsoluteError`, `dip::PSNR`, `dip::SSIM`, `dip::MutualInformation`,
+  `dip::SpatialOverlap`, `dip::DiceCoefficient`, `dip::JaccardIndex`, `dip::Specificity`, `dip::Sensitivity`,
+  `dip::Accuracy`, `dip::Precision`, `dip::HausdorffDistance`, `dip::Entropy`, `dip::EstimateNoiseVariance`,
+  `dip::GeometricMean`, `dip::MeanSquare`, `dip::SumSquare`, `dip::MaximumAbs`, `dip::MinimumAbs`,
+  `dip::MedianAbsoluteDeviation`, `dip::All`, `dip::Any`, `dip::Count`, `dip::CumulativeSum`, `dip::SampleStatistics`,
+  `dip::Covariance`, `dip::CenterOfMass`, `dip::Moments`, `dip::Transpose`, `dip::ConjugateTranspose`,
+  `dip::DotProduct`, `dip::CrossProduct`, `dip::Norm`, `dip::SquareNorm`, `dip::Angle`, `dip::Orientation`,
+  `dip::CartesianToPolar`, `dip::PolarToCartesian`, `dip::Determinant`, `dip::Trace`, `dip::Rank`, `dip::Eigenvalues`,
+  `dip::LargestEigenvalue`, `dip::SmallestEigenvalue`, `dip::EigenDecomposition`, `dip::LargestEigenVector`,
+  `dip::SmallestEigenVector`, `dip::Inverse`, `dip::PseudoInverse`, `dip::SingularValues`,
+  `dip::SingularValueDecomposition`, `dip::Identity`, `dip::SumTensorElements`, `dip::ProductTensorElements`,
+  `dip::AllTensorElements`, `dip::AnyTensorElement`, `dip::MaximumTensorElement`, `dip::MaximumAbsTensorElement`,
+  `dip::MinimumTensorElement`, `dip::MinimumAbsTensorElement`, `dip::MeanTensorElement`,
+  `dip::GeometricMeanTensorElement`, `dip::SortTensorElements`, `dip::SortTensorElementsByMagnitude`, `dip::Hypot`.
+
+- New microscopy functions: `dip::BeerLambertMapping`, `dip::InverseBeerLambertMapping`, `dip::UnmixStains`,
+  `dip::MixStains`.
+
+- New segmentatin functions: `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
+  `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`,
+  `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`.
+
+- New transform functions: `dip::OptimalFourierTransformSize`, `dip::RieszTransform`, `dip::StationaryWaveletTransform`.
+
+- There is also a lot of new functionality in the library infrastructure, which we cannot all list here.
+  See \ref infrastructure.
 
 [//]: # (--------------------------------------------------------------)
 

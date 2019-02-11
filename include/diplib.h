@@ -37,8 +37,22 @@
 #include "diplib/library/operators.h"
 #include "diplib/library/stringparams.h"
 
+
+/// \file
+/// \brief This is the main include file for the *DIPlib* library.
+///
+/// It declares all classes, functions, macros and constants that form the basic
+/// library infrastructure. Everything is declared within the `#dip` namespace.
+/// This header file is the core of *DIPlib*. To access image processing or analysis
+/// functionality, include their corresponding header files.
+
+
 /// \brief The `dip` namespace contains all the library functionality.
 namespace dip {
+
+/// \defgroup infrastructure The library infrastructure
+/// \brief The nuts and bolts that make it all work
+/// \{
 
 /// \brief Holds information about the *DIPlib* binary.
 ///
@@ -73,19 +87,9 @@ struct DIP_NO_EXPORT LibraryInformation {
 /// \brief Constant that holds information about the *DIPlib* binary.
 DIP_EXPORT extern const LibraryInformation libraryInformation;
 
+/// \}
+
 } // namespace dip
-
-/// \file
-/// \brief This is the main include file for the *DIPlib* library.
-///
-/// It declares all classes, functions, macros and constants that form the basic
-/// library infrastructure. Everything is declared within the `#dip` namespace.
-/// This header file is the core of *DIPlib*. To access image processing or analysis
-/// functionality, include their corresponding header files.
-
-
-/// \defgroup infrastructure The library infrastructure
-/// \brief The nuts and bolts that make it all work
 
 /// \defgroup filtering Filtering
 /// \brief Linear and non-linear filters for smoothing, sharpening and detection
