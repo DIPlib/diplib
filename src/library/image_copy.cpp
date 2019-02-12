@@ -494,6 +494,7 @@ void Image::Convert( dip::DataType dt ) {
          // Simply create a new image, identical copy of *this, with a different data type, copy
          // the data, then swap the two images.
          //std::cout << "dip::Image::Convert: using Copy\n";
+         DIP_THROW_IF( IsProtected(), "Image is protected" );
          Image newimg;
          newimg.externalInterface_ = externalInterface_;
          newimg.ReForge( *this, dt );

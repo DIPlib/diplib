@@ -57,8 +57,8 @@ namespace dip {
 /// calibration image taken without a slide in the optical path.
 ///
 /// `in` must be real-valued. Values outside of the range [0,`background`] will be clipped.
-/// `out` will be a floating-point type (do not force it to be an integer type, as the output values are typically
-/// quite small).
+/// `out` will be a floating-point type (do not force it to be an integer type, as the rounding will destroy
+/// all data).
 DIP_EXPORT void BeerLambertMapping(
       Image const& in,
       Image& out,
@@ -78,7 +78,9 @@ inline Image BeerLambertMapping(
 /// Applies the inverse mapping of `dip::BeerLambertMapping`, simulating the image obtained under a brightfield
 /// microscope given the stain densities in the image `in`. `background` is the illumination intensity, values of
 /// 0 in the input will be mapped to the value of `background`, whereas larger input values will be mapped to darker
-/// values.
+/// values. Input values should be relatively small, such that `background * dip::Exp10(-input)` can be represented
+/// in the ouput data type. Best results are obtained when the input is in the range [0,1], but larger values are
+/// allowed.
 ///
 /// `in` must be real-valued, negative values will be clipped to 0. `out` will be a floating-point type, unless
 /// it was protected before calling this function (see `dip::Image::Protect`).
