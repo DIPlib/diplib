@@ -341,34 +341,6 @@ classdef dip_image
          end
       end
 
-      function out = complex(out,im)
-         %COMPLEX   Construct complex image from real and imaginary parts.
-         %   COMPLEX(A,B) returns the complex result A + Bi, where A and B
-         %   are identically-sized real-valued images.
-         %
-         %   COMPLEX(A) returns the complex result A + 0i, where A must
-         %   be real.
-         if nargin == 1
-            if ~iscomplex(out)
-               if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32')
-                  out.Data = cat(1,double(out.Data),zeros(size(out.Data)));
-               else
-                  out.Data = cat(1,single(out.Data),zeros(size(out.Data),'single'));
-               end
-            end
-         else % nargin == 2
-            if iscomplex(out) || iscomplex(im)
-               error('Expected two real-valued images')
-            end
-            if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32') || ...
-               isa(im.Data, 'double') || isa(im.Data, 'uint32') || isa(im.Data, 'int32')
-               out.Data = cat(1,double(out.Data),double(im.Data));
-            else
-               out.Data = cat(1,single(out.Data),single(im.Data));
-            end
-         end
-      end
-
       % ------- SET PROPERTIES -------
 
       function img = set.Array(img,data)
@@ -812,63 +784,6 @@ classdef dip_image
          res = ~isempty(obj.ColorSpace);
       end
 
-      function obj = colorspace(obj,col)
-         %COLORSPACE   Gets/sets/changes the color space.
-         %    IN = COLORSPACE(IN,COL), with IN a color image, changes the color
-         %    space of image IN to COL, converting the pixel values as required.
-         %    If COL is 'grey', a scalar image is returned with the luminosity (Y).
-         %    If COL is '', no transformation is made, the color space information
-         %    is simply removed.
-         %
-         %    IN = COLORSPACE(IN,COL), with IN a tensor image, sets the color
-         %    space of image IN to COL. IN must have the right number of tensor
-         %    elements expected for colorspace COL.
-         %
-         %    COL = COLORSPACE(IN) returns the name of the color space of the
-         %    image IN.
-         %
-         %    Converting to a color-space-less tensor image is done by specifying
-         %    the empty string as a color space. This action only changes the color
-         %    space information, and does not change any pixel values. Thus, to
-         %    change from one color space to another without converting the pixel
-         %    values themselves, change first to a color-space-less tensor image,
-         %    and then to the final color space.
-         %
-         %    A color space is any string recognized by the system. It is possible
-         %    to specify any other string as color space, but no conversion of pixel
-         %    values can be made, since the system doesn't know about that color
-         %    space. Color space names are not case sensitive. Recognized color
-         %    spaces are:
-         %
-         %       grey (or gray)
-         %       RGB
-         %       sRGB
-         %       CMY
-         %       CMYK
-         %       HSI
-         %       ICH
-         %       ISH
-         %       HCV
-         %       HSV
-         %       XYZ
-         %       Yxy
-         %       Lab (or L*a*b*, CIELAB)
-         %       Luv (or L*u*v*, "CIELUV")
-         %       LCH (or L*C*H*)
-         %
-         %    See the DIPlib documentation for dip::ColorSpaceManager for more
-         %    information on the color spaces.
-         %
-         %    See also: dip_image/iscolor
-         if nargin==1
-            obj = obj.ColorSpace;
-         elseif isempty(col)
-            obj.ColorSpace = '';
-         else
-            obj = colorspacemanager(obj,col);
-         end
-      end
-
       function display(obj)
          %DISPLAY   Called when not terminating a statement with a semicolon.
          if ~isempty(obj) && numpixels(obj)>1 && dipgetpref('DisplayToFigure')
@@ -1251,41 +1166,6 @@ classdef dip_image
          end
       end
 
-      function a = diag(a,k)
-         %DIAG    Diagonal matrices and diagonals of a matrix.
-         %   DIAG(V) when V is a vector image with N tensor elements is a diagonal
-         %   tensor image of tensor size [N,N]. Note that no data is copied, and
-         %   the output still has only N tensor elements.
-         %
-         %   DIAG(X) when X is a matrix is a column vector formed from the elements
-         %   of the main diagonal of X. In this case, data is copied.
-         if nargin > 1 && k ~= 0
-            error('Only main diagonal access supported')
-         end
-         if ~isscalar(a)
-            if isvector(a)
-               a.TensorShape = 'diagonal matrix';
-            else
-               sz = a.TensorSizeInternal;
-               if sz(1) ~= sz(2)
-                  error('Image is not a square tensor');
-               end
-               N = sz(1);
-               s = substruct('()',repmat({':'},1,ndims(a.Data)));
-               if strcmp(a.TensorShapeInternal,'column-major matrix') || strcmp(a.TensorShapeInternal,'row-major matrix')
-                  s.subs{2} = 1:N+1:N*N;
-               else % diagonal, symmetric and triangular matrices store diagonal elements first
-                  s.subs{2} = 1:N;
-               end
-               if numtensorel(a) ~= N
-                  a.ColorSpace = '';
-               end
-               a.Data = subsref(a.Data,s);
-               a.TensorShape = 'column vector';
-            end
-         end
-      end
-
       function ii = end(a,k,n)
          %END   Overload for using END in indexing.
          %
@@ -1439,7 +1319,7 @@ classdef dip_image
          elseif any(k<0) || any(k>in.NDims)
             error('ORDER contains an index out of range')
          end
-         k = k(:)'; % Make sure K is a 1xN vector.
+         k = k(:).'; % Make sure K is a 1xN vector.
          nd = length(k);
          tmp = k;
          tmp(tmp==0) = [];
@@ -1581,7 +1461,7 @@ classdef dip_image
                n = [n(1:emptydim-1),p,n(emptydim:end)];
             end
          else
-            n = varargin{1}(:)';
+            n = varargin{1}(:).';
             if ~isint(n) || any(n<1)
                error('Size vector must be a vector with positive integer elements')
             end
@@ -1769,7 +1649,7 @@ classdef dip_image
             end
             n = cat(2,varargin{:});
          else
-            n = varargin{1}(:)';
+            n = varargin{1}(:).';
             if ~isint(n) || any(n<1)
                error('Size vector must be a vector with positive integer elements')
             end
@@ -1798,125 +1678,6 @@ classdef dip_image
             in.Data = reshape(in.Data,[sz(1:2),n(2)*k]);
          end
          in.NDims = nd;
-      end
-
-      function out = clone(in,varargin)
-         %CLONE   Creates a new image, identical to in
-         %   Conceptually OUT = CLONE(IN) is the same as OUT = IN; OUT(:) = 0;
-         %   That is, it creates a new image, initialzed to zero, with all the same
-         %   properties as IN.
-         %
-         %   Additional key/value pairs can be used to change specific properties:
-         %    - 'imsize': changes the sizes of the image
-         %    - 'tensorsize': changes the sizes of the tensor
-         %    - 'tensorshape': changes how the dip_image.TensorShape property
-         %    - 'colorspace': changes the color space
-         %    - 'datatype': changes the data type, see DIP_IMAGE/DIP_IMAGE for valid
-         %      DATATYPE strings.
-         %
-         %   If 'tensorsize' or 'tensorshape' are given, any previous color space
-         %   settings will be ignored, including that in IN. Likewise, if
-         %   'colorspace' is given, any previous tensor size or shape settings
-         %   will be ignored
-         %
-         %   SEE ALSO: newim, newtensorim, newcolorim, dip_image
-         if mod(length(varargin),2) ~= 0
-            error('All keys must have a value');
-         end
-         kk = 1;
-         imsz = imsize(in);
-         telem = numtensorel(in);
-         tsz = [];
-         tsh = 'column vector';
-         colsp = in.ColorSpace;
-         if isempty(colsp)
-            tsz = in.TensorSizeInternal;
-            tsh = in.TensorShapeInternal;
-         end
-         dtype = datatype(in);
-         while kk < length(varargin)
-            key = varargin{kk};
-            value = varargin{kk+1};
-            kk = kk+2;
-            if ~ischar(key)
-               error('Keys must be strings')
-            end
-            switch key
-               case 'imsize'
-                  imsz = value;
-                  if ~isnumeric(imsz) || ~isvector(imsz)
-                     error('IMSIZE value must be a numeric vector')
-                  end
-               case 'tensorsize'
-                  tsz = value;
-                  if ~isnumeric(tsz) || numel(tsz)<1 || numel(tsz)>2
-                     error('TENSORSIZE value must be numeric and have 1 or 2 elements')
-                  end
-                  colsp = '';
-                  telem = 0;
-               case 'tensorshape'
-                  tsh = value;
-                  if ~ischar(tsh)
-                     error('TENSORSHAPE value must be a string')
-                  end
-                  colsp = '';
-                  telem = 0;
-               case 'colorspace'
-                  colsp = value;
-                  if ~ischar(colsp)
-                     error('COLORSPACE value must be a string')
-                  end
-                  telem = colorspacemanager(colsp);
-                  tsz = telem;
-                  tsh = 'column vector';
-               case 'datatype'
-                  dtype = value;
-                  if ~ischar(dtype)
-                     error('DATATYPE value must be a string')
-                  end
-            end
-         end
-         update_tsh = '';
-         if telem == 0
-            % Compute telem
-            switch tsh
-               case {'column vector','row vector'}
-                  telem = prod(tsz);
-               case {'column-major matrix','row-major matrix'}
-                  telem = prod(tsz);
-                  update_tsh = tsh;
-                  tsh = tsz;
-               case 'diagonal matrix'
-                  if numel(tsz)==1
-                     tsz = [tsz,tsz];
-                  else
-                     if tsz(1)~=tsz(2)
-                        error('A diagonal matrix must be square')
-                     end
-                  end
-                  telem = tsz(1);
-               case {'symmetric matrix','upper triangular matrix','lower triangular matrix'}
-                  if numel(tsz)==1
-                     tsz = [tsz,tsz];
-                  else
-                     if tsz(1)~=tsz(2)
-                        error('A diagonal matrix must be square')
-                     end
-                  end
-                  telem = tsz(1) * (tsz(1)+1) / 2;
-               otherwise
-                  error('Bad value for TENSORSHAPE')
-            end
-         end
-         out = dip_image(zeros(telem,1),tsh,dtype);
-         if ~isempty(update_tsh)
-            out.TensorShape = update_tsh;
-         end
-         if ~isempty(imsz)
-            out = repmat(out,imsz);
-         end
-         out.ColorSpace = colsp;
-         out.PixelSize = in.PixelSize;
       end
 
       % ------- OPERATORS -------
@@ -2808,7 +2569,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          lut = dip_tensor_indices(a);
          [ii,jj] = ndgrid(ii,jj);
          telems = lut(ii + (jj-1)*stride) + 1;
-         telems = telems(:)'; % make into row vector
+         telems = telems(:).'; % make into row vector
          if any(telems == 0)
             error('Indexing into non-stored tensor elements')
             % TODO: return zeros?
