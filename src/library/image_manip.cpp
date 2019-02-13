@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2018, Cris Luengo.
+ * (c)2014-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -356,7 +356,6 @@ Image& Image::TensorToSpatial( dip::uint dim ) {
    return *this;
 }
 
-
 Image& Image::SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -451,6 +450,63 @@ Image& Image::MergeTensorToComplex() {
       strides_[ ii ] /= 2;
    }
    ResetColorSpace();
+   return *this;
+}
+
+
+Image& Image::ReinterpretCast( dip::DataType dataType ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   if( dataType == dataType_ ) {
+      return *this;
+   }
+   dip::uint inSize = dataType_.SizeOf();
+   dip::uint outSize = dataType.SizeOf();
+   if( inSize != outSize ) {
+      dip::uint dim;
+      dip::uint nDims = Dimensionality();
+      for( dim = 0; dim < nDims; ++dim ) {
+         if(( sizes_[ dim ] > 1 ) && ( strides_[ dim ] == 1 )) {
+            break;
+         }
+      }
+      if( inSize > outSize ) {
+         dip::uint ratio = inSize / outSize;
+         dip::sint ratio_s = static_cast< dip::sint >( ratio );
+         if( dim == nDims ) {
+            dim = 0;
+            AddSingleton( dim );
+            ++nDims;
+            strides_[ dim ] = 1;
+         }
+         sizes_[ dim ] *= ratio;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            if( ii != dim ) {
+               strides_[ ii ] *= ratio_s;
+            }
+         }
+         tensorStride_ *= ratio_s;
+      } else { // inSize < outSize
+         DIP_THROW_IF( dim == nDims, "Image not compatible with requested cast" );
+         dip::uint ratio = outSize / inSize;
+         dip::sint ratio_s = static_cast< dip::sint >( ratio );
+         // Do all checks before we change anything about the image
+         DIP_THROW_IF( sizes_[ dim ] % ratio != 0, "Image not compatible with requested cast" );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            if( ii != dim ) {
+               DIP_THROW_IF( strides_[ ii ] % ratio_s != 0, "Image not compatible with requested cast" );
+            }
+         }
+         // Now we're OK to make changes
+         sizes_[ dim ] /= ratio;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            if( ii != dim ) {
+               strides_[ ii ] /= ratio_s;
+            }
+         }
+         tensorStride_ /= ratio_s;
+      }
+   }
+   dataType_ = dataType;
    return *this;
 }
 
@@ -659,6 +715,72 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::Crop") {
    img = src.QuickCopy();
    img.Crop( { 6, 6, 7, 7 }, dip::Option::CropLocation::MIRROR_CENTER ); // keeps the pixel left of center on its place
    DOCTEST_CHECK( img.At<float>( dip::UnsignedArray{ 2, 2, 3, 3 } ) == 1.0 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::ReinterpretCast") {
+   dip::Image src( { 7, 8 }, 1, dip::DT_SINT32 );
+   dip::Image dest = src;
+   // Same size
+   dest.ReinterpretCast( dip::DT_UINT32 );
+   DOCTEST_CHECK( dest.DataType() == dip::DT_UINT32 );
+   DOCTEST_CHECK( src.DataType() == dip::DT_SINT32 );
+   DOCTEST_CHECK( dest.Sizes() == src.Sizes() );
+   // Smaller size
+   dest.ReinterpretCast( dip::DT_UINT16 );
+   DOCTEST_CHECK( dest.DataType() == dip::DT_UINT16 );
+   DOCTEST_CHECK( dest.Dimensionality() == src.Dimensionality() );
+   DOCTEST_CHECK( dest.Size( 0 ) == 2 * src.Size( 0 ) );
+   DOCTEST_CHECK( dest.Size( 1 ) == src.Size( 1 ) );
+   // Larger size
+   dest.ReinterpretCast( dip::DT_SINT32 );
+   DOCTEST_CHECK( dest.DataType() == dip::DT_SINT32 );
+   DOCTEST_CHECK( dest.Sizes() == src.Sizes() );
+   DOCTEST_CHECK_THROWS( dest.ReinterpretCast( dip::DT_DFLOAT )); // can't divide 7/2
+   // Make sure the failed cast didn't change the image
+   DOCTEST_CHECK( dest.DataType() == dip::DT_SINT32 );
+   DOCTEST_CHECK( dest.Sizes() == src.Sizes() );
+   // Crop and try again
+   dest.Crop( { 6, src.Size( 1 ) } );
+   DOCTEST_CHECK( dest.Size( 0 ) == 6 ); // divisible by 2
+   DOCTEST_CHECK_THROWS( dest.ReinterpretCast( dip::DT_DFLOAT )); // but the strides still don't match
+   // Create new image and try again
+   dest = dest.Similar();
+   DOCTEST_REQUIRE( dest.HasNormalStrides() );
+   dest.ReinterpretCast( dip::DT_DFLOAT );
+   DOCTEST_CHECK( dest.DataType() == dip::DT_DFLOAT );
+   DOCTEST_CHECK( dest.Size( 0 ) == 3 );
+   DOCTEST_CHECK( dest.Size( 1 ) == src.Size( 1 ) );
+   // Repeat the above, but with a tensor dimension
+   src = dip::Image( { 7, 8 }, 3, dip::DT_SINT32 );
+   dest = src;
+   // Smaller size
+   dest.ReinterpretCast( dip::DT_UINT16 );
+   DOCTEST_CHECK( dest.DataType() == dip::DT_UINT16 );
+   DOCTEST_REQUIRE( dest.Dimensionality() == src.Dimensionality() + 1 );
+   DOCTEST_CHECK( dest.Size( 0 ) == 2 );
+   DOCTEST_CHECK( dest.Size( 1 ) == src.Size( 0 ) );
+   DOCTEST_CHECK( dest.Size( 2 ) == src.Size( 1 ) );
+   // Larger size
+   dest.ReinterpretCast( dip::DT_SINT32 );
+   DOCTEST_CHECK( dest.DataType() == dip::DT_SINT32 );
+   DOCTEST_CHECK( dest.Size( 0 ) == 1 );
+   DOCTEST_CHECK( dest.Size( 1 ) == src.Size( 0 ) );
+   DOCTEST_CHECK( dest.Size( 2 ) == src.Size( 1 ) );
+   DOCTEST_CHECK_THROWS( dest.ReinterpretCast( dip::DT_DFLOAT )); // there's no stride=1 dimension this time
+   // Changing signedness of data
+   DOCTEST_CHECK_THROWS( dip::Image( {}, 1, dip::DT_SFLOAT ).ReinterpretCastToSignedInteger() );
+   src = dip::Image( { 7, 8 }, 1, dip::DT_SINT32 );
+   DOCTEST_REQUIRE( src.DataType() == dip::DT_SINT32 );
+   src.ReinterpretCastToUnsignedInteger();
+   DOCTEST_CHECK( src.DataType() == dip::DT_UINT32 );
+   src.ReinterpretCastToSignedInteger();
+   DOCTEST_CHECK( src.DataType() == dip::DT_SINT32 );
+   src = dip::Image( { 7, 8 }, 1, dip::DT_SINT8 );
+   DOCTEST_REQUIRE( src.DataType() == dip::DT_SINT8 );
+   src.ReinterpretCastToUnsignedInteger();
+   DOCTEST_CHECK( src.DataType() == dip::DT_UINT8 );
+   src.ReinterpretCastToSignedInteger();
+   DOCTEST_CHECK( src.DataType() == dip::DT_SINT8 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

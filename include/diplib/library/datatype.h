@@ -156,7 +156,7 @@ struct DIP_NO_EXPORT DataType {
    }
 
    /// \brief A string can be cast to a data type. See \ref types for recognized strings.
-   explicit DataType( String name ) {
+   explicit DataType( String const& name ) {
       if( name == DTString::BIN      ) { dt = DT::BIN;      } else
       if( name == DTString::UINT8    ) { dt = DT::UINT8;    } else
       if( name == DTString::SINT8    ) { dt = DT::SINT8;    } else

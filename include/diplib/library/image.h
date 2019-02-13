@@ -574,7 +574,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, IsSingletonExpanded, Strides, TensorStride.
+      /// \see dip::Image::GetSimpleStrideAndOrigin, dip::Image::HasSimpleStride, dip::Image::HasNormalStrides,
+      /// dip::Image::IsSingletonExpanded, dip::Image::Strides, dip::Image::TensorStride
       bool HasContiguousData() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          dip::uint size = NumberOfPixels() * TensorElements();
@@ -599,7 +600,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see HasContiguousData, HasNormalStrides, ExpandSingletonDimension, ExpandSingletonTensor.
+      /// \see dip::Image::HasContiguousData, dip::Image::HasNormalStrides, dip::Image::ExpandSingletonDimension,
+      /// dip::Image::ExpandSingletonTensor
       DIP_EXPORT bool IsSingletonExpanded() const;
 
       /// \brief Test if the whole image can be traversed with a single stride
@@ -613,7 +615,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
+      /// \see dip::Image::GetSimpleStrideAndOrigin, dip::Image::HasContiguousData, dip::Image::HasNormalStrides,
+      /// dip::Image::Strides, dip::Image::TensorStride
       bool HasSimpleStride() const {
          void* p;
          std::tie( std::ignore, p ) = GetSimpleStrideAndOrigin();
@@ -635,7 +638,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
+      /// \see dip::Image::HasSimpleStride, dip::Image::HasContiguousData, dip::Image::HasNormalStrides,
+      /// dip::Image::Strides, dip::Image::TensorStride, dip::Image::Data
       DIP_EXPORT std::pair< dip::sint, void* > GetSimpleStrideAndOrigin() const;
 
       /// \brief Checks to see if `other` and `this` have their dimensions ordered in
@@ -648,7 +652,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The images must be forged.
       ///
-      /// \see HasSimpleStride, GetSimpleStrideAndOrigin, HasContiguousData.
+      /// \see dip::Image::HasSimpleStride, dip::Image::GetSimpleStrideAndOrigin, dip::Image::HasContiguousData
       DIP_EXPORT bool HasSameDimensionOrder( Image const& other ) const;
 
       /// \}
@@ -945,7 +949,7 @@ class DIP_NO_EXPORT Image {
       /// memory: tensor shape, color space, and pixel size. The number of tensor elements of the
       /// the two images must match. The image must be forged.
       ///
-      /// \see CopyProperties, ResetNonDataProperties
+      /// \see dip::Image::CopyProperties, dip::Image::ResetNonDataProperties
       void CopyNonDataProperties( Image const& src ) {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( tensor_.Elements() != src.tensor_.Elements(), E::NTENSORELEM_DONT_MATCH );
@@ -959,7 +963,7 @@ class DIP_NO_EXPORT Image {
       /// The non-data image properties are those that do not influence how the data is stored in
       /// memory: tensor shape, color space, and pixel size.
       ///
-      /// \see CopyNonDataProperties, Strip
+      /// \see dip::Image::CopyNonDataProperties, dip::Image::Strip
       void ResetNonDataProperties() {
          tensor_ = {};
          colorSpace_ = {};
@@ -1002,7 +1006,8 @@ class DIP_NO_EXPORT Image {
       /// The pointer returned could be tangentially related to the data segment, if
       /// `dip::Image::IsExternalData` is true.
       ///
-      /// \see Origin, IsShared, ShareCount, SharesData, IsExternalData.
+      /// \see dip::Image::Origin, dip::Image::IsShared, dip::Image::ShareCount, dip::Image::SharesData,
+      /// dip::Image::IsExternalData
       void* Data() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return dataBlock_.get();
@@ -1010,7 +1015,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Check to see if the data segment is shared with other images.
       ///
-      /// \see Data, ShareCount, SharesData, IsExternalData.
+      /// \see dip::Image::Data, dip::Image::ShareCount, dip::Image::SharesData, dip::Image::IsExternalData
       bool IsShared() const {
          return IsForged() && ( dataBlock_.use_count() > 1 );
       }
@@ -1026,7 +1031,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Data, IsShared, SharesData, IsExternalData.
+      /// \see dip::Image::Data, dip::Image::IsShared, dip::Image::SharesData, dip::Image::IsExternalData
       dip::uint ShareCount() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return static_cast< dip::uint >( dataBlock_.use_count() );
@@ -1040,7 +1045,8 @@ class DIP_NO_EXPORT Image {
       /// into the same data block. To determine if any pixels are shared,
       /// use `dip::Image::Aliases`.
       ///
-      /// \see Aliases, IsIdenticalView, IsOverlappingView, Data, IsShared, ShareCount, IsExternalData.
+      /// \see dip::Image::Aliases, dip::Image::IsIdenticalView, dip::Image::IsOverlappingView, dip::Image::Data,
+      /// dip::Image::IsShared, dip::Image::ShareCount, dip::Image::IsExternalData
       bool SharesData( Image const& other ) const {
          return IsForged() && other.IsForged() && ( dataBlock_ == other.dataBlock_ );
       }
@@ -1055,7 +1061,7 @@ class DIP_NO_EXPORT Image {
       /// If `true`, writing into this image will change the data in
       /// `other`, and vice-versa.
       ///
-      /// \see SharesData, IsIdenticalView, IsOverlappingView, Alias.
+      /// \see dip::Image::SharesData, dip::Image::IsIdenticalView, dip::Image::IsOverlappingView, dip::Image::Alias
       DIP_EXPORT bool Aliases( Image const& other ) const;
 
       /// \brief Determine if `this` and `other` offer an identical view of the
@@ -1063,7 +1069,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// If `true`, changing one sample in this image will change the same sample in `other`.
       ///
-      /// \see SharesData, Aliases, IsOverlappingView.
+      /// \see dip::Image::SharesData, dip::Image::Aliases, dip::Image::IsOverlappingView
       bool IsIdenticalView( Image const& other ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          // We don't need to check dataBlock_ here, as origin_ is a pointer, not an offset.
@@ -1085,7 +1091,7 @@ class DIP_NO_EXPORT Image {
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
       ///
-      /// \see SharesData, Aliases, IsIdenticalView.
+      /// \see dip::Image::SharesData, dip::Image::Aliases, dip::Image::IsIdenticalView
       bool IsOverlappingView( Image const& other ) const {
          // Aliases checks for both images to be forged.
          return Aliases( other ) && !IsIdenticalView( other );
@@ -1100,7 +1106,7 @@ class DIP_NO_EXPORT Image {
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
       ///
-      /// \see SharesData, Aliases, IsIdenticalView.
+      /// \see dip::Image::SharesData, dip::Image::Aliases, dip::Image::IsIdenticalView
       bool IsOverlappingView( ImageConstRefArray const& other ) const {
          for( dip::uint ii = 0; ii < other.size(); ++ii ) {
             Image const& tmp = other[ ii ].get();
@@ -1120,7 +1126,7 @@ class DIP_NO_EXPORT Image {
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
       ///
-      /// \see SharesData, Aliases, IsIdenticalView.
+      /// \see dip::Image::SharesData, dip::Image::Aliases, dip::Image::IsIdenticalView
       bool IsOverlappingView( ImageArray const& other ) const {
          for( dip::uint ii = 0; ii < other.size(); ++ii ) {
             Image const& tmp = other[ ii ];
@@ -1253,7 +1259,7 @@ class DIP_NO_EXPORT Image {
       ///     img.Protect( wasProtected );
       /// ```
       ///
-      /// \see IsProtected, Strip
+      /// \see dip::Image::IsProtected, dip::Image::Strip
       bool Protect( bool set = true ) {
          bool old = protect_;
          protect_ = set;
@@ -1329,7 +1335,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Origin, Offset, OffsetToCoordinates
+      /// \see dip::Image::Origin, dip::Image::Offset, dip::Image::OffsetToCoordinates
       void* Pointer( dip::sint offset ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return static_cast< uint8* >( origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
@@ -1345,7 +1351,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Origin, Offset, OffsetToCoordinates
+      /// \see dip::Image::Origin, dip::Image::Offset, dip::Image::OffsetToCoordinates
       void* Pointer( UnsignedArray const& coords ) const {
          return Pointer( Offset( coords ));
       }
@@ -1360,7 +1366,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Origin, Offset, OffsetToCoordinates
+      /// \see dip::Image::Origin, dip::Image::Offset, dip::Image::OffsetToCoordinates
       void* Pointer( IntegerArray const& coords ) const {
          return Pointer( Offset( coords ));
       }
@@ -1437,7 +1443,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Origin, Pointer, OffsetToCoordinates
+      /// \see dip::Image::Origin, dip::Image::Pointer, dip::Image::OffsetToCoordinates
       dip::sint Offset( UnsignedArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return Offset( coords, strides_, sizes_ );
@@ -1452,7 +1458,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Origin, Pointer, OffsetToCoordinates
+      /// \see dip::Image::Origin, dip::Image::Pointer, dip::Image::OffsetToCoordinates
       dip::sint Offset( IntegerArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return Offset( coords, strides_ );
@@ -1470,7 +1476,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Offset, OffsetToCoordinatesComputer, IndexToCoordinates
+      /// \see dip::Image::Offset, dip::Image::OffsetToCoordinatesComputer, dip::Image::IndexToCoordinates
       UnsignedArray OffsetToCoordinates( dip::sint offset ) const  {
          CoordinatesComputer comp = OffsetToCoordinatesComputer();
          return comp( offset );
@@ -1484,7 +1490,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Offset, OffsetToCoordinates, IndexToCoordinates, IndexToCoordinatesComputer
+      /// \see dip::Image::Offset, dip::Image::OffsetToCoordinates, dip::Image::IndexToCoordinates,
+      /// dip::Image::IndexToCoordinatesComputer
       CoordinatesComputer OffsetToCoordinatesComputer() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return CoordinatesComputer( sizes_, strides_ );
@@ -1513,7 +1520,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see IndexToCoordinates, Offset
+      /// \see dip::Image::IndexToCoordinates, dip::Image::Offset
       dip::uint Index( UnsignedArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return Index( coords, sizes_ );
@@ -1531,7 +1538,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Index, Offset, IndexToCoordinatesComputer, OffsetToCoordinates
+      /// \see dip::Image::Index, dip::Image::Offset, dip::Image::IndexToCoordinatesComputer,
+      /// dip::Image::OffsetToCoordinates
       UnsignedArray IndexToCoordinates( dip::uint index ) const {
          CoordinatesComputer comp = IndexToCoordinatesComputer();
          return comp( static_cast< dip::sint >( index ));
@@ -1545,7 +1553,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see Index, Offset, IndexToCoordinates, OffsetToCoordinates, OffsetToCoordinatesComputer
+      /// \see dip::Image::Index, dip::Image::Offset, dip::Image::IndexToCoordinates, dip::Image::OffsetToCoordinates,
+      /// dip::Image::OffsetToCoordinatesComputer
       DIP_EXPORT CoordinatesComputer IndexToCoordinatesComputer() const;
 
       /// \brief Returns the coordinates for the center of the image.
@@ -1590,14 +1599,15 @@ class DIP_NO_EXPORT Image {
       /// new sizes array through Image::SetSizes. The data will never
       /// be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
+      /// \see dip::Image::SwapDimensions, dip::Image::Squeeze, dip::Image::AddSingleton,
+      /// dip::Image::ExpandDimensionality, dip::Image::Flatten
       DIP_EXPORT Image& PermuteDimensions( UnsignedArray const& order );
 
       /// \brief Swap dimensions d1 and d2. This is a simplified version of `PermuteDimensions`.
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see PermuteDimensions.
+      /// \see dip::Image::PermuteDimensions
       DIP_EXPORT Image& SwapDimensions( dip::uint dim1, dip::uint dim2 );
 
       /// \brief Make image 1D.
@@ -1608,7 +1618,7 @@ class DIP_NO_EXPORT Image {
       /// resulting image depend on the strides, and do not necessarily
       /// follow the same order as linear indices.
       ///
-      /// \see FlattenAsMuchAsPossible, Squeeze.
+      /// \see dip::Image::FlattenAsMuchAsPossible, dip::Image::Squeeze
       DIP_EXPORT Image& Flatten();
 
       /// \brief Make image have as few dimensions as possible.
@@ -1627,21 +1637,23 @@ class DIP_NO_EXPORT Image {
       /// Note that the order of the pixels in the resulting image depend on the strides, and do not necessarily
       /// follow the same order as linear indices.
       ///
-      /// \see Flatten, Squeeze
+      /// \see dip::Image::Flatten, dip::Image::Squeeze
       DIP_EXPORT Image& FlattenAsMuchAsPossible();
 
       /// \brief Remove singleton dimensions (dimensions with size==1).
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
+      /// \see dip::Image::AddSingleton, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions,
+      /// dip::Image::UnexpandSingletonDimensions
       DIP_EXPORT Image& Squeeze();
 
       /// \brief Remove singleton dimension `dim` (has size==1).
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see Squeeze, AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
+      /// \see dip::Image::Squeeze, dip::Image::AddSingleton, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions,
+      /// dip::Image::UnexpandSingletonDimensions
       DIP_EXPORT Image& Squeeze( dip::uint dim );
 
       /// \brief Add a singleton dimension (with size==1) to the image.
@@ -1654,7 +1666,7 @@ class DIP_NO_EXPORT Image {
       /// singleton dimension `dim == 1`. The image will now have
       /// sizes `{ 4, 1, 5, 6 }`.
       ///
-      /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
+      /// \see dip::Image::Squeeze, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions
       DIP_EXPORT Image& AddSingleton( dip::uint dim );
 
       /// \brief Append singleton dimensions to increase the image dimensionality.
@@ -1664,7 +1676,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
+      /// \see dip::Image::AddSingleton, dip::Image::ExpandSingletonDimension, dip::Image::Squeeze,
+      /// dip::Image::PermuteDimensions, dip::Image::Flatten
       DIP_EXPORT Image& ExpandDimensionality( dip::uint dim );
 
       /// \brief Expand singleton dimension `dim` to `sz` pixels, setting the corresponding stride to 0.
@@ -1673,7 +1686,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions, AddSingleton, ExpandDimensionality.
+      /// \see dip::Image::ExpandSingletonDimensions, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded,
+      /// dip::Image::UnexpandSingletonDimensions, dip::Image::AddSingleton, dip::Image::ExpandDimensionality
       DIP_EXPORT Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
 
       /// \brief Performs singleton expansion.
@@ -1683,7 +1697,8 @@ class DIP_NO_EXPORT Image {
       /// otherwise an exception is thrown. See `dip::Image::ExpandSingletonDimension`.
       /// `size` is the array as returned by `dip::Framework::SingletonExpandedSize`.
       ///
-      /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions.
+      /// \see dip::Image::ExpandSingletonDimension, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded,
+      /// dip::Image::UnexpandSingletonDimensions
       DIP_EXPORT Image& ExpandSingletonDimensions( UnsignedArray const& newSizes );
 
       /// \brief Unexpands singleton-expanded dimensions.
@@ -1691,12 +1706,13 @@ class DIP_NO_EXPORT Image {
       /// The image is modified so that each singleton-expanded dimension has a size of 1, including the tensor
       /// dimension. That is, the resulting image will no longer be `dip::Image::IsSingletonExpanded`.
       ///
-      /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, Squeeze.
+      /// \see dip::Image::ExpandSingletonDimension, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded,
+      /// dip::Image::Squeeze
       DIP_EXPORT Image& UnexpandSingletonDimensions();
 
       /// \brief Tests if the image can be singleton-expanded to `size`.
       ///
-      /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded.
+      /// \see dip::Image::ExpandSingletonDimensions, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded
       DIP_EXPORT bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
 
       /// \brief Expand singleton tensor dimension `sz` samples, setting the tensor
@@ -1706,7 +1722,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see ExpandSingletonDimension, IsSingletonExpanded.
+      /// \see dip::Image::ExpandSingletonDimension, dip::Image::IsSingletonExpanded
       DIP_EXPORT Image& ExpandSingletonTensor( dip::uint sz );
 
       /// \brief Mirror the image about selected axes.
@@ -1896,6 +1912,93 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must have two tensor elements, a tensor stride of 1, and be forged.
       DIP_EXPORT Image& MergeTensorToComplex();
+
+      /// \brief Changes the data type of `this` without changing or copying the data.
+      ///
+      /// If the target `dataType` is smaller than the source data type, then the spatial dimension
+      /// that has a stride of 1 will grow (for example, casting from 32-bit integer to 8-bit integer
+      /// causes that dimension to have four times as many pixels). If no spatial dimension has a
+      /// stride of 1, a new dimension with a stride of 1 will be created, this will be dimension
+      /// number 0.
+      ///
+      /// If the target `dataType` is larger than the source data type, then the spatial dimension
+      /// that has a stride 1 will shrink. The input size along that dimension must be a multiple
+      /// of the shrink factor, otherwise an exception will be thrown. If no spatial dimension has
+      /// a stride of 1, an exception will be thrown. Furthermore, all strides in the image must
+      /// be compatible with the new data size, if this is not the case, an exception will be thrown.
+      ///
+      /// If the target and source data types have the same size, this operation will always succeed.
+      /// For the special case of complex to real casting, see `dip::Image::SplitComplex` and
+      /// `dip::Image::MergeComplex`.
+      ///
+      /// The tensor dimension will never be used in the logic described above.
+      ///
+      /// The pixel sizes for the modified dimension will not change, though they will likely be
+      /// meaningless after this operation.
+      ///
+      /// If the image shares data with other images, the other images will still view the pixels in
+      /// their original data type. Interpreting data as a different type is inherently dangerous,
+      /// the C++ standard considers it Undefined Behaviour. Use this function only if you know what
+      /// you are doing.
+      ///
+      /// The image must be forged.
+      ///
+      /// \see dip::Image::Convert, dip::Image::ReinterpretCastToSignedInteger, dip::Image::ReinterpretCastToUnsignedInteger
+      DIP_EXPORT Image& ReinterpretCast( dip::DataType dataType );
+
+      /// \brief Changes the datatype of `this` to a signed integer of the same size, without changing the data.
+      ///
+      /// If the image shares data with other images, the other images will still view the pixels in
+      /// their original data type. Interpreting data as a different type is inherently dangerous,
+      /// but changing the signdess of an integer type is relatively bening. Thus, this function is
+      /// safer to use than `dip::Image::ReinterpretCast`.
+      ///
+      /// This function is always fast. The image must be forged and of an integer type.
+      ///
+      /// \see dip::Image::Convert, dip::Image::ReinterpretCast, dip::Image::ReinterpretCastToUnsignedInteger
+      Image& ReinterpretCastToSignedInteger() {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !dataType_.IsInteger(), E::DATA_TYPE_NOT_SUPPORTED );
+         switch( dataType_ ) {
+            case DT_UINT8:
+               dataType_ = DT_SINT8;
+               break;
+            case DT_UINT16:
+               dataType_ = DT_SINT16;
+               break;
+            case DT_UINT32:
+               dataType_ = DT_SINT32;
+               break;
+         };
+         return *this;
+      }
+
+      /// \brief Changes the datatype of `this` to an unsigned integer of the same size, without changing the data.
+      ///
+      /// If the image shares data with other images, the other images will still view the pixels in
+      /// their original data type. Interpreting data as a different type is inherently dangerous,
+      /// but changing the signdess of an integer type is relatively bening. Thus, this function is
+      /// safer to use than `dip::Image::ReinterpretCast`.
+      ///
+      /// This function is always fast. The image must be forged and of an integer type.
+      ///
+      /// \see dip::Image::Convert, dip::Image::ReinterpretCast, dip::Image::ReinterpretCastToSignedInteger
+      Image& ReinterpretCastToUnsignedInteger() {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !dataType_.IsInteger(), E::DATA_TYPE_NOT_SUPPORTED );
+         switch( dataType_ ) {
+            case DT_SINT8:
+               dataType_ = DT_UINT8;
+               break;
+            case DT_SINT16:
+               dataType_ = DT_UINT16;
+               break;
+            case DT_SINT32:
+               dataType_ = DT_UINT32;
+               break;
+         };
+         return *this;
+      }
 
       /// \brief Reduces the size of the image by cropping off the borders.
       ///
@@ -2201,6 +2304,8 @@ class DIP_NO_EXPORT Image {
       /// If the data segment is replaced, strides are set to normal.
       ///
       /// A binary image can be converted to an 8-bit integer type without copying or touching the data.
+      ///
+      /// \see dip::Image::ReinterpretCast, dip::Image::ReinterpretCastToSignedInteger, dip::Image::ReinterpretCastToUnsignedInteger
       DIP_EXPORT void Convert( dip::DataType dt );
 
       /// \brief Expands the image's tensor, such that the tensor representation is a column-major matrix.
@@ -2219,7 +2324,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see HasNormalStrides, ForceContiguousData.
+      /// \see dip::Image::HasNormalStrides, dip::Image::ForceContiguousData
       void ForceNormalStrides() {
          if( !HasNormalStrides() ) {
             CopyDataToNewDataSegment();
@@ -2231,7 +2336,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see HasContiguousData, ForceNormalStrides.
+      /// \see dip::Image::HasContiguousData, dip::Image::ForceNormalStrides
       void ForceContiguousData() {
          if( !HasContiguousData() ) {
             CopyDataToNewDataSegment();
@@ -2244,7 +2349,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see IsShared, Copy, ForceNormalStrides, ForceContiguousData
+      /// \see dip::Image::IsShared, dip::Image::Copy, dip::Image::ForceNormalStrides, dip::Image::ForceContiguousData
       void Separate() {
          if( IsShared() ) {
             CopyDataToNewDataSegment();
