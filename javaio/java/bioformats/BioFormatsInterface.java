@@ -26,6 +26,7 @@ import loci.formats.ImageReader;
 import loci.formats.FormatTools;
 import ome.units.quantity.Length;
 
+import loci.common.DebugTools;
 import loci.common.services.ServiceFactory;
 import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
@@ -33,6 +34,8 @@ import loci.formats.services.OMEXMLService;
 /// Main class called from embedded JVM to load file
 public class BioFormatsInterface {
    public static FileInformation Read( String file, long pointer ) throws Exception {
+      DebugTools.setRootLevel("warn") ;
+   
       final Image image = new Image( pointer );
       final ImageReader reader = new ImageReader();
       
