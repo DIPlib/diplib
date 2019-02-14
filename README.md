@@ -12,11 +12,12 @@ since 1999), and new Python bindings (called PyDIP). Many of the improvements to
 are a result of porting over concepts and ideas first implemented in *DIPimage*.
 
 **Status**: We are in the process of creating the first beta release for the 3.0 branch.
-However, not all functionality from the old *DIPlib* and *DIPimage* is (yet) present in
-this branch. See our [work plan](src/documentation/workplan.md) to find out what work is
-still planned.
+Most, but not all functionality from the old *DIPlib* and *DIPimage* is (yet) present in
+this branch. See the [open issues](https://github.com/DIPlib/diplib/issues) to find out
+how you can help!
 
-See the [documentation](https://diplib.github.io/diplib-docs/) for more information.
+See the [documentation](https://diplib.github.io/diplib-docs/) for more information about
+the library.
 
 
 ## Building the library

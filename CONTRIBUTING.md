@@ -8,8 +8,7 @@ To make best use of your and our time, please read the appropriate section below
 before you start work on your contribution.
 
 If you want to contribute but do not know how, you can start by reviewing
-[open issues](https://github.com/DIPlib/diplib/issues) and the
-[work plan](src/documentation/workplan.md).
+[open issues](https://github.com/DIPlib/diplib/issues).
 
 **Note:** Your contributions will carry the same licencing terms as the rest of the
 library, and you keep the copyright to any substantial contribution.
@@ -76,7 +75,7 @@ If making changes to *DIPlib*, run the unit tests with `make check`, and make su
 reported. We don't (yet) have automated testing set up on GitHub.
 
 If you are uncertain that changes you wish to submit will be useful to the project, feel free to
-[create a new issue](https://github.com/DIPlib/diplib/issues/new) on GitHub to ask abot it.
+[create a new issue](https://github.com/DIPlib/diplib/issues/new) on GitHub to ask about it.
 
 If there exists an issue discussing the proposed contribution, reference it as follows: `#1`.
 Add "`Closes #1`" to the commit message.

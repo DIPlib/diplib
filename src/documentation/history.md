@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2018, Cris Luengo.)
+[//]: # ([c]2016-2019, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -45,13 +45,12 @@ ideas we had developed within the *DIPimage* toolbox. C++14 allows the
 user to write code that is almost as simple as the equivalent *MATLAB*
 code, making it simple to use the library even for rapid prototyping.
 Hopefully, the new infrastructure is much easier to read, maintain, and
-contribute to. We are in the process of porting all of the image analysis
-routines to use the new infrastructure. See \ref workplan for progress and
-a detailed list of what still needs to be done.
+contribute to. We have ported most of the image analysis routines to use
+the new infrastructure.
 
-The *DIPimage* toolbox is being updated to optimally use *DIPlib 3*. This means
-that some of the *MATLAB* code is being replaced with calls to *DIPlib*, and
-the low-level interface (`dip_*` functions) disappears. The internal
+The *DIPimage* toolbox has been updated to optimally use *DIPlib 3*. This means
+that some of the *MATLAB* code was replaced with calls to *DIPlib*, and
+the low-level interface (`dip_*` functions) disappeared. The internal
 representation of images has also changed. However, we strive
 to keep backwards-compatibility in the high-level toolbox functions.
 
@@ -78,8 +77,9 @@ The DIPlib 3 project was initiated and is directed by Cris Luengo, with support 
 * Bernd Rieger, TU Delft
 * Damir Sudar, Lawrence Berkeley National Laboratory
 * Michel Nederlof, Quantitative Imaging Systems
+* Holger Lange, Flagship Biosciences
 
-The following people have contributed to the *DIPlib 3* project:
+The following people have contributed code the *DIPlib 3* project:
 
 * Cris Luengo
 * Wouter Caarls

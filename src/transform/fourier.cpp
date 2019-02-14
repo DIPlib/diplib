@@ -185,10 +185,10 @@ public:
 
    int GetOptimalNumThreads( UnsignedArray const& outSize ) const {
       // TODO: find heuristic. The FFTW 3 manual says:
-      // "You will have to experiment with your system to see what level of parallelization is best
-      // for your problem size. Typically, the problem will have to involve at least a few thousand
-      // data points before threads become beneficial. If you plan with FFTW_PATIENT, it will
-      // automatically disable threads for sizes that don't benefit from parallelization."
+      //   "You will have to experiment with your system to see what level of parallelization is best
+      //   for your problem size. Typically, the problem will have to involve at least a few thousand
+      //   data points before threads become beneficial. If you plan with FFTW_PATIENT, it will
+      //   automatically disable threads for sizes that don't benefit from parallelization."
       if( outSize.product() < 2000 )
          return 1;
       else
@@ -465,10 +465,10 @@ public:
 
    virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
       // TODO: rewrite; this approach is likely to be very inefficient!
-      // The least we can do is iterate over the missing data instead of over existing data
+      //   The least we can do is iterate over the missing data instead of over existing data
 
       // Due to Hermitian symmetry, only half the transform is computed and we have to fill the other half, for which holds:
-      // Y [k_0, k_1, ..., k_(d-1)] = Y [n_0-k_0, n_1-k_1, ..., n_(d-1)-k_(d-1)]*
+      // Y [k_0, k_1, ..., k_(d-1)] = Y [n_0-k_0, n_1-k_1, ..., n_(d-1)-k_(d-1)]
       // Note that 0 maps to 0.
       const dip::uint completionDim = largestProcessedDim_;  // This must be the dimension *represented* by the last element of fftwSizeDims
       typedef ComplexType< typename fftwapi::real > dip_complex;
@@ -775,7 +775,7 @@ void FourierTransform(
          inverse = true;
       } else if( option == S::REAL ) {
          // TODO: We should probably write code to do real -> 1/2 plane complex, and 1/2 plane complex -> real DFTs.
-         // TODO: If so, we'll need to write our own loop code here, we won't be able to depend on Framework::Separable (unless we add some options there...)
+         //       If so, we'll need to write our own loop code here, we won't be able to depend on Framework::Separable (unless we add some options there...)
          real = true;
       } else if( option == S::FAST ) {
          fast = true;
@@ -862,8 +862,8 @@ void FourierTransform(
    DIP_END_STACK_TRACE
    tmp.Protect( false );
    // Produce real-valued output
-   // TODO: OpenCV has code for a DFT that takes complex data but reads only half the array, assumes symmetry, and produces a real ouput. We should use that here.
-   // TODO: We should also use the code that takes real data in.
+   // TODO: OpenCV has code for a DFT that takes complex data but reads only half the array, assumes symmetry,
+   //       and produces a real ouput. We should use that here. We should also use the code that takes real data in.
    if( real ) {
       tmp = tmp.Real();
       if(( out.DataType() != tmp.DataType() ) && ( !out.IsProtected() )) {

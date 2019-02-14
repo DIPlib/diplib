@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2016-2018, Cris Luengo.)
+[//]: # ([c]2016-2019, Cris Luengo.)
 [//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -100,11 +100,6 @@ See \ref history for a list of contributors.
 If you want to contribute to the *DIPlib* project, there are many different
 ways of doing so:
 
-- Help port algorithms from *DIPlib 2* to the new infrastructure. Please
-  coordinate with [Cris Luengo](https://github.com/crisluengo) before you get
-  started. He can share the old code for the algorithms that need porting.
-  See \ref workplan for a list of stuff to do.
-
 - Write new algorithms. If you have an algorithm that you'd like to contribute
   to the project, we'll be happy to see it!
 
@@ -128,7 +123,7 @@ of the library, you keep the copyright to any substantial contribution.
 
 ## License
 
-Copyright 2014-2018 Cris Luengo<br>
+Copyright 2014-2019 Cris Luengo and contributors<br>
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");
