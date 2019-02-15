@@ -31,13 +31,6 @@
 
 #include "libics.h"
 
-// Fix strcasecmp for MSVC compilation
-#ifdef _MSC_VER
-//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
-#define strncasecmp _strnicmp
-#define strcasecmp _stricmp
-#endif
-
 namespace dip {
 
 namespace {
@@ -54,53 +47,67 @@ dip::uint FindTensorDimension(
    colorSpace = "";
    dip::uint tensorDim;
    for( tensorDim = 0; tensorDim < nDims; ++tensorDim ) {
-      char const* order;
-      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &order, 0 ), "Couldn't read ICS file" );
-      if( strcasecmp( order, "RGB" ) == 0 ) {
+      char const* c_order;
+      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &c_order, nullptr ), "Couldn't read ICS file" );
+      String order = c_order;
+      ToLowerCase( order );
+      if( order == "rgb" ) {
          colorSpace = "RGB";
          break;
-      } else if( strcasecmp( order, "sRGB" ) == 0 ) {
+      }
+      if( order == "srgb" ) {
          colorSpace = "sRGB";
          break;
-      } else if( strcasecmp( order, "Lab" ) == 0 ) {
+      }
+      if( order == "lab" ) {
          colorSpace = "Lab";
          break;
-      } else if( strcasecmp( order, "Luv" ) == 0 ) {
+      }
+      if( order == "luv" ) {
          colorSpace = "Luv";
          break;
-      } else if( strcasecmp( order, "LCH" ) == 0 ) {
+      }
+      if( order == "lch" ) {
          colorSpace = "LCH";
          break;
-      } else if( strcasecmp( order, "CMY" ) == 0 ) {
+      }
+      if( order == "cmy" ) {
          colorSpace = "CMY";
          break;
-      } else if( strcasecmp( order, "CMYK" ) == 0 ) {
+      }
+      if( order == "cmyk" ) {
          colorSpace = "CMYK";
          break;
-      } else if( strcasecmp( order, "XYZ" ) == 0 ) {
+      }
+      if( order == "xyz" ) {
          colorSpace = "XYZ";
          break;
-      } else if( strcasecmp( order, "Yxy" ) == 0 ) {
+      }
+      if( order == "yxy" ) {
          colorSpace = "Yxy";
          break;
-      } else if( strcasecmp( order, "HSI" ) == 0 ) {
+      }
+      if( order == "hsi" ) {
          colorSpace = "HSI";
          break;
-      } else if( strcasecmp( order, "ICH" ) == 0 ) {
+      }
+      if( order == "ich" ) {
          colorSpace = "ICH";
          break;
-      } else if( strcasecmp( order, "ISH" ) == 0 ) {
+      }
+      if( order == "ish" ) {
          colorSpace = "ISH";
          break;
-      } else if( strcasecmp( order, "HCV" ) == 0 ) {
+      }
+      if( order == "hcv" ) {
          colorSpace = "HCV";
          break;
-      } else if( strcasecmp( order, "HSV" ) == 0 ) {
+      }
+      if( order == "hsv" ) {
          colorSpace = "HSV";
          break;
-      } else if( strcasecmp( order, "channel" ) == 0 || strcasecmp( order, "channels" ) == 0 ||
-                 strcasecmp( order, "probe"   ) == 0 || strcasecmp( order, "probes"   ) == 0 ||
-                 strcasecmp( order, "tensor"  ) == 0 ) {
+      }
+      if(( order == "channel" ) || ( order == "channels" ) || ( order == "probe" ) || ( order == "probes" ) || ( order == "tensor" )) {
          break;
       }
    }
@@ -147,17 +154,17 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
          continue;
       }
       char const* order;
-      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( ii ), &order, 0 ), "Couldn't read ICS file" );
+      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( ii ), &order, nullptr ), "Couldn't read ICS file" );
       //std::cout << "dim " << ii << " is " << order << std::endl;
-      if( strcasecmp( order, "x" ) == 0 ) {
+      if( StringCompareCaseInsensitive( order, "x" )) {
          file[ ii ].order = 0;
          file[ ii ].known = true;
          file[ ii ].priority = true;
-      } else if( strcasecmp( order, "y" ) == 0 ) {
+      } else if( StringCompareCaseInsensitive( order, "y" )) {
          file[ ii ].order = 1;
          file[ ii ].known = true;
          file[ ii ].priority = true;
-      } else if( strcasecmp( order, "z" ) == 0 ) {
+      } else if( StringCompareCaseInsensitive( order, "z" )) {
          file[ ii ].order = 2;
          file[ ii ].known = true;
          file[ ii ].priority = true;
@@ -352,27 +359,15 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
       double scale, offset;
       char const* units;
       CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), &offset, &scale, &units ), "Couldn't read ICS file" );
-      if( strcasecmp( units, "undefined" ) == 0 ) {
+      if( StringCompareCaseInsensitive( units, "undefined" )) {
          pixelSize.Set( ii, PhysicalQuantity::Pixel() );
          origin[ ii ] = offset * PhysicalQuantity::Pixel();
       } else {
          Units u;
          try {
-            u = Units{ units };
+            u.FromString( units );
          } catch( Error const& ) {
-            // `Units` failed to parse the string, these are some fall-back strings
-            // TODO: dip::Units should be able to recognize these strings
-            if( strcasecmp( units, "meters" ) == 0 ) {
-               u = Units::Meter();
-            } else if( strcasecmp( units, "millimeters" ) ==  0 ) {
-               u = Units::Millimeter();
-            } else if( strcasecmp( units, "micrometers" ) == 0 ) {
-               u = Units::Micrometer();
-            } else if( strcasecmp( units, "nanometers" ) == 0 ) {
-               u = Units::Nanometer();
-            } else {
-               u = Units::Pixel();
-            }
+            u = Units::Pixel();
          }
          PhysicalQuantity ps{ scale, u };
          ps.Normalize();
@@ -408,7 +403,7 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    data.fileInformation.history.resize( static_cast< dip::uint >( history_lines ));
    if( history_lines > 0 ) {
       Ics_HistoryIterator it;
-      CALL_ICS( IcsNewHistoryIterator( icsFile, &it, 0 ), "Couldn't read ICS metadata");
+      CALL_ICS( IcsNewHistoryIterator( icsFile, &it, nullptr ), "Couldn't read ICS metadata");
       char const* hist;
       for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
          CALL_ICS( IcsGetHistoryStringIF( icsFile, &it, &hist ), "Couldn't read ICS metadata");
@@ -737,13 +732,13 @@ void ImageWriteICS(
    CALL_ICS( IcsSetLayout( icsFile, dt, nDims, image.Sizes().data() ), "Couldn't write to ICS file" );
    if( nDims >= 5 ) {
       // By default, 5th dimension is called "probe", but this is turned into a tensor dimension...
-      CALL_ICS( IcsSetOrder( icsFile, 4, "dim_4", 0 ), "Couldn't write to ICS file" );
+      CALL_ICS( IcsSetOrder( icsFile, 4, "dim_4", nullptr ), "Couldn't write to ICS file" );
    }
    CALL_ICS( IcsSetSignificantBits( icsFile, significantBits ), "Couldn't write to ICS file" );
    if( c_image.IsColor() ) {
-      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), 0 ), "Couldn't write to ICS file" );
+      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), nullptr ), "Couldn't write to ICS file" );
    } else if( isTensor ) {
-      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, "tensor", 0 ), "Couldn't write to ICS file" );
+      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, "tensor", nullptr ), "Couldn't write to ICS file" );
    }
    if( c_image.HasPixelSize() ) {
       if( isTensor ) { nDims--; }
@@ -792,7 +787,7 @@ void ImageWriteICS(
 
    // write history lines
    for( auto const& line : history ) {
-      auto error = IcsAddHistory( icsFile, 0, line.c_str() );
+      auto error = IcsAddHistory( icsFile, nullptr, line.c_str() );
       if(( error == IcsErr_LineOverflow ) || // history line is too long
          ( error == IcsErr_IllParameter )) { // history line contains illegal characters
          // Ignore these errors, the history line will not be written.
@@ -816,34 +811,34 @@ DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
 
    dip::ImageWriteICS( image, "test1.ics", { "line1", "line2 is good" }, 7, { "v1", "uncompressed" } );
    dip::Image result = dip::ImageReadICS( "test1", dip::RangeArray{}, {} );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    dip::ImageWriteICS( image, "test1f.ics", { "line1", "line2 is good" }, 7, { "v1", "uncompressed", "fast" } );
    result = dip::ImageReadICS( "test1f", dip::RangeArray{}, {}, "fast" );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    result = dip::ImageReadICS( "test1f", dip::RangeArray{}, {} );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    result = dip::ImageReadICS( "test1", dip::RangeArray{}, {}, "fast" );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    // Turn it on its side so the image to write has non-standard strides
    image.SwapDimensions( 0, 2 );
 
    dip::ImageWriteICS( image, "test2.ics", { "key\tvalue" }, 7, { "v1", "uncompressed" } );
    result = dip::ImageReadICS( "test2", dip::RangeArray{}, {} );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    dip::ImageWriteICS( image, "test2f.ics", { "key\tvalue" }, 7, { "v1", "uncompressed", "fast" } );
    result = dip::ImageReadICS( "test2f", dip::RangeArray{}, {}, "fast" );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    result = dip::ImageReadICS( "test2f", dip::RangeArray{}, {} );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 
    result = dip::ImageReadICS( "test2", dip::RangeArray{}, {}, "fast" );
-   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

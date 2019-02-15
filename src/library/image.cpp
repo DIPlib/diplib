@@ -81,7 +81,7 @@ bool Image::CompareProperties(
       }
    }
    if( cmpProps.Contains( Option::CmpProp::PixelSize )) {
-      if( pixelSize_ != src.pixelSize_ ) {
+      if( !pixelSize_.ApproximatelyEquals( src.pixelSize_, Dimensionality() )) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Pixel sizes don't match" );
          return false;
       }

@@ -185,7 +185,7 @@ inline bool CompareImages(
          std::cout << "[dip::testing::CompareImages] Color space doesn't match\n";
          return false;
       }
-      if( img1.PixelSize() != img2.PixelSize() ) {
+      if( !img1.PixelSize().ApproximatelyEquals( img2.PixelSize(), img1.Dimensionality() )) {
          std::cout << "[dip::testing::CompareImages] Pixel size doesn't match\n";
          return false;
       }
