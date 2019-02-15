@@ -220,9 +220,9 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 /// ```
 ///
 /// The `#DIP_START_STACK_TRACE`, `#DIP_END_STACK_TRACE` and `DIP_STACK_TRACE_THIS` macros help build this code.
-/// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
-/// option off if your application would make no use of the stack trace, as building the stack trace does incur some
-/// runtime cost.
+/// When compiling with the CMake configuration flag `DIP_ENABLE_STACK_TRACE` set to `OFF`, these macros don't do
+/// anything. Turn the option off if your application would make no use of the stack trace, as building the stack
+/// trace does incur some runtime cost.
 
 #ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
@@ -236,36 +236,42 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 #define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
 
+// Here we explicitly cast the output of `error.AddStackTrace` to the right type, since that function returns a
+// reference to the base class and we need the type of the thrown exception to be correct.
+#define DIP__THROW( type, str ) throw static_cast< type& >( DIP_ADD_STACK_TRACE( type( str )))
+// This used to be as follows, but GCC 5.4 cannot handle such a thing in a constexpr function.
+// #define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
+
 #else // DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
 #define DIP_ADD_STACK_TRACE( error )
+#define DIP__THROW( type, str ) throw type( str )
 
 #endif // DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
 
 /// \brief Throw a `dip::ParameterError`.
-#define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
+#define DIP_THROW( str ) DIP__THROW( dip::ParameterError, str )
 
 /// \brief Throw a `dip::ParameterError` that reads "Invalid flag: <flag>".
 #define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + std::string( flag ));
 
 /// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
-#define DIP_THROW_IF( test, str ) do { if( test ) DIP_THROW( str ); } while( false )
+#define DIP_THROW_IF( test, str ) if( test ) DIP_THROW( str )
 
 /// \brief Throw a `dip::RunTimeError`.
-#define DIP_THROW_RUNTIME( str ) do { auto e = dip::RunTimeError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
-
+#define DIP_THROW_RUNTIME( str ) DIP__THROW( dip::RunTimeError, str )
 
 /// \brief Throw a `dip::AssertionError`.
-#define DIP_THROW_ASSERTION( str ) do { auto e = dip::AssertionError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
+#define DIP_THROW_ASSERTION( str ) DIP__THROW( dip::AssertionError, str )
 
 /// \def DIP_ASSERT(test)
 /// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
 ///
-/// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
+/// If `DIP_ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
 /// ```
-///     cmake -DENABLE_ASSERT=OFF ...
+///     cmake -DDIP_ENABLE_ASSERT=OFF ...
 /// ```
 ///
 /// You would typically disable assertions for production code, as assertions are only used to test internal
@@ -273,7 +279,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 #ifdef DIP__ENABLE_ASSERT
 
-#define DIP_ASSERT( test ) do { if( !( test ) ) DIP_THROW_ASSERTION( "Failed assertion: " #test ); } while( false )
+#define DIP_ASSERT( test ) if( !( test )) DIP_THROW_ASSERTION( "Failed assertion: " #test )
 
 #else // DIP__ENABLE_ASSERT
 
@@ -302,9 +308,9 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 /// NOTE! `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with `#DIP_END_STACK_TRACE` to
 /// prevent malformed syntax. Thus you should never use one of these two macros without the other one.
 ///
-/// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
-/// option off if your application would make no use of the stack trace, as building the stack trace does incur some
-/// runtime cost.
+/// When compiling with the CMake configuration flag `DIP_ENABLE_STACK_TRACE` set to `OFF`, these macros don't do
+/// anything. Turn the option off if your application would make no use of the stack trace, as building the stack
+/// trace does incur some runtime cost.
 
 /// \def DIP_END_STACK_TRACE
 /// \brief Ends a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_START_STACK_TRACE`.
