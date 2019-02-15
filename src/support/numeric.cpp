@@ -401,4 +401,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::abs function") {
    DOCTEST_CHECK( dip::abs( dip::scomplex{ 1.2f, 5.3f } ) == std::hypot( 1.2f, 5.3f ) );
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::ApproximatelyEquals function") {
+   DOCTEST_CHECK( dip::ApproximatelyEquals( 1.0, 1.0 ));
+   DOCTEST_CHECK( !dip::ApproximatelyEquals( 1.0, 1.1 ));
+   DOCTEST_CHECK( dip::ApproximatelyEquals( 1.0, 1.05, 0.1 ));
+   DOCTEST_CHECK( dip::ApproximatelyEquals( 1.0, 1.0, 0.0 ));
+   DOCTEST_CHECK( !dip::ApproximatelyEquals( 1.0, 1.0 + 1e-12, 0.0 ));
+   DOCTEST_CHECK( dip::ApproximatelyEquals( 1.0, 1.0 + 1e-12 ));
+}
+
 #endif // DIP__ENABLE_DOCTEST

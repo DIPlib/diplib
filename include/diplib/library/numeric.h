@@ -64,13 +64,13 @@ constexpr dfloat infinity = std::numeric_limits< dfloat >::infinity();
 
 /// \brief Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.
-inline dip::uint gcd( dip::uint a, dip::uint b ) {
+constexpr inline dip::uint gcd( dip::uint a, dip::uint b ) {
    return b == 0 ? a : gcd( b, a % b );
 }
 
 /// \brief Integer division, unsigned, return ceil.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
-T div_ceil( T lhs, T rhs ) {
+constexpr T div_ceil( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -79,24 +79,22 @@ T div_ceil( T lhs, T rhs ) {
 
 /// \brief Integer division, signed, return ceil.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
-T div_ceil( T lhs, T rhs ) {
+constexpr T div_ceil( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
    if( lhs * rhs < 0 ) {
       return lhs / rhs;
-   } else {
-      if( lhs < 0 ) {
-         return ( lhs + 1 ) / rhs + 1;
-      } else {
-         return ( lhs - 1 ) / rhs + 1;
-      }
    }
+   if( lhs < 0 ) {
+      return ( lhs + 1 ) / rhs + 1;
+   }
+   return ( lhs - 1 ) / rhs + 1;
 }
 
 /// \brief Integer division, unsigned, return floor.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
-T div_floor( T lhs, T rhs ) {
+constexpr T div_floor( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -105,41 +103,39 @@ T div_floor( T lhs, T rhs ) {
 
 /// \brief Integer division, signed, return floor.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
-T div_floor( T lhs, T rhs ) {
+constexpr T div_floor( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
    if( lhs * rhs < 0 ) {
       if( lhs < 0 ) {
          return ( lhs + 1 ) / rhs - 1;
-      } else {
-         return ( lhs - 1 ) / rhs - 1;
       }
-   } else {
-      return lhs / rhs;
+      return ( lhs - 1 ) / rhs - 1;
    }
+   return lhs / rhs;
 }
 
 /// \brief Integer division, return rounded.
 template< typename T, typename = std::enable_if_t< std::is_integral< T >::value, T >>
-T div_round( T lhs, T rhs ) {
+constexpr T div_round( T lhs, T rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.
-inline dip::uint modulo( dip::uint value, dip::uint period ) {
+constexpr inline dip::uint modulo( dip::uint value, dip::uint period ) {
    return value % period;
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.
-inline dip::sint modulo( dip::sint value, dip::sint period ) {
+constexpr inline dip::sint modulo( dip::sint value, dip::sint period ) {
    return ( value < 0 ) ? ( period - ( -value % period )) : ( value % period );
 }
 
 /// \brief Fast floor operation, without checks, returning a `dip::sint`.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
 template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
-dip::sint floor_cast( T v ) {
+constexpr dip::sint floor_cast( T v ) {
    auto w = static_cast< dip::sint >( v );
    return w - ( v < static_cast< T >( w ));
 }
@@ -147,7 +143,7 @@ dip::sint floor_cast( T v ) {
 /// \brief Fast ceil operation, without checks, returning a `dip::sint`.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
 template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
-dip::sint ceil_cast( T v ) {
+constexpr dip::sint ceil_cast( T v ) {
    auto w = static_cast< dip::sint >( v );
    return w + ( v > static_cast< T >( w ));
 }
@@ -165,7 +161,7 @@ dip::sint round_cast( T v ) {
 /// values. The `inverse` template parameter indicates the direction for these cases. By default, it matches
 /// `std::round` for positive values.
 template< typename T, bool inverse = false, typename = std::enable_if_t< std::is_floating_point< T >::value >>
-dip::sint consistent_round( T v ) {
+constexpr dip::sint consistent_round( T v ) {
    return inverse ? ceil_cast( v - 0.5 ) : floor_cast( v + 0.5 ); // conditional should be optimized out
 }
 
@@ -201,7 +197,7 @@ constexpr inline const T& clamp( const T& v, const T& lo, const T& hi ) {
 }
 
 /// \brief Computes integer powers of 10, assuming the power is relatively small.
-inline dfloat pow10( dip::sint power ) {
+constexpr inline dfloat pow10( dip::sint power ) {
    switch( power ) {
       case -6: return 1e-6;
       case -5: return 1e-5;
@@ -223,6 +219,13 @@ inline dfloat pow10( dip::sint power ) {
             return 1e-6 * pow10( power + 6 );
          }
    }
+}
+
+/// \brief Approximate floating-point equality: `abs(lhs-rhs)/lhs <= tolerance`.
+constexpr inline bool ApproximatelyEquals( dfloat lhs, dfloat rhs, dfloat tolerance = 1e-6 ) {
+   return tolerance == 0.0 ? lhs == rhs : ( lhs == 0.0
+                                            ? std::abs( rhs ) <= tolerance
+                                            : std::abs( lhs - rhs ) / lhs <= tolerance );
 }
 
 /// \brief Counts the length of a (UTF-8 encoded) Unicode string.
