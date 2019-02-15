@@ -205,7 +205,7 @@ void cornerdetector( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 4 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::String method = ( nrhs > 1 ) ? dml::GetString( prhs[ 1 ] ) : "ShiTomasi";
-   dml::ToLower( method );
+   dip::ToLowerCase( method );
    dip::FloatArray sigmas = ( nrhs > 2 ) ? dml::GetFloatArray( prhs[ 2 ] ) : dip::FloatArray{ 2.0 };
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
@@ -229,7 +229,7 @@ void linedetector( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 5 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::String method = ( nrhs > 1 ) ? dml::GetString( prhs[ 1 ] ) : "Frangi";
-   dml::ToLower( method );
+   dip::ToLowerCase( method );
    dip::String polarity = ( nrhs > 4 ) ? dml::GetString( prhs[ 4 ] ) : dip::S::WHITE;
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();

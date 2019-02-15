@@ -75,7 +75,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          std::map< dip::String, dip::uint > knownFeatures;
          for( dip::uint ii = 0; ii < infoArray.size(); ++ii ) {
             dip::String name = infoArray[ ii ].name;
-            dml::ToLower( name );
+            dip::ToLowerCase( name );
             knownFeatures.emplace( name, ii );
          }
          // Put in aliases for backwards compatibility
@@ -94,7 +94,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          }
          // Find requested features in map, using case-insensitive search, and copy name with correct case
          for( auto& f : features ) {
-            dml::ToLower( f );
+            dip::ToLowerCase( f );
             it = knownFeatures.find( f );
             DIP_THROW_IF( it == knownFeatures.end(), "Feature name not recognized" );
             f = infoArray[ it->second ].name;

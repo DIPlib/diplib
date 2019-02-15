@@ -114,7 +114,7 @@ void errormeasure( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image const reference = dml::GetImage( prhs[ 1 ] );
    dip::Image const mask = ( nrhs > 2 ) ? dml::GetImage( prhs[ 2 ] ) : dip::Image{};
    dip::String method = ( nrhs > 3 ) ? dml::GetString( prhs[ 3 ] ) : "mse";
-   dml::ToLower( method );
+   dip::ToLowerCase( method );
    dip::dfloat error;
    if( method == "mse" ) {
       error = dip::MeanSquareError( in, reference, mask );

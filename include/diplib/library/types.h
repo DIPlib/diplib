@@ -424,7 +424,7 @@ inline bool BooleanFromString( String const& input, String::value_type const* tr
    DIP_THROW_INVALID_FLAG( input );
 }
 
-/// \brief A case-insensitive string comparison, the standard library doesn't want to meddle with case...
+/// \brief A case-insensitive string comparison, use only with ASCII characters!
 inline bool StringCompareCaseInsensitive( String const& string1, String const& string2 ) {
    if( string1.size() != string2.size() ) {
       return false;
@@ -436,6 +436,21 @@ inline bool StringCompareCaseInsensitive( String const& string1, String const& s
    }
    return true;
 }
+
+/// \brief Convert a string to lower case, use only with ASCII characters!
+inline void ToLowerCase( String& string ) {
+   for( auto& s : string ) {
+      s = static_cast< char >( std::tolower( static_cast< unsigned char >( s )));
+   }
+}
+
+/// \brief Convert a string to upper case, use only with ASCII characters!
+inline void ToUpperCase( String& string ) {
+   for( auto& s : string ) {
+      s = static_cast< char >( std::toupper( static_cast< unsigned char >( s )));
+   }
+}
+
 
 //
 // Ranges, used for indexing

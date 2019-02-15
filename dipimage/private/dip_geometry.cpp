@@ -240,7 +240,7 @@ void findshift( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       } else if( method == "grs" ) {
          method = "MTS";
       } else {
-         dml::ToUpper( method );
+         dip::ToUpperCase( method );
       }
    }
    dip::dfloat parameter = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 0;

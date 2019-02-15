@@ -1647,21 +1647,6 @@ class streambuf : public std::streambuf {
       std::streambuf* stdoutbuf;
 };
 
-/// \brief Convert a string to all upper-case letters, using current locale. Will not work with Unicode strings.
-inline void ToUpper( dip::String& str ) {
-   for( auto& c : str ) {
-      c = static_cast< char >( std::toupper( static_cast< unsigned char >( c )));
-   }
-}
-
-/// \brief Convert a string to all lower-case letters, using current locale. Will not work with Unicode strings.
-inline void ToLower( dip::String& str ) {
-   for( auto& c : str ) {
-      c = static_cast< char >( std::tolower( static_cast< unsigned char >( c )));
-   }
-}
-
-
 /// \}
 
 } // namespace dml
