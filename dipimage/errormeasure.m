@@ -21,6 +21,9 @@
 %                      (real-valued images only)
 %    - 'MutualInformation': Mutual information in bits (real-valued scalar
 %                           images only)
+%    - 'Pearson':      Pearson correlation coefficient(real-valued images only)
+%    - 'Spearman':     Spearman rank correlation coefficient(real-valued images
+%                      only)
 %
 %    - 'Dice':         Dice coefficient
 %    - 'Jaccard':      Jaccard index
@@ -34,7 +37,7 @@
 %  method = 'MSE'
 %
 % NOTES:
-%  The methods in the first block ('MSE' through 'MutualInformation') work on
+%  The methods in the first block ('MSE' through 'Spearman') work on
 %  any real-valued images, as well as complex-valued images unless otherwise
 %  stated; most work also on multi-valued (tensor) images.
 %
@@ -47,6 +50,7 @@
 %  This function calls the DIPlib functions dip::MeanError, dip::MeanSquareError,
 %  dip::RootMeanSquareError, dip::MeanAbsoluteError, dip::IDivergence,
 %  dip::InProduct, dip::LnNormError, dip::PSNR, dip::SSIM, dip::MutualInformation,
+%  dip::PearsonCorrelation, dip::SpearmanRankCorrelation,
 %  dip::DiceCoefficient, dip::JaccardIndex, dip::Specificity, dip::Sensitivity,
 %  dip::Accuracy, dip::Precision, dip::HausdorffDistance.
 %  See the documentation of these functions for more information.
@@ -59,7 +63,7 @@
 %    from error visibility to structural similarity", IEEE Transactions on Image
 %    Processing 13(4):600-612, 2004.
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

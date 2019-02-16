@@ -1,7 +1,7 @@
 /*
  * DIPimage 3.0
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -139,6 +139,10 @@ void errormeasure( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::SetNumberOfThreads( 1 );                            // Make sure we don't use OpenMP.
       error = dip::MutualInformation( in, reference, mask );   // Can crash if there is more than one tensor dimension when using OpenMP.
       dip::SetNumberOfThreads( nThreads );
+   } else if( method == "pearson" ) {
+      error = dip::PearsonCorrelation( in, reference, mask );
+   } else if( method == "spearman" ) {
+      error = dip::SpearmanRankCorrelation( in, reference, mask );
    } else if( method == "dice" ) {
       error = dip::DiceCoefficient( in, reference );
    } else if( method == "jaccard" ) {

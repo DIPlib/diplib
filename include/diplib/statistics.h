@@ -110,6 +110,23 @@ DIP__DEFINE_VIEW_FUNCTION( SampleStatistics, StatisticsAccumulator )
 /// ```
 DIP_EXPORT CovarianceAccumulator Covariance( Image const& in1, Image const& in2, Image const& mask = {} );
 
+/// \brief Computes the Pearson correlation coefficient. See `dip::Covariance`.
+inline dfloat PearsonCorrelation( Image const& in1, Image const& in2, Image const& mask = {} ) {
+   return Covariance( in1, in2, mask ).Correlation();
+}
+
+/// \brief Computes the Spearman rank correlation coefficient.
+///
+/// If `mask` is not forged, all input pixels are considered. In case of tensor
+/// images, returns the Spearman rank correlation coefficient over all sample values.
+/// The images must be real-valued and have the same number of tensor elements.
+///
+/// To compute the Spearman rank correlation coefficient between two channels in a multi-channel image (a tensor image):
+/// ```cpp
+///     SpearmanRankCorrelation( in[ 0 ], in[ 1 ], mask );
+/// ```
+DIP_EXPORT dfloat SpearmanRankCorrelation( Image const& in1, Image const& in2, Image const& mask = {} );
+
 /// \brief Computes the center of mass (first order moments) of the image `in`, optionally using only
 /// those pixels selected by `mask`.
 ///

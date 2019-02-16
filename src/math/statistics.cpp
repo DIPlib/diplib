@@ -574,6 +574,79 @@ CovarianceAccumulator Covariance(
 
 namespace {
 
+template< typename TPI >
+std::vector< dip::uint > dip__ComputeRank( void const* ptr, std::vector< dip::uint >& indices ) {
+   // First sort the indices
+   // NOTE!!! The indices must be contiguous, starting at 0, and with max_element(indices) == indices.size()-1.
+   TPI const* data = static_cast< TPI const* >( ptr );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint const& a, dip::uint const& b ) {
+      return data[ a ] < data[ b ];
+   } );
+   // Next find the ranks
+   std::vector< dip::uint > rank( indices.size() );
+   for( dip::uint ii = 0; ii < indices.size(); ++ii ) {
+      // Identify the equal-valued pixels
+      dip::uint rr = ii + 1;
+      while(( rr < indices.size()) && ( data[ indices[ rr ]] == data[ indices[ ii ]] )) {
+         ++rr;
+      }
+      // Assign the mean rank to all these pixels
+      dip::uint mean = ( rr + ii - 1 ) / 2;
+      for( dip::uint jj = ii; jj < rr; ++jj ) {
+         rank[ indices[ jj ]] = mean;
+      }
+      // Advance to next group of equal-valued pixels
+      ii = rr - 1;
+   }
+   return rank;
+}
+
+std::vector< dip::uint > CreateRankArray( Image const& img ) {
+   DIP_ASSERT( img.HasContiguousData() );
+   // Create indices array to each sample in the image
+   std::vector< dip::uint > indices( img.Sizes().product() * img.TensorElements() );
+   std::iota( indices.begin(), indices.end(), dip::uint( 0 ));
+   // Get the rank for each pixel
+   std::vector< dip::uint > rank;
+   DIP_OVL_CALL_ASSIGN_REAL( rank, dip__ComputeRank, ( img.Origin(), indices ), img.DataType() );
+   return rank;
+}
+
+} // namespace
+
+dfloat SpearmanRankCorrelation( Image const& in1, Image const& in2, Image const& mask ) {
+   DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProp::Sizes + Option::CmpProp::TensorElements ));
+   // Get the data in normal stride order. We need the data to be contiguous and the two images to have
+   // the same strides. This is a simple way of accomplishing that.
+   Image in1_c;
+   Image in2_c;
+   if( mask.IsForged() ) {
+      DIP_START_STACK_TRACE
+         in1_c = in1.At( mask );
+         in2_c = in2.At( mask );
+      DIP_END_STACK_TRACE
+   } else {
+      in1_c = in1.QuickCopy();
+      in2_c = in2.QuickCopy();
+   }
+   in1_c.ForceNormalStrides(); // Might copy the data, but if we already copied it (through `mask`) it won't need to,
+   in2_c.ForceNormalStrides(); //    so we're guaranteed to copy the image data at most once.
+   // Find the rank for each pixel
+   auto idx1 = CreateRankArray( in1_c );
+   auto idx2 = CreateRankArray( in2_c );
+   // Now compute correlation between the two sorted index arrays.
+   // We're not using the cheaper formula because we're not guaranteed a unique sort order (some pixels can have
+   // the same value).
+   CovarianceAccumulator vars;
+   for( auto it1 = idx1.begin(), it2 = idx2.begin(); it1 != idx1.end(); ++it1, ++it2 ) {
+      vars.Push( static_cast< dfloat >( *it1 ), static_cast< dfloat >( *it2 ));
+   }
+   return vars.Correlation();
+}
+
+namespace {
+
 class dip__CenterOfMassBase : public Framework::ScanLineFilter {
    public:
       virtual FloatArray GetResult() = 0;

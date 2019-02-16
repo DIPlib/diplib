@@ -32,6 +32,8 @@ void init_statistics( py::module& m ) {
    m.def( "SampleStatistics", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SampleStatistics ),
           "in"_a, "mask"_a = dip::Image{} );
    m.def( "Covariance", &dip::Covariance, "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
+   m.def( "PearsonCorrelation", &dip::PearsonCorrelation, "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
+   m.def( "SpearmanRankCorrelation", &dip::SpearmanRankCorrelation, "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
    m.def( "CenterOfMass", &dip::CenterOfMass, "in"_a, "mask"_a = dip::Image{} );
    m.def( "Moments", &dip::Moments, "in"_a, "mask"_a = dip::Image{} );
 
