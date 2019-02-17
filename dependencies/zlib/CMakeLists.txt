@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
+message("~~~Configuring Zlib~~~")
+
 project(zlib LANGUAGES C VERSION "1.2.11")
 
 include(CheckTypeSize)
@@ -99,3 +101,5 @@ set(ZLIB_SRCS
 add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 set_target_properties(zlibstatic PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
+
+message("~~~")

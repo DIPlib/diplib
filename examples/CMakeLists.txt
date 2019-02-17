@@ -90,7 +90,7 @@ if(DIP_BUILD_DIPVIEWER)
                     filter_image
                     )
 
-   find_package(OpenCV COMPONENTS core imgproc highgui)
+   find_package(OpenCV QUIET COMPONENTS core imgproc highgui)
    if(OpenCV_FOUND)
 
       # An example program that uses both DIPlib and OpenCV

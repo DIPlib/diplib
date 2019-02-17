@@ -25,6 +25,8 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+message("~~~Configuring LibTIFF~~~")
+
 # Read version information from configure.ac.
 set(LIBTIFF_MAJOR_VERSION 4)
 set(LIBTIFF_MINOR_VERSION 0)
@@ -482,6 +484,7 @@ add_subdirectory(libtiff)
 
 #message(STATUS "EXTRA_DIST: ${EXTRA_DIST}")
 
-message(STATUS "LibTIFF configuration:")
-message(STATUS "  Use win32 IO:                       ${USE_WIN32_FILEIO}")
-message(STATUS "  JPEG 8/12 bit dual mode:            ${JPEG12_FOUND}")
+message(STATUS "LibTIFF uses win32 IO: ${USE_WIN32_FILEIO}")
+message(STATUS "LibTIFF has JPEG 8/12 bit dual mode: ${JPEG12_FOUND}")
+
+message("~~~")

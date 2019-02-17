@@ -18,6 +18,8 @@ if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()
 
+message("~~~Configuring libics~~~")
+
 project(libics VERSION 1.6.2)
 
 # Note: the version number above is not yet used anywhere.
@@ -181,3 +183,5 @@ if(LIBICS_USE_ZLIB)
 endif()
 add_test(NAME test_history COMMAND test_history result_v1.ics)
 set_tests_properties(test_history PROPERTIES DEPENDS test_ics1)
+
+message("~~~")
