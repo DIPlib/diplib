@@ -833,14 +833,14 @@ class ProjectionMaxMinAbs : public ProjectionScanFunction {
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  res = Computer::compare( res, static_cast< TPO >( abs( it.template Sample< 0 >() )));
+                  res = Computer::compare( res, static_cast< TPO >( std::abs( it.template Sample< 0 >() )));
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               res = Computer::compare( res, static_cast< TPO >( abs( *it )));
+               res = Computer::compare( res, static_cast< TPO >( std::abs( *it )));
             } while( ++it );
          }
          *static_cast< TPO* >( out ) = res;

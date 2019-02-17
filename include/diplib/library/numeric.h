@@ -165,29 +165,11 @@ constexpr dip::sint consistent_round( T v ) {
    return inverse ? ceil_cast( v - 0.5 ) : floor_cast( v + 0.5 ); // conditional should be optimized out
 }
 
-/// \brief Computes the absolute value in such a way that the result is always correct for pixel types.
-/// For `dip::sint` use `std::abs` instead.
-///
-/// Note that, for signed integer types, `std::abs` returns an implementation-defined value when
-/// the input is equal to the smallest possible value, since its positive counterpart cannot be
-/// represented. For example, the absolute value of `dip::sint8(-128)` cannot be represented
-/// as an 8-bit signed value. `dip::abs` would return an 8-bit unsigned value of 128.
-///
-/// The return type is the same as the input type, except if the input is a signed integer,
-/// in which case the return type is the unsigned counterpart.
-template< typename T, typename std::enable_if_t< !std::is_integral< T >::value, int > = 0 >
-AbsType< T > abs( T value ) {
-   return static_cast< AbsType< T >>( std::abs( value ));
+/// \brief `constexpr` version of `std::abs`. Prefer `std::abs` outside of `constexpr` functions.
+template< typename T >
+constexpr T abs( T value ) {
+   return value >= 0 ? value : -value;
 }
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_unsigned< T >::value, int > = 0 >
-T abs( T value ) {
-   return value;
-}
-template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
-AbsType< T > abs( T value ) {
-   return static_cast< AbsType< T >>( std::abs( static_cast< dfloat >( value )));
-}
-template<> inline bin abs( bin value ) { return value; }
 
 /// \brief Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
 // `std::clamp` will be available in C++17.
@@ -224,8 +206,8 @@ constexpr inline dfloat pow10( dip::sint power ) {
 /// \brief Approximate floating-point equality: `abs(lhs-rhs)/lhs <= tolerance`.
 constexpr inline bool ApproximatelyEquals( dfloat lhs, dfloat rhs, dfloat tolerance = 1e-6 ) {
    return tolerance == 0.0 ? lhs == rhs : ( lhs == 0.0
-                                            ? std::abs( rhs ) <= tolerance
-                                            : std::abs( lhs - rhs ) / lhs <= tolerance );
+                                            ? dip::abs( rhs ) <= tolerance
+                                            : dip::abs( lhs - rhs ) / lhs <= tolerance );
 }
 
 /// \brief Counts the length of a (UTF-8 encoded) Unicode string.

@@ -262,32 +262,32 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::clamp_cast functions") {
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
    // Addition
-   DOCTEST_CHECK( dip::saturated_add( dip::uint8(50), dip::uint8(20) ) == dip::uint8(70) );
-   DOCTEST_CHECK( dip::saturated_add( dip::uint8(250), dip::uint8(20) ) == dip::uint8(255) );
-   DOCTEST_CHECK( dip::saturated_add( dip::sint16(250), dip::sint16(20) ) == dip::sint16(270) );
-   DOCTEST_CHECK( dip::saturated_add( dip::sint16(30000), dip::sint16(10000) ) == dip::sint16(32767) );
+   DOCTEST_CHECK( dip::saturated_add( dip::uint8( 50 ), dip::uint8( 20 )) == dip::uint8( 70 ));
+   DOCTEST_CHECK( dip::saturated_add( dip::uint8( 250 ), dip::uint8( 20 )) == dip::uint8( 255 ));
+   DOCTEST_CHECK( dip::saturated_add( dip::sint16( 250 ), dip::sint16( 20 )) == dip::sint16( 270 ));
+   DOCTEST_CHECK( dip::saturated_add( dip::sint16( 30000 ), dip::sint16( 10000 )) == dip::sint16( 32767 ));
    // Subtraction
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint16(20), dip::uint16(10) ) == dip::uint16(10) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint16(10), dip::uint16(20) ) == dip::uint16(0) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::sint16(10), dip::sint16(20) ) == dip::sint16(-10) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint8(10), dip::uint8(20) ) == dip::uint8(0) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint32(10000), dip::uint32(5000) ) == dip::uint32(5000) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint32(10000), dip::uint32(10000) ) == dip::uint32(0) );
-   DOCTEST_CHECK( dip::saturated_sub( dip::uint32(10000), dip::uint32(20000) ) == dip::uint32(0) );
+   DOCTEST_CHECK( dip::saturated_sub( dip::uint16( 20 ), dip::uint16( 10 )) == dip::uint16( 10 ));
+   DOCTEST_CHECK( dip::saturated_sub( dip::uint16( 10 ), dip::uint16( 20 )) == dip::uint16( 0 ));
+   DOCTEST_CHECK( dip::saturated_sub( dip::sint16( 10 ), dip::sint16( 20 )) == dip::sint16( -10 ));
+   DOCTEST_CHECK( dip::saturated_sub( dip::uint8( 10 ), dip::uint8( 20 )) == dip::uint8( 0 ));
+   DOCTEST_CHECK( dip::saturated_sub( dip::uint32( 10000 ), dip::uint32( 5000 )) == dip::uint32( 5000 ));
+   DOCTEST_CHECK( dip::saturated_sub( dip::uint32( 10000 ), dip::uint32( 10000 )) == dip::uint32( 0 ));
+   DOCTEST_CHECK( dip::saturated_sub( dip::uint32( 10000 ), dip::uint32( 20000 )) == dip::uint32( 0 ));
    // Multiplication
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(100) ) == dip::sint16(30000) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(-100) ) == dip::sint16(-30000) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(1000) ) == dip::sint16(32767) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::sint16(300), dip::sint16(-1000) ) == dip::sint16(-32768) );
-   DOCTEST_CHECK( dip::saturated_mul( dip::uint16(300), dip::uint16(1000) ) == dip::uint16(65535) );
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint16( 300 ), dip::sint16( 100 )) == dip::sint16( 30000 ));
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint16( 300 ), dip::sint16( -100 )) == dip::sint16( -30000 ));
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint16( 300 ), dip::sint16( 1000 )) == dip::sint16( 32767 ));
+   DOCTEST_CHECK( dip::saturated_mul( dip::sint16( 300 ), dip::sint16( -1000 )) == dip::sint16( -32768 ));
+   DOCTEST_CHECK( dip::saturated_mul( dip::uint16( 300 ), dip::uint16( 1000 )) == dip::uint16( 65535 ));
    // Division
-   DOCTEST_CHECK( dip::saturated_div( dip::sint16(300), dip::sint16(10) ) == dip::sint16(30) );
+   DOCTEST_CHECK( dip::saturated_div( dip::sint16( 300 ), dip::sint16( 10 )) == dip::sint16( 30 ));
    // Inversion
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(300) ) == dip::sint16(-300) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(-32768) ) == dip::sint16(32767) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(-32767) ) == dip::sint16(32767) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::sint16(-32766) ) == dip::sint16(32766) );
-   DOCTEST_CHECK( dip::saturated_inv( dip::uint16(300) ) == dip::uint16(65235) );
+   DOCTEST_CHECK( dip::saturated_inv( dip::sint16( 300 )) == dip::sint16( -300 ));
+   DOCTEST_CHECK( dip::saturated_inv( dip::sint16( -32768 )) == dip::sint16( 32767 ));
+   DOCTEST_CHECK( dip::saturated_inv( dip::sint16( -32767 )) == dip::sint16( 32767 ));
+   DOCTEST_CHECK( dip::saturated_inv( dip::sint16( -32766 )) == dip::sint16( 32766 ));
+   DOCTEST_CHECK( dip::saturated_inv( dip::uint16( 300 )) == dip::uint16( 65235 ));
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::gcd function") {
@@ -379,26 +379,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::{floor|ceil|round}_cast functions")
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {
-   DOCTEST_CHECK( dip::pow10( 25 ) == doctest::Approx( std::pow( 10, 25 )) );
-   DOCTEST_CHECK( dip::pow10( 10 ) == std::pow( 10, 10 ) );
-   DOCTEST_CHECK( dip::pow10( 1 ) == std::pow( 10, 1 ) );
-   DOCTEST_CHECK( dip::pow10( 0 ) == std::pow( 10, 0 ) );
-   DOCTEST_CHECK( dip::pow10( -5 ) == std::pow( 10, -5 ) );
-   DOCTEST_CHECK( dip::pow10( -21 ) == doctest::Approx( std::pow( 10, -21 )) );
+   DOCTEST_CHECK( dip::pow10( 25 ) == doctest::Approx( std::pow( 10, 25 )));
+   DOCTEST_CHECK( dip::pow10( 10 ) == std::pow( 10, 10 ));
+   DOCTEST_CHECK( dip::pow10( 1 ) == std::pow( 10, 1 ));
+   DOCTEST_CHECK( dip::pow10( 0 ) == std::pow( 10, 0 ));
+   DOCTEST_CHECK( dip::pow10( -5 ) == std::pow( 10, -5 ));
+   DOCTEST_CHECK( dip::pow10( -21 ) == doctest::Approx( std::pow( 10, -21 )));
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::abs function") {
-   DOCTEST_CHECK( dip::abs( dip::uint8( 25 )) == dip::uint8( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint8( 25 )) == dip::uint8( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint8( -25 )) == dip::uint8( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint8( -128 )) == dip::uint8( 128 ) );
-   DOCTEST_CHECK( dip::abs( dip::uint32( 25 )) == dip::uint32( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint32( 25 )) == dip::uint32( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint32( -25 )) == dip::uint32( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint32( -2147483648ll )) == dip::uint32( 2147483648u ) );
-   DOCTEST_CHECK( dip::abs( dip::sfloat( 25.6 )) == dip::sfloat( 25.6 ) );
-   DOCTEST_CHECK( dip::abs( dip::sfloat( -25.6 )) == dip::sfloat( 25.6 ) );
-   DOCTEST_CHECK( dip::abs( dip::scomplex{ 1.2f, 5.3f } ) == std::hypot( 1.2f, 5.3f ) );
+   DOCTEST_CHECK( dip::abs( 25.0 ) == 25.0 );
+   DOCTEST_CHECK( dip::abs( -25.0 ) == 25.0 );
+   DOCTEST_CHECK( dip::abs( 0.0 ) == 0.0 );
+   DOCTEST_CHECK( dip::abs( 25.6f ) == 25.6f );
+   DOCTEST_CHECK( dip::abs( -25.6f ) == 25.6f );
+   DOCTEST_CHECK( dip::abs( 25 ) == 25 );
+   DOCTEST_CHECK( dip::abs( -25 ) == 25 );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::ApproximatelyEquals function") {

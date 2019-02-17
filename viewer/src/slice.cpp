@@ -345,7 +345,7 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
         double dist = std::numeric_limits<double>::infinity();
         if (dx != -1)
         {
-          double dstart = abs(ix - (double)start[(dip::uint)dx]), dend = abs(ix-(double)end[(dip::uint)dx]);
+          double dstart = std::abs(ix - (double)start[(dip::uint)dx]), dend = std::abs(ix-(double)end[(dip::uint)dx]);
           dist = std::min(dstart, dend);
           if (dstart < dend)
             roi_edge_ = 0;
@@ -354,7 +354,7 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
         }
         if (dy != -1)
         {
-          double dstart = abs(iy - (double)start[(dip::uint)dy]), dend = abs(iy-(double)end[(dip::uint)dy]);
+          double dstart = std::abs(iy - (double)start[(dip::uint)dy]), dend = std::abs(iy-(double)end[(dip::uint)dy]);
           if (std::min(dstart, dend) < dist)
           {
             roi_dim_ = dy;
