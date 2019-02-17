@@ -78,6 +78,7 @@ void ProjectionScan(
       DIP_START_STACK_TRACE
          mask.CheckIsMask( inSizes, Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
          mask.ExpandSingletonDimensions( inSizes );
+         mask.ExpandSingletonTensor( input.TensorElements() ); // We've checked that it has a single tensor element
       DIP_END_STACK_TRACE
       hasMask = true;
    }
@@ -134,7 +135,7 @@ void ProjectionScan(
       //std::cout << "Projection framework: no need to loop!\n";
       function.SetNumberOfThreads( 1 );
       if( output.DataType() != outImageType ) {
-         Image outBuffer( {}, 1, outImageType );
+         Image outBuffer( {}, 1, outImageType ); // a single sample
          function.Project( input, mask, outBuffer.Origin(), 0 );
          detail::CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
                              output.Origin(), output.DataType(), 1, 1, 1, 1 );
