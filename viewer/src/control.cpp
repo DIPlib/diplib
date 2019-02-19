@@ -109,17 +109,9 @@ void ControlViewPort::click(int button, int state, int x, int y, int /*mods*/)
             o.mapping_range_ = {0, 255};
             break;
           case ViewingOptions::Mapping::Linear:
-            o.mapping_range_ = o.range_;
-            break;
           case ViewingOptions::Mapping::Symmetric:
-            o.mapping_range_ = o.range_;
-            if (std::abs(o.mapping_range_.first) > std::abs(o.mapping_range_.second))
-              o.mapping_range_.second = -o.mapping_range_.first;
-            else
-              o.mapping_range_.first = -o.mapping_range_.second;
-            break;
           case ViewingOptions::Mapping::Logarithmic:
-            o.mapping_range_ = o.range_;
+            o.setAutomaticRange();
             break;
         }
         o.status_ = "Mapping set to " + o.getMappingDescription() + ": [" + std::to_string(o.mapping_range_.first) + ", " + std::to_string(o.mapping_range_.second) + "]";

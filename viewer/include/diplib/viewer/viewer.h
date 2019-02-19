@@ -38,6 +38,9 @@ namespace dip { namespace viewer {
 /// \brief Specifies a range of values between a lower and upper limit
 typedef std::pair<dip::dfloat, dip::dfloat> FloatRange;
 
+/// \brief Specifies an array of ranges (typically one per tensor element)
+typedef std::vector<FloatRange> FloatRangeArray;
+
 /// \brief Model that determines the SliceViewer's behavior
 struct DIPVIEWER_NO_EXPORT ViewingOptions
 {
@@ -66,6 +69,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   
   // Mapping
   FloatRange range_;                   ///< value range across image (histogram limits).
+  FloatRangeArray tensor_range_;       ///< value range per tensor.
   FloatRange mapping_range_;           ///< mapped value range (colorbar limits).
   Mapping mapping_;                    ///< from input to [0, 1], modifies mapping_range_.
   
@@ -211,6 +215,35 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     }
     
     return false;
+  }
+  
+  /// \brief Sets automatic range based on current lookup table and mapping
+  void setAutomaticRange()
+  {
+    if (lut_ == LookupTable::RGB)
+    {
+      FloatRange range = { std::numeric_limits<dip::dfloat>::infinity(),
+                          -std::numeric_limits<dip::dfloat>::infinity()};
+                          
+      for (size_t ii=0; ii != color_elements_.size(); ++ii)
+        if (color_elements_[ii] >= 0 && color_elements_[ii] < (dip::sint)tensor_range_.size())
+          range = {std::min(range.first, tensor_range_[(dip::uint)color_elements_[ii]].first),
+                   std::max(range.second, tensor_range_[(dip::uint)color_elements_[ii]].second)};
+                   
+      mapping_range_ = range;
+    }
+    else if (lut_ == LookupTable::ColorSpace || element_ >= tensor_range_.size())
+      mapping_range_ = range_;
+    else
+      mapping_range_ = tensor_range_[element_];
+
+    if (mapping_ == ViewingOptions::Mapping::Symmetric)
+    {
+      if (std::abs(mapping_range_.first) > std::abs(mapping_range_.second))
+        mapping_range_.second = -mapping_range_.first;
+      else
+        mapping_range_.first = -mapping_range_.second;
+    }
   }
 
   /// \brief Returns a textual description of the current complex-to-real mapping

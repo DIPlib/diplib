@@ -744,7 +744,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
     {
       // ^L: linear stretch
       options_.mapping_ = ViewingOptions::Mapping::Linear;
-      options_.mapping_range_ = options_.range_;
+      options_.setAutomaticRange();
       
       options_.status_ = "Mapping set to " + options_.getMappingDescription() + ": range [" + std::to_string(options_.mapping_range_.first) + ", " + std::to_string(options_.mapping_range_.second) + "]";
       refresh();
@@ -860,29 +860,31 @@ void SliceViewer::calculateTextures()
       else
         image = original;
         
-      // Get range
-      dip::Image copy = image;
-      copy.TensorToSpatial();
-      dip::MinMaxAccumulator acc = MaximumAndMinimum( image );
+      // Get ranges
+      FloatRange range = { std::numeric_limits<dip::dfloat>::infinity(),
+                          -std::numeric_limits<dip::dfloat>::infinity()};
+      FloatRangeArray tensor_range(image.TensorElements());
+      
+      for (size_t ii=0; ii != image.TensorElements(); ++ii)
+      {
+        dip::MinMaxAccumulator acc = MaximumAndMinimum( image[ii] );
+        tensor_range[ii] = {acc.Minimum(), acc.Maximum()};
+        range = {std::min(range.first, tensor_range[ii].first),
+                 std::max(range.second, tensor_range[ii].second)};
+      }
       
       lock();
       image_ = image;
       original_ = original;
-      options_.range_ = {acc.Minimum(), acc.Maximum()};
+      options_.range_ = range;
+      options_.tensor_range_ = tensor_range;
+
       if (options.mapping_ == ViewingOptions::Mapping::Linear ||
           options.mapping_ == ViewingOptions::Mapping::Symmetric || 
           options.mapping_ == ViewingOptions::Mapping::Logarithmic)
       {
         // If we're on some automatic mapping more, adjust it.
-        options_.mapping_range_ = options_.range_;
-        
-        if (options.mapping_ == ViewingOptions::Mapping::Symmetric)
-        {
-          if (std::abs(options_.mapping_range_.first) > std::abs(options_.mapping_range_.second))
-            options_.mapping_range_.second = -options_.mapping_range_.first;
-          else
-            options_.mapping_range_.first = -options_.mapping_range_.second;
-        }
+        options_.setAutomaticRange();
       }
       unlock();
       
