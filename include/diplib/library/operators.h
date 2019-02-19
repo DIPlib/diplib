@@ -77,7 +77,6 @@ template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )  { 
 
 #define DIP__DEFINE_TRIADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& in, Image const& lhs, Image const& rhs, Image& out ); \
-template< typename T1, typename T2 > inline void name( Image const& in, T1 const& lhs, T2 const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, Image const& lhs, T const& rhs, Image& out ) { name( in, lhs, Image{ rhs }, out ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, T const& lhs, Image const& rhs, Image& out ) { name( in, Image{ lhs }, rhs, out ); } \
 template< typename T1, typename T2, typename = EnableIfNotImageOrView< T1 >, typename = EnableIfNotImageOrView< T2 >> inline void name( Image const& in, T1 const& lhs, T2 const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
