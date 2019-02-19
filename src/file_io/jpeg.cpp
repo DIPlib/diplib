@@ -298,19 +298,19 @@ namespace dip {
 
 static const char* NOT_AVAILABLE = "DIPlib was compiled without JPEG support.";
 
-FileInformation ImageReadJPEG( Image& out, String const& filename ) {
+FileInformation ImageReadJPEG( Image&, String const& ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-FileInformation FileInformation ImageReadJPEGInfo( String const& filename ) {
+FileInformation ImageReadJPEGInfo( String const& ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-bool ImageIsJPEG( String const& filename ) {
+bool ImageIsJPEG( String const& ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
-void ImageWriteJPEG( Image const& image, String const& filename, dip::uint jpegLevel ) {
+void ImageWriteJPEG( Image const&, String const&, dip::uint ) {
    DIP_THROW( NOT_AVAILABLE );
 }
 
