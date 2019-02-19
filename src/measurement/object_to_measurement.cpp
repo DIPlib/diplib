@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for the dip::MeasurementToObject function.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,16 +34,8 @@ void ObjectToMeasurement(
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nElements = featureValues.NumberOfValues();
-   bool protect = out.IsProtected();
-   if( !protect ) {
-      // If the user didn't protect the output image, we set it to SFLOAT, which is the default output type
-      out.ReForge( label.Sizes(), nElements, DT_SFLOAT );
-      out.Protect();
-   }
    UnsignedArray const& objects = featureValues.Objects();
-   if( objects.empty() ) {
-      out.Fill( 0 );
-   } else {
+   if( !objects.empty() ) {
       dip::uint maxObject = *std::max_element( objects.begin(), objects.end());
       Image lutIm( { maxObject + 1 }, nElements, DT_DFLOAT );
       lutIm.Fill( 0.0 );
@@ -58,8 +50,12 @@ void ObjectToMeasurement(
       }
       LookupTable lut( lutIm );
       lut.Apply( label, out );
+   } else {
+      auto px = label.PixelSize();
+      out.ReForge( label.Sizes(), nElements, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+      out.SetPixelSize( px );
+      out.Fill( 0 );
    }
-   out.Protect( protect );
 }
 
 } // namespace dip
