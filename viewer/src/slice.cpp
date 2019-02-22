@@ -118,10 +118,13 @@ void SliceView::map()
     line = Image({projected_.Size(0), 100}, 3, DT_UINT8);
     line.Fill(0);
     
-    dip::uint width = projected_.Size( 0 );
+    dip::uint width = line.Size(0);
+    dip::uint xstride = (dip::uint)line.Stride(0);
+    dip::uint ystride = (dip::uint)line.Stride(1);
+    dip::uint8 *col = (dip::uint8*)line.Origin();
     
     GenericImageIterator<> it(projected_);
-    for( dip::uint ii = 0; ii < width; ++ii, ++it)
+    for( dip::uint ii = 0; ii < width; ++ii, ++it, col += xstride)
     {
       if (o.lut_ == ViewingOptions::LookupTable::RGB)
       {
@@ -129,16 +132,18 @@ void SliceView::map()
           if (o.color_elements_[kk] != -1)
           {
             dip::uint8 color = (dip::uint8)rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
-            line.At<dip::uint8>({ii, 99-color*100U/256})[kk] = 255;
+            dip::uint height = 99-color*100U/256;
+            for (dip::uint jj=height; jj < 100; ++jj)
+              col[jj*ystride+kk] = 255;
           }
       }
       else
       {
         dip::uint8 color = (dip::uint8)rangeMap(it[o.element_], o);
-      
-        auto p = line.At<dip::uint8>({ii, 99-color*100U/256});
-        for (size_t kk=0; kk < 3; ++kk)
-          p[kk] = 255;
+        dip::uint height = 99-color*100U/256;
+        for (dip::uint jj=height; jj < 100; ++jj)
+          for (size_t kk=0; kk < 3; ++kk)
+            col[jj*ystride+kk] = 255;
       }
     }
     
@@ -660,6 +665,14 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
 
   if (!mods)
   {
+    if (k == 'D' && image_.Dimensionality() > 0 && options_.operating_point_[0] < image_.Size(0)-1)
+      options_.operating_point_[0]++;
+    if (k == 'A' && image_.Dimensionality() > 0 && options_.operating_point_[0] > 0)
+      options_.operating_point_[0]--;
+    if (k == 'S' && image_.Dimensionality() > 1 && options_.operating_point_[1] < image_.Size(1)-1)
+      options_.operating_point_[1]++;
+    if (k == 'W' && image_.Dimensionality() > 1 && options_.operating_point_[1] > 0)
+      options_.operating_point_[1]--;
     if (k == 'N' && image_.Dimensionality() > 2 && options_.operating_point_[2] < image_.Size(2)-1)
       options_.operating_point_[2]++;
     if (k == 'P' && image_.Dimensionality() > 2 && options_.operating_point_[2] > 0)
