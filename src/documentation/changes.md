@@ -368,6 +368,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::NobleCornerDetector`, `dip::WangBradyCornerDetector`, `dip::FrangiVesselness`,
   `dip::MatchedFiltersLineDetector2D`, `dip::DanielssonLineDetector`, `dip::RORPOLineDetector`.
 
+- New distance function: `dip::GeodesicDistanceTransform`.
+
 - New binary filtering functions: `dip::FillHoles`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`,
   `dip::BinaryAreaOpening`, `dip::BinaryAreaClosing`, `dip::CountNeighbors`, `dip::MajorityVote`, `dip::GetSinglePixels`,
   `dip::GetEndPixels`, `dip::GetLinkPixels`, `dip::GetBranchPixels`, `dip::SupGenerating`, `dip::InfGenerating`,
@@ -393,10 +395,14 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - New generation functions: `dip::FillRadiusCoordinate`, `dip::CreateRadiusCoordinate`,
   `dip::FillRadiusSquareCoordinate`, `dip::CreateRadiusSquareCoordinate`, `dip::FillPhiCoordinate`,
   `dip::CreatePhiCoordinate`, `dip::FillThetaCoordinate`, `dip::CreateThetaCoordinate`, `dip::FillCoordinates`,
-  `dip::CreateCoordinates`, `dip::ApplyWindow`, `dip::DrawPolygon2D`, `dip::DrawBandlimitedPoint`,
-  `dip::DrawBandlimitedLine`, `dip::DrawBandlimitedBall`, `dip::DrawBandlimitedBox`, `dip::SaltPepperNoise`,
-  `dip::FillColoredNoise`, `dip::ColoredNoise`, `dip::GaussianEdgeClip`, `dip::GaussianLineClip`, `dip::FillDelta`,
-  `dip::CreateDelta`, `dip::CreateGauss`, `dip::CreateGabor`, `dip::FillPoissonPointProcess`, `dip::FillRandomGrid`.
+  `dip::CreateCoordinates`,
+  `dip::ApplyWindow`,
+  `dip::DrawPolygon2D`, `dip::DrawBandlimitedPoint`, `dip::DrawBandlimitedLine`, `dip::DrawBandlimitedBall`,
+  `dip::DrawBandlimitedBox`,
+  `dip::SaltPepperNoise`, `dip::FillColoredNoise`, `dip::ColoredNoise`,
+  `dip::GaussianEdgeClip`, `dip::GaussianLineClip`,
+  `dip::FillDelta`, `dip::CreateDelta`, `dip::CreateGauss`, `dip::CreateGabor`,
+  `dip::FillPoissonPointProcess`, `dip::FillRandomGrid`.
 
 - New geometric transformation functions: `dip::RotationMatrix2D`, `dip::RotationMatrix3D`, `dip::AffineTransform`,
   `dip::LogPolarTransform2D`, `dip::Tile`, `dip::TileTensorElements`, `dip::Concatenate`, `dip::JoinChannels`.
@@ -412,25 +418,30 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - New labeled regions function: `dip::Relabel`.
 
 - New math and statistics functions: `dip::IsNotANumber`, `dip::IsInfinite`, `dip::IsFinite`, `dip::InRange`,
-  `dip::OutOfRange`, `dip::MaximumAbsoluteError`, `dip::PSNR`, `dip::SSIM`, `dip::MutualInformation`,
+  `dip::OutOfRange`,
+  `dip::MaximumAbsoluteError`, `dip::PSNR`, `dip::SSIM`, `dip::MutualInformation`,
   `dip::SpatialOverlap`, `dip::DiceCoefficient`, `dip::JaccardIndex`, `dip::Specificity`, `dip::Sensitivity`,
-  `dip::Accuracy`, `dip::Precision`, `dip::HausdorffDistance`, `dip::Entropy`, `dip::EstimateNoiseVariance`,
+  `dip::Accuracy`, `dip::Precision`, `dip::HausdorffDistance`,
+  `dip::Entropy`, `dip::EstimateNoiseVariance`,
   `dip::GeometricMean`, `dip::MeanSquare`, `dip::SumSquare`, `dip::MaximumAbs`, `dip::MinimumAbs`,
-  `dip::MedianAbsoluteDeviation`, `dip::All`, `dip::Any`, `dip::Count`, `dip::CumulativeSum`, `dip::SampleStatistics`,
-  `dip::Covariance`, `dip::CenterOfMass`, `dip::Moments`, `dip::Transpose`, `dip::ConjugateTranspose`,
-  `dip::DotProduct`, `dip::CrossProduct`, `dip::Norm`, `dip::SquareNorm`, `dip::Angle`, `dip::Orientation`,
-  `dip::CartesianToPolar`, `dip::PolarToCartesian`, `dip::Determinant`, `dip::Trace`, `dip::Rank`, `dip::Eigenvalues`,
-  `dip::LargestEigenvalue`, `dip::SmallestEigenvalue`, `dip::EigenDecomposition`, `dip::LargestEigenVector`,
-  `dip::SmallestEigenVector`, `dip::Inverse`, `dip::PseudoInverse`, `dip::SingularValues`,
-  `dip::SingularValueDecomposition`, `dip::Identity`, `dip::SumTensorElements`, `dip::ProductTensorElements`,
-  `dip::AllTensorElements`, `dip::AnyTensorElement`, `dip::MaximumTensorElement`, `dip::MaximumAbsTensorElement`,
-  `dip::MinimumTensorElement`, `dip::MinimumAbsTensorElement`, `dip::MeanTensorElement`,
-  `dip::GeometricMeanTensorElement`, `dip::SortTensorElements`, `dip::SortTensorElementsByMagnitude`, `dip::Hypot`.
+  `dip::MedianAbsoluteDeviation`, `dip::All`, `dip::Any`,
+  `dip::Count`, `dip::CumulativeSum`, `dip::SampleStatistics`, `dip::Covariance`,  `dip::PearsonCorrelation`,
+  `dip::SpearmanRankCorrelation`, `dip::CenterOfMass`, `dip::Moments`,
+  `dip::Transpose`, `dip::ConjugateTranspose`, `dip::DotProduct`, `dip::CrossProduct`,
+  `dip::Norm`, `dip::SquareNorm`, `dip::Angle`, `dip::Orientation`, `dip::CartesianToPolar`, `dip::PolarToCartesian`,
+  `dip::Determinant`, `dip::Trace`, `dip::Rank`, `dip::Eigenvalues`, `dip::LargestEigenvalue`, `dip::SmallestEigenvalue`,
+  `dip::EigenDecomposition`, `dip::LargestEigenVector`, `dip::SmallestEigenVector`, `dip::Inverse`, `dip::PseudoInverse`,
+  `dip::SingularValues`, `dip::SingularValueDecomposition`, `dip::Identity`,
+  `dip::SumTensorElements`, `dip::ProductTensorElements`, `dip::AllTensorElements`, `dip::AnyTensorElement`,
+  `dip::MaximumTensorElement`, `dip::MaximumAbsTensorElement`, `dip::MinimumTensorElement`,
+  `dip::MinimumAbsTensorElement`, `dip::MeanTensorElement`, `dip::GeometricMeanTensorElement`,
+  `dip::SortTensorElements`, `dip::SortTensorElementsByMagnitude`,
+  `dip::Hypot`.
 
 - New microscopy functions: `dip::BeerLambertMapping`, `dip::InverseBeerLambertMapping`, `dip::UnmixStains`,
   `dip::MixStains`.
 
-- New segmentatin functions: `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
+- New segmentation functions: `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
   `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`,
   `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`.
 

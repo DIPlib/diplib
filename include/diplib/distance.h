@@ -170,6 +170,7 @@ inline Image VectorDistanceTransform(
 ///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
 ///  - K.C. Strasters, "Quantitative Analysis in Confocal %Image Cytometry", Ph.D. thesis, Delft University of
 ///    Technology, The Netherlands, 1994.
+// TODO: Add the fast marching method, could be selected through a different metric?
 DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
@@ -187,6 +188,41 @@ inline Image GreyWeightedDistanceTransform(
 ) {
    Image out;
    GreyWeightedDistanceTransform( grey, bin, mask, out, metric, outputMode );
+   return out;
+}
+
+/// \brief Geodesic distance transform
+///
+/// This function computes the geodesic distance transform of the object elements in the `marker` image, with paths
+/// constrained to the `condition` image. That is, for each set pixel in `marker`, the distance to the background in
+/// `marker` is computed, along a path that stays completely within set pixels of `condition`. Pixels where `marker`
+/// or `condition` are not set, the output will not be set. Specifically, if a pixel is set in `marker` but not in
+/// `condition`, then that pixel will have a value of 0 in the output, but this value will not be used as a seed
+/// for paths, so that its neighbors can have a large distance value.
+///
+/// The images `marker` and `condition` must have the same sizes, and be scalar and binary.
+/// `out` will have type `dip::DT_SFLOAT`.
+///
+/// This function is currently implemented in terms of `dip::GreyWeightedDistanceTransform`, see that function for
+/// literature and implementation details. Here we use a 3x3 chamfer metric, meaning that the unit circle is an
+/// octagon.
+inline void GeodesicDistanceTransform(
+      Image const& marker,
+      Image const& condition,
+      Image& out
+) {
+   // TODO: This is not the most efficient implementation. For one, `weight` will be copied explicitly with normal strides...
+   Image weight( {}, 1, dip::DT_SFLOAT );
+   weight.Fill( 1.0 );
+   weight.ExpandSingletonDimensions( marker.Sizes() );
+   GreyWeightedDistanceTransform( weight, marker, condition, out, dip::Metric( S::CHAMFER, 1 ), S::EUCLIDEAN );
+}
+inline Image GeodesicDistanceTransform(
+      Image const& marker,
+      Image const& condition
+) {
+   Image out;
+   GeodesicDistanceTransform( marker, condition, out );
    return out;
 }
 

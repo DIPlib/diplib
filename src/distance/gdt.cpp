@@ -161,7 +161,9 @@ void GreyWeightedDistanceTransform(
    DIP_THROW_IF( c_grey.HasSingletonDimension(), "Images with singleton dimensions not supported. Use Squeeze." );
 
    // We can only support non-negative weights --
-   DIP_THROW_IF( Minimum( c_grey ).As< dfloat >() < 0.0, "Minimum input value < 0.0" );
+   dfloat min;
+   DIP_STACK_TRACE_THIS( min = Minimum( c_grey ).As< dfloat >() );
+   DIP_THROW_IF( min < 0.0, "Minimum input value < 0.0" );
 
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
@@ -198,32 +200,38 @@ void GreyWeightedDistanceTransform(
 
    // We must have contiguous data if we want to create another image with the same strides as `grey`
    Image grey = c_grey.QuickCopy();
-   grey.ForceContiguousData(); // this also ensures no singleton-expanded dimensions
+   DIP_STACK_TRACE_THIS( grey.ForceContiguousData() ); // this also ensures no singleton-expanded dimensions
 
    // Create temporary images
    Image gdt;
+   DIP_START_STACK_TRACE
    gdt.SetStrides( grey.Strides() );
    gdt.SetSizes( grey.Sizes() );
    gdt.SetDataType( DT_SFLOAT );
    gdt.Forge();
-   DIP_ASSERT( gdt.Strides() == grey.Strides() );
    gdt.Copy( bin );
+   DIP_END_STACK_TRACE
+   DIP_ASSERT( gdt.Strides() == grey.Strides() );
 
    Image distance;
    if( outputDistance ) {
+      DIP_START_STACK_TRACE
       distance.SetStrides( grey.Strides() );
       distance.SetSizes( grey.Sizes() );
       distance.SetDataType( DT_SFLOAT );
       distance.Forge();
-      DIP_ASSERT( distance.Strides() == grey.Strides() );
       distance.Fill( 0 );
+      DIP_END_STACK_TRACE
+      DIP_ASSERT( distance.Strides() == grey.Strides() );
    }
 
    Image flags;
+   DIP_START_STACK_TRACE
    flags.SetStrides( grey.Strides() );
    flags.SetSizes( grey.Sizes() );
    flags.SetDataType( DT_UINT8 );
    flags.Forge();
+   DIP_END_STACK_TRACE
    DIP_ASSERT( flags.Strides() == grey.Strides() );
 
    // Get neighborhoods and metrics
