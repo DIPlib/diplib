@@ -471,20 +471,22 @@ class DIP_NO_EXPORT GenericImageIterator {
       GenericImageIterator& OptimizeAndFlatten() {
          Optimize();
          // Merge dimensions that can be merged, but not procDim.
-         for( dip::uint ii = sizes_.size() - 1; ii > 0; --ii ) {
-            if(( ii != procDim_ ) && ( ii - 1 != procDim_ )) {
-               if( strides_[ ii - 1 ] * static_cast< dip::sint >( sizes_[ ii - 1 ] ) == strides_[ ii ] ) {
-                  // Yes, we can merge these dimensions
-                  sizes_[ ii - 1 ] *= sizes_[ ii ];
-                  sizes_.erase( ii );
-                  strides_.erase( ii );
-                  if( ii < procDim_ ) {
-                     --procDim_;
+         if( sizes_.size() > 1 ) {
+            for( dip::uint ii = sizes_.size() - 1; ii > 0; --ii ) {
+               if(( ii != procDim_ ) && ( ii - 1 != procDim_ )) {
+                  if( strides_[ ii - 1 ] * static_cast< dip::sint >( sizes_[ ii - 1 ] ) == strides_[ ii ] ) {
+                     // Yes, we can merge these dimensions
+                     sizes_[ ii - 1 ] *= sizes_[ ii ];
+                     sizes_.erase( ii );
+                     strides_.erase( ii );
+                     if( ii < procDim_ ) {
+                        --procDim_;
+                     }
                   }
                }
             }
+            coords_.resize( sizes_.size());
          }
-         coords_.resize( sizes_.size() );
          return *this;
       }
 
@@ -895,29 +897,31 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       GenericJointImageIterator& OptimizeAndFlatten( dip::uint n = 0 ) {
          Optimize( n );
          // Merge dimensions that can be merged, but not procDim.
-         for( dip::uint jj = sizes_.size() - 1; jj > 0; --jj ) {
-            if(( jj != procDim_ ) && ( jj - 1 != procDim_ )) {
-               bool all = true;
-               for( dip::uint ii = 0; ii < N; ++ii ) {
-                  if( stridess_[ ii ][ jj - 1 ] * static_cast< dip::sint >( sizes_[ jj - 1 ] ) != stridess_[ ii ][ jj ] ) {
-                     all = false;
-                     break;
-                  }
-               }
-               if( all ) {
-                  // Yes, we can merge these dimensions
-                  sizes_[ jj - 1 ] *= sizes_[ jj ];
-                  sizes_.erase( jj );
+         if( sizes_.size() > 1 ) {
+            for( dip::uint jj = sizes_.size() - 1; jj > 0; --jj ) {
+               if(( jj != procDim_ ) && ( jj - 1 != procDim_ )) {
+                  bool all = true;
                   for( dip::uint ii = 0; ii < N; ++ii ) {
-                     stridess_[ ii ].erase( jj );
+                     if( stridess_[ ii ][ jj - 1 ] * static_cast< dip::sint >( sizes_[ jj - 1 ] ) != stridess_[ ii ][ jj ] ) {
+                        all = false;
+                        break;
+                     }
                   }
-                  if( jj < procDim_ ) {
-                     --procDim_;
+                  if( all ) {
+                     // Yes, we can merge these dimensions
+                     sizes_[ jj - 1 ] *= sizes_[ jj ];
+                     sizes_.erase( jj );
+                     for( dip::uint ii = 0; ii < N; ++ii ) {
+                        stridess_[ ii ].erase( jj );
+                     }
+                     if( jj < procDim_ ) {
+                        --procDim_;
+                     }
                   }
                }
             }
+            coords_.resize( sizes_.size());
          }
-         coords_.resize( sizes_.size() );
          return *this;
       }
 
