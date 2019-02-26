@@ -190,9 +190,9 @@ void HistogramViewPort::click(int button, int state, int x, int y, int /*mods*/)
     double ix, iy;
   
     screenToView(x, y, &ix, &iy);
-    double dlower = iy - (o.mapping_range_.first-o.range_.first)/(o.range_.second-o.range_.first),
-           dupper = iy - (o.mapping_range_.second-o.range_.first)/(o.range_.second-o.range_.first);
-           
+    double dlower = iy - clamp((o.mapping_range_.first-o.range_.first)/(o.range_.second-o.range_.first), 0., 1.),
+           dupper = iy - clamp((o.mapping_range_.second-o.range_.first)/(o.range_.second-o.range_.first), 0., 1.);
+
     if (std::abs(dlower) < std::abs(dupper))
       drag_limit_ = 0;
     else
