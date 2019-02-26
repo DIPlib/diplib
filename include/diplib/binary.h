@@ -617,7 +617,7 @@ class DIP_NO_EXPORT Interval {
       /// The image must be odd in size, the origin is in the middle pixel.
       ///
       /// Such an image converts implicitly to an `%Interval`.
-      DIP_EXPORT Interval( Image const& image );
+      DIP_EXPORT Interval( dip::Image image );
 
       /// \brief An interval can be constructed with two binary images, one for the foreground mask
       /// and one for the background mask.
@@ -626,26 +626,31 @@ class DIP_NO_EXPORT Interval {
       ///
       /// The two images must be disjoint, meaning that `dip::Any( dip::Infimum( hit, miss ))` must be false.
       /// An exception will be raised if this is not the case.
-      DIP_EXPORT Interval( Image hit, Image miss );
+      DIP_EXPORT Interval( dip::Image const& hit, dip::Image const& miss );
 
-      /// \brief Inverts the interval, swapping foreground and background pixels.
-      void Invert() {
-         hit_.swap( miss_ );
+      /// \brief Inverts the interval, swapping foreground and background pixels. Caution using this function, as
+      /// the `%Interval` can potentially share data with other intervals.
+      DIP_EXPORT void Invert();
+
+      /// \brief Returns the interval image, an dip::DT_SFLOAT image with values 0, 1 and NaN (for don't care).
+      // NOTE! This function is the reason we refer to `dip::Image` in this class
+      dip::Image const& Image() const {
+         return image_;
       }
 
       /// \brief Returns the foreground mask image, a binary image.
-      Image const& HitImage() const {
-         return hit_;
+      dip::Image HitImage() const {
+         return image_ == 1;
       }
 
       /// \brief Returns the background mask image, a binary image.
-      Image const& MissImage() const {
-         return miss_;
+      dip::Image MissImage() const {
+         return image_ == 0;
       }
 
       /// \brief Returns the sizes of the interval. The output array always has two elements.
       UnsignedArray const& Sizes() const {
-         return hit_.Sizes();
+         return image_.Sizes();
       }
 
       /// \brief Returns rotated versions of the interval, applicable to 2D intervals only.
@@ -662,15 +667,20 @@ class DIP_NO_EXPORT Interval {
       ///  - `"counter-clockwise"` is the same, but goes around the other way.
       DIP_EXPORT IntervalArray GenerateRotatedVersions(
             dip::uint rotationAngle = 45,
-            String rotationDirection = "interleaved clockwise"
+            String rotationDirection = S::INTERLEAVED_CLOCKWISE
       ) const;
 
    private:
-      Image hit_;
-      Image miss_;
+      dip::Image image_;
 
       Interval() = default; // A default constructor that only class methods can use.
 };
+
+/// \brief Inverts the intervals in the array, swapping foreground and background pixels. Works correctly
+/// if intervals in the array share data. However, this function could also affect other intervals not in
+/// the array, if data is shared.
+DIP_EXPORT void Invert( IntervalArray& array );
+
 
 /// \brief Sup-generating operator, also known as hit-miss operator.
 ///
@@ -760,7 +770,7 @@ inline void UnionSupGenerating2D(
       Image& out,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
@@ -772,7 +782,7 @@ inline Image UnionSupGenerating2D(
       Image const& in,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
@@ -814,7 +824,7 @@ inline void IntersectionInfGenerating2D(
       Image& out,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
@@ -826,7 +836,7 @@ inline Image IntersectionInfGenerating2D(
       Image const& in,
       Interval const& interval,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
@@ -882,7 +892,7 @@ inline void Thickening2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
@@ -896,7 +906,7 @@ inline Image Thickening2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
@@ -951,7 +961,7 @@ inline void Thinning2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    DIP_START_STACK_TRACE
@@ -965,7 +975,7 @@ inline Image Thinning2D(
       Interval const& interval,
       dip::uint iterations = 0,
       dip::uint rotationAngle = 45,
-      String const& rotationDirection = "interleaved clockwise",
+      String const& rotationDirection = S::INTERLEAVED_CLOCKWISE,
       String const& boundaryCondition = S::ADD_ZEROS
 ) {
    Image out;
@@ -991,9 +1001,7 @@ DIP_EXPORT IntervalArray HomotopicThinningInterval2D( dip::uint connectivity = 2
 inline IntervalArray HomotopicThickeningInterval2D( dip::uint connectivity = 2 ) {
    DIP_START_STACK_TRACE
       IntervalArray out = HomotopicThinningInterval2D( connectivity );
-      for( auto& intv : out ) {
-         intv.Invert();
-      }
+      Invert( out );
       return out;
    DIP_END_STACK_TRACE
 }
@@ -1021,9 +1029,7 @@ DIP_EXPORT IntervalArray HomotopicEndPixelInterval2D( dip::uint connectivity = 2
 inline IntervalArray HomotopicInverseEndPixelInterval2D( dip::uint connectivity = 2 ) {
    DIP_START_STACK_TRACE
       IntervalArray out = HomotopicEndPixelInterval2D( connectivity );
-      for( auto& intv : out ) {
-         intv.Invert();
-      }
+      Invert( out );
       return out;
    DIP_END_STACK_TRACE
 }

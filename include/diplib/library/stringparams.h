@@ -275,6 +275,12 @@ constexpr char const* BCC = "bcc";
 constexpr char const* FCC = "fcc";
 constexpr char const* POISSON = "poisson";
 
+// Interval rotations
+constexpr char const* CLOCKWISE = "clockwise";
+constexpr char const* COUNTERCLOCKWISE = "counter-clockwise";
+constexpr char const* INTERLEAVED_CLOCKWISE = "interleaved clockwise";
+constexpr char const* INTERLEAVED_COUNTERCLOCKWISE = "interleaved counter-clockwise";
+
 } // namespace S
 
 } // namespace dip

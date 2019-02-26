@@ -29,33 +29,77 @@
 
 namespace dip {
 
-Interval::Interval( Image const& image ) {
-   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( image.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
-   for( auto& s : image.Sizes() ) {
-      DIP_THROW_IF( !(s & 1), "The interval is not odd in size" );
-   }
-   hit_ = image == 1;
-   DIP_THROW_IF( !Any( hit_ ).As< bool >(), "The interval needs at least one foreground pixel" );
-   miss_ = image == 0;
+namespace {
+// The "don't care" pixels.
+constexpr sfloat X = std::numeric_limits< sfloat >::quiet_NaN(); // dip::nan is a dfloat...
 }
 
-Interval::Interval( Image hit, Image miss ) : hit_( std::move( hit )), miss_( std::move( miss )) {
-   DIP_THROW_IF( !hit_.IsForged() || !miss_.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !hit_.IsScalar() || !miss_.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !hit_.DataType().IsBinary() || !miss_.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
-   DIP_THROW_IF( hit_.Sizes() != miss_.Sizes(), E::SIZES_DONT_MATCH );
-   for( auto& s : hit_.Sizes() ) {
-      DIP_THROW_IF( !(s & 1), "The interval is not odd in size" );
+Interval::Interval( dip::Image image ) : image_( std::move( image )) {
+   DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   for( auto& s : image_.Sizes() ) {
+      DIP_THROW_IF( !( s & 1 ), "The interval is not odd in size" );
    }
-   DIP_THROW_IF( !Any( hit_ ).As< bool >(), "The interval needs at least one foreground pixel" );
-   DIP_THROW_IF( dip::Any( dip::Infimum( hit_, miss_ )).As< bool >(), "The hit and miss images are not disjoint" );
+   DIP_THROW_IF( !Any( image_ == 1 ).As< bool >(), "The interval needs at least one foreground pixel" );
+   image_.Convert( DT_SFLOAT );
+   ImageIterator< sfloat > it( image_ );
+   do {
+      if(!(( *it == 0.0 ) || ( *it == 1.0 ))) {
+         *it = X;
+      }
+   } while( ++it );
+}
+
+Interval::Interval( dip::Image const& hit, dip::Image const& miss ) {
+   DIP_THROW_IF( !hit.IsForged() || !miss.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !hit.IsScalar() || !miss.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !hit.DataType().IsBinary() || !miss.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+   DIP_THROW_IF( hit.Sizes() != miss.Sizes(), E::SIZES_DONT_MATCH );
+   for( auto& s : hit.Sizes() ) {
+      DIP_THROW_IF( !( s & 1 ), "The interval is not odd in size" );
+   }
+   DIP_THROW_IF( !Any( hit ).As< bool >(), "The interval needs at least one foreground pixel" );
+   DIP_THROW_IF( dip::Any( dip::Infimum( hit, miss )).As< bool >(), "The hit and miss images are not disjoint" );
+   image_.ReForge( hit.Sizes(), 1, DT_SFLOAT );
+   image_.Fill( X );
+   image_.At( hit ) = 1;
+   image_.At( miss ) = 0; // I'm sure this can be done more efficiently be iterating only once, but we're talking about very small images here,
+}
+
+void Interval::Invert() {
+   ImageIterator< sfloat > it( image_ );
+   do {
+      if( *it == 0.0 ) {
+         *it = 1.0;
+      } else if( *it == 1.0 ) {
+         *it = 0.0;
+      } else {
+      }
+   } while( ++it );
+}
+
+void Invert( IntervalArray& array ) {
+   // Walk over the array, finding one of each set of intervals with shared data
+   BooleanArray shared( array.size(), false );
+   for( dip::uint ii = 1; ii < array.size(); ++ii ) {
+      for( dip::uint jj = 0; jj < ii; ++jj ) {
+         if( array[ ii ].Image().SharesData( array[ jj ].Image() )) {
+            shared[ ii ] = true;
+            break;
+         }
+      }
+   }
+   for( dip::uint ii = 0; ii < array.size(); ++ii ) {
+      if( !shared[ ii ] ) {
+         array[ ii ].Invert();
+      }
+   }
 }
 
 namespace {
 
-// Rotates 2D binary image clockwise
+// Rotates 2D sfloat image clockwise
 Image RotateBy45Degrees( Image const& input ) {
    DIP_ASSERT( input.Dimensionality() == 2 );
    Image output;
@@ -68,11 +112,11 @@ Image RotateBy45Degrees( Image const& input ) {
       UnsignedArray sizes( 2, len );
       output = input.Pad( sizes );
    }
-   DIP_ASSERT( output.DataType().IsBinary() );
+   DIP_ASSERT( output.DataType() == DT_SFLOAT );
    dip::sint stepX = output.Stride( 0 );
    dip::sint stepY = output.Stride( 1 );
    // Rotate by shells. Each shell (pixels with the same L_inf distance) rotates independently.
-   dip::bin* ptr = static_cast< dip::bin* >( output.Origin() );
+   dip::sfloat* ptr = static_cast< dip::sfloat* >( output.Origin() );
    for( dip::uint shell = 0; shell < len / 2; ++shell ) {
       dip::sint n = static_cast< dip::sint >( len / 2 - shell ); // number of pixels in half an edge
       dip::sint nStepX = n * stepX;
@@ -82,9 +126,9 @@ Image RotateBy45Degrees( Image const& input ) {
       for( dip::sint ii = 0; ii < n; ++ ii ) {
          dip::sint iX = ii * stepX;
          dip::sint iY = ii * stepY;
-         dip::bin* ptr1 = ptr + iX;
-         dip::bin* ptr2 = ptr + nStepY - iY;
-         dip::bin value = *ptr1;
+         dip::sfloat* ptr1 = ptr + iX;
+         dip::sfloat* ptr2 = ptr + nStepY - iY;
+         dip::sfloat value = *ptr1;
          *ptr1 = *ptr2;
          ptr1 = ptr2; ptr2 += nStepY; *ptr1 = *ptr2;
          ptr1 = ptr2; ptr2 = ptr + nStepX - iX + nEndY; *ptr1 = *ptr2;
@@ -105,7 +149,7 @@ IntervalArray Interval::GenerateRotatedVersions(
       dip::uint rotationAngle,
       String rotationDirection
 ) const {
-   DIP_THROW_IF( hit_.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( image_.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint step = 1;
    if( rotationAngle == 45 ) {
    } else if( rotationAngle == 90 ) {
@@ -117,12 +161,12 @@ IntervalArray Interval::GenerateRotatedVersions(
    }
    bool interleaved = true;
    bool clockwise = true;
-   if( rotationDirection == "interleaved clockwise" ) {
-   } else if( rotationDirection == "interleaved counter-clockwise" ) {
+   if( rotationDirection == S::INTERLEAVED_CLOCKWISE ) {
+   } else if( rotationDirection == S::INTERLEAVED_COUNTERCLOCKWISE ) {
       clockwise = false;
-   } else if( rotationDirection == "clockwise" ) {
+   } else if( rotationDirection == S::CLOCKWISE ) {
       interleaved = false;
-   } else if( rotationDirection == "counter-clockwise" ) {
+   } else if( rotationDirection == S::COUNTERCLOCKWISE ) {
       interleaved = false;
       clockwise = false;
    } else {
@@ -134,13 +178,11 @@ IntervalArray Interval::GenerateRotatedVersions(
    if( step == 1 ) {
       // 45 degrees + ( 0, 90, 180, 270 )
       dip::uint cur = clockwise ? 1 : 7;
-      output[ cur ].hit_ = RotateBy45Degrees( hit_ );
-      output[ cur ].miss_ = RotateBy45Degrees( miss_ );
+      output[ cur ].image_ = RotateBy45Degrees( image_ );
       for( dip::uint ii = 0; ii < 3; ++ii ) {
          dip::uint next = clockwise ? cur + 2 : cur - 2;
          output[ next ] = output[ cur ];
-         output[ next ].hit_.Rotation90( 1 );
-         output[ next ].miss_.Rotation90( 1 );
+         output[ next ].image_.Rotation90( 1 );
          cur = next;
       }
    }
@@ -153,15 +195,13 @@ IntervalArray Interval::GenerateRotatedVersions(
       for( dip::uint ii = 0; ii < 3; ++ii ) {
          dip::uint next = clockwise ? cur + ( 3 - step ) : ( cur == 0 ? N : cur ) - ( 3 - step );
          output[ next ] = output[ cur ];
-         output[ next ].hit_.Rotation90( 1 );
-         output[ next ].miss_.Rotation90( 1 );
+         output[ next ].image_.Rotation90( 1 );
          cur = next;
       }
    } else {
       // 180
       output[ 1 ] = output[ 0 ];
-      output[ 1 ].hit_.Rotation90( 2 );
-      output[ 1 ].miss_.Rotation90( 2 );
+      output[ 1 ].image_.Rotation90( 2 );
    }
    // not interleaved: 0, 45, 90, 135, 180, 225, 270, 315.
    // interleaved:     0, 180, 45, 225, 90, 270, 135, 315.
@@ -318,13 +358,8 @@ void SupInfGenerating(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
-      // Create a kernel image with 0, 1, and NaN values.
-      Image kernel = interval.HitImage().Similar( DT_SFLOAT );
-      kernel.Fill( dip::nan );
-      kernel.At( interval.HitImage() ) = 1;
-      kernel.At( interval.MissImage() ) = 0; // Silly, we're recreating an image the user likely originally made when creating the interval...
       SupInfGeneratingLineFilter lineFilter( supGenerating );
-      Framework::Full( in, out, DT_BIN, DT_BIN, DT_BIN, 1, { boundaryCondition }, kernel, lineFilter );
+      Framework::Full( in, out, DT_BIN, DT_BIN, DT_BIN, 1, { boundaryCondition }, interval.Image(), lineFilter );
    DIP_END_STACK_TRACE
 }
 
@@ -423,7 +458,7 @@ void ThickeningThinning(
             } else {
                out -= tmp;
             }
-            if( untilConvergence && Any( tmp ).As< bool >() ) {
+            if( !change && untilConvergence && Any( tmp ).As< bool >() ) {
                change = true;
             }
          }
@@ -465,32 +500,30 @@ void Thinning(
    DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, false ));
 }
 
-constexpr uint8 X = 2; // The "don't care" pixels.
-
 IntervalArray HomotopicThinningInterval2D( dip::uint connectivity ) {
-   constexpr uint8 data1[] = { 0, 0, 0,
-                               X, 1, X,
-                               1, 1, 1 };
-   constexpr uint8 data2[] = { X, 0, 0,
-                               1, 1, 0,
-                               X, 1, X };
-   constexpr uint8 data3[] = { 0, 0, 0,
-                               1, 1, 1,
-                               X, 1, X };
+   constexpr sfloat data1[] = { 0, 0, 0,
+                                X, 1, X,
+                                1, 1, 1 };
+   constexpr sfloat data2[] = { X, 0, 0,
+                                1, 1, 0,
+                                X, 1, X };
+   constexpr sfloat data3[] = { 0, 0, 0,
+                                1, 1, 1,
+                                X, 1, X };
    IntervalArray out;
    if( connectivity == 1 ) {
       Image in( data1, { 3, 3 } );
-      out = Interval( in ).GenerateRotatedVersions( 45 );
+      out = Interval( in.Copy() ).GenerateRotatedVersions( 45 );
    } else if( connectivity == 2 ) {
       Image in( data1, { 3, 3 } );
-      out = Interval( in ).GenerateRotatedVersions( 90 );
+      out = Interval( in.Copy() ).GenerateRotatedVersions( 90 );
       in = Image( data2, { 3, 3 } );
-      IntervalArray more = Interval( in ).GenerateRotatedVersions( 90 );
+      IntervalArray more = Interval( in.Copy() ).GenerateRotatedVersions( 90 );
       for( auto& ii : more ) {
          out.push_back( std::move( ii ));
       }
       in = Image( data3, { 3, 3 } );
-      more = Interval( in ).GenerateRotatedVersions( 90 );
+      more = Interval( in.Copy() ).GenerateRotatedVersions( 90 );
       for( auto& ii : more ) {
          out.push_back( std::move( ii ));
       }
@@ -501,19 +534,19 @@ IntervalArray HomotopicThinningInterval2D( dip::uint connectivity ) {
 }
 
 IntervalArray EndPixelInterval2D( dip::uint connectivity ) {
-   constexpr uint8 data1[] = { X, 0, X,
-                               0, 1, 0,
-                               X, X, X };
-   constexpr uint8 data2[] = { 0, 0, 0,
-                               0, 1, 0,
-                               0, X, X };
+   constexpr sfloat data1[] = { X, 0, X,
+                                0, 1, 0,
+                                X, X, X };
+   constexpr sfloat data2[] = { 0, 0, 0,
+                                0, 1, 0,
+                                0, X, X };
    IntervalArray out;
    if( connectivity == 1 ) {
       Image in( data1, { 3, 3 } );
-      out = Interval( in ).GenerateRotatedVersions( 90 );
+      out = Interval( in.Copy() ).GenerateRotatedVersions( 90 );
    } else if( connectivity == 2 ){
       Image in( data2, { 3, 3 } );
-      out = Interval( in ).GenerateRotatedVersions( 45 );
+      out = Interval( in.Copy() ).GenerateRotatedVersions( 45 );
    } else {
       DIP_THROW( E::CONNECTIVITY_NOT_SUPPORTED );
    }
@@ -521,19 +554,19 @@ IntervalArray EndPixelInterval2D( dip::uint connectivity ) {
 }
 
 IntervalArray HomotopicEndPixelInterval2D( dip::uint connectivity ) {
-   constexpr uint8 data1[] = { X, 0, X,
-                               0, 1, 0,
-                               X, 1, X };
-   constexpr uint8 data2[] = { 0, 0, 0,
-                               0, 1, 0,
-                               X, 1, X };
+   constexpr sfloat data1[] = { X, 0, X,
+                                0, 1, 0,
+                                X, 1, X };
+   constexpr sfloat data2[] = { 0, 0, 0,
+                                0, 1, 0,
+                                X, 1, X };
    IntervalArray out;
    if( connectivity == 1 ) {
       Image in( data1, { 3, 3 } );
-      out = Interval( in ).GenerateRotatedVersions( 90 );
+      out = Interval( in.Copy() ).GenerateRotatedVersions( 90 );
    } else if( connectivity == 2 ){
       Image in( data2, { 3, 3 } );
-      out = Interval( in ).GenerateRotatedVersions( 45 );
+      out = Interval( in.Copy() ).GenerateRotatedVersions( 45 );
    } else {
       DIP_THROW( E::CONNECTIVITY_NOT_SUPPORTED );
    }
@@ -543,7 +576,7 @@ IntervalArray HomotopicEndPixelInterval2D( dip::uint connectivity ) {
 Interval SinglePixelInterval( dip::uint nDims ) {
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    UnsignedArray sizes( nDims, 3 );
-   Image in( sizes, 1, DT_UINT8 );
+   Image in( sizes, 1, DT_SFLOAT );
    in.Fill( 0 );
    sizes.fill( 1 ); // reuse `sizes` for the index to the center pixel
    in.At( sizes ) = 1;
@@ -551,16 +584,16 @@ Interval SinglePixelInterval( dip::uint nDims ) {
 }
 
 IntervalArray BranchPixelInterval2D() {
-   constexpr uint8 data1[] = { 1, X, X,
-                               X, 1, 1,
-                               1, X, X };
-   constexpr uint8 data2[] = { 1, X, X,
-                               X, 1, X,
-                               1, X, 1 };
+   constexpr sfloat data1[] = { 1, X, X,
+                                X, 1, 1,
+                                1, X, X };
+   constexpr sfloat data2[] = { 1, X, X,
+                                X, 1, X,
+                                1, X, 1 };
    Image in( data1, { 3, 3 } );
-   IntervalArray out = Interval( in ).GenerateRotatedVersions( 45 );
+   IntervalArray out = Interval( in.Copy() ).GenerateRotatedVersions( 45 );
    in = Image( data2, { 3, 3 } );
-   IntervalArray more = Interval( in ).GenerateRotatedVersions( 45 );
+   IntervalArray more = Interval( in.Copy() ).GenerateRotatedVersions( 45 );
    for( auto& ii : more ) {
       out.push_back( std::move( ii ));
    }
@@ -568,19 +601,19 @@ IntervalArray BranchPixelInterval2D() {
 }
 
 Interval BoundaryPixelInterval2D() {
-   constexpr uint8 data[] = { X, X, X,
-                              X, 1, 0,
-                              X, X, X };
+   constexpr sfloat data[] = { X, X, X,
+                               X, 1, 0,
+                               X, X, X };
    Image in( data, { 3, 3 } );
-   return Interval( in );
+   return Interval( in.Copy() );
 }
 
 IntervalArray ConvexHullInterval2D() {
-   constexpr uint8 data[] = { 1, 1, X,
-                              1, 0, X,
-                              1, X, X };
+   constexpr sfloat data[] = { 1, 1, X,
+                               1, 0, X,
+                               1, X, X };
    Image in( data, { 3, 3 } );
-   return Interval( in ).GenerateRotatedVersions(45);
+   return Interval( in.Copy() ).GenerateRotatedVersions( 45 );
 }
 
 }
@@ -590,7 +623,7 @@ IntervalArray ConvexHullInterval2D() {
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing private function RotateBy45Degrees") {
-   dip::Image in( { 7, 7 }, 1, dip::DT_BIN );
+   dip::Image in( { 7, 7 }, 1, dip::DT_SFLOAT );
    in = 0;
    in.At( 0, 1 ) = 1;
    in.At( 2, 1 ) = 1;
