@@ -189,6 +189,63 @@ IntervalArray Interval::GenerateRotatedVersions(
 
 namespace {
 
+// Copies `in` to `out`, unless `&in==&out` and the input border is already expanded.
+// `out` will be the same as `in`, but it'll be possible to access pixel data outside of the bounds,
+// however far is needed to accommodate `intervals`.
+// `in` is supposed to be binary. No checks are made.
+// This function also checks that all elements in `intervals` have the same dimensionality.
+void ExpandInputImage(
+      dip::Image const& in,
+      dip::Image& out,
+      IntervalArray const& intervals,
+      String const& boundaryCondition
+) {
+   // Find out what size border we need
+   dip::uint nDims = in.Dimensionality();
+   UnsignedArray border = intervals[ 0 ].Sizes();
+   DIP_THROW_IF( border.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
+   for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
+      UnsignedArray const& b = intervals[ ii ].Sizes();
+      DIP_THROW_IF( b.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
+      for( dip::uint jj = 0; jj < b.size(); ++jj ) {
+         border[ jj ] = std::max( border[ jj ], b[ jj ] );
+      }
+   }
+   border /= 2;
+   // Prepare the output image, adding a border if it's not already there
+   if( boundaryCondition != S::ALREADY_EXPANDED ) {
+      StringArray bc;
+      if( !boundaryCondition.empty() ) {
+         bc.push_back( boundaryCondition );
+      }
+      if( !out.DataType().IsBinary() ) {
+         DIP_STACK_TRACE_THIS( out.Strip() ); // Make sure we don't get a data type conversion here
+      }
+      DIP_STACK_TRACE_THIS( ExtendImage( in, out, border, bc, { "masked" } ));
+   } else {
+      if( &out != &in ) {
+         // Get a view of input image plus its border
+         Image largerIn = in;
+         IntegerArray origin( nDims );
+         UnsignedArray sizes = in.Sizes();
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = -static_cast< dip::sint >( border[ ii ] );
+            sizes[ ii ] += 2 * border[ ii ];
+         }
+         largerIn.dip__ShiftOrigin( largerIn.Offset( origin ));
+         largerIn.dip__SetSizes( sizes );
+         // Copy
+         if( !out.DataType().IsBinary() ) {
+            DIP_STACK_TRACE_THIS( out.Strip()); // Make sure we don't get a data type conversion here
+         }
+         DIP_STACK_TRACE_THIS( out.Copy( largerIn ));
+         // Out must be a view on this
+         out.dip__ShiftOrigin( out.Offset( border ));
+         out.dip__SetSizes( in.Sizes());
+      }
+   }
+}
+
 enum class Mode { SUP, INF };
 
 class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
@@ -271,7 +328,7 @@ void SupInfGenerating(
    DIP_END_STACK_TRACE
 }
 
-}
+} // namespace
 
 void SupGenerating(
       Image const& in,
@@ -301,16 +358,13 @@ void UnionSupGenerating(
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   Image in = c_in;
-   if( out.Aliases( in )) {
-      DIP_STACK_TRACE_THIS( out.Strip() );   // prevent in-place operation
-   }
    DIP_START_STACK_TRACE
-      // TODO: expand input image as in ThickeningThinning below.
-      SupGenerating( in, out, intervals[ 0 ], boundaryCondition );
+      Image in;
+      ExpandInputImage( c_in, in, intervals, boundaryCondition );
+      SupGenerating( in, out, intervals[ 0 ], S::ALREADY_EXPANDED );
       Image tmp;
       for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-         SupGenerating( in, tmp, intervals[ ii ], boundaryCondition );
+         SupGenerating( in, tmp, intervals[ ii ], S::ALREADY_EXPANDED );
          Supremum( out, tmp, out );
       }
    DIP_END_STACK_TRACE
@@ -326,16 +380,13 @@ void IntersectionInfGenerating(
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   Image in = c_in;
-   if( out.Aliases( in )) {
-      DIP_STACK_TRACE_THIS( out.Strip() );   // prevent in-place operation
-   }
    DIP_START_STACK_TRACE
-      // TODO: expand input image as in ThickeningThinning below.
-      InfGenerating( in, out, intervals[ 0 ], boundaryCondition );
+      Image in;
+      ExpandInputImage( c_in, in, intervals, boundaryCondition );
+      InfGenerating( in, out, intervals[ 0 ], S::ALREADY_EXPANDED );
       Image tmp;
       for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-         InfGenerating( in, tmp, intervals[ ii ], boundaryCondition );
+         InfGenerating( in, tmp, intervals[ ii ], S::ALREADY_EXPANDED );
          Infimum( out, tmp, out );
       }
    DIP_END_STACK_TRACE
@@ -356,50 +407,8 @@ void ThickeningThinning(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   // Find out what size border we need
-   dip::uint nDims = in.Dimensionality();
-   UnsignedArray border = intervals[ 0 ].Sizes();
-   DIP_THROW_IF( border.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
-   for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-      UnsignedArray const& b = intervals[ ii ].Sizes();
-      DIP_THROW_IF( b.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
-      for( dip::uint jj = 0; jj < b.size(); ++jj ) {
-         border[ jj ] = std::max( border[ jj ], b[ jj ] );
-      }
-   }
-   for( auto& b : border ) {
-      b /= 2;
-   }
-   // Prepare the output image, adding a border if it's not already there
-   if( boundaryCondition != S::ALREADY_EXPANDED ) {
-      StringArray bc;
-      if( !boundaryCondition.empty() ) {
-         bc.push_back( boundaryCondition );
-      }
-      DIP_STACK_TRACE_THIS( out = ExtendImage( in, border, bc, { "masked" } ));
-   } else {
-      if( &out != &in ) {
-         // Get a view of input image plus its border
-         Image largerIn = in;
-         IntegerArray origin( nDims );
-         UnsignedArray sizes = in.Sizes();
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            origin[ ii ] = -static_cast< dip::sint >( border[ ii ] );
-            sizes[ ii ] += 2 * border[ ii ];
-         }
-         largerIn.dip__ShiftOrigin( largerIn.Offset( origin ));
-         largerIn.dip__SetSizes( sizes );
-         // Copy
-         if( out.IsForged() && !out.CompareProperties( largerIn, Option::CmpProp::Samples, Option::ThrowException::DONT_THROW )) {
-            out.Strip(); // Make sure we don't get a data type conversion here
-         }
-         out.Copy( largerIn );
-         // Out must be a view on this
-         out.dip__ShiftOrigin( out.Offset( border ));
-         out.dip__SetSizes( in.Sizes() );
-      }
-   }
    DIP_START_STACK_TRACE
+      ExpandInputImage( in, out, intervals, boundaryCondition );
       Image tmp;
       bool untilConvergence = iterations == 0;
       while( true ) {

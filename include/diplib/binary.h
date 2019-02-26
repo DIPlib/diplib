@@ -525,7 +525,7 @@ inline Image GetSinglePixels(
    return out;
 }
 
-/// \brief Returns the end pixels in the skeleton image `in`. That is, the set pixels with one neighbors. See `dip::CountNeighbors`.
+/// \brief Returns the end pixels in the skeleton image `in`. That is, the set pixels with one neighbor. See `dip::CountNeighbors`.
 inline void GetEndPixels(
       Image const& in,
       Image& out,
@@ -1048,7 +1048,7 @@ DIP_EXPORT Interval BoundaryPixelInterval2D();
 /// \brief Returns a 2D interval array to thicken to a convex hull.
 ///
 /// Use with `dip::Thickening` to grow concave sections of objects until the objects are all convex.
-/// This leads to hexagonal shapes.
+/// This leads to octagonal shapes.
 DIP_EXPORT IntervalArray ConvexHullInterval2D();
 
 /// \}

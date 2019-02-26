@@ -197,12 +197,12 @@ a[0, 5] = 50
 a[-1, 5] = 50
 a[5, 0] = 40
 a[5, -1] = 40
-Show(a)
+dip.viewer.Show(a)
 
-Show(dip.ExtendImage(a, [45, 45], ['mirror']))
-Show(dip.ExtendImage(a, [45, 45], ['asym mirror']))
-Show(dip.ExtendImage(a, [45, 45], ['periodic']))
-Show(dip.ExtendImage(a, [45, 45], ['asym periodic']))
+dip.viewer.Show(dip.ExtendImage(a, [45, 45], ['mirror']))
+dip.viewer.Show(dip.ExtendImage(a, [45, 45], ['asym mirror']))
+dip.viewer.Show(dip.ExtendImage(a, [45, 45], ['periodic']))
+dip.viewer.Show(dip.ExtendImage(a, [45, 45], ['asym periodic']))
 
 ###
 
@@ -219,17 +219,17 @@ dip.DrawEllipsoid(m, [60, 30], [70, 180], [0])
 dip.DrawEllipsoid(m, [20, 80], [85, 120], [0])
 d1 = dip.GreyWeightedDistanceTransform(a, c)
 d2 = dip.GreyWeightedDistanceTransform(a, c, m)
-Show(dip.Overlay(dip.Overlay(a, ~m), ~c, [0, 200, 0]))
-Show(d1)
-Show(d2)
+dip.viewer.Show(dip.Overlay(dip.Overlay(a, ~m), ~c, [0, 200, 0]))
+dip.viewer.Show(d1)
+dip.viewer.Show(d2)
 r1 = dip.GrowRegionsWeighted(b, a)
 r2 = dip.GrowRegionsWeighted(b, a, m)
-Show(r1)
-Show(r2)
+dip.viewer.Show(r1)
+dip.viewer.Show(r2)
 r3 = dip.GrowRegions(b)
 r4 = dip.GrowRegions(b, m)
-Show(r3)
-Show(r4)
+dip.viewer.Show(r3)
+dip.viewer.Show(r4)
 
 ###
 
@@ -269,39 +269,43 @@ intv = dip.Interval(np.array([
    [0, 0, 0, 2, 2],
    [2, 2, 2, 2, 2]], 'uint8'))
 
-Show(a)
-Show(dip.UnionSupGenerating2D(a, intv, 90))
+dip.viewer.Show(a)
+dip.viewer.Show(dip.UnionSupGenerating2D(a, intv, 90))
 
 ht = dip.HomotopicThinningInterval2D()
 skel8 = dip.Thinning(a, dip.Image(), ht)
-Show(skel8)
+dip.viewer.Show(skel8)
 
 ht = dip.BranchPixelInterval2D()
-Show(dip.UnionSupGenerating(skel8, ht))
+dip.viewer.Show(dip.UnionSupGenerating(skel8, ht))
 
 ht = dip.HomotopicEndPixelInterval2D()
 skel8 = dip.Thinning(skel8, dip.Image(), ht)
-Show(skel8)
+dip.viewer.Show(skel8)
 
 ht = dip.HomotopicThinningInterval2D(1)
 skel4 = dip.Thinning(a, dip.Image(), ht)
-Show(skel4)
+dip.viewer.Show(skel4)
 ht = dip.HomotopicEndPixelInterval2D(1)
 skel4 = dip.Thinning(skel4, dip.Image(), ht)
-Show(skel4)
+dip.viewer.Show(skel4)
 
 ht = dip.HomotopicThickeningInterval2D(2)
 skiz = dip.Thickening(a, dip.Image(), ht)
-Show(skiz)
+dip.viewer.Show(skiz)
 ht = dip.HomotopicInverseEndPixelInterval2D(2)
 skiz = dip.Thickening(skiz, dip.Image(), ht)
-Show(skiz)
+dip.viewer.Show(skiz)
 
 ht = dip.BoundaryPixelInterval2D()
-Show(dip.UnionSupGenerating2D(a, ht, 90))
+dip.viewer.Show(dip.UnionSupGenerating2D(a, ht, 90))
 
 ht = dip.ConvexHullInterval2D()
-Show(dip.Thickening(a, dip.Image(), ht))
+dip.viewer.Show(dip.Thickening(a, dip.Image(), ht))
+
+a[78,142:151] = 1
+b = dip.Thickening(a, dip.Image(), ht)
+dip.viewer.Show(dip.Overlay(b, a))
 
 ###
 
@@ -310,7 +314,7 @@ import matplotlib.pyplot as pp
 
 a = dip.Label(dip.ImageReadICS('cermet') < 120)
 ccs = dip.GetImageChainCodes(a)
-Show(a == 31)
+dip.Show(a == 31)
 cc = ccs[30]  # indexing starts at 0, but label IDs start at 1
 print(cc.objectID)  # returns 31
 print(cc.Length())  # best approximation of perimeter
