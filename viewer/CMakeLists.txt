@@ -35,6 +35,7 @@ else() # For older CMakes:
 endif()
 if(APPLE)
    set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")
+   target_compile_definitions(DIPviewer PRIVATE GL_SILENCE_DEPRECATION) # MacOS 10.14 deprecates OpenGL
 else()
    set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
