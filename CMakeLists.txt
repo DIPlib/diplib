@@ -131,13 +131,18 @@ endif()
 ### DIPjavaio
 
 find_package(Java 1.8 COMPONENTS Development)
-find_package(JNI)
-if (JAVA_FOUND AND JNI_FOUND)
-   set(DIP_BUILD_JAVAIO ON CACHE BOOL "Build the javaio module")
-   include(UseJava)
-   find_jar(BIOFORMATS_JAR bioformats_package)
-   if (BIOFORMATS_JAR)
-      list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
+if(JAVA_FOUND)
+   # Set JAVA_HOME so that the JNI found is from the same JDK as the Java package
+   get_filename_component(JAVA_HOME "${Java_JAVAC_EXECUTABLE}" DIRECTORY) # strip off /javac
+   get_filename_component(JAVA_HOME "${JAVA_HOME}" DIRECTORY)             # strip off /bin
+   find_package(JNI)
+   if(JNI_FOUND)
+      set(DIP_BUILD_JAVAIO ON CACHE BOOL "Build the javaio module")
+      include(UseJava)
+      find_jar(BIOFORMATS_JAR bioformats_package)
+      if(BIOFORMATS_JAR)
+         list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
+      endif()
    endif()
 endif()
 
