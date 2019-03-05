@@ -457,14 +457,15 @@ inline Image SobelGradient(
 ///
 /// For each dimension, provide a value in `sigmas` and `derivativeOrder`. The value of sigma determines
 /// the smoothing effect. The zeroth-order derivative is a plain smoothing, no derivative is computed.
-/// Depending on `method`, dimensions where sigma is 0 or negative are not processed, even if the derivative
-/// order is non-zero. That is, sigma must be positive for the dimension(s) where the derivative is to be computed.
+/// If `method` is `"best"`, `"gaussfir"` or `"gaussiir"`, dimensions where sigma is 0 or negative are not processed,
+/// even if the derivative order is non-zero. That is, sigma must be positive for the dimension(s) where
+/// the derivative is to be computed.
 ///
 /// `method` indicates which derivative filter is used:
 /// - `"best"`: A Gaussian derivative, see `dip::Gauss`.
-/// - `"gaussfir"`: The FIR implementation of the Gaussian derivative.
-/// - `"gaussiir"`: The IIR implementation of the Gaussian derivative.
-/// - `"gaussft"`: The FT implementation of the Gaussian derivative.
+/// - `"gaussfir"`: The FIR implementation of the Gaussian derivative, see `dip::GaussFIR`.
+/// - `"gaussiir"`: The IIR implementation of the Gaussian derivative, see `dip::GaussIIR`.
+/// - `"gaussft"`: The FT implementation of the Gaussian derivative, see `dip::GaussFT`.
 /// - `"finitediff"`: A finite difference derivative, see `dip::FiniteDifference`.
 ///
 /// A finite difference derivative is an approximation to the derivative operator on the discrete grid.
@@ -475,8 +476,6 @@ inline Image SobelGradient(
 /// better to use Gaussian derivatives than finite difference derivatives.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
-///
-/// \see dip::Gauss, dip::GaussFIR, dip::GaussIIR, dip::GaussFT, dip::FiniteDifference
 DIP_EXPORT void Derivative(
       Image const& in,
       Image& out,

@@ -100,10 +100,12 @@ void Derivative(
       BooleanArray process( nDims, true );
       FloatArray ss = sigmas;
       DIP_STACK_TRACE_THIS( ArrayUseParameter( ss, nDims, 1.0 ));
+      UnsignedArray dd = derivativeOrder;
+      DIP_STACK_TRACE_THIS( ArrayUseParameter( dd, nDims, dip::uint( 0 )));
       // Set process to false where sigma <= 0
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if(( ss[ ii ] <= 0.0 ) || ( in.Size( ii ) == 1 )) {
-            process[ ii ] = 0;
+         if((( ss[ ii ] <= 0.0 ) && ( dd[ ii ] == 0 )) || ( in.Size( ii ) == 1 )) {
+            process[ ii ] = false;
          }
       }
       DIP_STACK_TRACE_THIS( FiniteDifference( in, out, derivativeOrder, S::SMOOTH, boundaryCondition, process ));
@@ -125,7 +127,8 @@ namespace {
 UnsignedArray FindGradientDimensions(
       UnsignedArray const& sizes,
       FloatArray& sigmas, // adjusted to nDims
-      BooleanArray process // by copy
+      BooleanArray process, // by copy
+      bool finitediff
 ) {
    dip::uint nDims = sizes.size();
    DIP_START_STACK_TRACE
@@ -134,7 +137,7 @@ UnsignedArray FindGradientDimensions(
    DIP_END_STACK_TRACE
    UnsignedArray dims;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( process[ ii ] && ( sizes[ ii ] > 1 ) && ( sigmas[ ii ] > 0.0 )) {
+      if( process[ ii ] && ( sizes[ ii ] > 1 ) && ( finitediff || ( sigmas[ ii ] > 0.0 ))) {
          dims.push_back( ii );
       }
    }
@@ -155,7 +158,7 @@ void Gradient(
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -186,7 +189,7 @@ void GradientMagnitude(
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in;
@@ -240,7 +243,7 @@ void Curl(
    dip::uint nDims = c_in.TensorElements();
    DIP_THROW_IF( !c_in.IsVector() || ( nDims < 2 ) || ( nDims > 3 ), E::TENSOR_NOT_2_OR_3 );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    if( nDims == 2 ) {
       DIP_START_STACK_TRACE
@@ -307,7 +310,7 @@ void Divergence(
    dip::uint nDims = c_in.TensorElements();
    DIP_THROW_IF( !c_in.IsVector(), E::IMAGE_NOT_VECTOR );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
@@ -343,7 +346,7 @@ void Hessian (
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -385,11 +388,12 @@ void Laplace (
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   bool finitediff =  method == S::FINITEDIFF;
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, finitediff ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   if( method == S::FINITEDIFF ) {
+   if( finitediff ) {
       UnsignedArray ksz( c_in.Dimensionality(), 1 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
             ksz[ dims[ ii ]] = 3;

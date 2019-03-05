@@ -1,7 +1,7 @@
 %HESSIAN   Hessian matrix of an image
 %
 % SYNOPSIS:
-%  image_out = gradientvector(image_in,sigma,method,boundary_condition,process,truncation)
+%  image_out = hessian(image_in,sigma,method,boundary_condition,process,truncation)
 %
 %  IMAGE_IN is a scalar image with N dimensions.
 %  IMAGE_OUT is a N-by-N tensor image, where each image component
