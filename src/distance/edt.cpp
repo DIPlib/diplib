@@ -39,7 +39,7 @@ struct XYZPosition {
    dip::sint z;
 };
 
-static void EDTFast2D(
+void EDTFast2D(
       sfloat* oi,
       UnsignedArray const& sizes,
       IntegerArray const& stride,
@@ -544,9 +544,10 @@ dip::sint FindNeighbors2D(
       dip::sint nx,
       dip::sint ny,
       sfloat* fdnb,
-      sfloat* fsdx,
-      sfloat* fsdy,
-      bool useTrue
+      sfloat const* fsdx,
+      sfloat const* fsdy,
+      bool useTrue,
+      sfloat delta // used to be 0.8f
 ) {
    dip::sint i, j, k;
    sfloat* dnbp, min;
@@ -566,7 +567,7 @@ dip::sint FindNeighbors2D(
    *mindist = min;
 
    if( useTrue ) {
-      min = std::sqrt( min ) + 0.8f;
+      min = std::sqrt( min ) + delta;
       min *= min;
    }
 
@@ -603,7 +604,7 @@ dip::sint FindNeighbors2D(
    return j;
 }
 
-static void EDTTies2D(
+void EDTTies2D(
       sfloat* oi,
       UnsignedArray const& sizes,
       IntegerArray const& stride,
@@ -618,6 +619,7 @@ static void EDTTies2D(
    dip::sint sy = stride[ 1 ];
    sfloat dx = static_cast< sfloat >( distance[ 0 ] );
    sfloat dy = static_cast< sfloat >( distance[ 1 ] );
+   sfloat delta = 0.8f * std::min( dx, dy ); // This could still go wrong if there's a large difference between dx and dy.
    dip::sint nx1sx = ( nx - 1 ) * sx;
    dip::sint ny1sy = ( ny - 1 ) * sy;
    dip::sint guess = ( dim * 2 - 1 );
@@ -717,7 +719,7 @@ static void EDTTies2D(
             if( kk == 0 ) {
                *nbp++ = 0;
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
                nbs = reinterpret_cast< XYPosition* >( nbp );
                pnbp = pnb;
@@ -758,7 +760,7 @@ static void EDTTies2D(
                *nbp++ = 0;
                oi[ px ] = maxdist;
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
                nbs = reinterpret_cast< XYPosition* >( nbp );
                pnbp = pnb;
@@ -820,7 +822,7 @@ static void EDTTies2D(
             if( kk == 0 ) {
                *nbp++ = 0;
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
                nbs = reinterpret_cast< XYPosition* >( nbp );
                pnbp = pnb;
@@ -861,7 +863,7 @@ static void EDTTies2D(
                *nbp++ = 0;
                oi[ px ] = std::sqrt( oi[ px ] );
             } else {
-               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue );
+               kk = FindNeighbors2D( pnb, &mindist, kk, nx, ny, fdnb, fsdx, fsdy, useTrue, delta );
                *nbp++ = kk;
                nbs = reinterpret_cast< XYPosition* >( nbp );
                for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -887,10 +889,11 @@ dip::sint FindNeighbors3D(
       dip::sint ny,
       dip::sint nz,
       sfloat* fdnb,
-      sfloat* fsdx,
-      sfloat* fsdy,
-      sfloat* fsdz,
-      bool useTrue
+      sfloat const* fsdx,
+      sfloat const* fsdy,
+      sfloat const* fsdz,
+      bool useTrue,
+      sfloat delta // used to be 1.4f
 ) {
    dip::sint i, j, k;
    sfloat* dnbp, min;
@@ -910,7 +913,7 @@ dip::sint FindNeighbors3D(
    *mindist = min;
 
    if( useTrue ) {
-      min = std::sqrt( min ) + 1.4f;
+      min = std::sqrt( min ) + delta;
       min *= min;
    }
 
@@ -947,7 +950,7 @@ dip::sint FindNeighbors3D(
    return j;
 }
 
-static void EDTTies3D(
+void EDTTies3D(
       sfloat* oi,
       UnsignedArray const& sizes,
       IntegerArray const& stride,
@@ -965,6 +968,7 @@ static void EDTTies3D(
    sfloat dx = static_cast< sfloat >( distance[ 0 ] );
    sfloat dy = static_cast< sfloat >( distance[ 1 ] );
    sfloat dz = static_cast< sfloat >( distance[ 2 ] );
+   sfloat delta = 1.4f * std::min( dx, std::min( dy, dz )); // This could still go wrong if there's a large difference between dx and dy.
    dip::sint nx1sx = ( nx - 1 ) * sx;
    dip::sint ny1sy = ( ny - 1 ) * sy;
    dip::sint nz1sz = ( nz - 1 ) * sz;
@@ -1107,7 +1111,7 @@ static void EDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
                   nbs = reinterpret_cast< XYZPosition* >( nbp );
                   for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -1151,7 +1155,7 @@ static void EDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
                   nbs = reinterpret_cast< XYZPosition* >( nbp );
                   for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -1200,7 +1204,7 @@ static void EDTTies3D(
                   oi[ px ] = maxdist;
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
                   nbs = reinterpret_cast< XYZPosition* >( nbp );
                   for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -1290,7 +1294,7 @@ static void EDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
                   nbs = reinterpret_cast< XYZPosition* >( nbp );
                   for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -1332,7 +1336,7 @@ static void EDTTies3D(
                if( kk == 0 ) {
                   *nbp++ = 0;
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
                   nbs = reinterpret_cast< XYZPosition* >( nbp );
                   for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -1378,7 +1382,7 @@ static void EDTTies3D(
                   *nbp++ = 0;
                   oi[ px ] = std::sqrt( oi[ px ] );
                } else {
-                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue );
+                  kk = FindNeighbors3D( pnb, &mindist, kk, nx, ny, nz, fdnb, fsdx, fsdy, fsdz, useTrue, delta );
                   *nbp++ = kk;
                   nbs = reinterpret_cast< XYZPosition* >( nbp );
                   for( jj = kk, pnbp = pnb; --jj >= 0; nbs++, pnbp++ ) {
@@ -1397,7 +1401,7 @@ static void EDTTies3D(
    }
 }
 
-static void EDTBruteForce2D(
+void EDTBruteForce2D(
       sfloat* oi,
       UnsignedArray const& sizes,
       IntegerArray const& stride,
@@ -1475,7 +1479,7 @@ static void EDTBruteForce2D(
    }
 }
 
-static void EDTBruteForce3D(
+void EDTBruteForce3D(
       sfloat* oi,
       UnsignedArray const& sizes,
       IntegerArray const& stride,

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for distance transforms
  *
- * (c)2018, Erik Wernersson and Cris Luengo.
+ * (c)2018-2019, Erik Wernersson and Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ namespace dip {
 
 // Implements `dip::EuclideanDistanceTransform(...,"separable")`
 // There are no tests for inputs, since it's an internal function.
-void SeparableDistanceTransform(
+DIP_NO_EXPORT void SeparableDistanceTransform(
       Image const& in,              // Must be forged, scalar and binary
       Image& out,
       FloatArray const& spacing,    // Must be given, and have one value for each dimension in `in`

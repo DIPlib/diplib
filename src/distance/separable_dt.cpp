@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for distance transforms
  *
- * (c)2018, Erik Wernersson and Cris Luengo.
+ * (c)2018-2019, Erik Wernersson and Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ namespace {
 template< typename TPI >
 class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
    public:
-      // NOTE! This filter needs input and output buffers to be distinct only for the brute-force version (filterLength <= 3)
       DistanceTransformLineFilter( FloatArray const& spacing, dfloat maxDistance2, bool squareDistance )
             : spacing_( spacing ), maxDistance2_( static_cast< TPI >( maxDistance2 )), squareDistance_( squareDistance ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
@@ -47,8 +46,7 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
          DIP_ASSERT( params.inBuffer.stride == 1 ); // Guaranteed because we use an input buffer
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         const TPI spacing = static_cast< TPI >( spacing_[ params.dimension ] );
-         const TPI spacing2 = spacing * spacing;
+         const dfloat spacing = spacing_[ params.dimension ];
          dip::uint padding = params.inBuffer.border;  // inBuffer.border is the size of the border padding.
          bool border = padding == 0;                  // The border padding is either 0 or 1 pixel. If it's zero pixels,
          //                                              then the `border` boolean input argument was true (object).
@@ -58,10 +56,10 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
          if(( params.nPasses == 1 ) && ( !squareDistance_ )) {
 
             // 1: Forward
-            TPI d = border ? maxDistance2_ : 0;
+            dfloat d = border ? maxDistance2_ : 0;
             for( dip::uint ii = 0; ii < length; ++ii ) {
                d = ( *in == 0 ) ? 0 : d + spacing;
-               *out = d;
+               *out = static_cast< TPI >( d );
                ++in;
                out += outStride;
             }
@@ -73,7 +71,7 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
                out -= outStride;
                d = ( *in == 0 ) ? 0 : d + spacing;
                if( d < *out ) {
-                  *out = d;
+                  *out = static_cast< TPI >( d );
                }
             }
             return;
@@ -83,10 +81,10 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
          if( params.pass == 0 ) { // First pass
 
             // 1: Forward
-            TPI d = border ? maxDistance2_ : 0;
+            dfloat d = border ? maxDistance2_ : 0;
             for( dip::uint ii = 0; ii < length; ++ii ) {
                d = ( *in == 0 ) ? 0 : d + spacing;
-               *out = d * d;
+               *out = static_cast< TPI >( d * d );
                ++in;
                out += outStride;
             }
@@ -97,8 +95,9 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
                --in;
                out -= outStride;
                d = ( *in == 0 ) ? 0 : d + spacing;
-               if( d * d < *out ) {
-                  *out = d * d;
+               TPI d2 = static_cast< TPI >( d * d );
+               if( d2 < *out ) {
+                  *out = d2;
                }
             }
 
@@ -124,9 +123,9 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
                // f(t[q],s[q]) > f(t[q], u)
                // f(x,i) = (x-i)^2 + g(i)^2
                while( q >= 0 ) {
-                  TPI d1 = static_cast< TPI >( T[ q ] - S[ q ] );
-                  TPI d2 = static_cast< TPI >( T[ q ] - u );
-                  if(( spacing2 * d1 * d1 + in[ S[ q ]] ) < ( spacing2 * d2 * d2 + in[ u ] )) {
+                  dfloat d1 = spacing * static_cast< dfloat >( T[ q ] - S[ q ] );
+                  dfloat d2 = spacing * static_cast< dfloat >( T[ q ] - u );
+                  if(( d1 * d1 + in[ S[ q ]] ) < ( d2 * d2 + in[ u ] )) {
                      break;
                   }
                   --q;
@@ -140,14 +139,13 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
                   // w = 1 + Sep(s[q],u)
                   // Sep(i,u) = (u^2-i^2 +g(u)^2-g(i)^2) div (2(u-i))
                   // where division is rounded off towards zero
-                  TPI d1 = static_cast< TPI >( u );
-                  TPI d2 = static_cast< TPI >( S[ q ] );
-                  dip::sint w = 1 + static_cast< dip::sint >( std::trunc(
-                        ( spacing2 * d1 * d1 - spacing2 * d2 * d2 + in[ u ] - in[ S[ q ]] ) / ( spacing2 * 2 * ( d1 - d2 ))));
-                  if( w < len ) {
+                  dfloat d1 = spacing * static_cast< dfloat >( u );
+                  dfloat d2 = spacing * static_cast< dfloat >( S[ q ] );
+                  dfloat w = std::floor( 1 + ( d1 * d1 - d2 * d2 + in[ u ] - in[ S[ q ]] ) / ( 2 * ( d1 - d2 ) * spacing ));
+                  if( w < static_cast< dfloat >( len )) {
                      ++q;
                      S[ q ] = u; // The point where the segment is a minimizer
-                     T[ q ] = w; // The first pixel of the segment
+                     T[ q ] = static_cast< dip::sint >( w ); // The first pixel of the segment
                   }
                }
             }
@@ -164,8 +162,8 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
             }
             for( dip::sint u = len; u-- > end; ) {
                //dt[u,y]:=f(u,s[q])
-               TPI d1 = static_cast< TPI >( u - S[ q ] );
-               out[ u * outStride ] = spacing2 * d1 * d1 + in[ S[ q ]];
+               dfloat d1 = spacing * static_cast< dfloat >( u - S[ q ] );
+               out[ u * outStride ] = static_cast< TPI >( d1 * d1 + in[ S[ q ]] );
                if( u == T[ q ] ) {
                   --q;
                }
@@ -229,6 +227,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::Image gt{ dip::UnsignedArray{ 51 }, 1, dip::DT_SFLOAT };
       dip::FillRadiusCoordinate( gt );
       dip::Image in = gt != 0;
+      in.SetPixelSize( { 0.1 * dip::Units::Meter() } );
+      gt *= 0.1;
       dip::Image out;
       // border = "object"
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::SEPARABLE );
@@ -237,7 +237,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::Sqrt( out, out );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       // border = "background"
-      dip::Infimum( gt, ( gt.Size( 0 ) / 2 + 1 ) - gt, gt );
+      dip::Infimum( gt, static_cast< dip::dfloat >( gt.Size( 0 ) / 2 + 1 ) * 0.1 - gt, gt );
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SEPARABLE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SQUARE );
@@ -249,6 +249,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::Image gt{ dip::UnsignedArray{ 31, 41 }, 1, dip::DT_SFLOAT };
       dip::FillRadiusCoordinate( gt );
       dip::Image in = gt != 0;
+      in.SetPixelSize( { 0.1 * dip::Units::Meter() } );
+      gt *= 0.1;
       dip::Image out;
       // border = "object"
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::SEPARABLE );
@@ -259,12 +261,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::TRUE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::TIES );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::FAST );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       // border = "background"
-      dip::Infimum( gt, ( gt.Size( 0 ) / 2 + 1 ) - dip::Abs( dip::CreateXCoordinate( gt.Sizes() )), gt );
-      dip::Infimum( gt, ( gt.Size( 1 ) / 2 + 1 ) - dip::Abs( dip::CreateYCoordinate( gt.Sizes() )), gt );
+      dip::Infimum( gt, (( gt.Size( 0 ) / 2 + 1 ) - dip::Abs( dip::CreateXCoordinate( gt.Sizes() ))) * 0.1, gt );
+      dip::Infimum( gt, (( gt.Size( 1 ) / 2 + 1 ) - dip::Abs( dip::CreateYCoordinate( gt.Sizes() ))) * 0.1, gt );
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SEPARABLE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SQUARE );
@@ -273,9 +275,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TRUE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TIES );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::FAST );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       // We could be checking against the "brute force" method too, but it doesn't do the "background"
    }
    // 3D case
@@ -283,6 +285,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::Image gt{ dip::UnsignedArray{ 31, 21, 11 }, 1, dip::DT_SFLOAT };
       dip::FillRadiusCoordinate( gt );
       dip::Image in = gt != 0;
+      in.SetPixelSize( { 0.1 * dip::Units::Meter() } );
+      gt *= 0.1;
       dip::Image out;
       // border = "object"
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::SEPARABLE );
@@ -293,13 +297,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::TRUE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::TIES );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::OBJECT, dip::S::FAST );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       // border = "background"
-      dip::Infimum( gt, ( gt.Size( 0 ) / 2 + 1 ) - dip::Abs( dip::CreateXCoordinate( gt.Sizes() )), gt );
-      dip::Infimum( gt, ( gt.Size( 1 ) / 2 + 1 ) - dip::Abs( dip::CreateYCoordinate( gt.Sizes() )), gt );
-      dip::Infimum( gt, ( gt.Size( 2 ) / 2 + 1 ) - dip::Abs( dip::CreateZCoordinate( gt.Sizes() )), gt );
+      dip::Infimum( gt, (( gt.Size( 0 ) / 2 + 1 ) - dip::Abs( dip::CreateXCoordinate( gt.Sizes() ))) * 0.1, gt );
+      dip::Infimum( gt, (( gt.Size( 1 ) / 2 + 1 ) - dip::Abs( dip::CreateYCoordinate( gt.Sizes() ))) * 0.1, gt );
+      dip::Infimum( gt, (( gt.Size( 2 ) / 2 + 1 ) - dip::Abs( dip::CreateZCoordinate( gt.Sizes() ))) * 0.1, gt );
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SEPARABLE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::SQUARE );
@@ -308,9 +312,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TRUE );
       DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::TIES );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
       dip::EuclideanDistanceTransform( in, out, dip::S::BACKGROUND, dip::S::FAST );
-      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) < 0.25 );
+      DOCTEST_CHECK( dip::MaximumAbsoluteError( gt, out ) == doctest::Approx( 0.0 ));
    }
 }
 
