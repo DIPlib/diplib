@@ -420,8 +420,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    // Method: "CPF"
    result = FindShift( in1, in2, "CPF" );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
-   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.051 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.051 );
 
    // Method: "MTS"
    result = FindShift( in1, in2, "MTS" );
