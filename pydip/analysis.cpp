@@ -161,7 +161,7 @@ void init_analysis( py::module& m ) {
    m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
           "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
    m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
-          "grey"_a, "bin"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 }, "outputMode"_a = "GDT" );
+          "grey"_a, "bin"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{}, "outputMode"_a = dip::S::FASTMARCHING );
    m.def( "GeodesicDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::GeodesicDistanceTransform ),
           "marker"_a, "condition"_a );
 

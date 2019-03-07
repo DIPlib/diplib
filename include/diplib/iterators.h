@@ -584,7 +584,7 @@ class DIP_NO_EXPORT ImageIterator {
          UnsignedArray order;
          dip::sint offset;
          std::tie( order, offset ) = Image::StandardizeStrides( strides_, sizes_ );
-         origin_ = origin_ + offset;
+         origin_ += offset;
          sizes_ = sizes_.permute( order );
          strides_ = strides_.permute( order );
          procDim_ = order.find( procDim_ );

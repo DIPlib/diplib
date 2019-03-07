@@ -376,3 +376,31 @@ assert math.isclose(overlap.sensitivity, sensitivity)
 assert math.isclose(overlap.specificity, specificity)
 assert math.isclose(overlap.accuracy, accuracy)
 assert math.isclose(overlap.precision, precision)
+
+###
+
+import PyDIP as dip
+import timeit
+
+weights = dip.Image([1050,1000], 1, 'UINT8')
+weights.Fill(1)
+mask = dip.CreateRamp(weights.Sizes(), 0) > 0
+weights[mask] = 2
+mask = dip.Abs(dip.CreateRadiusCoordinate(weights.Sizes()) - 350) >= 10
+mask |= dip.CreateRamp(weights.Sizes(), 1) > 0
+bin = weights.Similar('BIN')
+bin.Fill(1)
+bin[100,100] = 0
+
+out = dip.GreyWeightedDistanceTransform_FM(weights, bin, mask)
+dip.viewer.Show(dip.Modulo(out, dip.Image(50)))
+
+weights.SetPixelSize(dip.PixelSize([dip.PhysicalQuantity(0.8),dip.PhysicalQuantity(1.2)]))
+
+out2 = dip.GreyWeightedDistanceTransform_FM(weights, bin, mask)
+dip.viewer.Show(dip.Modulo(out2, dip.Image(50)))
+
+timeit.timeit("dip.GreyWeightedDistanceTransform_FM(weights, bin, mask)", number=10, globals=globals())
+# before changes:   2.35
+# after changes:    2.32
+# with pixel sizes: 2.40

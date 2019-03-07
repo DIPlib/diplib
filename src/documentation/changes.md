@@ -340,7 +340,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
    number of dimensions.
 
 - `dip::GreyWeightedDistanceTransform` now works for images of any dimensionality, and no longer
-  excludes the pixels at the edge of the image. It also accepts an optional mask image.
+  excludes the pixels at the edge of the image. It also accepts an optional mask image. The Euclidean
+  distance output argument has been merged with the grey-weighted distance output, a flag is used to
+  choose which of these two outputs should be given. By default, it now uses the fast marching algorithm,
+  which produces more isotropic results than the old algorithm.
 
 - `dip::GrowRegions` no longer takes a grey-value image as input. Use `dip::SeededWatershed` instead.
 
@@ -673,6 +676,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `dt` has a new algorithm, which is used by default. It gives exact results and works for any number of
     dimensions, and it should be faster than the previous default algorithm. The old default algorithm can
     be executed with `dt(...,'fast')`.
+
+  - `gdt` has a new algorithm, which is used by default. It approximates Euclidean distances better. The old
+    default algorithm can be executed with `gdt(...,3)`. The second output image is no longer produced. A
+    new, optional argument specifies a mask image to further constrain paths.
 
   - `testobject` has a changed interface, the input argument order has changed and most arguments are now
     name-value pairs. Its functionality has been greatly extended.

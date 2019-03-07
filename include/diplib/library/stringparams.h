@@ -170,8 +170,6 @@ constexpr char const* CORNER = "corner";
 //constexpr char const* FAST = "fast";
 
 // Distance transforms
-constexpr char const* GDT = "GDT";
-constexpr char const* EUCLIDEAN = "Euclidean";
 //constexpr char const* FAST = "fast";
 constexpr char const* TIES = "ties";
 #ifdef TRUE
@@ -182,6 +180,11 @@ constexpr char const* TRUE = "true";
 constexpr char const* BRUTE_FORCE  = "brute force";
 constexpr char const* SEPARABLE = "separable";
 constexpr char const* SQUARE = "square";
+
+// Grey-weighted distance transforms
+constexpr char const* FASTMARCHING = "fast marching";
+//constexpr char const* CHAMFER = "chamfer";
+//constexpr char const* LENGTH = "length";
 
 // Crop location
 constexpr char const* CENTER = "center";
@@ -196,6 +199,7 @@ constexpr char const* HIGH = "high";
 constexpr char const* RANGE = "range";
 
 // Metrics
+constexpr char const* EUCLIDEAN = "Euclidean";
 constexpr char const* CHAMFER = "chamfer";
 constexpr char const* CONNECTED = "connected";
 constexpr char const* CITY = "city";

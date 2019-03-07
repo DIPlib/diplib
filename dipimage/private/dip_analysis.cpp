@@ -1,7 +1,7 @@
 /*
  * DIPimage 3.0
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -264,37 +264,41 @@ void EDT( EDTFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    plhs[ 0 ] = dml::GetArray( out );
 }
 
-void gdt( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void gdt( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
-   DML_MAX_ARGS( 3 );
+   DML_MAX_ARGS( 4 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::Image const grey = dml::GetImage( prhs[ 1 ] );
+   int index = 2;
+   bool hasMask = ( nrhs > index ) && ( !dml::IsScalar( prhs[ index ] ) || !mxIsDouble( prhs[ index ] ));
+   dip::Image const mask = hasMask ? dml::GetImage( prhs[ index ] ) : dip::Image{};
+   if( hasMask ) {
+      ++index;
+   }
    dip::Metric metric( dip::S::CHAMFER, 1 );
-   if( nrhs > 2 ) {
-      dip::uint chamfer = dml::GetUnsigned( prhs[ 2 ] );
-      switch( chamfer ) {
-         case 1:
-            metric = dip::Metric( dip::S::CONNECTED, 1 );
-            break;
-         case 3:
-            break;
-         case 5:
-            metric = dip::Metric( dip::S::CHAMFER, 2 );
-            break;
-         default:
-            DIP_THROW( dip::E::INVALID_PARAMETER );
+   dip::String outputMode = dip::S::FASTMARCHING;
+   if( nrhs > index ) {
+      dip::uint chamfer = dml::GetUnsigned( prhs[ index ] );
+      if( chamfer != 0 ) {
+         outputMode = dip::S::CHAMFER;
+         switch( chamfer ) {
+            case 1:
+               metric = dip::Metric( dip::S::CONNECTED, 1 );
+               break;
+            case 3:
+               break;
+            case 5:
+               metric = dip::Metric( dip::S::CHAMFER, 2 );
+               break;
+            default:
+               DIP_THROW( dip::E::INVALID_PARAMETER );
+         }
       }
    }
-   dip::String outputMode = nlhs > 1 ? dip::S::BOTH : dip::S::GDT;
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   dip::GreyWeightedDistanceTransform( grey, in, {}, out, metric, outputMode );
-   if( nlhs > 1 ) {
-      plhs[ 0 ] = dml::GetArray( out[ 0 ] );
-      plhs[ 1 ] = dml::GetArray( out[ 1 ] );
-   } else {
-      plhs[ 0 ] = dml::GetArray( out );
-   }
+   dip::GreyWeightedDistanceTransform( grey, in, mask, out, metric, outputMode );
+   plhs[ 0 ] = dml::GetArray( out );
 }
 
 } // namespace
@@ -329,7 +333,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       } else if( function == "dt" ) {
          EDT( dip::EuclideanDistanceTransform, plhs, nrhs, prhs, dip::S::SEPARABLE );
       } else if( function == "gdt" ) {
-         gdt( nlhs, plhs, nrhs, prhs );
+         gdt( plhs, nrhs, prhs );
       } else if( function == "vdt" ) {
          EDT( dip::VectorDistanceTransform, plhs, nrhs, prhs, dip::S::FAST );
 

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for distance transforms
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,26 +140,44 @@ inline Image VectorDistanceTransform(
 /// in `bin` (background), with the path chosen such that this integral is minimal.
 ///
 /// The images `bin` and `grey` must have the same sizes. `bin` is a binary image, `grey` is real-valued, and both
-/// must be scalar. `out` will have type `dip::DT_SFLOAT`.
+/// must be scalar. `out` will have type `dip::DT_SFLOAT`. If `grey` is not forged, it is assumed to be valued 1
+/// everywhere.
 ///
 /// `mask` is an optional input that further constrains the paths taken by the distance transform. Paths only go
-/// through those pixels that are set in `mask`. If a pixel is set in `bin` but not in `mask`, then that pixel will
-/// have a value of 0 in the output, just as if `bin` had not been set. But the pixel is not a seed for paths, so
-/// that its neighbors can have large distance values. If `mask` is not forged, paths are not constrained. If `mask`
-/// is forged, it must be of the same sizes as `bin` and `grey`, and be binary and scalar.
+/// through those pixels that are set in `mask`. Pixels not set in mask will have either a value of 0 or infinity
+/// in the output, depending on whether `bin` was set or not. If `mask` is not forged, paths are not constrained.
+/// If `mask` is forged, it must be of the same sizes as `bin` and `grey`, and be binary and scalar.
+///
+/// This function uses one of two algorithms: the fast marching algorithm (Sethian, 1996), or a simpler propagation
+/// algorithm that uses a chamfer metric (after work by Verwer and Strasters). `metric` is used only in the latter
+/// case. `mode` selects the algorithm used and what output is produced:
+///  - `"fast marching"` uses the fast marching algorithm. This is the default.
+///  - `"chamfer"` uses the chamfer metric algorithm.
+///  - `"length"` also uses the chamfer metric algorithm, but outputs the length of the optimal path, rather
+///    than the integral along the path.
 ///
 /// The chamfer metric is defined by the parameter `metric`. Any metric can be given, but a 3x3 or 5x5 chamfer metric
 /// is recommended for unbiased distances. See `dip::Metric` for more information. If the `metric` doesn't have a
 /// pixel size set, but either `grey` or `bin` have a pixel size defined, then that pixel size will be added to the
 /// metric (the pixel size in `grey` will have precedence over the one in `bin` if they both have one defined). To
-/// avoid the use of any pixel size, define `metric` with a pixel size of 1.
+/// avoid the use of any pixel size, define `metric` with a pixel size of 1. The magnitudes of the pixel sizes are
+/// used, ignoring any units.
 ///
-/// If `outputMode` is `"GDT"` (the default), then `out` will contain the grey-weighted distance transform. If it is
-/// `"Euclidean"`, in will output the Euclidean (geometric) length of the optimal path instead. If it is `"both"`,
-/// it will output a tensor image with two components, the first one will be the GDT, and the second one the
-/// path length.
+/// With the fast marching algorithm, the pixel size in either `grey` or `bin` will be used to weight distances. The
+/// magnitudes of the pixel sizes are used, ignoring any units.
+///
+/// The fast marching algorithm approximates Euclidean distances. It yields the most isotropic result, though it
+/// is biased. The chamfer metric algorithm uses the metric as specified by `metric`, which could be, for example,
+/// `dip::Metric("city")`. The metrics `dip::Metric("chamfer", 3)` or `dip::Metric("chamfer", 5)` are to be preferred,
+/// as they produce unbiased distances (with octagonal and dodecagonal unit circles, respectively).
+/// The larger neighborhood produces more precise distances than the smaller neighborhood.
+///
+/// The chamfer metric algorithm is a little faster than the fast marching algorithm,
+/// with smaller neighborhoods being faster than larger neighborhoods.
 ///
 /// **Literature**
+///  - J.A. Sethian, "A fast marching level set method for monotonically advancing fronts", Proceedings of the
+///    National Academy of Sciences 93(4):1591-1595, 1996.
 ///  - B.J.H. Verwer, P.W. Verbeek and S.T. Dekker, "An efficient uniform cost algorithm applied to distance
 ///    transforms", IEEE Transactions on Pattern Analysis and Machine Intelligence 11(4):425-429, 1989.
 ///  - P.W. Verbeek and B.J.H. Verwer, "Shading from shape, the eikonal equation solved by grey-weighted distance
@@ -170,24 +188,23 @@ inline Image VectorDistanceTransform(
 ///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
 ///  - K.C. Strasters, "Quantitative Analysis in Confocal %Image Cytometry", Ph.D. thesis, Delft University of
 ///    Technology, The Netherlands, 1994.
-// TODO: Add the fast marching method, could be selected through a different metric?
 DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
       Image const& mask,
       Image&  out,
       Metric metric = { S::CHAMFER, 2 },
-      String const& outputMode = S::GDT
+      String const& mode = S::FASTMARCHING
 );
 inline Image GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
       Image const& mask = {},
       Metric const& metric = { S::CHAMFER, 2 },
-      String const& outputMode = S::GDT
+      String const& mode = S::FASTMARCHING
 ) {
    Image out;
-   GreyWeightedDistanceTransform( grey, bin, mask, out, metric, outputMode );
+   GreyWeightedDistanceTransform( grey, bin, mask, out, metric, mode );
    return out;
 }
 
@@ -200,22 +217,20 @@ inline Image GreyWeightedDistanceTransform(
 /// `condition`, then that pixel will have a value of 0 in the output, but this value will not be used as a seed
 /// for paths, so that its neighbors can have a large distance value.
 ///
+/// Non-isotropic pixel sizes are supported. The pixel sizes of `marker` are used, those of `condition` are ignored.
+///
 /// The images `marker` and `condition` must have the same sizes, and be scalar and binary.
 /// `out` will have type `dip::DT_SFLOAT`.
 ///
 /// This function is currently implemented in terms of `dip::GreyWeightedDistanceTransform`, see that function for
-/// literature and implementation details. Here we use a 3x3 chamfer metric, meaning that the unit circle is an
-/// octagon.
+/// literature and implementation details. It uses the fast marching algorithm to produce a reasonable approximation
+/// of Euclidean distances.
 inline void GeodesicDistanceTransform(
       Image const& marker,
       Image const& condition,
       Image& out
 ) {
-   // TODO: This is not the most efficient implementation. For one, `weight` will be copied explicitly with normal strides...
-   Image weight( {}, 1, dip::DT_SFLOAT );
-   weight.Fill( 1.0 );
-   weight.ExpandSingletonDimensions( marker.Sizes() );
-   GreyWeightedDistanceTransform( weight, marker, condition, out, dip::Metric( S::CHAMFER, 1 ), S::EUCLIDEAN );
+   GreyWeightedDistanceTransform( {}, marker, condition, out, {}, S::FASTMARCHING );
 }
 inline Image GeodesicDistanceTransform(
       Image const& marker,
