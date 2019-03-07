@@ -352,6 +352,7 @@ void NeighborList::ConstructChamfer( dip::uint dimensionality, dip::uint maxDist
       }
    }
    // Higher dimensions, or maxDistance != 1, 2
+   // TODO: does not list all unique jumps with maxDistance > 2.
    dip::sint lim = static_cast< dip::sint >( maxDistance );
    IntegerArray coords( dimensionality, -lim );
    for( ;; ) {
