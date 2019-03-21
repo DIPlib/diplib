@@ -145,6 +145,8 @@ void init_morphology( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "WatershedMaxima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMaxima ),
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
+   m.def( "UpperSkeleton2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::UpperSkeleton2D ),
+          "in"_a, "mask"_a = dip::Image{}, "endPixelCondition"_a = dip::S::NATURAL );
    m.def( "MorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::MorphologicalReconstruction ),
           "marker"_a, "in"_a, "connectivity"_a = 1, "direction"_a = dip::S::DILATION );
    m.def( "LimitedMorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint, dip::String const& >( &dip::LimitedMorphologicalReconstruction ),

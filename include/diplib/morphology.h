@@ -1166,16 +1166,46 @@ inline Image Maxima(
 /// \addtogroup morphology
 /// \{
 
-// TODO: Port and document UpperEnvelope
-DIP_EXPORT void UpperEnvelope(
+/// \brief Grey-value skeleton (2D only).
+///
+/// This algorithm finds ridges in the image by, starting at the lowest values, setting values to the minimum possible
+/// value for the given data type if that doesn't change the topology of the higher-valued pixels.
+/// It uses Hilditch conditions to preserve topology. The unmodified pixels are the grey-value equivalent to a binary
+/// skeleton. Note that the minimum possible value is minus infinity for floating-point types.
+///
+/// The `mask` image optionally restricts the region of the image processed. Pixels not selected by the mask will
+/// retain their original value.
+///
+/// The `endPixelCondition` parameter determines what is considered an "end pixel" in the skeleton, and thus affects
+/// how many branches are generated. It is one of the following strings:
+///  - `"natural"`: "natural" end pixel condition of this algorithm.
+///  - `"one neighbor"`: Keep endpoint if it has one neighbor.
+///  - `"two neighbors"`: Keep endpoint if it has two neighbors.
+///  - `"three neighbors"`: Keep endpoint if it has three neighbors.
+/// To generate skeletons without end pixels (the equivalent of `"loose ends away"` in `dip::EuclideanSkeleton`),
+/// use `dip::Watershed` instead.
+///
+/// `in` must be a real-valued, scalar image. `out` will have the same type.
+///
+/// **Limitations**
+///  - This function is only implemented for 2D images.
+///  - Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
+///    If this is an issue, consider adding one pixel on each side of your image.
+DIP_EXPORT void UpperSkeleton2D(
       Image const& in,
+      Image const& mask,
       Image& out,
-      Image& bottom,
-      Image& labels,
-      dip::uint connectivity = 1,
-      dfloat maxDepth = 1,
-      dip::uint maxSize = 0
+      String const& endPixelCondition = S::NATURAL
 );
+inline Image UpperSkeleton2D(
+      Image const& in,
+      Image const& mask = {},
+      String const& endPixelCondition = S::NATURAL
+) {
+   Image out;
+   UpperSkeleton2D( in, mask, out, endPixelCondition );
+   return out;
+}
 
 /// \brief Reconstruction by dilation or erosion, also known as inf-reconstruction and sup-reconstruction
 ///

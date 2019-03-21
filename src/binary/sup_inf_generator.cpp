@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains binary propagation.
+ * This file contains sup and inf generators and related functionality.
  *
  * (c)2018, Cris Luengo.
  *

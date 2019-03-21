@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains the area opening and related functions.
+ * This file contains support functionality for the Euclidean skeleton function.
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

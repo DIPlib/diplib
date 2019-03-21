@@ -233,6 +233,7 @@ morphology/one_dimensional.cpp
 morphology/one_dimensional.h
 morphology/pathopening.cpp
 morphology/reconstruction.cpp
+morphology/upperskeleton2d.cpp
 morphology/watershed.cpp
 morphology/watershed_support.cpp
 morphology/watershed_support.h
