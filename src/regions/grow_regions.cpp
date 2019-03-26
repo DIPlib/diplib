@@ -219,7 +219,7 @@ void GrowRegionsWeighted(
    // Compute grey-weighted distance transform
    Image binary = label == 0;
    Image distance;
-   DIP_STACK_TRACE_THIS( GreyWeightedDistanceTransform( grey, binary, mask, distance, metric ));
+   DIP_STACK_TRACE_THIS( GreyWeightedDistanceTransform( grey, binary, mask, distance, metric, S::CHAMFER )); // TODO: Use FASTMATCHING here!
    binary.Strip();
 
    // Grow regions

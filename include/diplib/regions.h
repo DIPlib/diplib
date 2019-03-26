@@ -91,13 +91,18 @@ inline UnsignedArray GetObjectLabels(
    if( label.Offsets().empty() ) {
       // This code works if either the view is regular or has a mask.
       return GetObjectLabels( label.Reference(), label.Mask(), background );
-   } else {
-      // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
-      return GetObjectLabels( Image( label ), {}, background );
    }
+   // When the view uses indices, we copy the data over to a new image, it's not worth while writing separate code for this case.
+   return GetObjectLabels( Image( label ), {}, background );
 }
 
 /// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.
+///
+/// Note that disjoint objects will remain disjoint, as this function only replaces each label ID with
+/// a new value. The output image will have consecutive label IDs, in the range [1, *N*], with *N* the
+/// number of unique labels in `label`. Pixels with a value of 0 will remain 0 (background).
+///
+/// `dip::GetObjectLabels` returns a list of unique labels in `label`, and can be used to determine *N*.
 DIP_EXPORT void Relabel( Image const& label, Image& out );
 inline Image Relabel( Image const& label ) {
    Image out;
@@ -109,14 +114,16 @@ inline Image Relabel( Image const& label ) {
 ///
 /// If `in` is an unsigned integer image, it is assumed to be a labeled image. The size of the objects
 /// are measured using `dip::MeasurementTool`, and the labels for the objects with fewer than `threshold`
-/// pixels are removed. The `connectivity` parameter is ignored.
+/// pixels are removed. The `connectivity` parameter is ignored. Note that if this image contains disjoint
+/// objects (i.e. multiple connected components with the same label), it is the size of the object as a
+/// whole that counts, not the size of individual connected components.
 ///
 /// If `in` is a binary image, `dip::Label` is called with `minSize` set to `threshold`, and the result
 /// is binarized again. `connectivity` is passed to the labeling function.
 ///
 /// The operation on a binary image is equivalent to an area opening with parameter `threshold`
 /// (see `dip::AreaOpening`). The same is not true for the labeled image case, if labeled regions
-/// are touching.
+/// are touching or if objects are disjoint.
 DIP_EXPORT void SmallObjectsRemove(
       Image const& in,
       Image& out,
@@ -147,6 +154,9 @@ inline Image SmallObjectsRemove(
 /// The `connectivity` parameter defines the metric, that is, the shape of the structuring element
 /// (see \ref connectivity). Alternating connectivity is only implemented for 2D and 3D images.
 ///
+/// If isotropy in the dilation is very important, compute the distance transform of the background component,
+/// then apply `dip::SeededWatershed`.
+///
 /// \see dip::GrowRegionsWeighted, dip::SeededWatershed
 DIP_EXPORT void GrowRegions(
       Image const& label,
@@ -170,8 +180,8 @@ inline Image GrowRegions(
 ///
 /// The regions in the input image `label` are grown according to a grey-weighted distance
 /// metric; the weights are given by `grey`. The optional mask image `mask` limits the
-/// growing (not yet implemented!). All three images must be scalar. `label` must be of
-/// an unsigned integer type, and `grey` must be real-valued.
+/// growing. All three images must be scalar. `label` must be of an unsigned integer type,
+/// and `grey` must be real-valued.
 ///
 /// `out` is of the type `dip::DT_LABEL`, and contains the grown regions.
 ///
