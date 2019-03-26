@@ -609,10 +609,14 @@ class SelectEigenvalueLineFilter : public Framework::ScanLineFilter {
          if( buf.size() != n_ ) {
             buf.resize( n_ );
          }
+         TPO* bufPtr = buf.data();
+         if( !first_ ) {
+            bufPtr += n_ - 1;
+         }
          // Compute
          do {
             function_( n_, in.begin(), buf.data(), nullptr );
-            *out = first_ ? buf.front() : buf.back();
+            *out = *bufPtr;
          } while( ++in, ++out );
       }
    private:
@@ -646,12 +650,14 @@ class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
                params.outBuffer[ 0 ].tensorStride
          );
          std::array< TPO, 3 > buf; // NOTE!!! `function_` is either `SymmetricEigenDecomposition2` or `SymmetricEigenDecomposition3`
-         TPO* bufFront = buf.data();
-         TPO* bufBack = bufFront + ( n_ - 1 );
+         TPO* bufPtr = buf.data();
+         if( !first_ ) {
+            bufPtr += n_ - 1;
+         }
          // Compute
          do {
             function_( in.begin(), buf.data(), nullptr );
-            *out = first_ ? *bufFront : *bufBack;
+            *out = *bufPtr;
          } while( ++in, ++out );
       }
    private:
