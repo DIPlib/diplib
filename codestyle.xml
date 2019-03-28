@@ -57,10 +57,33 @@
     <option name="SPACE_AFTER_REFERENCE_IN_DECLARATION" value="true" />
     <option name="DISCHARGED_SHORT_TERNARY_OPERATOR" value="true" />
     <option name="INSERT_VIRTUAL_WITH_OVERRIDE" value="true" />
+    <option name="ADD_BRIEF_TAG" value="true" />
     <option name="TAG_PREFIX_OF_BLOCK_COMMENT" value="BACK_SLASH" />
-    <option name="GETTERS_PREFIX" value="" />
-    <option name="SETTERS_PREFIX" value="Set" />
+    <option name="ADD_GETTER_PREFIX" value="false" />
+    <option name="ADD_SETTER_PREFIX" value="false" />
     <option name="TYPE_QUALIFIERS_PLACEMENT" value="AFTER" />
+    <option name="HEADER_GUARD_STYLE_PATTERN" value="DIP_${FILE_NAME}_H" />
+    <option name="NAMESPACES_NAMING_CONVENTION">
+      <value prefix="" style="SNAKE_CASE" suffix="" />
+    </option>
+    <option name="CLASSES_AND_STRUCTS_NAMING_CONVENTION">
+      <value prefix="" style="PASCAL_CASE" suffix="" />
+    </option>
+    <option name="ENUMS_NAMING_CONVENTION">
+      <value prefix="" style="PASCAL_CASE" suffix="" />
+    </option>
+    <option name="TYPEDEFS_NAMING_CONVENTION">
+      <value prefix="" style="PASCAL_CASE" suffix="" />
+    </option>
+    <option name="UNIONS_NAMING_CONVENTION">
+      <value prefix="" style="PASCAL_CASE" suffix="" />
+    </option>
+    <option name="METHODS_NAMING_CONVENTION">
+      <value prefix="" style="PASCAL_CASE" suffix="" />
+    </option>
+    <option name="GLOBAL_FUNCTIONS_NAMING_CONVENTION">
+      <value prefix="" style="PASCAL_CASE" suffix="" />
+    </option>
   </Objective-C>
   <Objective-C-extensions>
     <option name="TAG_PREFIX_OF_BLOCK_COMMENT" value="BACK_SLASH" />
@@ -72,12 +95,11 @@
   </Objective-C-extensions>
   <Python>
     <option name="DICT_ALIGNMENT" value="1" />
-    <option name="DICT_WRAPPING" value="0" />
+    <option name="DICT_WRAPPING" value="5" />
     <option name="DICT_NEW_LINE_AFTER_LEFT_BRACE" value="true" />
     <option name="DICT_NEW_LINE_BEFORE_RIGHT_BRACE" value="true" />
     <option name="USE_CONTINUATION_INDENT_FOR_ARGUMENTS" value="true" />
     <option name="OPTIMIZE_IMPORTS_JOIN_FROM_IMPORTS_WITH_SAME_SOURCE" value="true" />
-    <option name="FROM_IMPORT_WRAPPING" value="0" />
   </Python>
   <codeStyleSettings language="CMake">
     <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
@@ -138,6 +160,13 @@
     <option name="WHILE_BRACE_FORCE" value="3" />
     <option name="FOR_BRACE_FORCE" value="3" />
     <option name="ENUM_CONSTANTS_WRAP" value="0" />
+    <indentOptions>
+      <option name="INDENT_SIZE" value="3" />
+      <option name="CONTINUATION_INDENT_SIZE" value="6" />
+      <option name="TAB_SIZE" value="3" />
+    </indentOptions>
+  </codeStyleSettings>
+  <codeStyleSettings language="Python">
     <indentOptions>
       <option name="INDENT_SIZE" value="3" />
       <option name="CONTINUATION_INDENT_SIZE" value="6" />
