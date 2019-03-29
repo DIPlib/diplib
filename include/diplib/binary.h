@@ -48,6 +48,9 @@ namespace dip {
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 ///
 /// For dilations with arbitrary structuring elements, see `dip::Dilation`.
+///
+/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
+/// For this case, `dip::Dilation` is always the faster choice.
 DIP_EXPORT void BinaryDilation(
       Image const& in,
       Image& out,
@@ -76,6 +79,9 @@ inline Image BinaryDilation(
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// 
 /// For erosions with arbitrary structuring elements, see `dip::Erosion`.
+///
+/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
+/// For this case, `dip::Erosion` is always the faster choice.
 DIP_EXPORT void BinaryErosion(
       Image const& in,
       Image& out,
@@ -107,6 +113,9 @@ inline Image BinaryErosion(
 /// effect you can get in the corners of the image in some cases.
 ///
 /// For closings with arbitrary structuring elements, see `dip::Closing`.
+///
+/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
+/// For this case, `dip::Closing` is always the faster choice.
 DIP_EXPORT void BinaryClosing(
       Image const& in,
       Image& out,
@@ -138,6 +147,9 @@ inline Image BinaryClosing(
 /// effect you can get in the corners of the image in some cases.
 ///
 /// For openings with arbitrary structuring elements, see `dip::Opening`.
+///
+/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
+/// For this case, `dip::Opening` is always the faster choice.
 DIP_EXPORT void BinaryOpening(
       Image const& in,
       Image& out,
@@ -170,7 +182,7 @@ inline Image BinaryOpening(
 ///
 /// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed.
 ///
-/// The function `dip::MorphologicalReconstruction` provides similar functionality also for other data types.
+/// The function `dip::MorphologicalReconstruction` provides similar functionality for other data types.
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,

@@ -1,128 +1,194 @@
 /*
- * Testing the binary morphology functions
+ * Testing the binary morphology functions and comparing their timing to the grey-value equivalents.
  */
 
 #include "diplib.h"
 #include "diplib/binary.h"
+#include "diplib/morphology.h"
+#include "diplib/distance.h"
 #include "diplib/file_io.h"
-#include "diplib/iterators.h"
-#include "diplib/generation.h"
 #include "diplib/testing.h"
-#include <iomanip>
+#include "diplib/multithreading.h"
+#include "diplib/geometry.h"
 
 int main( int argc, char** argv ) {
    dip::testing::Timer timer;
+   dip::uint reps = 100;
 
    // Set default input and output paths.
    // Can be overridden by commandline arguments.
    std::string inputPath = DIP__EXAMPLES_DIR;
-   std::string outputPath = "";
 
    // Arguments:
    // 1: input path (optional)
-   // 2: output path (optional)
    if( argc >= 2 ) {
-      inputPath = argv[1];
-   }
-   if( argc >= 3 ) {
-      outputPath = argv[2];
+      inputPath = argv[ 1 ];
    }
 
-   // ==================== 2D ==================== //
-   dip::Image org2d; // 2D original image
-   std::cout << "Reading " << ( inputPath + "/erika" ) << std::endl;
-   dip::ImageReadTIFF( org2d, inputPath + "/erika" );
-   dip::Image org2dBin = org2d > 100;
-   dip::Image ramp2d = dip::CreateRamp( dip::UnsignedArray{ 256, 256 }, 0 );
-   dip::Image ramp2dBin = ramp2d > 100;
-   std::vector< dip::Image > dilations2d;
-   std::vector< dip::Image > erosions2d;
-   std::vector< dip::Image > propagations2d;
+   std::cout << "Reading " << inputPath << "/erika\n";
+   dip::Image image = dip::ImageReadTIFF( inputPath + "/erika" ) > 100;
+   dip::Tile( { image, image, image, image, image, image }, image, { 3, 2 } );
+   std::cout << image;
 
-   timer.Reset();
+   //dip::SetNumberOfThreads( 1 ); // Uncomment this line if you don't want to allow dip::Dilation and dip::EuclideanDistanceTransform to use parallelism
+   double binTime, time;
 
-   dilations2d.push_back( dip::BinaryDilation( org2dBin, -1, 1, "object" ) );
-   dilations2d.push_back( dip::BinaryDilation( org2dBin, -1, 5, "object" ) );
-   dilations2d.push_back( dip::BinaryDilation( org2dBin, 2, 2, "object" ) );
-   dilations2d.push_back( dip::BinaryDilation( org2dBin, 2, 2, "background" ) );
+   std::cout << "\nsquare dilations:\n";
 
-   erosions2d.push_back( dip::BinaryErosion( org2dBin, -1, 1, "object" ) );
-   erosions2d.push_back( dip::BinaryErosion( org2dBin, -1, 5, "object" ) );
-   erosions2d.push_back( dip::BinaryErosion( org2dBin, 2, 2, "object" ) );
-   erosions2d.push_back( dip::BinaryErosion( org2dBin, 2, 2, "background" ) );
+   for( dip::uint kk = 1; kk < 7; ++kk ) {
 
-   erosions2d.push_back( dip::BinaryErosion( ramp2dBin, -1, 27, "object" ) );
-   erosions2d.push_back( dip::BinaryErosion( ramp2dBin, -1, 26, "object" ) );
+      if( dip::Count( dip::BinaryDilation( image, 2, kk ) != dip::Dilation( image, { double( 2 * kk + 1 ), "rectangular" } )) != 0 ) {
+         std::cout << "!!!Error for kk = " << kk << '\n';
+      }
 
-   timer.Stop();
-   std::cout << "Wall time for 4x 2D-dilation and 6x 2D-erosion: " << timer.GetWall() << std::endl;
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::BinaryDilation( image, 2, kk );
+      }
+      timer.Stop();
+      binTime = timer.GetWall();
 
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Dilation( image, { double( 2 * kk + 1 ), "rectangular" } );
+      }
+      timer.Stop();
+      time = timer.GetWall();
+      std::cout << kk << ": " << time << " vs " << binTime << " (s), binary is " << binTime / time << " times slower\n";
 
-   dip::Image propSeed( org2d.Sizes(), 1, dip::DT_BIN );
-   propSeed = false;
-   dip::Image floodMask( org2d.Sizes(), 1, dip::DT_BIN );
-   floodMask = true;
+   }
 
-   propSeed.At( 0, 0 ) = 1;
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, floodMask, -1, 1, "object" ) );
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, floodMask, -1, 1, "background" ) );
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, floodMask, -1, 10, "background" ) );
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, floodMask, 1, 10, "background" ) );
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, floodMask, 2, 10, "background" ) );
+   std::cout << "\ndiamond dilations:\n";
 
-   propSeed.At( 60, 10 ) = 1;
-   propSeed.At( 10, 60 ) = 1;
-   propSeed.At( 100, 100 ) = 1;
-   propSeed.At( 190, 190 ) = 1;
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, org2dBin, -1, 20, "background" ) );
+   for( dip::uint kk = 1; kk < 7; ++kk ) {
 
-   propSeed = 0;  // Clear seed image; only use outside-as-object
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, org2dBin, -1, 100, "object" ) );
-   propagations2d.push_back( dip::BinaryPropagation( propSeed, org2dBin, -1, 0, "object" ) );   // Unlimited iterations / until propagation done
-   dip::Image noEdgeObjects = dip::EdgeObjectsRemove( org2dBin, 2 );
+      dip::Image diff = dip::BinaryDilation( image, 1, kk ) != dip::Dilation( image, { double( 2 * kk + 1 ), "diamond" } );
+      // Ignore boundaries, we make an error there in dip::Dilation with a diamond SE
+      diff = diff.At( dip::Range( dip::sint( kk ), -1 - dip::sint( kk )), dip::Range( dip::sint( kk ), -1 - dip::sint( kk )));
+      if( dip::Count( diff ) != 0 ) {
+         std::cout << "!!!Error for kk = " << kk << '\n';
+      }
 
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::BinaryDilation( image, 1, kk );
+      }
+      timer.Stop();
+      binTime = timer.GetWall();
 
-   // ==================== 3D ==================== //
-   dip::Image org3d; // 3D original image
-   std::cout << "Reading " << ( inputPath + "/chromo3d" ) << std::endl;
-   dip::ImageReadICS( org3d, inputPath + "/chromo3d" );
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Dilation( image, { double( 2 * kk + 1 ), "diamond" } );
+      }
+      timer.Stop();
+      time = timer.GetWall();
+      std::cout << kk << ": " << time << " vs " << binTime << " (s), binary is " << binTime / time << " times slower\n";
 
-   dip::Image org3dBin = org3d > 100;
-   std::vector< dip::Image > dilations3d;
-   std::vector< dip::Image > erosions3d;
-   std::vector< dip::Image > propagations3d;
-   dip::Image ramp3d = dip::CreateRamp( dip::UnsignedArray{ 64, 64, 64 }, 0 );
-   dip::Image ramp3dBin = ramp3d > 28;
+   }
 
-   timer.Reset();
+   std::cout << "\noctagonal dilations:\n";
 
-   dilations3d.push_back( dip::BinaryDilation( org3dBin, -1, 1, "object" ) );
-   dilations3d.push_back( dip::BinaryDilation( org3dBin, -1, 5, "object" ) );
-   dilations3d.push_back( dip::BinaryDilation( org3dBin, 1, 2, "object" ) );
-   dilations3d.push_back( dip::BinaryDilation( org3dBin, 2, 2, "background" ) );
+   for( dip::uint kk = 2; kk < 9; kk += 2 ) {
 
-   erosions3d.push_back( dip::BinaryErosion( org3dBin, -3, 1, "object" ) );
-   erosions3d.push_back( dip::BinaryErosion( org3dBin, -1, 5, "object" ) );
-   erosions3d.push_back( dip::BinaryErosion( org3dBin, 3, 2, "object" ) );
-   erosions3d.push_back( dip::BinaryErosion( org3dBin, 2, 2, "background" ) );
+      if( dip::Count( dip::BinaryDilation( image, -1, kk ) != dip::Dilation( image, { double( 2 * kk + 1 ), "octagonal" } )) != 0 ) {
+         std::cout << "!!!Error for kk = " << kk << '\n';
+      }
 
-   erosions3d.push_back( dip::BinaryErosion( ramp3dBin, -1, 3, "object" ) );
-   erosions3d.push_back( dip::BinaryErosion( ramp3dBin, -1, 2, "object" ) );
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::BinaryDilation( image, -1, kk );
+      }
+      timer.Stop();
+      binTime = timer.GetWall();
 
-   timer.Stop();
-   std::cout << "Wall time for 4x 3D-dilation and 6x 3D-erosion: " << timer.GetWall() << std::endl;
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Dilation( image, { double( 2 * kk + 1 ), "octagonal" } );
+      }
+      timer.Stop();
+      time = timer.GetWall();
+      std::cout << kk << ": " << time << " vs " << binTime << " (s), binary is " << binTime / time << " times slower\n";
 
-   dip::Image prop3dSeed( dip::UnsignedArray{ 64, 64, 64 }, 1, dip::DT_BIN );
-   prop3dSeed = false;
-   prop3dSeed.At( 0, 0, 0 ) = 1;
-   dip::Image flood3dMask( dip::UnsignedArray{ 64, 64, 64 }, 1, dip::DT_BIN );
-   flood3dMask = true;
+   }
 
-   propagations3d.push_back( dip::BinaryPropagation( prop3dSeed, flood3dMask, -1, 1, "object" ) ); // one pixel along the border, surface of a cube( from the edge condtion )
-   propagations3d.push_back( dip::BinaryPropagation( prop3dSeed, flood3dMask, -1, 1, "background" ) ); // 3 pixels left upper corner on slice 0, and 1 pixel in slice 1
-   propagations3d.push_back( dip::BinaryPropagation( prop3dSeed, flood3dMask, -1, 10, "background" ) ); // round something upper left corner, 11 slices deep
-   propagations3d.push_back( dip::BinaryPropagation( prop3dSeed, flood3dMask, 1, 10, "background" ) ); // triangle in upper corner, 11 slices deep
-   propagations3d.push_back( dip::BinaryPropagation( prop3dSeed, flood3dMask, 2, 10, "background" ) ); // square in upper corner in slice 0, then triangle 11 slices deep
+   std::cout << "\nisotropic dilations:\n";
 
-   return 0;
+   for( dip::uint kk = 5; kk < 20; kk += 2 ) {
+
+      image.ResetPixelSize(); // We want distances to be in pixels, not physical units.
+
+      if( dip::Count(( dip::EuclideanDistanceTransform( !image, "object", "square" ) < kk * kk ) != dip::Dilation( image, { double( kk ) * 2 - 0.001, "elliptic" } )) != 0 ) {
+         std::cout << "!!!Error for kk = " << kk << '\n';
+      }
+
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Image out = dip::EuclideanDistanceTransform( !image, "object", "square" ) < kk * kk;
+      }
+      timer.Stop();
+      binTime = timer.GetWall();
+
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Image out = dip::Dilation( image, { double( kk ) * 2 - 0.001, "elliptic" } );
+      }
+      timer.Stop();
+      time = timer.GetWall();
+      std::cout << kk << ": " << time << " vs " << binTime << " (s), DT method is " << time / binTime << " times faster\n";
+
+   }
+
+   std::cout << "\npropagation:\n";
+
+   for( dip::uint kk = 1; kk < 10; kk += 1 ) {
+
+      dip::Image seeds = dip::Erosion( image, static_cast< dip::dfloat >( kk ));
+
+      if( dip::Count( dip::BinaryPropagation( seeds, image, 1 ) != dip::MorphologicalReconstruction( seeds, image, 1 )) != 0 ) {
+         std::cout << "!!!Error for kk = " << kk << '\n';
+      }
+
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
+         dip::Image out = dip::BinaryPropagation( seeds, image, 1 );
+      }
+      timer.Stop();
+      binTime = timer.GetWall();
+
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
+         dip::Image out = dip::MorphologicalReconstruction( seeds, image, 1 );
+      }
+      timer.Stop();
+      time = timer.GetWall();
+      std::cout << kk << ": " << time << " vs " << binTime << " (s), binary is " << time / binTime << " times faster\n";
+
+   }
+
+   std::cout << "\ninverse propagation:\n";
+
+   for( dip::uint kk = 1; kk < 10; kk += 1 ) {
+
+      dip::Image mask = dip::Erosion( image, static_cast< dip::dfloat >( kk ));
+
+      if( dip::Count( ~dip::BinaryPropagation( ~image, ~mask, 1 ) != dip::MorphologicalReconstruction( image, mask, 1, dip::S::EROSION )) != 0 ) {
+         std::cout << "!!!Error for kk = " << kk << '\n';
+      }
+
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
+         dip::Image out = ~dip::BinaryPropagation( ~image, ~mask, 1 );
+      }
+      timer.Stop();
+      binTime = timer.GetWall();
+
+      timer.Reset();
+      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
+         dip::Image out = dip::MorphologicalReconstruction( image, mask, 1, dip::S::EROSION );
+      }
+      timer.Stop();
+      time = timer.GetWall();
+      std::cout << kk << ": " << time << " vs " << binTime << " (s), binary is " << time / binTime << " times faster\n";
+
+   }
 }

@@ -35,8 +35,8 @@ city-block distance instead (the L1 norm). Thus, the connectivity is a number be
 a connectivity of 1 leads to 4 nearest neighbors (the edge neighbors), and a connectivity
 of 2 leads to 8 nearest neighbors (the edge and vertex neighbors).
 
-We use negative values for connectivity in some algorithms. These indicate alternating
-connectivities, which leads to more isotropic shapes, in e.g. the binary dilation, than
+We use negative values for connectivity in some algorithms, in e.g. the binary dilation.
+These indicate alternating connectivities, which leads to more isotropic shapes than
 using the same connectivity for all iterations. These alternating connectivities are
 available only if the function takes a `dip::sint` as connectivity parameter.
 

@@ -78,7 +78,7 @@ class DIP_NO_EXPORT Kernel;
 ///    The size array corresponds to the size of the bounding box of the line, with signs indicating
 ///    the direction. Thus, if the size array is `{2,2}`, the line goes right and down two pixels,
 ///    meaning that the line is formed by two pixels at an angle of 45 degrees down. If the size array
-///    is `{-2,2}`, then the line is again two pixels, but at an angle of 125 degrees. (Note that
+///    is `{-2,2}`, then the line is again two pixels, but at an angle of 135 degrees. (Note that
 ///    in images, angles increase clockwise from the x-axis, as the y-axis is inverted). For a description
 ///    of the meaning of these various line implementations, see \ref line_morphology.
 ///
@@ -1218,10 +1218,9 @@ inline Image UpperSkeleton2D(
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// For binary images, `dip::BinaryPropagation` also defines the reconstruction by dilation, and allows limiting
+/// For binary images, `dip::BinaryPropagation` is always faster. That function additionally allows limiting
 /// the number of reconstruction steps, and supports alternating connectivity, which yields a more isotropic result
-/// (note that alternating connectivity does not yield any advantages when reconstructing until idempotence, as this
-/// function does).
+/// when limiting the number of reconstruction steps.
 ///
 /// This functions is used by `dip::LimitedMorphologicalReconstruction`, `dip::HMinima`, `dip::HMaxima`,
 /// `dip::Leveling`, `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`

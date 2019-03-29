@@ -60,7 +60,7 @@ class DIP_NO_EXPORT Metric {
       ///
       /// - `"connected"`: here, `param` is the connectivity, see \ref connectivity for information
       /// on the connectivity parameter. A value of 1 corresponds to the city-block metric; a value of
-      /// 0 indicates a connectivity equal to the image dimensionality is requested, and corresponds
+      /// 0 indicates a connectivity equal to the image dimensionality, and corresponds
       /// to the chess-board metric.
       ///
       /// - `"chamfer"`: a chamfer metric. `param` indicates the neighborhood size: A value of 1
