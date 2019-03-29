@@ -35,9 +35,9 @@ void eig( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       dip::String mode = dml::GetString( prhs[ 1 ] );
       dip::Image V = mi.NewImage();
       if( mode == "largest" ) {
-         dip::LargestEigenVector( in, V );
+         dip::LargestEigenvector( in, V );
       } else if( mode == "smallest" ) {
-         dip::SmallestEigenVector( in, V );
+         dip::SmallestEigenvector( in, V );
       } else {
          DIP_THROW_INVALID_FLAG( mode );
       }

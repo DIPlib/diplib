@@ -433,7 +433,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::Transpose`, `dip::ConjugateTranspose`, `dip::DotProduct`, `dip::CrossProduct`,
   `dip::Norm`, `dip::SquareNorm`, `dip::Angle`, `dip::Orientation`, `dip::CartesianToPolar`, `dip::PolarToCartesian`,
   `dip::Determinant`, `dip::Trace`, `dip::Rank`, `dip::Eigenvalues`, `dip::LargestEigenvalue`, `dip::SmallestEigenvalue`,
-  `dip::EigenDecomposition`, `dip::LargestEigenVector`, `dip::SmallestEigenVector`, `dip::Inverse`, `dip::PseudoInverse`,
+  `dip::EigenDecomposition`, `dip::LargestEigenvector`, `dip::SmallestEigenvector`, `dip::Inverse`, `dip::PseudoInverse`,
   `dip::SingularValues`, `dip::SingularValueDecomposition`, `dip::Identity`,
   `dip::SumTensorElements`, `dip::ProductTensorElements`, `dip::AllTensorElements`, `dip::AnyTensorElement`,
   `dip::MaximumTensorElement`, `dip::MaximumAbsTensorElement`, `dip::MinimumTensorElement`,

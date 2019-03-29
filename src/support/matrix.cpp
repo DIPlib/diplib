@@ -143,7 +143,7 @@ void SymmetricEigenDecomposition3(
    }
 }
 
-void LargestEigenVector(
+void LargestEigenvector(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > vector
@@ -163,7 +163,7 @@ void LargestEigenVector(
    }
 }
 
-void SmallestEigenVector(
+void SmallestEigenvector(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > vector

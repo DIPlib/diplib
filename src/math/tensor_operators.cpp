@@ -792,7 +792,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
    }
 }
 
-void LargestEigenVector( Image const& in, Image& out ) {
+void LargestEigenvector( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, "The image is not a symmetric matrix" );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -800,14 +800,14 @@ void LargestEigenVector( Image const& in, Image& out ) {
    DataType dataType = DataType::SuggestFlex( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-         [ n ]( auto const& pin, auto const& pout ) { LargestEigenVector( n, pin, pout ); }, 600 * n // cost of decomposition???
+         [ n ]( auto const& pin, auto const& pout ) { LargestEigenvector( n, pin, pout ); }, 600 * n // cost of decomposition???
    );
    ImageRefArray outar{ out };
    DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { dataType },
                                           { n }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer ));
 }
 
-void SmallestEigenVector( Image const& in, Image& out ) {
+void SmallestEigenvector( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, "The image is not a symmetric matrix" );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -815,7 +815,7 @@ void SmallestEigenVector( Image const& in, Image& out ) {
    DataType dataType = DataType::SuggestFlex( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-         [ n ]( auto const& pin, auto const& pout ) { SmallestEigenVector( n, pin, pout ); }, 600 * n // cost of decomposition???
+         [ n ]( auto const& pin, auto const& pout ) { SmallestEigenvector( n, pin, pout ); }, 600 * n // cost of decomposition???
    );
    ImageRefArray outar{ out };
    DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { dataType },

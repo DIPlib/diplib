@@ -126,8 +126,8 @@ void init_math( py::module& m ) {
              dip::EigenDecomposition( in, out, eigenvectors );
              return py::make_tuple( out, eigenvectors ).release();
           }, "in"_a );
-   m.def( "LargestEigenVector", py::overload_cast< dip::Image const& >( &dip::LargestEigenVector ), "in"_a );
-   m.def( "SmallestEigenVector", py::overload_cast< dip::Image const& >( &dip::SmallestEigenVector ), "in"_a );
+   m.def( "LargestEigenvector", py::overload_cast< dip::Image const& >( &dip::LargestEigenvector ), "in"_a );
+   m.def( "SmallestEigenvector", py::overload_cast< dip::Image const& >( &dip::SmallestEigenvector ), "in"_a );
    m.def( "Inverse", py::overload_cast< dip::Image const& >( &dip::Inverse ), "in"_a );
    m.def( "PseudoInverse", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::PseudoInverse ), "in"_a, "tolerance"_a = 1e-7 );
    m.def( "SingularValues", py::overload_cast< dip::Image const& >( &dip::SingularValues ), "in"_a );

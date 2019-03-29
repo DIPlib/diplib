@@ -469,10 +469,10 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 /// outputs only the eigenvector that corresponds to the eigenvalue with largest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
-DIP_EXPORT void LargestEigenVector( Image const& in, Image& out );
-inline Image LargestEigenVector( Image const& in ) {
+DIP_EXPORT void LargestEigenvector( Image const& in, Image& out );
+inline Image LargestEigenvector( Image const& in ) {
    Image out;
-   LargestEigenVector( in, out );
+   LargestEigenvector( in, out );
    return out;
 }
 
@@ -482,10 +482,10 @@ inline Image LargestEigenVector( Image const& in ) {
 /// outputs only the eigenvector that corresponds to the eigenvalue with smallest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
-DIP_EXPORT void SmallestEigenVector( Image const& in, Image& out );
-inline Image SmallestEigenVector( Image const& in ) {
+DIP_EXPORT void SmallestEigenvector( Image const& in, Image& out );
+inline Image SmallestEigenvector( Image const& in ) {
    Image out;
-   SmallestEigenVector( in, out );
+   SmallestEigenvector( in, out );
    return out;
 }
 

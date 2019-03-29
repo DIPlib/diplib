@@ -309,7 +309,7 @@ DIP_EXPORT void SymmetricEigenDecomposition3(
 /// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
 /// largest eigenvalue by magnitude. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
 /// but only one eigenvector is written to the output.
-void LargestEigenVector(
+void LargestEigenvector(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > vector
@@ -322,7 +322,7 @@ void LargestEigenVector(
 /// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
 /// smallest eigenvalue by magnitude. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
 /// but only one eigenvector is written to the output.
-void SmallestEigenVector(
+void SmallestEigenvector(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > vector
