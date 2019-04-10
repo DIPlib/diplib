@@ -43,14 +43,14 @@ class FeatureMaxVal : public LineBased {
       }
 
       virtual void ScanLine(
-            LineIterator <uint32> label,
-            LineIterator <dfloat> grey,
+            LineIterator< LabelType > label,
+            LineIterator< dfloat > grey,
             UnsignedArray /*coordinates*/,
             dip::uint /*dimension*/,
             ObjectIdToIndexMap const& objectIndices
       ) override {
          // If new objectID is equal to previous one, we don't to fetch the data pointer again
-         uint32 objectID = 0;
+         LabelType objectID = 0;
          dfloat* data = nullptr;
          do {
             if( *label > 0 ) {

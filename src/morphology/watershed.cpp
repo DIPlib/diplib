@@ -932,7 +932,7 @@ void StochasticWatershed(
    if( out.Aliases( in )) {
       out.Strip();
    }
-   out.ReForge( in, DT_UINT32, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.ReForge( in, DT_LABEL, Option::AcceptDataTypeChange::DO_ALLOW );
    out.Fill( 0 );
    Image grid = in.Similar( DT_BIN );
    Image edges = in.Similar( DT_BIN );

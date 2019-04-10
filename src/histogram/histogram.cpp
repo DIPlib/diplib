@@ -31,8 +31,7 @@
 namespace dip {
 
 using CountType = Histogram::CountType;
-
-constexpr auto DT_COUNT = DataType( CountType( 0 ));
+static constexpr auto DT_COUNT = DataType( CountType( 0 ));
 
 void Histogram::Configuration::Complete( bool isInteger ) {
    if( mode != Mode::COMPUTE_BINS ) {

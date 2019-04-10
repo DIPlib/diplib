@@ -27,6 +27,9 @@
 
 namespace dip {
 
+using CountType = Histogram::CountType;
+static constexpr auto DT_COUNT = DataType( CountType( 0 ));
+
 Histogram KMeansClustering(
       Histogram const& in,
       dip::uint nClusters
@@ -75,7 +78,7 @@ FloatArray IsodataThreshold(
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
    DIP_ASSERT( hist.IsForged() );
-   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    FloatArray thresholds( nThresholds );
@@ -83,7 +86,7 @@ FloatArray IsodataThreshold(
    Histogram cumh = CumulativeHistogram( in );
    Image const& cum = cumh.GetImage();
    DIP_ASSERT( cum.IsForged() );
-   DIP_ASSERT( cum.DataType() == DT_UINT32 );
+   DIP_ASSERT( cum.DataType() == DT_COUNT );
    DIP_ASSERT( cum.Stride( 0 ) == 1 );
    DIP_ASSERT( cum.Size( 0 ) == nBins );
    Histogram::CountType* ptr = static_cast< Histogram::CountType* >( cum.Origin() );
@@ -147,7 +150,7 @@ dfloat OtsuThreshold(
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
    DIP_ASSERT( hist.IsForged() );
-   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    FloatArray bins = in.BinCenters();
@@ -191,7 +194,7 @@ dfloat MinimumErrorThreshold(
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
    DIP_ASSERT( hist.IsForged() );
-   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    FloatArray bins = in.BinCenters();
@@ -266,7 +269,7 @@ dfloat TriangleThreshold(
    Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();
    DIP_ASSERT( hist.IsForged() );
-   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );
@@ -309,7 +312,7 @@ dfloat BackgroundThreshold(
    Histogram smoothIn = Smooth( in, 4 );
    Image const& hist = smoothIn.GetImage();
    DIP_ASSERT( hist.IsForged() );
-   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );

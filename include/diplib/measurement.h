@@ -739,7 +739,7 @@ class DIP_CLASS_EXPORT LineBased : public Base {
       /// function is called after the whole image has been scanned, and should provide the
       /// final measurement result for one object given its index (not object ID).
       virtual void ScanLine(
-            LineIterator< uint32 > label, ///< Pointer to the line in the labeled image (always scalar)
+            LineIterator< LabelType > label, ///< Pointer to the line in the labeled image (always scalar)
             LineIterator< dfloat > grey, ///< Pointer to the line in the grey-value image (if given, invalid otherwise)
             UnsignedArray coordinates, ///< Coordinates of the first pixel on the line (by copy, so it can be modified)
             dip::uint dimension, ///< Along which dimension the line runs

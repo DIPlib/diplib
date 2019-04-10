@@ -47,7 +47,7 @@ class PerObjectHistogramLineFilter : public Framework::ScanLineFilter {
          dip::uint tLength = params.inBuffer[ 0 ].tensorLength;
          dip::sint tStride = params.inBuffer[ 0 ].tensorStride;
          // 1: Label image
-         uint32 const* label = static_cast< uint32 const* >( params.inBuffer[ 1 ].buffer );
+         LabelType const* label = static_cast< LabelType const* >( params.inBuffer[ 1 ].buffer );
          dip::sint lStride = params.inBuffer[ 1 ].stride;
          // 2: Mask image
          bool hasMask = params.inBuffer.size() > 2;
@@ -128,7 +128,7 @@ Distribution PerObjectHistogram(
 
    // Count labels
    // TODO: should we use a label look-up table (and return it to the caller too) to link label to index?
-   dip::uint nLabs = Maximum( label, mask ).As< uint32 >(); // we use labels 1..nLabs
+   dip::uint nLabs = Maximum( label, mask ).As< LabelType >(); // we use labels 1..nLabs
    if( include0 ) {
       ++nLabs;                                              // no, we use labels 0..nLabs-1
    }
@@ -145,7 +145,7 @@ Distribution PerObjectHistogram(
    // Fill output
    PerObjectHistogramLineFilter scanLineFilter( distribution, configuration, include0 );
    ImageConstRefArray inputs{ grey, label };
-   DataTypeArray inBufferTypes{ DT_DFLOAT, DT_UINT32 };
+   DataTypeArray inBufferTypes{ DT_DFLOAT, DT_LABEL };
    if( hasMask ) {
       inputs.push_back( mask );
       inBufferTypes.push_back( DT_BIN );

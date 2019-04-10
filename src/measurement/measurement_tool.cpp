@@ -139,8 +139,8 @@ class MeasureLineFilter : public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         LineIterator< uint32 > label(
-               static_cast< uint32* >( params.inBuffer[ 0 ].buffer ),
+         LineIterator< LabelType > label(
+               static_cast< LabelType* >( params.inBuffer[ 0 ].buffer ),
                0, params.bufferLength, params.inBuffer[ 0 ].stride,
                params.inBuffer[ 0 ].tensorLength, params.inBuffer[ 0 ].tensorStride
          );
@@ -262,7 +262,7 @@ Measurement MeasurementTool::Measure(
 
       // Create arrays for Scan framework
       ImageConstRefArray inar{ label };
-      DataTypeArray inBufT{ DT_UINT32 };
+      DataTypeArray inBufT{ DT_LABEL };
       if( grey.IsForged() ) {
          inar.emplace_back( grey );
          inBufT.push_back( DT_DFLOAT );

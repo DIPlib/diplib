@@ -65,14 +65,14 @@ class FeatureMu : public LineBased {
       }
 
       virtual void ScanLine(
-            LineIterator <uint32> label,
-            LineIterator <dfloat>,
+            LineIterator< LabelType > label,
+            LineIterator< dfloat >,
             UnsignedArray coordinates,
             dip::uint dimension,
             ObjectIdToIndexMap const& objectIndices
       ) override {
          // If new objectID is equal to previous one, we don't to fetch the data pointer again
-         uint32 objectID = 0;
+         LabelType objectID = 0;
          MomentAccumulator* data = nullptr;
          FloatArray pos{ coordinates };
          do {
