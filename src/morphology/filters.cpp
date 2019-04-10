@@ -333,11 +333,7 @@ void MultiScaleMorphologicalGradient(
          out += eros;
       }
    }
-   out /= static_cast< uint32 >( upperSize - lowerSize + 1 );
-   // About the cast to uint32: we can't make an Image with a dip::uint data type, so we need to cast to a pixel type.
-   // It doesn't really matter which type we pick, as long as there's no loss. We could pick uint8 here too, as it's
-   // unlikely that anyone would use a filtersize larger than 255. But uint32 is the safest option, and it won't
-   // affect performance, it's just a 0D image.
+   out /= upperSize - lowerSize + 1;
 }
 
 void MorphologicalLaplace(

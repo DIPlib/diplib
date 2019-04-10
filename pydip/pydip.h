@@ -241,10 +241,10 @@ class type_caster< dip::Image::Pixel > {
                }
             } else if( PYBIND11_LONG_CHECK( list[ 0 ].ptr() )) {
                //std::cout << "   Input is int" << std::endl;
-               value.swap( dip::Image::Pixel( dip::DT_SINT32, n ));
+               value.swap( dip::Image::Pixel( dip::DT_SINT64, n ));
                auto it = value.begin();
                for( auto& in : src ) {
-                  *it = in.cast< dip::sint32 >();
+                  *it = in.cast< dip::sint64 >();
                   ++it;
                }
             } else if( PyFloat_Check( list[ 0 ].ptr() )) {

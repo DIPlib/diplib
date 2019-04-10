@@ -170,7 +170,7 @@ class ProjectionRadialSum : public ProjectionRadialBase< TPI, TPO > {
    protected:
       virtual void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPO > pOut, dip::uint inTensorLength ) override {
          for( dip::uint iT = 0; iT < inTensorLength; ++iT, ++pIn, ++pOut ) {
-            *pOut += *pIn;
+            *pOut += static_cast< TPO >( *pIn );
          }
       }
 
@@ -215,7 +215,7 @@ class ProjectionRadialMean : public ProjectionRadialSum< TPI, TPO > {
    protected:
       virtual void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPO > pOut, dip::uint inTensorLength ) override {
          for( dip::uint iT = 0; iT < inTensorLength; ++iT, ++pIn, ++pOut ) {
-            *pOut += *pIn;
+            *pOut += static_cast< TPO >( *pIn );
          }
          // The output pixel contains an extra tensor element to store the bin count
          *pOut += 1.0;   // If the output sample type is complex, the bin count is in the real part

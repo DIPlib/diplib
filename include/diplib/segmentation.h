@@ -339,7 +339,7 @@ inline Image HysteresisThreshold(
 
 /// \brief Thresholds an image at multiple values, yielding a labeled image.
 ///
-/// `out` will be a `dip::DT_UINT8`, `dip::DT_UINT16` or `dip::DT_UINT32` image, depending on the length
+/// `out` will be a `dip::DT_UINT8`, `dip::DT_UINT16`, `dip::DT_UINT32` or `dip::DT_UINT64` image, depending on the length
 /// of `thresholds`. All pixels below `thresholds[ 0 ]` with be assigned the label 0, all pixels greater or
 /// equal to `thresholds[ 0 ]` and smaller than `thresholds[ 1 ]` will be assigned label 1, etc. Results might
 /// not be as expected if thresholds are not sorted.

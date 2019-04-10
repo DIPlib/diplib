@@ -1969,6 +1969,9 @@ class DIP_NO_EXPORT Image {
             case DT_UINT32:
                dataType_ = DT_SINT32;
                break;
+            case DT_UINT64:
+               dataType_ = DT_SINT64;
+               break;
          };
          return *this;
       }
@@ -1995,6 +1998,9 @@ class DIP_NO_EXPORT Image {
                break;
             case DT_SINT32:
                dataType_ = DT_UINT32;
+               break;
+            case DT_SINT64:
+               dataType_ = DT_UINT64;
                break;
          };
          return *this;

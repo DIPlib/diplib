@@ -157,7 +157,7 @@ void Zero(
    DIP_THROW_IF( !dtype.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
-         [ = ]( auto its ) { return *its[ 0 ] < threshold ? static_cast< decltype( *its[ 0 ] ) >( 0 ) : *its[ 0 ]; }, 2
+         [ = ]( auto its ) { return static_cast< dfloat >( *its[ 0 ] ) < threshold ? static_cast< decltype( *its[ 0 ] ) >( 0 ) : *its[ 0 ]; }, 2
    ), dtype );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }

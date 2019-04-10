@@ -57,8 +57,15 @@ void HistogramEqualization(
          case DT_SINT16:
             dt = DT_UINT16;
             break;
+         case DT_UINT32:
+            dt = DT_UINT64;
+            break;
          case DT_SINT32:
             dt = DT_UINT32;
+            break;
+         // case DT_UINT64: will always be in range,
+         case DT_SINT64:
+            dt = DT_UINT64;
             break;
          default:
             dt = DT_SFLOAT;

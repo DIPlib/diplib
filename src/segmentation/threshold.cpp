@@ -159,7 +159,7 @@ class RangeThresholdScanLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint const inStride = params.inBuffer[ 0 ].stride;
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
@@ -209,7 +209,7 @@ void RangeThreshold(
       DIP_OVL_NEW_REAL( lineFilter, RangeThresholdScanLineFilter, ( lowerBound, upperBound, foreground, background ), dataType );
       DIP_START_STACK_TRACE
          ImageRefArray outar{ out };
-         Framework::Scan( { in }, outar, { DT_DFLOAT }, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
+         Framework::Scan( { in }, outar, { dataType }, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
       DIP_END_STACK_TRACE
    }
 }
@@ -238,7 +238,9 @@ void MultipleThresholds(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nLabels = thresholds.size() + 1;
    DataType dataType = DT_UINT8;
-   if( nLabels > std::numeric_limits< uint16 >::max() ) {
+   if( nLabels > std::numeric_limits< uint32 >::max() ) {
+      dataType = DT_UINT64;
+   } else if( nLabels > std::numeric_limits< uint16 >::max() ) {
       dataType = DT_UINT32;
    } else if( nLabels > std::numeric_limits< uint8 >::max() ) {
       dataType = DT_UINT16;

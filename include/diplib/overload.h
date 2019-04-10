@@ -109,12 +109,14 @@
 #define DIP__OVL__UINT( assign_name, paramlist ) \
    case dip::DT_UINT8    : assign_name< dip::uint8 >paramlist   ; break; \
    case dip::DT_UINT16   : assign_name< dip::uint16 >paramlist  ; break; \
-   case dip::DT_UINT32   : assign_name< dip::uint32 >paramlist  ; break;
+   case dip::DT_UINT32   : assign_name< dip::uint32 >paramlist  ; break; \
+   case dip::DT_UINT64   : assign_name< dip::uint64 >paramlist  ; break;
 
 #define DIP__OVL__SINT( assign_name, paramlist ) \
    case dip::DT_SINT8    : assign_name< dip::sint8 >paramlist   ; break; \
    case dip::DT_SINT16   : assign_name< dip::sint16 >paramlist  ; break; \
-   case dip::DT_SINT32   : assign_name< dip::sint32 >paramlist  ; break;
+   case dip::DT_SINT32   : assign_name< dip::sint32 >paramlist  ; break; \
+   case dip::DT_SINT64   : assign_name< dip::sint64 >paramlist  ; break;
 
 #define DIP__OVL__FLOAT( assign_name, paramlist ) \
    case dip::DT_SFLOAT   : assign_name< dip::sfloat >paramlist  ; break; \

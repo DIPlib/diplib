@@ -97,14 +97,21 @@ class Image::Sample {
       constexpr Sample( bool value ) : dataType_( DT_BIN ) {
          *static_cast< bin* >( origin_ ) = value;
       }
-      #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 constructors above.
+#if SIZE_MAX == UINT32_MAX
       constexpr Sample( dip::uint value ) : dataType_( DT_UINT32 ) {
-         *static_cast< uint32* >( origin_ ) = clamp_cast< uint32 >( value );
+         *static_cast< uint32* >( origin_ ) = value;
       }
       constexpr Sample( dip::sint value ) : dataType_( DT_SINT32 ) {
-         *static_cast< sint32* >( origin_ ) = clamp_cast< sint32 >( value );
+         *static_cast< sint32* >( origin_ ) = value;
       }
-      #endif
+#else
+      constexpr Sample( dip::uint value ) : dataType_( DT_UINT64 ) {
+         *static_cast< uint64* >( origin_ ) = value;
+      }
+      constexpr Sample( dip::sint value ) : dataType_( DT_SINT64 ) {
+         *static_cast< sint64* >( origin_ ) = value;
+      }
+#endif
 
       /// A `dip::Image::Pixel`, when cast to a `%Sample`, references the first value in the pixel.
       Sample( Pixel const& pixel );
@@ -182,18 +189,26 @@ class Image::Sample {
          detail::CastSample( DT_BIN, &value, dataType_, origin_ );
          return *this;
       }
-      #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 constructors above.
       constexpr Sample& operator=( dip::uint value ) {
-         uint32 tmp = clamp_cast< uint32 >( value );
+#if SIZE_MAX == UINT32_MAX
+         uint32 tmp = value;
          detail::CastSample( DT_UINT32, &tmp, dataType_, origin_ );
+#else
+         uint64 tmp = static_cast< uint64 >( value );
+         detail::CastSample( DT_UINT64, &tmp, dataType_, origin_ );
+#endif
          return *this;
       }
       constexpr Sample& operator=( dip::sint value ) {
-         sint32 tmp = clamp_cast< sint32 >( value );
+#if SIZE_MAX == UINT32_MAX
+         sint32 tmp = value;
          detail::CastSample( DT_SINT32, &tmp, dataType_, origin_ );
+#else
+         sint64 tmp = clamp_cast< sint64 >( value );
+         detail::CastSample( DT_SINT64, &tmp, dataType_, origin_ );
+#endif
          return *this;
       }
-      #endif
 
       /// Returns a pointer to the sample referenced.
       constexpr void* Origin() const { return origin_; }
@@ -267,9 +282,10 @@ inline std::ostream& operator<<(
       case DT_UINT8:
       case DT_UINT16:
       case DT_UINT32:
-         os << sample.As< uint32 >(); break;
+      case DT_UINT64:
+         os << sample.As< uint64 >(); break;
       default: // signed integers
-         os << sample.As< sint32 >(); break;
+         os << sample.As< sint64 >(); break;
       case DT_SFLOAT:
       case DT_DFLOAT:
          os << sample.As< dfloat >(); break;

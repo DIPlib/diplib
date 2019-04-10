@@ -297,11 +297,13 @@ void ImageWriteTIFF(
          case DT_UINT8:
          case DT_UINT16:
          case DT_UINT32:
+         case DT_UINT64:
             sampleFormat = SAMPLEFORMAT_UINT;
             break;
          case DT_SINT8:
          case DT_SINT16:
          case DT_SINT32:
+         case DT_SINT64:
             sampleFormat = SAMPLEFORMAT_INT;
             break;
          case DT_SFLOAT:

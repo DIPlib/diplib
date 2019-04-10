@@ -58,7 +58,7 @@ namespace dip_opencv {
 ///    and 32-bit and 64-bit floats. Thus, `dip::DT_UINT32` cannot be mapped. We choose to map it to 32-bit signed
 ///    ints, with the potential problem that the upper half of the unsigned range is mapped to negative values
 ///    (all modern systems use two's complement). `dip::DT_BIN` is mapped to an 8-bit unsigned integer, see the note
-///    below.
+///    below. 64-bit integer images cannot be mapped and throw an exception.
 ///  - Complex pixel values are mapped to `CV_32FC2` or `CV_64FC2` -- a 2-channel float `cv::Mat` array. Consequently,
 ///    complex-valued tensor images cannot be mapped.
 ///  - `cv::Mat` objects can store arrays of any dimensionality larger than 2, but *OpenCV* functionality
@@ -194,7 +194,7 @@ inline int GetOpenMatType( dip::DataType dt, dip::uint nTensor ) {
          depth = CV_64F;
          break;
       default:
-         DIP_THROW( "This cannot happen" );
+         DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
    }
 
    return CV_MAKETYPE(depth, channels );

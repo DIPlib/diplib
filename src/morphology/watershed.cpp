@@ -88,8 +88,8 @@ void AddSizes( WatershedRegionList< TPI, UnionFunction >& list, LabelType label,
 }
 
 template< typename TPI >
-TPI AbsDiff( TPI a, TPI b ) {
-   return a > b ? TPI( a - b ) : TPI( b - a ); // casting back to TPI, because of inane default casts.
+dfloat AbsDiff( TPI a, TPI b ) {
+   return static_cast< dfloat >( a > b ? a - b : b - a );
 }
 
 template< typename TPI >

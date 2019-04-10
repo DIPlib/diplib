@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the DataType class and support functions.
  *
- * (c)2014-2018, Cris Luengo.
+ * (c)2014-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,6 +54,8 @@ namespace dip {
 /// `dip::sint16`   | `dip::DT_SINT16`    | `"SINT16"`   | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`   | 2
 /// `dip::uint32`   | `dip::DT_UINT32`    | `"UINT32"`   | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned` | 4
 /// `dip::sint32`   | `dip::DT_SINT32`    | `"SINT32"`   | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`   | 4
+/// `dip::uint64`   | `dip::DT_UINT64`    | `"UINT64"`   | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned` | 8
+/// `dip::sint64`   | `dip::DT_SINT64`    | `"SINT64"`   | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`   | 8
 /// `dip::sfloat`   | `dip::DT_SFLOAT`    | `"SFLOAT"`   | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`      | 4
 /// `dip::dfloat`   | `dip::DT_DFLOAT`    | `"DFLOAT"`   | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`      | 8
 /// `dip::scomplex` | `dip::DT_SCOMPLEX`  | `"SCOMPLEX"` | `Complex`, `Flex`, `FlexBin`, `Signed`            | 8 (4 x2)
@@ -79,12 +81,14 @@ namespace dip {
 /// <tr style='font-size:70%;'><th>`DT_SINT8`    <td> `DT_SINT8`  <td> `DT_SINT8`    <td> `DT_UINT8`  <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT8`  <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16` <td> `DT_SINT32`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SINT16`   <td> `DT_SINT16` <td> `DT_SINT16`   <td> `DT_UINT16` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT16` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
-/// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32` <td> `DT_SINT64`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SINT32`   <td> `DT_SINT32` <td> `DT_SINT32`   <td> `DT_UINT32` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_UINT64`   <td> `DT_UINT64` <td> `DT_SINT64`   <td> `DT_UINT64` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_UINT64` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_SINT64`   <td> `DT_SINT64` <td> `DT_SINT64`   <td> `DT_UINT64` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_SINT64` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SINT32` <td> `DT_SFLOAT`   <td> `DT_SFLOAT` <td> `DT_SFLOAT` <td> `DT_DFLOAT`   <td> `DT_SFLOAT` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT`   <td> `DT_SFLOAT`
-/// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_SINT32` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
+/// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_SINT64` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DFLOAT`   <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT`   <td> `DT_DFLOAT`
 /// <tr style='font-size:70%;'><th>`DT_SCOMPLEX` <td> `DT_SINT32` <td> `DT_SCOMPLEX` <td> `DT_SFLOAT` <td> `DT_SFLOAT` <td> `DT_DCOMPLEX` <td> `DT_SFLOAT` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX`
-/// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_SINT32` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+/// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_SINT64` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT` <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DFLOAT` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
 /// </table>
 ///
 /// \ingroup infrastructure
@@ -120,6 +124,8 @@ struct DIP_NO_EXPORT DataType {
          SINT16,
          UINT32,
          SINT32,
+         UINT64,
+         SINT64,
          SFLOAT,
          DFLOAT,
          SCOMPLEX,
@@ -135,6 +141,8 @@ struct DIP_NO_EXPORT DataType {
       constexpr static char const* SINT16 = "SINT16";
       constexpr static char const* UINT32 = "UINT32";
       constexpr static char const* SINT32 = "SINT32";
+      constexpr static char const* UINT64 = "UINT64";
+      constexpr static char const* SINT64 = "SINT64";
       constexpr static char const* SFLOAT = "SFLOAT";
       constexpr static char const* DFLOAT = "DFLOAT";
       constexpr static char const* SCOMPLEX = "SCOMPLEX";
@@ -164,6 +172,8 @@ struct DIP_NO_EXPORT DataType {
       if( name == DTString::SINT16   ) { dt = DT::SINT16;   } else
       if( name == DTString::UINT32   ) { dt = DT::UINT32;   } else
       if( name == DTString::SINT32   ) { dt = DT::SINT32;   } else
+      if( name == DTString::UINT64   ) { dt = DT::UINT64;   } else
+      if( name == DTString::SINT64   ) { dt = DT::SINT64;   } else
       if( name == DTString::SFLOAT   ) { dt = DT::SFLOAT;   } else
       if( name == DTString::DFLOAT   ) { dt = DT::DFLOAT;   } else
       if( name == DTString::SCOMPLEX ) { dt = DT::SCOMPLEX; } else
@@ -195,6 +205,8 @@ struct DIP_NO_EXPORT DataType {
          case DT::SINT16:   return DTString::SINT16;
          case DT::UINT32:   return DTString::UINT32;
          case DT::SINT32:   return DTString::SINT32;
+         case DT::UINT64:   return DTString::UINT64;
+         case DT::SINT64:   return DTString::SINT64;
          case DT::SFLOAT:   return DTString::SFLOAT;
          case DT::DFLOAT:   return DTString::DFLOAT;
          case DT::SCOMPLEX: return DTString::SCOMPLEX;
@@ -213,6 +225,8 @@ struct DIP_NO_EXPORT DataType {
          case DT::SINT16:   return sizeof( dip::sint16 );
          case DT::UINT32:   return sizeof( dip::uint32 );
          case DT::SINT32:   return sizeof( dip::sint32 );
+         case DT::UINT64:   return sizeof( dip::uint64 );
+         case DT::SINT64:   return sizeof( dip::sint64 );
          case DT::SFLOAT:   return sizeof( dip::sfloat );
          case DT::DFLOAT:   return sizeof( dip::dfloat );
          case DT::SCOMPLEX: return sizeof( dip::scomplex );
@@ -244,6 +258,9 @@ struct DIP_NO_EXPORT DataType {
          case DT::SINT32:
             return ( value >= static_cast< dip::sint >( std::numeric_limits< sint32 >::min() ))
                 && ( value <= static_cast< dip::sint >( std::numeric_limits< sint32 >::max() ));
+         case DT::UINT64:
+            return ( value >= 0 );
+         //case DT::SINT64, and floating-point types:
          default:
             return true;
       };
@@ -266,6 +283,9 @@ struct DIP_NO_EXPORT DataType {
             return value <= static_cast< dip::uint >( std::numeric_limits< uint32 >::max() );
          case DT::SINT32:
             return value <= static_cast< dip::uint >( std::numeric_limits< sint32 >::max() );
+         case DT::SINT64:
+            return value <= static_cast< dip::uint >( std::numeric_limits< sint64 >::max() );
+         //case DT::UINT64, and floating-point types:
          default:
             return true;
       };
@@ -297,13 +317,15 @@ struct DIP_NO_EXPORT DataType {
    /// Class_SInt16     | DT_SINT16
    /// Class_UInt32     | DT_UINT32
    /// Class_SInt32     | DT_SINT32
+   /// Class_UInt64     | DT_UINT64
+   /// Class_SInt64     | DT_SINT64
    /// Class_SFloat     | DT_SFLOAT
    /// Class_DFloat     | DT_DFLOAT
    /// Class_SComplex   | DT_SCOMPLEX
    /// Class_DComplex   | DT_DCOMPLEX
    /// Class_Binary     | Class_Bin;
-   /// Class_UInt       | Class_UInt8 + Class_UInt16 + Class_UInt32
-   /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32
+   /// Class_UInt       | Class_UInt8 + Class_UInt16 + Class_UInt32 + Class_UInt64
+   /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32 + Class_SInt64
    /// Class_Integer    | Class_UInt + Class_SInt
    /// Class_IntOrBin   | Class_Integer + Class_Binary
    /// Class_Float      | Class_SFloat + Class_DFloat
@@ -350,13 +372,15 @@ struct DIP_NO_EXPORT DataType {
    DIP_EXPORT constexpr static Classes Class_SInt16 = DT::SINT16;
    DIP_EXPORT constexpr static Classes Class_UInt32 = DT::UINT32;
    DIP_EXPORT constexpr static Classes Class_SInt32 = DT::SINT32;
+   DIP_EXPORT constexpr static Classes Class_UInt64 = DT::UINT64;
+   DIP_EXPORT constexpr static Classes Class_SInt64 = DT::SINT64;
    DIP_EXPORT constexpr static Classes Class_SFloat = DT::SFLOAT;
    DIP_EXPORT constexpr static Classes Class_DFloat = DT::DFLOAT;
    DIP_EXPORT constexpr static Classes Class_SComplex = DT::SCOMPLEX;
    DIP_EXPORT constexpr static Classes Class_DComplex = DT::DCOMPLEX;
    DIP_EXPORT constexpr static Classes Class_Binary = Class_Bin;
-   DIP_EXPORT constexpr static Classes Class_UInt = Class_UInt8 + Class_UInt16 + Class_UInt32;
-   DIP_EXPORT constexpr static Classes Class_SInt = Class_SInt8 + Class_SInt16 + Class_SInt32;
+   DIP_EXPORT constexpr static Classes Class_UInt = Class_UInt8 + Class_UInt16 + Class_UInt32 + Class_UInt64;
+   DIP_EXPORT constexpr static Classes Class_SInt = Class_SInt8 + Class_SInt16 + Class_SInt32 + Class_SInt64;
    DIP_EXPORT constexpr static Classes Class_Integer = Class_UInt + Class_SInt;
    DIP_EXPORT constexpr static Classes Class_IntOrBin = Class_Integer + Class_Binary;
    DIP_EXPORT constexpr static Classes Class_Float = Class_SFloat + Class_DFloat;
@@ -473,7 +497,7 @@ struct DIP_NO_EXPORT DataType {
    /// arithmetic computation performed with the two data types.
    ///
    /// The output value given `type1` and `type2` is as follows. First the two arguments are promoted using
-   /// `dip::DataType::SuggestFlexBin` (which converts 8 and 16-bit integers to `DT_SFLOAT` and 32-bit integers
+   /// `dip::DataType::SuggestFlexBin` (which converts 8 and 16-bit integers to `DT_SFLOAT` and 32 and 64-bit integers
    /// to `DT_DFLOAT`), and the resulting two types are looked up in this table (note that the order of the two
    /// inputs is irrelevant, and the table is symmetric):
    ///
@@ -493,18 +517,20 @@ struct DIP_NO_EXPORT DataType {
    /// irrelevant, and the table is symmetric):
    ///
    /// <table>
-   /// <tr style='font-size:70%;'><th>&nbsp;        <th> `DT_BIN`      <th> `DT_UINT8`    <th> `DT_SINT8`    <th> `DT_UINT16`   <th> `DT_SINT16`   <th> `DT_UINT32`   <th> `DT_SINT32`   <th> `DT_SFLOAT`   <th> `DT_DFLOAT`   <th> `DT_SCOMPLEX` <th> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_BIN`      <td> `DT_BIN`      <td> `DT_UINT8`    <td> `DT_SINT8`    <td> `DT_UINT16`   <td> `DT_SINT16`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_UINT8`    <td> `DT_UINT8`    <td> `DT_UINT8`    <td> `DT_SINT16`   <td> `DT_UINT16`   <td> `DT_SINT16`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_SINT8`    <td> `DT_SINT8`    <td> `DT_SINT16`   <td> `DT_SINT8`    <td> `DT_SINT32`   <td> `DT_SINT16`   <td> `DT_DFLOAT`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16`   <td> `DT_UINT16`   <td> `DT_SINT32`   <td> `DT_UINT16`   <td> `DT_SINT32`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT32`   <td> `DT_SINT16`   <td> `DT_DFLOAT`   <td> `DT_SINT32`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32`   <td> `DT_UINT32`   <td> `DT_DFLOAT`   <td> `DT_UINT32`   <td> `DT_DFLOAT`   <td> `DT_UINT32`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_DFLOAT`   <td> `DT_SINT32`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
-   /// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>&nbsp;        <th> `DT_BIN`      <th> `DT_UINT8`    <th> `DT_SINT8`    <th> `DT_UINT16`   <th> `DT_SINT16`   <th> `DT_UINT32`   <th> `DT_SINT32`   <th> `DT_UINT64`   <th> `DT_SINT64`   <th> `DT_SFLOAT`   <th> `DT_DFLOAT`   <th> `DT_SCOMPLEX` <th> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_BIN`      <td> `DT_BIN`      <td> `DT_UINT8`    <td> `DT_SINT8`    <td> `DT_UINT16`   <td> `DT_SINT16`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT8`    <td> `DT_UINT8`    <td> `DT_UINT8`    <td> `DT_SINT16`   <td> `DT_UINT16`   <td> `DT_SINT16`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT8`    <td> `DT_SINT8`    <td> `DT_SINT16`   <td> `DT_SINT8`    <td> `DT_SINT32`   <td> `DT_SINT16`   <td> `DT_SINT64`   <td> `DT_SINT32`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT16`   <td> `DT_UINT16`   <td> `DT_UINT16`   <td> `DT_SINT32`   <td> `DT_UINT16`   <td> `DT_SINT32`   <td> `DT_UINT32`   <td> `DT_SINT32`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT16`   <td> `DT_SINT32`   <td> `DT_SINT16`   <td> `DT_SINT64`   <td> `DT_SINT32`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT32`   <td> `DT_UINT32`   <td> `DT_UINT32`   <td> `DT_SINT64`   <td> `DT_UINT32`   <td> `DT_SINT64`   <td> `DT_UINT32`   <td> `DT_SINT64`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT32`   <td> `DT_SINT64`   <td> `DT_SINT32`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_UINT64`   <td> `DT_UINT64`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_UINT64`   <td> `DT_SINT64`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_SINT64`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SFLOAT`   <td> `DT_DFLOAT`   <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DFLOAT`   <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_SCOMPLEX` <td> `DT_DCOMPLEX`
+   /// <tr style='font-size:70%;'><th>`DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX` <td> `DT_DCOMPLEX`
    /// </table>
    DIP_EXPORT static DataType SuggestDyadicOperation( DataType type1, DataType type2 );
 
@@ -532,6 +558,8 @@ template<> constexpr DataType::DataType( uint16   ) : dt( DT::UINT16   ) {}
 template<> constexpr DataType::DataType( sint16   ) : dt( DT::SINT16   ) {}
 template<> constexpr DataType::DataType( uint32   ) : dt( DT::UINT32   ) {}
 template<> constexpr DataType::DataType( sint32   ) : dt( DT::SINT32   ) {}
+template<> constexpr DataType::DataType( uint64   ) : dt( DT::UINT64   ) {}
+template<> constexpr DataType::DataType( sint64   ) : dt( DT::SINT64   ) {}
 template<> constexpr DataType::DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
 template<> constexpr DataType::DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
 template<> constexpr DataType::DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
@@ -551,6 +579,8 @@ constexpr DataType DT_UINT16{ DataType::DT::UINT16 };
 constexpr DataType DT_SINT16{ DataType::DT::SINT16 };
 constexpr DataType DT_UINT32{ DataType::DT::UINT32 };
 constexpr DataType DT_SINT32{ DataType::DT::SINT32 };
+constexpr DataType DT_UINT64{ DataType::DT::UINT64 };
+constexpr DataType DT_SINT64{ DataType::DT::SINT64 };
 constexpr DataType DT_SFLOAT{ DataType::DT::SFLOAT };
 constexpr DataType DT_DFLOAT{ DataType::DT::DFLOAT };
 constexpr DataType DT_SCOMPLEX{ DataType::DT::SCOMPLEX };

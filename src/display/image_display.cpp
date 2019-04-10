@@ -213,7 +213,7 @@ namespace {
 
 template< typename T >
 dfloat convert( T v, bool /*usePhase*/ ) {
-   return v;
+   return static_cast< dfloat >( v );
 }
 
 template< typename T >

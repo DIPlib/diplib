@@ -50,7 +50,7 @@ inline void CopyPixelWithInterpolation( TPI const* in, TPI* out,
                                         dip::uint length, dip::sint inStride, dip::sint outStride,
                                         dfloat fraction, dip::sint interpStride ) {
    for( dip::uint ii = 0; ii < length; ++ii ) {
-      *out = static_cast< TPI >( *in * ( 1 - fraction ) + *( in + interpStride ) * fraction );
+      *out = static_cast< TPI >( static_cast< dfloat >( *in ) * ( 1 - fraction ) + static_cast< dfloat >( *( in + interpStride )) * fraction );
       in += inStride;
       out += outStride;
    }
@@ -69,11 +69,11 @@ inline void CopyPixelWithInterpolation( std::complex< TPI > const* in, std::comp
 
 template< typename TPI >
 class dip__DirectLUT_Integer : public Framework::ScanLineFilter {
-      // Applies the LUT with data type TPI, and no index, to an input image of type uint32.
+      // Applies the LUT with data type TPI, and no index, to an input image of type uint64.
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         uint32 const* in = static_cast< uint32 const* >( params.inBuffer[ 0 ].buffer );
+         uint64 const* in = static_cast< uint64 const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
@@ -401,7 +401,7 @@ void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpol
       } else {
          if( in.DataType().IsUnsigned() ) {
             DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Integer, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_), values_.DataType() );
-            inBufType = DT_UINT32;
+            inBufType = DT_UINT64;
          } else {
             DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Float, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
             inBufType = DT_DFLOAT;

@@ -178,8 +178,8 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             auto maskStride = params.inBuffer[ 1 ].stride;
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  if( *mask && ( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ configuration_.FindBin( *in ) ];
+                  if( *mask && ( static_cast< dfloat >( *in ) >= configuration_.lowerBound ) && ( static_cast< dfloat >( *in ) < configuration_.upperBound )) {
+                     ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -187,7 +187,7 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask ) {
-                     ++data[ configuration_.FindBin( *in ) ];
+                     ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -197,14 +197,14 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             // Otherwise we don't.
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  if(( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ configuration_.FindBin( *in ) ];
+                  if(( static_cast< dfloat >( *in ) >= configuration_.lowerBound ) && ( static_cast< dfloat >( *in ) < configuration_.upperBound )) {
+                     ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
                   }
                   in += inStride;
                }
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  ++data[ configuration_.FindBin( *in ) ];
+                  ++data[ configuration_.FindBin( static_cast< dfloat >( *in )) ];
                   in += inStride;
                }
             }
@@ -271,7 +271,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
                if( *mask ) {
                   bool include = true;
                   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                     if( configuration_[ jj ].IsOutOfRange( *( in[ jj ] ))) {
+                     if( configuration_[ jj ].IsOutOfRange( static_cast< dfloat >( *( in[ jj ] )))) {
                         include = false;
                         break;
                      }
@@ -279,7 +279,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
                   if( include ) {
                      dip::sint offset = 0;
                      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                        offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( *( in[ jj ] ));
+                        offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( static_cast< dfloat >( *( in[ jj ] )));
                      }
                      ++data[ offset ];
                   }
@@ -294,7 +294,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                bool include = true;
                for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                  if( configuration_[ jj ].IsOutOfRange( *( in[ jj ] ))) {
+                  if( configuration_[ jj ].IsOutOfRange( static_cast< dfloat >( *( in[ jj ] )))) {
                      include = false;
                      break;
                   }
@@ -302,7 +302,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
                if( include ) {
                   dip::sint offset = 0;
                   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-                     offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( *( in[ jj ] ));
+                     offset += image_.Stride( jj ) * configuration_[ jj ].FindBin( static_cast< dfloat >( *( in[ jj ] )));
                   }
                   ++data[ offset ];
                }
@@ -485,7 +485,7 @@ class dip__ReverseLookup : public Framework::ScanLineFilter {
             bool include = true;
             TPI const* in_t = in;
             for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
-               if( configuration_[ jj ].IsOutOfRange( *in_t )) {
+               if( configuration_[ jj ].IsOutOfRange( static_cast< dfloat >( *in_t ))) {
                   include = false;
                   break;
                }
@@ -494,7 +494,7 @@ class dip__ReverseLookup : public Framework::ScanLineFilter {
                dip::sint offset = 0;
                in_t = in;
                for( dip::uint jj = 0; jj < nDims; ++jj, in_t += tensorStride ) {
-                  offset += histogram_.Stride( jj ) * configuration_[ jj ].FindBin( *in_t );
+                  offset += histogram_.Stride( jj ) * configuration_[ jj ].FindBin( static_cast< dfloat >( *in_t ));
                }
                *out = data[ offset ];
             } else {

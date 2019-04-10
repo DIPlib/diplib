@@ -89,10 +89,10 @@ class dip__Clustering : public Framework::ScanLineFilter {
             } else {
                // Update the new mean of nearest mean
                for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  clusters_[ nearest ].newMean[ ii ] += *in * static_cast< dfloat >( pos[ ii ] );
+                  clusters_[ nearest ].newMean[ ii ] += static_cast< dfloat >( *in ) * static_cast< dfloat >( pos[ ii ] );
                }
                clusters_[ nearest ].newMean[ scanDim ] += static_cast< dfloat >( *in ) * static_cast< dfloat >( xx );
-               clusters_[ nearest ].norm += *in;
+               clusters_[ nearest ].norm += static_cast< dfloat >( *in );
                in += inStride;
             }
          }

@@ -559,6 +559,8 @@ void Image::Fill( Image::Sample const& sample ) {
       case DT_SINT16:   InternFill( *this, sample.As< sint16   >() ); break;
       case DT_UINT32:   InternFill( *this, sample.As< uint32   >() ); break;
       case DT_SINT32:   InternFill( *this, sample.As< sint32   >() ); break;
+      case DT_UINT64:   InternFill( *this, sample.As< uint64   >() ); break;
+      case DT_SINT64:   InternFill( *this, sample.As< sint64   >() ); break;
       case DT_SFLOAT:   InternFill( *this, sample.As< sfloat   >() ); break;
       case DT_DFLOAT:   InternFill( *this, sample.As< dfloat   >() ); break;
       case DT_SCOMPLEX: InternFill( *this, sample.As< scomplex >() ); break;

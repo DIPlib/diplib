@@ -48,6 +48,9 @@ dip::Image BufferToImage( py::buffer& buf ) {
       case py::format_descriptor< dip::uint32 >::c:
          datatype = dip::DT_UINT32;
          break;
+      case py::format_descriptor< dip::uint64 >::c:
+         datatype = dip::DT_UINT64;
+         break;
       case py::format_descriptor< dip::sint8 >::c:
          datatype = dip::DT_SINT8;
          break;
@@ -56,6 +59,9 @@ dip::Image BufferToImage( py::buffer& buf ) {
          break;
       case py::format_descriptor< dip::sint32 >::c:
          datatype = dip::DT_SINT32;
+         break;
+      case py::format_descriptor< dip::sint64 >::c:
+         datatype = dip::DT_SINT64;
          break;
       case py::format_descriptor< dip::sfloat >::c:
          datatype = dip::DT_SFLOAT;
@@ -128,6 +134,9 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
       case dip::DT_UINT32:
          format = py::format_descriptor< dip::uint32 >::format();
          break;
+      case dip::DT_UINT64:
+         format = py::format_descriptor< dip::uint64 >::format();
+         break;
       case dip::DT_SINT8:
          format = py::format_descriptor< dip::sint8 >::format();
          break;
@@ -136,6 +145,9 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
          break;
       case dip::DT_SINT32:
          format = py::format_descriptor< dip::sint32 >::format();
+         break;
+      case dip::DT_SINT64:
+         format = py::format_descriptor< dip::sint64 >::format();
          break;
       case dip::DT_SFLOAT:
          format = py::format_descriptor< dip::sfloat >::format();

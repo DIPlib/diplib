@@ -340,7 +340,7 @@ SubpixelLocationResult dip__SubpixelLocation(
                dip::uint count = 0;
                for( dip::sint jj = -1; jj <= 1; ++jj ) {
                   for( dip::sint ii = -1; ii <= 1; ++ii ) {
-                     t[ count++ ] = *( in + ii * input.Stride( 0 ) + jj * input.Stride( 1 ));
+                     t[ count++ ] = static_cast< dfloat >( *( in + ii * input.Stride( 0 ) + jj * input.Stride( 1 )));
                   }
                }
                bool inverted = false;
@@ -369,7 +369,7 @@ SubpixelLocationResult dip__SubpixelLocation(
                for( dip::sint kk = -1; kk <= 1; ++kk ) {
                   for( dip::sint jj = -1; jj <= 1; ++jj ) {
                      for( dip::sint ii = -1; ii <= 1; ++ii ) {
-                        t[ count++ ] = *( in + ii * input.Stride( 0 ) + jj * input.Stride( 1 ) + kk * input.Stride( 2 ));
+                        t[ count++ ] = static_cast< dfloat >( *( in + ii * input.Stride( 0 ) + jj * input.Stride( 1 ) + kk * input.Stride( 2 )));
                      }
                   }
                }

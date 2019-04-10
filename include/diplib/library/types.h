@@ -58,7 +58,7 @@ namespace dip {
 // as `dip::uint`, everywhere in the DIPlib code base!
 // For consistency, we also use `dip::sint` everywhere we refer to `sint`.
 //
-// NOTE: It might be better to always used signed integer types everywhere.
+// NOTE: It might be better to always use signed integer types everywhere.
 //       uint could lead to difficult to catch errors in loops, uint ii<0 is
 //       always false. I started with the uint because the standard library
 //       uses it for sizes of arrays, and sizeof() is unsigned also. Maybe
@@ -87,9 +87,11 @@ class DIP_NO_EXPORT bin;
 using uint8 = std::uint8_t;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
 using uint16 = std::uint16_t;    ///< Type for samples in a 16-bit unsigned integer image
 using uint32 = std::uint32_t;    ///< Type for samples in a 32-bit unsigned integer image
+using uint64 = std::uint64_t;    ///< Type for samples in a 64-bit unsigned integer image
 using sint8 = std::int8_t;       ///< Type for samples in an 8-bit signed integer image
 using sint16 = std::int16_t;     ///< Type for samples in a 16-bit signed integer image
 using sint32 = std::int32_t;     ///< Type for samples in a 32-bit signed integer image
+using sint64 = std::int64_t;     ///< Type for samples in a 64-bit signed integer image
 using sfloat = float;            ///< Type for samples in a 32-bit floating point (single-precision) image
 using dfloat = double;           ///< Type for samples in a 64-bit floating point (double-precision) image
 using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
@@ -103,23 +105,23 @@ template<> struct IsSampleType< bin > { static constexpr bool value = true; };
 template<> struct IsSampleType< uint8 > { static constexpr bool value = true; };
 template<> struct IsSampleType< uint16 > { static constexpr bool value = true; };
 template<> struct IsSampleType< uint32 > { static constexpr bool value = true; };
+template<> struct IsSampleType< uint64 > { static constexpr bool value = true; };
 template<> struct IsSampleType< sint8 > { static constexpr bool value = true; };
 template<> struct IsSampleType< sint16 > { static constexpr bool value = true; };
 template<> struct IsSampleType< sint32 > { static constexpr bool value = true; };
+template<> struct IsSampleType< sint64 > { static constexpr bool value = true; };
 template<> struct IsSampleType< sfloat > { static constexpr bool value = true; };
 template<> struct IsSampleType< dfloat > { static constexpr bool value = true; };
 template<> struct IsSampleType< scomplex > { static constexpr bool value = true; };
 template<> struct IsSampleType< dcomplex > { static constexpr bool value = true; };
 template< typename T > struct IsNumericType { static constexpr bool value = IsSampleType< T >::value; };
-#if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict.
 template<> struct IsNumericType< dip::uint > { static constexpr bool value = true; };
 template<> struct IsNumericType< dip::sint > { static constexpr bool value = true; };
-#endif
 template<> struct IsNumericType< bool > { static constexpr bool value = true; };
 template< typename T > struct IsIndexingType { static constexpr bool value = false; };
 template<> struct IsIndexingType< signed int > { static constexpr bool value = true; };
 template<> struct IsIndexingType< unsigned int > { static constexpr bool value = true; };
-#if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict.
+#if SIZE_MAX != UINT_MAX // we don't want to compile the next two if `dip::uint == unsigned int`.
 template<> struct IsIndexingType< dip::uint > { static constexpr bool value = true; };
 template<> struct IsIndexingType< dip::sint > { static constexpr bool value = true; };
 #endif
@@ -298,6 +300,8 @@ namespace detail {
 template< typename T > struct FloatTypeCalculator { using type = sfloat; };
 template<> struct FloatTypeCalculator< uint32 > { using type = dfloat; };
 template<> struct FloatTypeCalculator< sint32 > { using type = dfloat; };
+template<> struct FloatTypeCalculator< uint64 > { using type = dfloat; };
+template<> struct FloatTypeCalculator< sint64 > { using type = dfloat; };
 template<> struct FloatTypeCalculator< dfloat > { using type = dfloat; };
 template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
@@ -316,6 +320,8 @@ namespace detail {
 template< typename T > struct ComplexTypeCalculator { using type = scomplex; };
 template<> struct ComplexTypeCalculator< uint32 > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< sint32 > { using type = dcomplex; };
+template<> struct ComplexTypeCalculator< uint64 > { using type = dcomplex; };
+template<> struct ComplexTypeCalculator< sint64 > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dfloat > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
@@ -342,6 +348,7 @@ template< typename T > struct AbsTypeCalculator { using type = T; };
 template<> struct AbsTypeCalculator< sint8 > { using type = uint8; };
 template<> struct AbsTypeCalculator< sint16 > { using type = uint16; };
 template<> struct AbsTypeCalculator< sint32 > { using type = uint32; };
+template<> struct AbsTypeCalculator< sint64 > { using type = uint64; };
 template<> struct AbsTypeCalculator< scomplex > { using type = sfloat; };
 template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail

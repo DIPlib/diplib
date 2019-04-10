@@ -97,6 +97,8 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
                return DT_UINT16;
             case 32:
                return DT_UINT32;
+            case 64:
+               return DT_UINT64;
             default:
                DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
          }
@@ -108,6 +110,8 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
                return DT_SINT16;
             case 32:
                return DT_SINT32;
+            case 64:
+               return DT_SINT64;
             default:
                DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
          }

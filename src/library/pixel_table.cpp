@@ -417,7 +417,7 @@ void dip__AddWeights(
       position -= origin;
       TPI* data = static_cast< TPI* >( image.Pointer( position ));
       for( dip::uint ii = 0; ii < run.length; ++ii ) {
-         weights.push_back( *data );
+         weights.push_back( static_cast< dfloat >( *data ));
          data += stride;
       }
    }

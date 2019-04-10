@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality to copy a pixel buffer with cast.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -248,6 +248,9 @@ static inline void CopyBufferFrom(
       case dip::DT_UINT32:
          CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
+      case dip::DT_UINT64:
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< uint64* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         break;
       case dip::DT_SINT8:
          CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
@@ -256,6 +259,9 @@ static inline void CopyBufferFrom(
          break;
       case dip::DT_SINT32:
          CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         break;
+      case dip::DT_SINT64:
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sint64* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SFLOAT:
          CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
@@ -269,6 +275,8 @@ static inline void CopyBufferFrom(
       case dip::DT_DCOMPLEX:
          CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
+      default:
+         DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
 }
 
@@ -310,6 +318,9 @@ void CopyBuffer(
       case dip::DT_UINT32:
          CopyBufferFrom( static_cast< uint32 const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
+      case dip::DT_UINT64:
+         CopyBufferFrom( static_cast< uint64 const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         break;
       case dip::DT_SINT8:
          CopyBufferFrom( static_cast< sint8 const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
@@ -318,6 +329,9 @@ void CopyBuffer(
          break;
       case dip::DT_SINT32:
          CopyBufferFrom( static_cast< sint32 const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         break;
+      case dip::DT_SINT64:
+         CopyBufferFrom( static_cast< sint64 const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SFLOAT:
          CopyBufferFrom( static_cast< sfloat const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
@@ -331,6 +345,8 @@ void CopyBuffer(
       case dip::DT_DCOMPLEX:
          CopyBufferFrom( static_cast< dcomplex const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
+      default:
+         DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
 }
 
@@ -379,7 +395,7 @@ static inline void ExpandBufferFirstOrder(
       // Left side
       DataType* in = buffer;
       DataType* out = buffer - stride;
-      dfloat d0 = *in;
+      dfloat d0 = static_cast< dfloat >( *in );
       dfloat d1 = d0 / static_cast< dfloat >( left + 1 );
       for( dip::uint ii = 0; ii < left; ii++ ) {
          d0 -= d1;
@@ -391,7 +407,7 @@ static inline void ExpandBufferFirstOrder(
       // Right side
       DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
       DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
-      dfloat d0 = *in;
+      dfloat d0 = static_cast< dfloat >( *in );
       dfloat d1 = d0 / static_cast< dfloat >( right + 1 );
       for( dip::uint ii = 0; ii < right; ii++ ) {
          d0 -= d1;
@@ -418,8 +434,8 @@ static inline void ExpandBufferSecondOrder(
       DataType* in = buffer;
       DataType* out = buffer - stride;
       dfloat b = static_cast< dfloat >( left ) + 1.0;
-      dfloat d0 = *in;
-      dfloat f1 = *( in + stride );
+      dfloat d0 = static_cast< dfloat >( *in );
+      dfloat f1 = static_cast< dfloat >( *( in + stride ));
       dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
       dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
       for( dip::uint ii = 1; ii <= left; ii++ ) {
@@ -433,8 +449,8 @@ static inline void ExpandBufferSecondOrder(
       DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
       DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
       dfloat b = static_cast< dfloat >( right ) + 1.0;
-      dfloat d0 = *in;
-      dfloat f1 = *( in - stride );
+      dfloat d0 = static_cast< dfloat >( *in );
+      dfloat f1 = static_cast< dfloat >( *( in - stride ));
       dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
       dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
       for( dip::uint ii = 1; ii <= right; ii++ ) {
@@ -467,8 +483,8 @@ static inline void ExpandBufferThirdOrder(
       DataType* out = buffer - stride;
       dfloat b = static_cast< dfloat >( left ) + 1.0;
       dfloat b12 = ( b + 1 ) * ( b + 1 );
-      dfloat d0 = *in;
-      dfloat f1 = *( in + stride );
+      dfloat d0 = static_cast< dfloat >( *in );
+      dfloat f1 = static_cast< dfloat >( *( in + stride ));
       dfloat d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
       dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 )) / ( b * b );
       dfloat d3 = d0 / ( b * b ) - f1 / b12;
@@ -484,8 +500,8 @@ static inline void ExpandBufferThirdOrder(
       DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
       dfloat b = static_cast< dfloat >( right ) + 1.0;
       dfloat b12 = ( b + 1 ) * ( b + 1 );
-      dfloat d0 = *in;
-      dfloat f1 = *( in - stride );
+      dfloat d0 = static_cast< dfloat >( *in );
+      dfloat f1 = static_cast< dfloat >( *( in - stride ));
       dfloat d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
       dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 )) / ( b * b );
       dfloat d3 = d0 / ( b * b ) - f1 / b12;
@@ -701,6 +717,9 @@ void ExpandBuffer(
       case dip::DT_UINT32:
          ExpandBufferFromTo( static_cast< uint32* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
+      case dip::DT_UINT64:
+         ExpandBufferFromTo( static_cast< uint64* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
+         break;
       case dip::DT_SINT8:
          ExpandBufferFromTo( static_cast< sint8* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
@@ -709,6 +728,9 @@ void ExpandBuffer(
          break;
       case dip::DT_SINT32:
          ExpandBufferFromTo( static_cast< sint32* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
+         break;
+      case dip::DT_SINT64:
+         ExpandBufferFromTo( static_cast< sint64* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_SFLOAT:
          ExpandBufferFromTo( static_cast< sfloat* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
@@ -725,6 +747,8 @@ void ExpandBuffer(
          ExpandBufferFromTo( static_cast< dfloat* >( buffer ),     stride * 2, tensorStride * 2, pixels, tensorElements, left, right, bc );
          ExpandBufferFromTo( static_cast< dfloat* >( buffer ) + 1, stride * 2, tensorStride * 2, pixels, tensorElements, left, right, bc );
          break;
+      default:
+         DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
 }
 

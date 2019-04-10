@@ -1144,7 +1144,7 @@ class ProjectionPositionMinMax : public ProjectionScanFunction {
          }
          // Store coordinate.
          // Currently, only a single processing dim is supported, so only one coordinate is stored.
-         *static_cast< dip::uint32* >( out ) = static_cast< dip::uint32 >( limitCoords.front() );
+         *static_cast< dip::uint32* >( out ) = clamp_cast< dip::uint32 >( limitCoords.front() );
       }
 
    protected:
@@ -1304,7 +1304,7 @@ class ProjectionPositionPercentile : public ProjectionScanFunction {
          }
          // Store coordinate.
          // Currently, only a single processing dim is supported, so only one coordinate is stored.
-         *static_cast< dip::uint32* >( out ) = static_cast< dip::uint32 >( percentileCoords.front() );
+         *static_cast< dip::uint32* >( out ) = clamp_cast< dip::uint32 >( percentileCoords.front() );
       }
 
    protected:
