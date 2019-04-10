@@ -32,9 +32,9 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED on)
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -pedantic")
 elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unused-parameter")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unused-parameter -pedantic")
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
    # TODO: compiler flags for Intel compiler
 elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
@@ -46,12 +46,8 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Reentrant string tokenization
-include(CheckFunctionExists)
-check_function_exists(strtok_r HAVE_STRTOK_R)
-
 # ICS
-#configure_file(libics_conf.h.in ${CMAKE_CURRENT_SOURCE_DIR}/libics_conf.h COPYONLY)
+#configure_file(libics_conf.h.in ${CMAKE_CURRENT_SOURCE_DIR}/libics_conf.h COPYONLY) # Commented out for DIPlib
 set(SOURCES
       libics_binary.c
       libics_compress.c
@@ -76,45 +72,80 @@ set(HEADERS
       libics_test.h
       )
 
-# Build a dll
-add_library(libics SHARED ${SOURCES} ${HEADERS})
-target_compile_definitions(libics PRIVATE BUILD_ICSLIB) # For Windows, when compiling DLL
-target_compile_definitions(libics INTERFACE USE_ICSLIB_DLL) # For Windows, when linking against DLL
-target_include_directories(libics PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+add_library(libics STATIC ${SOURCES} ${HEADERS}) # For DIPlib: added STATIC
+
+#if(BUILD_SHARED_LIBS)
+#   target_compile_definitions(libics PRIVATE BUILD_ICSLIB) # When compiling DLL/SO
+#   target_compile_definitions(libics INTERFACE USE_ICSLIB_DLL) # When linking against DLL/SO
+#endif()
+
+target_include_directories(libics PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>) # This line added for DIPlib
+
+set_target_properties(libics PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
+
+if(UNIX)
+   set_target_properties(libics PROPERTIES OUTPUT_NAME "ics")
+   target_link_libraries(libics PUBLIC m)
+endif(UNIX)
+
+# Link against zlib
+#find_package(ZLIB)
+#if(ZLIB_FOUND)
+#   set(LIBICS_USE_ZLIB TRUE CACHE BOOL "Use Zlib in libics")
+#endif()
+#if(LIBICS_USE_ZLIB)
+#   target_link_libraries(libics PUBLIC ${ZLIB_LIBRARIES})
+#   target_include_directories(libics PRIVATE ${ZLIB_INCLUDE_DIRS})
+#   target_compile_definitions(libics PUBLIC -DICS_ZLIB)
+#endif()
+
+# DIPlib-specific zlib
 if(TARGET zlibstatic)
    target_link_libraries(libics PRIVATE zlibstatic)
    target_compile_definitions(libics PUBLIC -DICS_ZLIB)
 endif()
-if(UNIX)
-   set_target_properties(libics PROPERTIES OUTPUT_NAME "ics")
-   target_link_libraries(libics PRIVATE m)
-endif(UNIX)
-
-# Build a static library
-add_library(libics_static STATIC ${SOURCES} ${HEADERS})
-target_include_directories(libics_static PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-set_target_properties(libics_static PROPERTIES C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE TRUE)
-if(TARGET zlibstatic)
-   target_link_libraries(libics_static PRIVATE zlibstatic)
-   target_compile_definitions(libics_static PUBLIC -DICS_ZLIB)
-endif()
-if(UNIX)
-   set_target_properties(libics_static PROPERTIES OUTPUT_NAME "ics")
-   target_link_libraries(libics_static PRIVATE m)
-endif(UNIX)
 
 # Reentrant string tokenization
+include(CheckFunctionExists)
+check_function_exists(strtok_r HAVE_STRTOK_R)
 if (HAVE_STRTOK_R)
   target_compile_definitions(libics PRIVATE -DHAVE_STRTOK_R)
-  target_compile_definitions(libics_static PRIVATE -DHAVE_STRTOK_R)
 endif()
 
-# Install
-install(TARGETS libics libics_static DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include)
+# Install -- No installing for DIPlib
+#export(TARGETS libics FILE cmake/libicsTargets.cmake)
+
+#include(CMakePackageConfigHelpers)
+#write_basic_package_version_file(
+#      cmake/libicsConfigVersion.cmake
+#      VERSION ${PACKAGE_VERSION}
+#      COMPATIBILITY AnyNewerVersion)
+
+#configure_package_config_file(
+#      cmake/libicsConfig.cmake.in
+#      cmake/libicsConfig.cmake
+#      INSTALL_DESTINATION cmake/)
+
+#install(TARGETS libics
+#      EXPORT libicsTargets
+#      ARCHIVE DESTINATION lib
+#      LIBRARY DESTINATION lib
+#      RUNTIME DESTINATION bin
+#      INCLUDES DESTINATION include)
+
+#install(FILES ${HEADERS} DESTINATION include)
+
+#install(FILES
+#      ${CMAKE_CURRENT_BINARY_DIR}/cmake/libicsConfig.cmake
+#      ${CMAKE_CURRENT_BINARY_DIR}/cmake/libicsConfigVersion.cmake
+#      DESTINATION cmake/)
+
+#install(EXPORT libicsTargets DESTINATION cmake)
+
 
 # Unit tests
 enable_testing()
+
 add_executable(test_ics1 EXCLUDE_FROM_ALL test_ics1.c)
 target_link_libraries(test_ics1 libics)
 add_executable(test_ics2a EXCLUDE_FROM_ALL test_ics2a.c)
@@ -137,6 +168,7 @@ add_executable(test_metadata EXCLUDE_FROM_ALL test_metadata.c)
 target_link_libraries(test_metadata libics)
 add_executable(test_history EXCLUDE_FROM_ALL test_history.c)
 target_link_libraries(test_history libics)
+
 set(TEST_PROGRAMS
       test_ics1
       test_ics2a
@@ -152,6 +184,7 @@ if(LIBICS_USE_ZLIB)
    set(TEST_PROGRAMS ${TEST_PROGRAMS} test_gzip)
 endif()
 add_custom_target(all_tests DEPENDS ${TEST_PROGRAMS})
+
 add_test(ctest_build_test_code "${CMAKE_COMMAND}" --build "${PROJECT_BINARY_DIR}" --target all_tests)
 add_test(NAME test_ics1 COMMAND test_ics1 "${CMAKE_CURRENT_SOURCE_DIR}/test/testim.ics" result_v1.ics)
 set_tests_properties(test_ics1 PROPERTIES DEPENDS ctest_build_test_code)
@@ -184,4 +217,9 @@ endif()
 add_test(NAME test_history COMMAND test_history result_v1.ics)
 set_tests_properties(test_history PROPERTIES DEPENDS test_ics1)
 
-message("~~~")
+
+# Include the C++ interface?
+set(LIBICS_INCLUDE_CPP TRUE CACHE BOOL "Include the C++ interface")
+if(LIBICS_INCLUDE_CPP)
+   include(support/cpp_interface/CMakeLists.txt)
+endif()

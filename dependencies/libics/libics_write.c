@@ -442,7 +442,6 @@ static Ics_Error writeIcsLayout(Ics_Header *icsStruct,
 
         /* Number of significant bits, default is the number of bits/sample: */
     if (icsStruct->imel.sigBits == 0) {
-        size = IcsGetDataTypeSize(icsStruct->imel.dataType);
         icsStruct->imel.sigBits = size * 8;
     }
     problem = icsFirstToken(line, ICSTOK_LAYOUT);
@@ -464,7 +463,7 @@ static Ics_Error writeIcsRep(Ics_Header *icsStruct,
     int        empty, i;
     char       line[ICS_LINE_LENGTH];
     Ics_Format format;
-    int        sign;
+    int        sign, sampleSize;
     size_t     bits;
 
 
@@ -529,17 +528,18 @@ static Ics_Error writeIcsRep(Ics_Header *icsStruct,
            problems. If the calling function put something here, we'll keep
            it. Otherwise we fill in the machine's byte order. */
     empty = 0;
-    for (i = 0; i <(int)IcsGetDataTypeSize(icsStruct->imel.dataType); i++) {
+    sampleSize = (int)IcsGetDataTypeSize(icsStruct->imel.dataType);
+    for (i = 0; i < sampleSize; i++) {
         empty |= !(icsStruct->byteOrder[i]);
     }
     if (empty) {
         IcsFillByteOrder(icsStruct->imel.dataType,
-                         (int)IcsGetDataTypeSize(icsStruct->imel.dataType),
+                         sampleSize,
                          icsStruct->byteOrder);
     }
     problem = icsFirstToken(line, ICSTOK_REPRES);
     problem |= icsAddToken(line, ICSTOK_BYTEO);
-    for (i = 0; i <(int)IcsGetDataTypeSize(icsStruct->imel.dataType) - 1; i++) {
+    for (i = 0; i < sampleSize - 1; i++) {
         problem |= icsAddInt(line, icsStruct->byteOrder[i]);
     }
     problem |= icsAddLastInt(line, icsStruct->byteOrder[i]);

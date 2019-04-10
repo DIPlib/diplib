@@ -112,15 +112,15 @@ The library can be tested for problems using
    make test
 
 CMake can be used with the following options:
-   cmake ... -DCMAKE_BUILD_TYPE=Debug
-   cmake ... -DLIBICS_USE_ZLIB=Off
+   cmake ... -DCMAKE_BUILD_TYPE=Debug # build a debug version
+   cmake ... -DLIBICS_USE_ZLIB=Off    # do not use zlib
+   cmake ... -DBUILD_SHARED_LIBS=On   # build a shared library
+   cmake ... -DLIBICS_INCLUDE_CPP=Off # do not include the C++ interface
 
 CMake projects using libics as a subproject can do
    add_subdirectory(<path/to/libics/sources>)
    target_link_libraries(target PRIVATE libics)
-or
-   target_link_libraries(target PRIVATE libics_static)
-The include directory for libics will be automatically set, and the ZLib
+The include directory for libics will be automatically set, and the zlib
 library will be linked if necessary.
 
  - Compilation with cmake on Windows:
@@ -140,9 +140,7 @@ As of 2016, this library is maintained by Scientific Volume Imaging:
 
 This library was originally written and maintained by
    Cris Luengo
-   Centre for Image Analysis
-   Swedish University of Agricultural Sciences & Uppsala University
-   Uppsala, Sweden
+   (previously at) Delft University of Technology, Delft, NL
 
 With help from
    Bert Gijsbers, Scientific Volume Imaging BV, Hilversum, NL
@@ -174,11 +172,21 @@ Which ultimately is based upon stuff written by:
    HISTORY
 =============
 
-version 1.6.1
+Unreleased:
+   Added functionality:
+   - A C++ interface.
+   - IcsSetByteOrder() allows to specify the byte order of external data.
+   Changes / improvements / fixes:
+   - Support for 64-bit integers.
    - Various bug-fixes.
+
+version 1.6.1
+   Added functionality:
    - Added SPIM parameters.
    - Added scattering parameters.
    - New functions that return ICS string properties without string copying.
+   Changes / improvements / fixes:
+   - Various bug-fixes.
    - Enable the use of negative strides.
 
 version 1.6.0
@@ -190,15 +198,16 @@ version 1.5.4
    - Small patch for supporting older Visual Studio version.
 
 version 1.5.3
+   Added functionality:
+   - Added STED and detector parameters
+   - Added a "links" page to the documentation.
    Changes / improvements / fixes:
    - Fixed documentation and made explicit the current default to version
-   2.0 files.
-   - Added a "links" page to the documentation.
+     2.0 files.
    - Fixed tests 1 and 2a, which didn't work for big-endian machines.
    - IcsWriteIcs() no longer overwrites data in the ByteOrder array.
    - Fixed a segmentation violation when trying to write an image with
-   more than 5 dimensions.
-   - Added STED and detector parameters
+     more than 5 dimensions.
    - Fixed a bug to read large compressed files.
    - Moved distribution to to github
 

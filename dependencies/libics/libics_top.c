@@ -714,6 +714,36 @@ Ics_Error IcsSetSource(ICS        *ics,
 }
 
 
+Ics_Error IcsSetByteOrder(ICS           *ics,
+                          Ics_ByteOrder  order) {
+    ICSINIT;
+
+
+    if ((ics == NULL) || (ics->fileMode != IcsFileMode_write))
+        return IcsErr_NotValidAction;
+
+    if (ics->version == 1) return IcsErr_NotValidAction;
+    if (ics->srcFile[0] == '\0') return IcsErr_NotValidAction;
+
+    switch (order) {
+        case IcsByteOrder_littleEndian:
+            IcsFillLittleEndianByteOrder(ics->imel.dataType,
+                                         (int)IcsGetDataTypeSize(ics->imel.dataType),
+                                         ics->byteOrder);
+            break;
+        case IcsByteOrder_bigEndian:
+            IcsFillBigEndianByteOrder(ics->imel.dataType,
+                                      (int)IcsGetDataTypeSize(ics->imel.dataType),
+                                      ics->byteOrder);
+            break;
+        default:
+            return IcsErr_IllParameter;
+    }
+
+    return error;
+}
+
+
 /* Set the compression method and compression parameter. */
 Ics_Error IcsSetCompression(ICS             *ics,
                             Ics_Compression  compression,
@@ -1117,6 +1147,8 @@ Ics_Error IcsGuessScilType(ICS *ics)
             break;
         case Ics_uint32:
         case Ics_sint32:
+        case Ics_uint64:
+        case Ics_sint64:
         case Ics_real64:
         case Ics_complex64:
             return IcsErr_NoScilType;

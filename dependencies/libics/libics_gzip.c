@@ -501,8 +501,8 @@ Ics_Error IcsCloseZip(Ics_Header *icsStruct)
 /* Read ZIP compressed data block. This function mostly does:
      gzread((gzFile)br->ZlibStream, outBuf, len); */
 Ics_Error IcsReadZipBlock(Ics_Header *icsStruct,
-                           void       *outBuf,
-                           size_t      len)
+                          void       *outBuf,
+                          size_t      len)
 {
 #ifdef ICS_ZLIB
     Ics_BlockRead *br      = (Ics_BlockRead*)icsStruct->blockRead;
@@ -578,8 +578,8 @@ Ics_Error IcsReadZipBlock(Ics_Header *icsStruct,
 /* Skip ZIP compressed data block. This function mostly does:
      gzseek((gzFile)br->ZlibStream, (z_off_t)offset, whence); */
 Ics_Error IcsSetZipBlock(Ics_Header *icsStruct,
-                          long        offset,
-                          int         whence)
+                         long        offset,
+                         int         whence)
 {
 #ifdef ICS_ZLIB
     ICSINIT;

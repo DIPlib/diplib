@@ -52,10 +52,10 @@ extern "C" {
 /* Library versioning is in the form major, minor, patch: */
 #define ICSLIB_VERSION "1.6.2" /* also defined in configure.ac */
 
+
 #if defined(__WIN32__) && !defined(WIN32)
 #define WIN32
 #endif
-
 
 #ifdef WIN32
 #ifdef BUILD_ICSLIB
@@ -103,6 +103,8 @@ typedef enum {
     Ics_sint16,    /* integer, signed,   16 bpp */
     Ics_uint32,    /* integer, unsigned, 32 bpp */
     Ics_sint32,    /* integer, signed,   32 bpp */
+    Ics_uint64,    /* integer, unsigned, 64 bpp */
+    Ics_sint64,    /* integer, signed,   64 bpp */
     Ics_real32,    /* real,    signed,   32 bpp */
     Ics_real64,    /* real,    signed,   64 bpp */
     Ics_complex32, /* complex, signed, 2*32 bpp */
@@ -124,6 +126,13 @@ typedef enum {
     IcsFileMode_read,  /* read mode                                   */
     IcsFileMode_update /*  write only meta-data, read any header item */
 } Ics_FileMode;
+
+
+/* Byte orders. */
+typedef enum {
+    IcsByteOrder_littleEndian, /* little endian byte order */
+    IcsByteOrder_bigEndian     /* big endian byte order    */
+} Ics_ByteOrder;
 
 
 /* Structures that define the image representation. They are only used inside
@@ -153,7 +162,7 @@ typedef struct {
 } Ics_ImelRepresentation;
 
 
-/* A list of sensor parameters that are also equiped with a state. */
+/* A list of sensor parameters that are also equipped with a state. */
 typedef enum {
     ICS_SENSOR_FIRST,
     ICS_SENSOR_IMAGING_DIRECTION,
@@ -456,7 +465,7 @@ typedef enum {
     IcsErr_TooManyDims,
         /* Unknown compression type: */
     IcsErr_UnknownCompression,
-         /* The datatype is not recognized: */
+         /* The data type is not recognized: */
     IcsErr_UnknownDataType,
         /* The state is unknown. */
     IcsErr_UnknownSensorState,
@@ -473,11 +482,11 @@ typedef enum {
 } Ics_HistoryWhich;
 
 
-typedef struct {
+typedef struct _Ics_HistoryIterator {
     int  next;                    /* index into history array, pointing to next
                                      string to read, set to -1 if there's no
                                      more to read. */
-    int  previous;                /* index to previous string, useful for relace
+    int  previous;                /* index to previous string, useful for replace
                                      and delete. */
     char key[ICS_STRLEN_TOKEN+1]; /* optional key this iterator looks for. */
 } Ics_HistoryIterator;
@@ -489,7 +498,7 @@ ICSEXPORT const char* IcsGetLibVersion(void);
 
 
 /* Returns 0 if it is not an ICS file, or the version number if it is.  If
-  forcename is non-zero, no extension is appended. */
+  forceName is non-zero, no extension is appended. */
 ICSEXPORT int IcsVersion(const char *filename,
                          int         forceName);
 
@@ -606,6 +615,13 @@ ICSEXPORT Ics_Error IcsSetDataWithStrides(ICS             *ics,
 ICSEXPORT Ics_Error IcsSetSource(ICS        *ics,
                                  const char *fname,
                                  size_t      offset);
+
+/* Set the image source byte order for an ICS version 2.0 file. Only valid if
+   writing, and only valid after calling IcsSetSource. If the data type is
+   changed after this call, the byte order information written to file might
+   not be correct. */
+ICSEXPORT Ics_Error IcsSetByteOrder(ICS           *ics,
+                                    Ics_ByteOrder  order);
 
 
 /* Set the compression method and compression parameter. Only valid if
@@ -816,7 +832,7 @@ ICSEXPORT Ics_Error IcsDeleteHistoryStringI(ICS                 *ics,
                                             Ics_HistoryIterator *it);
 
 
-/* Delete last retrieved history line (iterator still points to the same
+/* Replace last retrieved history line (iterator still points to the same
    string). */
 ICSEXPORT Ics_Error IcsReplaceHistoryStringI(ICS                 *ics,
                                              Ics_HistoryIterator *it,

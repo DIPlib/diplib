@@ -281,6 +281,38 @@ void IcsFillByteOrder(Ics_DataType dataType,
                       int          bytes,
                       int          machineByteOrder[ICS_MAX_IMEL_SIZE])
 {
+    if (IcsIsLittleEndianMachine()) {
+        IcsFillLittleEndianByteOrder(dataType, bytes, machineByteOrder);
+    } else {
+        IcsFillBigEndianByteOrder(dataType, bytes, machineByteOrder);
+    }
+}
+
+/* Fill the byte order array with little endian byte order. */
+void IcsFillLittleEndianByteOrder(Ics_DataType dataType,
+                                  int          bytes,
+                                  int          byteOrder[ICS_MAX_IMEL_SIZE])
+{
+    int i;
+   (void) dataType; /* Not used, but kept as input for consistency. */
+
+
+    if (bytes > ICS_MAX_IMEL_SIZE) {
+            /* This will cause problems if undetected, */
+            /* but shouldn't happen anyway */
+        bytes = ICS_MAX_IMEL_SIZE;
+    }
+
+    for (i = 0; i < bytes; i++) {
+        byteOrder[i] = 1 + i;
+    }
+}
+
+/* Fill the byte order array with big endian byte order. */
+void IcsFillBigEndianByteOrder(Ics_DataType dataType,
+                               int          bytes,
+                               int          byteOrder[ICS_MAX_IMEL_SIZE])
+{
     int i, hbytes;
 
 
@@ -290,22 +322,15 @@ void IcsFillByteOrder(Ics_DataType dataType,
         bytes = ICS_MAX_IMEL_SIZE;
     }
 
-    if (IcsIsLittleEndianMachine()) {
-            /* Fill byte order for a little endian machine. */
-        for (i = 0; i < bytes; i++) {
-            machineByteOrder[i] = 1 + i;
+    if (dataType == Ics_complex32 || dataType == Ics_complex64) {
+        hbytes = bytes/2;
+        for (i = 0; i < hbytes; i++) {
+            byteOrder[i]        = hbytes - i;
+            byteOrder[i+hbytes] = bytes - i;
         }
     } else {
-        if (dataType == Ics_complex32 || dataType == Ics_complex64) {
-            hbytes = bytes/2;
-            for (i = 0; i < hbytes; i++) {
-                machineByteOrder[i]        = hbytes - i;
-                machineByteOrder[i+hbytes] = bytes - i;
-            }
-        } else {
-            for (i = 0; i < bytes; i++) {
-                machineByteOrder[i] = bytes - i;
-            }
+        for (i = 0; i < bytes; i++) {
+            byteOrder[i] = bytes - i;
         }
     }
 }

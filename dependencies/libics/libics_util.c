@@ -461,6 +461,8 @@ size_t IcsGetDataTypeSize(Ics_DataType dataType)
         case Ics_real32:
             bytes = 4;
             break;
+        case Ics_uint64:
+        case Ics_sint64:
         case Ics_real64:
         case Ics_complex32:
             bytes = 8;
@@ -488,11 +490,13 @@ void IcsGetPropsDataType(Ics_DataType  dataType,
         case Ics_uint8:
         case Ics_uint16:
         case Ics_uint32:
+        case Ics_uint64:
             *sign = 0;
             /* fallthrough */
         case Ics_sint8:
         case Ics_sint16:
         case Ics_sint32:
+        case Ics_sint64:
             *format = IcsForm_integer;
             break;
         case Ics_real32:
@@ -526,6 +530,9 @@ void IcsGetDataTypeProps(Ics_DataType* dataType,
                     break;
                 case 32:
                     *dataType = sign ? Ics_sint32 : Ics_uint32;
+                    break;
+                case 64:
+                    *dataType = sign ? Ics_sint64 : Ics_uint64;
                     break;
                 default:
                     *dataType = Ics_unknown;

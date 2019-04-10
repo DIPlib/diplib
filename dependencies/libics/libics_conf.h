@@ -51,6 +51,8 @@ typedef uint16_t ics_t_uint16;
 typedef int16_t  ics_t_sint16;
 typedef uint32_t ics_t_uint32;
 typedef int32_t  ics_t_sint32;
+typedef uint64_t ics_t_uint64;
+typedef int64_t  ics_t_sint64;
 typedef float    ics_t_real32;
 typedef double   ics_t_real64;
 

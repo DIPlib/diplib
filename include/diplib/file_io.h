@@ -136,6 +136,10 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 ///
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
 /// and data type also supported by DIPlib, and therefore is used as the default image file format.
+/// Any DIPlib image can be stored as an ICS file, and read back in to yield the exact same data,
+/// with the only limitation that the ICS writer (*libics*) currently throws an exception if the image
+/// has more than 10 dimensions. *libics* can be recompiled to handle higher-dimensional images if
+/// necessary.
 ///
 /// This function saves the pixel sizes, tensor dimension, color space, and the tensor shape. However,
 /// the tensor shape is saved in a custom way and will not be recognized by other software.

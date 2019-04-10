@@ -323,6 +323,9 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
       case Ics_uint32:
          data.fileInformation.dataType = DT_UINT32;
          break;
+      case Ics_uint64:
+         data.fileInformation.dataType = DT_UINT64;
+         break;
       case Ics_sint8:
          data.fileInformation.dataType = DT_SINT8;
          break;
@@ -331,6 +334,9 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
          break;
       case Ics_sint32:
          data.fileInformation.dataType = DT_SINT32;
+         break;
+      case Ics_sint64:
+         data.fileInformation.dataType = DT_SINT64;
          break;
       case Ics_real32:
          data.fileInformation.dataType = DT_SFLOAT;
@@ -700,9 +706,11 @@ void ImageWriteICS(
       case DT_UINT8:    dt = Ics_uint8;     maxSignificantBits = 8;  break;
       case DT_UINT16:   dt = Ics_uint16;    maxSignificantBits = 16; break;
       case DT_UINT32:   dt = Ics_uint32;    maxSignificantBits = 32; break;
+      case DT_UINT64:   dt = Ics_uint64;    maxSignificantBits = 64; break;
       case DT_SINT8:    dt = Ics_sint8;     maxSignificantBits = 8;  break;
       case DT_SINT16:   dt = Ics_sint16;    maxSignificantBits = 16; break;
       case DT_SINT32:   dt = Ics_sint32;    maxSignificantBits = 32; break;
+      case DT_SINT64:   dt = Ics_sint64;    maxSignificantBits = 64; break;
       case DT_SFLOAT:   dt = Ics_real32;    maxSignificantBits = 32; break;
       case DT_DFLOAT:   dt = Ics_real64;    maxSignificantBits = 64; break;
       case DT_SCOMPLEX: dt = Ics_complex32; maxSignificantBits = 32; break;
@@ -839,6 +847,23 @@ DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
 
    result = dip::ImageReadICS( "test2", dip::RangeArray{}, {}, "fast" );
    DOCTEST_CHECK( dip::testing::CompareImages( image, result, dip::Option::CompareImagesMode::FULL ));
+
+   // Test writing a 64-bit integer image
+   image = dip::Image( { 32, 24 }, 1, dip::DT_SINT64 );
+   image.Fill( 1234567890ll );
+   image.At( 0 ) = 0;
+   image.At( 1 ) = 9876543210ll;
+   image.At( 10 ) = 0;
+   DOCTEST_REQUIRE( image.DataType() == dip::DT_SINT64 );
+   dip::ImageWriteICS( image, "test3.ics" );
+   result = dip::ImageReadICS( "test3.ics" );
+   DOCTEST_CHECK( result.DataType() == dip::DT_SINT64 );
+   DOCTEST_CHECK( result.At( 0 ).As< dip::sint64 >() == 0 );
+   DOCTEST_CHECK( result.At( 1 ).As< dip::sint64 >() == 9876543210ll );
+   DOCTEST_CHECK( result.At( 2 ).As< dip::sint64 >() == 1234567890ll );
+   DOCTEST_CHECK( result.At( 9 ).As< dip::sint64 >() == 1234567890ll );
+   DOCTEST_CHECK( result.At( 10 ).As< dip::sint64 >() == 0 );
+   DOCTEST_CHECK( result.At( 11 ).As< dip::sint64 >() == 1234567890ll );
 }
 
 #endif // DIP__ENABLE_DOCTEST

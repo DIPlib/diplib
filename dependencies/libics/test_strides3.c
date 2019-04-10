@@ -51,7 +51,7 @@ int main(int argc, const char* argv[]) {
       fprintf(stderr, "Could not allocate memory.\n");
       exit(-1);
    }
-   retval = IcsGetDataWithStrides(ip, buf3 + bufsize - imelsize, 0, strides, 3);
+   retval = IcsGetDataWithStrides(ip, (char*)buf3 + bufsize - imelsize, 0, strides, 3);
    if (retval != IcsErr_Ok) {
       fprintf(stderr, "Could not read input image data using strides: %s\n",
               IcsGetErrorText(retval));
@@ -72,7 +72,7 @@ int main(int argc, const char* argv[]) {
       exit(-1);
    }
    IcsSetLayout(ip, dt, ndims, dims);
-   IcsSetDataWithStrides(ip, buf3 + bufsize - imelsize, bufsize, strides, 3);
+   IcsSetDataWithStrides(ip, (char*)buf3 + bufsize - imelsize, bufsize, strides, 3);
 #ifdef ICS_ZLIB
    IcsSetCompression(ip, IcsCompr_gzip, 6);
 #endif

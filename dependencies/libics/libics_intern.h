@@ -253,6 +253,12 @@ Ics_Error IcsInternAddHistory(Ics_Header *ics,
 void IcsFillByteOrder(Ics_DataType dataType,
                       int          bytes,
                       int          machineByteOrder[ICS_MAX_IMEL_SIZE]);
+void IcsFillLittleEndianByteOrder(Ics_DataType dataType,
+                                  int          bytes,
+                                  int          byteOrder[ICS_MAX_IMEL_SIZE]);
+void IcsFillBigEndianByteOrder(Ics_DataType dataType,
+                               int          bytes,
+                               int          byteOrder[ICS_MAX_IMEL_SIZE]);
 
 Ics_Error IcsWritePlainWithStrides(const void      *src,
                                    const size_t    *dim,

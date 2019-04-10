@@ -1,3 +1,32 @@
+.idea/
+.deps/
+.libs/
+*.la
+*.lo
+*.o
+*.tar.gz
 *~
-.idea
-target
+config.h
+config.log
+config.status
+libics_conf.h
+libtool
+Makefile
+stamp-*
+stamp-h2
+target*
+
+# aclocal.m4
+# autom4te.cache/
+# compile
+# config.guess
+# config.h.in
+# config.sub
+# configure
+# depcomp
+# install-sh
+# ltmain.sh
+# m4/
+# Makefile.in
+# missing
+# test-driver

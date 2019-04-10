@@ -472,7 +472,7 @@ Ics_Error IcsDeleteHistoryStringI(ICS                 *ics,
     return error;
 }
 
-/* Delete last retrieved history line (iterator still points to the same
+/* Replace last retrieved history line (iterator still points to the same
    string). Contains code duplicated from IcsInternAddHistory(). */
 Ics_Error IcsReplaceHistoryStringI(ICS                 *ics,
                                    Ics_HistoryIterator *it,

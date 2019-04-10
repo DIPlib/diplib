@@ -70,6 +70,12 @@
       <li><tt class="constant">Ics_sint32</tt>:
       <tt class="keyword">signed int</tt></li>
 
+      <li><tt class="constant">Ics_uint64</tt>:
+      <tt class="keyword">unsigned long long</tt></li>
+
+      <li><tt class="constant">Ics_sint64</tt>:
+      <tt class="keyword">signed long long</tt></li>
+
       <li><tt class="constant">Ics_real32</tt>:
       <tt class="keyword">float</tt></li>
 
@@ -104,10 +110,21 @@
 
       <li><tt class="constant">IcsCompr_gzip</tt>: Using the
       <tt class="keyword">gzip</tt> compression method
-      (the zlib libarary must be linked to). The compression parameter
+      (the zlib library must be linked to). The compression parameter
       is a value between 0 and 9: 1 gives best speed, 9 gives best
       compression, 0 gives no compression at all. A good value to use
       is 6.</li>
+    </ul>
+
+  <h3 class="ident"><a name="Ics_ByteOrder"></a>Ics_ByteOrder</h3>
+
+    <p><tt class="typeident">Ics_ByteOrder</tt> is an
+      <tt class="keyword">enum</tt> used by
+      <tt class="funcident"><a href="TopLevelFunctions.html#IcsSetByteOrder">IcsSetByteOrder</a></tt>.
+      It defines the following values:</p>
+    <ul>
+      <li><tt class="constant">IcsByteOrder_littleEndian</tt></li>
+      <li><tt class="constant">IcsByteOrder_bigEndian</tt></li>
     </ul>
 
   <h3 class="ident"><a name="Ics_HistoryWhich"></a>Ics_HistoryWhich</h3>

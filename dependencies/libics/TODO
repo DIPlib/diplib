@@ -4,7 +4,7 @@ libics to do list
 - Add bzip2 support, or rather xz (through XZ Utils).
 
 - 1-bit-per-pixel data should be packed when written. Ics_DataType
-  should then add a Ics_uint1 or Ics_binary data type. Tom·s Majtner
+  should then add a Ics_uint1 or Ics_binary data type. Tom√°s Majtner
   submitted some code that gets us pretty close to this.
 
 - IcsGetPreviewData() should look for dimensions labelled "x" and "y".
@@ -21,7 +21,3 @@ libics to do list
   with some NULL pointers. Maybe even macros?
 
 - IrfanView plugin should be updated, it still has a 3 year old bug.
-
-- test_ics2a shows an issue with endianness and the ICS file pointing to
-  an existing data file: we have no good way of determining the endianness
-  of this data file, and are stuck with using the machine's endinanness.
