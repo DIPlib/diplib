@@ -28,17 +28,16 @@
 namespace dip {
 
 using CountType = Histogram::CountType;
-static constexpr auto DT_COUNT = DataType( CountType( 0 ));
 
 Histogram KMeansClustering(
       Histogram const& in,
       dip::uint nClusters
 ) {
-   // This works because LabelType == Histogram::CountType. It will fail if we change one of these types.
-   Histogram out = in.Copy();
-   Image labs = out.GetImage();  // Makes a copy, but with shared data segment
-   labs.Protect();               // Don't reforge the data segment
+   Image labs;
    KMeansClustering( in.GetImage(), labs, nClusters );
+   Histogram out = in.Copy();
+   Image tmp = out.GetImage(); // Copy with shared data
+   tmp.Copy( labs );
    return out;
 }
 
@@ -46,11 +45,11 @@ Histogram MinimumVariancePartitioning(
       Histogram const& in,
       dip::uint nClusters
 ) {
-   // This works because LabelType == Histogram::CountType. It will fail if we change one of these types.
-   Histogram out = in.Copy();
-   Image labs = out.GetImage();  // Makes a copy, but with shared data segment
-   labs.Protect();               // Don't reforge the data segment
+   Image labs;
    MinimumVariancePartitioning( in.GetImage(), labs, nClusters );
+   Histogram out = in.Copy();
+   Image tmp = out.GetImage(); // Copy with shared data
+   tmp.Copy( labs );
    return out;
 }
 
@@ -60,13 +59,13 @@ namespace {
 dfloat FindBin( FloatArray bins, dfloat threshold ) {
    if( threshold <= 0 ) {
       return bins.front();
-   } else if( threshold >= static_cast< dfloat >( bins.size() - 1 )) {
-      return bins.back();
-   } else {
-      dfloat frac = threshold - static_cast< dfloat >( static_cast< dip::sint >( threshold )); // casting to round down
-      return bins[ static_cast< dip::uint >( threshold ) ] * ( 1.0 - frac ) +
-             bins[ static_cast< dip::uint >( threshold ) + 1 ] * frac;
    }
+   if( threshold >= static_cast< dfloat >( bins.size() - 1 )) {
+      return bins.back();
+   }
+   dfloat frac = threshold - static_cast< dfloat >( static_cast< dip::sint >( threshold )); // casting to round down
+   return bins[ static_cast< dip::uint >( threshold ) ] * ( 1.0 - frac ) +
+          bins[ static_cast< dip::uint >( threshold ) + 1 ] * frac;
 }
 
 } // namespace
@@ -111,8 +110,8 @@ FloatArray IsodataThreshold(
          dfloat moment = 0;
          dfloat sum = 0;
          for( dip::uint jj = origin1; jj < origin2; ++jj ) {
-            moment += static_cast< dfloat >( jj ) * data[ jj ];
-            sum += data[ jj ];
+            moment += static_cast< dfloat >( jj ) * static_cast< dfloat >( data[ jj ] );
+            sum += static_cast< dfloat >( data[ jj ] );
          }
          if( sum > 0 ) {
             centers[ ii ] = moment / sum;
@@ -124,8 +123,8 @@ FloatArray IsodataThreshold(
       dfloat moment = 0;
       dfloat sum = 0;
       for( dip::uint jj = origin1; jj < nBins; ++jj ) {
-         moment += static_cast< dfloat >( jj ) * data[ jj ];
-         sum += data[ jj ];
+         moment += static_cast< dfloat >( jj ) * static_cast< dfloat >( data[ jj ] );
+         sum += static_cast< dfloat >( data[ jj ] );
       }
       if( sum > 0 ) {
          centers.back() = moment / sum;
@@ -166,9 +165,9 @@ dfloat OtsuThreshold(
    dfloat ssMax = -1e6;
    dip::uint maxInd = 0;
    for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
-      w1 += *data;
-      w2 -= *data;
-      dfloat tmp = *data * *binPtr;
+      w1 += static_cast< dfloat >( *data );
+      w2 -= static_cast< dfloat >( *data );
+      dfloat tmp = static_cast< dfloat >( *data ) * *binPtr;
       m1 += tmp;
       m2 -= tmp;
       // c1(ii), c2(ii) are the centers of gravity
@@ -209,9 +208,9 @@ dfloat MinimumErrorThreshold(
    // Here we accumulate the error measure.
    FloatArray J( nBins - 1 );
    for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
-      w1 += *data;
-      w2 -= *data;
-      dfloat tmp = *data * *binPtr;
+      w1 += static_cast< dfloat >( *data );
+      w2 -= static_cast< dfloat >( *data );
+      dfloat tmp = static_cast< dfloat >( *data ) * *binPtr;
       m1 += tmp;
       m2 -= tmp;
       // c1(ii), c2(ii) are the centers of gravity
@@ -222,14 +221,14 @@ dfloat MinimumErrorThreshold(
       Histogram::CountType const* it = static_cast< Histogram::CountType* >( hist.Origin() );
       for( dip::uint jj = 0; jj <= ii; ++jj ) {
          dfloat d = bins[ jj ] - c1;
-         v1 += *it * d * d;
+         v1 += static_cast< dfloat >( *it ) * d * d;
          ++it;
       }
       v1 /= w2;
       dfloat v2 = 0;
       for( dip::uint jj = ii + 1; jj < nBins; ++jj ) {
          dfloat d = bins[ jj ] - c2;
-         v2 += *it * d * d;
+         v2 += static_cast< dfloat >( *it ) * d * d;
          ++it;
       }
       v2 /= w2;

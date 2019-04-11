@@ -60,7 +60,8 @@ inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::
 /// for a given dimension, default to dimension 0, so can be called without arguments.
 class DIP_NO_EXPORT Histogram {
    public:
-      using CountType = uint32;
+      /// \brief Type of histogram bins. See `dip::DT_COUNT`.
+      using CountType = uint64;
 
       /// \brief Configuration information for how the histogram is computed.
       ///
@@ -113,11 +114,17 @@ class DIP_NO_EXPORT Histogram {
          Configuration( dfloat lowerBound, dfloat upperBound, dfloat binSize ) :
                lowerBound( lowerBound ), upperBound( upperBound ), binSize( binSize ), mode( Mode::COMPUTE_BINS ) {}
          /// \brief A constructor takes a lower and upper bounds, and the number of bins. The bin size is computed.
+         Configuration( dfloat lowerBound, dfloat upperBound, dip::uint nBins = 256 ) :
+               lowerBound( lowerBound ), upperBound( upperBound ), nBins( nBins ) {}
+         /// \brief A constructor takes a lower and upper bounds, and the number of bins. The bin size is computed.
          Configuration( dfloat lowerBound, dfloat upperBound, int nBins = 256 ) :
-               lowerBound( lowerBound ), upperBound( upperBound ), nBins( static_cast< dip::uint >( nBins )) {}
+               Configuration( lowerBound, upperBound, static_cast< dip::uint >( nBins )) {}
+         /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
+         Configuration( dfloat lowerBound, dip::uint nBins, dfloat binSize ) :
+               lowerBound( lowerBound ), nBins( nBins ), binSize( binSize ), mode( Mode::COMPUTE_UPPER ) {}
          /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
          Configuration( dfloat lowerBound, int nBins, dfloat binSize ) :
-               lowerBound( lowerBound ), nBins( static_cast< dip::uint >( nBins )), binSize( binSize ), mode( Mode::COMPUTE_UPPER ) {}
+               Configuration( lowerBound, static_cast< dip::uint >( nBins ), binSize ) {}
          /// \brief A constructor takes an image data type, yielding a default histogram configuration for that data type.
          explicit Configuration( DataType dataType ) {
             if( dataType == DT_UINT8 ) {
@@ -284,6 +291,18 @@ class DIP_NO_EXPORT Histogram {
          DIP_STACK_TRACE_THIS( EmptyHistogram( ConfigurationArray{ configuration } ));
       }
 
+      /// \brief Create a 1D histogram around existing data. No ownership is transferred.
+      ///
+      /// `data` is a raw pointer to the data that will be encapsulated by the output histogram. Data must
+      /// be contiguous and of type `dip::Histogram::CountType`. `configuration` determines how many
+      /// bins are pointed to by `data`.
+      ///
+      /// Even though the data pointer is declared `const` here, it is possible to obtain a non-const
+      /// pointer to the data later.
+      Histogram( CountType const* data, Configuration const& configuration ) {
+         DIP_STACK_TRACE_THIS( HistogramFromDataPointer( data, configuration ));
+      }
+
       /// \brief Swaps `this` and `other`.
       void swap( Histogram& other ) {
          using std::swap;
@@ -344,6 +363,15 @@ class DIP_NO_EXPORT Histogram {
                       ( lowerBounds_ != other.lowerBounds_ ) ||
                       ( binSizes_ != other.binSizes_ )), "Histograms don't match" );
          data_ += other.data_;
+         return *this;
+      }
+
+      /// \brief Subtracts a histogram from *this, using saturated subtraction. `other` must have identical properties.
+      Histogram& operator-=( Histogram const& other ) {
+         DIP_THROW_IF(( data_.Sizes() != other.data_.Sizes() ||
+                      ( lowerBounds_ != other.lowerBounds_ ) ||
+                      ( binSizes_ != other.binSizes_ )), "Histograms don't match" );
+         data_ -= other.data_;
          return *this;
       }
 
@@ -467,7 +495,7 @@ class DIP_NO_EXPORT Histogram {
          return *static_cast< CountType* >( data_.Pointer( bin )); // Does all the checking
       }
 
-      /// \brief Get the image that holds the bin counts. The image is always scalar and of type `dip::DT_UINT32`.
+      /// \brief Get the image that holds the bin counts. The image is always scalar and of type `dip::DT_COUNT`.
       Image const& GetImage() const {
          return data_;
       }
@@ -519,7 +547,7 @@ class DIP_NO_EXPORT Histogram {
       }
 
    private:
-      Image data_;             // This is where the bins are stored. Always scalar and DT_UINT32.
+      Image data_;             // This is where the bins are stored. Always scalar and DT_COUNT.
       FloatArray lowerBounds_; // These are the lower bounds of the histogram along each dimension.
       FloatArray binSizes_;    // These are the sizes of the bins along each dimension.
       // Compute the upper bound by : lowerBounds_[ii] + binSizes_[ii]*data_.Size(ii).
@@ -535,10 +563,29 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void JointImageHistogram( Image const& input1, Image const& input2, Image const& mask, ConfigurationArray& configuration );
       DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
       DIP_EXPORT void EmptyHistogram( ConfigurationArray configuration );
+      DIP_EXPORT void HistogramFromDataPointer( CountType const* data, Configuration configuration );
 };
+
+/// \brief Data type of histogram bins. See `dip::Histogram::CountType`.
+constexpr DataType DT_COUNT{ Histogram::CountType{} };
+
+
+//
+// Operators
+//
 
 inline void swap( Histogram& v1, Histogram& v2 ) {
    v1.swap( v2 );
+}
+
+inline Histogram operator+( Histogram lhs, Histogram const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
+inline Histogram operator-( Histogram lhs, Histogram const& rhs ) {
+   lhs -= rhs;
+   return lhs;
 }
 
 

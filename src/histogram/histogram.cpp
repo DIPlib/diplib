@@ -31,7 +31,6 @@
 namespace dip {
 
 using CountType = Histogram::CountType;
-static constexpr auto DT_COUNT = DataType( CountType( 0 ));
 
 void Histogram::Configuration::Complete( bool isInteger ) {
    if( mode != Mode::COMPUTE_BINS ) {
@@ -458,10 +457,19 @@ void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
    }
-   data_.SetSizes( sizes );
-   data_.SetDataType( DT_COUNT );
-   data_.Forge();
+   data_.ReForge( sizes, 1, DT_COUNT );
    data_.Fill( 0 );
+}
+
+void Histogram::HistogramFromDataPointer( Histogram::CountType const* data, Histogram::Configuration configuration ) {
+   lowerBounds_.resize( 1 );
+   binSizes_.resize( 1 );
+   UnsignedArray sizes( 1 );
+   lowerBounds_[ 0 ] = configuration.lowerBound;
+   binSizes_[ 0 ] = configuration.binSize;
+   sizes[ 0 ] = configuration.nBins;
+   data_ = Image( data, sizes );
+   DIP_ASSERT( data_.DataType() == DT_COUNT );
 }
 
 namespace {
