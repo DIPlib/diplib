@@ -35,7 +35,7 @@ endif()
 
 # Do we have __PRETTY_FUNCTION__ ?
 include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
+check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; }" HAS_PRETTY_FUNCTION)
 if(HAS_PRETTY_FUNCTION)
    target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)
 endif()
