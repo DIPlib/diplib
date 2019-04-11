@@ -210,6 +210,8 @@ switch file_info.dataType
       file_info.significantBits = 16;
    case {'uint32','sint32'}
       file_info.significantBits = 32;
+   case {'uint64','sint64'}
+      file_info.significantBits = 64;
    otherwise
       file_info.significantBits = 0;
 end

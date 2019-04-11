@@ -970,6 +970,12 @@ inline dip::Image GetImage(
          if( complex ) { datatype = dip::DT_SCOMPLEX; }
          else { datatype = dip::DT_SFLOAT; }
          break;
+      case mxINT64_CLASS:     // sint64
+         datatype = dip::DT_SINT64;
+         break;
+      case mxUINT64_CLASS:    // uint64
+         datatype = dip::DT_UINT64;
+         break;
       case mxINT32_CLASS:     // sint32
          datatype = dip::DT_SINT32;
          break;
@@ -1140,6 +1146,12 @@ inline mxClassID GetMatlabClassID(
          break;
       case dip::DT_SINT32:
          type = mxINT32_CLASS;
+         break;
+      case dip::DT_UINT64:
+         type = mxUINT64_CLASS;
+         break;
+      case dip::DT_SINT64:
+         type = mxINT64_CLASS;
          break;
       case dip::DT_SFLOAT:
       case dip::DT_SCOMPLEX:
@@ -1482,9 +1494,7 @@ inline mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = fa
    }
    // If the image points to a modified view, or a non-MATLAB array, make a copy
    if( needCopy ) {
-#ifdef DIP__ENABLE_ASSERT // Or use NDEBUG instead?
-      mexPrintf( "GetArrayAsArray: Copying data from dip::Image to mxArray\n" );
-#endif
+      //mexPrintf( "GetArrayAsArray: Copying data from dip::Image to mxArray\n" );
       dip::IntegerArray strides;
       dip::sint tStride = 1;
       mxArray* newmat = detail::CreateMxArray( img.DataType(), img.Sizes(), strides, img.Tensor(), tStride );

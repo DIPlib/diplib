@@ -159,8 +159,8 @@ are used to store images. But it is also possible to specify something like
   `'real'`                   `'float'` + `'integer'`
   `'int'` or `'integer'`     `'signed'` + `'unsigned'`
   `'float'`                  `sfloat`, `dfloat`
-  `'sint'` or `'signed'`     `sint8`, `sint16`, `sint32`
-  `'uint'` or `'unsigned'`   `uint8`, `uint16`, `uint32`
+  `'sint'` or `'signed'`     `sint8`, `sint16`, `sint32`, `sint64`
+  `'uint'` or `'unsigned'`   `uint8`, `uint16`, `uint32`, `uint64`
 
   : Data type aliases used in the `constraint` parameter for
   images. {#tbl:datatypealias}

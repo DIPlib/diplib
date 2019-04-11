@@ -188,9 +188,11 @@ classdef dip_image
          %    - 'uint8'
          %    - 'uint16'
          %    - 'uint32'
+         %    - 'uint64'
          %    - 'int8', alias 'sint8'
          %    - 'int16', alias 'sint16'
          %    - 'int32', alias 'sint32'
+         %    - 'int64', alias 'sint64'
          %    - 'single', alias 'sfloat'
          %    - 'double', alias 'dfloat'
          %    - 'scomplex'
@@ -697,9 +699,11 @@ classdef dip_image
          %    - 'uint8':    uint8
          %    - 'uint16':   uint16
          %    - 'uint32':   uint32
+         %    - 'uint64':   uint64
          %    - 'sint8':    int8
          %    - 'sint16':   int16
          %    - 'sint32':   int32
+         %    - 'sint64':   int64
          %    - 'sfloat',   single
          %    - 'dfloat':   double
          %    - 'scomplex': single, complex
@@ -719,12 +723,12 @@ classdef dip_image
 
       function res = issigned(obj)
          %ISSIGNED   Returns true if the image is of a signed integer type.
-         res = isa(obj.Data,'int8') || isa(obj.Data,'int16') || isa(obj.Data,'int32');
+         res = isa(obj.Data,'int8') || isa(obj.Data,'int16') || isa(obj.Data,'int32') || isa(obj.Data,'int64');
       end
 
       function res = isunsigned(obj)
          %ISUNSIGNED   Returns true if the image is of an unsigned integer type.
-         res = isa(obj.Data,'uint8') || isa(obj.Data,'uint16') || isa(obj.Data,'uint32');
+         res = isa(obj.Data,'uint8') || isa(obj.Data,'uint16') || isa(obj.Data,'uint32') || isa(obj.Data,'uint64');
       end
 
       function res = islogical(obj)
@@ -942,6 +946,12 @@ classdef dip_image
          %   See also dip_image.dip_array
          out = dip_array(in,'single');
       end
+      function out = uint64(in)
+         %UINT64   Convert dip_image object to uint64 matrix.
+         %   A = UINT64(B) corresponds to A = DIP_ARRAY(IN,'uint64')
+         %   See also dip_image.dip_array
+         out = dip_array(in,'uint64');
+      end
       function out = uint32(in)
          %UINT32   Convert dip_image object to uint32 matrix.
          %   A = UINT32(B) corresponds to A = DIP_ARRAY(IN,'uint32')
@@ -959,6 +969,12 @@ classdef dip_image
          %   A = UINT8(B) corresponds to A = DIP_ARRAY(IN,'uint8')
          %   See also dip_image.dip_array
          out = dip_array(in,'uint8');
+      end
+      function out = int64(in)
+         %INT64   Convert dip_image object to int64 matrix.
+         %   A = INT64(B) corresponds to A = DIP_ARRAY(IN,'int64')
+         %   See also dip_image.dip_array
+         out = dip_array(in,'int64');
       end
       function out = int32(in)
          %INT32   Convert dip_image object to int32 matrix.
@@ -2305,7 +2321,7 @@ function in = array_convert_datatype(in,class)
 end
 
 function res = isintclass(dt)
-   res = any(strcmp(dt,{'uint8','uint16','uint32','int8','int16','int32'}));
+   res = any(strcmp(dt,{'uint8','uint16','uint32','uint64','int8','int16','int32','int64'}));
 end
 
 % Gives a DIPlib data type string for the data in the image.
@@ -2314,7 +2330,7 @@ function str = datatypestring(in)
    switch str
       case 'logical'
          str = 'binary';
-      case {'uint8','uint16','uint32'}
+      case {'uint8','uint16','uint32','uint64'}
          % nothing to do, it's OK.
       case 'int8'
          str = 'sint8';
@@ -2322,6 +2338,8 @@ function str = datatypestring(in)
          str = 'sint16';
       case 'int32'
          str = 'sint32';
+      case 'int64'
+         str = 'sint64';
       case 'single'
          if iscomplex(in)
             str = 'scomplex';
@@ -2347,7 +2365,7 @@ function [str,complex] = matlabtype(str)
    switch str
       case {'logical','binary','bin'}
          str = 'logical';
-      case {'uint8','uint16','uint32'}
+      case {'uint8','uint16','uint32','uint64'}
          % nothing to do, it's OK.
       case {'int8','sint8'}
          str = 'int8';
@@ -2355,6 +2373,8 @@ function [str,complex] = matlabtype(str)
          str = 'int16';
       case {'int32','sint32'}
          str = 'int32';
+      case {'int64','sint64'}
+         str = 'int64';
       case {'single','sfloat'}
          str = 'single';
       case {'double','dfloat'}
@@ -2391,53 +2411,51 @@ function dt_out = di_findtypex(dt1,dt2,comp)
          % All that is left now is INTxx or UINTxx
          if dt1(1:3)=='int'
             dt1_signed = true;
+            dt1_size = str2double(dt1(4:end));
          else
+            assert(all(dt1(1:4)=='uint'))
             dt1_signed = false;
+            dt1_size = str2double(dt1(5:end));
          end
          if dt2(1:3)=='int'
             dt2_signed = true;
+            dt2_size = str2double(dt2(4:end));
          else
+            assert(all(dt2(1:4)=='uint'))
             dt2_signed = false;
+            dt2_size = str2double(dt2(5:end));
          end
          if dt1_signed && dt2_signed
             % Both signed
-            if strcmp(dt1,'int32') || strcmp(dt2,'int32')
-               dt_out = 'int32';
-            elseif strcmp(dt1,'int16') || strcmp(dt2,'int16')
-               dt_out = 'int16';
-            else
-               dt_out = 'int8';
-            end
+            dt_out = ['int',num2str(max(dt1_size,dt2_size))];
+         elseif ~dt1_signed && ~dt2_signed
+            % Both unsigned
+            dt_out = ['uint',num2str(max(dt1_size,dt2_size))];
          else
-            if ~dt1_signed && dt2_signed
-               tmp = dt1; dt1 = dt2; dt2 = tmp;
+            if dt1_signed
+               [dt1_size,dt2_size] = deal(dt2_size,dt1_size); % swap dt1 and dt2
             end
-            if ~dt1_signed && ~dt2_signed
-               % Both unsigned
-               if strcmp(dt1,'uint32') || strcmp(dt2,'uint32')
-                  dt_out = 'uint32';
-               elseif strcmp(dt1,'uint16') || strcmp(dt2,'uint16')
-                  dt_out = 'uint16';
-               else
-                  dt_out = 'uint8';
-               end
+            % dt1 unsigned, dt2 signed
+            if dt2_size > dt1_size
+               sz = dt2_size;
             else
-               % dt1 unsigned, dt2 signed
-               if strcmp(dt1,'uint32')
-                  dt_out = 'dfloat';
-               elseif strcmp(dt1,'uint16') || strcmp(dt2,'sint32')
-                  dt_out = 'sint32';
-               elseif strcmp(dt1,'uint8') || strcmp(dt2,'sint16')
-                  dt_out = 'sint16';
-               else
-                  dt_out = 'sint8';
+               switch dt1_size
+                  case 8
+                     sz = 16;
+                  case 16
+                     sz = 32;
+                  case {32,64}
+                     sz = 64;
+                  otherwise
+                     error('Unknown integer type found')
                end
             end
+            dt_out = ['int',num2str(sz)];
          end
       end
    end
    if comp
-      if strcmp(dt_out,'double') || strcmp(dt_out,'int32') || strcmp(dt_out,'sint32')
+      if strcmp(dt_out,'double') || strcmp(dt_out,'int64') || strcmp(dt_out,'sint64') || strcmp(dt_out,'int32') || strcmp(dt_out,'sint32')
          dt_out = 'double';
       else
          dt_out = 'single';

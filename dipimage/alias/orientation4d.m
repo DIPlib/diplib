@@ -24,7 +24,7 @@ end
 if ~isreal(in)
    error('Input must be real.');
 end
-if strcmp(datatype(in),'dfloat') || strcmp(datatype(in)(2:end),'int32')
+if strcmp(datatype(in),'dfloat') || strcmp(datatype(in)(2:end),'int64') || strcmp(datatype(in)(2:end),'int32')
    in = dip_image(in,'sfloat');
    fpritnf('Converting to sfloat, keep it on the sane side of memory usage.');
 end

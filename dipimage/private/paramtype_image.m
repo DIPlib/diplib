@@ -137,17 +137,17 @@ if ~isempty(I)
    dt(I) = [];
    dt = unique([dt,{'sfloat','dfloat'}]);
 end
-% 'signed' | 'sint' = 'sint8' + 'sint16' + 'sint32'
+% 'signed' | 'sint' = 'sint8' + 'sint16' + 'sint32' + 'sint64'
 I = find( strcmp(dt,'signed') | strcmp(dt,'sint') );
 if ~isempty(I)
    dt(I) = [];
-   dt = unique([dt,{'sint8','sint16','sint32'}]);
+   dt = unique([dt,{'sint8','sint16','sint32','sint64'}]);
 end
-% 'unsigned' | 'uint' = 'uint8' + 'uint16' + 'uint32'
+% 'unsigned' | 'uint' = 'uint8' + 'uint16' + 'uint32' + 'uint64'
 I = find( strcmp(dt,'unsigned') | strcmp(dt,'uint') );
 if ~isempty(I)
    dt(I) = [];
-   dt = unique([dt,{'uint8','uint16','uint32'}]);
+   dt = unique([dt,{'uint8','uint16','uint32','uint64'}]);
 end
 % 'bin' = 'binary'
 I = find(strcmp(dt,'bin'));

@@ -23,7 +23,8 @@
 function out = complex(out,im)
 if nargin == 1
    if ~iscomplex(out)
-      if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32')
+      if isa(out.Data,'double') || isa(out.Data,'uint64') || isa(out.Data,'int64') ...
+                                || isa(out.Data,'uint32') || isa(out.Data,'int32')
          out.Data = cat(1,double(out.Data),zeros(size(out.Data)));
       else
          out.Data = cat(1,single(out.Data),zeros(size(out.Data),'single'));
@@ -33,8 +34,10 @@ else % nargin == 2
    if iscomplex(out) || iscomplex(im)
       error('Expected two real-valued images')
    end
-   if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32') || ...
-      isa(im.Data, 'double') || isa(im.Data, 'uint32') || isa(im.Data, 'int32')
+   if isa(out.Data,'double') || isa(out.Data,'uint64') || isa(out.Data,'int64') ...
+                             || isa(out.Data,'uint32') || isa(out.Data,'int32') ...
+   || isa(im.Data, 'double') || isa(im.Data, 'uint64') || isa(im.Data, 'int64') ...
+                             || isa(im.Data, 'uint32') || isa(im.Data, 'int32')
       out.Data = cat(1,double(out.Data),double(im.Data));
    else
       out.Data = cat(1,single(out.Data),single(im.Data));

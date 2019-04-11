@@ -66,17 +66,19 @@ example, `a*xx(a)` is an image multiplied by its x-coordinates.
 
   Name         Description                 Other allowed names
   ------------ --------------------------- --------------------------
-  `bin`        binary (in 8-bit integer)   `bin8`, `bin16`, `bin32`
+  `bin`        binary (in 8-bit integer)
   `uint8`      8-bit unsigned integer
   `uint16`     16-bit unsigned integer
-  `uint32`     32-bit unsigned integer     `uint`
+  `uint32`     32-bit unsigned integer
+  `uint64`     64-bit unsigned integer
   `sint8`      8-bit signed integer        `int8`
   `sint16`     16-bit signed integer       `int16`
-  `sint32`     32-bit signed integer       `int`, `int32`
-  `sfloat`     single precision float      `float`, `single`
+  `sint32`     32-bit signed integer       `int32`
+  `sint64`     64-bit signed integer       `int64`
+  `sfloat`     single precision float      `single`
   `dfloat`     double precision float      `double`
   `scomplex`   single precision complex
-  `dcomplex`   double precision complex    `complex`
+  `dcomplex`   double precision complex
   ------------ --------------------------- --------------------------
   
   : Valid data types for the `dip_image` object. {#tbl:datatypes}
