@@ -81,8 +81,10 @@ target_link_libraries(test_metadata_cpp libics_cpp)
 add_executable(test_history_cpp EXCLUDE_FROM_ALL ${CMAKE_CURRENT_LIST_DIR}/test_history.cpp)
 target_link_libraries(test_history_cpp libics_cpp)
 
-set(TEST_PROGRAMS ${TEST_PROGRAMS} test_ics2a_cpp test_ics2b_cpp test_metadata_cpp test_history_cpp)
-add_dependencies(all_tests ${TEST_PROGRAMS})
+if (${ENABLE_ICS_TESTS})
+   set(TEST_PROGRAMS ${TEST_PROGRAMS} test_ics2a_cpp test_ics2b_cpp test_metadata_cpp test_history_cpp)
+   add_dependencies(all_tests ${TEST_PROGRAMS})
+endif()
 
 add_test(NAME test_ics2a_cpp COMMAND test_ics2a_cpp "${CMAKE_CURRENT_SOURCE_DIR}/test/testim.ics" result_v2a_cpp.ics)
 set_tests_properties(test_ics2a_cpp PROPERTIES DEPENDS ctest_build_test_code)
