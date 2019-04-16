@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the basic data types.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,6 +100,7 @@ using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit co
 using LabelType = uint32;        ///< Type currently used for all labeled images, see `dip::DT_LABEL`.
 
 namespace detail {
+
 template< typename T > struct IsSampleType { static constexpr bool value = false; };
 template<> struct IsSampleType< bin > { static constexpr bool value = true; };
 template<> struct IsSampleType< uint8 > { static constexpr bool value = true; };
@@ -114,10 +115,12 @@ template<> struct IsSampleType< sfloat > { static constexpr bool value = true; }
 template<> struct IsSampleType< dfloat > { static constexpr bool value = true; };
 template<> struct IsSampleType< scomplex > { static constexpr bool value = true; };
 template<> struct IsSampleType< dcomplex > { static constexpr bool value = true; };
-template< typename T > struct IsNumericType { static constexpr bool value = IsSampleType< T >::value; };
-template<> struct IsNumericType< dip::uint > { static constexpr bool value = true; };
-template<> struct IsNumericType< dip::sint > { static constexpr bool value = true; };
-template<> struct IsNumericType< bool > { static constexpr bool value = true; };
+
+template< typename T > struct IsNumericType { static constexpr bool value = std::is_arithmetic< T >::value; };
+template<> struct IsNumericType< bin > { static constexpr bool value = true; };
+template<> struct IsNumericType< scomplex > { static constexpr bool value = true; };
+template<> struct IsNumericType< dcomplex > { static constexpr bool value = true; };
+
 template< typename T > struct IsIndexingType { static constexpr bool value = false; };
 template<> struct IsIndexingType< signed int > { static constexpr bool value = true; };
 template<> struct IsIndexingType< unsigned int > { static constexpr bool value = true; };
@@ -148,45 +151,11 @@ template<> struct IsIndexingType< dip::sint > { static constexpr bool value = tr
 template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are numeric types, similar to
-/// `std::is_arithmetic` but also true for complex types.
-///
-/// One example usage is as follows:
-///
-/// ```cpp
-///     template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
-///     void MyFunction( T value ) { ... }
-/// ```
-///
-/// When defining different versions of the templated function for `IsNumericType< T >` and `!IsNumericType< T >`,
-/// you'll need to use the following form:
-///
-/// ```cpp
-///     template< typename T, typename std::enable_if_t< IsNumericType< T >::value, int > = 0 >
-///     void MyFunction( T value ) { ... }
-///     template< typename T, typename std::enable_if_t< !IsNumericType< T >::value, int > = 0 >
-///     void MyFunction( T value ) { ... }
-/// ```
+/// `std::is_arithmetic` but also true for complex types. See `dip::IsSampleType` for usage details.
 template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are indexing types, true for
-/// signed and unsigned integers.
-///
-/// One example usage is as follows:
-///
-/// ```cpp
-///     template< typename T, typename = std::enable_if_t< IsIndexingType< T >::value >>
-///     void MyFunction( T value ) { ... }
-/// ```
-///
-/// When defining different versions of the templated function for `IsIndexingType< T >` and `!IsIndexingType< T >`,
-/// you'll need to use the following form:
-///
-/// ```cpp
-///     template< typename T, typename std::enable_if_t< IsIndexingType< T >::value, int > = 0 >
-///     void MyFunction( T value ) { ... }
-///     template< typename T, typename std::enable_if_t< !IsIndexingType< T >::value, int > = 0 >
-///     void MyFunction( T value ) { ... }
-/// ```
+/// signed and unsigned integers. See `dip::IsSampleType` for usage details.
 template< typename T > struct IsIndexingType : public detail::IsIndexingType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief A templated function to check for positive infinity, which works also for integer types (always returning false)

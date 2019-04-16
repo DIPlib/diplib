@@ -37,6 +37,7 @@
 //       In particular, for signed arithmetic one can overflow in two directions, and additional checks
 //       are necessary to disambiguate.
 
+
 namespace dip {
 
 
@@ -94,7 +95,7 @@ constexpr inline uint8 saturated_add( uint8 lhs, uint8 rhs ) {
 #ifdef __SIZEOF_INT128__
 template<>
 constexpr inline sint64 saturated_add( sint64 lhs, sint64 rhs ) {
-   return clamp_both< sint64 >( static_cast< __int128_t >( lhs ) + static_cast< __int128_t >( rhs ));
+   return clamp_cast< sint64 >( static_cast< __int128_t >( lhs ) + static_cast< __int128_t >( rhs ));
 }
 #else
 // However, if we don't have a 128-bit integer type, we need to do this the hard way
@@ -111,15 +112,15 @@ constexpr inline sint64 saturated_add( sint64 lhs, sint64 rhs ) {
 #endif // __SIZEOF_INT128__
 template<>
 constexpr inline sint32 saturated_add( sint32 lhs, sint32 rhs ) {
-   return clamp_both< sint32 >( static_cast< sint64 >( lhs ) + static_cast< sint64 >( rhs ));
+   return clamp_cast< sint32 >( static_cast< sint64 >( lhs ) + static_cast< sint64 >( rhs ));
 }
 template<>
 constexpr inline sint16 saturated_add( sint16 lhs, sint16 rhs ) {
-   return clamp_both< sint16 >( static_cast< sint32 >( lhs ) + static_cast< sint32 >( rhs ));
+   return clamp_cast< sint16 >( static_cast< sint32 >( lhs ) + static_cast< sint32 >( rhs ));
 }
 template<>
 constexpr inline sint8 saturated_add( sint8 lhs, sint8 rhs ) {
-   return clamp_both< sint8 >( static_cast< sint32 >( lhs ) + static_cast< sint32 >( rhs ));
+   return clamp_cast< sint8 >( static_cast< sint32 >( lhs ) + static_cast< sint32 >( rhs ));
 }
 
 // Binary addition is equivalent to OR.
@@ -168,7 +169,7 @@ constexpr inline uint8 saturated_sub( uint8 lhs, uint8 rhs ) {
 #ifdef __SIZEOF_INT128__
 template<>
 constexpr inline sint64 saturated_sub( sint64 lhs, sint64 rhs ) {
-   return clamp_both< sint64 >( static_cast< __int128_t >( lhs ) - static_cast< __int128_t >( rhs ));
+   return clamp_cast< sint64 >( static_cast< __int128_t >( lhs ) - static_cast< __int128_t >( rhs ));
 }
 #else
 // However, if we don't have a 128-bit integer type, we need to do this the hard way
@@ -185,15 +186,15 @@ constexpr inline sint64 saturated_sub( sint64 lhs, sint64 rhs ) {
 #endif // __SIZEOF_INT128__
 template<>
 constexpr inline sint32 saturated_sub( sint32 lhs, sint32 rhs ) {
-   return clamp_both< sint32 >( static_cast< sint64 >( lhs ) - static_cast< sint64 >( rhs ));
+   return clamp_cast< sint32 >( static_cast< sint64 >( lhs ) - static_cast< sint64 >( rhs ));
 }
 template<>
 constexpr inline sint16 saturated_sub( sint16 lhs, sint16 rhs ) {
-   return clamp_both< sint16 >( static_cast< sint32 >( lhs ) - static_cast< sint32 >( rhs ));
+   return clamp_cast< sint16 >( static_cast< sint32 >( lhs ) - static_cast< sint32 >( rhs ));
 }
 template<>
 constexpr inline sint8 saturated_sub( sint8 lhs, sint8 rhs ) {
-   return clamp_both< sint8 >( static_cast< sint32 >( lhs ) - static_cast< sint32 >( rhs ));
+   return clamp_cast< sint8 >( static_cast< sint32 >( lhs ) - static_cast< sint32 >( rhs ));
 }
 
 // Binary subtraction is equivalent to AND NOT
@@ -218,7 +219,7 @@ constexpr inline T saturated_mul( T lhs, T rhs ) {
 #ifdef __SIZEOF_INT128__
 template<>
 constexpr inline uint64 saturated_mul( uint64 lhs, uint64 rhs ) {
-   return clamp_both< uint64 >( static_cast< __uint128_t >( lhs ) * static_cast< __uint128_t >( rhs ));
+   return clamp_cast< uint64 >( static_cast< __uint128_t >( lhs ) * static_cast< __uint128_t >( rhs ));
 }
 #else
 // However, if we don't have a 128-bit integer type, we need to do this the hard way
@@ -233,22 +234,22 @@ constexpr inline uint64 saturated_mul( uint64 lhs, uint64 rhs ) {
 #endif // __SIZEOF_INT128__
 template<>
 constexpr inline uint32 saturated_mul( uint32 lhs, uint32 rhs ) {
-   return clamp_upper< uint32 >( static_cast< uint64 >( lhs ) * static_cast< uint64 >( rhs ));
+   return clamp_cast< uint32 >( static_cast< uint64 >( lhs ) * static_cast< uint64 >( rhs ));
 }
 template<>
 constexpr inline uint16 saturated_mul( uint16 lhs, uint16 rhs ) {
-   return clamp_upper< uint16 >( static_cast< uint32 >( lhs ) * static_cast< uint32 >( rhs ));
+   return clamp_cast< uint16 >( static_cast< uint32 >( lhs ) * static_cast< uint32 >( rhs ));
 }
 template<>
 constexpr inline uint8 saturated_mul( uint8 lhs, uint8 rhs ) {
-   return clamp_upper< uint8 >( static_cast< uint32 >( lhs ) * static_cast< uint32 >( rhs ));
+   return clamp_cast< uint8 >( static_cast< uint32 >( lhs ) * static_cast< uint32 >( rhs ));
 }
 
 // For signed integers we simply use a larger integer type to do the operation.
 #ifdef __SIZEOF_INT128__
 template<>
 constexpr inline sint64 saturated_mul( sint64 lhs, sint64 rhs ) {
-   return clamp_both< sint64 >( static_cast< __int128_t >( lhs ) * static_cast< __int128_t >( rhs ));
+   return clamp_cast< sint64 >( static_cast< __int128_t >( lhs ) * static_cast< __int128_t >( rhs ));
 }
 #else
 // However, if we don't have a 128-bit integer type, we need to do this the hard way
@@ -263,15 +264,15 @@ constexpr inline sint64 saturated_mul( sint64 lhs, sint64 rhs ) {
 #endif // __SIZEOF_INT128__
 template<>
 constexpr inline sint32 saturated_mul( sint32 lhs, sint32 rhs ) {
-   return clamp_both< sint32 >( static_cast< sint64 >( lhs ) * static_cast< sint64 >( rhs ));
+   return clamp_cast< sint32 >( static_cast< sint64 >( lhs ) * static_cast< sint64 >( rhs ));
 }
 template<>
 constexpr inline sint16 saturated_mul( sint16 lhs, sint16 rhs ) {
-   return clamp_both< sint16 >( static_cast< sint32 >( lhs ) * static_cast< sint32 >( rhs ));
+   return clamp_cast< sint16 >( static_cast< sint32 >( lhs ) * static_cast< sint32 >( rhs ));
 }
 template<>
 constexpr inline sint8 saturated_mul( sint8 lhs, sint8 rhs ) {
-   return clamp_both< sint8 >( static_cast< sint32 >( lhs ) * static_cast< sint32 >( rhs ));
+   return clamp_cast< sint8 >( static_cast< sint32 >( lhs ) * static_cast< sint32 >( rhs ));
 }
 
 // Binary multiplication is equivalent to AND
@@ -355,7 +356,7 @@ constexpr inline uint32 saturated_inv( uint32 v ) {
 }
 template<>
 constexpr inline uint16 saturated_inv( uint16 v ) {
-   return static_cast< uint16 >( static_cast< uint32 >(std::numeric_limits< uint16 >::max() ) - static_cast< uint32 >( v ));
+   return static_cast< uint16 >( static_cast< uint32 >( std::numeric_limits< uint16 >::max() ) - static_cast< uint32 >( v ));
 }
 template<>
 constexpr inline uint8 saturated_inv( uint8 v ) {

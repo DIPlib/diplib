@@ -38,6 +38,58 @@
 /// \see sample_operators
 
 
+#ifdef __SIZEOF_INT128__
+namespace std {
+// These seem not defined?
+// WARNING! We define only a useful subset of the struct.
+
+template<>
+struct numeric_limits< __uint128_t > {
+   static constexpr bool is_specialized = true;
+   static constexpr int digits = 128;
+   static constexpr bool is_signed = false;
+   static constexpr bool is_integer = true;
+   static constexpr bool has_infinity = false;
+   static constexpr bool has_quiet_NaN = false;
+   static constexpr bool has_signaling_NaN = false;
+   static constexpr __uint128_t max() noexcept { return static_cast< __uint128_t >( __int128_t( -1 )); }
+   static constexpr __uint128_t min() noexcept { return 0; }
+   static constexpr __uint128_t lowest() noexcept { return min(); }
+};
+
+template<>
+struct numeric_limits< __int128_t > {
+   static constexpr bool is_specialized = true;
+   static constexpr int digits = 127;
+   static constexpr bool is_signed = true;
+   static constexpr bool is_integer = true;
+   static constexpr bool has_infinity = false;
+   static constexpr bool has_quiet_NaN = false;
+   static constexpr bool has_signaling_NaN = false;
+   static constexpr __int128_t max() noexcept { return static_cast< __int128_t >( numeric_limits< __uint128_t >::max() >> 1u ); }
+   static constexpr __int128_t min() noexcept { return -max() - 1; }
+   static constexpr __int128_t lowest() noexcept { return min(); }
+};
+
+// This one is used outside of this file too (at least max and min.
+template<>
+struct numeric_limits< dip::bin > {
+   static constexpr bool is_specialized = false; // Set to false, below we test this instead of "is_arithmetic".
+   static constexpr int digits = 1;
+   static constexpr bool is_signed = false;
+   static constexpr bool is_integer = false;
+   static constexpr bool has_infinity = false;
+   static constexpr bool has_quiet_NaN = false;
+   static constexpr bool has_signaling_NaN = false;
+   static constexpr dip::bin max() noexcept { return true; }
+   static constexpr dip::bin min() noexcept { return false; }
+   static constexpr dip::bin lowest() noexcept { return min(); }
+};
+
+} // namespace std
+#endif // __SIZEOF_INT128__
+
+
 namespace dip {
 
 
@@ -69,362 +121,147 @@ namespace dip {
 /// \{
 // TODO: Do we want to round the float values instead?
 
-// Basis of dip::clamp_cast<>
-template< typename T, typename S >
-constexpr inline const T clamp_both( S v ) {
-   return static_cast< T >( clamp(
-         v,
-         static_cast< S >( std::numeric_limits< T >::lowest() ),
-         static_cast< S >( std::numeric_limits< T >::max()    ) ));
-}
-template< typename T, typename S >
-constexpr inline const T clamp_lower( S v ) {   // T is an unsigned integer type with same or more bits than S
-   return static_cast< T >( std::max( v, static_cast< S >( 0 ) ) );
-}
-template< typename T, typename S >
-constexpr inline const T clamp_upper( S v ) {   // S is an unsigned integer type with same or more bits than T
-   return static_cast< T >( std::min( v, static_cast< S >( std::numeric_limits< T >::max() ) ) );
+namespace detail {
 
-}
+// These in the std:: namespace don't always work for 128-bit types. Let's make our own based on numeric limits:
+template< typename T > struct is_floating_point{ static constexpr bool value =
+         std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
+         && !std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer; };
+template< typename T > struct is_signed{ static constexpr bool value =
+         std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
+         && std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_signed; };
+template< typename T > struct is_integer{ static constexpr bool value =
+         std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
+         && std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer; };
+template< typename T > struct is_unsigned_integer{ static constexpr bool value =
+         std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
+         && std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer
+         && !std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_signed; };
+template< typename T > struct is_signed_integer{ static constexpr bool value =
+         std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
+         && std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer
+         && std::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_signed; };
 
-/*
-// Another version, instead of clamp_both, clamp_lower and clamp_upper.
-// The compiler will optimize away unnecessary tests.
-// Not used because casting the limit of T to S might cause overflow if S is
-// narrower. How do we test for that case? In the code we use now we've
-// manually written out most cases. It looks stupid but it works.
-constexpr inline const T clamp_cast_basis( S v ) {
-   // Check lower bound
-   if ( std::numeric_limits< S >::lowest() < static_cast< S >( std::numeric_limits< T >::lowest() ) ) {
-      if ( v < static_cast< S >( std::numeric_limits< T >::lowest() ) ) {
-         return std::numeric_limits< T >::lowest();
-      }
-   }
-   // Check upper bound
-   if ( std::numeric_limits< S >::max() > static_cast< S >( std::numeric_limits< T >::max() ) ) {
-      if ( v > static_cast< S >( std::numeric_limits< T >::max() ) ) {
-         return std::numeric_limits< T >::max();
-      }
-   }
-   // Cast
-   return static_cast< T >( v );
-}
-*/
+template< typename T > struct is_complex_base{ static constexpr bool value = false; };
+template<> struct is_complex_base< scomplex >{ static constexpr bool value = true; };
+template<> struct is_complex_base< dcomplex >{ static constexpr bool value = true; };
+template< typename T > struct is_complex : public is_complex_base< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
-// Here we define functions to cast any pixel data type to any other pixel
-// data type. When casting to an integer type, the value is first clamped
-// (clipped, saturated) to the target type's range. For floating point types,
-// we don't care about overflow and underflow, and let the IEEE spec take
-// care of things.
+template< typename T > struct is_binary_base{ static constexpr bool value = false; };
+template<> struct is_binary_base< bin >{ static constexpr bool value = true; };
+template< typename T > struct is_binary : public is_binary_base< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
+
+// Clamp `value` on the lower side to `limit`. `value` is either integer or float, `limit` is always an integer.
 //
-// We implement these casts as a function `clamp_cast<target_type>( value )`.
-// The target type is a template parameter, the input value's type is used
-// in regular function overload selection. We define specialized version of
-// the templates where needed.
+// Logic:
+// value is unsigned integer ---> OK
+// value is signed integer ---> limit is unsigned integer ---> CLAMP
+//                         \--> limit is signed integer ---> limit has fewer digits: CLAMP
+//                                                      \--> otherwise: OK
+// value is float ---> CLAMP
 
-/// Casting from a binary value to any other sample type.
-// Casting from bin is always OK, except when casting to complex values
-template< typename T >
-constexpr inline T clamp_cast( bin v ) {
-   return T( v );
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( bin v ) {
-   return { static_cast< sfloat >( v ), 0.0f };
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( bin v ) {
-   return { static_cast< dfloat >( v ), 0.0 };
-}
+template< typename ValueType, typename LimitType >
+struct NeedsLowerClamping {
+   static constexpr bool value =
+         is_floating_point< ValueType >::value // `value is a float
+         || ( is_signed_integer< ValueType >::value // `value` is a signed integer
+              && ( is_unsigned_integer< LimitType >::value // `limit` is an unsigned integer
+                   || ( std::numeric_limits< ValueType >::digits > std::numeric_limits< LimitType >::digits ) // `limit` is a signed integer with fewer digits
+                 )
+            )
+   ;
+};
 
-/// Casting from a 8-bit unsigned value to any other sample type.
-// Casting from uint8, specialize for sint8
-template< typename T >
-constexpr inline T clamp_cast( uint8 v ) {
-   return static_cast< T >( v );
+template< typename ValueType, typename LimitType, typename std::enable_if_t< NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
+constexpr inline const ValueType clamp_lower( ValueType value, LimitType limit ) {
+   // `value` is a float or a signed integer with more digits than limit. Casting `limit` to the type of `value` is not a problem.
+   return std::max( value, static_cast< ValueType >( limit ));
 }
-template<>
-constexpr inline sint8 clamp_cast< sint8 >( uint8 v ) {
-   return clamp_upper< sint8, uint8 >( v );
-}
-
-/// Casting from a 16-bit unsigned value to any other sample type.
-// Casting from a uint16, specialize for uint8, sint8 and sint16
-template< typename T >
-constexpr inline T clamp_cast( uint16 v ) {
-   return static_cast< T >( v );
-}
-template<>
-constexpr inline uint8 clamp_cast< uint8 >( uint16 v ) {
-   return clamp_upper< uint8, uint16 >( v );
-}
-template<>
-constexpr inline sint8 clamp_cast< sint8 >( uint16 v ) {
-   return clamp_upper< sint8, uint16 >( v );
-}
-template<>
-constexpr inline sint16 clamp_cast< sint16 >( uint16 v ) {
-   return clamp_upper< sint16, uint16 >( v );
+template< typename ValueType, typename LimitType, typename std::enable_if_t< !NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
+constexpr inline const ValueType clamp_lower( ValueType value, LimitType ) {
+   // `value` is a signed integer with same or fewer digits than `limit`
+   return value;
 }
 
-/// Casting from a 32-bit unsigned value to any other sample type.
-// Casting from a uint32, specialize for uint8, uint16 and all signed types
-template< typename T >
-constexpr inline T clamp_cast( uint32 v ) {
-   return static_cast< T >( static_cast< FloatType< T >>( v )); // two casts for the case of T = complex.
+// Clamp 'value' on the upper side to `limit`. `value` is either integer or float, `limit` is always an integer.
+//
+// Logic:
+// value is integer ---> limit has same or more digits: OK
+//                       \--> otherwise: CLAMP
+// value is float ---> CLAMP
+
+template< typename ValueType, typename LimitType >
+struct NeedsUpperClamping {
+   static constexpr bool value =
+         is_floating_point< ValueType >::value // `value is a float
+         || ( std::numeric_limits< ValueType >::digits > std::numeric_limits< LimitType >::digits );
+};
+
+template< typename ValueType, typename LimitType, typename std::enable_if_t< NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
+constexpr inline const ValueType clamp_upper( ValueType value, LimitType limit ) {
+   return std::min( value, static_cast< ValueType >( limit ));
 }
-template<>
-constexpr inline uint8 clamp_cast< uint8 >( uint32 v ) {
-   return clamp_upper< uint8, uint32 >( v );
-}
-template<>
-constexpr inline uint16 clamp_cast< uint16 >( uint32 v ) {
-   return clamp_upper< uint16, uint32 >( v );
-}
-template<>
-constexpr inline sint8 clamp_cast< sint8 >( uint32 v ) {
-   return clamp_upper< sint8, uint32 >( v );
-}
-template<>
-constexpr inline sint16 clamp_cast< sint16 >( uint32 v ) {
-   return clamp_upper< sint16, uint32 >( v );
-}
-template<>
-constexpr inline sint32 clamp_cast< sint32 >( uint32 v ) {
-   return clamp_upper< sint32, uint32 >( v );
+template< typename ValueType, typename LimitType, typename std::enable_if_t< !NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
+constexpr inline const ValueType clamp_upper( ValueType value, LimitType ) {
+   return value;
 }
 
-/// Casting from a 64-bit unsigned value to any other sample type.
-// Casting from a uint64, we don't do checks if casting to a float, complex or bin
-template< typename T >
-constexpr inline T clamp_cast( uint64 v ) {
-   return clamp_upper< T, uint64 >( v );
-}
-template<>
-constexpr inline sfloat clamp_cast< sfloat >( uint64 v ) {
-   return static_cast< sfloat >( v );
-}
-template<>
-constexpr inline dfloat clamp_cast< dfloat >( uint64 v ) {
-   return static_cast< dfloat >( v );
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( uint64 v ) {
-   return static_cast< scomplex >( static_cast< sfloat >( v ) );
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( uint64 v ) {
-   return static_cast< dcomplex >( static_cast< dfloat >( v ) );
-}
-template<>
-constexpr inline bin clamp_cast< bin >( uint64 v ) {
-   return static_cast< bin >( v );
+} // namespace detail
+
+// Cast non-complex value to float
+template< typename TargetType, typename SourceType,
+          typename std::enable_if_t< detail::is_floating_point< TargetType >::value, int > = 0 >
+constexpr inline const TargetType clamp_cast( SourceType v ) {
+   return static_cast< TargetType >( v );
 }
 
-template< typename T >
-constexpr inline T clamp_cast( dip::uint v ) {
-   return clamp_cast< T >( static_cast< uint64 >( v )); // TODO: I don't like this, it makes assumptions about the size of the pointer...
+// Cast non-complex value to complex
+template< typename TargetType, typename SourceType,
+          typename std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
+constexpr inline const TargetType clamp_cast( SourceType v ) {
+   return static_cast< TargetType >( static_cast< typename TargetType::value_type >( v ));
 }
 
-/// Casting from a 8-bit signed value to any other sample type.
-// Casting from sint8, specialize for all unsigned types
-template< typename T >
-constexpr inline T clamp_cast( sint8 v ) {
-   return static_cast< T >( v );
-}
-template<>
-constexpr inline uint8 clamp_cast< uint8 >( sint8 v ) {
-   return clamp_lower< uint8, sint8 >( v );
-}
-template<>
-constexpr inline uint16 clamp_cast< uint16 >( sint8 v ) {
-   return clamp_lower< uint16, sint8 >( v );
-}
-template<>
-constexpr inline uint32 clamp_cast< uint32 >( sint8 v ) {
-   return clamp_lower< uint32, sint8 >( v );
-}
-template<>
-constexpr inline uint64 clamp_cast< uint64 >( sint8 v ) {
-   return clamp_lower< uint64, sint8 >( v );
+// Cast non-complex value to integer
+template< typename TargetType, typename SourceType,
+          typename std::enable_if_t< detail::is_integer< TargetType >::value, int > = 0 >
+constexpr inline const TargetType clamp_cast( SourceType v ) {
+   static_assert( std::numeric_limits< TargetType >::is_specialized, "It looks like std::numeric_limits is not specialized for the target type." );
+   static_assert( std::numeric_limits< SourceType >::is_specialized, "It looks like std::numeric_limits is not specialized for the source type." );
+   return static_cast< TargetType >(
+         detail::clamp_upper< SourceType, TargetType >(
+               detail::clamp_lower< SourceType, TargetType >(
+                     v,
+                     std::numeric_limits< TargetType >::lowest() ),
+               std::numeric_limits< TargetType >::max() ));
 }
 
-/// Casting from a 16-bit signed value to any other sample type.
-// Casting from a sint16, specialize for sint8 and all unsigned types
-template< typename T >
-constexpr inline T clamp_cast( sint16 v ) {
-   return static_cast< T >( v );
-}
-template<>
-constexpr inline sint8 clamp_cast< sint8 >( sint16 v ) {
-   return clamp_both< sint8, sint16 >( v );
-}
-template<>
-constexpr inline uint8 clamp_cast< uint8 >( sint16 v ) {
-   return clamp_both< uint8, sint16 >( v );
-}
-template<>
-constexpr inline uint16 clamp_cast< uint16 >( sint16 v ) {
-   return clamp_lower< uint16, sint16 >( v );
-}
-template<>
-constexpr inline uint32 clamp_cast< uint32 >( sint16 v ) {
-   return clamp_lower< uint32, sint16 >( v );
-}
-template<>
-constexpr inline uint64 clamp_cast< uint64 >( sint16 v ) {
-   return clamp_lower< uint64, sint16 >( v );
+// Cast non-complex value to bin
+template< typename TargetType, typename SourceType,
+          typename std::enable_if_t< detail::is_binary< TargetType >::value, int > = 0 >
+constexpr inline const TargetType clamp_cast( SourceType v ) {
+   return static_cast< TargetType >( v ); // The logic is built into the `dip::bin` class
 }
 
-/// Casting from a 32-bit signed value to any other sample type.
-// Casting from a sint32, specialize for sint8, sint16 and all unsigned types
-template< typename T >
-constexpr inline T clamp_cast( sint32 v ) {
-   return static_cast< T >( static_cast< FloatType< T >>( v )); // two casts for the case of T = complex.
-}
-template<>
-constexpr inline sint8 clamp_cast< sint8 >( sint32 v ) {
-   return clamp_both< sint8, sint32 >( v );
-}
-template<>
-constexpr inline sint16 clamp_cast< sint16 >( sint32 v ) {
-   return clamp_both< sint16, sint32 >( v );
-}
-template<>
-constexpr inline uint8 clamp_cast< uint8 >( sint32 v ) {
-   return clamp_both< uint8, sint32 >( v );
-}
-template<>
-constexpr inline uint16 clamp_cast< uint16 >( sint32 v ) {
-   return clamp_both< uint16, sint32 >( v );
-}
-template<>
-constexpr inline uint32 clamp_cast< uint32 >( sint32 v ) {
-   return clamp_lower< uint32, sint32 >( v );
-}
-template<>
-constexpr inline uint64 clamp_cast< uint64 >( sint32 v ) {
-   return clamp_lower< uint64, sint32 >( v );
+// Cast bin value to anything (except to complex, that's handled below)
+template< typename TargetType,
+          typename std::enable_if_t< !detail::is_complex< TargetType >::value, int > = 0 >
+constexpr inline TargetType clamp_cast( dip::bin v ) {
+   return static_cast< TargetType >( v );
 }
 
-/// Casting from a 64-bit signed value to any other sample type.
-// Casting from a sint64, we don't do checks if casting to a float, complex or bin
-template< typename T >
-constexpr inline T clamp_cast( sint64 v ) {
-   return clamp_both< T, sint64 >( v );
-}
-template<>
-constexpr inline uint64 clamp_cast< uint64 >( sint64 v ) {
-   return clamp_lower< uint64, sint64 >( v );
-}
-template<>
-constexpr inline sfloat clamp_cast< sfloat >( sint64 v ) {
-   return static_cast< sfloat >( v );
-}
-template<>
-constexpr inline dfloat clamp_cast< dfloat >( sint64 v ) {
-   return static_cast< dfloat >( v );
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( sint64 v ) {
-   return static_cast< scomplex >( static_cast< sfloat >( v ));
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( sint64 v ) {
-   return static_cast< dcomplex >( static_cast< dfloat >( v ));
-}
-template<>
-constexpr inline bin clamp_cast< bin >( sint64 v ) {
-   return static_cast< bin >( v );
+// Casting from complex to non-complex, we take the absolute value and cast as if from a float
+template< typename TargetType, typename SourceType,
+          typename std::enable_if_t< !detail::is_complex< TargetType >::value, int > = 0 >
+constexpr inline TargetType clamp_cast( std::complex< SourceType > v ) {
+   return clamp_cast< TargetType >( std::abs( v ));
 }
 
-template< typename T >
-constexpr inline T clamp_cast( dip::sint v ) {
-   return clamp_cast< T >( static_cast< sint64 >( v )); // TODO: I don't like this, it makes assumptions about the size of the pointer...
-}
-
-/// Casting from a single-precision float value to any other sample type.
-// Casting from a sfloat, we don't do checks if casting to a float, complex or bin
-template< typename T >
-constexpr inline T clamp_cast( sfloat v ) {
-   return clamp_both< T, sfloat >( v );
-}
-template<>
-constexpr inline sfloat clamp_cast< sfloat >( sfloat v ) {
-   return v;
-}
-template<>
-constexpr inline dfloat clamp_cast< dfloat >( sfloat v ) {
-   return static_cast< dfloat >( v );
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( sfloat v ) {
-   return static_cast< scomplex >( v );
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( sfloat v ) {
-   return static_cast< dcomplex >( static_cast< dfloat >( v ));
-}
-template<>
-constexpr inline bin clamp_cast< bin >( sfloat v ) {
-   return static_cast< bin >( v );
-}
-
-/// Casting from a double-precision float value to any other sample type.
-// Casting from a dfloat, we don't do checks if casting to a float, complex or bin
-template< typename T >
-constexpr inline T clamp_cast( dfloat v ) {
-   return clamp_both< T, dfloat >( v );
-}
-template<>
-constexpr inline dfloat clamp_cast< dfloat >( dfloat v ) {
-   return v;
-}
-template<>
-constexpr inline sfloat clamp_cast< sfloat >( dfloat v ) {
-   return static_cast< sfloat >( v );
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( dfloat v ) {
-   return static_cast< scomplex >( static_cast< sfloat >( v ));
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( dfloat v ) {
-   return static_cast< dcomplex >( v );
-}
-template<>
-constexpr inline bin clamp_cast< bin >( dfloat v ) {
-   return static_cast< bin >( v );
-}
-
-/// Casting from a single-precision complex value to any other sample type.
-// Casting from an scomplex, we take the absolute value and cast as if from a float
-template< typename T >
-constexpr inline T clamp_cast( scomplex v ) {
-   return clamp_cast< T >( std::abs( v ) );
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( scomplex v ) {
-   return v;
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( scomplex v ) {
-   return dcomplex{ static_cast< dfloat >( v.real() ), static_cast< dfloat >( v.imag() ) };
-}
-
-/// Casting from a double-precision complex value to any other sample type.
-// Casting from a dcomplex, we take the absolute value and cast as if from a float
-template< typename T >
-constexpr inline T clamp_cast( dcomplex v ) {
-   return clamp_cast< T >( std::abs( v ) );
-}
-template<>
-constexpr inline dcomplex clamp_cast< dcomplex >( dcomplex v ) {
-   return v;
-}
-template<>
-constexpr inline scomplex clamp_cast< scomplex >( dcomplex v ) {
-   return scomplex{ static_cast< sfloat >( v.real() ), static_cast< sfloat >( v.imag() ) };
+// Casting from complex to complex
+template< typename TargetType, typename SourceType,
+          typename std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
+constexpr inline TargetType clamp_cast( std::complex< SourceType > v ) {
+   return { static_cast< typename TargetType::value_type >( v.real() ), static_cast< typename TargetType::value_type >( v.imag() ) };
 }
 
 /// \}

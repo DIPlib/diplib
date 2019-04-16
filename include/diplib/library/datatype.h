@@ -152,16 +152,11 @@ struct DIP_NO_EXPORT DataType {
    constexpr DataType() : dt( DT::SFLOAT ) {}
    constexpr DataType( DT _dt ) : dt( _dt ) {}
 
-   // This is to get the template below to not compile -- please ignore
-   template< typename T >
-   struct assert_false : std::false_type {};
-
    /// \brief Get the data type value of any expression, as long as that expression is of one of the known data types
    template< typename T >
-   constexpr explicit DataType( T ) {
-      // This constructor is not valid. Only the specializations towards the bottom of this file are.
-      static_assert( assert_false< T >::value, "You need to cast your constant to one of the known data types" );
-   }
+   constexpr explicit DataType( T );
+   constexpr explicit DataType( unsigned long long ); // On some platforms, a long long is not the same as uint64_t!
+   constexpr explicit DataType( long long );
 
    /// \brief A string can be cast to a data type. See \ref types for recognized strings.
    explicit DataType( String const& name ) {
@@ -550,23 +545,59 @@ inline void swap( DataType& v1, DataType& v2 ) {
 // This must be declared outside of the `DataType` class. See the definition of the `DIP_DECLARE_OPTIONS` macro.
 constexpr DataType::Classes operator+( DataType::DT a, DataType::DT b ) { return DataType::Classes{ a } + b; }
 
-// Here are the specializations for the templated constructor
-template<> constexpr DataType::DataType( bin      ) : dt( DT::BIN      ) {}
-template<> constexpr DataType::DataType( uint8    ) : dt( DT::UINT8    ) {}
-template<> constexpr DataType::DataType( sint8    ) : dt( DT::SINT8    ) {}
-template<> constexpr DataType::DataType( uint16   ) : dt( DT::UINT16   ) {}
-template<> constexpr DataType::DataType( sint16   ) : dt( DT::SINT16   ) {}
-template<> constexpr DataType::DataType( uint32   ) : dt( DT::UINT32   ) {}
-template<> constexpr DataType::DataType( sint32   ) : dt( DT::SINT32   ) {}
-template<> constexpr DataType::DataType( uint64   ) : dt( DT::UINT64   ) {}
-template<> constexpr DataType::DataType( sint64   ) : dt( DT::SINT64   ) {}
-template<> constexpr DataType::DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
-template<> constexpr DataType::DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
-template<> constexpr DataType::DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
-template<> constexpr DataType::DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
-
 /// \brief An array to hold data types
 using DataTypeArray = DimensionArray< DataType >;
+
+//
+// Constructing a DataType object based on the type of an argument
+//
+
+namespace detail {
+
+// This is to get the template below to not compile
+template< typename T >
+struct assert_false : std::false_type {};
+
+// Main template definition, it always bombs out
+template< typename T >
+constexpr DataType MakeDataType( T ) {
+   static_assert( assert_false< T >::value, "You need to cast your constant to one of the known data types" );
+   return DataType{};
+}
+template<> constexpr DataType MakeDataType( bool     ) { return DataType::DT::BIN; }
+template<> constexpr DataType MakeDataType( bin      ) { return DataType::DT::BIN; }
+template<> constexpr DataType MakeDataType( uint8    ) { return DataType::DT::UINT8; }
+template<> constexpr DataType MakeDataType( sint8    ) { return DataType::DT::SINT8; }
+template<> constexpr DataType MakeDataType( uint16   ) { return DataType::DT::UINT16; }
+template<> constexpr DataType MakeDataType( sint16   ) { return DataType::DT::SINT16; }
+template<> constexpr DataType MakeDataType( uint32   ) { return DataType::DT::UINT32; }
+template<> constexpr DataType MakeDataType( sint32   ) { return DataType::DT::SINT32; }
+template<> constexpr DataType MakeDataType( uint64   ) { return DataType::DT::UINT64; }
+template<> constexpr DataType MakeDataType( sint64   ) { return DataType::DT::SINT64; }
+template<> constexpr DataType MakeDataType( sfloat   ) { return DataType::DT::SFLOAT; }
+template<> constexpr DataType MakeDataType( dfloat   ) { return DataType::DT::DFLOAT; }
+template<> constexpr DataType MakeDataType( scomplex ) { return DataType::DT::SCOMPLEX; }
+template<> constexpr DataType MakeDataType( dcomplex ) { return DataType::DT::DCOMPLEX; }
+
+#if SIZE_MAX == UINT32_MAX
+constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT64; }
+constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT64; }
+#elif SIZE_MAX == UINT64_MAX
+constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT64; }
+constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT64; }
+#endif
+
+} // namespace detail
+
+template< typename T >
+constexpr DataType::DataType( T v ) : dt( detail::MakeDataType( v ).dt ) {}
+
+constexpr DataType::DataType( unsigned long long ) : dt( DataType::DT::UINT64 ) {
+   DIP_ASSERT( sizeof( unsigned long long ) == 8 ); // Include an assertion in case this is compiled on a platform where `long long` is not 64 bits.
+}
+constexpr DataType::DataType( long long ) : dt( DataType::DT::SINT64 ) {
+   DIP_ASSERT( sizeof( long long ) == 8 );// Include an assertion in case this is compiled on a platform where `long long` is not 64 bits.
+}
 
 //
 // Constants that people will use where a DataType is needed
