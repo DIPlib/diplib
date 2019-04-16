@@ -40,35 +40,35 @@ if(UNIX)
    set_target_properties(libics_cpp PROPERTIES OUTPUT_NAME "ics_cpp")
 endif(UNIX)
 
-# Install
-export(TARGETS libics_cpp FILE cmake/libics_cppTargets.cmake)
+# Install -- No installing for DIPlib
+#export(TARGETS libics_cpp FILE cmake/libics_cppTargets.cmake)
 
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-      cmake/libics_cppConfigVersion.cmake
-      VERSION ${PACKAGE_VERSION}
-      COMPATIBILITY AnyNewerVersion)
+#include(CMakePackageConfigHelpers)
+#write_basic_package_version_file(
+#      cmake/libics_cppConfigVersion.cmake
+#      VERSION ${PACKAGE_VERSION}
+#      COMPATIBILITY AnyNewerVersion)
 
-configure_package_config_file(
-      ${CMAKE_CURRENT_SOURCE_DIR}/cmake/libicsConfig.cmake.in
-      cmake/libics_cppConfig.cmake
-      INSTALL_DESTINATION cmake/)
+#configure_package_config_file(
+#      ${CMAKE_CURRENT_SOURCE_DIR}/cmake/libicsConfig.cmake.in
+#      cmake/libics_cppConfig.cmake
+#      INSTALL_DESTINATION cmake/)
 
-install(TARGETS libics_cpp
-      EXPORT libics_cppTargets
-      ARCHIVE DESTINATION lib
-      LIBRARY DESTINATION lib
-      RUNTIME DESTINATION bin
-      INCLUDES DESTINATION include)
+#install(TARGETS libics_cpp
+#      EXPORT libics_cppTargets
+#      ARCHIVE DESTINATION lib
+#      LIBRARY DESTINATION lib
+#      RUNTIME DESTINATION bin
+#      INCLUDES DESTINATION include)
 
-install(FILES ${HEADERS} DESTINATION include)
+#install(FILES ${HEADERS} DESTINATION include)
 
-install(FILES
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/libics_cppConfig.cmake
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/libics_cppConfigVersion.cmake
-      DESTINATION cmake/)
+#install(FILES
+#      ${CMAKE_CURRENT_BINARY_DIR}/cmake/libics_cppConfig.cmake
+#      ${CMAKE_CURRENT_BINARY_DIR}/cmake/libics_cppConfigVersion.cmake
+#      DESTINATION cmake/)
 
-install(EXPORT libics_cppTargets DESTINATION cmake)
+#install(EXPORT libics_cppTargets DESTINATION cmake)
 
 
 # Unit tests
