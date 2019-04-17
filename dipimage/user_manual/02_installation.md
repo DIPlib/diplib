@@ -44,7 +44,7 @@ dependencies. You can also
 
 Once all the binaries are compiled, start *MATLAB* and type:
 ```matlab
-    addpath('C:\dip\share\dipimage')
+    addpath('C:\dip\share\DIPimage')
     setenv('PATH',['C:\dip\lib',';',getenv('PATH')]);
 ```
 assuming that `C:\dip\` was the root directory where the binaries were installed
@@ -83,11 +83,11 @@ Note that you need to have *MATLAB* installed on the build machine to build *DIP
 
 Once all the binaries are compiled, start *MATLAB* and type:
 ```matlab
-    addpath('/usr/share/dipimage')
+    addpath('/usr/share/DIPimage')
 ```
 or:
 ```matlab
-    addpath('/home/uname/share/dipimage')
+    addpath('/home/uname/share/DIPimage')
 ```
 
 You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
