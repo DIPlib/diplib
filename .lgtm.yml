@@ -1,0 +1,19 @@
+extraction:
+   cpp:
+      prepare:
+         packages:
+            - g++-6
+      after_prepare:
+         - mkdir -p $LGTM_WORKSPACE/latest-gcc-symlinks
+         - ln -s /usr/bin/g++-6 $LGTM_WORKSPACE/latest-gcc-symlinks/g++
+         - ln -s /usr/bin/gcc-6 $LGTM_WORKSPACE/latest-gcc-symlinks/gcc
+         - export PATH=$LGTM_WORKSPACE/latest-gcc-symlinks:$PATH
+         - export GNU_MAKE=make
+         - export GIT=true
+         - mkdir $LGTM_SRC/target
+      configure:
+         command:
+            - cd $LGTM_SRC/target && cmake ..
+      index:
+         build_command:
+            - cd $LGTM_SRC/target && $GNU_MAKE -j2 DIP
