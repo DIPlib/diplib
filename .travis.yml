@@ -1,0 +1,14 @@
+language: cpp
+os: linux
+dist: xenial
+compiler:
+  - clang
+  - gcc
+before_script:
+  - mkdir build
+  - cd build
+script:
+  - cmake ..
+  - make -j2
+after_success:
+  - make check
