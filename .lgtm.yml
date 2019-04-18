@@ -1,8 +1,17 @@
+path_classifiers:
+   external:
+      - dependencies
+      - "include/diplib/private/pcg_*.hpp"
+   test:
+      - exclude: /
+      - examples/pydip_examples.py
 extraction:
    cpp:
       prepare:
          packages:
             - g++-6
+            - freeglut3-dev
+            - python3-dev
       after_prepare:
          - mkdir -p $LGTM_WORKSPACE/latest-gcc-symlinks
          - ln -s /usr/bin/g++-6 $LGTM_WORKSPACE/latest-gcc-symlinks/g++
@@ -16,4 +25,4 @@ extraction:
             - cd $LGTM_SRC/target && cmake ..
       index:
          build_command:
-            - cd $LGTM_SRC/target && $GNU_MAKE -j2 DIP
+            - cd $LGTM_SRC/target && $GNU_MAKE -j2
