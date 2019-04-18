@@ -563,7 +563,7 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void JointImageHistogram( Image const& input1, Image const& input2, Image const& mask, ConfigurationArray& configuration );
       DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
       DIP_EXPORT void EmptyHistogram( ConfigurationArray configuration );
-      DIP_EXPORT void HistogramFromDataPointer( CountType const* data, Configuration configuration );
+      DIP_EXPORT void HistogramFromDataPointer( CountType const* data, Configuration const& configuration );
 };
 
 /// \brief Data type of histogram bins. See `dip::Histogram::CountType`.

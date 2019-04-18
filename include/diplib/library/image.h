@@ -2055,7 +2055,7 @@ class DIP_NO_EXPORT Image {
       View operator[]( T index ) const;
 
       /// \brief Extract tensor elements using linear indexing. The image must be forged.
-      View operator[]( Range const& range ) const;
+      View operator[]( Range range ) const;
 
       /// \brief Extracts the tensor elements along the diagonal. The image must be forged.
       DIP_EXPORT View Diagonal() const;
@@ -2116,7 +2116,7 @@ class DIP_NO_EXPORT Image {
       View At( Range const& x_range, Range const& y_range, Range const& z_range ) const;
 
       /// \brief Extracts a subset of pixels from an image. The image must be forged.
-      View At( RangeArray const& ranges ) const;
+      View At( RangeArray ranges ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `mask`.
       ///
@@ -2129,7 +2129,7 @@ class DIP_NO_EXPORT Image {
       /// linear index order, reading all samples for the first pixel, then all samples for the second pixel, etc.
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a binary image.
-      View At( Image const& mask ) const;
+      View At( Image mask ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `coordinates`.
       ///

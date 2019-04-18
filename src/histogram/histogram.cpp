@@ -461,7 +461,7 @@ void Histogram::EmptyHistogram( Histogram::ConfigurationArray configuration ) {
    data_.Fill( 0 );
 }
 
-void Histogram::HistogramFromDataPointer( Histogram::CountType const* data, Histogram::Configuration configuration ) {
+void Histogram::HistogramFromDataPointer( Histogram::CountType const* data, Histogram::Configuration const& configuration ) {
    lowerBounds_.resize( 1 );
    binSizes_.resize( 1 );
    UnsignedArray sizes( 1 );

@@ -51,7 +51,7 @@ Interval::Interval( dip::Image image ) : image_( std::move( image )) {
    } while( ++it );
 }
 
-Interval::Interval( dip::Image const& hit, dip::Image const& miss ) {
+Interval::Interval( dip::Image hit, dip::Image miss ) {
    DIP_THROW_IF( !hit.IsForged() || !miss.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !hit.IsScalar() || !miss.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !hit.DataType().IsBinary() || !miss.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
@@ -63,8 +63,8 @@ Interval::Interval( dip::Image const& hit, dip::Image const& miss ) {
    DIP_THROW_IF( dip::Any( dip::Infimum( hit, miss )).As< bool >(), "The hit and miss images are not disjoint" );
    image_.ReForge( hit.Sizes(), 1, DT_SFLOAT );
    image_.Fill( X );
-   image_.At( hit ) = 1;
-   image_.At( miss ) = 0; // I'm sure this can be done more efficiently be iterating only once, but we're talking about very small images here,
+   image_.At( std::move( hit )) = 1;
+   image_.At( std::move( miss )) = 0; // I'm sure this can be done more efficiently be iterating only once, but we're talking about very small images here,
 }
 
 void Interval::Invert() {
@@ -74,7 +74,6 @@ void Interval::Invert() {
          *it = 1.0;
       } else if( *it == 1.0 ) {
          *it = 0.0;
-      } else {
       }
    } while( ++it );
 }
@@ -152,6 +151,7 @@ IntervalArray Interval::GenerateRotatedVersions(
    DIP_THROW_IF( image_.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint step = 1;
    if( rotationAngle == 45 ) {
+      // default step is OK
    } else if( rotationAngle == 90 ) {
       step = 2;
    } else if( rotationAngle == 180 ) {
@@ -162,6 +162,7 @@ IntervalArray Interval::GenerateRotatedVersions(
    bool interleaved = true;
    bool clockwise = true;
    if( rotationDirection == S::INTERLEAVED_CLOCKWISE ) {
+      // defaults are OK
    } else if( rotationDirection == S::INTERLEAVED_COUNTERCLOCKWISE ) {
       clockwise = false;
    } else if( rotationDirection == S::CLOCKWISE ) {

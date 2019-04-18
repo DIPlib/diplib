@@ -29,7 +29,7 @@ Image::View Image::Diagonal() const {
    dip::sint step = 1;
    tensor.ExtractDiagonal( step );
    Range out{ 0, static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
-   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( out )));
 }
 
 Image::View Image::TensorRow( dip::uint index ) const {
@@ -38,7 +38,7 @@ Image::View Image::TensorRow( dip::uint index ) const {
    dip::sint offset;
    DIP_STACK_TRACE_THIS( offset = tensor.ExtractRow( index, step ));
    Range out{ offset, offset + static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
-   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( out )));
 }
 
 Image::View Image::TensorColumn( dip::uint index ) const {
@@ -47,7 +47,7 @@ Image::View Image::TensorColumn( dip::uint index ) const {
    dip::sint offset;
    DIP_STACK_TRACE_THIS( offset = tensor.ExtractColumn( index, step ));
    Range out{ offset, offset + static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
-   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( out )));
 }
 
 Image::Pixel Image::At( dip::uint index ) const {
@@ -150,7 +150,7 @@ void DefineROI(
       ranges[ ii ] = Range( static_cast< dip::sint >( origin[ ii ] ), static_cast< dip::sint >( sizes[ ii ] + origin[ ii ] - 1 ), spacing[ ii ] );
    }
    dest.Strip(); // strip output image to make sure data is not copied into it.
-   dest = src.At( ranges );
+   dest = src.At( std::move( ranges ));
 }
 
 

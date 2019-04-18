@@ -18,6 +18,9 @@
  * limitations under the License.
  */
 
+#ifndef DIP_FEATURE_SURFACE_AREA_H
+#define DIP_FEATURE_SURFACE_AREA_H
+
 #include <array>
 
 #include "diplib.h"
@@ -72,3 +75,5 @@ class FeatureSurfaceArea : public ImageBased {
 
 } // namespace feature
 } // namespace dip
+
+#endif // DIP_FEATURE_SURFACE_AREA_H

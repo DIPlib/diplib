@@ -100,7 +100,7 @@ void FrangiVesselness(
    Subtract( 1, tmp, tmp, tmp.DataType() );
    out *= tmp;
    // Mask pixels where eigenvalues have wrong sign
-   out.At( mask ) = 0;
+   out.At( std::move( mask )) = 0;
 }
 
 namespace {
@@ -115,7 +115,7 @@ Image CreateMatchedFilter( Image const& coords, dfloat phi, dfloat sigma, dfloat
    Exp( out, out );              // out = exp(-u^2/(2*s^2))
    out -= Mean( out, mask );
    Not( mask, mask );
-   out.At( mask ) = 0;
+   out.At( std::move( mask )) = 0;
    if( !white_vessels ) {
       Invert( out, out );
    }

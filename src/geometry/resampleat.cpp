@@ -588,8 +588,8 @@ void LogPolarTransform2D(
    do {
       UnsignedArray r_phi( it.Coordinates() );
       FloatArray u_v = {
-            logr[ r_phi[ 0 ]] * cosPhi[ r_phi[ 1 ]] + center[ 0 ],
-            logr[ r_phi[ 0 ]] * sinPhi[ r_phi[ 1 ]] + center[ 1 ]
+            static_cast< dfloat >( logr[ r_phi[ 0 ]] ) * static_cast< dfloat >( cosPhi[ r_phi[ 1 ]] ) + center[ 0 ],
+            static_cast< dfloat >( logr[ r_phi[ 0 ]] ) * static_cast< dfloat >( sinPhi[ r_phi[ 1 ]] ) + center[ 1 ]
       };
       if( in.IsInside( u_v ) ) {
          function( in, *it, u_v );

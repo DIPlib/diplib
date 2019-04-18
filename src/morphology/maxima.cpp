@@ -147,7 +147,7 @@ void ProcessPixel(
 template< typename TPI >
 void dip__Extrema(
       Image const& in,
-      Image out,
+      Image& out,
       IntegerArray const& neighborOffsetsIn,
       IntegerArray const& neighborOffsetsOut,
       NeighborList const& neighborList,

@@ -24,7 +24,7 @@
 
 namespace dip {
 
-Image::View::View( Image const& reference, Range range ) : reference_( reference ) {
+Image::View::View( Image reference, Range range ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_STACK_TRACE_THIS( range.Fix( reference_.TensorElements() ));
    reference_.origin_ = reference_.Pointer( range.start * reference_.TensorStride() );
@@ -35,7 +35,7 @@ Image::View::View( Image const& reference, Range range ) : reference_( reference
    }
 }
 
-Image::View::View( Image const& reference, RangeArray ranges ) : reference_( reference ) {
+Image::View::View( Image reference, RangeArray ranges ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = reference_.Dimensionality();
    DIP_THROW_IF( nDims != ranges.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
@@ -52,7 +52,7 @@ Image::View::View( Image const& reference, RangeArray ranges ) : reference_( ref
    reference_.origin_ = reference_.Pointer( offset ); // based only on origin and data type sizeof
 }
 
-Image::View::View( Image const& reference, Image const& mask ) : reference_( reference ), mask_( mask ) {
+Image::View::View( Image reference, Image mask ) : reference_( std::move( reference )), mask_( std::move( mask )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask_.IsForged(), E::IMAGE_NOT_FORGED );
    if( mask_.TensorElements() > 1 ) {
@@ -63,7 +63,7 @@ Image::View::View( Image const& reference, Image const& mask ) : reference_( ref
    DIP_STACK_TRACE_THIS( mask_.CheckIsMask( reference_.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
 }
 
-Image::View::View( Image const& reference, UnsignedArray const& indices ) : reference_( reference ) {
+Image::View::View( Image reference, UnsignedArray const& indices ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( indices.empty(), E::ARRAY_PARAMETER_EMPTY );
    dip::uint maxIndex = reference_.NumberOfPixels();
@@ -79,7 +79,7 @@ Image::View::View( Image const& reference, UnsignedArray const& indices ) : refe
    }
 }
 
-Image::View::View( Image const& reference, CoordinateArray const& coordinates ) : reference_( reference ) {
+Image::View::View( Image reference, CoordinateArray const& coordinates ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( coordinates.empty(), E::ARRAY_PARAMETER_EMPTY );
    dip::uint nDims = reference_.Dimensionality();
@@ -327,12 +327,12 @@ Image::View Image::View::At( Range x_range ) const {
    }
 }
 
-Image::View Image::View::At( RangeArray const& ranges ) const {
+Image::View Image::View::At( RangeArray ranges ) const {
    if( mask_.IsForged() || !offsets_.empty() ) {
       DIP_THROW_IF( ranges.size() != 1, E::ILLEGAL_DIMENSIONALITY );
       return At( ranges[ 0 ] );
    }
-   return View( reference_, ranges );
+   return View( reference_, std::move( ranges ));
 }
 
 

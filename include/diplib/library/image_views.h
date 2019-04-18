@@ -942,7 +942,7 @@ class Image::View {
 
       /// \brief Extract tensor elements using linear indexing.
       View operator[]( Range range ) const {
-         View out( reference_, range );
+         View out( reference_, std::move( range ));
          out.mask_ = mask_;
          out.offsets_ = offsets_;
          return out;
@@ -1004,7 +1004,7 @@ class Image::View {
       }
 
       /// \brief Extracts a subset of pixels from an image.
-      DIP_EXPORT View At( RangeArray const& ranges ) const;
+      DIP_EXPORT View At( RangeArray ranges ) const;
 
       /// \brief Returns the dimensionality of the view. Non-regular views (created by indexing using a mask image
       /// or a coordinate array) are always 1D.
@@ -1076,11 +1076,11 @@ class Image::View {
       explicit View( Image&& reference ) : reference_( std::move( reference )) {    // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
       }
-      DIP_EXPORT View( Image const& reference, Range range );                       // index tensor elements using range
-      DIP_EXPORT View( Image const& reference, RangeArray ranges );                 // index pixels using regular grid
-      DIP_EXPORT View( Image const& reference, Image const& mask );                 // index pixels or samples using mask
-      DIP_EXPORT View( Image const& reference, UnsignedArray const& indices );      // index pixels using linear indices
-      DIP_EXPORT View( Image const& reference, CoordinateArray const& coordinates );// index pixels using coordinates
+      DIP_EXPORT View( Image reference, Range range );                              // index tensor elements using range
+      DIP_EXPORT View( Image reference, RangeArray ranges );                        // index pixels using regular grid
+      DIP_EXPORT View( Image reference, Image mask );                               // index pixels or samples using mask
+      DIP_EXPORT View( Image reference, UnsignedArray const& indices );             // index pixels using linear indices
+      DIP_EXPORT View( Image reference, CoordinateArray const& coordinates );       // index pixels using coordinates
 };
 
 
@@ -1273,8 +1273,8 @@ inline Image::View Image::operator[]( T index ) const {
    return operator[]( Range( static_cast< dip::sint >( index )));
 }
 
-inline Image::View Image::operator[]( Range const& range ) const {
-   DIP_STACK_TRACE_THIS( return Image::View( *this, range ));
+inline Image::View Image::operator[]( Range range ) const {
+   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( range )));
 }
 
 inline Image::View Image::At( Range const& x_range ) const {
@@ -1292,12 +1292,12 @@ inline Image::View Image::At( Range const& x_range, Range const& y_range, Range 
    return At( RangeArray{ x_range, y_range, z_range } );
 }
 
-inline Image::View Image::At( RangeArray const& ranges ) const {
-   DIP_STACK_TRACE_THIS( return Image::View( *this, ranges ));
+inline Image::View Image::At( RangeArray ranges ) const {
+   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( ranges )));
 }
 
-inline Image::View Image::At( Image const& mask ) const {
-   DIP_STACK_TRACE_THIS( return Image::View( *this, mask ));
+inline Image::View Image::At( Image mask ) const {
+   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( mask )));
 }
 
 inline Image::View Image::At( CoordinateArray const& coordinates ) const {

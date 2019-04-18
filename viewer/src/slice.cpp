@@ -52,7 +52,7 @@ void SliceView::project()
       if ((int)ii != dx && (int)ii != dy)
         range[ii] = Range((dip::sint)o.operating_point_[ii]);
         
-    projected_ = image.At(range);
+    projected_ = image.At(std::move(range));
   }
   else
   {

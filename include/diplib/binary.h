@@ -638,7 +638,7 @@ class DIP_NO_EXPORT Interval {
       ///
       /// The two images must be disjoint, meaning that `dip::Any( dip::Infimum( hit, miss ))` must be false.
       /// An exception will be raised if this is not the case.
-      DIP_EXPORT Interval( dip::Image const& hit, dip::Image const& miss );
+      DIP_EXPORT Interval( dip::Image hit, dip::Image miss );
 
       /// \brief Inverts the interval, swapping foreground and background pixels. Caution using this function, as
       /// the `%Interval` can potentially share data with other intervals.

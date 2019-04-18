@@ -99,7 +99,7 @@ class DIP_NO_EXPORT LookupTable{
       }
 
       template< typename InputIterator >
-      LookupTable( InputIterator begin, InputIterator end, FloatArray index = {} ) : index_( std::move( index )) {
+      LookupTable( InputIterator const& begin, InputIterator const& end, FloatArray index = {} ) : index_( std::move( index )) {
          using TPI = typename InputIterator::value_type;
          dip::sint n = std::distance( begin, end );
          DIP_THROW_IF( n <= 0, "The iterator range is empty" );

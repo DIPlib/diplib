@@ -138,7 +138,7 @@ void ImageDisplay::UpdateSlice() {
                      rangeArray[ ii ] = Range( static_cast< dip::sint >( coordinates_[ ii ] ));
                   }
                }
-               slice_ = image_.At( rangeArray );
+               slice_ = image_.At( std::move( rangeArray ));
                break;
             }
             case ProjectionMode::MAX: {

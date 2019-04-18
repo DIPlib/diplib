@@ -341,7 +341,7 @@ void LogGaborFilterBank(
       Image radialFilter = rotMatrix * coord;
       Angle( radialFilter, radialFilter );
       auto lineFilter = Framework::NewMonadicScanLineFilter< sfloat >( [ expScaling ]( auto its ){
-         return static_cast< sfloat >( std::exp(( *its[ 0 ] ) * ( *its[ 0 ] ) * -expScaling ));
+         return static_cast< sfloat >( std::exp( static_cast< dfloat >( *its[ 0 ] ) * static_cast< dfloat >( *its[ 0 ] ) * -expScaling ));
       }, 30 );
       Framework::ScanMonadic( radialFilter, radialFilter, DT_SFLOAT, DT_SFLOAT, 1, *lineFilter );
       // Filter each scale with this angle selection filter

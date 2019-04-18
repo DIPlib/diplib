@@ -130,7 +130,7 @@ void ComputeProjectedParameterSpace(
       ComputeParameterSpaceSlice( inFT, sphere, sphereFT, tmp, static_cast< dfloat >( radius ), sigma, options );
       Greater( tmp, max, mask );
       Select( tmp, max, mask, max );
-      argmax.At( mask ) = radius;
+      argmax.At( std::move( mask )) = radius;
    }
 }
 

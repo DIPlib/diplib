@@ -968,7 +968,7 @@ dfloat AttSimArbTrace(
          auto& subArr = interArr[ static_cast< dip::uint >( xrest ) ][ static_cast< dip::uint >( yrest ) ][ static_cast< dip::uint >( zrest ) ];
          for( dip::uint PixNr = 0; PixNr < 8; ++PixNr ) {
             dip::sint PixBase1 = PixBase0 + pixAdd[ PixNr ];
-            exponent += dataBuf[ PixBase1 ] * subArr[ PixNr ];
+            exponent += static_cast< dfloat >( dataBuf[ PixBase1 ] ) * static_cast< dfloat >( subArr[ PixNr ] );
          }
          CurrVec.x += DispVec.x;
          CurrVec.y += DispVec.y;
