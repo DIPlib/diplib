@@ -1,5 +1,7 @@
 # *DIPlib 3*
+
 [![Build Status](https://travis-ci.org/DIPlib/diplib.svg?branch=master)](https://travis-ci.org/DIPlib/diplib)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/DIPlib/diplib.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DIPlib/diplib/context:cpp)
 
 *DIPlib* is a library for quantitative image analysis. It has been in development
 at Delft University of Technology in The Netherlands since 1995. The 3.0 release

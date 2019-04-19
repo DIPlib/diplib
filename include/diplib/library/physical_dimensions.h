@@ -563,7 +563,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       // Throws an exception if the physical quantities cannot be added together.
       // A workaround for GCC 5.4 bug that only allows a `throw` in a constexpr function in this way.
       constexpr void CheckHasSameDimensions( PhysicalQuantity const& other ) {
-         units.HasSameDimensions( other.units ) ? 0 : throw dip::ParameterError( "Units don't match" );
+         ( void ) ( units.HasSameDimensions( other.units ) ? 0 : throw dip::ParameterError( "Units don't match" ));
       }
 };
 
