@@ -5,6 +5,8 @@ path_classifiers:
    test:
       - exclude: /
       - examples/pydip_examples.py
+queries:
+   - exclude: cpp/large-parameter
 extraction:
    cpp:
       prepare:
