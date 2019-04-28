@@ -95,7 +95,7 @@ Controlling the build of *DIPviewer*:
 
 Controlling the build of *DIPjavaio*:
 
-    -DIP_BUILD_JAVAIO=Off              # don't build/install the DIPjavaio module
+    -DDIP_BUILD_JAVAIO=Off             # don't build/install the DIPjavaio module
     -DJAVA_HOME=<path>                 # use the JDK in <path>
     -DBIOFORMATS_JAR=<path>/bioformats_package.jar
                                        # specify location of the Bio-Formats JAR file
