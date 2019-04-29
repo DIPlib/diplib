@@ -580,8 +580,8 @@ template<> constexpr DataType MakeDataType( scomplex ) { return DataType::DT::SC
 template<> constexpr DataType MakeDataType( dcomplex ) { return DataType::DT::DCOMPLEX; }
 
 #if SIZE_MAX == UINT32_MAX
-constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT64; }
-constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT64; }
+constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT32; }
+constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT32; }
 #elif SIZE_MAX == UINT64_MAX
 constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT64; }
 constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT64; }
