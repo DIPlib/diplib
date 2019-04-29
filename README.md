@@ -3,24 +3,73 @@
 [![Build Status](https://travis-ci.org/DIPlib/diplib.svg?branch=master)](https://travis-ci.org/DIPlib/diplib)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/DIPlib/diplib.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DIPlib/diplib/context:cpp)
 
-*DIPlib* is a library for quantitative image analysis. It has been in development
-at Delft University of Technology in The Netherlands since 1995. The 3.0 release
-represents a complete rewrite in modern C++ of the library infrastructure, with most of
-the image processing and analysis algorithms ported from the previous version, and
-some of them improved significantly. See the [change log](src/documentation/changes.md)
-for a summary of changes.
+The *DIPlib* project contains:
 
-*DIPlib 3* comes with MATLAB bindings (in a toolbox called *DIPimage*, in development
-since 1999), and new Python bindings (called PyDIP). Many of the improvements to *DIPlib*
-are a result of porting over concepts and ideas first implemented in *DIPimage*.
+- [*DIPlib 3*](https://diplib.github.io/diplib-docs/), a C++ library for quantitative image analysis.
+It has been in development at Delft University of Technology in The Netherlands since 1995.
+The 3.0 release of *DIPlib* represents a complete rewrite in modern C++ of the library infrastructure,
+with most of the image processing and analysis algorithms ported from the previous version,
+and some of them improved significantly. Many of the improvements to *DIPlib* are a result of porting
+over concepts and ideas first implemented in *DIPimage*.
+See the [change log](https://diplib.github.io/diplib-docs/changes.html) for a summary of changes.
+
+- [*DIPimage 3*](https://diplib.github.io/diplib-docs/DIPimage.html), a MATLAB toolbox for quantitative
+image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
+See the [change log](https://diplib.github.io/diplib-docs/changes.html#changes_dipimage) for a summary
+of changes, and note that many changes in *DIPlib* affected *DIPimage* as well.
+
+- [*PyDIP*](https://diplib.github.io/diplib-docs/PyDIP.html), Python bindings to *DIPlib*.
+This is currently a thin wrapper that exposes the C++ functionality with little change.
+
+- [*DIPviewer*](https://diplib.github.io/diplib-docs/group__viewer.html), an interactive image display
+utility. It is usable from C++, Python and MATLAB programs. Within *DIPimage* this is an optional
+alternative to the default MATLAB-native interactive display utility.
+
+- [*DIPjavaio*](https://diplib.github.io/diplib-docs/group__javaio.html), an interface to
+[*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
+hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
+way of interfacing with *Bio-Formats*.
 
 **Status**: We are in the process of creating the first beta release for the 3.0 branch.
-Most, but not all functionality from the old *DIPlib* and *DIPimage* is (yet) present in
+Most (but not yet all) functionality from the old *DIPlib* and *DIPimage* is present in
 this branch. See the [open issues](https://github.com/DIPlib/diplib/issues) to find out
 how you can help!
 
 See the [documentation](https://diplib.github.io/diplib-docs/) for more information about
 the library.
+
+For binary releases of previous versions of *DIPlib* and *DIPimage* see
+and some of them improved significantly. Many of the improvements to *DIPlib* are a result of porting
+over concepts and ideas first implemented in *DIPimage*.
+See the [change log](https://diplib.github.io/diplib-docs/changes.html) for a summary of changes.
+
+- [*DIPimage 3*](https://diplib.github.io/diplib-docs/DIPimage.html), a MATLAB toolbox for quantitative
+image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
+See the [change log](https://diplib.github.io/diplib-docs/changes.html#changes_dipimage) for a summary
+of changes, and note that many changes in *DIPlib* affected *DIPimage* as well.
+
+- [*PyDIP*](https://diplib.github.io/diplib-docs/PyDIP.html), Python bindings to *DIPlib*.
+This is currently a thin wrapper that exposes the C++ functionality with little change.
+
+- [*DIPviewer*](https://diplib.github.io/diplib-docs/group__viewer.html), an interactive image display
+utility. It is usable from C++, Python and MATLAB programs. Within *DIPimage* this is an optional
+alternative to the default MATLAB-native interactive display utility.
+
+- [*DIPjavaio*](https://diplib.github.io/diplib-docs/group__javaio.html), an interface to
+[*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
+hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
+way of interfacing with *Bio-Formats*.
+
+**Status**: We are in the process of creating the first beta release for the 3.0 branch.
+Most (but not yet all) functionality from the old *DIPlib* and *DIPimage* is present in
+this branch. See the [open issues](https://github.com/DIPlib/diplib/issues) to find out
+how you can help!
+
+See the [documentation](https://diplib.github.io/diplib-docs/) for more information about
+the library.
+
+For binary releases of previous versions of *DIPlib* and *DIPimage* see
+[the *DIPlib* website](http://www.diplib.org).
 
 
 ## Building the library
@@ -220,7 +269,7 @@ to the Apache License, except for *OME Bio-Formats*.
 
 Note that [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) is optional,
 but *DIPjavaio* is currently useless without it.
-The *DIPjavaio* sources provided with this project are shared unde the same licence
+The *DIPjavaio* sources provided with this project are shared under the same licence
 as the rest of the project (Apache 2.0), but by linking with *Bio-Formats*, your
-whole program will become GPL. This modue is not suitable for use in commercial,
+whole program will become GPL. This module is not suitable for use in commercial,
 closed-source software.
