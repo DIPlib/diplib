@@ -1,1 +1,1 @@
-Class-Path: bioformats_package.jar @BIOFORMATS_JAR@ @CMAKE_INSTALL_PREFIX@/lib/bioformats_package.jar
+Class-Path: bioformats_package.jar file:///@BIOFORMATS_JAR@ file:///@CMAKE_INSTALL_PREFIX@/lib/bioformats_package.jar

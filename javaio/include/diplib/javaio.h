@@ -22,6 +22,7 @@
 
 #include "diplib.h"
 #include "diplib/file_io.h"
+#include "diplib/javaio/export.h"
 
 /// \file
 /// \brief Declares the functionality in namespace `dip::javaio`.
@@ -43,7 +44,7 @@ constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
 /// - `"org/diplib/BioFormatsInterface"`: The openmicroscopy.org Bio-Formats package (default).
 ///
 /// Information about the file and all metadata are returned in the `FileInformation` output argument.
-DIP_EXPORT FileInformation ImageReadJavaIO(
+DIPJAVAIO_EXPORT FileInformation ImageReadJavaIO(
       Image& out,
       String const& filename,
       String const& interface = bioformatsInterface

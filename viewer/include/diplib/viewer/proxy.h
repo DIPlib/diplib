@@ -85,7 +85,7 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     std::map<Window*, ProxyRefreshWindowCallback> refresh_window_callbacks_;
     std::map<Window*, ProxyCreateWindowCallback> create_window_callbacks_;
     
-    static ProxyManager instance_;
+    static DIPVIEWER_EXPORT ProxyManager instance_;
 
   public:
     static ProxyManager *instance()

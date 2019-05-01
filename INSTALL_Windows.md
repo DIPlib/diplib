@@ -50,7 +50,9 @@ ZIP file and note the location.
 
 - TODO: *FFTW3*.
 
-- TODO: *Bio-Formats*.
+- Download the *BioFormats* library from here: https://www.openmicroscopy.org/bio-formats/downloads.
+Put it somewhere sensible and note the location. The same location (as well as the
+library installation path) will be used to find it during execution.
 
 ## Creating *Visual Studio* project files
 
@@ -94,7 +96,13 @@ first parameter and "lib\Release\x64\glew32.lib" for the second. If the `GLEW_` 
 are not on the list, click on "Configure" again after entering the *GLFW* library
 location. This should populate the *GLEW* parameters.
 
-- TODO: `DIP_BUILD_DIPJAVAIO`, the Java SDK, and *Bio-Formats*.
+- If `DIP_BUILD_DIPVIEWER_JAVA` is not on the list but `DIP_BUILD_DIPVIEWER` is, you
+don't have MATLAB installed, you are building 32-bit binaries or the Java SDK could not
+be found. This is only necessary if you want to use the `viewslice` command from DIPimage.
+
+- If `BIOFORMATS_JAR` is not on the list, the Java SDK could not be found. If it is,
+point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
+you want to import image formats that are not directly supported by DIPlib.
 
 Finally, click on "Generate" to create a *Visual Studio* solution file.
 

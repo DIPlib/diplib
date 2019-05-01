@@ -24,7 +24,7 @@
 
 using namespace dip::viewer;
 
-ProxyManager ProxyManager::instance_;
+DIPVIEWER_EXPORT ProxyManager ProxyManager::instance_;
 
 int proxyGetWidth(Window *window)
 {

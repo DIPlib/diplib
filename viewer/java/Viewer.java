@@ -103,7 +103,13 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         final File f = new File(Viewer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
         final String sopath = f.getParent() + File.separator + ".." + File.separator + ".." + File.separator + "lib";
         //System.setProperty("jna.library.path", sopath);
-        NativeLibrary.addSearchPath("DIPviewer", sopath);
+
+		try {
+           NativeLibrary.addSearchPath("DIPviewer", new File(sopath).getCanonicalPath());
+		} catch (Exception e) {
+          System.out.println(e.toString());
+        }
+
         proxy_ = (Proxy) Native.loadLibrary("DIPviewer", Proxy.class);
 
         pointer_ = new Pointer(pointer);

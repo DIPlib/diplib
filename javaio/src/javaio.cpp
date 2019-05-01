@@ -22,9 +22,15 @@
 #include "image.h"
 #include "fileinformation.h"
 
+#ifdef _WIN32
+  #define WIN32_LEAN_AND_MEAN
+  #include <Windows.h>
+#else
+  #include <dlfcn.h>
+  #include <libgen.h>
+#endif
+
 #include <jni.h>
-#include <dlfcn.h>
-#include <libgen.h>
 
 namespace dip {
 
@@ -34,6 +40,25 @@ namespace {
 
 String GetLibraryPath()
 {
+   char buf[4096] = { 0 };
+
+#ifdef _WIN32
+   HMODULE hm = NULL;
+
+   DIP_THROW_IF( !GetModuleHandleEx( GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                                     GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+	                                 ( LPCSTR ) &GetLibraryPath, &hm ),
+	             "GetModuleHandleEx failed" );
+   DIP_THROW_IF( !GetModuleFileName( hm, buf, sizeof( buf ) ),
+	             "GetModuleHandleEx failed" );
+
+   // Remove last path component (filename)
+   size_t ii; 
+   for ( ii = strlen(buf); ii > 0 && buf[ ii ] != '\\'; --ii );
+   buf[ ii ] = '\0';
+
+   String path = buf;
+#else
    Dl_info dl_info;
   
    // ISO C++ forbids casting between pointer-to-function and pointer-to-object
@@ -42,11 +67,10 @@ String GetLibraryPath()
    #endif
    dladdr( (void *) GetLibraryPath, &dl_info );
 
-   char buf[ 4096 ] = { 0 };
    strcpy( buf, dl_info.dli_fname );
+   String path = dirname(buf);
+#endif
 
-   String path = dirname( buf );
-  
    return path;
 }
 
@@ -56,28 +80,28 @@ JNIEnv *GetEnv() {
    
    if ( !jvm )
    {
-     // Create JVM
-     // NOTE: The JVM is not multi-threaded, so all calls must happen on this thread
-     JavaVMInitArgs vm_args;
-     JavaVMOption* options = new JavaVMOption[ 1 ];
-     String classpathopt = "-Djava.class.path=" + GetLibraryPath() + "/DIPjavaio.jar";
-   
-     options[ 0 ].optionString = (char*) classpathopt.c_str();
-     vm_args.version = JNI_VERSION_1_8;
-     vm_args.nOptions = 1;
-     vm_args.options = options;
-     vm_args.ignoreUnrecognized = false;
-   
-     jint rc = JNI_CreateJavaVM( &jvm, (void**) &env, &vm_args );
-     delete[] options;
-   
-     if ( rc != JNI_OK ) {
-        jvm = NULL;
-        env = NULL;
-        DIP_THROW_RUNTIME( "Initializing JavaIO: cannot create JVM" );
-     }
+      // Create JVM
+      // NOTE: The JVM is not multi-threaded, so all calls must happen on this thread
+      JavaVMInitArgs vm_args;
+      JavaVMOption* options = new JavaVMOption[ 1 ];
+      String classpathopt = "-Djava.class.path=" + GetLibraryPath() + "/DIPjavaio.jar";
+      
+      options[ 0 ].optionString = (char*) classpathopt.c_str();
+      vm_args.version = JNI_VERSION_1_8;
+      vm_args.nOptions = 1;
+      vm_args.options = options;
+      vm_args.ignoreUnrecognized = false;
+      
+      jint rc = JNI_CreateJavaVM( &jvm, (void**) &env, &vm_args );
+      delete[] options;
+      
+      if ( rc != JNI_OK ) {
+         jvm = NULL;
+         env = NULL;
+         DIP_THROW_RUNTIME( "Initializing JavaIO: cannot create JVM" );
+      }
 
-     RegisterImageNatives( env );
+      RegisterImageNatives( env );
    }
    
    return env;
