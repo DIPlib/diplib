@@ -856,20 +856,20 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
             if( filterLength_ == 2 ) {
                // Brute-force computation
                if( !hasMargin ) {
-                  *out = OP2::max( *in, in[ inStride ] );
+                  *out = OP1::max( *in, in[ inStride ] );
                   in += inStride;
                   out += outStride;
                   length -= 2;
                }
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   // max(min(a,b),min(b,c)) == min(max(a,c),b)
-                  TPI v = OP1::max( in[ -inStride ], in[ inStride ] );
-                  *out = OP2::max( *in, v );
+                  TPI v = OP2::max( in[ -inStride ], in[ inStride ] );
+                  *out = OP1::max( *in, v );
                   in += inStride;
                   out += outStride;
                }
                if( !hasMargin ) {
-                  *out = OP2::max( *in, in[ -inStride ] );
+                  *out = OP1::max( *in, in[ -inStride ] );
                }
             } else { // filterLength_ == 3
                // Brute-force computation
@@ -878,34 +878,34 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
                TPI a, b, c;
                if( hasMargin ) {
                   // Initialize
-                  TPI v = OP2::max( in[ 0 ], in[ inStride ] );
-                  a = OP2::max( OP2::max( in[ 0 ], in[ -inStride ] ), in[ -inStride2 ] );
-                  b = OP2::max( v, in[ -inStride ] );
-                  c = OP2::max( v, in[ inStride2 ] );
-                  *out = OP1::max( OP1::max( a, b ), c );
+                  TPI v = OP1::max( in[ 0 ], in[ inStride ] );
+                  a = OP1::max( OP1::max( in[ 0 ], in[ -inStride ] ), in[ -inStride2 ] );
+                  b = OP1::max( v, in[ -inStride ] );
+                  c = OP1::max( v, in[ inStride2 ] );
+                  *out = OP2::max( OP2::max( a, b ), c );
                   in += inStride;
                   out += outStride;
                } else {
                   // Initialize, and handle first two pixels as special case
                   if( length == 2 ) {
-                     b = OP2::max( in[ 0 ], in[ inStride ] );
+                     b = OP1::max( in[ 0 ], in[ inStride ] );
                      c = b;
                      // The two pixels will be written at the end
                      length = 0; // don't run the main loop
                   } else if( length == 3 ) {
-                     b = OP2::max( OP2::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
+                     b = OP1::max( OP1::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
                      c = b;
                      *out = b;
                      out += outStride;
                      // The other two pixels will be written at the end
                      length = 0; // don't run the main loop
                   } else {
-                     b = OP2::max( OP2::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
+                     b = OP1::max( OP1::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
                      *out = b;
                      in += inStride;
                      out += outStride;
-                     c = OP2::max( OP2::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
-                     *out = OP1::max( b, c );
+                     c = OP1::max( OP1::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
+                     *out = OP2::max( b, c );
                      in += inStride;
                      out += outStride;
                      length -= 3;
@@ -914,14 +914,14 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
                for( dip::uint ii = 1; ii < length; ++ii ) {
                   a = b;
                   b = c;
-                  c = OP2::max( OP2::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
-                  *out = OP1::max( OP1::max( a, b ), c );
+                  c = OP1::max( OP1::max( in[ 0 ], in[ inStride ] ), in[ inStride2 ] );
+                  *out = OP2::max( OP2::max( a, b ), c );
                   in += inStride;
                   out += outStride;
                }
                if( !hasMargin ) {
                   // Handle last two pixels as special case
-                  *out = OP1::max( b, c );
+                  *out = OP2::max( b, c );
                   out += outStride;
                   *out = c;
                }

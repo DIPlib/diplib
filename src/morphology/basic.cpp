@@ -886,7 +886,23 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    dip::Image out;
 
    // Rectangular morphology
-   dip::StructuringElement se = {{ 10, 1 }, "rectangular" };
+   dip::StructuringElement se = {{ 2, 1 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
+   DOCTEST_CHECK( dip::Count( out ) == 2 );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
+
+   se = {{ 3, 1 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
+   DOCTEST_CHECK( dip::Count( out ) == 3 );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
+
+   se = {{ 10, 1 }, "rectangular" };
    dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
    se = {{ 11, 1 }, "rectangular" };
@@ -899,6 +915,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
+
+   se = {{ 2, 1 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::CLOSING );
+   DOCTEST_CHECK( dip::Count( out ) == 1 );
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval );
+   se = {{ 1, 3 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::CLOSING );
+   DOCTEST_CHECK( dip::Count( out ) == 1 );
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval );
    se = {{ 10, 1 }, "rectangular" };
    dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::CLOSING );
    DOCTEST_CHECK( dip::Count( out ) == 1 );
