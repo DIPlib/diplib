@@ -1,3 +1,4 @@
 dipimage/*.m linguist-language=matlab
 dipimage/*/*.m linguist-language=matlab
 dependencies linguist-vendored
+tools linguist-vendored

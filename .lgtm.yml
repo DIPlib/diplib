@@ -2,6 +2,7 @@ path_classifiers:
    external:
       - dependencies
       - "include/diplib/private/pcg_*.hpp"
+      - tools
    test:
       - exclude: /
       - examples/pydip_examples.py
