@@ -1152,13 +1152,13 @@ table.m-table tr.m-default th a:active, table.m-table th.m-default a:active {
 table.m-table tr.m-default pre, table.m-table tr.m-default code,
 table.m-table td.m-default pre, table.m-table td.m-default code,
 table.m-table th.m-default pre, table.m-table th.m-default code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--default-filled-code-background-color);
+  color: var(--default-filled-code-color);
 }
 .m-note.m-primary a,
 table.m-table tr.m-primary td a, table.m-table td.m-primary a,
 table.m-table tr.m-primary th a, table.m-table th.m-primary a {
-  color: var(--default-filled-link-color);
+  color: var(--primary-filled-link-color);
 }
 .m-note.m-primary,
 table.m-table tr.m-primary td, table.m-table td.m-primary,
@@ -1186,8 +1186,8 @@ table.m-table tr.m-primary th a:active, table.m-table th.m-primary a:active {
 table.m-table tr.m-primary pre, table.m-table tr.m-primary code,
 table.m-table td.m-primary pre, table.m-table td.m-primary code,
 table.m-table th.m-primary pre, table.m-table th.m-primary code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--primary-filled-code-background-color);
+  color: var(--primary-filled-code-color);
 }
 .m-note.m-success,
 table.m-table tr.m-success td, table.m-table td.m-success,
@@ -1215,8 +1215,8 @@ table.m-table tr.m-success th a:active, table.m-table th.m-success a:active {
 table.m-table tr.m-success pre, table.m-table tr.m-success code,
 table.m-table td.m-success pre, table.m-table td.m-success code,
 table.m-table th.m-success pre, table.m-table th.m-success code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--success-filled-code-background-color);
+  color: var(--success-filled-code-color);
 }
 .m-note.m-warning,
 table.m-table tr.m-warning td, table.m-table td.m-warning,
@@ -1244,8 +1244,8 @@ table.m-table tr.m-warning th a:active, table.m-table th.m-warning a:active {
 table.m-table tr.m-warning pre, table.m-table tr.m-warning code,
 table.m-table td.m-warning pre, table.m-table td.m-warning code,
 table.m-table th.m-warning pre, table.m-table th.m-warning code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--warning-filled-code-background-color);
+  color: var(--warning-filled-code-color);
 }
 .m-note.m-danger,
 table.m-table tr.m-danger td, table.m-table td.m-danger,
@@ -1273,8 +1273,8 @@ table.m-table tr.m-danger th a:active, table.m-table th.m-danger a:active {
 table.m-table tr.m-danger pre, table.m-table tr.m-danger code,
 table.m-table td.m-danger pre, table.m-table td.m-danger code,
 table.m-table th.m-danger pre, table.m-table th.m-danger code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--danger-filled-code-background-color);
+  color: var(--danger-filled-code-color);
 }
 .m-note.m-info,
 table.m-table tr.m-info td, table.m-table td.m-info,
@@ -1302,8 +1302,8 @@ table.m-table tr.m-info th a:active, table.m-table th.m-info a:active {
 table.m-table tr.m-info pre, table.m-table tr.m-info code,
 table.m-table td.m-info pre, table.m-table td.m-info code,
 table.m-table th.m-info pre, table.m-table th.m-info code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--info-filled-code-background-color);
+  color: var(--info-filled-code-color);
 }
 .m-note.m-dim,
 table.m-table tr.m-dim td, table.m-table td.m-dim,
@@ -1331,8 +1331,8 @@ table.m-table tr.m-dim th a:active, table.m-table th.m-dim a:active {
 table.m-table tr.m-dim pre, table.m-table tr.m-dim code,
 table.m-table td.m-dim pre, table.m-table td.m-dim code,
 table.m-table th.m-dim pre, table.m-table th.m-dim code {
-  background-color: var(--default-filled-code-color);
-  color: var(--default-filled-code-background-color);
+  background-color: var(--dim-filled-code-background-color);
+  color: var(--dim-filled-code-color);
 }
 
 /* Colored figure */
