@@ -39,36 +39,6 @@ See the [documentation](https://diplib.github.io/diplib-docs/) for more informat
 the library.
 
 For binary releases of previous versions of *DIPlib* and *DIPimage* see
-and some of them improved significantly. Many of the improvements to *DIPlib* are a result of porting
-over concepts and ideas first implemented in *DIPimage*.
-See the [change log](https://diplib.github.io/diplib-docs/changes.html) for a summary of changes.
-
-- [*DIPimage 3*](https://diplib.github.io/diplib-docs/DIPimage.html), a MATLAB toolbox for quantitative
-image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
-See the [change log](https://diplib.github.io/diplib-docs/changes.html#changes_dipimage) for a summary
-of changes, and note that many changes in *DIPlib* affected *DIPimage* as well.
-
-- [*PyDIP*](https://diplib.github.io/diplib-docs/PyDIP.html), Python bindings to *DIPlib*.
-This is currently a thin wrapper that exposes the C++ functionality with little change.
-
-- [*DIPviewer*](https://diplib.github.io/diplib-docs/group__viewer.html), an interactive image display
-utility. It is usable from C++, Python and MATLAB programs. Within *DIPimage* this is an optional
-alternative to the default MATLAB-native interactive display utility.
-
-- [*DIPjavaio*](https://diplib.github.io/diplib-docs/group__javaio.html), an interface to
-[*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
-hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
-way of interfacing with *Bio-Formats*.
-
-**Status**: We are in the process of creating the first beta release for the 3.0 branch.
-Most (but not yet all) functionality from the old *DIPlib* and *DIPimage* is present in
-this branch. See the [open issues](https://github.com/DIPlib/diplib/issues) to find out
-how you can help!
-
-See the [documentation](https://diplib.github.io/diplib-docs/) for more information about
-the library.
-
-For binary releases of previous versions of *DIPlib* and *DIPimage* see
 [the *DIPlib* website](http://www.diplib.org).
 
 

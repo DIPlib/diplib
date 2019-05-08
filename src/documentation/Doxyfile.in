@@ -2065,6 +2065,9 @@ PREDEFINED             = DIP__ENABLE_ASSERT \
                          DIPVIEWER_EXPORT="" \
                          DIPVIEWER_NO_EXPORT="" \
                          DIPVIEWER_EXTERN_EXPORT="" \
+                         DIPJAVAIO_EXPORT="" \
+                         DIPJAVAIO_NO_EXPORT="" \
+                         DIPJAVAIO_EXTERN_EXPORT="" \
                          DIP__FAKE_DOCUMENTATION
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
