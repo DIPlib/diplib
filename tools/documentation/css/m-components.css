@@ -30,6 +30,7 @@ html {
 body {
   font-family: var(--font);
   font-size: 1rem;
+  line-height: var(--line-height);
   color: var(--color);
 }
 
@@ -39,10 +40,29 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: var(--heading-font-weight);
 }
 h1 {
-  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 2em;
 }
-h2, h3, h4, h5, h6 {
+h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.5em;
+}
+h3 {
+  margin-top: 1rem;
+}
+h3, h4 {
+  font-size: 1.17em;
+}
+h3, h4, h5, h6, p {
   margin-bottom: 0.5rem;
+}
+h5, h6 {
+  font-size: 1em;
+}
+h4, h5 {
+  font-style: italic;
 }
 p, ul, ol, dl {
   margin-top: 0;
@@ -85,6 +105,9 @@ pre {
   color: var(--code-color);
   background-color: var(--code-background-color);
   border-radius: var(--border-radius);
+  border-left-style: solid;
+  border-left-width: 0.25rem;
+  border-color: var(--line-color);
   overflow-x: auto;
   margin-top: 0; /* stupid defaults */
 }
@@ -355,9 +378,12 @@ div.m-button a .m-small:last-child {
 /* Label */
 .m-label {
   border-radius: var(--border-radius);
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--dim-filled-color);
+  padding: 0.0625rem 0.1875rem;
   font-size: 75%;
   font-weight: normal;
-  padding: 0.125rem 0.25rem;
   vertical-align: 7.5%;
 }
 .m-label.m-flat {
@@ -372,6 +398,8 @@ table.m-table {
   border-collapse: collapse;
   margin-left: auto;
   margin-right: auto;
+  font-size: 0.9em;
+  margin-bottom: 1rem;
 }
 table.m-table.m-big {
   margin-top: 1.75rem;
@@ -379,33 +407,36 @@ table.m-table.m-big {
 div.m-scroll > table.m-table:last-child {
   margin-bottom: 0.0625rem;
 }
-table.m-table:not(.m-flat) tbody tr:hover {
-  background-color: var(--line-color);
-}
 table.m-table th, table.m-table td {
   vertical-align: top;
   border-style: solid;
-  border-top-width: 0.0625rem;
-  border-left-width: 0;
-  border-right-width: 0;
-  border-bottom-width: 0;
-  border-color: var(--line-color);
+  border-width: 0;
+  border-color: var(--link-active-color);
+  padding: 0.1rem 0.3rem;
 }
 table.m-table caption {
   padding-bottom: 0.5rem;
 }
 table.m-table thead tr:first-child th, table.m-table thead tr:first-child td {
   border-top-width: 0.125rem;
+  padding-top: 0.5rem;
 }
 table.m-table thead th, table.m-table thead td {
   border-bottom-width: 0.125rem;
+  padding-bottom: 0.5rem;
   vertical-align: bottom;
 }
 table.m-table tfoot th, table.m-table tfoot td {
   border-top-width: 0.125rem;
+  padding-top: 0.5rem;
 }
-table.m-table th, table.m-table td {
-  padding: 0.5rem;
+table.m-table tbody tr:first-child th, table.m-table tbody tr:first-child td {
+  border-top-width: 0.125rem;
+  padding-top: 0.5rem;
+}
+table.m-table tbody tr:last-child th, table.m-table tbody tr:last-child td {
+  border-bottom-width: 0.125rem;
+  padding-bottom: 0.5rem;
 }
 table.m-table.m-big th, table.m-table.m-big td {
   padding: 0.75rem 1rem;
@@ -481,7 +512,8 @@ table.m-table th.m-info pre, table.m-table th.m-info code,
 table.m-table tr.m-dim pre, table.m-table tr.m-dim code,
 table.m-table td.m-dim pre, table.m-table td.m-dim code,
 table.m-table th.m-dim pre, table.m-table th.m-dim code {
-  background-color: var(--code-note-background-color);
+  background-color: var(--code-background-color);
+  color: var(--code-color);
 }
 
 /* Image. Ensure everything is done for both <img> and <svg>. */
@@ -619,8 +651,11 @@ figure.m-figure.m-fullwidth:after {
 figure.m-figure figcaption, .m-code-figure figcaption, .m-console-figure figcaption {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
-  font-weight: var(--heading-font-weight);
-  font-size: 1.17rem; /* taken from webkit defaults for h3 */
+  font-weight: normal;
+  font-style: italic;
+  font-size: 1rem;
+  text-align: justify;
+  text-align-last: center;
 }
 
 /* Image grid */
@@ -882,7 +917,7 @@ pre.m-code span.hll {
   color: var(--code-inverted-color);
 }
 .m-code.m-inverted > span {
-  opacity: 0.3333;
+  opacity: 0.667;
 }
 .m-code.m-inverted > span.hll {
   color: var(--color);
@@ -1113,6 +1148,13 @@ table.m-table tr.m-default td a:active, table.m-table td.m-default a:active,
 table.m-table tr.m-default th a:active, table.m-table th.m-default a:active {
   color: var(--default-filled-link-active-color);
 }
+.m-note.m-default pre, .m-note.m-default code,
+table.m-table tr.m-default pre, table.m-table tr.m-default code,
+table.m-table td.m-default pre, table.m-table td.m-default code,
+table.m-table th.m-default pre, table.m-table th.m-default code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
+}
 .m-note.m-primary a,
 table.m-table tr.m-primary td a, table.m-table td.m-primary a,
 table.m-table tr.m-primary th a, table.m-table th.m-primary a {
@@ -1140,6 +1182,13 @@ table.m-table tr.m-primary td a:active, table.m-table td.m-primary a:active,
 table.m-table tr.m-primary th a:active, table.m-table th.m-primary a:active {
   color: var(--primary-filled-link-active-color);
 }
+.m-note.m-primary pre, .m-note.m-primary code,
+table.m-table tr.m-primary pre, table.m-table tr.m-primary code,
+table.m-table td.m-primary pre, table.m-table td.m-primary code,
+table.m-table th.m-primary pre, table.m-table th.m-primary code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
+}
 .m-note.m-success,
 table.m-table tr.m-success td, table.m-table td.m-success,
 table.m-table tr.m-success th, table.m-table th.m-success {
@@ -1162,13 +1211,22 @@ table.m-table tr.m-success td a:active, table.m-table td.m-success a:active,
 table.m-table tr.m-success th a:active, table.m-table th.m-success a:active {
   color: var(--success-filled-link-active-color);
 }
-.m-note.m-warning, table.m-table tr.m-warning td, table.m-table td.m-warning,
-                   table.m-table tr.m-warning th, table.m-table th.m-warning {
+.m-note.m-success pre, .m-note.m-success code,
+table.m-table tr.m-success pre, table.m-table tr.m-success code,
+table.m-table td.m-success pre, table.m-table td.m-success code,
+table.m-table th.m-success pre, table.m-table th.m-success code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
+}
+.m-note.m-warning,
+table.m-table tr.m-warning td, table.m-table td.m-warning,
+table.m-table tr.m-warning th, table.m-table th.m-warning {
   background-color: var(--warning-filled-background-color);
   color: var(--warning-filled-color);
 }
-.m-note.m-warning a, table.m-table tr.m-warning td a, table.m-table td.m-warning a,
-                     table.m-table tr.m-warning th a, table.m-table th.m-warning a {
+.m-note.m-warning a,
+table.m-table tr.m-warning td a, table.m-table td.m-warning a,
+table.m-table tr.m-warning th a, table.m-table th.m-warning a {
   color: var(--warning-filled-link-color);
 }
 .m-note.m-warning a:hover,
@@ -1181,6 +1239,13 @@ table.m-table tr.m-warning th a:focus, table.m-table th.m-warning a:focus,
 table.m-table tr.m-warning td a:active, table.m-table td.m-warning a:active,
 table.m-table tr.m-warning th a:active, table.m-table th.m-warning a:active {
   color: var(--warning-filled-link-active-color);
+}
+.m-note.m-warning pre, .m-note.m-warning code,
+table.m-table tr.m-warning pre, table.m-table tr.m-warning code,
+table.m-table td.m-warning pre, table.m-table td.m-warning code,
+table.m-table th.m-warning pre, table.m-table th.m-warning code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
 }
 .m-note.m-danger,
 table.m-table tr.m-danger td, table.m-table td.m-danger,
@@ -1204,6 +1269,13 @@ table.m-table tr.m-danger td a:active, table.m-table td.m-danger a:active,
 table.m-table tr.m-danger th a:active, table.m-table th.m-danger a:active {
   color: var(--danger-filled-link-active-color);
 }
+.m-note.m-danger pre, .m-note.m-danger code,
+table.m-table tr.m-danger pre, table.m-table tr.m-danger code,
+table.m-table td.m-danger pre, table.m-table td.m-danger code,
+table.m-table th.m-danger pre, table.m-table th.m-danger code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
+}
 .m-note.m-info,
 table.m-table tr.m-info td, table.m-table td.m-info,
 table.m-table tr.m-info th, table.m-table th.m-info {
@@ -1226,6 +1298,13 @@ table.m-table tr.m-info td a:active, table.m-table td.m-info a:active,
 table.m-table tr.m-info th a:active, table.m-table th.m-info a:active {
   color: var(--info-filled-link-active-color);
 }
+.m-note.m-info pre, .m-note.m-info code,
+table.m-table tr.m-info pre, table.m-table tr.m-info code,
+table.m-table td.m-info pre, table.m-table td.m-info code,
+table.m-table th.m-info pre, table.m-table th.m-info code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
+}
 .m-note.m-dim,
 table.m-table tr.m-dim td, table.m-table td.m-dim,
 table.m-table tr.m-dim th, table.m-table th.m-dim {
@@ -1247,6 +1326,13 @@ table.m-table tr.m-dim th a:focus, table.m-table th.m-dim a:focus,
 table.m-table tr.m-dim td a:active, table.m-table td.m-dim a:active,
 table.m-table tr.m-dim th a:active, table.m-table th.m-dim a:active {
   color: var(--dim-filled-link-active-color);
+}
+.m-note.m-dim pre, .m-note.m-dim code,
+table.m-table tr.m-dim pre, table.m-table tr.m-dim code,
+table.m-table td.m-dim pre, table.m-table td.m-dim code,
+table.m-table th.m-dim pre, table.m-table th.m-dim code {
+  background-color: var(--default-filled-code-color);
+  color: var(--default-filled-code-background-color);
 }
 
 /* Colored figure */
@@ -1563,4 +1649,9 @@ li:last-child > div.m-math:last-child, li:last-child > div.m-math.m-nopadb,
 li:last-child > div.m-graph:last-child, li:last-child > div.m-graph.m-nopadb,
 li:last-child > div.m-plot:last-child, li:last-child > div.m-plot.m-nopadb {
   margin-bottom: 0;
+}
+
+/* Lists can be declared as being spaced out */
+ul.m-spaced-list > li, ol.m-spaced-list > li {
+  margin-bottom: 1rem;
 }

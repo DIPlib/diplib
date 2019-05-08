@@ -29,37 +29,37 @@ from pygments.token import Keyword, Name, Comment, String, Error, \
 
 class DarkStyle(Style):
     background_color = None
-    highlight_color = '#34424d'
+    highlight_color = '#cbbdb2'
     default_style = ""
 
     styles = {
         # C++
-        Comment:                '#a5c9ea',
-        Comment.Preproc:        '#3bd267',
-        Comment.PreprocFile:    '#c7cf2f',
-        Keyword:                'bold #ffffff',
-        Name:                   '#dcdcdc',
-        String:                 '#e07f7c',
-        String.Char:            '#e07cdc',
-        Number:                 '#c7cf2f',
-        Operator:               '#aaaaaa',
-        Punctuation:            "#aaaaaa",
+        Comment:                '#198019',
+        Comment.Preproc:        '#666666',
+        Comment.PreprocFile:    '#666666',
+        Keyword:                'bold #000000',
+        Name:                   '#000000',
+        String:                 '#208a8a',
+        String.Char:            '#208a8a',
+        Number:                 '#1616e6',
+        Operator:               '#000000',
+        Punctuation:            "#000000",
 
         # CMake
-        Name.Builtin:           'bold #ffffff',
-        Name.Variable:          '#c7cf2f',
+        Name.Builtin:           'bold #000000',
+        Name.Variable:          '#1616e6',
 
         # reST, HTML
-        Name.Tag:               'bold #dcdcdc',
-        Name.Attribute:         'bold #dcdcdc',
-        Name.Class:             'bold #dcdcdc',
-        Operator.Word:          'bold #dcdcdc',
-        Generic.Heading:        'bold #ffffff',
-        Generic.Emph:           'italic #e6e6e6',
-        Generic.Strong:         'bold #e6e6e6',
+        Name.Tag:               'bold #232392',
+        Name.Attribute:         'bold #232392',
+        Name.Class:             'bold #232392',
+        Operator.Word:          'bold #232392',
+        Generic.Heading:        'bold #000000',
+        Generic.Emph:           'italic #191919',
+        Generic.Strong:         'bold #191919',
 
         # Diffs
-        Generic.Subheading:     '#5b9dd9',
-        Generic.Inserted:       '#3bd267',
-        Generic.Deleted:        '#cd3431'
+        Generic.Subheading:     '#a46226',
+        Generic.Inserted:       '#00b300',
+        Generic.Deleted:        '#cc0000'
     }

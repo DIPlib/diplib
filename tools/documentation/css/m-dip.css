@@ -26,5 +26,4 @@
 @import url('m-grid.css');
 @import url('m-components.css');
 @import url('m-layout.css');
-/* TODO: pygments-light.css */
-@import url('pygments-console.css');
+@import url('pygments-dip.css');

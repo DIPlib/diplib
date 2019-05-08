@@ -47,7 +47,7 @@ ul.m-doc li.m-doc-collapsible > a:first-child:active {
 a.m-doc-self,
 ul.m-doc li.m-doc-expansible > a:first-child:before,
 ul.m-doc li.m-doc-collapsible > a:first-child:before {
-  color: var(--article-heading-color);
+  color: var(--link-self-color);
 }
 a.m-doc-self:hover, a.m-doc-self:focus, a.m-doc-self:active,
 ul.m-doc li.m-doc-expansible > a:first-child:hover::before,
@@ -56,7 +56,7 @@ ul.m-doc li.m-doc-expansible > a:first-child:active::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:hover::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:focus::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:active::before {
-  color: var(--article-heading-active-color);
+  color: var(--link-self-active-color);
 }
 h3 a.m-doc-external {
   font-weight: normal;
@@ -85,6 +85,7 @@ ul.m-doc {
 ul.m-doc li {
   text-indent: -1rem;
   padding-left: 1rem;
+  margin-bottom: 0.5rem;
 }
 ul.m-doc li.m-doc-expansible > ul {
   display: none;
@@ -93,6 +94,7 @@ ul.m-doc li.m-doc-expansible, ul.m-doc li.m-doc-collapsible {
   padding-left: 0.6rem;
 }
 ul.m-doc li.m-doc-expansible > ul.m-doc, ul.m-doc li.m-doc-collapsible > ul.m-doc {
+  margin-top: 0.5rem;
   margin-left: 0.5rem;
 }
 ul.m-doc li.m-doc-expansible > a:first-child:before, ul.m-doc li.m-doc-collapsible > a:first-child:before {
@@ -131,10 +133,20 @@ dl.m-doc dd a:hover, dl.m-doc dd a:focus, dl.m-doc dd a:active,
 ul.m-doc li > span.m-doc a:hover, ul.m-doc li > span.m-doc a:focus, ul.m-doc li > span.m-doc a:active {
   color: var(--dim-link-active-color);
 }
+h3 .m-doc-template, h3 .m-doc-include {
+  color: var(--dim-filled-color);
+}
+h3 .m-doc-template a, h3 .m-doc-include a {
+  color: var(--dim-filled-link-color);
+}
+h3 .m-doc-template a:hover, h3 .m-doc-include a:hover {
+  color: var(--dim-filled-link-active-color);
+}
+
 /* So the link gets highlighted on hover */
 .m-code.m-inverted.m-doc-include > a:link,
 .m-code.m-inverted.m-doc-include > a:visited {
-  opacity: 0.6666; /* Same as .m-code.m-inverted > span */
+  opacity: 0.667; /* Same as .m-code.m-inverted > span */
 }
 .m-code.m-inverted.m-doc-include > a:hover,
 .m-code.m-inverted.m-doc-include > a:focus,
@@ -160,17 +172,36 @@ article section.m-doc-details > div::before {
   border-style: solid;
   border-width: 0.125rem;
   border-radius: var(--border-radius);
-  border-color: var(--code-background-color);
+  border-color: var(--background-color);
 }
 article section.m-doc-details > div > h3:first-child {
   position: relative; /* so it's above the border */
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
-  background-color: var(--code-background-color);
+  background-color: var(--code-header-background-color);
+  border-radius: var(--border-radius);
+  /*
   border-top-left-radius: var(--border-radius);
   border-top-right-radius: var(--border-radius);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  */
+}
+article section.m-doc-details > div > h3:first-child a {
+  color: var(--code-header-link-color);
+}
+article section.m-doc-details > div > h3:first-child a:hover,
+article section.m-doc-details > div > h3:first-child a:focus,
+article section.m-doc-details > div > h3:first-child a:active {
+  color: var(--code-header-link-active-color);
+}
+article section.m-doc-details > div > h3:first-child a.m-doc-self {
+  color: var(--code-header-self-color);
+}
+article section.m-doc-details > div > h3:first-child a.m-doc-self:hover,
+article section.m-doc-details > div > h3:first-child a.m-doc-self:focus,
+article section.m-doc-details > div > h3:first-child a.m-doc-self:active {
+  color: var(--code-header-self-active-color);
 }
 article section.m-doc-details:target {
   border-color: transparent; /* to preserve rounded corners */
@@ -290,12 +321,14 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   white-space: nowrap;
   overflow: hidden;
 }
+/*
 .m-doc-search ul#search-results li a > div:not(.m-doc-search-alias) {
-  /* This is here in order to cut the text off at the left side. Besides this
+  / * This is here in order to cut the text off at the left side. Besides this
      there's special patching needed for punctuation characters, see search.js
-     for details. */
+     for details. * /
   direction: rtl;
 }
+*/
 .m-doc-search ul#search-results li a .m-label {
   float: right;
   line-height: 1rem;

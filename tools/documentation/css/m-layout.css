@@ -241,6 +241,16 @@ body > footer > nav a {
 body > footer > nav a:hover, body > footer > nav a:focus, body > footer > nav a:active {
   color: var(--footer-link-active-color);
 }
+/* Move the footer to the bottom of the window if the content is short */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body > footer {
+  width: 100%;
+  margin-top: auto;
+}
 
 /* Main content */
 body > main {
