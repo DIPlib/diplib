@@ -233,7 +233,22 @@ TAB_SIZE               = 4
 # newlines (in the resulting output). You can put ^^ in the value part of an
 # alias to insert a newline as if a physical newline was in the original file.
 
-ALIASES                =
+# These aliases are defined for the benefit of m.css
+ALIASES = \
+    "m_div{1}=" \
+    "m_enddiv=" \
+    "m_span{1}=" \
+    "m_endspan=" \
+    "m_class{1}=" \
+    "m_footernavigation=" \
+    "m_examplenavigation{2}=" \
+    "m_keywords{1}=" \
+    "m_keyword{3}=" \
+    "m_enum_values_as_keywords=" \
+    "literature=**Literature** <ul>" \
+    "endliterature=</ul>"
+
+ALIASES += "link_to_include_diplib_library=\ref @PROJECT_SOURCE_DIR@/include/diplib/library \"diplib/library\""
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -2048,7 +2063,9 @@ PREDEFINED             = DIP__ENABLE_ASSERT \
                          DIP_EXPORT="" \
                          DIP_NO_EXPORT="" \
                          DIPVIEWER_EXPORT="" \
-                         DIPVIEWER_NO_EXPORT=""
+                         DIPVIEWER_NO_EXPORT="" \
+                         DIPVIEWER_EXTERN_EXPORT="" \
+                         DIP__FAKE_DOCUMENTATION
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
