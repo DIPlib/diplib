@@ -1,7 +1,7 @@
 %LINEDETECTOR   Line detector
 %
 % SYNOPSIS:
-%  error = linedetector(image_in,method,scale,parameter,polarity)
+%  image_out = linedetector(image_in,method,scale,parameter,polarity)
 %
 % PARAMETERS:
 %  method:     Method to use. One of:

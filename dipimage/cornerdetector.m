@@ -1,7 +1,7 @@
 %CORNERDETECTOR   Corner detector
 %
 % SYNOPSIS:
-%  error = cornerdetector(image_in,method,sigmas,parameter)
+%  image_out = cornerdetector(image_in,method,sigmas,parameter)
 %
 % PARAMETERS:
 %  method:     Method to use. One of:
