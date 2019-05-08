@@ -463,7 +463,11 @@ def parse_ref(state: State, element: ET.Element) -> str:
 
 def make_include(state: State, file) -> Tuple[str, str]:
     if file in state.includes and state.compounds[state.includes[file]].has_details:
-        return (html.escape('<{}>'.format(file)), state.compounds[state.includes[file]].url)
+        # NOTE!!! This is specific to the DIPlib documentation!
+        show_file = file
+        if show_file.startswith('diplib/library/'):
+            show_file = 'diplib.h'
+        return (html.escape('<{}>'.format(show_file)), state.compounds[state.includes[file]].url)
     return None
 
 def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, str, Tuple[str, str], bool]:
@@ -520,7 +524,7 @@ def extract_id_hash(state: State, element: ET.Element) -> str:
     # namespace one, depending on what's documented better. Ugh. See the
     # contents_section_underscore_one test for a verification.
     #
-    # Can't use current compount URL base here, as definitions can have
+    # Can't use current compound URL base here, as definitions can have
     # different URL base (again an enum being present in both file and
     # namespace documentation). The state.current_definition_url_base usually
     # comes from parse_id()[0]. See the
@@ -950,7 +954,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             out.parsed += '<blockquote>{}</blockquote>'.format(parse_desc(state, i))
 
         elif i.tag in ['itemizedlist', 'orderedlist']:
-            assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
+            assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div', 'simplesect']
             has_block_elements = True
             tag = 'ul' if i.tag == 'itemizedlist' else 'ol'
             out.parsed += '<{}{}>'.format(tag,
@@ -1035,6 +1039,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     if i.attrib['kind'] == 'see':
                         title = 'See also'
                         css_class = 'm-default'
+                    elif i.attrib['kind'] == 'literature':
+                        title = 'Literature'
+                        css_class = 'm-default'
                     elif i.attrib['kind'] == 'note':
                         title = 'Note'
                         css_class = 'm-info'
@@ -1043,7 +1050,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         css_class = 'm-warning'
                     elif i.attrib['kind'] == 'warning':
                         title = 'Warning'
-                        css_class = 'm-danger'
+                        css_class = 'm-warning'
                     elif i.attrib['kind'] == 'author':
                         title = 'Author'
                         css_class = 'm-default'
@@ -1076,7 +1083,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         css_class = 'm-default'
                     elif i.attrib['kind'] == 'par':
                         title = html.escape(i.findtext('title', ''))
-                        css_class = 'm-default'
+                        css_class = ''
                     elif i.attrib['kind'] == 'rcs':
                         title = html.escape(i.findtext('title', ''))
                         css_class = 'm-default'
@@ -1413,13 +1420,16 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
             # Otherwise try to find lexer by filename
             else:
-                # Put some bogus prefix to the filename in case it is just
-                # `.ext`
-                lexer = find_lexer_class_for_filename("code" + filename)
-                if not lexer:
-                    logging.warning("{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(state.current, filename))
+                if filename == '.none':
                     lexer = TextLexer()
-                else: lexer = lexer()
+                else:
+                    # Put some bogus prefix to the filename in case it is just
+                    # `.ext`
+                    lexer = find_lexer_class_for_filename("code" + filename)
+                    if not lexer:
+                        logging.warning("{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(state.current, filename))
+                        lexer = TextLexer()
+                    else: lexer = lexer()
 
             # Style console sessions differently
             if (isinstance(lexer, BashSessionLexer) or
@@ -2381,9 +2391,9 @@ def extract_metadata(state: State, xml):
     # This is similar to compound.url_base handling in parse_xml() below.
     compound.url = 'index.html' if compound.kind == 'page' and compound.id == 'indexpage' else compound.id + '.html'
     compound.brief = parse_desc(state, compounddef.find('briefdescription'))
-    # Groups and pages are explicitly created so they *have details*, other
+    # Groups are explicitly created so they *have details*, other
     # things need to have at least some documentation
-    compound.has_details = compound.kind in ['group', 'page'] or compound.brief or compounddef.find('detaileddescription')
+    compound.has_details = compound.kind == 'group' or compound.brief or compounddef.find('detaileddescription')
     compound.children = []
 
     # Deprecation status
@@ -2527,7 +2537,7 @@ def postprocess_state(state: State):
                     if len(firstAndRest):
                         links += [firstAndRest[0]]
                         if len(firstAndRest) == 1:
-                            break;
+                            break
                     i = firstAndRest[1]
 
             sublinks = []
@@ -2681,9 +2691,9 @@ def parse_xml(state: State, xml: str):
     if state.doxyfile['M_SHOW_UNDOCUMENTED']:
         _document_all_stuff(compounddef)
 
-    # Ignoring compounds w/o any description, except for pages and groups,
+    # Ignoring compounds w/o any description, except for groups,
     # which are created explicitly
-    if not compounddef.find('briefdescription') and not compounddef.find('detaileddescription') and not compounddef.attrib['kind'] in ['page', 'group']:
+    if not compounddef.find('briefdescription') and not compounddef.find('detaileddescription') and not compounddef.attrib['kind'] == 'group':
         logging.debug("{}: neither brief nor detailed description present, skipping".format(state.current))
         return None
 
@@ -3175,19 +3185,26 @@ def parse_xml(state: State, xml: str):
                             if func.has_details: compound.has_func_details = True
 
             elif compounddef_child.attrib['kind'] == 'user-defined':
+                header = compounddef_child.find('header')
+                put_in_list = not header is None
                 list = []
 
-                memberdef: ET.Element
                 for memberdef in compounddef_child.findall('memberdef'):
                     if memberdef.attrib['kind'] == 'enum':
                         enum = parse_enum(state, memberdef)
                         if enum:
-                            list += [('enum', enum)]
+                            if put_in_list:
+                                list += [('enum', enum)]
+                            else:
+                                compound.enums += [enum]
                             if enum.has_details: compound.has_enum_details = True
                     elif memberdef.attrib['kind'] == 'typedef':
                         typedef = parse_typedef(state, memberdef)
                         if typedef:
-                            list += [('typedef', typedef)]
+                            if put_in_list:
+                                list += [('typedef', typedef)]
+                            else:
+                                compound.typedefs += [typedef]
                             if typedef.has_details: compound.has_typedef_details = True
                     elif memberdef.attrib['kind'] in ['function', 'signal', 'slot']:
                         # Gather only private functions that are virtual and
@@ -3198,17 +3215,26 @@ def parse_xml(state: State, xml: str):
 
                         func = parse_func(state, memberdef)
                         if func:
-                            list += [('func', func)]
+                            if put_in_list:
+                                list += [('func', func)]
+                            else:
+                                compound.funcs += [func]
                             if func.has_details: compound.has_func_details = True
                     elif memberdef.attrib['kind'] == 'variable':
                         var = parse_var(state, memberdef)
                         if var:
-                            list += [('var', var)]
+                            if put_in_list:
+                                list += [('var', var)]
+                            else:
+                                compound.vars += [var]
                             if var.has_details: compound.has_var_details = True
                     elif memberdef.attrib['kind'] == 'define':
                         define = parse_define(state, memberdef)
                         if define:
-                            list += [('define', define)]
+                            if put_in_list:
+                                list += [('define', define)]
+                            else:
+                                compound.defines += [define]
                             if define.has_details: compound.has_define_details = True
                     elif memberdef.attrib['kind'] == 'friend':
                         # Ignore friend classes. This does not ignore friend
@@ -3220,22 +3246,21 @@ def parse_xml(state: State, xml: str):
                         else:
                             func = parse_func(state, memberdef)
                             if func:
-                                list += [('func', func)]
+                                if put_in_list:
+                                    list += [('func', func)]
+                                else:
+                                    compound.funcs += [func]
                                 if func.has_details: compound.has_func_details = True
                     else: # pragma: no cover
                         logging.warning("{}: unknown user-defined <memberdef> kind {}".format(state.current, memberdef.attrib['kind']))
 
                 if list:
-                    header = compounddef_child.find('header')
-                    if header is None:
-                        logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
-                    else:
-                        group = Empty()
-                        group.name = header.text
-                        group.id = slugify(group.name)
-                        group.description = parse_desc(state, compounddef_child.find('description'))
-                        group.members = list
-                        compound.groups += [group]
+                    group = Empty()
+                    group.name = header.text
+                    group.id = slugify(group.name)
+                    group.description = parse_desc(state, compounddef_child.find('description'))
+                    group.members = list
+                    compound.groups += [group]
 
             elif compounddef_child.attrib['kind'] not in ['private-type',
                                                           'private-static-func',
@@ -3343,31 +3368,31 @@ def parse_xml(state: State, xml: str):
         if not state.current_include:
             compound.include = None
         for entry in compound.enums:
-            if entry.include and not state.current_include:
+            if entry.include and not state.current_include and entry.base_url == compound.url:
                 entry.has_details = True
                 compound.has_enum_details = True
             else:
                 entry.include = None
         for entry in compound.typedefs:
-            if entry.include and not state.current_include:
+            if entry.include and not state.current_include and entry.base_url == compound.url:
                 entry.has_details = True
                 compound.has_typedef_details = True
             else:
                 entry.include = None
         for entry in compound.funcs:
-            if entry.include and not state.current_include:
+            if entry.include and not state.current_include and entry.base_url == compound.url:
                 entry.has_details = True
                 compound.has_func_details = True
             else:
                 entry.include = None
         for entry in compound.vars:
-            if entry.include and not state.current_include:
+            if entry.include and not state.current_include and entry.base_url == compound.url:
                 entry.has_details = True
                 compound.has_var_details = True
             else:
                 entry.include = None
         for entry in compound.defines:
-            if entry.include and not state.current_include:
+            if entry.include and not state.current_include: # NOTE! defines don't have a namespace, they only appear in one group list.
                 entry.has_details = True
                 compound.has_define_details = True
             else:
@@ -3376,7 +3401,7 @@ def parse_xml(state: State, xml: str):
         # global include anyway
         for group in compound.groups:
             for kind, entry in group.members:
-                if entry.include and not state.current_include:
+                if entry.include and not state.current_include and entry.base_url == compound.url:
                     entry.has_details = True
                     setattr(compound, 'has_{}_details'.format(kind), True)
                 else:
@@ -3768,7 +3793,7 @@ def run(doxyfile, templates=default_templates, wildcard=default_wildcard, index_
     #   the brief desc is not part of the <inner*> tag
     # - template specifications of all classes so we can include that in the
     #   linking pages
-    # - get URLs of namespace, classe, file docs and pages so we can link to
+    # - get URLs of namespace, class, file docs and pages so we can link to
     #   them from breadcrumb navigation
     file: str
     for file in xml_files_metadata:
