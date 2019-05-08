@@ -20,7 +20,7 @@
 When contributing to *DIPlib*, please follow the style and layout of other files.
 Specifically:
 
-## Programming style:
+\section style_general Programming style
 
 - Everything should be declared within the `dip` namespace, or a sub-namespace. The
   exception is functionality that interfaces *DIPlib* with other libraries or software,
@@ -48,7 +48,7 @@ Specifically:
 - Declare variables where they are first initialized, or as close as possible to that
   point. Uninitialized variables need some description.
 
-## Naming conventions:
+\section style_names Naming conventions
 
 - Use camel case for variable, function and class names. Variable names start with
   a lowercase letter, function and class names start with an uppercase letter. Don't
@@ -77,7 +77,7 @@ Specifically:
 - File names are in all lowercase and use underscores between words. There's no need
   to shorten names to 8 characters, so don't make the names cryptic.
 
-## Formatting:
+\section style_formatting Formatting
 
 - All loops and conditional statements should be surrounded by braces, even if they
   are only one statement long.
@@ -92,53 +92,64 @@ Specifically:
 
 - Keep each statement on its own line.
 
-## Function signatures:
+\section style_functions Function signatures
 
-- Option parameters to high-level functions (those that should be available in interfaces
-  to other languages such as *MATLAB*) should be strings or string arrays, which are easier
-  to translate to scripted languages.
+<ul>
+<li>
+Option parameters to high-level functions (those that should be available in interfaces
+to other languages such as *MATLAB*) should be strings or string arrays, which are easier
+to translate to scripted languages.
+</li>
+<li>
+Option parameters to low-level functions (those that are meant to be called only from
+C++ code) should be defined as `enum class`, these are simpler and more efficient than
+strings. Use the `DIP_DECLARE_OPTIONS` macro to turn the enumerator into a flag set.
+Declare these option types within the `dip::Option::` namespace or another sub-namespace
+if more appropriate.
+</li>
+<li>
+Don't use `bool` as a function parameter, prefer meaningful strings in high-level functions
+(e.g. "black"/"white"), and `enum class` with two options defined in `dip::Option::`
+namespace for low-level functions. Only private functions can deviate from this.
+</li>
+<li>
+Multiple return values are preferably combined in a `struct`, rather than a `std::tuple`
+or similar, as a `struct` has named members and is easier to use. Output should rarely
+be put into the function's argument list, with the exception of images
+(see \ref design_function_signatures).
+</li>
+<li>
+For every function that produces an output image, there should be two signatures,
+the main one with the `out` image as an input argument, and a second one, defined
+as `inline` in the header file, as follows:
 
-- Option parameters to low-level functions (those that are meant to be called only from
-  C++ code) should be defined as `enum class`, these are simpler and more efficient than
-  strings. Use the `DIP_DECLARE_OPTIONS` macro to turn the enumerator into a flag set.
-  Declare these option types within the `dip::Option::` namespace or another sub-namespace
-  if more appropriate.
+```cpp
+   inline Image Function( Image const& in, ... ) {
+      Image out;
+      Function( in, out, ... );
+      return out;
+   }
+```
+</li>
+<li>
+Add default values to as many input parameters as possible in the high-level functions.
+Sort the parameters such that the more important ones (the ones that the user is most likely
+to want to set) appear first. Image input parameters always appear first, with input image
+as first parameter, and output image as last image parameter:
 
-- Don't use `bool` as a function parameter, prefer meaningful strings in high-level functions
-  (e.g. "black"/"white"), and `enum class` with two options defined in `dip::Option::`
-  namespace for low-level functions. Only private functions can deviate from this.
+```cpp
+   void Function(
+      Image const& in,
+      Image const& kernel,
+      Image& out,
+      dfloat size = 1,
+      BooleanArray process = {}
+   );
+```
+</li>
+</ul>
 
-- Multiple return values are preferably combined in a `struct`, rather than a `std::tuple`
-  or similar, as a `struct` has named members and is easier to use. Output should rarely
-  be put into the function's argument list, with the exception of images
-  (see \ref design_function_signatures).
-
-- For every function that produces an output image, there should be two signatures,
-  the main one with the `out` image as an input argument, and a second one, defined
-  as `inline` in the header file, as follows:
-  ```cpp
-      inline Image Function( Image const& in, ... ) {
-         Image out;
-         Function( in, out, ... );
-         return out;
-      }
-  ```
-
-- Add default values to as many input parameters as possible in the high-level functions.
-  Sort the parameters such that the more important ones (the ones that the user is most likely
-  to want to set) appear first. Image input parameters always appear first, with input image
-  as first parameter, and output image as last image parameter:
-  ```cpp
-      void Function(
-         Image const& in,
-         Image const& kernel,
-         Image& out,
-         dfloat size = 1,
-         BooleanArray process = {}
-      );
-  ```
-
-## Header files
+\section style_headers Header files
 
 - In header files that define "modules" or parts of them (e.g. `diplib/linear.h`), always
   first include `diplib.h`. In header files that define helper classes and don't reference

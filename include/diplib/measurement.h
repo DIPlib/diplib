@@ -70,6 +70,7 @@ struct DIP_NO_EXPORT Information {
 };
 
 /// \brief %Information about the known measurement features
+/// \relates dip::Information
 using InformationArray = std::vector< Information >;
 
 /// \brief %Information about a measurement value, one of the components of a feature
@@ -80,6 +81,7 @@ struct DIP_NO_EXPORT ValueInformation {
 
 /// \brief %Information about the values of a measurement feature, or all values of all measurement features
 /// in a `dip::Measurement` object.
+/// \relates dip::ValueInformation
 using ValueInformationArray = std::vector< ValueInformation >;
 
 } // namespace Feature
@@ -609,6 +611,7 @@ class DIP_NO_EXPORT Measurement {
       /// actually added together!). This process insures that it is possible to add multiple sets of measurements
       /// (across different objects and different features) together, without worrying about the order that
       /// they are added together:
+      ///
       /// ```cpp
       ///     dip::Image label1 = ... // one image with objects 1-10
       ///     dip::Image label2 = ... // one image with objects 11-20
@@ -667,6 +670,7 @@ class DIP_NO_EXPORT Measurement {
 
 /// \brief You can output a `dip::Measurement` to `std::cout` or any other stream to produce a human-readable
 /// representation of the tabular data in it.
+/// \relates dip::Measurement
 DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& measurement );
 
 
@@ -794,7 +798,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
       /// \brief Lists the features that the measurement depends on. These features will be computed and made
       /// available to the `Measure` method. This function is always called after `dip::Feature::Base::Initialize`.
       ///
-      /// **Note:** Depedency chains are currently not supported. Dependencies listed here shoud not be
+      /// \note Depedency chains are currently not supported. Dependencies listed here shoud not be
       /// other `%Type::COMPOSITE` features. This would require processing the composite features in the
       /// right order for all dependencies to be present when needed.
       // TODO: Compute composite features in the right order according to a dependency tree.
@@ -1053,7 +1057,8 @@ inline Image ObjectToMeasurement(
 /// header rows contain the feature names, the value names, and the value units. The feature
 /// names, of which there typically are fewer than columns, are interspersed with empty cells
 /// to line them up with the first column for the feature. For example:
-/// ```
+///
+/// ```none
 ///    ObjectID, Size,  Center, ,      Feret, ,      ,        ,
 ///    ,         ,      dim0,   dim1,  Max,   Min,   PerpMin, MaxAng, MinAng
 ///    ,         um^2,  um,     um,    um,    um,    um,      rad,    rad
@@ -1062,6 +1067,7 @@ inline Image ObjectToMeasurement(
 ///    3,        628.0, 108.4,  12.47, 32.20, 26.00, 28.00,   2.202,  0.000
 ///    4,        412.0, 154.5,  9.561, 26.40, 22.00, 23.00,   2.222,  4.712
 /// ```
+///
 /// **Note** that the file will not have columns aligned with spaces as shown here, each
 /// comma is always followed by a single space.
 ///

@@ -73,7 +73,7 @@ DIP_EXPORT SubpixelLocationResult SubpixelLocation(
       Image const& in,
       UnsignedArray const& position,
       String const& polarity = S::MAXIMUM,
-      String const& method = dip::S::PARABOLIC_SEPARABLE
+      String const& method = S::PARABOLIC_SEPARABLE
 );
 
 /// \brief Gets coordinates of local maxima with sub-pixel precision
@@ -89,7 +89,7 @@ DIP_EXPORT SubpixelLocationResult SubpixelLocation(
 DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
       Image const& in,
       Image const& mask = {},
-      String const& method = dip::S::PARABOLIC_SEPARABLE
+      String const& method = S::PARABOLIC_SEPARABLE
 );
 
 /// \brief Gets coordinates of local minima with sub-pixel precision
@@ -105,7 +105,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
 DIP_EXPORT SubpixelLocationArray SubpixelMinima(
       Image const& in,
       Image const& mask = {},
-      String const& method = dip::S::PARABOLIC_SEPARABLE
+      String const& method = S::PARABOLIC_SEPARABLE
 );
 
 /// \brief Finds the coordinates of a local maximum close to `start`
@@ -172,11 +172,12 @@ inline FloatCoordinateArray MeanShift(
 /// conjugate-symmetric (i.e. be Fourier transforms of real-valued images).
 /// `out` will be real-valued if `outRepresentation` is `"spatial"`.
 ///
-/// **Literature**
-///  - C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
-///    Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
-///  - C.L. Luengo Hendriks and L.J. van Vliet, "Improving resolution to reduce aliasing in an undersampled image sequence",
-///    in: Proceedings of SPIE 3965:214–222, 2000.
+/// \literature
+/// <li>C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
+///     Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
+/// <li>C.L. Luengo Hendriks and L.J. van Vliet, "Improving resolution to reduce aliasing in an undersampled image sequence",
+///     in: Proceedings of SPIE 3965:214–222, 2000.
+/// \endliterature
 DIP_EXPORT void CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
@@ -250,8 +251,8 @@ inline Image CrossCorrelationFT(
 ///    with MTS has a bias due to truncation of the Taylor expansion series (Pham et al., 2005). The bias can be
 ///    expressed as a polynomial of the subpixel displacements. As a result, if the MTS method is applied iteratively,
 ///    and the shift is refined after each iteration, the bias eventually becomes negligible. By using just 3
-///    iterations, and noticing that log(bias_increment) is a linear sequence,  it is possible to correct for the
-///    bias up to O(1e-6).<br>
+///    iterations, and noticing that `log(bias_increment)` is a linear sequence, it is possible to correct for the
+///    bias up to O(10<sup>6</sup>).<br>
 ///    Set `parameter` to 0 for normal behavior. `parameter` in the range (0,0.1] specifies the desired accuracy.
 ///    A negative `parameter` causes `round(-parameter)` iterations to be run.
 ///    This method supports images with a dimensionality between 1 and 3.
@@ -263,11 +264,12 @@ inline Image CrossCorrelationFT(
 ///
 /// `in1` and `in2` must be scalar images with the same dimensionality and sizes.
 ///
-/// **Literature**
-///  - C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
-///    Delft University of Technology, The Netherlands, 1998.
-///  - T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
-///    Registration Estimators", in: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
+/// \literature
+/// <li>C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
+///     Delft University of Technology, The Netherlands, 1998.
+/// <li>T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
+///     Registration Estimators", in: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
+/// \endliterature
 DIP_EXPORT FloatArray FindShift(
       Image const& in1,
       Image const& in2,
@@ -289,6 +291,7 @@ DIP_EXPORT FloatArray FindShift(
 /// ignored, nearest neighbor interpolation will be used.
 ///
 /// Example:
+///
 /// ```cpp
 ///     dip::Image in1, in2, out;
 ///     // assign to in1 and in2 two similar images
@@ -324,6 +327,7 @@ inline Image FourierMellinMatch2D(
 ///
 /// `in` must be a scalar, real-valued image. `out` will be a symmetric NxN tensor image, where N is the number
 /// of dimensions in `in`. Out is computed by:
+///
 /// ```cpp
 ///     dip::Image g = dip::Gradient( in, gradientSigmas );
 ///     dip::Image out = dip::Gauss( g * dip::Transpose( g ), tensorSigmas );
@@ -339,11 +343,12 @@ inline Image FourierMellinMatch2D(
 /// The functions `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D` can be used with the output
 /// of this function to obtain useful image parameters.
 ///
-/// **Literature**
-///  - B. Jahne, "Practical Handbook on Image Processing for Scientific Applications", chapter 13, CRC Press, 1997.
-///  - L.J. van Vliet and P.W. Verbeek, "Estimators for Orientation and Anisotropy in Digitized Images",
-///    in: Proceedings First Annual Conference of the Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
-///  - C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Link&ouml;ping University, Sweden, 1994.
+/// \literature
+/// <li>B. Jahne, "Practical Handbook on Image Processing for Scientific Applications", chapter 13, CRC Press, 1997.
+/// <li>L.J. van Vliet and P.W. Verbeek, "Estimators for Orientation and Anisotropy in Digitized Images",
+///     in: Proceedings First Annual Conference of the Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
+/// <li>C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Link&ouml;ping University, Sweden, 1994.
+/// \endliterature
 DIP_EXPORT void StructureTensor(
       Image const& in,
       Image const& mask,
@@ -373,11 +378,13 @@ inline Image StructureTensor(
 /// `in` must be a 2D, symmetric 2x2 tensor image obtained from `dip::StructureTensor`. This function takes a pointer
 /// to output images, instead of taking them by reference. Set pointers to `nullptr` if you do not want the given
 /// output computed. Use this function as follows:
+///
 /// ```cpp
 ///     dip::Image st = dip::StructureTensor( img );
 ///     dip::Image energy, orientation;
 ///     dip::StructureTensorAnalysis2D( st, nullptr, nullptr, &orientation, &energy );
 /// ```
+///
 /// (note how the last two parameters were not given, they default to `nullptr`). The code above computes both the
 /// orientation and energy values of the structure tensor.
 ///
@@ -421,11 +428,13 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 /// `in` must be a 3D, symmetric 3x3 tensor image obtained from `dip::StructureTensor`. This function takes a pointer
 /// to output images, instead of taking them by reference. Set pointers to `nullptr` if you do not want the given
 /// output computed. Use this function as follows:
+///
 /// ```cpp
 ///     dip::Image st = dip::StructureTensor( img );
 ///     dip::Image energy;
 ///     dip::StructureTensorAnalysis3D( st, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &energy );
 /// ```
+///
 /// (note how the last two parameters were not given, they default to `nullptr`). The code above computes the
 /// energy value of the structure tensor.
 ///
@@ -557,8 +566,9 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// Out will be a tensor image with `wavelengths.size()` tensor columns and *n*+1 tensor rows. The data type will be
 /// single-precision float for spatial-domain output, or single-precision complex for frequency-domain output.
 ///
-/// **Literature**
-///  - M. Felsberg and G. Sommer, "The Monogenic Signal", IEEE Transactions on Signal Processing 49(12):3136-3144, 2001.
+/// \literature
+/// <li>M. Felsberg and G. Sommer, "The Monogenic Signal", IEEE Transactions on Signal Processing 49(12):3136-3144, 2001.
+/// \endliterature
 DIP_EXPORT void MonogenicSignal(
       Image const& in,
       Image& out,
@@ -628,10 +638,11 @@ inline Image MonogenicSignal(
 /// can be requested without requesting the two main parameters, but might require some of the input arguments
 /// discussed above to be set.
 ///
-/// **Literature**
-/// - P. Kovesi, "Image features from phase information", Videre: Journal of Computer Vision Research 1(3), 1999.
-/// - M. Felsberg and G. Sommer, "A New Extension of Linear Signal Processing for Estimating Local Properties and
-///   Detecting Features", DAGM Symposium, 2000.
+/// \literature
+/// <li>P. Kovesi, "Image features from phase information", Videre: Journal of Computer Vision Research 1(3), 1999.
+/// <li>M. Felsberg and G. Sommer, "A New Extension of Linear Signal Processing for Estimating Local Properties and
+///     Detecting Features", DAGM Symposium, 2000.
+/// \endliterature
 DIP_EXPORT void MonogenicSignalAnalysis(
       Image const& in,
       ImageRefArray& out,
@@ -756,8 +767,9 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
 /// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
 /// are in pixels.
 ///
-/// **Literature**
-///  - G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
+/// \literature
+/// <li>G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
+/// \endliterature
 DIP_EXPORT Distribution Semivariogram(
       Image const& in,
       Image const& mask,
@@ -875,11 +887,12 @@ DIP_EXPORT Distribution DistanceDistribution(
 /// `in` must be scalar and real-valued. `mask` must have the same sizes, and limits the region
 /// in which objects are measured.
 ///
-/// **Literature**
-///  - C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
-///    Pattern Recognition Letters 28(7):865-872, 2007.
-///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
-///    IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
+/// \literature
+/// <li>C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
+///     Pattern Recognition Letters 28(7):865-872, 2007.
+/// <li>C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
+///     IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
+/// \endliterature
 DIP_EXPORT Distribution Granulometry(
       Image const& in,
       Image const& mask,

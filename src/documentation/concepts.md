@@ -74,12 +74,14 @@ when output images are also input images. The resource handler takes
 care of moving the data blocks from the temporary images to the output
 images when the function ends. With the current design of shared pointers
 to the data, this is no longer necessary. Say a function is called with
+
 ```cpp
     dip::Image A;
     dip::Filter( A, A, params );
 ```
 
 Then the function `dip::Filter()` does this:
+
 ```cpp
     void dip::Filter( const dip::Image &in_c, dip::Image &out, ... ) {
        Image in = in_c.QuickCopy();
@@ -99,6 +101,7 @@ However, if `out` is not stripped, and data is written into it, then `in` is
 changed during processing. So if the function cannot work in place, it should
 always test for aliasing of image data, and strip/forge the output image if
 necessary:
+
 ```cpp
     void dip::Filter( const dip::Image &in_c, dip::Image &out, ... ) {
        Image in = in_c.QuickCopy();

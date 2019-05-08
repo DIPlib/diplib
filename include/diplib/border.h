@@ -25,6 +25,10 @@
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
 
+
+// Note that these function templates, being in an undocumented file and an
+// undocumented namespace, don't appear in the public documentation.
+
 namespace dip {
 
 namespace detail {
@@ -35,9 +39,11 @@ namespace detail {
 /// functions can read and write from the input pixel.
 ///
 /// `borderPixelFunction` and `nonBorderPixelFunction` are two functions with the following signature:
+///
 /// ```cpp
 ///     void Function( TPI* ptr, dip::sint tensorStride );
 /// ```
+///
 /// The first one is applied to border pixels (if `ProcessBorder` is true), and the second one to non-border
 /// pixels (if `ProcessNonBorder` is true). If either of the boolean template parameters is false, the corresponding
 /// function is not called, and thus can be an empty function (for example the lambda `[](auto*,dip::sint){}`).

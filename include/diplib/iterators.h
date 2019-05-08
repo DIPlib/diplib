@@ -246,6 +246,7 @@ inline void swap( LineIterator< T >& v1, LineIterator< T >& v2 ) {
 }
 
 /// \brief A const iterator to iterate over all pixels of an image line.
+/// \relates dip::LineIterator
 ///
 /// This iterator is identical to `dip::LineIterator`, but with a const value type.
 ///
@@ -634,6 +635,7 @@ inline void swap( ImageIterator< T >& v1, ImageIterator< T >& v2 ) {
 }
 
 /// \brief A const iterator to iterate over all pixels of an image, or all lines of an image.
+/// \relates dip::ImageIterator
 ///
 /// This iterator is identical to `dip::ImageIterator`, but with a const value type.
 ///
@@ -681,6 +683,7 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 ///
 /// Note that, within templated code, calling the `Sample<N>` and similar templated methods requires specifying
 /// that the method is a template:
+///
 /// ```cpp
 ///     template< typename TPI >
 ///     void Function( ... ) {

@@ -105,6 +105,7 @@ DIP__DEFINE_VIEW_FUNCTION( SampleStatistics, StatisticsAccumulator )
 /// have the same number of tensor elements.
 ///
 /// To compute the covariance or correlation between two channels in a multi-channel image (a tensor image):
+///
 /// ```cpp
 ///     Covariance( in[ 0 ], in[ 1 ], mask );
 /// ```
@@ -122,6 +123,7 @@ inline dfloat PearsonCorrelation( Image const& in1, Image const& in2, Image cons
 /// The images must be real-valued and have the same number of tensor elements.
 ///
 /// To compute the Spearman rank correlation coefficient between two channels in a multi-channel image (a tensor image):
+///
 /// ```cpp
 ///     SpearmanRankCorrelation( in[ 0 ], in[ 1 ], mask );
 /// ```
@@ -177,6 +179,7 @@ inline Image name( Image::View const& in, String const& mode = default_mode ) { 
 /// the mean pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the mean projection along the processing dimensions. To get the mean value of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Mean( img ).As< double >();
 /// ```
@@ -197,6 +200,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 /// the sum of pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the sum projection along the processing dimensions. To get the sum of all pixel values in the
 /// image:
+///
 /// ```cpp
 ///     dip::Sum( img ).As< double >();
 /// ```
@@ -213,6 +217,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Sum )
 /// the product of pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the product projection along the processing dimensions. To get the product of all pixel values in the
 /// image:
+///
 /// ```cpp
 ///     dip::GeometricMean( img ).As< double >();
 /// ```
@@ -231,6 +236,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( GeometricMean )
 /// the product of pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the product projection along the processing dimensions. To get the product of all pixel values in the
 /// image:
+///
 /// ```cpp
 ///     dip::Product( img ).As< double >();
 /// ```
@@ -249,6 +255,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Product )
 /// the mean absolute pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the mean absolute projection along the processing dimensions. To get the mean absolute value of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::MeanAbs( img ).As< double >();
 /// ```
@@ -271,6 +278,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MeanModulus )
 /// the sum absolute pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the sum absolute projection along the processing dimensions. To get the sum absolute value of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::SumAbs( img ).As< double >();
 /// ```
@@ -293,6 +301,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( SumModulus )
 /// the mean square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the mean square projection along the processing dimensions. To get the mean square value of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::MeanSquare( img ).As< double >();
 /// ```
@@ -311,6 +320,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MeanSquare )
 /// the sum square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the sum square projection along the processing dimensions. To get the sum square value of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::SumSquare( img ).As< double >();
 /// ```
@@ -329,6 +339,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( SumSquare )
 /// the mean square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the mean square projection along the processing dimensions. To get the mean square modulus value of all
 /// pixels in the image:
+///
 /// ```cpp
 ///     dip::MeanSquareModulus( img ).As< double >();
 /// ```
@@ -348,6 +359,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MeanSquareModulus )
 /// the sum square pixel value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the sum square projection along the processing dimensions. To get the sum square modulus value of all
 /// pixels in the image:
+///
 /// ```cpp
 ///     dip::SumSquareModulus( img ).As< double >();
 /// ```
@@ -367,6 +379,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( SumSquareModulus )
 /// the variance of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the variance projection along the processing dimensions. To get the variance of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Variance( img ).As< double >();
 /// ```
@@ -394,6 +407,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Variance, S::FAST )
 /// the standard deviation of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the standard deviation projection along the processing dimensions. To get the standard deviation of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::StandardDeviation( img ).As< double >();
 /// ```
@@ -421,6 +435,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( StandardDeviation, S::FAST )
 /// the maximum of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the maximum projection along the processing dimensions. To get the maximum of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Maximum( img ).As< double >();
 /// ```
@@ -443,6 +458,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Maximum )
 /// the minimum of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the minimum projection along the processing dimensions. To get the minimum of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Minimum( img ).As< double >();
 /// ```
@@ -465,6 +481,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Minimum )
 /// the maximum of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the maximum projection along the processing dimensions. To get the maximum of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Maximum( img ).As< double >();
 /// ```
@@ -483,6 +500,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MaximumAbs )
 /// the minimum of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the minimum projection along the processing dimensions. To get the minimum of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Minimum( img ).As< double >();
 /// ```
@@ -501,6 +519,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MinimumAbs )
 /// the `percentile` percentile of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the percentile projection along the processing dimensions. To get the 30<sup>th</sup> percentile of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Percentile( img, {}, 30.0 ).As< double >();
 /// ```
@@ -538,6 +557,7 @@ inline Image Percentile( Image::View const& in, dfloat percentile = 50 ) {
 /// the median (50<sup>th</sup> percentile) of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the median projection along the processing dimensions. To get the median of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::Median( img ).As< double >();
 /// ```
@@ -558,6 +578,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Median )
 ///
 /// The MAD is a measure of statistical dispersion. It can be used as a robust estimate of the standard deviation.
 /// For normally distributed data, the standard deviation equals `1.4826 * MAD`. It is computed as if by
+///
 /// ```cpp
 ///     dip::Median( dip::Abs( img - dip::Median( img )));
 /// ```
@@ -566,6 +587,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Median )
 /// the MAD of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the MAD projection along the processing dimensions. To get the MAD of all pixels in the
 /// image:
+///
 /// ```cpp
 ///     dip::MedianAbsoluteDeviation( img ).As< double >();
 /// ```
@@ -586,6 +608,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MedianAbsoluteDeviation )
 /// a boolean value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the "all" projection along the processing dimensions. To test if all the pixels in the image are
 /// non-zero:
+///
 /// ```cpp
 ///     dip::All( img ).As< bool >();
 /// ```
@@ -602,6 +625,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( All )
 /// a boolean value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
 /// and equals the "any" projection along the processing dimensions. To test if any pixel in the image is
 /// non-zero:
+///
 /// ```cpp
 ///     dip::Any( img ).As< bool >();
 /// ```
@@ -917,9 +941,10 @@ DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in, Image const& reference,
 /// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed.
 ///
-/// **Literature**
-/// - I. Csiszar, "Why Least Squares and Maximum Entropy? An axiomatic approach to inference for linear inverse problems",
-///   The Annals of Statistics 19:2032-2066, 1991.
+/// \literature
+/// <li>I. Csiszar, "Why Least Squares and Maximum Entropy? An axiomatic approach to inference for linear inverse problems",
+///     The Annals of Statistics 19:2032-2066, 1991.
+/// \endliterature
 DIP_EXPORT dfloat IDivergence( Image const& in, Image const& reference, Image const& mask = {} );
 
 /// \brief Calculates the sum of the product of corresponding sample values of `in` and `reference`.
@@ -964,9 +989,10 @@ DIP_EXPORT dfloat PSNR( Image const& in, Image const& reference, Image const& ma
 ///
 /// The two input images must be real-valued. Singleton expansion is applied if the image sizes don't match.
 ///
-/// **Literature**
-/// - Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
-///   structural similarity", IEEE Transactions on %Image Processing 13(4):600-612, 2004.
+/// \literature
+/// <li>Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
+///     structural similarity", IEEE Transactions on %Image Processing 13(4):600-612, 2004.
+/// \endliterature
 DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& mask = {}, dfloat sigma = 1.5, dfloat K1 = 0.01, dfloat K2 = 0.03 );
 
 /// \brief Calculates the mutual information, in bits, using a histogram with `nBins`-by-`nBins` bins.
@@ -1013,6 +1039,7 @@ DIP_EXPORT SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& r
 ///
 /// The Dice coefficient is equivalent to the harmonic mean between precision and sensitivity or recall (i.e. the
 /// F<sub>1</sub> score):
+///
 /// ```cpp
 ///     dfloat dice = dip::DiceCoefficient( a, b );
 ///     dfloat alsoDice = 2.0 / ( 1.0 / dip::Precision( a, b ) + 1.0 / dip::Sensitivity( a, b ));
@@ -1123,8 +1150,9 @@ inline dfloat Entropy( Image::View const& in, dip::uint nBins = 256 ) {
 ///
 /// If `mask` is not given, creates a mask that avoids edge regions.
 ///
-/// **Literature**
-/// - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and %Image Understanding 64(2):300-302, 1996.
+/// \literature
+/// <li>J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and %Image Understanding 64(2):300-302, 1996.
+/// \endliterature
 DIP_EXPORT dfloat EstimateNoiseVariance( Image const& in, Image const& mask = {} );
 
 /// \}

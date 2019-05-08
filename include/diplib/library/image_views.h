@@ -230,6 +230,7 @@ inline void swap( Image::Sample& v1, Image::Sample& v2 ) { v1.swap( v2 ); }
 
 /// \brief You can output a `dip::Image::Sample` to `std::cout` or any other stream.
 /// It is printed like any numeric value of the same type.
+/// \relates dip::Image::Sample
 inline std::ostream& operator<<(
       std::ostream& os,
       Image::Sample const& sample
@@ -664,82 +665,101 @@ inline void swap( Image::Pixel& v1, Image::Pixel& v2 ) { v1.swap( v2 ); }
 inline void swap( Image::Pixel::Iterator& v1, Image::Pixel::Iterator& v2 ) { v1.swap( v2 ); }
 
 /// \brief Arithmetic operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator+( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator+( Image::Pixel const& lhs, T const& rhs ) { return operator+( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator-( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator-( Image::Pixel const& lhs, T const& rhs ) { return operator-( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, tensor multiplication.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator*( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator*( Image::Pixel const& lhs, T const& rhs ) { return operator*( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator/( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator/( Image::Pixel const& lhs, T const& rhs ) { return operator/( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Arithmetic operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator%( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator%( Image::Pixel const& lhs, T const& rhs ) { return operator%( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Bit-wise operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator&( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator&( Image::Pixel const& lhs, T const& rhs ) { return operator&( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Bit-wise operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator|( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator|( Image::Pixel const& lhs, T const& rhs ) { return operator|( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Bit-wise operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator^( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 Image::Pixel operator^( Image::Pixel const& lhs, T const& rhs ) { return operator^( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Unary operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator-( Image::Pixel const& in );
 
 /// \brief Bit-wise unary operator operator.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator~( Image::Pixel const& in );
 
 /// \brief Boolean unary operator, element-wise.
+/// \relates dip::Image::Pixel
 DIP_EXPORT Image::Pixel operator!( Image::Pixel const& in );
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
+/// \relates dip::Image::Pixel
 DIP_EXPORT bool operator==( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator==( Image::Pixel const& lhs, T const& rhs ) { return operator==( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, equivalent to `!(lhs==rhs)`.
+/// \relates dip::Image::Pixel
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator!=( Image::Pixel const& lhs, T const& rhs ) { return !operator==( lhs, rhs ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
+/// \relates dip::Image::Pixel
 DIP_EXPORT bool operator< ( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator< ( Image::Pixel const& lhs, T const& rhs ) { return operator< ( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
+/// \relates dip::Image::Pixel
 DIP_EXPORT bool operator> ( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator> ( Image::Pixel const& lhs, T const& rhs ) { return operator> ( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
+/// \relates dip::Image::Pixel
 DIP_EXPORT bool operator<=( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator<=( Image::Pixel const& lhs, T const& rhs ) { return operator<=( lhs, Image::Pixel{ rhs } ); }
 
 /// \brief Comparison operator, can only be true if the two pixels have compatible number of tensor elements.
+/// \relates dip::Image::Pixel
 DIP_EXPORT bool operator>=( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator>=( Image::Pixel const& lhs, T const& rhs ) { return operator>=( lhs, Image::Pixel{ rhs } ); }
+
+/// \cond
 
 template< typename T >
 Image::Pixel& Image::Pixel::operator+=( T const& rhs ) { return *this = operator+( *this, rhs ); }
@@ -771,8 +791,11 @@ Image::Sample& Image::Sample::operator^=( T const& rhs ) { return *this = operat
 // This dip::Image::Sample constructor depends on the definition of dip::Image::Pixel
 inline Image::Sample::Sample( Image::Pixel const& pixel ) : origin_( pixel.Origin() ), dataType_( pixel.DataType() ) {}
 
+/// \endcond
+
 /// \brief You can output a `dip::Image::Pixel` to `std::cout` or any other stream.
 /// It is printed as a sequence of values, prepended with "Pixel with values:".
+/// \relates dip::Image::Pixel
 inline std::ostream& operator<<(
       std::ostream& os,
       Image::Pixel const& pixel
@@ -795,6 +818,7 @@ inline std::ostream& operator<<(
 //
 
 /// \brief Derived from `dip::Image::Sample`, works identically except it implicitly converts to type `T`.
+/// \relates dip::Image::Sample
 template< class T >
 class Image::CastSample : public Image::Sample {
    public:
@@ -808,6 +832,7 @@ class Image::CastSample : public Image::Sample {
 };
 
 /// \brief Derived from `dip::Image::Pixel`, works identically except it implicitly converts to type `T`.
+/// \relates dip::Image::Pixel
 template< class T >
 class Image::CastPixel : public Image::Pixel {
       friend class Image;
@@ -1020,7 +1045,6 @@ class Image::View {
          return reference_.TensorElements();
       }
 
-      /// \brief View iterator, similar in functionality to `dip::GenericImageIterator`.
       class Iterator;
 
       /// \brief Returns an iterator to the first pixel in the view.
@@ -1084,6 +1108,7 @@ class Image::View {
 };
 
 
+/// \brief View iterator, similar in functionality to `dip::GenericImageIterator`.
 class Image::View::Iterator {
    public:
       using iterator_category = std::forward_iterator_tag;

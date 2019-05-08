@@ -509,6 +509,8 @@ inline void swap( GenericImageIterator< T >& v1, GenericImageIterator< S >& v2 )
    v1.swap( v2 );
 }
 
+/// \cond
+
 inline GenericImageIterator< dip::dfloat > Image::begin() {
    return GenericImageIterator< dip::dfloat >( *this );
 }
@@ -517,6 +519,7 @@ inline GenericImageIterator< dip::dfloat > Image::end() {
    return GenericImageIterator< dip::dfloat >();
 }
 
+/// \endcond
 
 
 /// \brief A data-type--agnostic version of `dip::JointImageIterator`. Use this iterator only to write code that
@@ -549,7 +552,7 @@ inline GenericImageIterator< dip::dfloat > Image::end() {
 ///              dest.Stride( processingDim ),
 ///              dest.TensorStride(),
 ///              dest.Size( processingDim ),
-///              dest.tensor_.Elements()
+///              dest.TensorElements()
 ///        );
 ///     } while( ++it );
 /// ```
@@ -1165,20 +1168,24 @@ class DIP_NO_EXPORT ImageSliceIterator {
 };
 
 /// \brief Increment an image slice iterator by `n`
+/// \relates dip::ImageSliceIterator
 inline ImageSliceIterator operator+( ImageSliceIterator it, dip::sint n ) {
    it += n;
    return it;
 }
 /// \brief Increment an image slice iterator by `n`
+/// \relates dip::ImageSliceIterator
 inline ImageSliceIterator operator+( ImageSliceIterator it, dip::uint n ) {
    return operator+( it, static_cast< dip::sint >( n ));
 }
 /// \brief Decrement an image slice iterator by `n`, but never moves the iterator to before the first slide
+/// \relates dip::ImageSliceIterator
 inline ImageSliceIterator operator-( ImageSliceIterator it, dip::sint n ) {
    it -= n;
    return it;
 }
 /// \brief Decrement an image slice iterator by `n`, but never moves the iterator to before the first slide
+/// \relates dip::ImageSliceIterator
 inline ImageSliceIterator operator-( ImageSliceIterator it, dip::uint n ) {
    return operator-( it, static_cast< dip::sint >( n ));
 }
@@ -1188,6 +1195,7 @@ inline void swap( ImageSliceIterator& v1, ImageSliceIterator& v2 ) {
 }
 
 /// Constructs an end iterator corresponding to a `dip::ImageSliceIterator`
+/// \relates dip::ImageSliceIterator
 inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint procDim ) {
    ImageSliceIterator out { image, procDim }; // Tests for `procDim` to be OK
    out += static_cast< dip::sint >( image.Size( procDim ));

@@ -53,14 +53,15 @@ namespace dip {
 ///
 /// \see VarianceAccumulator, FastVarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// **Literature**
-/// - Code modified from [John D. Cook](http://www.johndcook.com/blog/skewness_kurtosis/)
-///   ([Wikipedia](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) has the same code).
-/// - T. B. Terriberry, ["Computing higher-order moments online"](http://people.xiph.org/~tterribe/notes/homs.html), 2008.
-/// - Philippe P. Pébay, "Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
-///   Technical Report [SAND2008-6212](http://infoserve.sandia.gov/sand_doc/2008/086212.pdf), Sandia National Laboratories, September 2008.
-/// - Wikipedia: ["Skewness", section "Sample skewness"](https://en.wikipedia.org/wiki/Skewness#Sample_skewness).
-/// - Wikipedia: ["Kurtosis", section "Estimators of population kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis).
+/// \literature
+/// <li>Code modified from [John D. Cook](http://www.johndcook.com/blog/skewness_kurtosis/)
+///     ([Wikipedia](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) has the same code).
+/// <li>T. B. Terriberry, ["Computing higher-order moments online"](http://people.xiph.org/~tterribe/notes/homs.html), 2008.
+/// <li>Philippe P. Pébay, "Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
+///     Technical Report [SAND2008-6212](http://infoserve.sandia.gov/sand_doc/2008/086212.pdf), Sandia National Laboratories, September 2008.
+/// <li>Wikipedia: ["Skewness", section "Sample skewness"](https://en.wikipedia.org/wiki/Skewness#Sample_skewness).
+/// <li>Wikipedia: ["Kurtosis", section "Estimators of population kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis).
+/// \endliterature
 class DIP_NO_EXPORT StatisticsAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -153,6 +154,7 @@ class DIP_NO_EXPORT StatisticsAccumulator {
 };
 
 /// \brief Combine two accumulators
+/// \relates dip::StatisticsAccumulator
 inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAccumulator const& rhs ) {
    lhs += rhs;
    return lhs;
@@ -177,8 +179,9 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 ///
 /// \see StatisticsAccumulator, FastVarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// **Literature**
-/// - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3<sup>rd</sup> Ed., 1998.
+/// \literature
+/// <li>Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3<sup>rd</sup> Ed., 1998.
+/// \endliterature
 class DIP_NO_EXPORT VarianceAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -243,6 +246,7 @@ class DIP_NO_EXPORT VarianceAccumulator {
 };
 
 /// \brief Combine two accumulators
+/// \relates dip::VarianceAccumulator
 inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulator const& rhs ) {
    lhs += rhs;
    return lhs;
@@ -324,6 +328,7 @@ class DIP_NO_EXPORT FastVarianceAccumulator {
 };
 
 /// \brief Combine two accumulators
+/// \relates dip::FastVarianceAccumulator
 inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVarianceAccumulator const& rhs ) {
    lhs += rhs;
    return lhs;
@@ -337,16 +342,19 @@ inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVaria
 /// The accumulator uses a stable algorithm to prevent catastrophic cancellation.
 ///
 /// The covariance matrix is formed by
-/// ```
+///
+/// ```none
 ///    | cov.VarianceX()   cov.Covariance() |
 ///    | cov.Covariance()  cov.VarianceY()  |
 /// ```
 ///
 /// The `Regression` method returns the parameters to the least squares fit of the equation:
+///
+/// ```none
+///    y = intercept + slope * x
 /// ```
-///    `y = intercept + slope * x`
-/// ```
-/// where `x` is the first sample in each pair, and y is the second (this is linear regression). The `Slope` method
+///
+/// where `x` is the first sample in each pair, and `y` is the second (this is linear regression). The `Slope` method
 /// computes only the slope component.
 ///
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
@@ -354,8 +362,9 @@ inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVaria
 ///
 /// \see StatisticsAccumulator, VarianceAccumulator, FastVarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// **Literature**
-/// - Wikipedia: ["Algorithms for calculating variance", section "Covariance"](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance).
+/// \literature
+/// <li>Wikipedia: ["Algorithms for calculating variance", section "Covariance"](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance).
+/// \endliterature
 class DIP_NO_EXPORT CovarianceAccumulator {
       // TODO: rewrite this for arbitrary number of variables
    public:
@@ -527,6 +536,7 @@ class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
 };
 
 /// \brief Combine two accumulators
+/// \relates dip::DirectionalStatisticsAccumulator
 inline DirectionalStatisticsAccumulator operator+( DirectionalStatisticsAccumulator lhs, DirectionalStatisticsAccumulator const& rhs ) {
    lhs += rhs;
    return lhs;
@@ -589,6 +599,7 @@ class DIP_NO_EXPORT MinMaxAccumulator {
 };
 
 /// \brief Combine two accumulators
+/// \relates dip::MinMaxAccumulator
 inline MinMaxAccumulator operator+( MinMaxAccumulator lhs, MinMaxAccumulator const& rhs ) {
    lhs += rhs;
    return lhs;
@@ -739,6 +750,7 @@ class DIP_NO_EXPORT MomentAccumulator {
 };
 
 /// \brief Combine two accumulators
+/// \relates dip::MomentAccumulator
 inline MomentAccumulator operator+( MomentAccumulator lhs, MomentAccumulator const& rhs ) {
    lhs += rhs;
    return lhs;

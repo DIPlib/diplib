@@ -41,11 +41,13 @@
 /// \file
 /// \brief This is the main include file for the *DIPlib* library.
 ///
-/// It declares all classes, functions, macros and constants that form the basic
-/// library infrastructure. Everything is declared within the `#dip` namespace.
-/// This header file is the core of *DIPlib*. To access image processing or analysis
-/// functionality, include their corresponding header files.
-
+/// This header file is the core of *DIPlib*. It declares all classes, functions,
+/// macros and constants that form the basic library infrastructure. It does so
+/// by including all the header files in the \link_to_include_diplib_library directory.
+/// Everything is declared within the `#dip` namespace.
+///
+/// To access image processing or analysis functionality, include their
+/// corresponding header files.
 
 /// \brief The `dip` namespace contains all the library functionality.
 namespace dip {
@@ -93,5 +95,11 @@ DIP_EXPORT extern const LibraryInformation libraryInformation;
 
 /// \defgroup filtering Filtering
 /// \brief Linear and non-linear filters for smoothing, sharpening and detection
+
+/// \dir include/diplib
+/// \brief Contains include files for the various modules in DIPlib
+
+/// \dir include/diplib/library
+/// \brief Contains core include files for DIPlib, they are all included by `diplib.h`
 
 #endif // DIPLIB_H

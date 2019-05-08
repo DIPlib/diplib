@@ -152,12 +152,14 @@ class DIP_NO_EXPORT SampleIterator {
 };
 
 /// \brief Add integer to a sample iterator
+/// \relates dip::SampleIterator
 template< typename T, typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
 inline SampleIterator< T > operator+( SampleIterator< T > it, I n ) {
    it += n;
    return it;
 }
 /// \brief Subtract integer from a sample iterator
+/// \relates dip::SampleIterator
 template< typename T, typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
 inline SampleIterator< T > operator-( SampleIterator< T > it, I n ) {
    it -= n;
@@ -170,6 +172,7 @@ inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) {
 }
 
 /// \brief A const iterator to iterate over samples in a tensor, or pixels on an image line.
+/// \relates dip::SampleIterator
 ///
 /// This iterator is identical to `dip::SampleIterator`, but with a const value type.
 ///

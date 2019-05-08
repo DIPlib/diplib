@@ -24,6 +24,9 @@
 
 #include "diplib/viewer/viewer.h"
 
+/// \file
+/// \brief Declares `dip::viewer::LinkViewPort`.
+
 namespace dip { namespace viewer {
 
 /// \brief Handles viewer linking.

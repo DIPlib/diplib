@@ -77,6 +77,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// it is not necessary to create functions that translate from your new color space to
 /// all known color spaces, it is sufficient to register two function that translate to
 /// and from your new color space to any existing color space:
+///
 /// ```cpp
 ///     dip::ColorSpaceManager csm;
 ///     dip::Image img = ...
@@ -89,6 +90,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 ///     csm.Register( new yxy2frank );              // an object that converts from Yxy to Frank
 ///     img = csm.Convert( img, "f" );              // img will be converted from Lab to Frank
 /// ```
+///
 /// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from `dip::ColorSpaceConverter`.
 ///
 /// The color spaces known by default are given in the table below. Color space names are case-sensitive,
@@ -200,6 +202,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       ///
       /// The output image is of a floating-point type. If you want the output to be written in, for example,
       /// an 8-bit unsigned integer, you can use the "protect" flag on the output image:
+      ///
       /// ```cpp
       ///     dip::Image in = ...; // read in a color image
       ///     dip::Image out;
@@ -208,6 +211,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       ///     dip::ColorSpaceManager csm;
       ///     cms.Convert( in, out, "HSV" );
       /// ```
+      ///
       /// In this case, all computations are still performed as double-precision floating-point computations,
       /// but the result is cast to 8-bit unsigned integers when written to the output image. Some color spaces,
       /// such as RGB and CMYK are defined to use the [0,255] range of 8-bit unsigned integers. Other color spaces

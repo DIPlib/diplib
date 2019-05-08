@@ -83,7 +83,7 @@ template< typename T1, typename T2, typename = EnableIfNotImageOrView< T1 >, typ
 template< typename T1, typename T2 > inline Image name( Image const& in, T1&& lhs, T2&& rhs ) { Image out; name( in, std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 
-/// \ingroup math_arithmetic
+/// \addtogroup math_arithmetic
 /// \{
 
 
@@ -524,7 +524,7 @@ inline Image::View& operator^=( Image::View& lhs, T const& rhs ) {
 /// \}
 
 
-/// \ingroup math_comparison
+/// \addtogroup math_comparison
 /// \{
 
 

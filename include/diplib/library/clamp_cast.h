@@ -208,6 +208,14 @@ constexpr inline const ValueType clamp_upper( ValueType value, LimitType ) {
 
 } // namespace detail
 
+#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+
+/// \brief Casts a value of any pixel type to any other pixel type, clamping it to the destination range.
+template< typename TargetType, typename SourceType >
+constexpr inline const TargetType clamp_cast( SourceType v ) {}
+
+#endif
+
 // Cast non-complex value to float
 template< typename TargetType, typename SourceType,
           typename std::enable_if_t< detail::is_floating_point< TargetType >::value, int > = 0 >

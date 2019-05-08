@@ -481,9 +481,10 @@ inline Image CreateGabor(
 /// The function is defined for images between 1 and 3 dimensions. `out` must be forged, scalar, and of a
 /// floating-point type.
 ///
-/// **Literature**
-///  - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images",
-///    Ph.D. thesis, Delft University of Technology, 1993.
+/// \literature
+/// <li>L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images",
+///     Ph.D. thesis, Delft University of Technology, 1993.
+/// \endliterature
 DIP_EXPORT void FTEllipsoid(
       Image& out,
       FloatArray radius = { 1 },

@@ -37,8 +37,8 @@ namespace dip {
 
 
 /// \defgroup random Random
-/// \brief Pseudo-random generator and probability distributions.
 /// \ingroup infrastructure
+/// \brief Pseudo-random generator and probability distributions.
 /// \{
 
 
@@ -142,10 +142,15 @@ class DIP_NO_EXPORT Random {
 class DIP_NO_EXPORT UniformRandomGenerator {
       using Distribution = std::uniform_real_distribution< dfloat >;
    public:
+
+      /// \brief Constructor
       explicit UniformRandomGenerator( Random& generator ) : generator_( generator ) {}
+
+      /// \brief Get the next random value, using the given parameters.
       dfloat operator()( dfloat lowerBound, dfloat upperBound ) {
          return distribution_( generator_, Distribution::param_type( lowerBound, upperBound ));
       }
+
    private:
       Random& generator_;
       Distribution distribution_;
@@ -163,10 +168,15 @@ class DIP_NO_EXPORT UniformRandomGenerator {
 class DIP_NO_EXPORT GaussianRandomGenerator {
       using Distribution = std::normal_distribution< dfloat >;
    public:
+
+      /// \brief Constructor
       explicit GaussianRandomGenerator( Random& generator ) : generator_( generator ) {}
+
+      /// \brief Get the next random value, using the given parameters.
       dfloat operator()( dfloat mean, dfloat standardDeviation ) {
          return distribution_( generator_, Distribution::param_type( mean, standardDeviation ));
       }
+
    private:
       Random& generator_;
       Distribution distribution_;
@@ -184,10 +194,15 @@ class DIP_NO_EXPORT GaussianRandomGenerator {
 class DIP_NO_EXPORT PoissonRandomGenerator {
       using Distribution = std::poisson_distribution< dip::uint >;
    public:
+
+      /// \brief Constructor
       explicit PoissonRandomGenerator( Random& generator ) : generator_( generator ) {}
+
+      /// \brief Get the next random value, using the given parameter.
       dip::uint operator()( dfloat mean ) {
          return distribution_( generator_, Distribution::param_type( mean ));
       }
+
    private:
       Random& generator_;
       Distribution distribution_;
@@ -204,19 +219,20 @@ class DIP_NO_EXPORT PoissonRandomGenerator {
 /// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator.
 class DIP_NO_EXPORT BinaryRandomGenerator {
    public:
+
+      /// \brief Constructor
       explicit BinaryRandomGenerator( Random& generator ) : generator_( generator ) {}
+
+      /// \brief Get the next random value, using the given parameter.
       bin operator()( dfloat p ) {
-         if( p <= 0.0 ) {
-            return false;
-         } else if( p >= 1.0 ) {
-            return true;
-         } else {
-            return std::generate_canonical< dfloat, std::numeric_limits< dfloat >::digits, Random >( generator_ ) < p;
-            // The above is slow, potentially requires multiple random numbers to be generated. Instead, we could do
-            // the following, though the casts loose precision and therefore probabilities might not be as requested:
-            // return static_cast< long double >( generator_() ) < ( static_cast< long double >( Random::max() ) + 1 ) * p;
-         }
+         if( p <= 0.0 ) { return false; }
+         if( p >= 1.0 ) { return true; }
+         return std::generate_canonical< dfloat, std::numeric_limits< dfloat >::digits, Random >( generator_ ) < p;
+         // The above is slow, potentially requires multiple random numbers to be generated. Instead, we could do
+         // the following, though the casts loose precision and therefore probabilities might not be as requested:
+         // return static_cast< long double >( generator_() ) < ( static_cast< long double >( Random::max() ) + 1 ) * p;
       }
+
    private:
       Random& generator_;
 };

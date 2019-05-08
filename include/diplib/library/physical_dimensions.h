@@ -42,8 +42,8 @@
 namespace dip {
 
 /// \defgroup physical_dimensions Physical dimensions
-/// \brief Support for units, physical quantities and pixel sizes.
 /// \ingroup infrastructure
+/// \brief Support for units, physical quantities and pixel sizes.
 /// \{
 
 
@@ -330,6 +330,7 @@ class DIP_NO_EXPORT Units {
 };
 
 /// \brief Insert physical quantity to an output stream as a string of base units. See `dip::Units::String`.
+/// \relates dip::Units
 inline std::ostream& operator<<( std::ostream& os, Units const& units ) {
    os << units.StringUnicode();
    return os;
@@ -568,48 +569,57 @@ struct DIP_NO_EXPORT PhysicalQuantity {
 };
 
 /// Multiplies two physical quantities.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator*( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
    lhs *= rhs;
    return lhs;
 }
 /// Scaling of a physical quantity.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator*( PhysicalQuantity lhs, dip::dfloat rhs ) {
    lhs *= rhs;
    return lhs;
 }
 /// Scaling of a physical quantity.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator*( dip::dfloat lhs, PhysicalQuantity rhs ) {
    rhs *= lhs;
    return rhs;
 }
 
 /// Divides two physical quantities.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator/( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
    lhs /= rhs;
    return lhs;
 }
 /// Scaling of a physical quantity.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator/( PhysicalQuantity lhs, dip::dfloat rhs ) {
    lhs /= rhs;
    return lhs;
 }
 /// Scaling of a physical quantity.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator/( dip::dfloat lhs, PhysicalQuantity rhs ) {
    return rhs.Invert() * lhs;
 }
 
 /// Addition of two physical quantities.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator+( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
    lhs += rhs;
    return lhs;
 }
 /// Subtraction of two physical quantities.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator-( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
    lhs -= rhs;
    return lhs;
 }
 
 /// Insert physical quantity to an output stream.
+/// \relates dip::PhysicalQuantity
 inline std::ostream& operator<<( std::ostream& os, PhysicalQuantity const& pq ) {
    os << pq.magnitude << " " << pq.units;
    return os;
@@ -620,13 +630,16 @@ inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) {
 }
 
 /// An array to hold physical quantities, such as a pixel's size.
+/// \relates dip::PhysicalQuantity
 using PhysicalQuantityArray = DimensionArray< PhysicalQuantity >;
 
 /// Create an arbitrary physical quantity by multiplying a magnitude with units.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator*( dip::dfloat magnitude, Units const& units ) {
    return { magnitude, units };
 }
 /// Create an arbitrary physical quantity by multiplying a magnitude with units.
+/// \relates dip::PhysicalQuantity
 constexpr inline PhysicalQuantity operator*( Units const& units, dip::dfloat magnitude ) {
    return { magnitude, units };
 }
@@ -1003,6 +1016,7 @@ class DIP_NO_EXPORT PixelSize {
 };
 
 /// \brief Writes the pixel sizes array to a stream
+/// \relates dip::PixelSize
 inline std::ostream& operator<<( std::ostream& os, PixelSize const& ps ) {
    os << "{";
    if( ps.IsDefined() ) {

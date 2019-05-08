@@ -32,7 +32,9 @@
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \defgroup boundary Boundary
+/// \ingroup infrastructure
+/// \brief Handling image boundary extension for filtering
 /// \{
 
 

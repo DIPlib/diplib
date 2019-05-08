@@ -62,8 +62,9 @@ Any holes in the object are not included in the perimeter either.
 The 3D equivalent to the \ref size_features_Perimeter feature. It does not assume a single connected component,
 and will include all surfaces in the measurement, including those of holes.
 
-**Literature**
- - J.C. Mullikin and P.W. Verbeek, "Surface area estimation of digitized planes," Bioimaging 1(1):6-16, 1993.
+\literature
+<li>J.C. Mullikin and P.W. Verbeek, "Surface area estimation of digitized planes," Bioimaging 1(1):6-16, 1993.
+\endliterature
 
 \subsection size_features_Feret Feret
 Computes the maximum and minimum object diameters from the object's convex hull, using

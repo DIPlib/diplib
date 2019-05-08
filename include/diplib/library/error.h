@@ -42,8 +42,8 @@ namespace dip {
 
 
 /// \defgroup error Error management
-/// \brief Exception classes and error management functionality
 /// \ingroup infrastructure
+/// \brief Exception classes and error management functionality
 /// \{
 
 
@@ -270,7 +270,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 ///
 /// If `DIP_ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
-/// ```
+/// ```bash
 ///     cmake -DDIP_ENABLE_ASSERT=OFF ...
 /// ```
 ///
@@ -326,6 +326,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 /// ```
 ///
 /// This expands to:
+///
 /// ```cpp
 ///     DIP_START_STACK_TRACE
 ///        dip::FunctionCall();

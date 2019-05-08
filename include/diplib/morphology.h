@@ -93,11 +93,13 @@ class DIP_NO_EXPORT Kernel;
 /// That is, `dip::Dilation` and `dip::Erosion` will use the same neighborhood. Their composition only
 /// leads to an opening or a closing if the structuring element is symmetric. For non-symmetric structuring
 /// element images, you need to mirror it in one of the two function calls:
+///
 /// ```cpp
 ///     dip::Image se = ...;
 ///     dip::Image out = dip::Erosion( in, se );
 ///     out = dip::Dilation( out, se.Mirror() );
 /// ```
+///
 /// (Do note that, in the code above, `se` itself is modified! use `se.QuickCopy().Mirror()` to prevent
 /// that.)
 ///
@@ -162,11 +164,12 @@ class DIP_NO_EXPORT Kernel;
 /// lines (times were equal with around 50px length), or they can be much slower for even the shortest of lines.
 /// Predicting which implementation of the line will be faster for a given situation is not trivial.
 ///
-/// **Literature**
-///  - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
-///    at arbitrary angles", IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
-///  - C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
-///    measurements", IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
+/// \literature
+/// <li>P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
+///     at arbitrary angles", IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+/// <li>C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
+///     measurements", IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
+/// \endliterature
 class DIP_NO_EXPORT StructuringElement {
    public:
       enum class ShapeCode {
@@ -689,6 +692,7 @@ inline Image MultiScaleMorphologicalGradient(
 /// \brief The morphological version of the Laplace operator
 ///
 /// This function computes:
+///
 /// ```cpp
 ///     out = ( Dilation( in ) + Erosion( in ) ) / 2 - in;
 /// ```
@@ -778,8 +782,9 @@ inline Image RankFilter(
 /// The default empty array causes the function to use `"add min"` with the rank filter,
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
-/// **Literature**
-///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
+/// \literature
+/// <li>P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
+/// \endliterature
 DIP_EXPORT void RankMinClosing(
       Image const& in,
       Image& out,
@@ -817,8 +822,9 @@ inline Image RankMinClosing(
 /// The default empty array causes the function to use `"add min"` with the dilation,
 /// and `"add max"` with the rank filter, equivalent to ignoring what's outside the image.
 ///
-/// **Literature**
-///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
+/// \literature
+/// <li>P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
+/// \endliterature
 DIP_EXPORT void RankMaxOpening(
       Image const& in,
       Image& out,
@@ -1011,15 +1017,16 @@ inline Image SeededWatershed(
 /// of iterations, but typically `dip::DT_UINT8`), or of type `dip::DT_SFLOAT` if the exact stochastic watershed
 /// is computed.
 ///
-/// **Literature**
-/// - J. Angulo and D. Jeulin, "Stochastic watershed segmentation", Proceedings of the 8th International Symposium on
-///   Mathematical Morphology, Instituto Nacional de Pesquisas Espaciais (INPE), São José dos Campos, pp. 265–276, 2007.
-/// - K.B. Bernander, K. Gustavsson, B. Selig, I.-M. Sintorn, and C.L. Luengo Hendriks, "Improving the stochastic watershed",
-///   Pattern Recognition Letters 34:993-1000, 2013.
-/// - F. Malmberg and C.L. Luengo Hendriks, "An efficient algorithm for exact evaluation of stochastic watersheds",
-///   Pattern Recognition Letters 47:80-84, 2014.
-/// - B. Selig, F, Malmberg and C.L. Luengo Hendriks, "Fast evaluation of the robust stochastic watershed",
-///   Proceedings of ISMM 2015, LNCS 9082:705-716, 2015.
+/// \literature
+/// <li>J. Angulo and D. Jeulin, "Stochastic watershed segmentation", Proceedings of the 8th International Symposium on
+///     Mathematical Morphology, Instituto Nacional de Pesquisas Espaciais (INPE), São José dos Campos, pp. 265–276, 2007.
+/// <li>K.B. Bernander, K. Gustavsson, B. Selig, I.-M. Sintorn, and C.L. Luengo Hendriks, "Improving the stochastic watershed",
+///     Pattern Recognition Letters 34:993-1000, 2013.
+/// <li>F. Malmberg and C.L. Luengo Hendriks, "An efficient algorithm for exact evaluation of stochastic watersheds",
+///     Pattern Recognition Letters 47:80-84, 2014.
+/// <li>B. Selig, F, Malmberg and C.L. Luengo Hendriks, "Fast evaluation of the robust stochastic watershed",
+///     Proceedings of ISMM 2015, LNCS 9082:705-716, 2015.
+/// \endliterature
 DIP_EXPORT void StochasticWatershed(
       Image const& in,
       Image& out,
@@ -1187,10 +1194,8 @@ inline Image Maxima(
 ///
 /// `in` must be a real-valued, scalar image. `out` will have the same type.
 ///
-/// **Limitations**
-///  - This function is only implemented for 2D images.
-///  - Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
-///    If this is an issue, consider adding one pixel on each side of your image.
+/// \note Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
+/// If this is an issue, consider adding one pixel on each side of your image.
 DIP_EXPORT void UpperSkeleton2D(
       Image const& in,
       Image const& mask,
@@ -1225,9 +1230,10 @@ inline Image UpperSkeleton2D(
 /// This functions is used by `dip::LimitedMorphologicalReconstruction`, `dip::HMinima`, `dip::HMaxima`,
 /// `dip::Leveling`, `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`
 ///
-/// **Literature**
-///  - K. Robinson and P.F. Whelan, "Efficient morphological reconstruction: a downhill filter", Pattern Recognition
-///    Letters 25:1759-1767, 2004.
+/// \literature
+/// <li>K. Robinson and P.F. Whelan, "Efficient morphological reconstruction: a downhill filter", Pattern Recognition
+///     Letters 25:1759-1767, 2004.
+/// \endliterature
 DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask
@@ -1346,9 +1352,10 @@ inline Image HMaxima(
 /// The `marker` image can be a smoothed version of `in`, then the leveling yields a similar simplification as
 /// the smoothing, but preserving sharp edges.
 ///
-/// **Literature**
-///  - F. Meyer, "The levelings", Mathematical Morphology and its Applications to %Image and Signal Processing
-///    (proceedings of ISSM'98), pp. 199-206, 1998.
+/// \literature
+/// <li>F. Meyer, "The levelings", Mathematical Morphology and its Applications to %Image and Signal Processing
+///     (proceedings of ISSM'98), pp. 199-206, 1998.
+/// \endliterature
 inline void Leveling(
       Image const& in,
       Image const& marker,
@@ -1387,11 +1394,12 @@ inline Image Leveling(
 /// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`). For binary images, this function calls
 /// `dip::BinaryAreaOpening` or `dip::BinaryAreaClosing`.
 ///
-/// **Literature**
-///  - L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
-///    Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
-///  - A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
-///    IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
+/// \literature
+/// <li>L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
+///     Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
+/// <li>A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
+///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
+/// \endliterature
 ///
 /// \see dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
 DIP_EXPORT void AreaOpening(
@@ -1498,11 +1506,12 @@ inline Image PathOpening(
 /// `direction = round(filterSize/length)`. For example, if `filterSize=[7,0]`, then `length` is 7, and
 /// `direction` is `[1,0]` (to the right), with `[1,1]` and `[1,-1]` as alternate directions.
 ///
-/// **Literature**
-///  - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
-///  - H. Talbot and B. Appleton, "Efficient complete and incomplete path openings and closings", %Image and Vision Computing 25:416-425, 2007.
-///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
-///  - O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
+/// \literature
+/// <li>H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
+/// <li>H. Talbot and B. Appleton, "Efficient complete and incomplete path openings and closings", %Image and Vision Computing 25:416-425, 2007.
+/// <li>C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
+/// <li>O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
+/// \endliterature
 DIP_EXPORT void DirectedPathOpening(
       Image const& in,
       Image const& mask,
@@ -1592,6 +1601,7 @@ inline Image ClosingByReconstruction(
 /// `polarity` can be `"open-close"` or `"close-open"`, and determines which of the operations is applied first.
 ///
 /// For example, if `sizes` is `{3,7,2}` and `polarity` is `"opening"`, the following operations are applied:
+///
 /// ```cpp
 ///     dip::Opening( in,  out, { 3, shape } );
 ///     dip::Closing( out, out, { 3, shape } );
@@ -1645,8 +1655,9 @@ inline Image AlternatingSequentialFilter(
 ///
 /// See also `dip::SupGenerating` for a function specific to binary images.
 ///
-/// **Literature**
-///  - P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, sections 5.1.1 and 5.1.2. Springer, 2002.
+/// \literature
+/// <li>P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, sections 5.1.1 and 5.1.2. Springer, 2002.
+/// \endliterature
 DIP_EXPORT void HitAndMiss(
       Image const& in,
       Image& out,

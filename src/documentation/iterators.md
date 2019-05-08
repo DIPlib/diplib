@@ -92,44 +92,48 @@ Note that the code above does not handle tensor images, presuming the image is
 scalar. A test for that should be included, or alternatively the tensor elements
 should be processed. There are two ways of doing so:
 
- - The simplest is to create a copy of the input image (which would use the same
-   data segment), and modify this copy so that the tensor dimension becomes a
-   spatial dimension. The loop above would then iterate over each sample, rather
-   than each pixel:
+<ul>
+<li>
+The simplest is to create a copy of the input image (which would use the same
+data segment), and modify this copy so that the tensor dimension becomes a
+spatial dimension. The loop above would then iterate over each sample, rather
+than each pixel:
 
-   ```cpp
-       dip::Image tmp = img.QuickCopy();
-       tmp.TensorToSpatial();
-       dip::ImageIterator< dip::uint16 > it( tmp );
-       ...
-   ```
+```cpp
+    dip::Image tmp = img.QuickCopy();
+    tmp.TensorToSpatial();
+    dip::ImageIterator< dip::uint16 > it( tmp );
+    ...
+```
+</li>
+<li>
+The second way is to explicitly iterate over the tensor elements within the
+main loop. This allows the different tensor elements to be treated differently.
+Simply note that the iterator `it` points at the first element of the tensor,
+and using the `[]` indexing operator yields the other tensor elements:
 
- - The second way is to explicitly iterate over the tensor elements within the
-   main loop. This allows the different tensor elements to be treated differently.
-   Simply note that the iterator `it` points at the first element of the tensor,
-   and using the `[]` indexing operator yields the other tensor elements:
+```cpp
+    dip::ImageIterator< T > it( img );
+    do {
+       for( dip::uint te = 0; te < img.TensorElements(); ++te ) {
+          it[ te ] *= 2;
+       }
+    } while( ++it );
+```
 
-   ```cpp
-       dip::ImageIterator< T > it( img );
-       do {
-          for( dip::uint te = 0; te < img.TensorElements(); ++te ) {
-             it[ te ] *= 2;
-          }
-       } while( ++it );
-   ```
+Alternatively, iterate over the tensor elements using the corresponding
+iterator (see `dip::SampleIterator`):
 
-   Alternatively, iterate over the tensor elements using the corresponding
-   iterator (see `dip::SampleIterator`):
-
-   ```cpp
-       dip::ImageIterator< T > it( img );
-       do {
-          for( auto te = it.begin(); te != it.end(); ++te ) {
-             *te *= 2;
-          }
-       } while( ++it );
-   ```
-
+```cpp
+    dip::ImageIterator< T > it( img );
+    do {
+       for( auto te = it.begin(); te != it.end(); ++te ) {
+          *te *= 2;
+       }
+    } while( ++it );
+```
+</li>
+</ul>
 
 [//]: # (--------------------------------------------------------------)
 

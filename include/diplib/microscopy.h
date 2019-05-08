@@ -100,7 +100,7 @@ inline Image InverseBeerLambertMapping(
 
 /// \brief Unmixes stains in a brightfield absorbance image or a fluorescence emission image.
 ///
-/// **Brightfield**
+/// # Brightfield
 ///
 /// A color image, obtained from a brightfield microscope, and converted to an absorbance image by
 /// `dip::BeerLambertMapping`, can be separated into individual stains as long as there are no more
@@ -142,6 +142,7 @@ inline Image InverseBeerLambertMapping(
 /// normalized.
 ///
 /// Example:
+///
 /// ```cpp
 ///     dip::Image img = dip::ImageReadTIFF( "brightfield.tif" );
 ///     img = dip::BeerLambertMapping( img, { 255 } );
@@ -150,7 +151,7 @@ inline Image InverseBeerLambertMapping(
 ///     dip::Image dab = img[ 1 ];
 /// ```
 ///
-/// **Fluorescence**
+/// # Fluorescence
 ///
 /// The explanation above translates to fluorescence imaging, replacing 'absorbance' with 'emission'. In the case
 /// of fluorescence, `dip::BeerLambertMapping` should not be used.
@@ -166,7 +167,7 @@ inline Image InverseBeerLambertMapping(
 /// emission strength for each dye in each channel again leads to the data to be written in `stains` to estimate
 /// dye densities using this function.
 ///
-/// **Standard brightfield stain vectors**
+/// # Standard brightfield stain vectors
 ///
 /// Stain name        | RGB absorbance triplet
 /// ----------------- | ----------------------
@@ -188,10 +189,11 @@ inline Image InverseBeerLambertMapping(
 /// PAS               | 0.175, 0.972, 0.155
 /// Ponceau-Fuchsin   | 0.107, 0.368, 0.923
 ///
-/// **Literature**
-///  - A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution",
-///    Analytical and Quantitative Cytology and Histology 23(4):291-299, 2001.
-///  - Stain color triplets taken from CellProfiler, [`unmixcolors.py`](https://github.com/CellProfiler/CellProfiler/blob/master/cellprofiler/modules/unmixcolors.py) module.
+/// \literature
+/// <li>A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution",
+///     Analytical and Quantitative Cytology and Histology 23(4):291-299, 2001.
+/// <li>Stain color triplets taken from CellProfiler, [`unmixcolors.py`](https://github.com/CellProfiler/CellProfiler/blob/master/cellprofiler/modules/unmixcolors.py) module.
+/// \endliterature
 DIP_EXPORT void UnmixStains(
       Image const& in,
       Image& out,
@@ -220,6 +222,7 @@ inline Image UnmixStains(
 /// to create an image as seen through a brightfield microscope:
 ///
 /// Example:
+///
 /// ```cpp
 ///     dip::Image img( { 1024, 1024 }, 2 );
 ///     dip::DrawBandlimitedBall( img, 300, { 400, 500 }, { 1.0, 0.0 } );
@@ -264,8 +267,9 @@ inline Image MixStains(
 /// `out` will be scalar and of type `DT_SFLOAT`. It should have 1 or 2 dimensions, its sizes will be preserved.
 /// If `out` has no sizes, a 256x256 image will be generated.
 ///
-/// **Literature**
-/// - K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
+/// \literature
+/// <li>K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
+/// \endliterature
 DIP_EXPORT void IncoherentOTF(
       Image& out,
       dfloat defocus = 0,
@@ -297,8 +301,9 @@ inline Image IncoherentOTF(
 /// For 1D images, the PSF returned is a single line through the middle of a 2D PSF.
 /// If `out` has no sizes, a square image of size `ceil(19*oversampling)` will be generated.
 ///
-/// **Literature**
-/// - K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
+/// \literature
+/// <li>K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
+/// \endliterature
 DIP_EXPORT void IncoherentPSF(
       Image& out,
       dfloat oversampling = 1,
@@ -408,9 +413,10 @@ inline Image WienerDeconvolution(
 /// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
 /// unchanged.
 ///
-/// **Literature**
-/// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-///   "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+/// \literature
+/// <li>K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+///     "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+/// \endliterature
 DIP_EXPORT void ExponentialFitCorrection(
       Image const& in,
       Image const& mask,
@@ -453,9 +459,10 @@ inline Image ExponentialFitCorrection(
 /// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
 /// unchanged.
 ///
-/// **Literature**
-/// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-///   "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+/// \literature
+/// <li>K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+///     "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+/// \endliterature
 DIP_EXPORT void AttenuationCorrection(
       Image const& in,
       Image& out,
@@ -484,8 +491,9 @@ inline Image AttenuationCorrection(
 
 /// \brief 3D fluorescence attenuation simulation
 ///
-/// Simulates an attenuation based on the model of a CSLM, using a ray tracing method. **NOTE:** this function is
-/// extremely slow, and its running time grows exponentially with the number of slices.
+/// Simulates an attenuation based on the model of a CSLM, using a ray tracing method.
+///
+/// \warning This function is extremely slow, and its running time grows exponentially with the number of slices.
 ///
 /// The system is characterized by parameters `NA` (numerical aperture) and `refIndex` (refractive index of the
 /// medium), as well as the pixel size information in `in` (the x and y pixel size must be the same, the z size
@@ -498,9 +506,10 @@ inline Image AttenuationCorrection(
 /// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
 /// unchanged.
 ///
-/// **Literature**
-/// - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-///   "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+/// \literature
+/// <li>K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+///     "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
+/// \endliterature
 DIP_EXPORT void SimulatedAttenuation(
       Image const& in,
       Image& out,

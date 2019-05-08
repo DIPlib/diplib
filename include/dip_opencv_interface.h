@@ -40,7 +40,7 @@
 namespace dip_opencv {
 
 
-/// \defgroup dip_opencv_interface DIPlib--OpenCV interface
+/// \defgroup dip_opencv_interface DIPlib-OpenCV interface
 /// \brief Functions to convert images to and from *OpenCV*.
 ///
 /// The `dip_opencv` namespace defines the functions needed to convert between *OpenCV* `cv::Mat` objects and *DIPlib*
@@ -299,11 +299,13 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 /// \brief This class is the `dip::ExternalInterface` for the *OpenCV* interface.
 ///
 /// Use the following code when declaring images to be used as the output to a *DIPlib* function:
+///
 /// ```cpp
 ///     dip_opencv::ExternalInterface cvei;
 ///     dip::Image img_out0 = cvei.NewImage();
 ///     dip::Image img_out1 = cvei.NewImage();
 /// ```
+///
 /// This configures the images `img_out0` and `img_out1` such that, when they are forged later on, an `cv::Mat`
 /// object will be created to hold the pixel data.
 ///
@@ -318,10 +320,12 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 ///
 /// To retrieve the `cv::Mat` object inside such a `dip::Image`, use the `dip_opencv::ExternalInterface::GetMat`
 /// method:
+///
 /// ```cpp
 ///     cv::Mat img0 = cvei.GetMat( img_out0 );
 ///     cv::Mat img1 = cvei.GetMat( img_out1 );
 /// ```
+///
 /// If you don't use the `GetMat` method, the `cv::Mat` that contains the pixel data will be destroyed when the
 /// `dip::Image` object goes out of scope. The `GetMat` method returns a `cv::Mat` object that owns the data segment
 /// used by the `dip::Image` object. In this case, the `dip::Image` object is still valid, and shares the data segment
@@ -330,10 +334,12 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 ///
 /// Remember to not assign a result into the images created with `NewImage`, as the pixel data will be copied in the
 /// assignment. Instead, use the *DIPlib* functions that take output images as function arguments:
+///
 /// ```cpp
 ///     img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
 ///     dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
 /// ```
+///
 /// In the first case, `in1 + in2` is computed into a temporary image, whose pixels are then copied into the
 /// `cv::Mat` created for `img_out0`. In the second case, the result of the operation is directly written into the
 /// `cv::Mat`, no copies are necessary.

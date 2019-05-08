@@ -22,6 +22,9 @@
 
 #include "diplib/viewer/viewer.h"
 
+/// \file
+/// \brief Declares `dip::viewer::TensorViewPort`.
+
 namespace dip { namespace viewer {
 
 /// \brief Allows the user to control which tensor elements are visualized.

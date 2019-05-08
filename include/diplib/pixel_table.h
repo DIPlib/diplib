@@ -218,6 +218,7 @@ class DIP_NO_EXPORT PixelTable {
       /// that is right of the center). For the `"diamond"` and `"elliptic"` shapes, the bounding box always has odd
       /// sizes, and the origin is always centered on one pixel. To accomplish the same for the "rectangular" shape,
       /// simply round the sizes array to an odd integer:
+      ///
       /// ```cpp
       ///     size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1
       /// ```
@@ -455,6 +456,8 @@ inline void swap( PixelTable::iterator& v1, PixelTable::iterator& v2 ) {
    v1.swap( v2 );
 }
 
+/// \cond
+
 inline PixelTable::iterator PixelTable::begin() const {
    return iterator( *this );
 }
@@ -462,6 +465,9 @@ inline PixelTable::iterator PixelTable::begin() const {
 inline PixelTable::iterator PixelTable::end() const {
    return iterator::end( *this );
 }
+
+/// \endcond
+
 
 /// \brief An iterator that visits each of the neighborhood's pixels in turn.
 ///
@@ -557,6 +563,8 @@ inline void swap( PixelTableOffsets::iterator& v1, PixelTableOffsets::iterator& 
    v1.swap( v2 );
 }
 
+/// \cond
+
 inline PixelTableOffsets::iterator PixelTableOffsets::begin() const {
    return iterator( *this );
 }
@@ -573,6 +581,8 @@ inline std::vector< dip::sint > PixelTableOffsets::Offsets() const {
    }
    return out;
 }
+
+/// \endcond
 
 /// \}
 

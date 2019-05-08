@@ -358,11 +358,14 @@ inline Image Orientation( Image const& in ) {
 /// within the x-y plane (azimuth). *theta* is the angle from the z-axis (inclination).
 ///
 /// That is, in 2D:
+///
 /// ```cpp
 ///     in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] );
 ///     in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] );
 /// ```
+///
 /// and in 3D:
+///
 /// ```cpp
 ///     in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] ) * Sin( out[ 2 ] );
 ///     in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] ) * Sin( out[ 2 ] );
@@ -667,6 +670,7 @@ DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 /// \brief Compares `in1` to `in2` according to `selector`, and writes `in3` or `in4` to `out` depending on the result.
 ///
 /// In short, this is the operation that is applied sample by sample:
+///
 /// ```cpp
 ///     in1 <selector> in2 ? in3 : in4
 /// ```
@@ -674,6 +678,7 @@ DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 /// The string `selector` can be one of: "==", "!=", ">", "<", ">=", "<="
 ///
 /// An alternative (slower) implementation would be:
+///
 /// ```cpp
 ///     dip::Image mask = in1 <selector> in2;
 ///     out = in4.Copy();
@@ -682,15 +687,19 @@ DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 ///
 /// Note that all input images are singleton-expanded to match in size, so the function can e.g. be used with scalar
 /// values for `in3` and `in4`:
+///
 /// ```cpp
 ///     dip::Image result = dip::Select( in1, in2, dip::Image{ true }, dip::Image{ false }, "==" );
 /// ```
+///
 /// The above is an (less efficient) implementation of
+///
 /// ```cpp
 ///     dip::Image result = in1 == in2;
 /// ```
 ///
 /// The output image has the same type as `in3` and `in4`. If these types are different, the output type is given by
+///
 /// ```cpp
 ///     dip::DataType::SuggestDyadicOperation( in3.DataType(), in4.DataType() );
 /// ```
@@ -704,26 +713,32 @@ inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image
 /// \brief Writes either `in1` or `in2` to `out` depending on the value of `mask`.
 ///
 /// In short, this is the operation that is applied sample by sample:
+///
 /// ```cpp
 ///     mask ? in1 : in2
 /// ```
 ///
 /// An alternative (slower) implementation would be:
+///
 /// ```cpp
 ///     out = in2.Copy();
 ///     out.At( mask ) = in1.At( mask );
 /// ```
 ///
 /// When `out` is the same image as `in1`, the operation becomes similar to (but faster than):
+///
 /// ```cpp
 ///     in1.At( !mask ) = in2.At( !mask );
 /// ```
+///
 /// Conversely, when `out` is the same image as `in2`, the operation becomes similar to (but faster than):
+///
 /// ```cpp
 ///     in2.At( mask) = in1.At( mask );
 /// ```
 ///
 /// The output image has the same type as `in1` and `in2`. If these types are different, the output type is given by
+///
 /// ```cpp
 ///     dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
 /// ```

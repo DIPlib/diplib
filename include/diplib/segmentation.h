@@ -284,6 +284,7 @@ inline Image FixedThreshold(
 /// If `output` is not `"binary"`, an image of the same type as the input image is produced, with the pixels
 /// set to either `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is
 /// applied:
+///
 /// ```cpp
 ///     out = ( lowerBound <= in && in <= upperBound ) ? foreground : background
 /// ```
@@ -451,9 +452,10 @@ inline Image Threshold(
 /// Here we provide an obvious extension to arbitrary dimensions. The final homotopic thinning is
 /// only applied in 2D and 3D, since `dip::EuclideanSkeleton` is not defined for other dimensionalities.
 ///
-/// **Literature**
-/// - J. Canny, "A Computational Approach to Edge Detection", IEEE Transactions on Pattern Analysis
-///   and Machine Intelligence, 8(6):679-697, 1986.
+/// \literature
+/// <li>J. Canny, "A Computational Approach to Edge Detection", IEEE Transactions on Pattern Analysis
+///     and Machine Intelligence, 8(6):679-697, 1986.
+/// \endliterature
 DIP_EXPORT void Canny(
       Image const& in,
       Image& out,

@@ -210,13 +210,14 @@ inline Image SelectionFilter(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// **Literature**
-/// - M. Kuwahara, K. Hachimura and M. Kinoshita, "Image enhancement and left ventricular contour extraction techniques
-///   applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
-/// - M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and %Image Processing 9:394-407, 1979.
-/// - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
-/// - P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
-///   The Netherlands, 2002.
+/// \literature
+/// <li>M. Kuwahara, K. Hachimura and M. Kinoshita, "Image enhancement and left ventricular contour extraction techniques
+///     applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
+/// <li>M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and %Image Processing 9:394-407, 1979.
+/// <li>P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
+/// <li>P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
+///     The Netherlands, 2002.
+/// \endliterature
 ///
 /// \see dip::SelectionFilter.
 DIP_EXPORT void Kuwahara(
@@ -296,9 +297,10 @@ inline Image NonMaximumSuppression(
 ///
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
-/// **Literature**
-/// - P. Perona and J. Malik, "Scale-space and edge detection using anisotropic diffusion",
-///   IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
+/// \literature
+/// <li>P. Perona and J. Malik, "Scale-space and edge detection using anisotropic diffusion",
+///     IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
+/// \endliterature
 DIP_EXPORT void PeronaMalikDiffusion(
       Image const& in,
       Image& out,
@@ -373,8 +375,8 @@ inline Image GaussianAnisotropicDiffusion(
 /// \f[
 ///    \psi(x,\sigma) =
 ///       \begin{cases}
-///          x\,\left(1-\frac{x^2}{\sigma^2}\right)^2, & \text{if}\ |x| \lt \sigma
-///       \\ 0, & \text{if}\ |x| \ge \sigma
+///          x\,\left(1-\frac{x^2}{\sigma^2}\right)^2, & \text{if}\ |x| < \sigma
+///       \\ 0, & \text{otherwise}
 ///       \end{cases}
 /// \f]
 ///
@@ -382,9 +384,10 @@ inline Image GaussianAnisotropicDiffusion(
 ///
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
-/// **Literature**
-/// - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion",
-///   IEEE Transactions on %Image Processing 7(3):421-432, 1998.
+/// \literature
+/// <li>M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion",
+///     IEEE Transactions on %Image Processing 7(3):421-432, 1998.
+/// \endliterature
 inline void RobustAnisotropicDiffusion(
       Image const& in,
       Image& out,
@@ -445,7 +448,7 @@ inline Image RobustAnisotropicDiffusion(
 ///       d_1 &=& \alpha
 ///    \\ d_2 &=& \begin{cases}
 ///                    \alpha + ( 1.0 - \alpha ) \exp\left(\frac{-c}{(\mu_1 - \mu_2)^2}\right) \, ,
-///                                & \text{if}\ \frac{\mu_1 - \mu_2}{\mu_1 + \mu_2} \gt \alpha \; \text{(high anisotropy)}
+///                                & \text{if}\ \frac{\mu_1 - \mu_2}{\mu_1 + \mu_2} > \alpha \; \text{(high anisotropy)}
 ///                 \\ \alpha \, , & \text{otherwise}
 ///               \end{cases}
 /// \f}
@@ -453,8 +456,9 @@ inline Image RobustAnisotropicDiffusion(
 /// \f$\alpha\f$ is a magic number set to 0.01, and \f$c\f$ is set to the median of all \f$\mu_2^2\f$
 /// values across the image (as proposed by Lucas van Vliet).
 ///
-/// **Literature**
-/// - J. Weickert, "Anisotropic diffusion in image processing", Teubner (Stuttgart), pages 95 and 127, 1998.
+/// \literature
+/// <li>J. Weickert, "Anisotropic diffusion in image processing", Teubner (Stuttgart), pages 95 and 127, 1998.
+/// \endliterature
 DIP_EXPORT void CoherenceEnhancingDiffusion(
       Image const& in,
       Image& out,
@@ -503,7 +507,8 @@ inline Image CoherenceEnhancingDiffusion(
 /// Each input tensor element corresponds with a tensor row in the scale image.
 /// Each tensor column in the scale image corresponds with a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
-/// ```
+///
+/// ```none
 ///     | R_kx R_ky |
 ///     | G_kx G_ky |
 ///     | B_kx B_ky |
@@ -524,7 +529,8 @@ inline Image CoherenceEnhancingDiffusion(
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
 ///
-/// **Example**
+/// # Example:
+///
 /// ```cpp
 ///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
 ///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
@@ -532,9 +538,10 @@ inline Image CoherenceEnhancingDiffusion(
 ///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
 /// ```
 ///
-/// **Literature**
-/// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///   convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+/// \literature
+/// <li>T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
+///     convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+/// \endliterature
 ///
 /// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
 DIP_EXPORT void AdaptiveGauss(
@@ -575,7 +582,8 @@ inline Image AdaptiveGauss(
 /// Each input tensor element corresponds with a tensor row in the scale image.
 /// Each tensor column in the scale image corresponds with a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
-/// ```
+///
+/// ```none
 ///     | R_kx R_ky |
 ///     | G_kx G_ky |
 ///     | B_kx B_ky |
@@ -594,7 +602,8 @@ inline Image AdaptiveGauss(
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
 ///
-/// **Example**
+/// # Example:
+///
 /// ```cpp
 ///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
 ///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
@@ -602,9 +611,10 @@ inline Image AdaptiveGauss(
 ///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
 /// ```
 ///
-/// **Literature**
-/// - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///   convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+/// \literature
+/// <li>T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
+///     convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
+/// \endliterature
 ///
 /// \see dip::AdaptiveGauss, dip::StructureTensorAnalysis2D
 DIP_EXPORT void AdaptiveBanana(
@@ -652,9 +662,10 @@ inline Image AdaptiveBanana(
 /// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
 /// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
-/// **Literature**
-/// - C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images", Proceedings of the 1998 IEEE
-///   International Conference on Computer Vision, Bombay, India.
+/// \literature
+/// <li>C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images", Proceedings of the 1998 IEEE
+///     International Conference on Computer Vision, Bombay, India.
+/// \endliterature
 DIP_EXPORT void FullBilateralFilter(
       Image const& in,
       Image const& estimate,
@@ -699,9 +710,10 @@ inline Image FullBilateralFilter(
 /// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
 /// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
-/// **Literature**
-/// - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images",
-///   ACM Transactions on Graphics 21(3), 2002.
+/// \literature
+/// <li>F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images",
+///     ACM Transactions on Graphics 21(3), 2002.
+/// \endliterature
 DIP_EXPORT void QuantizedBilateralFilter(
       Image const& in,
       Image const& estimate,
@@ -748,9 +760,10 @@ inline Image QuantizedBilateralFilter(
 /// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
 /// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
-/// **Literature**
-/// - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing", IEEE International
-///   Conference on Multimedia and Expo, 2005.
+/// \literature
+/// <li>T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing", IEEE International
+///     Conference on Multimedia and Expo, 2005.
+/// \endliterature
 DIP_EXPORT void SeparableBilateralFilter(
       Image const& in,
       Image const& estimate,

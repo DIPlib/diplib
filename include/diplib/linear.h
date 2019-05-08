@@ -314,11 +314,12 @@ inline Image GaussFT(
 ///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
 ///
-/// **Literature**
-///  - I.T. Young and L.J. van Vliet, "Recursive implementation of the Gaussian filter", Signal Processing,
-///    44(2):139-151, 1995.
-///  - L.J. van Vliet, I.T. Young and P.W. Verbeek, "Recursive Gaussian Derivative Filters",
-///    in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
+/// \literature
+/// <li>I.T. Young and L.J. van Vliet, "Recursive implementation of the Gaussian filter", Signal Processing,
+///     44(2):139-151, 1995.
+/// <li>L.J. van Vliet, I.T. Young and P.W. Verbeek, "Recursive Gaussian Derivative Filters",
+///     in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
+/// \endliterature
 DIP_EXPORT void GaussIIR(
       Image const& in,
       Image& out,
@@ -917,7 +918,8 @@ inline Image Hessian(
 /// If `method` is "finitediff", it does not add second order derivatives, but instead computes a convolution
 /// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with \f$d\f$ the number
 /// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kernel:
-/// ```
+///
+/// ```none
 ///    | -1  -1  -1 |
 ///    | -1   8  -1 |
 ///    | -1  -1  -1 |
@@ -956,6 +958,7 @@ inline Image Laplace(
 /// \f]
 ///
 /// This function is equivalent to:
+///
 /// ```cpp
 ///     Image g = dip::Gradient( in, ... );
 ///     Image H = dip::Hessian( in, ... );
@@ -999,11 +1002,12 @@ inline Image Dgg(
 ///
 /// See `dip::Laplace` and `dip::Dgg` for more information.
 ///
-/// **Literature**
-/// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", PhD Thesis, Delft University
-///   of Technology, 1993.
-/// - P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images",
-///   IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
+/// \literature
+/// <li>L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", PhD Thesis, Delft University
+///     of Technology, 1993.
+/// <li>P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images",
+///     IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
+/// \endliterature
 DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
@@ -1183,9 +1187,10 @@ inline Image GaborFIR(
 ///
 /// The `order` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
 ///
-/// **Literature**
-///  - I.T. Young, L.J. van Vliet and M. van Ginkel, "Recursive Gabor filtering",
-///    IEEE Transactions on Signal Processing 50(11):2798-2805, 2002.
+/// \literature
+/// <li>I.T. Young, L.J. van Vliet and M. van Ginkel, "Recursive Gabor filtering",
+///     IEEE Transactions on Signal Processing 50(11):2798-2805, 2002.
+/// \endliterature
 ///
 /// \see dip::Gabor2D, dip::GaborFIR.
 DIP_EXPORT void GaborIIR(
@@ -1261,7 +1266,7 @@ inline Image Gabor2D(
 ///
 /// This function generates a filter bank with `wavelengths.size()` times `nOrientations` filters. The width of
 /// the filters in the angular axis is determined by the number of orientations used, and their locations are
-/// always equally distributed over \f$pi\f$ radian, starting at 0. The radial location (scales) of the filters
+/// always equally distributed over &pi; radian, starting at 0. The radial location (scales) of the filters
 /// is determined by `wavelengths` (in pixels), which determines the center for each scale filter. The widths of
 /// the filters in this direction are determined by the `bandwidth` parameter; the default value of 0.75 corresponds
 /// approximately to one octave, 0.55 to two octaves, and 0.41 to three octaves.
@@ -1284,10 +1289,11 @@ inline Image Gabor2D(
 /// The data type will be either single-precision float or single-precision complex, depending on the selected
 /// parameters.
 ///
-/// **Literature**
-/// - D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells",
-///   Journal of the Optical Society of America A 4(12):2379-2394, 1987.
-/// - P. Kovesi, ["What Are Log-Gabor Filters and Why Are They Good?"](https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html) (retrieved July 25, 2018).
+/// \literature
+/// <li>D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells",
+///     Journal of the Optical Society of America A 4(12):2379-2394, 1987.
+/// <li>P. Kovesi, ["What Are Log-Gabor Filters and Why Are They Good?"](https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html) (retrieved July 25, 2018).
+/// \endliterature
 DIP_EXPORT void LogGaborFilterBank(
       Image const& in,
       Image& out,
@@ -1324,9 +1330,10 @@ inline Image LogGaborFilterBank(
 /// of the parameters. `boundaryCondition` defaults to `"add zeros"`, the normalized convolution then takes pixels
 /// outside of the image domain as missing values.
 ///
-/// **Literature**
-/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
-///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+/// \literature
+/// <li>H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
+///     Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+/// \endliterature
 DIP_EXPORT void NormalizedConvolution(
       Image const& in,
       Image const& mask,
@@ -1372,9 +1379,10 @@ inline Image NormalizedConvolution(
 /// This function uses `dip::Gauss`. See that function for the meaning of the parameters. `boundaryCondition` defaults
 /// to `"add zeros"`, the normalized convolution then takes pixels outside of the image domain as missing values.
 ///
-/// **Literature**
-/// - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
-///   Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+/// \literature
+/// <li>H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
+///     Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
+/// \endliterature
 DIP_EXPORT void NormalizedDifferentialConvolution(
       Image const& in,
       Image const& mask,
@@ -1426,9 +1434,10 @@ inline Image NormalizedDifferentialConvolution(
 ///
 /// \see dip::MeanShift, dip::Gradient, dip::Gauss
 ///
-/// **Literature**
-/// - D. Comaniciu and P. Meer, "Mean Shift: A Robust Approach Toward Feature Space Analysis",
-///   IEEE Transactions on Pattern Analysis and Machine Intelligence 24(5):603-619, 2002.
+/// \literature
+/// <li>D. Comaniciu and P. Meer, "Mean Shift: A Robust Approach Toward Feature Space Analysis",
+///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(5):603-619, 2002.
+/// \endliterature
 DIP_EXPORT void MeanShiftVector(
       Image const& in,
       Image& out,

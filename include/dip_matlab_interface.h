@@ -74,7 +74,7 @@ extern "C" {
 namespace dml {
 
 
-/// \defgroup dip_matlab_interface DIPlib--MATLAB interface
+/// \defgroup dip_matlab_interface DIPlib-MATLAB interface
 /// \brief Functions to convert image data, function parameters and other arrays to and from MATLAB.
 ///
 /// \{
@@ -855,6 +855,7 @@ enum class ArrayConversionMode {
 /// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
 /// modifier for the output argument. This should prevent accidentally modifying
 /// an input array, which is supposed to be illegal in `mexFunction()`:
+///
 /// ```cpp
 ///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
 /// ```
@@ -1363,16 +1364,19 @@ inline bool MatchSizes(
 ///
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
+///
 /// ```cpp
 ///     dml::MatlabInterface mi;
 ///     dip::Image img_out0 = mi.NewImage();
 ///     dip::Image img_out1 = mi.NewImage();
 /// ```
+///
 /// This configures the images `img_out0` and `img_out1` such that, when they are
 /// forged later on, an `mxArray` structure will be created to hold the pixel data.
 /// `mxArray` is MATLAB's representation of arrays.
 /// To return those images back to MATLAB, use `dml::GetArray`, which returns
 /// the `mxArray` created when the image was forged:
+///
 /// ```cpp
 ///     plhs[ 0 ] = dm::GetArray( img_out0 );
 ///     plhs[ 1 ] = dm::GetArray( img_out1 );
@@ -1390,10 +1394,12 @@ inline bool MatchSizes(
 /// as the pixel data will be copied in the assignment into a MATLAB array.
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
+///
 /// ```cpp
 ///     img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
 ///     dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
 /// ```
+///
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
 /// pixels are then copied into the `mxArray` created for `img_out0`. In the
 /// second case, the result of the operation is directly written into the

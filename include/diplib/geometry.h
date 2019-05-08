@@ -87,9 +87,10 @@ namespace dip {
 /// each output sample. For B-spline interpolation, a boundary extension of 5 is used. For the nearest neighbor
 /// and Fourier interpolation methods, no boundary extension is needed.
 ///
-/// **Literature**
-/// - R.G. Keys, "Cubic Convolution Interpolation for Digital Image Processing", IEEE Transactions on
-///   Acoustics, Speech, and Signal Processing 29(6):1153-1160, 1981.
+/// \literature
+/// <li>R.G. Keys, "Cubic Convolution Interpolation for Digital Image Processing", IEEE Transactions on
+///     Acoustics, Speech, and Signal Processing 29(6):1153-1160, 1981.
+/// \endliterature
 /// \{
 
 /// \brief Shifts the input image by an integer number of pixels, wrapping the pixels around.
@@ -164,7 +165,7 @@ inline Image Subsampling(
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
-/// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
+/// \bug The current implementation doesn't handle the `"asym"` boundary conditions properly.
 /// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
 /// of properly using the saturated inversion.
 DIP_EXPORT void Resampling(
@@ -213,13 +214,16 @@ inline Image Shift(
 ///
 /// `in` is the Fourier transform of an image `img`. It will be multiplied with a complex quantity
 /// to change its phase in such a way that the image `img` will be shifted. For example:
+///
 /// ```cpp
 ///     dip::Image img = dip::ImageReadTIFF( "erika" );
 ///     dip::Image ft = dip::FourierTransform( img );
 ///     dip::ShiftFT( ft, ft, { 10.3, -5.2 } );
 ///     dip::Image shifted = dip::FourierTransform( img, { "inverse", "real" } );
 /// ```
+///
 /// Produces the same output as:
+///
 /// ```cpp
 ///     dip::Image img = dip::ImageReadTIFF( "erika" );
 ///     dip::Image shifted = dip::Shift( img, { 10.3, -5.2 }, "fourier" );
@@ -356,11 +360,11 @@ DIP_EXPORT dip::UnsignedArray Skew(
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.
 ///
-/// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
+/// \bug The current implementation doesn't handle the `"asym"` boundary conditions properly.
 /// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
 /// of properly using the saturated inversion.
 ///
-/// **Note**: The `"ft"` interpolation method is not (yet?) supported.
+/// \warning The `"ft"` interpolation method is not (yet?) supported.
 inline void Skew(
       Image const& in,
       Image& out,
@@ -408,11 +412,11 @@ inline Image Skew(
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.
 ///
-/// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
+/// \bug The current implementation doesn't handle the `"asym"` boundary conditions properly.
 /// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
 /// of properly using the saturated inversion.
 ///
-/// **Note**: The `"ft"` interpolation method is not (yet?) supported.
+/// \warning The `"ft"` interpolation method is not (yet?) supported.
 inline void Skew(
       Image const& in,
       Image& out,
@@ -462,12 +466,12 @@ inline Image Skew(
 /// The rotation is computed by three consecutive calls to `dip::Skew`. See that function for the meaning of
 /// `interpolationMethod` and `boundaryCondition`.
 ///
-/// **Note** that the `"periodic"` boundary condition currently produces an output image of the same size as
+/// \note The `"periodic"` boundary condition currently produces an output image of the same size as
 /// the input, where the corners of the image that rotate out of the field of view are cut off and fill the
 /// sections that were outside of the input field of view. This is due to the way that `dip::Skew` handles
-/// the `"periodic"` boundary condition. TODO: This is something that we probably want to fix at some point.
+/// the `"periodic"` boundary condition. [TODO: This is something that we probably want to fix at some point.]
 ///
-/// **Note**: The `"ft"` interpolation method is not (yet?) supported.
+/// \warning The `"ft"` interpolation method is not (yet?) supported.
 DIP_EXPORT void Rotation(
       Image const& in,
       Image& out,
@@ -611,6 +615,7 @@ inline Image Rotation3D(
 /// `out` is of type `dip::DT_SFLOAT` by default.
 ///
 /// Example:
+///
 /// ```cpp
 ///     dip::Image coords = dip::CreateCoordinates( { 256, 256 }, { "frequency" } );
 ///     dip::Image rotatedCoords = dip::RotationMatrix2D( dip::pi/4 ) * coords;
@@ -636,6 +641,7 @@ inline Image RotationMatrix2D( dfloat angle ) {
 /// `out` is of type `dip::DT_SFLOAT` by default.
 ///
 /// Example:
+///
 /// ```cpp
 ///     dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
 ///     dip::Image rotatedCoords = dip::RotationMatrix3D( dip::pi/4, 0, dip::pi ) * coords;
@@ -660,6 +666,7 @@ inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
 /// `out` is of type `dip::DT_SFLOAT` by default.
 ///
 /// Example:
+///
 /// ```cpp
 ///     dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
 ///     dip::Image rotatedCoords = dip::RotationMatrix3D( { 1.0, 0.0, 0.0 }, dip::pi/4 ) * coords;
@@ -679,7 +686,7 @@ inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
 /// matrix using homogeneous coordinates, but with the bottom row removed (which is expected
 /// to be `{0,0,1}` in 2D or `{0,0,0,1}` in 3D). The values are stored in column-major order:
 ///
-/// ```
+/// ```none
 ///            ⎡ matrix[0]  matrix[2]  matrix[4] ⎤
 ///     T_2D = ⎢ matrix[1]  matrix[3]  matrix[5] ⎥
 ///            ⎣    0          0          1      ⎦
@@ -749,7 +756,7 @@ inline Image LogPolarTransform2D(
 /// can be given in `in`. If `in` has fewer images, the corresponding locations in `out` will be zero. If `in`
 /// has 6 images, they will be placed as follows:
 ///
-/// ```
+/// ```none
 ///    | in[0], in[1], in[2] |
 ///    | in[3], in[4], in[5] |
 /// ```

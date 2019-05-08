@@ -53,6 +53,7 @@ namespace dip {
 /// default-initializable. Ideally, it's small. The value associated to any tree element that is not a root is
 /// ignored. The `unionFunction` that the constructor takes is used to compute the value associated to the merged
 /// tree when two trees are merged. It should have the following signature:
+///
 /// ```cpp
 ///     ValueType_ unionFunction( ValueType_ const& value1, ValueType_ const& value2 );
 /// ```

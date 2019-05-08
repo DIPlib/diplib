@@ -163,13 +163,14 @@ using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 ///
 /// `in` must be scalar and non-complex, and have at least one dimension. `out` will be of type `dip::DT_SFLOAT`.
 ///
-/// **Literature**
-/// - C.L. Luengo Hendriks, M. van Ginkel, P.W. Verbeek and L.J. van Vliet,
-///   "The generalized Radon transform: sampling, accuracy and memory considerations",
-///   Pattern Recognition 38(12):2494–2505, 2005.
-/// - C.L. Luengo Hendriks, M. van Ginkel and L.J. van Vliet,
-///   "Underestimation of the radius in the Radon transform for circles and spheres",
-///   Technical Report PH-2003-02, Pattern Recognition Group, Delft University of Technology, The Netherlands, 2003.
+/// \literature
+/// <li>C.L. Luengo Hendriks, M. van Ginkel, P.W. Verbeek and L.J. van Vliet,
+///     "The generalized Radon transform: sampling, accuracy and memory considerations",
+///     Pattern Recognition 38(12):2494–2505, 2005.
+/// <li>C.L. Luengo Hendriks, M. van Ginkel and L.J. van Vliet,
+///     "Underestimation of the radius in the Radon transform for circles and spheres",
+///     Technical Report PH-2003-02, Pattern Recognition Group, Delft University of Technology, The Netherlands, 2003.
+/// \endliterature
 // TODO: If `mode` is `"full"`, then the parameter space is computed chunks to save memory.
 DIP_EXPORT RadonCircleParametersArray RadonTransformCircles(
       Image const& in,
@@ -218,14 +219,16 @@ inline Image RadonTransformCircles(
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// This function is equivalent to:
+///
 /// ```cpp
 ///     dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
 ///     Image out = dip::Determinant( M ) - k * dip::Square( dip::Trace( M ));
 ///     dip::ClipLow( out, out, 0 );
 /// ```
 ///
-/// **Literature**
-/// - C. Harris and M. Stephens, "A combined corner and edge detector", Proceedings of the 4<sup>th</sup> Alvey Vision Conference, pp. 147–151, 1988.
+/// \literature
+/// <li>C. Harris and M. Stephens, "A combined corner and edge detector", Proceedings of the 4<sup>th</sup> Alvey Vision Conference, pp. 147–151, 1988.
+/// \endliterature
 DIP_EXPORT void HarrisCornerDetector(
       Image const& in,
       Image& out,
@@ -257,13 +260,15 @@ inline Image HarrisCornerDetector(
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// This function is equivalent to:
+///
 /// ```cpp
 ///     dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
 ///     out = dip::SmallestEigenvalue( M );
 /// ```
 ///
-/// **Literature**
-/// - J. Shi and C. Tomasi, "Good features to track", 9<sup>th</sup> IEEE Conference on Computer Vision and Pattern Recognition, pp. 593–600, 1994.
+/// \literature
+/// <li>J. Shi and C. Tomasi, "Good features to track", 9<sup>th</sup> IEEE Conference on Computer Vision and Pattern Recognition, pp. 593–600, 1994.
+/// \endliterature
 DIP_EXPORT void ShiTomasiCornerDetector(
       Image const& in,
       Image& out,
@@ -290,13 +295,15 @@ inline Image ShiTomasiCornerDetector(
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// This function is equivalent to:
+///
 /// ```cpp
 ///     dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
 ///     Image out = dip::SafeDivide( dip::Determinant( M ), dip::Trace( M ));
 /// ```
 ///
-/// **Literature**
-/// - J.A. Noble, "Finding corners", Proceedings of the Alvey Vision Conference, pp. 37.1-37.8, 1987.
+/// \literature
+/// <li>J.A. Noble, "Finding corners", Proceedings of the Alvey Vision Conference, pp. 37.1-37.8, 1987.
+/// \endliterature
 DIP_EXPORT void NobleCornerDetector(
       Image const& in,
       Image& out,
@@ -336,13 +343,15 @@ inline Image NobleCornerDetector(
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
 ///
 /// Gradients are computed using Gaussian derivatives, with the `sigmas` parameter. This function is equivalent to:
+///
 /// ```cpp
 ///     Image out = dip::Square( dip::LaplaceMinusDgg( in, sigmas )) - threshold * dip::SquareNorm( dip::Gradient( in, sigmas ));
 ///     dip::ClipLow( out, out, 0 );
 /// ```
 ///
-/// **Literature**
-/// - H. Wang and M. Brady, "Real-time corner detection algorithm for motion estimation", %Image and Vision Computing 13(9):695–703, 1995.
+/// \literature
+/// <li>H. Wang and M. Brady, "Real-time corner detection algorithm for motion estimation", %Image and Vision Computing 13(9):695–703, 1995.
+/// \endliterature
 DIP_EXPORT void WangBradyCornerDetector(
       Image const& in,
       Image& out,
@@ -392,6 +401,7 @@ inline Image WangBradyCornerDetector(
 /// The complete multi-scale vessel detector simply applies this function at multiple scales and takes the maximum
 /// response at each scale. Even though the original paper didn't mention this, best results are obtained when
 /// scaling the input image with the square of the sigma:
+///
 /// ```cpp
 ///     std::vector<double> scales = { 1, 2, 4, 8 };
 ///     dip::Image out = dip::FrangiVesselness( in * ( scales[ 0 ] * scales[ 0 ] ), { scales[ 0 ] } );
@@ -400,9 +410,10 @@ inline Image WangBradyCornerDetector(
 ///     }
 /// ```
 ///
-/// **Literature**
-/// - A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
-///   in: Medical %Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
+/// \literature
+/// <li>A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
+///     in: Medical %Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
+/// \endliterature
 DIP_EXPORT void FrangiVesselness(
       Image const& in,
       Image& out,
@@ -433,9 +444,10 @@ inline Image FrangiVesselness(
 /// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and 2D.
 ///
-/// **Literature**
-/// - S. Chaudhuri, S. Chatterjee, N. Katz, M. Nelson, and M. Goldbaum, "Detection of Blood Vessels in Retinal Images
-///   Using Two-Dimensional Matched Filters", IEEE Transactions on Medical Imaging 8(3):263-269, 1989
+/// \literature
+/// <li>S. Chaudhuri, S. Chatterjee, N. Katz, M. Nelson, and M. Goldbaum, "Detection of Blood Vessels in Retinal Images
+///     Using Two-Dimensional Matched Filters", IEEE Transactions on Medical Imaging 8(3):263-269, 1989
+/// \endliterature
 DIP_EXPORT void MatchedFiltersLineDetector2D(
       Image const& in,
       Image& out,
@@ -468,9 +480,10 @@ inline Image MatchedFiltersLineDetector2D(
 /// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
 ///
-/// **Literature**
-/// - P.E. Danielson, Q. Lin and Q.Z. Ye, "Efficient detection of second degree variations in 2D and 3D images",
-///   Journal of Visual Communication and %Image Representation 12, 255–305, 2001.
+/// \literature
+/// <li>P.E. Danielson, Q. Lin and Q.Z. Ye, "Efficient detection of second degree variations in 2D and 3D images",
+///     Journal of Visual Communication and %Image Representation 12, 255–305, 2001.
+/// \endliterature
 DIP_EXPORT void DanielssonLineDetector(
       Image const& in,
       Image& out,
@@ -501,9 +514,10 @@ inline Image DanielssonLineDetector(
 /// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
 ///
-/// **Literature**
-/// - O. Merveille, H. Talbot, L. Najman, and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation
-///   Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
+/// \literature
+/// <li>O. Merveille, H. Talbot, L. Najman, and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation
+///     Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
+/// \endliterature
 DIP_EXPORT void RORPOLineDetector(
       Image const& in,
       Image& out,

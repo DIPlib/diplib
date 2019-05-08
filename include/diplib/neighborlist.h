@@ -89,11 +89,12 @@ class DIP_NO_EXPORT Metric {
       /// The `pixelSize` parameter, if given, causes the neighbor's distances to be scaled by the
       /// pixel size. The units must be identical in all dimensions, and only the magnitude is used.
       ///
-      /// **Literature**
-      ///  - B.J.H. Verwer, "Local distances for distance transformations in two and three dimensions", Pattern Recognition
-      ///    Letters 12(11):671-682, 1991.
-      ///  - B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
-      ///    of Technology, The Netherlands, 1991.
+      /// \literature
+      /// <li>B.J.H. Verwer, "Local distances for distance transformations in two and three dimensions", Pattern Recognition
+      ///     Letters 12(11):671-682, 1991.
+      /// <li>B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
+      ///     of Technology, The Netherlands, 1991.
+      /// \endliterature
       Metric( String const& type, dip::uint param = 1, dip::PixelSize const& pixelSize = {} ) {
          if( type == S::CHAMFER ) {
             DIP_THROW_IF( param < 1, E::INVALID_PARAMETER );
@@ -131,7 +132,8 @@ class DIP_NO_EXPORT Metric {
       /// value of 0.
       ///
       /// For example, this 3 by 3 image:
-      /// ```
+      ///
+      /// ```none
       ///    +---+---+---+
       ///    | 0 | 2 | 0 |
       ///    +---+---+---+
@@ -140,7 +142,9 @@ class DIP_NO_EXPORT Metric {
       ///    | 0 | 2 | 0 |
       ///    +---+---+---+
       /// ```
+      ///
       /// is equivalent to
+      ///
       /// ```cpp
       ///     dip::Metric( "city", 0, dip::PixelSize{ 1, 2 } )
       /// ```

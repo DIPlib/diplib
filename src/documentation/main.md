@@ -17,7 +17,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-## Introduction
+\section main_introduction Introduction
 
 The purpose of the *DIPlib* project is to provide a one-stop library and
 development environment for quantitative image analysis, be it applied
@@ -71,7 +71,7 @@ are the following documentation pages:
 - \ref using_iterators, in case existing algorithms are not sufficient.
 - \ref design, might help understand the library architecture.
 
-## Interfaces and bindings
+\section main_interfaces Interfaces and bindings
 
 Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
@@ -84,7 +84,7 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 - *OpenCV*: `dip_opencv` provides copyless conversion to and from
   *OpenCV* images, for *OpenCV* version 2 and newer.
 
-## Support
+\section main_support Support
 
 The *DIPlib* project was originally developed at the Pattern Recognition
 Group of Delt University of Technology, in the Netherlands. *DIPlib 3* is being
@@ -95,7 +95,7 @@ developed primarily by volunteers, but has had some financial support from:
 
 See \ref history for a list of contributors.
 
-## Contributing
+\section main_contributing Contributing
 
 If you want to contribute to the *DIPlib* project, there are many different
 ways of doing so:
@@ -121,7 +121,7 @@ with the project.
 Your documentation and code contributions will carry the same licencing terms as the rest
 of the library, you keep the copyright to any substantial contribution.
 
-## License
+\section main_license License
 
 Copyright 2014-2019 Cris Luengo and contributors<br>
 Copyright 1995-2014 Delft University of Technology
@@ -138,7 +138,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-### Non-legalese description of license
+\subsection main_simple_license Non-legalese description of license
 
 The apache 2.0 license is a permissive open-source license. In short, this means that
 you can use this software as you see fit, including making modifications, and distribute

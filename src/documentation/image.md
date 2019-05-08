@@ -29,24 +29,6 @@ revolves around images. Some image manipulation is provided as class
 methods, but most image processing and analysis functionality is provided
 in functions defined in the `#dip` namespace.
 
-Jump to:
- - \ref image_representation
- - \ref strides
- - \ref tensors
- - \ref pointers
- - \ref assignment
- - \ref indexing
- - \ref reshaping
- - \ref protect
- - \ref const_correctness
- - \ref arithmetic
- - \ref color
- - \ref pixel_size
- - \ref external_data_segment
- - \ref singleton_expansion
- - <a href="#nested-classes"><strong>Nested classes</strong></a>
- - <a href="#member-group"><strong>Public member functions</strong></a>
-
 [//]: # (--------------------------------------------------------------)
 
 \section image_representation Image representation
@@ -127,6 +109,8 @@ negative, and need not be ordered in any particular way. This allows a
 `%dip::Image` object to contain a regular subset of the pixels of another
 image, but still point to the same physical memory block. Here are some
 examples:
+
+\m_class{m-spaced-list}
 
   * An `%Image` object can contain a region of interest (ROI), a smaller
   region within a larger image. In this case, the strides are identical
@@ -806,6 +790,8 @@ flag is set, the assignment operator will perform a deep copy. For example:
 
 The protect flag has two purposes:
 
+\m_class{m-spaced-list}
+
 1. To prevent an image from being reforged, for example when the data segment
 is allocated in a special way and one needs to ensure it stays that way. In this
 case, it functions as a warning.
@@ -974,24 +960,34 @@ size in a particular dimension is not set, it is always presumed to be of size 1
 
 There are three ways in which the pixel size can be used:
 
-1. The measurement function will return its measurements as physical quantities,
-   using the pixel sizes, if known, to derive those from measurements in pixels.
+\m_class{m-spaced-list}
 
-2. The `dip::Image::PhysicalToPixels` method converts a filter size in physical
-   units to one in pixels, suitable to pass to a filtering function. For example,
-   to apply a filter with a sigma of 1 micron to an image:
-   ```cpp
-       dip::PhysicalQuantityArray fsz_phys{ 1 * dip::PhysicalQuantity::Micrometer() };
-       dip::Filter( img, img, img.PhysicalToPixels( fsz_phys ));
-   ```
+<ol>
+<li>
+The measurement function will return its measurements as physical quantities,
+using the pixel sizes, if known, to derive those from measurements in pixels.
+</li>
+<li>
+The `dip::Image::PhysicalToPixels` method converts a filter size in physical
+units to one in pixels, suitable to pass to a filtering function. For example,
+to apply a filter with a sigma of 1 micron to an image:
 
-3. The `dip::Image::PixelsToPhysical` method converts coordinates in pixels to
-   coordinates in physical units. For example, to determine the position in
-   physical units of a pixel w.r.t. the top left pixel:
-   ```cpp
-       dip::FloatArray pos_pix{ 40, 24 };
-       dip::PhysicalQuantityArray pos_phys = img.PixelsToPhysical( pos_pix );
-   ```
+```cpp
+    dip::PhysicalQuantityArray fsz_phys{ 1 * dip::PhysicalQuantity::Micrometer() };
+    dip::Filter( img, img, img.PhysicalToPixels( fsz_phys ));
+```
+</li>
+<li>
+The `dip::Image::PixelsToPhysical` method converts coordinates in pixels to
+coordinates in physical units. For example, to determine the position in
+physical units of a pixel w.r.t. the top left pixel:
+
+```cpp
+    dip::FloatArray pos_pix{ 40, 24 };
+    dip::PhysicalQuantityArray pos_phys = img.PixelsToPhysical( pos_pix );
+```
+</li>
+</ol>
 
 It is currently possible to add, subtract, multiply and divide two physical quantities,
 and elevate a physical quantity to an integer power. Other operations should be
@@ -1004,6 +1000,8 @@ added as necessary.
 
 It is possible to create `%dip::Image` objects whose pixels are not allocated
 by *DIPlib* using two different methods:
+
+\m_class{m-spaced-list}
 
 1. Create an image around an existing data segment. This is used in the case
 when passing data from other imaging libraries, or from interpreted languages

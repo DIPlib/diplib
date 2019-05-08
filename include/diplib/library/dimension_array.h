@@ -415,6 +415,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// \brief Order the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
+      ///
       /// ```cpp
       ///     out[ ii ] = (*this)[ order[ ii ] ];
       /// ```
@@ -429,9 +430,11 @@ class DIP_NO_EXPORT DimensionArray {
       /// \brief Inverse orders the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
+      ///
       /// ```cpp
       ///     out[ order[ ii ]] = (*this)[ ii ];
       /// ```
+      ///
       /// Elements not indexed by `order` will be default-initialized.
       DimensionArray inverse_permute( DimensionArray< size_type > const& order ) const {
          size_type n = 0;
@@ -616,6 +619,8 @@ class DIP_NO_EXPORT DimensionArray {
 // Compound assignment operator specializations
 //
 
+/// \cond
+
 // The general case: cast rhs to type of lhs
 template< typename T >
 template< typename S >
@@ -657,12 +662,15 @@ inline DimensionArray< std::size_t >& DimensionArray< std::size_t >::operator-=(
    return *this;
 }
 
+/// \endcond
+
 
 //
 // Comparison operators, array vs array
 //
 
 /// \brief Compares two arrays, returns true only if they have the same size and contain the same values.
+/// \relates dip::DimensionArray
 template< typename T >
 inline bool operator==( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
    if( lhs.size() != rhs.size() ) {
@@ -680,6 +688,7 @@ inline bool operator==( DimensionArray< T > const& lhs, DimensionArray< T > cons
    return true;
 }
 /// \brief Compares two arrays, returns true if they have different size and/or contain different values.
+/// \relates dip::DimensionArray
 template< typename T >
 inline bool operator!=( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
    return !( lhs == rhs );
@@ -690,6 +699,7 @@ inline bool operator!=( DimensionArray< T > const& lhs, DimensionArray< T > cons
 
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger
 /// than all `rhs` elements.
+/// \relates dip::DimensionArray
 template< typename T >
 inline bool operator>( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
    if( lhs.size() != rhs.size() ) {
@@ -708,6 +718,7 @@ inline bool operator>( DimensionArray< T > const& lhs, DimensionArray< T > const
 }
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller
 /// than all `rhs` elements.
+/// \relates dip::DimensionArray
 template< typename T >
 inline bool operator<( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
    if( lhs.size() != rhs.size() ) {
@@ -726,6 +737,7 @@ inline bool operator<( DimensionArray< T > const& lhs, DimensionArray< T > const
 }
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger
 /// or equal than all `rhs` elements.
+/// \relates dip::DimensionArray
 template< typename T >
 inline bool operator>=( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
    if( lhs.size() != rhs.size() ) {
@@ -744,6 +756,7 @@ inline bool operator>=( DimensionArray< T > const& lhs, DimensionArray< T > cons
 }
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller
 /// or equal than all `rhs` elements.
+/// \relates dip::DimensionArray
 template< typename T >
 inline bool operator<=( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
    if( lhs.size() != rhs.size() ) {
@@ -767,6 +780,7 @@ inline bool operator<=( DimensionArray< T > const& lhs, DimensionArray< T > cons
 //
 
 /// \brief Compares an array to a scalar, returns a boolean array.
+/// \relates dip::DimensionArray
 template< typename T >
 inline DimensionArray< bool > operator==( DimensionArray< T > const& lhs, T const& rhs ) {
    DimensionArray< bool > out( lhs.size() );
@@ -780,6 +794,7 @@ inline DimensionArray< bool > operator==( DimensionArray< T > const& lhs, T cons
    return out;
 }
 /// \brief Compares an array to a scalar, returns a boolean array.
+/// \relates dip::DimensionArray
 template< typename T >
 inline DimensionArray< bool > operator!=( DimensionArray< T > const& lhs, T const& rhs ) {
    DimensionArray< bool > out( lhs.size() );
@@ -793,6 +808,7 @@ inline DimensionArray< bool > operator!=( DimensionArray< T > const& lhs, T cons
    return out;
 }
 /// \brief Compares an array to a scalar, returns a boolean array.
+/// \relates dip::DimensionArray
 template< typename T >
 inline DimensionArray< bool > operator>( DimensionArray< T > const& lhs, T const& rhs ) {
    DimensionArray< bool > out( lhs.size() );
@@ -806,6 +822,7 @@ inline DimensionArray< bool > operator>( DimensionArray< T > const& lhs, T const
    return out;
 }
 /// \brief Compares an array to a scalar, returns a boolean array.
+/// \relates dip::DimensionArray
 template< typename T >
 inline DimensionArray< bool > operator<( DimensionArray< T > const& lhs, T const& rhs ) {
    DimensionArray< bool > out( lhs.size() );
@@ -819,6 +836,7 @@ inline DimensionArray< bool > operator<( DimensionArray< T > const& lhs, T const
    return out;
 }
 /// \brief Compares an array to a scalar, returns a boolean array.
+/// \relates dip::DimensionArray
 template< typename T >
 inline DimensionArray< bool > operator>=( DimensionArray< T > const& lhs, T const& rhs ) {
    DimensionArray< bool > out( lhs.size() );
@@ -832,6 +850,7 @@ inline DimensionArray< bool > operator>=( DimensionArray< T > const& lhs, T cons
    return out;
 }
 /// \brief Compares an array to a scalar, returns a boolean array.
+/// \relates dip::DimensionArray
 template< typename T >
 inline DimensionArray< bool > operator<=( DimensionArray< T > const& lhs, T const& rhs ) {
    DimensionArray< bool > out( lhs.size() );
@@ -851,6 +870,7 @@ inline DimensionArray< bool > operator<=( DimensionArray< T > const& lhs, T cons
 //
 
 /// \brief Writes the array to a stream
+/// \relates dip::DimensionArray
 template< typename T >
 inline std::ostream& operator<<(
       std::ostream& os,
@@ -874,6 +894,7 @@ inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {
 }
 
 /// \brief Sorts the `indices` array with indices into the `data` array, from smallest to largest. The sort is stable.
+/// \relates dip::DimensionArray
 template< typename T >
 inline void sortIndices( DimensionArray< typename DimensionArray< T >::size_type >& indices, DimensionArray< T > const& data ) {
    using size_type = typename DimensionArray< T >::size_type;

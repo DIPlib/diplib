@@ -92,6 +92,7 @@ class DIP_NO_EXPORT Tensor {
       ///
       /// To access each of the elements of a symmetric or triangular matrix, use the
       /// following code:
+      ///
       /// ```cpp
       ///     dip::uint index = 0;
       ///     for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
@@ -675,6 +676,8 @@ inline void swap( Tensor& v1, Tensor& v2 ) {
    v1.swap( v2 );
 }
 
+/// \brief Prints information about the tensor.
+/// \relates dip::Tensor
 inline std::ostream& operator<<(
       std::ostream& os,
       Tensor const& tensor

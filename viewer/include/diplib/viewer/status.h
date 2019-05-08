@@ -22,6 +22,9 @@
 
 #include "diplib/viewer/viewer.h"
 
+/// \file
+/// \brief Declares `dip::viewer::StatusViewPort`.
+
 namespace dip { namespace viewer {
 
 /// \brief Displays the Viewer's status.

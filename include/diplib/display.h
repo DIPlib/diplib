@@ -621,8 +621,9 @@ class DIP_NO_EXPORT ImageDisplay {
 ///
 /// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](http://peterkovesi.com/projects/colourmaps/index.html).
 ///
-/// **Literature**
-///  - Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
+/// \literature
+/// <li>Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
+/// \endliterature
 DIP_EXPORT void ApplyColorMap(
       Image const& in,
       Image& out,

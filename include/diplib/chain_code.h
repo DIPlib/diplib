@@ -146,10 +146,16 @@ struct DIP_NO_EXPORT Vertex {
    }
 };
 
-using VertexFloat = Vertex< dfloat >;        ///< A vertex with floating-point coordinates
-using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordinates
+/// \brief A vertex with floating-point coordinates
+/// \relates dip::Vertex
+using VertexFloat = Vertex< dfloat >;
+
+/// \brief A vertex with integer coordinates
+/// \relates dip::Vertex
+using VertexInteger = Vertex< dip::sint >;
 
 /// \brief Compare two vertices
+/// \relates dip::Vertex
 template< typename T >
 inline bool operator==( Vertex< T > v1, Vertex< T > v2 ) {
    return ( v1.x == v2.x ) && ( v1.y == v2.y );
@@ -157,23 +163,27 @@ inline bool operator==( Vertex< T > v1, Vertex< T > v2 ) {
 
 template< typename T >
 /// \brief Compare two vertices
+/// \relates dip::Vertex
 inline bool operator!=( Vertex< T > v1, Vertex< T > v2 ) {
    return !( v1 == v2 );
 }
 
 /// \brief The norm of the vector `v`.
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat Norm( Vertex< T > const& v ) {
    return std::hypot( v.x, v.y );
 }
 
 /// \brief The norm of the vector `v2-v1`.
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    return Norm( v2 - v1 );
 }
 
 /// \brief The square norm of the vector `v2-v1`.
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
@@ -181,6 +191,7 @@ inline dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
 }
 
 /// \brief The angle of the vector `v2-v1`.
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
@@ -188,30 +199,35 @@ inline dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
 }
 
 /// \brief Compute the z component of the cross product of vectors `v1` and `v2`
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat CrossProduct( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    return v1.x * v2.y - v1.y * v2.x;
 }
 
 /// \brief Compute the z component of the cross product of vectors `v2-v1` and `v3-v1`
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat ParallelogramSignedArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return CrossProduct( v2 - v1, v3 - v1 );
 }
 
 /// \brief Compute the area of the triangle formed by vertices `v1`, `v2` and `v3`
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat TriangleArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / 2.0 );
 }
 
 /// \brief Compute the height of the triangle formed by vertices `v1`, `v2` and `v3`, with `v3` the tip
+/// \relates dip::Vertex
 template< typename T >
 inline dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ));
 }
 
 /// \brief Add two vertices together, with identical types
+/// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
    lhs += rhs;
@@ -219,18 +235,21 @@ inline Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
 }
 
 /// \brief Add two vertices together, where the LHS is floating-point and the RHS is integer
+/// \relates dip::Vertex
 inline VertexFloat operator+( VertexFloat lhs, VertexInteger const& rhs ) {
    lhs += rhs;
    return lhs;
 }
 
 /// \brief Add two vertices together, where the LHS is integer and the RHS is floating-point
+/// \relates dip::Vertex
 inline VertexFloat operator+( VertexInteger const& lhs, VertexFloat rhs ) {
    rhs += lhs;
    return rhs;
 }
 
 /// \brief Subtract two vertices from each other
+/// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
    lhs -= rhs;
@@ -238,12 +257,14 @@ inline Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
 }
 
 /// \brief Subtract two vertices from each other, where the LHS is floating-point and the RHS is integer
+/// \relates dip::Vertex
 inline VertexFloat operator-( VertexFloat lhs, VertexInteger const& rhs ) {
    lhs -= rhs;
    return lhs;
 }
 
 /// \brief Subtract two vertices from each other, where the LHS is integer and the RHS is floating-point
+/// \relates dip::Vertex
 inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs ) {
    VertexFloat out{ static_cast< dfloat >( lhs.x ),
                     static_cast< dfloat >( lhs.y ) };
@@ -252,6 +273,7 @@ inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs )
 }
 
 /// \brief Add a vertex and a constant
+/// \relates dip::Vertex
 template< typename T, typename S >
 inline Vertex< T > operator+( Vertex< T > v, S n ) {
    v += T( n );
@@ -259,6 +281,7 @@ inline Vertex< T > operator+( Vertex< T > v, S n ) {
 }
 
 /// \brief Subtract a vertex and a constant
+/// \relates dip::Vertex
 template< typename T, typename S >
 inline Vertex< T > operator-( Vertex< T > v, S n ) {
    v -= T( n );
@@ -266,6 +289,7 @@ inline Vertex< T > operator-( Vertex< T > v, S n ) {
 }
 
 /// \brief Multiply a vertex and a constant
+/// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator*( Vertex< T > v, dfloat n ) {
    v *= n;
@@ -273,6 +297,7 @@ inline Vertex< T > operator*( Vertex< T > v, dfloat n ) {
 }
 
 /// \brief Divide a vertex by a constant
+/// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
    v /= n;
@@ -334,8 +359,13 @@ struct DIP_NO_EXPORT BoundingBox {
    DimensionArray< T > Size() const;
 };
 
-using BoundingBoxFloat = BoundingBox< dfloat >;        ///< A bounding box with floating-point coordinates
-using BoundingBoxInteger = BoundingBox< dip::sint >;   ///< A bounding box with integer coordinates
+/// \brief A bounding box with floating-point coordinates
+/// \relates dip::BoundingBox
+using BoundingBoxFloat = BoundingBox< dfloat >;
+
+/// \brief A bounding box with integer coordinates
+/// \relates dip::BoundingBox
+using BoundingBoxInteger = BoundingBox< dip::sint >;
 
 template<>
 inline IntegerArray BoundingBox< dip::sint >::Size() const {
@@ -583,9 +613,10 @@ struct DIP_NO_EXPORT Polygon {
    /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.
    ///
-   /// **Literature**
-   /// - M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
-   ///   in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
+   /// \literature
+   /// <li>M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
+   ///     in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
+   /// \endliterature
    dfloat EllipseVariance() const {
        // Covariance matrix of polygon vertices
        VertexFloat g = Centroid();
@@ -800,9 +831,10 @@ struct DIP_NO_EXPORT ChainCode {
    /// an object that is only partially inside the image, the portion of the object's perimeter that
    /// is inside of the image is measured, the edge created by cutting the object is not.
    ///
-   /// **Literature**
-   /// - A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
-   ///   of straight lines of finite length", Computer Graphics and %Image Processing 20(4):347-364, 1982.
+   /// \literature
+   /// <li>A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
+   ///     of straight lines of finite length", Computer Graphics and %Image Processing 20(4):347-364, 1982.
+   /// \endliterature
    DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
@@ -811,11 +843,12 @@ struct DIP_NO_EXPORT ChainCode {
 
    /// Computes the bending energy.
    ///
-   /// **Literature**
-   /// - I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
-   ///   Information and Control 25(4):357-370, 1974.
-   /// - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
-   ///   Acta Cytologica 21(5):455-464, 1977.
+   /// \literature
+   /// <li>I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
+   ///     Information and Control 25(4):357-370, 1974.
+   /// <li>J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
+   ///     Acta Cytologica 21(5):455-464, 1977.
+   /// \endliterature
    DIP_EXPORT dfloat BendingEnergy() const;
 
    /// \brief Computes the area of the solid object described by the chain code. Uses the result of
@@ -872,6 +905,7 @@ struct DIP_NO_EXPORT ChainCode {
 };
 
 /// \brief A collection of object contours
+/// \relates dip::ChainCode
 using ChainCodeArray = std::vector< ChainCode >;
 
 /// \brief Returns the set of chain codes sequences that encode the contours of the given objects in a labeled image.

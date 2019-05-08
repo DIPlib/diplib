@@ -660,7 +660,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
     number of dimensions (with special support for 2D and 3D images).
 
   - `curvature_thirion` and `isophote_curvature` have been moved to the `alias` directory. The function
-    `curvature` now takes `'thirion'` and `'isophote'` as options. `orientation4d` has been moved to the
+    `curvature` now takes '`thirion`' and '`isophote`' as options. `orientation4d` has been moved to the
     `alias` directory. A new function `orientation` generalizes it to arbitrary dimensionality.
 
   - `granulometry` has changed, but it is still possible to call it the old way. However, the parameters

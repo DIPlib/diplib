@@ -108,6 +108,7 @@ class DIP_CLASS_EXPORT ExternalInterface {
 /// The alignment, in bytes, is passed to `dip::AlignedAllocInterface::GetInstance()`
 /// as a template parameter.
 /// For example:
+///
 /// ```cpp
 ///     // Obtain ExternalInterface pointer that guarantees 64-byte alignment:
 ///     ExternalInterface* ei = dip::AlignedAllocInterface::GetInstance<64>();
@@ -199,12 +200,15 @@ class DIP_NO_EXPORT CoordinatesComputer {
 
 
 /// \brief An array of images
+/// \relates dip::Image
 using ImageArray = std::vector< Image >;
 
 /// \brief An array of image references
+/// \relates dip::Image
 using ImageRefArray = std::vector< std::reference_wrapper< Image >>;
 
 /// \brief An array of const image references
+/// \relates dip::Image
 using ImageConstRefArray = std::vector< std::reference_wrapper< Image const >>;
 
 // The class is documented in the file src/documentation/image.md
@@ -442,7 +446,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// See \ref use_external_data for more information on how to use this function.
       ///
-      /// **Note:** There is no way to make the data segment in an image read-only. It is possible to use this
+      /// \warning There is no way to make the data segment in an image read-only. It is possible to use this
       /// function to create an image around const data, and then write to that data. Use images pointing to
       /// const data only as input images!
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
@@ -803,14 +807,16 @@ class DIP_NO_EXPORT Image {
       ///
       /// There are other `%Image` methods that can be used to modify the pixel size, and might be
       /// simpler. For example:
-      /// ```
+      ///
+      /// ```cpp
       ///     img.PixelSize() = ps;                   img.SetPixelSize(ps);
       ///     img.PixelSize().Set(dim,sz);            img.SetPixelSize(dim,sz);
       ///     img.PixelSize().Clear();                img.ResetPixelSize();
       /// ```
       ///
       /// Also for querying the pixel size there are several `%Image` methods:
-      /// ```
+      ///
+      /// ```cpp
       ///     pq = img.PixelSize()[dim];              pq = img.PixelSize(dim);
       ///     bd = img.PixelSize().IsDefined();       bd = img.HasPixelSize();
       ///     bi = img.PixelSize().IsIsotropic();     bi = img.IsIsotropic();
@@ -2499,6 +2505,7 @@ class DIP_NO_EXPORT Image {
 
 /// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
 /// information about the image is printed.
+/// \relates dip::Image
 DIP_EXPORT std::ostream& operator<<( std::ostream& os, Image const& img );
 
 inline void swap( Image& v1, Image& v2 ) {
@@ -2506,12 +2513,14 @@ inline void swap( Image& v1, Image& v2 ) {
 }
 
 /// \brief Calls `img1.Aliases( img2 )`. See `dip::Image::Aliases`.
+/// \relates dip::Image
 inline bool Alias( Image const& img1, Image const& img2 ) {
    return img1.Aliases( img2 );
 }
 
 /// \brief Makes a new image object pointing to same pixel data as `src`, but
 /// with different origin, strides and size.
+/// \relates dip::Image
 ///
 /// This function does the same as `dip::Image::At`, but allows for more flexible
 /// defaults: If `origin`, `sizes` or `spacing` have only one value, that value is
@@ -2543,6 +2552,7 @@ inline Image DefineROI(
 
 /// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method, except `dest` can
 /// have an external interface.
+/// \relates dip::Image
 inline void Copy( Image const& src, Image& dest ) {
    dest.Copy( src );
 }
@@ -2555,6 +2565,7 @@ inline Image Copy( Image const& src ) {
 /// If `dest` is already forged and has the right number of pixels and tensor elements, it will not be reforged.
 /// In this case, the copy will apply data type conversion, where values are clipped to the target range and/or
 /// truncated, as applicable, and complex values are converted to non-complex values by taking the absolute value.
+/// \relates dip::Image
 DIP_EXPORT void CopyFrom( Image const& src, Image& dest, Image const& srcMask );
 
 /// \brief Copies the pixels selected by `srcOffsets` over from `src` to `dest`. `dest` will be a 1D image.
@@ -2562,15 +2573,19 @@ DIP_EXPORT void CopyFrom( Image const& src, Image& dest, Image const& srcMask );
 /// If `dest` is already forged and has the right number of pixels and tensor elements, it will not be reforged.
 /// In this case, the copy will apply data type conversion, where values are clipped to the target range and/or
 /// truncated, as applicable, and complex values are converted to non-complex values by taking the absolute value.
+/// \relates dip::Image
 DIP_EXPORT void CopyFrom( Image const& src, Image& dest, IntegerArray const& srcOffsets );
 
 /// \brief Copies all pixels from `src` over to the pixels selected by `destMask` in `dest`. `dest` must be forged.
+/// \relates dip::Image
 DIP_EXPORT void CopyTo( Image const& src, Image& dest, Image const& destMask );
 
 /// \brief Copies all pixels from `src` over to the pixels selected by `destOffsets` in `dest`. `dest` must be forged.
+/// \relates dip::Image
 DIP_EXPORT void CopyTo( Image const& src, Image& dest, IntegerArray const& destOffsets );
 
 /// \brief Copies samples over from `src` to `dest`, expanding the tensor so it's a standard, column-major matrix.
+/// \relates dip::Image
 ///
 /// If the tensor representation in `src` is one of those that do not save symmetric or zero values, to save space,
 /// a new data segment will be allocated for `dest`, where the tensor representation is a column-major matrix
@@ -2593,6 +2608,7 @@ inline Image ExpandTensor( Image const& src ) {
 }
 
 /// \brief Copies samples over from `src` to `dest`, with data type conversion.
+/// \relates dip::Image
 ///
 /// If `dest` is forged,
 /// has the same size as number of tensor elements as `src`, and has data type `dt`, then
@@ -2616,6 +2632,7 @@ inline Image Convert( Image const& src, dip::DataType dt ) {
 }
 
 /// \brief Creates a `dip::ImageRefArray` from a `dip::ImageArray`.
+/// \relates dip::Image
 inline ImageRefArray CreateImageRefArray( ImageArray& imar ) {
    dip::ImageRefArray out;
    out.reserve( imar.size() );
@@ -2626,6 +2643,7 @@ inline ImageRefArray CreateImageRefArray( ImageArray& imar ) {
 }
 
 /// \brief Creates a `dip::ImageConstRefArray` from a `dip::ImageArray`.
+/// \relates dip::Image
 inline ImageConstRefArray CreateImageConstRefArray( ImageArray const& imar ) {
    dip::ImageConstRefArray out;
    out.reserve( imar.size() );

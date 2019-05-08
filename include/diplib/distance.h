@@ -79,18 +79,18 @@ namespace dip {
 ///    Use only with small images to determine a ground-truth result. For 2D and 3D inputs only.
 ///    `method` must be `"brute force"`.
 ///
+/// \bug The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger, almost
+/// spherical objects. It this case, use a different method.
 ///
-/// **Literature**
-///  - R. van den Boomgaard, "Mathematical Morphology--Extensions towards Computer Vision", PhD Thesis, University of Amsterdam, 1992.
-///  - A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time", Mathematical Morphology and its Applications to %Image and Signal Processing, Springer, 2002.
-///  - P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and %Image Processing 14:227-248, 1980.
-///  - Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
-///  - J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and %Image Processing 54(6):526-535, 1992.
+/// \note The option `border` = `"background"` is not supported for the `"brute force"` method.
 ///
-/// **Known bugs**
-///  - The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger (almost)
-///    spherical objects. It this case, use a different method.
-///  - The option `border` = `"background"` is not supported for the `"brute force"` method.
+/// \literature
+/// <li>R. van den Boomgaard, "Mathematical Morphology--Extensions towards Computer Vision", PhD Thesis, University of Amsterdam, 1992.
+/// <li>A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time", Mathematical Morphology and its Applications to %Image and Signal Processing, Springer, 2002.
+/// <li>P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and %Image Processing 14:227-248, 1980.
+/// <li>Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
+/// <li>J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and %Image Processing 54(6):526-535, 1992.
+/// \endliterature
 DIP_EXPORT void EuclideanDistanceTransform(
       Image const& in,
       Image& out,
@@ -175,19 +175,20 @@ inline Image VectorDistanceTransform(
 /// The chamfer metric algorithm is a little faster than the fast marching algorithm,
 /// with smaller neighborhoods being faster than larger neighborhoods.
 ///
-/// **Literature**
-///  - J.A. Sethian, "A fast marching level set method for monotonically advancing fronts", Proceedings of the
-///    National Academy of Sciences 93(4):1591-1595, 1996.
-///  - B.J.H. Verwer, P.W. Verbeek and S.T. Dekker, "An efficient uniform cost algorithm applied to distance
-///    transforms", IEEE Transactions on Pattern Analysis and Machine Intelligence 11(4):425-429, 1989.
-///  - P.W. Verbeek and B.J.H. Verwer, "Shading from shape, the eikonal equation solved by grey-weighted distance
-///    transform", Pattern Recognition Letters 11(10):681-690, 1990.
-///  - B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
-///    of Technology, The Netherlands, 1991.
-///  - K.C. Strasters, A.W.M. Smeulders and H.T.M. van der Voort, "3-D Texture characterized by accessibility
-///    measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
-///  - K.C. Strasters, "Quantitative Analysis in Confocal %Image Cytometry", Ph.D. thesis, Delft University of
-///    Technology, The Netherlands, 1994.
+/// \literature
+/// <li>J.A. Sethian, "A fast marching level set method for monotonically advancing fronts", Proceedings of the
+///     National Academy of Sciences 93(4):1591-1595, 1996.
+/// <li>B.J.H. Verwer, P.W. Verbeek and S.T. Dekker, "An efficient uniform cost algorithm applied to distance
+///     transforms", IEEE Transactions on Pattern Analysis and Machine Intelligence 11(4):425-429, 1989.
+/// <li>P.W. Verbeek and B.J.H. Verwer, "Shading from shape, the eikonal equation solved by grey-weighted distance
+///     transform", Pattern Recognition Letters 11(10):681-690, 1990.
+/// <li>B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
+///     of Technology, The Netherlands, 1991.
+/// <li>K.C. Strasters, A.W.M. Smeulders and H.T.M. van der Voort, "3-D Texture characterized by accessibility
+///     measurements, based on the grey weighted distance transform", BioImaging 2(1):1-21, 1994.
+/// <li>K.C. Strasters, "Quantitative Analysis in Confocal %Image Cytometry", Ph.D. thesis, Delft University of
+///     Technology, The Netherlands, 1994.
+/// \endliterature
 DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,

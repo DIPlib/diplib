@@ -44,6 +44,7 @@ namespace dip {
 /// \brief An object that encapsulates the Discrete Fourier Transform (DFT).
 ///
 /// Usage:
+///
 /// ```cpp
 ///     DFT dft( size, inverse );               // creates the object with all the data ready to start running DFTs.
 ///     std::vector< std::complex< T >> buf( opts.BufferSize() ); // creates a buffer

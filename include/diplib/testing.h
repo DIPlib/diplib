@@ -89,8 +89,8 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 } // namespace detail
 
 /// \defgroup testing Testing and debugging
-/// \brief Tools for testing and debugging.
 /// \ingroup infrastructure
+/// \brief Tools for testing and debugging.
 /// \{
 
 /// \brief Outputs pixel values of a small image to `stdout`.
@@ -132,6 +132,7 @@ void PrintPixelValues( Image const& img ) {
 /// If `mode` is `dip::Option::CompareImagesMode::APPROX`, the sample values must all be within
 /// `epsilon`, which defaults to 1e-6. For this mode of operation there is an overloaded function
 /// that takes `epsilon` as the 3<sup>rd</sup> argument (i.e. you can skip the `mode` parameter):
+///
 /// ```cpp
 ///     dip::CompareImages( img1, img2 );       // samples must be identical
 ///     dip::CompareImages( img1, img2, 1e-3 ); // samples must be within 1e-3 of each other
@@ -205,6 +206,7 @@ inline bool CompareImages(
 /// The methods `GetCpu` and `GetWall` return the CPU and wall time, respectively, in seconds that passed in
 /// between object creation and the last call to `Stop`. `Stop` does not actually stop the timer, it just
 /// records the time it was last called. `Reset` resets the timer, as if it had just been created.
+///
 /// ```cpp
 ///     dip::Timer timer;
 ///     // do some computation
@@ -217,12 +219,14 @@ inline bool CompareImages(
 /// ```
 ///
 /// Note that it is also possible to directly put the timer object to the output stream:
+///
 /// ```cpp
 ///     dip::Timer timer;
 ///     // do some computation
 ///     timer.Stop();
 ///     std::cout << "Computation 1: " << timer << '\n';
 /// ```
+///
 /// The stream output reports both the wall time and the CPU time, and uses meaningful units (minutes, seconds,
 /// millisecons or microseconds).
 ///
@@ -287,6 +291,7 @@ class DIP_NO_EXPORT Timer {
 };
 
 /// \brief Reports elapsed time to a stream.
+/// \relates dip::testing::Timer
 inline std::ostream& operator<<(
       std::ostream& os,
       Timer const& timer

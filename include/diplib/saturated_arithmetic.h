@@ -80,7 +80,13 @@ template<> struct LargerType< sint64 > { using type = __int128_t; };
 // Addition
 //
 
+#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+
 /// \brief Adds two values using saturated arithmetic.
+template< typename T >
+constexpr inline T saturated_add( T lhs, T rhs ) {}
+
+#endif
 
 // Floats and complex don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
@@ -126,7 +132,13 @@ constexpr inline bin saturated_add( bin lhs, bin rhs ) {
 // Subtraction
 //
 
+#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+
 /// \brief Subtracts two values using saturated arithmetic.
+template< typename T >
+constexpr inline T saturated_sub( T lhs, T rhs ) {}
+
+#endif
 
 // Floats and complex don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
@@ -172,7 +184,13 @@ constexpr inline bin saturated_sub( bin lhs, bin rhs ) {
 // Multiplication
 //
 
+#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+
 /// \brief Multiplies two values using saturated arithmetic.
+template< typename T >
+constexpr inline T saturated_mul( T lhs, T rhs ) {}
+
+#endif
 
 // Floats and complex don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
@@ -216,7 +234,13 @@ constexpr inline bin saturated_mul( bin lhs, bin rhs ) {
 // Division
 //
 
+#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+
 /// \brief Divides two values using saturated arithmetic.
+template< typename T >
+constexpr inline T saturated_div( T lhs, T rhs ) {}
+
+#endif
 
 // Floats, complex and unsigned integers don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
@@ -255,7 +279,13 @@ constexpr inline bin saturated_safediv( bin lhs, bin rhs ) {
 // Inversion
 //
 
+#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+
 /// \brief Inverts a value using saturated arithmetic. This is the same as negation, but not for unsigned values.
+template< typename T >
+constexpr inline T saturated_inv( T v ) {}
+
+#endif
 
 // Floats and complex are straight-forward
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value

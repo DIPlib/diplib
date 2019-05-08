@@ -119,9 +119,10 @@ inline Image ClipHigh(
 ///
 /// `in` must be real-valued.
 ///
-/// **Literature**
-/// - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis, Delft University
-///   of Technology, The Netherlands, 1993.
+/// \literature
+/// <li>L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis, Delft University
+///     of Technology, The Netherlands, 1993.
+/// \endliterature
 DIP_EXPORT void ErfClip(
       Image const& in,
       Image& out,
@@ -179,6 +180,7 @@ inline Image Zero(
 ///
 /// Below follow the equations used for each of the mappings. They all use (with the percentile computed across all
 /// samples, not independently for each channel):
+///
 /// ```cpp
 ///     dfloat inMin = dip::Percentile( in, {}, lowerBound ).As< dfloat >();
 ///     dfloat inMax = dip::Percentile( in, {}, upperBound ).As< dfloat >();
@@ -191,10 +193,12 @@ inline Image Zero(
 /// and `inMin = -inMax`.
 ///
 /// `"logarithmic"` computes:
+///
 /// ```cpp
 ///     dfloat offset = inMin - 1;
 ///     out = ( outMax - outMin ) * Log( in - offset ) / std::log( inMax - offset ) + outMin;
 /// ```
+///
 /// whereas `"signed logarithmic"` computes a similar mapping, but first sets
 /// `inMax = std::max( std::abs(inMax), std::abs(inMin) )`, and `inMin = -inMax`, and then takes the logarithm
 /// of `in+1` for positive `in` or `inMax+in+1` for negative `in`.
@@ -204,6 +208,7 @@ inline Image Zero(
 /// case, the input is not hard-clipped to the range, but soft-clipped through the error function.
 ///
 /// `"decade"` applies the following mapping to each sample:
+///
 /// ```cpp
 ///     dfloat decade = std::log10(( inMax - inMin ) / ( in - inMin + EPSILON ));
 ///     if( decade < parameter1 )
@@ -213,11 +218,13 @@ inline Image Zero(
 /// ```
 ///
 /// `"sigmoid"` applies the following mapping to each sample:
+///
 /// ```cpp
 ///     dfloat min = sigmoid( parameter1 * inMin + parameter2 );
 ///     dfloat max = sigmoid( parameter1 * inMax + parameter2 );
 ///     out = ( outMax - outMin ) / ( max - min ) * ( sigmoid( parameter1 * in + parameter2 ) - min ) + outMin;
 /// ```
+///
 /// Here, the `sigmoid` function is `sigmoid(x) = x / ( 1 + std::abs(x) )`. `parameter1` represents the slope and
 /// `parameter2` the point around which the sigmoid is centered.
 DIP_EXPORT void ContrastStretch(

@@ -430,15 +430,15 @@ inline Image BinaryAreaClosing(
 /// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
 /// or as background (`"background"`).
 ///
-/// **Limitations**
-///  - This function is only implemented for 2D and 3D images.
-///  - Pixels in a 2-pixel border around the edge are not processed. If this is an issue, consider adding 2 pixels
-///    on each side of your image.
-///  - Results in 3D are not optimal: `"loose ends away"`, `"one neighbor"` and `"three neighbors"` produce the
-///    same results, and sometimes planes in the skeleton are not thinned to a single pixel thickness.
+/// \warning Pixels in a 2-pixel border around the edge are not processed. If this is an issue, consider adding 2 pixels
+/// on each side of your image.
 ///
-/// **Literature**
-/// - B.J.H. Verwer, "Improved metrics in image processing applied to the Hilditch skeleton", 9<sup>th</sup> ICPR, 1988.
+/// \bug Results in 3D are not always correct: `"loose ends away"`, `"one neighbor"` and `"three neighbors"` produce the
+/// same results, and sometimes planes in the skeleton are not thinned to a single pixel thickness.
+///
+/// \literature
+/// <li>B.J.H. Verwer, "Improved metrics in image processing applied to the Hilditch skeleton", 9<sup>th</sup> ICPR, 1988.
+/// \endliterature
 DIP_EXPORT void EuclideanSkeleton(
       Image const& in,
       Image& out,
@@ -492,10 +492,12 @@ inline Image CountNeighbors(
 /// of pixels.
 ///
 /// Note that this is equivalent to (but more efficient than):
-/// ```
+///
+/// ```cpp
 ///     dip::uint neighborhoodSize = dip::NeighborList( { "connected", connectivity }, in.Dimensionality() ).Size();
 ///     out = dip::CountNeighbors( in, connectivity, "all", edgeCondition ) > neighborhoodSize / 2;
 /// ```
+///
 /// with `neighborhoodSize` the number of pixels in the neighborhood given by `connectivity`.
 ///
 /// `edgeCondition` determines the value of pixels outside the image domain, and can be `"object"` or `"background"`.
@@ -701,9 +703,11 @@ DIP_EXPORT void Invert( IntervalArray& array );
 /// also allows "don't care" pixels, which will be ignored in the matching.
 ///
 /// This operator is equal to the infimum of an erosion and an anti-erosion:
-/// ```
+///
+/// ```cpp
 ///     out = dip::Infimum( dip::Erosion( in, hit ), dip::Erosion( ~in, miss ));
 /// ```
+///
 /// where `hit` and `miss` are the two binary structuring elements in `interval`.
 ///
 /// This function is specifically for binary images. Use `dip::HitAndMiss` for a more general operator.
@@ -726,9 +730,11 @@ inline Image SupGenerating(
 /// \brief Inf-generating operator, the dual of the hit-miss operator.
 ///
 /// This operator is equal to the supremum of a dilation and an anti-dilation:
-/// ```
+///
+/// ```cpp
 ///     out = dip::Supremum( dip::Dilation( in, hit ), dip::Dilation( ~in, miss ));
 /// ```
+///
 /// where `hit` and `miss` are the two binary structuring elements in `interval`.
 ///
 /// This function is specifically for binary images.

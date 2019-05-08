@@ -32,7 +32,7 @@ namespace dip {
 
 class DIP_NO_EXPORT Histogram;
 
-/// \ingroup analysis
+/// \addtogroup analysis
 /// \{
 
 
@@ -70,12 +70,14 @@ class DIP_NO_EXPORT Distribution {
       /// Note that `%Sample` references the `dip::Distribution` it is created from, which must therefore
       /// exist while the sample is used. Copying a `%Sample` does not create new storage, the copy will
       /// reference the same data. Therefore, things like the following will not work:
-      /// ```
+      ///
+      /// ```cpp
       ///    Distribution d = ...;
       ///    auto tmp = d[ 2 ];
       ///    d[ 2 ] = d[ 3 ];    // `tmp` changes along with `d[ 2 ]`, since they reference the same data
       ///    d[ 3 ] = tmp;
       /// ```
+      ///
       /// Instead, use `swap`. Do note that some algorithms in the C++ Standard Library expect the above
       /// to work.
       class DIP_NO_EXPORT Sample {
@@ -442,6 +444,7 @@ class DIP_NO_EXPORT Distribution {
 
 
 /// \brief Writes the distribution to a stream
+/// \relates dip::Distribution
 inline std::ostream& operator<<(
       std::ostream& os,
       Distribution const& distribution

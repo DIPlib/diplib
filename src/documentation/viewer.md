@@ -19,7 +19,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-## Introduction
+\section viewer_introduction Introduction
 
 *DIPlib* includes an *OpenGL*-based image viewer to help in the visualization
 of intermediate results. Its main purpose is as a debugging tool. It exists
@@ -34,12 +34,10 @@ windows are managed by a primitive window manager. Two libraries are
 supported for window management:
 
 1. **GLUT** (`dip::viewer::GLUTManager`):
-
    The venerable *OpenGL Utility Toolkit*, in the form of
    [*FreeGLUT*](http://freeglut.sourceforge.net).
 
 2. **GLFW** (`dip::viewer::GLFWManager`):
-
    [*GLFW*](http://www.glfw.org/) is more modern than *GLUT*, and better supported
    by MacOS. Its disadvantage is that it requires the user to poll an event handler
    from the main thread of the program, something that is baked into the MacOS
@@ -49,20 +47,21 @@ To use the `dip::viewer::ImageViewer`, the image must first be converted to 8-bi
 for example using the `dip::ImageDisplay` class. It does not have a user
 interface, and just shows the image.
 
-## User interface
+\section viewer_ui User interface
 
 ![SliceViewer showing the chromo3d.ics test image](viewer.png)
 
-`dip::viewer::SliceViewer` is more elaborate. Its user interface consists of three
-main parts
+`dip::viewer::SliceViewer` is more elaborate. Its user interface consists of four
+main parts: The main visualization window, the control panel, the histogram,
+and the status bar.
 
-1. **Main visualization window**
+\subsection viewer_main_window Main visualization window
 
   The main visualization window on the left shows three projections,
   nominally XY, XZ and YZ. The upper left corner visualizes the different
   tensor elements.
 
-2. **Control panel**
+\subsection viewer_control_panel Control panel
 
   The control panel allows the user to select different ways of visualizing
   the image. It consists of four lists of options:
@@ -100,7 +99,7 @@ main parts
      - *MEA*: Mean over dimensions perpendicular to slice.
      - *MAX*: Maximum over dimensions perpendicular to slice.
 
-3. **%Histogram**
+\subsection viewer_histogram Histogram
 
   The histogram shows both the frequency of intensities (100 bins between
   global minimum and maximum values), as well as the minimum and maximum
@@ -112,99 +111,93 @@ main parts
   The histogram also indicates the value of the operating point and the
   current mapping range.
 
-4. **Status bar**
+\subsection viewer_status_bar Status bar
 
   The status bar gives the current pixel value, and shows option values
   after you change them.
 
+\subsection interaction Interaction
+
 Interaction occurs mainly within the main visualization window, and depends
 on where it occurs:
 
-- *%Tensor elements*
+\subsubsection interaction_tensor Tensor elements
 
-  Within the tensor visualization subwindow, left-clicking selects the
-  tensor element to visualize. If the RGB colorspace is chosen,
-  left-clicking allocates the next available color (R, G or B) until three
-  elements have been selected. Left-clicking on an already selected element
-  deselects it.
+Within the tensor visualization subwindow, left-clicking selects the
+tensor element to visualize. If the RGB colorspace is chosen,
+left-clicking allocates the next available color (R, G or B) until three
+elements have been selected. Left-clicking on an already selected element
+deselects it.
 
-- *Slices*
+\subsubsection interaction_slices Slices
 
-  Left-clicking in a slice changes the operating point for the visualized
-  dimension(s). If slice projection is used, this will also affect the
-  slices that are being visualized in the other projections.
+Left-clicking in a slice changes the operating point for the visualized
+dimension(s). If slice projection is used, this will also affect the
+slices that are being visualized in the other projections.
 
-  Shift-left-dragging sets the projection ROI. The ROI edge closest to the
-  cursor is selected to be moved. This is only available when minimum, mean,
-  or maximum projection is used.
+Shift-left-dragging sets the projection ROI. The ROI edge closest to the
+cursor is selected to be moved. This is only available when minimum, mean,
+or maximum projection is used.
 
-  Middle-dragging gives some limited control over the relative sizes of the
-  three projections.
+Middle-dragging gives some limited control over the relative sizes of the
+three projections.
 
-  Right-dragging moves the slice, which is convenient when zooming in.
+Right-dragging moves the slice, which is convenient when zooming in.
 
-  Scroll wheel zooms in and out, centering in the current cursor position.
-  Zooming in on the ancillary windows (nominal XZ and YZ) only zooms the Z
-  dimension relatively.
+Scroll wheel zooms in and out, centering in the current cursor position.
+Zooming in on the ancillary windows (nominal XZ and YZ) only zooms the Z
+dimension relatively.
 
-- *Slice labels*
+\subsubsection interaction_labels Slice labels
 
-  Right-clicking on a slice label changes the visualized dimension for that
-  projection. In the special case of selecting '-', a 1d slice is shown.
-  Note that the horizontal dimensions of the nominal XY and XZ slices are
-  necessarily the same, as are the vertical dimensions of the nominal XY and
-  YZ slices.
+Right-clicking on a slice label changes the visualized dimension for that
+projection. In the special case of selecting '-', a 1d slice is shown.
+Note that the horizontal dimensions of the nominal XY and XZ slices are
+necessarily the same, as are the vertical dimensions of the nominal XY and
+YZ slices.
 
-  Zooming near the slice labels only zooms that dimension.
+Zooming near the slice labels only zooms that dimension.
 
-- *%Histogram*
+\subsubsection interaction_histogram Histogram
 
-  Left-dragging in the histogram changes the mapping range limits.
+Left-dragging in the histogram changes the mapping range limits.
 
-- *Status bar*
+\subsubsection interaction_status_bar Status bar
 
-  To the right of the status bar is the Link indicator, which can be used to link
-  to other windows. Simply click the indicator in the source window, and
-  then in the destination window. Operating point, zoom and offset will then be
-  shared between the windows. Right-click to unlink.
+To the right of the status bar is the Link indicator, which can be used to link
+to other windows. Simply click the indicator in the source window, and
+then in the destination window. Operating point, zoom and offset will then be
+shared between the windows. Right-click to unlink.
 
 There are also a few keyboard shortcuts:
 
-- *N* and *P*
-
+- <kbd>N</kbd> and <kbd>P</kbd>:
   Step through the third image dimension.
 
-- *F* and *B*
-
+- <kbd>F</kbd> and <kbd>B</kbd>:
   Step through the fourth image dimension.
 
-- *Control-1*
-
+- <kbd>Ctrl</kbd>+<kbd>1</kbd>:
   Sets a 1:1 image pixel to screen pixel zoom for all dimensions.
 
-- *Control-F*
-
+- <kbd>Ctrl</kbd>+<kbd>F</kbd>:
   Sets the image to fill the screen area, but maintaining the XY aspect
   ratio. The zoom of nonvisualized dimensions is reset to 1.
 
-- *Control-L*
-
+- <kbd>Ctrl</kbd>+<kbd>L</kbd>:
   Sets linear mapping between global minimum and maximum values.
 
-- *Control-N*
-
+- <kbd>Ctrl</kbd>+<kbd>N</kbd>:
   Creates a linked clone of the current viewer. Convenient when wanting to
   display different tensor elements, mappings, etc.
 
-- *Control-R*
-
+- <kbd>Ctrl</kbd>+<kbd>R</kbd>:
   Resets the projection ROI.
 
-- *Control-W* and *Control-Shift-W*
-
+- <kbd>Ctrl</kbd>+<kbd>W</kbd> and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>W</kbd>:
   Closes the current window or all windows.
 
-## Usage example
+\section viewer_example Usage example
 
 The viewer is most easily used through the `dip::viewer` namespace. Simply
 call

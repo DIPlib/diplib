@@ -244,6 +244,8 @@ class DIP_NO_EXPORT bin {
       uint8 v_ = 0;
 };
 
+/// \brief Writes the value as a `bool` to a stream.
+/// \relates dip::bin
 inline std::ostream& operator<<(
       std::ostream& os,
       bin const& v
@@ -594,7 +596,9 @@ struct DIP_NO_EXPORT Range {
    }
 };
 
-using RangeArray = DimensionArray< Range >;  ///< An array of ranges
+/// \brief An array of ranges
+/// \relates dip::Range
+using RangeArray = DimensionArray< Range >;
 
 
 //

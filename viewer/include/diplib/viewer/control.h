@@ -22,6 +22,9 @@
 
 #include "diplib/viewer/viewer.h"
 
+/// \file
+/// \brief Declares `dip::viewer::ControlViewPort`.
+
 namespace dip { namespace viewer {
 
 /// \brief Allows the user to control how the image is displayed.
