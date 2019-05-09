@@ -3,8 +3,8 @@ file(GLOB DIP_VIEWER_SRC
      "${CMAKE_CURRENT_LIST_DIR}/src/*.h"
      "${CMAKE_CURRENT_LIST_DIR}/src/manager/*.cpp"
      "${CMAKE_CURRENT_LIST_DIR}/src/manager/*.h"
-     "${CMAKE_CURRENT_LIST_DIR}/include/*.h"
-     "${CMAKE_CURRENT_LIST_DIR}/include/diplib/viewer/*.h")
+     "${PROJECT_SOURCE_DIR}/include/dipviewer.h"
+     "${PROJECT_SOURCE_DIR}/include/diplib/viewer/*.h")
 update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
 add_library(DIPviewer ${DIP_VIEWER_SRC})
 if(DIP_SHARED_LIBRARY)
@@ -12,9 +12,6 @@ if(DIP_SHARED_LIBRARY)
 else()
    target_compile_definitions(DIPviewer PUBLIC DIP__VIEWER_IS_STATIC)
 endif()
-target_include_directories(DIPviewer PUBLIC
-                           "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-                           $<INSTALL_INTERFACE:include>)
 target_link_libraries(DIPviewer PRIVATE DIP Threads::Threads)
 if(FREEGLUT_FOUND)
    target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
@@ -40,4 +37,5 @@ else()
    set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
 install(TARGETS DIPviewer DESTINATION lib EXPORT DIPlibTargets)
-install(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/include/" DESTINATION include)
+install(FILES "${PROJECT_SOURCE_DIR}/include/dipviewer.h" DESTINATION include)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/viewer" DESTINATION include/diplib)

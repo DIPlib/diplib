@@ -1,7 +1,7 @@
 file(GLOB DIPLIB_SOURCES
      "${CMAKE_CURRENT_LIST_DIR}/*/*.h"
      "${CMAKE_CURRENT_LIST_DIR}/*/*.cpp"
-     "${PROJECT_SOURCE_DIR}/include/*.h"
+     "${PROJECT_SOURCE_DIR}/include/diplib.h"
      "${PROJECT_SOURCE_DIR}/include/diplib/*.h"
      "${PROJECT_SOURCE_DIR}/include/diplib/library/*.h"
      "${PROJECT_SOURCE_DIR}/include/diplib/private/*.h")
@@ -132,7 +132,9 @@ endif()
 
 # Install
 install(TARGETS DIP DESTINATION lib EXPORT DIPlibTargets)
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/" DESTINATION include)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/" DESTINATION include
+        PATTERN "diplib/viewer" EXCLUDE PATTERN "dipviewer.h" EXCLUDE
+        PATTERN "diplib/javaio" EXCLUDE PATTERN "diplib/javaio.h" EXCLUDE)
 # To examine symbol table of the shared library on MacOSX: nm -g -p -U libDIP.dylib
 
 # Uncomment next line to see compile times for each source file (make without -j).
@@ -185,12 +187,5 @@ if(DOXYGEN_FOUND)
          COMMAND "./doxygen.py" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss"
          WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools/documentation"
    )
-   add_custom_target(
-         apidoc_fast
-         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
-         COMMAND "./doxygen.py" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss" "--no-doxygen"
-         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools/documentation"
-   )
-   # TODO: In the new `apidoc`, we're not calling `fix_doc_includes.sh`, because it no longer works correctly. Do we need it?
 endif(DOXYGEN_FOUND)
 set(DOXYGEN_FOUND ${DOXYGEN_FOUND} PARENT_SCOPE)

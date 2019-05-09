@@ -1,5 +1,7 @@
 file(GLOB DIP_JAVAIO_SRC             "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
-                                     "${CMAKE_CURRENT_LIST_DIR}/src/*.h")
+                                     "${CMAKE_CURRENT_LIST_DIR}/src/*.h"
+                                     "${PROJECT_SOURCE_DIR}/include/diplib/javaio.h"
+                                     "${PROJECT_SOURCE_DIR}/include/diplib/javaio/*.h")
 file(GLOB DIP_JAVAIO_JAVA            "${CMAKE_CURRENT_LIST_DIR}/java/*.java")
 file(GLOB DIP_JAVAIO_BIOFORMATS_JAVA "${CMAKE_CURRENT_LIST_DIR}/java/bioformats/*.java")
 
@@ -25,12 +27,10 @@ if(DIP_SHARED_LIBRARY)
 else()
    target_compile_definitions(DIPjavaio PUBLIC DIP__JAVAIO_IS_STATIC)
 endif()
-target_include_directories(DIPjavaio PUBLIC
-                           "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-                           $<INSTALL_INTERFACE:include>)
 
 install(TARGETS DIPjavaio DESTINATION lib EXPORT DIPlibTargets)
-install(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/include/" DESTINATION include)
+install(FILES "${PROJECT_SOURCE_DIR}/include/diplib/javaio.h" DESTINATION include/diplib)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/javaio" DESTINATION include/diplib)
 
 
 ### Java part

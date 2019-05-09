@@ -1,7 +1,5 @@
 # Automatically generated, don't edit!
 set(DIPlib_sources_bogus
-../include/dip_matlab_interface.h
-../include/dip_opencv_interface.h
 ../include/diplib.h
 ../include/diplib/accumulators.h
 ../include/diplib/analysis.h
@@ -23,6 +21,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/graph.h
 ../include/diplib/histogram.h
 ../include/diplib/iterators.h
+../include/diplib/javaio.h
 ../include/diplib/kernel.h
 ../include/diplib/library/clamp_cast.h
 ../include/diplib/library/copy_buffer.h
