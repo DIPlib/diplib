@@ -72,7 +72,7 @@ welcome if combined with functionality changes. Purely cosmetic changes often re
 effort than the benefit provided.
 
 If making changes to *DIPlib*, run the unit tests with `make check`, and make sure no errors are
-reported. We don't (yet) have automated testing set up on GitHub.
+reported.
 
 If you are uncertain that changes you wish to submit will be useful to the project, feel free to
 [create a new issue](https://github.com/DIPlib/diplib/issues/new) on GitHub to ask about it.
