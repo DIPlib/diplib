@@ -92,6 +92,7 @@ developed primarily by volunteers, but has had some financial support from:
 
 - A European Research Council grant to Bernd Rieger, TU Delft
 - Flagship Biosciences, Inc.
+- Quantitative Imaging Systems, Inc.
 
 See \ref history for a list of contributors.
 

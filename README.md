@@ -199,7 +199,8 @@ limitations under the License.
 - *m.css* (for generating the documentation)  
   Copyright 2017, 2018, 2019 Vladimír Vondruš  
   The MIT License (MIT)  
-  see [`tools/documentation/COPYING`](tools/documentation/COPYING)
+  see [`tools/documentation/COPYING`](tools/documentation/COPYING)  
+  (note that changes were made to customize it for the DIPlib project)
 
 Note that all of these have permissive open-source licenses similar in spirit
 to the Apache License, except for *OME Bio-Formats*.
