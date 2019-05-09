@@ -97,6 +97,7 @@ include(tools/update_deps_file.cmake)
 ### DIPlib library
 
 add_subdirectory(src)
+add_subdirectory(doc)
 
 ### DIPviewer
 

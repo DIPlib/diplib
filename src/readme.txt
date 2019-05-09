@@ -24,7 +24,9 @@ segmentation/     Segmentation (diplib/segmentation.h)
 support/          Functions that don't work on images (diplib/library/numeric.h)
 transform/        Fourier and related transforms (diplib/transform.h, diplib/dft.h)
 
-documentation/    Markdown files
-
 ../dependencies/* External code needed for compilation of DIPlib and/or components,
                   but not necessary to compile code that uses DIPlib.
+
+../include/       All the public header files
+
+../doc/src/       Additional DIPlib documentation in the form of Markdown files
