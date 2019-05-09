@@ -1,6 +1,7 @@
 \ingroup infrastructure
 
 \defgroup viewer DIPviewer
+\ingroup display
 \brief Interactive image display.
 
 [//]: # (DIPlib 3.0 viewer)

@@ -290,7 +290,7 @@ DIP_EXPORT void DrawBandlimitedBox(
 /// \}
 
 
-/// \defgroup generation_shapes Shape generation
+/// \defgroup generation_test Test image generation
 /// \ingroup generation
 /// \brief Generating images with test objects or functions
 /// \{

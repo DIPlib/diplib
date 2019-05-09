@@ -41,6 +41,7 @@ namespace dip_opencv {
 
 
 /// \defgroup dip_opencv_interface DIPlib-OpenCV interface
+/// \ingroup interfaces
 /// \brief Functions to convert images to and from *OpenCV*.
 ///
 /// The `dip_opencv` namespace defines the functions needed to convert between *OpenCV* `cv::Mat` objects and *DIPlib*

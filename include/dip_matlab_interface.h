@@ -73,8 +73,11 @@ extern "C" {
 /// The functions and classes defined in this namespace are meant to be used in MATLAB MEX-files.
 namespace dml {
 
+/// \defgroup interfaces Interfaces
+/// \brief Interfaces between DIPlib and other libraries/packages
 
 /// \defgroup dip_matlab_interface DIPlib-MATLAB interface
+/// \ingroup interfaces
 /// \brief Functions to convert image data, function parameters and other arrays to and from MATLAB.
 ///
 /// \{
