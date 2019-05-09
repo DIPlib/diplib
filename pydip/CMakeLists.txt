@@ -1,14 +1,14 @@
 add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
 
 # Find sources
-file(GLOB DIP_PYTHON_SRC "${CMAKE_CURRENT_LIST_DIR}/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/*.h")
+file(GLOB DIP_PYTHON_SRC "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/*.h")
 set(PyDIPdeps "${DIP_PYTHON_SRC}")
-file(GLOB DIP_PYTHON_PY "${CMAKE_CURRENT_LIST_DIR}/*.py")
+file(GLOB DIP_PYTHON_PY "${CMAKE_CURRENT_LIST_DIR}/src/*.py")
 list(APPEND PyDIPdeps "${DIP_PYTHON_PY}")
 # Insert DIP.dll location into __init__.py
-configure_file("${CMAKE_CURRENT_LIST_DIR}/__init__.py.in" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.in" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY)
 list(APPEND DIP_PYTHON_PY "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")
-list(APPEND PyDIPdeps "${CMAKE_CURRENT_LIST_DIR}/__init__.py.in")
+list(APPEND PyDIPdeps "${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.in")
 update_deps_file("PyDIP_sources" "${PyDIPdeps}")
 
 # Build PyDIP_bin
@@ -32,7 +32,7 @@ add_custom_target(PyDIP DEPENDS PyDIP_bin)
 # Repeat the above for PyDIPviewer
 if(DIP_BUILD_DIPVIEWER)
    # Find sources
-   file(GLOB DIP_PYTHON_VIEWER_SRC "${CMAKE_CURRENT_LIST_DIR}/viewer/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/viewer/*.h")
+   file(GLOB DIP_PYTHON_VIEWER_SRC "${CMAKE_CURRENT_LIST_DIR}/src/viewer/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/viewer/*.h")
    update_deps_file("PyDIPviewer_sources" "${DIP_PYTHON_VIEWER_SRC}")
    # Build PyDIPviewer
    pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
@@ -50,7 +50,7 @@ endif()
 # Repeat the above for PyDIPjavaio
 if(DIP_BUILD_JAVAIO)
    # Find sources
-   file(GLOB DIP_PYTHON_JAVAIO_SRC "${CMAKE_CURRENT_LIST_DIR}/javaio/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/javaio/*.h")
+   file(GLOB DIP_PYTHON_JAVAIO_SRC "${CMAKE_CURRENT_LIST_DIR}/src/javaio/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/javaio/*.h")
    update_deps_file("PyDIPjavaio_sources" "${DIP_PYTHON_JAVAIO_SRC}")
    # Build PyDIPjavaio
    pybind11_add_module(PyDIPjavaio ${DIP_PYTHON_JAVAIO_SRC})
