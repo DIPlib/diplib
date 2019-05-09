@@ -4,6 +4,9 @@ Compiling *DIPlib* requires a few programs that often are not present on a bare 
 installation. It depends on your distribution how you can obtain these. Below we give
 instructions for Ubuntu (TODO: add instructions for other distros).
 
+See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
+on the compilation options.
+
 Everything here requires a shell (such as Bash), which typically runs inside a terminal
 window. If you're using Linux we'll assume you know where to find this.
 

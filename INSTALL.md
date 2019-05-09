@@ -120,7 +120,7 @@ a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
 
 The `PYDIP_INSTALL_PATH` option defaults to the system-wide site packages directory for the
 selected version of Python. To obtain the user-specific site packages directory, use the
-following shell command: `python3 -m site --user-site`. The output can be used for the PyDIP
+following shell command: `python3 -m site --user-site`. The output can be used for the *PyDIP*
 installation path for users that cannot or do not want to install in the system-wide directory.
 For example:
 ```bash

@@ -4,15 +4,22 @@ Compiling *DIPlib* requires a few programs that do not come preinstalled on Wind
 We describe here how to obtain these programs, and how to use them to compile the
 *DIPlib* project.
 
+See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
+on the compilation options.
+
 ## *Visual Studio*
 
 You can download the free MS Visual Studio Community Edition here:
 https://www.visualstudio.com/vs/community/.
 
-You need at least the 2015 edition. We used the 2017 edition. Download and install
-as directed. Select the "Desktop C++ applications" option. Optionally, you can
-select to install *Python 3* as well. You can do this if you don't have *Python* but
-want to compile the *PyDIP* interface.
+We recommend that you use at least the 2019 edition. In principle you need
+at least the 2015 edition. However, *DIPlib* uses some advanced C++14 constructs
+that will not compile with older versions of MSVC, and it is necessary to turn
+off some components to compile the project with those.
+
+Download and install as directed. Select the "Desktop C++ applications" option.
+Optionally, you can select to install *Python 3* as well. You can do this if you
+don't have *Python* but want to compile the *PyDIP* interface.
 
 Make sure you select the *Git* option as well. If you don't have *Git* installed,
 and cannot install it through *Visual Studio*, download and install it from here:
@@ -62,7 +69,7 @@ Under "Where to build the binaries" enter a different, new directory. For exampl
 `target\DIPlib` in your user directory. Click on "Configure". A pop-up window will
 ask you for which generator to use. You should select your version of *Visual Studio*
 here. Make sure you select the **Win64** version. If you select the default version,
-you will build 32-bit binaries (really, in 2017 we're still building 32-bit binaries
+you will build 32-bit binaries (really, in 2019 we're still building 32-bit binaries
 by default?). Also, the latest *MATLAB* versions no longer support 32-bit binaries,
 so unless you select the 64-bit generator, you won't be able to build *DIPimage*.
 
@@ -103,6 +110,9 @@ be found. This is only necessary if you want to use the `viewslice` command from
 - If `BIOFORMATS_JAR` is not on the list, the Java SDK could not be found. If it is,
 point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
 you want to import image formats that are not directly supported by DIPlib.
+
+- If using a version of MSVC older than the 2019 edition, set both `DIP_ENABLE_UNICODE`
+and `DIP_ENABLE_DOCTEST` to `Off`. You will get compilation errors if you don't do this.
 
 Finally, click on "Generate" to create a *Visual Studio* solution file.
 

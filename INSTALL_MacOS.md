@@ -3,6 +3,9 @@
 Compiling *DIPlib* requires a few programs that do not come preinstalled on the Mac.
 Here we offer a simple way to install these programs.
 
+See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
+on the compilation options.
+
 We mostly use the command line here, which you will find in the terminal window. To
 open a terminal window, press \<Command>-\<Space> to bring up the *Spotlight* search tool,
 type `terminal`, and press \<Enter>. Alternatively, in *Finder*, go to the 'Applications'
