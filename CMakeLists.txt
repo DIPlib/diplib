@@ -1,5 +1,5 @@
 # CMakeLists file for DIPlib 3
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()
@@ -78,7 +78,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
 # OpenMP
 find_package(OpenMP)
-if(OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
+# If OpenMP wasn't found, see if we can find it in the default Homebrew location
+if((NOT OpenMP_CXX_FOUND) AND EXISTS "/usr/local/opt/libomp/lib/libomp.dylib")
+    set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
+    set(OpenMP_C_LIB_NAMES omp)
+    set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
+    set(OpenMP_CXX_LIB_NAMES omp)
+    set(OpenMP_omp_LIBRARY /usr/local/opt/libomp/lib/libomp.dylib)
+
+    find_package(OpenMP)
+    if (OpenMP_CXX_FOUND)
+        message(STATUS "Found libomp in homebrew default location.")
+    else()
+        message(FATAL_ERROR "Failed to use OpenMP which exists in the default Homebrew location.")
+    endif()
+endif()
+if(OpenMP_CXX_FOUND)
    set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
 endif()
 
