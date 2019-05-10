@@ -33,6 +33,9 @@
 #if __GNUC__ >= 7
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 #endif
+#if __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Wdeprecated-copy"
+#endif
 #endif
 
 #include <Eigen/Geometry>
