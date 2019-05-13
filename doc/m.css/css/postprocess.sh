@@ -1,1 +1,1 @@
-postprocess.py m-dip.css m-documentation.css -o m-dip+documentation.compiled.css
+./postprocess.py m-dip.css m-documentation.css -o m-dip+documentation.compiled.css

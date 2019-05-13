@@ -41,7 +41,11 @@ struct DIP_NO_EXPORT Polygon;
 class DIP_NO_EXPORT ConvexHull;
 
 /// \defgroup measurement Measurement
-/// \brief The measurement infrastructure and functionality. It all revolves around the `dip::MeasurementTool` class.
+/// \brief The measurement infrastructure and functionality.
+///
+/// The `dip::MeasurementTool` class provides the main interface to the
+/// functionality in this module. Quantification results are encapsulated in
+/// an object of the `dip::Measurement` class.
 /// \{
 
 
@@ -837,52 +841,52 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// <table>
 /// <tr><th> %Measurement name <th> Description <th> Limitations
 /// <tr><td colspan="3"> **Size features**
-/// <tr><td> "Size"                    <td> Number of object pixels <td>
-/// <tr><td> "CartesianBox"            <td> Cartesian box size of the object in all dimensions <td>
-/// <tr><td> "Minimum"                 <td> Minimum coordinates of the object <td>
-/// <tr><td> "Maximum"                 <td> Maximum coordinates of the object <td>
-/// <tr><td> "Perimeter"               <td> Length of the object perimeter <td> 2D (CC)
-/// <tr><td> "SurfaceArea"             <td> Surface area of object <td> 3D
-/// <tr><td> "Feret"                   <td> Maximum and minimum object diameters <td> 2D (CC)
-/// <tr><td> "SolidArea"               <td> Area of object with any holes filled <td> 2D (CC)
-/// <tr><td> "ConvexArea"              <td> Area of the convex hull <td> 2D (CC)
-/// <tr><td> "ConvexPerimeter"         <td> Perimeter of the convex hull <td> 2D (CC)
+/// <tr><td> `"Size"`                    <td> Number of object pixels <td>
+/// <tr><td> `"CartesianBox"`            <td> Cartesian box size of the object in all dimensions <td>
+/// <tr><td> `"Minimum"`                 <td> Minimum coordinates of the object <td>
+/// <tr><td> `"Maximum"`                 <td> Maximum coordinates of the object <td>
+/// <tr><td> `"Perimeter"`               <td> Length of the object perimeter <td> 2D (CC)
+/// <tr><td> `"SurfaceArea"`             <td> Surface area of object <td> 3D
+/// <tr><td> `"Feret"`                   <td> Maximum and minimum object diameters <td> 2D (CC)
+/// <tr><td> `"SolidArea"`               <td> Area of object with any holes filled <td> 2D (CC)
+/// <tr><td> `"ConvexArea"`              <td> Area of the convex hull <td> 2D (CC)
+/// <tr><td> `"ConvexPerimeter"`         <td> Perimeter of the convex hull <td> 2D (CC)
 /// <tr><td colspan="3"> **Shape features**
-/// <tr><td> "AspectRatioFeret"        <td> Feret-based aspect ratio <td> 2D (CC)
-/// <tr><td> "Radius"                  <td> Statistics on radius of object <td> 2D (CC)
-/// <tr><td> "P2A"                     <td> Perimeter to area ratio of the object <td> 2D (CC) & 3D
-/// <tr><td> "Roundness"               <td> Roundness of the object <td> 2D (CC)
-/// <tr><td> "Circularity"             <td> Circularity of the object <td> 2D (CC)
-/// <tr><td> "PodczeckShapes"          <td> Podczeck shape descriptors <td> 2D (CC)
-/// <tr><td> "Solidity"                <td> Area fraction of convex hull covered by object <td> 2D (CC)
-/// <tr><td> "Convexity"               <td> Ratio of perimeter of convex hull to perimeter of object <td> 2D (CC)
-/// <tr><td> "EllipseVariance"         <td> Distance to best fit ellipse <td> 2D (CC)
-/// <tr><td> "Eccentricity"            <td> Aspect ratio of best fit ellipse <td> 2D (CC)
-/// <tr><td> "BendingEnergy"           <td> Bending energy of object perimeter <td> 2D (CC)
+/// <tr><td> `"AspectRatioFeret"`        <td> Feret-based aspect ratio <td> 2D (CC)
+/// <tr><td> `"Radius"`                  <td> Statistics on radius of object <td> 2D (CC)
+/// <tr><td> `"P2A"`                     <td> Perimeter to area ratio of the object <td> 2D (CC) & 3D
+/// <tr><td> `"Roundness"`               <td> Roundness of the object <td> 2D (CC)
+/// <tr><td> `"Circularity"`             <td> Circularity of the object <td> 2D (CC)
+/// <tr><td> `"PodczeckShapes"`          <td> Podczeck shape descriptors <td> 2D (CC)
+/// <tr><td> `"Solidity"`                <td> Area fraction of convex hull covered by object <td> 2D (CC)
+/// <tr><td> `"Convexity"`               <td> Ratio of perimeter of convex hull to perimeter of object <td> 2D (CC)
+/// <tr><td> `"EllipseVariance"`         <td> Distance to best fit ellipse <td> 2D (CC)
+/// <tr><td> `"Eccentricity"`            <td> Aspect ratio of best fit ellipse <td> 2D (CC)
+/// <tr><td> `"BendingEnergy"`           <td> Bending energy of object perimeter <td> 2D (CC)
 /// <tr><td colspan="3"> **Intensity features**
-/// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> %Tensor grey
-/// <tr><td> "Mean"                    <td> Mean object intensity <td> %Tensor grey
-/// <tr><td> "StandardDeviation"       <td> Standard deviation of object intensity <td> %Tensor grey
-/// <tr><td> "Statistics"              <td> Mean, standard deviation, skewness and excess kurtosis of object intensity <td> Scalar grey
-/// <tr><td> "DirectionalStatistics"   <td> Directional mean and standard deviation of object intensity <td> Scalar grey
-/// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> %Tensor grey
-/// <tr><td> "MinVal"                  <td> Minimum object intensity <td> %Tensor grey
-/// <tr><td> "MaxPos"                  <td> Position of pixel with maximum intensity <td> Scalar grey
-/// <tr><td> "MinPos"                  <td> Position of pixel with minimum intensity <td> Scalar grey
+/// <tr><td> `"Mass"`                    <td> Mass of object (sum of object intensity) <td> %Tensor grey
+/// <tr><td> `"Mean"`                    <td> Mean object intensity <td> %Tensor grey
+/// <tr><td> `"StandardDeviation"`       <td> Standard deviation of object intensity <td> %Tensor grey
+/// <tr><td> `"Statistics"`              <td> Mean, standard deviation, skewness and excess kurtosis of object intensity <td> Scalar grey
+/// <tr><td> `"DirectionalStatistics"`   <td> Directional mean and standard deviation of object intensity <td> Scalar grey
+/// <tr><td> `"MaxVal"`                  <td> Maximum object intensity <td> %Tensor grey
+/// <tr><td> `"MinVal"`                  <td> Minimum object intensity <td> %Tensor grey
+/// <tr><td> `"MaxPos"`                  <td> Position of pixel with maximum intensity <td> Scalar grey
+/// <tr><td> `"MinPos"`                  <td> Position of pixel with minimum intensity <td> Scalar grey
 /// <tr><td colspan="3"> **Moments of binary object**
-/// <tr><td> "Center"                  <td> Coordinates of the geometric mean of the object <td>
-/// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td>
-/// <tr><td> "Inertia"                 <td> Moments of inertia of the binary object <td>
-/// <tr><td> "MajorAxes"               <td> Principal axes of the binary object <td>
-/// <tr><td> "DimensionsCube"          <td> Extent along the principal axes of a cube <td> 2D & 3D
-/// <tr><td> "DimensionsEllipsoid"     <td> Extent along the principal axes of an ellipsoid <td> 2D & 3D
+/// <tr><td> `"Center"`                  <td> Coordinates of the geometric mean of the object <td>
+/// <tr><td> `"Mu"`                      <td> Elements of the inertia tensor <td>
+/// <tr><td> `"Inertia"`                 <td> Moments of inertia of the binary object <td>
+/// <tr><td> `"MajorAxes"`               <td> Principal axes of the binary object <td>
+/// <tr><td> `"DimensionsCube"`          <td> Extent along the principal axes of a cube <td> 2D & 3D
+/// <tr><td> `"DimensionsEllipsoid"`     <td> Extent along the principal axes of an ellipsoid <td> 2D & 3D
 /// <tr><td colspan="3"> **Moments of grey-value object**
-/// <tr><td> "Gravity"                 <td> Coordinates of the center of mass of the object <td> Scalar grey
-/// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> Scalar grey
-/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of the object <td> Scalar grey
-/// <tr><td> "GreyMajorAxes"           <td> Grey-weighted principal axes of the object <td> Scalar grey
-/// <tr><td> "GreyDimensionsCube"      <td> Extent along the principal axes of a cube (grey-weighted) <td> 2D & 3D, scalar grey
-/// <tr><td> "GreyDimensionsEllipsoid" <td> Extent along the principal axes of an ellipsoid (grey-weighted) <td> 2D & 3D, scalar grey
+/// <tr><td> `"Gravity"`                 <td> Coordinates of the center of mass of the object <td> Scalar grey
+/// <tr><td> `"GreyMu"`                  <td> Elements of the grey-weighted inertia tensor <td> Scalar grey
+/// <tr><td> `"GreyInertia"`             <td> Grey-weighted moments of inertia of the object <td> Scalar grey
+/// <tr><td> `"GreyMajorAxes"`           <td> Grey-weighted principal axes of the object <td> Scalar grey
+/// <tr><td> `"GreyDimensionsCube"`      <td> Extent along the principal axes of a cube (grey-weighted) <td> 2D & 3D, scalar grey
+/// <tr><td> `"GreyDimensionsEllipsoid"` <td> Extent along the principal axes of an ellipsoid (grey-weighted) <td> 2D & 3D, scalar grey
 /// </table>
 ///
 /// Note that some features are derived from others, and will cause the features they depend on to be included in the

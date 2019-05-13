@@ -682,7 +682,7 @@ class DIP_NO_EXPORT PixelSize {
 
    public:
 
-      /// By default, an image has no physical dimensions. The pixel size is given
+      /// \brief By default, an image has no physical dimensions. The pixel size is given
       /// as "1 pixel".
       PixelSize() = default;
 

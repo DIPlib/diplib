@@ -63,7 +63,7 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Type of histogram bins. See `dip::DT_COUNT`.
       using CountType = uint64;
 
-      /// \brief Configuration information for how the histogram is computed.
+      /// \brief %Configuration information for how the histogram is computed.
       ///
       /// Note that if `mode == Mode::COMPUTE_BINS`, `binSize` will be adjusted so that a whole number of bins
       /// fits between the bounds. If `binSize` was set to zero or a negative value, and the input image is of

@@ -51,7 +51,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --font-size: 13px;
   --code-font-size: 0.95em; /* *not* rem, so it follows surrounding font size */
   --line-height: 1.5;
-  --paragraph-indent: 1.5rem;
+  --paragraph-indent: 0; /*1.5rem;*/
   --paragraph-align: justify;
   --link-decoration: underline;
   --link-decoration-nav: none;
@@ -153,14 +153,14 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --success-filled-code-color: #e6e6e6;
   --success-filled-code-background-color: var(--cs-primary-darker);
 
-  --warning-color: var(--cs-secondary-base);
+  --warning-color: var(--cs-secondary-lighter);
   --warning-link-active-color: var(--cs-secondary-darker);
-  --warning-filled-color: #ffffff;
-  --warning-filled-background-color: var(--cs-secondary-base);
-  --warning-filled-link-color: var(--cs-secondary-lightest);
-  --warning-filled-link-active-color: var(--cs-secondary-lighter);
-  --warning-filled-code-color: #e6e6e6;
-  --warning-filled-code-background-color: var(--cs-secondary-base);
+  --warning-filled-color: #000000;
+  --warning-filled-background-color: var(--cs-secondary-lighter);
+  --warning-filled-link-color: var(--cs-secondary-darker);
+  --warning-filled-link-active-color: var(--cs-secondary-darkest);
+  --warning-filled-code-color: var(--cs-secondary-darkest);
+  --warning-filled-code-background-color: var(--cs-secondary-lighter);
 
   --danger-color: var(--cs-secondary-darker);
   --danger-link-active-color: var(--cs-secondary-darkest);
@@ -173,11 +173,11 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
 
   --info-color: var(--cs-primary-lighter);
   --info-link-active-color: var(--cs-primary-base);
-  --info-filled-color: #ffffff;
+  --info-filled-color: #000000;
   --info-filled-background-color: var(--cs-primary-lighter);
-  --info-filled-link-color: var(--cs-primary-lightest);
-  --info-filled-link-active-color: var(--cs-primary-base);
-  --info-filled-code-color: #e6e6e6;
+  --info-filled-link-color: var(--cs-primary-darker);
+  --info-filled-link-active-color: var(--cs-primary-darkest);
+  --info-filled-code-color: var(--cs-primary-darkest);
   --info-filled-code-background-color: var(--cs-primary-lighter);
 
   --dim-color: #808080;

@@ -172,30 +172,31 @@ shared between the windows. Right-click to unlink.
 
 There are also a few keyboard shortcuts:
 
-- <kbd>N</kbd> and <kbd>P</kbd>:
+- \m_class{m-label m-error} **N** and \m_class{m-label m-error} **P**:
   Step through the third image dimension.
 
-- <kbd>F</kbd> and <kbd>B</kbd>:
+- \m_class{m-label m-warning} **F** and \m_class{m-label m-warning} **B**:
   Step through the fourth image dimension.
 
-- <kbd>Ctrl</kbd>+<kbd>1</kbd>:
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **1**:
   Sets a 1:1 image pixel to screen pixel zoom for all dimensions.
 
-- <kbd>Ctrl</kbd>+<kbd>F</kbd>:
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **F**:
   Sets the image to fill the screen area, but maintaining the XY aspect
   ratio. The zoom of nonvisualized dimensions is reset to 1.
 
-- <kbd>Ctrl</kbd>+<kbd>L</kbd>:
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **L**:
   Sets linear mapping between global minimum and maximum values.
 
-- <kbd>Ctrl</kbd>+<kbd>N</kbd>:
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **N**:
   Creates a linked clone of the current viewer. Convenient when wanting to
   display different tensor elements, mappings, etc.
 
-- <kbd>Ctrl</kbd>+<kbd>R</kbd>:
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **R**:
   Resets the projection ROI.
 
-- <kbd>Ctrl</kbd>+<kbd>W</kbd> and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>W</kbd>:
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **W** and
+  \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **Shift** + \m_class{m-label m-warning} **W**:
   Closes the current window or all windows.
 
 \section viewer_example Usage example

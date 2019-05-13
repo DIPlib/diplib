@@ -264,6 +264,8 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   bottom: 0;
 }
 .m-doc-search-header {
+  background-color: var(--header-background-color);
+  border-radius: var(--border-radius);
   margin-top: 2.5rem;
   padding: 0.5rem 1rem;
   height: 2rem;

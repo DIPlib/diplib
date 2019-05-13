@@ -30,3 +30,7 @@ Images can be shown using the `Show` method, which uses *matplotlib*.
 The `PyDIP.PyDIPviewer` sub-module gives access to \ref viewer.
 When Python is started through the `examples/pydip.py` script, the `Show` function
 will use the *DIPviewer* interactive display.
+
+The `/examples` directory contains a
+[Jupyter notebook](https://github.com/DIPlib/diplib/blob/master/examples/pydip_examples.ipynb)
+with a quick introduction to the package.

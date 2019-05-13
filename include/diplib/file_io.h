@@ -39,7 +39,7 @@ namespace dip {
 /// \brief A data structure with information about an image file.
 struct FileInformation {
       String                name;              ///< File name
-      String                fileType;          ///< File type (currently, "ICS" or "TIFF")
+      String                fileType;          ///< File type
       DataType              dataType;          ///< Data type for all samples
       dip::uint             significantBits;   ///< Number of bits used for each sample
       UnsignedArray         sizes;             ///< Size of image in pixels
@@ -47,7 +47,7 @@ struct FileInformation {
       String                colorSpace;        ///< Color space
       PixelSize             pixelSize;         ///< Pixel size
       PhysicalQuantityArray origin;            ///< Real-world location of origin pixel
-      dip::uint             numberOfImages;    ///< Number of images in the file. Only TIFF can have more than 1 here.
+      dip::uint             numberOfImages;    ///< Number of images in the file. Currently only TIFF can have more than 1 here.
       StringArray           history;           ///< Assorted metadata in the file, in the form of strings.
 };
 

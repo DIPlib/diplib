@@ -71,9 +71,15 @@ are the following documentation pages:
 - \ref using_iterators, in case existing algorithms are not sufficient.
 - \ref design, might help understand the library architecture.
 
-\section main_interfaces Interfaces and bindings
+See also the [`examples/`](https://github.com/DIPlib/diplib/tree/master/examples)
+directory for a series of simple C++ programs that demonstrate how to use
+various features of the library.
+
+\section main_modules Modules, interfaces and bindings
 
 Currently, *DIPlib 3* has interfaces or bindings to the following packages:
+
+\m_class{m-spaced-list}
 
 - *MATLAB*: \ref DIPimage is a MATLAB toolbox that gives access to most functionality
   in *DIPlib*, but goes beyond that by providing a lot of additional functionality
@@ -81,8 +87,17 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
 - *Python*: \ref PyDIP is a thin wrapper of most functionality in *DIPlib*.
 
-- *OpenCV*: `dip_opencv` provides copyless conversion to and from
-  *OpenCV* images, for *OpenCV* version 2 and newer.
+- *OpenCV*: the `dip_opencv` namespace provides copyless conversion to and from
+  [*OpenCV*](https://opencv.org) images, for *OpenCV* version 2 and newer.
+
+- *Bio-Formats*: \ref javaio is an interface to Java-based image readers. It
+  is designed to allow *DIPlib* to read hundreds of image file formats through
+  [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), but is
+  generic enough to be used with other Java libraries as well.
+
+The *DIPlib* project further contains these additional modules:
+
+- *DIPviewer*: \ref viewer is an interactive image display utility.
 
 \section main_support Support
 
@@ -123,6 +138,8 @@ Your documentation and code contributions will carry the same licencing terms as
 of the library, you keep the copyright to any substantial contribution.
 
 \section main_license License
+
+\m_class{m-noindent}
 
 Copyright 2014-2019 Cris Luengo and contributors<br>
 Copyright 1995-2014 Delft University of Technology

@@ -33,7 +33,7 @@ namespace dip {
 namespace javaio {
 
 /// \defgroup javaio DIPjavaio
-/// \ingroup file_io
+/// \ingroup file_io interfaces
 /// \brief An interface to Java file I/O functionality
 /// \{
 

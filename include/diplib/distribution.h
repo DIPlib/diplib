@@ -80,6 +80,7 @@ class DIP_NO_EXPORT Distribution {
       ///
       /// Instead, use `swap`. Do note that some algorithms in the C++ Standard Library expect the above
       /// to work.
+      // TODO: Document the member functions
       class DIP_NO_EXPORT Sample {
             friend class Distribution;
             friend class Iterator;
@@ -139,6 +140,7 @@ class DIP_NO_EXPORT Distribution {
       };
 
       /// \brief An iterator for `dip::Distribution`. Dereferences into a `Sample`.
+      // TODO: Document the member functions
       class DIP_NO_EXPORT Iterator {
             friend class Distribution;
 

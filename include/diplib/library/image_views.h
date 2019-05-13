@@ -552,6 +552,7 @@ class Image::Pixel {
       }
 
       /// \brief An iterator to iterate over the samples in the pixel. Mutable forward iterator.
+      // TODO: Document member functions
       class Iterator {
          public:
             using iterator_category = std::forward_iterator_tag;

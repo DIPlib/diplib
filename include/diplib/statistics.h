@@ -40,7 +40,9 @@ namespace dip {
 
 /// \defgroup math_statistics Statistics
 /// \ingroup math
-/// \brief %Image sample statistics, see also \ref math_projection.
+/// \brief %Image sample statistics.
+///
+/// See also \ref math_projection.
 /// \{
 
 #define DIP__DEFINE_VIEW_FUNCTION( name, ret_type ) \

@@ -34,7 +34,7 @@ namespace dip {
 
 
 /// \defgroup display Display
-/// \brief Image display
+/// \brief %Image display
 /// \{
 
 

@@ -566,7 +566,7 @@ inline Image FTGaussian(
 }
 
 
-/// \brief Describes the parameters for a test object.
+/// \brief Describes the parameters for a test object, used by `dip::TestObject`.
 struct TestObjectParams {
    // Object description
    String objectShape = S::ELLIPSOID;        ///< Can be `"ellipsoid"`, `"ellipsoid shell"`, `"box"`, `"box shell"`, or `"custom"`.

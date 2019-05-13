@@ -1010,8 +1010,10 @@ inline Image Thinning2D(
 /// `connectivity` can be 1 to produce 4-connected skeletons, or 2 for 8-connected skeletons.
 DIP_EXPORT IntervalArray HomotopicThinningInterval2D( dip::uint connectivity = 2 );
 
-/// \brief Returns a 2D interval array for homotopic thickening. Use with `dip::Thickening` to grow objects
-/// without merging them. This produces a background skeleton (also known as skiz).
+/// \brief Returns a 2D interval array for homotopic thickening.
+///
+/// Use with `dip::Thickening` to grow objects without merging them.
+/// This produces a background skeleton (also known as skiz).
 /// Note that `dip::ConditionalThickening2D` is more efficient, though the two options do not produce exactly
 /// the same output. To create a background skeleton, use `dip::EuclideanSkeleton` on the inverted image.
 ///

@@ -708,12 +708,17 @@ class DIP_NO_EXPORT ConvexHull {
       dip::Polygon vertices_;
 };
 
+/// \}
+
 // This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
 // class, which in turn needs to know about the dip::Polygon class.
 inline dip::ConvexHull Polygon::ConvexHull() const {
    Polygon copy = *this;
    return dip::ConvexHull( std::move( copy ));
 }
+
+/// \addtogroup measurement
+/// \{
 
 
 //

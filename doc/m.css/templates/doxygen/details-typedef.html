@@ -8,6 +8,7 @@
                 {% if compound.templates != None %}
                 {% set j = joiner(', ') %}
                 template&lt;{% for t in compound.templates %}{{ j() }}{{ t.type }} {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                {% if typedef.templates != None %}<br>{% endif %}
                 {% endif %}
                 {% if typedef.templates != None %}
                 {% set j = joiner(', ') %}

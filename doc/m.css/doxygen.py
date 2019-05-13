@@ -463,12 +463,14 @@ def parse_ref(state: State, element: ET.Element) -> str:
 
 def make_include(state: State, file) -> Tuple[str, str]:
     if file in state.includes and state.compounds[state.includes[file]].has_details:
-        # NOTE!!! This is specific to the DIPlib documentation!
-        show_file = file
-        if show_file.startswith('diplib/library/'):
-            show_file = 'diplib.h'
-        return (html.escape('<{}>'.format(show_file)), state.compounds[state.includes[file]].url)
+        return (html.escape('<{}>'.format(file)), state.compounds[state.includes[file]].url)
     return None
+
+# NOTE!!! This is specific to the DIPlib documentation!
+def fix_diplib_header(file) -> str:
+    if file.startswith('diplib/library/'):
+        return 'diplib.h'
+    return file
 
 def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, str, Tuple[str, str], bool]:
     # Returns URL base (usually saved to state.current_definition_url_base and
@@ -484,6 +486,7 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
     if state.current_kind in ['namespace', 'group']:
         location_attribs = element.find('location').attrib
         file = location_attribs['declfile'] if 'declfile' in location_attribs else location_attribs['file']
+        file = fix_diplib_header(file)
         include = make_include(state, file)
 
         # If the include for current namespace is not yet set (empty string)
@@ -492,7 +495,7 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
         # information from the compound, because namespace location is
         # sometimes pointed to a *.cpp file, which Doxygen sees before *.h.
         if not state.current_include and state.current_include is not None:
-            assert state.current_kind == 'namespace'
+            assert state.current_kind == 'namespace' or state.current_kind == 'group'
             state.current_include = file
             # parse_xml() fills compound.include from this later
 
@@ -510,6 +513,7 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
     if state.current_kind in ['class', 'struct', 'union']:
         location_attribs = element.find('location').attrib
         file = location_attribs['declfile'] if 'declfile' in location_attribs else location_attribs['file']
+        file = fix_diplib_header(file)
         if state.current_include != file:
             include = make_include(state, file)
             has_details = True
@@ -541,7 +545,7 @@ def fix_type_spacing(type: str) -> str:
         .replace('&lt; ', '&lt;')
         .replace(' &gt;', '&gt;')
         .replace(' &amp;', '&amp;')
-        .replace(' *', '*'))
+        .replace(' *', '*').replace(' *', '*'))
 
 def parse_type(state: State, type: ET.Element) -> str:
     # Constructors and typeless enums might not have it
@@ -2292,11 +2296,10 @@ def parse_define(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'define'
 
     define = Empty()
-    # defines are always only defined in files, never duplicated to namespaces,
-    # so we don't need to have define.base_url. Can't use extract_id_hash()
+    # Can't use extract_id_hash()
     # here because current_definition_url_base might be stale. See a test in
     # compound_namespace_members_in_file_scope_define_base_url.
-    state.current_definition_url_base, _, define.id, define.include, define.has_details = parse_id_and_include(state, element)
+    state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.name = element.find('name').text
     define.brief = parse_desc(state, element.find('briefdescription'))
     define.description, params, define.return_value, search_keywords, define.is_deprecated = parse_define_desc(state, element)
@@ -2317,10 +2320,11 @@ def parse_define(state: State, element: ET.Element):
     # Some param description got unused
     if params: logging.warning("{}: define parameter description doesn't match parameter names: {}".format(state.current, repr(params)))
 
-    if define.description or define.return_value:
+    if define.base_url == state.current_compound_url and (define.description or define.return_value):
         define.has_details = True # has_details might already be True from above
     if define.brief or define.has_details:
-        if not state.doxyfile['M_SEARCH_DISABLED']:
+        # Avoid duplicates in search
+        if define.base_url == state.current_compound_url and not state.doxyfile['M_SEARCH_DISABLED']:
             result = Empty()
             result.flags = ResultFlag.DEFINE|(ResultFlag.DEPRECATED if define.is_deprecated else ResultFlag(0))
             result.url = state.current_compound_url + '#' + define.id
@@ -2789,6 +2793,7 @@ def parse_xml(state: State, xml: str):
     if compound.kind in ['struct', 'class', 'union'] or (compound.kind == 'namespace' and compounddef.find('innerclass') is None and compounddef.find('innernamespace') is None and compounddef.find('sectiondef') is None):
         location_attribs = compounddef.find('location').attrib
         file = location_attribs['declfile'] if 'declfile' in location_attribs else location_attribs['file']
+        file = fix_diplib_header(file)
         compound.include = make_include(state, file)
 
         # Save include for current compound. Every enum/var/function/... parser
@@ -2810,11 +2815,12 @@ def parse_xml(state: State, xml: str):
     # it and resets to None in case the include differs for given entry,
     # meaning all entries need to have their own include definition instead.
     # That's then finally reflected in has_details of each entry.
-    elif compound.kind == 'namespace' and compounddef.find('innerclass') is None and compounddef.find('innernamespace') is None:
+    #elif compound.kind == 'namespace' and compounddef.find('innerclass') is None and compounddef.find('innernamespace') is None:
+    elif compound.kind == 'namespace' or compound.kind == 'group':
         state.current_include = ''
 
     # Files and dirs don't need it (it's implicit); and it makes no sense for
-    # pages or modules.
+    # pages.
     else:
         state.current_include = None
 
@@ -3358,7 +3364,7 @@ def parse_xml(state: State, xml: str):
     # or nowhere at all)
     if state.doxyfile['SHOW_INCLUDE_FILES'] and compound.kind in ['namespace', 'group']:
         # If we're in a namespace, its include info comes from inside
-        if compound.kind == 'namespace' and state.current_include:
+        if state.current_include:
             compound.include = make_include(state, state.current_include)
 
         # If we discovered that entries of this compound don't have a common
@@ -3392,7 +3398,7 @@ def parse_xml(state: State, xml: str):
             else:
                 entry.include = None
         for entry in compound.defines:
-            if entry.include and not state.current_include: # NOTE! defines don't have a namespace, they only appear in one group list.
+            if entry.include and not state.current_include and entry.base_url == compound.url:
                 entry.has_details = True
                 compound.has_define_details = True
             else:

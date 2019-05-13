@@ -107,14 +107,13 @@ class DIP_CLASS_EXPORT ExternalInterface {
 /// returns a pointer to a unique instance.
 /// The alignment, in bytes, is passed to `dip::AlignedAllocInterface::GetInstance()`
 /// as a template parameter.
-/// For example:
+/// For example, here we create an allocator that guarantees 64-byte alignment:
 ///
 /// ```cpp
-///     // Obtain ExternalInterface pointer that guarantees 64-byte alignment:
 ///     ExternalInterface* ei = dip::AlignedAllocInterface::GetInstance<64>();
 /// ```
 ///
-/// Note: this interface is only suitable for allocating blocks of memory that are (much)
+/// Note: this interface is only suitable for allocating blocks of memory that are
 /// larger than the alignment size. Internally, the class allocates an oversized memory block
 /// padded with `alignment`, and returns an aligned pointer within that oversized block.
 class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
@@ -149,7 +148,7 @@ class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
             dip::sint& tensorStride
       ) override;
 
-      /// Singleton interface, templated in the alignment parameter.
+      /// \brief Singleton interface, templated in the alignment parameter.
       /// Only one instance is needed for each distinct alignment.
       /// `alignment` is in bytes.
       template< size_t alignment >

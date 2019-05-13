@@ -106,7 +106,7 @@ class DIP_NO_EXPORT Kernel;
 /// As elsewhere, the origin of the structuring element is in the middle of the image, on the pixel to
 /// the right of the center in case of an even-sized image.
 ///
-/// See dip::Kernel, dip::PixelTable
+/// \see dip::Kernel, dip::PixelTable
 ///
 /// \section line_morphology Line morphology
 ///
@@ -159,7 +159,7 @@ class DIP_NO_EXPORT Kernel;
 /// This makes it easier to decompose the SE into the two components. Do note that, because of this normalization,
 /// there could be a 1 pixel shift for even-sized lines as compared to `"discrete line"` or `"fast line"`.
 ///
-/// In general, a few quick experiments have shown that, depending on the angle and the direction of the line w.r.t.
+/// A few quick experiments have shown that, depending on the angle and the direction of the line w.r.t.
 /// the image storage order, `"discrete line"` can be much faster than `"line"` (or `"fast line"`) for shorter
 /// lines (times were equal with around 50px length), or they can be much slower for even the shortest of lines.
 /// Predicting which implementation of the line will be faster for a given situation is not trivial.
