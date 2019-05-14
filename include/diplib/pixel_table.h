@@ -367,8 +367,7 @@ class DIP_NO_EXPORT PixelTable {
 /// Satisfies the requirements for ForwardIterator.
 class DIP_NO_EXPORT PixelTable::iterator {
    public:
-
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = IntegerArray;       ///< The value obtained by dereferencing are coordinates
       using reference = IntegerArray const&; ///< The type of a reference
 
@@ -406,7 +405,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
       /// Dereference
       reference operator*() const { return coordinates_; }
 
-      /// Increment
+      /// Pre-increment
       iterator& operator++() {
          ++index_;
          if( index_ < run_->length ) {
@@ -421,7 +420,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
          return *this;
       }
 
-      /// Increment
+      /// Post-increment
       iterator operator++( int ) {
          iterator tmp( *this );
          operator++();
@@ -475,8 +474,7 @@ inline PixelTable::iterator PixelTable::end() const {
 /// Satisfies the requirements for ForwardIterator.
 class DIP_NO_EXPORT PixelTableOffsets::iterator {
    public:
-
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = dip::sint;       ///< The value obtained by dereferencing is an offset
       using reference = dip::sint;        ///< The type of a reference, but we don't return by reference, it's just as easy to copy
 
@@ -518,7 +516,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       /// Get index within run
       dip::uint Index() const { return index_; }
 
-      /// Increment
+      /// Pre-increment
       iterator& operator++() {
          ++index_;
          if( index_ == run_->length ) {
@@ -528,7 +526,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
          return *this;
       }
 
-      /// Increment
+      /// Post-increment
       iterator operator++( int ) {
          iterator tmp( *this );
          operator++();

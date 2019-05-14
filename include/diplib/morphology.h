@@ -516,7 +516,19 @@ inline Image MorphologicalThreshold(
    return out;
 }
 
-// TODO: Document MorphologicalGist. It was undocumented in DIPlib 2.
+/// \brief Morphological gist operator and its variants
+///
+/// Similar to the top-hat operator, it computes the difference between the average of
+/// two complementary morphological operators and the original image.
+///
+/// The flags `edgeType` defines which operation is applied:
+/// - `"texture"`: response is limited to edges in texture (i.e. scales smaller than the structuring element).
+/// - `"object"`: response is limited to object edges (i.e. scales larger than the structuring element).
+/// - `"both"` or `"dynamic"`: all edges produce equal response.
+///
+/// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
+/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// of these parameters.
 DIP_EXPORT void MorphologicalGist(
       Image const& in,
       Image& out,

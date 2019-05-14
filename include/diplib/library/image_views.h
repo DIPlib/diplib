@@ -552,33 +552,42 @@ class Image::Pixel {
       }
 
       /// \brief An iterator to iterate over the samples in the pixel. Mutable forward iterator.
-      // TODO: Document member functions
+      ///
+      /// Note that this iterator has no useful public constructors, and needs to be constructed through
+      /// `dip::Image::Pixel::begin` and `dip::Image::Pixel::end`.
       class Iterator {
          public:
-            using iterator_category = std::forward_iterator_tag;
-            using value_type = Sample;
-            using difference_type = dip::sint;
-            using reference = value_type&;
-            using pointer = value_type*;
+            using iterator_category = std::forward_iterator_tag; ///< %Iterator category
+            using value_type = Sample;          ///< The data type of a sample, obtained when dereferencing the iterator
+            using reference = value_type&;      ///< The type of a reference to a sample
+            using pointer = value_type*;        ///< The type of a pointer to a sample
 
+            /// Default initializable, results in invalid iterator
             Iterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ) {}
 
+            /// Swap two iterators
             void swap( Iterator& other ) {
                value_.swap( other.value_ );
                std::swap( tensorStride_, other.tensorStride_ );
             }
 
+            /// Dereference
             reference operator*() { return value_; }
+            /// Dereference
             pointer operator->() { return &value_; }
 
+            /// Pre-increment
             Iterator& operator++() {
                value_.origin_ = static_cast< uint8* >( value_.origin_ ) +
                                 tensorStride_ * static_cast< dip::sint >( value_.dataType_.SizeOf() );
                return *this;
             }
+            /// Post-increment
             Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
 
+            /// Equality comparison
             bool operator==( Iterator const& other ) const { return value_.Origin() == other.value_.Origin(); }
+            /// Inequality comparison
             bool operator!=( Iterator const& other ) const { return !operator==( other ); }
 
          protected:
@@ -827,8 +836,7 @@ class Image::CastSample : public Image::Sample {
       CastSample( Sample&& sample ) : Sample( std::move( sample )) {}
       using Sample::operator=;
       operator T() const { return As< T >(); }
-
-      /// For some reason, MSVC needs this for disambiguation; the cast operator is not enough
+      // For some reason, MSVC needs this for disambiguation; the cast operator is not enough
       bool operator==( T value ) const { return As< T >() == value; }
 };
 
@@ -1112,11 +1120,10 @@ class Image::View {
 /// \brief View iterator, similar in functionality to `dip::GenericImageIterator`.
 class Image::View::Iterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
-      using value_type = Image::Pixel;
-      using difference_type = dip::sint;
-      using reference = value_type;
-      using pointer = value_type*;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
+      using value_type = Image::Pixel;     ///< The data type obtained when dereferencing the iterator
+      using reference = value_type;        ///< The type of a reference to a pixel
+      using pointer = value_type*;         ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       Iterator();
@@ -1142,7 +1149,7 @@ class Image::View::Iterator {
          return operator*()[ index ];
       }
 
-      /// Increment
+      /// Pre-increment
       Iterator& operator++();
 
       /// Get an iterator over the tensor for the current pixel, `it.begin()` is equal to `(*it).begin()`.

@@ -63,9 +63,9 @@ namespace dip {
 template< typename T >
 class DIP_NO_EXPORT SampleIterator {
    public:
-      using iterator_category = std::random_access_iterator_tag;
+      using iterator_category = std::random_access_iterator_tag; ///< %Iterator category
       using value_type = T;               ///< The data type of the sample, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
+      using difference_type = dip::sint;  ///< The type of difference between iterators
       using reference = T&;               ///< The type of a reference to a sample
       using pointer = T*;                 ///< The type of a pointer to a sample
 
@@ -90,23 +90,23 @@ class DIP_NO_EXPORT SampleIterator {
       /// Index
       template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
       reference operator[]( I index ) const { return *( ptr_ + static_cast< difference_type >( index ) * stride_ ); }
-      /// Increment
+      /// Pre-increment
       SampleIterator& operator++() {
          ptr_ += stride_;
          return *this;
       }
-      /// Decrement
+      /// Pre-decrement
       SampleIterator& operator--() {
          ptr_ -= stride_;
          return *this;
       }
-      /// Increment
+      /// Post-increment
       SampleIterator operator++( int ) {
          SampleIterator tmp( *this );
          ptr_ += stride_;
          return tmp;
       }
-      /// Decrement
+      /// Post-decrement
       SampleIterator operator--( int ) {
          SampleIterator tmp( *this );
          ptr_ -= stride_;
@@ -128,11 +128,11 @@ class DIP_NO_EXPORT SampleIterator {
       difference_type operator-( SampleIterator const& it ) const {
          return ( ptr_ - it.ptr_ ) / stride_;
       }
-      // Test returns false if the iterator cannot be dereferenced (is a null pointer)
+      /// Test returns false if the iterator cannot be dereferenced (is a null pointer)
       explicit operator bool() const { return ptr_ != nullptr; }
-      // Returns the stride
+      /// Returns the stride
       dip::sint Stride() const { return stride_; }
-      // Returns the pointer
+      /// Returns the pointer
       pointer Pointer() const { return ptr_; }
       /// Equality comparison
       bool operator==( SampleIterator const& other ) const { return ptr_ == other.ptr_; }

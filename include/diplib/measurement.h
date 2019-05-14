@@ -207,21 +207,21 @@ class DIP_NO_EXPORT Measurement {
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Dereference to access the first value
                   ValueType& operator*() const { return *begin(); }
-                  /// \brief Iterator to the first value
+                  /// \brief %Iterator to the first value
                   ValueIterator begin() const {
                      return measurement_->Data() +
                             static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride() +
                             static_cast< dip::sint >( startColumn_ );
                   }
-                  /// \brief Iterator one past the last value
+                  /// \brief %Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
                   ValueType* data() const { return begin(); }
                   /// \brief Number of values
                   dip::uint size() const { return numberValues_; }
-                  /// \brief Increment, to access the next object
+                  /// \brief Pre-increment, to access the next object
                   Iterator& operator++() { ++objectIndex_; return *this; }
-                  /// \brief Increment, to access the next object
+                  /// \brief Post-increment, to access the next object
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
                   bool IsAtEnd() const { return objectIndex_ >= measurement_->NumberOfObjects(); }
@@ -247,11 +247,11 @@ class DIP_NO_EXPORT Measurement {
                   dip::uint numberValues_;
             };
 
-            /// \brief Iterator to the first object for this feature
+            /// \brief %Iterator to the first object for this feature
             Iterator FirstObject() const { return Iterator( *this, 0 ); }
-            /// \brief Iterator to the given object for this feature
+            /// \brief %Iterator to the given object for this feature
             Iterator operator[]( dip::uint objectID ) const { return Iterator( *this, ObjectIndex( objectID )); }
-            /// \brief Increment, to access the next feature
+            /// \brief Pre-increment, to access the next feature
             IteratorFeature& operator++() {
                ++featureIndex_;
                if( IsAtEnd() ) {
@@ -263,7 +263,7 @@ class DIP_NO_EXPORT Measurement {
                }
                return *this;
             }
-            /// \brief Increment, to access the next feature
+            /// \brief Post-increment, to access the next feature
             IteratorFeature operator++( int ) { IteratorFeature tmp( *this ); operator++(); return tmp; }
             /// \brief Selects a subset of values from the current feature. This does not invalidate the iterator.
             IteratorFeature& Subset( dip::uint first, dip::uint number = 1 ) {
@@ -341,21 +341,21 @@ class DIP_NO_EXPORT Measurement {
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Dereference to access the first value
                   ValueType& operator*() const { return *begin(); }
-                  /// \brief Iterator to the first value
+                  /// \brief %Iterator to the first value
                   ValueIterator begin() const {
                      return measurement_->Data() +
                             static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride() +
                             static_cast< dip::sint >( Feature().startColumn );
                   }
-                  /// \brief Iterator one past the last value
+                  /// \brief %Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
                   ValueType* data() const { return begin(); }
                   /// \brief Number of values
                   dip::uint size() const { return Feature().numberValues; }
-                  /// \brief Increment, to access the next feature
+                  /// \brief Pre-increment, to access the next feature
                   Iterator& operator++() { ++featureIndex_; return *this; }
-                  /// \brief Increment, to access the next feature
+                  /// \brief Post-increment, to access the next feature
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
                   bool IsAtEnd() const { return featureIndex_ >= measurement_->NumberOfFeatures(); }
@@ -378,13 +378,13 @@ class DIP_NO_EXPORT Measurement {
                   dip::uint featureIndex_;
             };
 
-            /// \brief Iterator to the first feature for this object
+            /// \brief %Iterator to the first feature for this object
             Iterator FirstFeature() const { return Iterator( *this, 0 ); }
-            /// \brief Iterator to the given feature for this object
+            /// \brief %Iterator to the given feature for this object
             Iterator operator[]( String const& name ) const { return Iterator( *this, FeatureIndex( name )); }
-            /// \brief Increment, to access the next object
+            /// \brief Pre-increment, to access the next object
             IteratorObject& operator++() { ++objectIndex_; return *this; }
-            /// \brief Increment, to access the next object
+            /// \brief Post-increment, to access the next object
             IteratorObject operator++( int ) { IteratorObject tmp( *this ); operator++(); return tmp; }
             /// \brief True if done iterating (do not call other methods if this is true!)
             bool IsAtEnd() const { return objectIndex_ >= NumberOfObjects(); }

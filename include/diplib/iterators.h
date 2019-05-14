@@ -74,9 +74,8 @@ namespace dip {
 template< typename T >
 class DIP_NO_EXPORT LineIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = T&;               ///< The type of a reference to a pixel
       using pointer = T*;                 ///< The type of a pointer to a pixel
 
@@ -182,7 +181,7 @@ class DIP_NO_EXPORT LineIterator {
       /// Index into tensor, `it[0]` is equal to `*it`, but `it[1]` is not equal to `*(++it)`.
       reference operator[]( dip::uint index ) const { return *( ptr_ + static_cast< dip::sint >( index ) * tensorStride_ ); }
 
-      /// Increment
+      /// Pre-increment
       LineIterator& operator++() {
          if( ptr_ ) {
             ++coord_;
@@ -194,7 +193,7 @@ class DIP_NO_EXPORT LineIterator {
          }
          return *this;
       }
-      /// Increment
+      /// Post-increment
       LineIterator operator++( int ) {
          LineIterator tmp( *this );
          operator++();
@@ -331,9 +330,8 @@ using ConstLineIterator = LineIterator< T const >;
 template< typename T >
 class DIP_NO_EXPORT ImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = T;               ///< The data type of the sample, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = T&;               ///< The type of a reference to a sample
       using pointer = T*;                 ///< The type of a pointer to a pixel
 
@@ -352,9 +350,10 @@ class DIP_NO_EXPORT ImageIterator {
          DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( image.DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
       }
-      /// To construct a useful iterator, provide an image, an ROI, and optionally a processing dimension. `spacing` can
-      /// be an empty array or a scalar, but `origin` and `sizes` are expected to contain one value per image dimension.
-      /// Iterator coordinates are within the ROI.
+      /// \brief To construct a useful iterator, provide an image, an ROI, and optionally a processing dimension.
+      ///
+      /// `spacing` can be an empty array or a scalar, but `origin` and `sizes` are expected to contain one value
+      /// per image dimension. %Iterator coordinates are within the ROI.
       ImageIterator(
             Image const& image,
             UnsignedArray const& origin, // TODO: Add a similar constructor to the other image iterators
@@ -418,7 +417,7 @@ class DIP_NO_EXPORT ImageIterator {
          return *( ptr_ + static_cast< dip::sint >( index ) * tensorStride_ );
       }
 
-      /// Increment
+      /// Pre-increment
       ImageIterator& operator++() {
          if( ptr_ ) {
             dip::uint dd;
@@ -442,7 +441,7 @@ class DIP_NO_EXPORT ImageIterator {
          }
          return *this;
       }
-      /// Increment
+      /// Post-increment
       ImageIterator operator++( int ) {
          ImageIterator tmp( *this );
          operator++();
@@ -689,8 +688,8 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 ///     void Function( ... ) {
 ///        JointImageIterator< TPI, bin > it( { in, mask } );
 ///        do {
-///           if( it.template Sample< 1 >() ) {  // Note `template` on this line
-///              it.template Sample< 0 >() = 0;  // Note `template` on this line
+///           if( it.template Sample< 1 >() ) {   // Note `template` on this line
+///               it.template Sample< 0 >() = 0;  // Note `template` on this line
 ///           }
 ///        } while( ++it );
 ///     }
@@ -705,10 +704,8 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 template< typename... Types >
 class DIP_NO_EXPORT JointImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
-      template< dip::uint I > using value_type = typename std::tuple_element< I, std::tuple< Types ... >>::type;
-      ///< The data type of the sample, obtained when dereferencing the iterator
-      using difference_type = dip::sint;                ///< The type of distances between iterators
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
+      template< dip::uint I > using value_type = typename std::tuple_element< I, std::tuple< Types ... >>::type; ///< The data type of the sample, obtained when dereferencing the iterator
       template< dip::uint I > using reference = value_type< I >&; ///< The type of a reference to a sample
       template< dip::uint I > using pointer = value_type< I >*;   ///< The type of a pointer to a sample
 
@@ -788,7 +785,7 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Get first tensor element for image 1.
       reference< 1 > Out() const { return Sample< 1 >(); }
 
-      /// Increment
+      /// Pre-increment
       JointImageIterator& operator++() {
          if( *this ) {
             dip::uint dd;
@@ -816,7 +813,7 @@ class DIP_NO_EXPORT JointImageIterator {
          }
          return *this;
       }
-      /// Increment
+      /// Post-increment
       JointImageIterator operator++( int ) {
          JointImageIterator tmp( *this );
          operator++();

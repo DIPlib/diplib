@@ -52,14 +52,13 @@ namespace dip {
 /// \see LineIterator, SampleIterator
 class DIP_NO_EXPORT BresenhamLineIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
-      using value_type = dip::sint;       ///< The type of an offset
-      using difference_type = dip::sint;  ///< The type of distances between iterators
-      using reference = value_type const&;///< The type of a reference to an offset
-      using pointer = value_type const*;  ///< The type of a pointer an offset
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
+      using value_type = dip::sint;          ///< The type of an offset
+      using reference = value_type const&;   ///< The type of a reference to an offset
+      using pointer = value_type const*;     ///< The type of a pointer an offset
 
-      constexpr static dfloat epsilon = 1e-5;
-      constexpr static dfloat delta = 1.0 - epsilon;
+      constexpr static dfloat epsilon = 1e-5;         ///< Tolerance used to avoid errors caused by rounding.
+      constexpr static dfloat delta = 1.0 - epsilon;  ///< A distance of almost one pixel.
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       BresenhamLineIterator() = default;
@@ -139,10 +138,8 @@ class DIP_NO_EXPORT BresenhamLineIterator {
 
       /// Dereference
       dip::sint operator*() const { return offset_; }
-      // Dereference (makes no sense)
-      //pointer operator->() const { return &offset_; }
 
-      /// Increment
+      /// Pre-increment
       BresenhamLineIterator& operator++() {
          if( length_ == 0 ) {
             coord_.clear(); // mark we're done
@@ -160,7 +157,7 @@ class DIP_NO_EXPORT BresenhamLineIterator {
          --length_;
          return *this;
       }
-      /// Increment
+      /// Post-increment
       BresenhamLineIterator operator++( int ) {
          BresenhamLineIterator tmp( *this );
          operator++();
@@ -225,7 +222,8 @@ inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) {
 ///     do {
 ///        Image::Pixel d( dest.Pointer( *arrIt ), dest.DataType(), dest.Tensor(), dest.TensorStride() );
 ///        d = *srcIt;
-///     } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
+///     } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator,
+///                                  // as arrIt should be compared with the end iterator.
 /// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
@@ -234,11 +232,10 @@ inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) {
 template< typename T = dfloat >
 class DIP_NO_EXPORT GenericImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = Image::CastPixel< T >; ///< The type of the pixel, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
-      using reference = value_type;       ///< The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
-      using pointer = value_type*;        ///< The type of a pointer to a pixel
+      using reference = value_type; ///< The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
+      using pointer = value_type*;  ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), sizeOf_( 0 ), atEnd_( true ) {}
@@ -279,16 +276,12 @@ class DIP_NO_EXPORT GenericImageIterator {
       value_type operator*() const {
          return value_type( Pointer(), dataType_, Tensor( tensorElements_ ), tensorStride_ );
       }
-      /// Dereference
-      value_type operator->() const {
-         return operator*();
-      }
       /// Index into tensor, `it[index]` is equal to `(*it)[index]`.
       Image::CastSample< T > operator[]( dip::uint index ) const {
          return Image::CastSample< T >( Pointer( index ), dataType_ );
       }
 
-      /// Increment
+      /// Pre-increment
       GenericImageIterator& operator++() {
          DIP_ASSERT( origin_ );
          dip::uint dd;
@@ -311,7 +304,7 @@ class DIP_NO_EXPORT GenericImageIterator {
          }
          return *this;
       }
-      /// Increment
+      /// Post-increment
       GenericImageIterator operator++( int ) {
          GenericImageIterator tmp( *this );
          operator++();
@@ -563,9 +556,8 @@ inline GenericImageIterator< dip::dfloat > Image::end() {
 template< dip::uint N, typename T = dfloat >
 class DIP_NO_EXPORT GenericJointImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = Image::CastPixel< T >; ///< The type of the pixel, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = value_type;       ///< The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
       using pointer = value_type*;        ///< The type of a pointer to a pixel
 
@@ -650,7 +642,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          return value_type( Pointer< I >(), dataTypes_[ I ], Tensor( tensorElementss_[ I ] ), tensorStrides_[ I ] );
       }
 
-      /// Increment
+      /// Pre-increment
       GenericJointImageIterator& operator++() {
          if( *this ) {
             dip::uint dd;
@@ -678,7 +670,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          }
          return *this;
       }
-      /// Increment
+      /// Post-increment
       GenericJointImageIterator operator++( int ) {
          GenericJointImageIterator tmp( *this );
          operator++();
@@ -1003,7 +995,7 @@ inline void swap( GenericJointImageIterator< N, T >& v1, GenericJointImageIterat
 /// \see \ref using_iterators, ImageTensorIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
 class DIP_NO_EXPORT ImageSliceIterator {
    public:
-      using iterator_category = std::forward_iterator_tag;
+      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
       using value_type = Image;           ///< The type obtained when dereferencing the iterator
       using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = Image&;           ///< The type of a reference to `value_type`
@@ -1044,20 +1036,20 @@ class DIP_NO_EXPORT ImageSliceIterator {
       /// Dereference
       Image* operator->() { return &image_; }
 
-      /// Increment
+      /// Pre-increment
       ImageSliceIterator& operator++() {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
          ++coord_;
          image_.dip__ShiftOrigin( stride_ );
          return *this;
       }
-      /// Increment
+      /// Post-increment
       ImageSliceIterator operator++( int ) {
          ImageSliceIterator tmp( *this );
          operator++();
          return tmp;
       }
-      /// Decrement, but never past the first slide
+      /// Pre-decrement, but never past the first slice
       ImageSliceIterator& operator--() {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
          if( coord_ != 0 ) {
@@ -1066,7 +1058,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
          }
          return *this;
       }
-      /// Decrement, but never past the first slide
+      /// Post-decrement, but never past the first slice
       ImageSliceIterator operator--( int ) {
          ImageSliceIterator tmp( *this );
          operator--();
@@ -1089,11 +1081,11 @@ class DIP_NO_EXPORT ImageSliceIterator {
       ImageSliceIterator& operator+=( dip::uint n ) {
          return operator+=( static_cast< difference_type >( n ));
       }
-      /// Decrement by `n`, but never moves the iterator to before the first slide
+      /// Decrement by `n`, but never moves the iterator to before the first slice
       ImageSliceIterator& operator-=( difference_type n ) {
          return operator+=( -n );
       }
-      /// Decrement by `n`, but never moves the iterator to before the first slide
+      /// Decrement by `n`, but never moves the iterator to before the first slice
       ImageSliceIterator& operator-=( dip::uint n ) {
          return operator+=( -static_cast< difference_type >( n ));
       }

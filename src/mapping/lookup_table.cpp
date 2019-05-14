@@ -530,9 +530,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::LookupTable" ) {
       ind = d;
       d += 0.5;
    }
-   dip::LookupTable lut2(  dip::ImageIterator< dip::sfloat >( lutIm ),
-                           dip::ImageIterator< dip::sfloat >(),
-                           index ); // note that this is inefficient, this is just to test the functionality.
+   dip::SampleIterator< dip::sfloat > lutImIt( static_cast< dip::sfloat* >( lutIm.Origin() ), lutIm.Stride( 0 ));
+   dip::LookupTable lut2( lutImIt, lutImIt + lutIm.Size( 0 ), index );
    lut2.SetOutOfBoundsValue( 255 );
    DOCTEST_CHECK( lut2.HasIndex() );
    DOCTEST_CHECK( lut2.DataType() == dip::DT_SFLOAT );

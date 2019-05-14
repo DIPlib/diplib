@@ -91,12 +91,12 @@ class DIP_NO_EXPORT DimensionArray {
 
    public:
       // Types for consistency with STL containers
-      using value_type = T;
-      using iterator = T*;
-      using const_iterator = T const*;
-      using reverse_iterator = std::reverse_iterator< iterator >;
-      using const_reverse_iterator = std::reverse_iterator< const_iterator >;
-      using size_type = std::size_t;
+      using value_type = T;               ///< Type of values stored in container
+      using iterator = T*;                ///< Type of container's iterator
+      using const_iterator = T const*;    ///< Type of container's const iterator
+      using reverse_iterator = std::reverse_iterator< iterator >;             ///< Type of container's reverse iterator
+      using const_reverse_iterator = std::reverse_iterator< const_iterator >; ///< Type of container's const reverse iterator
+      using size_type = std::size_t;      ///< Type of index into container
 
       /// The default-initialized array has zero size.
       DimensionArray() {}; // Using `=default` causes weird sequence of "constructor required before non-static data member for ‘dip::Histogram::Configuration::lowerBound’ has been parsed" in GCC

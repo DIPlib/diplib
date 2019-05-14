@@ -54,8 +54,8 @@ class DIP_NO_EXPORT Histogram;
 /// The `Sort` method applies a stable sort to restore the order.
 class DIP_NO_EXPORT Distribution {
    public:
-      using ValueType = dfloat;
-      using Container = std::vector< ValueType >;
+      using ValueType = dfloat;                    ///< Data type of values stored in container
+      using Container = std::vector< ValueType >;  ///< %Container used internally to store the data
 
       /// \brief One sample of a distribution.
       ///
@@ -63,10 +63,12 @@ class DIP_NO_EXPORT Distribution {
       /// the sample. For multi-valued samples, evaluates to the first *y* value.
       ///
       /// Given a `%Sample` `s`, `s.X()` accesses the *x*-value of the sample, `s.Y()` accesses
-      /// the (first) *y*-value, `s.Y(ii)` accesses the `ii`-th *y* value, and `s.Y(ii,jj)` accesses
+      /// the (first) *y*-value, `s.Y(ii)` accesses the `(ii+1)`-th *y* value, and `s.Y(ii,jj)` accesses
       /// the element at (`ii`,`jj`). `s.Y(ii,jj)` is equivalent to `s.Y(ii+jj*nRows)`, where `nRows`
       /// is the number of rows in the matrix. None of these accessors test for out-of-bounds accesses.
       ///
+      /// \warning
+      /// \parblock
       /// Note that `%Sample` references the `dip::Distribution` it is created from, which must therefore
       /// exist while the sample is used. Copying a `%Sample` does not create new storage, the copy will
       /// reference the same data. Therefore, things like the following will not work:
@@ -80,47 +82,60 @@ class DIP_NO_EXPORT Distribution {
       ///
       /// Instead, use `swap`. Do note that some algorithms in the C++ Standard Library expect the above
       /// to work.
-      // TODO: Document the member functions
+      /// \endparblock
       class DIP_NO_EXPORT Sample {
             friend class Distribution;
             friend class Iterator;
          public:
+            /// Not default constructable
             Sample() = delete;
+            /// Move constructor
             Sample( Sample&& ) = default;
-            Sample( const Sample& ) = default; // Copy constructor, references the same data. Careful! Can't do `auto tmp=a; a=b; b=tmp;`
-            Sample& operator=( Sample&& other ) { // No move, data is copied to sample referenced
+            /// \brief Copy constructor, references the same data. Careful!
+            Sample( const Sample& ) = default;
+            /// Move assignment actually copies value over to sample referenced
+            Sample& operator=( Sample&& other ) {
                *this = other; // Call copy assignment
                return *this;
             }
-            Sample& operator=( Sample const& other ) { // Data is copied to sample referenced
+            /// Copy assignment, data is copied to sample referenced
+            Sample& operator=( Sample const& other ) {
                DIP_ASSERT( distribution_->ValuesPerSample() == other.distribution_->ValuesPerSample() );
                dfloat const* src = other.distribution_->data_.data() + other.index_;
                dfloat* dest = distribution_->data_.data() + index_;
                std::copy( src, src + distribution_->ValuesPerSample() + 1, dest );
                return *this;
             };
+            /// Returns reference to sample's *x* value.
             dfloat& X() {
                return distribution_->data_[ index_ ];
             }
+            /// Returns sample's *x* value.
             dfloat X() const {
                return distribution_->data_[ index_ ];
             }
+            /// Returns reference to sample's `(index+1)`-th *y* value.
             dfloat& Y( dip::uint index = 0 ) {
                return distribution_->data_[ index_ + index + 1 ];
             }
+            /// Returns sample's `(index+1)`-th *y* value.
             dfloat Y( dip::uint index = 0 ) const {
                return distribution_->data_[ index_ + index + 1 ];
             }
+            /// Returns reference to sample's *y* value at (`row`,`col`).
             dfloat& Y( dip::uint row, dip::uint col ) {
                return distribution_->data_[ index_ + 1 + row + col * distribution_->nRows_ ];
             }
+            /// Returns sample's *y* value at (`row`,`col`).
             dfloat Y( dip::uint row, dip::uint col ) const {
                return distribution_->data_[ index_ + 1 + row + col * distribution_->nRows_ ];
             }
+            /// Implicitly casts to sample's first *y* value.
             operator dfloat() const {
                return distribution_->data_[ index_ + 1 ];
             }
-            void swap( Sample& other ) { // Will do bad things if `*this` and `other` don't have the same number of values
+            /// Swaps two samples. Will do bad things if `*this` and `other` don't have the same number of values
+            void swap( Sample& other ) {
                DIP_ASSERT( distribution_->ValuesPerSample() == other.distribution_->ValuesPerSample() );
                dfloat* ptr1 = distribution_->data_.data() + index_;
                dfloat* ptr2 = other.distribution_->data_.data() + other.index_;
@@ -140,34 +155,42 @@ class DIP_NO_EXPORT Distribution {
       };
 
       /// \brief An iterator for `dip::Distribution`. Dereferences into a `Sample`.
-      // TODO: Document the member functions
       class DIP_NO_EXPORT Iterator {
             friend class Distribution;
 
          public:
-            using iterator_category = std::random_access_iterator_tag;
-            using value_type = Sample;
-            using difference_type = dip::sint;
-            using reference = Sample&;
-            using pointer = Sample*;
+            using iterator_category = std::random_access_iterator_tag; ///< %Iterator category
+            using value_type = Sample;           ///< The data type obtained when dereferencing the iterator
+            using difference_type = dip::sint;   ///< The type of difference between iterators
+            using reference = Sample&;           ///< The type of a reference to a sample
+            using pointer = Sample*;             ///< The type of a pointer to a sample
 
+            /// Not default constructable
             Iterator() = delete; // TODO: random access iterator requires default initialization
             //Iterator() : sample_{ nullptr, 0 }, stride_( 0 ) {}
+            /// Move constructor
             Iterator( Iterator&& ) = default;
-            Iterator( const Iterator& ) = default; // Copy constructor, references the same data. Careful! Can't do `auto tmp=a; a=b; b=tmp;`
-            Iterator& operator=( Iterator&& other ) {
+            /// Copy constructor
+            Iterator( const Iterator& ) = default;
+            /// Move assignment, identical to move assignment
+            Iterator& operator=( Iterator&& other ) noexcept {
                return operator=( other ); // Call copy assignment
             }
-            Iterator& operator=( Iterator const& other ) { // Copy assignment cannot be defaulted because copy assignment of Sample is not as needed here
+            /// Copy assignment
+            Iterator& operator=( Iterator const& other ) noexcept {
+               // Copy assignment cannot be defaulted because copy assignment of Sample is not as needed here
                sample_.distribution_ = other.sample_.distribution_;
                sample_.index_ = other.sample_.index_;
                stride_ = other.stride_;
                return *this;
             };
 
+            /// Derefence
             Sample& operator*() noexcept { return sample_; }
+            /// Derefence
             Sample* operator->() noexcept { return &sample_; }
 
+            /// Return sample `index` values away from the current location
             template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
             Sample operator[]( I index ) const {
                auto out = sample_;
@@ -175,25 +198,30 @@ class DIP_NO_EXPORT Distribution {
                return out;
             }
 
+            /// Pre-increment
             Iterator& operator++() {
                sample_.index_ += stride_;
                return *this;
             }
+            /// Pre-decrement
             Iterator& operator--() {
                sample_.index_ -= stride_;
                return *this;
             }
+            /// Post-increment
             Iterator operator++( int ) {
                Iterator tmp( *this );
                operator++();
                return tmp;
             }
+            /// Post-decrement
             Iterator operator--( int ) {
                Iterator tmp( *this );
                operator++();
                return tmp;
             }
 
+            /// Move iterator forward by `index` elements
             template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
             Iterator& operator+=( I index ) {
                sample_.index_ = static_cast< dip::uint >(
@@ -201,32 +229,35 @@ class DIP_NO_EXPORT Distribution {
                      + static_cast< dip::sint >( index ) * static_cast< dip::sint >( stride_ ));
                return *this;
             }
+            /// Move iterator backward by `index` elements
             template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
             Iterator& operator-=( I index ) {
-               sample_.index_ = static_cast< dip::uint >(
-                     static_cast< dip::sint >( sample_.index_ )
-                     - static_cast< dip::sint >( index ) * static_cast< dip::sint >( stride_ ));
-               return *this;
+               return operator+=( -static_cast< dip::sint >( index ));
             }
+            /// Returns new iterator moved forward by `n` elements
             template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
             Iterator operator+( I n ) {
                Iterator tmp( *this );
                tmp += n;
                return tmp;
             }
+            /// Returns new iterator moved backward by `n` elements
             template< typename I, typename = std::enable_if_t< IsIndexingType< I >::value >>
             Iterator operator-( I n ) {
                Iterator tmp( *this );
                tmp -= n;
                return tmp;
             }
-            dip::sint operator-( Iterator const& it ) const {
+            /// Returns distance between two iterators
+            difference_type operator-( Iterator const& it ) const {
                return ( static_cast< dip::sint >( sample_.index_ ) - static_cast< dip::sint >( it.sample_.index_ )) / static_cast< dip::sint >( stride_ );
             }
 
+            /// Equality comparison
             bool operator==( Iterator const& other ) {
                return ( sample_.distribution_ == other.sample_.distribution_ ) && ( sample_.index_ == other.sample_.index_ );
             }
+            /// Inequality comparison
             bool operator!=( Iterator const& other ) {
                return !operator==( other );
             }

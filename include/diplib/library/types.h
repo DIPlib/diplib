@@ -546,11 +546,10 @@ struct DIP_NO_EXPORT Range {
    /// An iterator for the range
    class Iterator {
       public:
-         using iterator_category = std::forward_iterator_tag;
-         using value_type = dip::uint;
-         using difference_type = dip::sint;
-         using reference = dip::sint const&;
-         using pointer = dip::sint const*;
+         using iterator_category = std::forward_iterator_tag; ///< %Iterator category
+         using value_type = dip::uint;          ///< Type of value iterator references
+         using reference = dip::sint const&;    ///< Type of reference to value
+         using pointer = dip::sint const*;      ///< Type of pointer to value
 
          /// Default constructor
          Iterator() = default;
@@ -563,12 +562,12 @@ struct DIP_NO_EXPORT Range {
          /// Dereference
          pointer operator->() const { return &index_; }
 
-         /// Increment
+         /// Pre-increment
          Iterator& operator++() {
             index_ += step_;
             return *this;
          }
-         /// Increment
+         /// Post-increment
          Iterator operator++( int ) {
             Iterator tmp( *this );
             index_ += step_;

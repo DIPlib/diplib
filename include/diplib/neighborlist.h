@@ -216,18 +216,18 @@ class DIP_NO_EXPORT NeighborList {
          dfloat distance;
       };
       using NeighborListData = std::vector< Neighbor >;
-      using NeighborListIterator = std::vector< Neighbor >::const_iterator;
+      using NeighborListIterator = NeighborListData::const_iterator;
 
    public:
 
       /// \brief Iterates over the neighbors in the `%NeighborList`.
       class Iterator {
-            using iterator_category = std::forward_iterator_tag;
+         public:
+            using iterator_category = std::forward_iterator_tag; ///< %Iterator category
             using value_type = dfloat;             ///< The type that the iterator points at
             using reference = value_type const&;   ///< The type you get when you dereference
-         public:
+            /// Default constructible, yields an invalid iterator.
             Iterator() = default;
-            Iterator( NeighborListIterator const& it ) : it_( it ) {}
             /// Swap
             void swap( Iterator& other ) {
                using std::swap;
@@ -237,12 +237,12 @@ class DIP_NO_EXPORT NeighborList {
             reference operator*() const { return it_->distance; }
             /// Get the coordinates for the current neighbor
             IntegerArray const& Coordinates() const { return it_->coords; }
-            /// Increment
+            /// Pre-increment
             Iterator& operator++() {
                ++it_;
                return *this;
             }
-            /// Increment
+            /// Post-increment
             Iterator operator++( int ) {
                Iterator tmp( *this );
                ++it_;
@@ -266,6 +266,8 @@ class DIP_NO_EXPORT NeighborList {
             }
          private:
             NeighborListIterator it_;
+            friend class NeighborList;
+            Iterator( NeighborListIterator const& it ) : it_( it ) {}
       };
 
       /// \brief Creates a `%NeighborList` given the image dimensionality and a `dip::Metric`.

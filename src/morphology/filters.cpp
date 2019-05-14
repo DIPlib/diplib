@@ -79,8 +79,7 @@ void Tophat(
       bool white = BooleanFromString( polarity, S::WHITE, S::BLACK );
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       switch( decodedEdgeType ) {
-         default:
-         //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
+         case EdgeType::BOTH:
             if( white ) {
                Image c_in = Separate( in, out );
                Erosion( c_in, out, se, boundaryCondition );
@@ -91,6 +90,7 @@ void Tophat(
                out -= c_in;
             }
             break;
+         default:
          case EdgeType::TEXTURE:
             if( white ) {
                Image c_in = Separate( in, out );
@@ -128,13 +128,13 @@ void MorphologicalThreshold(
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       Image tmp;
       switch( decodedEdgeType ) {
-         default:
-         //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
+         case EdgeType::BOTH:
             Dilation( in, tmp, se, boundaryCondition );
             Erosion( in, out, se, boundaryCondition );
             out += tmp;
             out /= 2;
             break;
+         default:
          case EdgeType::TEXTURE:
             Closing( in, tmp, se, boundaryCondition );
             Opening( in, out, se, boundaryCondition );
@@ -170,14 +170,14 @@ void MorphologicalGist(
       Image tmp;
       Image c_in = Separate( in,  out );
       switch( decodedEdgeType ) {
-         default:
-         //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
+         case EdgeType::BOTH:
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( c_in, out, se, boundaryCondition );
             out += tmp;
             out /= 2;
             Subtract( c_in, out, out, out.DataType() );
             break;
+         default:
          case EdgeType::TEXTURE:
             Closing( c_in, tmp, se, boundaryCondition );
             Opening( c_in, out, se, boundaryCondition );
@@ -210,12 +210,12 @@ void MorphologicalRange(
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       Image tmp;
       switch( decodedEdgeType ) {
-         default:
-         //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
+         case EdgeType::BOTH:
             Dilation( in, tmp, se, boundaryCondition );
             Erosion( in, out, se, boundaryCondition );
             Subtract( tmp, out, out, out.DataType() );
             break;
+         default:
          case EdgeType::TEXTURE:
             Closing( in, tmp, se, boundaryCondition );
             Opening( in, out, se, boundaryCondition );
@@ -249,13 +249,13 @@ void Lee(
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       Image c_in = Separate( in,  out );
       switch( decodedEdgeType ) {
-         default:
-         //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
+         case EdgeType::BOTH:
             Dilation( c_in, out, se, boundaryCondition );
             out -= c_in;
             Erosion( c_in, out2, se, boundaryCondition );
             Subtract( c_in, out2, out2, out2.DataType() );
             break;
+         default:
          case EdgeType::TEXTURE:
             Closing( c_in, out, se, boundaryCondition );
             out -= c_in;
