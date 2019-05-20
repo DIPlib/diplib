@@ -246,8 +246,9 @@ inline Image ShiftFT(
 /// \brief Finds the values of the image at sub-pixel locations `coordinates` by linear interpolation.
 ///
 /// The array `coordinates` must have all elements be arrays of the same length as the image dimensionality.
-/// Any coordinates outside of the image domain are returned as zero values. That is, no extrapolation is
-/// performed. Coordinates match image indexing: the first pixel on a line has coordinate 0.
+/// For any coordinates outside of the image domain, the pixel value `fill` will be returned.
+/// That is, no extrapolation is performed.
+/// Coordinates match image indexing: the first pixel on a line has coordinate 0.
 ///
 /// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
 /// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
@@ -260,15 +261,17 @@ DIP_EXPORT void ResampleAt(
       Image const& in,
       Image& out,
       FloatCoordinateArray const& coordinates,
-      String const& interpolationMethod = S::LINEAR
+      String const& interpolationMethod = S::LINEAR,
+      Image::Pixel const& fill = { 0 }
 );
 inline Image ResampleAt(
       Image const& in,
       FloatCoordinateArray const& coordinates,
-      String const& interpolationMethod = S::LINEAR
+      String const& interpolationMethod = S::LINEAR,
+      Image::Pixel const& fill = { 0 }
 ) {
    Image out;
-   ResampleAt( in, out, coordinates, interpolationMethod );
+   ResampleAt( in, out, coordinates, interpolationMethod, fill );
    return out;
 }
 
@@ -276,7 +279,8 @@ inline Image ResampleAt(
 DIP_EXPORT Image::Pixel ResampleAt(
       Image const& in,
       FloatArray const& coordinates,
-      String const& interpolationMethod = S::LINEAR
+      String const& interpolationMethod = S::LINEAR,
+      Image::Pixel const& fill = { 0 }
 );
 
 using InterpolationFunctionPointer = void ( * )( Image const&, Image::Pixel const&, FloatArray );
@@ -286,7 +290,7 @@ DIP_EXPORT InterpolationFunctionPointer PrepareResampleAtUnchecked(
       String const& interpolationMethod
 );
 /// \brief Similar to `dip::ResampleAt`, but optimized for repeated calls using the same parameters.
-///  See `dip::ResampleAt`. `function` comes from `PrepareResampleAtUnchecked`.
+///  See `dip::ResampleAt`. `function` comes from `PrepareResampleAtUnchecked`. `fill` is always 0.
 DIP_EXPORT Image::Pixel ResampleAtUnchecked(
       Image const& in,
       FloatArray const& coordinates,
@@ -296,10 +300,11 @@ DIP_EXPORT Image::Pixel ResampleAtUnchecked(
 /// \brief Resamples an image with sub-pixel locations specified by a coordinate map.
 ///
 /// Returns an image of the same size as `map` with pixels taken from `in` at the subpixel coordinates
-/// specified by `map`. Each tensor element of `map` specifies the location for an input dimension. As such,
-/// it must have a number of tensor elements equal to `in`'s dimensionality.
-/// Any coordinates outside of the image domain are returned as zero values. That is, no extrapolation is
-/// performed. Coordinates match image indexing: the first pixel on a line has coordinate 0.
+/// specified by `map`. Each tensor element of `map` specifies the location for an input dimension.
+/// As such, it must have a number of tensor elements equal to `in`'s dimensionality, and real-valued samples.
+/// For any coordinates outside of the image domain, the pixel value `fill` will be returned.
+/// That is, no extrapolation is performed.
+/// Coordinates match image indexing: the first pixel on a line has coordinate 0.
 ///
 /// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
 /// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
@@ -310,15 +315,17 @@ DIP_EXPORT void ResampleAt(
       Image const &in,
       Image &out,
       Image const &map,
-      String const &interpolationMethod = S::LINEAR
+      String const &interpolationMethod = S::LINEAR,
+      Image::Pixel const& fill = { 0 }
 );
 inline DIP_EXPORT Image ResampleAt(
       Image const &in,
       Image const &map,
-      String const &interpolationMethod = S::LINEAR
+      String const &interpolationMethod = S::LINEAR,
+      Image::Pixel const& fill = { 0 }
 ) {
   Image out;
-  ResampleAt( in, out, map, interpolationMethod );
+  ResampleAt( in, out, map, interpolationMethod, fill );
   return out;
 }
 

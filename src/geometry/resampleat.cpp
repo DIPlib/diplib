@@ -90,7 +90,7 @@ template< typename TPI >
 TPI NearestNeighborND( TPI* src, IntegerArray const& srcStride,
                        UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      src += ( static_cast< dip::sint >( coords[ ii ] ) + ( ( subpos[ ii ] > 0.5) ? 1 : 0 ) ) * srcStride[ ii ];
+      src += ( static_cast< dip::sint >( coords[ ii ] ) + (( subpos[ ii ] > 0.5) ? 1 : 0 )) * srcStride[ ii ];
    }
 
    return *src;
@@ -208,7 +208,8 @@ void ResampleAt(
       Image const& c_in,
       Image& out,
       FloatCoordinateArray const& coordinates,
-      String const& method
+      String const& method,
+      Image::Pixel const& fill
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = c_in.Dimensionality();
@@ -217,6 +218,7 @@ void ResampleAt(
    for( auto& c : coordinates ) {
       DIP_THROW_IF( c.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    }
+   DIP_THROW_IF( !fill.IsScalar() && ( c_in.TensorElements() != fill.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
 
    // Preserve input
    Image in = c_in.QuickCopy();
@@ -239,10 +241,10 @@ void ResampleAt(
    // Iterate over coordinates and out
    GenericImageIterator<> outIt( out );
    for( auto cIt = coordinates.begin(); cIt != coordinates.end(); ++cIt, ++outIt ) {
-      if( in.IsInside( *cIt ) ) {
+      if( in.IsInside( *cIt )) {
          function( in, *outIt, *cIt );
       } else {
-         *outIt = 0;
+         *outIt = fill;
       }
    }
 }
@@ -250,12 +252,14 @@ void ResampleAt(
 Image::Pixel ResampleAt(
       Image const& in,
       FloatArray const& coordinates,
-      String const& method
+      String const& method,
+      Image::Pixel const& fill
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( coordinates.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( !fill.IsScalar() && ( in.TensorElements() != fill.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
 
    // Create output
    Image::Pixel out( in.DataType(), in.TensorElements() );
@@ -266,10 +270,14 @@ Image::Pixel ResampleAt(
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, in.DataType() ));
 
    // Call interpolator
-   if( in.IsInside( coordinates ) ) {
+   if( in.IsInside( coordinates )) {
       function( in, out, coordinates );
    } else {
-      out = 0;
+      if (fill.IsScalar()) {
+         out = fill[ 0 ]; // Call overload that copies a sample to each pixel element
+      } else {
+         out = fill;
+      }
    }
 
    return out;
@@ -287,6 +295,7 @@ InterpolationFunctionPointer PrepareResampleAtUnchecked(
    DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( method, in.DataType() ));
    return function;
 }
+
 Image::Pixel ResampleAtUnchecked(
       Image const& in,
       FloatArray const& coordinates,
@@ -313,56 +322,56 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
    protected:
       Image in_;
       Func interpolate_;
+      std::vector< TPI > value_;
 
    public:
-      ResampleAtLineFilter(Image const &in, Func interpolate) : in_(in), interpolate_(interpolate) { }
+      ResampleAtLineFilter( Image const& in, Func interpolate, Image::Pixel const& fill ) : in_( in ), interpolate_( interpolate ) {
+         // Code below similar to CopyPixelToVector() in generation/draw_support.h
+         value_.resize( in.TensorElements(), fill[ 0 ].As< TPI >() );
+         if( !in.IsScalar() ) {
+            for( dip::uint ii = 1; ii < in.TensorElements(); ++ii ) {
+               value_[ ii ] = fill[ ii ].As< TPI >();
+            }
+         }
+      }
 
-      void Filter( Framework::ScanLineFilterParameters const &params )
+      void Filter( Framework::ScanLineFilterParameters const& params )
       {
          auto dims = in_.Dimensionality();
          auto elements = in_.TensorElements();
-         auto intstride = in_.TensorStride();
          auto map = params.inBuffer[0];
-         auto mapstride = map.stride;
-         auto maptstride = map.tensorStride;
          auto out = params.outBuffer[0];
-         auto outstride = out.stride;
-         auto outtstride = out.tensorStride;
-         uint length = params.bufferLength;
-
-         UnsignedArray coords(dims);
-         FloatArray subpos(dims);
-         FloatArray limit(dims);
-         for (dip::uint dd=0; dd < dims; ++dd ) {
-            limit[dd] = (dip::dfloat)in_.Size(dd)-2;
+         UnsignedArray coords( dims );
+         FloatArray subpos( dims );
+         FloatArray limit( dims );
+         for( dip::uint dd = 0; dd < dims; ++dd ) {
+            limit[ dd ] = static_cast< dip::dfloat >( in_.Size( dd )) - 2;
          }
-
-         TPI *io = (TPI*) in_.Origin();
-         dip::dfloat *mo = (dip::dfloat*) map.buffer;
-         TPI *oo = (TPI*) out.buffer;
-         for ( dip::uint ii=0; ii < length; ++ii, mo += mapstride, oo += outstride ) {
-            dip::dfloat *mt = mo;
+         TPI* inPtr = static_cast< TPI* >( in_.Origin() );
+         dip::dfloat* mapPtr = static_cast< dip::dfloat* >( map.buffer );
+         TPI* outPtr = static_cast< TPI* >( out.buffer );
+         for( dip::uint ii = 0; ii < params.bufferLength; ++ii, mapPtr += map.stride, outPtr += out.stride ) {
+            dip::dfloat* mptr = mapPtr;
             bool valid = true;
-            for ( dip::uint dd=0; dd < dims; ++dd, mt += maptstride ) {
-               dip::dfloat pos = *mt;
-               if ( pos >= 0 && pos < limit[dd] ) {
-                  coords[dd] = (dip::uint)pos;
-                  subpos[dd] = pos - (dip::dfloat)coords[dd];
+            for( dip::uint dd = 0; dd < dims; ++dd, mptr += map.tensorStride ) {
+               dip::dfloat pos = *mptr;
+               if( pos >= 0 && pos < limit[ dd ] ) {
+                  coords[ dd ] = static_cast< dip::uint >( pos );
+                  subpos[ dd ] = pos - static_cast< dip::dfloat >( coords[ dd ] );
                } else {
                   valid = false;
                   break;
                }
             }
-
-            TPI *ot = oo;
-            if ( valid ) {
-               TPI *it = io;
-               for ( dip::uint tt=0; tt < elements; ++tt, ot += outtstride, it += intstride ) {
-                  *ot = (TPI) interpolate_( it, coords, subpos );
+            TPI *optr = outPtr;
+            if( valid ) {
+               TPI *it = inPtr;
+               for( dip::uint tt = 0; tt < elements; ++tt, optr += out.tensorStride, it += in_.TensorStride() ) {
+                  *optr = static_cast< TPI >( interpolate_( it, coords, subpos ));
               }
             } else {
-               for ( dip::uint tt=0; tt < elements; ++tt, ot += outtstride) {
-                  *ot = (TPI) 0;
+               for( dip::uint tt = 0; tt < elements; ++tt, optr += out.tensorStride ) {
+                  *optr = value_[ tt ];
                }
             }
          }
@@ -370,8 +379,8 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
 };
 
 template< typename TPI, typename Func >
-std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image const &in, Func interpolate ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new ResampleAtLineFilter< TPI, Func >( in, interpolate ));
+std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image const &in, Func interpolate, Image::Pixel const& fill ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new ResampleAtLineFilter< TPI, Func >( in, interpolate, fill ));
 }
 
 } // namespace
@@ -380,53 +389,55 @@ void ResampleAt(
       Image const &in,
       Image &out,
       Image const &map,
-      String const &method
+      String const &method,
+      Image::Pixel const& fill
 )
 {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !map.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( map.DataType() != DT_DFLOAT, E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Dimensionality() != map.TensorElements(), E::NTENSORELEM_DONT_MATCH  );
+   DIP_THROW_IF( !fill.IsScalar() && ( in.TensorElements() != fill.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
 
    DataType dt = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
 
-   auto m = ParseMethod( method );
-   if( dt == DT_BIN ) {
-      m = Method::NEAREST_NEIGHBOR;
+   auto m = Method::NEAREST_NEIGHBOR;
+   if( dt != DT_BIN ) {
+      m = ParseMethod( method );
    }
    switch( m ) {
       case Method::NEAREST_NEIGHBOR:
          DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, NewResampleAtLineFilter, (
             in,
             [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
-               return NearestNeighborND(src, in.Strides(), coords, subpos, in.Dimensionality() );
-            }
-            ), dt );
+               return NearestNeighborND( src, in.Strides(), coords, subpos, in.Dimensionality() );
+            },
+            fill ), dt );
          break;
       default:
       //case Method::LINEAR:
          DIP_OVL_CALL_ASSIGN_NONBINARY( scanLineFilter, NewResampleAtLineFilter, (
             in,
             [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
-               return LinearND(src, in.Strides(), coords, subpos, in.Dimensionality() );
-            }
-            ), dt );
+               return LinearND( src, in.Strides(), coords, subpos, in.Dimensionality() );
+            },
+            fill ), dt );
          break;
       case Method::CUBIC_ORDER_3:
          DIP_OVL_CALL_ASSIGN_NONBINARY( scanLineFilter, NewResampleAtLineFilter, (
             in,
             [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
-               return ThirdOrderCubicSplineND(src, in.Sizes(), in.Strides(), coords, subpos, in.Dimensionality() );
-            }
-            ), dt );
+               return ThirdOrderCubicSplineND( src, in.Sizes(), in.Strides(), coords, subpos, in.Dimensionality() );
+            },
+            fill ), dt );
          break;
    }
 
    // ScanMonadic has output buffer type equal to input buffer type. We have output buffer type
    // equal to output image type (= input image type). Both have drawbacks.
    ImageRefArray outar{ out };
-   DIP_STACK_TRACE_THIS( Framework::Scan( { map }, outar, { DT_DFLOAT }, { dt }, { dt }, { in.TensorElements() }, *scanLineFilter ) );
+   DIP_STACK_TRACE_THIS( Framework::Scan( { map }, outar, { DT_DFLOAT }, { dt }, { dt }, { in.TensorElements() }, *scanLineFilter ));
 }
 
 namespace {
@@ -503,7 +514,7 @@ void AffineTransform(
    do {
       FloatArray coord( it.Coordinates() );
       coord = ApplyTransformation( transform, coord, translation );
-      if( in.IsInside( coord ) ) {
+      if( in.IsInside( coord )) {
          function( in, *it, coord );
       } else {
          *it = 0;
@@ -591,7 +602,7 @@ void LogPolarTransform2D(
             static_cast< dfloat >( logr[ r_phi[ 0 ]] ) * static_cast< dfloat >( cosPhi[ r_phi[ 1 ]] ) + center[ 0 ],
             static_cast< dfloat >( logr[ r_phi[ 0 ]] ) * static_cast< dfloat >( sinPhi[ r_phi[ 1 ]] ) + center[ 1 ]
       };
-      if( in.IsInside( u_v ) ) {
+      if( in.IsInside( u_v )) {
          function( in, *it, u_v );
       } else {
          *it = 0;
