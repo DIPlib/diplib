@@ -38,8 +38,10 @@
 /// \see sample_operators
 
 
-#ifdef __SIZEOF_INT128__
 namespace std {
+
+#ifdef __SIZEOF_INT128__
+
 // These seem not defined?
 // WARNING! We define only a useful subset of the struct.
 
@@ -71,7 +73,11 @@ struct numeric_limits< __int128_t > {
    static constexpr __int128_t lowest() noexcept { return min(); }
 };
 
+#endif // __SIZEOF_INT128__
+
 // This one is used outside of this file too (at least max and min.
+// WARNING! We define only a useful subset of the struct.
+
 template<>
 struct numeric_limits< dip::bin > {
    static constexpr bool is_specialized = false; // Set to false, below we test this instead of "is_arithmetic".
@@ -87,7 +93,6 @@ struct numeric_limits< dip::bin > {
 };
 
 } // namespace std
-#endif // __SIZEOF_INT128__
 
 
 namespace dip {
