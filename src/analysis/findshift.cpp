@@ -175,10 +175,10 @@ FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iteratio
       } else if(( ii == 1 ) || ( ii == 2 )) {
          // If ii > 0, we shift in2
          //std::cout << "[FindShift_MTS] shifting in2 by " << invShift << std::endl;
-         tmp = Shift( in2g, invShift, "3-cubic" );
+         tmp = Shift( in2g, invShift, dip::S::CUBIC_ORDER_3 );
       } else {
          // Use non-smoothed image for iterations after the 3rd one.
-         tmp = Shift( in2, invShift, "3-cubic" );
+         tmp = Shift( in2, invShift, dip::S::CUBIC_ORDER_3 );
          in1g = in1.QuickCopy();
       }
       Subtract( in1g, tmp, tmp, tmp.DataType() );
@@ -336,21 +336,21 @@ FloatArray FindShift(
    dip::uint nDims = c_in1.Dimensionality();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( maxShift, nDims, std::numeric_limits< dip::uint >::max() ));
    FloatArray shift( nDims, 0.0 );
-   if( method == "integer only" ) {
+   if( method == dip::S::INTEGER_ONLY ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, false ));
-   } else if( method == "CC" ) {
+   } else if( method == dip::S::CC ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, true ));
-   } else if( method == "NCC" ) {
+   } else if( method == dip::S::NCC ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::NORMALIZE, true ));
-   } else if( method == "PC" ) {
+   } else if( method == dip::S::PC ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::PHASE, true ));
    } else {
       Image in1 = c_in1.QuickCopy();
       Image in2 = c_in2.QuickCopy();
       DIP_STACK_TRACE_THIS( shift = CorrectIntegerShift( in1, in2, maxShift )); // modifies in1 and in2
-      if( method == "CPF" ) {
+      if( method == dip::S::CPF ) {
          DIP_STACK_TRACE_THIS( shift += FindShift_CPF( in1, in2, parameter ));
-      } else if( method == "MTS" ) {
+      } else if( method == dip::S::MTS ) {
          if( parameter <= 0.0 ) {
             parameter = 1.0;
          }
@@ -365,9 +365,9 @@ FloatArray FindShift(
             maxIter = 20;        // NOTE: more iteration solution may end up very far from truth
             accuracy = parameter;
          }
-         if( method == "ITER" ) {
+         if( method == dip::S::ITER ) {
             DIP_STACK_TRACE_THIS( shift += FindShift_MTS( in1, in2, maxIter, accuracy, 1.0 ));
-         } else if( method == "PROJ" ) {
+         } else if( method == dip::S::PROJ ) {
             DIP_STACK_TRACE_THIS( shift += FindShift_PROJ( in1, in2, maxIter, accuracy, 1.0 )); // calls FindShift_MTS
          } else {
             DIP_THROW_INVALID_FLAG( method );
@@ -383,7 +383,7 @@ FloatArray FindShift(
 #include "doctest.h"
 #include "diplib/generation.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
+DOCTEST_TEST_CASE("[DIPlib] testing the FindShift function") {
    // Something to shift
    dip::Image in1( { 250, 261 }, 1, dip::DT_SFLOAT );
    dip::FillRadiusCoordinate( in1 );
@@ -391,7 +391,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    dip::Erf( in1, in1 );
    // A shift
    dip::FloatArray shift{ 10.27, 6.08 };
-   dip::Image in2 = dip::Shift( in1, shift, "3-cubic" );
+   dip::Image in2 = dip::Shift( in1, shift, dip::S::CUBIC_ORDER_3 );
    // Add a little bit of noise
    dip::Random random( 0 );
    dip::GaussianNoise( in1, in1, random, 0.005 * 0.005 );
@@ -400,49 +400,49 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    dip::FloatArray result;
 
    // Method: "integer only"
-   result = FindShift( in1, in2, "integer only" );
+   result = FindShift( in1, in2, dip::S::INTEGER_ONLY );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( result[ 0 ] == std::round( shift[ 0 ] ));
    DOCTEST_CHECK( result[ 1 ] == std::round( shift[ 1 ] ));
 
    // Method: "CC"
-   result = FindShift( in1, in2, "CC" );
+   result = FindShift( in1, in2, dip::S::CC );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.03 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );
 
    // Method: "NCC"
-   result = FindShift( in1, in2, "NCC" );
+   result = FindShift( in1, in2, dip::S::NCC );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.15 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.15 );
 
    // Method: "CPF"
-   result = FindShift( in1, in2, "CPF" );
+   result = FindShift( in1, in2, dip::S::CPF );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.051 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.051 );
 
    // Method: "MTS"
-   result = FindShift( in1, in2, "MTS" );
+   result = FindShift( in1, in2, dip::S::MTS );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.007 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.007 );
 
    // Method: "ITER"
-   result = FindShift( in1, in2, "ITER" );
+   result = FindShift( in1, in2, dip::S::ITER );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.002 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.002 );
 
    // Method: "PROJ"
-   result = FindShift( in1, in2, "PROJ" );
+   result = FindShift( in1, in2, dip::S::PROJ );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.004 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.004 );
 
    // Method: "CC", with max shift
-   result = FindShift( in1, in2, "CC", 0, { 11 } );
+   result = FindShift( in1, in2, dip::S::CC, 0, { 11 } );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.03 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );

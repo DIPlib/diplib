@@ -212,7 +212,7 @@ void crosscorrelation( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 6 );
    dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
    dip::Image const in2 = dml::GetImage( prhs[ 1 ] );
-   dip::String normalize = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : "";
+   dip::String normalize = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::String{};
    if( normalize.empty() ) {
       normalize = dip::S::DONT_NORMALIZE;
    }
@@ -230,15 +230,14 @@ void findshift( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 5 );
    dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
    dip::Image const in2 = dml::GetImage( prhs[ 1 ] );
-   dip::String method = "integer only";
+   dip::String method = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::S::INTEGER_ONLY;
    if( nrhs > 2 ) {
-      method = dml::GetString( prhs[ 2 ] );
-      if(( method == "integer" ) || ( method == "integer only" )) {
-         method = "integer only";
+      if(( method == "integer" ) || ( method == dip::S::INTEGER_ONLY )) {
+         method = dip::S::INTEGER_ONLY;
       } else if( method == "ffts" ) {
-         method = "CPF";
+         method = dip::S::CPF;
       } else if( method == "grs" ) {
-         method = "MTS";
+         method = dip::S::MTS;
       } else {
          dip::ToUpperCase( method );
       }
@@ -274,11 +273,10 @@ void get_subpixel( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::FloatCoordinateArray coords = dml::GetFloatCoordinateArray( prhs[ 1 ] );
-   dip::String mode = "linear";
+   dip::String mode = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::S::LINEAR;
    if( nrhs > 2 ) {
-      mode = dml::GetString( prhs[ 2 ] );
-      if( mode == "spline" ) {
-         mode = "cubic";
+      if(( mode == "spline" ) || ( mode == "cubic" )) {
+         mode = dip::S::CUBIC_ORDER_3;
       }
    }
    dml::MatlabInterface mi;
@@ -304,11 +302,8 @@ void warp_subpixel( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
-   dip::Image const map = dml::GetImage( prhs[ 1] );
-   dip::String mode = "linear";
-   if( nrhs > 2 ) {
-      mode = dml::GetString( prhs[ 2 ] );
-   }
+   dip::Image const map = dml::GetImage( prhs[ 1 ] );
+   dip::String mode = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::S::LINEAR;
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
    dip::ResampleAt( in, map, out, mode );

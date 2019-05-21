@@ -18,7 +18,7 @@
 %  T is the number of tensor elements.
 %
 %  For backwards compatibility, method=='spline' will be interpreted
-%  as 'cubic', since 'spline' is no longer supported.
+%  as '3-cubic', since 'spline' is no longer supported.
 %
 %  `'cubic'` is an alias for `'3-cubic'`, for backwards compatibility.
 %

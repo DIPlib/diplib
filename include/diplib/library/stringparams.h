@@ -285,6 +285,16 @@ constexpr char const* COUNTERCLOCKWISE = "counter-clockwise";
 constexpr char const* INTERLEAVED_CLOCKWISE = "interleaved clockwise";
 constexpr char const* INTERLEAVED_COUNTERCLOCKWISE = "interleaved counter-clockwise";
 
+// FindShift methods
+constexpr char const* INTEGER_ONLY = "integer only";
+constexpr char const* CC = "CC";
+constexpr char const* NCC = "NCC";
+constexpr char const* PC = "PC";
+constexpr char const* CPF = "CPF";
+constexpr char const* MTS = "MTS";
+constexpr char const* ITER = "ITER";
+constexpr char const* PROJ = "PROJ";
+
 } // namespace S
 
 } // namespace dip

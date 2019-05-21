@@ -273,7 +273,7 @@ inline Image CrossCorrelationFT(
 DIP_EXPORT FloatArray FindShift(
       Image const& in1,
       Image const& in2,
-      String const& method = "MTS",
+      String const& method = dip::S::MTS,
       dfloat parameter = 0,
       UnsignedArray maxShift = {}
 );
