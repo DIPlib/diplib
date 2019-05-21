@@ -310,7 +310,8 @@ DIP_EXPORT Image::Pixel ResampleAtUnchecked(
 /// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
 /// ignored, nearest neighbor interpolation will be used.
 ///
-/// `out` will have the same size as `map`, and the same data type and tensor shape as `in`.
+/// `out` will have the same size as `map`, and the same data type and tensor shape as `in`. If `out` is protected,
+/// its data type will not change, but the computations will still be performed in the data type of `in`.
 DIP_EXPORT void ResampleAt(
       Image const &in,
       Image const &map,

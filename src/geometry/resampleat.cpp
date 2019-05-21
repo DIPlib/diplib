@@ -325,10 +325,11 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
       std::vector< TPI > value_;
 
    public:
-      ResampleAtLineFilter( Image const& in, Func interpolate, Image::Pixel const& fill ) : in_( in ), interpolate_( interpolate ) {
+      ResampleAtLineFilter( Image const& in, Func interpolate, Image::Pixel const& fill ) : in_( in ), interpolate_( std::move( interpolate )) {
          // Code below similar to CopyPixelToVector() in generation/draw_support.h
          value_.resize( in.TensorElements(), fill[ 0 ].As< TPI >() );
-         if( !in.IsScalar() ) {
+         if( !fill.IsScalar() ) {
+            // We've already asserted than fill.TensorElements == in.TensorElements when we called this constructor.
             for( dip::uint ii = 1; ii < in.TensorElements(); ++ii ) {
                value_[ ii ] = fill[ ii ].As< TPI >();
             }
@@ -395,7 +396,7 @@ void ResampleAt(
 {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !map.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( map.DataType() != DT_DFLOAT, E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !map.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Dimensionality() != map.TensorElements(), E::NTENSORELEM_DONT_MATCH  );
    DIP_THROW_IF( !fill.IsScalar() && ( in.TensorElements() != fill.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
 
