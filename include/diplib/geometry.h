@@ -313,19 +313,19 @@ DIP_EXPORT Image::Pixel ResampleAtUnchecked(
 /// `out` will have the same size as `map`, and the same data type and tensor shape as `in`.
 DIP_EXPORT void ResampleAt(
       Image const &in,
-      Image &out,
       Image const &map,
+      Image &out,
       String const &interpolationMethod = S::LINEAR,
       Image::Pixel const& fill = { 0 }
 );
-inline DIP_EXPORT Image ResampleAt(
+inline Image ResampleAt(
       Image const &in,
       Image const &map,
       String const &interpolationMethod = S::LINEAR,
       Image::Pixel const& fill = { 0 }
 ) {
   Image out;
-  ResampleAt( in, out, map, interpolationMethod, fill );
+  ResampleAt( in, map, out, interpolationMethod, fill );
   return out;
 }
 

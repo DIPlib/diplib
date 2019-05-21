@@ -311,7 +311,7 @@ void warp_subpixel( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    }
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   dip::ResampleAt( in, out, map, mode );
+   dip::ResampleAt( in, map, out, mode );
    plhs[ 0 ] = dml::GetArray( out );
 }
 

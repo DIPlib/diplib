@@ -387,8 +387,8 @@ std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image cons
 
 void ResampleAt(
       Image const &in,
-      Image &out,
       Image const &map,
+      Image &out,
       String const &method,
       Image::Pixel const& fill
 )
