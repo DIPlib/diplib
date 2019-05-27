@@ -1,4 +1,4 @@
-%ROTATE   Rotate the vector field in a vector image around an axis
+%ROTATE   Rotate the vector field in a vector image around an axis.
 %   ROTATE(V,AXIS,ANGLE) rotates the 3-vectors in image V about ANGLE
 %   around the AXIS given by a second vector image or a vector.
 %
@@ -7,7 +7,7 @@
 %   The ANGLE should be given between [0,2pi]
 %
 %   LITERATURE: Computer Graphics, D. Hearn and M.P. Baker, Prentice
-%               Hall, p.408-419
+%   Hall, p.408-419
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

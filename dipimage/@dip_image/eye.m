@@ -1,4 +1,4 @@
-%EYE   Identity tensor
+%EYE   Identity tensor.
 %   EYE(A) creates a identity tensor with the specification of A.
 %   Same dimensionality and sizes of images. The tensor at each pixel
 %   is 1 on the diagonal, and 0 off the diagonal.

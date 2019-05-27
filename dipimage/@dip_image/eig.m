@@ -1,4 +1,4 @@
-%EIG   Eigenvalues and eigenvectors of a tensor image
+%EIG   Eigenvalues and eigenvectors of a tensor image.
 %  E = EIG(A) is a vector image containing the eigenvalues of the
 %  square tensors in image A. If A is a real-valued symmetric matrix,
 %  then the values in E are sorted in descending order, so that E{1}

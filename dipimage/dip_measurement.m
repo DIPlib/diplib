@@ -39,7 +39,7 @@
 
 % DIPimage 3.0
 %
-% (c)2017, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)2008, Michael van Ginkel.
 %
@@ -589,66 +589,61 @@ classdef dip_measurement
 
       function [msr,map_array] = remap(msr,t_lut,msr_ref)
          %REMAP   Remap label IDs in a measurement object
-         %  Maps a measurement structure corresponding to a particular label
-         %  image to a measurement structure corresponding to a re-mapped
-         %  version of that label image.
+         %   [MSR_NEW,MAP] = REMAP(MSR,RLUT) maps a measurement object MSR
+         %   corresponding to a particular label image to a new measurement object
+         %   corresponding to a remapped version of that label image. RLUT is the
+         %   look-up table from SETLABELS that was used to remap the label image.
+         %   See example 1 below. RLUT should not attempt to remap two different
+         %   object IDs to the same value.
          %
-         % SYNOPSIS:
-         %  [msr_new,map_array] = msr_remap(msr_org,t_lut,msr_mapped)
+         %   The second output argument MAP is such that MSR_NEW.FEATURE ==
+         %   MSR.FEATURE(MAP). That is, it can be used to index into individual
+         %   measurement feature arrays. It cannot be used to index into MSR
+         %   itself: MSR(MAP) is not necessarily equal to MSR_NEW.
          %
-         % PARAMETERS:
-         %  msr_org:    The measurement structure as measured on the original label image
-         %  t_lut:      the look-up table [from setlabels()] used to re-map the label
-         %              image. Remapping two different labels onto the same label is not
-         %              allowed.
-         %  msr_mapped: A measurement structure obtained on the new label image may
-         %              have a different ordering of the measurement ID's. If you
-         %              have performed a measurement on the new label image, provide
-         %              it as the third argument and the measurement ID's in msr_new
-         %              will be put in the same order. Optional.
+         %   REMAP(MSR,RLUT,MSR_REF) additionally orders the object IDs according
+         %   to their order in MSR_REF. MSR_REF is a measurement object obtained
+         %   on the remapped label image. This is useful because SETLABELS can
+         %   change the order that object IDs appear in a measurement object.
+         %   See example 2 below.
          %
-         % OUTPUT:
-         %  map_array:  Is such that msr_new.Size == msr_org.Size(map_array).
-         %              Careful though: msr_new ~= msr_org(map_array)
+         %   Example 1:
+         %      % Create test image and measure:
+         %      iml = label(threshold(gaussf(noise(newim([200,200])),5)))
+         %      msr = measure(iml,[],'Size');
+         %      n_obj = max(iml);
+         %      % Randomly select half objects to remove:
+         %      remove_ids = unique(randi(n_obj,1,floor(n_obj/2)));
          %
-         % EXAMPLE:
-         %   % Create test image and measure:
-         %   iml = label(threshold(gaussf(noise(newim([200,200])),5)))
-         %   msr_org = measure(iml,[],'Size');
-         %   n_obj = max(iml);
-         %   % Randomly select half objects to remove:
-         %   remove_ids = unique(randi(n_obj,1,floor(n_obj/2)));
+         %      % Remove objects and measure again:
+         %      [iml_new,rlut] = setlabels(iml,remove_ids,'clear');
+         %      msr_ref = measure(iml_new,[],'Size');
          %
-         %   % Remove objects and measure again:
-         %   [iml_new,t_lut] = setlabels(iml,remove_ids,'clear');
-         %   msr_size = measure(iml_new,[],'Size');
+         %      % Remap first measurement, it is now identical to the second one:
+         %      [msr_new,map] = remap(msr,rlut);
+         %      all(msr_new.Size == msr_ref.Size)       % is true
+         %      all(msr_new.Size == msr.Size(map))      % is true
          %
-         %   % Remap first measurement, it is now identical to the second one:
-         %   [msr_new,map] = remap(msr_org,t_lut);
-         %   all(msr_new.Size == msr_size.Size)       % is true
-         %   all(msr_new.Size == msr_org.Size(map))   % is true
+         %   Example 2:
+         %      rlut = uint32(0:n_obj);
+         %      rlut(remove_ids) = 0;
+         %      rlut(rlut>0) = nnz(rlut):-1:1; % assign reversed labels to these
+         %      iml_new = lut(iml,rlut);
+         %      msr_ref = measure(iml_new,[],'Size');
          %
-         % EXAMPLE (with reordering of labels):
-         %   t_lut = uint32(0):n_obj;
-         %   t_lut(remove_ids) = 0;
-         %   t_lut(t_lut>0) = nnz(t_lut):-1:1; % assign reversed labels to these
-         %   iml_new = lut(iml,t_lut);
-         %   msr_size = measure(iml_new,[],'Size');
+         %      % Remap first measurement, it contains same objects, but in a different
+         %      % order compared to the second one:
+         %      [msr_new,map] = remap(msr,rlut);
+         %      all(msr_new.Size == msr_ref.Size)       % is false
+         %      all(msr_new.Size == msr.Size(map))      % is true
          %
-         %   % Remap first measurement, it contains same objects, but in a different
-         %   % order compared to the second one:
-         %   [msr_new,map] = remap(msr_org,t_lut);
-         %   all(msr_new.Size == msr_size.Size)       % is false
-         %   all(msr_new.Size == msr_org.Size(map))   % is true
+         %      % Remap first measurement, and put objects in same order as second
+         %      % measurement. It is now identical to the second one:
+         %      [msr_new,map] = remap(msr,rlut,msr_ref);
+         %      all(msr_new.Size == msr_ref.Size)       % is true
+         %      all(msr_new.Size == msr.Size(map))      % is true
          %
-         %   % Remap first measurement, and put objects in same order as second
-         %   % measurement. It is now identical to the second one:
-         %   [msr_new,map] = remap(msr_org,t_lut,msr_size);
-         %   all(msr_new.size == msr_size.size)       % is true
-         %   all(msr_new.size == msr_org.size(map))   % is true
-         %
-         % SEE ALSO:
-         %  setlabels, relabel
+         %   See also setlabels, relabel
 
          % Based on original DIPimage code: (c)2008, Michael van Ginkel.
 
@@ -690,11 +685,11 @@ classdef dip_measurement
          % Reorder remaining objects to be same order as in msr_ref
          if nargin>=3
             if ~isa(msr_ref,'dip_measurement')
-               error('MSR_MAPPED must be a dip_measurement structure')
+               error('MSR_REF must be a dip_measurement structure')
             end
             [~,I] = ismember(msr_ref.Objects,msr.Objects);
             if any(I==0)
-               error('MSR_MAPPED contains object IDs not in the mapped MSR')
+               error('MSR_REF contains object IDs not in the mapped MSR')
             end
             msr.Objects = msr.Objects(I);
             msr.Data = msr.Data(I,:);

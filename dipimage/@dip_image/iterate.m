@@ -1,39 +1,34 @@
-%ITERATE   Apply a function to all tensor components of an image
+%ITERATE   Apply a function to all tensor components of an image.
+%   OUT = ITERATE(FUNCTION,IN,PAR1,PAR2,...) applies the function FUNCTION
+%   to each of the tensor elements (channels) of image IN.
+%   That is, it executes OUT{i} = FUNCTION(IN{i},PAR1,PAR2,...) for each
+%   possible index i. PAR1, PAR2, etc. are optional. FUNCTION is a string
+%   or a function handle.
 %
-%  This function is useful for operations that intrinsically only
-%  work with scalar images, such as DILATION in the example below.
-%  It applies the function to each of the tensor elements (channels).
-%  This process works even if the function produces an output that
-%  is of a different size or dimensionality than the input, as long
-%  as the output is a scalar image.
+%   OUT = ITERATE(FUNCTION,IN1,IN2,...) expects IN1 and IN2 to have the
+%   same number of tensor elements, and executes
+%   OUT{i} = FUNCTION(IN1{i},IN2{i},...).
+%   The function accepts any number of images, in any position of the
+%   parameter list. Scalar images are also accepted, and used as-is when
+%   calling the function. For example, if IN1 above were scalar:
+%   OUT{i} = FUNCTION(IN1,IN2{i},...).
 %
-% SYNOPSIS:
-%  image_out = iterate(function,par1,par2,...)
+%   This function is useful for operations that intrinsically only work with
+%   scalar images, such as DILATION in the example below. The function must
+%   produce a scalar image as output, its sizes do not need to match those
+%   of the input image(s).
 %
-% PARAMETERS:
-%  function: a function handle or function name to execute.
-%  parX:     parameters to FUNCTION.
+%   Note that a color image is a tensor image. Color space information is
+%   kept if possible. There is no support yet for applying a filter in
+%   selected channels only.
 %
-% EXAMPLE:
-%  a = readim('flamingo');
-%  b = iterate(@dilation,a,5);
+%   Example:
+%      a = readim('flamingo');
+%      b = iterate(@dilation,a,5);
 %
-% NOTE:
-%  Each non-scalar image passed as parameter (PAR1, PAR2, etc) must have
-%  the same tensor sizes. IMAGE_OUT will also have the same tensor sizes.
-%  Each tensor element IMAGE_OUT{I,J} will be computed by:
-%     FUNCTION(PAR1{I,J},PAR2{I,J},...)
-%  Parameters that are not non-scalar images are passed identically to
-%  each call (this includes arrays as well as scalar images).
-%
-%  Note that a color image is a tensor image. Color space information is
-%  kept if possible. There is no support yet for applying a filter in
-%  selected channels only.
-%
-% SEE ALSO:
-%  dip_image/slice_op, dip_image/tensorfun, im2array, array2im.
+%   See also dip_image/slice_op, dip_image/tensorfun, im2array, array2im.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");

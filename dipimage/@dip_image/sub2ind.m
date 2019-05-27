@@ -1,4 +1,4 @@
-%SUB2IND   Linear indices from coordinates
+%SUB2IND   Linear indices from coordinates.
 %   I = SUB2IND(A,C) returns the linear indices in the image A that
 %   correspond to coordinates C. That is,
 %      A(I(N)) == A(C(N,1),C(N,2))

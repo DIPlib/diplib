@@ -1,68 +1,63 @@
-%TENSORFUN   Applies a functions across tensor elements
+%TENSORFUN   Applies a functions across tensor elements.
+%   OUT = TENSORFUN(FUNCTION,IN) applies FUNCTION to each of the
+%   tensor elements of image IN. FUNCTION must be one of the strings
+%   detailed below. Depending on the chosen FUNCTION, OUT is either a
+%   scalar image (mode 1) or an array of the same size as the tensor
+%   of IN (mode 2).
 %
-% SYNOPSIS:
-%  out = tensorfun(function,image_in)
+%   MODE 1
+%   FUNCTION is one of:
+%      'imsum'     -- sum of all elements
+%      'improd'    -- product of all elements
+%      'imor'      -- true if any elements is non-zero
+%      'imand'     -- true if all elements are non-zero
+%      'immax'     -- maximum over all elements
+%      'immin'     -- minimum over all elements
+%      'immean'    -- mean over all elements
+%      'immedian'  -- median over all elements
+%      'imeq'      -- true if elements are all equal
+%      'imlargest' -- index of first element with largest pixel value
+%      'imsmallest'-- index of first element with smallest pixel value
 %
-% PARAMETERS:
-%  function: one of the strings indicated below
-%  image_in: the image to apply the operation on
+%   OUT is a scalar image that results in applying the given projection
+%   across the tensor elements. That is, each output pixel is the result
+%   of the given operation on all input tensor elements.
 %
-% MODE 1:
-%  FUNCTION is one of:
-%     'imsum'     -- sum of all elements
-%     'improd'    -- product of all elements
-%     'imor'      -- true if any elements is non-zero
-%     'imand'     -- true if all elements are non-zero
-%     'immax'     -- maximum over all elements
-%     'immin'     -- minimum over all elements
-%     'immean'    -- mean over all elements
-%     'immedian'  -- median over all elements
-%     'imeq'      -- true if elements are all equal
-%     'imlargest' -- index of first element with largest pixel value
-%     'imsmallest'-- index of first element with smallest pixel value
+%   For example,
+%      A = TENSORFUN('imsum',IMG);
+%   is the same as
+%      A = IMG{1} + IMG{2} + IMG{3} + ...;
 %
-%  OUT is a scalar image that results in applying the given projection
-%  across the tensor elements. That is, each output pixel is the result
-%  of the given operation on all input tensor elements.
+%   NOTE! The first 8 options can all be accomplished by using the
+%   'tensor' option of the equivalent method, and exist for backwards
+%   compatibility. For example 'imsum' calls SUM(IMG,'tensor'). Only the
+%   last three modes are still useful.
 %
-%  For example,
-%     A = TENSORFUN('imsum',IMG);
-%  is the same as
-%     A = IMG{1} + IMG{2} + IMG{3} + ...;
+%   MODE 2
+%   FUNCTION is one of:
+%      'isempty'   -- true for empty image
+%      'islogical' -- true for binary image
+%      'isreal'    -- true for non-complex image
+%      'ndims'     -- number of dimensions of image
+%      'prodofsize'-- number of pixels in image
+%      'max'       -- maximum pixel value in image
+%      'mean'      -- mean pixel value in image
+%      'median'    -- median pixel value in image
+%      'min'       -- minimum pixel value in image
+%      'std'       -- standard deviation of pixels in image
+%      'sum'       -- sum of pixels in image
 %
-%  NOTE! The first 8 options can all be accomplished by using the 'tensor'
-%  option of the equivalent method. For example 'imsum' calls
-%  SUM(IMG,'tensor'). Only the last three modes are still useful.
-%
-% MODE 2:
-%  NOTE! This exists mostly for backwards-compatibility, and should no
-%  longer be useful in new code.
-%
-%  FUNCTION is one of:
-%     'isempty'   -- true for empty image
-%     'islogical' -- true for binary image
-%     'isreal'    -- true for non-complex image
-%     'ndims'     -- number of dimensions of image
-%     'prodofsize'-- number of pixels in image
-%     'max'       -- maximum pixel value in image
-%     'mean'      -- mean pixel value in image
-%     'median'    -- median pixel value in image
-%     'min'       -- minimum pixel value in image
-%     'std'       -- standard deviation of pixels in image
-%     'sum'       -- sum of pixels in image
 %   OUT is a MATLAB array of the same size as the tensor of IMAGE_IN,
 %   each element containing the scalar result of FUNCTION on each
 %   tensor element.
 %
 %   Note that the first 5 functions retun an array with all the same
 %   values, and the latter 6 return the same as applying the method
-%   of the same name to IMAGE_IN:
-%      TENSORFUN('max',IMG) == MAX(IMG)
+%   of the same name to IMAGE_IN. For exaple 'max' calls MAX(IMG).
 %
-% SEE ALSO:
-%  dip_image/iterate, dip_image/slice_op
+%   See also dip_image/iterate, dip_image/slice_op
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");

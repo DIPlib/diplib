@@ -1,4 +1,4 @@
-%CLONE   Creates a new image, identical to in
+%CLONE   Creates a new image, identical to in.
 %   Conceptually OUT = CLONE(IN) is the same as OUT = IN; OUT(:) = 0;
 %   That is, it creates a new image, initialzed to zero, with all the same
 %   properties as IN.

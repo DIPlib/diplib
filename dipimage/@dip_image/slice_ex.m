@@ -1,35 +1,24 @@
-%SLICE_EX   Extracts one slice from an image
+%SLICE_EX   Extracts one slice from an image.
+%   SLICE_EX(IN,PLANE,DIM) returns the N-1 dimensional image obtained by
+%   indexing into N-dimensional image IN along dimension DIM with index
+%   PLANE. For example, if IN has 3 dimensions, and DIM is 3, it returns
+%   IN(:,:,PLANE). Dimensions start counting at 1, negative dimensions
+%   start from the end (that is, -1 is the last dimension).
 %
-% SYNOPSIS:
-%  slice = slice_ex(in,plane,dim)
+%   SLICE_EX(IN,PLANE) indexes along the last dimension of IN.
 %
-% PARAMETERS:
-%  plane: Index along dimension DIM for the plane.
-%  dim:   Dimension along which to slice. Negative dimensions start from the
-%         end. Dimensions start counting at 1.
+%   The output SLICE has the same properties as IN, but has one fewer
+%   dimension: it misses dimension DIM. However, as in DIP_IMAGE/RESHAPE
+%   and DIP_IMAGE/SQUEEZE, if dimension 1 or 2 are removed, other
+%   dimensions map in a non-obvious way. Given dimensions [1,2,3,4], if
+%   dimension 1 is removed, the output dimensions will be ordered
+%   [3,2,4]. If dimension 2 is removed, the output dimensions will be
+%   ordered [3,1,4]. This is because of the way that DIPimage stores
+%   image data (swapping the first and second dimensions).
 %
-% NOTE:
-%  The output SLICE has the same properties as IN, but has one fewer
-%  dimension: it misses dimension DIM. However, as in DIP_IMAGE/RESHAPE
-%  and DIP_IMAGE/SQUEEZE, if dimension 1 or 2 are removed, other dimensions
-%  map in a non-obvious way. Given dimensions [1,2,3,4], if dimension 1 is
-%  removed, the output dimensions will be ordered [3,2,4]. If dimension 2 is
-%  removed, the output dimensions will be ordered [3,1,4]. This is because
-%  of the way that DIPimage stores image data (swapping the first and second
-%  dimensions).
-%
-% DEFAULTS:
-%  dim = -1 (last dimension)
-%
-% EXAMPLE:
-%  slice_ex(readim('chromo3d'),3)
-%  slice_ex(readim('chromo3d'),0,1)
-%  slice_ex(readim,3,2)
-%
-%  SEE ALSO:
-%   dip_image/slice_in, dip_image/slice_op, im2array, array2im.
+%   See also dip_image/slice_in, dip_image/slice_op, im2array, array2im.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");

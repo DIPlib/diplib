@@ -92,13 +92,16 @@ classdef dip_image
    % ------- PROPERTIES -------
 
    properties
-      % PixelSize - A struct array indicating the size of a pixel along each of the spatial
-      % dimensions. The struct contains fields 'magnitude' and 'units'. Magnitude is a double
-      % scalar value, and units is a string formatted according to the dip::Units class in
-      % DIPlib.
+      %PixelSize - The physical size of a pixel.
+      %   A struct array indicating the size of a pixel along each of the spatial
+      %   dimensions. The struct contains fields 'magnitude' and 'units'.
+      %   'magnitude' is a double scalar value, and 'units' is a string formatted
+      %   according to the dip::Units class in DIPlib.
       PixelSize = struct('magnitude',{},'units',{})
-      % ColorSpace - A string indicating the color space, if any. An empty string
-      % indicates there is no color space associated to the image data.
+      %ColorSpace - A string indicating the color space, if any.
+      %   An empty string indicates there is no color space associated to the
+      %   image data.
+      %   See also DIP_IMAGE/COLORSPACE.
       ColorSpace = ''
    end
 
@@ -109,8 +112,8 @@ classdef dip_image
       TensorSizeInternal = [1,1]            % Size of the tensor: [ROWS,COLUMNS].
    end
 
-   % These dependent properties are mostly meant for intenal use, and use of the MATLAB-DIPlib interface.
-   % The user has regular methods to access these properties.
+   % These dependent properties are mostly meant for intenal use, and use of the
+   % MATLAB-DIPlib interface. The user has regular methods to access these properties.
 
    properties (Dependent)
       %Array - The pixel data, an array of size [C,T,Y,X,Z,...].
@@ -124,9 +127,9 @@ classdef dip_image
       %   Set this property to replace the image data. The array assigned to
       %   this property is interpreted as described above.
       Array
-      % The number of spatial dimensions.
+      %NDims - The number of spatial dimensions.
       NDims
-      % The size of the tensor: [ROWS,COLUMNS].
+      %TensorSize - The size of the tensor: [ROWS,COLUMNS].
       TensorSize
       %TensorShape - How the tensor is stored.
       %   A string, one of:
@@ -153,7 +156,7 @@ classdef dip_image
       % ------- CONSTRUCTOR -------
 
       function img = dip_image(varargin)
-         %dip_image   Constructor
+         %dip_image   Constructor.
          %   Construct an object with one of the following syntaxes:
          %      OUT = DIP_IMAGE(IMAGE)
          %      OUT = DIP_IMAGE(IMAGE,TENSOR_SHAPE,DATATYPE)
@@ -287,7 +290,7 @@ classdef dip_image
                   sz = sz([1,3:end]); % make 2nd dimension the tensor dimension
                   img.Data = reshape(img.Data,sz);
                   tshape = size(data);
-                  if length(tshape) > 2
+                  if numel(tshape) > 2
                      tshape = [prod(tshape),1];
                   end
                   if prod(tshape) ~= size(img.Data,2)
@@ -427,10 +430,10 @@ classdef dip_image
       end
 
       function img = set.PixelSize(img,pxsz)
-         nd = min(img.NDims,numel(pxsz));
          % Make sure we don't use more elements than image dimensions
          pxsz = validatePixelSize(pxsz);
          % Make the array as short as possible, given that we automatically replicate the last array element to cover all image dimensions
+         nd = numel(pxsz);
          while nd > 1 && isequal(pxsz(nd),pxsz(nd-1))
             nd = nd-1;
          end
@@ -493,7 +496,7 @@ classdef dip_image
             if nargin ~= 1, error('Unknown command option'); end
             varargout = cell(1,nargout);
             if ~isempty(obj)
-               n = min(length(sz),nargout);
+               n = min(numel(sz),nargout);
                for ii=1:n
                   varargout{ii} = sz(ii);
                end
@@ -508,7 +511,7 @@ classdef dip_image
          else
             if ~isempty(obj)
                if nargin > 1
-                  if dim <= length(sz)
+                  if dim <= numel(sz)
                      varargout{1} = sz(dim);
                   else
                      varargout{1} = 1;
@@ -516,7 +519,7 @@ classdef dip_image
                else
                   if isempty(sz)
                      varargout{1} = [1,1];
-                  elseif length(sz) == 1
+                  elseif numel(sz) == 1
                      varargout{1} = [sz,1];
                   else
                      varargout{1} = sz;
@@ -549,18 +552,18 @@ classdef dip_image
             sz = 0;
          else
             sz = [size(obj.Data),ones(1,obj.TrailingSingletons)];
-            if length(sz)==2
+            if numel(sz)==2
                sz = [];
             else
                sz(1:2) = [];
             end
-            if length(sz) > 1
+            if numel(sz) > 1
                sz(1:2) = sz([2,1]);
             end
          end
          if nargout > 1
             if nargin ~= 1, error('Unknown command option'); end
-            if nargout > length(sz), error('Too many dimensions requested'); end
+            if nargout > numel(sz), error('Too many dimensions requested'); end
             varargout = cell(1,nargout);
             if ~isempty(obj)
                for ii=1:nargout
@@ -574,7 +577,7 @@ classdef dip_image
          else
             if ~isempty(obj)
                if nargin > 1
-                  if dim <= length(sz)
+                  if dim <= numel(sz)
                      varargout{1} = sz(dim);
                   else
                      error(['Dimension ',num2str(dim),' does not exist.']);
@@ -847,15 +850,19 @@ classdef dip_image
             if ndims(obj)~=0
                v = imsize(obj);
                sz = num2str(v(1));
-               for jj=2:length(v)
+               for jj=2:numel(v)
                   sz = [sz,'x',num2str(v(jj))];
                end
                disp(['    size ',sz]);
                if ~isempty(obj.PixelSize)
                   pxsz = obj.PixelSize;
-                  pxsz(end+1:length(v)) = pxsz(end); % replicate the last element across all dimensions
+                  if numel(pxsz)>numel(v)
+                     pxsz = pxsz(1:numel(v)); % don't use all elements if there are too many
+                  else
+                     pxsz(end+1:numel(v)) = pxsz(end); % replicate the last element across all dimensions
+                  end
                   sz = [num2str(pxsz(1).magnitude),' ',pxsz(1).units];
-                  for jj=2:length(pxsz)
+                  for jj=2:numel(pxsz)
                      sz = [sz,' x ',num2str(pxsz(jj).magnitude),' ',pxsz(jj).units];
                   end
                   disp(['    pixel size ',sz]);
@@ -906,7 +913,7 @@ classdef dip_image
          if sz(1) > 1
             out = complex(out(1,:),out(2,:));
          end
-         if length(sz) == 3
+         if numel(sz) == 3
             sz = [sz(1:2),1,sz(3)]; % a 1D image must become a row vector
          else
             sz = [sz,1,1]; % add singleton dimensions at the end, we need at least 2 dimensions at all times!
@@ -1004,7 +1011,7 @@ classdef dip_image
       % ------- INDEXING -------
 
       function n = numArgumentsFromSubscript(~,~,~)
-         %numArgumentsFromSubscript   Overload for internal use by MATLAB
+         %numArgumentsFromSubscript   Overload for internal use by MATLAB.
          n = 1; % Indexing into a dip_image object always returns a single object.
       end
 
@@ -1026,10 +1033,12 @@ classdef dip_image
                a = [a.PixelSize.magnitude];
                if isempty(a)
                   a = ones(1,ndims);
-               elseif length(a) < ndims
-                  a = [a,repmat(a(end),1,ndims-length(a))];
+               elseif numel(a) < ndims
+                  a = [a,repmat(a(end),1,ndims-numel(a))];
+               elseif numel(a) > ndims
+                  a = a(1:ndims);
                end
-               if length(s) > 1
+               if numel(s) > 1
                   a = subsref(a,s(2:end));
                end
             elseif strcmp(name,'pixelunits')
@@ -1037,13 +1046,15 @@ classdef dip_image
                a = {a.PixelSize.units};
                if isempty(a)
                   a = repmat({'px'},1,ndims);
-               elseif length(a) < ndims
-                  a = [a,repmat(a(end),1,ndims-length(a))];
+               elseif numel(a) < ndims
+                  a = [a,repmat(a(end),1,ndims-numel(a))];
+               elseif numel(a) > ndims
+                  a = a(1:ndims);
                end
-               if length(s) > 1
+               if numel(s) > 1
                   a = subsref(a,s(2:end));
                end
-               if length(a) == 1
+               if numel(a) == 1
                   a = a{1};
                end
             else
@@ -1055,7 +1066,7 @@ classdef dip_image
          % Find the indices to use
          sz = imsize(a);
          [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a);
-         if ndims == 1 && length(sz) > 1
+         if ndims == 1 && numel(sz) > 1
             a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
          end
          % Do the indexing!
@@ -1083,17 +1094,17 @@ classdef dip_image
             end
             if strcmp(name,'pixelsize')
                pxsz = a.PixelSize;
-               if length(s) > 1
+               if numel(s) > 1
                   q = [pxsz.magnitude];
                   q = subsasgn(q,s(2:end),b);
                else
                   q = b;
                end
                q = q(:);
-               if length(q) > length(pxsz)
-                  pxsz = ensurePixelSizeDimensionality(pxsz,length(q));
-               elseif length(pxsz) > length(q)
-                  q(end+1:length(pxsz)) = q(end);
+               if numel(q) > numel(pxsz)
+                  pxsz = ensurePixelSizeDimensionality(pxsz,numel(q));
+               elseif numel(pxsz) > numel(q)
+                  q(end+1:numel(pxsz)) = q(end);
                end
                q = num2cell(q);
                [pxsz.magnitude] = deal(q{:});
@@ -1103,17 +1114,17 @@ classdef dip_image
                if ~iscell(b)
                   b = {b};
                end
-               if length(s) > 1
+               if numel(s) > 1
                   q = {pxsz.units};
                   q = subsasgn(q,s(2:end),b);
                else
                   q = b;
                end
                q = q(:);
-               if length(q) > length(pxsz)
-                  pxsz = ensurePixelSizeDimensionality(pxsz,length(q));
-               elseif length(pxsz) > length(q)
-                  q(end+1:length(pxsz)) = q(end);
+               if numel(q) > numel(pxsz)
+                  pxsz = ensurePixelSizeDimensionality(pxsz,numel(q));
+               elseif numel(pxsz) > numel(q)
+                  q(end+1:numel(pxsz)) = q(end);
                end
                [pxsz.units] = deal(q{:});
                a.PixelSize = pxsz;
@@ -1126,7 +1137,7 @@ classdef dip_image
          sz = imsize(a);
          [s,~,~,nd] = construct_subs_struct(s,sz,a);
          orig_sz = size(a.Data);
-         if nd == 1 && length(sz) > 1
+         if nd == 1 && numel(sz) > 1
             a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
          end
          % Assigning a dip_image into a?
@@ -1138,8 +1149,8 @@ classdef dip_image
             a.Data = subsasgn_dip(a.Data,s,b);
          else
             reshaped = false;
-            if length(s.subs{2}) > 1
-               I = find(size(b) == length(s.subs{2}));
+            if numel(s.subs{2}) > 1
+               I = find(size(b) == numel(s.subs{2}));
                if ~isempty(I)
                   I = I(1);
                   if I ~= 1
@@ -1153,11 +1164,11 @@ classdef dip_image
                   else
                      b = reshape(b,[1,size(b)]);
                   end
-                  if ndims(b)==2 && length(s.subs)>2
+                  if ndims(b)==2 && numel(s.subs)>2
                      % It's become a 0D tensor image: we'll need to replicate it to allow
                      % assignment of 0D image to multiple locations in 'a'
-                     sz = cellfun('length',s.subs);
-                     for ii=3:length(sz)
+                     sz = cellfun('numel',s.subs);
+                     for ii=3:numel(sz)
                         if isequal(s.subs{ii},':')
                            sz(ii) = size(a,ii);
                         end
@@ -1177,7 +1188,7 @@ classdef dip_image
             end
             a.Data = subsasgn_mat(a.Data,s,b);
          end
-         if nd == 1 && length(sz) > 1
+         if nd == 1 && numel(sz) > 1
             a.Data = reshape(a.Data,orig_sz);
          end
       end
@@ -1237,13 +1248,13 @@ classdef dip_image
             nd = in.NDims;
             dim = dim+2;
             n = 1:max(ndims(in.Data)+1,dim);
-            if length(n) > 3
+            if numel(n) > 3
                n = n([1:2,4,3,5:end]);
             end
             n = [n(1:dim-1),2,n(dim:end)];
             n(2) = n(end);
             n(end) = [];
-            if length(n) > 3
+            if numel(n) > 3
                n = n([1:2,4,3,5:end]);
             end
             in.Data = permute(in.Data,n);
@@ -1272,7 +1283,7 @@ classdef dip_image
             nd = in.NDims;
             sz = size(in.Data);
             sz = sz([1,3:end]);
-            if length(sz)<2
+            if numel(sz)<2
                sz = [sz,1];
             end
             in.Data = reshape(in.Data,sz);
@@ -1283,11 +1294,11 @@ classdef dip_image
             if ~isintscalar(dim) || dim < 1 || dim > nd, error('Dimension argument must be a positive scalar integer in the indexing range'), end
             dim = dim+2;
             n = 1:ndims(in.Data);
-            if length(n) > 3
+            if numel(n) > 3
                n = n([1:2,4,3,5:end]);
             end
             n = n([1,dim,3:dim-1,dim+1:end,2]);
-            if length(n) > 4 % one more than necessary, since the trailing singleton dimension we want to keep trailing
+            if numel(n) > 4 % one more than necessary, since the trailing singleton dimension we want to keep trailing
                n = n([1:2,4,3,5:end]);
             end
             in.Data = permute(in.Data,n);
@@ -1300,7 +1311,7 @@ classdef dip_image
       end
 
       function in = expanddim(in,dims)
-         %EXPANDDIM   Appends dimensions of size 1
+         %EXPANDDIM   Appends dimensions of size 1.
          %   B = EXPANDDIM(A,N) increases the dimensionality of the image A
          %   to N, if its dimensionality is smaller. The dimensions added will
          %   have a size of 1.
@@ -1336,10 +1347,10 @@ classdef dip_image
             error('ORDER contains an index out of range')
          end
          k = k(:).'; % Make sure K is a 1xN vector.
-         nd = length(k);
+         nd = numel(k);
          tmp = k;
          tmp(tmp==0) = [];
-         if length(unique(tmp)) ~= length(tmp)
+         if numel(unique(tmp)) ~= numel(tmp)
             error('ORDER contains a repeated index')
          end
          notused = setdiff(1:in.NDims,tmp);
@@ -1349,8 +1360,8 @@ classdef dip_image
          end
          k_orig = k; % Save to change pixel sizes later
          k = [k,notused];
-         k(k==0) = max(k) + 1:length(k==0);
-         if length(k) > 1
+         k(k==0) = max(k) + (1:numel(k==0));
+         if numel(k) > 1
             % Where we say 1, we mean 2.
             I = k==1;
             J = k==2;
@@ -1375,10 +1386,10 @@ classdef dip_image
          if nargin~=3
             error('Requires three arguments.')
          end
-         if ~isnumeric(dim1) || length(dim1)~=1 || fix(dim1)~=dim1 || dim1<1 || dim1>in.NDims
+         if ~isnumeric(dim1) || numel(dim1)~=1 || fix(dim1)~=dim1 || dim1<1 || dim1>in.NDims
             error('DIM1 must be a positive integer.')
          end
-         if ~isnumeric(dim2) || length(dim2)~=1 || fix(dim2)~=dim2 || dim2<1 || dim2>in.NDims
+         if ~isnumeric(dim2) || numel(dim2)~=1 || fix(dim2)~=dim2 || dim2<1 || dim2>in.NDims
             error('DIM2 must be a positive integer.')
          end
          order = 1:in.NDims;
@@ -1409,11 +1420,11 @@ classdef dip_image
             sz = imsize(in);
             n = min(find(sz>1,'first')); % First non-singleton dimension.
             if isempty(n)
-               n = length(sz);
+               n = numel(sz);
             end
             nshifts = n-1;
             if n>1
-               in = permute(in,n:length(sz));
+               in = permute(in,n:numel(sz));
             % else don't do anything
             end
          else
@@ -1483,11 +1494,11 @@ classdef dip_image
             end
          end
          if numpixels(in) ~= prod(n), error('Number of pixels must not change'), end
-         if length(n)>1
+         if numel(n)>1
             n = n([2,1,3:end]);
          end
          in.Data = reshape(in.Data,[size(in.Data,1),size(in.Data,2),n]);
-         in.NDims = length(n);
+         in.NDims = numel(n);
          pxsz = in.PixelSize;
          if numel(pxsz) > 1
             pxsz = defaultPixelSize;
@@ -1510,11 +1521,11 @@ classdef dip_image
          %
          %   See also dip_image.reshape, dip_image.permute
          sz = imsize(in);
-         if length(sz)>1
+         if numel(sz)>1
             sz = sz([2,1,3:end]);
          end
          sz(sz==1) = [];
-         if length(sz)>1
+         if numel(sz)>1
             sz = sz([2,1,3:end]);
          end
          in = reshape(in,sz);
@@ -1525,7 +1536,7 @@ classdef dip_image
          if nargin~=2
             error('Requires two arguments.')
          end
-         if ~isnumeric(dim) || length(dim)~=1 || fix(dim)~=dim || dim<1
+         if ~isnumeric(dim) || numel(dim)~=1 || fix(dim)~=dim || dim<1
             error('DIM must be a positive integer.')
          end
          if b.NDims < dim
@@ -1572,7 +1583,7 @@ classdef dip_image
          if nargin == 1
              k = 1;
          else
-            if ~isnumeric(k) || length(k)~=1 || fix(k)~=k
+            if ~isnumeric(k) || numel(k)~=1 || fix(k)~=k
                error('k must be a scalar.');
             end
             k = mod(k,4);
@@ -1618,7 +1629,7 @@ classdef dip_image
          end
          % Find the correct output datatype
          out_type = di_findtypex(class(in{ii}),class(in{ii}),size(in{ii},2)==2);
-         for ii=1:length(in)
+         for ii=1:numel(in)
             out_type = di_findtypex(out_type,class(in{ii}),size(in{ii},2)==2);
          end
          pxsz(cellfun('isempty',pxsz)) = [];
@@ -1626,7 +1637,7 @@ classdef dip_image
             pxsz = pxsz{1};
          end
          % Convert images to the output type
-         for ii=1:length(in)
+         for ii=1:numel(in)
             if ~strcmp(class(in{ii}),out_type)
                in{ii} = array_convert_datatype(in{ii},out_type);
             end
@@ -1832,7 +1843,7 @@ classdef dip_image
       end
 
       function out = bitand(lhs,rhs)
-         %BITAND   Bitwise AND for integer-valued images
+         %BITAND   Bitwise AND for integer-valued images.
          if strcmp(class(lhs),'dip_image')
             dt = class(lhs.Data);
             if ~isintclass(dt)
@@ -1857,7 +1868,7 @@ classdef dip_image
       end
 
       function out = bitor(lhs,rhs)
-         %BITOR   Bitwise OR for integer-valued images
+         %BITOR   Bitwise OR for integer-valued images.
          if strcmp(class(lhs),'dip_image')
             dt = class(lhs.Data);
             if ~isintclass(dt)
@@ -1882,7 +1893,7 @@ classdef dip_image
       end
 
       function out = bitxor(lhs,rhs)
-         %BITXOR   Bitwise XOR for integer-valued images
+         %BITXOR   Bitwise XOR for integer-valued images.
          if strcmp(class(lhs),'dip_image')
             dt = class(lhs.Data);
             if ~isintclass(dt)
@@ -1907,7 +1918,7 @@ classdef dip_image
       end
 
       function out = bitcmp(in)
-         %BITCMP   Bitwise complement for integer-valued images
+         %BITCMP   Bitwise complement for integer-valued images.
          dt = class(in.Data);
          if ~isintclass(dt)
             error('BITCMP only defined for integer-valued images')
@@ -2100,7 +2111,7 @@ classdef dip_image
       end
 
       function out = pinv(varargin)
-         %PINV   Pseudoinverse or a tensor image
+         %PINV   Pseudoinverse or a tensor image.
          %   X = PINV(A,TOL)
          %
          %   X is of dimension A' and fullfills A*X*A = A, X*A*X = X. The computation
@@ -2252,7 +2263,7 @@ classdef dip_image
    methods(Static)
 
       function n = numberchannels(col)
-         %NUMBERCHANNELS   Number of channels for a color space
+         %NUMBERCHANNELS   Number of channels for a color space.
          %   N = DIP_IMAGE.NUMBERCHANNELS(COL) returns the number of channels
          %   expected for color space COL.
          n = colorspacemanager(col);
@@ -2264,7 +2275,7 @@ classdef dip_image
       % The function above defined to prevent its use.
 
       function img = loadobj(img)
-         %LOADOBJ   This function is called when loading dip_image objects from file
+         %LOADOBJ   This function is called when loading dip_image objects from file.
          if isa(img,'dip_image')
             return
          end
@@ -2535,7 +2546,7 @@ end
 function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
    tensorindex = 0;
    imageindex = 0;
-   for ii=1:length(s)
+   for ii=1:numel(s)
       switch s(ii).type
          case '{}'
             if tensorindex
@@ -2565,7 +2576,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          elseif any(telems<1) || any(telems>numtensorel(a))
             error('Tensor index out of range');
          end
-         tsz = [length(telems),1];
+         tsz = [numel(telems),1];
          tsh = 'column vector';
       elseif N==2
          % Two elements: use lookup table
@@ -2583,7 +2594,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          end
          stride = tsz(1);
          tsh = 'column-major matrix';
-         tsz = [length(ii),length(jj)];
+         tsz = [numel(ii),numel(jj)];
          lut = dip_tensor_indices(a);
          [ii,jj] = ndgrid(ii,jj);
          telems = lut(ii + (jj-1)*stride) + 1;
@@ -2599,10 +2610,10 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
       telems = 1:numtensorel(a);
    end
    % Find spatial indices
-   ndims = length(sz);
+   ndims = numel(sz);
    if imageindex
       s = s(imageindex);
-      if length(s.subs) == 1 % (this should produce a 1D image)
+      if numel(s.subs) == 1 % (this should produce a 1D image)
          ind = s.subs{1};
          ndims = 1;
          if isa(ind,'dip_image')
@@ -2633,8 +2644,8 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          % else it's ':'
          end
          s.subs{1} = ind;
-      elseif length(s.subs) == length(sz)
-         for ii=1:length(sz)
+      elseif numel(s.subs) == numel(sz)
+         for ii=1:numel(sz)
             ind = s.subs{ii};
             if islogical(ind)
                error('Illegal indexing')
@@ -2659,7 +2670,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          error('Number of indices not the same as image dimensionality')
       end
    else
-      s = substruct('()',repmat({':'},1,length(sz)));
+      s = substruct('()',repmat({':'},1,numel(sz)));
    end
    % Combine spatial and tensor indexing, add indexing into complex dimension
    s.subs = [{':'},{telems},s.subs];
@@ -2727,7 +2738,7 @@ function a = subsasgn_core(a,s,b)
       end
    else
       % Insert b(:,ii,:,:,:,...) into tensor element ii
-      if ntelemsB ~= length(telemsA)
+      if ntelemsB ~= numel(telemsA)
          error('Subscripted assignment tensor sizes mismatch')
       end
       sb = substruct('()',repmat({':'},1,ndims(b)));

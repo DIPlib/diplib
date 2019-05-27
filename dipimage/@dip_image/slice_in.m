@@ -1,36 +1,30 @@
-%SLICE_IN   Inserts one slice in an image
+%SLICE_IN   Inserts one slice in an image.
+%   SLICE_IN(IN,SLICE,PLANE,DIM) assigns the N-1 dimensional image SLICE
+%   into the N-dimensional image IN by indexing along dimension DIM with
+%   index PLANE. For example, if IN has 3 dimensions, and DIM is 3, it
+%   assigns IN(:,:,PLANE) = SLICE. Dimensions start counting at 1,
+%   negative dimensions start from the end (that is, -1 is the last
+%   dimension).
 %
-% SYNOPSIS:
-%  in = slice_in(in,slice,plane,dim)
+%   SLICE_IN(IN,SLICE,PLANE) indexes along the last dimension of IN.
 %
-% PARAMETERS:
-%  slice: Slice (image) to be written into image IN
-%  plane: Index along dimension DIM for the plane.
-%  dim:   Dimension along which to slice. Negative dimensions start from the
-%         end. Dimensions start counting at 1.
+%   The input SLICE should have the same properties (tensor elements
+%   etc.) as IN, but with one fewer dimension. Because of the way data
+%   is stored in DIPimage, if DIM is 1 or 2 the dimensions will be re-
+%   ordered in a non-obvious way. The best way to find out what the
+%   correct size is for SLICE is to extract a slice using SLICE_EX.
 %
-% NOTE:
-%  The input SLICE should have the same properties (tensor elements etc.)
-%  as IN, but with one fewer dimension. Because of the way data is stored
-%  in DIPimage, if DIM is 1 or 2 the dimensions will be re-ordered in a
-%  non-obvious way. The best way to find out what the correct size is for
-%  SLICE is to extract a slice using SLICE_EX.
+%   SLICE_EX, with the same value for the parameter DIM, gives an image
+%   if correct size for SLICE_IN. See the example below.
 %
-%  SLICE_EX, with the same value for the parameter DIM, gives an image of
-%  correct size for SLICE_IN. See the example below.
+%   Example:
+%      a = readim('chromo3d');
+%      b = gaussf(slice_ex(a,8));
+%      a = slice_in(a,b,8);
 %
-% DEFAULTS:
-%  dim = -1 (last dimension)
-%
-% EXAMPLE:
-%  a = readim('chromo3d');
-%  b = gaussf(slice_ex(a,8));
-%  a = slice_in(a,b,8);
-%
-%  SEE ALSO:
-%   dip_image/slice_ex, dip_image/slice_op, im2array, array2im.
+%   See also dip_image/slice_ex, dip_image/slice_op, im2array, array2im.
 
-% (c)2010, 2017, Cris Luengo.
+% (c)2010, 2017-2019, Cris Luengo.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

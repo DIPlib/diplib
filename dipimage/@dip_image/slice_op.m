@@ -1,35 +1,27 @@
-%SLICE_OP   Apply a function to all slices along the last image dimension
+%SLICE_OP   Apply a function to all slices along the last image dimension.
+%   OUT = SLICE_OP(FUNCTION,IN,PAR1,PAR2,...) applies the function FUNCTION
+%   to each of the (N-1)-dimensional slices of the N-dimensional image IN.
+%   That is, it executes OUT(:,:,i) = FUNCTION(IN(:,:,i),PAR1,PAR2,...)
+%   for each possible index i. PAR1, PAR2, etc. are optional. FUNCTION is
+%   a string or a function handle. It must take the input image as its
+%   first argument. If any other arguments are images, they are not
+%   sliced, but passed directly to the function. IN must have at least
+%   one dimension.
 %
-%  This function is useful for operations that intrinsically do
-%  not allow a no-op along one dimension, such as BDILATION in the
-%  example below. It applies the function to each of the (N-1)-dimensional
-%  slices of the N-dimensional image. This process works even if the
-%  function produces an output that is of a different size or
-%  dimensionality than the input, as long as there are not more dimensions
-%  produced.
+%   This function is useful for operations that intrinsically do not
+%   allow a no-op along one dimension, such as BDILATION in the example
+%   below. The function must produce an image of the same dimensionality
+%   as its input, but not of the same sizes, tensor dimensions or shape,
+%   etc.
 %
-% SYNOPSIS:
-%  image_out = slice_op(function,image_in,par1,par2,...)
+%   Example:
+%      a = threshold(readim('chromo3d'));
+%      b = slice_op(@bdilation,a,5,-1);
 %
-% PARAMETERS:
-%  function: a function handle or function name to execute. The
-%     function has as signature: function(image_in,par1,par2,...)
-%  image_in: the input image, with more than one dimension.
-%
-% EXAMPLE:
-%  a = threshold(readim('chromo3d'));
-%  b = slice_op(@bdilation,a,5,-1);
-%
-% NOTE:
-%  The FUNCTION must take the input image as its first argument. If any
-%  other arguments are images, they are not sliced, but passed directly to
-%  the function.
-%
-% SEE ALSO:
-%  dip_image/iterate, dip_image/tensorfun, dip_image/slice_ex,
-%  dip_image/slice_in, im2array, array2im.
+%   See also dip_image/iterate, dip_image/tensorfun, dip_image/slice_ex,
+%   dip_image/slice_in, im2array, array2im.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,5 +1,5 @@
-%PLOT   plots a one dimensional image
-%   This function simply converts all dip_image objects in the input
+%PLOT   plots a one dimensional image.
+%   This function simply converts all DIP_IMAGE objects in the input
 %   to DOUBLE and passes on all the arguments to PLOT.
 
 % (c)2017, Cris Luengo.
