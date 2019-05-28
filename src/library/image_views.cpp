@@ -564,7 +564,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
 
    // -- Indexing into image (3 types of indexing)
 
-   dip::Image img{ dip::UnsignedArray{ 15, 20, 10 }, 3 };
+   dip::Image img{ dip::UnsignedArray{ 15, 20, 10 }, 3, dip::DT_SINT32 };
    img.Fill( 0 );
 
    // Regular indexing
@@ -576,6 +576,15 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
    DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 ); // we didn't write into pixels not in the view
    DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   dip::Image diff;
+   diff.SetDataType( dip::DT_SFLOAT );
+   diff.Protect();
+   diff = viewR;
+   DOCTEST_CHECK( diff.Sizes() == dip::UnsignedArray{ 3, 3, 3 } );
+   DOCTEST_CHECK( diff.TensorElements() == 3 );
+   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 1 ) == 3*3*3 );
+   diff.Unprotect();
+   diff.Strip();
 
    // Indexing using mask image
    dip::Image mask = img[ 0 ] > 0;
@@ -583,7 +592,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    ref = viewM;
    DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3 * 3 * 3 } );
    DOCTEST_CHECK( ref.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( ref[ 0 ] == 1 ) == 3*3*3 );
+   diff.Protect();
+   diff = viewM;
+   DOCTEST_CHECK( diff.Sizes() == dip::UnsignedArray{ 3 * 3 * 3 } );
+   DOCTEST_CHECK( diff.TensorElements() == 3 );
+   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 1 ) == 3*3*3 );
+   diff.Unprotect();
+   diff.Strip();
 
    // Indexing using coordinate array
    dip::CoordinateArray coords;
@@ -602,6 +618,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( img.At( 1, 1, 1 )[ 0 ] == 2 );
    DOCTEST_CHECK( img.At( 0, 1, 1 )[ 0 ] == 2 );
    DOCTEST_CHECK( img.At( 1, 1, 0 )[ 0 ] == 2 );
+   diff.Protect();
+   diff = viewC;
+   DOCTEST_CHECK( diff.Sizes() == dip::UnsignedArray{ 4 } );
+   DOCTEST_CHECK( diff.TensorElements() == 3 );
+   DOCTEST_CHECK( dip::Count( diff[ 0 ] == 2 ) == 4 );
 
    // -- Indexing into view
 
@@ -649,36 +670,56 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    img.Fill( 0 );
    ref = viewR;
    dip::Image src = ref.Similar();
-   dip::ImageIterator< dip::sfloat > it( src );
+   dip::ImageIterator< dip::sint32 > it( src );
    for( dip::uint ii = 1; it; ++ii, ++it ) {
-      it[ 0 ] = static_cast< dip::sfloat >( ii );
-      it[ 1 ] = static_cast< dip::sfloat >( ii + 1000 );
-      it[ 2 ] = static_cast< dip::sfloat >( ii + 2000 );
+      it[ 0 ] = static_cast< dip::sint32 >( ii );
+      it[ 1 ] = static_cast< dip::sint32 >( ii + 1000 );
+      it[ 2 ] = static_cast< dip::sint32 >( ii + 2000 );
    }
    viewR = src; // copy samples from src to view in img, now ref should match src
+   DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
+   viewR.Fill( 0 );
+   viewR = Convert( src, dip::DT_SFLOAT );
    DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
 
    // Indexing using mask image
    img.Fill( 0 );
    it.Reset();
    do {
-      it[ 0 ] += 500.0f;
-      it[ 1 ] += 500.0f;
-      it[ 2 ] += 500.0f;
+      it[ 0 ] += 500;
+      it[ 1 ] += 500;
+      it[ 2 ] += 500;
    } while( ++it );
    viewM = src; // copy samples from src to view in img, now ref should match src
+   DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
+   viewM.Fill( 0 );
+   viewM = Convert( src, dip::DT_SFLOAT );
    DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
 
    // Indexing using coordinate array
    img.Fill( 0 );
-   src.ReForge( dip::UnsignedArray{ 4 }, 3 );
-   it = dip::ImageIterator< dip::sfloat >( src );
+   src.ReForge( dip::UnsignedArray{ 4 }, 3, dip::DT_SINT32 );
+   it = dip::ImageIterator< dip::sint32 >( src );
    for( dip::uint ii = 1; it; ++ii, ++it ) {
-      it[ 0 ] = static_cast< dip::sfloat >( ii );
-      it[ 1 ] = static_cast< dip::sfloat >( ii + 1000 );
-      it[ 2 ] = static_cast< dip::sfloat >( ii + 2000 );
+      it[ 0 ] = static_cast< dip::sint32 >( ii );
+      it[ 1 ] = static_cast< dip::sint32 >( ii + 1000 );
+      it[ 2 ] = static_cast< dip::sint32 >( ii + 2000 );
    }
    viewC = src;
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 0 ] == 1 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 0 ] == 2 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 0 ] == 3 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 0 ] == 4 );
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 1 ] == 1 + 1000 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 1 ] == 2 + 1000 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 1 ] == 3 + 1000 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 1 ] == 4 + 1000 );
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 2 ] == 1 + 2000 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 2 ] == 2 + 2000 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 2 ] == 3 + 2000 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 2 ] == 4 + 2000 );
+   viewC.Fill( 0 );
+   viewC = Convert( src, dip::DT_SFLOAT );
    DOCTEST_CHECK( img.At( 0, 0, 0 )[ 0 ] == 1 );
    DOCTEST_CHECK( img.At( 1, 1, 1 )[ 0 ] == 2 );
    DOCTEST_CHECK( img.At( 0, 1, 1 )[ 0 ] == 3 );
@@ -694,12 +735,12 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
 
    // Writing a 2D image into a slice of a 3D image
    img.Fill( 0 );
-   dip::Image slice{ dip::UnsignedArray{ 15, 20 }, 3 };
-   it = dip::ImageIterator< dip::sfloat >( slice );
+   dip::Image slice{ dip::UnsignedArray{ 15, 20 }, 3, dip::DT_SINT32 };
+   it = dip::ImageIterator< dip::sint32 >( slice );
    for( dip::uint ii = 1; it; ++ii, ++it ) {
-      it[ 0 ] = static_cast< dip::sfloat >( ii );
-      it[ 1 ] = static_cast< dip::sfloat >( ii + 1000 );
-      it[ 2 ] = static_cast< dip::sfloat >( ii + 2000 );
+      it[ 0 ] = static_cast< dip::sint32 >( ii );
+      it[ 1 ] = static_cast< dip::sint32 >( ii + 1000 );
+      it[ 2 ] = static_cast< dip::sint32 >( ii + 2000 );
    }
    img.At( dip::Range(), dip::Range(), dip::Range( 3 ) ) = slice;
    DOCTEST_CHECK( dip::testing::CompareImages( dip::Image( img.At( dip::Range(), dip::Range(), dip::Range( 3 ))).Squeeze(), slice ));

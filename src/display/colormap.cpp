@@ -1693,7 +1693,7 @@ void Overlay(
       out.Strip();
    }
    Image in = c_in;
-   if( overlay.DataType().IsUInt() || !in.IsScalar() || !color.IsScalar() ) {
+   if( !(overlay.DataType().IsBinary() && in.IsScalar() && color.IsScalar() )) {
       // This code is not run in the case that `overlay` is binary, and `in` and `color` are scalar. In this case,
       //    we create a grey-value output.
       if( in.IsScalar() ) {

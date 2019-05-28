@@ -75,10 +75,10 @@ void CopyFrom( Image const& src, Image& dest, Image const& srcMask ) {
       DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { N } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
       dest.CopyNonDataProperties( src );
    }
-   if( DataType() == src.DataType() ) {
+   if( dest.DataType() == src.DataType() ) {
       // Samples
       dip::uint telems = src.TensorElements();
-      dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+      dip::uint bytes = dest.DataType().SizeOf(); // both source and destination have the same types
       if(( src.TensorStride() == 1 ) && ( dest.TensorStride() == 1 )) {
          // We copy the whole tensor as a single data block
          bytes *= telems;
@@ -111,11 +111,10 @@ void CopyFrom( Image const& src, Image& dest, Image const& srcMask ) {
       do {
          if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ))) {
             DIP_ASSERT( destIt );
-            srcIt.Pixel< 0 >() = *destIt;
+            *destIt = srcIt.Pixel< 0 >();
             ++destIt;
          }
       } while( ++srcIt );
-
    }
 }
 
@@ -127,10 +126,10 @@ void CopyFrom( Image const& src, Image& dest, IntegerArray const& srcOffsets ) {
       DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { srcOffsets.size() } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
       dest.CopyNonDataProperties( src );
    }
-   if( DataType() == src.DataType() ) {
+   if( dest.DataType() == src.DataType() ) {
       // Samples
       dip::uint telems = src.TensorElements();
-      dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+      dip::uint bytes = dest.DataType().SizeOf(); // both source and destination have the same types
       if(( src.TensorStride() == 1 ) && ( dest.TensorStride() == 1 )) {
          // We copy the whole tensor as a single data block
          bytes *= telems;
@@ -157,8 +156,7 @@ void CopyFrom( Image const& src, Image& dest, IntegerArray const& srcOffsets ) {
       auto arrIt = srcOffsets.begin();
       GenericImageIterator<> destIt( dest );
       do {
-         Image::Pixel d( src.Pointer( *arrIt ), src.DataType(), src.Tensor(), src.TensorStride() );
-         d = *destIt;
+         *destIt = Image::Pixel( src.Pointer( *arrIt ), src.DataType(), src.Tensor(), src.TensorStride() );
       } while( ++arrIt, ++destIt ); // these two must end at the same time, we test the image iterator, as arrIt should be compared with the end iterator.
 
    }
@@ -222,9 +220,9 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& destOffsets ) {
    DIP_THROW_IF( src.TensorElements() != dest.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( destOffsets.empty(), E::ARRAY_PARAMETER_EMPTY );
    DIP_THROW_IF( src.NumberOfPixels() != destOffsets.size(), "Number of pixels does not match offset list" );
-   if( DataType() == src.DataType() ) {
+   if( dest.DataType() == src.DataType() ) {
       dip::uint telems = dest.TensorElements();
-      dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+      dip::uint bytes = dest.DataType().SizeOf(); // both source and destination have the same types
       if(( dest.TensorStride() == 1 ) && ( src.TensorStride() == 1 )) {
          // We copy the whole tensor as a single data block
          bytes *= telems;
