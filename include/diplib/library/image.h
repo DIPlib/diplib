@@ -1264,11 +1264,16 @@ class DIP_NO_EXPORT Image {
       ///     img.Protect( wasProtected );
       /// ```
       ///
-      /// \see dip::Image::IsProtected, dip::Image::Strip
+      /// \see dip::Image::Unprotect, dip::Image::IsProtected, dip::Image::Strip
       bool Protect( bool set = true ) {
          bool old = protect_;
          protect_ = set;
          return old;
+      }
+
+      /// \brief Reset protection flag. Alias for `Protect(false)`.
+      bool Unprotect() {
+         return Protect( false );
       }
 
       /// \brief Test if protected. See `dip::Image::Protect` for information.
