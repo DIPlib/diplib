@@ -1325,7 +1325,7 @@ inline Image HMinima(
 /// The H-Maxima filtered image has all local maxima with a height less than `h` removed:
 ///
 /// ```cpp
-///     HMinima = dip::MorphologicalReconstruction( in - h, in, connectivity, "dilation" );
+///     HMaxima = dip::MorphologicalReconstruction( in - h, in, connectivity, "dilation" );
 /// ```
 ///
 /// \see dip::MorphologicalReconstruction, dip::Maxima, dip::Hminima

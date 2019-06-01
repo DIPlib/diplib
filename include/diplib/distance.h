@@ -53,31 +53,35 @@ namespace dip {
 /// The `method` parameter specifies the method to use to compute the distances. There are three general algorithms
 /// implemented:
 ///
-///  - A separable algorithm based on parabolic erosions as first described by van den Boomgaard and later by
-///    Meijster et al. This is a very fast algorithm of linear time complexity, it is parallelized, and produces
-///    exact Euclidean distances in any number of dimensions. `method` must be `"separable"`, which is the default,
-///    or `"square"`, in which case squared distances are returned.
+/// \m_class{m-spaced-list}
 ///
-///  - A vector distance transform, which propagates vectors to the nearest background pixel instead of propagating
-///    distances as the chamfer method does. This leads to a fairly fast algorithm that can yield exact results.
-///    This algorithm was described by Mullikin, based on previous work by Danielsson and Ye.
+///  1. A separable algorithm based on parabolic erosions as first described by van den Boomgaard (1992) and later by
+///     Meijster et al. (2002), but for some reason frequently refered to as "Felzenszwalb and Huttenlocher", who published
+///     the same method without attribution 10 years later.
+///     This is a very fast algorithm of linear time complexity, it is parallelized, and produces
+///     exact Euclidean distances in any number of dimensions. `method` must be `"separable"`, which is the default,
+///     or `"square"`, in which case squared distances are returned.
 ///
-///    `method` must be one of `"fast"`, `"ties"` or `"true"`. The difference is in how vectors of equal length are
-///    propagated. The `"fast"` method chooses one of them, which can lead to errors of around 0.2 pixels. The
-///    `"ties"` method stores all vectors of equal length, which reduces the average errors but can still lead to
-///    significant errors. The `"true"` method stores also vectors close in length, which leads to exact distances
-///    in all cases. These three methods are listed in increasing computational complexity.
+///  2. A vector distance transform, which propagates vectors to the nearest background pixel instead of propagating
+///     distances as the chamfer method does. This leads to a fairly fast algorithm that can yield exact results.
+///     This algorithm was described by Mullikin, based on previous work by Danielsson and Ye.
 ///
-///    This method works with 2D and 3D images only. The `"fast"` method can have a time advantage over the
-///    `"separable"` method in situations where parallelism is not an option. When exact distances are needed,
-///    the separable algorithm is always fastest.
+///     `method` must be one of `"fast"`, `"ties"` or `"true"`. The difference is in how vectors of equal length are
+///     propagated. The `"fast"` method chooses one of them, which can lead to errors of around 0.2 pixels. The
+///     `"ties"` method stores all vectors of equal length, which reduces the average errors but can still lead to
+///     significant errors. The `"true"` method stores also vectors close in length, which leads to exact distances
+///     in all cases. These three methods are listed in increasing computational complexity.
 ///
-///    Individual vector components of the Euclidean distance transform can be obtained with
-///    `dip::VectorDistanceTransform`.
+///     This method works with 2D and 3D images only. The `"fast"` method can have a time advantage over the
+///     `"separable"` method in situations where parallelism is not an option. When exact distances are needed,
+///     the separable algorithm is always fastest.
 ///
-///  - A brute force algorithm that scales quadratically with the number of pixels. The results are always exact.
-///    Use only with small images to determine a ground-truth result. For 2D and 3D inputs only.
-///    `method` must be `"brute force"`.
+///     Individual vector components of the Euclidean distance transform can be obtained with
+///     `dip::VectorDistanceTransform`.
+///
+///  3. A brute force algorithm that scales quadratically with the number of pixels. The results are always exact.
+///     Use only with small images to determine a ground-truth result. For 2D and 3D inputs only.
+///     `method` must be `"brute force"`.
 ///
 /// \bug The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger, almost
 /// spherical objects. It this case, use a different method.
@@ -85,11 +89,16 @@ namespace dip {
 /// \note The option `border` = `"background"` is not supported for the `"brute force"` method.
 ///
 /// \literature
-/// <li>R. van den Boomgaard, "Mathematical Morphology--Extensions towards Computer Vision", PhD Thesis, University of Amsterdam, 1992.
-/// <li>A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time", Mathematical Morphology and its Applications to %Image and Signal Processing, Springer, 2002.
+/// <li>R. van den Boomgaard, "Mathematical Morphology--Extensions towards Computer Vision",
+///     PhD Thesis, University of Amsterdam, 1992.
+/// <li>A. Meijster, J.B.T.M. Roerdink and W.H. Hesselink, "A General Algorithm for Computing Distance Transforms in Linear Time",
+///     Mathematical Morphology and its Applications to %Image and Signal Processing, Springer, 2002.
+/// <li>P.F. Felzenszwalb and D.P. Huttenlocher, "Distance Transforms of Sampled Functions", Theory of Computing 8:415–428, 2012.
 /// <li>P.E. Danielsson, "Euclidean distance mapping", Computer Graphics and %Image Processing 14:227-248, 1980.
-/// <li>Q.Z. Ye, "The signed Euclidean distance transform and its applications", in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
-/// <li>J.C. Mullikin, "The vector distance transform in two and three dimensions", CVGIP: Graphical Models and %Image Processing 54(6):526-535, 1992.
+/// <li>Q.Z. Ye, "The signed Euclidean distance transform and its applications",
+///     in: 9<sup>th</sup> International Conference on Pattern Recognition, 495-499, 1988.
+/// <li>J.C. Mullikin, "The vector distance transform in two and three dimensions",
+///     CVGIP: Graphical Models and %Image Processing 54(6):526-535, 1992.
 /// \endliterature
 DIP_EXPORT void EuclideanDistanceTransform(
       Image const& in,

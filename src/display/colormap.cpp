@@ -1699,6 +1699,9 @@ void Overlay(
       if( in.IsScalar() ) {
          in.ExpandSingletonTensor( 3 );
          in.SetColorSpace( "RGB" );
+         if( out.Aliases( in )) {
+            out.Strip(); // if &out == &in, we need a new bit of memory for out
+         }
       } else {
          DIP_THROW_IF( in.TensorElements() != 3, "Input image must have 1 or 3 tensor elements" );
          DIP_THROW_IF( in.IsColor() && ( in.ColorSpace() != "RGB" ), "Convert input image to RGB color space first" );
