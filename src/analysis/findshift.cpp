@@ -336,21 +336,21 @@ FloatArray FindShift(
    dip::uint nDims = c_in1.Dimensionality();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( maxShift, nDims, std::numeric_limits< dip::uint >::max() ));
    FloatArray shift( nDims, 0.0 );
-   if( method == dip::S::INTEGER_ONLY ) {
+   if( method == S::INTEGER_ONLY ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, false ));
-   } else if( method == dip::S::CC ) {
+   } else if( method == S::CC ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, true ));
-   } else if( method == dip::S::NCC ) {
+   } else if( method == S::NCC ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::NORMALIZE, true ));
-   } else if( method == dip::S::PC ) {
+   } else if( method == S::PC ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::PHASE, true ));
    } else {
       Image in1 = c_in1.QuickCopy();
       Image in2 = c_in2.QuickCopy();
       DIP_STACK_TRACE_THIS( shift = CorrectIntegerShift( in1, in2, maxShift )); // modifies in1 and in2
-      if( method == dip::S::CPF ) {
+      if( method == S::CPF ) {
          DIP_STACK_TRACE_THIS( shift += FindShift_CPF( in1, in2, parameter ));
-      } else if( method == dip::S::MTS ) {
+      } else if( method == S::MTS ) {
          if( parameter <= 0.0 ) {
             parameter = 1.0;
          }
@@ -365,9 +365,9 @@ FloatArray FindShift(
             maxIter = 20;        // NOTE: more iteration solution may end up very far from truth
             accuracy = parameter;
          }
-         if( method == dip::S::ITER ) {
+         if( method == S::ITER ) {
             DIP_STACK_TRACE_THIS( shift += FindShift_MTS( in1, in2, maxIter, accuracy, 1.0 ));
-         } else if( method == dip::S::PROJ ) {
+         } else if( method == S::PROJ ) {
             DIP_STACK_TRACE_THIS( shift += FindShift_PROJ( in1, in2, maxIter, accuracy, 1.0 )); // calls FindShift_MTS
          } else {
             DIP_THROW_INVALID_FLAG( method );

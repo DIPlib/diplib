@@ -273,7 +273,7 @@ inline Image CrossCorrelationFT(
 DIP_EXPORT FloatArray FindShift(
       Image const& in1,
       Image const& in2,
-      String const& method = dip::S::MTS,
+      String const& method = S::MTS,
       dfloat parameter = 0,
       UnsignedArray maxShift = {}
 );
@@ -290,6 +290,10 @@ DIP_EXPORT FloatArray FindShift(
 /// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
 /// ignored, nearest neighbor interpolation will be used.
 ///
+/// `correlationMethod` determines the normalization applied in the cross correlation. It can be
+/// `"don't normalize"`, `"normalize"` or `"phase"`. See `dip::CrossCorrelationFT` for an explanation of
+/// these flags.
+///
 /// Example:
 ///
 /// ```cpp
@@ -303,15 +307,17 @@ DIP_EXPORT FloatArray FourierMellinMatch2D(
       Image const& in1,
       Image const& in2,
       Image& out,
-      String const& interpolationMethod = S::LINEAR
+      String const& interpolationMethod = S::LINEAR,
+      String const& correlationMethod = S::PHASE
 );
 inline Image FourierMellinMatch2D(
       Image const& in1,
       Image const& in2,
-      String const& interpolationMethod = S::LINEAR
+      String const& interpolationMethod = S::LINEAR,
+      String const& correlationMethod = S::PHASE
 ) {
    Image out;
-   FourierMellinMatch2D( in1, in2, out, interpolationMethod );
+   FourierMellinMatch2D( in1, in2, out, interpolationMethod, correlationMethod );
    return out;
 }
 

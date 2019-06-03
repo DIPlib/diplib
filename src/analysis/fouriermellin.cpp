@@ -40,7 +40,8 @@ FloatArray FourierMellinMatch2D(
       Image const& in1,
       Image const& in2,
       Image& out,
-      String const& interpolationMethod
+      String const& interpolationMethod,
+      String const& correlationMethod
 ) {
    DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_STACK_TRACE_THIS( in1.CheckProperties( 2, 1, DataType::Class_Real ));
@@ -62,8 +63,18 @@ FloatArray FourierMellinMatch2D(
    dfloat size = static_cast< dfloat >( fmIn2.Size( 0 ));
 
    // Compute cross-correlation
-   FloatArray shift = FindShift( fmIn1, fmIn2, "NCC" );
-   std::cout << "shift = " << shift << '\n';
+   String findShiftMethod;
+   if( correlationMethod == S::DONT_NORMALIZE ) {
+      findShiftMethod = S::CC;
+   } else if( correlationMethod == S::NORMALIZE  ) {
+      findShiftMethod = S::NCC;
+   } else if( correlationMethod == S::PHASE  ) {
+      findShiftMethod = S::PC;
+   } else {
+      DIP_THROW_INVALID_FLAG( correlationMethod );
+   }
+   FloatArray shift = FindShift( fmIn1, fmIn2, findShiftMethod );
+   //std::cout << "shift = " << shift << '\n';
    fmIn1.Strip();
    fmIn2.Strip();
 
@@ -72,7 +83,7 @@ FloatArray FourierMellinMatch2D(
    dfloat maxr = center.minimum_value();
    dfloat zoom = std::pow( maxr, shift[ 0 ] / ( size - 1 ));
    dfloat theta = shift[ 1 ] * 2 * pi / size;
-   std::cout << "zoom = " << zoom << ", theta = " << theta << '\n';
+   //std::cout << "zoom = " << zoom << ", theta = " << theta << '\n';
 
    // Compute a transformed in2 for scale and rotation
    FloatArray matrix( 6, 0 );
@@ -89,17 +100,17 @@ FloatArray FourierMellinMatch2D(
    // Compute cross-correlation, pick the rotation with the best match
    // (code modified from FindShift_CC, FindShift doesn't return the cross correlation value)
    Image cross;
-   DIP_STACK_TRACE_THIS( CrossCorrelationFT( fIn1, in2a, cross, S::FREQUENCY, S::SPATIAL, S::SPATIAL, S::NORMALIZE ));
+   DIP_STACK_TRACE_THIS( CrossCorrelationFT( fIn1, in2a, cross, S::FREQUENCY, S::SPATIAL, S::SPATIAL, correlationMethod ));
    DIP_ASSERT( cross.DataType().IsReal());
    SubpixelLocationResult locA = SubpixelLocation( cross, MaximumPixel( cross, {} ));
    locA.coordinates -= cross.GetCenter();
-   std::cout << "A: coordinates = " << locA.coordinates << ", value = " << locA.value << '\n';
+   //std::cout << "A: coordinates = " << locA.coordinates << ", value = " << locA.value << '\n';
 
-   DIP_STACK_TRACE_THIS( CrossCorrelationFT( fIn1, in2b, cross, S::FREQUENCY, S::SPATIAL, S::SPATIAL, S::NORMALIZE ));
+   DIP_STACK_TRACE_THIS( CrossCorrelationFT( fIn1, in2b, cross, S::FREQUENCY, S::SPATIAL, S::SPATIAL, correlationMethod ));
    DIP_ASSERT( cross.DataType().IsReal());
    SubpixelLocationResult locB = SubpixelLocation( cross, MaximumPixel( cross, {} ));
    locB.coordinates -= cross.GetCenter();
-   std::cout << "B: coordinates = " << locB.coordinates << ", value = " << locB.value << '\n';
+   //std::cout << "B: coordinates = " << locB.coordinates << ", value = " << locB.value << '\n';
    fIn1.Strip();
    cross.Strip();
 

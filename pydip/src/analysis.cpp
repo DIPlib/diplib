@@ -81,8 +81,8 @@ void init_analysis( py::module& m ) {
           "in1"_a, "in2"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
    m.def( "FindShift", &dip::FindShift,
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = dip::UnsignedArray{ std::numeric_limits< dip::uint >::max() } );
-   m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::FourierMellinMatch2D ),
-          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR );
+   m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::FourierMellinMatch2D ),
+          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE );
 
    m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
           "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );

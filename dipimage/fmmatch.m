@@ -1,11 +1,13 @@
-%FMMATCH   Matches two images using the Fourier-Mellin transform
+%FMMATCH   Matches two images using the Fourier Mellin transform
 %  Finds the scaling, rotation and translation between two 2D images
 %
 % SYNOPSIS:
-%  [image_out,matrix] = fmmatch(image_in1,image_in2,method)
+%  [image_out,matrix] = fmmatch(image_in1,image_in2,interpolate,normalize)
 %
 % PARAMETERS:
-%  method:  Interpolation method, one of: 'linear', '3-cubic', or 'nearest'.
+%  interpolate: Interpolation method, one of: 'linear', '3-cubic', or 'nearest'.
+%  normalize:   Cross-correlation normalization method, one of: '', 'normalize',
+%               or 'phase'. See CROSSCORRELATION for an explanaton
 %
 % OUPUTS:
 %  image_out:  image_in2 transformed to match image_in1.
@@ -13,7 +15,8 @@
 %              that can be used to transform image_in2 to yield image_out.
 %
 % DEFAULTS:
-%  method = 'linear'
+%  interpolate = 'linear'
+%  normalize = 'phase'
 %
 % EXAMPLE:
 %  a = readim('trui');

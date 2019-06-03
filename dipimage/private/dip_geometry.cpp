@@ -250,13 +250,17 @@ void findshift( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
 void fmmatch( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
-   DML_MAX_ARGS( 3 );
+   DML_MAX_ARGS( 4 );
    dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
    dip::Image const in2 = dml::GetImage( prhs[ 1 ] );
-   dip::String interpolationMethod = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::S::LINEAR;
+   dip::String interpolate = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::S::LINEAR;
+   dip::String normalize = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : dip::S::PHASE;
+   if( normalize.empty() ) {
+      normalize = dip::S::DONT_NORMALIZE;
+   }
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   auto matrix = dip::FourierMellinMatch2D( in1, in2, out, interpolationMethod );
+   auto matrix = dip::FourierMellinMatch2D( in1, in2, out, interpolate, normalize );
    plhs[ 0 ] = dml::GetArray( out );
    if( nlhs > 1 ) {
       DIP_ASSERT( matrix.size() == 6 );
