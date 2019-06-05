@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
+#include "diplib.h"
+#include "diplib/measurement.h"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-
-#include "diplib.h"
-#include "diplib/measurement.h"
 
 namespace dip {
 
