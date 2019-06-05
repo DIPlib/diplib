@@ -12,6 +12,12 @@ if(DIP_SHARED_LIBRARY)
 else()
    target_compile_definitions(DIPviewer PUBLIC DIP__VIEWER_IS_STATIC)
 endif()
+
+# C++ version, etc.
+set_target_properties(DIPviewer PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
+set_target_properties(DIPviewer PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
+
+# Dependencies
 target_link_libraries(DIPviewer PRIVATE DIP Threads::Threads)
 if(FREEGLUT_FOUND)
    target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
@@ -30,12 +36,16 @@ else() # For older CMakes:
    target_link_libraries(DIPviewer PRIVATE ${OPENGL_LIBRARIES})
    target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR})
 endif()
+
+# rpath
 if(APPLE)
    set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")
    target_compile_definitions(DIPviewer PRIVATE GL_SILENCE_DEPRECATION) # MacOS 10.14 deprecates OpenGL
 else()
    set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
+
+# Install
 install(TARGETS DIPviewer DESTINATION lib EXPORT DIPlibTargets)
 install(FILES "${PROJECT_SOURCE_DIR}/include/dipviewer.h" DESTINATION include)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/viewer" DESTINATION include/diplib)

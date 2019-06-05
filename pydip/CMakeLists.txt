@@ -21,6 +21,10 @@ else()
    set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
 endif()
 
+# C++ version, etc.
+set_target_properties(PyDIP_bin PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
+set_target_properties(PyDIP_bin PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
+
 # Install PyDIP_bin
 install(TARGETS PyDIP_bin DESTINATION "${PYDIP_INSTALL_PATH}/PyDIP")
 
@@ -31,9 +35,11 @@ add_custom_target(PyDIP DEPENDS PyDIP_bin)
 
 # Repeat the above for PyDIPviewer
 if(DIP_BUILD_DIPVIEWER)
+
    # Find sources
    file(GLOB DIP_PYTHON_VIEWER_SRC "${CMAKE_CURRENT_LIST_DIR}/src/viewer/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/viewer/*.h")
    update_deps_file("PyDIPviewer_sources" "${DIP_PYTHON_VIEWER_SRC}")
+
    # Build PyDIPviewer
    pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
    target_link_libraries(PyDIPviewer PRIVATE DIP DIPviewer)
@@ -42,16 +48,24 @@ if(DIP_BUILD_DIPVIEWER)
    else()
       set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
    endif()
+
+   # C++ version, etc.
+   set_target_properties(PyDIPviewer PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
+   set_target_properties(PyDIPviewer PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
+
    # Install PyDIPviewer
    install(TARGETS PyDIPviewer DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
    add_dependencies(PyDIP PyDIPviewer)
+
 endif()
 
 # Repeat the above for PyDIPjavaio
 if(DIP_BUILD_JAVAIO)
+
    # Find sources
    file(GLOB DIP_PYTHON_JAVAIO_SRC "${CMAKE_CURRENT_LIST_DIR}/src/javaio/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/javaio/*.h")
    update_deps_file("PyDIPjavaio_sources" "${DIP_PYTHON_JAVAIO_SRC}")
+
    # Build PyDIPjavaio
    pybind11_add_module(PyDIPjavaio ${DIP_PYTHON_JAVAIO_SRC})
    target_link_libraries(PyDIPjavaio PRIVATE DIP DIPjavaio)
@@ -60,7 +74,13 @@ if(DIP_BUILD_JAVAIO)
    else()
       set_target_properties(PyDIPjavaio PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
    endif()
+
+   # C++ version, etc.
+   set_target_properties(PyDIPjavaio PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
+   set_target_properties(PyDIPjavaio PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
+
    # Install PyDIPjavaio
    install(TARGETS PyDIPjavaio DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
    add_dependencies(PyDIP PyDIPjavaio)
+
 endif()

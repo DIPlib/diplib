@@ -30,26 +30,6 @@ set(DOCUMENTATION_OUTPUT share/doc/DIPlib)
 set(DIPIMAGE_INSTALL_PATH share/DIPimage)
 
 # Compiler flags
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-   if(${MSVC_VERSION} VERSION_LESS 1900)
-      message(SEND_ERROR "You need MSVC 2015 or later to compile DIPlib.")
-   endif()
-else()
-   if(NOT "cxx_generic_lambdas" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-      message(SEND_ERROR "Your compiler does not support generic lambdas. You need a compiler with full C++14 support to build DIPlib.")
-   endif()
-   if(NOT "cxx_relaxed_constexpr" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-      message(SEND_ERROR "Your compiler does not support relaxed constexpr functions. You need a compiler with full C++14 support to build DIPlib.")
-   endif()
-endif()
-# TODO: We should move to target-specific compiler mode:
-#       target_compile_features(DIP PUBLIC cxx_generic_lambdas cxx_relaxed_constexpr)
-
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    # using Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic")

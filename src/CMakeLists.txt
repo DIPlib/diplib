@@ -19,6 +19,17 @@ endif()
 # Debugging mode
 target_compile_definitions(DIP PRIVATE DIP_DEBUG_VERSION=$<CONFIG:Debug>)
 
+# C++ version, etc.
+set_target_properties(DIP PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
+set_target_properties(DIP PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+   if(${MSVC_VERSION} VERSION_LESS 1900)
+      message(SEND_ERROR "You need MSVC 2015 or later to compile DIPlib.")
+   endif()
+else()
+   target_compile_features(DIP PUBLIC cxx_generic_lambdas cxx_relaxed_constexpr) # This should force dependent targets to also use C++14.
+endif()
+
 # Multithreading
 if(DIP_ENABLE_MULTITHREADING)
    if(TARGET OpenMP::OpenMP_CXX)
