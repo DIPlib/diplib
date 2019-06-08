@@ -87,13 +87,16 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
 - *Python*: \ref PyDIP is a thin wrapper of most functionality in *DIPlib*.
 
-- *OpenCV*: the `dip_opencv` namespace provides copyless conversion to and from
-  [*OpenCV*](https://opencv.org) images, for *OpenCV* version 2 and newer.
-
 - *Bio-Formats*: \ref javaio is an interface to Java-based image readers. It
   is designed to allow *DIPlib* to read hundreds of image file formats through
   [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), but is
   generic enough to be used with other Java libraries as well.
+
+- *OpenCV*: the \ref dip_opencv_interface provides copyless conversion to and from
+  [*OpenCV*](https://opencv.org) images, for *OpenCV* version 2 and newer.
+
+- *Vigra*: the \ref dip_vigra_interface provides copyless conversion to and from
+  [*Vigra*](http://ukoethe.github.io/vigra/) images.
 
 The *DIPlib* project further contains these additional modules:
 

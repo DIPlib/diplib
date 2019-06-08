@@ -29,7 +29,6 @@
 #include "diplib/iterators.h"
 
 #include <opencv2/opencv.hpp>
-#include <diplib/library/error.h>
 
 
 /// \file

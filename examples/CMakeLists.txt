@@ -100,4 +100,20 @@ if(DIP_BUILD_DIPVIEWER)
 
    endif()
 
+   find_package(Vigra QUIET)
+   if(Vigra_FOUND)
+
+      # An example program that uses both DIPlib and Vigra
+      add_executable(vigra_with_dip vigra_with_dip.cpp)
+      target_compile_definitions(vigra_with_dip PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+      target_include_directories(vigra_with_dip PRIVATE ${Vigra_INCLUDE_DIRS})
+      target_link_libraries(vigra_with_dip DIP DIPviewer vigraimpex)
+      if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+         target_compile_options(vigra_with_dip PRIVATE -Wno-conversion -Wno-sign-conversion)
+      elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+         target_compile_options(vigra_with_dip PRIVATE -Wno-conversion -Wno-sign-conversion -Wno-deprecated-copy -Wno-parentheses)
+      endif()
+
+   endif()
+
 endif(DIP_BUILD_DIPVIEWER)
