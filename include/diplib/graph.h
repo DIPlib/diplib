@@ -69,6 +69,9 @@ class DIP_NO_EXPORT Graph {
       struct Edge {
          std::array< VertexIndex, 2 > vertices = {{ 0, 0 }};   ///< The two vertices joined by this edge.
          mutable dfloat weight = 0.0;                          ///< The weight of this edge
+         bool IsValid() const {
+            return vertices[ 0 ] != vertices[ 1 ];
+         }
       };
 
       Graph() = default;
@@ -90,16 +93,25 @@ class DIP_NO_EXPORT Graph {
       /// If `weights` is `"average"`, the edge weights are given by the average of the two pixel values.
       DIP_EXPORT explicit Graph( Image const& image, dip::uint connectivity = 1, String const& weights = "difference" );
 
-      // TODO: Make a graph from a labelled image, where vertices are labeled regions.
-
-      /// \brief returns the number of vertices in the graph.
+      /// \brief Returns the number of vertices in the graph.
       dip::uint NumberOfVertices() const {
          return vertices_.size();
       };
 
-      /// \brief returns the number of edges in the graph.
+      /// \brief Returns the number of edges in the graph, including invalid edges.
       dip::uint NumberOfEdges() const {
          return edges_.size();
+      };
+
+      /// \brief Counts the number of valid edges in the graph.
+      dip::uint CountEdges() const {
+         dip::uint count = 0;
+         for( auto& e: edges_ ) {
+            if( e.IsValid() ) {
+               ++count;
+            }
+         }
+         return count;
       };
 
       /// \brief Gets the set of edges in the graph. The weights of the edges are mutable, they can be directly modified.
@@ -128,11 +140,11 @@ class DIP_NO_EXPORT Graph {
       }
 
       /// \brief Add an edge between vertices `v1` and `v2`, with weight `weight`. If the edge already exists,
-      /// update the weight of the edge.
+      /// update the weight of the edge to be `weight`.
       void AddEdge( VertexIndex v1, VertexIndex v2, dfloat weight ) {
          DIP_ASSERT( v1 < vertices_.size() );
          DIP_ASSERT( v2 < vertices_.size() );
-         DIP_THROW_IF( v1 != v2, "Cannot create an edge between a vertex and itself" );
+         DIP_THROW_IF( v1 == v2, "Cannot create an edge between a vertex and itself" );
          if( v1 > v2 ) {
             std::swap( v1, v2 );
          }
@@ -140,6 +152,26 @@ class DIP_NO_EXPORT Graph {
             if( edges_[ edge ].vertices[ 1 ] == v2 ) {
                // Found the edge, update the weight & quit
                edges_[ edge ].weight = weight;
+               return;
+            }
+         }
+         // Didn't find the edge, create it.
+         dip__AddEdgeNoCheck( v1, v2, weight );
+      }
+
+      /// \brief Add an edge between vertices `v1` and `v2`, with weight `weight`. If the edge already exists,
+      /// update the weight of the edge by adding `weight` to the existing weight.
+      void AddEdgeSumWeight( VertexIndex v1, VertexIndex v2, dfloat weight ) {
+         DIP_ASSERT( v1 < vertices_.size() );
+         DIP_ASSERT( v2 < vertices_.size() );
+         DIP_THROW_IF( v1 == v2, "Cannot create an edge between a vertex and itself" );
+         if( v1 > v2 ) {
+            std::swap( v1, v2 );
+         }
+         for( auto edge : vertices_[ v1 ].edges ) {
+            if( edges_[ edge ].vertices[ 1 ] == v2 ) {
+               // Found the edge, update the weight & quit
+               edges_[ edge ].weight += weight;
                return;
             }
          }
@@ -191,7 +223,7 @@ class DIP_NO_EXPORT Graph {
       std::vector< VertexIndex > Neighbors( VertexIndex v ) {
          DIP_ASSERT( v < vertices_.size() );
          std::vector< VertexIndex > neighbors;
-         neighbors.reserve( vertices_[ v ].edges.size());
+         neighbors.reserve( vertices_[ v ].edges.size() );
          for( auto edge : vertices_[ v ].edges ) {
             neighbors.push_back( OtherVertex( edge, v ));
          }
@@ -216,6 +248,13 @@ class DIP_NO_EXPORT Graph {
       /// will be a minimum spanning tree (MST). If multiple roots are given, each one will spawn a tree.
       DIP_EXPORT Graph MinimumSpanningForest( std::vector< VertexIndex > const& roots = {} ) const;
 
+      /// \brief Removes `number` edges with the largest weights from the graph.
+      ///
+      /// If the graph is a minimum spanning tree, it will be converted to a minimum spanning forest with
+      /// `number + 1` trees. This is a segmentation of the tree into the `number + 1` regions with smallest
+      /// trees.
+      DIP_EXPORT void RemoveLargestEdges( dip::uint number );
+
    private:
       std::vector< Vertex > vertices_;
       std::vector< Edge > edges_;
@@ -237,8 +276,8 @@ class DIP_NO_EXPORT LowestCommonAncestorSolver {
       /// easiest way to turn an arbitrary graph into a tree is to compute the MST (see `dip::Graph::MinimumSpanningForest`).
       DIP_EXPORT LowestCommonAncestorSolver( Graph const& graph );
       // Prevent copying, that might go wrong because we use a shared pointer, `rmq_` might be shared...
-      LowestCommonAncestorSolver( LowestCommonAncestorSolver const & ) = delete;
-      LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver const & ) = delete;
+      LowestCommonAncestorSolver( LowestCommonAncestorSolver const& ) = delete;
+      LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver const& ) = delete;
 
       /// \brief Returns the vertex that is the nearest common ancestor to vertices `a` and `b`.
       DIP_EXPORT dip::uint GetLCA( dip::uint a, dip::uint b ) const;

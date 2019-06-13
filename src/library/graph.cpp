@@ -25,7 +25,6 @@
 
 #include <queue>
 #include <stack>
-#include <map>
 
 namespace dip {
 
@@ -143,6 +142,30 @@ Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) cons
    return msf;
 }
 
+void Graph::RemoveLargestEdges( dip::uint number ) {
+   if( number == 0 ) {
+      // Nothing to do
+      return;
+   }
+   // Generate list of valid edges
+   std::vector< EdgeIndex > indices;
+   indices.reserve( edges_.size() );
+   for( EdgeIndex ii = 0; ii < edges_.size(); ++ii ) {
+      if( edges_[ ii ].IsValid() ) {
+         indices.push_back( ii );
+      }
+   }
+   // Sort indices to edges, largest first
+   number = std::min( number, indices.size() ); // If number is too large, we will delete all edges.
+   dip::sint element = static_cast< dip::sint >( number ) - 1;
+   std::nth_element( indices.begin(), indices.begin() + element, indices.end(), [ this ]( EdgeIndex lhs, EdgeIndex rhs ){
+      return edges_[ lhs ].weight > edges_[ rhs ].weight;
+   } );
+   // Delete largest edges
+   for( dip::uint ii = 0; ii < number; ++ii ) {
+      DeleteEdge( indices[ ii ] );
+   }
+}
 
 namespace {
 
@@ -263,7 +286,6 @@ class LookUpTable {
             s -= minVal;
          }
          if( sequence_.size() == 1 ) {
-            //table_ = { 1, 1 };
             table_ = { 1 };
          } else {
             sparseTable_ = { sequence_ };
@@ -288,9 +310,6 @@ class LookUpTable {
       }
 
       dip::uint getEntry( dip::uint x, dip::uint y ) const {
-         //if( y < x ) {
-         //   std::swap( x, y );
-         //}
          return table_.at( x, y );
       }
 
@@ -456,15 +475,6 @@ dip::uint LowestCommonAncestorSolver::GetLCA( dip::uint a, dip::uint b ) const {
       std::swap( i, j );
    }
    return tourArray_[ rmq_->getIndexOfMinimum( i, j ) ];
-}
-
-struct Neighbor {
-   Graph::VertexIndex index;
-   dfloat edgeWeight;
-};
-
-bool operator<( Neighbor const& lhs, Neighbor const& rhs ) {
-   return lhs.index < rhs.index;
 }
 
 LowestCommonAncestorSolver::LowestCommonAncestorSolver( Graph const& graph )
