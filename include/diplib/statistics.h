@@ -878,10 +878,10 @@ inline Image RadialMaximum(
 
 
 //
-// Basic image queries
+// Error measures
 //
 
-/// \defgroup math_error Error operators
+/// \defgroup math_error Error measures
 /// \ingroup math
 /// \brief Quantifying the difference between images.
 /// \{
@@ -1115,7 +1115,7 @@ DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference );
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
 inline dfloat Precision( Image const& in, Image const& reference ) {
-   return Sensitivity( reference, in );
+   return Sensitivity( reference, in ); // Note! Reversing the order of the parameters on purpose!
 }
 
 /// \brief Computes the Hausdorff distance between two binary images.

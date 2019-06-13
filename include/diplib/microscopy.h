@@ -46,9 +46,9 @@ namespace dip {
 /// absorbance. Thus, estimating absorbance yields an estimate of the relative dye concentration at each image
 /// pixel.
 ///
-/// This function applies the following mapping to the intensities \f$I\f$ in image `in`:
+/// This function applies the mapping \f$A\f$ to the intensities \f$I\f$ in image `in`.
 ///
-/// \f[ A = -log_{10}(I/I_0) \f]
+/// \f[ A = -log_{10}(I/I_0) \;, \f]
 ///
 /// with \f$I_0\f$ the intensity of the illumination (`background`), and \f$A\f$ the absorbance written to `out`).
 ///
@@ -114,14 +114,14 @@ inline Image InverseBeerLambertMapping(
 /// absorbance values depend on the tissue, tissue preparation and staining protocols, and imaging equipment.
 /// Consequently, best results are always obtained with project-specific values.
 ///
-/// The absorption of the dyes in each channel combine linearly with the density of each of the dyes:
+/// The absorption of the dyes in each channel combine linearly with the density of each of the dyes,
 ///
 /// \f[ A_R = S_{R,1} d_1 + S_{R,2} d_2 + S_{R,3} d_3 + ... \f]
 ///
 /// with \f$S_{R,n}\f$ the absorbance of dye \f$n\f$ in the red channel, \f$d_n\f$ the density (concentration) of
 /// dye \f$n\f$, and \f$A_R\f$ the total absorbance in the red channel. In matrix notation this leads to
 ///
-/// \f[ A = \mathbf{S} d \f]
+/// \f[ A = \mathbf{S} d \;. \f]
 ///
 /// Here, \f$A\f$ is a pixel in the multi-channel absorbance image (`in`), \f$\mathbf{S}\f$ is a matrix that
 /// combines absorbance for each dye and each channel, and \f$d\f$ is a vector with the density for each
@@ -246,6 +246,147 @@ inline Image MixStains(
    MixStains( in, out, stains );
    return out;
 }
+
+
+/// \brief Computes the Manders Overlap Coefficient.
+///
+/// The Manders Overlap Coefficient is defined similarly to the Pearson Correlation Coefficient, but without
+/// subtracting the means from each of the variables,
+/// \f[ r = \frac{\sum{C_1(p) C_2(p)}}{\sqrt{\sum{C_1(p)^2}\sum{C_2(p)^2}}} \;, \f]
+/// with \f$C_1\f$ and \f$C_2\f$ the two channels.
+/// Thus, it returns a value proportional to the fraction of pixels where both channels have a large value.
+/// Do note the arguments against this method by Adler and Parmryd (2010).
+///
+/// If `mask` is not forged, all input pixels are considered. For this measure, it is very important to select
+/// only relevant pixels, and exclude any background pixels with background staining. Furthermore, the zero
+/// level is important, any offset should be subtracted first.
+///
+/// The images must be scalar and real-valued.
+///
+/// To compute the Manders Overlap Coefficient between two channels in a multi-channel image (a tensor image):
+///
+/// ```cpp
+///     MandersOverlapCoefficient( in[ 0 ], in[ 1 ], mask );
+/// ```
+///
+/// \see dip::PearsonCorrelation, dip::SpearmanRankCorrelation, dip::IntensityCorrelationQuotient, dip::MandersColocalizationCoefficients, dip::CostesColocalizationCoefficients
+///
+/// \literature
+/// <li>E.M.M. Manders, F.J. Verbeek, and J.A. Aten, "Measurement of co-localization of objects in dual-color confocal images",
+///     Journal of Microscopy 169(3):375-382, 1993.
+/// <li>J. Adler, and I. Parmryd, "Quantifying colocalization by correlation: the Pearson correlation coefficient is superior
+///     to the Mander's overlap coefficient", Cytometry A 77(8):733-42, 2010.
+/// \endliterature
+DIP_EXPORT dfloat MandersOverlapCoefficient(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& mask = {}
+);
+
+/// \brief Computes Li's Intensity Correlation Quotient.
+///
+/// Li's Intensity Correlation Quotient is proportional to the fraction of pixels where the two channels vary in a
+/// dependent manner. For each pixel, \f$ c = (C_1 - \overline{C_1})(C_2 - \overline{C_2}) \f$ is computed. Then the ICQ is
+/// \f$ \frac{|c>0|}{|c|} - 0.5 \f$, with \f$ |\cdot| \f$ the count operator.
+///
+/// The images must be scalar and real-valued.
+///
+/// To compute Li's Intensity Correlation Quotient between two channels in a multi-channel image (a tensor image):
+///
+/// ```cpp
+///     IntensityCorrelationQuotient( in[ 0 ], in[ 1 ], mask );
+/// ```
+///
+/// \see dip::PearsonCorrelation, dip::SpearmanRankCorrelation, dip::MandersOverlapCoefficient
+///
+/// \literature
+/// <li>Q. Li, A. Lau, T.J. Morris, L. Guo, C.B. Fordyce, and E.F. Stanley, "A Syntaxin 1, G&alpha;<sup>o</sup>, and N-Type
+///     Calcium Channel Complex at a Presynaptic Nerve Terminal: Analysis by Quantitative Immunocolocalization",
+///     Journal of Neuroscience 24(16):4070-4081, 2004.
+/// \endliterature
+DIP_EXPORT dfloat IntensityCorrelationQuotient(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& mask = {}
+);
+
+/// \brief Holds Colocalization Coefficients as described by Manders, see `dip::MandersColocalizationCoefficients`.
+struct ColocalizationCoefficients {
+   dfloat M1; ///< Proportional to the fraction of fluorescence in channel 1 that colocalizes.
+   dfloat M2; ///< Proportional to the fraction of fluorescence in channel 2 that colocalizes.
+};
+
+/// \brief Computes Manders' Colocalization Coefficients.
+///
+/// Manders' Colocalization Coefficients separate out the contributions in Manders Overlap Coefficient of the two
+/// channels \f$C_1\f$ and \f$C_2\f$, defining two coefficients as the fraction of staining in one channel that
+/// appears where the other channel has some staining,
+/// \f[ M_1 = \frac{\sum_{p|C_2(p) > 0}{C_1(p)}}{\sum_p{C_1(p)}} \;, \qquad
+///     M_2 = \frac{\sum_{p|C_1(p) > 0}{C_2(p)}}{\sum_p{C_2(p)}} \;. \f]
+///
+/// Note that if the two input images are binary, this is eqivalent to computing the precision and sensitivity using
+/// `dip::Precision` and `dip::Sensitivity`.
+///
+/// Here, instead of thresholding at 0, we apply `threshold1` for `channel1`, and `threshold2` for `channel2`. These
+/// thresholds default to 0 to match the method proposed by Manders.
+///
+/// The images must be scalar and real-valued. Any negative values in the input images will cause wrong output,
+/// make sure to clamp the input to 0 before calling this function.
+///
+/// To compute Manders' Colocalization Coefficients between two channels in a multi-channel image (a tensor image):
+///
+/// ```cpp
+///     MandersColocalizationCoefficients( in[ 0 ], in[ 1 ], mask );
+/// ```
+///
+/// \see dip::MandersOverlapCoefficient, dip::CostesColocalizationCoefficients
+///
+/// \literature
+/// <li>E.M.M. Manders, F.J. Verbeek, and J.A. Aten, "Measurement of co-localization of objects in dual-color confocal images",
+///     Journal of Microscopy 169(3):375-382, 1993.
+/// \endliterature
+DIP_EXPORT ColocalizationCoefficients MandersColocalizationCoefficients(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& mask = {},
+      dfloat threshold1 = 0,
+      dfloat threshold2 = 0
+);
+
+/// \brief Computes Costes' colocalization coefficients.
+///
+/// Costes' Colocalization Coefficients are similar to Manders' colocalization coefficients, but uses a threshold
+/// for each channel under which the correlation is zero. This threshold cuts out the background signal. Staining
+/// is colocalized at those pixels where both channels are above their respective threshold.
+/// The two coefficients are defined as the fraction of total staining that is colocalized,
+/// \f[ M_j = \frac{\sum_{p \in T}{C_j(p)}}{\sum_p{C_j(p)}} \;, j \in \{1,2\} \;, \qquad
+///     T = C_1 > t_1 \wedge C_2 > t_2 \f]
+/// with \f$C_j\f$ the two input channels.
+/// \f$t_j\f$ are the thresholds for each channel, with \f$t_2 = a t_1 + b\f$, and
+/// \f$a\f$ and \f$b\f$ the slope and intercept of the regression line of the two-dimensional histogram. The thresolds
+/// are successively lowered until the pixels that are not in \f$T\f$ exhibit no correlation between the two channels.
+///
+/// The images must be scalar and real-valued. Any negative values in the input images will cause wrong output,
+/// make sure to clamp the input to 0 before calling this function.
+///
+/// To compute Costes' Colocalization Coefficients between two channels in a multi-channel image (a tensor image):
+///
+/// ```cpp
+///     CostesColocalizationCoefficients( in[ 0 ], in[ 1 ], mask );
+/// ```
+///
+/// \see dip::MandersColocalizationCoefficients
+///
+/// \literature
+/// <li>S.V. Costes, D. Daelemans, E.H. Cho, Z. Dobbin, G. Pavlakis, and S. Lockett,
+///     "Automatic and Quantitative Measurement of Protein-Protein Colocalization in Live Cells",
+///     Biophysical Journal 86:3993-4003, 2004.
+/// \endliterature
+DIP_EXPORT ColocalizationCoefficients CostesColocalizationCoefficients(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& mask = {}
+);
 
 
 /// \brief Generates an incoherent OTF (optical transfer function)

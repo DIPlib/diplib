@@ -177,6 +177,20 @@ void init_analysis( py::module& m ) {
           "in"_a, "stains"_a );
    m.def( "MixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
           "in"_a, "stains"_a );
+
+   m.def( "MandersOverlapCoefficient", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MandersOverlapCoefficient ),
+          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
+   m.def( "IntensityCorrelationQuotient", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::IntensityCorrelationQuotient ),
+          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
+   m.def( "MandersColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::dfloat threshold1, dip::dfloat threshold2 ){
+             auto out = dip::MandersColocalizationCoefficients( channel1, channel2, mask, threshold1, threshold2 );
+             return py::make_tuple( out.M1, out.M2 ).release();
+          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0 );
+   m.def( "CostesColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask ){
+             auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
+             return py::make_tuple( out.M1, out.M2 ).release();
+          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
+
    m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
           "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = "Stokseth" );
    m.def( "IncoherentPSF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),

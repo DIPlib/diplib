@@ -221,6 +221,7 @@ measurement/measurement.cpp
 measurement/measurement_tool.cpp
 measurement/object_to_measurement.cpp
 microscopy/attenuation_correction.cpp
+microscopy/colocalization.cpp
 microscopy/psf.cpp
 microscopy/unmix_stains.cpp
 microscopy/wiener.cpp
