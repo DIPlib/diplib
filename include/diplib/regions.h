@@ -23,6 +23,8 @@
 
 #include "diplib.h"
 #include "diplib/neighborlist.h"
+#include "diplib/graph.h"
+#include "diplib/measurement.h"
 
 
 /// \file
@@ -86,7 +88,7 @@ inline Image Label(
 /// Otherwise, `background` is `"exclude"`, and the label ID 0 will be ignored.
 DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& label,
-      Image const& mask,
+      Image const& mask = {},
       String const& background = S::EXCLUDE
 );
 inline UnsignedArray GetObjectLabels(
@@ -101,6 +103,7 @@ inline UnsignedArray GetObjectLabels(
    return GetObjectLabels( Image( label ), {}, background );
 }
 
+
 /// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.
 ///
 /// Note that disjoint objects will remain disjoint, as this function only replaces each label ID with
@@ -114,6 +117,29 @@ inline Image Relabel( Image const& label ) {
    Relabel( label, out );
    return out;
 }
+
+/// \brief Re-assigns labels to objects in a labeled image, such that regions joined by an edge in `graph` obtain the same label.
+///
+/// `graph` should be obtained through `dip::RegionAdjacencyGraph` and modified to obtain a useful segmentation.
+/// For example:
+///
+/// ```cpp
+///    dip::Image input = ...
+///    dip::Image label = dip::Watershed( dip::GradientMagnitude( input, { 2 } ), {}, 2, 1, 0, { "labels" } );
+///    dip::MeasurementTool measurementTool;
+///    auto msr = measurementTool.Measure( label, input, { "Mean" } );
+///    dip::Graph graph = RegionAdjacencyGraph( label, msr[ "Mean" ], "watershed" );
+///    graph = graph.MinimumSpanningForest( { 1 } ); // make sure we don't use the unconnected vertex 0 as root.
+///    graph.RemoveLargestEdges( 100 );
+///    dip::Relabel( label, label, graph );
+/// ```
+DIP_EXPORT void Relabel( Image const& label, Image& out, Graph const& graph );
+inline Image Relabel( Image const& label, Graph const& graph ) {
+   Image out;
+   Relabel( label, out, graph );
+   return out;
+}
+
 
 /// \brief Removes small objects from a labeled or binary image.
 ///
@@ -212,6 +238,46 @@ inline Image GrowRegionsWeighted(
    GrowRegionsWeighted( label, grey, mask, out, metric );
    return out;
 }
+
+
+/// \brief Construct a graph for the given labeled image.
+///
+/// Each region (label) in the image `labels` is a node. Edges represent neighborhood relations between regions.
+/// Because the `dip::Graph` class uses the vertex ID as an index into an array, it is recommended that this function
+/// be called with a labeled image where labels are more or less consecutive. If `dip::Maximum( labels ).As< dip::uint >()`
+/// (i.e. the largest label ID) is much larger than `dip::GetObjectLabels( labels ).size()` (i.e. the number of labels),
+/// then the `dip::Graph` object will have many unused vertices, and hence waste space. use `dip::Relabel` to modify
+/// the `labels` image to have consecutive labels.
+///
+/// `mode` indicates how to construct the graph. It can be one of the following strings:
+///  - `"touching"`: two regions are neighbors if they have at least one pixel that is 1-connected to the other
+///    regions. That is, the two regions directly touch.
+///  - `"watershed"`: two regions are neighbors if there is a background pixel that is 1-connected to the two
+///    regions. That is, the two regions are separated by a 1-pixel watershed line. Note that, in this case,
+///    two regions that directly touch will not be recognized as neighbors!
+///
+/// In both modes, region with ID 0 (the background) is not included in the graph. But note that there is a vertex
+/// with index 0, which will not be connected to any other vertex.
+/// To include the background, simply increment the label image by 1.
+///
+/// Edge weights are computed as follows: The fraction of boundary pixels for regions 1 that connect to
+/// regions 2 is determined. The fraction of boundary pixels for regions 2 that connect to regions 1 is determined.
+/// One minus the larger of these two fractions is the edge weight. Thus, edge weights have a value in the
+/// half-open interval [0,1). If one of the two regions has a very large fraction of its perimeter connected
+/// to another region, then the edge weight is very small to indicate a strong connection.
+DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, String const& mode = "touching" );
+
+/// \brief Construct a graph for the given labeled image.
+///
+/// This function is similar to the one above, but edge weights are derived from the absolute difference
+/// between `featureValues` for the two regions joined by the edge.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, Measurement::IteratorFeature const& featureValues, String const& mode = "touching" );
+
 
 /// \}
 

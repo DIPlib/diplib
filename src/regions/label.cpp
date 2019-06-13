@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains the definition for the Label function.
+ * This file contains the labelling algorithm.
  *
  * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

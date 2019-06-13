@@ -248,6 +248,7 @@ regions/grow_regions.cpp
 regions/label.cpp
 regions/label_manipulation.cpp
 regions/labelingGrana2016.h
+regions/region_adjacency_graph.cpp
 segmentation/canny.cpp
 segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
