@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the declaration for a union-find data structure
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,9 @@ namespace dip {
 /// equivalent labels (`FindRoot`).
 ///
 /// To stream-line the second pass, we provide here a `Relabel` method that assigns a unique, consecutive
-/// label to each of the correspondence sets. **Note:** After this function has been called, the union-find data
+/// label to each of the correspondence sets.
+///
+/// \warning After this function has been called, the union-find data
 /// structure is destroyed, and the only valid method that can still be called is `Label`.
 ///
 /// Each tree element has a value associated to it. This must be a type that is copy-constructible and
@@ -58,6 +60,8 @@ namespace dip {
 ///     ValueType_ unionFunction( ValueType_ const& value1, ValueType_ const& value2 );
 /// ```
 ///
+/// \note To create a union-find data structure that does not hold any data for each tree, see `dip::SimpleUnionFind`.
+///
 /// The `IndexType_` template parameter should be an integer, and probably unsigned.
 ///
 /// See the code to any of the algorithms that use this class for an example usage.
@@ -68,13 +72,15 @@ class UnionFind {
       using ValueType = ValueType_; ///< The type of the additional data stored for each tree element
 
       /// \brief Default constructor, creates an empty structure
-      explicit UnionFind( UnionFunction_ const& unionFunction ) : unionFunction_( unionFunction ) {
+      explicit UnionFind( UnionFunction_ const& unionFunction )
+            : unionFunction_( unionFunction ) {
          list.reserve( 1000 );
          list.push_back( ListElement{ 0, {} } ); // This element will not be used.
       }
 
       /// \brief Alternate constructor, creates `n` trees initialized to `value`.
-      UnionFind( dip::uint n, ValueType value, UnionFunction_ const& unionFunction  ) : unionFunction_( unionFunction ) {
+      UnionFind( dip::uint n, ValueType value, UnionFunction_ const& unionFunction )
+            : unionFunction_( unionFunction ) {
          list.resize( n + 1, { 0, value } );
          for( IndexType ii = 1; ii <= static_cast< IndexType >( n ); ++ii ) {
             list[ ii ].parent = ii;
@@ -85,14 +91,13 @@ class UnionFind {
       IndexType FindRoot( IndexType index ) const {
          if( list[ index ].parent == index ) {
             return index;
-         } else {
-            // Note we update the parent node here to point directly to the root.
-            return list[ index ].parent = FindRoot( list[ index ].parent );
          }
+         // Note we update the parent node here to point directly to the root.
+         return list[ index ].parent = FindRoot( list[ index ].parent );
       }
 
       /// \brief Creates a new element, and places it in its own tree.
-      IndexType Create( ValueType const& value ) {
+      IndexType Create( ValueType const& value = {} ) {
          if( list.size() > std::numeric_limits< IndexType >::max() ) {
             DIP_THROW( "Cannot create more regions!" );
          }
@@ -107,14 +112,13 @@ class UnionFind {
          index2 = FindRoot( index2 );
          if( index1 == index2 ) {
             return index1;
-         } else {
-            // We take the lower of the two labels as root.
-            IndexType root = std::min( index1, index2 );
-            IndexType leaf = std::max( index1, index2 );
-            list[ root ].value = unionFunction_( list[ root ].value, list[ leaf ].value );
-            list[ leaf ].parent = root;
-            return root;
          }
+         // We take the lower of the two labels as root.
+         IndexType root = std::min( index1, index2 );
+         IndexType leaf = std::max( index1, index2 );
+         list[ root ].value = unionFunction_( list[ root ].value, list[ leaf ].value );
+         list[ leaf ].parent = root;
+         return root;
       }
 
       /// \brief Returns a reference to the value associated to the tree that contains `index`.
@@ -123,8 +127,11 @@ class UnionFind {
       /// \brief Returns a reference to the value associated to the tree that contains `index`.
       ValueType const& Value( IndexType index ) const { return list[ FindRoot( index ) ].value; }
 
-      /// \brief Assigns a new label to each of the trees, destroying the tree structure. Returns the number of
-      /// unique labels. After this call, only use `Label`!
+      /// \brief Assigns a new label to each of the trees.
+      ///
+      /// Returns the number of unique labels.
+      ///
+      /// \warning This function destroys the tree structure. After this call, you can only use `Label`.
       dip::uint Relabel() {
          std::vector< IndexType > newLabels( list.size(), 0 );
          IndexType lab = 0;
@@ -146,12 +153,12 @@ class UnionFind {
 
       /// \brief Assigns a new label to the trees that satisfy `constraint`, and 0 to the remainder.
       ///
-      /// This function destroys the tree structure. After this call, only use `Label`!
-      ///
       /// `constraint` is a function or function object that takes the `ValueType` associated to a tree,
       /// and returns `true` if the tree is to be kept.
       ///
       /// Returns the number of unique labels.
+      ///
+      /// \warning This function destroys the tree structure. After this call, you can only use `Label`.
       template< typename Constraint >
       dip::uint Relabel( Constraint constraint ) {
          std::vector< IndexType > newLabels( list.size(), 0 );
@@ -191,6 +198,32 @@ class UnionFind {
       };
       std::vector< ListElement > list;
       UnionFunction_ const& unionFunction_;
+};
+
+namespace detail {
+   struct DummyUnionFindData {};
+   inline DummyUnionFindData DummyUnionFindFunc( DummyUnionFindData const&, detail::DummyUnionFindData const& ) { return {}; }
+}
+
+/// \brief A simplified version of `dip::UnionFind` that doesn't store any information about the regions, only equivalences.
+template< typename IndexType_ >
+class SimpleUnionFind : public UnionFind< IndexType_, detail::DummyUnionFindData, decltype( detail::DummyUnionFindFunc ) > {
+      // This class is implemented by overloading the UnionFind class, with the ValueType parameter UnionFunction set to
+      // the dummies declared above. The following two lines are identical:
+      //
+      //    SimpleUnionFind< dip::uint > uf1;
+      //    SimpleUnionFind< dip::uint > uf2( 100 );
+      //
+      //    UnionFind< dip::uint, detail::DummyUnionFindData, decltype( detail::DummyUnionFindFunc ) > uf1( detail::DummyUnionFindFunc );
+      //    UnionFind< dip::uint, detail::DummyUnionFindData, decltype( detail::DummyUnionFindFunc ) > uf2( 100, {}, detail::DummyUnionFindFunc );
+   public:
+      /// \brief Default constructor, creates an empty structure
+      SimpleUnionFind()
+            : UnionFind< IndexType_, detail::DummyUnionFindData, decltype( detail::DummyUnionFindFunc ) >( detail::DummyUnionFindFunc ) {}
+
+      /// \brief Alternate constructor, creates `n` trees.
+      explicit SimpleUnionFind( dip::uint n )
+            : UnionFind< IndexType_, detail::DummyUnionFindData, decltype( detail::DummyUnionFindFunc ) >( n, {}, detail::DummyUnionFindFunc ) {}
 };
 
 

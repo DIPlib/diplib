@@ -33,11 +33,7 @@ namespace dip {
 
 namespace {
 
-struct ExtremalRegion {}; // We don't need to keep any information about the regions, only equivalences
-
-ExtremalRegion UnionFunction( ExtremalRegion const&, ExtremalRegion const& ) { return {}; }
-
-using ExtremalRegionList = UnionFind< LabelType, ExtremalRegion, decltype(UnionFunction) >;
+using ExtremalRegionList = SimpleUnionFind< LabelType >;
 
 template< typename TPI >
 void ProcessNeighbor(
@@ -77,7 +73,7 @@ void HandleLabels(
       LabelType lab = 0;
       if( neighborLabels.Size() == 0 ) {
          // No labeled neighbors: create a new label
-         lab = regions.Create( {} );      // TODO: can throw if too many regions -- should compact instead, takes time but allows us to continue
+         lab = regions.Create();      // TODO: can throw if too many regions -- should compact instead, takes time but allows us to continue
       } else {
          // Some labeled neighbors: merge the labels
          auto labit = neighborLabels.begin();
@@ -156,7 +152,7 @@ void dip__Extrema(
       bool maxima
 ) {
    // Allocate Union-Find data structure
-   ExtremalRegionList regions( UnionFunction );
+   ExtremalRegionList regions;
 
    // Loop over all image pixels
    UnsignedArray const& imsz = in.Sizes();
