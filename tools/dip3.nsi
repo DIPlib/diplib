@@ -2,6 +2,12 @@
 ;Start Menu Folder Selection Example Script
 ;Written by Joost Verburg
 
+;Definitions
+
+  !Define DIPROOT "d:\local\dip"
+  !Define IMAGEROOT "d:\local\images"
+  !Define LICENSEFILE "d:\src\diplib\LICENSE.txt"
+
 ;--------------------------------
 ;Include Modern UI
 
@@ -36,7 +42,7 @@
 ;--------------------------------
 ;Pages
 
-;   !insertmacro MUI_PAGE_LICENSE "${NSISDIR}\Docs\Modern UI\License.txt"
+  !insertmacro MUI_PAGE_LICENSE ${LICENSEFILE}
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
@@ -64,7 +70,8 @@ Section "!DIPlib" SecDIPlib
 
   SetOutPath "$INSTDIR"
   
-  File /r /x "cmake" /x "__pycache__" "dip\*.*"
+  File /r /x "cmake" /x "__pycache__" "${DIPROOT}\*.*"
+  File ${LICENSEFILE}
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DIPlib 3" "" $INSTDIR
@@ -107,6 +114,7 @@ Section "!DIPlib" SecDIPlib
     CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\DIPlib instruction.lnk" "$INSTDIR\instruction.md"
+    CreateShortcut "$SMPROGRAMS\$StartMenuFolder\License.lnk" "$INSTDIR\LICENSE.txt"
 
   !insertmacro MUI_STARTMENU_WRITE_END
 
@@ -116,7 +124,7 @@ Section "Images" SecImages
 
     SetOutPath "$INSTDIR\images"
 
-    File /r "images\*.*"
+    File /r "${IMAGEROOT}\*.*"
 
   ;Store installation folder
   WriteRegStr HKCU "Software\DIPlib 3" "" $INSTDIR
@@ -127,7 +135,7 @@ Section "Images" SecImages
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
 
   	; Write dipstart.m
-	FileOpen $3 "dipstart.m" a
+	FileOpen $3 "..\dipstart.m" a
 	FileSeek $3 0 END
 	FileWrite $3 "dipsetpref('ImageFilePath', '$INSTDIR\images');$\r$\n"
 	FileClose $3
@@ -159,7 +167,8 @@ Section "Uninstall"
   RMDir /r "$INSTDIR"
   
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
-    
+
+  Delete "$SMPROGRAMS\$StartMenuFolder\License.lnk"  
   Delete "$SMPROGRAMS\$StartMenuFolder\DIPlib instruction.lnk"
   Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
