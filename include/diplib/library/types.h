@@ -783,6 +783,11 @@ constexpr CmpPropFlags All = Shape + CmpPropEnumerator::ColorSpace + CmpPropEnum
 
 } // namespace Option
 
+/// \brief Represents the result of a 2D regression analysis: `y = intercept + x * slope`.
+struct RegressionParameters {
+   dfloat intercept = 0.0; ///< intercept
+   dfloat slope = 0.0;     ///< slope
+};
 
 /// \}
 

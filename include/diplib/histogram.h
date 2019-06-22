@@ -117,7 +117,7 @@ class DIP_NO_EXPORT Histogram {
          Configuration( dfloat lowerBound, dfloat upperBound, dip::uint nBins = 256 ) :
                lowerBound( lowerBound ), upperBound( upperBound ), nBins( nBins ) {}
          /// \brief A constructor takes a lower and upper bounds, and the number of bins. The bin size is computed.
-         Configuration( dfloat lowerBound, dfloat upperBound, int nBins = 256 ) :
+         Configuration( dfloat lowerBound, dfloat upperBound, int nBins ) :
                Configuration( lowerBound, upperBound, static_cast< dip::uint >( nBins )) {}
          /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
          Configuration( dfloat lowerBound, dip::uint nBins, dfloat binSize ) :
@@ -524,8 +524,8 @@ class DIP_NO_EXPORT Histogram {
       /// The cumulative histogram has `this->Count()` as the right-most bin. The `Count` method applied to the
       /// cumulative histogram is meaningless, as are `Mean` and the other statistics functions.
       ///
-      /// For a multi-dimensional histogram, the cumulative histogram has bin(i,j,k) equal to the sum of all bins
-      /// with indices equal or smaller to i, j and k: bin(1..i,1..j,1..k). It is computed through the
+      /// For a multi-dimensional histogram, the cumulative histogram has `bin(i,j,k)` equal to the sum of all bins
+      /// with indices equal or smaller to `i`, `j` and `k`: `bin(1..i,1..j,1..k)`. It is computed through the
       /// `dip::CumulativeSum` function.
       DIP_EXPORT Histogram& Cumulative();
 
@@ -636,8 +636,8 @@ DIP_EXPORT FloatArray Mean( Histogram const& in );
 /// computing the statistic on data rounded to the bin centers.
 ///
 /// The returned array contains the elements of the symmetric covariance matrix in the same order as tensor
-/// elements are stored in a symmetric tensor image (see `dip::Tensor::Shape`). That is, there are `n`*(`n`+1)/2
-/// elements (with `n` the histogram dimensionality), with the diagonal matrix elements stored first, and the
+/// elements are stored in a symmetric tensor image (see `dip::Tensor::Shape`). That is, there are \f$\frac{1}{2}n(n+1)\f$
+/// elements (with \f$n\f$ the histogram dimensionality), with the diagonal matrix elements stored first, and the
 /// off-diagonal elements after. For a 2D histogram, the three elements are *xx*, *yy*, and *xy*.
 DIP_EXPORT FloatArray Covariance( Histogram const& in );
 
@@ -658,6 +658,22 @@ DIP_EXPORT FloatArray MarginalMedian( Histogram const& in );
 /// When multiple bins have the same, largest count, the first bin encountered is returned. This is the bin
 /// with the lowest linear index.
 DIP_EXPORT FloatArray Mode( Histogram const& in );
+
+/// \brief Computes the Pearson correlation coefficient between two images from their joint histogram `in`.
+///
+/// `in` must be a 2D histogram. The number of bins along each axis determines the precision for the result.
+inline dfloat PearsonCorrelation( Histogram const& in ) {
+   DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   FloatArray cov = Covariance( in );
+   DIP_ASSERT( cov.size() == 3 );
+   dfloat denom = cov[ 0 ] * cov[ 1 ];
+   return ( denom != 0.0 ) ? ( cov[ 2 ] / std::sqrt( denom )) : ( 0.0 );
+}
+
+/// \brief Fits a line through the histogram. Returns the slope and intercept of the regression line.
+///
+/// `in` must be a 2D histogram. The number of bins along each axis determines the precision for the result.
+DIP_EXPORT RegressionParameters Regression( Histogram const& in );
 
 /// \brief Calculates the mutual information, in bits, between two images from their joint histogram `in`.
 ///

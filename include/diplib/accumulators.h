@@ -457,11 +457,8 @@ class DIP_NO_EXPORT CovarianceAccumulator {
          //return ( stdX != 0.0 ) ? ( Correlation() * StandardDeviationY() / stdX ) : ( 0.0 );
          return ( m2x_ != 0.0 ) ? ( C_ / m2x_ ) : ( 0.0 );
       }
-      /// Contains the output of the `Regression` method: `y = intercept + x * slope`.
-      struct RegressionResult {
-         dfloat intercept = 0.0; ///< intercept
-         dfloat slope = 0.0;     ///< slope
-      };
+      /// Copying type for backward compatability.
+      using RegressionResult = dip::RegressionParameters;
       /// Computes the slope and intercept of the regression line
       RegressionResult Regression() const {
          RegressionResult out;

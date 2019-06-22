@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for histogram-related functionality.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ FloatArray Mean( Histogram const& in ) {
       UnsignedArray const& coord = it.Coordinates();
       dfloat v = static_cast< dfloat >( *it );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         dfloat bin = binCenters[ ii ][ coord[ ii ] ];
+         dfloat bin = binCenters[ ii ][ coord[ ii ]];
          mean[ ii ] += bin * v;
       }
       weight += v;
@@ -48,9 +48,10 @@ FloatArray Mean( Histogram const& in ) {
    return mean;
 }
 
-FloatArray Covariance( Histogram const& in ) {
+namespace {
+
+FloatArray Covariance( Histogram const& in, FloatArray& mean ) {
    dip::uint nDims = in.Dimensionality();
-   FloatArray mean = Mean( in );
    dfloat weight = 0;
    FloatArray cov( nDims * ( nDims + 1 ) / 2, 0 );
    std::vector< FloatArray > binCenters( nDims );
@@ -64,7 +65,7 @@ FloatArray Covariance( Histogram const& in ) {
       UnsignedArray const& coord = it.Coordinates();
       dfloat w = static_cast< dfloat >( *it );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         diff[ ii ] = binCenters[ ii ][ coord[ ii ] ] - mean[ ii ];
+         diff[ ii ] = binCenters[ ii ][ coord[ ii ]] - mean[ ii ];
       }
 
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -84,6 +85,23 @@ FloatArray Covariance( Histogram const& in ) {
       c *= norm;
    }
    return cov;
+}
+
+} // namespace
+
+FloatArray Covariance( Histogram const& in ) {
+   FloatArray mean = Mean( in );
+   return Covariance( in, mean );
+}
+
+RegressionParameters Regression( Histogram const& in ) {
+   DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   FloatArray mean = Mean( in );
+   FloatArray cov = Covariance( in, mean );
+   RegressionParameters out;
+   out.slope = ( cov[ 0 ] != 0.0 ) ? ( cov[ 2 ] / cov[ 0 ] ) : ( 0.0 );
+   out.intercept = mean[ 1 ] - out.slope * mean[ 0 ];
+   return out;
 }
 
 FloatArray MarginalMedian( Histogram const& in ) {
