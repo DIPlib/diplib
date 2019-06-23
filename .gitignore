@@ -7,3 +7,4 @@ build/
 dipimage/private/*.jar
 *~
 *.orig
+examples/python/.ipynb_checkpoints
