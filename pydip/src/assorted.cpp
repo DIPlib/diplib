@@ -293,13 +293,15 @@ void init_assorted( py::module& m ) {
           "in"_a, "interpolationMethod"_a = dip::S::LINEAR );
 
    m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray const& >( &dip::Tile ),
-          "in"_a, "tiling"_a = dip::UnsignedArray{} );
+          "in_array"_a, "tiling"_a = dip::UnsignedArray{} );
    m.def( "TileTensorElements", py::overload_cast< dip::Image const& >( &dip::TileTensorElements ),
           "in"_a );
    m.def( "Concatenate", py::overload_cast< dip::ImageConstRefArray const&, dip::uint >( &dip::Concatenate ),
-          "in"_a, "dimension"_a = 0 );
+          "in_array"_a, "dimension"_a = 0 );
    m.def( "Concatenate", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Concatenate ),
           "in1"_a, "in2"_a, "dimension"_a = 0 );
+   m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const& >( &dip::JoinChannels ),
+          "in_array"_a );
 
    // diplib/histogram.h
    m.def( "Histogram", []( dip::Image const& input, dip::Image const& mask, dip::uint nBins ){
