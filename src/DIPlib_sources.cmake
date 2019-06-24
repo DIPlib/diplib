@@ -254,6 +254,7 @@ segmentation/threshold.cpp
 support/accumulators.cpp
 support/matrix.cpp
 support/numeric.cpp
+support/thin_plate_spline.cpp
 transform/fourier.cpp
 transform/opencv_dxt.cpp
 transform/riesz.cpp

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that sample a single location
  *
- * (c)2018, Cris Luengo.
+ * (c)2018-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -204,6 +204,7 @@ InterpolationFunctionPointer GetInterpFunctionPtr( String const& method, DataTyp
 
 } // namespace
 
+
 void ResampleAt(
       Image const& c_in,
       Image& out,
@@ -282,6 +283,7 @@ Image::Pixel ResampleAt(
 
    return out;
 }
+
 
 InterpolationFunctionPointer PrepareResampleAtUnchecked(
       Image const& in,
@@ -441,6 +443,7 @@ void ResampleAt(
    DIP_STACK_TRACE_THIS( Framework::Scan( { map }, outar, { DT_DFLOAT }, { dt }, { dt }, { in.TensorElements() }, *scanLineFilter ));
 }
 
+
 namespace {
 
 // Computes p := R * p + T, where T is an nxn matrix in column-major order, and p and T are an n vector, with n in {2,3}.
@@ -515,6 +518,59 @@ void AffineTransform(
    do {
       FloatArray coord( it.Coordinates() );
       coord = ApplyTransformation( transform, coord, translation );
+      if( in.IsInside( coord )) {
+         function( in, *it, coord );
+      } else {
+         *it = 0;
+      }
+   } while( ++it );
+}
+
+
+void WarpControlPoints(
+      Image const& c_in,
+      Image& out,
+      FloatCoordinateArray const& inCoordinates,
+      FloatCoordinateArray const& outCoordinates,
+      dfloat lambda,
+      String const& interpolationMethod
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = c_in.Dimensionality();
+   DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( inCoordinates.empty(), E::ARRAY_PARAMETER_EMPTY );
+   DIP_THROW_IF( outCoordinates.size() != inCoordinates.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   for( auto& c : inCoordinates ) {
+      DIP_THROW_IF( c.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+   for( auto& c : outCoordinates ) {
+      DIP_THROW_IF( c.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+   DIP_THROW_IF( lambda < 0, E::PARAMETER_OUT_OF_RANGE );
+
+   // Build thin plate spline function
+   ThinPlateSpline thinPlateSpline( outCoordinates, inCoordinates, lambda );
+
+   // Find interpolator
+   InterpolationFunctionPointer function;
+   DIP_STACK_TRACE_THIS( function = GetInterpFunctionPtr( interpolationMethod, c_in.DataType() ));
+
+   // Preserve input
+   Image in = c_in;
+
+   // Create output
+   if( out.Aliases( in )) {
+      out.Strip();
+   }
+   out.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.Fill( 0 );
+
+   // Iterate over out and interpolate in in
+   // TODO: This would be better if parallelized.
+   GenericImageIterator<> it( out );
+   do {
+      FloatArray coord( it.Coordinates() );
+      coord = thinPlateSpline.Evaluate( coord );
       if( in.IsInside( coord )) {
          function( in, *it, coord );
       } else {

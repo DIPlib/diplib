@@ -243,7 +243,7 @@ inline Image ShiftFT(
 }
 
 
-/// \brief Finds the values of the image at sub-pixel locations `coordinates` by linear interpolation.
+/// \brief Finds the values of the image at sub-pixel locations `coordinates` by interpolation.
 ///
 /// The array `coordinates` must have all elements be arrays of the same length as the image dimensionality.
 /// For any coordinates outside of the image domain, the pixel value `fill` will be returned.
@@ -712,7 +712,7 @@ inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
 /// the same size as `in`.
 ///
 /// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
-/// See \ref interpolation_methods for their definition.  If `in` is binary, `interpolationMethod` will be
+/// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
 /// ignored, nearest neighbor interpolation will be used.
 DIP_EXPORT void AffineTransform(
       Image const& in,
@@ -730,6 +730,39 @@ inline Image AffineTransform(
    return out;
 }
 
+/// \brief Warps an image based on a set of control points using thin plate spline interpolation
+///
+/// `inCoordinates` and `outCoordinates` are two sets of points (they must be of equal size). The
+/// point `inCoordinates[ ii ]` will be moved to `outCoordinates[ ii ]`, warping the image `in`
+/// accordingly.
+///
+/// `lambda` is the regularization parameter. By default it is zero, meaning that the control points
+/// will be matched exactly in the input and output images. Increasing `lambda` allows some error in
+/// the location of the control points, and will result in a smoother interpolation.
+///
+/// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
+/// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
+///// ignored, nearest neighbor interpolation will be used.
+DIP_EXPORT void WarpControlPoints(
+      Image const& in,
+      Image& out,
+      FloatCoordinateArray const& inCoordinates,
+      FloatCoordinateArray const& outCoordinates,
+      dfloat lambda = 0,
+      String const& interpolationMethod = S::LINEAR
+);
+inline Image WarpControlPoints(
+      Image const& in,
+      FloatCoordinateArray const& inCoordinates,
+      FloatCoordinateArray const& outCoordinates,
+      dfloat lambda = 0,
+      String const& interpolationMethod = S::LINEAR
+) {
+   Image out;
+   WarpControlPoints( in, out, inCoordinates, outCoordinates, lambda, interpolationMethod );
+   return out;
+}
+
 /// \brief Computes the log-polar transform of the 2D image.
 ///
 /// By default, `out` will be a square image with side equal to the smaller of the two sides of `in`. However,
@@ -738,7 +771,7 @@ inline Image AffineTransform(
 /// The x-axis (horizontal) of `out` is the logarithm of the radius, and the y-axis is the angle.
 ///
 /// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
-/// See \ref interpolation_methods for their definition.  If `in` is binary, `interpolationMethod` will be
+/// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
 /// ignored, nearest neighbor interpolation will be used.
 ///
 /// This function is an integral part of the Fourier-Mellin transform, see `dip::FourierMellinMatch2D`.

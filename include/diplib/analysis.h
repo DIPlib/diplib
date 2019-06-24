@@ -135,7 +135,7 @@ inline FloatCoordinateArray MeanShift(
    FloatCoordinateArray out;
    out.reserve( startArray.size() );
    for( auto& start : startArray ) {
-      out.push_back( MeanShift( meanShiftVectorResult, start, epsilon ));
+      DIP_STACK_TRACE_THIS( out.push_back( MeanShift( meanShiftVectorResult, start, epsilon )));
    }
    return out;
 }

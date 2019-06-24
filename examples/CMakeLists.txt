@@ -82,12 +82,18 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(filter_image PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(filter_image DIP DIPviewer)
 
+   # An example program that shows how to use various geometric transformations
+   add_executable(geometric_transformation cpp/geometric_transformation.cpp)
+   target_compile_definitions(geometric_transformation PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(geometric_transformation DIP DIPviewer)
+
    add_dependencies(examples
                     viewer
                     display
                     fileviewer
                     select_objects
                     filter_image
+                    geometric_transformation
                     )
 
    ## An example that needs OpenCV, compile only if OpenCV is available

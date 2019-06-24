@@ -587,6 +587,54 @@ DIP_EXPORT void Solve(
       SampleIterator< dfloat > output
 );
 
+/// \brief Fits a thin plate spline function to a set of points. Useful for interpolation of scattered points.
+///
+/// This class implements a generalization of the 2D thin plate spline to arbitrary dimensionality. The
+/// constructor builds the thin plate spline function, and the `Evaluate` method evaluates this function
+/// at a given point.
+///
+/// \literature
+/// <li>J. Elonen, "Thin Plate Spline editor - an example program in C++", https://elonen.iki.fi/code/tpsdemo/index.html
+///     (last retrieved June 25, 2019). The page explains the math behind 2D thin plate splines, we did not use
+///     the source code linked from that page.
+/// \endliterature
+class ThinPlateSpline {
+   public:
+      /// \brief Creates a function that maps `coordinate` to `value`.
+      ///
+      /// `coordinate` gives the spatial location of samples, and `value` their values. The thin
+      /// plate spline function therefore maps `coordinate` to `value`. `value[ ii ]` corresponds to
+      /// `coordinate[ ii ]`, both arrays must have the same number of elements.
+      ///
+      /// This function also expects `coordinate` and `value` to have the same dimensionality. That is,
+      /// they both represent spatial coordinates in the same image. Internally, the function maps
+      /// `coordinate` to `value - coordinate`, `Evaluate( pt )` adds `pt` to the interpolated
+      /// value at `pt`, and thus it looks externally as if the function maps to `value` rather than
+      /// `value-coordinate`. This improves extrapolation.
+      ///
+      /// To use this class for warping, set `coordinate` to control points in the fixed image, and `value`
+      /// to corresponding points in the floating image. Then, for each point in the fixed image,
+      /// `Evaluate` will return the corresponding coordinates in the floating image, which can be
+      /// used to sample it.
+      ///
+      /// If `lambda` is larger than 0, the mapping is not exact, leading to a smoother function.
+      ///
+      /// The first input argument, `coordinate`, is taken by value and stored inside the object. Use
+      /// `std::move` to pass this argument if you no longer use it later.
+      DIP_EXPORT ThinPlateSpline(
+            FloatCoordinateArray coordinate,    // use std::move if you can!
+            FloatCoordinateArray const& value,  // correspondence points
+            dfloat lambda = 0
+      );
+
+      /// \brief Evaluates the thin plate spline function at point `pt`.
+      DIP_EXPORT FloatArray Evaluate( FloatArray const& pt );
+
+   private:
+      std::vector< dfloat > x_;
+      FloatCoordinateArray c_;
+};
+
 /// \}
 
 } // namespace dip

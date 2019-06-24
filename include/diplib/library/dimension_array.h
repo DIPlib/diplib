@@ -915,6 +915,27 @@ inline void sortIndices( DimensionArray< typename DimensionArray< T >::size_type
    }
 }
 
+/// \brief Computes the Square Euclidean distance between two points.
+/// \relates dip::DimensionArray
+template< typename T >
+inline double SquareDistance( DimensionArray< T > const& v1, DimensionArray< T > const& v2 ) {
+   DIP_ASSERT( v1.size() == v2.size() );
+   using size_type = typename DimensionArray< T >::size_type;
+   double p = 0;
+   for( size_type ii = 0; ii < v1.size(); ++ii ) {
+      double d = static_cast< double >( v1[ ii ] ) - static_cast< double >( v2[ ii ] );
+      p += d * d;
+   }
+   return p;
+}
+
+/// \brief Computes the Square Euclidean distance between two points.
+/// \relates dip::DimensionArray
+template< typename T >
+inline double Distance( DimensionArray< T > const& v1, DimensionArray< T > const& v2 ) {
+   return std::sqrt( SquareDistance( v1, v2 ));
+}
+
 /// \}
 
 } // namespace dip
