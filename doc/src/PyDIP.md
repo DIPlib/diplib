@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2018, Cris Luengo.)
+[//]: # ([c]2018-2019, Cris Luengo.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
 [//]: # (you may not use this file except in compliance with the License.)
@@ -28,9 +28,9 @@ Documentation hasn't been added to these Python functions yet.
 
 Images can be shown using the `Show` method, which uses *matplotlib*.
 The `PyDIP.PyDIPviewer` sub-module gives access to \ref viewer.
-When Python is started through the `examples/pydip.py` script, the `Show` function
+When Python is started through the `examples/python/pydip.py` script, the `Show` function
 will use the *DIPviewer* interactive display.
 
-The `/examples` directory contains a
-[Jupyter notebook](https://github.com/DIPlib/diplib/blob/master/examples/pydip_examples.ipynb)
-with a quick introduction to the package.
+The [`/examples/python`](https://github.com/DIPlib/diplib/blob/master/examples/python/)
+directory contains a few Jupyter notebooks that introduce the package and demonstrate
+some of its functionality.

@@ -455,7 +455,7 @@ inline Image SmallestEigenvalue( Image const& in ) {
 
 /// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
 ///
-/// The decomposition is such that `in * eigenvectors == `eigenvectors * out`.
+/// The decomposition is such that `in * eigenvectors == eigenvectors * out`.
 /// `eigenvectors` is almost always invertible, in which case one can write
 /// `in == eigenvectors * out * Inverse( eigenvectors )`.
 ///
