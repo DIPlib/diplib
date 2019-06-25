@@ -383,7 +383,7 @@ bool Image::HasSameDimensionOrder( Image const& other ) const {
    }
    // Check that the strides have the same sign (meaning that the dimensions run in the same direction)
    // If one is zero, the other must be too.
-   for( dip::uint ii = 1; ii < s2.size(); ++ii ) {
+   for( dip::uint ii = 0; ii < s2.size(); ++ii ) {
       if((( s1[ ii ] != 0 ) || ( s2[ ii ] != 0 )) && ( s1[ ii ] * s2[ ii ] <= 0 )) {
          return false;
       }
