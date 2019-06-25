@@ -58,17 +58,17 @@ inline void Delete() {
 
 } // namespace
 
-SliceViewer::Ptr Show( Image const& image, String const& title ) {
+SliceViewer::Ptr Show( Image const& image, String const& title, dip::uint width, dip::uint height ) {
    Create();
    SliceViewer::Ptr wdw;
-   DIP_STACK_TRACE_THIS( wdw = SliceViewer::Create( image, getWindowTitle( title )));
+   DIP_STACK_TRACE_THIS( wdw = SliceViewer::Create( image, getWindowTitle( title ), width, height ));
    DIP_STACK_TRACE_THIS( manager__->createWindow( wdw ));
    ++count__;
    
    return wdw;
 }
 
-ImageViewer::Ptr ShowSimple( Image const& image, String const& title ) {
+ImageViewer::Ptr ShowSimple( Image const& image, String const& title, dip::uint width, dip::uint height ) {
    DIP_THROW_IF( image.DataType() != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );
    Create();
    Image tmp = image.QuickCopy();
@@ -77,7 +77,7 @@ ImageViewer::Ptr ShowSimple( Image const& image, String const& title ) {
    }
    tmp.ForceNormalStrides();
    ImageViewer::Ptr wdw;
-   DIP_STACK_TRACE_THIS( wdw = ImageViewer::Create( tmp, getWindowTitle( title )));
+   DIP_STACK_TRACE_THIS( wdw = ImageViewer::Create( tmp, getWindowTitle( title ), width, height ));
    DIP_STACK_TRACE_THIS( manager__->createWindow( wdw ));
    ++count__;
    

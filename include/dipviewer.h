@@ -40,6 +40,7 @@ class ImageViewer;
 /// \brief Show an image in the slice viewer.
 ///
 /// A new interactive `dip::viewer::SliceViewer` window is created for the image. `title` sets the window title.
+/// If both `width` and `height` are larger than zero, they specify the size of the window created.
 ///
 /// Call `dip::viewer::Draw` or `dip::Viewer::Spin` to enable user interaction.
 ///
@@ -47,11 +48,16 @@ class ImageViewer;
 /// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
 /// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
 /// at an appropriate time after calling `%dip::viewer::Show` or `dip::viewer::ShowSimple`.
-DIPVIEWER_EXPORT std::shared_ptr<SliceViewer> Show( Image const& image, String const& title = "" );
+DIPVIEWER_EXPORT std::shared_ptr<SliceViewer> Show( Image const& image, String const& title = "", dip::uint width = 0, dip::uint height = 0 );
 
 /// \brief Show a 2D grey-value or RGB image, of type `dip::DT_UINT8`.
 ///
 /// A new non-interactive `dip::viewer::ImageViewer` window is created for the image. `title` sets the window title.
+/// `width` and `height` specify the size of the window created.
+///
+/// If either `width` or `height` is 0, it is computed from the other value so as to preserve the image's aspect ratio.
+/// If both are 0 (the default), the image is displayed in its natural size (one image pixel to one screen pixel) but
+/// scaled down if otherwise the window would exceed 512 pixels along either dimension.
 ///
 /// A scalar (grey-value) image will be replicated across three channels to form an RGB image (meaning that data
 /// will be copied).
@@ -60,7 +66,7 @@ DIPVIEWER_EXPORT std::shared_ptr<SliceViewer> Show( Image const& image, String c
 /// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
 /// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
 /// at an appropriate time after calling `dip::viewer::Show` or `%dip::viewer::ShowSimple`.
-DIPVIEWER_EXPORT std::shared_ptr<ImageViewer> ShowSimple( Image const& image, String const& title = "" );
+DIPVIEWER_EXPORT std::shared_ptr<ImageViewer> ShowSimple( Image const& image, String const& title = "", dip::uint width = 0, dip::uint height = 0 );
 
 /// \brief Wait until all windows are closed.
 ///

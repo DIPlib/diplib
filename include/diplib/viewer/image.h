@@ -92,6 +92,11 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     /// As the constructor is protected, this is the only way to create an ImageViewer.
     /// Note that the ImageViewer only supports 8-bit 2D RGB images.
     ///
+    /// If either `width` or `height` is 0, it is computed from the other value so as to
+    /// preserve the image's aspect ratio. If both are zero, the image is displayed in its
+    /// natural size (one image pixel to one screen pixel) but scaled down if otherwise the
+    /// window would exceed 512 pixels along either dimension.
+    ///
     /// Example usage:
     ///
     /// ```cpp
@@ -120,18 +125,24 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
       DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
       DIP_THROW_IF( image.TensorElements() != 3, "Only defined for 3-vector images" );
 
-      if (!width || !height)
+      if (!width && !height)
       {
         if (image.Size(0) > image.Size(1))
         {
-          width = std::max<dip::uint>(512UL, image.Size(0));
-          height = (size_t)((double)width * (double)image.Size(1)/(double)image.Size(0));
+          width = std::min<dip::uint>(512, image.Size(0));
         }
         else
         {
-          height = std::max<dip::uint>(512UL, image.Size(1));
-          width = (size_t)((double)height * (double)image.Size(0)/(double)image.Size(1));
+          height = std::min<dip::uint>(512, image.Size(1));
         }
+      }
+      if (!width)
+      {
+        width = (size_t)((double)height * (double)image.Size(0)/(double)image.Size(1));
+      }
+      else if (!height)
+      {
+        height = (size_t)((double)width * (double)image.Size(1)/(double)image.Size(0));
       }
 
       requestSize(width, height);
