@@ -34,6 +34,7 @@
 #include <utility>
 #include <iostream>
 #include <type_traits>
+#include <cmath>
 
 #include "diplib/library/error.h"
 
