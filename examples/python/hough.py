@@ -22,7 +22,6 @@ print(m, r)
 
 # Find circles using integrated function
 c = dip.FindHoughCircles(bin, gv, (), 10)
-
 print(c)
 
 # Show original and transform

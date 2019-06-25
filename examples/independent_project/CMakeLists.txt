@@ -20,5 +20,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(DIPlib 3.0 REQUIRED DIP DIPviewer)
 # find_package finds the file ${...}/lib/cmake/DIPlib/DIPlibConfig.cmake
 
-add_executable(fileviewer ../fileviewer.cpp)
+add_executable(fileviewer ../cpp/fileviewer.cpp)
 target_link_libraries(fileviewer PRIVATE DIPlib::DIP DIPlib::DIPviewer)
