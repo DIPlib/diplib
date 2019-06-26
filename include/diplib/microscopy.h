@@ -79,7 +79,7 @@ inline Image BeerLambertMapping(
 /// microscope given the stain densities in the image `in`. `background` is the illumination intensity, values of
 /// 0 in the input will be mapped to the value of `background`, whereas larger input values will be mapped to darker
 /// values. Input values should be relatively small, such that `background * dip::Exp10(-input)` can be represented
-/// in the ouput data type. Best results are obtained when the input is in the range [0,1], but larger values are
+/// in the output data type. Best results are obtained when the input is in the range [0,1], but larger values are
 /// allowed.
 ///
 /// `in` must be real-valued, negative values will be clipped to 0. `out` will be a floating-point type, unless
@@ -257,11 +257,11 @@ inline Image MixStains(
 /// Thus, it returns a value proportional to the fraction of pixels where both channels have a large value.
 /// Do note the arguments against this method by Adler and Parmryd (2010).
 ///
+/// The images must be scalar and real-valued.
+///
 /// If `mask` is not forged, all input pixels are considered. For this measure, it is very important to select
 /// only relevant pixels, and exclude any background pixels with background staining. Furthermore, the zero
 /// level is important, any offset should be subtracted first.
-///
-/// The images must be scalar and real-valued.
 ///
 /// To compute the Manders Overlap Coefficient between two channels in a multi-channel image (a tensor image):
 ///
@@ -289,7 +289,7 @@ DIP_EXPORT dfloat MandersOverlapCoefficient(
 /// dependent manner. For each pixel, \f$ c = (C_1 - \overline{C_1})(C_2 - \overline{C_2}) \f$ is computed. Then the ICQ is
 /// \f$ \frac{|c>0|}{|c|} - 0.5 \f$, with \f$ |\cdot| \f$ the count operator.
 ///
-/// The images must be scalar and real-valued.
+/// The images must be scalar and real-valued. If `mask` is not forged, all input pixels are considered.
 ///
 /// To compute Li's Intensity Correlation Quotient between two channels in a multi-channel image (a tensor image):
 ///
@@ -332,6 +332,7 @@ struct ColocalizationCoefficients {
 ///
 /// The images must be scalar and real-valued. Any negative values in the input images will cause wrong output,
 /// make sure to clamp the input to 0 before calling this function.
+/// If `mask` is not forged, all input pixels are considered.
 ///
 /// To compute Manders' Colocalization Coefficients between two channels in a multi-channel image (a tensor image):
 ///
@@ -363,11 +364,12 @@ DIP_EXPORT ColocalizationCoefficients MandersColocalizationCoefficients(
 ///     T = C_1 > t_1 \wedge C_2 > t_2 \f]
 /// with \f$C_j\f$ the two input channels.
 /// \f$t_j\f$ are the thresholds for each channel, with \f$t_2 = a t_1 + b\f$, and
-/// \f$a\f$ and \f$b\f$ the slope and intercept of the regression line of the two-dimensional histogram. The thresolds
+/// \f$a\f$ and \f$b\f$ the slope and intercept of the regression line of the two-dimensional histogram. The thresholds
 /// are successively lowered until the pixels that are not in \f$T\f$ exhibit no correlation between the two channels.
 ///
 /// The images must be scalar and real-valued. Any negative values in the input images will cause wrong output,
 /// make sure to clamp the input to 0 before calling this function.
+/// If `mask` is not forged, all input pixels are considered.
 ///
 /// To compute Costes' Colocalization Coefficients between two channels in a multi-channel image (a tensor image):
 ///
@@ -388,6 +390,47 @@ DIP_EXPORT ColocalizationCoefficients CostesColocalizationCoefficients(
       Image const& mask = {}
 );
 
+/// \brief Computes Costes' test of significance of true colocalization
+///
+/// This test verifies whether there is colocalization in the image pair by comparing the correlation
+/// between the two channels to that of a randomly shuffled version of the channels. When randomly
+/// shuffling one of the channels, there no longer exists correlation. This test gives a significance
+/// value to colocalization estimates, but does not quantify the amount of colocalization. Use one of
+/// the methods listed below to quantify colocalization.
+///
+/// The algorithm shuffles one of the channels by dividing it into blocks of `blockSizes` pixels,
+/// and randomly permuting these blocks. This is repeated `repetitions` times. The correlation
+/// between the shuffled channel and the other channel is computed for each of these repetitions,
+/// and a normal distribution is fitted to the obtained values. From this distribution, we compute
+/// the probability that a correlation not larger than the correlation between the two channels is
+/// obtained randomly. This probability (a P-value) is returned, and can be compared to, for example,
+/// 0.95 to determine with a 5% confidence whether there exists true colocalization in the image
+/// pair.
+///
+/// `blockSizes` should be set to the size of the point-spread function or the size of the texture
+/// in the image. An appropriate value can be estimated as the smaller of the widths of the
+/// autocorrelation functions for the two channels. If the block size is too small, the method
+/// will overestimate the significance of the colocalization.
+///
+/// The images must be scalar and real-valued. If `mask` is not forged, all input pixels are considered.
+/// If `mask` is forged, only blocks that overlap the masked area by at least 3/4 are used.
+/// However, the full block is used, including the portion that falls outside the mask.
+///
+/// \see dip::PearsonCorrelation, dip::SpearmanRankCorrelation, dip::IntensityCorrelationQuotient, dip::MandersColocalizationCoefficients, dip::CostesColocalizationCoefficients
+///
+/// \literature
+/// <li>S.V. Costes, D. Daelemans, E.H. Cho, Z. Dobbin, G. Pavlakis, and S. Lockett,
+///     "Automatic and Quantitative Measurement of Protein-Protein Colocalization in Live Cells",
+///     Biophysical Journal 86:3993-4003, 2004.
+/// \endliterature
+DIP_EXPORT dfloat CostesSignificanceTest(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& mask = {},
+      UnsignedArray blockSizes = { 3 },
+      dip::uint repetitions = 200
+);
+
 
 /// \brief Generates an incoherent OTF (optical transfer function)
 ///
@@ -397,7 +440,7 @@ DIP_EXPORT ColocalizationCoefficients CostesColocalizationCoefficients(
 /// (See Castleman for details).
 /// When `defocus` is unequal to zero, either the Stokseth approximation or the Hopkins approximation
 /// is used, depending on the value of `method` (which can be either `"Stokseth"` or `"Hopkins"`).
-/// The summation over the Bessel functions in the Hopkins formluation is stopped when the change is
+/// The summation over the Bessel functions in the Hopkins formulation is stopped when the change is
 /// smaller than 0.0001 (this is a compile-time constant).
 ///
 /// `oversampling` is the oversampling rate. If set to 1, the OTF is sampled at the Nyquist rate. Increase

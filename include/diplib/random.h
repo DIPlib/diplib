@@ -61,6 +61,9 @@ namespace dip {
 /// 128-bit arithmetic. Note that, if *DIPlib* is compiled with this flag, code that links to it must also be
 /// compiled with this flag, or bad things will happen.
 ///
+/// Satisfies the requirements for [*UniformRandomBitGenerator*](https://en.cppreference.com/w/cpp/named_req/UniformRandomBitGenerator),
+/// and hence can be used in all algorithms of the standard library that require such an object.
+///
 /// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
 class DIP_NO_EXPORT Random {
 #if defined(__SIZEOF_INT128__) || defined(DIP__ALWAYS_128_PRNG)

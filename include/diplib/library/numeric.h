@@ -246,6 +246,18 @@ inline dfloat Sinc( dfloat x ) {
    return x == 0.0 ? 1.0 : std::sin( x ) / x;
 }
 
+/// \brief Computes phi, the integral of the PDF of a Normal distribution with
+/// unit variance and zero mean from minus infinity to `x`.
+inline dfloat Phi( dfloat x ) {
+   return 0.5 * ( 1.0 + std::erf( x * std::sqrt( 2.0 )));
+}
+
+/// \brief Computes phi, the integral of the PDF of a Normal distribution with
+/// standard deviation `s` and mean `m` from minus infinity to `x`.
+inline dfloat Phi( dfloat x, dfloat m, dfloat s ) {
+   return Phi(( x - m ) / s );
+}
+
 /// \brief Computes the surface area of an `n`-dimensional hypershpere with radius `r`.
 constexpr inline dfloat HypersphereSurface( dip::uint n, dfloat r ) {
    // See https://en.wikipedia.org/wiki/N-sphere#Recurrences

@@ -22,7 +22,8 @@
 #include "diplib/statistics.h"
 #include "diplib/math.h"
 #include "diplib/histogram.h"
-#include "diplib/framework.h"
+#include "diplib/generic_iterators.h"
+#include "diplib/random.h"
 
 namespace dip {
 
@@ -184,6 +185,103 @@ ColocalizationCoefficients CostesColocalizationCoefficients(
    dfloat M2 = dip::Sum( channel2, colocalizedMap ).As< dfloat >() / dip::Sum( channel2, nonZeroMask ).As< dfloat >();
 
    return { M1, M2 };
+}
+
+dfloat CostesSignificanceTest(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& c_mask,
+      UnsignedArray blockSizes,
+      dip::uint repetitions
+) {
+   DIP_THROW_IF( !channel1.IsForged() || !channel2.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !channel1.IsScalar() || !channel2.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !channel1.DataType().IsReal() || !channel2.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_STACK_TRACE_THIS( channel1.CompareProperties( channel2, Option::CmpProp::Sizes ));
+   dip::uint nDims = channel1.Dimensionality();
+   dip::Image mask;
+   if( c_mask.IsForged() ) {
+      mask = c_mask.QuickCopy();
+      DIP_STACK_TRACE_THIS( mask.CheckIsMask( channel1.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW ));
+      DIP_STACK_TRACE_THIS( mask.ExpandSingletonDimensions( channel1.Sizes() ));
+   }
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( blockSizes, nDims, dip::uint( 3 )));
+   DIP_THROW_IF( blockSizes.minimum_value() < 1, E::INVALID_PARAMETER );
+   DIP_THROW_IF( repetitions < 1, E::INVALID_PARAMETER ); // Must do at least one repetition, though only one really doesn't make sense.
+
+   // Instead of shuffling blocks in an image and computing the correlation between the result and the
+   // other image, we do something that is simpler and faster:
+   // We generate an array with pointers to all blocks within channel1, and a similar one for channel2.
+   // We shuffle one of these arrays, and compute correlation between the pairs of blocks. Rinse and repeat.
+
+   // Compute correlation without shuffling
+   dfloat corr0 = PearsonCorrelation( channel1, channel2, mask );
+
+   // Generate arrays with pointers to the first pixel of each block
+   dip::RangeArray blocks( nDims, { 0, -1 } );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if( blockSizes[ ii ] > channel1.Size( ii )) {
+         blockSizes[ ii ] = channel1.Size( ii );
+         blocks[ ii ].stop = 0;
+      } else {
+         blocks[ ii ].stop = static_cast< dip::sint >(( channel1.Size( ii ) / blockSizes[ ii ] - 1 ) * blockSizes[ ii ] );
+      }
+      blocks[ ii ].step = blockSizes[ ii ];
+   }
+   dip::Image channel1_blocks = channel1.At( blocks );
+   dip::Image channel2_blocks = channel2.At( blocks );
+   dip::uint nBlocks = channel1_blocks.NumberOfPixels();
+   std::vector< void* > origins1;
+   origins1.reserve( nBlocks );
+   std::vector< void* > origins2;
+   origins2.reserve( nBlocks );
+   dip::GenericJointImageIterator< 2 > it( { channel1_blocks, channel2_blocks } );
+   if( mask.IsForged() ) {
+      dip::uint threshold = blockSizes.product() * 3 / 4; // three quarter pixels
+      dip::Image block = mask.QuickCopy();
+      block.dip__SetSizes( blockSizes );
+      dip::Image mask_blocks = mask.At( blocks );
+      dip::ImageIterator< bin > mit( mask_blocks );
+      do {
+         block.dip__SetOrigin( mit.Pointer() );
+         if( Count( block ) > threshold ) {
+            origins1.push_back( it.Pointer< 0 >());
+            origins2.push_back( it.Pointer< 1 >());
+         }
+      } while( ++mit, ++it );
+      nBlocks = origins1.size();
+   } else { // No mask
+      do {
+         origins1.push_back( it.Pointer< 0 >() );
+         origins2.push_back( it.Pointer< 1 >() );
+      } while( ++it );
+   }
+
+   // Shuffle one array, and compute correlation between pairs of blocks
+   Random rng;
+   dip::Image block1 = channel1.QuickCopy();
+   block1.dip__SetSizes( blockSizes );
+   dip::Image block2 = channel2.QuickCopy();
+   block2.dip__SetSizes( blockSizes );
+   VarianceAccumulator var;
+   //dip::uint smallerCount = 0;
+   for( dip::uint ii = 0; ii < repetitions; ++ii ) {
+      std::shuffle( origins2.begin(), origins2.end(), rng );
+      CovarianceAccumulator cov;
+      for( dip::uint jj = 0; jj < nBlocks; ++jj ) {
+         block1.dip__SetOrigin( origins1[ jj ] );
+         block2.dip__SetOrigin( origins2[ jj ] );
+         cov += Covariance( block1, block2 );
+      }
+      dfloat corr = cov.Correlation();
+      var.Push( corr );
+      //if( corr <= corr0 ) {
+      //   ++smallerCount;
+      //}
+   }
+
+   // Estimate probability to find at least `corr0` with random shuffles
+   return Phi( corr0, var.Mean(), var.StandardDeviation() );
 }
 
 } // namespace dip
