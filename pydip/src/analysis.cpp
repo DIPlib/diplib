@@ -79,6 +79,8 @@ void init_analysis( py::module& m ) {
           "meanShiftVectorResult"_a, "startArray"_a, "epsilon"_a = 1e-3 );
    m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
           "in1"_a, "in2"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
+   m.def( "AutoCorrelationFT", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::AutoCorrelationFT ),
+          "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
    m.def( "FindShift", &dip::FindShift,
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = dip::UnsignedArray{ std::numeric_limits< dip::uint >::max() } );
    m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::FourierMellinMatch2D ),

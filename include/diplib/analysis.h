@@ -200,6 +200,22 @@ inline Image CrossCorrelationFT(
    return out;
 }
 
+DIP_EXPORT void AutoCorrelationFT(
+      Image const& in,
+      Image& out,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
+);
+inline Image  AutoCorrelationFT(
+      Image const& in,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
+) {
+   Image out;
+   AutoCorrelationFT( in, out, inRepresentation, outRepresentation );
+   return out;
+}
+
 /// \brief Estimates the (sub-pixel) global shift between `in1` and `in2`.
 ///
 /// The numbers found represent the shift of `in2` with respect to `in1`, or equivalently, the position of the

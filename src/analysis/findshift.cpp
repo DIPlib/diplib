@@ -81,6 +81,30 @@ void CrossCorrelationFT(
    }
 }
 
+void AutoCorrelationFT(
+      Image const& in,
+      Image& out,
+      String const& inRepresentation,
+      String const& outRepresentation
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   bool inSpatial;
+   DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
+   Image inFT;
+   if( inSpatial ) {
+      DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_STACK_TRACE_THIS( FourierTransform( in, inFT ));
+   } else {
+      inFT = in.QuickCopy();
+   }
+   SquareModulus( inFT, out );
+   if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
+      DIP_STACK_TRACE_THIS( FourierTransform( out, out, { S::INVERSE, S::REAL } ));
+   }
+}
+
 namespace {
 
 FloatArray FindShift_CPF( Image const& in1, Image const& in2, dfloat maxFrequency ) {
