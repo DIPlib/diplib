@@ -32,8 +32,8 @@
 #endif
 #endif
 
-#include <Eigen/Dense>
 #include <Eigen/QR>
+#include <Eigen/Cholesky>
 
 namespace dip {
 
@@ -90,9 +90,10 @@ ThinPlateSpline::ThinPlateSpline(
    }
 
    // Solve equation Lx=b for x
-   Eigen::ColPivHouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
    // Using Eigen::Ref to get in-place decomposition, it re-uses L to store the decomposition.
-   // Eigen::HouseholderQR is faster but less accurate. Which one to pick?
+   Eigen::HouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
+   //Eigen::ColPivHouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
+   // TODO: Eigen::HouseholderQR is faster but less accurate than Eigen::ColPivHouseholderQR. Which one to pick?
    x_.resize( N * nDims );
    Eigen::Map< Eigen::MatrixXd >( x_.data(), N, nDims ) = decomposition.solve( b );
 }

@@ -619,6 +619,9 @@ class ThinPlateSpline {
       ///
       /// If `lambda` is larger than 0, the mapping is not exact, leading to a smoother function.
       ///
+      /// When applied with a large coordinates array, this constructor can take quite a long time. It is
+      /// worth while to split up such a problem into blocks.
+      ///
       /// The first input argument, `coordinate`, is taken by value and stored inside the object. Use
       /// `std::move` to pass this argument if you no longer use it later.
       DIP_EXPORT ThinPlateSpline(

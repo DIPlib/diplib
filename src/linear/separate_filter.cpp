@@ -35,8 +35,7 @@
 #endif
 #endif
 
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
+#include <Eigen/SVD>
 
 namespace dip {
 
