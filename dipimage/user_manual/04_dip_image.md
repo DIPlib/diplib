@@ -318,7 +318,7 @@ into the tensor dimension is identical to indexing into a *MATLAB*
 matrix: the first index goes down, and indices start at 0. For
 example, `c{1,1}` is a scalar image with the first tensor element of
 each matrix in the image `c`.
-A sigle index uses linear indexing: `c{1}` also is the first tensor element.
+A single index uses linear indexing: `c{1}` also is the first tensor element.
 
 It is possible to combine spatial and tensor indexing, but the curly
 braces have to come first.[^42] Thus, write `c{1}(0,0)`, not `c(0,0){1}`.
@@ -328,9 +328,9 @@ Note that the function `end` only works correctly for spatial indexing
 See [@sec:dip_image_end].
  
 Note here that the image `c` above is a special type of matrix image:
-it is symmetric. That is becuase `c{1,2}` and `c{2,1}` are the result of
+it is symmetric. That is because `c{1,2}` and `c{2,1}` are the result of
 the same operation: `b{1}*b{2}`. The `*` operator recognizes that the two
-inputs are transposed versions of each other (becuase they point at the
+inputs are transposed versions of each other (because they point at the
 same data block), and thus knows not to compute the same thing twice.
 The image `c` actually only contains 3 tensor elements, even though it
 represents a 2-by-2 matrix. Therefore, `c{4}` is an out-of-bounds error,
@@ -402,7 +402,7 @@ color space, filled with zeros:
 ```
 
 All operations that are defined for tensor images can be applied to
-color images. These operations simpliy ignore the color space. Thus,
+color images. These operations simply ignore the color space. Thus,
 adding two images with different color spaces does not cause one to
 be converted to the other color space. Typically, the output image
 will have the color space of the first input image with a color space
@@ -469,7 +469,7 @@ these functions here.
 
 ### `find`, `findcoord`
 
-`find` works similarily to the base version, except it is not possible
+`find` works similarly to the base version, except it is not possible
 to obtain `[I,J]` indices as output. The indices returned are always
 linear indices. An optional second output argument receives the non-zero
 values. To obtain the coordinates of non-zero values, use `findcoord`

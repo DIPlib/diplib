@@ -168,7 +168,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    py::implicitly_convertible< py::buffer, dip::Metric >();
    py::implicitly_convertible< py::str, dip::Metric >();
 
-   // diplib/multitheading.h
+   // diplib/multithreading.h
 
    m.def( "SetNumberOfThreads", &dip::SetNumberOfThreads, "nThreads"_a );
    m.def( "GetNumberOfThreads", &dip::GetNumberOfThreads );

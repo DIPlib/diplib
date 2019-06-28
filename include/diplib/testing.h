@@ -228,7 +228,7 @@ inline bool CompareImages(
 /// ```
 ///
 /// The stream output reports both the wall time and the CPU time, and uses meaningful units (minutes, seconds,
-/// millisecons or microseconds).
+/// milliseconds or microseconds).
 ///
 ///
 /// Wall time is the real-world time that elapsed. CPU time is the time that the CPU spent working for the current

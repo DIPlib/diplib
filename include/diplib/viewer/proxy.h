@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0 viewer
- * This file contains definitions for rudamentary proxy window manager.
+ * This file contains definitions for rudimentary proxy window manager.
  *
  * (c)2018, Wouter Caarls
  *

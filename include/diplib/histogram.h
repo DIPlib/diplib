@@ -110,7 +110,7 @@ class DIP_NO_EXPORT Histogram {
 
          /// \brief Default-constructed configuration defines 256 bins in the range [0,256].
          Configuration() = default;
-         /// \brief A constructor takes a lower and upper bounds, and the bin size. The numbr of bins are computed.
+         /// \brief A constructor takes a lower and upper bounds, and the bin size. The number of bins are computed.
          Configuration( dfloat lowerBound, dfloat upperBound, dfloat binSize ) :
                lowerBound( lowerBound ), upperBound( upperBound ), binSize( binSize ), mode( Mode::COMPUTE_BINS ) {}
          /// \brief A constructor takes a lower and upper bounds, and the number of bins. The bin size is computed.
@@ -780,7 +780,7 @@ DIP_EXPORT dfloat BackgroundThreshold(
 /// \brief Partitions a (multi-dimensional) histogram into `nClusters` partitions using k-means clustering.
 ///
 /// K-means clustering partitions the histogram into compact, similarly-weighted segments. The algorithm
-/// uses a random initialization, so mutliple runs might yield different results.
+/// uses a random initialization, so multiple runs might yield different results.
 ///
 /// For 1D histograms, `dip::IsodataThreshold(Histogram const&, dip::uint)` is more efficient, and deterministic.
 DIP_EXPORT Histogram KMeansClustering(

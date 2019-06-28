@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0 viewer
- * This file contains definitions for a rudamentary GLFW window manager.
+ * This file contains definitions for a rudimentary GLFW window manager.
  *
  * (c)2017, Wouter Caarls
  *

@@ -290,7 +290,7 @@ inline Image ShiTomasiCornerDetector(
 /// Noble defined a corner detector as
 /// \f[ \text{Det}(M) / \text{Tr}(M) \; ,\f]
 /// This is similar to the Harris corner detector (see `dip::Harris`), except it has no parameter to tune. The ratio
-/// of the deteminant to the trace is equivalent to the harmonic mean of the eigenvalues.
+/// of the determinant to the trace is equivalent to the harmonic mean of the eigenvalues.
 ///
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
 ///
@@ -391,7 +391,7 @@ inline Image WangBradyCornerDetector(
 /// `parameters` are the two (*&beta;* and *c* in 2D) or three (*&alpha;*, *&beta;* and *c* in 3D) thresholds used
 /// in the method. An empty array indicates the default values (`{0.5, 15}` in 2D and `{0.5, 0.5, 500}` in 3D).
 ///
-/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). The sign of the one (2D) or two (3D) larger eigenvalues are examined at each pixel to
 /// determine the polarity of the line, if the signs don't match, the pixel is set to 0.
 ///
@@ -441,7 +441,7 @@ inline Image FrangiVesselness(
 /// zero so that it yields a zero response in flat areas. It is created at 12 different orientations (thus using 15
 /// degree steps to cover the full 180 degree half-circle), and the maximum response over all orientations is returned.
 ///
-/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and 2D.
 ///
 /// \literature
@@ -477,7 +477,7 @@ inline Image MatchedFiltersLineDetector2D(
 /// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see `dip::Hessian`),
 /// and determine the scale. To detect wider lines, increase `sigmas`.
 ///
-/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
 ///
 /// \literature
@@ -511,7 +511,7 @@ inline Image DanielssonLineDetector(
 /// `length` is the length of the path operator. Longer paths make for a more selective filter that requires
 /// lines to be straighter.
 ///
-/// `polarity` indicates whether to look for light lines on a dark brackground (`"white"`) or dark lines on a light
+/// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
 ///
 /// \literature

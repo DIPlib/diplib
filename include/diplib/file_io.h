@@ -149,7 +149,7 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 /// `dip::ImageReadICSInfo` function.
 ///
 /// Set `significantBits` only if the number of significant bits is different from the full range of the data
-/// type of `image` (use 0 otherwise). For example, it can be used to specifiy that a camera has produced
+/// type of `image` (use 0 otherwise). For example, it can be used to specify that a camera has produced
 /// 10-bit output, even though the image is of type `dip::DT_UINT16`.
 ///
 /// `options` specifies how the ICS file is written, and can contain one or several of these strings:
@@ -192,9 +192,9 @@ DIP_EXPORT void ImageWriteICS(
 ///
 /// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
 /// more common ones. These are the most obvious limitations:
-///  - Only 1, 4, 8, 16 and 32 bits per pixel integer grayvalues are read, as well as 32-bit and 64-bit
+///  - Only 1, 4, 8, 16 and 32 bits per pixel integer gray values are read, as well as 32-bit and 64-bit
 ///    floating point.
-///  - Only 4 and 8 bits per pixel colormapped images are read.
+///  - Only 4 and 8 bits per pixel color-mapped images are read.
 ///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
 ///  - Some non-standard compression schemes are not recognized (most notably JPEG2000).
 // TODO: Option to read an indexed image without applying the color map, and reading in the color map separately.

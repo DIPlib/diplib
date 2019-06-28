@@ -552,7 +552,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
    - A new function `viewslice` can be used to display any image (including tensor images and
      higher-dimensional images) in \ref viewer. This is an alternative way to examine images,
-     but none of the tools to programatically interact with images displayed through `dipshow`
+     but none of the tools to programmatically interact with images displayed through `dipshow`
      will work with this viewer.
 
 - Configuration settings accessed through `dipsetpref` and `dipgetpref` have been changed since

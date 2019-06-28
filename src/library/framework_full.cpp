@@ -76,7 +76,7 @@ void Full(
       if( cond.all() ) {
          alreadyExpanded = true;
       } else {
-         DIP_THROW_IF( cond.any(), "\"already expaned\" boundary condition cannot be combined with other boundary conditions" );
+         DIP_THROW_IF( cond.any(), "\"already expanded\" boundary condition cannot be combined with other boundary conditions" );
       }
    }
    if( !expandBoundary ) {

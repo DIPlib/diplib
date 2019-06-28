@@ -39,7 +39,7 @@ Adding Functions to the GUI {#sec:function_adding}
 To add a function to the GUI, it must be on the MATLAB path, and you must
 make information about it available to the GUI.
 The second requirement is accomplished by writing a function `localdipmenus`.
-The function should be defined by iteself in a file called `localdipmenus.m` and
+The function should be defined by itself in a file called `localdipmenus.m` and
 be somewhere on the MATLAB path. See `help addpath` to learn about the MATLAB
 path. `localdipmenus` is defined as follows:
 
@@ -466,7 +466,7 @@ images). However, all the `dipshow`-related options mentioned in this
 section are ignored, and no further programmatic interaction with
 the figure windows is supported. A new window will always be opened
 for each display command, `dipfig` ([@sec:function_dipfig]) does not
-apply either. See the [*DIPviewer* documention](https://diplib.github.io/diplib-docs/group__viewer.html#details)
+apply either. See the [*DIPviewer* documentation](https://diplib.github.io/diplib-docs/group__viewer.html#details)
 for more information on these fi
 
 ### DisplayToFigure

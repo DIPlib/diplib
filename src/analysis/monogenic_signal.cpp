@@ -47,8 +47,8 @@ void MonogenicSignal(
    bool spatialDomainOutput;
    DIP_STACK_TRACE_THIS( spatialDomainOutput = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    bool inputIsReal = spatialDomainInput && !c_in.DataType().IsComplex();
-   bool ouputIsReal = inputIsReal && spatialDomainOutput;
-   DataType dt = ouputIsReal ? DT_SFLOAT : DT_SCOMPLEX;
+   bool outputIsReal = inputIsReal && spatialDomainOutput;
+   DataType dt = outputIsReal ? DT_SFLOAT : DT_SCOMPLEX;
    Image in = c_in;
    if( out.Aliases( in )) {
       out.Strip(); // we can't work in-place
@@ -72,7 +72,7 @@ void MonogenicSignal(
    DIP_STACK_TRACE_THIS( LogGaborFilterBank( radialFilter, radialFilter, wavelengths, bandwidth, 1, S::FREQUENCY, S::FREQUENCY ));
    // Options for inverse transform
    StringSet options = { S::INVERSE };
-   if( spatialDomainOutput && ouputIsReal ) {
+   if( spatialDomainOutput && outputIsReal ) {
       options.insert( S::REAL );
    }
    // Get all combinations by multiplication
@@ -81,7 +81,7 @@ void MonogenicSignal(
          Image destination = out[ UnsignedArray{ 0, scale } ];
          destination.Protect();          // ensure it will not be reforged
          Image tempStorage;
-         Image& ftDestination = ( spatialDomainOutput && ouputIsReal ) ? tempStorage : destination;
+         Image& ftDestination = ( spatialDomainOutput && outputIsReal ) ? tempStorage : destination;
          DIP_STACK_TRACE_THIS( Multiply( radialFilter[ scale ], ftIn, ftDestination ));
          ftDestination.At( center ) = 0;
          if( spatialDomainOutput ) {
@@ -92,7 +92,7 @@ void MonogenicSignal(
          Image destination = out[ UnsignedArray{ ii + 1, scale } ];
          destination.Protect();          // ensure it will not be reforged
          Image tempStorage;
-         Image& ftDestination = ( spatialDomainOutput && ouputIsReal ) ? tempStorage : destination;
+         Image& ftDestination = ( spatialDomainOutput && outputIsReal ) ? tempStorage : destination;
          DIP_STACK_TRACE_THIS( Multiply( radialFilter[ scale ], mono[ ii ], ftDestination ));
          if( spatialDomainOutput ) {
             DIP_STACK_TRACE_THIS( FourierTransform( ftDestination, destination, options ));

@@ -259,7 +259,7 @@ DIP_EXPORT void DrawBandlimitedBall(
       dfloat truncation = 3.0
 );
 
-/// \brief Draws an approximately bandlimited box (rectagle) in an image, using Gaussian profiles.
+/// \brief Draws an approximately bandlimited box (rectangle) in an image, using Gaussian profiles.
 ///
 /// The box is centered around the coordinates given by `origin`, and has a width of `sizes[ii]` along
 /// dimension `ii`. The origin does not need to be within the image.
@@ -616,7 +616,7 @@ struct TestObjectParams {
 /// `params` also describes what effects are applied to the image:
 ///
 /// Modulation is an additive sine wave along each dimension, and is controlled by:
-///  - `params.modulationDepth` controls the strenght of the modulation. If this value is zero, no modulation is applied.
+///  - `params.modulationDepth` controls the strength of the modulation. If this value is zero, no modulation is applied.
 ///  - `params.modulationFrequency` controls the frequency along each image axis. The units are number of periods per
 ///    pixel, and hence values below 0.5 should be given to prevent aliasing.
 ///

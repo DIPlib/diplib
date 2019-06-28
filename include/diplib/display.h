@@ -605,12 +605,12 @@ class DIP_NO_EXPORT ImageDisplay {
 ///  - `"grey"`: Each grey level maps to an RGB value that represents the same grey level.
 ///  - `"saturation"`: Each grey level maps to an RGB value that represents the same grey level, except pixels
 ///    with a value 0 and 255, which are colored blue and red respectively. This can be used to show which
-///    pixels were likely saturated during aquisition.
-///  - `"linear"`: A blue-magenta-yellow hightly saturated, percetually linear color map.
+///    pixels were likely saturated during acquisition.
+///  - `"linear"`: A blue-magenta-yellow highly saturated, perceptually linear color map.
 ///  - `"diverging"`: A blue-grey-red diverging, perceptually linear color map, where the middle value maps
 ///    to a neutral grey-value, high values map to increasingly bright reds, and low values map to increasingly
 ///    bright blues. This is meant to be used in combination with the `"base"` range mode of `dip::ImageDisplay`.
-///  - `"cyclic"`: A magenta-yellow-green-blue cyclic, percetually linear color map, which allows four orientations
+///  - `"cyclic"`: A magenta-yellow-green-blue cyclic, perceptually linear color map, which allows four orientations
 ///    or angles to be visualised. Use in combination with the `"angle"` or `"orientation"` range mode of
 ///    `dip::ImageDisplay`.
 ///  - `"label"`: For labeled images, each grey value gets a color that can easily be distinguished from

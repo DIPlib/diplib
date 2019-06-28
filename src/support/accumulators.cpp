@@ -26,7 +26,7 @@
 #include "diplib/math.h"
 #include "diplib/transform.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the statictical accumulators") {
+DOCTEST_TEST_CASE("[DIPlib] testing the statistical accumulators") {
    {
       dip::StatisticsAccumulator acc1;
       acc1.Push( 1.0 );

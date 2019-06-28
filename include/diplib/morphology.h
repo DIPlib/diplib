@@ -998,7 +998,7 @@ inline Image SeededWatershed(
 /// \brief Computes the stochastic watershed of `in`.
 ///
 /// The stochastic watershed is computed by applying a watershed with randomly placed seeds `nIterations` times,
-/// and adding the results. The output is an image where each pixel's value is the likelyhood that it belongs to
+/// and adding the results. The output is an image where each pixel's value is the likelihood that it belongs to
 /// an edge in the image, the values are in the range [0,`nIterations`]. The input image `in` should contain high
 /// gray values at the edges of the regions to be segmented. Thresholding `out` at an appropriate value will yield
 /// the relevant edges in the image. Alternatively, apply `dip::Watershed` to the result, with `maxDepth` set to
@@ -1011,7 +1011,7 @@ inline Image SeededWatershed(
 /// or `"bcc"` or `"fcc"` (3D only)). The output contains counts, in the range [0,`nIterations`].
 ///
 /// If `seeds` is `"exact"`, or if `nIterations` is 0, then the exact probabilities are computed
-/// (Malmberg and Luengo, 2014). The ouput contains probabilities, in the range [0,1]. Note that this algorithm
+/// (Malmberg and Luengo, 2014). The output contains probabilities, in the range [0,1]. Note that this algorithm
 /// requires O(n<sup>2</sup>) space, and is not suitable for very large images.
 ///
 /// The stochastic watershed expects the image to contain roughly equally-sized regions. `nSeeds` should be

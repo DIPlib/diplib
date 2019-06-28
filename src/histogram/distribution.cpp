@@ -30,7 +30,7 @@ Distribution::Distribution( Histogram const& histogram ) {
    DIP_ASSERT( histImg.IsForged() );
    DIP_ASSERT( histImg.Stride( 0 ) == 1 );
    length_ = histImg.Size( 0 );
-   nRows_ = nColums_ = 1;
+   nRows_ = nColumns_ = 1;
    data_.resize( length_ * 2 );
    auto bins = histogram.BinCenters();
    auto src = static_cast< Histogram::CountType const* >( histImg.Origin() );
@@ -45,7 +45,7 @@ Distribution::Distribution( Histogram const& histogram ) {
 }
 
 Distribution& Distribution::Sort() {
-   // -- std::stable_sort doesn't work: it wants to use a temporary variable, it doens't just swap elements
+   // -- std::stable_sort doesn't work: it wants to use a temporary variable, it doesn't just swap elements
    //std::stable_sort( begin(), end(), []( Sample const& a, Sample const& b ) { return a.X() < b.X(); } );
    // -- Instead using insertion sort because it's easy to implement
    auto first = begin();

@@ -136,7 +136,7 @@ If everything works correctly, you will have:
 - `C:\Users\<name>\DIPlib\lib`: `DIP.dll`, as well as `DIPviewer.dll` and `DIPjavaio.dll`. 
 
 - `C:\Users\<name>\DIPlib\include`: The *DIPlib* include files, which you'll need when
-building your own C++ progrmas using *DIPlib*.
+building your own C++ programs using *DIPlib*.
 
 - `C:\Users\<name>\DIPlib\share\DIPimage`: The *DIPimage* toolbox for MATLAB.
 

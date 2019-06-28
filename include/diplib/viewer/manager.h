@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0 viewer
- * This file contains definitions for rudamentary window management.
+ * This file contains definitions for rudimentary window management.
  *
  * (c)2017, Wouter Caarls
  *

@@ -37,7 +37,7 @@ f = a0 + a1*x + a2*y + a3*x*x + a4*y*y + a5*x*y
 formulae taken from "Estimating Mean Wind"
 http://lidar.ssec.wisc.edu/papers/akp_thes/node19.htm
 
-Shortcut for least quares solution is computed in Matlab as follows:
+Shortcut for least squares solution is computed in Matlab as follows:
 x = [-1 0 1 -1 0 1 -1 0 1]'; y = [-1 -1 -1 0 0 0 1 1 1]';
 G = [ones([9 1]) x y x.*x y.*y x.*y];
 => a = inv(G'*G)*(G'*t) = (inv(G'*G)*G')*t  due to associativity
@@ -106,7 +106,7 @@ Compute subpixel offset of local maximum of a 3x3x3 image patch around a peak
 using 3D quadratic fit:
 f = a0 + a1*x + a2*y + a3*z + a4*x*x + a5*y*y + a6*z*z + a7*y*z + a8*z*x + a9*x*y
 
-Shortcut for least quares solution is computed in Matlab as follows:
+Shortcut for least squares solution is computed in Matlab as follows:
 [y,x,z] = meshgrid([-1:1],[-1:1],[-1:1]);
 x = x(:); y = y(:); z = z(:);
 G = [ones([27 1]) x y z x.*x y.*y z.*z y.*z z.*x x.*y];

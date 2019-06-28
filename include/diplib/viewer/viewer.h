@@ -53,7 +53,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   /// \brief Slice projection options
   enum class Projection { None, Min, Mean, Max };
   
-  /// \brief Grey-value to color mapping optios
+  /// \brief Grey-value to color mapping options
   enum class LookupTable { ColorSpace, RGB, Grey, Sequential, Divergent, Cyclic, Label };
   
   /// \brief Defines which view (parts) need to be recalculated
@@ -61,7 +61,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
 
   // Projection
   dip::IntegerArray dims_;             ///< Dimensions to visualize (MainX, MainY, LeftX, TopY).
-  dip::UnsignedArray operating_point_; ///< Value of nonvisualized, nonprojected dimensions.
+  dip::UnsignedArray operating_point_; ///< Value of non-visualized, non-projected dimensions.
   ComplexToReal complex_;              ///< What to do with complex numbers.
   Projection projection_;              ///< Type of projection.
   dip::UnsignedArray roi_origin_;      ///< Origin of projection ROI.
@@ -195,7 +195,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     if (dims_[dimx] != options.dims_[dimx]) return true;
     if (dims_[dimy] != options.dims_[dimy]) return true;
     
-    // Change of operating point in nonvisualized dimension
+    // Change of operating point in non-visualized dimension
     if (projection_ == Projection::None)
     {
       for (size_t ii=0; ii < operating_point_.size(); ++ii)
@@ -204,7 +204,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
             return true;
     }
     
-    // Change of ROI in nonvisualized dimension
+    // Change of ROI in non-visualized dimension
     if (projection_ != Projection::None)
     {
       for (size_t ii=0; ii < roi_origin_.size(); ++ii)
@@ -256,7 +256,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   /// \brief Returns a textual description of the current grey-value mapping
   dip::String getMappingDescription()
   {
-    dip::String names[] = {"unit", "angle", "normal", "linear", "symmetric around 0", "logaritmic"};
+    dip::String names[] = {"unit", "angle", "normal", "linear", "symmetric around 0", "logarithmic"};
     return names[(dip::uint)mapping_];
   }
   

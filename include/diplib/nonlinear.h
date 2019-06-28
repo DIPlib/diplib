@@ -198,7 +198,7 @@ inline Image SelectionFilter(
 /// due to noise, one position of the filtering window will have the lowest variance in its neighborhood, and therefore
 /// that position will be selected for all output pixels in the neighborhood. The solution we implement here is
 /// requiring that the variance at the minimum be lower than the variance when the window is not shifted. The parameter
-/// `threshold` controls how much lower the minimum must be. If the neighborhood is uniform w.r.t. this threhsold
+/// `threshold` controls how much lower the minimum must be. If the neighborhood is uniform w.r.t. this threshold
 /// parameter, then the filtering window is not shifted.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
@@ -339,7 +339,7 @@ inline Image PeronaMalikDiffusion(
 ///  - `"exponential"`: \f$ g(x) = \exp(-\frac{x}{K}) \f$
 ///
 /// Note that the parameters here are identical to those in `dip::PeronaMalik`. The Perona-Malik diffusion
-/// is a discrete differences approximation to the generic anosotropic diffusion equation. This function uses Gaussian
+/// is a discrete differences approximation to the generic anisotropic diffusion equation. This function uses Gaussian
 /// gradients as a discretization strategy.
 ///
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
@@ -501,7 +501,7 @@ inline Image CoherenceEnhancingDiffusion(
 ///     - `params[3]` is the polar coordinate theta of the second orientation
 ///     - `params[4]` (optional) is a tensor image with the local kernel scale
 ///
-/// For intrinsic 1D strutures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
+/// For intrinsic 1D structures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
 ///
 /// The kernel scale parameter image is interpreted as follows.
 /// Each input tensor element corresponds with a tensor row in the scale image.

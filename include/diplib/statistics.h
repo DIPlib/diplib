@@ -66,7 +66,7 @@ DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, 
 /// \brief Returns the coordinates of the minimum pixel in the image.
 ///
 /// The image must be scalar. If `in` is complex, the modulus of its values are used.
-/// If `positionFlag` is `"first"`, the first minimuim is found, in linear index order.
+/// If `positionFlag` is `"first"`, the first minimum is found, in linear index order.
 /// If it is `"last"`, the last one is found.
 ///
 /// \see dip::Minimum, dip::PositionMinimum, dip::MaximumAndMinimum
@@ -983,7 +983,7 @@ DIP_EXPORT dfloat PSNR( Image const& in, Image const& reference, Image const& ma
 
 /// \brief Calculates the structural similarity index (a visual similarity measure)
 ///
-/// Returns the average SSIM, computed locally in a Gausian window of size `sigma`, using constants
+/// Returns the average SSIM, computed locally in a Gaussian window of size `sigma`, using constants
 /// `K1` and `K2`. These two constants should be small (<<1) positive values and serve to avoid instabilities.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of

@@ -67,10 +67,10 @@ and the status bar.
   The control panel allows the user to select different ways of visualizing
   the image. It consists of four lists of options:
 
-  1. *Colorspace*, being
+  1. *Color space*, being
 
-     - *SPA*: image colorspace; this disregards the mapping.
-     - *RGB*: RGB colorspace, from any 3 tensor elements.
+     - *SPA*: image color space; this disregards the mapping.
+     - *RGB*: RGB color space, from any 3 tensor elements.
      - *GRY*: Single grey value.
      - *SEQ*: Single value mapped to a sequential blue-yellow colormap.
      - *DIV*: Single value mapped to a divergent blue-red colormap. Use for symmetric mappings.
@@ -125,7 +125,7 @@ on where it occurs:
 \subsubsection interaction_tensor Tensor elements
 
 Within the tensor visualization subwindow, left-clicking selects the
-tensor element to visualize. If the RGB colorspace is chosen,
+tensor element to visualize. If the RGB color space is chosen,
 left-clicking allocates the next available color (R, G or B) until three
 elements have been selected. Left-clicking on an already selected element
 deselects it.
@@ -183,7 +183,7 @@ There are also a few keyboard shortcuts:
 
 - \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **F**:
   Sets the image to fill the screen area, but maintaining the XY aspect
-  ratio. The zoom of nonvisualized dimensions is reset to 1.
+  ratio. The zoom of non-visualized dimensions is reset to 1.
 
 - \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **L**:
   Sets linear mapping between global minimum and maximum values.

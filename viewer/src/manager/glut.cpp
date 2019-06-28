@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0 viewer
- * This file contains functionality for a rudamentary GLUT window manager.
+ * This file contains functionality for a rudimentary GLUT window manager.
  *
  * (c)2017, Wouter Caarls
  *

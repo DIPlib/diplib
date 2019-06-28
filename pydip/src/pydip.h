@@ -301,7 +301,7 @@ class type_caster< dip::Image::Pixel > {
    PYBIND11_TYPE_CASTER( type, _( "Pixel" ));
 };
 
-} // nanmespace detail
+} // namespace detail
 } // namespace pybind11
 
 #endif // DIP_PYDIP_H

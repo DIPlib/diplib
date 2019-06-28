@@ -190,8 +190,8 @@ void init_analysis( py::module& m ) {
              auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
              return py::make_tuple( out.M1, out.M2 ).release();
           }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
-   m.def( "CostesSignificanceTest", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray, dip::uint >( &dip::CostesSignificanceTest ),
-          "channel1"_a, "channel2"_a, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200 );
+   m.def( "CostesSignificanceTest", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::UnsignedArray, dip::uint >( &dip::CostesSignificanceTest ),
+          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200 );
 
    m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
           "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = "Stokseth" );

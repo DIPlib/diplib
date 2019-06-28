@@ -516,7 +516,7 @@ some overloaded methods and can be iterated over. Additionally, the `dip::Image:
 object implicitly casts back to a `%dip::Image`, so it can be used as arguments
 to functions that take an `%Image`. Here is where the difference between regular
 and irregular indexing comes into play: the `%Image` that results from regular
-indexing (and from tensor indexing) shares the data with the orignal image, whereas
+indexing (and from tensor indexing) shares the data with the original image, whereas
 when the indexing was irregular, the data needs to be copied to create a new image
 with only those pixels.
 
@@ -689,7 +689,7 @@ An arbitrary subset of pixels can be indexed in three ways, using one of:
 
 The first two forms are again available through the `dip::Image::At` method, the
 third one through the `dip::Image::AtIndices` method (since the input argument would
-not be distinguiseable from indexing a single pixel through its coordinates). As with
+not be distinguishable from indexing a single pixel through its coordinates). As with
 regular indexing, the returned object is a `dip::Image::View`, which can be assigned
 to to change the referenced pixels. But as opposed to regular indexing, when cast
 back to a `%dip::Image`, the operation results in a 1D image with a copy of the sample
@@ -736,7 +736,7 @@ along that dimensions, again without physically replicating or modifying the
 data in memory. See \ref singleton_expansion. The methods
 `dip::Image::ExpandSingletonDimension`, `dip::Image::ExpandSingletonDimensions`
 and `dip::Image::ExpandSingletonTensor` are used for this.
-`dip::Image::UnexpandSingletonDimensions` does the oposite operation.
+`dip::Image::UnexpandSingletonDimensions` does the opposite operation.
 
 The method `dip::Image::StandardizeStrides` undoes all rotation, mirroring,
 dimension reordering, and singleton expansion, by making all strides positive
@@ -1073,7 +1073,7 @@ After the call to `dip::Gauss`, `*src` no longer exists. `dip::Gauss` has reforg
 by `src`.
 
 A convenience function, `dip::ConstructScalarImage`, simplifies the above in the case where
-ownership is not transfered. It takes only two input arguments, a pointer to the data and
+ownership is not transferred. It takes only two input arguments, a pointer to the data and
 an array with sizes. The strides are assumed to be normal. The data pointer must be of any
 of the allowed data types:
 

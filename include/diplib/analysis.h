@@ -538,7 +538,7 @@ inline ImageArray StructureTensorAnalysis(
 /// of data points showing how the selected feature changes across scales. `scales` and `gradientSigmas` are
 /// given in pixels, the image's pixel size is not taken into account.
 ///
-/// The reason that each element of `scales` is mutliplied by `gradientSigmas` is to allow analysis of
+/// The reason that each element of `scales` is multiplied by `gradientSigmas` is to allow analysis of
 /// non-isotropic images. The `gradientSigmas` corrects for the non-isotropy, allowing `scales` to be a scalar
 /// value for each scale.
 ///
@@ -570,7 +570,7 @@ DIP_EXPORT Distribution StructureAnalysis(
 ///
 /// The monogenic signal of an *n*-dimensional image has *n*+1 components. The first component has been
 /// filtered with the even (symmetric) filter component, and the other *n* components have been filtered
-/// with the odd (antisymmetric) fitler components, where each of those filter components is antisymmetric
+/// with the odd (antisymmetric) filter components, where each of those filter components is antisymmetric
 /// along a different dimension.
 ///
 /// This function splits the frequency spectrum of the image into `wavelengths.size()` components. The radial
@@ -622,11 +622,11 @@ inline Image MonogenicSignal(
 ///
 /// %Image          | Description
 /// ----------------|------------
-/// `"congruency"`  | **Phase congruency**, a measure of line/edge significace
+/// `"congruency"`  | **Phase congruency**, a measure of line/edge significance
 /// `"orientation"` | Line/edge orientation (in the range [-pi/2, pi/2]), 2D only
 /// `"phase"`       | Phase angle (pi/2 is a white line, 0 is an edge, -pi/2 is a black line)
-/// `"enery"`       | Raw phase congruency energy
-/// `"symmetry"`    | **Phase symmetry**, a constrast invariant measure of symmetry
+/// `"energy"`      | Raw phase congruency energy
+/// `"symmetry"`    | **Phase symmetry**, a contrast invariant measure of symmetry
 /// `"symenergy"`   | Raw phase symmetry energy
 ///
 /// The order of the strings in `outputs` indicates the order they will be written to the `out` array.
@@ -637,16 +637,16 @@ inline Image MonogenicSignal(
 /// `noiseThreshold` indicates the noise threshold to use on the energy images when computing phase congruency
 /// or symmetry.
 ///
-/// Two different algorithms for phase conguency are implemented:
+/// Two different algorithms for phase congruency are implemented:
 ///
 /// - Kovesi's method works for images in 2D only, and requires several scales (>2) to be present in the monogenic
 ///   signal. This method will use the following input arguments:
-///     - `frequencySpreadThreshold` is a threshold that avoids high phase congurency values if the frequency
+///     - `frequencySpreadThreshold` is a threshold that avoids high phase congruency values if the frequency
 ///       spread is not large enough.
 ///     - `sigmoidParameter` is the parameter to the sigmoid function that weighs congruency with the frequency
 ///       spread.
 ///     - `deviationGain` determines how much the calculated phase deviation should be magnified. Larger values
-///       create a sharper response to edges, but also reduces this respone's magnitude. Sensible values are in
+///       create a sharper response to edges, but also reduces this response's magnitude. Sensible values are in
 ///       the range [1,2].
 ///
 /// - Felsberg's method works in any number of dimensions, and requires exactly two scales to be present in the
@@ -868,7 +868,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 /// object sizes. See `dip::Distribution::Differentiate`.
 ///
 /// Grey-value--weighted means that objects with a larger grey-value contrast will be weighted more heavily.
-/// Ensuring a uniform grey-value contrast to prevent this characateristic from affecting the estimated size
+/// Ensuring a uniform grey-value contrast to prevent this characteristic from affecting the estimated size
 /// distribution.
 ///
 /// Volume-weighted means that objects are weighted by their volume (area in 2D). By dividing the distribution
@@ -891,7 +891,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 ///      - `"reconstruction"`: uses openings or closings by reconstruction instead of structural openings or closings.
 ///        This leads to objects not being broken up in the same way. Objects need to be clearly separated spatially
 ///        for this to work.
-///      - `"shifted"`: uses sub-pixel shifted isotropic strcuturing elements. This allows a finer sampling of the
+///      - `"shifted"`: uses sub-pixel shifted isotropic structuring elements. This allows a finer sampling of the
 ///        scale axis (see Luengo et al., 2007). Ignored for images with more than 3 dimensions.
 ///      - `"interpolate"`: interpolates by a factor up to 8x for smaller scales, attempting to avoid SE diameters
 ///        smaller than 8. This improves precision of the result for small scales (see Luengo et al., 2007).

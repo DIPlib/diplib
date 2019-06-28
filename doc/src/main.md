@@ -105,7 +105,7 @@ The *DIPlib* project further contains these additional modules:
 \section main_support Support
 
 The *DIPlib* project was originally developed at the Pattern Recognition
-Group of Delt University of Technology, in the Netherlands. *DIPlib 3* is being
+Group of Delft University of Technology, in the Netherlands. *DIPlib 3* is being
 developed primarily by volunteers, but has had some financial support from:
 
 - A European Research Council grant to Bernd Rieger, TU Delft

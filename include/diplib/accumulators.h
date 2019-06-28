@@ -457,7 +457,7 @@ class DIP_NO_EXPORT CovarianceAccumulator {
          //return ( stdX != 0.0 ) ? ( Correlation() * StandardDeviationY() / stdX ) : ( 0.0 );
          return ( m2x_ != 0.0 ) ? ( C_ / m2x_ ) : ( 0.0 );
       }
-      /// Copying type for backward compatability.
+      /// Copying type for backward compatibility.
       using RegressionResult = dip::RegressionParameters;
       /// Computes the slope and intercept of the regression line
       RegressionResult Regression() const {

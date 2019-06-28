@@ -600,7 +600,7 @@ void Eusk2D(
       dip::sint strideX,
       dip::sint strideY
 ) {
-   // intialize
+   // initialize
    dip::sint strideX2 = strideX * 2;
    dip::sint strideY2 = strideY * 2;
 

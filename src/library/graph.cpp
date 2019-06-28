@@ -170,10 +170,10 @@ class Matrix {
 };
 
 template< typename T >
-class SymetricMatrix {
+class SymmetricMatrix {
    public:
-      SymetricMatrix() = default;
-      SymetricMatrix( dip::uint size, T value = {} ) : m_( size * ( size + 1 ) / 2, value ), size_( size ) {}
+      SymmetricMatrix() = default;
+      SymmetricMatrix( dip::uint size, T value = {} ) : m_( size * ( size + 1 ) / 2, value ), size_( size ) {}
 
       T& at( dip::uint x, dip::uint y ) {
          if( y < x ) {
@@ -296,8 +296,7 @@ class LookUpTable {
 
    private:
       std::vector< T > sequence_;
-      //Matrix< dip::uint > table_;
-      SymetricMatrix< dip::uint > table_;
+      SymmetricMatrix< dip::uint > table_;
       SparseTable< T > sparseTable_;
 };
 

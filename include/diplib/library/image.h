@@ -1956,11 +1956,11 @@ class DIP_NO_EXPORT Image {
       /// \see dip::Image::Convert, dip::Image::ReinterpretCastToSignedInteger, dip::Image::ReinterpretCastToUnsignedInteger
       DIP_EXPORT Image& ReinterpretCast( dip::DataType dataType );
 
-      /// \brief Changes the datatype of `this` to a signed integer of the same size, without changing the data.
+      /// \brief Changes the data type of `this` to a signed integer of the same size, without changing the data.
       ///
       /// If the image shares data with other images, the other images will still view the pixels in
       /// their original data type. Interpreting data as a different type is inherently dangerous,
-      /// but changing the signdess of an integer type is relatively bening. Thus, this function is
+      /// but changing the signedness of an integer type is relatively benign. Thus, this function is
       /// safer to use than `dip::Image::ReinterpretCast`.
       ///
       /// This function is always fast. The image must be forged and of an integer type.
@@ -1986,11 +1986,11 @@ class DIP_NO_EXPORT Image {
          return *this;
       }
 
-      /// \brief Changes the datatype of `this` to an unsigned integer of the same size, without changing the data.
+      /// \brief Changes the data type of `this` to an unsigned integer of the same size, without changing the data.
       ///
       /// If the image shares data with other images, the other images will still view the pixels in
       /// their original data type. Interpreting data as a different type is inherently dangerous,
-      /// but changing the signdess of an integer type is relatively bening. Thus, this function is
+      /// but changing the signedness of an integer type is relatively benign. Thus, this function is
       /// safer to use than `dip::Image::ReinterpretCast`.
       ///
       /// This function is always fast. The image must be forged and of an integer type.

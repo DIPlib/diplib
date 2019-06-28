@@ -121,7 +121,7 @@ directory.
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
-to your computer. Note that the resuling binaries will likely be slower on another
+to your computer. Note that the resulting binaries will likely be slower on another
 computer, and possibly not work at all.
 
 Finally, if you installed the `gcc` package because you want to use *OpenMP*,

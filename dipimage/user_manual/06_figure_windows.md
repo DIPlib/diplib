@@ -18,7 +18,7 @@ The alternative way to display images is with the `viewslice` function.
 The figure windows created use the *DIPviewer* tool, which has better
 image display capabilities (for example it can show tensor images),
 but is not integrated equally well into *MATLAB*.
-See the [*DIPviewer* documention](https://diplib.github.io/diplib-docs/group__viewer.html#details)
+See the [*DIPviewer* documentation](https://diplib.github.io/diplib-docs/group__viewer.html#details)
 for more information on these figure windows.
 
 The `'DisplayFunction'` option (see [@sec:customizing_dippref])

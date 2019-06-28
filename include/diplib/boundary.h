@@ -168,7 +168,7 @@ DIP_EXPORT void ExtendImage(
 
 /// \brief Extends the image `in` by `borderSizes` along each dimension.
 ///
-/// The output image has size `in.Size( ii ) + 2 * boderSizes[ ii ]` along dimension `ii`.
+/// The output image has size `in.Size( ii ) + 2 * borderSizes[ ii ]` along dimension `ii`.
 ///
 /// The new regions are filled using the boundary condition `bc`. If `boundaryCondition` is an empty array, the default
 /// boundary condition is used along all dimensions. If `boundaryCondition` has a single element, it is used for all

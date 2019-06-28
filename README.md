@@ -74,7 +74,7 @@ to install.
 ## Linking against the library
 
 When using *CMake*, and importing the `DIP` target into your project in the right way, you will just need
-to link against the `DIP` target and everything will be configured correctly. Otherise, there are several
+to link against the `DIP` target and everything will be configured correctly. Otherwise, there are several
 macros that you should define when building any program that links against *DIPlib*:
 
 If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag was not set, then you need to define the `DIP__IS_STATIC`

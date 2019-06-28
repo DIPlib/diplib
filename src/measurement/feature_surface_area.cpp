@@ -78,7 +78,7 @@ static void dip__SurfaceArea(
       for( dip::uint yy = 0; yy < dims[ 1 ]; ++yy ) {
          dip::sint pos = static_cast< dip::sint >( zz ) * stride[ 2 ] + static_cast< dip::sint >( yy ) * stride[ 1 ];
          for( dip::uint xx = 0; xx < dims[ 0 ]; ++xx ) {
-            // Check whether currect pixel value is a requested objectID
+            // Check whether correct pixel value is a requested objectID
             bool requested = false;
             dip::uint index = 0;
             auto it = objectIndex.find( ip[ pos ] );
@@ -117,7 +117,7 @@ static void dip__SurfaceArea(
                      break;
 
                   default:
-                     // slince the not so clever code inspector
+                     // since the not so clever code inspector
                      break;
                }
 
@@ -183,7 +183,7 @@ std::vector< dfloat > SurfaceArea(
    // Check image properties
    DIP_STACK_TRACE_THIS( label.CheckProperties( 3, 1, dip::DataType::Class_UInt, Option::ThrowException::DO_THROW ));
 
-   // Intialise the surface area results array
+   // Initialise the surface area results array
    std::vector< dfloat > surfaceArea( objectIDs.size() );
 
    // Create lookup table for objectIDs

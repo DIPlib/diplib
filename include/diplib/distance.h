@@ -56,7 +56,7 @@ namespace dip {
 /// \m_class{m-spaced-list}
 ///
 ///  1. A separable algorithm based on parabolic erosions as first described by van den Boomgaard (1992) and later by
-///     Meijster et al. (2002), but for some reason frequently refered to as "Felzenszwalb and Huttenlocher", who published
+///     Meijster et al. (2002), but for some reason frequently referred to as "Felzenszwalb and Huttenlocher", who published
 ///     the same method without attribution 10 years later.
 ///     This is a very fast algorithm of linear time complexity, it is parallelized, and produces
 ///     exact Euclidean distances in any number of dimensions. `method` must be `"separable"`, which is the default,

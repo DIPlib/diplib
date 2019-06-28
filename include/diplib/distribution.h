@@ -185,9 +185,9 @@ class DIP_NO_EXPORT Distribution {
                return *this;
             };
 
-            /// Derefence
+            /// Dereference
             Sample& operator*() noexcept { return sample_; }
-            /// Derefence
+            /// Dereference
             Sample* operator->() noexcept { return &sample_; }
 
             /// Return sample `index` values away from the current location
@@ -273,10 +273,10 @@ class DIP_NO_EXPORT Distribution {
 
       /// A zero-initialized distribution can be created by giving a size, and number of values (or rows and columns) per sample
       explicit Distribution( dip::uint size = 0, dip::uint rows = 1, dip::uint columns = 1 )
-            : length_( size ), nRows_( rows ), nColums_( columns ), data_( length_ * ( rows * columns + 1 )) {}
+            : length_( size ), nRows_( rows ), nColumns_( columns ), data_( length_ * ( rows * columns + 1 )) {}
       /// A zero-initialized distribution can be created by giving an array of the *x* values, and number of values (or rows and columns) per sample
       explicit Distribution( std::vector< dfloat > const& x, dip::uint rows = 1, dip::uint columns = 1 )
-            : length_( x.size() ), nRows_( rows ), nColums_( columns ), data_( length_ * ( rows * columns + 1 )) {
+            : length_( x.size() ), nRows_( rows ), nColumns_( columns ), data_( length_ * ( rows * columns + 1 )) {
          dip::uint stride = Stride();
          for( dip::uint ii = 0; ii < length_; ++ii ) {
             data_[ ii * stride ] = x[ ii ];
@@ -284,7 +284,7 @@ class DIP_NO_EXPORT Distribution {
       }
       /// A distribution can be created by giving an array of the *x* values and an array of the *y* values
       Distribution( std::vector< dfloat > const& x, std::vector< dfloat > const& y )
-            : length_( x.size() ), nRows_( 1 ), nColums_( 1 ), data_( length_ * 2 ) {
+            : length_( x.size() ), nRows_( 1 ), nColumns_( 1 ), data_( length_ * 2 ) {
          DIP_THROW_IF( x.size() != y.size(), E::ARRAY_SIZES_DONT_MATCH );
          for( dip::uint ii = 0; ii < length_; ++ii ) {
             data_[ ii * 2 ] = x[ ii ];
@@ -305,7 +305,7 @@ class DIP_NO_EXPORT Distribution {
 
       /// Returns the number of *y* values per sample
       dip::uint ValuesPerSample() const {
-         return nRows_ * nColums_;
+         return nRows_ * nColumns_;
       }
       /// Returns the number of rows in the matrix of *y* values
       dip::uint Rows() const {
@@ -313,14 +313,14 @@ class DIP_NO_EXPORT Distribution {
       }
       /// Returns the number of columns in the matrix of *y* values
       dip::uint Columns() const {
-         return nColums_;
+         return nColumns_;
       }
 
       /// Returns the units used along the *x* axis.
       Units const& XUnits() const {
          return units_;
       }
-      /// Returns a modifyable reference to the units used along the *x* axis.
+      /// Returns a modifiable reference to the units used along the *x* axis.
       Units& XUnits() {
          return units_;
       }
@@ -462,16 +462,16 @@ class DIP_NO_EXPORT Distribution {
    private:
       dip::uint length_;   // Number of samples
       dip::uint nRows_;    // Number of rows in the matrix of y values, 1 for scalar distributions
-      dip::uint nColums_;  // Number of columns in the matrix of y values, 1 for scalar or vector-valued distributions
-      Container data_; // `( 1 + nRows_ * nColums_ ) * length_` elements
+      dip::uint nColumns_; // Number of columns in the matrix of y values, 1 for scalar or vector-valued distributions
+      Container data_; // `( 1 + nRows_ * nColumns_ ) * length_` elements
       Units units_ = Units::Pixel();
       // data_[ ii * Stride() ] -> x
       // data_[ ii * Stride() + 1 ] -> y[0,0]
-      // data_[ ii * Stride() + nRows_ * nColums_ ] -> y[N,N]
+      // data_[ ii * Stride() + nRows_ * nColumns_ ] -> y[N,N]
       // matrix stored column-wise, as usual
 
       dip::uint Stride() const {
-         return 1 + nRows_ * nColums_;
+         return 1 + nRows_ * nColumns_;
       }
 };
 
