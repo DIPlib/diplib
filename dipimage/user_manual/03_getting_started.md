@@ -205,8 +205,8 @@ the figure look prettier):
     plot([180,360],[180,360],'k--')
     axis equal
     box on
-    xlabel('object area   (pixels\^2)')
-    ylabel('\pi{\cdot}a{\cdot}b   (pixels\^2)')
+    xlabel('object area   (pixels^2)')
+    ylabel('\pi{\cdot}a{\cdot}b   (pixels^2)')
 ```
 ![image](figures/rice_graph.pdf){width=12cm}\ 
 
