@@ -129,7 +129,7 @@ class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
 
          public:
             // Construct Deleter with pointer to unaligned memory
-            Deleter( void* pUnaligned ) : pUnaligned_( pUnaligned ) {}
+            explicit Deleter( void* pUnaligned ) : pUnaligned_( pUnaligned ) {}
             // Deletes the memory of a DataSegment allocated by AlignedAllocInterface::AllocateData()
             DIP_EXPORT void operator()( void* pAligned );
       };
@@ -2296,14 +2296,16 @@ class DIP_NO_EXPORT Image {
       /// `src` must be forged.
       DIP_EXPORT void Copy( Image const& src );
 
+      /// \brief Idem as above, but with a `dip::Image::View` as input.
+      DIP_EXPORT void Copy( Image::View const& src );
+
       /// \brief Deep copy, returns a copy of `this` with its own data.
       ///
       /// `this` must be forged.
       ///
-      /// `dip::Image::QuickCopy` does the same, but without copying the data, its output image shares
-      /// the data segment with `this`.
-      ///
       /// Any external interface is not preserved. Use `dip::Copy` to control the data allocation for the output image.
+      ///
+      /// \see `dip::Image::QuickCopy`
       Image Copy() const {
          Image out;
          out.Copy( *this );
@@ -2554,8 +2556,7 @@ inline Image DefineROI(
    return dest;
 }
 
-/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method, except `dest` can
-/// have an external interface.
+/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method.
 /// \relates dip::Image
 inline void Copy( Image const& src, Image& dest ) {
    dest.Copy( src );
@@ -2563,6 +2564,21 @@ inline void Copy( Image const& src, Image& dest ) {
 inline Image Copy( Image const& src ) {
    return src.Copy();
 }
+
+/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method.
+/// \relates dip::Image
+inline void Copy( Image::View const& src, Image& dest ) {
+   dest.Copy( src );
+}
+Image Copy( Image::View const& src ); // Implemented in image_views.h
+
+/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::View::Copy` method.
+/// \relates dip::Image
+void Copy( Image const& src, Image::View& dest ); // Implemented in image_views.h
+
+/// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::View::Copy` method.
+/// \relates dip::Image
+void Copy( Image::View const& src, Image::View& dest ); // Implemented in image_views.h
 
 /// \brief Copies the pixels selected by `srcMask` in `src` over to `dest`. `dest` will be a 1D image.
 ///

@@ -353,6 +353,25 @@ void Image::Copy( Image const& src ) {
    } while( ++it );
 }
 
+void Image::Copy( Image::View const& src ) {
+   DIP_THROW_IF( TensorElements() != src.TensorElements(), E::NTENSORELEM_DONT_MATCH );
+   if( src.IsRegular() ) {
+      Copy( src.reference_ );
+      return;
+   }
+   bool prot = IsProtected();
+   if( IsForged() ) {
+      Protect(); // prevent reforging. Instead, throw an error if image is not correct
+   }
+   if( src.mask_.IsForged() ) {
+      DIP_STACK_TRACE_THIS( CopyFrom( src.reference_, *this, src.mask_ ));
+   } else {
+      DIP_ASSERT( !src.offsets_.empty() );
+      DIP_STACK_TRACE_THIS( CopyFrom( src.reference_, *this, src.offsets_ ));
+   }
+   Protect( prot );
+}
+
 //
 
 void Image::ExpandTensor() {

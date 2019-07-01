@@ -128,23 +128,14 @@ void Image::View::Copy( View const& source ) {
       dest.Protect();
       if( source.mask_.IsForged() ) {
          DIP_STACK_TRACE_THIS( CopyFrom( source.reference_, dest, source.mask_ ));
-      } else if( !source.offsets_.empty() ) {
-         DIP_STACK_TRACE_THIS( CopyFrom( source.reference_, dest, source.offsets_ ));
       } else {
-         Image src = source.reference_.QuickCopy();
-         while( src.Size( src.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
-            src.Squeeze( src.Dimensionality() - 1 );
-         }
-         while( dest.Size( dest.Dimensionality() - 1 ) == 1 ) { // remove trailing singleton dimensions
-            dest.Squeeze( dest.Dimensionality() - 1 );
-         }
-         DIP_THROW_IF( dest.Sizes() != src.Sizes(), E::SIZES_DONT_MATCH );
-         DIP_STACK_TRACE_THIS( dest.Copy( src )); // This should always work.
+         DIP_ASSERT( !source.offsets_.empty() );
+         DIP_STACK_TRACE_THIS( CopyFrom( source.reference_, dest, source.offsets_ ));
       }
       return;
    }
    // Neither `source` nor `this` is regular
-   Copy( static_cast< Image >( source ));
+   Copy( static_cast< Image >( source )); // Easy way out.
    // TODO: Implement this more efficiently.
    //  We need separate code for each possible combination. For these, we'll write CopyFromTo() functions:
    //      CopyFromTo( Image const& src, Image& dest, Image const& srcMask, Image const& destMask )

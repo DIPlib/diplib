@@ -1354,7 +1354,21 @@ inline Image::View Image::AsScalar() const {
 
 inline Image::Image( FloatArray const& values, dip::DataType dt ) : Image( Pixel( values, dt )) {}
 
-inline Image::operator FloatArray() const { return static_cast< Pixel >( *this ); }
+inline Image::operator FloatArray() const {
+   return static_cast< Pixel >( *this );
+}
+
+inline Image Copy( Image::View const& src ) {
+   return src.Copy();
+}
+
+inline void Copy( Image const& src, Image::View& dest ) {
+   dest.Copy( src );
+}
+
+inline void Copy( Image::View const& src, Image::View& dest ) {
+   dest.Copy( src );
+}
 
 } // namespace dip
 
