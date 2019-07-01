@@ -242,7 +242,7 @@ inline Image GrowRegionsWeighted(
 
 /// \brief Construct a graph for the given labeled image.
 ///
-/// Each region (label) in the image `labels` is a node. Edges represent neighborhood relations between regions.
+/// Each region (object/label) in the image `labels` is a node. Edges represent neighborhood relations between regions.
 /// Because the `dip::Graph` class uses the vertex ID as an index into an array, it is recommended that this function
 /// be called with a labeled image where labels are more or less consecutive. If `dip::Maximum( labels ).As< dip::uint >()`
 /// (i.e. the largest label ID) is much larger than `dip::GetObjectLabels( labels ).size()` (i.e. the number of labels),
@@ -251,7 +251,7 @@ inline Image GrowRegionsWeighted(
 ///
 /// `mode` indicates how to construct the graph. It can be one of the following strings:
 ///  - `"touching"`: two regions are neighbors if they have at least one pixel that is 1-connected to the other
-///    regions. That is, the two regions directly touch.
+///    region. That is, the two regions directly touch.
 ///  - `"watershed"`: two regions are neighbors if there is a background pixel that is 1-connected to the two
 ///    regions. That is, the two regions are separated by a 1-pixel watershed line. Note that, in this case,
 ///    two regions that directly touch will not be recognized as neighbors!
@@ -260,22 +260,27 @@ inline Image GrowRegionsWeighted(
 /// with index 0, which will not be connected to any other vertex.
 /// To include the background, simply increment the label image by 1.
 ///
-/// Edge weights are computed as follows: The fraction of boundary pixels for regions 1 that connect to
-/// regions 2 is determined. The fraction of boundary pixels for regions 2 that connect to regions 1 is determined.
+/// Edge weights are computed as follows: The fraction of boundary pixels for region 1 that connect to
+/// region 2 is determined. The fraction of boundary pixels for regions 2 that connect to regions 1 is determined.
 /// One minus the larger of these two fractions is the edge weight. Thus, edge weights have a value in the
 /// half-open interval [0,1). If one of the two regions has a very large fraction of its perimeter connected
 /// to another region, then the edge weight is very small to indicate a strong connection.
+///
+/// Vertex values are not assigned.
 DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, String const& mode = "touching" );
 
 /// \brief Construct a graph for the given labeled image.
 ///
 /// This function is similar to the one above, but edge weights are derived from the absolute difference
-/// between `featureValues` for the two regions joined by the edge.
+/// between `featureValues` for the two regions joined by the edge. Vertex values are set to the feature value
+/// for the region.
 ///
 /// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
+///
+/// For the labels that do not appear in `featureValues`, their vertex value will be set to 0.
 DIP_EXPORT Graph RegionAdjacencyGraph( Image const& labels, Measurement::IteratorFeature const& featureValues, String const& mode = "touching" );
 
 

@@ -179,13 +179,11 @@ Graph RegionAdjacencyGraph( Image const& label, Measurement::IteratorFeature con
    Graph graph;
    std::vector< dfloat > ignore;
    DIP_STACK_TRACE_THIS( graph = dip__RegionAdjacencyGraph( label, mode, ignore ));
-   for( auto& edge: graph.Edges() ) {
-      if( edge.IsValid() ) {
-         dfloat v1 = *featureValues[ edge.vertices[ 0 ]];
-         dfloat v2 = *featureValues[ edge.vertices[ 1 ]];
-         edge.weight = std::abs( v1 - v2 );
-      }
-   }
+   auto it = featureValues.FirstObject();
+   do {
+      graph.VertexValue( it.ObjectID() ) = *it;
+   } while ( ++it );
+   graph.UpdateEdgeWeights();
    return graph;
 }
 

@@ -57,6 +57,7 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
             // Add to graph_ links to each of the *forward* neighbors (i.e. those that you can reach by incrementing
             // one of the coordinates). The other neighbors are already linked to when those neighbors were processed
             dfloat value = static_cast< dfloat >( in[ 0 ] );
+            graph_.VertexValue( index ) = value;
             for( dip::uint jj = 0; jj < nDims; ++jj ) {
                if( process[ jj ] ) {
                   dip::uint neighborIndex = index + indexStrides[ jj ];
@@ -68,6 +69,7 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
          }
          process[ dim ] = false;
          dfloat value = static_cast< dfloat >( in[ 0 ] );
+         graph_.VertexValue( index ) = value;
          for( dip::uint jj = 0; jj < nDims; ++jj ) {
             if( process[ jj ] ) {
                dip::uint neighborIndex = index + indexStrides[ jj ];
@@ -108,6 +110,9 @@ Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) cons
    }
 #endif
    Graph msf( NumberOfVertices() );
+   for( dip::uint ii = 0; ii < NumberOfVertices(); ++ii ) {
+      msf.vertices_[ ii ].value = vertices_[ ii ].value;
+   }
    std::vector< bool > visited( NumberOfVertices(), false );
    auto Comparator = [ & ]( EdgeIndex lhs, EdgeIndex rhs ){ return edges_[ lhs ].weight > edges_[ rhs ].weight; }; // NOTE! inverted order to give higher priority to lower weights
    std::priority_queue< EdgeIndex, std::vector< EdgeIndex >, decltype( Comparator ) > queue( Comparator );
@@ -118,9 +123,11 @@ Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) cons
       }
    } else {
       for( auto q : roots ) {
-         visited[ q ] = true;
-         for( auto index : vertices_[ q ].edges ) {
-            queue.push( index );
+         if( !visited[ q ] ) {
+            visited[ q ] = true;
+            for( auto index : vertices_[ q ].edges ) {
+               queue.push( index );
+            }
          }
       }
    }

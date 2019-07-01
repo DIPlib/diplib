@@ -39,7 +39,8 @@ namespace dip {
 /// \brief A non-directed, edge-weighted graph.
 ///
 /// Vertices are identified by an index, these indices are expected to be consecutive. Each vertex contains a list
-/// of indices to edges. Edges are represented by indices to two vertices, and a double precision floating-point weight.
+/// of indices to edges, and has an optional value.
+/// Edges are represented by indices to two vertices, and a double precision floating-point weight.
 /// If the two vertex indices for an edge are the same, the edge is not valid; this situation arises when an edge is
 /// deleted.
 ///
@@ -54,6 +55,7 @@ class DIP_NO_EXPORT Graph {
       /// \brief A vertex in the graph
       struct Vertex {
          EdgeList edges;               ///< The list of indices to edges
+         mutable dfloat value = 0.0;   ///< The value associated to each vertex
 
          Vertex() = default;
 
@@ -67,7 +69,7 @@ class DIP_NO_EXPORT Graph {
       ///
       /// If both vertices are 0, the edge is not valid (never used or deleted). Otherwise, `vertices[1] > vertices[0]`.
       struct Edge {
-         std::array< VertexIndex, 2 > vertices = {{ 0, 0 }};   ///< The two vertices joined by this edge.
+         std::array< VertexIndex, 2 > vertices = {{ 0, 0 }};   ///< The two vertices joined by this edge
          mutable dfloat weight = 0.0;                          ///< The weight of this edge
          bool IsValid() const {
             return vertices[ 0 ] != vertices[ 1 ];
@@ -91,6 +93,8 @@ class DIP_NO_EXPORT Graph {
       ///
       /// By default, the edge weights are given by the absolute difference between the two pixel values.
       /// If `weights` is `"average"`, the edge weights are given by the average of the two pixel values.
+      ///
+      /// Vertex values are set to the corresponding pixel value.
       DIP_EXPORT explicit Graph( Image const& image, dip::uint connectivity = 1, String const& weights = "difference" );
 
       /// \brief Returns the number of vertices in the graph.
@@ -137,6 +141,12 @@ class DIP_NO_EXPORT Graph {
       EdgeList const& EdgeIndices( VertexIndex v ) const {
          DIP_ASSERT( v < vertices_.size() );
          return vertices_[ v ].edges;
+      }
+
+      /// \brief Returns a reference to the value of the vertex `v`. This value is mutable even if the graph is `const`.
+      dfloat& VertexValue( VertexIndex v ) const {
+         DIP_ASSERT( v < vertices_.size() );
+         return vertices_[ v ].value;
       }
 
       /// \brief Add an edge between vertices `v1` and `v2`, with weight `weight`. If the edge already exists,
@@ -242,10 +252,20 @@ class DIP_NO_EXPORT Graph {
          dip__AddEdgeNoCheck( {{ v1, v2 }, weight } );
       }
 
+      /// \brief Re-computes edge weights as the absolute difference between vertex values.
+      DIP_EXPORT void UpdateEdgeWeights() const {
+         for( auto& edge: edges_ ) {
+            edge.weight = std::abs( vertices_[ edge.vertices[ 0 ]].value - vertices_[ edge.vertices[ 1 ]].value );
+         }
+      }
+
       /// \brief Computes the minimum spanning forest (MSF) using Prim's algorithm.
       ///
       /// If `roots` is an empty set, the vertex with index 0 is used as the root, and the resulting graph
       /// will be a minimum spanning tree (MST). If multiple roots are given, each one will spawn a tree.
+      ///
+      /// The output graph only contains edges reachable from the given roots. Any components not connected
+      /// to the roots will not remain in the graph (the vertices will be copied over, but not connected).
       DIP_EXPORT Graph MinimumSpanningForest( std::vector< VertexIndex > const& roots = {} ) const;
 
       /// \brief Removes `number` edges with the largest weights from the graph.
@@ -275,6 +295,7 @@ class DIP_NO_EXPORT LowestCommonAncestorSolver {
       /// \brief The constructor takes a `graph`, which must not have any cycles in it (it must be a tree). The
       /// easiest way to turn an arbitrary graph into a tree is to compute the MST (see `dip::Graph::MinimumSpanningForest`).
       DIP_EXPORT LowestCommonAncestorSolver( Graph const& graph );
+
       // Prevent copying, that might go wrong because we use a shared pointer, `rmq_` might be shared...
       LowestCommonAncestorSolver( LowestCommonAncestorSolver const& ) = delete;
       LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver const& ) = delete;
