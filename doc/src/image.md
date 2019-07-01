@@ -514,11 +514,57 @@ regular or irregular indexing), the return type is a `dip::Image::View`, which
 references multiple pixels in the original image. Both these objects have
 some overloaded methods and can be iterated over. Additionally, the `dip::Image::View`
 object implicitly casts back to a `%dip::Image`, so it can be used as arguments
-to functions that take an `%Image`. Here is where the difference between regular
+to functions that take an `%Image` as input. Here is where the difference between regular
 and irregular indexing comes into play: the `%Image` that results from regular
 indexing (and from tensor indexing) shares the data with the original image, whereas
 when the indexing was irregular, the data needs to be copied to create a new image
 with only those pixels.
+
+The following table summarizes the various indexing types discussed in detail in this
+section.
+
+\m_div{m-smaller-font}
+<table>
+<tr style='font-size:70%;'><th>&nbsp; <th> Single pixel <th> %Tensor <th> Regular <th> Mask image <th> Set of pixels
+<tr style='font-size:70%;'><th>Syntax <td> `.At(dip::uint, ...)`<br>`.At(dip::UnsignedArray)` <td> `[dip::uint]`<br>`[dip::UnsignedArray]`<br>`[dip::Range]`<br>`.Diagonal()`<br>`.TensorRow(dip::uint)`<br>`.TensorColumn(dip::uint)` <td> `.At(dip::Range, ...)`<br>`.At(dip::RangeArray)` <td> `.At(dip::Image)` <td> `.At(dip::CoordinateArray)`<br>`.AtIndices(dip::UnsignedArray)`
+<tr style='font-size:70%;'><th>Output <td> `dip::Image::Pixel` <td> `dip::Image::View` <td> `dip::Image::View` <td> `dip::Image::View` <td> `dip::Image::View`
+<tr style='font-size:70%;'><th>Implicitly casts to `dip::Image` <td> No <td> Yes, with shared data <td> Yes, with shared data <td> Yes, with data copy <td> Yes, with data copy
+</table>
+\m_enddiv
+
+<br>
+
+\remark
+\parblock
+The result of an indexing operation can be used as input image to functions, but
+not as output image: output images are taken by reference, which cannot bind a temporary.
+Thus, the following does not compile:
+
+```cpp
+    dip::Gauss( in[ 0 ], out[ 0 ] ); // Does not compile.
+```
+
+The output image must always be a `dip::Image` object with a name (i.e. a variable of type `dip::Image`):
+
+```cpp
+    dip::Image channel = out[ 0 ];
+    dip::Gauss( in[ 0 ], channel ); // Writes to `out` (assuming `channel` has the expected properties).
+```
+
+Do note that some indexing operations, when cast to a `dip::Image`, cause pixels to be copied, and
+hence cannot be used to write into the original image:
+
+```cpp
+    dip::Image channel = out.At( mask );      // `mask` here is a binary image.
+    dip::Threshold( in.At( mask ), channel ); // Warning! `out` is not modified.
+```
+
+Instead, copy the result of the operation directly into the result of the indexing operation:
+
+```cpp
+    out.At( mask ) = dip::Threshold( in.At( mask )); // This does incur an extra copy.
+```
+\endparblock
 
 
 \subsection tensor_indexing Tensor dimensions
@@ -549,7 +595,9 @@ When cast back to an image, the image created shares the pixels with the origina
 meaning that it is possible to write to a channel in this way:
 
 ```cpp
-    dip::Gauss( colorIm[ 2 ], colorIm[ 2 ], { 4 } );
+    dip::Image blueChannel = colorIm[ 2 ];
+    blueChannel.Protect();                         // Prevent `dip::Gauss` from reforgin this image.
+    dip::Gauss( blueChannel, blueChannel, { 4 } ); // Modifies `colorIm`.
 ```
 
 Note that the single-index version of the tensor indexing uses linear indexing into
@@ -569,7 +617,7 @@ they reference only the real or imaginary component of the complex sample values
 
 \subsection pixel_indexing Single-pixel indexing
 
-The function `dip::Image::At` extracts a single pixel from the image. It has different
+Some forms of the function `dip::Image::At` extract a single pixel from the image. It has different
 forms, accepting either a `dip::UnsignedArray` representing the coordinates of the pixel,
 one to three indices for 1D to 3D images, or a (linear) index to the pixel. The latter
 form is less efficient because the linear index needs to be translated to coordinates,
@@ -577,10 +625,10 @@ as the linear index is not necessarily related to the order in which pixels are 
 in memory.
 
 ```cpp
-    image1D.At( 5 );          // indexes pixel at coordinate 5
-    image2D.At( 0, 10 );      // indexes the pixel at coordinates (0, 10)
-    image2D.At( { 0, 10 } );  // indexes the pixel at coordinates (0, 10)
-    image2D.At( 20 );         // indexes the pixel with linear index 20
+    image1D.At( 5 );                           // Indexes pixel at coordinate 5
+    image2D.At( 0, 10 );                       // Indexes the pixel at coordinates (0, 10)
+    image2D.At( dip::UnsignedArray{ 0, 10 } ); // Indexes the pixel at coordinates (0, 10)
+    image2D.At( 20 );                          // Indexes the pixel with linear index 20
 ```
 
 These forms result in an object of type `dip::Image::Pixel`. The object contains a
@@ -642,21 +690,21 @@ data-type agnostic way. To access all pixels in a data-type agnostic way, use th
 
 The function `dip::Image::At` is also used for creating views that represent a subset of
 pixels. In this form, it accepts a set of `dip::Range` objects, or a `dip::RangeArray`,
-representing regular pixel intervals along one dimension through a start, stop and
+representing regular pixel intervals along each dimension through a start, stop and
 step value. That is, a range indicates a portion of an image line, with optional
 subsampling. For example, indexing into a 1D image:
 
 ```cpp
-    image1D.At( dip::Range{ 5 } );          // indexes pixel at coordinate 5
-    image1D.At( dip::Range{ 0, 10 } );      // indexes the first 11 pixels
-    image1D.At( dip::Range{ 0, -1, 2 } );   // indexes every second pixel
+    image1D.At( dip::Range{ 5 } );        // Indexes pixel at coordinate 5
+    image1D.At( dip::Range{ 0, 10 } );    // Indexes the first 11 pixels
+    image1D.At( dip::Range{ 0, -1, 2 } ); // Indexes every second pixel
 ```
 
 Note that negative values index from the end, without needing to know the exact
-size of the image.
+size of the image. Note also that the stop value is always included in the range.
 
 For indexing into multidimensional images, simply provide one range per dimension.
-For more than 3 dimensions, provide a `dip::RangeArray`.
+For more than 3 dimensions, use a `dip::RangeArray`.
 
 As is the case with the `[]` indexing, these operations yield a `dip::Image::View` that
 can be assigned to to change the referenced pixels; and when cast back to a `dip::Image`,
@@ -680,7 +728,7 @@ The `dip::Image::Pad` method does the opposite operation, but creates a new imag
 copies the data over.
 
 
-\subsection irregular_indexing Irregular indexing
+\subsection irregular_indexing Irregular indexing (mask image, arbitrary set of pixels)
 
 An arbitrary subset of pixels can be indexed in three ways, using one of:
  * a mask image
@@ -700,7 +748,7 @@ object cannot reference samples that are not stored in memory on a regular grid.
 ```cpp
     image.At( mask ) += 1;
     dip::Image out = image.At( mask );
-    out.Fill( 0 );                       // does not affect `image`.
+    out.Fill( 0 ); // Careful! Does not affect `image`.
 ```
 
 Another typical example:
@@ -785,7 +833,7 @@ flag is set, the assignment operator will perform a deep copy. For example:
     dip::Image img1( dip::UnsignedArray{ 256, 256 }, 3, dip::DT_SFLOAT );
     img1.Protect();
     //img1.Strip();  // Throws!
-    img1 = img2;     // Equivalent to:  img1.Copy( img2 )
+    img1 = img2;     // Equivalent to: `img1.Copy( img2 )`.
 ```
 
 The protect flag has two purposes:
@@ -814,7 +862,7 @@ data type, protect it, and receive the result of the filter in that data type:
     out.SetDataType( dip::DT_SINT16 );
     out.Protect();
     dip::Gauss( img, out, { 4 } );
-    // out is forged with correct sizes to receive filter result, and as 16-bit integer.
+    // `out` is forged with correct sizes to receive filter result, and as 16-bit integer.
 ```
 
 This is especially suitable for in-place operations where we want to receive the
@@ -1043,8 +1091,8 @@ image around it, which we can use as both an input or an output image:
        { 256, 256 },  // sizes
        { 1, 256 }     // strides
     );
-    img.Protect();          // Prevent `dip::Gauss` from reallocating its output image
-    dip::Gauss( img, img ); // Apply Gaussian filter, output is written to input array
+    img.Protect();          // Prevent `dip::Gauss` from reallocating its output image.
+    dip::Gauss( img, img ); // Apply Gaussian filter, output is written to input array.
 ```
 
 The first argument to this constructor is a `dip::DataSegment` object, which is just
@@ -1065,7 +1113,7 @@ In the example below, we do the same as above, but we transfer ownership of the
        { 256, 256 },  // sizes
        { 1, 256 }     // strides
     );
-    dip::Gauss( img, img ); // Apply Gaussian filter, output is written to a different data segment
+    dip::Gauss( img, img ); // Apply Gaussian filter, output is written to a different data segment.
 ```
 
 After the call to `dip::Gauss`, `*src` no longer exists. `dip::Gauss` has reforged
@@ -1134,7 +1182,7 @@ forging to fail, simply throw an exception.
                 dip::sint& tstride
           ) override {
              if(( sizes.size() != 2 ) || ( !tensor.IsScalar() )) {
-                return nullptr; // We do not want to handle such images
+                return nullptr; // We do not want to handle such images.
              }
              auto data = new std::vector< unsigned char >( sizes[ 0 ] * sizes[ 1 ], 0 );
              origin = data.data();
