@@ -320,7 +320,7 @@ class DIP_NO_EXPORT Tensor {
 
       /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_MAJOR_MATRIX`.
       void ChangeShape( dip::uint rows ) {
-         if( rows_ != rows ) {
+         if(( shape_ != Shape::COL_MAJOR_MATRIX ) || ( rows_ != rows )) {
             DIP_THROW_IF( elements_ % rows, "Cannot reshape tensor to requested size" );
             rows_ = rows;
             shape_ = Shape::COL_MAJOR_MATRIX;
