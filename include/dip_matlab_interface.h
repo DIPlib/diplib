@@ -785,7 +785,7 @@ inline mxArray* GetArray( dip::Distribution const& in ) {
 namespace detail {
 
 // Get the dip::Tensor::Shape value from a string mxArray
-inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
+inline dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
    char str[ 25 ];
    if( mxGetString( mx, str, 25 ) == 0 ) {
       try {
@@ -903,7 +903,7 @@ inline dip::Image GetImage(
       if( !tensor.IsScalar() ) {
          dip::UnsignedArray tsize = GetUnsignedArray( mxGetPropertyShared( mx, 0, tsizePropertyName ));
          DIP_THROW_IF( tsize.size() != 2, "Error in tensor size property" );
-         enum dip::Tensor::Shape tshape = detail::GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
+         dip::Tensor::Shape tshape = detail::GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
          tensor.ChangeShape( dip::Tensor( tshape, tsize[ 0 ], tsize[ 1 ] ));
       }
       mxArray* pxsz = mxGetPropertyShared( mx, 0, pxsizePropertyName );

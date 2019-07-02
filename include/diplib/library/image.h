@@ -690,7 +690,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Get the tensor shape.
-      enum dip::Tensor::Shape TensorShape() const {
+      dip::Tensor::Shape TensorShape() const {
          return tensor_.TensorShape();
       }
 

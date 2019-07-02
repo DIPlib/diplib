@@ -42,7 +42,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       DIP_THROW_IF( !mxIsClass( prhs[ 0 ], dml::imageClassName ), "First input argument must be a dip_image object" );
       dip::UnsignedArray tsize = dml::GetUnsignedArray( mxGetPropertyShared( prhs[ 0 ], 0, dml::tsizePropertyName ));
       DIP_THROW_IF( tsize.size() != 2, "Error in tensor size property" );
-      enum dip::Tensor::Shape tshape = dml::detail::GetTensorShape( mxGetPropertyShared( prhs[ 0 ], 0, dml::tshapePropertyName ));
+      dip::Tensor::Shape tshape = dml::detail::GetTensorShape( mxGetPropertyShared( prhs[ 0 ], 0, dml::tshapePropertyName ));
       dip::Tensor tensor( tshape, tsize[ 0 ], tsize[ 1 ] );
 
       if( nrhs == 2 ) {
