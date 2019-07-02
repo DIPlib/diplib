@@ -3,7 +3,6 @@
  * It displays the result using dip::viewer::ShowSimple.
  */
 
-#include <vector>
 #include "diplib.h"
 #include "dipviewer.h"
 #include "diplib/file_io.h"

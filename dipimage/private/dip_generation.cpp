@@ -446,6 +446,31 @@ void noise( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void randomseeds( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 0 );
+   DML_MAX_ARGS( 4 );
+   dip::UnsignedArray sizes( 2, 256 );
+   if( nrhs > 0 ) {
+      if( mxIsDouble( prhs[ 0 ] ) && dml::IsVector( prhs[ 0 ] )) {
+         sizes = dml::GetUnsignedArray( prhs[ 0 ] );
+      } else {
+         dip::Image const in = dml::GetImage( prhs[ 0 ] );
+         sizes = in.Sizes();
+      }
+   }
+   dip::dfloat density = nrhs > 1 ? dml::GetFloat( prhs[ 1 ] ) : 0.01;
+   dip::String type = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : dip::S::RECTANGULAR;
+   dip::String mode = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : dip::S::TRANSLATION;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   if( type == "poisson" ) {
+      dip::CreatePoissonPointProcess( out, sizes, random, density );
+   } else {
+      dip::CreateRandomGrid( out, sizes, random, density, type, mode );
+   }
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void setborder( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 1 );
    DML_MAX_ARGS( 3 );
@@ -592,6 +617,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          gaussianlineclip( plhs, nrhs, prhs );
       } else if( function == "noise" ) {
          noise( plhs, nrhs, prhs );
+      } else if( function == "randomseeds" ) {
+         randomseeds( plhs, nrhs, prhs );
       } else if( function == "setborder" ) {
          setborder( plhs, nrhs, prhs );
       } else if( function == "testobject" ) {

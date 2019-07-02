@@ -395,8 +395,8 @@ DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
 /// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillDelta` for the meaning of `origin`.
 inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& origin = "" ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillDelta( out, origin );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillDelta( out, origin ));
 }
 inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
    Image out;
@@ -665,6 +665,28 @@ void FillPoissonPointProcess(
       dfloat density = 0.01
 );
 
+/// \brief Creates a binary image with a Poisson point process of `density`.
+///
+/// `out` will be of size `sizes`, binary and scalar.
+inline void CreatePoissonPointProcess(
+      Image& out,
+      UnsignedArray const& sizes,
+      Random& random,
+      dfloat density = 0.01
+) {
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_BIN, Option::AcceptDataTypeChange::DONT_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillPoissonPointProcess( out, random, density ));
+}
+inline Image CreatePoissonPointProcess(
+      UnsignedArray const& sizes,
+      Random& random,
+      dfloat density = 0.01
+) {
+   Image out;
+   CreatePoissonPointProcess( out, sizes, random, density );
+   return out;
+}
+
 /// \brief Fills the binary image `out` with a grid that is randomly placed over the image.
 ///
 /// This grid can be useful for random systematic sampling.
@@ -691,6 +713,34 @@ DIP_EXPORT void FillRandomGrid(
       String const& type = S::RECTANGULAR,
       String const& mode = S::TRANSLATION
 );
+
+/// \brief Creates a binary image with a random grid.
+///
+/// `out` will be of size `sizes`, binary and scalar.
+///
+/// See `dip::FillRandomGrid` for the meaning of the remainder of the parameters, which define the grid.
+inline void CreateRandomGrid(
+      Image& out,
+      UnsignedArray const& sizes,
+      Random& random,
+      dfloat density = 0.01,
+      String const& type = S::RECTANGULAR,
+      String const& mode = S::TRANSLATION
+) {
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_BIN, Option::AcceptDataTypeChange::DONT_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillRandomGrid( out, random, density, type, mode ));
+}
+inline Image CreateRandomGrid(
+      UnsignedArray const& sizes,
+      Random& random,
+      dfloat density = 0.01,
+      String const& type = S::RECTANGULAR,
+      String const& mode = S::TRANSLATION
+) {
+   Image out;
+   CreateRandomGrid( out, sizes, random, density, type, mode );
+   return out;
+}
 
 /// \}
 
@@ -728,8 +778,8 @@ inline void CreateRamp(
    if( dimension < sizes.size() ) {
       trueSizes[ dimension ] = sizes[ dimension ];
    }
-   out.ReForge( trueSizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillRamp( out, dimension, mode );
+   DIP_STACK_TRACE_THIS( out.ReForge( trueSizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillRamp( out, dimension, mode ));
    out.ExpandSingletonDimensions( sizes );
 }
 inline Image CreateRamp(
@@ -748,7 +798,7 @@ inline Image CreateRamp(
 /// `out` must be forged, scalar, and of a real type.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
-   FillRamp( out, 0, mode );
+   DIP_STACK_TRACE_THIS( FillRamp( out, 0, mode ));
 }
 
 /// \brief Creates a ramp function image.
@@ -762,7 +812,7 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateXCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   CreateRamp( out, sizes, 0, mode );
+   DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 0, mode ));
 }
 inline Image CreateXCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -776,7 +826,7 @@ inline Image CreateXCoordinate( UnsignedArray const& sizes, StringSet const& mod
 /// `out` must be forged, scalar, of a real type, and have at least two dimensions.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
-   FillRamp( out, 1, mode );
+   DIP_STACK_TRACE_THIS( FillRamp( out, 1, mode ));
 }
 
 /// \brief Creates a ramp function image.
@@ -790,7 +840,7 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateYCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   CreateRamp( out, sizes, 1, mode );
+   DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 1, mode ));
 }
 inline Image CreateYCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -804,7 +854,7 @@ inline Image CreateYCoordinate( UnsignedArray const& sizes, StringSet const& mod
 /// `out` must be forged, scalar, of a real type, and have at least three dimensions.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
-   FillRamp( out, 2, mode );
+   DIP_STACK_TRACE_THIS( FillRamp( out, 2, mode ));
 }
 
 /// \brief Creates a ramp function image.
@@ -818,7 +868,7 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateZCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   CreateRamp( out, sizes, 2, mode );
+   DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 2, mode ));
 }
 inline Image CreateZCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -842,8 +892,8 @@ DIP_EXPORT void FillRadiusCoordinate( Image& out, StringSet const& mode = {} );
 /// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateRadiusCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillRadiusCoordinate( out, mode );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillRadiusCoordinate( out, mode ));
 }
 inline Image CreateRadiusCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -867,8 +917,8 @@ DIP_EXPORT void FillRadiusSquareCoordinate( Image& out, StringSet const& mode = 
 /// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateRadiusSquareCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillRadiusSquareCoordinate( out, mode );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillRadiusSquareCoordinate( out, mode ));
 }
 inline Image CreateRadiusSquareCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -892,8 +942,8 @@ DIP_EXPORT void FillPhiCoordinate( Image& out, StringSet const& mode = {} );
 /// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreatePhiCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillPhiCoordinate( out, mode );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillPhiCoordinate( out, mode ));
 }
 inline Image CreatePhiCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -916,8 +966,8 @@ DIP_EXPORT void FillThetaCoordinate( Image& out, StringSet const& mode = {} );
 /// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateThetaCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillThetaCoordinate( out, mode );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillThetaCoordinate( out, mode ));
 }
 inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
@@ -977,8 +1027,8 @@ inline void CreateCoordinates(
       StringSet const& mode = {},
       String const& system = S::CARTESIAN
 ) {
-   out.ReForge( sizes, sizes.size(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillCoordinates( out, mode, system );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, sizes.size(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillCoordinates( out, mode, system ));
 }
 inline Image CreateCoordinates(
       UnsignedArray const& sizes,
@@ -1022,8 +1072,8 @@ inline void DistanceToPoint(
       String const& distance = S::EUCLIDEAN,
       FloatArray const& scaling = {}
 ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillDistanceToPoint( out, point, distance, scaling );
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
+   DIP_STACK_TRACE_THIS( FillDistanceToPoint( out, point, distance, scaling ));
 }
 inline Image DistanceToPoint(
       UnsignedArray const& sizes,
@@ -1047,7 +1097,7 @@ inline void EuclideanDistanceToPoint(
       FloatArray const& point,
       FloatArray const& scaling = {}
 ) {
-   DistanceToPoint( out, sizes, point, S::EUCLIDEAN, scaling );
+   DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::EUCLIDEAN, scaling ));
 }
 inline Image EuclideanDistanceToPoint(
       UnsignedArray const& sizes,
@@ -1070,7 +1120,7 @@ inline void CityBlockDistanceToPoint(
       FloatArray const& point,
       FloatArray const& scaling = {}
 ) {
-   DistanceToPoint( out, sizes, point, S::CITY, scaling );
+   DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::CITY, scaling ));
 }
 inline Image CityBlockDistanceToPoint(
       UnsignedArray const& sizes,
@@ -1313,10 +1363,10 @@ inline void ColoredNoise(
       dfloat variance = 1.0,
       dfloat color = -2.0
 ) {
-   out.ReForge( in.Sizes(), in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+   DIP_STACK_TRACE_THIS( out.ReForge( in.Sizes(), in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
    out.CopyNonDataProperties( in );
-   FillColoredNoise( out, random, variance, color );
-   out += in;
+   DIP_STACK_TRACE_THIS( FillColoredNoise( out, random, variance, color ));
+   DIP_STACK_TRACE_THIS( out += in );
 }
 inline Image ColoredNoise(
       Image const& in,
@@ -1341,7 +1391,7 @@ inline void FillPoissonPointProcess(
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !out.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    out.Fill( 0 );
-   BinaryNoise( out, out, random, 0, density );
+   DIP_STACK_TRACE_THIS( BinaryNoise( out, out, random, 0, density ));
 }
 
 

@@ -188,6 +188,7 @@ radialsum.m
 radoncircle.m
 ramp.m
 ramp1.m
+randomseeds.m
 rankmax_opening.m
 rankmin_closing.m
 readics.m
