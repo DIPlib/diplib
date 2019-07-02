@@ -43,6 +43,8 @@ class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort
       for (auto it=links_.begin(); it != links_.end(); ++it)
         (*it)->unlink(this);
       links_.clear();
+      if (link_source_ == this)
+        link_source_ = NULL;
     }
     
     DIPVIEWER_EXPORT void render() override;

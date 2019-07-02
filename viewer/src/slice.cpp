@@ -888,7 +888,6 @@ void SliceViewer::calculateTextures()
       
       lock();
       image_ = image;
-      original_ = original;
       options_.range_ = range;
       options_.tensor_range_ = tensor_range;
 

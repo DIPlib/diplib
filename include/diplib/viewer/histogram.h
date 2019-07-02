@@ -36,7 +36,7 @@ class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort
   protected:
     ImageView colorbar_;
     dip::Image histogram_;
-    std::recursive_mutex mutex_;
+    std::mutex mutex_;
     
     int drag_limit_, drag_x_, drag_y_;
 
