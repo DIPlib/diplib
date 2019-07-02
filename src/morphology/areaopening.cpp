@@ -244,6 +244,10 @@ void AreaOpening(
    } else {
       offsets = CreateOffsetsArray( grey.Sizes(), grey.Strides() );
    }
+   if( offsets.empty() ) {
+      // This can happen if `mask` is empty.
+      return;
+   }
    SortOffsets( grey, offsets, lowFirst );
 
    // Create array with offsets to neighbors

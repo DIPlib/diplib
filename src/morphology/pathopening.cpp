@@ -425,7 +425,7 @@ void PathOpening(
    DIP_THROW_IF(( length < 2 ) || ( length > std::numeric_limits< PathLenType >::max() ), E::PARAMETER_OUT_OF_RANGE );
 
    // Prepare output image
-   if( out.Aliases( in ) || out.Aliases( mask ) || ( out.DataType() != in.DataType() )) {
+   if( out.Aliases( in ) || out.Aliases( mask ) || ( !out.IsProtected() && ( out.DataType() != in.DataType() ))) {
       out.Strip();
       // It will be forged later when we do the first copy.
    }
@@ -479,6 +479,12 @@ void PathOpening(
       offsets = CreateOffsetsArray( mask, tmp.Strides() );
    } else {
       offsets = CreateOffsetsArray( tmp.Sizes(), tmp.Strides() );
+   }
+   if( offsets.empty() ) {
+      // This can happen if `mask` is empty.
+      out.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
+      out.Fill( 0 );
+      return;
    }
    SortOffsets( tmp, offsets, opening );
 
@@ -684,6 +690,10 @@ void DirectedPathOpening(
       offsets = CreateOffsetsArray( mask, out.Strides() );
    } else {
       offsets = CreateOffsetsArray( out.Sizes(), out.Strides() );
+   }
+   if( offsets.empty() ) {
+      // This can happen if `mask` is empty.
+      return;
    }
    SortOffsets( out, offsets, opening );
 

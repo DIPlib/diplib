@@ -457,13 +457,15 @@ void UpperSkeleton2D(
    skeleton.Fill( 1 );
 
    // Create sorted offsets array (skipping border)
-   //dip::Image mask;
-   //bool hasMask = mask.IsForged();
    std::vector< dip::sint > offsets;
    if( hasMask ) {
       offsets = CreateOffsetsArray( mask, out.Strides() );
    } else {
       offsets = CreateOffsetsArray( out.Sizes(), out.Strides() );
+   }
+   if( offsets.empty() ) {
+      // This can happen if `mask` is empty.
+      return;
    }
    SortOffsets( out, offsets, true );
 

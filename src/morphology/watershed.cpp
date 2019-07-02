@@ -326,6 +326,11 @@ void FastWatershed(
    labels.Fill( 0 );
    out.SetPixelSize( pixelSize );
 
+   if( offsets.empty() ) {
+      // This can happen if `mask` is empty. We test here because the output image is now forged and initialized to zeros.
+      return;
+   }
+
    // Create array with offsets to neighbors
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( in.Strides() );
