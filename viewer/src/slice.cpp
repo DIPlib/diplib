@@ -948,4 +948,19 @@ void SliceViewer::updateLinkedViewers()
   link_->update();
 }
 
+void SliceViewer::link(SliceViewer &other)
+{
+  Guard guard(*this);
+  Guard guard2(other);
+
+  DIP_THROW_IF( other.image().Sizes() != image().Sizes(), E::DIMENSIONALITIES_DONT_MATCH );
+
+  // Take settings from link source
+  link_->update(other.options());
+
+  // Perform link
+  link_->link(other.link_);
+  other.link_->link(link_);
+}
+
 }} // namespace dip::viewer

@@ -160,9 +160,10 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     void refreshImage() { refresh_seq_++; }
     
     /// \brief Update linked viewers.
-    ///
-    /// Only call this under lock.
     DIPVIEWER_EXPORT void updateLinkedViewers();
+    
+    /// \brief Link this viewer to another, compatible one.
+    DIPVIEWER_EXPORT void link(SliceViewer &other);
   protected:
     DIPVIEWER_EXPORT explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
 

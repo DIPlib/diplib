@@ -3,6 +3,7 @@
  */
 
 #include <iostream>
+#include <list>
 
 #include <diplib.h>
 #include <diplib/simple_file_io.h>
@@ -24,6 +25,7 @@ int main( int argc, char** argv ) {
       format = "bioformats";
    }
 
+   std::list< dip::viewer::SliceViewer::Ptr > windows;
    for( ; ii < argc; ++ii ) {
       std::string arg( argv[ ii ] );
       dip::Image img;
@@ -45,11 +47,20 @@ int main( int argc, char** argv ) {
          }
       }
 
-      auto wdw = dip::viewer::Show( img, arg );
-      dip::viewer::SliceViewer::Guard guard( *wdw );
-      wdw->options().offset_ = info.origin;
+      windows.push_back( dip::viewer::Show( img, arg ) );
+      dip::viewer::SliceViewer::Guard guard( *windows.back() );
+      windows.back()->options().offset_ = info.origin;
+
+      auto it = windows.rbegin();
+      for ( ++it; it != windows.rend(); ++it ) {
+         dip::viewer::SliceViewer::Guard guard( **it );
+         if ( (*it)->image().Sizes() == windows.back()->image().Sizes() ) {
+            windows.back()->link( **it );
+         }
+      }
    }
 
+   windows.clear();
    dip::viewer::Spin();
 
    return 0;

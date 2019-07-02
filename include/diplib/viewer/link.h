@@ -53,16 +53,14 @@ class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort
     /// \brief Update linked viewers' options
     DIPVIEWER_EXPORT void update();
     
+    /// \brief Update from linked viewer's options
+    DIPVIEWER_EXPORT void update(const ViewingOptions &options);
+
     /// \brief Add linked viewer
     DIPVIEWER_EXPORT void link(LinkViewPort *link);
     
     /// \brief Remove linked viewer
     DIPVIEWER_EXPORT void unlink(LinkViewPort *link);
-
-  protected:
-  
-    /// \brief Update from linked viewer's options
-    DIPVIEWER_EXPORT void update(const ViewingOptions &options);
 };
 
 }} // namespace dip::viewer
