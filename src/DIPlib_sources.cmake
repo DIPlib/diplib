@@ -94,6 +94,7 @@ detection/lines.cpp
 detection/radon.cpp
 display/colormap.cpp
 display/image_display.cpp
+display/label_edges.cpp
 distance/edt.cpp
 distance/gdt.cpp
 distance/separable_dt.cpp

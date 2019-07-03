@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the ImageDisplay class
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -661,6 +661,24 @@ inline Image Overlay(
 ) {
    Image out;
    Overlay( in, overlay, out, color );
+   return out;
+}
+
+/// \brief Upscales a labeled image and outlines each region with the background label.
+///
+/// `out` will be a labeled image like `labels`, but `factor` times as large along each dimension.
+/// In the upscaled image, the pixels that form the border of each region are set to 0, the background label.
+DIP_EXPORT void MarkLabelEdges(
+      Image const& labels,
+      Image& out,
+      dip::uint factor = 2
+);
+inline Image MarkLabelEdges(
+      Image const& labels,
+      dip::uint factor = 2
+) {
+   Image out;
+   MarkLabelEdges( labels, out, factor );
    return out;
 }
 
