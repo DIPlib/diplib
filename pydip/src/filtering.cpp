@@ -131,6 +131,8 @@ void init_filtering( py::module& m ) {
           "in"_a, "percentile"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "NonMaximumSuppression", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::String const& >( &dip::NonMaximumSuppression ),
           "gradmag"_a, "gradient"_a, "mask"_a = dip::Image{}, "mode"_a = dip::S::INTERPOLATE );
+   m.def( "MoveToLocalMinimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::MoveToLocalMinimum ),
+          "bin"_a, "weights"_a );
    m.def( "PeronaMalikDiffusion", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::String const& >( &dip::PeronaMalikDiffusion ),
           "in"_a, "iterations"_a = 5, "K"_a = 10, "lambda"_a = 0.25, "g"_a = "Gauss" );
    m.def( "GaussianAnisotropicDiffusion", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::String const& >( &dip::GaussianAnisotropicDiffusion ),

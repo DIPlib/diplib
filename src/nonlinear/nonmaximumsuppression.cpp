@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the non-maximum suppression.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,8 @@
 #include "diplib/math.h"
 #include "diplib/overload.h"
 #include "diplib/framework.h"
+#include "diplib/iterators.h"
+#include "diplib/neighborlist.h"
 
 namespace dip {
 
@@ -318,7 +320,7 @@ void NonMaximumSuppression(
    DataType ovlType;
    if( c_gradmag.IsForged() && ( c_gradmag.Dimensionality() == 1 )) {
 
-      // In this case we can ignore c_gradient
+      // In this case we can ignore gradient
       gradmag = c_gradmag.QuickCopy();
       ovlType = gradmag.DataType();
       nDims = 1;
@@ -382,6 +384,177 @@ void NonMaximumSuppression(
    }
    ImageRefArray outar{ out };
    Framework::Scan( inar, outar, indt, { ovlType }, { ovlType }, { 1 }, *scanLineFilter, Framework::ScanOption::NeedCoordinates );
+}
+
+// ---
+
+namespace {
+
+template< typename TPI >
+void dip__MoveToLocalMinimum(
+      Image const& bin,       // binary
+      Image const& weights,   // TPI
+      Image& out,             // binary
+      NeighborList const& neighbors,
+      IntegerArray const& weights_offsets,
+      IntegerArray const& out_offsets,
+      dip::uint procDim
+) {
+   JointImageIterator< dip::bin, TPI, dip::bin > it( { bin, weights, out }, procDim );
+   BooleanArray use( neighbors.Size(), true );
+   dip::uint lastPixel = bin.Size( procDim ) - 1;
+   do {
+      auto binIt = it.template GetLineIterator< 0 >();
+      auto weightIt = it.template GetLineIterator< 1 >();
+      auto outIt = it.template GetLineIterator< 2 >();
+      UnsignedArray coords = it.Coordinates();
+      if( it.IsOnEdge() ) {
+         // This is for lines that go along the image edge
+         coords[ procDim ] = 1;
+         auto neigh = neighbors.begin();
+         for( dip::uint jj = 0; jj < neighbors.Size(); ++jj, ++neigh ) {
+            use[ jj ] = neigh.IsInImage( coords, bin.Sizes() );
+         }
+         // First pixel on line
+         if( *binIt ) {
+            coords[ procDim ] = 0;
+            neigh = neighbors.begin();
+            TPI weight = *weightIt;
+            dip::sint offset = 0;
+            for( dip::uint jj = 0; jj < neighbors.Size(); ++jj, ++neigh ) {
+               if( use[ jj ] && neigh.IsInImage( coords, bin.Sizes()) ) {
+                  TPI value = *( weightIt.Pointer() + weights_offsets[ jj ] );
+                  if( value < weight ) {
+                     weight = value;
+                     offset = out_offsets[ jj ];
+                  }
+               }
+            }
+            *( outIt.Pointer() + offset ) = true;
+         }
+         ++binIt;
+         ++weightIt;
+         ++outIt;
+         for( dip::uint ii = 1; ii < lastPixel; ++ii ) {
+            // Bulk pixels on line
+            if( *binIt ) {
+               TPI weight = *weightIt;
+               dip::sint offset = 0;
+               for( dip::uint jj = 0; jj < neighbors.Size(); ++jj ) {
+                  if( use[ jj ] ) {
+                     TPI value = *( weightIt.Pointer() + weights_offsets[ jj ] );
+                     if( value < weight ) {
+                        weight = value;
+                        offset = out_offsets[ jj ];
+                     }
+                  }
+               }
+               *( outIt.Pointer() + offset ) = true;
+            }
+            ++binIt;
+            ++weightIt;
+            ++outIt;
+         }
+         // Last pixel on line
+         if( *binIt ) {
+            coords[ procDim ] = lastPixel;
+            neigh = neighbors.begin();
+            TPI weight = *weightIt;
+            dip::sint offset = 0;
+            for( dip::uint jj = 0; jj < neighbors.Size(); ++jj, ++neigh ) {
+               if( use[ jj ] && neigh.IsInImage( coords, bin.Sizes()) ) {
+                  TPI value = *( weightIt.Pointer() + weights_offsets[ jj ] );
+                  if( value < weight ) {
+                     weight = value;
+                     offset = out_offsets[ jj ];
+                  }
+               }
+            }
+            *( outIt.Pointer() + offset ) = true;
+         }
+      } else {
+         // This is for lines that do not go along the image edge
+         // First pixel on line
+         if( *binIt ) {
+            coords[ procDim ] = 0;
+            auto neigh = neighbors.begin();
+            TPI weight = *weightIt;
+            dip::sint offset = 0;
+            for( dip::uint jj = 0; jj < neighbors.Size(); ++jj, ++neigh ) {
+               if( neigh.IsInImage( coords, bin.Sizes()) ) {
+                  TPI value = *( weightIt.Pointer() + weights_offsets[ jj ] );
+                  if( value < weight ) {
+                     weight = value;
+                     offset = out_offsets[ jj ];
+                  }
+               }
+            }
+            *( outIt.Pointer() + offset ) = true;
+         }
+         ++binIt;
+         ++weightIt;
+         ++outIt;
+         for( dip::uint ii = 1; ii < lastPixel; ++ii ) {
+            // Bulk pixels on line
+            if( *binIt ) {
+               TPI weight = *weightIt;
+               dip::sint offset = 0;
+               for( dip::uint jj = 0; jj < neighbors.Size(); ++jj ) {
+                  TPI value = *( weightIt.Pointer() + weights_offsets[ jj ] );
+                  if( value < weight ) {
+                     weight = value;
+                     offset = out_offsets[ jj ];
+                  }
+               }
+               *( outIt.Pointer() + offset ) = true;
+            }
+            ++binIt;
+            ++weightIt;
+            ++outIt;
+         }
+         // Last pixel on line
+         if( *binIt ) {
+            coords[ procDim ] = lastPixel;
+            auto neigh = neighbors.begin();
+            TPI weight = *weightIt;
+            dip::sint offset = 0;
+            for( dip::uint jj = 0; jj < neighbors.Size(); ++jj, ++neigh ) {
+               if( neigh.IsInImage( coords, bin.Sizes()) ) {
+                  TPI value = *( weightIt.Pointer() + weights_offsets[ jj ] );
+                  if( value < weight ) {
+                     weight = value;
+                     offset = out_offsets[ jj ];
+                  }
+               }
+            }
+            *( outIt.Pointer() + offset ) = true;
+         }
+      }
+   } while( ++it );
+}
+
+} // namespace
+
+void MoveToLocalMinimum(
+      Image const& c_bin,
+      Image const& weights,
+      Image& out
+) {
+   DIP_THROW_IF( !c_bin.IsForged() || !weights.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_bin.IsScalar() || !weights.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !c_bin.DataType().IsBinary() || !weights.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( c_bin.Sizes() != weights.Sizes(), E::SIZES_DONT_MATCH );
+   Image bin = c_bin;
+   if( out.SharesData( weights ) || out.Aliases( bin )) {
+      out.Strip(); // Don't work in-place
+   }
+   out.ReForge( bin );
+   out.Fill( 0 );
+   dip::uint procDim = Framework::OptimalProcessingDim( bin ); // pick the best dimension for any of the 3 images, it does not matter which I think.
+   NeighborList neighbors( { Metric::TypeCode::CONNECTED, 0 }, bin.Dimensionality() );
+   IntegerArray weightsOffsets = neighbors.ComputeOffsets( weights.Strides() );
+   IntegerArray outOffsets = neighbors.ComputeOffsets( out.Strides() );
+   DIP_OVL_CALL_REAL( dip__MoveToLocalMinimum, ( bin, weights, out, neighbors, weightsOffsets, outOffsets, procDim ), weights.DataType() );
 }
 
 } // namespace dip

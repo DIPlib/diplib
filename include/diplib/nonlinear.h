@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for non-linear image filters
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -274,6 +274,31 @@ inline Image NonMaximumSuppression(
 ) {
    Image out;
    NonMaximumSuppression( gradmag, gradient, mask, out, mode );
+   return out;
+}
+
+/// \brief Given a sparse binary image `bin`, moves each set pixel to the pixel in the 3x3 neighborhood with
+/// lowest `weight`.
+///
+/// The neighborhood used is 3x3 in 2D, or 3x3x3 in 3D.
+/// In other words, the connectivity is equal to `bin.Dimensionality()`.
+///
+/// Note that the output doesn't necessarily have the same number of set pixels as the `bin` input. However,
+/// it will not have more. To move pixels over a larger distance, call this function repeatedly.
+///
+/// `out` will have the same properties as `bin`. `bin` must be binary, scalar, and have at least one dimension.
+/// `weights` must be real-valued, scalar, and of the same sizes as `bin`. No singleton expansion is applied.
+DIP_EXPORT void MoveToLocalMinimum(
+      Image const& bin,
+      Image const& weights,
+      Image& out
+);
+inline Image MoveToLocalMinimum(
+      Image const& bin,
+      Image const& weights
+) {
+   Image out;
+   MoveToLocalMinimum( bin, weights, out );
    return out;
 }
 

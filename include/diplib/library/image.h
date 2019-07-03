@@ -2282,16 +2282,16 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///
-      /// If `this` is forged, then `src` is expected to have the same sizes
-      /// and number of tensor elements, and the data is copied over from `src`
+      /// If `this` is forged, and `src` has the same sizes
+      /// and number of tensor elements, then the data is copied over from `src`
       /// to `this`. The copy will apply data type conversion, where values are
       /// clipped to the target range and/or truncated, as applicable. Complex
       /// values are converted to non-complex values by taking the absolute
       /// value.
       ///
-      /// If `this` is not forged, then all the properties of `src` will be
-      /// copied to `this`, `this` will be forged, and the data from `src` will
-      /// be copied over.
+      /// If `this` is not forged, or its sizes or number of tensor elements don't
+      /// match those of `src`, then `this` will be forged or reforged to match `src`,
+      /// and then the data from `src` will be copied over.
       ///
       /// `src` must be forged.
       DIP_EXPORT void Copy( Image const& src );
