@@ -12,10 +12,15 @@
 %  minSize, maxSize: minimum and maximum size of objects to be labeled. Set
 %     either to zero to mean no limit.
 %  boundary_condition: Defines how the boundary of the image is handled.
-%     See HELP BOUNDARY_CONDITION. It is generally ignored, except if
-%     'periodic' is given for any dimension, in which case objects on either
-%     side of the image along that dimension are considered one and receive
-%     the same label.
+%     Either a single string or a cell array of strings. When giving only one
+%     value, that value is applied to all image dimensions. Otherwise, provide a
+%     value for each image dimension. An empty array indicates the default
+%     behavior. Possible values are:
+%     * '' or 'mirror': the default behavior, causing the labeling to simply
+%       stop at the edges.
+%     * 'periodic': imposing a periodic boundary condition, such that objects
+%     touching opposite edges of the image are considered the same object.
+%     * 'remove': causing objects that touch the image edge to be removed.
 %
 % DEFAULTS:
 %  connectivity = 0 (equivalent to ndims(image_in))
@@ -26,7 +31,7 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::Label.
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2019, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

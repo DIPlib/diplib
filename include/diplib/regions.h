@@ -53,15 +53,20 @@ namespace dip {
 /// image are set to zero. Setting either to zero disables the corresponding check. Setting both
 /// to zero causes all objects to be labeled, irrespective of size.
 ///
-/// The boundary conditions are generally ignored (labeling stops at the boundary). The exception
-/// is `"periodic"`, which is the only one that makes sense for this algorithm.
+/// The `boundaryCondition` array contains a boundary condition string per image dimension, or one
+/// string to be used for all dimensions. Valid strings are:
+///  - `""` and `"mirror"`: the default behavior, causing the labeling to simply stop at the edges.
+///  - `"periodic"`: imposing a periodic boundary condition, such that objects touching opposite
+///    edges of the image are considered the same object.
+///  - `"remove"`: causing objects that touch the image edge to be removed.
+/// `boundaryCondition` can also be an empty array, using the default behavior for all dimensions.
 DIP_EXPORT dip::uint Label(
       Image const& binary,
       Image& out,
       dip::uint connectivity = 0,
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
-      StringArray const& boundaryCondition = {}
+      StringArray boundaryCondition = {}
 );
 inline Image Label(
       Image const& binary,

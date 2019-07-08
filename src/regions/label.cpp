@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for the Label function.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -253,7 +253,7 @@ dip::uint Label(
       dip::uint connectivity,
       dip::uint minSize,
       dip::uint maxSize,
-      StringArray const& boundaryCondition
+      StringArray boundaryCondition
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -298,60 +298,87 @@ dip::uint Label(
 
    // Handle boundary condition
    if( !boundaryCondition.empty() ) {
-      BoundaryConditionArray bc;
-      DIP_START_STACK_TRACE
-         bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-         ArrayUseParameter( bc, nDims, BoundaryCondition::ADD_ZEROS ); // any default that is not PERIODIC will do...
-         //BoundaryArrayUseParameter( bc, nDims ); // We don't use this form because what if someone changes the default to be PERIODIC?
-      DIP_END_STACK_TRACE
-      NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
+      // Replicate what ArrayUseParameter does (StringArray is not a DimensionArray)
+      if( boundaryCondition.size() == 1 ) {
+         boundaryCondition.resize( nDims, boundaryCondition[ 0 ] );
+      } else if( boundaryCondition.size() != nDims ) {
+         DIP_THROW( E::ARRAY_PARAMETER_WRONG_LENGTH );
+      }
+      // We use `c_out` here, not `out`, because we need to be sure of which dimension is being processed.
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if(( bc[ ii ] == BoundaryCondition::PERIODIC ) && ( c_out.Size( ii ) > 2 )) { // >2 because there's no effect for fewer pixels.
-            // Merge labels for objects touching opposite sides of image along this dimension
-            // We use `c_out` here, not `out`, because we need to be sure of which dimension is being processed.
-            // We also do a lot of out-of-bounds testing, which is relatively expensive. But this is a not-so-commonly
-            // used feature, it's OK if it's not super-fast.
-            DIP_START_STACK_TRACE
-            IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_out.Strides() );
-            std::vector< dip::sint > otherSideOffsets; // Don't use IntegerArray, we will push_back
-            std::vector< IntegerArray > otherSideCoords;
-            dip::sint acrossImage = c_out.Stride( ii ) * static_cast< dip::sint >( c_out.Size( ii ));
-            auto nl = neighborList.begin();
-            auto no = neighborOffsets.begin();
-            for( ; nl != neighborList.end(); ++no, ++nl ) {
-               if( nl.Coordinates()[ ii ] == -1 ) {
-                  // This neighbor wraps around the image
-                  otherSideOffsets.push_back( *no + acrossImage );
-                  IntegerArray coords = nl.Coordinates();
-                  coords[ ii ] += static_cast< dip::sint >( c_out.Size( ii ));
-                  otherSideCoords.push_back( coords );
-               }
+         if(( boundaryCondition[ ii ] == "" ) || ( boundaryCondition[ ii ] == S::SYMMETRIC_MIRROR )) {
+            // Do nothing.
+         } else if( boundaryCondition[ ii ] == S::PERIODIC ) {
+            if( c_out.Size( ii ) > 2 ) { // >2 because there's no effect for fewer pixels.
+               // Merge labels for objects touching opposite sides of image along this dimension.
+               // We do a lot of out-of-bounds testing, which is relatively expensive. But this is a not-so-commonly
+               // used feature, it's OK if it's not super-fast.
+               DIP_START_STACK_TRACE
+                  NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
+                  IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_out.Strides());
+                  std::vector< dip::sint > otherSideOffsets; // Don't use IntegerArray, we will push_back
+                  std::vector< IntegerArray > otherSideCoords;
+                  dip::sint acrossImage = c_out.Stride( ii ) * static_cast< dip::sint >( c_out.Size( ii ));
+                  auto nl = neighborList.begin();
+                  auto no = neighborOffsets.begin();
+                  for( ; nl != neighborList.end(); ++no, ++nl ) {
+                     if( nl.Coordinates()[ ii ] == -1 ) {
+                        // This neighbor wraps around the image
+                        otherSideOffsets.push_back( *no + acrossImage );
+                        IntegerArray coords = nl.Coordinates();
+                        coords[ ii ] += static_cast< dip::sint >( c_out.Size( ii ));
+                        otherSideCoords.push_back( coords );
+                     }
+                  }
+                  ImageIterator< LabelType > it( c_out, ii );
+                  do {
+                     for( dip::uint kk = 0; kk < otherSideOffsets.size(); ++kk ) {
+                        // Is this neighbor in the image?
+                        IntegerArray coords = otherSideCoords[ kk ];
+                        coords += it.Coordinates();
+                        bool use = true;
+                        for( dip::uint dd = 0; dd < nDims; ++dd ) {
+                           // Relying on 2's complement conversion, coords can be a small negative value, which will
+                           // convert to a very large unsigned value, and test larger than the image size.
+                           if( static_cast< dip::uint >( coords[ dd ] ) >= c_out.Size( dd )) {
+                              use = false;
+                              break;
+                           }
+                        }
+                        if( use ) {
+                           LabelType lab1 = *it;
+                           LabelType lab2 = *( it.Pointer() + otherSideOffsets[ kk ] );
+                           if(( lab1 > 0 ) && ( lab2 > 0 )) {
+                              regions.Union( lab1, lab2 );
+                           }
+                        }
+                     }
+                  } while( ++it );
+               DIP_END_STACK_TRACE
             }
-            ImageIterator< LabelType > it( c_out, ii );
-            do {
-               for( dip::uint kk = 0; kk < otherSideOffsets.size(); ++kk ) {
-                  // Is this neighbor in the image?
-                  IntegerArray coords = otherSideCoords[ kk ];
-                  coords += it.Coordinates();
-                  bool use = true;
-                  for( dip::uint dd = 0; dd < nDims; ++dd ) {
-                     // Relying on 2's complement conversion, coords can be a small negative value, which will
-                     // convert to a very large unsigned value, and test larger than the image size.
-                     if( static_cast< dip::uint >( coords[ dd ] ) >= c_out.Size( dd )) {
-                        use = false;
-                        break;
+         } else if( boundaryCondition[ ii ] == "remove" ) {
+            if( c_out.Size( ii ) > 1 ) { // Skip singleton dimensions
+               DIP_START_STACK_TRACE
+                  dip::sint otherSideOffset = static_cast< dip::sint >( c_out.Size( ii ) - 1 ) * c_out.Stride( ii );
+                  ImageIterator< LabelType > it( c_out, ii );
+                  LabelType prev0 = 0;
+                  LabelType prevN = 0;
+                  do {
+                     LabelType lab = *it;
+                     if(( lab != 0 ) && ( lab != prev0 )) {
+                        regions.Union( lab, 0 );
+                        prev0 = lab;
                      }
-                  }
-                  if( use ) {
-                     LabelType lab1 = *it;
-                     LabelType lab2 = *( it.Pointer() + otherSideOffsets[ kk ] );
-                     if(( lab1 > 0 ) && ( lab2 > 0 )) {
-                        regions.Union( lab1, lab2 );
+                     lab = *( it.Pointer() + otherSideOffset );
+                     if(( lab != 0 ) && ( lab != prevN )) {
+                        regions.Union( lab, 0 );
+                        prevN = lab;
                      }
-                  }
-               }
-            } while( ++it );
-            DIP_END_STACK_TRACE
+                  } while( ++it );
+               DIP_END_STACK_TRACE
+            }
+         } else {
+            DIP_THROW_INVALID_FLAG( boundaryCondition[ ii ] );
          }
       }
    }
