@@ -78,7 +78,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --mark-background-color: var(--cs-secondary-lightest);
   --code-color: var(--cs-primary-darkest);
   --code-inverted-color: var(--cs-primary-lightest);
-  --code-background-color: #ffffff;
+  --code-background-color: #f7f7f7;
   --code-header-background-color: var(--cs-primary-lighter);
   --code-header-link-color: var(--cs-primary-darkest);
   --code-header-link-active-color: var(--cs-primary-darker);
@@ -183,7 +183,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --dim-color: #808080;
   --dim-link-color: var(--cs-primary-lighter);
   --dim-link-active-color: var(--cs-primary-base);
-  --dim-filled-color: #666666;
+  --dim-filled-color: #000000;
   --dim-filled-background-color: #e6e6e6;
   --dim-filled-link-color: var(--cs-primary-base);
   --dim-filled-link-active-color: var(--cs-primary-darker);

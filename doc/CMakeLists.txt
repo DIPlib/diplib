@@ -16,7 +16,7 @@ if(DOXYGEN_FOUND)
          apidoc
          COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
          COMMAND "./doxygen.py" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss"
-         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/m.css"
+         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/m.css/documentation"
    )
 endif(DOXYGEN_FOUND)
 set(DOXYGEN_FOUND ${DOXYGEN_FOUND} PARENT_SCOPE)

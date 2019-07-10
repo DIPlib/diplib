@@ -418,13 +418,17 @@ pre {
   font-size: 0.95em;
   padding: 0.5rem 1rem;
   color: #a64b00;
-  background-color: #ffffff;
+  background-color: #f7f7f7;
   border-radius: 0.2rem;
   border-left-style: solid;
   border-left-width: 0.25rem;
   border-color: #ff7400;
   overflow-x: auto;
   margin-top: 0;
+}
+pre.m-console-wrap {
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 pre.m-console {
   background-color: #ffffff;
@@ -465,7 +469,7 @@ code {
   font-size: 0.95em;
   padding: 0.125rem;
   color: #a64b00;
-  background-color: #ffffff;
+  background-color: #f7f7f7;
 }
 code.m-console {
   background-color: #ffffff;
@@ -499,12 +503,9 @@ div.m-scroll {
 .m-text-bottom, table.m-table th.m-text-bottom, table.m-table td.m-text-bottom {
   vertical-align: bottom;
 }
-.m-text.m-small {
-  font-size: 85.4%;
-}
-.m-text.m-big {
-  font-size: 117%;
-}
+.m-text.m-tiny { font-size: 50.0%; }
+.m-text.m-small { font-size: 85.4%; }
+.m-text.m-big { font-size: 117%; }
 h1 .m-thin, h2 .m-thin, h3 .m-thin, h4 .m-thin, h5 .m-thin, h6 .m-thin {
   font-weight: normal;
 }
@@ -670,7 +671,7 @@ div.m-button a .m-small:last-child {
   border-radius: 0.2rem;
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: #666666;
+  border-color: #000000;
   padding: 0.0625rem 0.1875rem;
   font-size: 75%;
   font-weight: normal;
@@ -795,7 +796,7 @@ table.m-table th.m-info pre, table.m-table th.m-info code,
 table.m-table tr.m-dim pre, table.m-table tr.m-dim code,
 table.m-table td.m-dim pre, table.m-table td.m-dim code,
 table.m-table th.m-dim pre, table.m-table th.m-dim code {
-  background-color: #ffffff;
+  background-color: #f7f7f7;
   color: #a64b00;
 }
 img.m-image, svg.m-image {
@@ -901,7 +902,7 @@ figure.m-figure.m-fullwidth:after {
   border-radius: 0.2rem;
 }
 .m-code-figure:before {
-  border-color: #ffffff;
+  border-color: #f7f7f7;
 }
 .m-console-figure:before {
   border-color: #ffffff;
@@ -914,6 +915,13 @@ figure.m-figure.m-fullwidth:after {
   margin: -1rem -1rem 1rem -1rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+.m-code-figure > pre.m-nopad, .m-console-figure > pre.m-nopad {
+  margin-left: -0.875rem;
+  margin-right: -0.875rem;
+  margin-top: -1rem;
+  margin-bottom: -0.875rem;
+  padding-left: 0.875rem;
 }
 figure.m-figure figcaption, .m-code-figure figcaption, .m-console-figure figcaption {
   margin-top: 0.5rem;
@@ -1563,7 +1571,7 @@ table.m-table th.m-info pre, table.m-table th.m-info code {
 table.m-table tr.m-dim td, table.m-table td.m-dim,
 table.m-table tr.m-dim th, table.m-table th.m-dim {
   background-color: #e6e6e6;
-  color: #666666;
+  color: #000000;
 }
 .m-note.m-dim a,
 table.m-table tr.m-dim td a, table.m-table td.m-dim a,
@@ -2323,38 +2331,38 @@ article:last-child, article section:last-child { margin-bottom: 0; }
 .m-container-inflatable section:target > .m-frame,
 .m-container-inflatable section:target > .m-block,
 .m-container-inflatable section:target > pre,
-.m-container-inflatable section:target > figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target > figure.m-console-figure > pre:first-child,
+.m-container-inflatable section:target > .m-code-figure > pre:first-child,
+.m-container-inflatable section:target > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target section > .m-note,
 .m-container-inflatable section:target section > .m-frame,
 .m-container-inflatable section:target section > .m-block,
 .m-container-inflatable section:target section > pre,
-.m-container-inflatable section:target section > figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target section > figure.m-console-figure > pre:first-child,
+.m-container-inflatable section:target section > .m-code-figure > pre:first-child,
+.m-container-inflatable section:target section > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target [class*='m-center-'] > .m-note,
 .m-container-inflatable section:target [class*='m-center-'] > .m-frame,
 .m-container-inflatable section:target [class*='m-center-'] > .m-block,
 .m-container-inflatable section:target [class*='m-center-'] > pre,
-.m-container-inflatable section:target [class*='m-center-'] > figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target [class*='m-center-'] > figure.m-console-figure > pre:first-child,
+.m-container-inflatable section:target [class*='m-center-'] > .m-code-figure > pre:first-child,
+.m-container-inflatable section:target [class*='m-center-'] > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target [class*='m-left-'] > .m-note,
 .m-container-inflatable section:target [class*='m-left-'] > .m-frame,
 .m-container-inflatable section:target [class*='m-left-'] > .m-block,
 .m-container-inflatable section:target [class*='m-left-'] > pre,
-.m-container-inflatable section:target [class*='m-left-'] > figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target [class*='m-left-'] > figure.m-console-figure > pre:first-child,
+.m-container-inflatable section:target [class*='m-left-'] > .m-code-figure > pre:first-child,
+.m-container-inflatable section:target [class*='m-left-'] > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target [class*='m-right-'] > .m-note,
 .m-container-inflatable section:target [class*='m-right-'] > .m-frame,
 .m-container-inflatable section:target [class*='m-right-'] > .m-block,
 .m-container-inflatable section:target [class*='m-right-'] > pre,
-.m-container-inflatable section:target [class*='m-right-'] > figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target [class*='m-right-'] > figure.m-console-figure > pre:first-child,
+.m-container-inflatable section:target [class*='m-right-'] > .m-code-figure > pre:first-child,
+.m-container-inflatable section:target [class*='m-right-'] > .m-console-figure > pre:first-child,
 .m-container-inflatable section:target .m-container-inflate > .m-note,
 .m-container-inflatable section:target .m-container-inflate > .m-frame,
 .m-container-inflatable section:target .m-container-inflate > .m-block,
 .m-container-inflatable section:target .m-container-inflate > pre,
-.m-container-inflatable section:target .m-container-inflate > figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target .m-container-inflate > figure.m-console-figure > pre:first-child {
+.m-container-inflatable section:target .m-container-inflate > .m-code-figure > pre:first-child,
+.m-container-inflatable section:target .m-container-inflate > .m-console-figure > pre:first-child {
   margin-left: -1.0rem;
   border-left-style: solid;
   border-left-width: 0.25rem;
@@ -2362,21 +2370,26 @@ article:last-child, article section:last-child { margin-bottom: 0; }
   border-bottom-left-radius: 0;
   padding-left: 0.75rem;
 }
-.m-container-inflatable section:target > figure.m-code-figure::before,
-.m-container-inflatable section:target > figure.m-console-figure::before,
-.m-container-inflatable section:target section > figure.m-code-figure::before,
-.m-container-inflatable section:target section > figure.m-console-figure::before,
-.m-container-inflatable section:target [class*='m-center-'] > figure.m-code-figure::before,
-.m-container-inflatable section:target [class*='m-center-'] > figure.m-console-figure::before,
-.m-container-inflatable section:target [class*='m-left-'] > figure.m-code-figure::before,
-.m-container-inflatable section:target [class*='m-left-'] > figure.m-console-figure::before,
-.m-container-inflatable section:target [class*='m-right-'] > figure.m-code-figure::before,
-.m-container-inflatable section:target [class*='m-right-'] > figure.m-console-figure::before,
-.m-container-inflatable section:target .m-container-inflate > figure.m-code-figure::before,
-.m-container-inflatable section:target .m-container-inflate > figure.m-console-figure::before {
+.m-container-inflatable section:target > .m-code-figure::before,
+.m-container-inflatable section:target > .m-console-figure::before,
+.m-container-inflatable section:target section > .m-code-figure::before,
+.m-container-inflatable section:target section > .m-console-figure::before,
+.m-container-inflatable section:target [class*='m-center-'] > .m-code-figure::before,
+.m-container-inflatable section:target [class*='m-center-'] > .m-console-figure::before,
+.m-container-inflatable section:target [class*='m-left-'] > .m-code-figure::before,
+.m-container-inflatable section:target [class*='m-left-'] > .m-console-figure::before,
+.m-container-inflatable section:target [class*='m-right-'] > .m-code-figure::before,
+.m-container-inflatable section:target [class*='m-right-'] > .m-console-figure::before,
+.m-container-inflatable section:target .m-container-inflate > .m-code-figure::before,
+.m-container-inflatable section:target .m-container-inflate > .m-console-figure::before {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-left-width: 0.25rem;
+}
+.m-container-inflatable section:target > .m-code-figure > pre.m-nopad,
+.m-container-inflatable section:target > .m-console-figure > pre.m-nopad {
+  margin-left: -0.75rem;
+  padding-left: -0.75rem;
 }
 @media screen and (min-width: 576px) {
   .m-container-inflatable section:target .m-center-s > .m-note,
@@ -2530,7 +2543,7 @@ article:last-child, article section:last-child { margin-bottom: 0; }
 @media screen and (min-width: 576px) {
   .m-container-inflatable section:target .m-center-s > figure.m-code-figure::before,
   .m-container-inflatable section:target .m-right-s > figure.m-code-figure::before {
-    border-color: #ffffff;
+    border-color: #f7f7f7;
   }
   .m-container-inflatable section:target .m-center-s > figure.m-console-figure::before,
   .m-container-inflatable section:target .m-right-s > figure.m-console-figure::before {
@@ -2540,7 +2553,7 @@ article:last-child, article section:last-child { margin-bottom: 0; }
 @media screen and (min-width: 768px) {
   .m-container-inflatable section:target .m-center-m > figure.m-code-figure::before,
   .m-container-inflatable section:target .m-right-m > figure.m-code-figure::before {
-    border-color: #ffffff;
+    border-color: #f7f7f7;
   }
   .m-container-inflatable section:target .m-center-m > figure.m-console-figure::before,
   .m-container-inflatable section:target .m-right-m > figure.m-console-figure::before {
@@ -2550,7 +2563,7 @@ article:last-child, article section:last-child { margin-bottom: 0; }
 @media screen and (min-width: 992px) {
   .m-container-inflatable section:target .m-center-l > figure.m-code-figure::before,
   .m-container-inflatable section:target .m-right-l > figure.m-code-figure::before {
-    border-color: #ffffff;
+    border-color: #f7f7f7;
   }
   .m-container-inflatable section:target .m-center-l > figure.m-console-figure::before,
   .m-container-inflatable section:target .m-right-l > figure.m-console-figure::before {
@@ -2759,7 +2772,7 @@ ul.m-doc li > span.m-doc a:hover, ul.m-doc li > span.m-doc a:focus, ul.m-doc li 
   color: #ff7400;
 }
 h3 .m-doc-template, h3 .m-doc-include {
-  color: #666666;
+  color: #000000;
 }
 h3 .m-doc-template a, h3 .m-doc-include a {
   color: #ff7400;

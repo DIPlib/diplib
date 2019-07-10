@@ -111,6 +111,10 @@ pre {
   overflow-x: auto;
   margin-top: 0; /* stupid defaults */
 }
+pre.m-console-wrap {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 pre.m-console {
   background-color: var(--console-background-color);
 }
@@ -193,12 +197,9 @@ div.m-scroll {
 .m-text-bottom, table.m-table th.m-text-bottom, table.m-table td.m-text-bottom {
   vertical-align: bottom;
 }
-.m-text.m-small {
-  font-size: 85.4%;
-}
-.m-text.m-big {
-  font-size: 117%;
-}
+.m-text.m-tiny { font-size: 50.0%; }
+.m-text.m-small { font-size: 85.4%; }
+.m-text.m-big { font-size: 117%; }
 h1 .m-thin, h2 .m-thin, h3 .m-thin, h4 .m-thin, h5 .m-thin, h6 .m-thin {
   font-weight: normal;
 }
@@ -645,6 +646,16 @@ figure.m-figure.m-fullwidth:after {
   margin: -1rem -1rem 1rem -1rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+
+/* "Nopad" code block inside a code/console figure -- show code and console
+   output nicely packed together */
+.m-code-figure > pre.m-nopad, .m-console-figure > pre.m-nopad {
+  margin-left: -0.875rem;
+  margin-right: -0.875rem;
+  margin-top: -1rem;
+  margin-bottom: -0.875rem;
+  padding-left: 0.875rem;
 }
 
 /* Figure caption */

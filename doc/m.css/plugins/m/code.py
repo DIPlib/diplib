@@ -59,7 +59,10 @@ def _highlight(code, language, options, is_block):
     else:
         class_ = 'm-code'
 
-    formatter = HtmlFormatter(nowrap=True, **options)
+    if isinstance(lexer, ansilexer.AnsiLexer):
+        formatter = ansilexer.HtmlAnsiFormatter(**options)
+    else:
+        formatter = HtmlFormatter(nowrap=True, **options)
     parsed = highlight(code, lexer, formatter).rstrip()
     if not is_block: parsed.lstrip()
 
@@ -208,7 +211,9 @@ def code(role, rawtext, text, lineno, inliner, options={}, content=[]):
 code.options = {'class': directives.class_option,
                 'language': directives.unchanged}
 
-def register():
+def register_mcss(**kwargs):
     rst.directives.register_directive('code', Code)
     rst.directives.register_directive('include', Include)
     rst.roles.register_canonical_role('code', code)
+
+register = register_mcss # for Pelican

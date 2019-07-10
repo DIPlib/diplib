@@ -58,7 +58,7 @@
             <li>
               <a href="#{{ id }}">{{ name }}</a>
               <ul>
-{{ loop(children)|indent(4, true) }}
+{{ loop(children)|rtrim|indent(4, true) }}
               </ul>
             </li>
             {% else %}
@@ -230,7 +230,7 @@
            <h2><a href="#pub-static-methods">Public static functions</a></h2>
            <dl class="m-doc">
               {% for func in compound.public_static_funcs %}
-              {{ entry_func(func) }}
+{{ entry_func(func) }}
               {% endfor %}
            </dl>
         </section>
@@ -240,7 +240,7 @@
            <h2><a href="#pub-static-attribs">Public static variables</a></h2>
            <dl class="m-doc">
               {% for var in compound.public_static_vars %}
-              {{ entry_var(var) }}
+{{ entry_var(var) }}
               {% endfor %}
            </dl>
         </section>
@@ -296,7 +296,7 @@
            <h2><a href="#pro-static-methods">Protected static functions</a></h2>
            <dl class="m-doc">
               {% for func in compound.protected_static_funcs %}
-              {{ entry_func(func) }}
+{{ entry_func(func) }}
               {% endfor %}
            </dl>
         </section>
@@ -306,7 +306,7 @@
            <h2><a href="#pro-static-attribs">Protected static variables</a></h2>
            <dl class="m-doc">
               {% for var in compound.protected_static_vars %}
-              {{ entry_var(var) }}
+{{ entry_var(var) }}
               {% endfor %}
            </dl>
         </section>
@@ -461,7 +461,7 @@
           {% endfor %}
           {% for func in compound.public_static_funcs %}
           {% if func.has_details %}
-          {{ details_func(func, compound.prefix_wbr) }}
+{{ details_func(func, compound.prefix_wbr) }}
           {% endif %}
           {% endfor %}
           {% for func in compound.protected_funcs %}
@@ -476,7 +476,7 @@
           {% endfor %}
           {% for func in compound.protected_static_funcs %}
           {% if func.has_details %}
-          {{ details_func(func, compound.prefix_wbr) }}
+{{ details_func(func, compound.prefix_wbr) }}
           {% endif %}
           {% endfor %}
           {% for func in compound.private_funcs %}
@@ -518,7 +518,7 @@
           {% endfor %}
           {% for var in compound.public_static_vars %}
           {% if var.has_details %}
-          {{ details_var(var, compound.prefix_wbr) }}
+{{ details_var(var, compound.prefix_wbr) }}
           {% endif %}
           {% endfor %}
           {% for var in compound.protected_vars %}
@@ -528,7 +528,7 @@
           {% endfor %}
           {% for var in compound.protected_static_vars %}
           {% if var.has_details %}
-          {{ details_var(var, compound.prefix_wbr) }}
+{{ details_var(var, compound.prefix_wbr) }}
           {% endif %}
           {% endfor %}
           {% for group in compound.groups %}

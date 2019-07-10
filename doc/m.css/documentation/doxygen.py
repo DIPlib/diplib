@@ -49,7 +49,7 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import TextLexer, BashSessionLexer, get_lexer_by_name, find_lexer_class_for_filename
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'plugins'))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../plugins'))
 import dot2svg
 import latex2svg
 import latex2svgextra
@@ -495,7 +495,7 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
         # information from the compound, because namespace location is
         # sometimes pointed to a *.cpp file, which Doxygen sees before *.h.
         if not state.current_include and state.current_include is not None:
-            assert state.current_kind == 'namespace' or state.current_kind == 'group'
+            assert state.current_kind == 'namespace' or state.current_kind == 'group' # Change for DIPlib: groups should have an include file too
             state.current_include = file
             # parse_xml() fills compound.include from this later
 
@@ -545,7 +545,7 @@ def fix_type_spacing(type: str) -> str:
         .replace('&lt; ', '&lt;')
         .replace(' &gt;', '&gt;')
         .replace(' &amp;', '&amp;')
-        .replace(' *', '*').replace(' *', '*'))
+        .replace(' *', '*').replace(' *', '*')) # Repeating this replacement fixes some weird formatting issue within DIPlib docs
 
 def parse_type(state: State, type: ET.Element) -> str:
     # Constructors and typeless enums might not have it
@@ -958,7 +958,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             out.parsed += '<blockquote>{}</blockquote>'.format(parse_desc(state, i))
 
         elif i.tag in ['itemizedlist', 'orderedlist']:
-            assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div', 'simplesect']
+            assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div', 'simplesect'] # The DIPlib-specific \literature tag generates a list within a simpleselect tag
             has_block_elements = True
             tag = 'ul' if i.tag == 'itemizedlist' else 'ol'
             out.parsed += '<{}{}>'.format(tag,
@@ -1044,17 +1044,19 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         title = 'See also'
                         css_class = 'm-default'
                     elif i.attrib['kind'] == 'literature':
+                        # This tag is specific to DIPlib
                         title = 'Literature'
                         css_class = 'm-default'
                     elif i.attrib['kind'] == 'note':
                         title = 'Note'
                         css_class = 'm-info'
+                        logging.warning("Please don't use \\note in the DIPlib documentation")
                     elif i.attrib['kind'] == 'attention':
                         title = 'Attention'
                         css_class = 'm-warning'
                     elif i.attrib['kind'] == 'warning':
                         title = 'Warning'
-                        css_class = 'm-warning'
+                        css_class = 'm-danger'
                     elif i.attrib['kind'] == 'author':
                         title = 'Author'
                         css_class = 'm-default'
@@ -1085,9 +1087,10 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     elif i.attrib['kind'] == 'remark':
                         title = 'Remark'
                         css_class = 'm-default'
+                        logging.warning("Please don't use \\remark in the DIPlib documentation")
                     elif i.attrib['kind'] == 'par':
                         title = html.escape(i.findtext('title', ''))
-                        css_class = ''
+                        css_class = 'm-dim' # Change for DIPlib docs: I like this coloring better here
                     elif i.attrib['kind'] == 'rcs':
                         title = html.escape(i.findtext('title', ''))
                         css_class = 'm-default'
@@ -1424,16 +1427,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
             # Otherwise try to find lexer by filename
             else:
-                if filename == '.none':
+                # Put some bogus prefix to the filename in case it is just
+                # `.ext`
+                lexer = find_lexer_class_for_filename("code" + filename)
+                if not lexer:
+                    logging.warning("{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(state.current, filename))
                     lexer = TextLexer()
-                else:
-                    # Put some bogus prefix to the filename in case it is just
-                    # `.ext`
-                    lexer = find_lexer_class_for_filename("code" + filename)
-                    if not lexer:
-                        logging.warning("{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(state.current, filename))
-                        lexer = TextLexer()
-                    else: lexer = lexer()
+                else: lexer = lexer()
 
             # Style console sessions differently
             if (isinstance(lexer, BashSessionLexer) or
@@ -1442,7 +1442,10 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             else:
                 class_ = 'm-code'
 
-            formatter = HtmlFormatter(nowrap=True)
+            if isinstance(lexer, ansilexer.AnsiLexer):
+                formatter = ansilexer.HtmlAnsiFormatter()
+            else:
+                formatter = HtmlFormatter(nowrap=True)
             highlighted = highlight(code, lexer, formatter)
             # Strip whitespace around if inline code, strip only trailing
             # whitespace if a block
@@ -2296,9 +2299,6 @@ def parse_define(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'define'
 
     define = Empty()
-    # Can't use extract_id_hash()
-    # here because current_definition_url_base might be stale. See a test in
-    # compound_namespace_members_in_file_scope_define_base_url.
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.name = element.find('name').text
     define.brief = parse_desc(state, element.find('briefdescription'))
@@ -2327,7 +2327,7 @@ def parse_define(state: State, element: ET.Element):
         if define.base_url == state.current_compound_url and not state.doxyfile['M_SEARCH_DISABLED']:
             result = Empty()
             result.flags = ResultFlag.DEFINE|(ResultFlag.DEPRECATED if define.is_deprecated else ResultFlag(0))
-            result.url = state.current_compound_url + '#' + define.id
+            result.url = define.base_url + '#' + define.id
             result.prefix = []
             result.name = define.name
             result.keywords = search_keywords
@@ -2349,6 +2349,18 @@ def _document_all_stuff(compounddef: ET.Element):
             para = ET.Element('para')
             para.append(dim)
             brief.append(para)
+
+def is_a_stupid_empty_markdown_page(compounddef: ET.Element):
+    assert compounddef.attrib['kind'] == 'page'
+
+    # Doxygen creates a page for *all* markdown files even thought they
+    # otherwise contain absolutely NOTHING except for symbol documentation.
+    # And of course it's nearly impossible to distinguish those unwanted pages
+    # from actually wanted (but empty) pages so at least I'm filtering out
+    # everything that starts with md_ and ends with the same thing as the title
+    # (which means there's no explicit title). We *do* want to preserve empty
+    # pages with custom titles.
+    return compounddef.find('compoundname').text.startswith('md_') and compounddef.find('compoundname').text.endswith(compounddef.find('title').text) and not compounddef.find('briefdescription') and not compounddef.find('detaileddescription')
 
 def extract_metadata(state: State, xml):
     logging.debug("Extracting metadata from {}".format(os.path.basename(xml)))
@@ -2396,8 +2408,9 @@ def extract_metadata(state: State, xml):
     compound.url = 'index.html' if compound.kind == 'page' and compound.id == 'indexpage' else compound.id + '.html'
     compound.brief = parse_desc(state, compounddef.find('briefdescription'))
     # Groups are explicitly created so they *have details*, other
-    # things need to have at least some documentation
-    compound.has_details = compound.kind == 'group' or compound.brief or compounddef.find('detaileddescription')
+    # things need to have at least some documentation. Pages are treated as
+    # having something unless they're stupid. See the function for details.
+    compound.has_details = compound.kind == 'group' or compound.brief or compounddef.find('detaileddescription') or (compound.kind == 'page' and not is_a_stupid_empty_markdown_page(compounddef))
     compound.children = []
 
     # Deprecation status
@@ -2696,8 +2709,9 @@ def parse_xml(state: State, xml: str):
         _document_all_stuff(compounddef)
 
     # Ignoring compounds w/o any description, except for groups,
-    # which are created explicitly
-    if not compounddef.find('briefdescription') and not compounddef.find('detaileddescription') and not compounddef.attrib['kind'] == 'group':
+    # which are created explicitly. Pages are treated as having something
+    # unless they're stupid. See the function for details.
+    if not compounddef.find('briefdescription') and not compounddef.find('detaileddescription') and not compounddef.attrib['kind'] == 'group' and (not compounddef.attrib['kind'] == 'page' or is_a_stupid_empty_markdown_page(compounddef)):
         logging.debug("{}: neither brief nor detailed description present, skipping".format(state.current))
         return None
 
@@ -2815,6 +2829,8 @@ def parse_xml(state: State, xml: str):
     # it and resets to None in case the include differs for given entry,
     # meaning all entries need to have their own include definition instead.
     # That's then finally reflected in has_details of each entry.
+
+    # Change for DIPlib: groups should have an include file too
     #elif compound.kind == 'namespace' and compounddef.find('innerclass') is None and compounddef.find('innernamespace') is None:
     elif compound.kind == 'namespace' or compound.kind == 'group':
         state.current_include = ''
@@ -3191,26 +3207,19 @@ def parse_xml(state: State, xml: str):
                             if func.has_details: compound.has_func_details = True
 
             elif compounddef_child.attrib['kind'] == 'user-defined':
-                header = compounddef_child.find('header')
-                put_in_list = not header is None
                 list = []
 
+                memberdef: ET.Element
                 for memberdef in compounddef_child.findall('memberdef'):
                     if memberdef.attrib['kind'] == 'enum':
                         enum = parse_enum(state, memberdef)
                         if enum:
-                            if put_in_list:
-                                list += [('enum', enum)]
-                            else:
-                                compound.enums += [enum]
+                            list += [('enum', enum)]
                             if enum.has_details: compound.has_enum_details = True
                     elif memberdef.attrib['kind'] == 'typedef':
                         typedef = parse_typedef(state, memberdef)
                         if typedef:
-                            if put_in_list:
-                                list += [('typedef', typedef)]
-                            else:
-                                compound.typedefs += [typedef]
+                            list += [('typedef', typedef)]
                             if typedef.has_details: compound.has_typedef_details = True
                     elif memberdef.attrib['kind'] in ['function', 'signal', 'slot']:
                         # Gather only private functions that are virtual and
@@ -3221,26 +3230,17 @@ def parse_xml(state: State, xml: str):
 
                         func = parse_func(state, memberdef)
                         if func:
-                            if put_in_list:
-                                list += [('func', func)]
-                            else:
-                                compound.funcs += [func]
+                            list += [('func', func)]
                             if func.has_details: compound.has_func_details = True
                     elif memberdef.attrib['kind'] == 'variable':
                         var = parse_var(state, memberdef)
                         if var:
-                            if put_in_list:
-                                list += [('var', var)]
-                            else:
-                                compound.vars += [var]
+                            list += [('var', var)]
                             if var.has_details: compound.has_var_details = True
                     elif memberdef.attrib['kind'] == 'define':
                         define = parse_define(state, memberdef)
                         if define:
-                            if put_in_list:
-                                list += [('define', define)]
-                            else:
-                                compound.defines += [define]
+                            list += [('define', define)]
                             if define.has_details: compound.has_define_details = True
                     elif memberdef.attrib['kind'] == 'friend':
                         # Ignore friend classes. This does not ignore friend
@@ -3252,21 +3252,22 @@ def parse_xml(state: State, xml: str):
                         else:
                             func = parse_func(state, memberdef)
                             if func:
-                                if put_in_list:
-                                    list += [('func', func)]
-                                else:
-                                    compound.funcs += [func]
+                                list += [('func', func)]
                                 if func.has_details: compound.has_func_details = True
                     else: # pragma: no cover
                         logging.warning("{}: unknown user-defined <memberdef> kind {}".format(state.current, memberdef.attrib['kind']))
 
                 if list:
-                    group = Empty()
-                    group.name = header.text
-                    group.id = slugify(group.name)
-                    group.description = parse_desc(state, compounddef_child.find('description'))
-                    group.members = list
-                    compound.groups += [group]
+                    header = compounddef_child.find('header')
+                    if header is None:
+                        logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
+                    else:
+                        group = Empty()
+                        group.name = header.text
+                        group.id = slugify(group.name)
+                        group.description = parse_desc(state, compounddef_child.find('description'))
+                        group.members = list
+                        compound.groups += [group]
 
             elif compounddef_child.attrib['kind'] not in ['private-type',
                                                           'private-static-func',
@@ -3363,14 +3364,15 @@ def parse_xml(state: State, xml: str):
     # #include (for all others the include info is either on a compound itself
     # or nowhere at all)
     if state.doxyfile['SHOW_INCLUDE_FILES'] and compound.kind in ['namespace', 'group']:
-        # If we're in a namespace, its include info comes from inside
+        # If we're in a namespace or a group (DIPlib specific), its include info comes from inside
         if state.current_include:
             compound.include = make_include(state, state.current_include)
 
         # If we discovered that entries of this compound don't have a common
-        # #include, flip on has_details of all entries and wipe the compound
-        # include. Otherwise wipe the include information from everywhere but
-        # the compound.
+        # #include (and the entry isn't just a reference to a definition in
+        # some other page), flip on has_details of all entries and wipe the
+        # compound include. Otherwise wipe the include information from
+        # everywhere but the compound.
         if not state.current_include:
             compound.include = None
         for entry in compound.enums:
@@ -3791,6 +3793,8 @@ def run(doxyfile, templates=default_templates, wildcard=default_wildcard, index_
     def basename_or_url(path):
         if urllib.parse.urlparse(path).netloc: return path
         return os.path.basename(path)
+    def rtrim(value): return value.rstrip()
+    env.filters['rtrim'] = rtrim
     env.filters['basename_or_url'] = basename_or_url
     env.filters['urljoin'] = urllib.parse.urljoin
 
@@ -3825,8 +3829,8 @@ def run(doxyfile, templates=default_templates, wildcard=default_wildcard, index_
                     f.write(rendered.encode('utf-8'))
                     # Add back a trailing newline so we don't need to bother
                     # with patching test files to include a trailing newline to
-                    # make Git happy
-                    # TODO could keep_trailing_newline fix this better?
+                    # make Git happy. Can't use keep_trailing_newline because
+                    # that'd add it also for nested templates :(
                     f.write(b'\n')
         else:
             parsed = parse_xml(state, file)
@@ -3843,8 +3847,8 @@ def run(doxyfile, templates=default_templates, wildcard=default_wildcard, index_
                 f.write(rendered.encode('utf-8'))
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
-                # happy
-                # TODO could keep_trailing_newline fix this better?
+                # happy. Can't use keep_trailing_newline because that'd add it
+                # also for nested templates :(
                 f.write(b'\n')
 
     # Empty index page in case no mainpage documentation was provided so
@@ -3868,8 +3872,8 @@ def run(doxyfile, templates=default_templates, wildcard=default_wildcard, index_
             f.write(rendered.encode('utf-8'))
             # Add back a trailing newline so we don't need to bother with
             # patching test files to include a trailing newline to make Git
-            # happy
-            # TODO could keep_trailing_newline fix this better?
+            # happy. Can't use keep_trailing_newline because that'd add it
+            # also for nested templates :(
             f.write(b'\n')
 
     if not state.doxyfile['M_SEARCH_DISABLED']:
@@ -3895,8 +3899,8 @@ def run(doxyfile, templates=default_templates, wildcard=default_wildcard, index_
                 f.write(rendered.encode('utf-8'))
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
-                # happy
-                # TODO could keep_trailing_newline fix this better?
+                # happy. Can't use keep_trailing_newline because that'd add it
+                # also for nested templates :(
                 f.write(b'\n')
 
     # Copy all referenced files
