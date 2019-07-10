@@ -56,7 +56,7 @@ namespace dip {
 ///
 /// The output image will have the data type of the LUT.
 ///
-/// \par Out-of-bounds handling:
+/// \par Out-of-bounds handling
 /// When an input value is outside the bounds provided by the index, it is clamped to the index range.
 /// This behavior can be modified using the `SetOutOfBoundsValue` method (uses the given value or values for all
 /// pixels that are out of bounds), or  the `KeepInputValueOnOutOfBounds` method (which sets the output

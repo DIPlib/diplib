@@ -919,7 +919,7 @@ inline Image Hessian(
 /// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with \f$d\f$ the number
 /// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kernel:
 ///
-/// ```none
+/// ```txt
 ///    | -1  -1  -1 |
 ///    | -1   8  -1 |
 ///    | -1  -1  -1 |

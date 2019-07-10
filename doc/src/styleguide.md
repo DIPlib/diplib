@@ -171,3 +171,19 @@ as first parameter, and output image as last image parameter:
   `<cstring>`, `<exception>`, `<functional>`, `<initializer_list>`, `<iostream>`,
   `<iterator>`, `<limits>`, `<memory>`, `<numeric>`, `<set>`, `<string>`, `<type_traits>`,
   `<utility>`, `<vector>`.
+
+\section documentation
+
+- Always include a `\brief`, and keep it brief. Add additional paragraphs if needed.
+
+- Add `\see` to link to functions in other modules, or in the same module but "far away".
+  Linking to the next or previous function is not very important, but do so if it makes
+  sense and there is a `\see` section anyway. Note that the documentation lists the functions
+  in the same order as that they appear in the header files.
+
+- Use `\par` for a named info box. It will be rendered with a gray background.
+
+- Use `\attention` and `\warning` for two levels of attention-grabbing info boxes. These are
+  rendered with lighter and darker 2nd color background (highly contrasting!).
+
+- Don't use `\note` or `\remark`.

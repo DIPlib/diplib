@@ -51,7 +51,7 @@ namespace dip {
 /// \{
 
 
-/// \brief The constant pi.
+/// \brief The constant &pi;.
 constexpr dfloat pi = 3.14159265358979323846264338327950288;
 // std::acos( -1 ) is the good way of defining pi, but it's not constexpr.
 

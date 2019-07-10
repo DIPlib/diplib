@@ -84,7 +84,7 @@ DIPVIEWER_EXPORT void Spin();
 /// This function allows user interaction in all slice viewer windows created. Returns immediately, and needs to be
 /// called repeatedly for continuous interaction.
 ///
-/// **Note** that `dip::viewer::Spin` or `dip::viewer::CloseAll` must still be called before exiting, to prevent
+/// \attention `dip::viewer::Spin` or `dip::viewer::CloseAll` must still be called before exiting, to prevent
 /// memory leaks.
 DIPVIEWER_EXPORT void Draw();
 

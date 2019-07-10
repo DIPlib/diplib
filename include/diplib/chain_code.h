@@ -829,7 +829,7 @@ struct DIP_NO_EXPORT ChainCode {
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders.
    ///
-   /// If the chain code represents the closed contour of an object, add pi to the result to determine
+   /// If the chain code represents the closed contour of an object, add &pi; to the result to determine
    /// the object's perimeter.
    ///
    /// Any portions of the chain code that run along the image edge are not measured. That is, for

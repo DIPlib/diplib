@@ -508,7 +508,7 @@ inline Image CoherenceEnhancingDiffusion(
 /// Each tensor column in the scale image corresponds with a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
-/// ```none
+/// ```txt
 ///     | R_kx R_ky |
 ///     | G_kx G_ky |
 ///     | B_kx B_ky |
@@ -583,7 +583,7 @@ inline Image AdaptiveGauss(
 /// Each tensor column in the scale image corresponds with a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
-/// ```none
+/// ```txt
 ///     | R_kx R_ky |
 ///     | G_kx G_ky |
 ///     | B_kx B_ky |

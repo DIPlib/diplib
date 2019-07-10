@@ -55,7 +55,7 @@
 /// You can think of `param1` above being of type `void*` or `dip::Image`,
 /// for example.
 ///
-/// **Note** the parenthesis around the function parameters in the macro
+/// \attention Note the parenthesis around the function parameters in the macro
 /// call above!
 ///
 /// `DIP_OVL_NEW_ALL` and friends work similarly, but create a new object

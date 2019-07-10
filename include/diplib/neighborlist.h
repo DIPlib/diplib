@@ -133,7 +133,7 @@ class DIP_NO_EXPORT Metric {
       ///
       /// For example, this 3 by 3 image:
       ///
-      /// ```none
+      /// ```txt
       ///    +---+---+---+
       ///    | 0 | 2 | 0 |
       ///    +---+---+---+

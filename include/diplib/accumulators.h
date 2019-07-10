@@ -343,14 +343,14 @@ inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVaria
 ///
 /// The covariance matrix is formed by
 ///
-/// ```none
+/// ```txt
 ///    | cov.VarianceX()   cov.Covariance() |
 ///    | cov.Covariance()  cov.VarianceY()  |
 /// ```
 ///
 /// The `Regression` method returns the parameters to the least squares fit of the equation:
 ///
-/// ```none
+/// ```txt
 ///    y = intercept + slope * x
 /// ```
 ///

@@ -80,7 +80,7 @@ and the status bar.
   2. *Mapping*, being
 
      - *0-1*: Unit values.
-     - *ANG*: Data between [-pi, pi].
+     - *ANG*: Data between [-&pi;, &pi;].
      - *255*: 8-bit data.
      - *LIN*: Linear interpolation between the global minimum and maximum values.
      - *SYM*: Linear interpolation that is symmetric around 0.
@@ -172,7 +172,7 @@ shared between the windows. Right-click to unlink.
 
 There are also a few keyboard shortcuts:
 
-- \m_class{m-label m-error} **N** and \m_class{m-label m-error} **P**:
+- \m_class{m-label m-warning} **N** and \m_class{m-label m-warning} **P**:
   Step through the third image dimension.
 
 - \m_class{m-label m-warning} **F** and \m_class{m-label m-warning} **B**:
@@ -195,9 +195,11 @@ There are also a few keyboard shortcuts:
 - \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **R**:
   Resets the projection ROI.
 
-- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **W** and
-  \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **Shift** + \m_class{m-label m-warning} **W**:
-  Closes the current window or all windows.
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **W**:
+  Closes the current window.
+
+- \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **Shift** + \m_class{m-label m-warning} **W**:
+  Closes all windows.
 
 \section viewer_example Usage example
 

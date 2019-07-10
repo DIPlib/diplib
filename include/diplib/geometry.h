@@ -410,7 +410,7 @@ inline Image Skew(
 ///
 /// The output image has the same data type as the input image.
 ///
-/// `shear` must have a magnitude smaller than pi/2. Note that the definition of `shear` is different
+/// `shear` must have a magnitude smaller than &pi;/2. Note that the definition of `shear` is different
 /// from that of `shearArray` in the other version of `dip::Skew`, documented above.
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
@@ -467,14 +467,16 @@ inline Image Skew(
 ///
 /// Rotates an image in the plane defined by `dimension1` and `dimension2`, over an angle `angle`, in radian.
 /// The origin of the rotation is the central pixel (see \ref coordinates_origin).
-/// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
+///
+/// \attention The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
+/// Therefore, positive angles are clock-wise.
 ///
 /// The output image has the same data type as the input image.
 ///
 /// The rotation is computed by three consecutive calls to `dip::Skew`. See that function for the meaning of
 /// `interpolationMethod` and `boundaryCondition`.
 ///
-/// \note The `"periodic"` boundary condition currently produces an output image of the same size as
+/// \attention The `"periodic"` boundary condition currently produces an output image of the same size as
 /// the input, where the corners of the image that rotate out of the field of view are cut off and fill the
 /// sections that were outside of the input field of view. This is due to the way that `dip::Skew` handles
 /// the `"periodic"` boundary condition. [TODO: This is something that we probably want to fix at some point.]
@@ -578,7 +580,8 @@ inline Image Rotation3D(
 /// The first rotation is over `alpha` radian around the initial z-axis. The second rotation is over `beta` radian
 /// around the intermediate y-axis. The last rotation is over `gamma` radian around the final z-axis.
 ///
-/// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
+/// \attention The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
+/// Therefore, positive angles are clock-wise.
 ///
 /// The rotation is over the center of the image, see \ref coordinates_origin.
 // TODO: Implement the rotation using 4 skews as described by Chen and Kaufman, Graphical Models 62:308-322, 2000.
@@ -694,7 +697,7 @@ inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
 /// matrix using homogeneous coordinates, but with the bottom row removed (which is expected
 /// to be `{0,0,1}` in 2D or `{0,0,0,1}` in 3D). The values are stored in column-major order:
 ///
-/// ```none
+/// ```txt
 ///            ⎡ matrix[0]  matrix[2]  matrix[4] ⎤
 ///     T_2D = ⎢ matrix[1]  matrix[3]  matrix[5] ⎥
 ///            ⎣    0          0          1      ⎦
@@ -797,7 +800,7 @@ inline Image LogPolarTransform2D(
 /// can be given in `in`. If `in` has fewer images, the corresponding locations in `out` will be zero. If `in`
 /// has 6 images, they will be placed as follows:
 ///
-/// ```none
+/// ```txt
 ///    | in[0], in[1], in[2] |
 ///    | in[3], in[4], in[5] |
 /// ```

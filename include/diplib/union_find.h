@@ -60,7 +60,7 @@ namespace dip {
 ///     ValueType_ unionFunction( ValueType_ const& value1, ValueType_ const& value2 );
 /// ```
 ///
-/// \note To create a union-find data structure that does not hold any data for each tree, see `dip::SimpleUnionFind`.
+/// \attention To create a union-find data structure that does not hold any data for each tree, see `dip::SimpleUnionFind`.
 ///
 /// The `IndexType_` template parameter should be an integer, and probably unsigned.
 ///

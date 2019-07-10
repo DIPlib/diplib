@@ -2189,10 +2189,10 @@ class DIP_NO_EXPORT Image {
       ///
       /// `%CropLocation` constant | String
       /// ------------------------ | ----------
-      /// `CENTER`                 | "center"
-      /// `MIRROR_CENTER`          | "mirror center"
-      /// `TOP_LEFT`               | "top left"
-      /// `BOTTOM_RIGHT`           | "bottom right"
+      /// `CENTER`                 | `"center"`
+      /// `MIRROR_CENTER`          | `"mirror center"`
+      /// `TOP_LEFT`               | `"top left"`
+      /// `BOTTOM_RIGHT`           | `"bottom right"`
       DIP_EXPORT View Cropped( UnsignedArray const& sizes, String const& cropLocation ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
@@ -2262,10 +2262,10 @@ class DIP_NO_EXPORT Image {
       ///
       /// `%CropLocation` constant | String
       /// ------------------------ | ----------
-      /// `CENTER`                 | "center"
-      /// `MIRROR_CENTER`          | "mirror center"
-      /// `TOP_LEFT`               | "top left"
-      /// `BOTTOM_RIGHT`           | "bottom right"
+      /// `CENTER`                 | `"center"`
+      /// `MIRROR_CENTER`          | `"mirror center"`
+      /// `TOP_LEFT`               | `"top left"`
+      /// `BOTTOM_RIGHT`           | `"bottom right"`
       inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
          if( cropLocation == S::CENTER ) {
             return Pad( sizes, Option::CropLocation::CENTER );

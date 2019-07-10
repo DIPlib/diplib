@@ -280,7 +280,7 @@ class DIP_NO_EXPORT Measurement {
             /// \brief Name of the feature
             String const& FeatureName() const { return Feature().name; }
             /// \brief Returns an array with names and units for each of the values for the feature.
-            /// (Note: data are copied to output array, not a trivial function).
+            /// (Note: data are copied to output array, this is not a trivial function).
             Feature::ValueInformationArray Values() const {
                Feature::ValueInformationArray values( numberValues_ );
                for( dip::uint ii = 0; ii < numberValues_; ++ii ) {
@@ -401,7 +401,7 @@ class DIP_NO_EXPORT Measurement {
             /// \brief Returns the index to the first columns for the feature
             dip::uint ValueIndex( String const& name ) const { return measurement_->ValueIndex( name ); }
             /// \brief Returns an array with names and units for each of the values for the feature.
-            /// (Note: data are copied to output array, not a trivial function).
+            /// (Note: data are copied to output array, this is not a trivial function).
             Feature::ValueInformationArray Values( String const& name ) const { return measurement_->Values( name ); }
             /// \brief Returns an array with names and units for each of the values (for all features)
             Feature::ValueInformationArray const& Values() const { return measurement_->Values(); }
@@ -551,7 +551,7 @@ class DIP_NO_EXPORT Measurement {
       }
 
       /// \brief Returns an array with names and units for each of the values for the feature.
-      /// (Note: data are copied to output array, not a trivial function).
+      /// (Note: data are copied to output array, this is not a trivial function).
       Feature::ValueInformationArray Values( String const& name ) const {
          auto feature = features_[ FeatureIndex( name ) ];
          Feature::ValueInformationArray values( feature.numberValues );
@@ -719,7 +719,7 @@ class DIP_CLASS_EXPORT Base {
       /// class, so that it is available when performing measurements. For example, it can store the
       /// pixel size to inform the measurement.
       ///
-      /// Note that this function is not expected to perform any major amount of work.
+      /// \attention This function is not expected to perform any major amount of work.
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) = 0;
 
       /// \brief All measurement features define a `%Cleanup` method that is called after finishing the measurement
@@ -802,7 +802,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
       /// \brief Lists the features that the measurement depends on. These features will be computed and made
       /// available to the `Measure` method. This function is always called after `dip::Feature::Base::Initialize`.
       ///
-      /// \note Dependency chains are currently not supported. Dependencies listed here should not be
+      /// \attention Dependency chains are currently not supported. Dependencies listed here should not be
       /// other `%Type::COMPOSITE` features. This would require processing the composite features in the
       /// right order for all dependencies to be present when needed.
       // TODO: Compute composite features in the right order according to a dependency tree.
@@ -904,7 +904,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
 ///
 /// See \ref features for more information on each of these features.
 ///
-/// Note that you can define new measurement features, and register them with the `%MeasurementTool` through the
+/// It is possible for the user to define new measurement features, and register them with the `%MeasurementTool` through the
 /// `dip::MeasurementTool::Register` method. The new feature then becomes available in the `dip::MeasurementTool::Measure`
 /// method just like any of the default features.
 class DIP_NO_EXPORT MeasurementTool {
@@ -986,7 +986,7 @@ class DIP_NO_EXPORT MeasurementTool {
       ) const;
 
       /// \brief Returns a table with known feature names and descriptions, which can directly be shown to the user.
-      /// (Note: data is copied to output array, not a trivial function).
+      /// (Note: data is copied to output array, this is not a trivial function).
       Feature::InformationArray Features() const {
          Feature::InformationArray out;
          for( auto const& feature : features_ ) {
@@ -1062,7 +1062,7 @@ inline Image ObjectToMeasurement(
 /// names, of which there typically are fewer than columns, are interspersed with empty cells
 /// to line them up with the first column for the feature. For example:
 ///
-/// ```none
+/// ```txt
 ///    ObjectID, Size,  Center, ,      Feret, ,      ,        ,
 ///    ,         ,      dim0,   dim1,  Max,   Min,   PerpMin, MaxAng, MinAng
 ///    ,         um^2,  um,     um,    um,    um,    um,      rad,    rad
@@ -1072,7 +1072,7 @@ inline Image ObjectToMeasurement(
 ///    4,        412.0, 154.5,  9.561, 26.40, 22.00, 23.00,   2.222,  4.712
 /// ```
 ///
-/// **Note** that the file will not have columns aligned with spaces as shown here, each
+/// \attention The file will not have columns aligned with spaces as shown here, each
 /// comma is always followed by a single space.
 ///
 /// `options` is one or more of the following values:

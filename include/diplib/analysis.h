@@ -419,7 +419,7 @@ inline Image StructureTensor(
 /// --------------|------------
 /// `l1`          | The largest eigenvalue.
 /// `l2`          | The smallest eigenvalue.
-/// `orientation` | Orientation. Lies in the interval (-pi/2, pi/2).
+/// `orientation` | Orientation. Lies in the interval (-&pi;/2, &pi;/2).
 /// `energy`      | Sum of the two eigenvalues `l1` and `l2`.
 /// `anisotropy1` | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
 /// `anisotropy2` | Measure for local anisotropy: `1 - l2 / l1`, where `l1 > 0`.
@@ -623,8 +623,8 @@ inline Image MonogenicSignal(
 /// %Image          | Description
 /// ----------------|------------
 /// `"congruency"`  | **Phase congruency**, a measure of line/edge significance
-/// `"orientation"` | Line/edge orientation (in the range [-pi/2, pi/2]), 2D only
-/// `"phase"`       | Phase angle (pi/2 is a white line, 0 is an edge, -pi/2 is a black line)
+/// `"orientation"` | Line/edge orientation (in the range [-&pi;/2, &pi;/2]), 2D only
+/// `"phase"`       | Phase angle (&pi;/2 is a white line, 0 is an edge, -&pi;/2 is a black line)
 /// `"energy"`      | Raw phase congruency energy
 /// `"symmetry"`    | **Phase symmetry**, a contrast invariant measure of symmetry
 /// `"symenergy"`   | Raw phase symmetry energy

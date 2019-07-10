@@ -377,8 +377,8 @@ class DIP_NO_EXPORT ImageDisplay {
       /// | `"s8bit"`       | [-128, 127] |
       /// | `"s12bit"`      | [-2048, 2047] |
       /// | `"s16bit"`      | [-32768, 32767] |
-      /// | `"angle"`       | [-pi, pi] |
-      /// | `"orientation"` | [-pi/2, pi/2] |
+      /// | `"angle"`       | [-&pi;, &pi;] |
+      /// | `"orientation"` | [-&pi;/2, &pi;/2] |
       /// | `"lin"`         | uses the full range of the image (or slice) |
       /// | `"percentile"`  | uses the 5% to 95% range of the image |
       /// | `"base"`        | uses the full range of the image (or slice), but keeps 0 at the middle of the output range |

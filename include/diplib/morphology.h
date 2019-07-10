@@ -1061,12 +1061,12 @@ inline Image StochasticWatershed(
 
 /// \brief Marks significant local minima.
 ///
-/// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. All pixels with a value
+/// This algorithm works exactly like `dip::Watershed` with the `"fast"` flag set. All pixels with a value
 /// equal to the lowest value within each watershed basin form a local minimum. Note that they can form
-/// disconnected regions, use the "labels" flag to recognize such disconnected regions as a single local
+/// disconnected regions, use the `"labels"` flag to recognize such disconnected regions as a single local
 /// minimum. See `dip::Watershed` for a description of all the parameters.
 ///
-/// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
+/// `output` can be `"binary"` or `"labels"`, and determines whether the algorithm outputs a binary image or
 /// a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
@@ -1096,12 +1096,12 @@ inline Image WatershedMinima(
 
 /// \brief Marks significant local maxima.
 ///
-/// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. All pixels with a value
+/// This algorithm works exactly like `dip::Watershed` with the `"fast"` flag set. All pixels with a value
 /// equal to the highest value within each watershed basin form a local maximum. Note that they can form
-/// disconnected regions, use the "labels" flag to recognize such disconnected regions as a single local
+/// disconnected regions, use the `"labels"` flag to recognize such disconnected regions as a single local
 /// maximum. See `dip::Watershed` for a description of all the parameters.
 ///
-/// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
+/// `output` can be `"binary"` or `"labels"`, and determines whether the algorithm outputs a binary image or
 /// a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
@@ -1132,8 +1132,8 @@ inline Image WatershedMaxima(
 /// \brief Marks local minima.
 ///
 /// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
-/// surrounded by pixels with a higher value. If `output` is "binary", the result is a binary image where these
-/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image.
+/// surrounded by pixels with a higher value. If `output` is `"binary"`, the result is a binary image where these
+/// pixels and plateaus are set. If `output` is `"labels"`, the result is a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
@@ -1157,8 +1157,8 @@ inline Image Minima(
 /// \brief Marks local maxima.
 ///
 /// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
-/// surrounded by pixels with a lower value. If `output` is "binary", the result is a binary image where these
-/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image.
+/// surrounded by pixels with a lower value. If `output` is `"binary"`, the result is a binary image where these
+/// pixels and plateaus are set. If `output` is `"labels"`, the result is a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
@@ -1206,7 +1206,7 @@ inline Image Maxima(
 ///
 /// `in` must be a real-valued, scalar image. `out` will have the same type.
 ///
-/// \note Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
+/// \attention Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
 /// If this is an issue, consider adding one pixel on each side of your image.
 DIP_EXPORT void UpperSkeleton2D(
       Image const& in,
@@ -1228,7 +1228,7 @@ inline Image UpperSkeleton2D(
 ///
 /// Iteratively dilates (erodes) the image `marker` such that it remains lower (higher) than `in` everywhere, until
 /// stability. This is implemented with an efficient priority-queue--based method. `direction` indicates which of
-/// the two operations to apply ("dilation" or "erosion").
+/// the two operations to apply (`"dilation"` or `"erosion"`).
 ///
 /// `out` will have the data type of `in`, and `marker` will be cast to that same type (with clamping to the target
 /// range, see `dip::Convert`).
@@ -1393,14 +1393,15 @@ inline Image Leveling(
 ///
 /// The area opening removes all local maxima that have an area smaller than the given parameter `filterSize`,
 /// and is equivalent to the supremum of openings with all possible connected flat structuring elements of that area.
-/// The output has all maxima being connected components with a size of at least `filterSize`.
+/// The output has all maxima being connected components with a size of at least `filterSize`. The area closing is the
+/// dual operation.
 ///
 /// `mask` restricts the image regions used for the operation.
 ///
 /// `connectivity` determines what a connected component is. See \ref connectivity for information on the
 /// connectivity parameter.
 ///
-/// When `polarity` is set to `"closing"`, the area closing is computed instead.
+/// `polarity` can be `"opening"` (the default) or `"closing"`, to compute the area opening or area closing, respectively.
 ///
 /// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
 /// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`). For binary images, this function calls
@@ -1456,11 +1457,11 @@ inline Image AreaClosing(
    return out;
 }
 
-/// \brief Applies a path opening in all possible directions
+/// \brief Applies a path opening or closing in all possible directions
 ///
 /// `length` is the length of the path. All `filterParam` arguments to `dip::DirectedPathOpening` that yield a
-/// length of `length` pixels and represent unique directions are generated, and the directed path opening is computed
-/// for each of them. The supremum (when `polarity` is `"opening"`) or infimum (when it is `"closing"`) is
+/// length of `length` pixels and represent unique directions are generated, and the directed path opening or closing
+/// is computed for each of them. The supremum (when `polarity` is `"opening"`) or infimum (when it is `"closing"`) is
 /// computed over all results. See `dip::DirectedPathOpening` for a description of the algorithm and the parameters.
 DIP_EXPORT void PathOpening(
       Image const& in,
@@ -1482,7 +1483,7 @@ inline Image PathOpening(
    return out;
 }
 
-/// \brief Applies a path opening in a specific direction.
+/// \brief Applies a path opening or closing in a specific direction.
 ///
 /// The path opening is an opening over all possible paths of a specific length and general direction. A path
 /// direction represents a 90 degree cone within which paths are generated. The paths are formed by single pixel
@@ -1500,6 +1501,9 @@ inline Image PathOpening(
 /// the `filterParam` argument, see below. Note that the path length is given by the number of pixels in the path,
 /// not the Euclidean length of the path.
 ///
+/// The `polarity` parameter can be `"opening"` (the default) or `"closing"`, to compute the path opening and path
+/// closing, respectively.
+///
 /// When `mode` contains `"constrained"`, the path construction described above is modified such that, after every alternate
 /// step, a step in the main direction must be taken. This constraint avoids a zig-zag line that causes the path
 /// opening to yield much shorter lines for the diagonal directions if the lines in the image are thicker than one pixel.
@@ -1513,7 +1517,8 @@ inline Image PathOpening(
 /// applying the path opening, then taking the infimum of the result and the input (Merveille, 2018). For a path
 /// closing, the erosion and the supremum are used instead.
 ///
-/// **Definition of `filterSize`:** `length = max(abs(filterSize))` is the number of pixels in the line.
+/// \par Definition of `filterSize`
+/// `length = max(abs(filterSize))` is the number of pixels in the line.
 /// The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using
 /// `direction = round(filterSize/length)`. For example, if `filterSize=[7,0]`, then `length` is 7, and
 /// `direction` is `[1,0]` (to the right), with `[1,1]` and `[1,-1]` as alternate directions.

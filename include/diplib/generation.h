@@ -952,7 +952,7 @@ inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const&
 ///    The origin is as for `"right"`, and the coordinates are in the range [0.5,0.5).
 /// Additionally, `mode` can contain the following strings:
 ///  - `"math"`: The y axis is inverted, such that it increases upwards.
-///  - `"radial"`: In combination with "frequency", changes the range to [-pi,pi), as with radial
+///  - `"radial"`: In combination with "frequency", changes the range to [-&pi;,&pi;), as with radial
 ///    frequencies.
 ///  - `"physical"`: The coordinate system is in physical units rather than providing indices.
 ///    That is, instead of unit increments between pixels, the pixel size magnitudes are used to

@@ -534,7 +534,7 @@ section.
 
 <br>
 
-\remark
+\attention
 \parblock
 The result of an indexing operation can be used as input image to functions, but
 not as output image: output images are taken by reference, which cannot bind a temporary.
