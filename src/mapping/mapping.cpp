@@ -81,7 +81,8 @@ void Clip(
    }
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
-         [ = ]( auto its ) { return clamp( *its[ 0 ], static_cast< decltype( *its[ 0 ] ) >( low ), decltype( *its[ 0 ] )( high )); }, 2
+         [ = ]( auto its ) { return clamp( *its[ 0 ], clamp_cast< std::remove_reference_t< decltype( *its[ 0 ] ) >>( low ),
+                                                      clamp_cast< std::remove_reference_t< decltype( *its[ 0 ] ) >>( high )); }, 2
    ), dtype );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }

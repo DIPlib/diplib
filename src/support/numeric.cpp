@@ -274,6 +274,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::clamp_cast functions") {
    DOCTEST_CHECK( dip::clamp_cast< dip::sint16 >( dip::bin( 0 )) == dip::sint16( 0 ));
    DOCTEST_CHECK( dip::clamp_cast< dip::sint16 >( dip::bin( 1 )) == dip::sint16( 1 ));
    DOCTEST_CHECK( dip::clamp_cast< dip::scomplex >( dip::bin( 1 )) == dip::scomplex{ 1, 0 } );
+   // Cast dip::infinity to integer1, 0
+   DOCTEST_CHECK( dip::clamp_cast< dip::uint8 >( dip::infinity ) == dip::uint8{ 255 } );
+   DOCTEST_CHECK( dip::clamp_cast< dip::uint8 >( -dip::infinity ) == dip::uint8{ 0 } );
+   DOCTEST_CHECK( dip::clamp_cast< dip::sint32 >( dip::infinity ) == std::numeric_limits< dip::sint32 >::max() );
+   DOCTEST_CHECK( dip::clamp_cast< dip::sint32 >( -dip::infinity ) == std::numeric_limits< dip::sint32 >::lowest() );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
