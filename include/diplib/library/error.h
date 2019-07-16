@@ -72,8 +72,8 @@ class DIP_CLASS_EXPORT Error : public std::exception {
       }
 
       /// \brief Return a message indicating what caused the exception to be thrown, without location information.
-      char const* Message() const {
-         return message_.substr( 0, message_.find_first_of( '\n' )).c_str();
+      std::string Message() const {
+         return message_.substr( 0, message_.find_first_of( '\n' )); // TODO: this is a good place to introduce a StringView type.
       }
 
       /// \brief Add an entry to the stack trace. Typically called through the `#DIP_ADD_STACK_TRACE` macro.
