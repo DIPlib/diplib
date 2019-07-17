@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,6 +135,8 @@ void init_morphology( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1.0, "maxSize"_a = 0, "flags"_a = dip::StringSet{} );
    m.def( "SeededWatershed", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::StringSet const& >( &dip::SeededWatershed ),
           "in"_a, "seeds"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1.0, "maxSize"_a = 0, "flags"_a = dip::StringSet{} );
+   m.def( "CompactWatershed", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::StringSet const& >( &dip::CompactWatershed ),
+          "in"_a, "seeds"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "compactness"_a = 1.0, "flags"_a = dip::StringSet{} );
    m.def( "StochasticWatershed", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::dfloat, dip::String const& >( &dip::StochasticWatershed ),
           "in"_a, "nSeeds"_a = 100, "nIterations"_a = 50, "noise"_a = 0, "seeds"_a = dip::S::HEXAGONAL );
    m.def( "Maxima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),

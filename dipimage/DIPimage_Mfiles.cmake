@@ -27,6 +27,7 @@ chordlength.m
 clip.m
 closing.m
 cluster.m
+compactwaterseed.m
 convolve.m
 coord2image.m
 coordinates.m

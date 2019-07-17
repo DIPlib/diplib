@@ -213,6 +213,20 @@ void waterseed( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void compactwaterseed( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 5 );
+   dip::Image const seeds = dml::GetImage( prhs[ 0 ] );
+   dip::Image const in = dml::GetImage( prhs[ 1 ] );
+   dip::uint connectivity = nrhs > 2 ? dml::GetUnsigned( prhs[ 2 ] ) : 1;
+   dip::dfloat compactness = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 1.0;
+   dip::StringSet flags = nrhs > 4 ? dml::GetStringSet( prhs[ 4 ] ) : dip::StringSet{};
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::CompactWatershed( in, seeds, {}, out, connectivity, compactness, flags );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void watershed( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 5 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -391,6 +405,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          tophat( plhs, nrhs, prhs );
       } else if( function == "waterseed" ) {
          waterseed( plhs, nrhs, prhs );
+      } else if( function == "compactwaterseed" ) {
+         compactwaterseed( plhs, nrhs, prhs );
       } else if( function == "watershed" ) {
          watershed( plhs, nrhs, prhs );
       } else if( function == "stochasticwatershed" ) {

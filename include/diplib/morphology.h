@@ -83,7 +83,7 @@ class DIP_NO_EXPORT Kernel;
 ///    of the meaning of these various line implementations, see \ref line_morphology.
 ///
 /// To define a structuring element through an image, provide either a binary or grey-value image.
-/// If the image is binary, the "set" pixels form the structuring element. If the image is a grey-value
+/// If the image is binary, the set pixels form the structuring element. If the image is a grey-value
 /// image, those grey values are directly used as structuring element values. Set pixels to negative infinity
 /// to exclude them from the structuring element (the result would be the same by setting them to
 /// a value lower than the range of the input image, but the algorithm should be more efficient if
@@ -876,16 +876,16 @@ inline Image RankMaxOpening(
 /// information on the connectivity parameter.
 ///
 /// `flags` determines how the output is computed. There are three options:
-/// - "labels" or "binary": returns either the labels used during processing, with the watershed
+/// - `"labels"` or `"binary"`: returns either the labels used during processing, with the watershed
 ///   lines as background (value 0), or a binary image where the watershed lines are set and the
-///   regions are not set. "binary" is the default.
-/// - "low first" or "high first": determines the sort order of pixels. The default of "low first"
+///   regions are not set. `"binary"` is the default.
+/// - `"low first"` or `"high first"`: determines the sort order of pixels. The default of `"low first"`
 ///   yields the normal watershed, where local minima are origin of the basins, and the watershed
-///   lines run along the high ridges in the image. "high first" simply inverts the definition,
+///   lines run along the high ridges in the image. `"high first"` simply inverts the definition,
 ///   such that local maxima are at the centers of the basins, and the watershed lines run along
 ///   the low valleys.
-/// - "fast" or "correct": determines which algorithm is used:
-///   - "fast" is an algorithm that takes a few shortcuts, but usually manages to produce good results
+/// - `"fast"` or `"correct"`: determines which algorithm is used:
+///   - `"fast"` is an algorithm that takes a few shortcuts, but usually manages to produce good results
 ///     any way. One shortcut leads to all border pixels being marked as watershed lines. It is possible
 ///     to extend the image by one pixel before processing to circumvent this. The other shortcut means
 ///     that plateaus are not handled correctly. A plateau is a region in the image where pixels have
@@ -893,8 +893,8 @@ inline Image RankMaxOpening(
 ///     the plateaus, instead being shifted to one side. Adding a little bit of noise to the image, and
 ///     setting `maxDepth` to the range of the noise, usually improves the results in these cases
 ///     a little bit.
-///   - "correct" is an algorithm that first finds the local minima through `dip::Minima` (or maxima if
-///     "high first" is set), and then applies `dip::SeededWatershed`. This always produces correct results,
+///   - `"correct"` is an algorithm that first finds the local minima through `dip::Minima` (or maxima if
+///     `"high first"` is set), and then applies `dip::SeededWatershed`. This always produces correct results,
 ///     but is significantly slower.
 ///
 /// The on-line region merging works as follows: When two regions first meet, a decision is
@@ -907,10 +907,10 @@ inline Image RankMaxOpening(
 /// In this case, the merging is exactly equivalent to applying an H-minima transform to the image
 /// before computing the watershed.
 ///
-/// Note that for the "fast" algorithm, `maxDepth` is always at least 0 (negative values will be ignored).
+/// Note that for the `"fast"` algorithm, `maxDepth` is always at least 0 (negative values will be ignored).
 /// That is, two regions without a grey-value difference between them (they are on the same plateau) will
 /// always be merged. This is necessary to prevent unexpected results (i.e. a plateau being split into
-/// multiple regions). For the "correct" algorithm, any negative value of `maxDepth` will disable the
+/// multiple regions). For the `"correct"` algorithm, any negative value of `maxDepth` will disable the
 /// merging. But note that, due to the way that the region seeds are computed (`dip::Minima`), setting
 /// `maxDepth` to 0 would lead to the exact same result.
 ///
@@ -949,7 +949,7 @@ inline Image Watershed(
 /// include on-line merging. Note that two labeled regions in `seeds` that do not have a grey-value ridge
 /// between them (i.e. they are on the same plateau) will be merged unless merging is disabled (see below).
 /// Merged labels will be painted with the label of one of the originating seeds, and the other labels will
-/// not be present in the output (only if `flags` contains "labels").
+/// not be present in the output (only if `flags` contains `"labels"`).
 ///
 /// `connectivity` determines which pixels are considered neighbors; the default value of 1 leads to
 /// vertex-connected watershed lines (i.e. thinnest possible result). See \ref connectivity for information
@@ -959,18 +959,18 @@ inline Image Watershed(
 /// additions:
 /// - If `maxDepth` is negative, regions will never be merged, even if they have no grey-value difference
 ///   between them.
-/// - The `flags` values "fast" or "correct" are not allowed.
-/// - `flags` can contain the string "no gaps", which prevents the formation of watershed lines in between
-///   the regions. That is, seeds are grown until they touch. This flag implies the flag "labels", since in
+/// - The `flags` values `"fast"` or `"correct"` are not allowed.
+/// - `flags` can contain the string `"no gaps"`, which prevents the formation of watershed lines in between
+///   the regions. That is, seeds are grown until they touch. This flag implies the flag `"labels"`, since in
 ///   a binary image there would be no distinction between initially separate regions.
 ///   Pixels that have an infinite value in `in`, or a zero value in `mask`, will still be excluded from the
 ///   region growing process.
-/// - `flags` can contain the string "uphill only", which will limit the region growing to be exclusively
-///   uphill (or downhill if "high first" is also given). This means that regions will grow to fill the
+/// - `flags` can contain the string `"uphill only"`, which will limit the region growing to be exclusively
+///   uphill (or downhill if `"high first"` is also given). This means that regions will grow to fill the
 ///   local catchment basin, but will not grow into neighboring catchment basins that have no seeds. This
 ///   flag will also disable any merging.
 ///
-/// \see dip::Watershed, dip::GrowRegions, dip::GrowRegionsWeighted
+/// \see dip::Watershed, dip::CompactWatershed, dip::GrowRegions, dip::GrowRegionsWeighted
 DIP_EXPORT void SeededWatershed(
       Image const& in,
       Image const& seeds,
@@ -992,6 +992,51 @@ inline Image SeededWatershed(
 ) {
    Image out;
    SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
+   return out;
+}
+
+/// \brief Computes the compact watershed of `in` within `mask`, starting at `seeds`.
+///
+/// `seeds` is a binary or labeled image (if binary, it is labeled using `connectivity`). These labels are
+/// iteratively expanded in the watershed order (i.e. pixels that have a low value in `in` go first), modified
+/// with a compactness term, until they meet. Pixels where two regions meet are marked as the watershed lines.
+///
+/// The compactness term modifies the normal watershed order by taking into account the distance to the originating
+/// seed. This distance, multiplied by `compactness`, is added to the gray value when determining the processing
+/// order. A `compactness` of 0 leads to the normal seeded watershed, and a very large value for `compactness`
+/// leads to disregarding the pixel values in `in`, thereby creating a Voronoi diagram.
+///
+/// `connectivity` determines which pixels are considered neighbors; the default value of 1 leads to
+/// vertex-connected watershed lines (i.e. thinnest possible result). See \ref connectivity for information
+/// on the connectivity parameter.
+///
+/// The `flags` parameter work as described in `dip::SeededWatershed`, except that `"uphill only"` is not supported.
+///
+/// \see dip::SeededWatershed, dip::Watershed, dip::GrowRegions, dip::GrowRegionsWeighted
+///
+/// \literature
+/// <li>P. Neubert and P. Protzel, "Compact Watershed and Preemptive SLIC: On improving trade-offs of superpixel segmentation algorithms",
+///     22<sup>nd</sup> International Conference on Pattern Recognition, Stockholm, 2014, pp. 996-1001.
+/// \endliterature
+DIP_EXPORT void CompactWatershed(
+      Image const& in,
+      Image const& seeds,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity,
+      dfloat compactness,
+      StringSet const& flags
+);
+inline Image CompactWatershed(
+      Image const& in,
+      Image const& seeds,
+      Image const& mask = {},
+      dip::uint connectivity = 1,
+      dfloat compactness = 1.0,
+      StringSet const& flags = {}
+) {
+   Image out;
+   CompactWatershed( in, seeds, mask, out, connectivity, compactness, flags );
    return out;
 }
 

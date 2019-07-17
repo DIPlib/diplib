@@ -49,7 +49,7 @@
 %  See the user guide for the definition of connectivity in DIPimage.
 %
 % SEE ALSO:
-%  waterseed, maxima, minima
+%  waterseed, compactwaterseed, maxima, minima
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Watershed.
