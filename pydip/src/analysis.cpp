@@ -250,4 +250,6 @@ void init_analysis( py::module& m ) {
           }, "in"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL );
+   m.def( "Superpixels", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringSet const& >( &dip::Superpixels ),
+          "in"_a, "density"_a = 0.005, "compactness"_a = 1.0, "method"_a = "CW", "flags"_a = dip::StringSet{} );
 }

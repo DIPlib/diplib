@@ -223,6 +223,7 @@ stretch.m
 structuretensor.m
 subpixlocation.m
 subsample.m
+superpixels.m
 testobject.m
 tframehessian.m
 thetatheta.m

@@ -135,6 +135,19 @@ void cluster( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    }
 }
 
+void superpixels( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 5 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::dfloat density = nrhs > 1 ? dml::GetFloat( prhs[ 1 ] ) : 0.005;
+   dip::dfloat compactness = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 1.0;
+   dip::String method = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : "CW";
+   dip::StringSet flags = nrhs > 4 ? dml::GetStringSet( prhs[ 4 ] ) : dip::StringSet{};
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::Superpixels( in, out, density, compactness, method, flags );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -363,6 +376,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       } else if( function == "cluster" ) {
          cluster( nlhs, plhs, nrhs, prhs );
+      } else if( function == "superpixels" ) {
+         superpixels( plhs, nrhs, prhs );
       } else if( function == "threshold" ) {
          threshold( nlhs, plhs, nrhs, prhs );
 

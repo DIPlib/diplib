@@ -87,6 +87,11 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(geometric_transformation PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(geometric_transformation DIP DIPviewer)
 
+   # An example program that uses superpixel segmentation and graph manipulation
+   add_executable(oversegmentation cpp/oversegmentation.cpp)
+   target_compile_definitions(oversegmentation PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(oversegmentation DIP DIPviewer)
+
    add_dependencies(examples
                     viewer
                     display

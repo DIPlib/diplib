@@ -476,6 +476,56 @@ inline Image Canny(
    return out;
 }
 
+/// \brief Generates superpixels (oversegmentation)
+///
+/// `density` indicates how many superpixels, on average, should be created. It is given in superpixels per pixel.
+/// That is, `1/density` is the average size of the superpixels.
+///
+/// `compactness` controls the shape of the superpixels. Reducing this value leads to superpixels that more
+/// precisely follow image contours, but also are more varied in size and shape. Increasing this value leads
+/// to more isotropic superpixels and less variation in size.
+///
+/// `method` controls the method used to generate superpixels. Currently only `"CW"` is supported. This is the
+/// compact watershed superpixel segmentation (Neubert and Protzel, 2014).
+///
+/// `flags` can contain the following flags:
+/// - `"rectangular"` (default) or `"hexagonal"`: controls the basic shape of the superpixels (the shape they tend
+///   towards as `compactness` increases). For 3D images, `"hexagonal"` implies an FCC grid (see `dip::FillRandomGrid`).
+///   For images with more than 3 dimensions, `"rectangular"` will always be used.
+/// - `"no gaps"`  indicates that the superpixels must cover the whole image. By default a 1-pixel gap is left in
+///   between superpixels.
+///
+/// `in` must be real-valued. If not scalar, the norm of the gradient magnitude for each tensor element is used
+/// to determine where edges are located. In the case of a color image, no color space conversion is performed,
+/// the image is used as-is. It is recommended to pass an image in an appropriate color space for superpixel
+/// segmentation, such as CIE Lab.
+///
+/// \see dip::FillRandomGrid, dip::CompactWatershed
+///
+/// \literature
+/// <li>P. Neubert and P. Protzel, "Compact Watershed and Preemptive SLIC: On improving trade-offs of superpixel segmentation algorithms",
+///     22<sup>nd</sup> International Conference on Pattern Recognition, Stockholm, 2014, pp. 996-1001.
+/// \endliterature
+DIP_EXPORT void Superpixels(
+      Image const& in,
+      Image& out,
+      dfloat density = 0.005,
+      dfloat compactness = 1.0,
+      String const& method = "CW",
+      StringSet const& flags = {}
+);
+inline Image Superpixels(
+      Image const& in,
+      dfloat density = 0.005,
+      dfloat compactness = 1.0,
+      String const& method = "CW",
+      StringSet const& flags = {}
+) {
+   Image out;
+   Superpixels( in, out, density, compactness, method, flags );
+   return out;
+}
+
 /// \}
 
 } // namespace dip

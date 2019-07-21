@@ -253,6 +253,7 @@ regions/region_adjacency_graph.cpp
 segmentation/canny.cpp
 segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
+segmentation/superpixels.cpp
 segmentation/threshold.cpp
 support/accumulators.cpp
 support/matrix.cpp
