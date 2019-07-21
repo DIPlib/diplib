@@ -394,7 +394,7 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window
     /// ```
     virtual ViewingOptions &options() = 0;
     
-    /// \brief Returns the `dip::Image` being visualized.
+    /// \brief Returns the `dip::Image` being visualized, converted to real valued.
     ///
     /// Only call this under lock.
     ///
@@ -408,6 +408,20 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window
     /// ```
     virtual const dip::Image &image() = 0;
     
+    /// \brief Returns the `dip::Image` being visualized.
+    ///
+    /// Only call this under lock.
+    ///
+    /// Example usage:
+    ///
+    /// ```cpp
+    ///     {
+    ///        dip::viewer::Viewer::Guard(*viewer);
+    ///        dip::Image image = viewer->original();
+    ///     }
+    /// ```
+    virtual const dip::Image &original() = 0;
+
     /// \brief Sets the image to be visualized.
     ///
     /// Only call this under lock.

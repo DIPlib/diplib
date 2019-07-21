@@ -156,6 +156,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     
     ViewingOptions &options() override { return options_; }
     const dip::Image &image() override { return image_; }
+    const dip::Image &original() override { return original_; }
     void setImage(const dip::Image &image) override { original_ = image; refresh_seq_++; }
     void refreshImage() { refresh_seq_++; }
     

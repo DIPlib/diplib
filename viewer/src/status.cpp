@@ -22,6 +22,18 @@
 
 namespace dip { namespace viewer {
 
+namespace {
+std::string to_string(dcomplex value) {
+   std::stringstream str;
+   str << value.real();
+   if (value.imag() >= 0) {
+      str << '+';
+   }
+   str << value.imag() << 'i';
+   return str.str();
+}
+}
+
 void StatusViewPort::render()
 {
   auto &o = viewer()->options();
@@ -73,7 +85,8 @@ void StatusViewPort::render()
     rx += viewer()->drawString("): ");
     if (te > 1)
       rx += viewer()->drawString("[");
-    
+
+    auto pixel = viewer()->original().At(op);
     for (int ii=0; ii < te; ++ii)
     {
       if (o.lut_ == ViewingOptions::LookupTable::RGB)
@@ -96,7 +109,16 @@ void StatusViewPort::render()
       }
       
       glRasterPos2i((GLint)rx, 12);
-      rx += viewer()->drawString(std::to_string((dip::sfloat)viewer()->image().At(op)[(size_t)ii]).c_str());
+      auto value = pixel[(size_t)ii];
+      if (value.DataType().IsUnsigned()) {
+         rx += viewer()->drawString(std::to_string(value.As<dip::uint>()).c_str());
+      } else if (value.DataType().IsSInt()) {
+         rx += viewer()->drawString(std::to_string(value.As<dip::sint>()).c_str());
+      } else if (value.DataType().IsComplex()) {
+         rx += viewer()->drawString(to_string(value.As<dcomplex>()).c_str());
+      } else {
+         rx += viewer()->drawString(std::to_string(value.As<dfloat>()).c_str());
+      }
         
       glColor3f(1., 1., 1.);
       glRasterPos2i((GLint)rx, 12);

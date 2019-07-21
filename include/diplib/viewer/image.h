@@ -115,6 +115,7 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
 
     ViewingOptions &options() override { return options_; }
     const dip::Image &image() override { return viewport_->view()->image(); }
+    const dip::Image &original() override { return viewport_->view()->image(); }
     void setImage(const dip::Image &image) override { viewport_->view()->set(image); refresh(); }
 
   protected:
