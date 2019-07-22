@@ -254,7 +254,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 #define DIP_THROW( str ) DIP__THROW( dip::ParameterError, str )
 
 /// \brief Throw a `dip::ParameterError` that reads "Invalid flag: <flag>".
-#define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + std::string( flag ));
+#define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + std::string( flag ))
 
 /// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
 #define DIP_THROW_IF( test, str ) if( test ) DIP_THROW( str )
