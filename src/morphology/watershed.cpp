@@ -47,9 +47,9 @@ namespace {
 
 template< typename TPI >
 struct WatershedRegion {
-   dip::uint size;
-   TPI lowest;
-   WatershedRegion(): size( 0 ), lowest( 0 ) {}
+   dip::uint size = 0;
+   TPI lowest = 0;
+   WatershedRegion() = default;
    WatershedRegion( TPI value ): size( 1 ), lowest( value ) {}
    WatershedRegion( dip::uint sz, TPI value ): size( sz ), lowest( value ) {}
 };
@@ -78,13 +78,6 @@ template< typename TPI, typename UnionFunction >
 void AddPixel( WatershedRegionList< TPI, UnionFunction >& list, LabelType index ) {
    WatershedRegion< TPI >& region = list.Value( index );
    ++( region.size );
-}
-
-template< typename TPI, typename UnionFunction >
-void AddSizes( WatershedRegionList< TPI, UnionFunction >& list, LabelType label, LabelType other ) {
-   WatershedRegion< TPI >& region1 = list.Value( label );
-   WatershedRegion< TPI >& region2 = list.Value( other );
-   region1.size += region2.size;
 }
 
 template< typename TPI >
@@ -346,13 +339,11 @@ constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
 constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
 constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 2;
 
-// Returns true if a pixel in the neighbor list is foreground and has the mask set
+// Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL
 inline bool PixelHasForegroundNeighbor(
       LabelType const* label,
-      bin const* mask,
       NeighborList const& neighbors,
       IntegerArray const& neighborsLabels,
-      IntegerArray const& neighborsMask,
       UnsignedArray const& coords,
       UnsignedArray const& imsz,
       bool onEdge
@@ -360,27 +351,23 @@ inline bool PixelHasForegroundNeighbor(
    auto it = neighbors.begin();
    for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
       if( !onEdge || it.IsInImage( coords, imsz )) {
-         if( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) {
-            LabelType lab = *( label + neighborsLabels[ jj ] );
-            if(( lab != 0 ) && ( lab <= MAX_LABEL )) {
-               return true;
-            }
+         LabelType lab = *( label + neighborsLabels[ jj ] );
+         if(( lab != 0 ) && ( lab <= MAX_LABEL )) {
+            return true;
          }
       }
    }
    return false;
 }
 
-// Returns true if a pixel in the neighbor list is foreground, has the mask set, and is larger in greyvalue
+// Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL, and is larger in grey value
 template< typename TPI >
 inline bool PixelHasUphillForegroundNeighbor(
       LabelType const* label,
       TPI const* grey,
-      bin const* mask,
       NeighborList const& neighbors,
       IntegerArray const& neighborsLabels,
       IntegerArray const& neighborsGrey,
-      IntegerArray const& neighborsMask,
       UnsignedArray const& coords,
       UnsignedArray const& imsz,
       bool onEdge
@@ -388,26 +375,22 @@ inline bool PixelHasUphillForegroundNeighbor(
    auto it = neighbors.begin();
    for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
       if( !onEdge || it.IsInImage( coords, imsz )) {
-         if( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) {
-            LabelType lab = *( label + neighborsLabels[ jj ] );
-            if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) > *grey )) {
-               return true;
-            }
+         LabelType lab = *( label + neighborsLabels[ jj ] );
+         if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) > *grey )) {
+            return true;
          }
       }
    }
    return false;
 }
-// Returns true if a pixel in the neighbor list is foreground, has the mask set, and is smaller in greyvalue
+// Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL, and is smaller in grey value
 template< typename TPI >
 inline bool PixelHasDownhillForegroundNeighbor(
       LabelType const* label,
       TPI const* grey,
-      bin const* mask,
       NeighborList const& neighbors,
       IntegerArray const& neighborsLabels,
       IntegerArray const& neighborsGrey,
-      IntegerArray const& neighborsMask,
       UnsignedArray const& coords,
       UnsignedArray const& imsz,
       bool onEdge
@@ -415,11 +398,9 @@ inline bool PixelHasDownhillForegroundNeighbor(
    auto it = neighbors.begin();
    for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
       if( !onEdge || it.IsInImage( coords, imsz )) {
-         if( !mask || *( mask + neighborsMask[ jj ] ) != 0 ) {
-            LabelType lab = *( label + neighborsLabels[ jj ] );
-            if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) < *grey )) {
-               return true;
-            }
+         LabelType lab = *( label + neighborsLabels[ jj ] );
+         if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) < *grey )) {
+            return true;
          }
       }
    }
@@ -452,7 +433,7 @@ inline void EnqueueNeighbors(
       if( useNeighbor[ jj ] ) {
          dip::sint neighOffset = offsetLabels + neighborOffsetsLabels[ jj ];
          if( labels[ neighOffset ] == 0 ) {
-            TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ] ];
+            TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ]];
             if( !uphillOnly || ( lowFirst ? grey[ offsetGrey ] < nVal : grey[ offsetGrey ] > nVal )) {
                Q.push( Qitem< TPI >{ nVal, order++, neighOffset } );
                labels[ neighOffset ] = PIXEL_ON_STACK;
@@ -465,10 +446,8 @@ inline void EnqueueNeighbors(
 template< typename TPI >
 void dip__SeededWatershed(
       Image const& c_grey,
-      Image const& c_mask,
       Image& c_labels,
       IntegerArray const& neighborOffsetsGrey,
-      IntegerArray const& neighborOffsetsMask,
       IntegerArray const& neighborOffsetsLabels,
       NeighborList const& neighborList,
       dip::uint numlabs,
@@ -492,44 +471,33 @@ void dip__SeededWatershed(
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
-   JointImageIterator< TPI, LabelType, bin > it( { c_grey, c_labels, c_mask } );
-   bool hasMask = c_mask.IsForged();
+   JointImageIterator< TPI, LabelType > it( { c_grey, c_labels } );
    dip::uint order = 0;
    do {
-      if( !hasMask || it.template Sample< 2 >() ) {
-         LabelType lab = it.template Sample< 1 >();
-         if( lab == 0 ) {
-            bool onEdge = it.IsOnEdge();
-            if( uphillOnly
-                ? ( lowFirst
-                    ? PixelHasDownhillForegroundNeighbor( it.template Pointer< 1 >(), it.template Pointer< 0 >(),
-                                                          hasMask ? it.template Pointer< 2 >() : nullptr,
-                                                          neighborList, neighborOffsetsLabels, neighborOffsetsGrey, neighborOffsetsMask,
-                                                          it.Coordinates(), imsz, onEdge )
-                    : PixelHasUphillForegroundNeighbor( it.template Pointer< 1 >(), it.template Pointer< 0 >(),
-                                                        hasMask ? it.template Pointer< 2 >() : nullptr,
-                                                        neighborList, neighborOffsetsLabels, neighborOffsetsGrey, neighborOffsetsMask,
-                                                        it.Coordinates(), imsz, onEdge ))
-                : PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
-                                              hasMask ? it.template Pointer< 2 >() : nullptr,
-                                              neighborList, neighborOffsetsLabels, neighborOffsetsMask,
-                                              it.Coordinates(), imsz, onEdge )) {
-               Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order++, it.template Offset< 1 >() } );
-               it.template Sample< 1 >() = PIXEL_ON_STACK;
-            }
-         } else { // lab > 0
-            DIP_ASSERT( lab <= numlabs ); // Not really necessary, is it?
-            AddPixel( regions, lab, it.template Sample< 0 >(), lowFirst );
+      LabelType lab = it.template Sample< 1 >();
+      if( lab == 0 ) {
+         bool onEdge = it.IsOnEdge();
+         if( uphillOnly
+             ? ( lowFirst
+                 ? PixelHasDownhillForegroundNeighbor( it.template Pointer< 1 >(), it.template Pointer< 0 >(),
+                                                       neighborList, neighborOffsetsLabels, neighborOffsetsGrey,
+                                                       it.Coordinates(), imsz, onEdge )
+                 : PixelHasUphillForegroundNeighbor( it.template Pointer< 1 >(), it.template Pointer< 0 >(),
+                                                     neighborList, neighborOffsetsLabels, neighborOffsetsGrey,
+                                                     it.Coordinates(), imsz, onEdge ))
+             : PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
+                                           neighborList, neighborOffsetsLabels,
+                                           it.Coordinates(), imsz, onEdge )) {
+            Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order++, it.template Offset< 1 >() } );
+            it.template Sample< 1 >() = PIXEL_ON_STACK;
          }
+      } else if( lab <= numlabs ) {
+         AddPixel( regions, lab, it.template Sample< 0 >(), lowFirst );
       }
    } while( ++it );
 
    // Start processing pixels
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );
-   bin* mask = nullptr;
-   if( c_mask.IsForged() ) {
-      mask = static_cast< bin* >( c_mask.Origin() );
-   }
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
    auto coordinatesComputer = c_labels.OffsetToCoordinatesComputer();
    NeighborLabels neighborLabels;
@@ -540,7 +508,6 @@ void dip__SeededWatershed(
       UnsignedArray coords = coordinatesComputer( offsetLabels );
       bool onEdge = c_grey.IsOnEdge( coords ); // TODO: label edge pixels (use upper bit?) such that we don't need to do compute this
       dip::sint offsetGrey = c_grey.Offset( coords );
-      dip::sint offsetMask = mask ? c_mask.Offset( coords ) : 0;
       if( lowFirst ? PixelIsInfinity( grey[ offsetGrey ] ) : PixelIsMinusInfinity( grey[ offsetGrey ] )) {
          break; // we're done
       }
@@ -548,7 +515,7 @@ void dip__SeededWatershed(
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
          useNeighbor[ jj ] = ( !onEdge || lit.IsInImage( coords, imsz )) &&
-                             ( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] );
+                             ( labels[ offsetLabels + neighborOffsetsLabels[ jj ]] != WATERSHED_LABEL );
          if( useNeighbor[ jj ] ){
             LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
             if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
@@ -580,9 +547,9 @@ void dip__SeededWatershed(
                   ++realRegionCount;
                }
             }
-            LabelType lab = neighborLabels.Label( 0 );
             if( realRegionCount < 2 ) {
                // At most one is a "real" region: merge all
+               LabelType lab = neighborLabels.Label( 0 );
                for( dip::uint jj = 1; jj < neighborLabels.Size(); ++jj ) {
                   regions.Union( lab, neighborLabels.Label( jj ));
                }
@@ -600,9 +567,9 @@ void dip__SeededWatershed(
                   LabelType bestLab = 0;
                   for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
                      if( useNeighbor[ jj ] ) {
-                        lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
+                        LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
                         if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
-                           TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ] ];
+                           TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ]];
                            if(( bestLab == 0 ) || ( lowFirst ? nVal < bestVal : nVal > bestVal )) {
                               bestVal = nVal;
                               bestLab = lab;
@@ -725,19 +692,18 @@ void SeededWatershed(
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
    out.SetPixelSize( pixelSize );
+   if( mask.IsForged() ) {
+      out.At( !mask ) = WATERSHED_LABEL;
+   }
 
    // Create array with offsets to neighbors
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
    IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
    IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
-   IntegerArray neighborOffsetsMask;
-   if( mask.IsForged() ) {
-      neighborOffsetsMask = neighborList.ComputeOffsets( mask.Strides() );
-   }
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, mask, out,
-         neighborOffsetsIn, neighborOffsetsMask, neighborOffsetsOut, neighborList,
+   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, out,
+         neighborOffsetsIn, neighborOffsetsOut, neighborList,
          numlabs, maxDepth, maxSize, lowFirst, binaryOutput, noGaps, uphillOnly ), in.DataType() );
 
    if( binaryOutput ) {
@@ -788,10 +754,8 @@ inline void EnqueueNeighbors(
 template< typename TPI >
 void dip__CompactWatershed(
       Image const& c_grey,
-      Image const& c_mask,
       Image& c_labels,
       IntegerArray const& neighborOffsetsGrey,
-      IntegerArray const& neighborOffsetsMask,
       IntegerArray const& neighborOffsetsLabels,
       NeighborList const& neighborList,
       dfloat compactness,
@@ -806,30 +770,22 @@ void dip__CompactWatershed(
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
-   JointImageIterator< TPI, LabelType, bin > it( { c_grey, c_labels, c_mask } );
-   bool hasMask = c_mask.IsForged();
+   JointImageIterator< TPI, LabelType > it( { c_grey, c_labels } );
    do {
-      if( !hasMask || it.template Sample< 2 >() ) {
-         LabelType lab = it.template Sample< 1 >();
-         if( lab == 0 ) {
-            bool onEdge = it.IsOnEdge();
-            if( PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
-                                            hasMask ? it.template Pointer< 2 >() : nullptr,
-                                            neighborList, neighborOffsetsLabels, neighborOffsetsMask,
-                                            it.Coordinates(), imsz, onEdge )) {
-               Q.push( CQitem< TPI >{ static_cast< dfloat >( it.template Sample< 0 >() ), 0, it.template Offset< 1 >() } );
-               it.template Sample< 1 >() = PIXEL_ON_STACK;
-            }
+      LabelType lab = it.template Sample< 1 >();
+      if( lab == 0 ) {
+         bool onEdge = it.IsOnEdge();
+         if( PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
+                                         neighborList, neighborOffsetsLabels,
+                                         it.Coordinates(), imsz, onEdge )) {
+            Q.push( CQitem< TPI >{ static_cast< dfloat >( it.template Sample< 0 >() ), 0, it.template Offset< 1 >() } );
+            it.template Sample< 1 >() = PIXEL_ON_STACK;
          }
       }
    } while( ++it );
 
    // Start processing pixels
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );
-   bin* mask = nullptr;
-   if( c_mask.IsForged() ) {
-      mask = static_cast< bin* >( c_mask.Origin() );
-   }
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
    auto coordinatesComputer = c_labels.OffsetToCoordinatesComputer();
    NeighborLabels neighborLabels;
@@ -841,7 +797,6 @@ void dip__CompactWatershed(
       UnsignedArray coords = coordinatesComputer( offsetLabels );
       bool onEdge = c_grey.IsOnEdge( coords ); // TODO: label edge pixels (use upper bit?) such that we don't need to do compute this
       dip::sint offsetGrey = c_grey.Offset( coords );
-      dip::sint offsetMask = mask ? c_mask.Offset( coords ) : 0;
       if( lowFirst ? PixelIsInfinity( grey[ offsetGrey ] ) : PixelIsMinusInfinity( grey[ offsetGrey ] )) {
          break; // we're done
       }
@@ -849,7 +804,7 @@ void dip__CompactWatershed(
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
          useNeighbor[ jj ] = ( !onEdge || lit.IsInImage( coords, imsz )) &&
-                             ( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] );
+                             ( labels[ offsetLabels + neighborOffsetsLabels[ jj ]] != WATERSHED_LABEL );
          if( useNeighbor[ jj ] ){
             LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
             if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
@@ -874,7 +829,6 @@ void dip__CompactWatershed(
          }
          default: {
             // Touching two or more labels
-            LabelType lab = neighborLabels.Label( 0 );
             if( noGaps ) {
                // Grow one of the regions (whichever has the lowest value, which we need to find out here because
                // we don't store the origin label in the queue)
@@ -882,7 +836,7 @@ void dip__CompactWatershed(
                LabelType bestLab = 0;
                for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
                   if( useNeighbor[ jj ] ) {
-                     lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
+                     LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
                      if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
                         TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ]];
                         if(( bestLab == 0 ) || ( lowFirst ? nVal < bestVal : nVal > bestVal )) {
@@ -999,19 +953,18 @@ void CompactWatershed(
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
    out.SetPixelSize( pixelSize );
+   if( mask.IsForged() ) {
+      out.At( !mask ) = WATERSHED_LABEL;
+   }
 
    // Create array with offsets to neighbors
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
    IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
    IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
-   IntegerArray neighborOffsetsMask;
-   if( mask.IsForged() ) {
-      neighborOffsetsMask = neighborList.ComputeOffsets( mask.Strides() );
-   }
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__CompactWatershed, ( in, mask, out,
-         neighborOffsetsIn, neighborOffsetsMask, neighborOffsetsOut, neighborList,
+   DIP_OVL_CALL_REAL( dip__CompactWatershed, ( in, out,
+         neighborOffsetsIn, neighborOffsetsOut, neighborList,
          compactness, lowFirst, binaryOutput, noGaps ), in.DataType() );
 
    if( binaryOutput ) {
