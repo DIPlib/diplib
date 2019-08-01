@@ -140,6 +140,8 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    pixSz.def( py::init<>() );
    pixSz.def( py::init< dip::PhysicalQuantity const& >(), "physicalQuantity"_a );
    pixSz.def( py::init< dip::PhysicalQuantityArray const& >(), "physicalQuantities"_a );
+   pixSz.def( py::init( []( dip::dfloat mag, dip::Units const& units ) { return dip::PhysicalQuantity( mag, units ); } ),
+              "magnitude"_a, "units"_a = dip::Units{} );
    pixSz.def( "__repr__", []( dip::PixelSize const& self ) { std::ostringstream os; os << "<PixelSize " << self << ">"; return os.str(); } );
    pixSz.def( "__str__", []( dip::PixelSize const& self ) { std::ostringstream os; os << self; return os.str(); } );
    pixSz.def( "__len__", []( dip::PixelSize const& self ) { return self.Size(); } );
