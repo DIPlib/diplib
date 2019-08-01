@@ -35,7 +35,7 @@ void Full(
       DataType outBufferType,
       DataType outImageType,
       dip::uint nTensorElements,
-      BoundaryConditionArray boundaryConditions,
+      BoundaryConditionArray const& boundaryConditions,
       Kernel const& kernel,
       FullLineFilter& lineFilter,
       FullOptions opts

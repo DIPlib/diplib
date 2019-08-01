@@ -1000,7 +1000,7 @@ DIP_EXPORT void Full(
       DataType outBufferType,          ///< Data types for output buffer
       DataType outImageType,           ///< Data types for output image
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
-      BoundaryConditionArray boundaryConditions, ///< Filling method for the border
+      BoundaryConditionArray const& boundaryConditions, ///< Filling method for the border
       Kernel const& kernel,            ///< Object describing the neighborhood.
       FullLineFilter& lineFilter,      ///< Function object to call for each image line
       FullOptions opts = {}            ///< Options to control how `lineFilter` is called

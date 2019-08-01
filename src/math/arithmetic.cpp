@@ -275,7 +275,6 @@ void Multiply(
       Image& out,
       DataType dt
 ) {
-   // TODO: Another special case could be for diagonal matrices, where each row/column of the other matrix is multiplied by the same value.
    if( lhs.IsScalar() || rhs.IsScalar() ) {
       DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt ));
       return;

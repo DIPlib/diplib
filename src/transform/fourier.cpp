@@ -863,7 +863,7 @@ void FourierTransform(
    tmp.Protect( false );
    // Produce real-valued output
    // TODO: OpenCV has code for a DFT that takes complex data but reads only half the array, assumes symmetry,
-   //       and produces a real ouput. We should use that here. We should also use the code that takes real data in.
+   //       and produces a real output. We should use that here. We should also use the code that takes real data in.
    if( real ) {
       tmp = tmp.Real();
       if(( out.DataType() != tmp.DataType() ) && ( !out.IsProtected() )) {
