@@ -65,7 +65,8 @@ returns a copy of the data, but an assignment form is also available:
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
 import os
 if os.name == 'nt':
-    os.environ["PATH"] += os.pathsep + "@CMAKE_INSTALL_PREFIX@/lib"
+    pydip_dir = os.path.dirname(os.path.abspath(__file__)) + "/@diplib_dir@"
+    os.environ["PATH"] += os.pathsep + pydip_dir
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
