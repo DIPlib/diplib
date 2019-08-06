@@ -66,6 +66,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
    - The same is true for the color space. A function that changes the number of tensor
      elements must also remove the color space information.
 
+   - We have added 64-bit signed and unsigned integers to the set of allowed data types for pixels.
+
    - Please read the documentation to the `dip::Image` class before doing any work with the
      library!
 
@@ -97,7 +99,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   using a simple image copy (the copy shares the image data with the original image, and
   makes it possible to strip the original image while still keeping the input data available).
 
-- Header files used to have names such as `dip_xxx.h`, they now are `diplib/xxx.h`. The "`xxx`"
+- Header files used to have names such as `dip_xxx.h`, they now are `diplib/xxx.h`. The &ldquo;`xxx`&rdquo;
   part has remained the same in most cases, though some function declarations have moved to a
   different header file. The documentation specifies which header file to include for each
   function.
@@ -190,7 +192,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip_GetMaximumAndMinimum` is now called `dip::MaximumAndMinimum` for consistency.
 
-- `dip_ResamplingFT` is no longer a separate function, call `dip::Resampling` with "ft" as
+- `dip_ResamplingFT` is no longer a separate function, call `dip::Resampling` with `"ft"` as
   method. `dip_Skewing` was renamed to `dip::Skew` for consistency. `dip_Rotation` has
   been renamed `dip::Rotation2D`, and a generalized `dip::Rotation` is similar but takes
   two additional integers to specify the rotation plane. `dip_Rotation3d_Axis` and
@@ -278,7 +280,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   to arbitrary number of dimensions.
 
 - `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
-  no longer are "left" and "right" options.
+  no longer are `left` and `right` options.
 
 - `dip::ImageDisplay` no longer does any spatial scaling. Also, it's a class, not a function, and provides
   much more functionality than the function of the same name in the old version of the library.
@@ -287,12 +289,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
   with a few new color spaces added.
 
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
-  normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change
+  normalized, inverse transform normalized by 1/N), but an option (`"symmetric"`) allows to change
   the normalization to be consistent with *DIPlib 2*, which used a symmetric normalization
   scheme (both forward and backward transforms use 1/N<sup>1/2</sup>)
 
 - `dip::Histogram` misses a few of the options that `dip_MultiDimensionalHistogram` had, but I
-  don't think they are relevant. They can be added easily if necessary.
+  don't think they are relevant. They can be added easily if necessary. Histograms now use
+  64-bit unsigned integers for the bins. It is possible to add histograms together.
 
 - Many threshold selection strategies have been ported from MATLAB code in *DIPimage*, see
   `dip::Threshold`.
@@ -309,8 +312,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   of being a length and an angle, now represents the bounding box, with direction encoded by the
   signs. Besides the discrete line and the interpolated line, we now have several other options,
   including the periodic line, which makes translation-invariant operations with line SEs much
-  more efficient. The "diamond" SE is now implemented using line SEs, and we have added an
-  "octagonal" SE that is computed as a combination of a diamond SE and a rectangular SE.
+  more efficient. The `"diamond"` SE is now implemented using line SEs, and we have added an
+  `"octagonal"` SE that is computed as a combination of a diamond SE and a rectangular SE.
 
 - `dip::Rotation` and dependent functions now rotate around the pixel that is right from center
   (the same pixel that is assumed the origin in `dip::FourierTransform` and other functions),
@@ -363,13 +366,15 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - New external library DIPjavaio adds the option to use *Bio-Formats* to read hundreds of image file formats,
   see \ref javaio.
 
-- New analysis functions: `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
+- New analysis functions: `dip::AutoCorrelationFT`, `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
   `dip::MonogenicSignalAnalysis`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
 
 - New detection functions: `dip::HoughTransformCircleCenters`, `dip::FindHoughMaxima`, `dip::PointDistanceDistribution`,
   `dip::FindHoughCircles`, `dip::RadonTransformCircles`, `dip::HarrisCornerDetector`, `dip::ShiTomasiCornerDetector`,
   `dip::NobleCornerDetector`, `dip::WangBradyCornerDetector`, `dip::FrangiVesselness`,
   `dip::MatchedFiltersLineDetector2D`, `dip::DanielssonLineDetector`, `dip::RORPOLineDetector`.
+
+- New display functions: `dip::ApplyColorMap`, `dip::Overlay`, `dip::MarkLabelEdges`.
 
 - New distance function: `dip::GeodesicDistanceTransform`.
 
@@ -392,7 +397,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`, `dip::AlternatingSequentialFilter`,
   `dip::HitAndMiss`.
 
-- New nonlinear filtering functions: `dip::PeronaMalikDiffusion`, `dip::GaussianAnisotropicDiffusion`,
+- New nonlinear filtering functions: `dip::MoveToLocalMinimum`,
+  `dip::PeronaMalikDiffusion`, `dip::GaussianAnisotropicDiffusion`,
   `dip::RobustAnisotropicDiffusion`, `dip::CoherenceEnhancingDiffusion`.
 
 - New generation functions: `dip::FillRadiusCoordinate`, `dip::CreateRadiusCoordinate`,
@@ -405,20 +411,22 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::SaltPepperNoise`, `dip::FillColoredNoise`, `dip::ColoredNoise`,
   `dip::GaussianEdgeClip`, `dip::GaussianLineClip`,
   `dip::FillDelta`, `dip::CreateDelta`, `dip::CreateGauss`, `dip::CreateGabor`,
-  `dip::FillPoissonPointProcess`, `dip::FillRandomGrid`.
+  `dip::FillPoissonPointProcess`, `dip::CreatePoissonPointProcess`, `dip::FillRandomGrid`, `dip::CreateRandomGrid`.
 
-- New geometric transformation functions: `dip::RotationMatrix2D`, `dip::RotationMatrix3D`, `dip::AffineTransform`,
-  `dip::LogPolarTransform2D`, `dip::Tile`, `dip::TileTensorElements`, `dip::Concatenate`, `dip::JoinChannels`.
+- New geometric transformation functions: `dip::RotationMatrix2D`, `dip::RotationMatrix3D`,
+  `dip::AffineTransform`, `dip::WarpControlPoints`, `dip::LogPolarTransform2D`,
+  `dip::Tile`, `dip::TileTensorElements`, `dip::Concatenate`, `dip::JoinChannels`.
 
 - New grey-value mapping functions: `dip::Zero`, `dip::HistogramEqualization`, `dip::HistogramMatching`.
 
-- New histogram functions: `dip::CumulativeHistogram`, `dip::Smooth`, `dip::Mean`, `dip::Covariance`,
-  `dip::MarginalMedian`, `dip::Mode`, `dip::MutualInformation`, `dip::Entropy`, `dip::IsodataThreshold`,
-  `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`, `dip::BackgroundThreshold`,
-  `dip::KMeansClustering`, `dip::MinimumVariancePartitioning`, `dip::EqualizationLookupTable`,
-  `dip::MatchingLookupTable`, `dip::PerObjectHistogram`.
+- New histogram functions: `dip::CumulativeHistogram`, `dip::Smooth`,
+  `dip::Mean`, `dip::Covariance`, `dip::MarginalMedian`, `dip::Mode`, `dip::PearsonCorrelation`, `dip::Regression`,
+  `dip::MutualInformation`, `dip::Entropy`,
+  `dip::IsodataThreshold`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`, `dip::BackgroundThreshold`,
+  `dip::KMeansClustering`, `dip::MinimumVariancePartitioning`,
+  `dip::EqualizationLookupTable`, `dip::MatchingLookupTable`, `dip::PerObjectHistogram`.
 
-- New labeled regions function: `dip::Relabel`.
+- New labeled regions function: `dip::Relabel`, `dip::RegionAdjacencyGraph`.
 
 - New math and statistics functions: `dip::IsNotANumber`, `dip::IsInfinite`, `dip::IsFinite`, `dip::InRange`,
   `dip::OutOfRange`,
@@ -441,12 +449,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::SortTensorElements`, `dip::SortTensorElementsByMagnitude`,
   `dip::Hypot`.
 
-- New microscopy functions: `dip::BeerLambertMapping`, `dip::InverseBeerLambertMapping`, `dip::UnmixStains`,
-  `dip::MixStains`.
+- New microscopy functions: `dip::BeerLambertMapping`, `dip::InverseBeerLambertMapping`, `dip::UnmixStains`, `dip::MixStains`,
+  `dip::MandersOverlapCoefficient`, `dip::IntensityCorrelationQuotient`, `dip::MandersColocalizationCoefficients`,
+  `dip::CostesColocalizationCoefficients`, `dip::CostesSignificanceTest`.
 
-- New segmentation functions: `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
+- New segmentation functions: `dip::CompactWatershed`, `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
   `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`,
-  `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`.
+  `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`, `dip::Superpixels`.
 
 - New transform functions: `dip::OptimalFourierTransformSize`, `dip::RieszTransform`, `dip::StationaryWaveletTransform`.
 
@@ -560,7 +569,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
    - Added settings:
 
-       - '`DisplayFunction`' can be set to either '`dipshow`' (the default), or '`viewslice`',
+       - <tt>'DisplayFunction'</tt> can be set to either <tt>'dipshow'</tt> (the default), or <tt>'viewslice'</tt>,
          and determines which of these functions is invoked by default when the `dip_image/display`
          method is invoked (see the
          [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
@@ -568,7 +577,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
    - Changed settings:
 
-       - '`KeepDataType`', which changes how the output data type for arithmetic operations is
+       - <tt>'KeepDataType'</tt>, which changes how the output data type for arithmetic operations is
          chosen, has the same intent but does not always make the same choice. For example
          the result is different when mixing signed and unsigned integers. (see the
          [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
@@ -576,26 +585,26 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
    - Removed settings:
 
-       - '`BoundaryCondition`', '`Truncation`', and '`DerivativeFlavour`', because relevant
+       - <tt>'BoundaryCondition'</tt>, <tt>'Truncation'</tt>, and <tt>'DerivativeFlavour'</tt>, because relevant
          functions take these parameters as optional input arguments.
 
-       - '`MorphologicalFlavour`', as it didn't seem useful (the associated function
+       - <tt>'MorphologicalFlavour'</tt>, as it didn't seem useful (the associated function
          `dip_morph_flavour` has also been removed).
 
-       - '`ComputationLimit`', because image arithmetic is now always performed by *DIPlib*.
+       - <tt>'ComputationLimit'</tt>, because image arithmetic is now always performed by *DIPlib*.
 
-       - '`ConflictingPixelSize`' and '`InconsistentPixelSize`', because the *DIPlib* library
+       - <tt>'ConflictingPixelSize'</tt> and <tt>'InconsistentPixelSize'</tt>, because the *DIPlib* library
          keeps track of pixel sizes and handles these situations in a fixed manner.
 
-       - '`CommandFilePath`', because the *DIPimage* GUI no longer probes functions to
+       - <tt>'CommandFilePath'</tt>, because the *DIPimage* GUI no longer probes functions to
          put them in the menus.
 
-       - '`DebugMode`', as *DIPlib* stack traces are shown or not depending on a
+       - <tt>'DebugMode'</tt>, as *DIPlib* stack traces are shown or not depending on a
          compile-time flag.
 
-       - '`FFTtype`', because *DIPlib* can optionally be compiled to use *FFTW* for the FFT.
+       - <tt>'FFTtype'</tt>, because *DIPlib* can optionally be compiled to use *FFTW* for the FFT.
 
-       - '`FastSubscriptedAssignment`', introduced recently in *DIPimage 2.9*, because the
+       - <tt>'FastSubscriptedAssignment'</tt>, introduced recently in *DIPimage 2.9*, because the
          related functionality has not been ported over (yet?).
 
 - Many filters now have a boundary condition parameter. In *DIPimage 2*, one would change
@@ -628,6 +637,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
     previously. In `hist2image`, the `coords` input is transposed w.r.t. previous versions,
     for consistency: each row is interpreted as a vertex.
 
+  - `ft` now does normalization in the more common way (forward transform not normalized,
+    inverse transform normalized by 1/N), but an option (<tt>'symmetric'</tt>) allows to change
+    the normalization to be consistent with *DIPimage 2*, which used a symmetric normalization
+    scheme (both forward and backward transforms use 1/N<sup>1/2</sup>)
+
   - `resample` and `shift` shift the image in the opposite direction from what it did in
     *DIPimage 2*, where the shift was unintuitive.
 
@@ -635,8 +649,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
     of angles in the rest of the toolbox. The function now also accepts an affine transformation
     matrix to direct the transformation.
 
-  - `readim` and `writeim` work differently now, in part because *DIPlib* natively only supports
-    two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
+  - `readim` and `writeim` work differently now, in part because *DIPlib* natively supports
+    fewer file types now. The `file_info` struct output for `readim` has changed somewhat. The last
     two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
     to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
     always given by the image, use `dip_image/pixelsize` to set it. `readics` and `readtiff` are
@@ -660,12 +674,12 @@ code that used *DIPlib* or *DIPimage* to the new version.
     number of dimensions (with special support for 2D and 3D images).
 
   - `curvature_thirion` and `isophote_curvature` have been moved to the `alias` directory. The function
-    `curvature` now takes '`thirion`' and '`isophote`' as options. `orientation4d` has been moved to the
+    `curvature` now takes <tt>'thirion'</tt> and <tt>'isophote'</tt> as options. `orientation4d` has been moved to the
     `alias` directory. A new function `orientation` generalizes it to arbitrary dimensionality.
 
   - `granulometry` has changed, but it is still possible to call it the old way. However, the parameters
-    in this old syntax are interpreted to match the new capabilities of this function. `'usegrey'` and
-    `'verbose'` options no longer have an effect. Default values have changed a bit.
+    in this old syntax are interpreted to match the new capabilities of this function. <tt>'usegrey'</tt> and
+    <tt>'verbose'</tt> options no longer have an effect. Default values have changed a bit.
 
   - `ht` no longer exists. Use `riesz` instead. The Riesz transform is the multi-dimensional generalization
     of the 1D Hilbert transform. See also the new function `monogenicsignal`.
@@ -675,7 +689,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - `dt` has a new algorithm, which is used by default. It gives exact results and works for any number of
     dimensions, and it should be faster than the previous default algorithm. The old default algorithm can
-    be executed with `dt(...,'fast')`.
+    be executed with <tt>dt(...,'fast')</tt>.
 
   - `gdt` has a new algorithm, which is used by default. It approximates Euclidean distances better. The old
     default algorithm can be executed with `gdt(...,3)`. The second output image is no longer produced. A
@@ -687,10 +701,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `radoncircle` has a different implementation with different capabilities and a different interface.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`,
-  `cornerdetector`, `coordinates`, `distancedistribution`, `drawshape`, `extendregion`,
+  `compactwaterseed`, `coordinates`,  `cornerdetector`, `distancedistribution`, `drawshape`, `extendregion`,
   `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `lee`, `linedetector`, `loggabor`,
-  `pathopening`, `perobjecthist`, `psf`, `quantize`, `select`, `semivariogram`, `setborder`,
-  `skew`, `smallobjectsremove`, `thetatheta`, `traceobjects`.
+  `pathopening`, `perobjecthist`, `psf`, `quantize`, `randomseeds`, `select`, `semivariogram`, `setborder`,
+  `skew`, `smallobjectsremove`, `superpixels`, `thetatheta`, `traceobjects`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.
 
 - `jacobi` moved to the `alias` directory, `eig` does it better now.
@@ -700,5 +714,5 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - If you customized the menus in the *DIPimage* GUI, you will have to update your `localdipmenus.m`
   file. If you wrote your own functions that integrated in the GUI, you'll have to do so through
-  your `localdipmenus.m` now. Preference setting '`CommandFilePath`' no longer exists,
-  `getparams` no longer exists, and functions are no longer probed with '`DIP_GetParamList`'.
+  your `localdipmenus.m` now. Preference setting <tt>'CommandFilePath'</tt> no longer exists,
+  `getparams` no longer exists, and functions are no longer probed with <tt>'DIP_GetParamList'</tt>.
