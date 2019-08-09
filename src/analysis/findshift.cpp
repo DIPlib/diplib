@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for shift estimation
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,43 +41,52 @@ void CrossCorrelationFT(
    DIP_THROW_IF( !in1.IsScalar() || !in2.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in1.DataType().IsBinary() || in2.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in1.Sizes() != in2.Sizes(), E::SIZES_DONT_MATCH );
-   bool in1spatial;
-   DIP_STACK_TRACE_THIS( in1spatial = BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY ));
-   bool in2spatial;
-   DIP_STACK_TRACE_THIS( in2spatial = BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY ));
+   bool in1Spatial;
+   DIP_STACK_TRACE_THIS( in1Spatial = BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY ));
+   bool in2Spatial;
+   DIP_STACK_TRACE_THIS( in2Spatial = BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY ));
+   bool outSpatial;
+   DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
    Image in1FT;
-   if( in1spatial ) {
+   if( in1Spatial ) {
       DIP_THROW_IF( !in1.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
       DIP_STACK_TRACE_THIS( FourierTransform( in1, in1FT ));
    } else {
       in1FT = in1.QuickCopy();
    }
    Image in2FT;
-   if( in2spatial ) {
+   if( in2Spatial ) {
       DIP_THROW_IF( !in2.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
       DIP_STACK_TRACE_THIS( FourierTransform( in2, in2FT ));
    } else {
       in2FT = in2.QuickCopy();
    }
-   DataType dt = in1FT.DataType();
-   DIP_STACK_TRACE_THIS( MultiplyConjugate( in1FT, in2FT, out, dt ));
+   DataType dt = DataType::SuggestArithmetic( in1FT.DataType(), in2FT.DataType() );
+   if( dt.IsBinary() ) {
+      dt = DT_SFLOAT; // let's not go there...
+   }
+   Image outFT;
+   if( !outSpatial ) { // write directly into out
+      DIP_STACK_TRACE_THIS( MultiplyConjugate( in1FT, in2FT, out, dt ));
+      outFT = out.QuickCopy();
+   } else {
+      DIP_STACK_TRACE_THIS( MultiplyConjugate( in1FT, in2FT, outFT, dt ));
+   }
    if( normalize == S::NORMALIZE ) {
-      if( in2FT.IsShared() ) {
-         in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
-      }
-      SquareModulus( in1FT, in2FT );
-      SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
+      Image tmp;
+      SquareModulus( in1FT, tmp );
+      SafeDivide( outFT, tmp, outFT, outFT.DataType() ); // Normalize by the square modulus of in1.
    } else if( normalize == S::PHASE ) {
       Image tmp;
       Modulus( in1FT, tmp );
-      SafeDivide( out, tmp, out, out.DataType() );
+      SafeDivide( outFT, tmp, outFT, outFT.DataType() );
       Modulus( in2FT, tmp );
-      SafeDivide( out, tmp, out, out.DataType() );
+      SafeDivide( outFT, tmp, outFT, outFT.DataType() );
    } else if( normalize != S::DONT_NORMALIZE ) {
       DIP_THROW_INVALID_FLAG( normalize );
    }
-   if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
-      DIP_STACK_TRACE_THIS( FourierTransform( out, out, { S::INVERSE, S::REAL } ));
+   if( outSpatial ) {
+      DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, { S::INVERSE, S::REAL } ));
    }
 }
 
