@@ -53,23 +53,6 @@ Histogram MinimumVariancePartitioning(
    return out;
 }
 
-namespace {
-
-// Translate thresholds from bin indices to intensities (using linear interpolation)
-dfloat FindBin( FloatArray bins, dfloat threshold ) {
-   if( threshold <= 0 ) {
-      return bins.front();
-   }
-   if( threshold >= static_cast< dfloat >( bins.size() - 1 )) {
-      return bins.back();
-   }
-   dfloat frac = threshold - static_cast< dfloat >( static_cast< dip::sint >( threshold )); // casting to round down
-   return bins[ static_cast< dip::uint >( threshold ) ] * ( 1.0 - frac ) +
-          bins[ static_cast< dip::uint >( threshold ) + 1 ] * frac;
-}
-
-} // namespace
-
 FloatArray IsodataThreshold(
       Histogram const& in,
       dip::uint nThresholds
@@ -136,9 +119,10 @@ FloatArray IsodataThreshold(
       }
    } while( thresholds != old );
    // Translate thresholds from bin indices to intensities (using linear interpolation)
-   FloatArray bins = in.BinCenters();
+   dfloat scale = in.BinSize();
+   dfloat offset = in.LowerBound() + scale / 2; // bin[ii] = offset + ii * scale;
    for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
-      thresholds[ ii ] = FindBin( bins, thresholds[ ii ] );
+      thresholds[ ii ] = offset + thresholds[ ii ] * scale;
    }
    return thresholds;
 }
@@ -196,21 +180,25 @@ dfloat MinimumErrorThreshold(
    DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
-   FloatArray bins = in.BinCenters();
+   dfloat scale = in.BinSize();
+   dfloat offset = in.LowerBound() + scale / 2; // bin[ii] = offset + ii * scale;
    Histogram::CountType const* data = static_cast< Histogram::CountType* >( hist.Origin() );
-   dfloat const* binPtr = bins.data();
-   // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded between bins(ii) and bins(ii+1)
+   // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded between bin(ii) and bin(ii+1)
    dfloat w1 = 0;
    dfloat w2 = std::accumulate( data, data + nBins, 0.0 );
    // m1(ii), m2(ii) are the corresponding first order moments
    dfloat m1 = 0;
-   dfloat m2 = std::inner_product( data, data + nBins, binPtr, 0.0 );
+   dfloat m2 = 0;
+   for( dip::uint ii = 0; ii < nBins; ++ii ) {
+      m2 += static_cast< dfloat >( data[ ii ] ) * ( offset + static_cast< dfloat >( ii ) * scale );
+   }
    // Here we accumulate the error measure.
-   FloatArray J( nBins - 1 );
+   std::vector< double > J( nBins - 1 );
    for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
-      w1 += static_cast< dfloat >( *data );
-      w2 -= static_cast< dfloat >( *data );
-      dfloat tmp = static_cast< dfloat >( *data ) * *binPtr;
+      dfloat value = static_cast< dfloat >( data[ ii ] );
+      w1 += value;
+      w2 -= value;
+      dfloat tmp = value * ( offset + static_cast< dfloat >( ii ) * scale );
       m1 += tmp;
       m2 -= tmp;
       // c1(ii), c2(ii) are the centers of gravity
@@ -218,38 +206,27 @@ dfloat MinimumErrorThreshold(
       dfloat c2 = m2 / w2;
       // v1(ii), v2(ii) are the corresponding second order central moments
       dfloat v1 = 0;
-      Histogram::CountType const* it = static_cast< Histogram::CountType* >( hist.Origin() );
       for( dip::uint jj = 0; jj <= ii; ++jj ) {
-         dfloat d = bins[ jj ] - c1;
-         v1 += static_cast< dfloat >( *it ) * d * d;
-         ++it;
+         dfloat d = ( offset + static_cast< dfloat >( jj ) * scale ) - c1;
+         v1 += static_cast< dfloat >( data[ jj ] ) * d * d;
       }
-      v1 /= w2;
+      v1 /= w1;
       dfloat v2 = 0;
       for( dip::uint jj = ii + 1; jj < nBins; ++jj ) {
-         dfloat d = bins[ jj ] - c2;
-         v2 += static_cast< dfloat >( *it ) * d * d;
-         ++it;
+         dfloat d = ( offset + static_cast< dfloat >( jj ) * scale ) - c2;
+         v2 += static_cast< dfloat >( data[ jj ] ) * d * d;
       }
       v2 /= w2;
       // J(ii) is the measure for error
       J[ ii ] = 1.0 + w1 * std::log( v1 ) + w2 * std::log( v2 ) - 2.0 * ( w1 * std::log( w1 ) + w2 * std::log( w2 ));
-      ++data;
-      ++binPtr;
+      std::cout << J[ii] << ",";
    }
+   std::cout << '\n';
    // Now we need to find the minimum in J, but ignore the values at the edges, if they are lowest.
    dip::uint begin = 0;
-   dip::uint end = nBins;
-   for( ; begin < end - 1; ++begin ) {
-      if( J[ begin ] > J[ begin + 1 ] ) {
-         break;
-      }
-   }
-   for( ; begin < end - 1; --end ) {
-      if( J[ end ] > J[ end - 1 ] ) {
-         break;
-      }
-   }
+   dip::uint end = nBins - 2;
+   for( ; ( begin < end - 1 ) && ( J[ begin ] <= J[ begin + 1 ] ); ++begin ) {}
+   for( ; ( begin < end - 1 ) && ( J[ end ] <= J[ end - 1 ] ); --end ) {}
    dfloat minJ = J[ begin ];
    dip::uint minInd = begin;
    for( dip::uint ii = begin + 1; ii < end; ++ii ) {
@@ -258,7 +235,9 @@ dfloat MinimumErrorThreshold(
          minInd = ii;
       }
    }
-   return ( bins[ minInd ] + bins[ minInd + 1 ] ) / 2.0;
+   dip::uint maxInd = minInd + 1;
+   for( ; ( maxInd < end ) && ( J[ maxInd ] == minJ ); ++maxInd ) {}
+   return offset + ( static_cast< dfloat >( minInd ) + static_cast< dfloat >( maxInd )) / 2.0 * scale;
 }
 
 dfloat TriangleThreshold(
@@ -299,7 +278,7 @@ dfloat TriangleThreshold(
          bin = ii;
       }
    }
-   return smoothIn.BinCenters()[ bin ];
+   return smoothIn.BinCenter( bin );
 }
 
 dfloat BackgroundThreshold(
@@ -319,7 +298,8 @@ dfloat BackgroundThreshold(
    UnsignedArray maxCoords = MaximumPixel( hist );
    dip::uint maxElement = maxCoords[ 0 ];
    Histogram::CountType maxValue = data[ maxElement ];
-   dfloat threshold = smoothIn.BinCenters()[ maxElement ];
+   dfloat threshold = smoothIn.BinCenter( maxElement );
+   dfloat binSize = smoothIn.BinSize();
    // Is the peak on the left or right side of the histogram?
    bool rightPeak = maxElement > ( nBins / 2 );
    // Find the 50% height & the threshold
@@ -334,7 +314,7 @@ dfloat BackgroundThreshold(
       if( sigma == 0 ) {
          sigma = 1;
       }
-      threshold -= static_cast< dfloat >( sigma ) * distance;
+      threshold -= static_cast< dfloat >( sigma ) * distance * binSize;
    } else {
       dip::uint sigma = 0;
       for( ; sigma <= maxElement; ++sigma ) {
@@ -346,7 +326,7 @@ dfloat BackgroundThreshold(
       if( sigma == 0 ) {
          sigma = 1;
       }
-      threshold += static_cast< dfloat >( sigma ) * distance;
+      threshold += static_cast< dfloat >( sigma ) * distance * binSize;
    }
    return threshold;
 }
