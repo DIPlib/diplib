@@ -610,7 +610,7 @@ DIP_EXPORT void Solve(
 ///     (last retrieved June 25, 2019). The page explains the math behind 2D thin plate splines, we did not use
 ///     the source code linked from that page.
 /// \endliterature
-class ThinPlateSpline {
+class DIP_NO_EXPORT ThinPlateSpline {
    public:
       /// \brief Creates a function that maps `coordinate` to `value`.
       ///
@@ -649,6 +649,48 @@ class ThinPlateSpline {
       std::vector< dfloat > x_;
       FloatCoordinateArray c_;
 };
+
+namespace Option {
+
+/// \brief Select if the operation is periodic or not
+enum class DIP_NO_EXPORT Periodicity {
+      NOT_PERIODIC,  ///< The operation is not periodic
+      PERIODIC       ///< The operation is periodic, left and right ends of the data are contiguous
+};
+
+} // namespace Option
+
+/// \brief Parameters defining a 1D Gaussian. Returned by `dip::GaussianMixtureModel`.
+struct GaussianParameters {
+   dfloat position;  ///< The location of the origin, in pixels
+   dfloat amplitude; ///< The amplitude (value at the origin)
+   dfloat sigma;     ///< The sigma (width)
+};
+
+/// \brief Determines the parameters for a Gaussian Mixture Model.
+///
+/// `data` is an iterator (or pointer) to the first of `size` samples of a GMM (not random samples drawn
+/// from such a distribution, but rather samples of a function representing the distribution).
+/// `numberOfGaussians` Gaussians will be fitted to it using the Expectation Maximization (EM) procedure.
+/// The parameters are initialized deterministically, the means are distributed equally over the domain and
+/// the sigma and amplitude are set to 1.
+///
+/// `responsibilities` optionally points to a buffer of size `size * numberOfGaussians` that will be used
+/// internally. If set to `nullptr` or a default-initialized iterator, a buffer will be allocated internally.
+/// Use this parameter when repeatedly calling this function to avoid memory allocations.
+///
+/// `maxIter` sets how many iterations are run. There is currently no other stopping criterion.
+/// `periodicity` determines if the data is considered periodic or not.
+///
+/// The output is sorted by amplitude, most important component first.
+DIP_EXPORT std::vector< GaussianParameters > GaussianMixtureModel(
+      ConstSampleIterator< dfloat > data,       // size, input
+      SampleIterator< dfloat > responsibilities,// size * numberOfGaussians (optional), temporary storage -- can be nullptr to not use it
+      dip::uint size,
+      dip::uint numberOfGaussians,
+      dip::uint maxIter = 20,
+      Option::Periodicity periodicity = Option::Periodicity::NOT_PERIODIC
+);
 
 /// \}
 

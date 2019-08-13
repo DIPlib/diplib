@@ -256,6 +256,7 @@ segmentation/minimum_variance_partitioning.cpp
 segmentation/superpixels.cpp
 segmentation/threshold.cpp
 support/accumulators.cpp
+support/gaussian_mixture.cpp
 support/matrix.cpp
 support/numeric.cpp
 support/thin_plate_spline.cpp

@@ -742,6 +742,21 @@ DIP_EXPORT dfloat MinimumErrorThreshold(
       Histogram const& in
 );
 
+/// \brief Determines a set of `nThresholds` thresholds by modeling the histogram with a Gaussian Mixture Model,
+/// fitting the model using the Expectation Maximization procedure, and choosing the optimal Bayes thresholds.
+///
+/// The algorithm fits a mixture of `nThresholds + 1` Gaussians to the 1D histogram, and returns the thresholds
+/// in between the fitted Gaussians that minimize the Bayes error (if possible). Note that the sum of a narrow
+/// Gaussian and an overlapping broad Gaussian would typically yield two thresholds (dividing space into three
+/// regions, the middle one belonging to the narrow Gaussian and the other two to the broad Gaussian). This
+/// routine instead always returns a single threshold in between each of the Gaussian means.
+///
+/// \see dip::GaussianMixtureModel
+DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
+      Histogram const& in,
+      dip::uint nThresholds = 1
+);
+
 /// \brief Determines a threshold using the using the chord method (a.k.a. skewed bi-modality, maximum distance
 /// to triangle), and the image's histogram `in`.
 ///

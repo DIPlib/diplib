@@ -80,6 +80,25 @@ dfloat MinimumErrorThreshold(
    DIP_END_STACK_TRACE
 }
 
+FloatArray GaussianMixtureModelThreshold(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint nThresholds
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_START_STACK_TRACE
+      FloatArray thresholds = GaussianMixtureModelThreshold( Histogram( in, mask ), nThresholds );
+      if( nThresholds == 1 ) {
+         FixedThreshold( in, out, thresholds[ 0 ] );
+      } else {
+         MultipleThresholds( in, out, thresholds );
+      }
+      return thresholds;
+   DIP_END_STACK_TRACE
+}
+
 dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,

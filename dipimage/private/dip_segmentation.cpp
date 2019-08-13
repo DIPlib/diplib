@@ -176,7 +176,7 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       if( nlhs > 1 ) {
          plhs[ 1 ] = dml::CreateDouble2Vector( param1, param2 );
       }
-   } else if(( method == "isodata" ) || ( method == "kmeans" )) {
+   } else if(( method == "isodata" ) || ( method == "kmeans" ) || ( method == "gmm" )) {
       dip::uint nThresholds = 1;
       if( nrhs > 2 ) {
          dip::dfloat parameter = dml::GetFloat( prhs[ 2 ] );
@@ -184,7 +184,8 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             nThresholds = static_cast< dip::uint >( parameter );
          }
       }
-      dip::FloatArray thresholds = IsodataThreshold( in, {}, out, nThresholds );
+      dip::FloatArray thresholds = ( method == "gmm" ) ? GaussianMixtureModelThreshold( in, {}, out, nThresholds )
+                                                       : IsodataThreshold( in, {}, out, nThresholds );
       if( nlhs > 1 ) {
          plhs[ 1 ] = dml::GetArray( thresholds );
       }

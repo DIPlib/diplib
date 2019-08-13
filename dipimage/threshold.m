@@ -26,6 +26,11 @@
 %  - minerror: Thresholding using minimal error method by Kittler and
 %    Illingworth (1986). PARAMETER is ignored.
 %
+%  - gmm: Thresholding using a Gaussian Mixture Model. PARAMETER is the number
+%    of thresholds to compute. Fits PARAMETER+1 Gaussians to the histogram,
+%    then finds thresholds to optimally separate those Gaussians. PARAMETER
+%    defaults to 1.
+%
 %  - triangle: Thresholding using chord method (a.k.a. skewed bi-modality,
 %    maximum distance to triangle) by Zack, Rogers and Latt (1977). PARAMETER
 %    is ignored.

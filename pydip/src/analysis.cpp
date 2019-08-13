@@ -229,6 +229,8 @@ void init_analysis( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{} );
    m.def( "MinimumErrorThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::MinimumErrorThreshold ),
           "in"_a, "mask"_a = dip::Image{} );
+   m.def( "GaussianMixtureModelThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::GaussianMixtureModelThreshold ),
+          "in"_a, "mask"_a = dip::Image{}, "nThresholds"_a = 1 );
    m.def( "TriangleThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::TriangleThreshold ),
           "in"_a, "mask"_a = dip::Image{} );
    m.def( "BackgroundThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::BackgroundThreshold ),

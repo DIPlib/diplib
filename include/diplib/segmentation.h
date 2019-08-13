@@ -115,7 +115,7 @@ DIP_EXPORT FloatArray IsodataThreshold(
 inline Image IsodataThreshold(
       Image const& in,
       Image const& mask = {},
-      dip::uint nThresholds = 1 // output is binary if nThresholds==1, labeled otherwise
+      dip::uint nThresholds = 1
 ) {
    Image out;
    IsodataThreshold( in, mask, out, nThresholds );
@@ -165,6 +165,34 @@ inline Image MinimumErrorThreshold(
 ) {
    Image out;
    MinimumErrorThreshold( in, mask, out );
+   return out;
+}
+
+/// \brief Thresholds the image `in` using `nThresholds` thresholds, determined by fitting a Gaussian Mixture
+/// Model to the histogram of `in`.
+///
+/// Only those pixels in `mask` are used to determine the histogram on which the Gaussian Mixture Model
+/// algorithm is applied, but the threshold is applied to the whole image. `in` must be scalar and real-valued.
+///
+/// If `nThresholds` is 1, then `out` is a binary image. With more thresholds, the output image is labeled.
+///
+/// The output array contains the thresholds used.
+///
+/// See <tt>\ref dip::GaussianMixtureModelThreshold(Histogram const&, dip::uint) "dip::GaussianMixtureModelThreshold"</tt>
+/// for more information on the algorithm used.
+DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint nThresholds = 1
+);
+inline Image GaussianMixtureModelThreshold(
+      Image const& in,
+      Image const& mask = {},
+      dip::uint nThresholds = 1
+) {
+   Image out;
+   GaussianMixtureModelThreshold( in, mask, out, nThresholds );
    return out;
 }
 
@@ -369,6 +397,7 @@ inline Image MultipleThresholds(
 ///  - "isodata": see <tt>\ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint) "dip::IsodataThreshold"</tt>.
 ///  - "otsu": see <tt>\ref dip::OtsuThreshold(Image const&, Image const&, Image&) "dip::OtsuThreshold"</tt>. This is the default method
 ///  - "minerror": see <tt>\ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&) "dip::MinimumErrorThreshold"</tt>.
+///  - "gmm": see <tt>\ref dip::GaussianMixtureModelThreshold(Image const&, Image const&, Image&, dip::uint) "dip::GaussianMixtureModelThreshold"</tt>.
 ///  - "triangle": see <tt>\ref dip::TriangleThreshold(Image const&, Image const&, Image&) "dip::TriangleThreshold"</tt>.
 ///  - "background": see <tt>\ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat) "dip::BackgroundThreshold"</tt>.
 ///  - "volume": see <tt>\ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat) "dip::VolumeThreshold"</tt>.
@@ -388,6 +417,9 @@ inline dfloat Threshold(
       return OtsuThreshold( in, {}, out );
    } else if( method == "minerror" ) {
       return MinimumErrorThreshold( in, {}, out );
+   } else if( method == "gmm" ) {
+      FloatArray values = GaussianMixtureModelThreshold( in, {}, out, 1 );
+      return values[ 0 ];
    } else if( method == "triangle" ) {
       return TriangleThreshold( in, {}, out );
    } else if( method == "background" ) {
