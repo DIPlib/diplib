@@ -168,6 +168,7 @@ nonmaximumsuppression.m
 normconv.m
 opening.m
 orientation.m
+orientationspace.m
 overlay.m
 overlay_confidence.m
 overlay_vector.m

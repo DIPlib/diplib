@@ -367,7 +367,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   see \ref javaio.
 
 - New analysis functions: `dip::AutoCorrelationFT`, `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
-  `dip::MonogenicSignalAnalysis`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
+  `dip::MonogenicSignalAnalysis`, `dip::OrientationSpace`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
 
 - New detection functions: `dip::HoughTransformCircleCenters`, `dip::FindHoughMaxima`, `dip::PointDistanceDistribution`,
   `dip::FindHoughCircles`, `dip::RadonTransformCircles`, `dip::HarrisCornerDetector`, `dip::ShiTomasiCornerDetector`,
@@ -702,7 +702,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`,
   `compactwaterseed`, `coordinates`,  `cornerdetector`, `distancedistribution`, `drawshape`, `extendregion`,
-  `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `lee`, `linedetector`, `loggabor`,
+  `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `lee`, `linedetector`, `loggabor`, `orientationspace`,
   `pathopening`, `perobjecthist`, `psf`, `quantize`, `randomseeds`, `select`, `semivariogram`, `setborder`,
   `skew`, `smallobjectsremove`, `superpixels`, `thetatheta`, `traceobjects`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.

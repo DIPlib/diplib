@@ -97,7 +97,8 @@ void init_analysis( py::module& m ) {
           "in"_a, "wavelengths"_a = dip::FloatArray{ 3.0, 24.0 }, "bandwidth"_a = 0.41, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
    m.def( "MonogenicSignalAnalysis", py::overload_cast< dip::Image const&, dip::StringArray const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::MonogenicSignalAnalysis ),
           "in"_a, "outputs"_a, "noiseThreshold"_a = 0.2, "frequencySpreadThreshold"_a = 0.5, "sigmoidParameter"_a = 10, "deviationGain"_a = 1.5, "polarity"_a = dip::S::BOTH );
-
+   m.def( "OrientationSpace", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::uint >( &dip::OrientationSpace ),
+          "in"_a, "order"_a = 8, "radCenter"_a = 0.1, "radSigma"_a = 0.8, "orientations"_a = 0 );
    m.def( "PairCorrelation", &dip::PairCorrelation,
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
    m.def( "ProbabilisticPairCorrelation", &dip::ProbabilisticPairCorrelation,

@@ -692,6 +692,49 @@ inline ImageArray MonogenicSignalAnalysis(
 }
 
 
+/// \brief Creates an orientation space for a 2D image
+///
+/// `out` is a 3D image, where the 3<sup>rd</sup> dimension represents orientation. Structures (lines and edges) in
+/// the image are separated into different orientation planes. This transformation separates, for example, intersecting
+/// rings (such as the logo of the Olympic Games) into non-touching objects. This is accomplished using an orientation-selective
+/// quadrature filter. Because it's a quadrature filter, the output is complex-valued, with the real component responding
+/// to lines and the imaginary component responding to edges.
+///
+/// `order` determines the angular selectivity. Increasing this number makes the filter longer, and therefore it responds
+/// to a narrower range of orientations. `radCenter` determines the overall scaling of the filter. Increasing this
+/// value makes the filter smaller. The `radSigma` parameter controls the bandwidth of the filter. Reducing this value
+/// makes the filter more specific to a frequency range (the scale selected by `radCenter`).
+///
+/// By default, the orientation space is sampled at `order * 2 + 1` different orientations (this is the number
+/// of filters applied, and the number of samples along the 3<sup>rd</sup> dimension). `orientation`, when positive,
+/// determines the number of orientation used. This parameter can be used to oversample the orientation space.
+///
+/// \literature
+/// <li>M. van Ginkel, P.W. Verbeek and L.J. van Vliet, "Improved Orientation Selectivity for Orientation Estimation",
+///     Proceedings 10th Scandinavian Conference on %Image Analysis, pp 533-537, Pattern Recognition Society of Finland, 1997.
+/// <li>M. van Ginkel, "Image Analysis using Orientation Space based on Steerable Filters", PhD Thesis, Delft University of Technology, The Netherlands, 2002.
+/// \endliterature
+DIP_EXPORT void OrientationSpace(
+      Image const& in,
+      Image& out,
+      dip::uint order = 8,
+      dfloat radCenter = 0.1,
+      dfloat radSigma = 0.8,
+      dip::uint orientations = 0
+);
+inline Image OrientationSpace(
+      Image const& in,
+      dip::uint order = 8,
+      dfloat radCenter = 0.1,
+      dfloat radSigma = 0.8,
+      dip::uint orientations = 0
+) {
+   Image out;
+   OrientationSpace( in, out, order, radCenter, radSigma, orientations );
+   return out;
+}
+
+
 /// \brief Estimates the pair correlation function of the different phases in `object`.
 ///
 /// If `object` is a binary image, the image is a regarded as a two-phase image.

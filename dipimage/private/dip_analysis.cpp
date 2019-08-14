@@ -200,6 +200,19 @@ void monogenicsignal( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    }
 }
 
+void orientationspace( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 5 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::uint order = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 8;
+   dip::dfloat radCenter = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.1;
+   dip::dfloat radSigma = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 0.8;
+   dip::uint orientations = nrhs > 4 ? dml::GetUnsigned( prhs[ 4 ] ) : 0;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   OrientationSpace( in, out, order, radCenter, radSigma, orientations );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void structuretensor( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 7 );
    dip::uint nOut = static_cast< dip::uint >( nlhs );
@@ -327,6 +340,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       } else if( function == "monogenicsignal" ) {
          monogenicsignal( nlhs, plhs, nrhs, prhs );
+      } else if( function == "orientationspace" ) {
+         orientationspace( plhs, nrhs, prhs );
       } else if( function == "structuretensor" ) {
          structuretensor( nlhs, plhs, nrhs, prhs );
 

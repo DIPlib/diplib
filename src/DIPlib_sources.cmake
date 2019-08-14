@@ -68,6 +68,7 @@ analysis/fouriermellin.cpp
 analysis/fractal_dimension.cpp
 analysis/granulometry.cpp
 analysis/monogenic_signal.cpp
+analysis/orientation_space.cpp
 analysis/pixel_pair_sampling.cpp
 analysis/structure_tensor.cpp
 analysis/subpixel_location.cpp
