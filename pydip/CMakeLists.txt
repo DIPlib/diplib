@@ -1,20 +1,27 @@
 add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
 
-file(RELATIVE_PATH diplib_dir "${PYDIP_INSTALL_PATH}/PyDIP" "${CMAKE_INSTALL_PREFIX}/lib")
-
 # Find sources
 file(GLOB DIP_PYTHON_SRC "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/*.h")
 set(PyDIPdeps "${DIP_PYTHON_SRC}")
 file(GLOB DIP_PYTHON_PY "${CMAKE_CURRENT_LIST_DIR}/src/*.py")
 list(APPEND PyDIPdeps "${DIP_PYTHON_PY}")
 # Insert DIP.dll location into __init__.py
-set(DIP_PYDIP_RELATIVE_LOCATION OFF CACHE BOOL "Use relative path to find the DIPlib library (Windows only) (turn on for binary distribution, keep off for personal builds)")
+set(DIP_PYDIP_RELATIVE_LOCATION OFF CACHE BOOL "PyDIP uses relative path to find the DIPlib library (turn on for binary distribution, keep off for personal builds)")
 if(DIP_PYDIP_RELATIVE_LOCATION)
-   # uses ${diplib_dir}
-   configure_file("${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.distrib" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY)
+   file(RELATIVE_PATH diplib_dir "${PYDIP_INSTALL_PATH}/PyDIP" "${CMAKE_INSTALL_PREFIX}/lib")
+   configure_file("${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.distrib" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY) # uses ${diplib_dir}
+   if(APPLE)
+      set(rpath "@loader_path/${diplib_dir}")
+   else()
+      set(rpath "$ORIGIN/${diplib_dir}")
+   endif()
 else()
-   # uses ${CMAKE_INSTALL_PREFIX}
-   configure_file("${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.in" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY)
+   configure_file("${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.in" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY) # uses ${CMAKE_INSTALL_PREFIX}
+   if(APPLE)
+      set(rpath "${CMAKE_INSTALL_PREFIX}/lib")
+   else()
+      set(rpath "${CMAKE_INSTALL_PREFIX}/lib")
+   endif()
 endif()
 list(APPEND DIP_PYTHON_PY "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")
 list(APPEND PyDIPdeps "${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.in")
@@ -23,11 +30,7 @@ update_deps_file("PyDIP_sources" "${PyDIPdeps}")
 # Build PyDIP_bin
 pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC})
 target_link_libraries(PyDIP_bin PRIVATE DIP)
-if(APPLE)
-   set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "@loader_path/${diplib_dir}")
-else()
-   set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
-endif()
+set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "${rpath}")
 
 # C++ version, etc.
 set_target_properties(PyDIP_bin PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
@@ -51,11 +54,7 @@ if(DIP_BUILD_DIPVIEWER)
    # Build PyDIPviewer
    pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
    target_link_libraries(PyDIPviewer PRIVATE DIP DIPviewer)
-   if(APPLE)
-      set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "@loader_path/${diplib_dir}")
-   else()
-      set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
-   endif()
+   set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "${rpath}")
 
    # C++ version, etc.
    set_target_properties(PyDIPviewer PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
@@ -77,11 +76,7 @@ if(DIP_BUILD_JAVAIO)
    # Build PyDIPjavaio
    pybind11_add_module(PyDIPjavaio ${DIP_PYTHON_JAVAIO_SRC})
    target_link_libraries(PyDIPjavaio PRIVATE DIP DIPjavaio)
-   if(APPLE)
-      set_target_properties(PyDIPjavaio PROPERTIES INSTALL_RPATH "@loader_path/${diplib_dir}")
-   else()
-      set_target_properties(PyDIPjavaio PROPERTIES INSTALL_RPATH "$ORIGIN/${diplib_dir}")
-   endif()
+   set_target_properties(PyDIPjavaio PROPERTIES INSTALL_RPATH "${rpath}")
 
    # C++ version, etc.
    set_target_properties(PyDIPjavaio PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
