@@ -2217,7 +2217,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
       DIP_EXPORT View Real() const;
 
-      /// \brief Extracts the imaginary component of a complex-typed image. The image must be forged.
+      /// \brief Extracts the imaginary component of a complex-typed image. The image must be forged and complex-valued.
       DIP_EXPORT View Imaginary() const;
 
       /// \brief Creates a scalar view of the image, where the tensor dimension is converted to a new spatial

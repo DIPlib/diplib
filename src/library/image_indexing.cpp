@@ -97,7 +97,9 @@ Image::View Image::Cropped( UnsignedArray const& sizes, String const& cropLocati
 
 Image::View Image::Real() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   if( !dataType_.IsComplex() ) {
+      return Image::View( *this );
+   }
    Image::View out( *this );
    // Change data type
    out.reference_.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
