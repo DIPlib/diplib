@@ -141,6 +141,44 @@ inline FloatCoordinateArray MeanShift(
 }
 
 
+/// \brief Determines the parameters for a Gaussian Mixture Model for every line in the image.
+///
+/// `in` must be real-valued and scalar. For each image line along `dimension`, a Gaussian Mixture Model (GMM)
+/// is fitted to find the `numberOfGaussians` most important Gaussian components. In the output image, `dimension`
+/// indexes the Gaussian component. The components are stored in order of importance, the component with the largest
+/// amplitude first. The parameters to each Gaussian are stored as tensor components, in the order
+/// position, amplitude and sigma.
+///
+/// `out` is a double-precision floating-point image with three tensor components. It has a size of `numberOfGaussians`
+/// along `dimension`, and the same size as `in` along all other dimensions.
+///
+/// `maxIter` sets how many iterations are run. There is currently no other stopping criterion.
+///
+/// `flags` can contain the following values:
+///   - `"periodic"` specifies that the image is periodic along `dimension`.
+///   - `"pixel size"` scales the parameters written to the output image with the pixel size along `dimension`.
+///     By default these parameters are in pixels.
+DIP_EXPORT void GaussianMixtureModel(
+      Image const& in,
+      Image& out,
+      dip::uint dimension = 2,
+      dip::uint numberOfGaussians = 2,
+      dip::uint maxIter = 20,
+      StringSet const& flags = {}
+);
+inline Image GaussianMixtureModel(
+      Image const& in,
+      dip::uint dimension = 2,
+      dip::uint numberOfGaussians = 2,
+      dip::uint maxIter = 20,
+      StringSet const& flags = {}
+) {
+   Image out;
+   GaussianMixtureModel( in, out, dimension, numberOfGaussians, maxIter, flags );
+   return out;
+}
+
+
 /// \brief Calculates the cross-correlation between two images of equal size.
 ///
 /// The `normalize` flag determines whether to compute the regular cross-correlation (`"don't normalize"`)
@@ -150,11 +188,19 @@ inline FloatCoordinateArray MeanShift(
 /// where the input images are whitened (in the spatial domain) before the cross-correlations is computed. The
 /// method is instead related to the "phase correlation" as proposed by Kuglin and Hines (1975).
 ///
-/// When `normalize` is `"normalize"`, the computation performed in the Fourier Domain is
-/// `out = (in1*dip::Conjugate(in2))/dip::SquareModulus(in1)` (as per Luengo & van Vliet, 2000).
-///  (see `dip::Conjugate`, `dip::SquareModulus`).
-/// When `normalize` is set to `"phase"`, the computation is
-/// `out = (in1*dip::Conjugate(in2))/(dip::Modulus(in1)*dip::Modulus(in2))` (as per Kuglin & Hines, 1975).
+/// When `normalize` is `"normalize"`, the computation performed in the Fourier Domain is (as per Luengo & van Vliet, 2000)
+///
+/// ```cpp
+///     out = ( in1 * dip::Conjugate(in2) ) / dip::SquareModulus(in1);
+/// ```
+///
+/// When `normalize` is set to `"phase"`, the computation is (as per Kuglin & Hines, 1975)
+///
+/// ```cpp
+///     out = ( in1 * dip::Conjugate(in2) ) / ( dip::Modulus(in1) * dip::Modulus(in2) );
+/// ```
+///
+/// (See `dip::Conjugate`, `dip::SquareModulus` and `dip::Modulus`.)
 /// These two approaches are identical if the only difference between `in1` and `in2` is a shift, except that
 /// `"normalize"` is computationally cheaper than `"phase"`. If the images are obtained with different
 /// modalities, or if important differences exist in the images, the `"phase"` method might be the better choice.

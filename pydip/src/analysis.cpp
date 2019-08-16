@@ -77,6 +77,8 @@ void init_analysis( py::module& m ) {
           "meanShiftVectorResult"_a, "start"_a, "epsilon"_a = 1e-3 );
    m.def( "MeanShift", py::overload_cast< dip::Image const&, dip::FloatCoordinateArray const&, dip::dfloat >( &dip::MeanShift ),
           "meanShiftVectorResult"_a, "startArray"_a, "epsilon"_a = 1e-3 );
+   m.def( "GaussianMixtureModel", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringSet const& >( &dip::GaussianMixtureModel ),
+          "in"_a, "dimension"_a = 2, "numberOfGaussians"_a = 2, "maxIter"_a = 20, "flags"_a = dip::StringSet{} );
    m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
           "in1"_a, "in2"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
    m.def( "AutoCorrelationFT", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::AutoCorrelationFT ),
