@@ -1628,7 +1628,7 @@ class DIP_NO_EXPORT Image {
       /// resulting image depend on the strides, and do not necessarily
       /// follow the same order as linear indices.
       ///
-      /// \see dip::Image::FlattenAsMuchAsPossible, dip::Image::Squeeze
+      /// \see dip::Image::FlattenAsMuchAsPossible, dip::Image::SplitDimension, dip::Image::Squeeze
       DIP_EXPORT Image& Flatten();
 
       /// \brief Make image have as few dimensions as possible.
@@ -1647,8 +1647,27 @@ class DIP_NO_EXPORT Image {
       /// Note that the order of the pixels in the resulting image depend on the strides, and do not necessarily
       /// follow the same order as linear indices.
       ///
-      /// \see dip::Image::Flatten, dip::Image::Squeeze
+      /// \see dip::Image::Flatten, dip::Image::SplitDimension, dip::Image::Squeeze
       DIP_EXPORT Image& FlattenAsMuchAsPossible();
+
+      /// \brief Splits a dimension into two.
+      ///
+      /// Splits dimension `dim` into two: one with size `size`, and one with size `Size( dim ) / size`. The two
+      /// new dimensions will be at `dim` and `dim + 1`, moving the previous `dim + 1` and subsequent dimensions
+      /// over by one. `Size( dim )` must be evenly divisible by `size` for this to work, an exception will be
+      /// thrown if this is not the case.
+      ///
+      /// After this call, the image will have the same number of pixels, stored identically (no copy is made),
+      /// but one more dimension. For example:
+      ///
+      /// ```cpp
+      ///     dip::Image image( { 43, 512, 21 } );
+      ///     image.SplitDimension( 1, 32 );
+      ///     std::cout << image.Sizes() << '\n'; // should print { 43, 32, 16, 21 }
+      /// ```
+      ///
+      /// \see dip::Image::Flatten, dip::Image::FlattenAsMuchAsPossible
+      DIP_EXPORT Image& SplitDimension( dip::uint dim, dip::uint size );
 
       /// \brief Remove singleton dimensions (dimensions with size==1).
       ///

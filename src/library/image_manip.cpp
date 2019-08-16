@@ -127,6 +127,19 @@ Image& Image::FlattenAsMuchAsPossible() {
 }
 
 
+Image& Image::SplitDimension( dip::uint dim, dip::uint size ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes_.size() <= dim, E::ILLEGAL_DIMENSION );
+   dip::uint size2 = sizes_[ dim ] / size;
+   DIP_THROW_IF( size * size2 != sizes_[ dim ], "Dimension cannot be evenly divided" );
+   sizes_[ dim ] = size;
+   sizes_.insert( dim + 1, size2 );
+   strides_.insert( dim + 1, strides_[ dim ] * static_cast< dip::sint >( size ));
+   pixelSize_.InsertDimension( dim + 1, pixelSize_[ dim ] );
+   return *this;
+}
+
+
 Image& Image::Squeeze() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint jj = 0;
@@ -566,7 +579,7 @@ Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions") {
-   dip::Image src( { 5, 10, 15, }, 3 );
+   dip::Image src( { 5, 10, 15 }, 3 );
    dip::Image img = src;
    void* origin = src.Origin();
    DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
@@ -615,10 +628,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions"
    DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 5, 5 } );
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 150 } );
    DOCTEST_CHECK( img.Origin() != origin );
+   img = src;
+   img.SplitDimension( 1, 5 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 5, 10 / 5, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 15 * 5, 150 } );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image tensor dimension manipulation functions") {
-   dip::Image src( { 5, 10, 15, }, 3, dip::DT_SCOMPLEX );
+   dip::Image src( { 5, 10, 15 }, 3, dip::DT_SCOMPLEX );
    dip::Image img = src;
    DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
    DOCTEST_REQUIRE( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
@@ -657,7 +674,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image tensor dimension manipulation fun
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image singleton dimensions") {
-   dip::Image src( { 5, 10, 15, }, 1 );
+   dip::Image src( { 5, 10, 15 }, 1 );
    dip::Image img = src;                                                      // Point 0
    DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
    DOCTEST_REQUIRE( img.Strides() == dip::IntegerArray{ 1, 5, 50 } );

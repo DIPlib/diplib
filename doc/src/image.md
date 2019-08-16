@@ -794,7 +794,8 @@ The `dip::Image::Flatten` method converts the image to 1D (though if the image
 does not have contiguous data, it will have to be copied to form a 1D image).
 `dip::Image::FlattenAsMuchAsPossible` does the same thing, but never copies.
 If the data is not contiguous, the image will not be 1D, though it will hopefully
-have fewer dimensions than before the method call.
+have fewer dimensions than before the method call. `dip::Image::SplitDimension`
+splits a dimension into two.
 
 A group of methods manipulate the image's tensor shape:
 `dip::Image::ReshapeTensor` requires the target tensor shape to have as many
