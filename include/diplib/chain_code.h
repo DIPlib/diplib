@@ -762,7 +762,7 @@ struct DIP_NO_EXPORT ChainCode {
             dip::sint xS = strides[ 0 ];
             dip::sint yS = strides[ 1 ];
             pos = is8connected ? deltas8 : deltas4;
-            for( dip::uint ii = 0; ii < ( is8connected ? 8 : 4 ); ++ii ) {
+            for( dip::uint ii = 0; ii < ( is8connected ? 8u : 4u ); ++ii ) {
                offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
             }
          }

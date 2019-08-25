@@ -86,7 +86,7 @@ class dip__DirectLUT_Integer : public Framework::ScanLineFilter {
          DIP_ASSERT( values_.TensorElements() == tensorLength );
          dip::uint maxIndex = values_.Size( 0 ) - 1;
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            dip::uint index = *in;
+            dip::uint index = static_cast< dip::uint >( *in );
             if( index > maxIndex ) {
                switch( outOfBoundsMode_ ) {
                   case LookupTable::OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE:

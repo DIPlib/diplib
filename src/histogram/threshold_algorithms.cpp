@@ -72,7 +72,7 @@ FloatArray IsodataThreshold(
    DIP_ASSERT( cum.Stride( 0 ) == 1 );
    DIP_ASSERT( cum.Size( 0 ) == nBins );
    Histogram::CountType* ptr = static_cast< Histogram::CountType* >( cum.Origin() );
-   dip::uint N = ptr[ nBins - 1 ] / ( nThresholds + 1 );
+   dip::uint N = static_cast< dip::uint >( ptr[ nBins - 1 ] ) / ( nThresholds + 1 );
    dip::uint index = 1;
    for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
       while( ptr[ index ] < N * ( ii + 1 )) {

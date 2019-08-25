@@ -66,11 +66,11 @@ class TouchingRegionAdjacencyGraphLineFilter : public Framework::ScanLineFilter 
       IntegerArray const& strides_;
 
       void DoPixel( TPI const* in, dip::uint nDims, BooleanArray const& process ) {
-         dip::uint label = in[ 0 ];
+         dip::uint label = static_cast< dip::uint >( in[ 0 ] );
          if( label == 0 ) { return; }
          for( dip::uint jj = 0; jj < nDims; ++jj ) {
             if( process[ jj ] ) {
-               dip::uint neighborLabel = in[ strides_[ jj ]];
+               dip::uint neighborLabel = static_cast< dip::uint >( in[ strides_[ jj ]] );
                if(( neighborLabel != 0 ) && ( neighborLabel != label )) {
                   graph_.AddEdgeSumWeight( label, neighborLabel, 1 ); // Add 1 to the weight, this is the count of boundary pixels
                   boundaryLength_[ label ] += 1;
@@ -125,8 +125,8 @@ class WatershedRegionAdjacencyGraphLineFilter : public Framework::ScanLineFilter
          if( in[ 0 ] == 0 ) {
             for( dip::uint jj = 0; jj < nDims; ++jj ) {
                if( process[ jj ] ) {
-                  dip::uint label1 = in[ -strides_[ jj ]];
-                  dip::uint label2 = in[ strides_[ jj ]];
+                  dip::uint label1 = static_cast< dip::uint >( in[ -strides_[ jj ]] );
+                  dip::uint label2 = static_cast< dip::uint >( in[ strides_[ jj ]] );
                   if(( label1 > 0 ) && ( label2 > 0 ) && ( label1 != label2 )) {
                      graph_.AddEdgeSumWeight( label1, label2, 1 ); // Add 1 to the weight, this is the count of boundary pixels
                      boundaryLength_[ label1 ] += 1;

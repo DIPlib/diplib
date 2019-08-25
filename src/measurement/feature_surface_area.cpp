@@ -81,7 +81,7 @@ static void dip__SurfaceArea(
             // Check whether correct pixel value is a requested objectID
             bool requested = false;
             dip::uint index = 0;
-            auto it = objectIndex.find( ip[ pos ] );
+            auto it = objectIndex.find( static_cast< dip::uint >( ip[ pos ] ));
             if( it != objectIndex.end() ) {
                requested = true;
                index = it->second;
@@ -131,7 +131,7 @@ static void dip__SurfaceArea(
                // If the pixel has a label we don't want to measure,
                // store the labels of its neighborhood
                else {
-                  nnn[ ii ] = objectIndex.count( ip[ pos + nn[ ii ]] ) > 0 ? ip[ pos + nn[ ii ] ] : 0;
+                  nnn[ ii ] = static_cast< dip::uint >( objectIndex.count( static_cast< dip::uint >( ip[ pos + nn[ ii ]] )) > 0 ? ip[ pos + nn[ ii ] ] : 0 );
                }
             }
 
@@ -158,7 +158,7 @@ static void dip__SurfaceArea(
                      }
                   }
                   // I don't know what Jim meant with this next statement (GvK)
-                  nnt = ( nnt ^ 077 ) & 077;
+                  nnt = ( nnt ^ 077u ) & 077u;
                   // Let's make sure nnt doesn't overflow stype
                   nnt = std::min( nnt, dip::uint( 64 ) );
                   surfaceArea[ index ] += sa[ stype[ nnt ] ];

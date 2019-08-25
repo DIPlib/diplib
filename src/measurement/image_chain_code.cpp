@@ -47,7 +47,7 @@ static ChainCode dip__OneChainCode(
       bool startDir0 = false
 ) {
    TPI const* data = static_cast< TPI const* >( data_ptr );
-   dip::uint label = *data;
+   dip::uint label = static_cast< dip::uint >( *data );
    DIP_THROW_IF( label == 0, "Start coordinates not on object boundary" );
    // Initialize the chain code of the object
    ChainCode out;

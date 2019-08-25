@@ -49,7 +49,7 @@ class dip__GetLabels: public Framework::ScanLineFilter {
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
                   if( !setPrevID || ( *data != prevID ) ) {
-                     prevID = *data;
+                     prevID = static_cast< dip::uint >( *data );
                      setPrevID = true;
                      objectIDs_.insert( prevID );
                   }
@@ -61,7 +61,7 @@ class dip__GetLabels: public Framework::ScanLineFilter {
             dip::uint prevID = static_cast< dip::uint >( *data ) + 1; // something that's different from the first pixel value
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *data != prevID ) {
-                  prevID = *data;
+                  prevID = static_cast< dip::uint >( *data );
                   objectIDs_.insert( prevID );
                }
                data += stride;
