@@ -24,7 +24,9 @@ Image objects created by the interface expose their data buffer, and so can be
 used with most *NumPy* functions. Likewise, any object that exposes a data buffer
 (e.g. *NumPy* arrays) can be used as input to *PyDIP* functions.
 
-Documentation hasn't been added to these Python functions yet.
+The interface only has automatically generated docstrings that show the names of
+each of the parameters. Use the DIPlib reference to learn how to use each function.
+Get started by reading the \ref pydip_user_manual.
 
 Images can be shown using the `Show` method, which uses *matplotlib*.
 The `PyDIP.PyDIPviewer` sub-module gives access to \ref viewer.
