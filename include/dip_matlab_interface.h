@@ -1377,7 +1377,7 @@ inline bool MatchSizes(
 /// This configures the images `img_out0` and `img_out1` such that, when they are
 /// forged later on, an `mxArray` structure will be created to hold the pixel data.
 /// `mxArray` is MATLAB's representation of arrays.
-/// To return those images back to MATLAB, use `dml::GetArray`, which returns
+/// To return those images back to MATLAB, use `dml::GetArray(dip::Image const&, bool)`, which returns
 /// the `mxArray` created when the image was forged:
 ///
 /// ```cpp
@@ -1385,7 +1385,7 @@ inline bool MatchSizes(
 ///     plhs[ 1 ] = dm::GetArray( img_out1 );
 /// ```
 ///
-/// If you don't use `dml::GetArray`, the `mxArray` that contains
+/// If you don't use `%dml::GetArray`, the `mxArray` that contains
 /// the pixel data will be destroyed when the dip::Image object goes out
 /// of scope.
 ///
@@ -1453,7 +1453,7 @@ class MatlabInterface : public dip::ExternalInterface {
       /// \brief Constructs a dip::Image object with the external interface set so that,
       /// when forged, a MATLAB `mxArray` will be allocated to hold the samples.
       ///
-      /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
+      /// Use `dml::GetArray(dip::Image const&, bool)` to obtain the `mxArray` and assign
       /// it as a `lhs` argument to your MEX-file.
       dip::Image NewImage() {
          dip::Image out;

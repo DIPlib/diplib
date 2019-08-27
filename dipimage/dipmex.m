@@ -18,7 +18,7 @@
 %
 %  On Windows, the MSVC compiler is assumed. On Linux and MacOS, either
 %  GCC or CLang compilers can be used. If you use a different compiler,
-%  edit this file to adjus the options passed to the MEX command, in
+%  edit this file to adjust the options passed to the MEX command, in
 %  particular the switch to tell the compiler to use C++14.
 %
 %  Do note that you most likely need to configure MEX to use the exact
