@@ -571,17 +571,14 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
        - <tt>'DisplayFunction'</tt> can be set to either <tt>'dipshow'</tt> (the default), or <tt>'viewslice'</tt>,
          and determines which of these functions is invoked by default when the `dip_image/display`
-         method is invoked (see the
-         [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
-         for more detauls).
+         method is invoked (see the \ref sec_dum_customizing_dippref_displayfunction "DIPimage User Manual" for more details).
 
    - Changed settings:
 
        - <tt>'KeepDataType'</tt>, which changes how the output data type for arithmetic operations is
          chosen, has the same intent but does not always make the same choice. For example
          the result is different when mixing signed and unsigned integers. (see the
-         [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/DIPimageUserManual.pdf)
-         for details on the current logic).
+         \ref sec_dum_customizing_dippref_keepdatatype "DIPimage User Manual" for details on the current logic).
 
    - Removed settings:
 

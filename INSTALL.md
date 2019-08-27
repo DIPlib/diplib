@@ -50,6 +50,7 @@ Available `make` targets:
     check         # builds the unit_tests program and runs it
     check_memory  # ...and runs it under valgrind
     apidoc        # builds the HTML documentation for the library API
+                  #    (as well as the user manuals for DIPimage and PyDIP)
     examples      # builds the examples
     package       # creates a distributable package
 
@@ -60,7 +61,6 @@ The following `make` targets are part of the `all` target:
     DIPjavaio     # builds the DIPjavaio module (plus the DIPlib library)
     PyDIP         # builds the PyDIP Python module (includes DIP, DIPviewer and
                   #    DIPjavaio targets)
-    dum           # builds the DIPimage User Manual PDF
 
 The `apidoc` target requires that *Doxygen* be installed, the target will not be available
 if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be
@@ -156,11 +156,6 @@ after installing *DIPimage*, to learn more).
 
 *PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
 
-To build the *DIPlib* documentation (HTML), [*Doxygen*](http://www.doxygen.org) is needed.
+To build the *DIPlib* documentation (HTML), as well as the *DIPimage* and *PyDIP* User Manuals,
+[*Doxygen*](http://www.doxygen.org) is needed.
 There is a chance it will only work on Unix-like systems (not yet tested under Windows).
-
-Compiling the *DIPimage* User Manual (PDF) requires [*Pandoc*](https://pandoc.org),
-[*pandoc-crossref*](https://hackage.haskell.org/package/pandoc-crossref), and
-[*LaTeX*](http://www.tug.org/texlive/). Note that you'll need certain *LaTeX* packages,
-such as `upquote`, that are not in the most basic set of packages. You can install these
-through the *TeX Live* package manager.

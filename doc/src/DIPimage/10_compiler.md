@@ -1,10 +1,27 @@
-*DIPimage* and the *MATLAB* Compiler
-====================================
+# DIPimage and the MATLAB Compiler {#sec_dum_matlab_compiler}
 
-**NOTE: This section needs updating, things have changed since this was written**
+[//]: # (DIPlib 3.0)
 
-The *MATLAB* Compiler
----------------------
+[//]: # ([c]2017-2019, Cris Luengo.)
+[//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
+
+[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
+[//]: # (you may not use this file except in compliance with the License.)
+[//]: # (You may obtain a copy of the License at)
+[//]: # ()
+[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
+[//]: # ()
+[//]: # (Unless required by applicable law or agreed to in writing, software)
+[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
+[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
+[//]: # (See the License for the specific language governing permissions and)
+[//]: # (limitations under the License.)
+
+\warning This section needs updating, things have changed significantly since this was written
+
+\tableofcontents
+
+\section sec_dum_matlab_compiler_intro The MATLAB Compiler
 
 Since *MATLAB* version 7.0 (Release 14), the *MATLAB* Compiler no longer
 generates C or C++ code from M-files. Instead, it packages all M-files
@@ -36,8 +53,7 @@ User's Guide (available online at
 contains all the information needed to compile an M-file that uses
 *DIPimage*.
 
-Compiling an M-file that uses *DIPimage*
-----------------------------------------
+\section sec_dum_matlab_compiler_compiling Compiling an M-file that uses DIPimage
 
 Please first read the *MATLAB* Compiler User's Guide, and make sure you
 are able to generate the `magicsquare.m` stand-alone example application
@@ -69,13 +85,16 @@ make and empty `startup.m` file to avoid your default one to be used.
 To find out which directories you need to add to the Compiler search
 path, type `path` on the *MATLAB* command line. It should return a long
 list of directories, three of which look like this:
+
 ```bash
     /something/dip/common/mlv7_4/diplib
     /something/dip/common/mlv7_4/dipimage_mex
     /something/dip/common/dipimage
 ```
+
 These three paths can be added the the `mcc` command line using the
-‘`-I`' argument:
+'`-I`' argument:
+
 ```bash
     mcc -m myapplication.m ...
         -I /something/dip/common/dipimage ...
@@ -90,12 +109,11 @@ due to the order in which paths get added and commands are executed.
 
 When running the stand-alone application you just created, the three
 *DIPlib* shared libraries must be on the `LD_LIBRARY_PATH` environment
-variable, as discussed in [@sec:unixinst]. It is possible to
+variable, as discussed in \ref sec_dum_installing_linux. It is possible to
 edit the shell script that is created by `mcc` (`run_myapplication.sh`)
 to properly set the `LD_LIBRARY_PATH` environment variable.
 
-Deploying your compiled program
--------------------------------
+\section sec_dum_matlab_compiler_deploying Deploying your compiled program
 
 First of all, note that you need a special license of *DIPimage* and
 *DIPlib* to be able to distribute a program that uses this toolbox and
@@ -113,6 +131,7 @@ environment variable prior to starting the executable.
 
 There is a very simple way of including the *DIPlib* libraries in the CTF
 file:
+
 ```bash
     mcc -m myapplication.m ...
         -I /something/dip/common/dipimage ...
@@ -131,7 +150,8 @@ Thus, assuming your user puts the files `myapplication.ctf` and
 `myapplication` into the directory `/home/user/myapp/`, and installed
 the MCR into `/usr/local/mcr/v76/`, your user will have to do the
 following to start the application:
-```bash
+
+\code{.bash}
     MCRROOT=/usr/local/mcr/v76
     LD_LIBRARY_PATH=/home/user/myapp/myapplication_mcr/something/dip/Linux/
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRROOT}/runtime/glnx86
@@ -146,7 +166,8 @@ following to start the application:
     XAPPLRESDIR=${MCRROOT}/X11/app-defaults
     export LD_LIBRARY_PATH
     export XAPPLRESDIR /home/user/myapp/myapplication <arguments>
-```
+\endcode
+
 You would do good creating a little shell script that collects these
 commands, and provide it with your executable (instead of
 `run_myapplication.sh`).

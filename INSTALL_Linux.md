@@ -36,17 +36,6 @@ documentation directly in the header files), you need *Doxygen*:
 sudo apt install doxygen
 ```
 
-And to compile the *DIPimage User Manual* you'll need *Pandoc* and the *crossref*
-filter. The `pandoc` package satisfies the first requirement, but unfortunately Ubuntu
-doesn't have pre-compiled binaries for the latter. I have not been able to easily
-compile it from sources on Ubuntu (TODO: If anyone wants to help fill out this part
-of the instructions, I'd be most grateful!)
-
-This latter document also requires *LaTeX*:
-```bash
-sudo apt install texlive-latex-base
-```
-
 Finally, even if the `python3` program is already installed, you might need to
 install the *Python 3* header files and static library:
 ```bash

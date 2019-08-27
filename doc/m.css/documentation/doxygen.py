@@ -1409,6 +1409,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # Custom mapping of filenames to languages
             mapping = [('.h', 'c++'),
                        ('.h.cmake', 'c++'),
+                       ('.m', 'matlab'), # The .m extension is ambiguous, we always want to do MATLAB here (DIPlib specific).
+                       ('.txt', 'text'), # The .txt extension is ambiguous, we always want to do no lexing here (DIPlib specific).
                        # Pygments knows only .vert, .frag, .geo
                        ('.glsl', 'glsl'),
                        ('.conf', 'ini'),

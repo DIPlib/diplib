@@ -52,16 +52,6 @@ documentation directly in the header files), you need *Doxygen*:
 brew install doxygen
 ```
 
-And to compile the *DIPimage User Manual* you'll need *Pandoc*:
-```bash
-brew install pandoc pandoc-crossref
-```
-
-This latter document also requires *LaTeX*, which ideally you should get through
-[*MacTeX*](http://www.tug.org/mactex/), but you can also choose to directly get the
-[*TeX Live*](http://www.tug.org/texlive/) distribution, which is identical but misses
-a few Mac-specific applications.
-
 Finally, MacOS comes with *Python 2*. We recommend *Python 3*:
 ```bash
 brew install python3
