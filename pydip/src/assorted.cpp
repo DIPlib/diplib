@@ -21,6 +21,7 @@
 #include "diplib/color.h"
 #include "diplib/display.h"
 #include "diplib/file_io.h"
+#include "diplib/simple_file_io.h"
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
 #include "diplib/histogram.h"
@@ -132,6 +133,10 @@ void init_assorted( py::module& m ) {
    m.def( "ImageReadJPEG", py::overload_cast< dip::String const& >( &dip::ImageReadJPEG ), "filename"_a );
    m.def( "ImageIsJPEG", &dip::ImageIsJPEG, "filename"_a );
    m.def( "ImageWriteJPEG", &dip::ImageWriteJPEG, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
+
+   // diplib/simple_file_io.h
+   m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
+   m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
 
    // diplib/generation.h
    m.def( "FillDelta", &dip::FillDelta, "out"_a, "origin"_a = "" );
