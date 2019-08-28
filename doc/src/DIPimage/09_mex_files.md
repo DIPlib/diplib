@@ -49,7 +49,7 @@ function creates a raw image that can be forged (or passed as output image to
 any *DIPlib* function). The `dml::GetArray(dip::Image const&, bool)` function
 can then be used to obtain a pointer to the `mxArray` containing a `dip_image`
 object with the same pixel data. Note that the `%dml::MatlabInterface` object
-needs to exist throughout this process, as it owns the data unit `%dml::GetArray`
+needs to exist throughout this process, as it owns the data until `%dml::GetArray`
 extracts it.
 
 This is a skeleton MEX-file that outputs such an image:
@@ -106,7 +106,7 @@ the documentation to the <tt>\ref dml</tt> namespace for a complete list. These
 take an `mxArray` pointer as input, validate it, and output a value of the appropriate
 type. If the validation fails, an exception is thrown.
 
-There exist also a series of `dml::GetArray` functions that to the reverse process:
+There exist also a series of `dml::GetArray` functions that do the reverse process:
 they take a value of any type typically returned by a *DIPlib* function, and
 convert it to an `mxArray`, returning its pointer. Note that *MATLAB* always takes
 care of freeing any `mxArray` objects created by the MEX-file, there is no need
