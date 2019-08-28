@@ -113,6 +113,22 @@ developed primarily by volunteers, but has had some financial support from:
 
 See \ref history for a list of contributors.
 
+\section main_building Building
+
+As of yet we do not have a binary distribution of the library and associated
+modules. To use *DIPlib*, *DIPimage* or *PyDIP*, please build the project
+from sources. The sources are available from the
+[GitHub repository](https://github.com/DIPlib/diplib). For installation
+instructions, see [`INSTALL.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL.md)
+in the root directory of the repository. Platform-specific instructions
+are found in
+[`INSTALL_Linux.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL_Linux.md),
+[`INSTALL_MacOS.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL_MacOS.md) and
+[`INSTALL_Windows.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL_Windows.md).
+Even though there might not be detailed instructions for other platforms,
+it should be possible to compile and use the library on any platform with a compliant
+C++14 compiler.
+
 \section main_contributing Contributing
 
 If you want to contribute to the *DIPlib* project, there are many different
@@ -129,7 +145,7 @@ ways of doing so:
 
 - Add code to the unit tests.
 
-- Create a nice *Doxygen* theme for the documentation, or create a logo for the project.
+- Improve the markup of the documentation, or create a logo for the project.
 
 In any of these cases, see <a href="https://github.com/DIPlib/diplib/blob/master/CONTRIBUTING.md">`CONTRIBUTING.md`</a>
 to learn how to make optimal use of your time.
