@@ -2,6 +2,7 @@
 %
 % SYNOPSIS:
 %  error = errormeasure(image_in,image_reference,mask,method)
+%  error = errormeasure(image_in,image_reference,method)
 %
 % PARAMETERS:
 %  image_reference: Noiseless image to compare against
@@ -21,8 +22,8 @@
 %                      (real-valued images only)
 %    - 'MutualInformation': Mutual information in bits (real-valued scalar
 %                           images only)
-%    - 'Pearson':      Pearson correlation coefficient(real-valued images only)
-%    - 'Spearman':     Spearman rank correlation coefficient(real-valued images
+%    - 'Pearson':      Pearson correlation coefficient (real-valued images only)
+%    - 'Spearman':     Spearman rank correlation coefficient (real-valued images
 %                      only)
 %
 %    - 'Dice':         Dice coefficient
@@ -32,6 +33,10 @@
 %    - 'Accuracy':     Fraction of identical values
 %    - 'Precision':    Precision (Positive Predictive Value)
 %    - 'Hausdorff':    Hausdorff distance (binary images only)
+%    - 'ModifiedHausdorff': Modified Hausdorff distance (binary images only)
+%    - 'SMD':          Sum of minimal distances (binary images only)
+%    - 'CWSMD':        Complement weighted sum of minimal distances from
+%                      Ćurić et al. (2014) (binary images only)
 %
 % DEFAULTS:
 %  method = 'MSE'
@@ -44,7 +49,7 @@
 %  The methods in the second block compare segmentations. The input images are
 %  either binary images, or real-valued images in the range [0,1]. If the images
 %  contain values outside of that range, the output will be nonsensical. Images
-%  must be scalar.
+%  must be scalar. MASK is ignored.
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::MeanError, dip::MeanSquareError,
@@ -52,7 +57,9 @@
 %  dip::InProduct, dip::LnNormError, dip::PSNR, dip::SSIM, dip::MutualInformation,
 %  dip::PearsonCorrelation, dip::SpearmanRankCorrelation,
 %  dip::DiceCoefficient, dip::JaccardIndex, dip::Specificity, dip::Sensitivity,
-%  dip::Accuracy, dip::Precision, dip::HausdorffDistance.
+%  dip::Accuracy, dip::Precision, dip::HausdorffDistance,
+%  dip::ModifiedHausdorffDistance, dip::SumOfMinimalDistances,
+%  dip::ComplementWeightedSumOfMinimalDistances.
 %  See the documentation of these functions for more information.
 %
 % LITERATURE:
@@ -62,6 +69,9 @@
 %  - Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment:
 %    from error visibility to structural similarity", IEEE Transactions on Image
 %    Processing 13(4):600-612, 2004.
+%  - V. Ćurić, J. Lindblad, N. Sladoje, H. Sarve, and G. Borgefors, "A new set
+%    distance and its application to shape registration", Pattern Analysis and
+%    Applications 17:141-152, 2014.
 
 % (c)2017-2019, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

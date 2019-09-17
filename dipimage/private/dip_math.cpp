@@ -157,6 +157,12 @@ void errormeasure( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       error = dip::Precision( in, reference );
    } else if( method == "hausdorff" ) {
       error = dip::HausdorffDistance( in, reference );
+   } else if( method == "modifiedhausdorff" ) {
+      error = dip::ModifiedHausdorffDistance( in, reference );
+   } else if( method == "smd" ) {
+      error = dip::SumOfMinimalDistances( in, reference );
+   } else if( method == "cwsmd" ) {
+      error = dip::ComplementWeightedSumOfMinimalDistances( in, reference );
    } else {
       DIP_THROW_INVALID_FLAG( method );
    }

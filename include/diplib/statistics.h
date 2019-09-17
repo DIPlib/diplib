@@ -1128,6 +1128,52 @@ inline dfloat Precision( Image const& in, Image const& reference ) {
 /// The two input images must have the same sizes, be scalar, and binary.
 DIP_EXPORT dfloat HausdorffDistance( Image const& in, Image const& reference );
 
+/// \brief Computes the modified Hausdorff distance between two binary images.
+///
+/// The modified Hausdorff distance is the average distance between a point in one set and the nearest point
+/// in the other set. The measure is made symmetric by swapping the two sets and using the largest obtained
+/// result.
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
+///
+/// The two input images must have the same sizes, be scalar, and binary.
+///
+/// \literature
+/// <li>M.P. Dubuisson and A.K. Jain, "A modified Hausdoff distance for object matching",
+///     Proc. 12<sup>th</sup> Intl. Conf. on Pattern Recognition, Jerusalem, Israel, pp. 566-568, 1994.
+/// \endliterature
+DIP_EXPORT dfloat ModifiedHausdorffDistance( Image const& in, Image const& reference );
+
+/// \brief Computes the sum of minimal distances (SMD) between two binary images.
+///
+/// The sum of minimal distances is the sum of distances between a point in one set and the nearest point
+/// in the other set. The measure is made symmetric by swapping the two sets and averaging the results.
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
+///
+/// The two input images must have the same sizes, be scalar, and binary.
+///
+/// \literature
+/// <li>T. Eiter and H. Mannila, "Distance measures for point sets and their computation", Acta Informatica 34(2):109–133, 1997.
+/// \endliterature
+DIP_EXPORT dfloat SumOfMinimalDistances( Image const& in, Image const& reference );
+
+/// \brief Computes the complement weighted sum of minimal distances (CWSMD) between two binary images.
+///
+/// The complement weighted sum of minimal distances is the weighted sum of distances between a point in the first
+/// set and the nearest point in the second set. The weights are given by the distance of the point in the
+/// first set to its boundary. The measure is made symmetric by swapping the two sets and summing the results.
+///
+/// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
+///
+/// The two input images must have the same sizes, be scalar, and binary.
+///
+/// \literature
+/// <li>V. Ćurić, J. Lindblad, N. Sladoje, H. Sarve, and G. Borgefors, "A new set distance and its application to shape registration",
+///     Pattern Analysis and Applications 17:141-152, 2014.
+/// \endliterature
+DIP_EXPORT dfloat ComplementWeightedSumOfMinimalDistances( Image const& in, Image const& reference );
+
 /// \brief Calculates the entropy, in bits, using a histogram with `nBins` bins.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of

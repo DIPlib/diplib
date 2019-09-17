@@ -6,6 +6,7 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+ * Based on original set distance code by Vladimir Ćurić, (c)2011-2014.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -348,7 +349,7 @@ dfloat FalseNegatives( Image const& in, Image const& reference ) {
 
 SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    SpatialOverlapMetrics out;
@@ -368,7 +369,7 @@ SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference ) 
 
 dfloat DiceCoefficient( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    return 2 * TruePositives( in, reference ) / ( Measure( in ) + Measure( reference ) );
@@ -376,7 +377,7 @@ dfloat DiceCoefficient( Image const& in, Image const& reference ) {
 
 dfloat JaccardIndex( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    return TruePositives( in, reference ) / Measure( Supremum( in, reference ) );
@@ -384,7 +385,7 @@ dfloat JaccardIndex( Image const& in, Image const& reference ) {
 
 dfloat Specificity( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    return TrueNegatives( in, reference ) / ( static_cast< dfloat >( in.NumberOfPixels() ) - Measure( reference ));
@@ -392,7 +393,7 @@ dfloat Specificity( Image const& in, Image const& reference ) {
 
 dfloat Sensitivity( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    return TruePositives( in, reference ) / Measure( reference );
@@ -400,7 +401,7 @@ dfloat Sensitivity( Image const& in, Image const& reference ) {
 
 dfloat Accuracy( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in.DataType().IsComplex() || reference.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    dfloat total = static_cast< dfloat >( in.NumberOfPixels() );
@@ -418,7 +419,7 @@ dfloat Accuracy( Image const& in, Image const& reference ) {
 
 dfloat HausdorffDistance( Image const& in, Image const& reference ) {
    DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsBinary() || !reference.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
    Image dt;
@@ -427,6 +428,50 @@ dfloat HausdorffDistance( Image const& in, Image const& reference ) {
    EuclideanDistanceTransform( !reference, dt, S::OBJECT );
    dfloat distance2 = Maximum( dt, in ).As< dfloat >();
    return std::max( distance1, distance2 );
+}
+
+dfloat ModifiedHausdorffDistance( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary() || !reference.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   Image dt;
+   EuclideanDistanceTransform( !in, dt, S::OBJECT );
+   dfloat distance1 = Mean( dt, reference ).As< dfloat >();
+   EuclideanDistanceTransform( !reference, dt, S::OBJECT );
+   dfloat distance2 = Mean( dt, in ).As< dfloat >();
+   return std::max( distance1, distance2 );
+}
+
+dfloat SumOfMinimalDistances( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary() || !reference.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   Image dt;
+   EuclideanDistanceTransform( !in, dt, S::OBJECT );
+   dfloat distance1 = Sum( dt, reference ).As< dfloat >();
+   EuclideanDistanceTransform( !reference, dt, S::OBJECT );
+   dfloat distance2 = Sum( dt, in ).As< dfloat >();
+   return ( distance1 + distance2 ) * 0.5;
+}
+
+dfloat ComplementWeightedSumOfMinimalDistances( Image const& in, Image const& reference ) {
+   DIP_THROW_IF( !in.IsForged() || !reference.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !reference.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary() || !reference.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( in.Sizes() != reference.Sizes(), E::SIZES_DONT_MATCH );
+   Image dt1;
+   Image dt2;
+   EuclideanDistanceTransform( in, dt1, S::BACKGROUND );
+   EuclideanDistanceTransform( !reference, dt2, S::OBJECT );
+   dt2 *= dt1;
+   dfloat distance1 = Sum( dt2, in ).As< dfloat >() / Sum( dt1, in ).As< dfloat >();
+   EuclideanDistanceTransform( reference, dt1, S::BACKGROUND );
+   EuclideanDistanceTransform( !in, dt2, S::OBJECT );
+   dt2 *= dt1;
+   dfloat distance2 = Sum( dt2, reference ).As< dfloat >() / Sum( dt1, reference ).As< dfloat >();
+   return distance1 + distance2;
 }
 
 } // namespace dip
