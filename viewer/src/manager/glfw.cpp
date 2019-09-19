@@ -26,6 +26,21 @@
 
 #include "diplib/viewer/glfw.h"
 
+#if (GLFW_VERSION_MAJOR >= 4) || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 3)
+  #define GLFW_THROW_IF(x, _str) \
+    do { \
+      if (x) \
+      { \
+        std::string str(_str); \
+        const char *glfwstr; \
+        glfwGetError(&glfwstr); \
+        DIP_THROW(str + ": " + glfwstr); \
+      } \
+    } while (false)
+#else
+  #define GLFW_THROW_IF(x, str) DIP_THROW_IF(x, str)
+#endif
+
 #define EPS 0.001
 
 /// \file
@@ -44,7 +59,7 @@ GLFWManager::GLFWManager()
 
   instance_ = this;
 
-  glfwInit();
+  GLFW_THROW_IF(glfwInit() != GLFW_TRUE, "Failed to initialize GLFW");
 }
 
 GLFWManager::~GLFWManager()
@@ -67,7 +82,7 @@ void GLFWManager::createWindow(WindowPtr window)
   if (height <= 0) height = width;
 
   GLFWwindow *wdw = glfwCreateWindow(width, height, "", NULL, NULL);
-  DIP_THROW_IF(wdw == nullptr, "Failed to create window");
+  GLFW_THROW_IF(wdw == nullptr, "Failed to create window");
   
   glfwSetWindowRefreshCallback(wdw, refresh);
   glfwSetFramebufferSizeCallback(wdw, reshape);
