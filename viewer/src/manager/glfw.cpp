@@ -59,7 +59,7 @@ GLFWManager::GLFWManager()
 
   instance_ = this;
 
-  GLFW_THROW_IF(glfwInit() != GLFW_TRUE, "Failed to initialize GLFW");
+  GLFW_THROW_IF(glfwInit() != GL_TRUE, "Failed to initialize GLFW");
 }
 
 GLFWManager::~GLFWManager()
