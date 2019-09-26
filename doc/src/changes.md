@@ -357,6 +357,14 @@ code that used *DIPlib* or *DIPimage* to the new version.
   is also a `dip::ResampleAtUnchecked`, to be used together with `dip::PrepareResampleAtUnchecked`,
   for low-level use.
 
+- `dip::OrientationSpace` is a simplified version of the old `dip_OrientationSpace` and `dip_ExtendedOrientationSpace`,
+  with only the most useful options.
+
+- Documented functions not (yet) ported: `dip_AdaptivePercentile`, `dip_BiasedSigma`, `dip_GaussianSigma`,
+  `dip_HartleyTransform`, `dip_PseudoInverse`, `dip_Sigma`, `dip_TikhonovMiller`,
+  `dip_TikhonovRegularizationParameter`, and `dip_UpperEnvelope`. It is unlikely that these will be ported,
+  unless someone really needs them.
+
 [//]: # (--------------------------------------------------------------)
 
 \section new_functionality New functionality
@@ -367,7 +375,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   see \ref javaio.
 
 - New analysis functions: `dip::AutoCorrelationFT`, `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
-  `dip::MonogenicSignalAnalysis`, `dip::OrientationSpace`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
+  `dip::MonogenicSignalAnalysis`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
 
 - New detection functions: `dip::HoughTransformCircleCenters`, `dip::FindHoughMaxima`, `dip::PointDistanceDistribution`,
   `dip::FindHoughCircles`, `dip::RadonTransformCircles`, `dip::HarrisCornerDetector`, `dip::ShiTomasiCornerDetector`,
@@ -422,7 +430,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - New histogram functions: `dip::CumulativeHistogram`, `dip::Smooth`,
   `dip::Mean`, `dip::Covariance`, `dip::MarginalMedian`, `dip::Mode`, `dip::PearsonCorrelation`, `dip::Regression`,
   `dip::MutualInformation`, `dip::Entropy`,
-  `dip::IsodataThreshold`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`, `dip::BackgroundThreshold`,
+  `dip::IsodataThreshold`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::GaussianMixtureModelThreshold`,
+  `dip::TriangleThreshold`, `dip::BackgroundThreshold`,
   `dip::KMeansClustering`, `dip::MinimumVariancePartitioning`,
   `dip::EqualizationLookupTable`, `dip::MatchingLookupTable`, `dip::PerObjectHistogram`.
 
@@ -432,7 +441,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::OutOfRange`,
   `dip::MaximumAbsoluteError`, `dip::PSNR`, `dip::SSIM`, `dip::MutualInformation`,
   `dip::SpatialOverlap`, `dip::DiceCoefficient`, `dip::JaccardIndex`, `dip::Specificity`, `dip::Sensitivity`,
-  `dip::Accuracy`, `dip::Precision`, `dip::HausdorffDistance`,
+  `dip::Accuracy`, `dip::Precision`, `dip::HausdorffDistance`, `dip::ModifiedHausdorffDistance`,
+  `dip::SumOfMinimalDistances`, `dip::ComplementWeightedSumOfMinimalDistances`,
   `dip::Entropy`, `dip::EstimateNoiseVariance`,
   `dip::GeometricMean`, `dip::MeanSquare`, `dip::SumSquare`, `dip::MaximumAbs`, `dip::MinimumAbs`,
   `dip::MedianAbsoluteDeviation`, `dip::All`, `dip::Any`,
@@ -454,8 +464,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
   `dip::CostesColocalizationCoefficients`, `dip::CostesSignificanceTest`.
 
 - New segmentation functions: `dip::CompactWatershed`, `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
-  `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::TriangleThreshold`,
-  `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`, `dip::Superpixels`.
+  `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::GaussianMixtureModelThreshold`,
+  `dip::TriangleThreshold`, `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`, `dip::Superpixels`.
 
 - New transform functions: `dip::OptimalFourierTransformSize`, `dip::RieszTransform`, `dip::StationaryWaveletTransform`.
 
@@ -465,6 +475,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 [//]: # (--------------------------------------------------------------)
 
 \section changes_dipimage Changes from DIPimage 2
+
+- It is no longer necessary to call `dip_initialise` (which doesn't exist any more). The *DIPlib*
+  library no longer requires initialization.
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
   tensor images have all samples in the same MATLAB array. Complex images are stored as a
@@ -608,6 +621,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   the boundary condition through a global parameter, which no longer exists. If you never
   touched the global parameter, nothing should change for you. If you did change this global
   parameter in a program, you now need to pass the value to the relevant functions instead.
+  See `help boundary_condition`.
 
 - Many functions have been added to match new functionality in *DIPlib*, as well as previous
   functionality that was not accessible from MATLAB. Some old functions have gained additional
@@ -625,7 +639,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
     of `percentile`. This should make them match the literature better, and make them more
     usable.
 
-  - `smooth` is no longer relevant, moved to the `alias` directory.
+  - `smooth` is no longer relevant, moved to the `alias` directory. Use `gausff` instead.
 
   - `derivative` has the 2<sup>nd</sup> and 3<sup>rd</sup> arguments switched, it makes more
     sense having the order first.
@@ -644,7 +658,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
   - `affine_trans` rotates in the opposite direction it did before, to match the interpretation
     of angles in the rest of the toolbox. The function now also accepts an affine transformation
-    matrix to direct the transformation.
+    matrix to direct the transformation. The function `transform` provided duplicate functionality
+    and no longer exists. `find_affine_trans` no longer exists, as `fmmatch` provides a much better
+    algorithm to do the same.
 
   - `readim` and `writeim` work differently now, in part because *DIPlib* natively supports
     fewer file types now. The `file_info` struct output for `readim` has changed somewhat. The last
@@ -652,6 +668,10 @@ code that used *DIPlib* or *DIPimage* to the new version.
     to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
     always given by the image, use `dip_image/pixelsize` to set it. `readics` and `readtiff` are
     the interfaces to the corresponding *DIPlib* file reading functions.
+
+  - The AVI reading and writing functions `readavi`, `writeavi` and `writedisplayavi` depended on
+    outdated MATLAB functionality and have been removed. You can use MATLAB's video reading and
+    writing capabilities, converting between standard MATLAB arrays and a  `dip_image` is trivial.
 
   - `countneighbours` has been renamed to `countneighbors` for consistency in spelling.
 
@@ -661,11 +681,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `slice_in` and `slice_ex` specify dimensions starting at 1 (not at 0 as previously). This
     change is for consistency with the rest of the toolbox. These functions now reorder dimensions
     in a way consistent with `dip_image/squeeze` (removing dimension 1 causes dimension 3 to become
-    dimension 1). `slice_in`, `slice_ex` and `slice_op` have been made into `dip_image` methods,
-    for efficiency.
+    dimension 1), which is more efficient.
+    `slice_in`, `slice_ex` and `slice_op` have been made into `dip_image` methods, for efficiency.
 
   - `get_subpixel` no longer supports the `spline` interpolation method, this string is still
-    accepted, but uses the `cubic` method.
+    accepted, but selects the `cubic` method.
 
   - `structuretensor3d` has been moved to the `alias` directory, `structuretensor` now works for any
     number of dimensions (with special support for 2D and 3D images).
@@ -695,21 +715,45 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `testobject` has a changed interface, the input argument order has changed and most arguments are now
     name-value pairs. Its functionality has been greatly extended.
 
-  - `radoncircle` has a different implementation with different capabilities and a different interface.
+  - `radoncircle` and `orientationspace` have a different implementation with different capabilities and a different interface.
 
-- New functions not mentioned above: `abssqr`, `areaopening`, `asf`, `cell2im`, `cluster`,
-  `compactwaterseed`, `coordinates`,  `cornerdetector`, `distancedistribution`, `drawshape`, `extendregion`,
-  `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `lee`, `linedetector`, `loggabor`, `orientationspace`,
-  `pathopening`, `perobjecthist`, `psf`, `quantize`, `randomseeds`, `select`, `semivariogram`, `setborder`,
-  `skew`, `smallobjectsremove`, `superpixels`, `thetatheta`, `traceobjects`.
+  - `measurehelp` is no longer a separate function. You can now do `measure help` or `measure('help')`.
+
+  - `jacobi` moved to the `alias` directory, the `eig` method has improved to make `jacobi` irrelevant.
+
+- New functions not mentioned above: `abssqr`, `areaclosing`, `areaopening`, `asf`, `cell2im`, `cluster`,
+  `compactwaterseed`, `coordinates`,  `cornerdetector`, `curlvector`, `distancedistribution`, `divergencevector`,
+  `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `integral_image`, `lee`,
+  `linedetector`, `loggabor`, `nonmaximumsuppression`, `pathclosing`, `pathopening`, `perobjecthist`, `psf`,
+  `quantize`, `randomseeds`, `select`, `semivariogram`, `setborder`, `skew`, `smallobjectsremove`,
+  `stochasticwatershed`, `superpixels`, `thetatheta`, `traceobjects`, `warp_subpixel`, `window`, `wrap`.
   Use `help <functionname>` in MATLAB to learn what these functions provide.
 
-- `jacobi` moved to the `alias` directory, `eig` does it better now.
+- Old functions not (yet) ported:
+  `afm_flatten`, `arcf`, `backgroundoffset`, `cal_readnoise`, `change_chroma`, `change_gamma`, `change_xyz`,
+  `color_rotation`, `correctshift`, `cpf`, `deblock`, `distancebetweenpointsets`, `dpr`, `find_lambda`, `findlocalshift`,
+  `findlocmax`, `findospeaks`, `frc`, `gamut_destretch`, `gamut_mapping`, `gamut_stretch`, `huecorr`, `hybridf`,
+  `iso_luminance_lines`, `jpeg_quality_score`, `lfmse`, `localshift`, `luminance_steered_dilation`, `luminance_steered_erosion`,
+  `make_gamut`, `mappg`, `mcd`, `morphscales`, `nufft_type1`, `nufft_type2`, `opticflow`, `orientationplot`, `out_of_gamut`,
+  `percf_adap`, `percf_adap_banana`, `plot_gamut`, `pst`, `quadraturetensor`, `rgb_to_border`, `rotation3d`, `scale2rgb`,
+  `scalespace`, `splitandmerge`, `structf`, `tikhonovmiller`, `view5d`, `write_add`.
+  These functions will be ported as they are needed.
 
-- Old functions that used to be in the `alias` directory are no longer. We recommend that
-  you correct affected code, but if you want, you can always create those aliases again.
+- Old functions that will not be ported:
+  `acquireim`, `dipmaxaspect`, `edir`, `fixlsmfile`, `fast_str2double`, `msr2ds`,
+  `measure_gamma_monitor`, `mon_rgb2xyz`, `mon_xyz2rgb`, `monitor_icc`, `print_cmy2xyz`, `print_xyz2cmy`,
+  `printer_icc`, `read_icc_profile`, `scan_rgb2xyz`, `scan_xyz2rgb`, `scanner_calibration`, `scanner_icc`,
+  `spectra2xyz`, `write_icc_profile`.
+
+- Old functions that used to be in the `alias` directory are no longer. We recommend that you correct affected code,
+  but if you want, you can always create those aliases again (copy the files from an older version of DIPimage).
 
 - If you customized the menus in the *DIPimage* GUI, you will have to update your `localdipmenus.m`
   file. If you wrote your own functions that integrated in the GUI, you'll have to do so through
-  your `localdipmenus.m` now. Preference setting <tt>'CommandFilePath'</tt> no longer exists,
-  `getparams` no longer exists, and functions are no longer probed with <tt>'DIP_GetParamList'</tt>.
+  your `localdipmenus.m` now. Preference setting <tt>'CommandFilePath'</tt> no longer exists, nor
+  the associated function `dipaddpath`, only functions mentioned in `dipmenus` and `localdipmenus`
+  are added to the menu system. Functions are no longer probed with <tt>'DIP_GetParamList'</tt>,
+  their parameter descriptions are given by `dipmenus` and `localdipmenus`.
+
+- `getparams` no longer exists. It was a nifty idea but incurred a large overhead. Each function now must
+  do its own input parameter checking, for example through `inputParser` and/or `validateattributes`.
