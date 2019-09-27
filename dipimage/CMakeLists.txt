@@ -114,20 +114,21 @@ if(DIP_BUILD_DIPVIEWER)
 endif()
 
 # Create the Contents.m file
+# TODO: Starting with R2019a we can use the -batch command line option instead.
 if(WIN32)
 	add_custom_command(
 		  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
 		  COMMAND ${Matlab_MAIN_PROGRAM}
-		  -nojvm -nodisplay -r "try, makecontents('${CMAKE_CURRENT_BINARY_DIR}'), catch ME, disp(ME.message), exit(1), end, exit(0)"
+		  -nojvm -wait -nosplash -r "try, makecontents('${CMAKE_CURRENT_BINARY_DIR}'), catch ME, disp(ME.message), exit(1), end, exit(0)"
 		  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
 		  DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
 else()
 	add_custom_command(
 		  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
 		  COMMAND ${Matlab_MAIN_PROGRAM}
-		  -nojvm -nodisplay -r "try, makecontents\\(\\'${CMAKE_CURRENT_BINARY_DIR}\\'\\), catch ME, disp\\(ME.message\\), exit\\(1\\), end, exit\\(0\\)"
+		  -nojvm -nodisplay -nosplash -r "try, makecontents\\(\\'${CMAKE_CURRENT_BINARY_DIR}\\'\\), catch ME, disp\\(ME.message\\), exit\\(1\\), end, exit\\(0\\)"
 		  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
 		  DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
 endif()
-add_custom_target(contents ALL DEPENDS Contents.m)
+add_custom_target(contents ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Contents.m)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Contents.m DESTINATION ${DIPIMAGE_INSTALL_PATH})

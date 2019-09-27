@@ -31,12 +31,12 @@ set(DIPIMAGE_INSTALL_PATH share/DIPimage)
 
 # Compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
-   # using Clang C++
+   # Compiler flags for Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
    set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-   # using GNU C++
+   # Compiler flags for GNU C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -pedantic")
    # "#pragma omp" causes a warning if OpenMP is not enabled.
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
@@ -47,13 +47,14 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
    set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-   # using Intel C++
+   # Compiler flags for Intel C++
    # TODO: compiler flags for Intel compiler
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-   # using Visual Studio C++
+   # Compiler flags for Visual Studio C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
    add_definitions(/wd4180) # Disable "qualifier applied to function type has no meaning; ignored" that happens in union_find.h as used in maxima.cpp
+   add_definitions(/EHa) # This exception handling model apparently is what MATLAB uses (default is /EHsc)
 endif()
 
 # RPATH
