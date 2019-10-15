@@ -34,9 +34,9 @@ void BeerLambertMapping(
    DIP_THROW_IF(( background.TensorElements() != 1 ) && ( background.TensorElements() != in.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DataType dt = DataType::SuggestFloat( in.DataType() );
    Divide( in, background, out, dt );
-   Clip( out, out, 0.0, 1.0 );
-   dip::Log10( out, out );
-   dip::Invert( out, out );
+   Clip( out, out, 1e-6, 1.0 );
+   Log10( out, out );
+   Invert( out, out );
 }
 
 void InverseBeerLambertMapping(
@@ -51,23 +51,23 @@ void InverseBeerLambertMapping(
       // Use temporary float image for intermediate results
       Image tmp;
       if( in.DataType().IsFloat() ) {
-         dip::Invert( in, tmp );
+         Invert( in, tmp );
       } else {
          Convert( in, tmp, DataType::SuggestFloat( in.DataType() ));
-         dip::Invert( tmp, tmp );
+         Invert( tmp, tmp );
       }
-      dip::Exp10( tmp, tmp );
+      Exp10( tmp, tmp );
       Clip( tmp, tmp, 0.0, 1.0 );
       MultiplySampleWise( tmp, background, out, tmp.DataType() );
    } else {
       // We can use `out` for intermediate results
       if( in.DataType().IsFloat() ) {
-         dip::Invert( in, out );
+         Invert( in, out );
       } else {
          Convert( in, out, DataType::SuggestFloat( in.DataType() ));
-         dip::Invert( out, out );
+         Invert( out, out );
       }
-      dip::Exp10( out, out );
+      Exp10( out, out );
       Clip( out, out, 0.0, 1.0 );
       MultiplySampleWise( out, background, out, out.DataType() );
    }
