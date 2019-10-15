@@ -144,7 +144,7 @@ Section "Images" SecImages
 	FileClose $3
 
   ; Write dipstart.py
-  FileOpen $4 "dipstart.py" a
+  FileOpen $4 "..\dipstart.py" a
   FileSeek $4 0 END
   FileWrite $4 "img_dir = dip_dir / 'images'$\r$\n"
   FileWrite $4 "import PyDIP.PyDIPviewer as dv$\r$\n"
