@@ -10,6 +10,7 @@
 #pragma once
 
 #include "../attr.h"
+#include "../options.h"
 
 NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 NAMESPACE_BEGIN(detail)
@@ -289,13 +290,9 @@ extern "C" inline int pybind11_object_init(PyObject *self, PyObject *, PyObject 
 inline void add_patient(PyObject *nurse, PyObject *patient) {
     auto &internals = get_internals();
     auto instance = reinterpret_cast<detail::instance *>(nurse);
-    auto &current_patients = internals.patients[nurse];
     instance->has_patients = true;
-    for (auto &p : current_patients)
-        if (p == patient)
-            return;
     Py_INCREF(patient);
-    current_patients.push_back(patient);
+    internals.patients[nurse].push_back(patient);
 }
 
 inline void clear_patients(PyObject *self) {
@@ -472,7 +469,7 @@ extern "C" inline int pybind11_getbuffer(PyObject *obj, Py_buffer *view, int fla
         if (tinfo && tinfo->get_buffer)
             break;
     }
-    if (view == nullptr || obj == nullptr || !tinfo || !tinfo->get_buffer) {
+    if (view == nullptr || !tinfo || !tinfo->get_buffer) {
         if (view)
             view->obj = nullptr;
         PyErr_SetString(PyExc_BufferError, "pybind11_getbuffer(): Internal error");
@@ -589,6 +586,9 @@ inline PyObject* make_new_python_type(const type_record &rec) {
     type->tp_as_number = &heap_type->as_number;
     type->tp_as_sequence = &heap_type->as_sequence;
     type->tp_as_mapping = &heap_type->as_mapping;
+#if PY_VERSION_HEX >= 0x03050000
+    type->tp_as_async = &heap_type->as_async;
+#endif
 
     /* Flags */
     type->tp_flags |= Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE;
