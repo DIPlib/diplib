@@ -5,7 +5,7 @@
 
 The *DIPlib* project contains:
 
-- [*DIPlib*](https://diplib.github.io/diplib-docs/), a C++ library for quantitative image analysis.
+- **[*DIPlib*](https://diplib.github.io/diplib-docs/)**, a C++ library for quantitative image analysis.
 It has been in development at Delft University of Technology in The Netherlands since 1995.
 The 3.0 release of *DIPlib* represents a complete rewrite in modern C++ of the library infrastructure,
 with most of the image processing and analysis algorithms ported from the previous version,
@@ -13,19 +13,19 @@ and some of them improved significantly. Many of the improvements to *DIPlib* ar
 over concepts and ideas first implemented in *DIPimage*.
 Read [the *DIPlib* documentation](https://diplib.github.io/diplib-docs/).
 
-- [*DIPimage*](https://diplib.github.io/DIPimage.html), a MATLAB toolbox for quantitative
+- **[*DIPimage*](https://diplib.github.io/DIPimage.html)**, a MATLAB toolbox for quantitative
 image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
 Read [the *DIPimage* User Manual](https://diplib.github.io/diplib-docs/dipimage_user_manual.html).
 
-- [*PyDIP*](https://diplib.github.io/PyDIP.html), Python bindings to *DIPlib*.
+- **[*PyDIP*](https://diplib.github.io/PyDIP.html)**, Python bindings to *DIPlib*.
 This is currently a thin wrapper that exposes the C++ functionality with little change.
 [the *PyDIP* User Manual](https://diplib.github.io/diplib-docs/pydip_user_manual.html)
 
-- *DIPviewer*, an interactive image display utility. It is usable from C++, Python and MATLAB programs.
+- ***DIPviewer***, an interactive image display utility. It is usable from C++, Python and MATLAB programs.
 Within *DIPimage* this is an optional alternative to the default MATLAB-native interactive display utility.
 Read [the *DIPviewer* documentation](https://diplib.github.io/diplib-docs/group__viewer.html).
 
-- *DIPjavaio*, an interface to
+- ***DIPjavaio***, an interface to
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
 hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
 way of interfacing with *Bio-Formats*.
