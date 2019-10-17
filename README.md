@@ -5,42 +5,33 @@
 
 The *DIPlib* project contains:
 
-- [*DIPlib 3*](https://diplib.github.io/diplib-docs/), a C++ library for quantitative image analysis.
+- [*DIPlib*](https://diplib.github.io/diplib-docs/), a C++ library for quantitative image analysis.
 It has been in development at Delft University of Technology in The Netherlands since 1995.
 The 3.0 release of *DIPlib* represents a complete rewrite in modern C++ of the library infrastructure,
 with most of the image processing and analysis algorithms ported from the previous version,
 and some of them improved significantly. Many of the improvements to *DIPlib* are a result of porting
 over concepts and ideas first implemented in *DIPimage*.
-See the [change log](https://diplib.github.io/diplib-docs/changes.html) for a summary of changes.
+Read [the *DIPlib* documentation](https://diplib.github.io/diplib-docs/>).
 
-- [*DIPimage 3*](https://diplib.github.io/diplib-docs/DIPimage.html), a MATLAB toolbox for quantitative
+- [*DIPimage*](https://diplib.github.io/DIPimage.html), a MATLAB toolbox for quantitative
 image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
-See the [change log](https://diplib.github.io/diplib-docs/changes.html#changes_dipimage) for a summary
-of changes, and note that many changes in *DIPlib* affected *DIPimage* as well.
+Read [the *DIPimage* User Manual](https://diplib.github.io/diplib-docs/dipimage_user_manual.html).
 
-- [*PyDIP*](https://diplib.github.io/diplib-docs/PyDIP.html), Python bindings to *DIPlib*.
+- [*PyDIP*](https://diplib.github.io/PyDIP.html), Python bindings to *DIPlib*.
 This is currently a thin wrapper that exposes the C++ functionality with little change.
+[the *PyDIP* User Manual](https://diplib.github.io/diplib-docs/pydip_user_manual.html)
 
-- [*DIPviewer*](https://diplib.github.io/diplib-docs/group__viewer.html), an interactive image display
-utility. It is usable from C++, Python and MATLAB programs. Within *DIPimage* this is an optional
-alternative to the default MATLAB-native interactive display utility.
+- *DIPviewer*, an interactive image display utility. It is usable from C++, Python and MATLAB programs.
+Within *DIPimage* this is an optional alternative to the default MATLAB-native interactive display utility.
+Read [the *DIPviewer* documentation](https://diplib.github.io/diplib-docs/group__viewer.html).
 
-- [*DIPjavaio*](https://diplib.github.io/diplib-docs/group__javaio.html), an interface to
+- *DIPjavaio*, an interface to
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
 hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
 way of interfacing with *Bio-Formats*.
+Read [the *DIPjavaio* documentation](https://diplib.github.io/diplib-docs/group__javaio.html)
 
-**Status**: We are in the process of creating the first beta release for the 3.0 branch.
-Most (but not yet all) functionality from the old *DIPlib* and *DIPimage* is present in
-this branch. See the [open issues](https://github.com/DIPlib/diplib/issues) to find out
-how you can help!
-
-See the [documentation](https://diplib.github.io/diplib-docs/) for more information about
-the library.
-
-For binary releases of previous versions of *DIPlib* and *DIPimage* see
-[the *DIPlib* website](http://www.diplib.org).
-
+See [the *DIPlib* website](https://diplib.github.io/) for more information.
 
 ## Building the library
 
@@ -210,7 +201,7 @@ to the Apache License, except for *OME Bio-Formats*.
 - *FFTW3* (as installed on your system, not used by default)  
   Copyright (c) 2003, 2007-14 Matteo Frigo  
   Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology  
-  GNU General Public License, Version 2 (not compatible with the Apache License)
+  GNU General Public License, Version 2 (**not compatible with the Apache License**)
 
 *DIPviewer* links against the following libraries:
 
@@ -237,7 +228,7 @@ to the Apache License, except for *OME Bio-Formats*.
 
 - *JDK 8* (as installed on your system)  
   Copyright, probably Sun and/or Oracle  
-  GNU General Public License, Version 2 (not compatible with the Apache License)
+  GNU General Public License, Version 2 (**not compatible with the Apache License**)
 
 - *OME Bio-Formats* (optional, as installed on your system)  
   Copyright 2012-2017 Open Microscopy Environment  

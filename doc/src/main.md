@@ -80,11 +80,12 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
 \m_class{m-spaced-list}
 
-- *MATLAB*: \ref DIPimage is a MATLAB toolbox that gives access to most functionality
-  in *DIPlib*, but goes beyond that by providing a lot of additional functionality
-  as M-file functions.
+- *MATLAB*: [*DIPimage*](https://diplib.github.io/DIPimage.html) is a MATLAB
+  toolbox that gives access to most functionality in *DIPlib*, but goes beyond
+  that by providing a lot of additional functionality as M-file functions.
 
-- *Python*: \ref PyDIP is a thin wrapper of most functionality in *DIPlib*.
+- *Python*: [*PyDIP*](https://diplib.github.io/PyDIP.html) is a thin wrapper of
+  most functionality in *DIPlib*.
 
 - *Bio-Formats*: \ref javaio is an interface to Java-based image readers. It
   is designed to allow *DIPlib* to read hundreds of image file formats through
@@ -100,94 +101,3 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 The *DIPlib* project further contains these additional modules:
 
 - *DIPviewer*: \ref viewer is an interactive image display utility.
-
-\section main_support Support
-
-The *DIPlib* project was originally developed at the Pattern Recognition
-Group of Delft University of Technology, in the Netherlands. *DIPlib 3* is being
-developed primarily by volunteers, but has had some financial support from:
-
-- A European Research Council grant to Bernd Rieger, TU Delft
-- Flagship Biosciences, Inc.
-- Quantitative Imaging Systems, Inc.
-
-See \ref history for a list of contributors.
-
-\section main_building Building
-
-As of yet we do not have a binary distribution of the library and associated
-modules. To use *DIPlib*, *DIPimage* or *PyDIP*, please build the project
-from sources. The sources are available from the
-[GitHub repository](https://github.com/DIPlib/diplib). For installation
-instructions, see [`INSTALL.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL.md)
-in the root directory of the repository. Platform-specific instructions
-are found in
-[`INSTALL_Linux.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL_Linux.md),
-[`INSTALL_MacOS.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL_MacOS.md) and
-[`INSTALL_Windows.md`](https://github.com/DIPlib/diplib/blob/master/INSTALL_Windows.md).
-Even though there might not be detailed instructions for other platforms,
-it should be possible to compile and use the library on any platform with a compliant
-C++14 compiler.
-
-\section main_contributing Contributing
-
-If you want to contribute to the *DIPlib* project, there are many different
-ways of doing so:
-
-- Write new algorithms. If you have an algorithm that you'd like to contribute
-  to the project, we'll be happy to see it!
-
-- Create an interface to another library or scripting language.
-
-- Create tutorials for how to use *DIPlib*, *DIPimage* and/or *PyDIP*.
-
-- Fix bugs or improve documentation.
-
-- Add code to the unit tests.
-
-- Improve the markup of the documentation, or create a logo for the project.
-
-In any of these cases, see <a href="https://github.com/DIPlib/diplib/blob/master/CONTRIBUTING.md">`CONTRIBUTING.md`</a>
-to learn how to make optimal use of your time.
-Don't be offended if you receive requests for modifications before your work is merged
-with the project.
-
-Your documentation and code contributions will carry the same licencing terms as the rest
-of the library, you keep the copyright to any substantial contribution.
-
-\section main_license License
-
-\m_class{m-noindent}
-
-Copyright 2014-2019 Cris Luengo and contributors<br>
-Copyright 1995-2014 Delft University of Technology
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-\subsection main_simple_license Non-legalese description of license
-
-The apache 2.0 license is a permissive open-source license. In short, this means that
-you can use this software as you see fit, including making modifications, and distribute
-this software, parts of it, and/or your modifications to it, either in source form or as
-binaries. You are free to keep your modifications private, you are not required to
-distribute sources with your binaries. HOWEVER, you must include proper attribution, as
-well as the copyright notices, with any such distribution. You cannot pretend that you
-wrote this software, and you cannot make it look like we endorse any software that you
-wrote.
-
-If you make modifications to this software, you are not required to share those with us,
-but we certainly would appreciate any such contribution!
-
-Note that this short description of the license does not replace the license text and
-might not correctly represent all the legalese in the licence. Please read the actual
-licence text if you plan to redistribute this software.
