@@ -11,7 +11,7 @@ The 3.0 release of *DIPlib* represents a complete rewrite in modern C++ of the l
 with most of the image processing and analysis algorithms ported from the previous version,
 and some of them improved significantly. Many of the improvements to *DIPlib* are a result of porting
 over concepts and ideas first implemented in *DIPimage*.
-Read [the *DIPlib* documentation](https://diplib.github.io/diplib-docs/>).
+Read [the *DIPlib* documentation](https://diplib.github.io/diplib-docs/).
 
 - [*DIPimage*](https://diplib.github.io/DIPimage.html), a MATLAB toolbox for quantitative
 image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
