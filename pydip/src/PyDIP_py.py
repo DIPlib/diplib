@@ -126,7 +126,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     projected as described above for higher-dimensional images.
     """
     if hasMatPlotLib:
-        out = PyDIP.ImageDisplay(img, range, complexMode, projectionMode, coordinates, dim1, dim2)
+        out = PyDIP.ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
         if out.Dimensionality() == 1:
             axes = pp.gca()
             axes.clear()

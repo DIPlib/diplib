@@ -33,63 +33,37 @@ namespace {
 dip::ColorSpaceManager colorSpaceManager;
 dip::Random randomNumberGenerator;
 
-dip::Image Display(
+dip::Image ImageDisplay(
       dip::Image const& input,
-      dip::String const& mappingMode = "lin",
-      dip::dfloat lower = 0.0,
-      dip::dfloat upper = 1.0,
-      dip::String const& complexMode = "abs",
-      dip::String const& projectionMode = "mean",
-      dip::UnsignedArray const& coordinates = {},
-      dip::uint dim1 = 0,
-      dip::uint dim2 = 1
+      dip::FloatArray const& range,
+      dip::String const& mappingMode,
+      dip::String const& complexMode,
+      dip::String const& projectionMode,
+      dip::UnsignedArray const& coordinates,
+      dip::uint dim1,
+      dip::uint dim2
 ) {
    dip::ImageDisplay imageDisplay( input, &colorSpaceManager );
-   if( mappingMode.empty() ) {
-      imageDisplay.SetRange( dip::ImageDisplay::Limits{ lower, upper } );
-   } else {
+   if( !mappingMode.empty() ) {
       imageDisplay.SetRange( mappingMode );
+   } else if( range.empty() ) {
+      imageDisplay.SetRange( "lin" );
+   } else {
+      DIP_THROW_IF( range.size() != 2, "Range must be a 2-tuple" );
+      imageDisplay.SetRange( dip::ImageDisplay::Limits{ range[ 0 ], range[ 1 ] } );
    }
    imageDisplay.SetComplexMode( complexMode );
    if( input.Dimensionality() > 2 ) {
       imageDisplay.SetGlobalStretch( true );
       imageDisplay.SetProjectionMode( projectionMode );
+   }
+   if( input.Dimensionality() >= 2 ) {
       if( !coordinates.empty() ) {
          imageDisplay.SetCoordinates( coordinates );
       }
-   }
-   if( input.Dimensionality() >= 2 ) { // also for 2D images, you can rotate the output this way
       imageDisplay.SetDirection( dim1, dim2 );
    }
    return imageDisplay.Output();
-}
-
-dip::Image DisplayRange(
-      dip::Image const& input,
-      dip::FloatArray const& range,
-      dip::String const& complexMode = "abs",
-      dip::String const& projectionMode = "mean",
-      dip::UnsignedArray const& coordinates = {},
-      dip::uint dim1 = 0,
-      dip::uint dim2 = 1
-) {
-   if( range.empty() ) {
-      return Display( input, "lin", 0.0, 1.0, complexMode, projectionMode, coordinates, dim1, dim2 );
-   }
-   DIP_THROW_IF( range.size() != 2, "Range must be a 2-tuple" );
-   return Display( input, "", range[ 0 ], range[ 1 ], complexMode, projectionMode, coordinates, dim1, dim2 );
-}
-
-dip::Image DisplayMode(
-      dip::Image const& input,
-      dip::String const& mappingMode = "lin",
-      dip::String const& complexMode = "abs",
-      dip::String const& projectionMode = "mean",
-      dip::UnsignedArray const& coordinates = {},
-      dip::uint dim1 = 0,
-      dip::uint dim2 = 1
-) {
-   return Display( input, mappingMode, 0.0, 1.0, complexMode, projectionMode, coordinates, dim1, dim2 );
 }
 
 } // namespace
@@ -110,8 +84,28 @@ void init_assorted( py::module& m ) {
    // TODO: WhitePoint stuff
 
    // diplib/display.h
-   m.def( "ImageDisplay", &DisplayRange, "in"_a, "range"_a, "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1 );
-   m.def( "ImageDisplay", &DisplayMode, "in"_a, "mappingMode"_a = "", "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1 );
+   m.def( "ImageDisplay", [](
+               dip::Image const& input,
+               dip::FloatArray const& range,
+               dip::String const& complexMode,
+               dip::String const& projectionMode,
+               dip::UnsignedArray const& coordinates,
+               dip::uint dim1,
+               dip::uint dim2
+          ) {
+            return ImageDisplay( input, range, {}, complexMode, projectionMode, coordinates, dim1, dim2 );
+          }, "in"_a, "range"_a = dip::FloatArray{}, "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1 );
+   m.def( "ImageDisplay", [](
+               dip::Image const& input,
+               dip::String const& mappingMode,
+               dip::String const& complexMode,
+               dip::String const& projectionMode,
+               dip::UnsignedArray const& coordinates,
+               dip::uint dim1,
+               dip::uint dim2
+          ) {
+            return ImageDisplay( input, {}, mappingMode, complexMode, projectionMode, coordinates, dim1, dim2 );
+          }, "in"_a, "mappingMode"_a = "", "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1 );
    m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::String const& >( &dip::ApplyColorMap ), "in"_a, "colorMap"_a = "grey" );
    m.def( "Overlay", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image::Pixel const& >( &dip::Overlay ), "in"_a, "overlay"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 } );
    m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::uint >( &dip::MarkLabelEdges ), "in"_a, "factor"_a = 2 );
