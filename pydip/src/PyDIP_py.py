@@ -148,7 +148,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             else:
                 cmap = pp.get_cmap(colormap)
             pp.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none')
-        pp.show(block=False)
+        pp.draw()
+        pp.pause(0.001)
 
 
 PyDIP.Image.Show = Show
