@@ -12,14 +12,9 @@ extraction:
    cpp:
       prepare:
          packages:
-            - g++-6
             - freeglut3-dev
             - python3-dev
       after_prepare:
-         - mkdir -p $LGTM_WORKSPACE/latest-gcc-symlinks
-         - ln -s /usr/bin/g++-6 $LGTM_WORKSPACE/latest-gcc-symlinks/g++
-         - ln -s /usr/bin/gcc-6 $LGTM_WORKSPACE/latest-gcc-symlinks/gcc
-         - export PATH=$LGTM_WORKSPACE/latest-gcc-symlinks:$PATH
          - export GNU_MAKE=make
          - export GIT=true
          - mkdir $LGTM_SRC/target
