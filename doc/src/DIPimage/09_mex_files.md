@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 A MEX-file is a compiled C, C++ or Fortran function (C++ if it uses *DIPlib*) that
 can be called from *MATLAB* as if it were a normal *MATLAB* function. It must take
 *MATLAB* data as input and produce *MATLAB* data as output. To call a *DIPlib* function

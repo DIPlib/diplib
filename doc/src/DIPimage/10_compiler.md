@@ -19,6 +19,8 @@
 
 \warning This section needs updating, things have changed significantly since this was written
 
+\m_footernavigation
+
 \tableofcontents
 
 \section sec_dum_matlab_compiler_intro The MATLAB Compiler
@@ -49,7 +51,7 @@ code is reasonably well protected against reverse-engineering.
 The explanations below are for Linux/UNIX systems. If you use Windows,
 similar issues will have to be taken into account. The *MATLAB* Compiler
 User's Guide (available online at
-<http://www.mathworks.com/access/helpdesk/help/pdf_doc/compiler/compiler.pdf>)
+<https://www.mathworks.com/help/pdf_doc/compiler/compiler.pdf>)
 contains all the information needed to compile an M-file that uses
 *DIPimage*.
 
@@ -115,11 +117,11 @@ to properly set the `LD_LIBRARY_PATH` environment variable.
 
 \section sec_dum_matlab_compiler_deploying Deploying your compiled program
 
-First of all, note that you need a special license of *DIPimage* and
+~~First of all, note that you need a special license of *DIPimage* and
 *DIPlib* to be able to distribute a program that uses this toolbox and
 associated libraries. Please read our web page
 (<http://www.diplib.org/>) for information on how to obtain such a
-license.
+license.~~
 
 The CTF file created by `mcc` needs either the exact same version of
 *MATLAB*, or the MCR created with that version, to run. It will also need

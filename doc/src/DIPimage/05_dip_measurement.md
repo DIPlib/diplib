@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 The function `measure` returns the measurement results in an object of type
 `dip_measurement`. It contains all the measurements done on an image in a
 manageable way.

@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 Images used by this toolbox are encapsulated in an object called
 `dip_image`. Objects of this type are unlike regular *MATLAB* arrays in
 some ways, but behave similarly most of the time. This chapter explains

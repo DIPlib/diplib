@@ -27,3 +27,4 @@
 8. \subpage sec_dum_customizing
 9. \subpage sec_dum_mex_files
 10. \subpage sec_dum_matlab_compiler
+11. \subpage sec_dum_faq

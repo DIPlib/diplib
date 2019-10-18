@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 The display is a very important part of any image-processing package.
 `dip_image` objects containing scalar or color images with 1 to 4
 dimensions are displayed to *MATLAB*'s figure windows. These windows are
@@ -34,7 +36,7 @@ The alternative way to display images is with the `viewslice` function.
 The figure windows created use the *DIPviewer* tool, which has better
 image display capabilities (for example it can show tensor images),
 but is not integrated equally well into *MATLAB*.
-See the [*DIPviewer* documentation](https://diplib.github.io/diplib-docs/group__viewer.html#details)
+See \ref viewer_ui "the *DIPviewer* documentation"
 for more information on these figure windows.
 
 The <tt>'DisplayFunction'</tt> option (see \ref sec_dum_customizing_dippref)

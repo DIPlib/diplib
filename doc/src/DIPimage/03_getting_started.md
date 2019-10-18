@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 To show you around *DIPimage*, we will work through a simple
 image analysis application. Not all steps will be written out
 explicitly, since it is our goal to make you understand what is going
@@ -260,7 +262,7 @@ The actual slope can be computed by:
 
 If you are new to *MATLAB*, it would be a good idea to read the "Getting
 Started with *MATLAB*" manual. If you are new to image processing, you can
-read ["The Fundamentals of Image Processing"](ftp://ftp.tudelft.nl/pub/DIPimage/docs/FIP2.3.pdf).
+read ["The Fundamentals of Image Processing"](ftp://qiftp.tudelft.nl/DIPimage/docs/FIP2.3.pdf).
 
 Before you start using this toolbox, we recommend that you read
 \ref sec_dum_dip_image (at least \ref sec_dum_dip_image_review).

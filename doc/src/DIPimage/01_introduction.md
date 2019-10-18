@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 \tableofcontents
 
 \section sec_dum_introduction_the_dipimage_toolbox The DIPimage toolbox
@@ -54,9 +56,8 @@ memory and time).
 often changing the syntax of the *DIPlib* function calls to be more
 natural within the *MATLAB* environment. Nonetheless, the help text for
 functions will list the *DIPlib* function that is called.
-[The on-line *DIPlib* reference](https://diplib.github.io/diplib-docs/)
-for the function can then be read to learn more details
-about the algorithm and the meaning of the parameters.
+\ref index "The on-line *DIPlib* reference" for the function can then be read
+to learn more details about the algorithm and the meaning of the parameters.
 
 More information on *DIPlib* can be found at
 <https://diplib.github.io/diplib-docs/> and <http://www.diplib.org/>.
@@ -67,7 +68,7 @@ This manual is meant as an introduction and reference to the *DIPimage*
 toolbox, not as a tutorial on image analysis. Although
 \ref sec_dum_gettingstarted shows some image analysis basics, it
 is not complete. We refer to
-["The Fundamentals of Image Processing"](ftp://ftp.tudelft.nl/pub/DIPimage/docs/FIP2.3.pdf).
+["The Fundamentals of Image Processing"](ftp://qiftp.tudelft.nl/DIPimage/docs/FIP2.3.pdf).
 
 \section sec_dum_introduction_conventions Documentation conventions
 

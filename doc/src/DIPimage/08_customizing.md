@@ -17,6 +17,8 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
+\m_footernavigation
+
 \tableofcontents
 
 \section sec_dum_customizing_figure_windows Figure windows
@@ -478,8 +480,8 @@ images). However, all the `dipshow`-related options mentioned in this
 section are ignored, and no further programmatic interaction with
 the figure windows is supported. A new window will always be opened
 for each display command, `dipfig` (\ref sec_dum_functions_dipfig) does not
-apply either. See the [*DIPviewer* documentation](https://diplib.github.io/diplib-docs/group__viewer.html#details)
-for more information on these fi
+apply either. See \ref viewer_ui "the *DIPviewer* documentation"
+for more information on how to interact with these figure windows.
 
 \subsection sec_dum_customizing_dippref_displaytofigure DisplayToFigure
 

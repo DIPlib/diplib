@@ -17,10 +17,12 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-This toolbox requires (probably) *MATLAB* 7.0 or later, though some functionality
-requires newer versions. The official distributions are compiled with much more
+\m_footernavigation
+
+This toolbox requires *MATLAB* R2008a (version 7.6) or later, though some functionality
+might require newer versions. The official distributions are compiled with much more
 recent versions of *MATLAB* and do not run on earlier versions.
-The [download page](http://www.diplib.org/download) on the *DIPimage* web site
+The [download page](https://github.com/DIPlib/diplib/releases) on GitHub
 should specify the versions of *MATLAB* a specific distribution is compatible
 with.
 
@@ -75,7 +77,8 @@ to.
 
 \subsection sec_dum_installing_linux_bindist Installation from binary distribution
 
-*This will probably be a DEB package and an RPM package*.
+\par Not yet available
+This will probably be a tar ball.
 
 \subsection sec_dum_installing_linux_source Installation from source
 
@@ -120,9 +123,8 @@ You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 
 \subsection sec_dum_installing_macos_bindist Installation from binary distribution
 
-*This might be a bundle, or a drag-drop disk image*.
-
-*A different option could be a Homebrew formula*.
+\par Not yet available
+This might be a bundle, or a drag-drop disk image. A different option could be a Homebrew formula.
 
 \subsection sec_dum_installing_macos_source Installation from source
 
