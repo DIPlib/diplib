@@ -1504,12 +1504,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             content = parse_inline_desc(state, i).strip()
             if content: out.parsed += '<code>{}</code>'.format(content)
 
-        elif i.tag in ['emphasis', 'bold', 'small', 'superscript', 'subscript']:
+        elif i.tag in ['emphasis', 'bold', 'small', 'superscript', 'subscript', 'strike']:
             mapping = {'emphasis': 'em',
                        'bold': 'strong',
                        'small': 'small',
                        'superscript': 'sup',
-                       'subscript': 'sub'}
+                       'subscript': 'sub',
+                       'strike': 's'}
 
             content = parse_inline_desc(state, i).strip()
             if content: out.parsed += '<{0}{1}>{2}</{0}>'.format(
@@ -1790,9 +1791,10 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                        'tm': 'trade'}
             try:
                 entity = mapping[i.tag]
+                out.parsed += '&{};'.format(entity)
             except:
                 logging.warning("{}: ignoring <{}> in desc".format(state.current, i.tag))
-            out.parsed += '&{};'.format(entity)
+                out.parsed += i.tag
 
         # Now we can reset previous_section to None, nobody needs it anymore.
         # Of course we're resetting it only in case nothing else (such as the
