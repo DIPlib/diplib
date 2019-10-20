@@ -86,6 +86,8 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --code-header-self-active-color: var(--cs-primary-lightest);
   --code-note-color: inherit;
   --code-note-background-color: inherit;
+  --console-color: var(--code-color);
+  --console-inverted-color: var(--code-inverted-color);
   --console-background-color: #ffffff;
   --button-background-color: #ffffff;
 
@@ -110,6 +112,10 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
 
   /* Cover image */
   --cover-image-background-color: #666666;
+
+  /* Search (used only by m-documentation.css) */
+  --search-overlay-color: var(--header-background-color-landing);
+  --search-background-color: var(--header-background-color);
 
   /* Article */
   --article-header-color: #7a7a7a;

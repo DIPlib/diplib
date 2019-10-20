@@ -32,8 +32,6 @@ from docutils.parsers import rst
 from docutils.parsers.rst import directives
 from docutils.parsers.rst.roles import set_classes
 
-import pelican.signals
-
 import latex2svg
 import latex2svgextra
 
@@ -100,13 +98,12 @@ class Math(rst.Directive):
         container.append(node)
         return [container]
 
-def new_page(*args):
+def new_page(*args, **kwargs):
     latex2svgextra.counter = 0
 
 def math(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    # Otherwise the backslashes do quite a mess there
-    i = rawtext.find('`')
-    text = rawtext.split('`')[1]
+    # In order to properly preserve backslashes (well, and backticks)
+    text = rawtext[rawtext.find('`') + 1:rawtext.rfind('`')]
 
     # Fallback rendering as code requested
     if settings['M_MATH_RENDER_AS_CODE']:
@@ -134,7 +131,7 @@ def math(role, rawtext, text, lineno, inliner, options={}, content=[]):
     node = nodes.raw(rawtext, latex2svgextra.patch(text, svg, depth, attribs), format='html', **options)
     return [node], []
 
-def save_cache(*args):
+def save_cache(*args, **kwargs):
     if settings['M_MATH_CACHE_FILE']:
         latex2svgextra.pickle_cache(settings['M_MATH_CACHE_FILE'])
 
@@ -147,10 +144,12 @@ def register_mcss(mcss_settings, hooks_pre_page, hooks_post_run, **kwargs):
     if settings['M_MATH_CACHE_FILE']:
         settings['M_MATH_CACHE_FILE'] = os.path.join(settings['INPUT'], settings['M_MATH_CACHE_FILE'])
 
-        if os.path.exists(settings['M_MATH_CACHE_FILE']):
-            latex2svgextra.unpickle_cache(settings['M_MATH_CACHE_FILE'])
-        else:
-            latex2svgextra.unpickle_cache(None)
+    # Ensure that cache is unpickled again if M_MATH_CACHE_FILE is *not* set --
+    # otherwise tests will sporadically fail.
+    if settings['M_MATH_CACHE_FILE'] and os.path.exists(settings['M_MATH_CACHE_FILE']):
+        latex2svgextra.unpickle_cache(settings['M_MATH_CACHE_FILE'])
+    else:
+        latex2svgextra.unpickle_cache(None)
 
     hooks_pre_page += [new_page]
     hooks_post_run += [save_cache]
@@ -158,10 +157,15 @@ def register_mcss(mcss_settings, hooks_pre_page, hooks_post_run, **kwargs):
     rst.directives.register_directive('math', Math)
     rst.roles.register_canonical_role('math', math)
 
+# Below is only Pelican-specific functionality. If Pelican is not found, these
+# do nothing.
+
 def _configure_pelican(pelicanobj):
     register_mcss(mcss_settings=pelicanobj.settings, hooks_pre_page=[], hooks_post_run=[])
 
 def register():
+    import pelican.signals
+
     pelican.signals.initialized.connect(_configure_pelican)
     pelican.signals.finalized.connect(save_cache)
     pelican.signals.content_object_init.connect(new_page)

@@ -71,9 +71,24 @@ span.m-doc-wrap {
   white-space: pre-line;
   max-width: 100%; /* otherwise horizontal scrollbars, wtf */
 }
+
+/* Highlight the doc entries the same way as sections */
 dl.m-doc dd {
   margin-bottom: 0.5rem;
 }
+dl.m-doc dd {
+  margin-left: 0;
+  padding-left: 2.5rem;
+}
+dl.m-doc dt:target, dl.m-doc dt:target + dd {
+  margin-left: -1.0rem;
+  border-left-style: solid;
+  border-left-width: 0.25rem;
+  border-color: var(--article-heading-color);
+}
+dl.m-doc dt:target { padding-left: 0.75rem; }
+dl.m-doc dt:target + dd { padding-left: 3.25rem; }
+
 ul.m-doc {
   list-style: none;
   margin-left:  1.0375rem;
@@ -180,12 +195,6 @@ article section.m-doc-details > div > h3:first-child {
   padding: 0.5rem 1rem;
   background-color: var(--code-header-background-color);
   border-radius: var(--border-radius);
-  /*
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  */
 }
 article section.m-doc-details > div > h3:first-child a {
   color: var(--code-header-link-color);
@@ -250,7 +259,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   right: 0;
   top: 0;
   bottom: 0;
-  background-color: var(--header-background-color-landing);
+  background-color: var(--search-overlay-color);
 }
 .m-doc-search:target {
   display: block;
@@ -274,7 +283,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   float: right;
 }
 .m-doc-search-content {
-  background-color: var(--header-background-color);
+  background-color: var(--search-background-color);
   border-radius: var(--border-radius);
   padding: 1rem;
 }

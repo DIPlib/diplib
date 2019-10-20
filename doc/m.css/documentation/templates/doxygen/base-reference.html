@@ -73,7 +73,7 @@
                 <li><a href="#var-members">Variables</a></li>
                 {% endif %}
                 {% if compound.defines %}
-                <li><a href="#defines">Defines</a></li>
+                <li><a href="#define-members">Defines</a></li>
                 {% endif %}
                 {% for group in compound.groups %}
                 <li><a href="#{{ group.id }}">{{ group.name }}</a></li>
@@ -178,8 +178,8 @@
         </section>
         {% endif %}
         {% if compound.defines %}
-        <section id="defines">
-          <h2><a href="#defines">Defines</a></h2>
+        <section id="define-members">
+          <h2><a href="#define-members">Defines</a></h2>
           <dl class="m-doc">
             {% for define in compound.defines %}
 {{ entry_define(define) }}

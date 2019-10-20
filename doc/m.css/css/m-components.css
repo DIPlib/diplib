@@ -98,26 +98,6 @@ hr {
 blockquote, hr {
   border-color: var(--line-color);
 }
-pre {
-  font-family: var(--code-font), monospace, monospace; /* https://en.wikipedia.org/wiki/User:Davidgothberg/Test59 */
-  font-size: var(--code-font-size);
-  padding: 0.5rem 1rem;
-  color: var(--code-color);
-  background-color: var(--code-background-color);
-  border-radius: var(--border-radius);
-  border-left-style: solid;
-  border-left-width: 0.25rem;
-  border-color: var(--line-color);
-  overflow-x: auto;
-  margin-top: 0; /* stupid defaults */
-}
-pre.m-console-wrap {
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-pre.m-console {
-  background-color: var(--console-background-color);
-}
 
 /* Inline elements */
 strong, .m-text.m-strong { font-weight: bold; }
@@ -152,15 +132,33 @@ mark {
   background-color: var(--mark-background-color);
   color: var(--mark-color);
 }
-code {
-  font-family: var(--code-font), monospace, monospace;
+
+/* Block/inline code */
+pre, code {
+  font-family: var(--code-font), monospace, monospace; /* https://en.wikipedia.org/wiki/User:Davidgothberg/Test59 */
   font-size: var(--code-font-size);
-  padding: 0.125rem;
   color: var(--code-color);
   background-color: var(--code-background-color);
 }
-code.m-console {
+pre.m-console, code.m-console {
+  color: var(--console-color);
   background-color: var(--console-background-color);
+}
+pre {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  border-left-style: solid;
+  border-left-width: 0.25rem;
+  border-color: var(--line-color);
+  overflow-x: auto;
+  margin-top: 0; /* stupid defaults */
+}
+pre.m-console-wrap {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+code {
+  padding: 0.125rem;
 }
 
 /* Focus outline on link, canvas and input: match the focused header item. */
@@ -268,14 +266,15 @@ dl.m-diary:last-child {
 }
 dl.m-diary dt {
   font-weight: bold;
-  width: 3.5rem;
+  width: 6rem; /* Large enough so it can fit a date (Aug 27, 2019) as well */
   float: left;
   clear: both;
   padding-top: 0.25rem;
 }
 dl.m-diary dd {
   padding-top: 0.25rem;
-  padding-left: 3.5rem;
+  padding-left: 6rem;
+  margin-left: 0;
 }
 
 /* Footnotes, footnote references */
@@ -382,9 +381,9 @@ div.m-button a .m-small:last-child {
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--dim-filled-color);
-  padding: 0.0625rem 0.1875rem;
   font-size: 75%;
   font-weight: normal;
+  padding: 0.0625rem 0.1875rem;
   vertical-align: 7.5%;
 }
 .m-label.m-flat {
@@ -532,6 +531,11 @@ img.m-image, svg.m-image, div.m-image img, div.m-image svg {
 }
 div.m-image.m-fullwidth img, div.m-image.m-fullwidth svg {
   width: 100%;
+}
+/* Image badge. Deliberately omitting <svg> since I don't see any use for those
+   as avatars yet. */
+img.m-image.m-badge, div.m-image.m-badge img {
+  border-radius: 50%;
 }
 
 /* Figure. Ensure everything is done for both <img> and <svg>. */
@@ -924,18 +928,18 @@ pre.m-code span.hll {
 }
 
 /* Inverted code block / inline code */
-.m-code.m-inverted {
-  color: var(--code-inverted-color);
-}
-.m-code.m-inverted > span {
+.m-code.m-inverted > span, .m-console.m-inverted > span {
   opacity: 0.667;
 }
-.m-code.m-inverted > span.hll {
-  color: var(--color);
+.m-code.m-inverted > span.hll, .m-console.m-inverted > span.hll {
   opacity: 1;
-  background-color: transparent;
+  background-color: transparent; /* TODO: handle this in pygments directly */
   border-color: transparent;
 }
+.m-code.m-inverted { color: var(--code-inverted-color); }
+.m-console.m-inverted { color: var(--console-inverted-color); }
+.m-code.m-inverted > span.hll { color: var(--code-color); }
+.m-cosole.m-inverted > span.hll { color: var(--console-color); }
 
 /* Code color swatch */
 .m-code-color {
@@ -1115,33 +1119,17 @@ div.m-button a, .m-label {
   color: var(--button-background-color);
   border-color: var(--button-background-color);
 }
-div.m-button.m-flat a {
-  color: var(--color);
-}
+div.m-button.m-flat a { color: var(--color); }
 div.m-button.m-flat a:hover, div.m-button.m-default a:focus, div.m-button.m-default a:active {
   color: var(--link-active-color);
 }
-div.m-button.m-default a, .m-label:not(.m-flat).m-default {
-  background-color: var(--default-color);
-}
-div.m-button.m-primary a, .m-label:not(.m-flat).m-primary {
-  background-color: var(--primary-color);
-}
-div.m-button.m-success a, .m-label:not(.m-flat).m-success {
-  background-color: var(--success-color);
-}
-div.m-button.m-warning a, .m-label:not(.m-flat).m-warning {
-  background-color: var(--warning-color);
-}
-div.m-button.m-danger a, .m-label:not(.m-flat).m-danger {
-  background-color: var(--danger-color);
-}
-div.m-button.m-info a, .m-label:not(.m-flat).m-info {
-  background-color: var(--info-color);
-}
-div.m-button.m-dim a, .m-label:not(.m-flat).m-dim {
-  background-color: var(--dim-color);
-}
+div.m-button.m-default a, .m-label:not(.m-flat).m-default { background-color: var(--default-color); }
+div.m-button.m-primary a, .m-label:not(.m-flat).m-primary { background-color: var(--primary-color); }
+div.m-button.m-success a, .m-label:not(.m-flat).m-success { background-color: var(--success-color); }
+div.m-button.m-warning a, .m-label:not(.m-flat).m-warning { background-color: var(--warning-color); }
+div.m-button.m-danger a, .m-label:not(.m-flat).m-danger { background-color: var(--danger-color); }
+div.m-button.m-info a, .m-label:not(.m-flat).m-info { background-color: var(--info-color); }
+div.m-button.m-dim a, .m-label:not(.m-flat).m-dim { background-color: var(--dim-color); }
 div.m-button.m-default a:hover, div.m-button.m-default a:focus, div.m-button.m-default a:active {
   background-color: var(--default-link-active-color);
 }

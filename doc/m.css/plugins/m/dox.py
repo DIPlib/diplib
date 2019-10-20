@@ -27,7 +27,6 @@ from docutils import nodes, utils
 from docutils.parsers import rst
 from docutils.parsers.rst.roles import set_classes
 
-from pelican import signals
 import xml.etree.ElementTree as ET
 import os
 import re
@@ -36,7 +35,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Modified from __init__ to add support for queries and hashes
+# Modified from abbr / gh / gl / ... to add support for queries and hashes
 link_regexp = re.compile(r'(?P<title>.*) <(?P<link>[^?#]+)(?P<hash>[?#].+)?>')
 
 def parse_link(text):
@@ -51,8 +50,6 @@ def parse_link(text):
     return title, link, hash
 
 def init(tagfiles, input):
-    rst.roles.register_local_role('dox', dox)
-
     global symbol_mapping, symbol_prefixes, tagfile_basenames
 
     # Pre-round to populate subclasses. Clear everything in case we init'd
@@ -171,8 +168,13 @@ def dox(name, rawtext, text, lineno, inliner: Inliner, options={}, content=[]):
     return [node], []
 
 def register_mcss(mcss_settings, **kwargs):
+    rst.roles.register_local_role('dox', dox)
+
     init(input=mcss_settings['INPUT'],
          tagfiles=mcss_settings.get('M_DOX_TAGFILES', []))
+
+# Below is only Pelican-specific functionality. If Pelican is not found, these
+# do nothing.
 
 def _pelican_configure(pelicanobj):
     settings = {
@@ -185,4 +187,6 @@ def _pelican_configure(pelicanobj):
     register_mcss(mcss_settings=settings)
 
 def register(): # for Pelican
-    signals.initialized.connect(_pelican_configure)
+    import pelican.signals
+
+    pelican.signals.initialized.connect(_pelican_configure)
