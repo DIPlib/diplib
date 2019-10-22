@@ -1319,6 +1319,9 @@ classdef dip_image
          %   EXPANDDIM is a trivial operation which never copies pixel data.
          if ~isintscalar(dims), error('Number of dimensions must be scalar integer'), end
          if ndims(in) < dims
+            if ndims(in) == 1
+                in.Data = permute(in.Data,[1,2,4,3]); % make the existing single dimension be the x dimension of the expanded image
+            end
             in.NDims = dims;
          end
          % PixelSize is automatically expanded to cover all dimensions, so we don't need to do anything here
@@ -1360,7 +1363,7 @@ classdef dip_image
          end
          k_orig = k; % Save to change pixel sizes later
          k = [k,notused];
-         k(k==0) = max(k) + (1:numel(k==0));
+         k(k==0) = max(k) + (1:sum(k==0));
          if numel(k) > 1
             % Where we say 1, we mean 2.
             I = k==1;
