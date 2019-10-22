@@ -260,6 +260,9 @@ void init_assorted( py::module& m ) {
    m.def( "ColoredNoise", []( dip::Image const& in, dip::dfloat variance, dip::dfloat color  ){ return dip::ColoredNoise( in, randomNumberGenerator, variance, color ); },
           "in"_a, "variance"_a = 1.0, "color"_a = -2.0 );
 
+   m.def( "ReseedRng", [](){ randomNumberGenerator.Seed(); }, "Randomly reseed the random number generator used by the noise, grid and object generation functions.");
+   m.def( "ReseedRng", []( dip::uint seed ){ randomNumberGenerator.Seed( seed ); }, "Reseed the random number generator used by the noise, grid and object generation functions.");
+
    // diplib/geometry.h
    m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray const& >( &dip::Wrap ), "in"_a, "wrap"_a );
    m.def( "Subsampling", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Subsampling ), "in"_a, "sample"_a );
