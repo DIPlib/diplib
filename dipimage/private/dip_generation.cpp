@@ -412,6 +412,7 @@ void noise( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 4 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::String type = nrhs > 1 ? dml::GetString( prhs[ 1 ] ) : "gaussian";
+   dip::ToLowerCase( type );
    dip::dfloat param1 = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 1.0;
    dip::dfloat param2 = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 0.0;
    dml::MatlabInterface mi;
@@ -463,7 +464,7 @@ void randomseeds( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::String mode = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : dip::S::TRANSLATION;
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   if( type == "poisson" ) {
+   if(( type == "poisson" ) || ( type == "Poisson" )) {
       dip::CreatePoissonPointProcess( out, sizes, random, density );
    } else {
       dip::CreateRandomGrid( out, sizes, random, density, type, mode );

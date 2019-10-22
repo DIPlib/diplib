@@ -199,7 +199,7 @@ constexpr char const* HIGH = "high";
 constexpr char const* RANGE = "range";
 
 // Metrics
-constexpr char const* EUCLIDEAN = "Euclidean";
+constexpr char const* EUCLIDEAN = "euclidean";
 constexpr char const* CHAMFER = "chamfer";
 constexpr char const* CONNECTED = "connected";
 constexpr char const* CITY = "city";

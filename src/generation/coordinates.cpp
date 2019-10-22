@@ -580,7 +580,7 @@ void FillDistanceToPoint(
    Image coords = CreateCoordinates( out.Sizes(), { S::CORNER }, S::CARTESIAN );
    coords -= center;
    MultiplySampleWise( coords, scale, coords, coords.DataType() );
-   if( distance == S::EUCLIDEAN ) {
+   if(( distance == S::EUCLIDEAN ) || ( distance == "Euclidean" )) { // allow first letter capitalized
       Norm( coords, out );
    } else if( distance == S::SQUARE ) {
       SquareNorm( coords, out );
