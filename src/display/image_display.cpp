@@ -218,22 +218,65 @@ dfloat convert( T v, bool /*usePhase*/ ) {
 
 template< typename T >
 dfloat convert( std::complex< T > v, bool usePhase ) {
-   if( usePhase ) {
-      return std::arg( v );
-   } else {
-      return std::abs( v );
-   }
+   return usePhase ? std::arg( v ) : std::abs( v );
 }
+
+constexpr uint8 maxUint8 = std::numeric_limits< uint8 >::max();
+constexpr dfloat logRange = 1e3;
+const dfloat logScale = maxUint8 / std::log( logRange );
+
+struct ScalingParams {
+   dfloat offset;
+   dfloat scale;
+   bool logarithmic;
+   bool useModulo;
+
+   ScalingParams( ImageDisplay::MappingMode mappingMode, ImageDisplay::Limits range ) {
+      logarithmic = mappingMode == ImageDisplay::MappingMode::LOGARITHMIC;
+      useModulo = mappingMode == ImageDisplay::MappingMode::MODULO;
+      if( logarithmic ) {
+         // For logarithmic scaling, we linearly map the input data to the range [1,1e3], then take the logarithm, and finally scale to [0,255].
+         scale = ( logRange - 1.0 ) / ( range.upper - range.lower );
+         offset = 1.0 - range.lower * scale;
+         //logScale = maxUint8 / std::log( range.upper * scale + offset );
+      } else {
+         scale = maxUint8 / ( range.upper - range.lower );
+         offset = -range.lower * scale;
+      }
+   }
+
+   uint8 ScaleLinear( dfloat value ) {
+      return clamp_cast< uint8 >(value * scale + offset );
+   }
+
+   uint8 ScaleLogarithmic( dfloat value ) {
+      return clamp_cast< uint8 >( std::log( value * scale + offset ) * logScale );
+   }
+
+   uint8 ScaleModulo( dfloat value ) {
+      //dip::uint scaled = static_cast< dip::uint >( value * scale + offset );
+      dip::uint scaled = static_cast< dip::uint >( value ); // Note that the modulo mode cannot be selected without range being set to [0,255].
+      scaled = ( scaled == 0 ) ? ( 0 ) : (( scaled - 1 ) % maxUint8 + 1 );
+      return static_cast< uint8 >( scaled );
+   }
+
+   uint8 Scale( dfloat value ) {
+      if( logarithmic ) {
+         return ScaleLogarithmic( value );
+      }
+      if( useModulo ) {
+         return ScaleModulo( value );
+      }
+      return ScaleLinear( value );
+   }
+};
 
 template< typename TPI >
 void CastToUint8(
       Image const& slice,
       Image& out,
       bool usePhase,
-      bool logarithmic,
-      bool useModulo,
-      dip::dfloat offset,
-      dip::dfloat scale
+      ScalingParams params
 ) {
    dip::uint width = slice.Size( 0 );
    dip::uint height = slice.Dimensionality() == 2 ? slice.Size( 1 ) : 1;
@@ -250,23 +293,21 @@ void CastToUint8(
       for( dip::uint jj = 0; jj < height; ++jj ) {
          TPI* iPtr = slicePtr;
          uint8* oPtr = outPtr;
-         if( logarithmic ) {
+         if( params.logarithmic ) {
             for( dip::uint ii = 0; ii < width; ++ii ) {
-               *oPtr = clamp_cast< uint8 >( std::log( convert( *iPtr, usePhase ) + offset ) * scale );
+               *oPtr = params.ScaleLogarithmic( convert( *iPtr, usePhase ));
                iPtr += sliceStride0;
                oPtr += outStride0;
             }
-         } else if( useModulo ) {
+         } else if( params.useModulo ) {
             for( dip::uint ii = 0; ii < width; ++ii ) {
-               dfloat scaled = ( convert( *iPtr, usePhase ) + offset ) * scale;
-               scaled = scaled == 0 ? 0 : ( std::fmod( scaled - 1, 255.0 ) + 1 );
-               *oPtr = clamp_cast< uint8 >( scaled );
+               *oPtr = params.ScaleModulo( convert( *iPtr, usePhase ));
                iPtr += sliceStride0;
                oPtr += outStride0;
             }
          } else {
             for( dip::uint ii = 0; ii < width; ++ii ) {
-               *oPtr = clamp_cast< uint8 >(( convert( *iPtr, usePhase ) + offset ) * scale );
+               *oPtr = params.ScaleLinear( convert( *iPtr, usePhase ));
                iPtr += sliceStride0;
                oPtr += outStride0;
             }
@@ -281,10 +322,7 @@ void CastToUint8< bin >(
       Image const& slice,
       Image& out,
       bool /*usePhase*/,
-      bool /*logarithmic*/,
-      bool /*useModulo*/,
-      dip::dfloat /*offset*/,
-      dip::dfloat /*scale*/
+      ScalingParams /*params*/
 ) {
    dip::uint width = slice.Size( 0 );
    dip::uint height = slice.Dimensionality() == 2 ? slice.Size( 1 ) : 1;
@@ -326,17 +364,7 @@ void ImageDisplay::UpdateOutput() {
          }
       }
       // Mapping function
-      bool logarithmic = mappingMode_ == MappingMode::LOGARITHMIC;
-      bool useModulo = mappingMode_ == MappingMode::MODULO;
-      dfloat offset;
-      dfloat scale;
-      if( logarithmic ) {
-         offset = 1.0 - range_.lower;
-         scale = 255.0 / std::log( range_.upper + offset );
-      } else {
-         offset = -range_.lower;
-         scale = 255.0 / ( range_.upper - range_.lower );
-      }
+      ScalingParams scalingParams( mappingMode_, range_ );
       // Complex to real
       Image slice = rgbSlice_.QuickCopy();
       bool usePhase = false;
@@ -361,7 +389,7 @@ void ImageDisplay::UpdateOutput() {
       DIP_ASSERT(( !twoDimOut_ && ( slice.Dimensionality() == 1 )) || ( twoDimOut_ && ( slice.Dimensionality() == 2 )));
       output_.ReForge( slice.Sizes(), slice.TensorElements(), DT_UINT8 );
       // Stretch and convert the data
-      DIP_OVL_CALL_ALL( CastToUint8, ( slice, output_, usePhase, logarithmic, useModulo, offset, scale ), slice.DataType() );
+      DIP_OVL_CALL_ALL( CastToUint8, ( slice, output_, usePhase, scalingParams ), slice.DataType() );
       outputIsDirty_ = false;
    }
 }
@@ -371,23 +399,15 @@ namespace {
 void MapPixelValues(
       Image::Pixel const& input,
       Image::Pixel const& output,
-      dfloat offset, dfloat scale,
-      bool usePhase, bool logarithmic, bool useModulo
+      ScalingParams params,
+      bool usePhase
 ) {
    // Input and output both always have 3 tensor elements
    for( dip::uint ii = 0; ii < 3; ++ii ) {
       double value = usePhase
                      ? std::arg( input[ ii ].As< dcomplex >() )
                      : input[ ii ].As< dfloat >();
-      value += offset;
-      if( logarithmic ) {
-         output[ ii ] = clamp_cast< uint8 >( std::log( value ) * scale );
-      } else if( useModulo ) {
-         value = value == 0 ? 0 : ( std::fmod( value * scale - 1, 255.0 ) + 1 );
-         output[ ii ] = clamp_cast< uint8 >( value );
-      } else {
-         output[ ii ] = clamp_cast< uint8 >( value * scale );
-      }
+      output[ ii ] = params.Scale( value );
    }
 }
 
@@ -422,40 +442,29 @@ Image::Pixel ImageDisplay::MapSinglePixel( Image::Pixel const& input ) {
       rgb = tmp.At( 0 );
    }
    // Mapping function
-   bool logarithmic = mappingMode_ == MappingMode::LOGARITHMIC;
-   bool useModulo = mappingMode_ == MappingMode::MODULO;
-   dfloat offset;
-   dfloat scale;
-   if( logarithmic ) {
-      offset = 1.0 - range_.lower;
-      scale = 255.0 / std::log( range_.upper + offset );
-   } else {
-      offset = -range_.lower;
-      scale = 255.0 / ( range_.upper - range_.lower );
-   }
+   ScalingParams scalingParams( mappingMode_, range_ );
    Image::Pixel output( DT_UINT8, 3 );
    if( rgb.DataType().IsComplex() ) {
       switch( complexMode_ ) {
          //case ComplexMode::MAGNITUDE:
          default:
-            MapPixelValues( rgb, output, offset, scale, false, logarithmic, useModulo );
+            MapPixelValues( rgb, output, scalingParams, false );
             break;
          case ComplexMode::PHASE:
-            MapPixelValues( rgb, output, offset, scale, true, logarithmic, useModulo );
+            MapPixelValues( rgb, output, scalingParams, true );
             break;
          case ComplexMode::REAL:
-            MapPixelValues( rgb.Real(), output, offset, scale, false, logarithmic, useModulo );
+            MapPixelValues( rgb.Real(), output, scalingParams, false );
             break;
          case ComplexMode::IMAG:
-            MapPixelValues( rgb.Imaginary(), output, offset, scale, false, logarithmic, useModulo );
+            MapPixelValues( rgb.Imaginary(), output, scalingParams, false );
             break;
       }
    }
    if( image_.IsScalar() ) {
       return output[ 0 ];
-   } else {
-      return output;
    }
+   return output;
 }
 
 } // namespace dip
