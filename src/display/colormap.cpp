@@ -557,6 +557,7 @@ static constexpr std::array< uint8, 256 * 3 > saturationColorMap =
 // Black + 14 repetitions of 19 unique colors.
 // Greens are closer together perceptually, so we reduce the number of green entries in this map.
 // Assuming gamma of 1.2: ((1/3)^(1/1.2))=102 ; ((2/3)^(1/1.2))=182 ; ((1/2)^(1/1.2))=143
+// Data same as in /dipimage/private/label_colormap.m
 static constexpr std::array< uint8, 256 * 3 > labelColorMap =
       {{
              0,   0,   0,
