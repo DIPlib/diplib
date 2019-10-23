@@ -50,8 +50,8 @@ end
 %Check if input is a figure handle or an image
 if isfigh(in)
    udata = get(in,'UserData');
-   if strncmp(get(in,'Tag'),'DIP_Image_3D',12) && ~iscolor(udata.slices)
-      in = udata.slices;
+   if strncmp(get(in,'Tag'),'DIP_Image_3D',12) && isempty(udata.colspace)
+      in = dipgetimage(in);
    else
       error('Cannot create isosurface for image.')
    end
@@ -86,7 +86,7 @@ uicontrol('Parent',plotF,'Style','checkbox', 'String', 'Axis Equal',...
 uicontrol('Parent',plotF,'Style','pushbutton', 'String', 'Delete Buttons',...
    'Position',[450 10 90 25], 'Callback', 'dipisosurface printi',...
    'BackgroundColor',col,'Interruptible','off','BusyAction','cancel');
-      
+
 Hcomp = uicontrol('Parent',plotF,'Style','text','Position',[150 390 100 15],...
    'String','Computing...','ForegroundColor',[1 0 0],...
    'BackgroundColor',col,'Interruptible','off','BusyAction','cancel');
@@ -124,8 +124,6 @@ value = get(ob,'Value');
 if value
    set(ax,'DataAspectRatio',[1,1,1]);
 else
-   udata = get(gcf,'UserData');
-   sz = size(udata.slices);
    set(ax,'DataAspectRatioMode','auto');
 end
 
@@ -160,9 +158,9 @@ set(udata.co,'visible','off');
 
 
 function text_change
-[ob,plotF] = gcbo;
+[~,plotF] = gcbo;
 udata = get(plotF,'UserData');
-value = str2num(get(udata.te,'String'));
+value = str2double(get(udata.te,'String'));
 if value
    if value < udata.min
       value = udata.min;
@@ -184,7 +182,7 @@ if value
 end
 
 function printi
-[ob,plotF] = gcbo;
+[~,plotF] = gcbo;
 h=findobj(plotF,'type','uicontrol');
 for ii=1:length(h)
    delete(h(ii));
