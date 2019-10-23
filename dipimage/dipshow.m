@@ -60,7 +60,7 @@
 %   For more info on the figure windows created, see the DIPimage User Guide.
 %
 %   See also DIPSETPREF, DIPFIG, DIPTRUESIZE, DIPMAPPING, DIPZOOM, DIPTEST,
-%   DIPORIEN, DIPLINK, DIPSTEP.
+%   DIPLINK, DIPSTEP.
 
 % (c)2017-2018, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
@@ -150,8 +150,6 @@
 %                                a single click is detected, then the double click. However,
 %                                we don't know with which button was double-clicked. Using
 %                                this variable, the second click repeats the first one.
-%   - If DIPORIEN has been enabled:
-%      - udata.orientationim  -> dip_image object with orientation image.
 
 % TODO: use image pixel size to determine aspect ratio, and use aspect ratio to scale axes.
 
@@ -388,7 +386,7 @@ else
    try
       % 27-10-2006 MvG -- Trying to get rid of this bloody behaviour where
       % the window is brought to the front on every display. It seems to be
-      % due to design *AND* matlab bugs. On wintendo it's even worse since
+      % due to design *AND* MATLAB bugs. On Windows it's even worse since
       % bringing a window to the front implies that it takes the focus!!!
       % Try running batch jobs with this going on...
       if ~ishandle(fig)
@@ -1251,8 +1249,15 @@ if nD==3 && ~iscol
       added_separator = true;
    end
 end
-if nD > 1 && exist('view5d','file') && exist('javachk','file') && isempty(javachk('jvm'))
-   h2 = uimenu(h,'Label','View5d','Tag','viewer5d','Callback',@(~,~)view5d(gcbf));
+if nD > 0 && exist('viewslice','file')
+   h2 = uimenu(h,'Label','Open with DIPviewer','Tag','DIPviewer','Callback',@(~,~)viewslice(dipgetimage(gcbf)));
+   if(~added_separator)
+      set(h2,'Separator','on');
+      added_separator = true;
+   end
+end
+if nD > 1 && exist('view5d','file') && isempty(javachk('jvm'))
+   h2 = uimenu(h,'Label','Open with View5D','Tag','View5D','Callback',@(~,~)view5d(gcbf));
    if(~added_separator)
       set(h2,'Separator','on');
       added_separator = true;
@@ -1263,8 +1268,6 @@ h2 = uimenu(h,'Label','Enable keyboard','Tag','keyboard',...
 if(~added_separator)
    set(h2,'Separator','on');
 end
-% Work around a bug in MATLAB 7.1 (R14SP3) (solution # 1-1XPN82).
-h = uimenu(fig); drawnow; delete(h);
 
 
 %
@@ -1273,8 +1276,6 @@ h = uimenu(fig); drawnow; delete(h);
 function state = find_action_state(state,nD,iscolor)
 switch state
    case 'diptest'
-   case 'diporien'
-      if nD~=2 || iscolor, state = 'none'; end
    case 'dipzoom'
    case 'dippan'
    case 'dipstep'
@@ -1297,8 +1298,6 @@ if ~strcmp(state,udata.state)
          dipstep(fig,'on');
       case 'diptest'
          diptest(fig,'on');
-      case 'diporien'
-         diporien(fig,'on');
       case 'dipzoom'
          dipzoom(fig,'on');
       case 'dippan'

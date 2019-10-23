@@ -12,7 +12,7 @@
 %
 %   Also: DIPTEST(H,'ON'), DIPTEST(H,'OFF'), etc. to specify a window handle.
 %
-%   See also DIPSHOW, DIPORIEN, DIPZOOM, DIPSTEP, DIPLINK.
+%   See also DIPSHOW, DIPZOOM, DIPSTEP, DIPLINK.
 
 % (c)2017-2018, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
