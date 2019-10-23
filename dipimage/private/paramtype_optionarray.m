@@ -21,8 +21,8 @@ switch command
    case 'control_create'
       fig = varargin{1};   % figure handle
       default = param.default;
-      if iscell(default) && isempty(default)
-         default = '{}';
+      if iscell(default)
+         default = cell2str(default);
       end
       bh = uicontrol(fig,...
                      'Style','pushbutton',...
