@@ -55,7 +55,7 @@ cc = cc{1}{1};
 dipimage_dir = fullfile('..','dipimage');
 addpath(dipimage_dir)
 menulist = dipmenus;
-menulist = [{'GUI',{'dipimage','dipshow','viewslice'}};...
+menulist = [{'GUI',{'dipimage','dipshow','viewslice','view5d'}};...
             {'Configuration',{'dipgetpref','dipsetpref','dipinit','dipfig','dipmenus'}};...
             menulist];
 
@@ -70,7 +70,8 @@ mfiles = [];
 [mfilenames,I] = sort(lower(mfilenames));
 mfiledirs = mfiledirs(I);
 I = strncmp('dip_',mfilenames,4);
-mfilenames(I) = {''};
+mfilenames(I) = [];
+mfileused = false(size(mfilenames));
 
 % Create Contents.m
 outputfile = fullfile(outputdir,'Contents.m');
@@ -85,7 +86,7 @@ fprintf(f,'%% (c)1999-2014, Delft University of Technology\n');
 fprintf(f,'%%\n');
 
 % Formatting for function list
-l = max(cellfun(@length,mfilenames));
+l = max(cellfun('prodofsize',mfilenames)); % numel for each file name
 l = max(l,16);
 format = ['%%   %-',num2str(l),'s - %s\n'];
 
@@ -97,7 +98,7 @@ for ii = 1:size(menulist,1)
       if ~strcmp(functionlist{1,jj},'-') && functionlist{1,jj}(1)~='#'
          I = strcmp([functionlist{1,jj},'.m'],mfilenames);
          if any(I)
-            mfilenames(I) = {''};
+            mfileused(I) = true;
             functionlist{2,jj} = getdescription(functionlist{1,jj},mfiledirs{I});
             valid(jj) = true;
          end
@@ -110,28 +111,10 @@ for ii = 1:size(menulist,1)
    end
 end
 
-% Write the functions related to the image display
-fprintf(f,'%% Interactive image display:\n');
-descr = getdescription('dipshow',dipimage_dir);
-fprintf(f,format,'dipshow',descr); % we repeat this one here
-descr = getdescription('diptruesize',dipimage_dir);
-fprintf(f,format,'diptruesize',descr); % we repeat this one here
-descr = getdescription('dipclf',dipimage_dir);
-fprintf(f,format,'dipclf',descr); % we repeat this one here
-for ii = 1:length(mfilenames)
-   if strncmp('dip',mfilenames{ii},3)
-      func = mfilenames{ii}(1:end-2);
-      descr = getdescription(func,mfiledirs{ii});
-      fprintf(f,format,func,descr);
-      mfilenames{ii} = '';
-   end
-end
-fprintf(f,'%%\n');
-
 % Write the rest of the functions
 fprintf(f,'%% Other available functions are:\n');
-for ii = 1:length(mfilenames)
-   if ~isempty(mfilenames{ii})
+for ii = 1:numel(mfilenames)
+   if ~mfileused(ii) && ~isempty(mfilenames{ii})
       func = mfilenames{ii}(1:end-2);
       descr = getdescription(func,mfiledirs{ii});
       fprintf(f,format,func,descr);

@@ -1,4 +1,4 @@
-%CURVATURE   Curvature in grey value images in nD
+%CURVATURE   Local structure curvature
 %
 % SYNOPSIS:
 %  out = curvature(in,method,sg,st,subsample)
