@@ -204,6 +204,7 @@ reconstruction.m
 relabel.m
 resample.m
 riesz.m
+rngseed.m
 rotation.m
 rr.m
 select.m

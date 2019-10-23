@@ -257,7 +257,7 @@ porting your old code that used *DIPimage* to the new version.
   `compactwaterseed`, `coordinates`,  `cornerdetector`, `curlvector`, `distancedistribution`, `divergencevector`,
   `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `integral_image`, `lee`,
   `linedetector`, `loggabor`, `nonmaximumsuppression`, `pathclosing`, `pathopening`, `perobjecthist`, `psf`,
-  `quantize`, `randomseeds`, `select`, `semivariogram`, `setborder`, `skew`, `smallobjectsremove`,
+  `quantize`, `randomseeds`, `rngseed`, `select`, `semivariogram`, `setborder`, `skew`, `smallobjectsremove`,
   `stochasticwatershed`, `superpixels`, `thetatheta`, `traceobjects`, `warp_subpixel`, `window`, `wrap`.
   Use `help <functionname>` in *MATLAB* to learn what these functions provide.
 

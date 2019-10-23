@@ -591,6 +591,18 @@ void extendregion( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void rngseed( int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 1 );
+   if( nrhs > 0 ) {
+      //dip::uint seed = dml::GetUnsigned( prhs[ 0 ] ); // it's a bit weird, since seed starts off as a double...
+      dip::dfloat seed = dml::GetFloat( prhs[ 0 ] );
+      seed = std::abs( seed );
+      random.Seed( static_cast< dip::uint >( seed )); //
+   } else {
+      random.Seed();
+   }
+}
+
 } // namespace
 
 // Gateway function
@@ -629,6 +641,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       } else if( function == "extendregion" ) {
          extendregion( plhs, nrhs, prhs );
+
+      } else if( function == "rngseed" ) {
+         rngseed( nrhs, prhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );
