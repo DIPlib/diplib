@@ -184,7 +184,7 @@ ratio:
     diptruesize(200)
 ```
 
-`diptruesize('off')` causes the image to fill the figure window,
+<tt>diptruesize('off')</tt> causes the image to fill the figure window,
 possibly loosing the aspect ratio. `diptruesize` accepts a figure handle
 as an optional first argument. If you provide a handle, you must also
 provide a zoom factor. See `help diptruesize` for other options not

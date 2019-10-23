@@ -461,27 +461,38 @@ See \ref sec_dum_functions_dipmapping and \ref sec_dum_figurewindows_menus.
 
 \subsection sec_dum_customizing_dippref_displayfunction DisplayFunction
 
-*Value*: <tt>'dipshow'</tt> or <tt>'viewslice'</tt>
+*Value*: <tt>'dipshow'</tt>, <tt>'viewslice'</tt> or <tt>'view5d'</tt>
 
 *Default*: <tt>'dipshow'</tt>
 
-This option selects how images are shown to a figure window when the
-command does not end with a semicolon. `dipshow` is the default
-method, yielding well-integrated display windows. Many of the settings
-described in this section apply only to the figure windows created by `dipshow`,
-as do the interactive tools described in \ref sec_dum_functions_dipcrop.
-See \ref sec_dum_figurewindows for more information on these figure
-windows.
+This option selects how images are shown to a figure window when the command
+does not end with a semicolon. `dipshow` is the default method, yielding
+well-integrated display windows. See \ref sec_dum_figurewindows for more
+information on these figure windows.
 
-`viewslice` is the alternate method. It uses the *DIPviewer* tool.
-This tool has no limitations to what type of images can be shown
-(i.e. it can show images with more than 4 dimensions, as well as tensor
-images). However, all the `dipshow`-related options mentioned in this
-section are ignored, and no further programmatic interaction with
-the figure windows is supported. A new window will always be opened
-for each display command, `dipfig` (\ref sec_dum_functions_dipfig) does not
-apply either. See \ref viewer_ui "the *DIPviewer* documentation"
-for more information on how to interact with these figure windows.
+Many of the settings described in this section apply only to the figure windows
+created by `dipshow`, not to the two alternatives described below.
+Similarly, <tt>\ref sec_dum_functions_dipfig "dipfig"</tt>,
+<tt>\ref sec_dum_functions_diptruesize "diptruesize"</tt>,
+<tt>\ref sec_dum_functions_diptest "diptest"</tt>, etc. only apply to figure windows
+created by `dipshow`, as do the interactive tools described in
+\ref sec_dum_functions_dipcrop.
+
+`viewslice` is an alternate method. It uses the *DIPviewer* tool. This tool has
+no limitations to what type of images can be shown (i.e. it can show images
+with more than 4 dimensions, as well as tensor images). However, no programmatic
+interaction with the figure windows is supported, and a new window will always
+be opened for each display command.
+See \ref viewer_ui "the DIPviewer documentation" for more information on how
+to interact with these figure windows.
+
+`view5d` is yet another alternate method. It uses Rainer Heintzmann's
+View5D Java applet, which needs to be installed separately. See `help view5d`
+for instructions on installation.
+See [the tool's documentation](http://www.nanoimaging.de/View5D/)
+for instructions and tutorials. This applet does allow updating the image
+shown, and a series of methods of the Java object can be invoked to
+programmatically control some aspects of the figure window.
 
 \subsection sec_dum_customizing_dippref_displaytofigure DisplayToFigure
 

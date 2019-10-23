@@ -111,9 +111,9 @@ porting your old code that used *DIPimage* to the new version.
 
    - Added settings:
 
-       - `'DisplayFunction'` can be set to either `'dipshow'` (the default), or `'viewslice'`,
-         and determines which of these functions is invoked by default when the `dip_image/display`
-         method is invoked (see the
+       - `'DisplayFunction'` can be set to either `'dipshow'` (the default), `'viewslice'`, or
+         `'view5d'`, and determines which of these functions is invoked by default when the
+         `dip_image/display` method is invoked (see the
          [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_customizing.html#sec_dum_customizing_dippref_displayfunction)
          for more details).
 
@@ -268,7 +268,7 @@ porting your old code that used *DIPimage* to the new version.
   `iso_luminance_lines`, `jpeg_quality_score`, `lfmse`, `localshift`, `luminance_steered_dilation`, `luminance_steered_erosion`,
   `make_gamut`, `mappg`, `mcd`, `morphscales`, `nufft_type1`, `nufft_type2`, `opticflow`, `orientationplot`, `out_of_gamut`,
   `percf_adap`, `percf_adap_banana`, `plot_gamut`, `pst`, `quadraturetensor`, `rgb_to_border`, `rotation3d`, `scale2rgb`,
-  `scalespace`, `splitandmerge`, `structf`, `tikhonovmiller`, `view5d`, `write_add`.
+  `scalespace`, `splitandmerge`, `structf`, `tikhonovmiller`, `write_add`.
   These functions will be ported as they are needed.
 
 - Old functions that will not be ported:

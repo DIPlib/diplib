@@ -237,6 +237,7 @@ unif.m
 varif.m
 vdt.m
 vfc.m
+view5d.m
 warp_subpixel.m
 waterseed.m
 watershed.m

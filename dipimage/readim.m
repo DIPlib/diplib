@@ -38,9 +38,8 @@
 %  calling them directly.
 %
 % INSTALLING BIO-FORMATS:
-%  The complete Bio-Formats is a large binary, and so we do not usually include
-%  it in the DIPimage distribution. If you want to use this functionality,
-%  please download it separately.
+%  The Bio-Formats library is not included in the DIPimage distribution. If you
+%  want to use this functionality, please download it separately.
 %
 %  You will find the latest version here:
 %     http://www.openmicroscopy.org/bio-formats/downloads/
@@ -50,7 +49,7 @@
 %  MATLAB command gives you the directory where the JAR file should reside:
 %     fileparts(which('bfGetReader','in','readim'))
 %
-%  Note that Bio-Formats is licensed under GLP-2.0
+%  Note that Bio-Formats is licensed under GLPv2
 %
 % SEE ALSO:
 %  writeim, readics, readtiff, imread, readtimeseries

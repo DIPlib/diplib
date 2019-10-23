@@ -796,22 +796,34 @@ classdef dip_image
          if ~isempty(obj) && numpixels(obj)>1 && dipgetpref('DisplayToFigure')
             sz = imsize(obj);
             if all(sz<=dipgetpref('ImageSizeLimit'))
-               if strcmp(dipgetpref('DisplayFunction'),'viewslice')
-                  viewslice(obj,inputname(1));
-                  disp(['Displayed to new DIPviewer figure'])
-                  return
-               elseif (isscalar(obj) || iscolor(obj))
-                  dims = sum(sz>1);
-                  if dims >= 1 && dims <= 4
-                     h = dipshow(obj,'name',inputname(1));
-                     if ~isnumeric(h)
-                        if ishandle(h)
+               switch dipgetpref('DisplayFunction')
+                  case 'viewslice'
+                     viewslice(obj,inputname(1));
+                     disp(['Displayed to new DIPviewer figure'])
+                     return
+                  case 'view5d'
+                     dims = sum(sz>1);
+                     if numtensorel(obj) > 1 && dims >= 2
+                        dims = dims + 1;
+                     end
+                     if dims >= 2 && dims <= 5
+                        h = view5d(obj);
+                        h.NameWindow(inputname(1));
+                        disp(['Displayed to new View5D figure'])
+                        return
+                     end
+                  case 'dipshow'
+                     dims = sum(sz>1);
+                     if (isscalar(obj) || iscolor(obj)) && (dims >= 1 && dims <= 4)
+                        h = dipshow(obj,'name',inputname(1));
+                        if ~isnumeric(h) && ishandle(h)
                            h = h.Number;
                         end
+                        disp(['Displayed in figure ',num2str(h)])
+                        return
                      end
-                     disp(['Displayed in figure ',num2str(h)])
-                     return
-                  end
+                  otherwise
+                     error('Invalid value for option ''DisplayFunction''')
                end
             end
          end
