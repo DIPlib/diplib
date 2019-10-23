@@ -799,7 +799,7 @@ classdef dip_image
                switch dipgetpref('DisplayFunction')
                   case 'viewslice'
                      viewslice(obj,inputname(1));
-                     disp(['Displayed to new DIPviewer figure'])
+                     disp('Displayed to new DIPviewer figure')
                      return
                   case 'view5d'
                      dims = sum(sz>1);
@@ -809,7 +809,7 @@ classdef dip_image
                      if dims >= 2 && dims <= 5
                         h = view5d(obj);
                         h.NameWindow(inputname(1));
-                        disp(['Displayed to new View5D figure'])
+                        disp('Displayed to new View5D figure')
                         return
                      end
                   case 'dipshow'
@@ -953,71 +953,71 @@ classdef dip_image
          end
       end
 
-      function out = double(in)
+      function im = double(im)
          %DOUBLE   Convert dip_image object to double matrix.
          %   A = DOUBLE(B) corresponds to A = DIP_ARRAY(IN,'double')
          %   See also dip_image.dip_array
-         out = dip_array(in,'double');
+         im = dip_array(im,'double');
       end
-      function out = single(in)
+      function im = single(im)
          %SINGLE   Convert dip_image object to single matrix.
          %   A = SINGLE(B) corresponds to A = DIP_ARRAY(IN,'single')
          %   See also dip_image.dip_array
-         out = dip_array(in,'single');
+         im = dip_array(im,'single');
       end
-      function out = uint64(in)
+      function im = uint64(im)
          %UINT64   Convert dip_image object to uint64 matrix.
          %   A = UINT64(B) corresponds to A = DIP_ARRAY(IN,'uint64')
          %   See also dip_image.dip_array
-         out = dip_array(in,'uint64');
+         im = dip_array(im,'uint64');
       end
-      function out = uint32(in)
+      function im = uint32(im)
          %UINT32   Convert dip_image object to uint32 matrix.
          %   A = UINT32(B) corresponds to A = DIP_ARRAY(IN,'uint32')
          %   See also dip_image.dip_array
-         out = dip_array(in,'uint32');
+         im = dip_array(im,'uint32');
       end
-      function out = uint16(in)
+      function im = uint16(im)
          %UINT16   Convert dip_image object to uint16 matrix.
          %   A = UINT16(B) corresponds to A = DIP_ARRAY(IN,'uint16')
          %   See also dip_image.dip_array
-         out = dip_array(in,'uint16');
+         im = dip_array(im,'uint16');
       end
-      function out = uint8(in)
+      function im = uint8(im)
          %UINT8   Convert dip_image object to uint8 matrix.
          %   A = UINT8(B) corresponds to A = DIP_ARRAY(IN,'uint8')
          %   See also dip_image.dip_array
-         out = dip_array(in,'uint8');
+         im = dip_array(im,'uint8');
       end
-      function out = int64(in)
+      function im = int64(im)
          %INT64   Convert dip_image object to int64 matrix.
          %   A = INT64(B) corresponds to A = DIP_ARRAY(IN,'int64')
          %   See also dip_image.dip_array
-         out = dip_array(in,'int64');
+         im = dip_array(im,'int64');
       end
-      function out = int32(in)
+      function im = int32(im)
          %INT32   Convert dip_image object to int32 matrix.
          %   A = INT32(B) corresponds to A = DIP_ARRAY(IN,'int32')
          %   See also dip_image.dip_array
-         out = dip_array(in,'int32');
+         im = dip_array(im,'int32');
       end
-      function out = int16(in)
+      function im = int16(im)
          %INT16   Convert dip_image object to int16 matrix.
          %   A = INT16(B) corresponds to A = DIP_ARRAY(IN,'int16')
          %   See also dip_image.dip_array
-         out = dip_array(in,'int16');
+         im = dip_array(im,'int16');
       end
-      function out = int8(in)
+      function im = int8(im)
          %INT8   Convert dip_image object to int8 matrix.
          %   A = INT8(B) corresponds to A = DIP_ARRAY(IN,'int8')
          %   See also dip_image.dip_array
-         out = dip_array(in,'int8');
+         im = dip_array(im,'int8');
       end
-      function out = logical(in)
+      function im = logical(im)
          %LOGICAL   Convert dip_image object to logical matrix.
          %   A = LOGICAL(B) corresponds to A = DIP_ARRAY(IN,'logical')
          %   See also dip_image.dip_array
-         out = dip_array(in,'logical');
+         im = dip_array(im,'logical');
       end
 
       % ------- INDEXING -------
@@ -1236,7 +1236,7 @@ classdef dip_image
 
       % ------- RESHAPING -------
 
-      function in = tensortospatial(in,dim)
+      function im = tensortospatial(im,dim)
          %TENSORTOSPATIAL   Converts the tensor dimension to a spatial dimension.
          %
          %   B = TENSORTOSPATIAL(A) converts the tensor image A into a scalar image B
@@ -1247,19 +1247,19 @@ classdef dip_image
          %   image B copying the pixel data. The tensor dimension becomes the
          %   spatial dimension DIM.
          if nargin < 2 || isequal(dim,2)
-            nd = in.NDims;
-            sz = size(in.Data);
+            nd = im.NDims;
+            sz = size(im.Data);
             sz = [sz(1),1,sz(2:end)];
-            in.Data = reshape(in.Data,sz);
-            in.NDims = nd + 1;
-            if ~isempty(in.PixelSize)
-               in = insertPixelSizeElement(in,2,defaultPixelSize);
+            im.Data = reshape(im.Data,sz);
+            im.NDims = nd + 1;
+            if ~isempty(im.PixelSize)
+               im = insertPixelSizeElement(im,2,defaultPixelSize);
             end
          else
             if ~isintscalar(dim) || dim < 1, error('Dimension argument must be a positive scalar integer'), end
-            nd = in.NDims;
+            nd = im.NDims;
             dim = dim+2;
-            n = 1:max(ndims(in.Data)+1,dim);
+            n = 1:max(ndims(im.Data)+1,dim);
             if numel(n) > 3
                n = n([1:2,4,3,5:end]);
             end
@@ -1269,18 +1269,18 @@ classdef dip_image
             if numel(n) > 3
                n = n([1:2,4,3,5:end]);
             end
-            in.Data = permute(in.Data,n);
-            in.NDims = max(nd+1, dim-2);
-            if ~isempty(in.PixelSize)
-               in = insertPixelSizeElement(in,dim-2,defaultPixelSize);
+            im.Data = permute(im.Data,n);
+            im.NDims = max(nd+1, dim-2);
+            if ~isempty(im.PixelSize)
+               im = insertPixelSizeElement(im,dim-2,defaultPixelSize);
             end
          end
-         in.TensorShapeInternal = 'column vector';
-         in.TensorSizeInternal = [1,1];
-         in.ColorSpace = '';
+         im.TensorShapeInternal = 'column vector';
+         im.TensorSizeInternal = [1,1];
+         im.ColorSpace = '';
       end
 
-      function in = spatialtotensor(in,dim)
+      function im = spatialtotensor(im,dim)
          %SPATIALTOTENSOR   Converts a spatial dimension to the tensor dimension.
          %
          %   B = SPATIALTOTENSOR(A) converts the scalar image A into a tensor image B
@@ -1290,22 +1290,22 @@ classdef dip_image
          %   B = SPATIALTOTENSOR(A,DIM) converts the scalar image A into a tensor
          %   image B copying the pixel data. The spatial dimension DIM becomes the
          %   tensor dimension.
-         if ~isscalar(in), error('Cannot create a tensor dimension, image is not scalar'), end
+         if ~isscalar(im), error('Cannot create a tensor dimension, image is not scalar'), end
          if nargin < 2 || isequal(dim,2)
-            nd = in.NDims;
-            sz = size(in.Data);
+            nd = im.NDims;
+            sz = size(im.Data);
             sz = sz([1,3:end]);
             if numel(sz)<2
                sz = [sz,1];
             end
-            in.Data = reshape(in.Data,sz);
-            in.NDims = nd - 1;
-            in = removePixelSizeElement(in,2);
+            im.Data = reshape(im.Data,sz);
+            im.NDims = nd - 1;
+            im = removePixelSizeElement(im,2);
          else
-            nd = in.NDims;
+            nd = im.NDims;
             if ~isintscalar(dim) || dim < 1 || dim > nd, error('Dimension argument must be a positive scalar integer in the indexing range'), end
             dim = dim+2;
-            n = 1:ndims(in.Data);
+            n = 1:ndims(im.Data);
             if numel(n) > 3
                n = n([1:2,4,3,5:end]);
             end
@@ -1313,16 +1313,16 @@ classdef dip_image
             if numel(n) > 4 % one more than necessary, since the trailing singleton dimension we want to keep trailing
                n = n([1:2,4,3,5:end]);
             end
-            in.Data = permute(in.Data,n);
-            in.NDims = nd - 1;
-            in = removePixelSizeElement(in,dim-2);
+            im.Data = permute(im.Data,n);
+            im.NDims = nd - 1;
+            im = removePixelSizeElement(im,dim-2);
          end
-         in.TensorShapeInternal = 'column vector';
-         in.TensorSizeInternal = [size(in.Data,2),1];
-         in.ColorSpace = '';
+         im.TensorShapeInternal = 'column vector';
+         im.TensorSizeInternal = [size(im.Data,2),1];
+         im.ColorSpace = '';
       end
 
-      function in = expanddim(in,dims)
+      function im = expanddim(im,dims)
          %EXPANDDIM   Appends dimensions of size 1.
          %   B = EXPANDDIM(A,N) increases the dimensionality of the image A
          %   to N, if its dimensionality is smaller. The dimensions added will
@@ -1330,16 +1330,16 @@ classdef dip_image
          %
          %   EXPANDDIM is a trivial operation which never copies pixel data.
          if ~isintscalar(dims), error('Number of dimensions must be scalar integer'), end
-         if ndims(in) < dims
-            if ndims(in) == 1
-                in.Data = permute(in.Data,[1,2,4,3]); % make the existing single dimension be the x dimension of the expanded image
+         if ndims(im) < dims
+            if ndims(im) == 1
+                im.Data = permute(im.Data,[1,2,4,3]); % make the existing single dimension be the x dimension of the expanded image
             end
-            in.NDims = dims;
+            im.NDims = dims;
          end
          % PixelSize is automatically expanded to cover all dimensions, so we don't need to do anything here
       end
 
-      function in = permute(in,k)
+      function im = permute(im,k)
          %PERMUTE   Permute image dimensions.
          %   B = PERMUTE(A,ORDER) rearranges the dimensions of A so that they
          %   are in the order specified by the vector ORDER. The array
@@ -1358,7 +1358,7 @@ classdef dip_image
          %   See also dip_image.shiftdim, dip_image.reshape
          if ~isint(k)
             error('ORDER must be an integer vector')
-         elseif any(k<0) || any(k>in.NDims)
+         elseif any(k<0) || any(k>im.NDims)
             error('ORDER contains an index out of range')
          end
          k = k(:).'; % Make sure K is a 1xN vector.
@@ -1368,8 +1368,8 @@ classdef dip_image
          if numel(unique(tmp)) ~= numel(tmp)
             error('ORDER contains a repeated index')
          end
-         notused = setdiff(1:in.NDims,tmp);
-         sz = imsize(in);
+         notused = setdiff(1:im.NDims,tmp);
+         sz = imsize(im);
          if any(sz(notused)>1)
             error('ORDER misses some non-singleton dimensions')
          end
@@ -1385,35 +1385,35 @@ classdef dip_image
             % The X index must be the second one for MATLAB.
             k = k([2,1,3:end]);
          end
-         in.Data = permute(in.Data,[1,2,k+2]);
-         in.NDims = nd;
-         pxsz = in.PixelSize;
+         im.Data = permute(im.Data,[1,2,k+2]);
+         im.NDims = nd;
+         pxsz = im.PixelSize;
          if ~isempty(pxsz)
             pxsz = ensurePixelSizeDimensionality(pxsz,nd);
-            in.PixelSize = pxsz(k_orig);
+            im.PixelSize = pxsz(k_orig);
          end
       end
 
-      function in = swapdim(in,dim1,dim2)
+      function im = swapdim(im,dim1,dim2)
          %SWAPDIM   Swap two image dimensions.
          %   B = SWAPDIM(A,DIM1,DIM2) swaps DIM1 and DIM2.
          %   See PERMUTE.
          if nargin~=3
             error('Requires three arguments.')
          end
-         if ~isnumeric(dim1) || numel(dim1)~=1 || fix(dim1)~=dim1 || dim1<1 || dim1>in.NDims
+         if ~isnumeric(dim1) || numel(dim1)~=1 || fix(dim1)~=dim1 || dim1<1 || dim1>im.NDims
             error('DIM1 must be a positive integer.')
          end
-         if ~isnumeric(dim2) || numel(dim2)~=1 || fix(dim2)~=dim2 || dim2<1 || dim2>in.NDims
+         if ~isnumeric(dim2) || numel(dim2)~=1 || fix(dim2)~=dim2 || dim2<1 || dim2>im.NDims
             error('DIM2 must be a positive integer.')
          end
-         order = 1:in.NDims;
+         order = 1:im.NDims;
          order(dim1) = dim2;
          order(dim2) = dim1;
-         in = permute(in,order);
+         im = permute(im,order);
       end
 
-      function [in,nshifts] = shiftdim(in,n)
+      function [im,nshifts] = shiftdim(im,n)
          %SHIFTDIM   Shift dimensions (reorients/flips an image).
          %   B = SHIFTDIM(X,N) shifts the dimensions of X by N. When N is
          %   positive, SHIFTDIM shifts the dimensions to the left and wraps
@@ -1432,36 +1432,36 @@ classdef dip_image
          %   See also dip_image.permute, dip_image.reshape
          if nargin==1
             % Remove leading singleton dimensions
-            sz = imsize(in);
+            sz = imsize(im);
             n = min(find(sz>1,'first')); % First non-singleton dimension.
             if isempty(n)
                n = numel(sz);
             end
             nshifts = n-1;
             if n>1
-               in = permute(in,n:numel(sz));
+               im = permute(im,n:numel(sz));
             % else don't do anything
             end
          else
             if ~isintscalar(n)
                 error('N should be a scalar integer')
             end
-            if ~isequal(n,0) && ~isempty(in)
+            if ~isequal(n,0) && ~isempty(im)
                if n>0
                   % Wrapped shift to the left
-                  n = mod(n,in.NDims);
-                  order = [n+1:in.NDims,1:n];
-                  in = permute(in,order);
+                  n = mod(n,im.NDims);
+                  order = [n+1:im.NDims,1:n];
+                  im = permute(im,order);
                else
                   % Shift to the right (padding with singletons).
-                  order = [zeros(1,-n),1:in.NDims];
-                  in = permute(in,order);
+                  order = [zeros(1,-n),1:im.NDims];
+                  im = permute(im,order);
                end
             end
          end
       end
 
-      function in = reshape(in,varargin)
+      function im = reshape(im,varargin)
          %RESHAPE   Change size of an image.
          %   B = RESHAPE(A,M,N,...) returns an image with the same
          %   pixels as A but reshaped to have the size M-by-N-by-...
@@ -1498,7 +1498,7 @@ classdef dip_image
             end
             n = cat(2,varargin{:});
             if emptydim ~= 0
-               p = numpixels(in) / prod(n);
+               p = numpixels(im) / prod(n);
                if fix(p)~=p, error('Number of pixels not evenly divisible by given dimensions'), end
                n = [n(1:emptydim-1),p,n(emptydim:end)];
             end
@@ -1508,20 +1508,20 @@ classdef dip_image
                error('Size vector must be a vector with positive integer elements')
             end
          end
-         if numpixels(in) ~= prod(n), error('Number of pixels must not change'), end
+         if numpixels(im) ~= prod(n), error('Number of pixels must not change'), end
          if numel(n)>1
             n = n([2,1,3:end]);
          end
-         in.Data = reshape(in.Data,[size(in.Data,1),size(in.Data,2),n]);
-         in.NDims = numel(n);
-         pxsz = in.PixelSize;
+         im.Data = reshape(im.Data,[size(im.Data,1),size(im.Data,2),n]);
+         im.NDims = numel(n);
+         pxsz = im.PixelSize;
          if numel(pxsz) > 1
             pxsz = defaultPixelSize;
          end
-         in.PixelSize = pxsz; % We set it even if we didn't change the value, so that 0D images can erase the array, etc.
+         im.PixelSize = pxsz; % We set it even if we didn't change the value, so that 0D images can erase the array, etc.
       end
 
-      function in = squeeze(in)
+      function im = squeeze(im)
          %SQUEEZE   Remove singleton dimensions.
          %   B = SQUEEZE(A) returns an image B with the same elements as
          %   A but with all the singleton dimensions removed. A dimension
@@ -1535,7 +1535,7 @@ classdef dip_image
          %   would require a data copy, and can be accomplished with PERMUTE.
          %
          %   See also dip_image.reshape, dip_image.permute
-         sz = imsize(in);
+         sz = imsize(im);
          if numel(sz)>1
             sz = sz([2,1,3:end]);
          end
@@ -1543,10 +1543,10 @@ classdef dip_image
          if numel(sz)>1
             sz = sz([2,1,3:end]);
          end
-         in = reshape(in,sz);
+         im = reshape(im,sz);
       end
 
-      function b = flip(b,dim)
+      function im = flip(im,dim)
          %FLIP   Flips an image along specified dimension, same as FLIPDIM.
          if nargin~=2
             error('Requires two arguments.')
@@ -1554,39 +1554,39 @@ classdef dip_image
          if ~isnumeric(dim) || numel(dim)~=1 || fix(dim)~=dim || dim<1
             error('DIM must be a positive integer.')
          end
-         if b.NDims < dim
+         if im.NDims < dim
             error('Cannot flip along non-existent dimension.')
          end
          if dim == 2
             dim = 1;
-         elseif dim == 1 && b.NDims > 1
+         elseif dim == 1 && im.NDims > 1
             dim = 2;
          end
-         b.Data = flip(b.Data,dim+2);
+         im.Data = flip(im.Data,dim+2);
       end
 
-      function b = flipdim(b,dim)
+      function im = flipdim(im,dim)
          %FLIPDIM   Flips an image along specified dimension, same as FLIP.
-         b = flip(b,dim);
+         im = flip(im,dim);
       end
 
-      function b = fliplr(b)
+      function im = fliplr(im)
          %FLIPLR   Flips an image left/right.
-         if b.NDims < 1
+         if im.NDims < 1
             error('Cannot flip left/right with less than one dimension.')
          end
-         b.Data = flip(b.Data,4);
+         im.Data = flip(im.Data,4);
       end
 
-      function b = flipud(b)
+      function im = flipud(im)
          %FLIPUD   Flips an image up/down.
-         if b.NDims < 2
+         if im.NDims < 2
             error('Cannot flip up/down with less than two dimensions.')
          end
-         b.Data = flip(b.Data,3);
+         im.Data = flip(im.Data,3);
       end
 
-      function b = rot90(b,k)
+      function im = rot90(im,k)
          %ROT90  Rotate image 90 degrees.
          %   ROT90(A) is the 90 degree clockwise rotation of image A.
          %   ROT90(A,K) is the K*90 degree rotation of A, K = +-1,+-2,...
@@ -1604,13 +1604,13 @@ classdef dip_image
             k = mod(k,4);
          end
          if k == 1
-            b = swapdim(b,1,2);
-            b = flipdim(b,1);
+            im = swapdim(im,1,2);
+            im = flipdim(im,1);
          elseif k == 2
-            b = flipdim(flipdim(b,1),2);
+            im = flipdim(flipdim(im,1),2);
          elseif k == 3
-            b = flipdim(b,1);
-            b = swapdim(b,1,2);
+            im = flipdim(im,1);
+            im = swapdim(im,1,2);
          % else k==0, we do nothing.
          end
       end
@@ -1679,7 +1679,7 @@ classdef dip_image
          a = cat(2,varargin{:});
       end
 
-      function in = repmat(in,varargin)
+      function im = repmat(im,varargin)
          %REPMAT   Replicate and tile an image.
          %   B = REPMAT(A,M,N,...) replicates and tiles the image A to produce an
          %   image of size SIZE(A).*[M,N]. Any number of dimensions are allowed.
@@ -1699,27 +1699,27 @@ classdef dip_image
          if isempty(n)
             error('Size argument is an empty array')
          end
-         nd = max(numel(n),ndims(in));
+         nd = max(numel(n),ndims(im));
          if numel(n)==1
             n = [1,n];
          else
             n = n([2,1,3:end]);
          end
-         sz = size(in.Data);
-         if ndims(in)==1
+         sz = size(im.Data);
+         if ndims(im)==1
             % Special case for a 1D image: it's stored along the Y-axis,
             % the code below won't work correctly
             k = sz(3);
-            in.Data = reshape(in.Data,[sz(1:2),1,k]);
-            in.Data = repmat(in.Data,[1,1,n]);
+            im.Data = reshape(im.Data,[sz(1:2),1,k]);
+            im.Data = repmat(im.Data,[1,1,n]);
          else
-            in.Data = repmat(in.Data,[1,1,n]);
+            im.Data = repmat(im.Data,[1,1,n]);
             k = 1;
          end
          if nd==1
-            in.Data = reshape(in.Data,[sz(1:2),n(2)*k]);
+            im.Data = reshape(im.Data,[sz(1:2),n(2)*k]);
          end
-         in.NDims = nd;
+         im.NDims = nd;
       end
 
       % ------- OPERATORS -------
@@ -1849,22 +1849,22 @@ classdef dip_image
          out = dip_operators('x',lhs,rhs);
       end
 
-      function out = not(in)
+      function im = not(im)
          %NOT   Overload for unary operator ~
-         if ~islogical(in)
-            in = dip_image(in,'bin');
+         if ~islogical(im)
+            im = dip_image(im,'bin');
          end
-         out = dip_operators('m~',in);
+         im = dip_operators('m~',im);
       end
 
       function out = bitand(lhs,rhs)
          %BITAND   Bitwise AND for integer-valued images.
-         if strcmp(class(lhs),'dip_image')
+         if isa(lhs,'dip_image')
             dt = class(lhs.Data);
             if ~isintclass(dt)
                error('BITAND only defined for integer-valued images')
             end
-            if strcmp(class(rhs),'dip_image')
+            if isa(rhs,'dip_image')
                dt = class(rhs.Data);
                if ~isintclass(dt)
                   error('BITAND only defined for integer-valued images')
@@ -1884,12 +1884,12 @@ classdef dip_image
 
       function out = bitor(lhs,rhs)
          %BITOR   Bitwise OR for integer-valued images.
-         if strcmp(class(lhs),'dip_image')
+         if isa(lhs,'dip_image')
             dt = class(lhs.Data);
             if ~isintclass(dt)
                error('BITOR only defined for integer-valued images')
             end
-            if strcmp(class(rhs),'dip_image')
+            if isa(rhs,'dip_image')
                dt = class(rhs.Data);
                if ~isintclass(dt)
                   error('BITOR only defined for integer-valued images')
@@ -1909,12 +1909,12 @@ classdef dip_image
 
       function out = bitxor(lhs,rhs)
          %BITXOR   Bitwise XOR for integer-valued images.
-         if strcmp(class(lhs),'dip_image')
+         if isa(lhs,'dip_image')
             dt = class(lhs.Data);
             if ~isintclass(dt)
                error('BITXOR only defined for integer-valued images')
             end
-            if strcmp(class(rhs),'dip_image')
+            if isa(rhs,'dip_image')
                dt = class(rhs.Data);
                if ~isintclass(dt)
                   error('BITXOR only defined for integer-valued images')
@@ -1932,93 +1932,93 @@ classdef dip_image
          out = dip_operators('x',lhs,rhs);
       end
 
-      function out = bitcmp(in)
+      function im = bitcmp(im)
          %BITCMP   Bitwise complement for integer-valued images.
-         dt = class(in.Data);
+         dt = class(im.Data);
          if ~isintclass(dt)
             error('BITCMP only defined for integer-valued images')
          end
-         out = dip_operators('m~',in);
+         im = dip_operators('m~',im);
       end
 
-      function out = uminus(in)
+      function im = uminus(im)
          %UMINUS   Overload for unary operator -
          %   For unsigned integer types, -A is the same as INTMAX(DATATYPE(A))-A.
-         out = dip_operators('m-',in);
+         im = dip_operators('m-',im);
       end
 
-      function in = uplus(in)
+      function im = uplus(im)
          %UPLUS   Overload for unary operator +
          %   Converts a binary image to UINT8. Has no effect for other data types.
-         if islogical(in.Data)
-            in.Data = uint8(in.Data);
+         if islogical(im.Data)
+            im.Data = uint8(im.Data);
          end
       end
 
-      function in = ctranspose(in)
+      function im = ctranspose(im)
          %CTRANSPOSE   Overload for unary operator '
          %   Returns the complex conjugate transpose of the tensor at each pixel.
-         in = conj(transpose(in));
+         im = conj(transpose(im));
       end
 
-      function in = transpose(in)
+      function im = transpose(im)
          %TRANSPOSE   Overload for unary operator .'
          %   Returns the non-conjugate transpose of the tensor at each pixel.
          %   No data is copied, the transposition is accomplished by changing the
          %   TensorShape property of the image.
-         switch in.TensorShapeInternal
+         switch im.TensorShapeInternal
             case 'column vector'
-                in.TensorShapeInternal = 'row vector';
+                im.TensorShapeInternal = 'row vector';
             case 'row vector'
-                in.TensorShapeInternal = 'column vector';
+                im.TensorShapeInternal = 'column vector';
             case 'column-major matrix'
-                in.TensorShapeInternal = 'row-major matrix';
+                im.TensorShapeInternal = 'row-major matrix';
             case 'row-major matrix'
-                in.TensorShapeInternal = 'column-major matrix';
+                im.TensorShapeInternal = 'column-major matrix';
             case 'diagonal matrix'
-                %in.TensorShapeInternal = 'diagonal matrix';
+                %im.TensorShapeInternal = 'diagonal matrix';
             case 'symmetric matrix'
-                %in.TensorShapeInternal = 'symmetric matrix';
+                %im.TensorShapeInternal = 'symmetric matrix';
             case 'upper triangular matrix'
-                in.TensorShapeInternal = 'lower triangular matrix';
+                im.TensorShapeInternal = 'lower triangular matrix';
             case 'lower triangular matrix'
-                in.TensorShapeInternal = 'upper triangular matrix';
+                im.TensorShapeInternal = 'upper triangular matrix';
          end
-         in.TensorSizeInternal = in.TensorSizeInternal([2,1]);
+         im.TensorSizeInternal = im.TensorSizeInternal([2,1]);
       end
 
-      function in = conj(in)
+      function im = conj(im)
          %CONJ   Complex conjugate.
-         if iscomplex(in)
-            in.Data(2,:) = -in.Data(2,:);
+         if iscomplex(im)
+            im.Data(2,:) = -im.Data(2,:);
          end
       end
 
-      function in = real(in)
+      function im = real(im)
          %REAL   Complex real part.
-         if iscomplex(in)
-            sz = size(in.Data);
+         if iscomplex(im)
+            sz = size(im.Data);
             sz(1) = 1;
-            in.Data = reshape(in.Data(1,:),sz);
+            im.Data = reshape(im.Data(1,:),sz);
          end
       end
 
-      function in = imag(in)
+      function im = imag(im)
          %IMAG   Complex imaginary part.
-         if iscomplex(in)
-            sz = size(in.Data);
+         if iscomplex(im)
+            sz = size(im.Data);
             sz(1) = 1;
-            in.Data = reshape(in.Data(2,:),sz);
+            im.Data = reshape(im.Data(2,:),sz);
          end
       end
 
-      function out = abs(in)
+      function im = abs(im)
          %ABS   Absolute value.
          %   See also DIP_IMAGE/HYPOT and DIP_IMAGE/NORM.
-         out = dip_operators('ma',in);
+         im = dip_operators('ma',im);
       end
 
-      function out = angle(in)
+      function im = angle(im)
          %ANGLE   Phase angle of complex values or angle of vector.
          %   ANGLE(C), with C a complex-valued image, returns the phase angle of the
          %   values in C.
@@ -2030,77 +2030,77 @@ classdef dip_image
          %   (azimuth), and THETA being the angle to the z-axis (inclination).
          %
          %   See also DIP_IMAGE/ATAN2.
-         out = dip_operators('mc',in);
+         im = dip_operators('mc',im);
       end
 
-      function out = phase(in)
+      function im = phase(im)
          %PHASE   Phase angle of complex values, alias to DIP_IMAGE/ANGLE.
-         out = dip_operators('mc',in);
+         im = dip_operators('mc',im);
       end
 
-      function out = round(in)
+      function im = round(im)
          %ROUND   Round to nearest integer.
-         if isfloat(in)
-            out = dip_operators('md',in);
+         if isfloat(im)
+            im = dip_operators('md',im);
          end
       end
 
-      function out = ceil(in)
+      function im = ceil(im)
          %CEIL   Round up.
-         if isfloat(in)
-            out = dip_operators('me',in);
+         if isfloat(im)
+            im = dip_operators('me',im);
          end
       end
 
-      function out = floor(in)
+      function im = floor(im)
          %FLOOR   Round down.
-         if isfloat(in)
-            out = dip_operators('mf',in);
+         if isfloat(im)
+            im = dip_operators('mf',im);
          end
       end
 
-      function out = fix(in)
+      function im = fix(im)
          %FIX   Round towards zero.
-         if isfloat(in)
-            out = dip_operators('mg',in);
+         if isfloat(im)
+            im = dip_operators('mg',im);
          end
       end
 
-      function in = sign(in)
+      function im = sign(im)
          %SIGN   Signum function.
-         if ~isreal(in)
+         if ~isreal(im)
             error('SIGN defined only for real-valued images')
          end
-         if issigned(in) || isfloat(in)
-            in = dip_operators('mh',in);
+         if issigned(im) || isfloat(im)
+            im = dip_operators('mh',im);
          else
-            in.Data(:) = 1;
+            im.Data(:) = 1;
          end
       end
 
-      function out = isnan(in)
+      function im = isnan(im)
          %ISNAN   True for samples that are NaN.
-         out = dip_operators('mi',in);
+         im = dip_operators('mi',im);
       end
 
-      function out = isinf(in)
+      function im = isinf(im)
          %ISINF   True for samples that are +/- Inf.
-         out = dip_operators('mj',in);
+         im = dip_operators('mj',im);
       end
 
-      function out = isfinite(in)
+      function im = isfinite(im)
          %ISFINITE   True for samples that are not NaN nor Inf.
-         out = dip_operators('mk',in);
+         im = dip_operators('mk',im);
       end
 
-      function out = det(in)
+      function im = det(im)
          %DET   Determinant of a tensor image.
          %   DET(A) returns the determinant of the square tensors in the
          %   tensor image A.
-         out = dip_operators('ml',in);
+         im = dip_operators('ml',im);
       end
 
-      function out = inv(in)
+      function im = inv(im)
          %INV   Inverse of a square tensor image.
          %   INV(A) returns the inverse of A in the sense that INV(A)*A is equal
          %   to EYE(A). A must be a square matrix image.
@@ -2110,22 +2110,22 @@ classdef dip_image
          %   inverse, which also works for non-square matrices.
          %
          %   See also: DIP_IMAGE/PINV
-         out = dip_operators('mm',in);
+         im = dip_operators('mm',im);
       end
 
-      function out = norm(in)
+      function im = norm(im)
          %NORM   Computes the Eucledian norm of a vector image.
          %   NORM(V) returns the norm of the vectors in V.
-         out = dip_operators('mn',in);
+         im = dip_operators('mn',im);
       end
 
-      function out = trace(in)
+      function im = trace(im)
          %TRACE   Sum of the diagonal elements.
          %   TRACE(A) is the sum of the diagonal elements of the tensor image.
-         out = dip_operators('mo',in);
+         im = dip_operators('mo',im);
       end
 
-      function out = pinv(varargin)
+      function im = pinv(varargin)
          %PINV   Pseudoinverse or a tensor image.
          %   X = PINV(A,TOL)
          %
@@ -2134,102 +2134,102 @@ classdef dip_image
          %   as zero.
          %
          %   See also: DIP_IMAGE/INV, DIP_IMAGE/SVD
-         out = dip_operators('mp',varargin{:});
+         im = dip_operators('mp',varargin{:});
       end
 
-      function out = cos(in)
+      function im = cos(im)
          %COS   Cosine.
-         out = dip_operators('mA',in);
+         im = dip_operators('mA',im);
       end
 
-      function out = sin(in)
+      function im = sin(im)
          %SIN   Sine.
-         out = dip_operators('mB',in);
+         im = dip_operators('mB',im);
       end
 
-      function out = tan(in)
+      function im = tan(im)
          %TAN   Tangent.
-         out = dip_operators('mC',in);
+         im = dip_operators('mC',im);
       end
 
-      function out = acos(in)
+      function im = acos(im)
          %ACOS   Inverse cosine.
-         out = dip_operators('mD',in);
+         im = dip_operators('mD',im);
       end
 
-      function out = asin(in)
+      function im = asin(im)
          %ASIN   Inverse sine.
-         out = dip_operators('mE',in);
+         im = dip_operators('mE',im);
       end
 
-      function out = atan(in)
+      function im = atan(im)
          %ATAN   Inverse tangent.
-         out = dip_operators('mF',in);
+         im = dip_operators('mF',im);
       end
 
-      function out = cosh(in)
+      function im = cosh(im)
          %COSH   Hyperbolic cosine.
-         out = dip_operators('mG',in);
+         im = dip_operators('mG',im);
       end
 
-      function out = sinh(in)
+      function im = sinh(im)
          %SINH   Hyperbolic sine.
-         out = dip_operators('mH',in);
+         im = dip_operators('mH',im);
       end
 
-      function out = tanh(in)
+      function im = tanh(im)
          %TANH   Hyperbolic tangent.
-         out = dip_operators('mI',in);
+         im = dip_operators('mI',im);
       end
 
-      function out = sqrt(in)
+      function im = sqrt(im)
          %SQRT   Square root.
-         out = dip_operators('m1',in);
+         im = dip_operators('m1',im);
       end
 
-      function out = exp(in)
+      function im = exp(im)
          %EXP   Base e power.
-         out = dip_operators('m2',in);
+         im = dip_operators('m2',im);
       end
 
-      function out = pow10(in)
+      function im = pow10(im)
          %POW10   Base 10 power.
-         out = dip_operators('m3',in);
+         im = dip_operators('m3',im);
       end
 
-      function out = pow2(in)
+      function im = pow2(im)
          %POW2   Base 2 power.
-         out = dip_operators('m4',in);
+         im = dip_operators('m4',im);
       end
 
-      function out = log(in)
+      function im = log(im)
          %LOG   Natural (base e) logarithm.
-         out = dip_operators('m5',in);
+         im = dip_operators('m5',im);
       end
 
-      function out = log10(in)
+      function im = log10(im)
          %LOG10   Base 10 logarithm.
-         out = dip_operators('m6',in);
+         im = dip_operators('m6',im);
       end
 
-      function out = log2(in)
+      function im = log2(im)
          %LOG2   Base 2 logarithm.
-         out = dip_operators('m7',in);
+         im = dip_operators('m7',im);
       end
 
-      function out = erf(in)
+      function im = erf(im)
          %ERF   Error function.
-         out = dip_operators('m!',in);
+         im = dip_operators('m!',im);
       end
 
-      function out = erfc(in)
+      function im = erfc(im)
          %ERFC   Complementary error function.
-         out = dip_operators('m@',in);
+         im = dip_operators('m@',im);
       end
 
-      function out = gammaln(in)
+      function im = gammaln(im)
          %GAMMALN   Logarithm of gamma function.
-         out = dip_operators('m#',in);
+         im = dip_operators('m#',im);
       end
 
       function res = atan2(y,x)
@@ -2284,7 +2284,7 @@ classdef dip_image
          n = colorspacemanager(col);
       end
 
-      function varargout = empty(varargin)
+      function empty(varargin)
          error('Cannot create empty dip_image object')
       end
       % The function above defined to prevent its use.
@@ -2532,14 +2532,6 @@ function img = insertPixelSizeElement(img,dim,newelem)
    pxsz = img.PixelSize;
    pxsz = ensurePixelSizeDimensionality(pxsz,dim);
    pxsz = [pxsz(1:dim-1),validatePixelSize(newelem),pxsz(dim:end)];
-   img.PixelSize = pxsz;
-end
-
-% Swaps the element at locations `dim1` and `dim2` in the `img.PixelSize` array
-function img = swapPixelSizeElements(img,dim1,dim2)
-   pxsz = img.PixelSize;
-   pxsz = ensurePixelSizeDimensionality(pxsz,max(dim1,dim2));
-   pxsz([dim1,dim2]) = pxsz([dim2,dim1]);
    img.PixelSize = pxsz;
 end
 
