@@ -89,7 +89,7 @@ if(DIP_BUILD_DIPVIEWER)
       install(FILES ${DIPVIEWER_MFILES} DESTINATION "${DIPIMAGE_INSTALL_PATH}")
 
       # Keep a file with all M-files to be written to the Contents.m file
-      update_deps_file("DIPviewer_Mfiles" "${DIPVIEWER_MFILES}")
+      update_deps_file("DIPimageViewer_Mfiles" "${DIPVIEWER_MFILES}")
 
       # Compile and install MEX-files in dipviewer/dipimage/
       file(GLOB DIPVIEWER_DIPIMAGE "${PROJECT_SOURCE_DIR}/viewer/dipimage/*.cpp")

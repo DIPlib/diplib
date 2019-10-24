@@ -1,7 +1,7 @@
 # Automatically generated, don't edit!
 set(DIPimage_sources_bogus
 @dip_image/private/colorspacemanager.cpp
-@dip_image/private/dip_eig_svd.cpp
+@dip_image/private/dip_imagemath.cpp
 @dip_image/private/dip_operators.cpp
 @dip_image/private/dip_projection.cpp
 @dip_image/private/dip_tensor_indices.cpp

@@ -61,13 +61,14 @@ porting your old code that used *DIPimage* to the new version.
 
   - The `inner` and `outer` methods no longer exist, use `cross` and `dot`.
 
-  - New methods: `clone`, `cosh`, `cumsum`, `erfc`, `flip`, `gammaln`, `iscomplex`, `issigned`, `isunsigned`,
+  - New methods: `bessely`, `clone`, `cosh`, `cumsum`, `erfc`, `flip`, `gammaln`, `iscomplex`, `issigned`, `isunsigned`,
     `numArgumentsFromSubscript`, `numberchannels`, `numpixels`, `numtensorel`, `sinh`, `slice_ex`, `slice_in`,
     `slice_op`, `spatialtotensor`, `swapdim`, `tanh`, `tensorfun`, `tensorsize`, `tensortospatial`.
 
-  - `eig_largest` has been moved to the toolbox directory.
+  - `eig_largest` has been moved to the toolbox directory, and `eig` has gained an option to return
+    only the eigenvector corresponding to the largest or the smallest eigenvalue.
 
-  - `besselj`, `length` and `unique` are no longer methods of `dip_image`.
+  - `length` and `unique` are no longer methods of `dip_image`.
 
 - Related to the tensor image changes above, `newimar` and `imarfun` are now in the `alias`
   subdirectory, and are identical to the new functions `newtensorim` and `tensorfun`.

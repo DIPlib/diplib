@@ -1,7 +1,7 @@
 /*
  * DIPimage 3.0
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -82,6 +82,28 @@ void svd( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    }
 }
 
+void besselj( mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 2 );
+   dml::MatlabInterface mi;
+   dip::uint nu = dml::GetUnsigned( prhs[ 0 ] );
+   dip::Image in = dml::GetImage( prhs[ 1 ] );
+   dip::Image out = mi.NewImage();
+   dip::BesselJN( in, out, nu );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void bessely( mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 2 );
+   dml::MatlabInterface mi;
+   dip::uint nu = dml::GetUnsigned( prhs[ 0 ] );
+   dip::Image in = dml::GetImage( prhs[ 1 ] );
+   dip::Image out = mi.NewImage();
+   dip::BesselYN( in, out, nu );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 } // namespace
 
 // Gateway function
@@ -97,6 +119,11 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          eig( nlhs, plhs, nrhs, prhs );
       } else if( function == "svd" ) {
          svd( nlhs, plhs, nrhs, prhs );
+
+      } else if( function == "besselj" ) {
+         besselj( plhs, nrhs, prhs );
+      } else if( function == "bessely" ) {
+         bessely( plhs, nrhs, prhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );

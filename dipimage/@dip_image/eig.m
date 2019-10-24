@@ -15,6 +15,10 @@
 %  magnitude. Compared to the V output of the previous syntax, V1 = V{:,1}
 %  and VN = V{:,N}, with N = NDIMS(A).
 %
+%  This function calls the DIPlib functions dip::Eigenvalues,
+%  dip::EigenDecomposition, dip::LargestEigenvector and
+%  dip::SmallestEigenvector.
+%
 %  See also: EIG_LARGEST, DIP_IMAGE/SVD
 
 % (c)2017-2018, Cris Luengo.
@@ -35,4 +39,4 @@
 
 function varargout = eig(varargin)
 varargout = cell(1,max(nargout,1));
-[varargout{:}] = dip_eig_svd('eig',varargin{:});
+[varargout{:}] = dip_imagemath('eig',varargin{:});

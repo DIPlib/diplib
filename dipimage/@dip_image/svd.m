@@ -7,6 +7,9 @@
 %  then only the first n columns of U are computed and S is n-by-n.
 %  For m < n, only the first m columns of V are computed and S is m-by-m.
 %
+%  This function calls the DIPlib functions dip::SingularValues and
+%  dip::SingularValueDecomposition.
+%
 %  See also: DIP_IMAGE/EIG, EIG_LARGEST, DIP_IMAGE/PINV, DIP_IMAGE/RANK
 
 % (c)2017-2018, Cris Luengo.
@@ -27,4 +30,4 @@
 
 function varargout = svd(varargin)
 varargout = cell(1,max(nargout,1));
-[varargout{:}] = dip_eig_svd('svd',varargin{:});
+[varargout{:}] = dip_imagemath('svd',varargin{:});
