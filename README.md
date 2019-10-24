@@ -50,8 +50,8 @@ For detailed instructions, see [`INSTALL.md`](INSTALL.md).
 
 ### Windows
 
-Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Studio 2017*
-(version 15). You'll also need *CMake*.
+Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Studio 2019*.
+You'll also need *CMake*.
 
 Using *CMake-gui*, choose where the source directory is and where to build the binaries. Then
 press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
