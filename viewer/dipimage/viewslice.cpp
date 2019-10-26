@@ -75,34 +75,83 @@ void EnsureViewerJarIsOnPath() {
    }
 }
 
+dip::viewer::SliceViewer* GetViewer( const mxArray *obj ) {
+   if ( mxIsClass( obj, ViewerClassName ) ) {
+      mxArray* rhs[2];
+      rhs[ 0 ] = mxCreateString( "pointer" );
+      rhs[ 1 ] = ( mxArray* ) obj;
+      mxArray *lhs;
+      mexCallMATLAB( 1, &lhs, 2, rhs, "javaMethod" );
+     
+      if ( mxIsInt64( lhs ) && mxGetNumberOfElements( lhs ) == 1 ) {
+         dip::viewer::SliceViewer *viewer = ( dip::viewer::SliceViewer* ) *( ( int64_t* ) mxGetData( lhs ) );
+
+         if ( dip::viewer::ProxyManager::instance()->isWindow( viewer ) ) {
+            return viewer;
+         }
+            
+         mexErrMsgIdAndTxt( "DIPlib:RunTimeError", "Viewer returned invalid window handle" );
+      }
+      
+      mexErrMsgIdAndTxt( "DIPlib:RunTimeError", "Viewer did not return window handle" );
+  }
+  
+  mexErrMsgIdAndTxt( "DIPlib:RunTimeError", "Not a Viewer object" );
+  
+  // Never reached
+  return NULL;
+}
+
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    EnsureViewerJarIsOnPath();
 
    try {
-      DML_MIN_ARGS( 1 );
+      DML_MIN_ARGS( 0 );
       DML_MAX_ARGS( 2 );
-
-      dip::Image image = dml::GetImage( prhs[ 0 ], dml::GetImageMode::SHARED_COPY );
-
-      dip::String title;
-      if( nrhs > 1 ) {
-         title = dml::GetString( prhs[ 1 ] );
-      }
-
-      dip::viewer::WindowPtr wdw = dip::viewer::SliceViewer::Create( image, title );
-      dip::viewer::ProxyManager::instance()->createWindow( wdw, false );
-
-      mxArray* obj;
-      mxArray* rhs[2];
-      rhs[ 0 ] = mxCreateString( ViewerClassName );
+      
       static_assert( sizeof( void* ) == 8, "viewslice requires a 64-bit environment" );
-      rhs[ 1 ] = mxCreateNumericMatrix( 1, 1, mxINT64_CLASS, mxREAL );
-      *static_cast< void** >( mxGetData( rhs[ 1 ] )) = wdw.get();
-      mexCallMATLAB( 1, &obj, 2, rhs, "javaObjectEDT" );
 
-      if( nlhs > 0 ) {
-         plhs[ 0 ] = obj;
+      if ( nrhs > 0 ) {
+         mxArray* obj = NULL;
+         
+         if ( mxIsClass( prhs[ 0 ], ViewerClassName ) ) {
+            // Change image in current window
+            dip::viewer::SliceViewer *viewer = GetViewer( prhs[ 0 ] );
+            dip::Image image = dml::GetImage( prhs[ 1 ], dml::GetImageMode::SHARED_COPY );
+            dip::viewer::SliceViewer::Guard guard(*viewer);
+            viewer->setImage( image );
+            obj = ( mxArray* ) prhs[ 0 ];
+         } else {
+            // Create new window
+            dip::Image image = dml::GetImage( prhs[ 0 ], dml::GetImageMode::SHARED_COPY );
+
+            dip::String title;
+            if( nrhs > 1 ) {
+               title = dml::GetString( prhs[ 1 ] );
+            }
+    
+            dip::viewer::WindowPtr wdw = dip::viewer::SliceViewer::Create( image, title );
+            dip::viewer::ProxyManager::instance()->createWindow( wdw, false );
+
+            mxArray* rhs[2];
+            rhs[ 0 ] = mxCreateString( ViewerClassName );
+            rhs[ 1 ] = mxCreateNumericMatrix( 1, 1, mxINT64_CLASS, mxREAL );
+            *static_cast< void** >( mxGetData( rhs[ 1 ] )) = wdw.get();
+            mexCallMATLAB( 1, &obj, 2, rhs, "javaObjectEDT" );
+         }
+
+         if ( nlhs > 0 ) {
+            plhs[ 0 ] = obj;
+         }
+      }
+      
+      if ( dip::viewer::ProxyManager::instance()->activeWindows() ) {
+         if ( !mexIsLocked() ) {
+            mexLock();
+         }
+      } else {
+         mexUnlock();
       }
 
    } DML_CATCH

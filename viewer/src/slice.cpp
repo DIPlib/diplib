@@ -380,10 +380,10 @@ void SliceViewPort::click(int button, int state, int x, int y, int mods)
       {
         // Left mouse button: change operating point
         if (dx != -1)
-          viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)view()->size(0)-1.);
+          viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)viewer()->image().Size((dip::uint)dx)-1.);
 
         if (dy != -1)
-          viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
+          viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)viewer()->image().Size((dip::uint)dy)-1.);
       }
 
       viewer()->options().status_ = "";
@@ -517,9 +517,9 @@ void SliceViewPort::motion(int button, int x, int y)
     {
       // Left mouse button: change operating point
       if (dx != -1)
-        viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)view()->size(0)-1.);
+        viewer()->options().operating_point_[(dip::uint)dx] = (dip::uint)std::min(std::max(ix-0.0, 0.), (double)viewer()->image().Size((dip::uint)dx)-1.);
       if (dy != -1)
-        viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
+        viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)viewer()->image().Size((dip::uint)dy)-1.);
     }
     
     viewer()->refresh();
@@ -898,6 +898,49 @@ void SliceViewer::calculateTextures()
         // If we're on some automatic mapping more, adjust it.
         options_.setAutomaticRange();
       }
+      
+      // Adjust model in case image properties changed
+      options_.operating_point_.resize(image.Dimensionality(), 0);
+      options_.roi_origin_.resize(image.Dimensionality(), 0);
+      options_.roi_sizes_.resize(image.Dimensionality(), 0);
+      options_.zoom_.resize(image.Dimensionality(), 0);
+      options_.origin_.resize(image.Dimensionality(), 0.);
+      options_.offset_ = dip::PhysicalQuantityArray(image.Dimensionality());
+
+      for (size_t ii=0; ii != 4; ++ii)
+        if (options_.dims_[ii] >= (dip::sint)image.Dimensionality())
+          options_.dims_[ii] = -1;
+      
+      for (size_t ii=0; ii != image.Dimensionality(); ++ii)
+      {
+        if (options_.operating_point_[ii] >= image.Size(ii))
+          options_.operating_point_[ii] = image.Size(ii)-1;
+          
+        if (options_.roi_origin_[ii] >= image.Size(ii))
+          options_.roi_origin_[ii] = image.Size(ii)-1;
+
+        if (options_.roi_sizes_[ii] == 0)
+        {
+          options_.roi_origin_[ii] = 0;
+          options_.roi_sizes_[ii] = image.Size(ii);
+        }
+        
+        if (options_.roi_origin_[ii] + options_.roi_sizes_[ii] > image.Size(ii))
+          options_.roi_sizes_[ii] = image.Size(ii) - options_.roi_origin_[ii];
+        
+        if (options_.zoom_[ii] == 0)
+          options_.zoom_[ii] = 1;
+          
+        options_.offset_[ii] = 0 * image.PixelSize(ii);
+      }
+      
+      if (options_.element_ >= image.TensorElements())
+        options_.element_ = 0;
+        
+      for (size_t ii=0; ii != 3; ++ii)
+        if (options_.color_elements_[ii] >= (dip::sint)image.TensorElements())
+          options_.color_elements_[ii] = -1;
+          
       unlock();
       
       // Recalculate histogram

@@ -56,10 +56,6 @@ class DIPVIEWER_CLASS_EXPORT SliceView : public View
     DIPVIEWER_EXPORT void map();
     DIPVIEWER_EXPORT void rebuild();
     DIPVIEWER_EXPORT void render();
-    dip::uint size(dip::uint ii)
-    {
-      return colored_.Size(ii);
-    }
     
     dip::uint dimx() { return dimx_; }
     dip::uint dimy() { return dimy_; }

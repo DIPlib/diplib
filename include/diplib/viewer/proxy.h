@@ -138,6 +138,13 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
     {
     }
     
+    // Sanity checking
+    
+    bool isWindow(Window *window)
+    {
+      return windows_.count(window) > 0;
+    }
+    
     // Window interaction
 
     int proxyGetWidth(Window *window)

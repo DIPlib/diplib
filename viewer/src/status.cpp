@@ -63,6 +63,16 @@ void StatusViewPort::render()
   {
     // Describe operating point
     auto op = o.operating_point_;
+    
+    // Bail if options do not match original. This can happen
+    // after the original is changed, but before it is processed
+    // and copied to the viewer's image.
+    if (op.size() != viewer()->original().Dimensionality())
+      return;
+    for (dip::uint ii=0; ii < op.size(); ++ii)
+      if (op[ii] >= viewer()->original().Size(ii))
+        return;
+        
     auto te = (int)viewer()->image().TensorElements();
     auto opp = viewer()->image().PixelsToPhysical((FloatArray)op);
     

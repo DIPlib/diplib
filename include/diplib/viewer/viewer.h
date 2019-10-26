@@ -281,6 +281,8 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     for (size_t ii=0; ii < opt.origin_.size(); ++ii)
     {
       os << "Dimension " << ii << ":\n";
+      os << "  Point : " << opt.operating_point_[ii] << "\n";
+      os << "  ROI   : " << opt.roi_origin_[ii] << "+" << opt.roi_sizes_[ii] << "\n";
       os << "  Origin: " << opt.origin_[ii] << "\n";
       os << "  Zoom  : " << opt.zoom_[ii] << "\n";
     }

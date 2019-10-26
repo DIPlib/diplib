@@ -185,6 +185,11 @@ public class Viewer extends JFrame implements GLEventListener, WindowListener, M
         return "org.java.viewer.Viewer";
     }
     
+    public long[] pointer() {
+        long[] retval = { pointer_.nativeValue( pointer_ ) };
+        return retval;
+    }
+    
     // GLEventListener
     
     public void display(GLAutoDrawable drawable) {

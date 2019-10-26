@@ -98,59 +98,63 @@ void HistogramViewPort::render()
   GLfloat maxhist = (GLfloat)acc.Maximum();
   auto p = viewer()->image().At<GLfloat>(o.operating_point_);
   
-  if (o.lut_ == ViewingOptions::LookupTable::RGB)
+  // Only draw histogram if it has been updated to correspond to current image.
+  if (histogram_.TensorElements() == viewer()->image().TensorElements())
   {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-  
-    for (size_t ii=0; ii < 3; ++ii)
-      if (o.color_elements_[ii] != -1)
-      {
-        // Histogram
-        if (ii == 0)
-          glColor3d(0.9, 0.17, 0.);
-        else if (ii == 1)
-          glColor3d(0.0, 0.50, 0.);
-        else if (ii == 2)
-          glColor3d(0.1, 0.33, 1.);
-        
-        glBegin(GL_TRIANGLE_STRIP);
-        
-        ImageIterator<dip::uint32> it(histogram_[o.color_elements_[ii]]);
-        for (size_t jj=0; jj < histogram_.Size(0); ++jj, ++it)
-        {
-          glVertex2f(0., (GLfloat)jj/(GLfloat)histogram_.Size(0));
-          glVertex2f((GLfloat)*it/maxhist, (GLfloat)jj/(GLfloat)histogram_.Size(0));
-        }
-        glEnd();
-      
-        // Current value
-        glBegin(GL_LINES);
-          glVertex2f(0., (GLfloat)(((dip::dfloat)p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
-          glVertex2f(1., (GLfloat)(((dip::dfloat)p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
-        glEnd();
-      }
-    glDisable(GL_BLEND);
-  }
-  else
-  {
-    // Histogram
-    glColor3f(1., 1., 1.);
-    glBegin(GL_TRIANGLE_STRIP);
-    
-    ImageIterator<dip::uint32> it(histogram_[(dip::sint)o.element_]);
-    for (size_t ii=0; ii < histogram_.Size(0); ++ii, ++it)
+    if (o.lut_ == ViewingOptions::LookupTable::RGB)
     {
-      glVertex2f(0., (GLfloat)ii/(GLfloat)histogram_.Size(0));
-      glVertex2f((GLfloat)*it/maxhist, (GLfloat)ii/(GLfloat)histogram_.Size(0));
-    }
-    glEnd();
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_ONE, GL_ONE);
     
-    // Current value
-    glBegin(GL_LINES);
-      glVertex2f(0., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
-      glVertex2f(1., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
-    glEnd();
+      for (size_t ii=0; ii < 3; ++ii)
+        if (o.color_elements_[ii] != -1)
+        {
+          // Histogram
+          if (ii == 0)
+            glColor3d(0.9, 0.17, 0.);
+          else if (ii == 1)
+            glColor3d(0.0, 0.50, 0.);
+          else if (ii == 2)
+            glColor3d(0.1, 0.33, 1.);
+          
+          glBegin(GL_TRIANGLE_STRIP);
+          
+          ImageIterator<dip::uint32> it(histogram_[o.color_elements_[ii]]);
+          for (size_t jj=0; jj < histogram_.Size(0); ++jj, ++it)
+          {
+            glVertex2f(0., (GLfloat)jj/(GLfloat)histogram_.Size(0));
+            glVertex2f((GLfloat)*it/maxhist, (GLfloat)jj/(GLfloat)histogram_.Size(0));
+          }
+          glEnd();
+        
+          // Current value
+          glBegin(GL_LINES);
+            glVertex2f(0., (GLfloat)(((dip::dfloat)p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
+            glVertex2f(1., (GLfloat)(((dip::dfloat)p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
+          glEnd();
+        }
+      glDisable(GL_BLEND);
+    }
+    else
+    {
+      // Histogram
+      glColor3f(1., 1., 1.);
+      glBegin(GL_TRIANGLE_STRIP);
+      
+      ImageIterator<dip::uint32> it(histogram_[(dip::sint)o.element_]);
+      for (size_t ii=0; ii < histogram_.Size(0); ++ii, ++it)
+      {
+        glVertex2f(0., (GLfloat)ii/(GLfloat)histogram_.Size(0));
+        glVertex2f((GLfloat)*it/maxhist, (GLfloat)ii/(GLfloat)histogram_.Size(0));
+      }
+      glEnd();
+      
+      // Current value
+      glBegin(GL_LINES);
+        glVertex2f(0., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
+        glVertex2f(1., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
+      glEnd();
+    }
   }
   mutex_.unlock();
   
