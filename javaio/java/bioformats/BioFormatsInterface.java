@@ -70,7 +70,6 @@ public class BioFormatsInterface {
          // More than 2D. Read only first series, and interpret all images as third dimension.
          long[] sizes = { reader.getSizeX(), reader.getSizeY(), reader.getImageCount() };
          image.SetSizes( sizes );
-         image.SetPixelSize( pixelSize );
          image.SetTensorSizes( reader.getRGBChannelCount() );
          
          if ( reader.isInterleaved() ) {

@@ -35,8 +35,16 @@ PhysicalQuantity PhysicalQuantityFromJava( JNIEnv *env, jobject obj ) {
    jfieldID unitsID = env->GetFieldID( cls, "units", "Ljava/lang/String;" );
    double magnitude = env->GetDoubleField( obj, magnitudeID );
    jstring units = (jstring) env->GetObjectField( obj, unitsID );
+   String unitsStr = StringFromJava( env, units );
    
-   return PhysicalQuantity( magnitude, Units( StringFromJava( env, units ) ) );
+   dip::Units dipunits;
+   try {
+     dipunits = Units( unitsStr );
+   } catch (dip::Error e) {
+     std::cout << e.what() << " while converting `" << unitsStr << "'" << std::endl;
+   }
+
+   return PhysicalQuantity( magnitude, dipunits );
 }
 
 jobject PhysicalQuantityToJava( JNIEnv *env, const PhysicalQuantity &quantity ) {
