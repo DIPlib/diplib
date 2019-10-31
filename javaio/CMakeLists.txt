@@ -46,6 +46,6 @@ add_jar(DIPjavaio_java "${DIP_JAVAIO_JAVA}"
         INCLUDE_JARS "${DIP_JAVAIO_CLASSPATH}"
         OUTPUT_NAME DIPjavaio
         MANIFEST "${CMAKE_CURRENT_BINARY_DIR}/Manifest.txt")
-install_jar(DIPjavaio_java lib)
+install_jar(DIPjavaio_java ${LIBRARY_DESTINATION})
 
 add_dependencies(DIPjavaio DIPjavaio_java)
