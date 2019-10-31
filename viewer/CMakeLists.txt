@@ -53,7 +53,7 @@ if(DIP_BUILD_JAVAIO)
 endif()
 
 # Install
-install(TARGETS DIPviewer EXPORT DIPlibTargets DESTINATION ${DIP_DESTINATIONS})
-install(TARGETS dipview DESTINATION ${DIP_DESTINATIONS})
+install(TARGETS DIPviewer EXPORT DIPlibTargets ${DIP_DESTINATIONS})
+install(TARGETS dipview ${DIP_DESTINATIONS})
 install(FILES "${PROJECT_SOURCE_DIR}/include/dipviewer.h" DESTINATION include)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/viewer" DESTINATION include/diplib)
