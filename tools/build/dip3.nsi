@@ -84,14 +84,14 @@ Section "!DIPlib" SecDIPlib
   ; Write dipstart.m
 	FileOpen $0 "dipstart.m" w
 	FileWrite $0 "addpath('$INSTDIR\share\DIPimage');$\r$\n"
-	FileWrite $0 "setenv('PATH', ['$INSTDIR\lib',';',getenv('PATH')]);$\r$\n"
+	FileWrite $0 "setenv('PATH', ['$INSTDIR\bin',';',getenv('PATH')]);$\r$\n"
 	FileClose $0
 
   ; Write dipstart.py
   FileOpen $1 "dipstart.py" w
   FileWrite $1 "from pathlib import Path$\r$\n"
   FileWrite $1 "dip_dir = Path('$INSTDIR')$\r$\n"
-  FileWrite $1 "lib_dir = dip_dir / 'lib'$\r$\n"
+  FileWrite $1 "lib_dir = dip_dir / 'bin'$\r$\n"
   FileWrite $1 "import sys$\r$\n"
   FileWrite $1 "sys.path.append(str(lib_dir))$\r$\n"
   FileWrite $1 "import PyDIP as dip$\r$\n"

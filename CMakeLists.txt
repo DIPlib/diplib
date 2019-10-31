@@ -28,6 +28,13 @@ set(BUILD_SHARED_LIBS ${DIP_SHARED_LIBRARY})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT share/doc/DIPlib)
 set(DIPIMAGE_INSTALL_PATH share/DIPimage)
+set(RUNTIME_DESTINATION bin)
+set(LIBRARY_DESTINATION lib)
+set(ARCHIVE_DESTINATION lib)
+set(DIP_DESTINATIONS
+    RUNTIME DESTINATION ${RUNTIME_DESTINATION}
+    LIBRARY DESTINATION ${LIBRARY_DESTINATION}
+    ARCHIVE DESTINATION ${ARCHIVE_DESTINATION})
 
 # Compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
@@ -263,7 +270,11 @@ if(DIP_SHARED_LIBRARY)
 else()
    message(" * Building static library")
 endif()
-message(" * Library installed to: ${CMAKE_INSTALL_PREFIX}/lib")
+message(" * Library installed to: ${CMAKE_INSTALL_PREFIX}/${LIBRARY_DESTINATION}")
+message(" * Binaries installed to: ${CMAKE_INSTALL_PREFIX}/${RUNTIME_DESTINATION}")
+if (WIN32)
+   message(" * Import library installed to: ${CMAKE_INSTALL_PREFIX}/${ARCHIVE_DESTINATION}")
+endif()
 message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
 
 if(DOXYGEN_FOUND)

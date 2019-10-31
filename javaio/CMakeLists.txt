@@ -28,7 +28,7 @@ else()
    target_compile_definitions(DIPjavaio PUBLIC DIP__JAVAIO_IS_STATIC)
 endif()
 
-install(TARGETS DIPjavaio DESTINATION lib EXPORT DIPlibTargets)
+install(TARGETS DIPjavaio EXPORT DIPlibTargets DESTINATION ${DIP_DESTINATIONS})
 install(FILES "${PROJECT_SOURCE_DIR}/include/diplib/javaio.h" DESTINATION include/diplib)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/javaio" DESTINATION include/diplib)
 
