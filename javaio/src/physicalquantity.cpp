@@ -40,7 +40,7 @@ PhysicalQuantity PhysicalQuantityFromJava( JNIEnv *env, jobject obj ) {
    dip::Units dipunits;
    try {
      dipunits = Units( unitsStr );
-   } catch (dip::Error e) {
+   } catch (dip::Error const& e) {
      std::cout << e.what() << " while converting `" << unitsStr << "'" << std::endl;
    }
 
@@ -82,4 +82,3 @@ jobjectArray PhysicalQuantityArrayToJava( JNIEnv *env, PhysicalQuantityArray con
 } // namespace javaio
 
 } // namespace dip
-   
