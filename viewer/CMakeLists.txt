@@ -51,6 +51,11 @@ target_link_libraries(dipview DIP DIPviewer)
 if(DIP_BUILD_JAVAIO)
    target_link_libraries(dipview DIPjavaio)
 endif()
+if(APPLE)
+   set_target_properties(dipview PROPERTIES INSTALL_RPATH "@loader_path/../lib/")
+else()
+   set_target_properties(dipview PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+endif()
 
 # Install
 install(TARGETS DIPviewer EXPORT DIPlibTargets ${DIP_DESTINATIONS})
