@@ -142,7 +142,7 @@ endif()
 
 
 # Install
-install(TARGETS DIP DESTINATION lib EXPORT DIPlibTargets)
+install(TARGETS DIP EXPORT DIPlibTargets ${DIP_DESTINATIONS})
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/" DESTINATION include
         PATTERN "diplib/viewer" EXCLUDE PATTERN "dipviewer.h" EXCLUDE
         PATTERN "diplib/javaio" EXCLUDE PATTERN "diplib/javaio.h" EXCLUDE)

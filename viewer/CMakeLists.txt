@@ -45,7 +45,20 @@ else()
    set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
 
+# Standalone viewer application
+add_executable(dipview src/dipview/dipview.cpp)
+target_link_libraries(dipview DIP DIPviewer)
+if(DIP_BUILD_JAVAIO)
+   target_link_libraries(dipview DIPjavaio)
+endif()
+if(APPLE)
+   set_target_properties(dipview PROPERTIES INSTALL_RPATH "@loader_path/../lib/")
+else()
+   set_target_properties(dipview PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+endif()
+
 # Install
-install(TARGETS DIPviewer DESTINATION lib EXPORT DIPlibTargets)
+install(TARGETS DIPviewer EXPORT DIPlibTargets ${DIP_DESTINATIONS})
+install(TARGETS dipview ${DIP_DESTINATIONS})
 install(FILES "${PROJECT_SOURCE_DIR}/include/dipviewer.h" DESTINATION include)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/viewer" DESTINATION include/diplib)

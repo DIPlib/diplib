@@ -28,7 +28,7 @@ else()
    target_compile_definitions(DIPjavaio PUBLIC DIP__JAVAIO_IS_STATIC)
 endif()
 
-install(TARGETS DIPjavaio DESTINATION lib EXPORT DIPlibTargets)
+install(TARGETS DIPjavaio EXPORT DIPlibTargets ${DIP_DESTINATIONS})
 install(FILES "${PROJECT_SOURCE_DIR}/include/diplib/javaio.h" DESTINATION include/diplib)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/javaio" DESTINATION include/diplib)
 
@@ -46,6 +46,6 @@ add_jar(DIPjavaio_java "${DIP_JAVAIO_JAVA}"
         INCLUDE_JARS "${DIP_JAVAIO_CLASSPATH}"
         OUTPUT_NAME DIPjavaio
         MANIFEST "${CMAKE_CURRENT_BINARY_DIR}/Manifest.txt")
-install_jar(DIPjavaio_java lib)
+install_jar(DIPjavaio_java ${LIBRARY_DESTINATION})
 
 add_dependencies(DIPjavaio DIPjavaio_java)
