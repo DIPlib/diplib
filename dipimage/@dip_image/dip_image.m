@@ -1626,44 +1626,74 @@ classdef dip_image
          %   A1, A2, etc. along the dimension DIM.
          if nargin < 2, error('Erroneus input'); end
          if ~isintscalar(dim), error('Erroneus input'), end
-         out = varargin{1};
+         in = varargin;
+         in(cellfun(@isempty,in)) = [];
+         if isempty(in)
+            out = dip_image([]);
+            return
+         end
+         out = in{1};
          % Collect all images in cell array
-         n = nargin-1;
+         n = numel(in);
          if n == 1
             return
          end
-         in = cell(1,n);
+         oneD = true;
+         nExtraDims = 0;
          pxsz = cell(1,n);
-         for ii=1:n
-            img = varargin{ii};
+         for ii = 1:n
+            img = in{ii};
             if ~isa(img,'dip_image')
                img = dip_image(img);
             end
             in{ii} = img.Data;
+            if img.NDims == 1
+               sz = size(in{ii});
+               sz(4) = sz(3);
+               sz(3) = 1;
+               in{ii} = reshape(in{ii},sz);
+            else
+               oneD = false;
+            end
+            nExtraDims = max(nExtraDims,img.TrailingSingletons);
             pxsz{ii} = img.PixelSize;
          end
          % Find the correct output datatype
-         out_type = di_findtypex(class(in{ii}),class(in{ii}),size(in{ii},2)==2);
-         for ii=1:numel(in)
-            out_type = di_findtypex(out_type,class(in{ii}),size(in{ii},2)==2);
+         compl = size(in{1},1) == 2;
+         out_type = di_findtypex(class(in{1}),class(in{1}),compl);
+         for ii = 2:n
+            compl = compl | (size(in{ii},1) == 2);
+            out_type = di_findtypex(out_type,class(in{ii}),compl);
          end
          pxsz(cellfun('isempty',pxsz)) = [];
          if ~isempty(pxsz)
             pxsz = pxsz{1};
          end
          % Convert images to the output type
-         for ii=1:numel(in)
+         for ii = 1:n
             if ~strcmp(class(in{ii}),out_type)
                in{ii} = array_convert_datatype(in{ii},out_type);
+            end
+            if compl && size(in{ii},1) == 1
+               in{ii}(2,1) = 0; % make it complex by adding zeros
             end
          end
          % Call CAT
          if dim == 1
             dim = 2;
-         elseif dim == 2
-            dim = 1;
+         else
+            oneD = false;
+            if dim == 2
+               dim = 1;
+            end
          end
          out.Data = cat(dim+2,in{:});
+         out.TrailingSingletons = nExtraDims;
+         if oneD
+            sz = size(out.Data);
+            sz(3) = [];
+            out.Data = reshape(out.Data,sz);
+         end
          if ~isempty(pxsz)
             out.PixelSize = pxsz;
          end
