@@ -841,7 +841,9 @@ classdef dip_image
 
       function disp(obj)
          % DISP   Display information on the DIP_IMAGE object.
-         if isscalar(obj)
+         if isempty(obj)
+            disp('Empty image:');
+         elseif isscalar(obj)
             disp('Scalar image:');
          else
             sz = obj.TensorSizeInternal;
@@ -855,9 +857,7 @@ classdef dip_image
             end
          end
          disp(['    data type ',datatypestring(obj)]);
-         if isempty(obj)
-            disp('    - empty -');
-         else
+         if ~isempty(obj)
             disp(['    dimensionality ',num2str(ndims(obj))]);
             if ndims(obj)~=0
                v = imsize(obj);

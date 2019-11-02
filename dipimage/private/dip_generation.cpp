@@ -35,12 +35,26 @@ void coordinates( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image out = mi.NewImage();
    out.DataType() = dip::DT_SFLOAT;
    if( nrhs > 0 ) {
+      bool isRaw = false;
       if( mxIsNumeric( prhs[ 0 ] ) && dml::IsVector( prhs[ 0 ] )) {
-         out.SetSizes( dml::GetUnsignedArray( prhs[ 0 ] ));
+         dip::UnsignedArray sz = dml::GetUnsignedArray( prhs[ 0 ] );
+         if( !sz.all() ) {
+            isRaw = true;
+         } else {
+            out.SetSizes( sz );
+         }
       } else {
          dip::Image tmp = dml::GetImage( prhs[ 0 ] );
-         out.SetSizes( tmp.Sizes() );
-         out.SetPixelSize( tmp.PixelSize() );
+         if( !tmp.IsForged() ) {
+            isRaw = true;
+         } else {
+            out.SetSizes( tmp.Sizes());
+            out.SetPixelSize( tmp.PixelSize());
+         }
+      }
+      if( isRaw ) {
+         plhs[ 0 ] = dml::GetArray( out );
+         return;
       }
    } else {
       out.SetSizes( { 256, 256 } );

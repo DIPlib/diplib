@@ -39,6 +39,10 @@ if nargin<2
    dim = 1;
 end
 if isa(sz,'dip_image')
+   if isempty(sz)
+      out = dip_image;
+      return
+   end
    sz = imsize(sz);
 elseif ~isvector(sz)
    error('First input argument expected to be a dip_image or a size array')

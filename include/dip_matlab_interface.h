@@ -1467,7 +1467,10 @@ class MatlabInterface : public dip::ExternalInterface {
 // is an `mxArray`. This is true only if `img` was created by `dml::GetImage`. You should not need this
 // functionality, it is used in `dipimage/private/imagedisplay.cpp`.
 inline mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = false ) {
-   DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
+   if( !img.IsForged() ) {
+      // Raw image, return an empty array
+      return mxCreateNumericMatrix( 0, 0, detail::GetMatlabClassID( img.DataType() ), mxREAL );
+   }
    mxArray* mat = nullptr;
    // Make sure that `img` has external data and the correct external interface set
    if( img.IsExternalData() ) {
@@ -1544,6 +1547,9 @@ inline mxArray* GetArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    mxSetPropertyShared( out, 0, arrayPropertyName, mat );
    //mxArray* tmp = mxGetPropertyShared( out, 0, arrayPropertyName );
    //std::cout << " -- output data pointer = " << mxGetData( tmp ) << '\n';
+   if( !img.IsForged() ) {
+      return out;
+   }
    // Set NDims property
    mxArray* ndims = mxCreateDoubleScalar( static_cast< double >( img.Dimensionality() ));
    mxSetPropertyShared( out, 0, ndimsPropertyName, ndims );
