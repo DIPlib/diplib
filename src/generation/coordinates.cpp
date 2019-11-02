@@ -203,7 +203,11 @@ void FillRamp( Image& out, dip::uint dimension, StringSet const& mode ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( dimension >= out.Dimensionality(), E::INVALID_PARAMETER );
+   if( dimension >= out.Dimensionality() ) {
+      // The ramp dimension is not one of the image dimensions
+      out.Fill( 0 );
+      return;
+   }
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );
       Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode, out.PixelSize( dimension ));
@@ -554,7 +558,7 @@ void FillDistanceToPoint(
 ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( out.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nDims = out.Dimensionality();
    Image::Pixel center( DT_SFLOAT, nDims );
    if( point.empty() ) {
