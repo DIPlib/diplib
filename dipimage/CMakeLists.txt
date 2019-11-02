@@ -40,7 +40,7 @@ update_deps_file("DIPimage_Mfiles" "${DIPIMAGE_MFILES}")
 # Compile and install MEX-files in dipimage/@dip_image/private
 file(GLOB DIP_IMAGE_PRIVATE "${CMAKE_CURRENT_LIST_DIR}/@dip_image/private/*.cpp")
 set(DIPIMAGE_DEPS "${DIP_IMAGE_PRIVATE}")
-compile_mex_files("${DIP_IMAGE_PRIVATE}" ../../../../lib/ DIP_IMAGE_PRIVATE_TARGETS)
+compile_mex_files("${DIP_IMAGE_PRIVATE}" ../../../../${LIBRARY_DESTINATION}/ DIP_IMAGE_PRIVATE_TARGETS)
 install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS}
         LIBRARY DESTINATION "${DIPIMAGE_INSTALL_PATH}/@dip_image/private"
         RUNTIME DESTINATION "${DIPIMAGE_INSTALL_PATH}/@dip_image/private")
@@ -51,7 +51,7 @@ install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS}
 # Compile and install MEX-files in dipimage/@dip_image (this set is currently empty)
 #file(GLOB DIP_IMAGE "${CMAKE_CURRENT_LIST_DIR}/@dip_image/*.cpp")
 #list(APPEND DIPIMAGE_DEPS "${DIP_IMAGE}")
-#compile_mex_files("${DIP_IMAGE}" ../../../lib/ DIP_IMAGE_TARGETS)
+#compile_mex_files("${DIP_IMAGE}" ../../../${LIBRARY_DESTINATION}/ DIP_IMAGE_TARGETS)
 #install(TARGETS ${DIP_IMAGE_TARGETS}
 #        LIBRARY DESTINATION "${DIPIMAGE_INSTALL_PATH}/@dip_image"
 #        RUNTIME DESTINATION "${DIPIMAGE_INSTALL_PATH}/@dip_image")
@@ -59,7 +59,7 @@ install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS}
 # Compile and install MEX-files in dipimage/private
 file(GLOB DIPIMAGE_PRIVATE "${CMAKE_CURRENT_LIST_DIR}/private/*.cpp")
 list(APPEND DIPIMAGE_DEPS "${DIPIMAGE_PRIVATE}")
-compile_mex_files("${DIPIMAGE_PRIVATE}" ../../../lib/ DIPIMAGE_PRIVATE_TARGETS)
+compile_mex_files("${DIPIMAGE_PRIVATE}" ../../../${LIBRARY_DESTINATION}/ DIPIMAGE_PRIVATE_TARGETS)
 install(TARGETS ${DIPIMAGE_PRIVATE_TARGETS}
         LIBRARY DESTINATION "${DIPIMAGE_INSTALL_PATH}/private"
         RUNTIME DESTINATION "${DIPIMAGE_INSTALL_PATH}/private")
@@ -67,7 +67,7 @@ install(TARGETS ${DIPIMAGE_PRIVATE_TARGETS}
 # Compile and install MEX-files in dipimage/
 file(GLOB DIPIMAGE "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 list(APPEND DIPIMAGE_DEPS "${DIPIMAGE}")
-compile_mex_files("${DIPIMAGE}" ../../lib/ DIPIMAGE_TARGETS)
+compile_mex_files("${DIPIMAGE}" ../../${LIBRARY_DESTINATION}/ DIPIMAGE_TARGETS)
 install(TARGETS ${DIPIMAGE_TARGETS}
         LIBRARY DESTINATION "${DIPIMAGE_INSTALL_PATH}"
         RUNTIME DESTINATION "${DIPIMAGE_INSTALL_PATH}")
@@ -94,7 +94,7 @@ if(DIP_BUILD_DIPVIEWER)
       # Compile and install MEX-files in dipviewer/dipimage/
       file(GLOB DIPVIEWER_DIPIMAGE "${PROJECT_SOURCE_DIR}/viewer/dipimage/*.cpp")
       update_deps_file("DIPimageViewer_sources" "${DIPVIEWER_DIPIMAGE}")
-      compile_mex_files("${DIPVIEWER_DIPIMAGE}" ../../lib/ DIPVIEWER_DIPIMAGE_TARGETS)
+      compile_mex_files("${DIPVIEWER_DIPIMAGE}" ../../${LIBRARY_DESTINATION}/ DIPVIEWER_DIPIMAGE_TARGETS)
       target_link_libraries(${DIPVIEWER_DIPIMAGE_TARGETS} DIPviewer) # TODO: this only works because there's a single target here. Will need to write a loop if we add targets.
       install(TARGETS ${DIPVIEWER_DIPIMAGE_TARGETS}
               LIBRARY DESTINATION "${DIPIMAGE_INSTALL_PATH}"

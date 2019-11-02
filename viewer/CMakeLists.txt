@@ -46,19 +46,26 @@ else()
 endif()
 
 # Standalone viewer application
+# This can be distributed to systems without a jvm installed
+set(DIPVIEW_TARGETS dipview)
 add_executable(dipview src/dipview/dipview.cpp)
 target_link_libraries(dipview DIP DIPviewer)
+
+# Standalone viewer application with JavaIO support
 if(DIP_BUILD_JAVAIO)
-   target_link_libraries(dipview DIPjavaio)
+  set(DIPVIEW_TARGETS ${DIPVIEW_TARGETS} dipviewjava)
+  add_executable(dipviewjava src/dipview/dipview.cpp)
+  target_link_libraries(dipviewjava DIP DIPviewer DIPjavaio)
 endif()
+
 if(APPLE)
-   set_target_properties(dipview PROPERTIES INSTALL_RPATH "@loader_path/../lib/")
+   set_target_properties(${DIPVIEW_TARGETS} PROPERTIES INSTALL_RPATH "@loader_path/../${LIBRARY_DESTINATION}/")
 else()
-   set_target_properties(dipview PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+   set_target_properties(${DIPVIEW_TARGETS} PROPERTIES INSTALL_RPATH "$ORIGIN/../${LIBRARY_DESTINATION}/")
 endif()
 
 # Install
 install(TARGETS DIPviewer EXPORT DIPlibTargets ${DIP_DESTINATIONS})
-install(TARGETS dipview ${DIP_DESTINATIONS})
+install(TARGETS ${DIPVIEW_TARGETS} ${DIP_DESTINATIONS})
 install(FILES "${PROJECT_SOURCE_DIR}/include/dipviewer.h" DESTINATION include)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/viewer" DESTINATION include/diplib)
