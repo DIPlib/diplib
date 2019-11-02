@@ -166,7 +166,13 @@ void SliceView::map()
       colored_.ForceNormalStrides();
     } 
     else
+    {
+      // Avoid overwriting shared image data
+      if (colored_.IsShared())
+        colored_.Strip();
+      
       ApplyViewerColorMap(projected_, colored_, o);
+    }
   }
 }
 
