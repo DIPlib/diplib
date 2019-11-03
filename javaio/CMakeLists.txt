@@ -12,7 +12,7 @@ update_deps_file("DIPjavaio_sources" "${DIP_JAVAIO_SRC};${DIP_JAVAIO_JAVA};${DIP
 
 add_library(DIPjavaio ${DIP_JAVAIO_SRC})
 
-target_link_libraries(DIPjavaio PRIVATE DIP ${JNI_LIBRARIES})
+target_link_libraries(DIPjavaio PRIVATE DIP ${JAVA_JVM_LIBRARY})
 target_include_directories(DIPjavaio PRIVATE ${JNI_INCLUDE_DIRS})
 foreach (lib ${JNI_LIBRARIES})
    get_filename_component(path ${lib} DIRECTORY)
