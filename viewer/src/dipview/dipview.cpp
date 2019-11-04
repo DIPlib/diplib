@@ -13,8 +13,14 @@
 
 int main( int argc, char** argv ) {
    if( argc < 2 ) {
-      std::cerr << "Usage: dipview [-b] <image> [<image> ...]\n";
+      std::cerr << "Usage: dipview"
+#ifdef DIPVIEW_WITH_JAVAIO
+      " [-b]"
+#endif
+      " <image> [<image> ...]\n";
+#ifdef DIPVIEW_WITH_JAVAIO
       std::cerr << "   The -b option forces the use of Bio-Formats for all file types.\n";
+#endif
       return 1;
    }
 
@@ -22,7 +28,11 @@ int main( int argc, char** argv ) {
    dip::String format;
    if( std::strcmp( argv[ ii ], "-b" ) == 0 ) {
       ++ii;
+#ifdef DIPVIEW_WITH_JAVAIO
       format = "bioformats";
+#else
+      std::cerr << "Ignoring the -b flag.\n";
+#endif
    }
 
    std::list< dip::viewer::SliceViewer::Ptr > windows;

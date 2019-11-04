@@ -55,6 +55,7 @@ target_link_libraries(dipview DIP DIPviewer)
 if(DIP_BUILD_JAVAIO)
   set(DIPVIEW_TARGETS ${DIPVIEW_TARGETS} dipviewjava)
   add_executable(dipviewjava src/dipview/dipview.cpp)
+  target_compile_definitions(dipviewjava PRIVATE DIPVIEW_WITH_JAVAIO)
   target_link_libraries(dipviewjava DIP DIPviewer DIPjavaio)
 endif()
 

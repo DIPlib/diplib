@@ -648,12 +648,17 @@ FileInformation ImageReadICSInfo( String const& filename ) {
 }
 
 bool ImageIsICS( String const& filename ) {
-   return IcsVersion( filename.c_str(), 1 ) != 0;
+   try {
+      IcsFile icsFile( filename, "r" );
+   } catch( ... ) {
+      return false;
+   }
+   return true;
 }
 
 namespace {
 
-inline bool StridesArePositive( IntegerArray strides ) {
+inline bool StridesArePositive( IntegerArray const& strides ) {
    for( auto s : strides ) {
       if( s < 1 ) {
          return false;

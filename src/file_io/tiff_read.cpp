@@ -1121,12 +1121,12 @@ FileInformation ImageReadTIFFInfo(
 bool ImageIsTIFF(
       String const& filename
 ) {
-   TIFF* tiff = TIFFOpen( filename.c_str(), "r" );
-   if( tiff != nullptr ) {
-      TIFFClose( tiff );
-      return true;
+   try {
+      TiffFile tiff( filename );
+   } catch( ... ) {
+      return false;
    }
-   return false;
+   return true;
 }
 
 } // namespace dip

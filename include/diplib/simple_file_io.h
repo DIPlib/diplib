@@ -46,7 +46,7 @@ namespace dip {
 /// - `"tiff"`: The file is a TIFF file, use `dip::ImageReadTIFF`. Reads only the first image plane.
 /// - `"jpeg"`: The file is a JPEG file, use `dip::ImageReadJPEG`.
 /// - `"bioformats"`: Use `dip::javaio::ImageReadJavaIO` to read the file with the *Bio-Formats* library.
-/// - `""`: Select the format by looking at the file name extension. This is the default.
+/// - `""`: Select the format by looking at the file name extension or the file's first few bytes. This is the default.
 ///
 /// Information about the file and all metadata are returned in the `FileInformation` output argument.
 ///
@@ -67,6 +67,12 @@ inline FileInformation ImageRead(
       } else if( StringCompareCaseInsensitive( format, "tif" ) || StringCompareCaseInsensitive( format, "tiff" )) {
          format = "tiff";
       } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
+         format = "jpeg";
+      } else if( ImageIsICS( filename )) {
+         format = "ics";
+      } else if( ImageIsTIFF( filename )) {
+         format = "tiff";
+      } else if( ImageIsJPEG( filename )) {
          format = "jpeg";
       } else {
          format = "bioformats";
