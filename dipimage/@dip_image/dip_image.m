@@ -97,10 +97,16 @@ classdef dip_image
       %   dimensions. The struct contains fields 'magnitude' and 'units'.
       %   'magnitude' is a double scalar value, and 'units' is a string formatted
       %   according to the dip::Units class in DIPlib.
+      %
+      %   It is possible to directly modify this struct:
+      %      img.PixelSize = [1,1,3];  % assumes 'm' for units
+      %      img.PixelSize = struct('magnitude',{1,1,3},'units','um'); same, but micrometer
+      %      img.PixelSize(3).magnitude = 2.5; % only valid if struct already had 3 values
       PixelSize = struct('magnitude',{},'units',{})
       %ColorSpace - A string indicating the color space, if any.
       %   An empty string indicates there is no color space associated to the
-      %   image data.
+      %   image data. Changing this value does not modify the pixel values, use the
+      %   COLORSPACE method to change the color space representation of the image.
       %   See also DIP_IMAGE/COLORSPACE.
       ColorSpace = ''
    end
@@ -122,7 +128,8 @@ classdef dip_image
       %   T is either 1 for a scalar image or larger for a tensor image.
       %   X, Y, Z, etc. are the spatial dimensions. There do not need to be
       %   any (for a 0D image, a single sample), and there can be as many as
-      %   required.
+      %   required. A 1D image has sizes [C,T,X], only images with two or
+      %   more dimensions store the X dimension in the 4th index.
       %
       %   Set this property to replace the image data. The array assigned to
       %   this property is interpreted as described above.
@@ -548,45 +555,36 @@ classdef dip_image
          %   returns exactly as many values as there are image dimensions.
          %
          %   See also dip_image.tensorsize, dip_image.size
+         varargout = cell(1,nargout);
          if isempty(obj)
-            sz = 0;
+            [varargout{:}] = deal(0);
+            return
+         end
+         sz = [size(obj.Data),ones(1,obj.TrailingSingletons)];
+         if numel(sz)==2
+            sz = [];
          else
-            sz = [size(obj.Data),ones(1,obj.TrailingSingletons)];
-            if numel(sz)==2
-               sz = [];
-            else
-               sz(1:2) = [];
-            end
-            if numel(sz) > 1
-               sz(1:2) = sz([2,1]);
-            end
+            sz(1:2) = [];
+         end
+         if numel(sz) > 1
+            sz(1:2) = sz([2,1]);
          end
          if nargout > 1
             if nargin ~= 1, error('Unknown command option'); end
             if nargout > numel(sz), error('Too many dimensions requested'); end
             varargout = cell(1,nargout);
-            if ~isempty(obj)
-               for ii=1:nargout
-                  varargout{ii} = sz(ii);
-               end
-            else
-               for ii=1:nargout
-                  varargout{ii} = 0;
-               end
+            for ii=1:nargout
+               varargout{ii} = sz(ii);
             end
          else
-            if ~isempty(obj)
-               if nargin > 1
-                  if dim <= numel(sz)
-                     varargout{1} = sz(dim);
-                  else
-                     error(['Dimension ',num2str(dim),' does not exist.']);
-                  end
+            if nargin > 1
+               if dim <= numel(sz) && dim >= 1
+                  varargout{1} = sz(dim);
                else
-                  varargout{1} = sz;
+                  error(['Dimension ',num2str(dim),' does not exist.']);
                end
             else
-               varargout{1} = 0;
+               varargout{1} = sz;
             end
          end
       end
@@ -1227,7 +1225,7 @@ classdef dip_image
       end
 
       function a = subsindex(a)
-         %SUBSINDEX   Overload for indexing syntax M{A), where A is a DIP_IMAGE.
+         %SUBSINDEX   Overload for indexing syntax M(A), where A is a DIP_IMAGE.
          if ~isscalar(a) || ~islogical(a)
             error('Can only index using scalar, binary images')
          end
@@ -1332,7 +1330,9 @@ classdef dip_image
          if ~isintscalar(dims), error('Number of dimensions must be scalar integer'), end
          if ndims(im) < dims
             if ndims(im) == 1
-                im.Data = permute(im.Data,[1,2,4,3]); % make the existing single dimension be the x dimension of the expanded image
+                sz = size(im.Data);
+                sz(3:4) = [1,sz(3)];
+                im.Data = reshape(im.Data,sz); % make the existing single dimension be the x dimension of the expanded image
             end
             im.NDims = dims;
          end
@@ -1649,8 +1649,7 @@ classdef dip_image
             in{ii} = img.Data;
             if img.NDims == 1
                sz = size(in{ii});
-               sz(4) = sz(3);
-               sz(3) = 1;
+               sz(3:4) = [1,sz(3)];
                in{ii} = reshape(in{ii},sz);
             else
                oneD = false;
