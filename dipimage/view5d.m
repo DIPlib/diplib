@@ -3,6 +3,7 @@
 % SYNOPSIS:
 %  view5d(in,mode,myViewer,element)
 %  view5d(in,ts,mode,myViewer,element)
+%  h = view5d(...)
 %
 % PARAMETERS:
 %  in:       can either be an image or a figure handle
@@ -14,7 +15,8 @@
 %            the data
 %
 % RETURNS:
-%  a Java instance of the viewer, or an empty array in 'extern' mode.
+%  h:        a Java instance of the viewer; no return value is given if the
+%            mode is 'extern'.
 %
 % DEFAULTS:
 %  ts:   false
@@ -36,6 +38,9 @@
 %  panel, see DOC WEB. Make sure your web browser has Java enabled.
 %
 %  If there is no Java support in MATLAB, the external mode is always used.
+%  If the View5D Java applet is not installed (as described below) this
+%  function will produce an error:
+%      Undefined variable "View5D" or class "View5D.Start5DViewer".
 %
 %  For larger images you may get java.lang.OutOfMemoryError
 %  Increase the memory for the jvm by placing the file java.opts in your
@@ -70,7 +75,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function myViewer = view5d(in,varargin)
+function retval = view5d(in,varargin)
 
 % Parse input
 mode = 'direct';
@@ -122,23 +127,16 @@ end
 % Load Java tool
 if direct
    if ~isempty(javachk('jvm'))
-      disp('Using the external viewer, MATLAB started without Java support.');
+      warning('Using the external viewer, MATLAB started without Java support.');
       direct = false;
    end
 end
 if direct
-   try
-      % Add the path if not known
-      jp = javaclasspath('-all');
-      jarfile = jarfilename;
-      if ~any(strcmp(jp,jarfile))
-         javaaddpath(jarfile);
-      end
-      % Force the loading of the JAR file
-      import view5d.*
-   catch
-      help view5d.m
-      error(['Please install the Java5D.jar file as explained in the ''INSTALLING VIEW5D''',10,'section above.'])
+   % Add the path if not known
+   jp = javaclasspath('-all');
+   jarfile = jarfilename;
+   if ~any(strcmp(jp,jarfile))
+      javaaddpath(jarfile);
    end
 end
 
@@ -152,157 +150,66 @@ else
    in = dip_image(in);
 end
 sz = imsize(in);
+if numtensorel(in) > 1 && length(sz)>4
+   error('Only available for 2, 3 and 4D non-scalar images.');
+end
 if length(sz)>5 || length(sz)<2
    error('Only available for 2, 3, 4 and 5D images.');
 end
 if any(sz(1:2)==1)
    error('First two image dimensions must be larger than 1.');
 end
-if numtensorel(in) > 1
-   % The array elements need to go along the 4th dimension, and not become the time axis later on.
-   if length(sz)>4
-      error('Only available for 2, 3 and 4D tensor images.');
-   end
-   in = tensortospatial(in,4);
-   elements = 1;
-else
-   elements = 0;
-end
-in = expanddim(in,5); % make sure the input has 5 dimensions
-sz = imsize(in);
 if strcmp(datatype(in),'dcomplex')
    in = dip_image(in,'scomplex'); % dcomplex not supported
 end
+istensor = false;
+if numtensorel(in) > 1
+   in = tensortospatial(in); % tensor dimension is now the 2nd one, x has moved to 3rd location and y to 1st one -- note no data copy was made here!
+   istensor = true;
+end
+in = expanddim(in,5); % make sure the input has 5 dimensions
+sz = imsize(in);      % refresh sz to include expanded dimensions
+order = 1:5;
 if ts
    % The user asks for a time series -- move the last data dimension to the 5th dimension
-   t = find(sz>1); t = t(end);
-   if t<3 || t==5
-      t = [];
-   elseif t==4 && elements
-      sz(t) = 1;
-      t = find(sz>1); t = t(end);
-      if t<3
-         t = [];
-      end
-   end
-   if ~isempty(t)
-      order = 1:5;
-      order(t) = 5;
-      order(5) = t;
-      in = permute(in,order);
-      sz = imsize(in);
+   t = find(sz>1,1,'last'); % we've already ensured that dims 1 and 2 are > 1, so t is always set
+   if t > (2+istensor) % don't move one of the x,y dimensions, nor the tensor dimension
+      order([t,5]) = [5,t];
    end
 end
-
-% Handle iterative modes
-if strcmp(mode,'newElement')
-   if sz(4) > 1 || sz(5) > 1
-      for t = 1:sz(5)
-         for e = 1:sz(4)
-            % fprintf('Adding Element: %d, Time: %d\n',e,t);
-            view5d(in(:,:,:,e-1,t-1),ts,'newElement',myViewer);
-         end
-      end
-      return
-   end
-elseif strcmp(mode,'newTime')
-   if sz(5) > 1
-      for t = 1:sz(5)
-         for e = 1:sz(4)
-            % fprintf('Adding ElemenTime: %d, Time: %d\n',e,t);
-            view5d(in(:,:,:,e-1,t-1),ts,'newTime',myViewer);
-         end
-      end
-      return
-   end
+if istensor
+   order = order([3,1,4,2,5]); % move tensor dimension to 4th location, and x and y back to 1st and 2nd one
 end
 
-% Start the applet
-if direct
-   % Make a one dimensional flat input array
-   in = permute(in,[2,1,3:numel(sz)]);
-   in5d = in.Array;
-   in5d = in5d(:);
-   % Real or complex data is handled differently
-   if isreal(in)
-      if isa(in5d,'uint16')
-         in5d = char(in5d);  % only this way java understands this type...
-      end
-      if strcmp(mode,'direct')
-         myViewer = View5D.Start5DViewer(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-         if ~isempty(imname)
-            myViewer.NameWindow(imname);
-         end
-         ElementNum = 0:myViewer.getNumElements()-1;
-      elseif strcmp(mode,'newElement')
-         myViewer.AddElement(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-         ElementNum = myViewer.getNumElements()-1;
-      elseif strcmp(mode,'newTime')
-         myViewer.setTimesLinked(0);
-         myViewer.AddTime(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-         ElementNum = myViewer.getNumElements()-1;
-      elseif strcmp(mode,'replaceElement')
-         if (ElementNum >= myViewer.getNumElements())
-            myViewer.AddElement(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-            ElementNum = myViewer.getNumElements()-1;
-         else
-            myViewer.ReplaceData(ElementNum,0,in5d);
-         end
-      end
-   else
-      in5d_angle = dip_array(angle(in));
-      in5d_angle = in5d_angle(:);
-      if strcmp(mode,'direct')
-         myViewer = View5D.Start5DViewerC(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-         myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
-         if ~isempty(imname)
-            myViewer.NameWindow(imname);
-         end
-         ElementNum = 0:myViewer.getNumElements()-1;
-         setComplexDisplayMode(myViewer)
-         myViewer.UpdatePanels();
-      elseif strcmp(mode,'newElement')
-         myViewer.AddElementC(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-         myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
-         ElementNum = myViewer.getNumElements()-1;
-         setComplexDisplayMode(myViewer)
-      elseif strcmp(mode,'newTime')
-         myViewer.setTimesLinked(0);
-         myViewer.AddTime(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-         myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
-         ElementNum = myViewer.getNumElements()-1;
-         setComplexDisplayMode(myViewer)
-      elseif strcmp(mode,'replaceElement')
-         if (ElementNum >= myViewer.getNumElements())
-            myViewer.AddElementC(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
-            ElementNum = myViewer.getNumElements()-1;
-         else
-            myViewer.ReplaceDataC(ElementNum,0,in5d);
-         end
-         % Repeat for now phase
-         ElementNum = ElementNum+1;
-         if (ElementNum >= myViewer.getNumElements())
-            myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
-            ElementNum = myViewer.getNumElements()-1;
-         else
-            myViewer.ReplaceData(ElementNum,0,in5d_angle);
-         end
-      end
+% Handle web browser mode
+if ~direct
+   in = permute(in,order);
+   view5d_image_extern(in);
+   if nargout > 0
+      retval = []; % just to avoid error messages for the user if direct mode was unexpectedly not available.
    end
-   myViewer.UpdatePanels();
-   if ~isempty(in.pixelsize)
-      AxisNames = {'X','Y','Z','E','T'};
-      AxisUnits = [in.pixelunits(1:3),'a.u.','a.u.'];
-      for n = 1:numel(ElementNum)
-         myViewer.SetAxisScalesAndUnits(ElementNum(n),0,1.0,...
-            in.pixelsize(1),in.pixelsize(2),in.pixelsize(1),...
-            1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,...
-            'intensity',AxisNames,'a.u.',AxisUnits);
+   return
+end
+
+order([1,2]) = order([2,1]); % swap x and y
+in = permute(in,order);
+sz = imsize(in);
+
+if (strcmp(mode,'newElement') && (sz(4) > 1 || sz(5) > 1)) || (strcmp(mode,'newTime') && sz(5) > 1)
+   % Handle iterative modes
+   for t = 1:sz(5)
+      for e = 1:sz(4)
+         % fprintf('Adding Element: %d, Time: %d\n',e,t);
+         view5d_image_direct(in(:,:,:,e-1,t-1),imname,mode,myViewer,0);
       end
    end
 else
-   view5d_image_extern(in);
-   myViewer = [];
+   % Start the applet
+   myViewer = view5d_image_direct(in,imname,mode,myViewer,ElementNum);
+end
+
+if nargout > 0
+   retval = myViewer;
 end
 
 %-----------------------------------------------------------------------
@@ -311,6 +218,93 @@ try
    jarfile = fullfile(fileparts(mfilename('fullpath')),'private','View5D.jar');
 catch
    jarfile = fullfile(fileparts(which('dipsetpref')),'private','View5D.jar');
+end
+
+%-----------------------------------------------------------------------
+function myViewer = view5d_image_direct(in,imname,mode,myViewer,ElementNum)
+import view5d.*
+
+% Make a one dimensional flat input array
+sz = imsize(in);
+sz([1,2]) = sz([2,1]);
+in5d = in.Array;
+in5d = in5d(:);
+% Real or complex data is handled differently
+if isreal(in)
+   if isa(in5d,'uint16')
+      in5d = char(in5d);  % only this way java understands this type...
+   end
+   if strcmp(mode,'direct')
+      myViewer = View5D.Start5DViewer(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+      if ~isempty(imname)
+         myViewer.NameWindow(imname);
+      end
+      ElementNum = 0:myViewer.getNumElements()-1;
+   elseif strcmp(mode,'newElement')
+      myViewer.AddElement(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+      ElementNum = myViewer.getNumElements()-1;
+   elseif strcmp(mode,'newTime')
+      myViewer.setTimesLinked(0);
+      myViewer.AddTime(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+      ElementNum = myViewer.getNumElements()-1;
+   elseif strcmp(mode,'replaceElement')
+      if (ElementNum >= myViewer.getNumElements())
+         myViewer.AddElement(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+         ElementNum = myViewer.getNumElements()-1;
+      else
+         myViewer.ReplaceData(ElementNum,0,in5d);
+      end
+   end
+else
+   in5d_angle = angle(in);
+   in5d_angle = in5d_angle.Array(:);
+   if strcmp(mode,'direct')
+      myViewer = View5D.Start5DViewerC(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+      myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
+      if ~isempty(imname)
+         myViewer.NameWindow(imname);
+      end
+      ElementNum = 0:myViewer.getNumElements()-1;
+      setComplexDisplayMode(myViewer)
+      myViewer.UpdatePanels();
+   elseif strcmp(mode,'newElement')
+      myViewer.AddElementC(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+      myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
+      ElementNum = myViewer.getNumElements()-1;
+      setComplexDisplayMode(myViewer)
+   elseif strcmp(mode,'newTime')
+      myViewer.setTimesLinked(0);
+      myViewer.AddTime(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+      myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
+      ElementNum = myViewer.getNumElements()-1;
+      setComplexDisplayMode(myViewer)
+   elseif strcmp(mode,'replaceElement')
+      if (ElementNum >= myViewer.getNumElements())
+         myViewer.AddElementC(in5d,sz(1),sz(2),sz(3),sz(4),sz(5));
+         ElementNum = myViewer.getNumElements()-1;
+      else
+         myViewer.ReplaceDataC(ElementNum,0,in5d);
+      end
+      % Repeat for now phase
+      ElementNum = ElementNum+1;
+      if (ElementNum >= myViewer.getNumElements())
+         myViewer.AddElement(in5d_angle,sz(1),sz(2),sz(3),sz(4),sz(5));
+         ElementNum = myViewer.getNumElements()-1;
+      else
+         myViewer.ReplaceData(ElementNum,0,in5d_angle);
+      end
+   end
+end
+myViewer.UpdatePanels();
+if ~isempty(in.pixelsize)
+   AxisNames = {'X','Y','Z','E','T'};
+   AxisUnits = [in.pixelunits(1:3),'a.u.','a.u.'];
+   for n = 1:numel(ElementNum)
+      myViewer.SetAxisScalesAndUnits(ElementNum(n),0,1.0,...
+         in.pixelsize(1),in.pixelsize(2),in.pixelsize(1),...
+         1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,...
+         'intensity',AxisNames,'a.u.',AxisUnits);
+   end
 end
 
 %-----------------------------------------------------------------------
@@ -337,16 +331,16 @@ end
 fn = [base,'dipimage_view5d'];
 
 mdt = {'uint8',    1, 8,  'Byte'
-   'uint16',   2, 16, 'Char'
-   'uint32',   4, 32, 'Long'
-   'sint8',    1, 8,  'Byte'
-   'sint16',   2, 16, 'Short'
-   'sint32',   4, 32, 'Long'
-   'sfloat',  -1, 32, 'Float'
-   'dfloat',  -1, 64, 'Double'
-   'scomplex',-1, 32, 'Complex'
-   'bin',      1, 8,  'Byte'
-   };
+       'uint16',   2, 16, 'Char'
+       'uint32',   4, 32, 'Long'
+       'sint8',    1, 8,  'Byte'
+       'sint16',   2, 16, 'Short'
+       'sint32',   4, 32, 'Long'
+       'sfloat',  -1, 32, 'Float'
+       'dfloat',  -1, 64, 'Double'
+       'scomplex',-1, 32, 'Complex'
+       'bin',      1, 8,  'Byte'
+};
 ind = find(strcmp(datatype(in),mdt(:,1)));
 bytes = mdt{ind,2};
 bits  = mdt{ind,3};
