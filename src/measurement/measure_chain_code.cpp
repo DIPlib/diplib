@@ -142,60 +142,56 @@ dfloat ChainCode::BendingEnergy() const {
    constexpr dfloat kulpa_weights[ 8 ] = { 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408 };
    constexpr dfloat fourc_cornerc_weights[ 2 ] = { 0.948, 0.278 };
    dip::uint size = codes.size();
-   if( size > 1 ) {
-      // Compute angular difference, divide by curve element length computed using Kulpa weights.
-      dip::uint size1 = size - 1;
-      FloatArray diff( size, 0 );
-      FloatArray delta_s( size, 0 );
-      for( dip::uint ii = 0; ii < size1; ++ii ) {
-         delta_s[ ii ] = is8connected
-                         ? 0.5 * ( kulpa_weights[ codes[ ii ] ] + kulpa_weights[ codes[ ii + 1 ] ] )
-                         : fourc_cornerc_weights[ 0 ] + fourc_cornerc_weights[ 1 ] * ( codes[ ii ] != codes[ ii + 1 ] );
-         diff[ ii ] = codes[ ii + 1 ] - codes[ ii ];
-         if( !is8connected ) { diff[ ii ] *= 2; }
-         if( diff[ ii ] > 3 ) { diff[ ii ] -= 8; }
-         if( diff[ ii ] < -3 ) { diff[ ii ] += 8; }
-         diff[ ii ] = diff[ ii ] / delta_s[ ii ];
-      }
-      diff[ size1 ] = codes.front() - codes.back();
-      delta_s[ size1 ] = is8connected
-                         ? 0.5 * ( kulpa_weights[ codes.back() ] + kulpa_weights[ codes.front() ] )
-                         : fourc_cornerc_weights[ 0 ] + fourc_cornerc_weights[ 1 ] * ( codes.back() != codes.front() );
-      // Three times uniform filtering of diff
-      if( size > 5 ) {
-         for( dip::uint jj = 0; jj < 3; ++jj ) {
-            dfloat sum = 0;
-            dfloat stored[5];
-            dfloat saved;
-            for( dip::uint ii = 0; ii < 5; ++ii ) {
-               stored[ ii ] = diff[ ii ];
-               sum += diff[ ii ];
-            }
-            size1 = size - 5;
-            for( dip::uint ii = 0; ii < size1; ++ii ) {
-               saved = diff[ ii ];
-               diff[ ii ] = sum / 5;
-               sum += diff[ ii + 5 ] - saved;
-            }
-            for( dip::uint ii = size1; ii < size; ++ii ) {
-               saved = diff[ ii ];
-               diff[ ii ] = sum / 5;
-               sum += stored[ 5 - size + ii ] - saved;
-            }
-         }
-      }
-      // Integrate the curvature squared weighted by the curve element length
-      dfloat be = 0;
-      for( dip::uint ii = 0; ii < size; ++ii ) {
-         be += diff[ ii ] * diff[ ii ] * delta_s[ ii ];
-      }
-      // Convert chain code into actual angle in radian
-      be *= dip::pi * dip::pi / 16;
-      return be;
-   }
-   else {
+   if( size <= 1 ) {
       return 0;
    }
+   // Compute angular difference, divide by curve element length computed using Kulpa weights.
+   std::vector< dfloat > diff( size, 0 );
+   std::vector< dfloat > delta_s( size, 0 );
+   auto prev = codes.back();
+   for( dip::uint ii = 0; ii < size; ++ii ) {
+      delta_s[ ii ] = is8connected
+                      ? 0.5 * ( kulpa_weights[ codes[ ii ]] + kulpa_weights[ prev ] )
+                      : fourc_cornerc_weights[ 0 ] + fourc_cornerc_weights[ 1 ] * ( codes[ ii ] != prev );
+      diff[ ii ] = static_cast< dfloat >( codes[ ii ] ) - static_cast< dfloat >( prev );
+      if( !is8connected ) { diff[ ii ] *= 2; }
+      if( diff[ ii ] > 3 ) { diff[ ii ] -= 8; }
+      if( diff[ ii ] < -3 ) { diff[ ii ] += 8; }
+      diff[ ii ] /= delta_s[ ii ];
+      prev = codes[ ii ];
+   }
+   // Three times uniform filtering of diff
+   constexpr dip::uint k = 5; // filter size
+   if( size > k ) {
+      dip::uint size1 = size - k;
+      for( dip::uint jj = 0; jj < 3; ++jj ) {
+         dfloat sum = 0;
+         dfloat stored[ k ];
+         dfloat saved;
+         for( dip::uint ii = 0; ii < k; ++ii ) {
+            stored[ ii ] = diff[ ii ];
+            sum += diff[ ii ];
+         }
+         for( dip::uint ii = 0; ii < size1; ++ii ) {
+            saved = diff[ ii ];
+            diff[ ii ] = sum / k;
+            sum += diff[ ii + k ] - saved;
+         }
+         for( dip::uint ii = size1; ii < size; ++ii ) {
+            saved = diff[ ii ];
+            diff[ ii ] = sum / k;
+            sum += stored[ ii - size1 ] - saved;
+         }
+      }
+   }
+   // Integrate the curvature squared weighted by the curve element length
+   dfloat be = 0;
+   for( dip::uint ii = 0; ii < size; ++ii ) {
+      be += diff[ ii ] * diff[ ii ] * delta_s[ ii ];
+   }
+   // Convert chain code into actual angle in radian
+   be *= dip::pi * dip::pi / 16.0;
+   return be;
 }
 
 BoundingBoxInteger ChainCode::BoundingBox() const {
