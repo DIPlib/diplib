@@ -124,6 +124,9 @@ this list will help in porting your old code that used *DIPlib* to the new versi
    - Measurement features have a much simpler programmer's interface, it should be easier to
      write new features now.
 
+   - Computed measurements are now in an object of type `dip::Measurement`, whose interface is
+     much easier to use than the old `dip_Measurement`.
+
 - `dip_ObjectToMeasurement` now takes a feature iterator rather than computing the feature;
   this might be more flexible.
 
@@ -434,6 +437,10 @@ this list will help in porting your old code that used *DIPlib* to the new versi
   `dip::SortTensorElements`, `dip::SortTensorElementsByMagnitude`,
   `dip::Hypot`.
 
+- New measurement functions: see the class `dip::Measurement`, and functions that apply to it: `dip::Minimum`, `dip::Maximum`,
+  `dip::Percentile`, `dip::Median`, `dip::Mean`, `dip::MaximumAndMinimum`, `dip::SampleStatistics`. See the classes
+  `dip::ChainCode`, `dip::Polygon`, `dip::ConvexHull`, `dip::CovarianceMatrix`.
+
 - New microscopy functions: `dip::BeerLambertMapping`, `dip::InverseBeerLambertMapping`, `dip::UnmixStains`, `dip::MixStains`,
   `dip::MandersOverlapCoefficient`, `dip::IntensityCorrelationQuotient`, `dip::MandersColocalizationCoefficients`,
   `dip::CostesColocalizationCoefficients`, `dip::CostesSignificanceTest`.
@@ -441,6 +448,8 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - New segmentation functions: `dip::CompactWatershed`, `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
   `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::GaussianMixtureModelThreshold`,
   `dip::TriangleThreshold`, `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`, `dip::Superpixels`.
+
+- New testing functions: `dip::testing::PrintPixelValues`, `dip::testing::CompareImages`. New class: `dip::testing::Timer`.
 
 - New transform functions: `dip::OptimalFourierTransformSize`, `dip::RieszTransform`, `dip::StationaryWaveletTransform`.
 

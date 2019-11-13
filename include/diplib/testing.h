@@ -89,7 +89,6 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 } // namespace detail
 
 /// \defgroup testing Testing and debugging
-/// \ingroup infrastructure
 /// \brief Tools for testing and debugging.
 /// \{
 
