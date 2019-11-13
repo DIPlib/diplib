@@ -1,18 +1,21 @@
 %TRACEOBJECTS   Traces the objects in an image
 %
 % SYNOPSIS:
-%  traces = traceobjects(image_in,labels,connectivity,output)
+%  traces = traceobjects(image_in,labels,connectivity,output,param)
 %
 % PARAMETERS:
 %  image_in:     Binary or labeled image, only 2D supported
 %  labels:       The labels to trace. [] traces all objects
 %  connectivity: 1 for 4-connected objects, 2 for 8-connected objects
-%  output:       String, one of 'chain code', 'polygon', 'convex hull'
+%  output:       String, one of 'chain code', 'polygon', 'convex hull', or
+%                'smoothed polygon', 'simplified polygon'
+%  param:        Parameter to 'smoothed polygon' and 'simplified polygon'
 %
 % DEFAULTS:
 %  labels = []
 %  connectivity = 2
 %  output = 'polygon'
+%  param = 1
 %
 %  If IMAGE_IN is binary, labels the image and traces all objects. LABELS
 %  is not expected.
@@ -32,6 +35,15 @@
 %  Holes in objects are not represented, and if an object is not connected
 %  (i.e. two different connected components have the same label) only the
 %  first one encountered is traced.
+%
+%  Instead of 'polygon', one can request a 'smoothed polygon' or a
+%  'simplified polygon'.
+%  - A 'smoothed polygon' will have its vertex coordinates filtered using a
+%    Gaussian-weighted local averaging, with sigma equal to PARAM. Objects
+%    with lower curvature can support a larger sigma.
+%  - A 'simplified polygon' will have fewer vertices after being processed
+%    with the Douglas-Peucker algorithm. PARAM is the maximum distance between
+%    original and simplified polygons.
 %
 % EXAMPLE:
 %  a = readim('cermet');

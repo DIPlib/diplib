@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that measure polygons and convex hulls.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,21 +24,102 @@
 
 namespace dip {
 
+dfloat Polygon::Area() const {
+   if( vertices.size() < 3 ) {
+      return 0; // Should we generate an error instead?
+   }
+   dfloat sum = CrossProduct( vertices.back(), vertices[ 0 ] );
+   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+      sum += CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
+   }
+   return sum / 2.0;
+}
+
+VertexFloat Polygon::Centroid() const {
+   if( vertices.size() < 3 ) {
+      return { 0, 0 }; // Should we generate an error instead?
+   }
+   dfloat v = CrossProduct( vertices.back(), vertices[ 0 ] );
+   dfloat sum = v;
+   dfloat xsum = ( vertices.back().x + vertices[ 0 ].x ) * v;
+   dfloat ysum = ( vertices.back().y + vertices[ 0 ].y ) * v;
+   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+      v = CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
+      sum += v;
+      xsum += ( vertices[ ii - 1 ].x + vertices[ ii ].x ) * v;
+      ysum += ( vertices[ ii - 1 ].y + vertices[ ii ].y ) * v;
+   }
+   return sum == 0.0 ? VertexFloat{ 0.0, 0.0 } : VertexFloat{ xsum, ysum } / ( 3 * sum );
+}
+
+dip::CovarianceMatrix Polygon::CovarianceMatrix( VertexFloat const& g ) const {
+   dip::CovarianceMatrix C;
+   if( vertices.size() >= 3 ) {
+      for( auto& v : vertices ) {
+         C += dip::CovarianceMatrix( v - g );
+      }
+      C /= static_cast< dfloat >( vertices.size() );
+   }
+   return C;
+}
+
+dfloat Polygon::Length() const {
+   if( vertices.size() < 2 ) {
+      return 0; // Should we generate an error instead?
+   }
+   dfloat sum = Distance( vertices.back(), vertices[ 0 ] );
+   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+      sum += Distance( vertices[ ii - 1 ], vertices[ ii ] );
+   }
+   return sum;
+}
+
+RadiusValues Polygon::RadiusStatistics( VertexFloat const& g ) const {
+   RadiusValues radius;
+   if( vertices.size() < 3 ) {
+      return radius;
+   }
+   for( auto const& v : vertices ) {
+      dfloat r = Distance( g, v );
+      radius.Push( r );
+   }
+   return radius;
+}
+
+dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
+   // Inverse of covariance matrix
+   dip::CovarianceMatrix U = C.Inv();
+   // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
+   VarianceAccumulator acc;
+   for( auto v : vertices ) {
+      v -= g;
+      dfloat d = std::sqrt( U.Project( v ));
+      acc.Push( d );
+   }
+   dfloat m = acc.Mean();
+   // Ellipse variance = coefficient of variation of radius
+   return m == 0.0 ? 0.0 : acc.StandardDeviation() / m;
+}
+
+namespace {
+
 // An operator that increments the iterator but treating the container as a circular one
 template< typename Iterator, typename Container >
-static inline Iterator Next( Iterator it, Container const& con ) {
+inline Iterator Next( Iterator it, Container const& con ) {
    ++it;
-   if( it == con.end() ) {
+   if( it == con.end()) {
       it = con.begin();
    }
    return it;
+}
+
 }
 
 FeretValues ConvexHull::Feret() const {
 
    FeretValues feret;
 
-   auto const& vertices = Vertices();
+   auto const& vertices = polygon_.vertices;
 
    if( vertices.size() < 3 ) {
       // Nothing to do, give some meaningful values
@@ -147,6 +228,96 @@ FeretValues ConvexHull::Feret() const {
    return feret;
 }
 
+dfloat Polygon::FractalDimension( dfloat length ) const {
+   if( length <= 0 ) {
+      length = Length();
+   }
+   dfloat sigmaMax = length / 16;
+   if( sigmaMax <= 2 ) {
+      // This ensures that nScales >= 3, and that log2(sigmaMax) is not a negative number
+      return 1.0;
+   }
+   dip::uint nScales = dip::uint( std::ceil( std::log2( sigmaMax ))) + 1; // Guaranteed >= 3.
+
+   // Compute perimeter at all tolerance sizes
+   std::vector< dfloat > scale( nScales );
+   std::vector< dfloat > perimeter( nScales );
+   {
+      Polygon P = *this; // Make copy we can modify
+      dfloat sigma = 1.0;
+      dfloat prevSigma = 0.0;
+      for( dip::uint ii = 0; ii < nScales; ++ii ) {
+         P.Smooth( std::sqrt( sigma * sigma - prevSigma * prevSigma ));
+         scale[ ii ] = sigma;
+         perimeter[ ii ] = P.Length();
+         prevSigma = sigma;
+         sigma *= 2.0;
+      }
+   }
+
+   // Linear Regression (Least Square Estimation)
+   dfloat Sx = std::log( scale[ 0 ] );
+   dfloat Sy = std::log( perimeter[ 0 ] );
+   dfloat Sxx = Sx * Sx;
+   dfloat Sxy = Sx * Sy;
+   dfloat N = 1;
+   for( dip::uint ii = 1; ii < nScales; ++ii ) {
+      dfloat ls = std::log( scale[ ii ] );
+      dfloat lp = std::log( perimeter[ ii ] );
+      Sx += ls;
+      Sy += lp;
+      Sxx += ls * ls;
+      Sxy += ls * lp;
+      ++N;
+   }
+   dfloat slope = 1.0;
+   dfloat d = N * Sxx - Sx * Sx;
+   if( d != 0.0 ) {
+      slope = (( N * Sxy ) - ( Sx * Sy )) / d;
+      slope = clamp( 1.0 - slope, 1.0, 2.0 );
+   }
+   return slope;
+}
+
+namespace {
+
+dfloat AngleDifference( dfloat a, dfloat b ) { // a and b are assumed in the [-pi,pi] range.
+   dfloat diff = std::abs( a - b );
+   if( diff > pi ) {
+      diff = 2 * pi - diff;
+   }
+   return diff;
+}
+
+}
+
+dfloat Polygon::BendingEnergy() const {
+   // BE = sum ( k * k * dist )
+   // k = diff / dist
+   // => BE = sum ( diff * diff / dist )
+   dfloat be = 0;
+   if( vertices.size() > 2 ) {
+      dfloat prev = dip::Angle( vertices[ 0 ], vertices[ 1 ] );
+      dfloat a;
+      dfloat diff;
+      dip::uint ii;
+      for( ii = 1; ii < vertices.size() - 1; ++ii ) {
+         a = Angle( vertices[ ii ], vertices[ ii + 1 ] );
+         diff = AngleDifference( a, prev );
+         be += diff * diff * 2.0 / Distance( vertices[ ii - 1 ], vertices[ ii + 1 ] );
+         prev = a;
+      }
+      // Add the two points that require straddling the boundary
+      a = Angle( vertices[ ii ], vertices[ 0 ] );
+      diff = AngleDifference( a, prev );
+      be += diff * diff * 2.0 / Distance( vertices[ ii - 1 ], vertices[ 0 ] );
+      prev = a;
+      a = Angle( vertices[ 0 ], vertices[ 1 ] );
+      diff = AngleDifference( a, prev );
+      be += diff * diff * 2.0 / Distance( vertices[ ii ], vertices[ 1 ] );
+   }
+   return be;
+}
 
 } // namespace dip
 
@@ -161,7 +332,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( p.Length() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
    dip::ConvexHull h = p.ConvexHull();
-   DOCTEST_CHECK( h.Vertices().size() == 4 );
+   DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
    auto f = h.Feret();
@@ -175,10 +346,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.Length() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
    DOCTEST_CHECK( p.IsClockWise() );
    h = p.ConvexHull();
-   DOCTEST_CHECK( h.Vertices().size() == 8 );
+   DOCTEST_CHECK( h.Polygon().vertices.size() == 8 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 4 - 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
-   DOCTEST_CHECK( h.IsClockWise() );
+   DOCTEST_CHECK( h.Polygon().IsClockWise() );
    f = h.Feret();
    DOCTEST_CHECK( f.maxDiameter == doctest::Approx( std::sqrt( 5 )));
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( 2 ));
@@ -191,7 +362,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 1 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 ));
-   DOCTEST_CHECK( h.IsClockWise() );
+   DOCTEST_CHECK( h.Polygon().IsClockWise() );
+   f = h.Feret();
+   DOCTEST_CHECK( f.maxDiameter == doctest::Approx( std::sqrt( 2 )));
+   DOCTEST_CHECK( f.minDiameter == doctest::Approx( 1 ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

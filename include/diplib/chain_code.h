@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations and definitions for chain-code--based 2D measurements
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -175,6 +175,13 @@ inline dfloat Norm( Vertex< T > const& v ) {
    return std::hypot( v.x, v.y );
 }
 
+/// \brief The square of the norm of the vector `v`.
+/// \relates dip::Vertex
+template< typename T >
+inline dfloat NormSquare( Vertex< T > const& v ) {
+   return v.x * v.x + v.y * v.y;
+}
+
 /// \brief The norm of the vector `v2-v1`.
 /// \relates dip::Vertex
 template< typename T >
@@ -186,8 +193,7 @@ inline dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
 /// \relates dip::Vertex
 template< typename T >
 inline dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
-   Vertex< T > v = v2 - v1;
-   return v.x * v.x + v.y * v.y;
+   return NormSquare( v2 - v1 );
 }
 
 /// \brief The angle of the vector `v2-v1`.
@@ -496,81 +502,24 @@ class DIP_NO_EXPORT ConvexHull; // Forward declaration
 /// \brief A polygon with floating-point vertices.
 struct DIP_NO_EXPORT Polygon {
 
-   std::vector< VertexFloat > vertices;  ///< The vertices
+   using Vertices = std::vector< VertexFloat >;
+   Vertices vertices;  ///< The vertices
 
    /// \brief Returns the bounding box of the polygon
-   BoundingBoxFloat BoundingBox() const {
-      if( vertices.empty() ) {
-         return {}; // Should we generate an error instead?
-      }
-      BoundingBoxFloat bb( vertices[ 0 ] );
-      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-         bb.Expand( vertices[ ii ] );
-      }
-      return bb;
-   }
+   DIP_EXPORT BoundingBoxFloat BoundingBox() const;
 
    /// \brief Determine the orientation of the polygon (if constructed from a chain code, should return true)
-   bool IsClockWise() const {
-      if( vertices.size() < 3 ) {
-         return true;
-      }
-      // Find the topmost point (lowest y value) of the polygon, then compute the
-      // cross product of the two incident edges. This avoids computing the signed
-      // area of the full polygon.
-      size_t minIndex = 0;
-      for( size_t ii = 1; ii < vertices.size(); ++ii ) {
-         if(( vertices[ ii ].y < vertices[ minIndex ].y ) ||
-            (( vertices[ ii ].y == vertices[ minIndex ].y ) && ( vertices[ ii ].x > vertices[ minIndex ].x ))) {
-            minIndex = ii;
-         }
-      }
-      size_t prev = ( minIndex + vertices.size() - 1 ) % vertices.size();
-      size_t next = ( minIndex + 1 ) % vertices.size();
-      return ParallelogramSignedArea( vertices[ minIndex ], vertices[ next ], vertices[ prev ] ) >= 0; // shouldn't be == 0
-   }
+   DIP_EXPORT bool IsClockWise() const;
 
    /// \brief Computes the (signed) area of the polygon. Default, clockwise polygons have a positive area.
-   dfloat Area() const {
-      if( vertices.size() < 3 ) {
-         return 0; // Should we generate an error instead?
-      }
-      dfloat sum = CrossProduct( vertices.back(), vertices[ 0 ] );
-      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-         sum += CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
-      }
-      return sum / 2.0;
-   }
+   DIP_EXPORT dfloat Area() const;
 
    /// \brief Computes the centroid of the polygon
-   VertexFloat Centroid() const {
-      if( vertices.size() < 3 ) {
-         return { 0, 0 }; // Should we generate an error instead?
-      }
-      dfloat v = CrossProduct( vertices.back(), vertices[ 0 ] );
-      dfloat sum = v;
-      dfloat xsum = ( vertices.back().x + vertices[ 0 ].x ) * v;
-      dfloat ysum = ( vertices.back().y + vertices[ 0 ].y ) * v;
-      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-         v = CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
-         sum += v;
-         xsum += ( vertices[ ii - 1 ].x + vertices[ ii ].x ) * v;
-         ysum += ( vertices[ ii - 1 ].y + vertices[ ii ].y ) * v;
-      }
-      return sum == 0.0 ? VertexFloat{ 0.0, 0.0 } : VertexFloat{ xsum, ysum } / ( 3 * sum );
-   }
+   DIP_EXPORT VertexFloat Centroid() const;
 
    /// \brief Returns the covariance matrix for the vertices of the polygon, using centroid `g`.
-   dip::CovarianceMatrix CovarianceMatrix( VertexFloat const& g ) const {
-      dip::CovarianceMatrix C;
-      if( vertices.size() >= 3 ) {
-         for( auto& v : vertices ) {
-            C += dip::CovarianceMatrix( v - g );
-         }
-         C /= static_cast< dfloat >( vertices.size() );
-      }
-      return C;
-   }
+   DIP_EXPORT dip::CovarianceMatrix CovarianceMatrix( VertexFloat const& g ) const;
+
    /// \brief Returns the covariance matrix for the vertices of the polygon.
    dip::CovarianceMatrix CovarianceMatrix() const {
       return this->CovarianceMatrix( Centroid() );
@@ -578,16 +527,7 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Computes the length of the polygon (i.e. perimeter). If the polygon represents a pixelated object,
    /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
-   dfloat Length() const {
-      if( vertices.size() < 2 ) {
-         return 0; // Should we generate an error instead?
-      }
-      dfloat sum = Distance( vertices.back(), vertices[ 0 ] );
-      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-         sum += Distance( vertices[ ii - 1 ], vertices[ ii ] );
-      }
-      return sum;
-   }
+   DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
    /// and each of the vertices.
@@ -598,17 +538,7 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the given centroid
    /// and each of the vertices.
-   RadiusValues RadiusStatistics( VertexFloat const& g ) const {
-      RadiusValues radius;
-      if( vertices.size() < 3 ) {
-         return radius;
-      }
-      for( auto const& v : vertices ) {
-         dfloat r = Distance( g, v );
-         radius.Push( r );
-      }
-      return radius;
-   }
+   DIP_EXPORT RadiusValues RadiusStatistics( VertexFloat const& g ) const;
 
    /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.
@@ -626,26 +556,66 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Compares a polygon to the ellipse described by the given centroid and covariance matrix, returning
    /// the coefficient of variation of the distance of vertices to the ellipse.
-   dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
-      // Inverse of covariance matrix
-      dip::CovarianceMatrix U = C.Inv();
-      // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
-      VarianceAccumulator acc;
-      for( auto v : vertices ) {
-         v -= g;
-         dfloat d = std::sqrt( U.Project( v ));
-         acc.Push( d );
-      }
-      dfloat m = acc.Mean();
-      // Ellipse variance = coefficient of variation of radius
-      return m == 0.0 ? 0.0 : acc.StandardDeviation() / m;
-   }
+   DIP_EXPORT dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const;
+
+   /// \brief Computes the fractal dimension of a polygon.
+   ///
+   /// Fractal dimension is defined as the slope of the polygon length as a function of scale, in a log-log plot.
+   /// Scale is obtained by smoothing the polygon using `dip::Polygon::Smooth`. Therefore, it is important that
+   /// the polygon be densely sampled, use `dip::Polygon::Augment` if necessary.
+   ///
+   /// `length` is the length of the polygon (see `dip::Polygon::Length`). It determines the range of scales used
+   /// to compute the fractal dimension, so a rough estimate is sufficient. If zero is given as length (the default
+   /// value), then it is computed.
+   DIP_EXPORT dfloat FractalDimension( dfloat length = 0 ) const;
+
+   /// \brief Computes the bending energy of a polygon.
+   ///
+   /// The bending energy is the integral along the contour of the square of the curvature.
+   /// We approximate curvature by, at each vertex, taking the difference in angle between
+   /// the two edges, and dividing by half the length of the two edges (this is the portion
+   /// of the boundary associated to the edge).
+   ///
+   /// Note that this approximation is poor when the points are far apart. `dip::Polygon::Augment` should
+   /// be used to obtain a densely sampled polygon. It is also beneficial to sufficiently smooth the
+   /// polygon so it better approximates a smooth curve around the object being measured, see `dip::Polygon::Smooth`.
+   ///
+   /// \literature
+   /// <li>I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
+   ///     Information and Control 25(4):357-370, 1974.
+   /// <li>J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
+   ///     Acta Cytologica 21(5):455-464, 1977.
+   /// \endliterature
+   DIP_EXPORT dfloat BendingEnergy() const;
+
+   /// \brief Simplifies the polygon using the Douglas-Peucker algorithm.
+   ///
+   /// For a polygon derived from a chain code, setting tolerance to 0.5 leads to a maximum-length digital straight
+   /// segment representation of the object.
+   DIP_EXPORT Polygon& Simplify( dfloat tolerance = 0.5 );
+
+   /// \brief Adds vertices along each edge of the polygon such that the distance between two consecutive
+   /// vertices is never more than `distance`.
+   DIP_EXPORT Polygon& Augment( dfloat distance = 1.0 );
+
+   /// \brief Locally averages the location of vertices of a polygon so it becomes smoother.
+   ///
+   /// Uses a Gaussian filter with parameter `sigma`, which is not interpreted as a physical distance between
+   /// vertices, but as a distance in number of vertices. That is, the neighboring vertex is at a distance of 1,
+   /// the next one over at a distance of 2, etc. Therefore, it is important that vertices are approximately equally
+   /// spaced. `dip::Polygon::Augment` modifies any polygon to satisfy that requirement.
+   ///
+   /// A polygon derived from the chain code of an object without high curvature, when smoothed with a `sigma` of 2,
+   /// will fairly well approximate the original smooth boundary. For objects with higher curvature (including very
+   /// small objects), choose a smaller `sigma`.
+   DIP_EXPORT Polygon& Smooth( dfloat sigma = 1.0 );
 
    /// \brief Returns the convex hull of the polygon.
    DIP_EXPORT dip::ConvexHull ConvexHull() const;
 };
 
-/// \brief A convex hull as a sequence of vertices (i.e. a closed polygon).
+/// \brief A convex hull is a convex polygon. It can be constructed from a `dip::Polygon`, and a const reference
+/// to the underlying `dip::Polygon` object can be obtained. It is guaranteed clockwise.
 class DIP_NO_EXPORT ConvexHull {
    public:
 
@@ -653,59 +623,39 @@ class DIP_NO_EXPORT ConvexHull {
       ConvexHull() = default;
 
       /// Constructs a convex hull of a polygon
-      DIP_EXPORT ConvexHull( dip::Polygon&& polygon );
+      DIP_EXPORT explicit ConvexHull( dip::Polygon const& polygon );
 
-      /// Retrieve the vertices that represent the convex hull
-      std::vector< VertexFloat > const& Vertices() const {
-         return vertices_.vertices;
-      }
-
-      /// Compute the bounding box of the convex hull
-      BoundingBoxFloat BoundingBox() const {
-         return vertices_.BoundingBox();
-      }
-
-      /// Determine the orientation of the convex hull (should always be true).
-      bool IsClockWise() const {
-         return vertices_.IsClockWise();
+      /// Returns the polygon representing the convex hull
+      dip::Polygon const& Polygon() const {
+         return polygon_;
       }
 
       /// Returns the area of the convex hull
       dfloat Area() const {
-         return vertices_.Area();
+         return polygon_.Area();
       }
 
       /// Returns the perimeter of the convex hull
       dfloat Perimeter() const {
-         return vertices_.Length();
+         return polygon_.Length();
       }
 
       /// Returns the %Feret diameters of the convex hull
+      ///
+      /// The Feret diameters of the convex hull correspond to the Feret diameters of the original polygon.
+      /// Feret diameters are the lengths of the projections. This function determines the longest and the shortest
+      /// projections, as well as the length of the projection perpendicular to the shortest.
+      ///
+      /// These values are obtained by enumerating anti-podal pairs using the "rotating calipers" algorithm by
+      /// Preparata and Shamos (1985).
+      ///
+      /// \literature
+      /// <li>F.P. Preparata and M.I. Shamos, "Computational Geometry: an Introduction", Springer-Verlag, 1985.
+      /// \endliterature
       DIP_EXPORT FeretValues Feret() const;
 
-      /// Returns the centroid of the convex hull
-      VertexFloat Centroid() const {
-         return vertices_.Centroid();
-      }
-
-      /// Returns statistics on the radii of the convex hull, see `dip::Polygon::RadiusStatistics`.
-      RadiusValues RadiusStatistics() const {
-         return vertices_.RadiusStatistics();
-      }
-
-      /// \brief Returns the coefficient of variation of the distance of vertices to the ellipse with identical
-      /// covariance matrix, see `dip::Polygon::EllipseVariance`.
-      dfloat EllipseVariance() const {
-         return vertices_.EllipseVariance();
-      }
-
-      /// Returns the polygon representing the convex hull
-      dip::Polygon const& Polygon() const {
-          return vertices_;
-      }
-
    private:
-      dip::Polygon vertices_;
+      dip::Polygon polygon_;
 };
 
 /// \}
@@ -713,8 +663,7 @@ class DIP_NO_EXPORT ConvexHull {
 // This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
 // class, which in turn needs to know about the dip::Polygon class.
 inline dip::ConvexHull Polygon::ConvexHull() const {
-   Polygon copy = *this;
-   return dip::ConvexHull( std::move( copy ));
+   return dip::ConvexHull( *this );
 }
 
 /// \addtogroup measurement
@@ -843,10 +792,13 @@ struct DIP_NO_EXPORT ChainCode {
    DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
-   /// It is better to use `this->ConvexHull().Feret()`.
+   /// It is better to use `dip::ConvexHull::Feret`.
    DIP_EXPORT FeretValues Feret( dfloat angleStep = 5.0 / 180.0 * pi ) const;
 
    /// Computes the bending energy.
+   ///
+   /// Computes the bending energy directly from the chain code. The algorithm is rather imprecise. It is better
+   /// to use `dip::Polygon::BendingEnergy`.
    ///
    /// \literature
    /// <li>I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
@@ -891,7 +843,7 @@ struct DIP_NO_EXPORT ChainCode {
 
    /// Returns the convex hull of the object, see `dip::ChainCode::Polygon`.
    dip::ConvexHull ConvexHull() const {
-      return dip::ConvexHull( Polygon() );
+      return Polygon().ConvexHull();
    }
 
    /// \brief Paints the pixels traced by the chain code in a binary image. The image has the size of the

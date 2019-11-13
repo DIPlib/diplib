@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for functions that create chain codes from object outlines.
+ * This file contains functions that create chain codes from object outlines.
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -215,64 +215,6 @@ void ChainCode::Image( dip::Image& out ) const {
    }
 }
 
-ChainCode ChainCode::Offset() const {
-   DIP_THROW_IF( !is8connected, "This method is only defined for 8-connected chain codes" );
-   ChainCode out;
-   out.objectID = objectID;
-   out.is8connected = true;
-   unsigned prev = codes.back();
-   out.start = start + deltas8[ ( prev + ( codes.back().IsEven() ? 2u : 3u )) % 8u ];
-   for( auto code : codes ) {
-      unsigned n;
-      if( code < prev ) {
-         n = code + 8u - prev;
-      } else {
-         n = code - prev;
-      }
-      if( code.IsEven() ) {
-         switch( n ) {
-            case 4: // -4
-            case 5: // -3
-               out.Push( { code + 3, code.IsBorder() } );
-               // fallthrough
-            case 6: // -2
-            case 7: // -1
-               out.Push( { code + 1, code.IsBorder() } );
-               // fallthrough
-            case 0:
-            case 1:
-               out.Push( code );
-               break;
-            default:
-               DIP_THROW_ASSERTION( "Not reachable" );
-         }
-      } else {
-         switch( n ) {
-            case 4: // -4
-               out.Push( { code + 4, code.IsBorder() } );
-               // fallthrough
-            case 5: // -3
-            case 6: // -2
-               out.Push( { code + 2, code.IsBorder() } );
-               // fallthrough
-            case 7: // -1
-            case 0:
-               out.Push( code );
-               // fallthrough
-            case 1:
-            case 2:
-               // no points to add
-               break;
-            default:
-               DIP_THROW_ASSERTION( "Not reachable" );
-         }
-      }
-      prev = code;
-   }
-   return out;
-}
-
-
 } // namespace dip
 
 
@@ -292,22 +234,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    DOCTEST_REQUIRE( cc2.codes.size() == cc.codes.size() );
    for( dip::uint ii = 0; ii < cc2.codes.size(); ++ii ) {
       DOCTEST_CHECK( cc.codes[ ii ] == cc2.codes[ ii ] );
-   }
-}
-
-#include "diplib/pixel_table.h"
-#include "diplib/morphology.h"
-
-DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Offset") {
-   dip::Image img = dip::PixelTable( "elliptic", { 29, 29 } ).AsImage(); // Currently the easiest way of generating an image...
-   img = img.Pad( { 33, 33 } );
-   dip::ChainCode cc1 = dip::GetSingleChainCode( img, { 16, 2 }, 2 );
-   cc1 = cc1.Offset();
-   img = dip::Dilation( img, { 3, "diamond" } );
-   dip::ChainCode cc2 = dip::GetSingleChainCode( img, { 16, 1 }, 2 );
-   DOCTEST_REQUIRE( cc1.codes.size() == cc2.codes.size() );
-   for( dip::uint ii = 0; ii < cc1.codes.size(); ++ii ) {
-      DOCTEST_CHECK( cc1.codes[ ii ] == cc2.codes[ ii ] );
    }
 }
 

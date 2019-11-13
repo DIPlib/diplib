@@ -291,6 +291,10 @@ void init_measurement( py::module& m ) {
    poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrix().Ellipse(); } );
    poly.def( "RadiusStatistics", py::overload_cast<>( &dip::Polygon::RadiusStatistics, py::const_ ));
    poly.def( "EllipseVariance", py::overload_cast<>( &dip::Polygon::EllipseVariance, py::const_ ));
+   poly.def( "FractalDimension", &dip::Polygon::FractalDimension, "length"_a = 0.0 );
+   poly.def( "BendingEnergy", &dip::Polygon::BendingEnergy );
+   poly.def( "Simplify", &dip::Polygon::Simplify, "tolerance"_a = 0.5 );
+   poly.def( "Smooth", &dip::Polygon::Smooth, "sigma"_a = 1.0 );
    poly.def( "ConvexHull", []( dip::Polygon const& self ) {
                 auto out = self.ConvexHull().Polygon(); // Make a copy of the polygon, sadly. Otherwise we'd have to return the ConvexHull object. We can't extract that data from it trivially.
                 return out;

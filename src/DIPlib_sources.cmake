@@ -172,7 +172,7 @@ math/radial.cpp
 math/select.cpp
 math/statistics.cpp
 math/tensor_operators.cpp
-measurement/convex_hull.cpp
+measurement/chain_code.cpp
 measurement/feature_aspect_ratio_feret.h
 measurement/feature_bending_energy.h
 measurement/feature_cartesian_box.h
@@ -218,10 +218,11 @@ measurement/feature_surface_area.cpp
 measurement/feature_surface_area.h
 measurement/image_chain_code.cpp
 measurement/measure_chain_code.cpp
-measurement/measure_convex_hull.cpp
+measurement/measure_polygon.cpp
 measurement/measurement.cpp
 measurement/measurement_tool.cpp
 measurement/object_to_measurement.cpp
+measurement/polygon.cpp
 microscopy/attenuation_correction.cpp
 microscopy/colocalization.cpp
 microscopy/psf.cpp

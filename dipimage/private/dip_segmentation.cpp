@@ -85,15 +85,36 @@ inline mxArray* GetArray( dip::ChainCode const& in ) {
 }
 
 void traceobjects( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   DML_MAX_ARGS( 4 );
+   DML_MAX_ARGS( 5 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::UnsignedArray objectIDs = nrhs > 1 ? dml::GetUnsignedArray( prhs[ 1 ] ) : dip::UnsignedArray{};
    dip::uint connectivity = nrhs > 2 ? dml::GetUnsigned( prhs[ 2 ] ) : 2;
    dip::String output = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : "polygon";
-   bool computeConvexHull = output == "convex hull";
-   bool computePolygon = computeConvexHull || ( output == "polygon" );
-   if( !computePolygon && ( output != "chain code" )) {
+   bool computePolygon = true;
+   bool computeConvexHull = false;
+   bool smoothPolygon = false;
+   bool simplifyPolygon = false;
+   bool needsParam = false;
+   if (output == "chain code") {
+      computePolygon = false;
+   } else if (output == "polygon") {
+      // (the default)
+   } else if (output == "convex hull") {
+      computeConvexHull = true;
+   } else if (output == "smoothed polygon") {
+      smoothPolygon = true;
+      needsParam = true;
+   } else if (output == "simplified polygon") {
+      simplifyPolygon = true;
+      needsParam = true;
+   } else {
       DIP_THROW_INVALID_FLAG( output );
+   }
+   dip::dfloat param = 1.0;
+   if( needsParam ) {
+      param = nrhs > 4 ? dml::GetFloat( prhs[ 4 ] ) : param;
+   } else {
+      DML_MAX_ARGS( 4 );
    }
    dip::Image const& labels = in.DataType().IsBinary() ? dip::Label( in, connectivity ) : in;
    dip::ChainCodeArray ccs = GetImageChainCodes( labels, objectIDs, connectivity );
@@ -105,6 +126,10 @@ void traceobjects( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          dip::Polygon p = ccs[ ii ].Polygon();
          if( computeConvexHull ) {
             p = p.ConvexHull().Polygon();
+         } else if( smoothPolygon ) {
+            p.Smooth( param );
+         } else if( simplifyPolygon ) {
+            p.Simplify( param );
          }
          v = GetArray( p );
       } else {
