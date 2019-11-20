@@ -368,44 +368,57 @@ FloatArray FindShift(
    DIP_THROW_IF( c_in1.Sizes() != c_in2.Sizes(), E::SIZES_DONT_MATCH );
    dip::uint nDims = c_in1.Dimensionality();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( maxShift, nDims, std::numeric_limits< dip::uint >::max() ));
+   // Remove any singleton dimensions, but remember where there are
+   Image in1 = c_in1.QuickCopy();
+   Image in2 = c_in2.QuickCopy();
+   UnsignedArray singletonDims;
+   in1.Squeeze( singletonDims );
+   in2.Squeeze(); // This one removes exactly the same dimensions, since the image sizes have been tested to be the same.
+   nDims = in1.Dimensionality();
+   // Find shift
    FloatArray shift( nDims, 0.0 );
    if( method == S::INTEGER_ONLY ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, false ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( in1, in2, maxShift, S::DONT_NORMALIZE, false ));
    } else if( method == S::CC ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, true ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( in1, in2, maxShift, S::DONT_NORMALIZE, true ));
    } else if( method == S::NCC ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::NORMALIZE, true ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( in1, in2, maxShift, S::NORMALIZE, true ));
    } else if( method == S::PC ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::PHASE, true ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( in1, in2, maxShift, S::PHASE, true ));
    } else {
-      Image in1 = c_in1.QuickCopy();
-      Image in2 = c_in2.QuickCopy();
       DIP_STACK_TRACE_THIS( shift = CorrectIntegerShift( in1, in2, maxShift )); // modifies in1 and in2
-      if( method == S::CPF ) {
-         DIP_STACK_TRACE_THIS( shift += FindShift_CPF( in1, in2, parameter ));
-      } else if( method == S::MTS ) {
-         if( parameter <= 0.0 ) {
-            parameter = 1.0;
-         }
-         DIP_STACK_TRACE_THIS( shift += FindShift_MTS( in1, in2, 1, 0.0, parameter ));
-      } else {
-         dip::uint maxIter = 5;  // default number of iteration => accuracy ~ 1e-4
-         dfloat accuracy = 0.0;  // signals early break if bias correction is possible
-         if( parameter < 0.0 ) {
-            maxIter = std::max( dip::uint{ 1 }, static_cast< dip::uint >( round_cast( -parameter )));
-            accuracy = 1e-10;    // so small that maxIter would play its role
-         } else if(( parameter > 0.0 ) && ( parameter <= 0.1 )) {
-            maxIter = 20;        // NOTE: more iteration solution may end up very far from truth
-            accuracy = parameter;
-         }
-         if( method == S::ITER ) {
-            DIP_STACK_TRACE_THIS( shift += FindShift_MTS( in1, in2, maxIter, accuracy, 1.0 ));
-         } else if( method == S::PROJ ) {
-            DIP_STACK_TRACE_THIS( shift += FindShift_PROJ( in1, in2, maxIter, accuracy, 1.0 )); // calls FindShift_MTS
+      // If the cropping in CorrectIntegerShift() left only one pixel along any dimension, we cannot run the sub-pixel tools.
+      if(( in1.Sizes() > dip::uint( 1 )).all() ) {
+         if( method == S::CPF ) {
+            DIP_STACK_TRACE_THIS( shift += FindShift_CPF( in1, in2, parameter ));
+         } else if( method == S::MTS ) {
+            if( parameter <= 0.0 ) {
+               parameter = 1.0;
+            }
+            DIP_STACK_TRACE_THIS( shift += FindShift_MTS( in1, in2, 1, 0.0, parameter ));
          } else {
-            DIP_THROW_INVALID_FLAG( method );
+            dip::uint maxIter = 5;  // default number of iteration => accuracy ~ 1e-4
+            dfloat accuracy = 0.0;  // signals early break if bias correction is possible
+            if( parameter < 0.0 ) {
+               maxIter = std::max( dip::uint{ 1 }, static_cast< dip::uint >( round_cast( -parameter )));
+               accuracy = 1e-10;    // so small that maxIter would play its role
+            } else if(( parameter > 0.0 ) && ( parameter <= 0.1 )) {
+               maxIter = 20;        // NOTE: more iteration solution may end up very far from truth
+               accuracy = parameter;
+            }
+            if( method == S::ITER ) {
+               DIP_STACK_TRACE_THIS( shift += FindShift_MTS( in1, in2, maxIter, accuracy, 1.0 ));
+            } else if( method == S::PROJ ) {
+               DIP_STACK_TRACE_THIS( shift += FindShift_PROJ( in1, in2, maxIter, accuracy, 1.0 )); // calls FindShift_MTS
+            } else {
+               DIP_THROW_INVALID_FLAG( method );
+            }
          }
       }
+   }
+   // Recover original dimensionality, shift along singleton dimensions is 0
+   for( auto s : singletonDims ) {
+      shift.insert( s, 0 );
    }
    return shift;
 }

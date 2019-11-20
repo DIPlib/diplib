@@ -1,6 +1,6 @@
 /*
- * This program shows how to delete small objects from a grey-value image.
- * It displays the result using dip::viewer::ShowSimple.
+ * This program shows how to use superpixel segmentation and graph manipulation.
+ * It displays the result using dip::viewer::Show.
  */
 
 #include "diplib.h"
