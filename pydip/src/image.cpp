@@ -296,8 +296,12 @@ void init_image( py::module& m ) {
    img.def( "SwapDimensions", &dip::Image::SwapDimensions, "dim1"_a, "dim2"_a, py::return_value_policy::reference_internal );
    img.def( "Flatten", &dip::Image::Flatten, py::return_value_policy::reference_internal );
    img.def( "FlattenAsMuchAsPossible", &dip::Image::FlattenAsMuchAsPossible, py::return_value_policy::reference_internal );
+   img.def( "SplitDimension", &dip::Image::SplitDimension, "dim"_a, "size"_a, py::return_value_policy::reference_internal );
    img.def( "Squeeze", py::overload_cast<>( &dip::Image::Squeeze ), py::return_value_policy::reference_internal );
-   img.def( "AddSingleton", &dip::Image::AddSingleton, "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "Squeeze", py::overload_cast< dip::uint >( &dip::Image::Squeeze ), "dims"_a, py::return_value_policy::reference_internal );
+   img.def( "Squeeze", py::overload_cast< dip::UnsignedArray& >( &dip::Image::Squeeze ), "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "AddSingleton", py::overload_cast< dip::uint >( &dip::Image::AddSingleton ), "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "AddSingleton", py::overload_cast< dip::UnsignedArray const& >( &dip::Image::AddSingleton ), "dims"_a, py::return_value_policy::reference_internal );
    img.def( "ExpandDimensionality", &dip::Image::ExpandDimensionality, "dim"_a, py::return_value_policy::reference_internal );
    img.def( "ExpandSingletonDimension", &dip::Image::ExpandSingletonDimension, "dim"_a, "newSize"_a, py::return_value_policy::reference_internal );
    img.def( "ExpandSingletonDimensions", &dip::Image::ExpandSingletonDimensions, "newSizes"_a, py::return_value_policy::reference_internal );

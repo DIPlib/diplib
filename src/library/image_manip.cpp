@@ -140,15 +140,18 @@ Image& Image::SplitDimension( dip::uint dim, dip::uint size ) {
 }
 
 
-Image& Image::Squeeze() {
+Image& Image::Squeeze( UnsignedArray& dims ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint jj = 0;
+   dims.clear();
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       if( sizes_[ ii ] > 1 ) {
          strides_[ jj ] = strides_[ ii ];
          sizes_[ jj ] = sizes_[ ii ];
          pixelSize_.Set( jj, pixelSize_[ ii ] );
          ++jj;
+      } else {
+         dims.push_back( ii );
       }
    }
    strides_.resize( jj );
@@ -156,7 +159,6 @@ Image& Image::Squeeze() {
    pixelSize_.Resize( jj );
    return *this;
 }
-
 
 Image& Image::Squeeze( dip::uint dim ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -187,6 +189,13 @@ Image& Image::AddSingleton( dip::uint dim ) {
    return *this;
 }
 
+Image & Image::AddSingleton( UnsignedArray const& dims ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   for( auto dim : dims ) {
+      AddSingleton( dim );
+   }
+   return *this;
+}
 
 Image& Image::ExpandDimensionality( dip::uint dim ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -713,6 +722,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image singleton dimensions") {
    DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5, 50 } );
    DOCTEST_CHECK( img.TensorElements() == 1 );
+   img.AddSingleton( 1 );
+   img.AddSingleton( 2 );
+   img.AddSingleton( 4 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 1, 1, 10, 1, 15 } );
+   dip::UnsignedArray dims( 3, 0 ); // initialize with data to verify it's cleared
+   img.Squeeze( dims );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   img.AddSingleton( dims );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 1, 1, 10, 1, 15 } );
 }
 
 #include "diplib/generation.h"

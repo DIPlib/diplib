@@ -1673,9 +1673,24 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
+      /// `dims` will be modified to contain the dimensions that were removed. `AddSingleton` can be
+      /// used with `dims` to recover the original image sizes.
+      ///
       /// \see dip::Image::AddSingleton, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions,
       /// dip::Image::UnexpandSingletonDimensions
-      DIP_EXPORT Image& Squeeze();
+      DIP_EXPORT Image& Squeeze( UnsignedArray& dims );
+
+      /// \brief Remove singleton dimensions (dimensions with size==1).
+      ///
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see dip::Image::AddSingleton, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions,
+      /// dip::Image::UnexpandSingletonDimensions
+      DIP_EXPORT Image& Squeeze() {
+         UnsignedArray dims;
+         Squeeze( dims );
+         return *this;
+      }
 
       /// \brief Remove singleton dimension `dim` (has size==1).
       ///
@@ -1697,6 +1712,16 @@ class DIP_NO_EXPORT Image {
       ///
       /// \see dip::Image::Squeeze, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions
       DIP_EXPORT Image& AddSingleton( dip::uint dim );
+
+      /// \brief Add a singleton dimensions (with size==1) to the image.
+      ///
+      /// The elements of `dims` will be applied in order.
+      /// Dimensions `dims[ii]` to last are shifted up, dimension `dim[ii]` will have a size of 1.
+      ///
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see dip::Image::Squeeze, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions
+      DIP_EXPORT Image& AddSingleton( UnsignedArray const& dims );
 
       /// \brief Append singleton dimensions to increase the image dimensionality.
       ///
