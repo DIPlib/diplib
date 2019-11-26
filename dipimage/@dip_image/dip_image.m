@@ -1390,7 +1390,8 @@ classdef dip_image
          pxsz = im.PixelSize;
          if ~isempty(pxsz)
             pxsz = ensurePixelSizeDimensionality(pxsz,nd);
-            im.PixelSize = pxsz(k_orig);
+            pxsz = [defaultPixelSize;pxsz];
+            im.PixelSize = pxsz(k_orig+1); % where k_orig==0, read the default pixel size value
          end
       end
 
@@ -2545,6 +2546,7 @@ function pxsz = validatePixelSize(pxsz)
           % Record for longest expression???
       error('Illegal value for pixel size')
    end
+   pxsz = reshape(pxsz,[],1); % We try to keep this being a column vector
 end
 
 % Makes sure that the PixelSize array has at least the given number of elements by replicating the last element
@@ -2560,7 +2562,7 @@ end
 function img = insertPixelSizeElement(img,dim,newelem)
    pxsz = img.PixelSize;
    pxsz = ensurePixelSizeDimensionality(pxsz,dim);
-   pxsz = [pxsz(1:dim-1),validatePixelSize(newelem),pxsz(dim:end)];
+   pxsz = [pxsz(1:dim-1);validatePixelSize(newelem);pxsz(dim:end)];
    img.PixelSize = pxsz;
 end
 
@@ -2568,7 +2570,7 @@ end
 function img = removePixelSizeElement(img,dim)
    pxsz = img.PixelSize;
    if numel(pxsz) > dim % Not `>=`: we don't want to remove the last element in the array, as that is implicitly also the value for subsequent elements
-      pxsz = [pxsz(1:dim-1),pxsz(dim+1:end)];
+      pxsz(dim) = [];
       img.PixelSize = pxsz;
    end
 end
