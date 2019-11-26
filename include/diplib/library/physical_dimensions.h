@@ -807,7 +807,7 @@ class DIP_NO_EXPORT PixelSize {
          if( !size_.empty() ) {
             // we do not add a dimension past `d` here, assuming that the caller is modifying all useful dimensions.
             EnsureDimensionality( s.size() );
-            for( dip::uint ii = 1; ii < s.size(); ++ii ) {
+            for( dip::uint ii = 0; ii < s.size(); ++ii ) {
                size_[ ii ] *= s[ ii ];
             }
          }

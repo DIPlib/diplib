@@ -219,6 +219,7 @@ void Resampling(
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
+   pixelSize.Scale( zoom );
    String colorSpace = c_in.ColorSpace();
 
    // Calculate new output sizes and other processing parameters
@@ -240,8 +241,6 @@ void Resampling(
 
    // Create output
    out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
    DataType bufferType = DataType::SuggestFlex( out.DataType() );
 
    // Find line filter
@@ -255,6 +254,8 @@ void Resampling(
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, borders, bc, *lineFilter,
                          Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
+   out.SetPixelSize( pixelSize );
+   out.SetColorSpace( colorSpace );
 }
 
 namespace {
@@ -474,8 +475,6 @@ dip::UnsignedArray Skew(
 
    // Create output
    out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
    DataType bufferType = DataType::SuggestFlex( out.DataType() );
 
    // Find line filter
@@ -485,6 +484,8 @@ dip::UnsignedArray Skew(
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, { border }, boundaryCondition, *lineFilter,
          Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
+   out.SetPixelSize( pixelSize );
+   out.SetColorSpace( colorSpace );
 
    return outArray;
 }
@@ -638,8 +639,10 @@ void Rotation(
    // Fix pixel sizes
    if( pixelSize.IsDefined() ) {
       if( pixelSize[ dimension1 ] != pixelSize[ dimension2 ] ) {
-         pixelSize.Set( dimension1, {} );
-         pixelSize.Set( dimension2, {} );
+         dip::uint k = out.Dimensionality() - 1;
+         pixelSize.Set( k, pixelSize[ k ] ); // This ensures that all elements of pixelSize are defined, so that the commands below only change a single dimension
+         pixelSize.Set( dimension1, Units::Pixel() );
+         pixelSize.Set( dimension2, Units::Pixel() );
       }
       out.SetPixelSize( pixelSize );
    }
