@@ -62,7 +62,7 @@ if nargin < 2
    extension = '';
 end
 if nargin < 3 || isempty(range)
-   range = [0,0];
+   range = [0,-1];
 elseif numel(range)~=2
    error('The range parameter must be of the form [start ending]');
 end
@@ -107,9 +107,6 @@ M = length(fns);
 if M==1
    if verbose
       disp(['Reading multi-page tiff file ',fns{1},' as 3D image.']);
-   end
-   if range==[0,0]
-      range = [0,-1];
    end
    out = dip_fileio('readtiff',fns{1},range);
 else
@@ -228,5 +225,5 @@ if ending > start
 end
 out = out(I);
 iout = iout(I);
-[iout,I] = sort(iout);
+[~,I] = sort(iout);
 out = out(I);

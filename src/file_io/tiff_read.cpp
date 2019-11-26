@@ -914,10 +914,11 @@ void ImageReadTIFFStack(
       RoiSpec& roiSpec
 ) {
    // Forge the image
+   data.fileInformation.pixelSize.Set( data.fileInformation.sizes.size(), Units::Pixel() );
    data.fileInformation.sizes.push_back( imageNumbers.Size() );
    roiSpec.sizes.push_back( imageNumbers.Size() );
    roiSpec.mirror.push_back( false );
-   std::cout << "[ImageReadTIFFStack] roiSpec.sizes = " << roiSpec.sizes << ", roiSpec.tensorElements = " << roiSpec.tensorElements << '\n';
+   //std::cout << "[ImageReadTIFFStack] roiSpec.sizes = " << roiSpec.sizes << ", roiSpec.tensorElements = " << roiSpec.tensorElements << '\n';
    image.ReForge( roiSpec.sizes, roiSpec.tensorElements, data.fileInformation.dataType );
    uint8* imagedata = static_cast< uint8* >( image.Origin() );
    dip::sint z_stride = image.Stride( 2 ) * static_cast< dip::sint >( data.fileInformation.dataType.SizeOf() );
@@ -1075,16 +1076,20 @@ void ImageReadTIFFSeries(
    UnsignedArray sizes = tmp.Sizes();
    sizes.push_back( filenames.size() );
    out.ReForge( sizes, tmp.TensorElements(), tmp.DataType() );
+   // Make sure we copy over the color space information also
+   if( tmp.IsColor() ) {
+      out.SetColorSpace( tmp.ColorSpace() );
+   }
+   // And set the pixel sizes too
+   auto ps = tmp.PixelSize();
+   ps.Set( tmp.Dimensionality(), Units::Pixel() );
+   out.SetPixelSize( ps );
 
    // Iterate over the sub-images through the last dimension
    ImageSliceIterator it( out, out.Dimensionality() - 1 );
 
    // Write the first image into the output
    it->Copy( tmp );
-   // Make sure we copy over the color space information also
-   if( tmp.IsColor() ) {
-      out.SetColorSpace( tmp.ColorSpace() );
-   }
 
    // Read in the rest of the images, and write them into the output
    while( ++ii, ++it ) {
