@@ -67,7 +67,7 @@ Once all the binaries are compiled, start *MATLAB* and type:
 
 ```m
     addpath('C:\dip\share\DIPimage')
-    setenv('PATH',['C:\dip\lib',';',getenv('PATH')]);
+    setenv('PATH',['C:\dip\bin',';',getenv('PATH')]);
 ```
 
 assuming that `C:\dip\` was the root directory where the binaries were installed

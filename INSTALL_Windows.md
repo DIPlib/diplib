@@ -133,7 +133,10 @@ build 32-bit binaries). Right-click on `INSTALL` and select "Build".
 
 If everything works correctly, you will have:
 
-- `C:\Users\<name>\DIPlib\lib`: `DIP.dll`, as well as `DIPviewer.dll` and `DIPjavaio.dll`. 
+- `C:\Users\<name>\DIPlib\bin`: `DIP.dll`, as well as `DIPviewer.dll`,
+`DIPjavaio.dll`, `DIPjavaio.jar`, `dipview.exe` and `dipviewjava.exe`.
+
+- `C:\Users\<name>\DIPlib\lib`: `DIP.lib`, as well as `DIPviewer.lib` and `DIPjavaio.lib`. 
 
 - `C:\Users\<name>\DIPlib\include`: The *DIPlib* include files, which you'll need when
 building your own C++ programs using *DIPlib*.
@@ -149,7 +152,7 @@ Once the `INSTALL` target has finished building and installing the toolbox, star
 *MATLAB*. Type the following commands:
 ```matlab
 addpath('C:\Users\<name>\DIPlib\share\DIPimage')
-setenv('PATH',['C:\Users\<name>\DIPlib\lib',';',getenv('PATH')]);
+setenv('PATH',['C:\Users\<name>\DIPlib\bin',';',getenv('PATH')]);
 ```
 This will make the toolbox available (replace `C:\Users\<name>\DIPlib` with the
 actual path you installed to).
