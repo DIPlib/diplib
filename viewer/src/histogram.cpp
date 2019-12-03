@@ -95,6 +95,7 @@ void HistogramViewPort::render()
   dip::Image copy = histogram_;
   copy.TensorToSpatial();
   dip::MinMaxAccumulator acc = MaximumAndMinimum( copy );
+  copy.Strip();
   GLfloat maxhist = (GLfloat)acc.Maximum();
   auto p = viewer()->image().At<GLfloat>(o.operating_point_);
   
@@ -293,7 +294,7 @@ class viewer__Histogram : public dip::Framework::ScanLineFilter
           T const* inT = in;
 
           for( dip::uint jj = 0; jj < tensorLength; ++jj, inT += tensorStride )
-            out[(dip::uint)(((dip::dfloat)bins-1)*((dip::dfloat)*inT-offset) * scale)*tensorLength+jj]++;
+            out[dip::clamp((dip::uint)(((dip::dfloat)bins-1)*((dip::dfloat)*inT-offset) * scale), (dip::uint)0, (dip::uint)bins-1)*tensorLength+jj]++;
         }
       }
 };
