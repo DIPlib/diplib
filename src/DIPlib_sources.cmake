@@ -253,6 +253,7 @@ regions/label_manipulation.cpp
 regions/labelingGrana2016.h
 regions/region_adjacency_graph.cpp
 segmentation/canny.cpp
+segmentation/ellipse_fit.cpp
 segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
 segmentation/superpixels.cpp

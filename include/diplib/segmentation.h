@@ -455,6 +455,57 @@ inline Image Threshold(
 }
 
 
+/// \brief Finds a per-object threshold such that found objects are maximally elliptical.
+///
+/// [TODO: document this function and all its parameters.]
+///
+/// Additional parameters are allowed intervals of major- and minor axes, the ratio between those, and lowest ellipse fit.
+///
+/// `in` must be scalar, real-valued, and be two-dimensional (TODO: port the 3D version of this function also).
+/// `out` will be binary and of the same sizes as `in`.
+///
+/// \literature
+/// <li>P. Ranefall, S.K. Sadanandan, C. Wahlby, "Fast Adaptive Local Thresholding Based on Ellipse Fit",
+///    International Symposium on Biomedical Imaging (ISBI'16), Prague, Czech Republic, 2016.
+/// \endliterature
+DIP_EXPORT void PerObjectEllipseFit(
+      Image const& in,
+      Image& out,
+      dip::uint areaLowerBound = 6,
+      dip::uint areaUpperBound = 30000,
+      dfloat ellipseFitThreshold = 0.88,
+      dfloat minMajorAxis = 3.0,
+      dfloat maxMajorAxis = 200.0,
+      dfloat minMinorAxis = 2.0,
+      dfloat maxMinorAxis = 150.0,
+      dfloat minMajorMinorRatio = 1.0,
+      dfloat maxMajorMinorRatio = 10.0,
+      dfloat thrLowerBound = 0.0,
+      dfloat thrUpperBound = 255.0
+);
+inline Image PerObjectEllipseFit(
+      Image const& in,
+      dip::uint areaLowerBound = 6,
+      dip::uint areaUpperBound = 30000,
+      dfloat ellipseFitThreshold = 0.88,
+      dfloat minMajorAxis = 3.0,
+      dfloat maxMajorAxis = 200.0,
+      dfloat minMinorAxis = 2.0,
+      dfloat maxMinorAxis = 150.0,
+      dfloat minMajorMinorRatio = 1.0,
+      dfloat maxMajorMinorRatio = 10.0,
+      dfloat thrLowerBound = 0.0,
+      dfloat thrUpperBound = 255.0
+) {
+   Image out;
+   PerObjectEllipseFit(
+         in, out, areaLowerBound, areaUpperBound, ellipseFitThreshold,
+         minMajorAxis, maxMajorAxis, minMinorAxis, maxMinorAxis,
+         minMajorMinorRatio, maxMajorMinorRatio, thrLowerBound, thrUpperBound );
+   return out;
+}
+
+
 /// \brief Detect edges in the grey-value image by finding salient ridges in the gradient magnitude
 ///
 /// The Canny edge detector finds the ridges in the gradient magnitude of `in`, which correspond to the
