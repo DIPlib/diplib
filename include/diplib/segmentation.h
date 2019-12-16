@@ -454,6 +454,21 @@ inline Image Threshold(
    return out;
 }
 
+/// \brief Stores parameters for the `PerObjectEllipseFit` function.
+struct PerObjectEllipseFitParameters {
+   dip::uint minArea = 6;
+   dip::uint maxArea = 30000;
+   dfloat minEllipseFit = 0.88;
+   dfloat minMajorAxis = 3.0;
+   dfloat maxMajorAxis = 200.0;
+   dfloat minMinorAxis = 2.0;
+   dfloat maxMinorAxis = 150.0;
+   dfloat minMajorMinorRatio = 1.0;
+   dfloat maxMajorMinorRatio = 10.0;
+   dfloat minThreshold = 0.0;
+   dfloat maxThreshold = 255.0;
+};
+
 
 /// \brief Finds a per-object threshold such that found objects are maximally elliptical.
 ///
@@ -471,37 +486,16 @@ inline Image Threshold(
 DIP_EXPORT void PerObjectEllipseFit(
       Image const& in,
       Image& out,
-      dip::uint areaLowerBound = 6,
-      dip::uint areaUpperBound = 30000,
-      dfloat ellipseFitThreshold = 0.88,
-      dfloat minMajorAxis = 3.0,
-      dfloat maxMajorAxis = 200.0,
-      dfloat minMinorAxis = 2.0,
-      dfloat maxMinorAxis = 150.0,
-      dfloat minMajorMinorRatio = 1.0,
-      dfloat maxMajorMinorRatio = 10.0,
-      dfloat thrLowerBound = 0.0,
-      dfloat thrUpperBound = 255.0
+      PerObjectEllipseFitParameters const& params
+
 );
 inline Image PerObjectEllipseFit(
       Image const& in,
-      dip::uint areaLowerBound = 6,
-      dip::uint areaUpperBound = 30000,
-      dfloat ellipseFitThreshold = 0.88,
-      dfloat minMajorAxis = 3.0,
-      dfloat maxMajorAxis = 200.0,
-      dfloat minMinorAxis = 2.0,
-      dfloat maxMinorAxis = 150.0,
-      dfloat minMajorMinorRatio = 1.0,
-      dfloat maxMajorMinorRatio = 10.0,
-      dfloat thrLowerBound = 0.0,
-      dfloat thrUpperBound = 255.0
+      PerObjectEllipseFitParameters const& params
+
 ) {
    Image out;
-   PerObjectEllipseFit(
-         in, out, areaLowerBound, areaUpperBound, ellipseFitThreshold,
-         minMajorAxis, maxMajorAxis, minMinorAxis, maxMinorAxis,
-         minMajorMinorRatio, maxMajorMinorRatio, thrLowerBound, thrUpperBound );
+   PerObjectEllipseFit( in, out, params );
    return out;
 }
 

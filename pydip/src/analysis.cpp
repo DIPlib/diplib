@@ -253,11 +253,15 @@ void init_analysis( py::module& m ) {
              dip::dfloat threshold = Threshold( in, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
           }, "in"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
-   m.def( "PerObjectEllipseFit", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::dfloat, dip::dfloat, dip::dfloat,
-          dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat >( &dip::PerObjectEllipseFit ),
-          "in"_a, "areaLowerBound"_a = 6, "areaUpperBound"_a = 30000, "ellipseFitThreshold"_a = 0.88,
-          "minMajorAxis"_a = 3.0, "maxMajorAxis"_a = 200.0, "minMinorAxis"_a = 2.0, "maxMinorAxis"_a = 150.0,
-          "minMajorMinorRatio"_a = 1.0, "maxMajorMinorRatio"_a = 10.0, "thrLowerBound"_a = 0.0, "thrUpperBound"_a = 255.0 );
+   m.def( "PerObjectEllipseFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> areaBounds, dip::dfloat minEllipseFit,
+                                     std::pair<dip::dfloat, dip::dfloat> majorAxisBounds, std::pair<dip::dfloat, dip::dfloat> minorAxisBounds,
+                                     std::pair<dip::dfloat, dip::dfloat> majorMinorRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
+             return dip::PerObjectEllipseFit( in, { areaBounds.first, areaBounds.second, minEllipseFit, majorAxisBounds.first, majorAxisBounds.second,
+                                                    minorAxisBounds.first, minorAxisBounds.second, majorMinorRatioBounds.first, majorMinorRatioBounds.second,
+                                                    thresholdBounds.first, thresholdBounds.second } );
+          }, "in"_a, "areaBounds"_a = std::pair< dip::uint, dip::uint >{ 6, 30000 }, "minEllipseFit"_a = 0.88,
+          "majorAxisBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 3.0, 200.0 }, "minorAxisBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 2.0, 150.0 },
+          "majorMinorRatioBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 1.0, 10.0 }, "thresholdBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 0.0, 255.0 } );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL );
    m.def( "Superpixels", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringSet const& >( &dip::Superpixels ),

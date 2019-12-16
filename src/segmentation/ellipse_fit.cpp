@@ -96,20 +96,6 @@ dip::uint mergeNodes(
    return par;
 }
 
-struct PerObjectEllipseFitParameters {
-      dip::uint areaLowerBound;
-      dip::uint areaUpperBound;
-      dfloat ellipseFitThreshold;
-      dfloat minMajorAxis;
-      dfloat maxMajorAxis;
-      dfloat minMinorAxis;
-      dfloat maxMinorAxis;
-      dfloat minMajorMinorRatio;
-      dfloat maxMajorMinorRatio;
-      dfloat thrLowerBound;
-      dfloat thrUpperBound;
-};
-
 void findBestEllipseLevel(
       dip::uint inputE,
       PerObjectEllipseFitParameters const& params,
@@ -166,7 +152,7 @@ void findBestEllipseLevel(
          }
          return;
       }
-      if( nodes[ e ].area > params.areaUpperBound || imData[ e ] < params.thrLowerBound ) {
+      if( nodes[ e ].area > params.maxArea || imData[ e ] < params.minThreshold ) {
          // set from firstE
          if( optE != INVALID ) {
             while( startE != optE ) {
@@ -196,10 +182,10 @@ void findBestEllipseLevel(
       if( nodes[ e ].minorAxis > 0 ) {
          majorMinorRatio = nodes[ e ].majorAxis / nodes[ e ].minorAxis;
       }
-      if(( nodes[ e ].area >= params.areaLowerBound )
-         && ( imData[ e ] <= params.thrUpperBound )
+      if(( nodes[ e ].area >= params.minArea )
+         && ( imData[ e ] <= params.maxThreshold )
          && ( nodes[ e ].ellipseFit > optEf )
-         && ( nodes[ e ].ellipseFit > params.ellipseFitThreshold )
+         && ( nodes[ e ].ellipseFit >= params.minEllipseFit )
          && ( nodes[ e ].majorAxis >= params.minMajorAxis )
          && ( nodes[ e ].majorAxis <= params.maxMajorAxis )
          && ( nodes[ e ].minorAxis >= params.minMinorAxis )
@@ -233,7 +219,7 @@ void findObjBelow(
          res = OBJECT;
          break;
       }
-      if( nodes[ nodes[ e ].parentNode ].area > params.areaUpperBound || imData[ e ] < params.thrLowerBound ) {
+      if( nodes[ nodes[ e ].parentNode ].area > params.maxArea || imData[ e ] < params.minThreshold ) {
          res = NOT_OBJECT;
          break;
       }
@@ -251,17 +237,7 @@ void findObjBelow(
 void PerObjectEllipseFit(
       Image const& image,
       Image& out,
-      dip::uint areaLowerBound,
-      dip::uint areaUpperBound,
-      dfloat ellipseFitThreshold,
-      dfloat minMajorAxis,
-      dfloat maxMajorAxis,
-      dfloat minMinorAxis,
-      dfloat maxMinorAxis,
-      dfloat minMajorMinorRatio,
-      dfloat maxMajorMinorRatio,
-      dfloat thrLowerBound,
-      dfloat thrUpperBound
+      PerObjectEllipseFitParameters const& params
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -307,19 +283,6 @@ void PerObjectEllipseFit(
       }
    }
    std::vector< uint8 > outputArray( lenData, 0 ); // Actually the output image...
-   PerObjectEllipseFitParameters params{
-         areaLowerBound,
-         areaUpperBound,
-         ellipseFitThreshold,
-         minMajorAxis,
-         maxMajorAxis,
-         minMinorAxis,
-         maxMinorAxis,
-         minMajorMinorRatio,
-         maxMajorMinorRatio,
-         thrLowerBound,
-         thrUpperBound
-   };
 
    for( dip::uint jj : sortedIndices ) {
       dip::uint curNode = jj;
