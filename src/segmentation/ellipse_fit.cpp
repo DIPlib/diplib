@@ -21,13 +21,12 @@
 #include "diplib.h"
 #include "diplib/segmentation.h"
 #include "diplib/statistics.h"
-#include "diplib/iterators.h"
 
 namespace dip {
 
 namespace {
 
-// Values written to outputArray
+// Values written to intermediate output image
 constexpr uint8 UNDEFINED = 0;
 constexpr uint8 NOT_OBJECT = 1;
 constexpr uint8 MAYBE_NOT_OBJECT = 2;
@@ -44,125 +43,149 @@ struct Node {
    sfloat sumY = 0;
    sfloat sumY2 = 0;
    sfloat sumXY = 0;
+
+   void ComputeEllipseParams() {
+      if( area > 1 ) { // this is always true!
+         sfloat varX = ( sumX2 - sumX * sumX / static_cast< sfloat >( area ));
+         sfloat varY = ( sumY2 - sumY * sumY / static_cast< sfloat >( area ));
+         sfloat covXY = ( sumXY - sumX * sumY / static_cast< sfloat >( area ));
+         sfloat varXPlusVarY = varX + varY;
+         sfloat sqrtExpr = std::sqrt( varXPlusVarY * varXPlusVarY - 4 * ( varX * varY - covXY * covXY ));
+         if( varXPlusVarY > sqrtExpr ) {
+            sfloat r1 = 2 * std::sqrt(( varXPlusVarY + sqrtExpr ) / ( 2 * static_cast< sfloat >( area )));
+            sfloat r2 = 2 * std::sqrt(( varXPlusVarY - sqrtExpr ) / ( 2 * static_cast< sfloat >( area )));
+            sfloat ellipseArea = static_cast< sfloat >( pi ) * r1 * r2;
+            if( ellipseArea > 0 ) {
+               ellipseFit = static_cast< sfloat >( area ) / ellipseArea;
+               majorAxis = 2 * r1;
+               minorAxis = 2 * r2;
+            }
+         } else {
+            ellipseFit = majorAxis = minorAxis = 0.0; // CL: added
+         }
+      }
+   }
+
+   void operator+=( Node const& other ) {
+      area += other.area;
+      sumX += other.sumX;
+      sumX2 += other.sumX2;
+      sumY += other.sumY;
+      sumY2 += other.sumY2;
+      sumXY += other.sumXY;
+      ComputeEllipseParams();
+   }
+
+   bool MatchesParams( PerObjectEllipseFitParameters const& params, sfloat value ) {
+      if(( area >= params.minArea ) &&
+         ( value <= params.maxThreshold ) &&
+         ( ellipseFit >= params.minEllipseFit ) &&
+         ( majorAxis >= params.minMajorAxis ) &&
+         ( majorAxis <= params.maxMajorAxis ) &&
+         ( minorAxis >= params.minMinorAxis ) &&
+         ( minorAxis <= params.maxMinorAxis )) {
+         // `minorAxis >= params.minMinorAxis` ensures `minorAxis > 0`!
+         sfloat majorMinorRatio = majorAxis / minorAxis;
+         return ( majorMinorRatio >= params.minMajorMinorRatio ) &&
+                ( majorMinorRatio <= params.maxMajorMinorRatio );
+      }
+      return false;
+   }
+
 };
 
-dip::uint findNode( dip::uint n, std::vector< Node > const& nodes ) {
+dip::uint FindRootNode( dip::uint n, std::vector< Node > const& nodes ) {
    if( nodes[ n ].parentNode == n ) {
       return n;
    }
-   return findNode( nodes[ n ].parentNode, nodes );
+   return FindRootNode( nodes[ n ].parentNode, nodes ); // This is like union-find, but without path compression.
 }
 
-dip::uint mergeNodes(
-      dip::uint n1,
-      dip::uint n2,
-      sfloat const* imData,
-      std::vector< Node >& nodes
+dip::uint ConditionallyMergeNodes(
+      dip::uint currentNode,
+      dip::uint neighborNode,
+      std::vector< Node >& nodes,
+      sfloat const* inData
 ) {
-   dip::uint par;
-   dip::uint child;
-   if( imData[ n1 ] == imData[ n2 ] ) {
-      par = std::max( n1, n2 );
-      child = std::min( n1, n2 );
-   } else { // imData[n1] is always > imData[n2] here
-      par = n2;
-      child = n1;
-   }
-   nodes[ par ].area += nodes[ child ].area;
-   nodes[ child ].parentNode = par;
-   nodes[ par ].sumX += nodes[ child ].sumX;
-   nodes[ par ].sumX2 += nodes[ child ].sumX2;
-   nodes[ par ].sumY += nodes[ child ].sumY;
-   nodes[ par ].sumY2 += nodes[ child ].sumY2;
-   nodes[ par ].sumXY += nodes[ child ].sumXY;
-
-   //if( nodes[ par ].area > 1 ) { // this is always true!
-      sfloat varX = ( nodes[ par ].sumX2 - nodes[ par ].sumX * nodes[ par ].sumX / static_cast< sfloat >( nodes[ par ].area ));
-      sfloat varY = ( nodes[ par ].sumY2 - nodes[ par ].sumY * nodes[ par ].sumY / static_cast< sfloat >( nodes[ par ].area ));
-      sfloat covXY = ( nodes[ par ].sumXY - nodes[ par ].sumX * nodes[ par ].sumY / static_cast< sfloat >( nodes[ par ].area ));
-      sfloat varXPlusVarY = varX + varY;
-      sfloat sqrtExpr = std::sqrt( varXPlusVarY * varXPlusVarY - 4 * ( varX * varY - covXY * covXY ));
-      if( varXPlusVarY > sqrtExpr ) {
-         sfloat r1 = 2 * std::sqrt(( varXPlusVarY + sqrtExpr ) / ( 2 * static_cast< sfloat >( nodes[ par ].area )));
-         sfloat r2 = 2 * std::sqrt(( varXPlusVarY - sqrtExpr ) / ( 2 * static_cast< sfloat >( nodes[ par ].area )));
-         sfloat ellipseArea = static_cast< sfloat >( pi ) * r1 * r2;
-         if( ellipseArea > 0 ) {
-            nodes[ par ].ellipseFit = static_cast< sfloat >( nodes[ par ].area ) / ellipseArea;
-            nodes[ par ].majorAxis = 2 * r1;
-            nodes[ par ].minorAxis = 2 * r2;
+   if( inData[ neighborNode ] >= inData[ currentNode ] ) {
+      neighborNode = FindRootNode( neighborNode, nodes );
+      if( currentNode != neighborNode ) {
+         if(( currentNode < neighborNode ) && ( inData[ neighborNode ] == inData[ currentNode ] )) {
+            std::swap( currentNode, neighborNode );
          }
+         nodes[ neighborNode ].parentNode = currentNode;
+         nodes[ currentNode ] += nodes[ neighborNode ];
       }
-   //}
-   return par;
+   }
+   return currentNode;
 }
 
-void findBestEllipseLevel(
-      dip::uint inputE,
+void MarkParents(
+      dip::uint startE,
+      dip::uint e,
+      uint8 value,
+      std::vector< Node >& nodes,
+      uint8* outData
+) {
+   while( startE != e ) {
+      outData[ startE ] = value;
+      startE = nodes[ startE ].parentNode;
+   }
+}
+
+constexpr dip::uint INVALID = std::numeric_limits< dip::uint >::max();
+
+void ProcessParents(
+      dip::uint startE,
+      dip::uint e,
+      dip::uint optE,
+      std::vector< Node >& nodes,
+      uint8* outData
+) {
+   if( optE != INVALID ) {
+      MarkParents( startE, e, OBJECT, nodes, outData );
+      outData[ optE ] = OBJECT;
+      startE = nodes[ optE ].parentNode;
+   }
+   MarkParents( startE, e, NOT_OBJECT, nodes, outData );
+}
+
+void FindBestEllipseLevel(
+      dip::uint e,
       PerObjectEllipseFitParameters const& params,
       std::vector< Node >& nodes,
-      std::vector< uint8 >& outputArray,
-      sfloat const* imData
+      uint8* outData,
+      sfloat const* inData
 ) {
-   constexpr dip::uint INVALID = std::numeric_limits< dip::uint >::max();
-   dip::uint e = inputE;
    dip::uint optE = INVALID;
    sfloat optEf = 0;
    dip::uint optArea = 0;
    dip::uint startE = e;
    while( true ) {
       dip::uint firstE = e;
-      while( imData[ e ] == imData[ nodes[ e ].parentNode ] && nodes[ e ].parentNode != e ) {
+      while(( inData[ e ] == inData[ nodes[ e ].parentNode ] ) && ( nodes[ e ].parentNode != e )) {
          e = nodes[ e ].parentNode;
       }
-      if( outputArray[ e ] == OBJECT ) {
-         while( startE != e ) {
-            outputArray[ startE ] = OBJECT;
-            startE = nodes[ startE ].parentNode;
-         }
+      if( outData[ e ] == OBJECT ) {
+         MarkParents( startE, e, OBJECT, nodes, outData );
          return;
       }
-      if( outputArray[ e ] == NOT_OBJECT ) {
-         if( optE != INVALID ) {
-            while( startE != optE ) {
-               outputArray[ startE ] = OBJECT;
-               startE = nodes[ startE ].parentNode;
-            }
-            outputArray[ optE ] = OBJECT;
-            startE = nodes[ optE ].parentNode;
-         }
-         while( startE != e ) {
-            outputArray[ startE ] = NOT_OBJECT;
-            startE = nodes[ startE ].parentNode;
-         }
+      if( outData[ e ] == NOT_OBJECT ) {
+         ProcessParents( startE, e, optE, nodes, outData );
          return;
       }
-      if( nodes[ e ].parentNode == e ) // root
-      {
-         if( optE != INVALID ) {
-            while( startE != optE ) {
-               outputArray[ startE ] = OBJECT;
-               startE = nodes[ startE ].parentNode;
-            }
-            outputArray[ optE ] = OBJECT;
-            startE = nodes[ optE ].parentNode;
-         }
-         while( startE != e ) {
-            outputArray[ startE ] = NOT_OBJECT;
-            startE = nodes[ startE ].parentNode;
-         }
+      if( nodes[ e ].parentNode == e ) { // root
+         ProcessParents( startE, e, optE, nodes, outData );
          return;
       }
-      if( nodes[ e ].area > params.maxArea || imData[ e ] < params.minThreshold ) {
+      if(( nodes[ e ].area > params.maxArea ) || ( inData[ e ] < params.minThreshold )) {
          // set from firstE
          if( optE != INVALID ) {
-            while( startE != optE ) {
-               outputArray[ startE ] = OBJECT;
-               startE = nodes[ startE ].parentNode;
-            }
-            outputArray[ optE ] = OBJECT;
+            MarkParents( startE, optE, OBJECT, nodes, outData );
+            outData[ optE ] = OBJECT;
             startE = nodes[ optE ].parentNode;
-            while( startE != e ) {
-               outputArray[ startE ] = MAYBE_NOT_OBJECT;
+            while( startE != e ) { // same as MarkParents() but additionally changing the area for each visited node.
+               outData[ startE ] = MAYBE_NOT_OBJECT;
                if( optArea > nodes[ startE ].area ) {
                   nodes[ startE ].area = 0;
                } else {
@@ -171,55 +194,41 @@ void findBestEllipseLevel(
                startE = nodes[ startE ].parentNode;
             }
          }
-         while( firstE != nodes[ firstE ].parentNode && outputArray[ nodes[ firstE ].parentNode ] == UNDEFINED ) {
+         while(( firstE != nodes[ firstE ].parentNode ) && ( outData[ nodes[ firstE ].parentNode ] == UNDEFINED )) {
             firstE = nodes[ firstE ].parentNode;
-            outputArray[ firstE ] = NOT_OBJECT;
+            outData[ firstE ] = NOT_OBJECT;
          }
-         outputArray[ firstE ] = NOT_OBJECT;
+         outData[ firstE ] = NOT_OBJECT;
          return;
       }
-      sfloat majorMinorRatio = 1.0;
-      if( nodes[ e ].minorAxis > 0 ) {
-         majorMinorRatio = nodes[ e ].majorAxis / nodes[ e ].minorAxis;
-      }
-      if(( nodes[ e ].area >= params.minArea )
-         && ( imData[ e ] <= params.maxThreshold )
-         && ( nodes[ e ].ellipseFit > optEf )
-         && ( nodes[ e ].ellipseFit >= params.minEllipseFit )
-         && ( nodes[ e ].majorAxis >= params.minMajorAxis )
-         && ( nodes[ e ].majorAxis <= params.maxMajorAxis )
-         && ( nodes[ e ].minorAxis >= params.minMinorAxis )
-         && ( nodes[ e ].minorAxis <= params.maxMinorAxis )
-         && ( majorMinorRatio >= params.minMajorMinorRatio )
-         && ( majorMinorRatio <= params.maxMajorMinorRatio )) {
+      if(( nodes[ e ].ellipseFit > optEf ) && ( nodes[ e ].MatchesParams( params, inData[ e ] ))) {
          optEf = nodes[ e ].ellipseFit;
          optArea = nodes[ e ].area;
          optE = e;
       }
-
       e = nodes[ e ].parentNode;
    }
 }
 
-void findObjBelow(
+void FindObjectBelow(
       dip::uint startE,
       PerObjectEllipseFitParameters const& params,
       std::vector< Node >& nodes,
-      std::vector< uint8 >& outputArray,
-      sfloat const* imData
+      uint8* outData,
+      sfloat const* inData
 ) {
    dip::uint e = startE;
-   uint8 res = NOT_OBJECT;
+   uint8 res;
    while( true ) {
       if( nodes[ e ].parentNode == e ) {
          res = NOT_OBJECT;
          break;
       }
-      if( outputArray[ nodes[ e ].parentNode ] == OBJECT ) {
+      if( outData[ nodes[ e ].parentNode ] == OBJECT ) {
          res = OBJECT;
          break;
       }
-      if( nodes[ nodes[ e ].parentNode ].area > params.maxArea || imData[ e ] < params.minThreshold ) {
+      if( nodes[ nodes[ e ].parentNode ].area > params.maxArea || inData[ e ] < params.minThreshold ) {
          res = NOT_OBJECT;
          break;
       }
@@ -227,7 +236,7 @@ void findObjBelow(
    }
    dip::uint j = startE;
    while( j != e ) {
-      outputArray[ j ] = res;
+      outData[ j ] = res;
       j = nodes[ j ].parentNode;
    }
 }
@@ -252,21 +261,23 @@ void PerObjectEllipseFit(
    DIP_THROW_IF( !std::isfinite( extrema.Maximum() ) || !std::isfinite( extrema.Minimum() ), "Image has non-finite values" );
    DIP_THROW_IF( extrema.Maximum() == extrema.Minimum(), "Image is constant" );
 
+   DIP_THROW_IF( params.minMinorAxis <= 0, "params.minMinorAxis must be positive" ); // actually they all should be, but with this test we prevent division by zero later on.
+
    // Get image data pointer.
    // We first convert the image to SFLOAT, this way we avoid dealing with multiple data types and strides.
    Image floatImg = Convert( image, DT_SFLOAT );
    DIP_ASSERT( floatImg.HasNormalStrides() );
-   float const* imData = static_cast< float const* >( floatImg.Origin() );
+   float const* inData = static_cast< float const* >( floatImg.Origin() );
 
    // Get a list of indices to all pixels, sorted in descending order.
    std::vector< dip::uint > sortedIndices( lenData );
    std::iota( sortedIndices.begin(), sortedIndices.end(), 0 );
    std::stable_sort( sortedIndices.begin(), sortedIndices.end(),
                      [ & ]( dip::uint const& a, dip::uint const& b ) {
-                        return imData[ a ] > imData[ b ];
+                        return inData[ a ] > inData[ b ];
                      } );
 
-   // Allocate and initialize intermediate data
+   // Allocate and initialize nodes
    std::vector< Node > nodes( lenData );
    dip::uint ii = 0;
    for( dip::uint yy = 0; yy < height; ++yy ) {
@@ -282,67 +293,45 @@ void PerObjectEllipseFit(
          ++ii;
       }
    }
-   std::vector< uint8 > outputArray( lenData, 0 ); // Actually the output image...
 
-   for( dip::uint jj : sortedIndices ) {
-      dip::uint curNode = jj;
-      dip::uint yy = jj / width;
-      dip::uint xx = jj - yy * width;
-
-      dip::uint nextY = yy + 1;
-      if( nextY < height ) {
-         dip::uint kk = xx + width * nextY;
-         if( imData[ kk ] >= imData[ jj ] ) {
-            dip::uint adjNode = findNode( kk, nodes );
-            if( curNode != adjNode ) {
-               curNode = mergeNodes( adjNode, curNode, imData, nodes );
-            }
-         }
+   // Build tree
+   for( dip::uint currentNode : sortedIndices ) {
+      dip::uint yy = currentNode / width;
+      dip::uint xx = currentNode - yy * width;
+      dip::uint rootNode = currentNode;
+      if( yy + 1 < height ) {
+         rootNode = ConditionallyMergeNodes( rootNode, currentNode + width, nodes, inData );
       }
-      dip::uint nextX = xx + 1;
-      if( nextX < width ) {
-         dip::uint kk = nextX + width * yy;
-         if( imData[ kk ] >= imData[ jj ] ) {
-            dip::uint adjNode = findNode( kk, nodes );
-            if( curNode != adjNode ) {
-               curNode = mergeNodes( adjNode, curNode, imData, nodes );
-            }
-         }
+      if( xx + 1 < width ) {
+         rootNode = ConditionallyMergeNodes( rootNode, currentNode + 1, nodes, inData );
       }
       if( xx > 0 ) {
-         dip::uint kk = xx - 1 + width * yy;
-         if( imData[ kk ] > imData[ jj ] ) {
-            dip::uint adjNode = findNode( kk, nodes );
-            if( curNode != adjNode ) {
-               curNode = mergeNodes( adjNode, curNode, imData, nodes );
-            }
-         }
+         rootNode = ConditionallyMergeNodes( rootNode, currentNode - 1, nodes, inData );
       }
       if( yy > 0 ) {
-         dip::uint kk = xx + width * ( yy - 1 );
-         if( imData[ kk ] > imData[ jj ] ) {
-            dip::uint adjNode = findNode( kk, nodes );
-            if( curNode != adjNode ) {
-               curNode = mergeNodes( adjNode, curNode, imData, nodes );
-            }
-         }
+         /*rootNode =*/ ConditionallyMergeNodes( rootNode, currentNode - width, nodes, inData );
       }
    }
+
+   // Allocate and initialize intermediate output image
+   // By using a separate array we don't have to deal with output image strides.
+   Image tmpOutput( image.Sizes(), 1, DT_UINT8 );
+   tmpOutput.Fill( UNDEFINED );
+   uint8* outData = static_cast< uint8* >( tmpOutput.Origin() );
 
    // Handle UNDEFINED
    for( dip::uint jj : sortedIndices ) {
-      if( outputArray[ jj ] == UNDEFINED ) {
+      if( outData[ jj ] == UNDEFINED ) {
          dip::uint e = jj;
-         while( imData[ e ] == imData[ nodes[ e ].parentNode ] && outputArray[ e ] == UNDEFINED && e != nodes[ e ].parentNode  ) {
+         while(( inData[ e ] == inData[ nodes[ e ].parentNode ] ) && ( outData[ e ] == UNDEFINED ) && ( e != nodes[ e ].parentNode )) {
             e = nodes[ e ].parentNode;
          }
-         if( outputArray[ e ] == UNDEFINED ) {
-            findBestEllipseLevel( jj, params, nodes, outputArray, imData );
+         if( outData[ e ] == UNDEFINED ) {
+            FindBestEllipseLevel( jj, params, nodes, outData, inData );
          } else {
-            dip::uint e1 = jj;
-            while( e1 != e ) {
-               outputArray[ e1 ] = outputArray[ e ];
-               e1 = nodes[ e1 ].parentNode;
+            while( jj != e ) {
+               outData[ jj ] = outData[ e ];
+               jj = nodes[ jj ].parentNode;
             }
          }
       }
@@ -350,25 +339,21 @@ void PerObjectEllipseFit(
 
    // Handle MAYBE
    for( dip::uint jj : sortedIndices ) {
-      if( outputArray[ jj ] == MAYBE_NOT_OBJECT ) {
-         findBestEllipseLevel( jj, params, nodes, outputArray, imData );
+      if( outData[ jj ] == MAYBE_NOT_OBJECT ) {
+         FindBestEllipseLevel( jj, params, nodes, outData, inData );
       }
    }
 
    // Handle MAYBE
    for( dip::uint jj : sortedIndices ) {
-      if( outputArray[ jj ] == MAYBE_NOT_OBJECT ) {
-         findObjBelow( jj, params, nodes, outputArray, imData );
+      if( outData[ jj ] == MAYBE_NOT_OBJECT ) {
+         FindObjectBelow( jj, params, nodes, outData, inData );
       }
    }
 
    // Create output image and copy over
    out.ReForge( image, DT_BIN ); // Note: copies over pixel sizes.
-   ImageIterator< bin > outIt( out );
-   auto dataIt = outputArray.begin();
-   do {
-      *outIt = *dataIt == OBJECT;
-   } while( ++dataIt, ++outIt );
+   Equal( tmpOutput, OBJECT, out );
 }
 
 } // namespace dip
