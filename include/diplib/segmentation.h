@@ -454,48 +454,44 @@ inline Image Threshold(
    return out;
 }
 
-/// \brief Stores parameters for the `PerObjectEllipseFit` function.
-struct PerObjectEllipseFitParameters {
-   dip::uint minArea = 6;
-   dip::uint maxArea = 30000;
-   dfloat minEllipseFit = 0.88;
-   dfloat minMajorAxis = 3.0;
-   dfloat maxMajorAxis = 200.0;
-   dfloat minMinorAxis = 2.0;
-   dfloat maxMinorAxis = 150.0;
-   dfloat minMajorMinorRatio = 1.0;
-   dfloat maxMajorMinorRatio = 10.0;
-   dfloat minThreshold = 0.0;
-   dfloat maxThreshold = 255.0;
+/// \brief Defines the parameters for the `PerObjectEllipsoidFit` function.
+struct PerObjectEllipsoidFitParameters {
+   dip::uint minSize = 25;          ///< Area in pixels of the smallest object detected
+   dip::uint maxArea = 25000;       ///< Area in pixels of the largest object detected
+   dfloat minEllipsoidFit = 0.88;   ///< Smallest allowed ratio of object size vs fitted ellipse size
+   dfloat minAspectRatio = 1.0;     ///< Smallest allowed aspect ratio of ellipse (largest radius divided by smallest radius); 1.0 is a circle/sphere
+   dfloat maxAspectRatio = 10.0;    ///< Largest allowed aspect ratio
+   dfloat minThreshold = 0.0;       ///< Smallest allowed threshold
+   dfloat maxThreshold = 255.0;     ///< Largest allowed threshold
 };
 
-
-/// \brief Finds a per-object threshold such that found objects are maximally elliptical.
+/// \brief Finds a per-object threshold such that found objects are maximally ellipsoidal.
 ///
-/// [TODO: document this function and all its parameters.]
+/// This function thresholds the image such that all objects found are approximately ellipsoidal, within the bounds expressed
+/// by `parameters`. Each object is thresholded at a different level, chosen to maximize its fit to an ellipsoid. The measure
+/// maximized is the ratio of the object's size (area or volume) to the size of the fitted ellipsoid. Ellipsoids are fitted by
+/// determining the ellipsoid with the same second order central moments as the object at the given threshold level.
 ///
-/// Additional parameters are allowed intervals of major- and minor axes, the ratio between those, and lowest ellipse fit.
-///
-/// `in` must be scalar, real-valued, and be two-dimensional (TODO: port the 3D version of this function also).
+/// `in` must be scalar, real-valued, and be 2D (TODO: port the 3D version of this function also).
 /// `out` will be binary and of the same sizes as `in`.
 ///
 /// \literature
 /// <li>P. Ranefall, S.K. Sadanandan, C. Wahlby, "Fast Adaptive Local Thresholding Based on Ellipse Fit",
 ///    International Symposium on Biomedical Imaging (ISBI'16), Prague, Czech Republic, 2016.
 /// \endliterature
-DIP_EXPORT void PerObjectEllipseFit(
+DIP_EXPORT void PerObjectEllipsoidFit(
       Image const& in,
       Image& out,
-      PerObjectEllipseFitParameters const& params
+      PerObjectEllipsoidFitParameters const& parameters
 
 );
-inline Image PerObjectEllipseFit(
+inline Image PerObjectEllipsoidFit(
       Image const& in,
-      PerObjectEllipseFitParameters const& params
+      PerObjectEllipsoidFitParameters const& parameters
 
 ) {
    Image out;
-   PerObjectEllipseFit( in, out, params );
+   PerObjectEllipsoidFit( in, out, parameters );
    return out;
 }
 

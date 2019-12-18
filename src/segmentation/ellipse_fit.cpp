@@ -36,8 +36,7 @@ struct Node {
    dip::uint parentNode = 0;
    dip::uint area = 1;
    sfloat ellipseFit = 0;
-   sfloat majorAxis = 0;
-   sfloat minorAxis = 0;
+   sfloat aspectRatio = 0;
    sfloat sumX = 0;
    sfloat sumX2 = 0;
    sfloat sumY = 0;
@@ -45,7 +44,7 @@ struct Node {
    sfloat sumXY = 0;
 
    void ComputeEllipseParams() {
-      ellipseFit = majorAxis = minorAxis = 0.0;
+      ellipseFit = aspectRatio = 0.0;
       if( area > 1 ) { // this is always true!
          sfloat farea = static_cast< sfloat >( area );
          sfloat varX = ( sumX2 - sumX * sumX / farea ); // Actually variance * area
@@ -60,8 +59,7 @@ struct Node {
             sfloat ellipseArea = static_cast< sfloat >( pi ) * r1 * r2;
             if( ellipseArea > 0 ) {
                ellipseFit = farea / ellipseArea;
-               majorAxis = 2 * r1;
-               minorAxis = 2 * r2;
+               aspectRatio  = r1 / r2;
             }
          }
          */
@@ -69,11 +67,11 @@ struct Node {
          sfloat dmu2 = ( varX - varY ) / 2;  //     I didn't recognize the equations above, but they are equivalent.
          sfloat sqroot = std::sqrt( covXY * covXY + dmu2 * dmu2 );
          if( sqroot < mmu2 ) {
-            majorAxis = 4 * std::sqrt(( mmu2 + sqroot ) / farea );   // diameter == r1*2
-            minorAxis = std::sqrt(( mmu2 - sqroot ) / farea );       // leaving out *4 for a moment, making this r2/2
-            sfloat ellipseArea = static_cast< sfloat >( pi ) * majorAxis * minorAxis; // r1 * r2 = r1*2 * r2/2
-            minorAxis *= 4;                                          // adding the missing *4
+            sfloat r1 = 2 * std::sqrt(( mmu2 + sqroot ) / farea );
+            sfloat r2 = 2 * std::sqrt(( mmu2 - sqroot ) / farea );
+            sfloat ellipseArea = static_cast< sfloat >( pi ) * r1 * r2;
             ellipseFit = farea / ellipseArea;
+            aspectRatio  = r1 / r2;
          }
       }
    }
@@ -88,21 +86,13 @@ struct Node {
       ComputeEllipseParams();
    }
 
-   bool MatchesParams( PerObjectEllipseFitParameters const& params, sfloat value ) {
-      if(( area >= params.minArea ) &&
-         ( value <= params.maxThreshold ) &&
-         ( ellipseFit >= params.minEllipseFit ) &&
-         ( majorAxis >= params.minMajorAxis ) &&
-         ( majorAxis <= params.maxMajorAxis ) &&
-         ( minorAxis >= params.minMinorAxis ) &&
-         ( minorAxis <= params.maxMinorAxis )) {
-         sfloat majorMinorRatio = majorAxis / minorAxis;
-         return ( majorMinorRatio >= params.minMajorMinorRatio ) &&
-                ( majorMinorRatio <= params.maxMajorMinorRatio );
-      }
-      return false;
+   bool MatchesParams( PerObjectEllipsoidFitParameters const& params, sfloat value ) {
+      return ( area >= params.minSize ) &&
+             ( value <= params.maxThreshold ) &&
+             ( ellipseFit >= params.minEllipsoidFit ) &&
+             ( aspectRatio >= params.minAspectRatio ) &&
+             ( aspectRatio <= params.maxAspectRatio );
    }
-
 };
 
 dip::uint FindRootNode( dip::uint n, std::vector< Node > const& nodes ) {
@@ -159,7 +149,7 @@ void ProcessParents(
 
 void FindBestEllipseLevel(
       dip::uint e,
-      PerObjectEllipseFitParameters const& params,
+      PerObjectEllipsoidFitParameters const& params,
       std::vector< Node >& nodes,
       uint8* outData,
       sfloat const* inData
@@ -219,7 +209,7 @@ void FindBestEllipseLevel(
 
 void FindObjectBelow(
       dip::uint startE,
-      PerObjectEllipseFitParameters const& params,
+      PerObjectEllipsoidFitParameters const& params,
       std::vector< Node >& nodes,
       uint8* outData,
       sfloat const* inData
@@ -250,10 +240,10 @@ void FindObjectBelow(
 
 } // namespace
 
-void PerObjectEllipseFit(
+void PerObjectEllipsoidFit(
       Image const& image,
       Image& out,
-      PerObjectEllipseFitParameters const& params
+      PerObjectEllipsoidFitParameters const& params
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -304,7 +294,7 @@ void PerObjectEllipseFit(
    for( dip::uint currentNode : sortedIndices ) {
       sfloat currentValue = inData[ currentNode ];
       if( currentValue == extrema.Minimum() ) {
-         // We've reached the lowest value, we're done!
+         // We've reached the lowest value, we're done! (added by CL)
          break;
       }
       dip::uint yy = currentNode / width;

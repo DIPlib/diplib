@@ -253,15 +253,12 @@ void init_analysis( py::module& m ) {
              dip::dfloat threshold = Threshold( in, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
           }, "in"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
-   m.def( "PerObjectEllipseFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> areaBounds, dip::dfloat minEllipseFit,
-                                     std::pair<dip::dfloat, dip::dfloat> majorAxisBounds, std::pair<dip::dfloat, dip::dfloat> minorAxisBounds,
-                                     std::pair<dip::dfloat, dip::dfloat> majorMinorRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
-             return dip::PerObjectEllipseFit( in, { areaBounds.first, areaBounds.second, minEllipseFit, majorAxisBounds.first, majorAxisBounds.second,
-                                                    minorAxisBounds.first, minorAxisBounds.second, majorMinorRatioBounds.first, majorMinorRatioBounds.second,
-                                                    thresholdBounds.first, thresholdBounds.second } );
-          }, "in"_a, "areaBounds"_a = std::pair< dip::uint, dip::uint >{ 6, 30000 }, "minEllipseFit"_a = 0.88,
-          "majorAxisBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 3.0, 200.0 }, "minorAxisBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 2.0, 150.0 },
-          "majorMinorRatioBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 1.0, 10.0 }, "thresholdBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 0.0, 255.0 } );
+   m.def( "PerObjectEllipsoidFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> sizeBounds, dip::dfloat minEllipsoidFit,
+                                     std::pair<dip::dfloat, dip::dfloat> aspectRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
+             return dip::PerObjectEllipsoidFit( in, { sizeBounds.first, sizeBounds.second, minEllipsoidFit, aspectRatioBounds.first,
+                                                      aspectRatioBounds.second, thresholdBounds.first, thresholdBounds.second } );
+          }, "in"_a, "sizeBounds"_a = std::pair< dip::uint, dip::uint >{ 6, 30000 }, "minEllipsoidFit"_a = 0.88,
+          "aspectRatioBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 1.0, 10.0 }, "thresholdBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 0.0, 255.0 } );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL );
    m.def( "Superpixels", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringSet const& >( &dip::Superpixels ),
