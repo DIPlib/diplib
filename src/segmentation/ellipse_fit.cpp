@@ -45,23 +45,35 @@ struct Node {
    sfloat sumXY = 0;
 
    void ComputeEllipseParams() {
+      ellipseFit = majorAxis = minorAxis = 0.0;
       if( area > 1 ) { // this is always true!
-         sfloat varX = ( sumX2 - sumX * sumX / static_cast< sfloat >( area ));
-         sfloat varY = ( sumY2 - sumY * sumY / static_cast< sfloat >( area ));
-         sfloat covXY = ( sumXY - sumX * sumY / static_cast< sfloat >( area ));
+         sfloat farea = static_cast< sfloat >( area );
+         sfloat varX = ( sumX2 - sumX * sumX / farea ); // Actually variance * area
+         sfloat varY = ( sumY2 - sumY * sumY / farea );
+         sfloat covXY = ( sumXY - sumX * sumY / farea );
+         /*
          sfloat varXPlusVarY = varX + varY;
          sfloat sqrtExpr = std::sqrt( varXPlusVarY * varXPlusVarY - 4 * ( varX * varY - covXY * covXY ));
          if( varXPlusVarY > sqrtExpr ) {
-            sfloat r1 = 2 * std::sqrt(( varXPlusVarY + sqrtExpr ) / ( 2 * static_cast< sfloat >( area )));
-            sfloat r2 = 2 * std::sqrt(( varXPlusVarY - sqrtExpr ) / ( 2 * static_cast< sfloat >( area )));
+            sfloat r1 = 2 * std::sqrt(( varXPlusVarY + sqrtExpr ) / ( 2 * farea ));
+            sfloat r2 = 2 * std::sqrt(( varXPlusVarY - sqrtExpr ) / ( 2 * farea ));
             sfloat ellipseArea = static_cast< sfloat >( pi ) * r1 * r2;
             if( ellipseArea > 0 ) {
-               ellipseFit = static_cast< sfloat >( area ) / ellipseArea;
+               ellipseFit = farea / ellipseArea;
                majorAxis = 2 * r1;
                minorAxis = 2 * r2;
             }
-         } else {
-            ellipseFit = majorAxis = minorAxis = 0.0; // CL: added
+         }
+         */
+         sfloat mmu2 = ( varX + varY ) / 2;  // CL: Changed eigenvalue computation, copied from dip::CovarianceMatrix::Eig() because
+         sfloat dmu2 = ( varX - varY ) / 2;  //     I didn't recognize the equations above, but they are equivalent.
+         sfloat sqroot = std::sqrt( covXY * covXY + dmu2 * dmu2 );
+         if( sqroot < mmu2 ) {
+            majorAxis = 4 * std::sqrt(( mmu2 + sqroot ) / farea );   // diameter == r1*2
+            minorAxis = std::sqrt(( mmu2 - sqroot ) / farea );       // leaving out *4 for a moment, making this r2/2
+            sfloat ellipseArea = static_cast< sfloat >( pi ) * majorAxis * minorAxis; // r1 * r2 = r1*2 * r2/2
+            minorAxis *= 4;                                          // adding the missing *4
+            ellipseFit = farea / ellipseArea;
          }
       }
    }
@@ -84,7 +96,6 @@ struct Node {
          ( majorAxis <= params.maxMajorAxis ) &&
          ( minorAxis >= params.minMinorAxis ) &&
          ( minorAxis <= params.maxMinorAxis )) {
-         // `minorAxis >= params.minMinorAxis` ensures `minorAxis > 0`!
          sfloat majorMinorRatio = majorAxis / minorAxis;
          return ( majorMinorRatio >= params.minMajorMinorRatio ) &&
                 ( majorMinorRatio <= params.maxMajorMinorRatio );
@@ -101,23 +112,19 @@ dip::uint FindRootNode( dip::uint n, std::vector< Node > const& nodes ) {
    return FindRootNode( nodes[ n ].parentNode, nodes ); // This is like union-find, but without path compression.
 }
 
-dip::uint ConditionallyMergeNodes(
-      dip::uint currentNode,
-      dip::uint neighborNode,
-      std::vector< Node >& nodes,
-      sfloat const* inData
+void MergeNodes(
+      dip::uint rootNode,
+      dip::uint otherNode,
+      std::vector< Node >& nodes
 ) {
-   if( inData[ neighborNode ] >= inData[ currentNode ] ) {
-      neighborNode = FindRootNode( neighborNode, nodes );
-      if( currentNode != neighborNode ) {
-         if(( currentNode < neighborNode ) && ( inData[ neighborNode ] == inData[ currentNode ] )) {
-            std::swap( currentNode, neighborNode );
-         }
-         nodes[ neighborNode ].parentNode = currentNode;
-         nodes[ currentNode ] += nodes[ neighborNode ];
-      }
+   otherNode = FindRootNode( otherNode, nodes );
+   if( rootNode != otherNode ) {
+      //if(( diff == 0 ) && ( rootNode < otherNode )) { // CL: never happens!
+      //   std::swap( rootNode, otherNode );
+      //}
+      nodes[ otherNode ].parentNode = rootNode;
+      nodes[ rootNode ] += nodes[ otherNode ];
    }
-   return currentNode;
 }
 
 void MarkParents(
@@ -186,7 +193,7 @@ void FindBestEllipseLevel(
             startE = nodes[ optE ].parentNode;
             while( startE != e ) { // same as MarkParents() but additionally changing the area for each visited node.
                outData[ startE ] = MAYBE_NOT_OBJECT;
-               if( optArea > nodes[ startE ].area ) {
+               if( optArea >= nodes[ startE ].area ) {
                   nodes[ startE ].area = 0;
                } else {
                   nodes[ startE ].area -= optArea;
@@ -228,7 +235,7 @@ void FindObjectBelow(
          res = OBJECT;
          break;
       }
-      if( nodes[ nodes[ e ].parentNode ].area > params.maxArea || inData[ e ] < params.minThreshold ) {
+      if(( nodes[ nodes[ e ].parentNode ].area > params.maxArea ) || ( inData[ e ] < params.minThreshold )) {
          res = NOT_OBJECT;
          break;
       }
@@ -261,8 +268,6 @@ void PerObjectEllipseFit(
    DIP_THROW_IF( !std::isfinite( extrema.Maximum() ) || !std::isfinite( extrema.Minimum() ), "Image has non-finite values" );
    DIP_THROW_IF( extrema.Maximum() == extrema.Minimum(), "Image is constant" );
 
-   DIP_THROW_IF( params.minMinorAxis <= 0, "params.minMinorAxis must be positive" ); // actually they all should be, but with this test we prevent division by zero later on.
-
    // Get image data pointer.
    // We first convert the image to SFLOAT, this way we avoid dealing with multiple data types and strides.
    Image floatImg = Convert( image, DT_SFLOAT );
@@ -270,11 +275,12 @@ void PerObjectEllipseFit(
    float const* inData = static_cast< float const* >( floatImg.Origin() );
 
    // Get a list of indices to all pixels, sorted in descending order.
+   // Using a stable sort so that pixels of the same value are processed left to right, top to bottom.
    std::vector< dip::uint > sortedIndices( lenData );
    std::iota( sortedIndices.begin(), sortedIndices.end(), 0 );
    std::stable_sort( sortedIndices.begin(), sortedIndices.end(),
                      [ & ]( dip::uint const& a, dip::uint const& b ) {
-                        return inData[ a ] > inData[ b ];
+                        return inData[ a ] > inData[ b ]; // indices to larger pixel values come first
                      } );
 
    // Allocate and initialize nodes
@@ -296,20 +302,40 @@ void PerObjectEllipseFit(
 
    // Build tree
    for( dip::uint currentNode : sortedIndices ) {
+      sfloat currentValue = inData[ currentNode ];
+      if( currentValue == extrema.Minimum() ) {
+         // We've reached the lowest value, we're done!
+         break;
+      }
       dip::uint yy = currentNode / width;
       dip::uint xx = currentNode - yy * width;
-      dip::uint rootNode = currentNode;
-      if( yy + 1 < height ) {
-         rootNode = ConditionallyMergeNodes( rootNode, currentNode + width, nodes, inData );
-      }
-      if( xx + 1 < width ) {
-         rootNode = ConditionallyMergeNodes( rootNode, currentNode + 1, nodes, inData );
-      }
+      // The neighbors to the top and left, of the same value as the current pixel, have already been processed.
+      // Therefore we attempt to merge them here.
       if( xx > 0 ) {
-         rootNode = ConditionallyMergeNodes( rootNode, currentNode - 1, nodes, inData );
+         dip::uint neighborNode = currentNode - 1;
+         if( inData[ neighborNode ] >= currentValue ) {
+            MergeNodes( currentNode, neighborNode, nodes );
+         }
       }
       if( yy > 0 ) {
-         /*rootNode =*/ ConditionallyMergeNodes( rootNode, currentNode - width, nodes, inData );
+         dip::uint neighborNode = currentNode - width;
+         if( inData[ neighborNode ] >= currentValue ) {
+            MergeNodes( currentNode, neighborNode, nodes );
+         }
+      }
+      // The neighbors to the right and bottom, of the same value as the current pixel, haven't been processed yet.
+      // Therefore we don't attempt to merge them here.
+      if( yy + 1 < height ) {
+         dip::uint neighborNode = currentNode + width;
+         if( inData[ neighborNode ] > currentValue ) {
+            MergeNodes( currentNode, neighborNode, nodes );
+         }
+      }
+      if( xx + 1 < width ) {
+         dip::uint neighborNode = currentNode + 1;
+         if( inData[ neighborNode ] > currentValue ) {
+            MergeNodes( currentNode, neighborNode, nodes );
+         }
       }
    }
 
