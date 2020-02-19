@@ -79,7 +79,7 @@ Hence, you need to create a special version of your `startup.m` file in
 the directory where your application M-file lives. Remove all the
 `addpath` instructions, and change the line `dip_initialise` into
 `dip_initialise_libs` (if you do not want the *DIPlib* version information
-to be displayed on startup, you can use the `'silent'` argument to
+to be displayed on startup, you can use the <tt>'silent'</tt> argument to
 `dip_initialise_libs`). Alternatively, you can call the
 `dip_initialise_libs` function in your application M-file. In this case,
 make and empty `startup.m` file to avoid your default one to be used.

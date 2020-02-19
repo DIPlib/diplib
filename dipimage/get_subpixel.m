@@ -20,7 +20,7 @@
 %  For backwards compatibility, method=='spline' will be interpreted
 %  as '3-cubic', since 'spline' is no longer supported.
 %
-%  `'cubic'` is an alias for `'3-cubic'`, for backwards compatibility.
+%  'cubic' is an alias for '3-cubic', for backwards compatibility.
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::ResampleAt.
