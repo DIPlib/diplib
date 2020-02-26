@@ -57,7 +57,7 @@ void BinaryPropagation(
    // Make out equal to inMask
    Image inMask = c_inMask.QuickCopy(); // temporary copy of input image headers, so we can strip/reforge out
    Image inSeed = c_inSeed.QuickCopy();
-   PixelSize pixelSize = inSeed.HasPixelSize() ? inSeed.PixelSize() : inMask.PixelSize();
+   PixelSize pixelSize = c_inSeed.HasPixelSize() ? c_inSeed.PixelSize() : c_inMask.PixelSize();
    if( out.Aliases( inMask )) { // make sure we don't overwrite the mask image
       out.Strip();
    }
@@ -77,10 +77,10 @@ void BinaryPropagation(
    }
 
    // Bit planes
-   constexpr uint8 dataBitmask = 1; // Data mask: the pixel data is in the first 'plane'
-   constexpr uint8 maskBitmask = uint8( 1 << 3 );
-   constexpr uint8 borderBitmask = uint8( 1 << 2 );
-   constexpr uint8 seedBitmask = uint8( 1 << 0 ); // seed bitmask equals data bitmask
+   constexpr uint8 dataBitmask{ 1u }; // Data mask: the pixel data is in the first 'plane'
+   constexpr uint8 maskBitmask{ 1u << 3u };
+   constexpr uint8 borderBitmask{ 1u << 2u };
+   constexpr uint8 seedBitmask{ 1u << 0u }; // seed bitmask equals data bitmask
    constexpr uint8 maskOrSeedBitmask = seedBitmask | maskBitmask;
 
    // Use border mask to mark pixels of the image border
@@ -133,8 +133,8 @@ void BinaryPropagation(
    // Second and further iterations. Loop stops if the queue is empty
    for( dip::uint ii = 1; ( ii < iterations ) && !edgePixels.empty(); ++ii ) {
       // Obtain neighbor list and offsets for this iteration
-      NeighborList const& neighborList = ( ii & 1 ) == 1 ? neighborList1 : neighborList0;
-      IntegerArray const& neighborOffsetsOut = ( ii & 1 ) == 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
+      NeighborList const& neighborList = ( ii & 1u ) == 1 ? neighborList1 : neighborList0;
+      IntegerArray const& neighborOffsetsOut = ( ii & 1u ) == 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
 
       // Process all elements currently in the queue
       count = edgePixels.size();
