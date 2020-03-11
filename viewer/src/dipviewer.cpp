@@ -88,7 +88,7 @@ void Spin() {
    if( !manager__ ) {
       return;
    }
-   std::this_thread::sleep_for( std::chrono::seconds( 1 )); // Wait a while to make sure the windows have finished drawing
+   //std::this_thread::sleep_for( std::chrono::seconds( 1 )); // Wait a while to make sure the windows have finished drawing
    while( manager__->activeWindows()) {
       Draw();
       std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
