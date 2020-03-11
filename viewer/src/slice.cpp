@@ -671,6 +671,31 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
 
   if (!mods)
   {
+    if (k >= '1' && k <= '9')
+    {
+      dip::sint idx = k - '1';
+      
+      if (image_.TensorElements() > (dip::uint) idx)
+      {
+        if (options_.lut_ == ViewingOptions::LookupTable::RGB)
+        {
+          auto &c = options_.color_elements_;
+        
+          // Select and deselect tensor elements to visualize. Clicking on a
+          // selected element deselects it, while clicking on an unselected
+          // element assigns the first available color from {R, G, B}.
+               if (c[0] == idx) c[0] = -1;
+          else if (c[1] == idx) c[1] = -1;
+          else if (c[2] == idx) c[2] = -1;
+          else if (c[0] == -1 ) c[0] = idx;
+          else if (c[1] == -1 ) c[1] = idx;
+          else if (c[2] == -1 ) c[2] = idx;
+        }
+        else
+          options_.element_ = (dip::uint) idx;
+      }
+    }
+  
     if (k == 'D' && image_.Dimensionality() > 0 && options_.operating_point_[0] < image_.Size(0)-1)
       options_.operating_point_[0]++;
     if (k == 'A' && image_.Dimensionality() > 0 && options_.operating_point_[0] > 0)
