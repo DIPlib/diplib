@@ -1,4 +1,4 @@
-%SPLIT   Split an image into subsampled versions
+%SPLITIM   Split an image into subsampled versions
 %
 %  Reduces size of an image by an integer factor, by subsampling.
 %  The subsampling factor evenly divides the image. The output image
@@ -7,7 +7,7 @@
 %  as the input, but arranged in one more dimension.
 %
 % SYNOPSIS:
-%  out = split(in, stepsize)
+%  out = splitim(in, stepsize)
 %
 % PARAMETERS:
 %  in:       input image
@@ -18,11 +18,11 @@
 %  rebin, subsample
 %
 % NOTE:
-%  REBIN is equal to the sum along the new dimension of the output of SPLIT:
+%  REBIN is equal to the sum along the new dimension of the output of SPLITIM:
 %     a = readim;
-%     all(sum(split(a),[],3) == rebin(a))
+%     all(sum(splitim(a),[],3) == rebin(a))
 
-% (c)2017, Cris Luengo.
+% (c)2017, 2020, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = split(in,stepsize)
+function out = splitim(in,stepsize)
 if nargin<2
    stepsize = 2;
 end

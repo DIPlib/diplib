@@ -1752,6 +1752,15 @@ classdef dip_image
          im.NDims = nd;
       end
 
+      function out = split(in,stepsize)
+         %SPLIT   Split an image into subsampled versions
+         %   B = SPLIT(A,N) reduces size of image A by an integer factor N, by
+         %   subsampling. The subsampling factor must evenly divide the image.
+         %   The output image has an additional dimension, where all possible
+         %   subsampling shifts are present. See SPLITIM for more information.
+         out = splitim(in,stepsize);
+      end
+
       % ------- OPERATORS -------
 
       function out = plus(lhs,rhs)

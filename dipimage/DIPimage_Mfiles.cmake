@@ -219,7 +219,7 @@ snake2im.m
 snakedraw.m
 snakeminimize.m
 sobelf.m
-split.m
+splitim.m
 stochasticwatershed.m
 stretch.m
 structuretensor.m

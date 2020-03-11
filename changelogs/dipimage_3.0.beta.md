@@ -254,6 +254,10 @@ porting your old code that used *DIPimage* to the new version.
 
   - `jacobi` moved to the `alias` directory, the `eig` method has improved to make `jacobi` irrelevant.
 
+  - `split` was shadowing an important new function in MATLAB. It has been renamed to `splitim`. To minimize issues
+    with backwards-compatibility there now is a `split` method for `dip_image` objects, and a `split` function in the
+    `alias` directory.
+
 - New functions not mentioned above: `abssqr`, `areaclosing`, `areaopening`, `asf`, `cell2im`, `cluster`,
   `compactwaterseed`, `coordinates`,  `cornerdetector`, `curlvector`, `distancedistribution`, `divergencevector`,
   `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `integral_image`, `lee`,
