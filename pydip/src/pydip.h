@@ -57,6 +57,10 @@ void init_measurement( py::module& m );
 void init_assorted( py::module& m );
 
 namespace pybind11 {
+
+// py::buffer type that implicitly casts to c-style dense double arrays
+typedef array_t<dip::dfloat, array::c_style | array::forcecast> double_array_t;
+
 namespace detail {
 
 // Cast Python list types to our custom dynamic array type

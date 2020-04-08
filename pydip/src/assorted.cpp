@@ -27,6 +27,7 @@
 #include "diplib/histogram.h"
 #include "diplib/lookup_table.h"
 #include "diplib/mapping.h"
+#include "diplib/chain_code.h"
 
 namespace {
 
@@ -139,6 +140,7 @@ void init_assorted( py::module& m ) {
    m.def( "SetBorder", &dip::SetBorder, "out"_a, "value"_a = dip::Image::Pixel{ 0 }, "sizes"_a = dip::UnsignedArray{ 1 } );
    m.def( "DrawLine", &dip::DrawLine, "out"_a, "start"_a, "end"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
    m.def( "DrawLines", &dip::DrawLines, "out"_a, "points"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
+   m.def( "DrawPolygon2D", &dip::DrawPolygon2D, "out"_a, "polygon"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED);
    m.def( "DrawEllipsoid", &dip::DrawEllipsoid, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );
    m.def( "DrawDiamond", &dip::DrawDiamond, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );
    m.def( "DrawBox", &dip::DrawBox, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );

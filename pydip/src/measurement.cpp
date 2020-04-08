@@ -123,7 +123,7 @@ dip::Polygon BufferToPolygon( py::buffer& buf ) {
    DIP_THROW_IF( stride * static_cast< dip::sint >( info.itemsize ) != info.strides[ 0 ],
                  "Stride of buffer is not an integer multiple of the item size" );
    dip::sint dstride = info.strides[ 1 ] / static_cast< dip::sint >( info.itemsize );
-   DIP_THROW_IF( stride * static_cast< dip::sint >( info.itemsize ) != info.strides[ 1 ],
+   DIP_THROW_IF( dstride * static_cast< dip::sint >( info.itemsize ) != info.strides[ 1 ],
                  "Stride of buffer is not an integer multiple of the item size" );
    double* ptr = static_cast< double* >( info.ptr );
    for( dip::uint ii = 0; ii < nPoints; ++ii, ptr += stride ) {
@@ -267,7 +267,7 @@ void init_measurement( py::module& m ) {
 
    // dip::Polygon
    auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(), "A polygon representing a 2D object." );
-   poly.def( py::init([]( py::buffer& buf ) { return BufferToPolygon( buf ); } ));
+   poly.def( py::init([]( py::double_array_t& buf ) { return BufferToPolygon( buf ); } ));
    py::implicitly_convertible< py::buffer, dip::Polygon >();
    poly.def_buffer( []( dip::Polygon& self ) -> py::buffer_info { return PolygonToBuffer( self ); } );
    poly.def( "__repr__", []( dip::Polygon const& self ) {
