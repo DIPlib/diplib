@@ -21,6 +21,9 @@
 #include "diplib/color.h"
 #include "diplib/display.h"
 #include "diplib/file_io.h"
+#ifdef DIP__HAS_JAVAIO
+#   include "diplib/javaio.h"
+#endif
 #include "diplib/simple_file_io.h"
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
@@ -128,6 +131,11 @@ void init_assorted( py::module& m ) {
    m.def( "ImageReadJPEG", py::overload_cast< dip::String const& >( &dip::ImageReadJPEG ), "filename"_a );
    m.def( "ImageIsJPEG", &dip::ImageIsJPEG, "filename"_a );
    m.def( "ImageWriteJPEG", &dip::ImageWriteJPEG, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
+
+   // diplib/javaio.h
+#ifdef DIP__HAS_JAVAIO
+   m.def( "ImageReadJavaIO", py::overload_cast< dip::String const&, dip::String const& >( &dip::javaio::ImageReadJavaIO ), "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
+#endif
 
    // diplib/simple_file_io.h
    m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
