@@ -1,7 +1,7 @@
 %WARP_SUBPIXEL   Warps image using a coordinate map.
 %
 % USAGE:
-%  out = warp(in, map, method)
+%  out = warp_subpixel(in, map, method)
 %
 % PARAMETERS:
 %  map:    Tensor image specifying coordinates of interest.

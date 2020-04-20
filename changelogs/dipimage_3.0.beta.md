@@ -172,7 +172,7 @@ porting your old code that used *DIPimage* to the new version.
     of `percentile`. This should make them match the literature better, and make them more
     usable.
 
-  - `smooth` is no longer relevant, moved to the `alias` directory. Use `gausff` instead.
+  - `smooth` is no longer relevant, moved to the `alias` directory. Use `gaussf` instead.
 
   - `derivative` has the 2<sup>nd</sup> and 3<sup>rd</sup> arguments switched, it makes more
     sense having the order first.
@@ -184,7 +184,7 @@ porting your old code that used *DIPimage* to the new version.
   - `ft` now does normalization in the more common way (forward transform not normalized,
     inverse transform normalized by 1/N), but an option (`'symmetric'`) allows to change
     the normalization to be consistent with *DIPimage 2*, which used a symmetric normalization
-    scheme (both forward and backward transforms use 1/N<sup>1/2</sup>)
+    scheme (both forward and backward transforms use 1/N<sup>1/2</sup>).
 
   - `resample` and `shift` shift the image in the opposite direction from what it did in
     *DIPimage 2*, where the shift was unintuitive.

@@ -188,7 +188,7 @@ connected component found for that label will be measured.
 \subsection shape_features_Eccentricity Eccentricity
 Aspect ratio of the best fit ellipse, computed using `dip::CovarianceMatrix::Eigenvalues::Eccentricity`
 from the covariance matrix of the chain code. Eccentricity is defined as
-\f$\sqrt{\frac{1-\lambda_2}{\lambda_1}}\f$, with \f$\lambda_1\f$ the largest eigenvalue
+\f$\sqrt{1-\frac{\lambda_2}{\lambda_1}}\f$, with \f$\lambda_1\f$ the largest eigenvalue
 and \f$\lambda_2\f$ the smallest eigenvalue of the covariance matrix of the boundary
 pixels of the object.
 
