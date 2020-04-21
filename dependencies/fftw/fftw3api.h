@@ -32,7 +32,7 @@
 template<typename FloatType>
 struct fftwapidef;
 
-#define FFTW_TEMPLATED_API_FUNC(MANGLE, FUNCNAME) static constexpr decltype( & MANGLE( FUNCNAME ) ) FUNCNAME = & MANGLE( FUNCNAME );
+#define FFTW_TEMPLATED_API_FUNC(MANGLE, FUNCNAME) static constexpr decltype( & MANGLE( FUNCNAME ) ) FUNCNAME = & MANGLE( FUNCNAME )
 
 #define FFTW_TEMPLATED_API(T, MANGLE ) \
 template<> \
@@ -61,7 +61,7 @@ struct fftwapidef<T> \
    FFTW_TEMPLATED_API_FUNC( MANGLE, print_plan ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, malloc ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, free ); \
-}; // end fftwapidef<>
+} // end fftwapidef<>
 // Excluded, because free() results in runtime error in debug mode: static std::string plan_to_string( plan p ) { char* pStr = MANGLE( sprint_plan )(p); std::string result( pStr ); ::free( pStr ); return result; };
 
 

@@ -155,45 +155,42 @@ namespace {
 //     // verify that fftwThreadingInitResult != 0
 // ```
 template< typename FloatType >
-class FFTWThreading
-{
-private:
-   FFTWThreading() {
-      // Initialization must be done for the specific float type
-      // Initialization is called from the user of the shared library: the executable
-      initResult_ = fftwapidef< FloatType >::init_threads();
-   }
+class FFTWThreading {
+   private:
+      FFTWThreading() {
+         // Initialization must be done for the specific float type
+         // Initialization is called from the user of the shared library: the executable
+         initResult_ = fftwapidef< FloatType >::init_threads();
+      }
 
-   int initResult_;
-public:
-   ~FFTWThreading() {
-      // Destruction of the singleton is called by the shared library
-      // and causes a lockup :( .. disabled for now.
-      //fftwapidef< FloatType >::cleanup_threads();
-   }
+      int initResult_;
 
-   // Singleton interface
-   static FFTWThreading* GetInstance() {
-      static FFTWThreading singleton;
-      return &singleton;
-   }
+   public:
+      ~FFTWThreading() {
+         // Destruction of the singleton is called by the shared library
+         // and causes a lockup :( .. disabled for now.
+         //fftwapidef< FloatType >::cleanup_threads();
+      }
 
-   // Returns a non-zero value upon successful init and zero if there was some error
-   int GetInitResult() const {
-      return initResult_;
-   }
+      // Singleton interface
+      static FFTWThreading* GetInstance() {
+         static FFTWThreading singleton;
+         return &singleton;
+      }
 
-   int GetOptimalNumThreads( UnsignedArray const& outSize ) const {
-      // TODO: find heuristic. The FFTW 3 manual says:
-      //   "You will have to experiment with your system to see what level of parallelization is best
-      //   for your problem size. Typically, the problem will have to involve at least a few thousand
-      //   data points before threads become beneficial. If you plan with FFTW_PATIENT, it will
-      //   automatically disable threads for sizes that don't benefit from parallelization."
-      if( outSize.product() < 2000 )
-         return 1;
-      else
-         return omp_get_max_threads();
-   }
+      // Returns a non-zero value upon successful init and zero if there was some error
+      int GetInitResult() const {
+         return initResult_;
+      }
+
+      int GetOptimalNumThreads( UnsignedArray const& outSize ) const {
+         // TODO: find heuristic. The FFTW 3 manual says:
+         //   "You will have to experiment with your system to see what level of parallelization is best
+         //   for your problem size. Typically, the problem will have to involve at least a few thousand
+         //   data points before threads become beneficial. If you plan with FFTW_PATIENT, it will
+         //   automatically disable threads for sizes that don't benefit from parallelization."
+         return ( outSize.product() < 2000 ) ? 1 : omp_get_max_threads();
+      }
 };
 
 // Force FFTW threading initialization at shared library creation
@@ -217,189 +214,187 @@ public:
 // output image. Finally, the output image is filled with the (processed) input data and the
 // transform is done in-place. This eliminates all needs for an intermediate image.
 template< class fftwapi >
-class FFTWHelper
-{
-public:
-   FFTWHelper( Image const& in, Image& out )
-      : floatType_( static_cast< typename fftwapi::real >( 0 ))
-      , complexType_( DataType::SuggestComplex( floatType_ ))
-      , in_( in )
-      , out_( out )
-      , largestProcessedDim_( 0 )
-      , inputTensorStride_( 0 )
-      , transformScale_( 1.0 )
-   {}
+class FFTWHelper {
+   public:
+      FFTWHelper( Image const& in, Image& out )
+            : floatType_( static_cast< typename fftwapi::real >( 0 )), complexType_( DataType::SuggestComplex( floatType_ )),
+              in_( in ), out_( out ), largestProcessedDim_( 0 ), inputTensorStride_( 0 ), transformScale_( 1.0 ) {}
 
-   // Prepare input/output dimension descriptors
-   // Requires calling HandleProcessingDims() and ForgeOutput() first.
-   // Input strides are taken from `inputStrides_` and `inputTensorStride_`, output strides are taken from `out_`.
-   // Sizes are taken from `out_`.
-   virtual void PrepareIODims() {
-      DIP_THROW_IF( inputStrides_.empty(), "FFTWHelper did not set inputStrides_" );
-      DIP_THROW_IF( inputTensorStride_ == 0, "FFTWHelper did not set inputTensorStride_" );
+      // A virtual destructor so deleting a pointer to base calls the destructor of the derived class.
+      virtual ~FFTWHelper() = default;
 
-      // Prepare iodim structs for in-place operation
-      sizeDims_.resize( out_.Dimensionality() );
-      for( int iSizeDim = 0; iSizeDim < sizeDims_.size(); ++iSizeDim ) {
-         sizeDims_[ iSizeDim ].n = static_cast< int >( out_.Size( iSizeDim ));         // Number of elements
-         sizeDims_[ iSizeDim ].is = static_cast< int >( inputStrides_[ iSizeDim ] );   // Input stride
-         sizeDims_[ iSizeDim ].os = static_cast< int >( out_.Stride( iSizeDim ));      // Output stride
-      }
+      // Prepare input/output dimension descriptors
+      // Requires calling HandleProcessingDims() and ForgeOutput() first.
+      // Input strides are taken from `inputStrides_` and `inputTensorStride_`, output strides are taken from `out_`.
+      // Sizes are taken from `out_`.
+      virtual void PrepareIODims() {
+         DIP_THROW_IF( inputStrides_.empty(), "FFTWHelper did not set inputStrides_" );
+         DIP_THROW_IF( inputTensorStride_ == 0, "FFTWHelper did not set inputTensorStride_" );
 
-      // Repeat along the tensor dimension
-      // If the tensor has just 1 element, this also works fine.
-      // We use the tensor entry to create a non-empty repeatDims array for easy parameter passing when all dims are processed.
-      if( dimsNotProcessed_.empty() || in_.TensorElements() > 1 ) {
-         repeatDims_.resize( 1 );
-         for( int iTensorEl = 0; iTensorEl < repeatDims_.size(); ++iTensorEl ) {
-            repeatDims_[ iTensorEl ].n = static_cast< int >( out_.TensorElements() );  // Number of tensor elements
-            repeatDims_[ iTensorEl ].is = static_cast< int >( inputTensorStride_ );    // Input tensor stride
-            repeatDims_[ iTensorEl ].os = static_cast< int >( out_.TensorStride() );   // Output tensor stride
+         // Prepare iodim structs for in-place operation
+         sizeDims_.resize( out_.Dimensionality() );
+         for( dip::uint iSizeDim = 0; iSizeDim < sizeDims_.size(); ++iSizeDim ) {
+            sizeDims_[ iSizeDim ].n = static_cast< int >( out_.Size( iSizeDim ));         // Number of elements
+            sizeDims_[ iSizeDim ].is = static_cast< int >( inputStrides_[ iSizeDim ] );   // Input stride
+            sizeDims_[ iSizeDim ].os = static_cast< int >( out_.Stride( iSizeDim ));      // Output stride
+         }
+
+         // Repeat along the tensor dimension
+         // If the tensor has just 1 element, this also works fine.
+         // We use the tensor entry to create a non-empty repeatDims array for easy parameter passing when all dims are processed.
+         if( dimsNotProcessed_.empty() || in_.TensorElements() > 1 ) {
+            repeatDims_.resize( 1 );
+            for( dip::uint iTensorEl = 0; iTensorEl < repeatDims_.size(); ++iTensorEl ) {
+               repeatDims_[ iTensorEl ].n = static_cast< int >( out_.TensorElements() );  // Number of tensor elements
+               repeatDims_[ iTensorEl ].is = static_cast< int >( inputTensorStride_ );    // Input tensor stride
+               repeatDims_[ iTensorEl ].os = static_cast< int >( out_.TensorStride() );   // Output tensor stride
+            }
+         } else {
+            repeatDims_.clear();
+         }
+
+         //  Repeat along dimensions not processed
+         if( !dimsNotProcessed_.empty() ) {
+            // Do reverse iteration for easy erasing of vector entries
+            for( UnsignedArray::const_reverse_iterator itDimNot = dimsNotProcessed_.rbegin(); itDimNot != dimsNotProcessed_.rend(); ++itDimNot ) {
+               repeatDims_.push_back( sizeDims_[ *itDimNot ] ); // Move size dim to repeat dim
+               sizeDims_.erase( sizeDims_.begin() + static_cast< dip::sint >( *itDimNot )); // Erase size dim
+            }
          }
       }
-      else {
-         repeatDims_.clear();
-      }
 
-      //  Repeat along dimensions not processed
-      if( !dimsNotProcessed_.empty() ) {
-         // Do reverse iteration for easy erasing of vector entries
-         for( UnsignedArray::const_reverse_iterator itDimNot = dimsNotProcessed_.rbegin(); itDimNot != dimsNotProcessed_.rend(); ++itDimNot ) {
-            repeatDims_.push_back( sizeDims_[ *itDimNot ] ); // Move size dim to repeat dim
-            sizeDims_.erase( sizeDims_.begin() + *itDimNot ); // Erase size dim
+      // Do the handling related to the selection of dimensions that are processed
+      virtual void HandleProcessingDims( BooleanArray const& process ) {
+         // Handle processing dims.
+         // If a dimension is excluded from the transform,
+         // it is added as a 'repeat' dimension. For example, in 2D, if Y is excluded,
+         // the transform is performed in the X-direction only and repeated along the Y-dimension.
+         //
+         // Keep track of the largest dimension that is processed.
+         // It is used in completing the R2C image and in C2R padding.
+         largestProcessedDim_ = 0;
+         // Keep track of the scaling that the transform will cause
+         transformScale_ = 1.0;
+         dimsNotProcessed_.clear();
+         dimsProcessed_.clear();
+         for( dip::uint iDim = 0; iDim < in_.Dimensionality(); ++iDim ) {
+            if( process[ iDim ] ) {
+               dimsProcessed_.push_back( iDim );   // Keep track of processed dims
+               largestProcessedDim_ = iDim;  // Keep track of largest processed dim
+               transformScale_ *= static_cast< typename fftwapi::real >( in_.Size( iDim )); // TODO: change this to outSize when supporting padding
+            } else {
+               dimsNotProcessed_.push_back( iDim ); // Keep track of dims not processed
+            }
          }
       }
-   }
 
-   // Do the handling related to the selection of dimensions that are processed
-   virtual void HandleProcessingDims( BooleanArray const& process ) {
-      // Handle processing dims.
-      // If a dimension is excluded from the transform,
-      // it is added as a 'repeat' dimension. For example, in 2D, if Y is excluded,
-      // the transform is performed in the X-direction only and repeated along the Y-dimension.
-      // 
-      // Keep track of the largest dimension that is processed.
-      // It is used in completing the R2C image and in C2R padding.
-      largestProcessedDim_ = 0;
-      // Keep track of the scaling that the transform will cause
-      transformScale_ = 1.0;
-      dimsNotProcessed_.clear();
-      dimsProcessed_.clear();
-      for( dip::uint iDim = 0; iDim < in_.Dimensionality(); ++iDim ) {
-         if( process[ iDim ] ) {
-            dimsProcessed_.push_back( iDim );   // Keep track of processed dims
-            largestProcessedDim_ = iDim;  // Keep track of largest processed dim
-            transformScale_ *= static_cast< typename fftwapi::real >( in_.Size( iDim )); // TODO: change this to outSize when supporting padding
+      // Forge the output image
+      virtual void ForgeOutput( UnsignedArray const& outSize ) = 0;
+
+      // Prepare the input data.
+      // This involves copying, scaling and shifting into the output buffer for in-place transformation.
+      // Note that this must be done after creating an FFTW plan, because planning can destroy the input/output buffer.
+      virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) = 0;
+
+      // Finalize the output, e.g., complete the R2C output image with only N/2+1 sub-images
+      // Scaling is done while preparing the input, so before the transform
+      virtual void FinalizeOutput( bool /*shiftOriginToCenter*/ ) {} // Not always necessary
+
+      // Create the FFTW plan
+      // The FFTW_MEASURE flag is advised. Initialization takes longer, but is done only once by FFTW.
+      // No re-measuring is done for subsequent calls with the same sizes.
+      virtual typename fftwapi::plan CreatePlan( bool inverse ) = 0;
+
+   protected:
+      // Define dip's float type and complex type
+      DataType floatType_;
+      DataType complexType_;
+
+      Image const& in_;
+      Image& out_;
+
+      std::vector< typename fftwapi::iodim > sizeDims_;
+      std::vector< typename fftwapi::iodim > repeatDims_;
+      UnsignedArray dimsNotProcessed_; // Indices of dimension not processed
+      UnsignedArray dimsProcessed_; // Indices of processed dimensions
+
+      dip::uint largestProcessedDim_;
+
+      IntegerArray inputStrides_;   // Strides of the in-place input (note: data is located in out_, due to in-place processing)
+      dip::sint inputTensorStride_;
+
+      typename fftwapi::real transformScale_;   // Scale caused by the transform
+
+      ExternalInterface* GetOutputExternalInterface() {
+         // If out_ already contains an external interface, use it.
+         // Otherwise, use aligned allocator for better FFTW performance.
+         if( out_.HasExternalInterface() ) {
+            return out_.ExternalInterface();
          }
-         else {
-            dimsNotProcessed_.push_back( iDim ); // Keep track of dims not processed
-         }
-      }
-   }
-
-   // Forge the output image
-   virtual void ForgeOutput( UnsignedArray const& outSize ) = 0;
-
-   // Prepare the input data.
-   // This involves copying, scaling and shifting into the output buffer for in-place transformation.
-   // Note that this must be done after creating an FFTW plan, because planning can destroy the input/output buffer.
-   virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) = 0;
-
-   // Finalize the output, e.g., complete the R2C output image with only N/2+1 sub-images
-   // Scaling is done while preparing the input, so before the transform
-   virtual void FinalizeOutput( bool shiftOriginToCenter ) {} // Not always necessary
-
-   // Create the FFTW plan
-   // The FFTW_MEASURE flag is advised. Initialization takes longer, but is done only once by FFTW.
-   // No re-measuring is done for subsequent calls with the same sizes.
-   virtual typename fftwapi::plan CreatePlan( bool inverse ) = 0;
-
-protected:
-   // Define dip's float type and complex type
-   DataType floatType_;
-   DataType complexType_;
-
-   Image const& in_;
-   Image& out_;
-
-   std::vector< typename fftwapi::iodim > sizeDims_;
-   std::vector< typename fftwapi::iodim > repeatDims_;
-   UnsignedArray dimsNotProcessed_; // Indices of dimension not processed
-   UnsignedArray dimsProcessed_; // Indices of processed dimensions
-
-   dip::uint largestProcessedDim_;
-
-   IntegerArray inputStrides_;   // Strides of the in-place input (note: data is located in out_, due to in-place processing)
-   dip::sint inputTensorStride_;
-
-   typename fftwapi::real transformScale_;   // Scale caused by the transform
-
-   ExternalInterface* GetOutputExternalInterface() {
-      // If out_ already contains an external interface, use it.
-      // Otherwise, use aligned allocator for better FFTW performance.
-      if( out_.HasExternalInterface() )
-         return out_.ExternalInterface();
-      else
          return AlignedAllocInterface::GetInstance< FFTW_MAX_ALIGN_REQUIRED >();
-   }
-
-   // Shift center to corner. Done before the transform. Also see Matlab's ifftshift().
-   // One dimension, `fixedDim`, can be left untouched while shifting.
-   // All dimensions are shifted by default or by passing -1.
-   void ShiftCenterToCorner( Image& img, dip::uint fixedDim = -1 ) {
-      // Wrap 'backward'
-      IntegerArray wrapShifts( img.Dimensionality() );
-      for( int iDim = 0; iDim < wrapShifts.size(); ++iDim ) {
-         wrapShifts[ iDim ] = -static_cast< dip::sint >( img.Size( iDim )) / 2;   // Note the minus sign
-      }
-      // Set fixed dim shift to zero
-      if( fixedDim != -1 ) {
-         wrapShifts[ fixedDim ] = 0;
       }
 
-      // Do in-place Wrap
-      Wrap( img, img, wrapShifts );
-   }
+      // Shift center to corner. Done before the transform. Also see Matlab's ifftshift().
+      // One dimension, `fixedDim`, can be left untouched while shifting.
+      // All dimensions are shifted by default or by passing -1.
+      void ShiftCenterToCorner( Image& img, dip::uint fixedDim = static_cast< dip::uint >( -1 )) {
+         // Wrap 'backward'
+         IntegerArray wrapShifts( img.Dimensionality() );
+         for( dip::uint iDim = 0; iDim < wrapShifts.size(); ++iDim ) {
+            wrapShifts[ iDim ] = -static_cast< dip::sint >( img.Size( iDim )) / 2;   // Note the minus sign
+         }
+         // Set fixed dim shift to zero
+         if( fixedDim != static_cast< dip::uint >( -1 )) {
+            wrapShifts[ fixedDim ] = 0;
+         }
 
-   // Shift corner to center. Done after the transform. Also see Matlab's fftshift().
-   static void ShiftCornerToCenter( Image& img ) {
-      // Wrap 'forward'
-      IntegerArray wrapShifts( img.Dimensionality() );
-      for( int iDim = 0; iDim < wrapShifts.size(); ++iDim ) {
-         wrapShifts[ iDim ] = static_cast< dip::sint >( img.Size( iDim )) / 2;
+         // Do in-place Wrap
+         Wrap( img, img, wrapShifts );
       }
 
-      // Do in-place Wrap
-      Wrap( img, img, wrapShifts );
-   }
+      // Shift corner to center. Done after the transform. Also see Matlab's fftshift().
+      static void ShiftCornerToCenter( Image& img ) {
+         // Wrap 'forward'
+         IntegerArray wrapShifts( img.Dimensionality() );
+         for( dip::uint iDim = 0; iDim < wrapShifts.size(); ++iDim ) {
+            wrapShifts[ iDim ] = static_cast< dip::sint >( img.Size( iDim )) / 2;
+         }
+
+         // Do in-place Wrap
+         Wrap( img, img, wrapShifts );
+      }
 };
 
 // FFTW helper class for real to real transforms.
 // Not yet implemented.
 template< class fftwapi >
-class FFTWHelperR2R : public FFTWHelper< fftwapi >
-{
+class FFTWHelperR2R : public FFTWHelper< fftwapi > {
       using FFTWHelper< fftwapi >::sizeDims_;
       using FFTWHelper< fftwapi >::repeatDims_;
       using FFTWHelper< fftwapi >::out_;
-public:
-   FFTWHelperR2R( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {
-      DIP_THROW( "FFTW R2R not yet supported" );
-   }
+   public:
+      FFTWHelperR2R( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {
+         DIP_THROW( "FFTW R2R not yet supported" );
+      }
 
-   virtual void ForgeOutput( UnsignedArray const& outSize ) override {
-      DIP_THROW( "FFTW R2R not yet supported" );
-   }
+      virtual void ForgeOutput( UnsignedArray const& outSize ) override {
+         ( void )outSize;
+         DIP_THROW( "FFTW R2R not yet supported" );
+      }
 
-   virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
-      DIP_THROW( "FFTW R2R not yet supported" );
-   }
+      virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
+         ( void )inverse;
+         ( void )symmetricNormalization;
+         ( void )shiftOriginToCenter;
+         DIP_THROW( "FFTW R2R not yet supported" );
+      }
 
-   virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
-      std::vector< typename fftwapi::r2r_kind > r2rKinds( sizeDims_.size(), FFTW_REDFT10 );  // TODO: what kind of R2R transform is requested?
-      return fftwapi::plan_guru_r2r( static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
-         static_cast< typename fftwapi::real* >( out_.Origin() ), static_cast< typename fftwapi::real* >( out_.Origin() ), &r2rKinds[ 0 ], FFTW_MEASURE );
-   }
+      virtual typename fftwapi::plan CreatePlan( bool /*inverse*/ ) override {
+         std::vector< typename fftwapi::r2r_kind > r2rKinds( sizeDims_.size(), FFTW_REDFT10 );  // TODO: what kind of R2R transform is requested?
+         return fftwapi::plan_guru_r2r(
+               static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
+               static_cast< typename fftwapi::real* >( out_.Origin() ), static_cast< typename fftwapi::real* >( out_.Origin() ), &r2rKinds[ 0 ], FFTW_MEASURE );
+      }
 };
 
 // FFTW helper class for real to complex transforms
@@ -407,8 +402,7 @@ public:
 // On interpreting FFTW real-to-complex results:
 // http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html
 template< class fftwapi >
-class FFTWHelperR2C : public FFTWHelper< fftwapi >
-{
+class FFTWHelperR2C : public FFTWHelper< fftwapi > {
       using FFTWHelper< fftwapi >::sizeDims_;
       using FFTWHelper< fftwapi >::repeatDims_;
       using FFTWHelper< fftwapi >::in_;
@@ -422,97 +416,97 @@ class FFTWHelperR2C : public FFTWHelper< fftwapi >
       using FFTWHelper< fftwapi >::GetOutputExternalInterface;
       using FFTWHelper< fftwapi >::ShiftCenterToCorner;
       using FFTWHelper< fftwapi >::ShiftCornerToCenter;
-public:
-   FFTWHelperR2C( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
+   public:
+      FFTWHelperR2C( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
 
-   virtual void ForgeOutput( UnsignedArray const& outSize ) override {
-      out_.Strip();
-      out_.SetExternalInterface( GetOutputExternalInterface() );
-      out_.ReForge( outSize, in_.TensorElements(), complexType_, Option::AcceptDataTypeChange::DO_ALLOW );
+      virtual void ForgeOutput( UnsignedArray const& outSize ) override {
+         //out_.Strip(); // TODO: We cannot strip, what if the output image is protected? But then: how do we use the aligned allocator?
+         //out_.SetExternalInterface( GetOutputExternalInterface() );
+         out_.ReForge( outSize, in_.TensorElements(), complexType_, Option::AcceptDataTypeChange::DO_ALLOW );
 
-      // Set inputStrides_
-      // PrepareInput() for R2C in-place copies the real data to the complex output image,
-      // interleaving it with the (empty/unused) imaginary data,
-      // which results in an input float stride that is twice the complex stride
-      // Manual says: "for an in-place transform, each individual dimension should be able to operate in place".
-      // Not sure what this implies exactly.
-      inputStrides_ = out_.Strides();
-      for( int iDim = 0; iDim < inputStrides_.size(); ++iDim ) {
-         inputStrides_[ iDim ] *= 2;
+         // Set inputStrides_
+         // PrepareInput() for R2C in-place copies the real data to the complex output image,
+         // interleaving it with the (empty/unused) imaginary data,
+         // which results in an input float stride that is twice the complex stride
+         // Manual says: "for an in-place transform, each individual dimension should be able to operate in place".
+         // Not sure what this implies exactly.
+         inputStrides_ = out_.Strides();
+         for( dip::uint iDim = 0; iDim < inputStrides_.size(); ++iDim ) {
+            inputStrides_[ iDim ] *= 2;
+         }
+         inputTensorStride_ = 2 * out_.TensorStride();
       }
-      inputTensorStride_ = 2 * out_.TensorStride();
-   }
 
-   virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
-      // This must be a forward transform
-      DIP_THROW_IF( inverse, "FFTW real-to-complex cannot be an inverse transform" );
-      // Copy pixel data to out_ without modifying its properties.
-      Image tmp = out_;
-      if( symmetricNormalization ) {
-         // Use the Multiply operation to scale and copy the input to the output buffer
-         typename fftwapi::real normalizationScale = std::sqrt( static_cast< typename fftwapi::real >( 1.0 ) / transformScale_ );
-         Multiply( in_, normalizationScale, tmp, tmp.DataType() );
+      virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
+         // This must be a forward transform
+         DIP_THROW_IF( inverse, "FFTW real-to-complex cannot be an inverse transform" );
+         // Copy pixel data to out_ without modifying its properties.
+         bool protect = out_.Protect();
+         if( symmetricNormalization ) {
+            // Use the Multiply operation to scale and copy the input to the output buffer
+            typename fftwapi::real normalizationScale = std::sqrt( static_cast< typename fftwapi::real >( 1.0 ) / transformScale_ );
+            Multiply( in_, normalizationScale, out_, out_.DataType() );
+         } else {
+            // Just copy; no normalization in the forward transform
+            out_.Copy( in_ );
+         }
+         if( shiftOriginToCenter ) {
+            // TODO: only the real values need wrapping -> create Image with same data but different type and strides?
+            ShiftCenterToCorner( out_ );
+         }
+         out_.Protect( protect );
       }
-      else {
-         // Just copy; no normalization in the forward transform
-         tmp.Copy( in_ );
-      }
-      if( shiftOriginToCenter ) {
-         // TODO: only the real values need wrapping -> create Image with same data but different type and strides?
-         ShiftCenterToCorner( tmp );
-      }
-   }
 
-   virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
-      // TODO: rewrite; this approach is likely to be very inefficient!
-      //   The least we can do is iterate over the missing data instead of over existing data
+      virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
+         // TODO: rewrite; this approach is likely to be very inefficient!
+         //   The least we can do is iterate over the missing data instead of over existing data
 
-      // Due to Hermitian symmetry, only half the transform is computed and we have to fill the other half, for which holds:
-      // Y [k_0, k_1, ..., k_(d-1)] = Y [n_0-k_0, n_1-k_1, ..., n_(d-1)-k_(d-1)]
-      // Note that 0 maps to 0.
-      const dip::uint completionDim = largestProcessedDim_;  // This must be the dimension *represented* by the last element of fftwSizeDims
-      typedef ComplexType< typename fftwapi::real > dip_complex;
-      dip::ImageIterator< dip_complex > itOut( out_ );
-      dip::uint completionDimIndex = 0;
-      do {
-         // Only process the part of the image containing input values
-         completionDimIndex = itOut.Coordinates()[ completionDim ];
-         if( completionDimIndex <= out_.Size( completionDim ) / 2 ) {
-            dip::UnsignedArray outCoords = itOut.Coordinates();
-            // Transform the coords of the processed dimensions from k to N-k
-            for( UnsignedArray::const_iterator itDim = dimsProcessed_.begin(); itDim != dimsProcessed_.end(); ++itDim ) {
-               dip::uint dimSize = out_.Size( *itDim );
-               outCoords[ *itDim ] = ( dimSize - itOut.Coordinates()[ *itDim ] ) % dimSize;
-            }
-            if( outCoords[ completionDim ] >= out_.Size( completionDim ) / 2 + 1 ) {
-               dip_complex* pIn = static_cast< dip_complex* >( itOut.Pointer() );
-               dip_complex* pOut = static_cast< dip_complex* >( out_.At( outCoords ).Origin() );
-               // Write the complex conjugate of input to output for all tensor elements
-               for( int iT = 0; iT < out_.TensorElements(); ++iT, pIn += out_.TensorStride(), pOut += out_.TensorStride() ) {
-                  pOut->real( pIn->real() );
-                  pOut->imag( -pIn->imag() );
+         // Due to Hermitian symmetry, only half the transform is computed and we have to fill the other half, for which holds:
+         // Y [k_0, k_1, ..., k_(d-1)] = Y [n_0-k_0, n_1-k_1, ..., n_(d-1)-k_(d-1)]
+         // Note that 0 maps to 0.
+         const dip::uint completionDim = largestProcessedDim_;  // This must be the dimension *represented* by the last element of fftwSizeDims
+         using dip_complex = ComplexType< typename fftwapi::real >;
+         dip::ImageIterator< dip_complex > itOut( out_ );
+         dip::uint completionDimIndex = 0;
+         do {
+            // Only process the part of the image containing input values
+            completionDimIndex = itOut.Coordinates()[ completionDim ];
+            if( completionDimIndex <= out_.Size( completionDim ) / 2 ) {
+               dip::UnsignedArray outCoords = itOut.Coordinates();
+               // Transform the coords of the processed dimensions from k to N-k
+               for( UnsignedArray::const_iterator itDim = dimsProcessed_.begin(); itDim != dimsProcessed_.end(); ++itDim ) {
+                  dip::uint dimSize = out_.Size( *itDim );
+                  outCoords[ *itDim ] = ( dimSize - itOut.Coordinates()[ *itDim ] ) % dimSize;
+               }
+               if( outCoords[ completionDim ] >= out_.Size( completionDim ) / 2 + 1 ) {
+                  dip_complex* pIn = static_cast< dip_complex* >( itOut.Pointer() );
+                  dip_complex* pOut = static_cast< dip_complex* >( out_.At( outCoords ).Origin() );
+                  // Write the complex conjugate of input to output for all tensor elements
+                  for( dip::uint iT = 0; iT < out_.TensorElements(); ++iT, pIn += out_.TensorStride(), pOut += out_.TensorStride() ) {
+                     pOut->real( pIn->real() );
+                     pOut->imag( -pIn->imag() );
+                  }
                }
             }
+            ++itOut;
+         } while( itOut );
+
+         if( shiftOriginToCenter ) {
+            ShiftCornerToCenter( out_ );
          }
-         ++itOut;
-      } while( itOut );
-
-      if( shiftOriginToCenter ) {
-         ShiftCornerToCenter( out_ );
       }
-   }
 
-   // Create r2c plan
-   virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
-      return fftwapi::plan_guru_dft_r2c( static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
-         static_cast< typename fftwapi::real* >( out_.Origin() ), static_cast< typename fftwapi::complex* >( out_.Origin() ), FFTW_MEASURE );
-   }
+      // Create r2c plan
+      virtual typename fftwapi::plan CreatePlan( bool /*inverse*/ ) override {
+         return fftwapi::plan_guru_dft_r2c(
+               static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
+               static_cast< typename fftwapi::real* >( out_.Origin() ), static_cast< typename fftwapi::complex* >( out_.Origin() ), FFTW_MEASURE );
+      }
 };
 
 // FFTW helper class for complex to real transforms
 template< class fftwapi >
-class FFTWHelperC2R : public FFTWHelper< fftwapi >
-{
+class FFTWHelperC2R : public FFTWHelper< fftwapi > {
       using FFTWHelper< fftwapi >::sizeDims_;
       using FFTWHelper< fftwapi >::repeatDims_;
       using FFTWHelper< fftwapi >::in_;
@@ -527,173 +521,155 @@ class FFTWHelperC2R : public FFTWHelper< fftwapi >
       using FFTWHelper< fftwapi >::GetOutputExternalInterface;
       using FFTWHelper< fftwapi >::ShiftCenterToCorner;
       using FFTWHelper< fftwapi >::ShiftCornerToCenter;
-public:
-   FFTWHelperC2R( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
+   public:
+      FFTWHelperC2R( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
 
-   virtual void ForgeOutput( UnsignedArray const& outSize ) override {
-      // Backup outSize
-      floatOutSize_ = in_.Sizes(); // TODO: support padding via outSize (currently ignored)
-      // Create real-typed image around pre-allocated data, which is large enough to contain (a little over half of) the complex input image
-      void* origin;
-      Tensor outTensor( in_.Tensor() );
-      // Prepare outSize with the special treatment of the last processed dimension
-      complexOutSize_ = in_.Sizes();
-      complexOutSize_[ largestProcessedDim_ ] = outSize[ largestProcessedDim_ ] / 2 + 1;
-      // Allocate data (also fills inputStrides_)
-      dataLargeEnoughForComplex_ = GetOutputExternalInterface()->AllocateData( origin, complexType_, complexOutSize_, inputStrides_, outTensor, inputTensorStride_ );
-
-      IntegerArray floatOutStrides = inputStrides_;
-      // Correct the stride of the N/2+1 padded ("peculiar") dimension in the float output image 
-      // Assumption: this stride is stored in strides[ peculiar_dim + 1 ]
-      if( largestProcessedDim_ < in_.Dimensionality() - 1 ) {
-         floatOutStrides[ largestProcessedDim_ + 1 ] *= 2;
-      }
-      out_ = Image( dataLargeEnoughForComplex_, origin, floatType_, floatOutSize_, floatOutStrides, outTensor, inputTensorStride_, GetOutputExternalInterface() );
-   }
-
-   virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
-      // This must be an inverse transform
-      DIP_THROW_IF( !inverse, "FFTW complex-to-real must be an inverse transform" );
-
-      // Determine scale
-      typename fftwapi::real normalizationScale = static_cast< typename fftwapi::real >( 1.0 ) / transformScale_;
-      if( symmetricNormalization ) {
-         normalizationScale = std::sqrt( normalizationScale );
+      virtual void ForgeOutput( UnsignedArray const& outSize ) override {
+         // Prepare output image
+         out_.ReForge( outSize, in_.TensorElements(), floatType_, Option::AcceptDataTypeChange::DO_ALLOW );
+         // Prepare temporary image that can hold half of the input data, with special treatment of the last processed dimension
+         UnsignedArray tmpInSize = in_.Sizes();
+         tmpInSize[ largestProcessedDim_ ] = outSize[ largestProcessedDim_ ] / 2 + 1;
+         tmpIn_.ReForge( tmpInSize, in_.TensorElements(), complexType_ );
+         // Fill inputStrides_: equal to out_'s strides
+         inputStrides_ = tmpIn_.Strides();
+         inputTensorStride_ = tmpIn_.TensorStride();
       }
 
-      // Define a wrapper around the out_ image with size N/2+1 and complex type
-      Image complexOut( NonOwnedRefToDataSegment( out_.Data() ), out_.Origin(), in_.DataType(), complexOutSize_, inputStrides_, in_.Tensor(), inputTensorStride_ );
+      virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
+         // This must be an inverse transform
+         DIP_THROW_IF( !inverse, "FFTW complex-to-real must be an inverse transform" );
 
-      // Copy one half of the complex input to the output
-      if( shiftOriginToCenter ) {
-
-         // Do the shifting in the largestProcessedDim_ dimension here, because it is more difficult in the N/2+1 sized output image
-         bool dimIsOdd = in_.Size( largestProcessedDim_ ) & 1;
-         UnsignedArray shiftedInCoords( in_.Dimensionality(), 0 );
-         shiftedInCoords[ largestProcessedDim_ ] = in_.Size( largestProcessedDim_ ) / 2;  // During ifft, the shift is negative. But this means the shift in in_ during a copy is positive.
-         UnsignedArray inSize = complexOutSize_;
-         UnsignedArray outSize = complexOutSize_;
-         // If the dimension in question is even sized, copy N/2 sub-images from in_[..., N/2, ...] to out_[..., 0, ...] and copy in_[..., 0, ...] to out_[..., N/2, ...]
-         // If the dimension in question is odd sized, copy N/2+1 sub-images from in_[..., N/2, ...] to out_[..., 0, ...]
-         if( !dimIsOdd ) {
-            --inSize[ largestProcessedDim_ ];
-            --outSize[ largestProcessedDim_ ];
-         }
-
-         // Copy N/2 (or N/2+1) sub-images
-         void* shiftedInOrigin = in_.Pointer( shiftedInCoords );
-         Image halfIn( NonOwnedRefToDataSegment( in_.Data() ), shiftedInOrigin, in_.DataType(), inSize, in_.Strides(), in_.Tensor(), in_.TensorStride() );
-         Image partialComplexOut( NonOwnedRefToDataSegment( out_.Data() ), out_.Origin(), in_.DataType(), outSize, inputStrides_, in_.Tensor(), inputTensorStride_ );
-         // Multiply() performs the copy and the scaling in one operation
-         Multiply( halfIn, normalizationScale, partialComplexOut, partialComplexOut.DataType() );
-
-         if( !dimIsOdd ) {
-            // Copy one last sub-image
-            inSize[ largestProcessedDim_ ] = 1;
-            outSize[ largestProcessedDim_ ] = 1;
-            void* shiftedInOrigin = in_.Origin();
-            UnsignedArray shiftedOutCoords( out_.Dimensionality(), 0 );
-            shiftedOutCoords[ largestProcessedDim_ ] = in_.Size( largestProcessedDim_ ) / 2;
-            void* shiftedOutOrigin = complexOut.Pointer( shiftedOutCoords );
-            Image subImgIn( NonOwnedRefToDataSegment( in_.Data() ), shiftedInOrigin, in_.DataType(), inSize, in_.Strides(), in_.Tensor(), in_.TensorStride() );
-            Image subImgComplexOut( NonOwnedRefToDataSegment( out_.Data() ), shiftedOutOrigin, in_.DataType(), outSize, inputStrides_, in_.Tensor(), inputTensorStride_ );
-            // Multiply() performs the copy and the scaling in one operation
-            Multiply( subImgIn, normalizationScale, subImgComplexOut, subImgComplexOut.DataType() );
-         }
-
-         // Wrap the remaining dimensions (largestProcessedDim_ is skipped, we just did that one)
-         ShiftCenterToCorner( complexOut, largestProcessedDim_ );
-      }
-      else {
-         // Create wrappers around in_ such that a single Copy() call can do the job
-         Image halfIn( NonOwnedRefToDataSegment( in_.Data() ), in_.Origin(), in_.DataType(), complexOutSize_, in_.Strides(), in_.Tensor(), in_.TensorStride() );
-         // Multiply() performs the copy and the scaling in one operation
-         Multiply( halfIn, normalizationScale, complexOut, complexOut.DataType() );
-         // operation to just copy without scaling: complexOut.Copy( halfIn );
-      }
-   }
-
-   virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
-      if( shiftOriginToCenter ) {
-         ShiftCornerToCenter( out_ );
-      }
-   }
-
-   // Create c2r plan
-   virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
-      return fftwapi::plan_guru_dft_c2r( static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
-         static_cast< typename fftwapi::complex* >( out_.Origin() ), static_cast< typename fftwapi::real* >( out_.Origin() ), FFTW_MEASURE );
-   }
-
-protected:
-   UnsignedArray complexOutSize_;
-   UnsignedArray floatOutSize_;  // filled by ForgeOutput()
-   DataSegment dataLargeEnoughForComplex_;
-};
-
-// FFTW helper class for complex to complex transforms
-template< class fftwapi >
-class FFTWHelperC2C : public FFTWHelper< fftwapi >
-{
-      using FFTWHelper< fftwapi >::sizeDims_;
-      using FFTWHelper< fftwapi >::repeatDims_;
-      using FFTWHelper< fftwapi >::in_;
-      using FFTWHelper< fftwapi >::out_;
-      using FFTWHelper< fftwapi >::complexType_;
-      using FFTWHelper< fftwapi >::floatType_;
-      using FFTWHelper< fftwapi >::inputStrides_;
-      using FFTWHelper< fftwapi >::inputTensorStride_;
-      using FFTWHelper< fftwapi >::largestProcessedDim_;
-      using FFTWHelper< fftwapi >::dimsProcessed_;
-      using FFTWHelper< fftwapi >::transformScale_;
-      using FFTWHelper< fftwapi >::GetOutputExternalInterface;
-      using FFTWHelper< fftwapi >::ShiftCenterToCorner;
-      using FFTWHelper< fftwapi >::ShiftCornerToCenter;
-public:
-   FFTWHelperC2C( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
-
-   virtual void ForgeOutput( UnsignedArray const& outSize ) override {
-      out_.Strip();
-      out_.SetExternalInterface( GetOutputExternalInterface() );
-      out_.ReForge( outSize, in_.TensorElements(), complexType_, Option::AcceptDataTypeChange::DO_ALLOW );
-
-      // Fill inputStrides_: equal to out_'s strides
-      // Manual says: "for in-place transforms the input/output strides should be the same."
-      inputStrides_ = out_.Strides();
-      inputTensorStride_ = out_.TensorStride();
-   }
-
-   virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
-      if( inverse || symmetricNormalization ) {
-         // Use the Multiply operation to scale and copy the input to the output buffer
+         // Determine scale
          typename fftwapi::real normalizationScale = static_cast< typename fftwapi::real >( 1.0 ) / transformScale_;
          if( symmetricNormalization ) {
             normalizationScale = std::sqrt( normalizationScale );
          }
-         Multiply( in_, normalizationScale, out_, out_.DataType() );
-      }
-      else {
-         // Just copy without normalization
-         out_.Copy( in_ );
+
+         // Copy one half of the complex input to the output
+         if( shiftOriginToCenter ) {
+
+            // Do the shifting in the largestProcessedDim_ dimension here, because it is more difficult in the N/2+1 sized output image
+            bool dimIsOdd = in_.Size( largestProcessedDim_ ) & 1u;
+            UnsignedArray shiftedInCoords( in_.Dimensionality(), 0 );
+            shiftedInCoords[ largestProcessedDim_ ] = in_.Size( largestProcessedDim_ ) / 2;  // During ifft, the shift is negative. But this means the shift in in_ during a copy is positive.
+            UnsignedArray sizes = tmpIn_.Sizes();
+            // If the dimension in question is even sized, copy N/2 sub-images from in_[..., N/2, ...] to tmpIn_[..., 0, ...] and copy in_[..., 0, ...] to tmpIn_[..., N/2, ...]
+            // If the dimension in question is odd sized, copy N/2+1 sub-images from in_[..., N/2, ...] to tmpIn_[..., 0, ...]
+            if( !dimIsOdd ) {
+               --sizes[ largestProcessedDim_ ];
+            }
+
+            // Copy N/2 (or N/2+1) sub-images
+            void* shiftedInOrigin = in_.Pointer( shiftedInCoords );
+            Image halfIn( NonOwnedRefToDataSegment( in_.Data() ), shiftedInOrigin, in_.DataType(), sizes, in_.Strides(), in_.Tensor(), in_.TensorStride() );
+            Image partialComplexIn( NonOwnedRefToDataSegment( tmpIn_.Data() ), tmpIn_.Origin(), tmpIn_.DataType(), sizes, tmpIn_.Strides(), tmpIn_.Tensor(), inputTensorStride_ );
+            // Multiply() performs the copy and the scaling in one operation
+            Multiply( halfIn, normalizationScale, partialComplexIn, partialComplexIn.DataType() );
+
+            if( !dimIsOdd ) {
+               // Copy one last sub-image
+               sizes[ largestProcessedDim_ ] = 1;
+               void* shiftedInOrigin = in_.Origin();
+               UnsignedArray shiftedOutCoords( tmpIn_.Dimensionality(), 0 );
+               shiftedOutCoords[ largestProcessedDim_ ] = in_.Size( largestProcessedDim_ ) / 2;
+               void* shiftedOutOrigin = tmpIn_.Pointer( shiftedOutCoords );
+               Image subImgIn( NonOwnedRefToDataSegment( in_.Data() ), shiftedInOrigin, in_.DataType(), sizes, in_.Strides(), in_.Tensor(), in_.TensorStride() );
+               Image subImgComplexOut( NonOwnedRefToDataSegment( tmpIn_.Data() ), shiftedOutOrigin, tmpIn_.DataType(), sizes, tmpIn_.Strides(), tmpIn_.Tensor(), inputTensorStride_ );
+               // Multiply() performs the copy and the scaling in one operation
+               Multiply( subImgIn, normalizationScale, subImgComplexOut, subImgComplexOut.DataType() );
+            }
+
+            // Wrap the remaining dimensions (largestProcessedDim_ is skipped, we just did that one)
+            ShiftCenterToCorner( tmpIn_, largestProcessedDim_ );
+         } else {
+            // Create wrappers around in_ such that a single Copy() call can do the job
+            Image halfIn( NonOwnedRefToDataSegment( in_.Data() ), in_.Origin(), in_.DataType(), tmpIn_.Sizes(), in_.Strides(), in_.Tensor(), in_.TensorStride() );
+            // Multiply() performs the copy and the scaling in one operation
+            Multiply( halfIn, normalizationScale, tmpIn_, tmpIn_.DataType() );
+            // operation to just copy without scaling: complexOut.Copy( halfIn );
+         }
       }
 
-      if( shiftOriginToCenter ) {
-         ShiftCenterToCorner( out_ );
+      virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
+         if( shiftOriginToCenter ) {
+            ShiftCornerToCenter( out_ );
+         }
       }
-   }
 
-   virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
-      if( shiftOriginToCenter ) {
-         ShiftCornerToCenter( out_ );
+      // Create c2r plan
+      virtual typename fftwapi::plan CreatePlan( bool /*inverse*/ ) override {
+         return fftwapi::plan_guru_dft_c2r(
+               static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
+               static_cast< typename fftwapi::complex* >( tmpIn_.Origin() ), static_cast< typename fftwapi::real* >( out_.Origin() ), FFTW_MEASURE );
       }
-   }
 
-   // Create regular dft (c2c) plan
-   virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
-      int sign = inverse ? FFTW_BACKWARD : FFTW_FORWARD;
-      return fftwapi::plan_guru_dft( static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
-         static_cast< typename fftwapi::complex* >( out_.Origin() ), static_cast< typename fftwapi::complex* >( out_.Origin() ), sign, FFTW_MEASURE );
-   }
+   protected:
+      Image tmpIn_;
+};
+
+// FFTW helper class for complex to complex transforms
+template< class fftwapi >
+class FFTWHelperC2C : public FFTWHelper< fftwapi > {
+      using FFTWHelper< fftwapi >::sizeDims_;
+      using FFTWHelper< fftwapi >::repeatDims_;
+      using FFTWHelper< fftwapi >::in_;
+      using FFTWHelper< fftwapi >::out_;
+      using FFTWHelper< fftwapi >::complexType_;
+      using FFTWHelper< fftwapi >::floatType_;
+      using FFTWHelper< fftwapi >::inputStrides_;
+      using FFTWHelper< fftwapi >::inputTensorStride_;
+      using FFTWHelper< fftwapi >::largestProcessedDim_;
+      using FFTWHelper< fftwapi >::dimsProcessed_;
+      using FFTWHelper< fftwapi >::transformScale_;
+      using FFTWHelper< fftwapi >::GetOutputExternalInterface;
+      using FFTWHelper< fftwapi >::ShiftCenterToCorner;
+      using FFTWHelper< fftwapi >::ShiftCornerToCenter;
+   public:
+      FFTWHelperC2C( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
+
+      virtual void ForgeOutput( UnsignedArray const& outSize ) override {
+         //out_.Strip(); // TODO: We cannot strip, what if the output image is protected? But then: how do we use the aligned allocator?
+         //out_.SetExternalInterface( GetOutputExternalInterface() );
+         out_.ReForge( outSize, in_.TensorElements(), complexType_, Option::AcceptDataTypeChange::DO_ALLOW );
+
+         // Fill inputStrides_: equal to out_'s strides
+         // Manual says: "for in-place transforms the input/output strides should be the same."
+         inputStrides_ = out_.Strides();
+         inputTensorStride_ = out_.TensorStride();
+      }
+
+      virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
+         if( inverse || symmetricNormalization ) {
+            // Use the Multiply operation to scale and copy the input to the output buffer
+            typename fftwapi::real normalizationScale = static_cast< typename fftwapi::real >( 1.0 ) / transformScale_;
+            if( symmetricNormalization ) {
+               normalizationScale = std::sqrt( normalizationScale );
+            }
+            Multiply( in_, normalizationScale, out_, out_.DataType() );
+         } else {
+            // Just copy without normalization
+            out_.Copy( in_ );
+         }
+
+         if( shiftOriginToCenter ) {
+            ShiftCenterToCorner( out_ );
+         }
+      }
+
+      virtual void FinalizeOutput( bool shiftOriginToCenter ) override {
+         if( shiftOriginToCenter ) {
+            ShiftCornerToCenter( out_ );
+         }
+      }
+
+      // Create regular dft (c2c) plan
+      virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
+         int sign = inverse ? FFTW_BACKWARD : FFTW_FORWARD;
+         return fftwapi::plan_guru_dft(
+               static_cast< int >( sizeDims_.size() ), &sizeDims_[ 0 ], static_cast< int >( repeatDims_.size() ), &repeatDims_[ 0 ],
+               static_cast< typename fftwapi::complex* >( out_.Origin() ), static_cast< typename fftwapi::complex* >( out_.Origin() ), sign, FFTW_MEASURE );
+      }
 };
 
 // \brief Function that performs the FFTW transform, templated in the floating point type
@@ -701,7 +677,7 @@ public:
 // The actual work is delegated to a helper class, depending on the transform type. See `FFTWHelper`.
 // `outSize` can be the result of padding for optimal DFT sizes, but is not yet supported. It must be the same as in's size.
 template< typename FloatType >
-void PerformFFTW( Image const& in, Image& out, UnsignedArray const& outSize, BooleanArray const& process, bool inverse, bool realOutput, bool shiftOriginToCenter, bool symmetric ) {
+void PerformFFTW( Image const& in_c, Image& out, UnsignedArray const& outSize, BooleanArray const& process, bool inverse, bool realOutput, bool shiftOriginToCenter, bool symmetric ) {
    // Use the correct FFTW API depending on the floating point type
    using fftwapi = fftwapidef< FloatType >;
 
@@ -710,18 +686,31 @@ void PerformFFTW( Image const& in, Image& out, UnsignedArray const& outSize, Boo
 
    // In-place processing is not supported. We need a separate output image
    // to perform the necessary preparations like shifting, scaling and (possibly) data conversion
-   DIP_THROW_IF( &in == &out, "FFTW for in == out not supported" );
+   Image in = in_c.QuickCopy();
+   if( out.Aliases( in )) {
+      out.Strip();
+   }
 
-   // Determine transform type and reate data helper for it
-   std::shared_ptr< FFTWHelper< fftwapi > > helper;
-   if( in.DataType().IsReal() && realOutput ) // Real-to-real
-      helper.reset( new FFTWHelperR2R< fftwapi >( in, out ));
-   else if( in.DataType().IsReal() ) // Real-to-complex
-      helper.reset( new FFTWHelperR2C< fftwapi >( in, out ));
-   else if( in.DataType().IsComplex() && realOutput ) // Complex-to-real
-      helper.reset( new FFTWHelperC2R< fftwapi >( in, out ));
-   else // Complex-to-complex
-      helper.reset( new FFTWHelperC2C< fftwapi >( in, out ));
+   // Determine transform type and create data helper for it
+   std::shared_ptr< FFTWHelper < fftwapi >>
+   helper;
+   if( in.DataType().IsReal() ) {
+      if( realOutput ) {
+         // Real-to-real
+         helper.reset( new FFTWHelperR2R< fftwapi >( in, out ));
+      } else {
+         // Real-to-complex
+         helper.reset( new FFTWHelperR2C< fftwapi >( in, out ));
+      }
+   } else {
+      if( realOutput ) {
+         // Complex-to-real
+         helper.reset( new FFTWHelperC2R< fftwapi >( in, out ));
+      } else {
+         // Complex-to-complex
+         helper.reset( new FFTWHelperC2C< fftwapi >( in, out ));
+      }
+   }
 
    // Handle processing dims
    helper->HandleProcessingDims( process );
@@ -735,7 +724,7 @@ void PerformFFTW( Image const& in, Image& out, UnsignedArray const& outSize, Boo
    // Create FFTW plan
    fftwapi::plan_with_nthreads( FFTWThreading< FloatType >::GetInstance()->GetOptimalNumThreads( outSize ));
    typename fftwapi::plan plan = helper->CreatePlan( inverse );
-   DIP_THROW_IF( plan == NULL, "FFTW planner failed, requested data formats/strides not supported" );
+   DIP_THROW_IF( plan == nullptr, "FFTW planner failed, requested data formats/strides not supported" );
 
    // Fill output for in-place operation
    // NOTE!! This must be done after creating the plan, because FFTW_MEASURE overwrites the in/out arrays.
@@ -770,7 +759,7 @@ void FourierTransform(
    bool fast = false; // pad the image to a "nice" size?
    bool corner = false;
    bool symmetric = false;
-   for( auto& option : options ) {
+   for( auto const& option : options ) {
       if( option == S::INVERSE ) {
          inverse = true;
       } else if( option == S::REAL ) {
@@ -801,8 +790,7 @@ void FourierTransform(
    if( fast ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( process[ ii ] ) {
-            dip::uint sz;
-            sz = GetOptimalDFTSize( outSize[ ii ] ); // Awkward: OpenCV uses int a lot. We cannot handle image sizes larger than can fit in an int (2^31-1 on most platforms)
+            dip::uint sz = GetOptimalDFTSize( outSize[ ii ] ); // Awkward: OpenCV uses int a lot. We cannot handle image sizes larger than can fit in an int (2^31-1 on most platforms)
             DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size." );
             border[ ii ] = div_ceil< dip::uint >( sz - outSize[ ii ], 2 );
             outSize[ ii ] = sz;
@@ -824,15 +812,14 @@ void FourierTransform(
    // NOTE: There is no support for padded output yet, so outSize is not yet passed
    DataType floatOutType = DataType::SuggestFloat( in.DataType() );
    switch( floatOutType ) {
-   case DT_SFLOAT:
-      PerformFFTW< float >( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
-      break;
-   case DT_DFLOAT:
-      PerformFFTW< double >( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
-      break;
-   default:
-      DIP_THROW( "Unknown float type for FFTW" );
-      break;
+      case DT_SFLOAT:
+         PerformFFTW< float >( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
+         break;
+      case DT_DFLOAT:
+         PerformFFTW< double >( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
+         break;
+      default:
+         DIP_THROW( "Unknown float type for FFTW" );
    }
 
 #else // DIP__HAS_FFTW
