@@ -142,7 +142,8 @@ which can be obtained through `dip::Image::TensorStride`. Even for a 2D
 tensor, all tensor elements can be visited using a single stride value.
 See the section \ref tensors for more information on accessing tensor
 elements. And see the section \ref pointers for more information about
-accessing samples.
+accessing samples. See the section \ref normal_strides for information
+on the default strides.
 
 
 [//]: # (--------------------------------------------------------------)
@@ -278,7 +279,7 @@ consequently is not efficient for images with dimensionality of 2 or more.
 
 Oftentimes it is possible to determine a **simple stride** that will allow you to
 access every pixel in an image. When an image is a view into another image,
-this is not necessarily possible, but any default image (i.e. with normal strides)
+this is not necessarily possible, but any default image (i.e. with \ref normal_strides)
 has this possibility. This simple stride allows one to view the image as a
 1D image. The function `dip::Image::Flatten` will create this 1D image (without
 copying any data, if there exists such a simple stride). Walking along this
@@ -1120,10 +1121,11 @@ After the call to `dip::Gauss`, `*src` no longer exists. `dip::Gauss` has reforg
 `img` to be of type `dip::DT_SFLOAT`, triggering the deletion of object pointed to
 by `src`.
 
-A convenience function, `dip::ConstructScalarImage`, simplifies the above in the case where
-ownership is not transferred. It takes only two input arguments, a pointer to the data and
-an array with sizes. The strides are assumed to be normal. The data pointer must be of any
-of the allowed data types:
+Another form of the constructor simplifies the above in the case where ownership is not
+transferred. It takes two or three input arguments: a pointer to the data and an array
+with sizes, and optionally the number of tensor elements (channels). The strides are
+assumed to be normal (see \ref normal_strides).
+The data pointer must be of any of the allowed data types:
 
 ```cpp
     std::vector<unsigned char> src( 256 * 256, 0 ); // existing data

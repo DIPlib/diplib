@@ -1673,8 +1673,7 @@ void ApplyColorMap(
    } else {
           DIP_THROW_INVALID_FLAG( colorMap );
    }
-   void* data = const_cast< void* >( static_cast< void const* >( values ));
-   Image im( NonOwnedRefToDataSegment( data ), data, DT_UINT8, { 256 }, { 3 }, Tensor( 3 ), 1 );
+   Image im( values, { 256 }, 3 );
    LookupTable lut( im );
    DIP_STACK_TRACE_THIS( lut.Apply( in, out ));
    out.SetColorSpace( "RGB" );

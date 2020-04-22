@@ -392,17 +392,16 @@ class DIP_NO_EXPORT Image {
       /// but not necessarily, the same pointer as used in `data`.
       ///
       /// `dataType` and `sizes` must be set appropriately. `strides` must either have the same number
-      /// of elements as `sizes`, or be an empty array. If `strides` is an empty array, normal strides
-      /// will be assumed (i.e. row-major, with tensor elements for one pixel stored contiguously). In
-      /// this case, `tensorStride` will be ignored. `tensor` defaults to scalar (i.e. a single tensor
-      /// element). No tests will be performed on the validity of the values passed in,
-      /// except to enforce a few class invariants.
+      /// of elements as `sizes`, or be an empty array. If `strides` is an empty array, \ref normal_strides
+      /// will be assumed. In this case, `tensorStride` will be ignored. `tensor` defaults to scalar
+      /// (i.e. a single tensor element). No tests will be performed on the validity of the values
+      /// passed in, except to enforce a few class invariants.
       ///
       /// See \ref external_interface for information about the `externalInterface` parameter.
       ///
       /// See \ref use_external_data for more information on how to use this constructor.
       ///
-      /// See `dip::ConstructImage` for a simplified interface to this constructor.
+      /// See the next constructor for a simplified interface to this constructor.
       Image(
             DataSegment const& data,
             void* origin,
@@ -435,10 +434,10 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Create an image around existing data. No ownership is transferred.
       ///
-      /// `data` is a raw pointer to the data that will be encapsulated by the output image. Normal strides
-      /// will be assumed. That is, the data is contiguous and in row-major order. `sizes` indicates the
-      /// size of each dimension in the data. `data` must point to a buffer that is at least `sizes.product()`
-      /// elements long. The output image is scalar.
+      /// `data` is a raw pointer to the data that will be encapsulated by the output image. \ref normal_strides
+      /// will be assumed. That is, the data is contiguous and in row-major order, with the channels interleaved.
+      /// `sizes` indicates the size of each dimension in the data, and `nTensorElements` the number of channels.
+      /// `data` must point to a buffer that is at least `sizes.product() * nTensorElements` elements long.
       ///
       /// To encapsulate data in a different format, or to transfer ownership of the data to the image, see
       /// the previous constructor.
@@ -449,8 +448,8 @@ class DIP_NO_EXPORT Image {
       /// function to create an image around const data, and then write to that data. Use images pointing to
       /// const data only as input images!
       template< typename T, typename = std::enable_if_t< IsSampleType< T >::value >>
-      Image( T const* data, UnsignedArray sizes )
-            : Image( NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes )) {}
+      Image( T const* data, UnsignedArray sizes, dip::uint nTensorElements = 1 )
+            : Image( NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes ), {}, dip::Tensor{ nTensorElements } ) {}
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
       Image Similar() const {
@@ -553,12 +552,12 @@ class DIP_NO_EXPORT Image {
          tensorStride_ = ts;
       }
 
-      /// \brief computes normal strides given the sizes array and the number of tensor elements. Note that the
+      /// \brief Computes \ref normal_strides given the sizes array and the number of tensor elements. Note that the
       /// tensor stride is presumed to be 1. If tensor dimension is to be sorted at the end, set `tensorElements` to 1.
       DIP_EXPORT static IntegerArray ComputeStrides( UnsignedArray const& sizes, dip::uint tensorElements );
 
-      /// \brief Set the strides array and tensor stride so strides are normal. The image must be raw,
-      /// but its sizes should be set first.
+      /// \brief Set the strides array and tensor stride so strides are normal (see \ref normal_strides).
+      /// The image must be raw, but its sizes should be set first.
       DIP_EXPORT void SetNormalStrides();
 
       /// \brief Set the strides array and tensor stride to match the dimension order of `src`. The image must be raw,
@@ -588,7 +587,7 @@ class DIP_NO_EXPORT Image {
          return sz == size;
       }
 
-      /// \brief Test if strides are as by default. The image must be forged.
+      /// \brief Test if strides are as by default (see \ref normal_strides). The image must be forged.
       DIP_EXPORT bool HasNormalStrides() const;
 
       /// \brief Test if any of the image dimensions is a singleton dimension (size is 1). Singleton expanded
@@ -1027,7 +1026,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Get the number of images that share their data with this image.
       ///
-      /// For normal images. the count is always at least 1. If the count is
+      /// For normal images the count is always at least 1. If the count is
       /// larger than 1, `dip::Image::IsShared` is true.
       ///
       /// If `this` encapsulates external data (`dip::Image::IsExternalData` is true),
@@ -1148,7 +1147,7 @@ class DIP_NO_EXPORT Image {
       /// to hold the pixel data. If the stride array is consistent with
       /// size array, and leads to a compact data segment, it is honored.
       /// Otherwise, it is ignored and a new stride array is created that
-      /// leads to an image that `dip::Image::HasNormalStrides`. If an
+      /// leads to an image that has \ref normal_strides. If an
       /// external interface is registered for this image, that interface
       /// may create whatever strides are suitable, may honor or not the
       /// existing stride array, and may or may not produce normal strides.
@@ -2381,7 +2380,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Copies pixel data over to a new data segment if the strides are not normal.
       ///
-      /// Will throw an exception if reallocating the data segment does not yield normal strides.
+      /// Will throw an exception if reallocating the data segment does not yield \ref normal_strides.
       /// This can happen only if there is an external interface.
       ///
       /// The image must be forged.
@@ -2534,7 +2533,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Allocates a new data segment and copies the data over. The image will be the same as before, but
-      /// have normal strides and not share data with another image.
+      /// have \ref normal_strides and not share data with another image.
       ///
       /// Don't call this function if the image is not forged.
       void CopyDataToNewDataSegment() {

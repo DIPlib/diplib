@@ -135,3 +135,22 @@ default) places the origin in the same location as `dip::FourierTransform`,
 
 The function `dip::Image::GetCenter` (using the default value for its input
 argument) returns the coordinates of the central pixel as a floating-point array.
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section normal_strides Normal strides
+
+As discussed in \ref strides, images in *DIPlib* can be stored in different orders.
+The stride array specifies how many samples to skip to find the neighboring pixel
+along each image dimension. Likewise, the tensor stride indicates how many samples
+to skip to find the value for the next channel of the current pixel. When an image
+is first forged, the sample ordering is *normal*, unless an external interface
+is set (see \ref external_interface). Normal strides are defined as follows:
+
+1. The tensor stride is set to 1. That is, image channels are interleaved.
+2. The first dimension's stride is set to the number of tensor elements. That is,
+   pixels are stored consecutively in memory along the first dimension (x).
+3. Other image dimension's strides are set to the previous dimension's
+   stride times the previous dimension's size. That is, image rows are stored
+   consecutively without padding, as are image planes, etc.
