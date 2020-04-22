@@ -2049,17 +2049,17 @@ functionlist('entropy') = struct(...
 % Add the user's own functions described in LOCALDIPMENUS
 %
 
-newfuncs = [];
 if exist('localdipmenus','file')
+   newfuncs = [];
    try
       [menulist,newfuncs] = localdipmenus(menulist);
    catch exception
       warning('Evaluation of LOCALDIPMENUS failed:')
       disp(exception.message)
    end
-end
-if ~isempty(newfuncs)
-   functionlist = [functionlist;newfuncs(:)];
+   for key = newfuncs.keys
+      functionlist(key{1}) = newfuncs(key{1});
+   end
 end
 
 % diff -qsr ../dipimage dip/share/dipimage | sed '/identical$/d' | sed '/^Only in/d'
