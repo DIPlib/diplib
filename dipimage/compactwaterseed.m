@@ -16,7 +16,7 @@
 %     For 3D images use 1, 2 or 3.
 %  compactness: determines compactness of output regions.
 %     Pixels are addressed in the order given by
-%     GRAY_VALUE + COMPACTNESS * DISTANCE, where DISTANCE is the distance to
+%     GREY_VALUE + COMPACTNESS * DISTANCE, where DISTANCE is the distance to
 %     the seed the current pixel was reached from. Compactness of 0 leads to
 %     a normal seeded watershed, and a very large compactness leads to a
 %     voronoi diagram.

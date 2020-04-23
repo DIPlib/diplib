@@ -1002,7 +1002,7 @@ inline Image SeededWatershed(
 /// with a compactness term, until they meet. Pixels where two regions meet are marked as the watershed lines.
 ///
 /// The compactness term modifies the normal watershed order by taking into account the distance to the originating
-/// seed. This distance, multiplied by `compactness`, is added to the gray value when determining the processing
+/// seed. This distance, multiplied by `compactness`, is added to the grey value when determining the processing
 /// order. A `compactness` of 0 leads to the normal seeded watershed, and a very large value for `compactness`
 /// leads to disregarding the pixel values in `in`, thereby creating a Voronoi diagram.
 ///
@@ -1045,7 +1045,7 @@ inline Image CompactWatershed(
 /// The stochastic watershed is computed by applying a watershed with randomly placed seeds `nIterations` times,
 /// and adding the results. The output is an image where each pixel's value is the likelihood that it belongs to
 /// an edge in the image, the values are in the range [0,`nIterations`]. The input image `in` should contain high
-/// gray values at the edges of the regions to be segmented. Thresholding `out` at an appropriate value will yield
+/// grey values at the edges of the regions to be segmented. Thresholding `out` at an appropriate value will yield
 /// the relevant edges in the image. Alternatively, apply `dip::Watershed` to the result, with `maxDepth` set to
 /// the appropriate threshold value.
 ///

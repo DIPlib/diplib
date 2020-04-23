@@ -69,7 +69,7 @@ can be changed for example as follows:
    img.Show('unit')  # maps [0,1] to the display range
    img.Show('8bit')  # maps [0,255] to the display range
    img.Show('orientation')  # maps [0,pi] to the display range
-   img.Show('base')  # keeps 0 to the middle gray level, and uses a divergent color map
+   img.Show('base')  # keeps 0 to the middle grey level, and uses a divergent color map
    img.Show('log')  # uses logarithmic mapping
 ```
 

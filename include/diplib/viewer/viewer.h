@@ -270,7 +270,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   /// \brief Returns a textual description of the current grey-value to color mapping
   dip::String getLookupTableDescription()
   {
-    dip::String names[] = {"image colorspace (mapping inactive)", "ternary (RGB)", "gray-value", "perceptually linear", "divergent blue-red", "cyclic", "labels"};
+    dip::String names[] = {"image colorspace (mapping inactive)", "ternary (RGB)", "grey-value", "perceptually linear", "divergent blue-red", "cyclic", "labels"};
     return names[(dip::uint)lut_];
   }
 

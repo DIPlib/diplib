@@ -7,7 +7,7 @@
 %  coordinates: matrix containing the coordinates of the corner points
 %      of the polygon. It is organised as follows:
 %      [x1 y1 z1; x2 y2 z2; etc...]
-%  color: gray value(s) with which to draw the lines
+%  color: grey value(s) with which to draw the lines
 %  mode:  'open': do not connect the last point to the first point
 %         'closed': do connect the last point to the first point
 %         'filled': draw a filled polygon (2D only)

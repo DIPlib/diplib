@@ -1,11 +1,11 @@
 %MEASURE   Do measurements on objects in an image
 %
 % SYNOPSIS:
-%  msr = measure(object,gray,measurmentIDs,objectIDs,connectivity)
+%  msr = measure(object,grey,measurmentIDs,objectIDs,connectivity)
 %
 % PARAMETERS:
 %  object: binary or labeled image holding the objects.
-%  gray: (original) gray value image of object_in. It is needed for
+%  grey: (original) grey value image of object_in. It is needed for
 %        several types of measurements. Otherwise you can use [].
 %  featureIDs: measurements to be performed, either a single string
 %              or a cell array with strings (e.g.: {'Size','Perimeter'} ).
@@ -15,7 +15,7 @@
 %                this value to the one used to label object_in.
 %
 % DEFAULTS:
-%  gray_in = [];
+%  grey_in = [];
 %  featureIDs = 'size'
 %  objectIDs = []
 %  connectivity = 0 (equivalent to NDIMS(OBJECT_IN))

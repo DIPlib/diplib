@@ -164,7 +164,7 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
          for( auto const& step : steps_ ) {
             dip::uint c = step.converterFunction->Cost();
             if( c >= 100 ) {
-               c -= 99; // This is usually the case for conversion to gray, to indicate data loss
+               c -= 99; // This is usually the case for conversion to grey, to indicate data loss
             }
             cost += 50 * c; // This is very rough, most methods indicate a cost of 1 through 3, which we map here to 50-150.
          }

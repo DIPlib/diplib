@@ -920,7 +920,7 @@ void CompactWatershed(
    }
    compactness = std::abs( compactness );
    if( !lowFirst ) {
-      compactness = -compactness; // This subtracts the distance from the gray values, when doing upside-down watershed.
+      compactness = -compactness; // This subtracts the distance from the grey values, when doing upside-down watershed.
    }
 
    // Make simplified copy of input image header so we can modify it at will.

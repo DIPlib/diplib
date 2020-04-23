@@ -95,7 +95,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             the middle of the output range. Additionally, it sets the color
             map to `'coolwarm'`, such that negative and positive values
             have blue and red colors, respectively, and 0 is a neutral
-            gray.
+            grey.
         - `'log'`: use a logarithmic mapping.
         - `'modulo'` or `'labels'`: use the `(0,255)` range, with folding
             of out-of-range values by modulo operation. Additionally, it

@@ -192,7 +192,7 @@ DIP_EXPORT void ImageWriteICS(
 ///
 /// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
 /// more common ones. These are the most obvious limitations:
-///  - Only 1, 4, 8, 16 and 32 bits per pixel integer gray values are read, as well as 32-bit and 64-bit
+///  - Only 1, 4, 8, 16 and 32 bits per pixel integer grey values are read, as well as 32-bit and 64-bit
 ///    floating point.
 ///  - Only 4 and 8 bits per pixel color-mapped images are read.
 ///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.

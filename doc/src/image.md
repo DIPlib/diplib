@@ -52,7 +52,7 @@ element is synonymous with sample, and we use the one or the other term
 in the documentation and code depending on context. We say that an image
 with 1 million pixels and 3 samples per pixel has a total of 3 million samples.
 
-If the tensor is 0D (a single sample), the image is a standard gray-value image
+If the tensor is 0D (a single sample), the image is a standard grey-value image
 (which we refer to as scalar image). A 1D tensor (a vector) can be used to represent
 color images (e.g. an RGB image has three samples per pixel), but also for example
 the image gradient (see `dip::Gradient`). With a 2D tensor (a matrix) it is possible
