@@ -5,7 +5,7 @@
 %   dippreferences('set',name,value)  -> set value
 %   dippreferences('unload')          -> unlock m-file
 
-% (c)2017, Cris Luengo.
+% (c)2017-2020, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,6 +66,7 @@ if isempty(factory)
       'DisplayFunction',         struct('type','string', 'value','dipshow'),...
       'EnableKeyboard',          struct('type','boolean','value',true),...
       'FileWriteWarning',        struct('type','boolean','value',true),...
+      'FtOption',                struct('type','string', 'value',''),...
       'Gamma',                   struct('type','float*3','value',[1,1,1]),...
       'GammaGrey',               struct('type','float',  'value',1),...
       'ImageFilePath',           struct('type','string', 'value',''),...
@@ -162,10 +163,6 @@ switch varargin{1}
             if numel(value)~=N
                error([num2str(N),' values expected for preference ',name,'.'])
             end
-            if strcmp(name,'NumberOfThreads')
-               numberofthreads(value); % Throws if value is wrong
-               value = numberofthreads; % Get the value we actually set
-            end
             data.value = value(:)';
          case 'float'
             if ~isnumeric(value)
@@ -216,4 +213,7 @@ switch name
       data.value = min(100,data.value);
    case 'BinaryDisplayColor'
       data.value = max(0,min(1,data.value));
+   case 'NumberOfThreads'
+      numberofthreads(data.value);  % Throws if value is wrong
+      data.value = numberofthreads; % Get the value we actually set
 end

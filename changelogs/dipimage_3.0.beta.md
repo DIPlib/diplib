@@ -118,6 +118,11 @@ porting your old code that used *DIPimage* to the new version.
          [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_customizing.html#sec_dum_customizing_dippref_displayfunction)
          for more details).
 
+       - `'FtOption'` adds one option to the `ft` and `ift` functions, and allows to configure
+         *DIPimage* be be compatible with versions prior to 3.0 (see the
+         [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_customizing.html#sec_dum_customizing_dippref_ftoption)
+         for more details).
+
    - Changed settings:
 
        - `'KeepDataType'`, which changes how the output data type for arithmetic operations is

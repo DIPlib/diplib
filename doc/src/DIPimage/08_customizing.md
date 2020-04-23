@@ -92,7 +92,7 @@ There are two things happening in this function:
 
 2- A map object is created that contains a single entry for `myfunction`. This
    map will be added to the default map defined in `dipmenus`, which provides
-   information about all the DIPimage functions in the GUI menu. The structure
+   information about all the *DIPimage* functions in the GUI menu. The structure
    assigned to the `myfunction` entry in the map is rather complex. We describe
    it in detail below.
 
@@ -531,9 +531,20 @@ screen. This is useful as many image viewers cannot read anything but
 `uint8` uncompressed images (e.g. the standard Windows image TIFF
 viewer).
 
+\subsection sec_dum_customizing_dippref_ftoption FtOption
+
+*Value*: <tt>''</tt>, <tt>'symmetric'</tt>, <tt>'corner'</tt> or <tt>'fast'</tt>
+
+*Default*: <tt>''</tt>
+
+This preference defines one option that will be added to the `options` input
+argument to `ft` and `ift`. Set this to <tt>'symmetric'</tt> to ensure that
+all subsequent calls to `ft` and `ift` will use the symmetric  normalization,
+and therefore behave like in versions before *DIPimage 3.0*.
+
 \subsection sec_dum_customizing_dippref_gamma Gamma
 
-**NOTE: This setting is not yet used**
+**NOTE: This setting is not currently used**
 
 *Value*: 3x1 array of floats
 
@@ -546,7 +557,7 @@ behaviour for the Red, Green and Blue channel respectively.
 
 \subsection sec_dum_customizing_dippref_gammagrey GammaGrey
 
-**NOTE: This setting is not yet used**
+**NOTE: This setting is not currently used**
 
 *Value*: float
 

@@ -29,8 +29,15 @@
 %  options = {}
 %  process = [] (equivalent to all dimensions)
 %
+% NOTE:
+%  The 'FtOption' preference (see DIPSETPREF) defines one option that will be
+%  added to the OPTIONS array. With
+%     dipsetpref('FtOption','symmetric')
+%  you ensure that all subsequent calls to FT and IFT will use the symmetric
+%  normalization, and therefore behave like in DIPimage 2.
+%
 % SEE ALSO:
-%  ft, convolve
+%  ift, convolve
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::FourierTransform.
@@ -51,5 +58,13 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ft(varargin)
-out = dip_filtering('ft',varargin{:});
+function out = ft(in,options,varargin)
+if(nargin<2)
+   options = {};
+elseif ~iscell(options)
+   options= {options};
+end
+options = [dipgetpref('FtOption'),options];
+% dirty trick: if `dipgetpref` returns an empty string, then ['',options] == options
+%              otherwise ['foo',options] == [{'foo'},options]
+out = dip_filtering('ft',in,options,varargin{:});
