@@ -212,11 +212,15 @@ inline Image BinaryPropagation(
 /// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity).
 inline void EdgeObjectsRemove(
-      Image const& in,
+      Image const& c_in,
       Image& out,
       dip::uint connectivity = 1
 ){
    DIP_START_STACK_TRACE
+      Image in = c_in;
+      if( out.Aliases( in )) {
+         out.Strip(); // prevent `in` data being overwritten if `out` points to the same data.
+      }
       // Propagate with empty seed mask, iteration until done and treating outside the image as object
       BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
       // The out-image now contains the edge objects
