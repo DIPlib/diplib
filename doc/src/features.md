@@ -272,6 +272,9 @@ The `grey` image must be a scalar image.
 
 \section binary_moments Moments of binary object
 
+\subsection binary_moments_Size Size
+The \ref size_features_Size feature is the zero order moment of the binary object.
+
 \subsection binary_moments_Center Center
 Coordinates of the geometric mean (centroid) of the object (with sub-pixel precision),
 which is the first order normalized moment of the binary shape.
@@ -311,6 +314,12 @@ Currently defined only for 2D and 3D images.
 [//]: # (--------------------------------------------------------------)
 
 \section grey_moments Moments of grey-value object
+
+\subsection grey_moments_GreySize GreySize
+The zero order moment of the object. Same as the \ref intensity_features_Mass feature,
+but multiplied by the physical size of a pixel. If object pixels have a value of 1, and
+background pixels have a value of 0, then this feature is the size of the grey-value
+object.
 
 \subsection grey_moments_Gravity Gravity
 Coordinates of the center of mass of the object, which is the first order normalized

@@ -67,6 +67,7 @@
 #include "feature_dimensions_cube.h"
 #include "feature_dimensions_ellipsoid.h"
 // Grey-value moments
+#include "feature_grey_size.h"
 #include "feature_gravity.h"
 #include "feature_grey_mu.h"
 #include "feature_grey_inertia.h"
@@ -119,6 +120,7 @@ MeasurementTool::MeasurementTool() {
    Register( new Feature::FeatureDimensionsCube );
    Register( new Feature::FeatureDimensionsEllipsoid );
    // Grey-value moments
+   Register( new Feature::FeatureGreySize );
    Register( new Feature::FeatureGravity );
    Register( new Feature::FeatureGreyMu );
    Register( new Feature::FeatureGreyInertia );
