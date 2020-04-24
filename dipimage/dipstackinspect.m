@@ -63,7 +63,7 @@ if ~strncmp(tag,'DIP_Image_3D',12)
    error('DIPSTACKINSPECT only works on 3D images displayed using DIPSHOW.')
 end
 ax = findobj(fig,'Type','axes');
-if length(ax)~=1
+if numel(ax)~=1
    error('DIPSTACKINSPECT only works on images displayed using DIPSHOW.')
 end
 
@@ -175,7 +175,7 @@ while ~done
 	   h = figure;
 	   h = axes('parent',h);
    end
-   plot(h,0:length(imline)-1,imline);
+   plot(h,0:numel(imline)-1,imline);
    xlabel(h,'Stack index');
    if useRoi
       ylabel(h,'Mean intensity');

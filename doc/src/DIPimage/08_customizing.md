@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2017-2019, Cris Luengo.)
+[//]: # ([c]2017-2020, Cris Luengo.)
 [//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -341,6 +341,16 @@ prefer a different color, such as white (`[1 1 1]`) or green (`[0 1 0]`).
 This setting controls whether `dipshow` brings a window to the front
 when displaying a new image, or updating an old one.
 
+\subsection sec_dum_customizing_dippref_cheapsqueeze CheapSqueeze
+
+*Value*: <tt>'on'</tt> or <tt>'off'</tt>
+
+*Default*: <tt>'on'</tt>
+
+This setting affects the behavior of the `squeeze` method of `dip_image` objects.
+When set to <tt>'off'</tt>, it mimics the behavior of *DIPimage 2*,
+possibly incurring a data copy. See \ref sec_dum_dip_image_reshape.
+
 \subsection sec_dum_customizing_dippref_complexmappingdisplay ComplexMappingDisplay
 
 *Value*: string
@@ -540,7 +550,7 @@ viewer).
 This preference defines one option that will be added to the `options` input
 argument to `ft` and `ift`. Set this to <tt>'symmetric'</tt> to ensure that
 all subsequent calls to `ft` and `ift` will use the symmetric  normalization,
-and therefore behave like in versions before *DIPimage 3.0*.
+and therefore behave like in *DIPimage 2*.
 
 \subsection sec_dum_customizing_dippref_gamma Gamma
 

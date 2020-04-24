@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2017-2019, Cris Luengo.)
+[//]: # ([c]2017-2020, Cris Luengo.)
 [//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -25,7 +25,7 @@ some ways, but behave similarly most of the time. This chapter explains
 the usage of these objects.
 
 For more information on the functions mentioned in this chapter (and
-elsewhere) use the *MATLAB* help system. An the command prompt, type
+elsewhere) use the *MATLAB* help system. At the *MATLAB* command prompt, type
 `help <function_name>`.
 
 \tableofcontents
@@ -353,9 +353,22 @@ It is possible to combine spatial and tensor indexing, but the curly
 braces have to come first (this is a limitation of the *MATLAB* parser).
 Thus, write `c{1}(0,0)`, not `c(0,0){1}`.
 
+\warning
 Note that the function `end` only works correctly for spatial indexing
 (within `()`), not for tensor images (within `{}`).
-See \ref sec_dum_dip_image_end.
+
+Because of limitations in the *MATLAB* language, it is impossible to know,
+for the overloaded `end` method, if it is being used inside curly or
+round braces (i.e. whether the last element of the image array is
+requested, or the last pixel of the image is requested). The solution we
+have adopted is to always assume round braces (`()`). Never use `end`
+within curly braces (`{}`). You can use `tensorsize` or `numtensorel`
+to compute indices from the end for tensor indexing:
+
+```m
+    a{end};             % doesn't work!
+    a{numtensorel(a)};  % returns the last tensor component
+```
 
 Note here that the image `c` above is a special type of matrix image:
 it is symmetric. That is because `c{1,2}` and `c{2,1}` are the result of
@@ -398,8 +411,8 @@ A color image is represented in a `dip_image` object by a tensor image
 with some extra information on the color space in which the pixel values
 are to be interpreted. A color image must have more than one channel, so
 the tensor image that represents it should have at least two components.
-Use the `colorspace` function (see \ref sec_dum_dip_image_overloaded) to
-add this color space information to a tensor image:
+Use the `colorspace` function to add this color space information to a
+tensor image:
 
 ```m
     C = colorspace(A,'RGB')
@@ -466,27 +479,61 @@ dimension, the data must be copied (and reordered). Thus, by using dimension 2,
 it is possible to exchange image shapes very efficiently, for example to
 apply functions such as `max` or `sum` along the tensor dimension.
 
-Note that `reshape` and `squeeze` never copy image data, and thus preserve the
+Note that `reshape` and `squeeze` never copy image data (but see
+\ref sec_dum_dip_image_reshape), and thus preserve the
 linear indexing order (the linear indexing order is related to storage in memory).
 Because linear indexing order matches the *MATLAB* storage order, dimension 2
 is the most rapidly changing dimension. This means that squeezing an image of
 size `[1,10,20,30]` leads to an image of size `[20,10,30]`, not `[10,20,30]`,
 as one would expect.
 
-\section sec_dum_dip_image_end A note on the end method in indexing
+\subsection sec_dum_dip_image_reshape A note on the reshape and squeeze methods
 
-Because of limitations in the *MATLAB* language, it is impossible to know,
-for the overloaded `end` method, if it is being used inside curly or
-round braces (i.e. whether the last element of the image array is
-requested, or the last pixel of the image is requested). The solution we
-have adopted is to always assume round braces (`()`). Never use `end`
-within curly braces (`{}`). You can use `tensorsize` or `numtensorel`
-to compute indices from the end for tensor indexing:
+`reshape` and `squeeze` have a different behavior in *DIPimage 3* than they
+had in earlier versions of the toolbox. The behavior was changed for consistency,
+though the new behavior can be surprising at times.
+
+In older versions of the toolbox, `reshape` and `squeeze` often reordered the
+data (i.e. incurred the cost of a data copy), whereas the methods applied to a
+normal array never do so, these methods are supposed to be essentially free.
+`reshape` was implemented to fill the output image row-wise with pixels taken
+row-wise from the input image. But because MATLAB stores matrices column-wise,
+the data copy was necessary. However, this behavior was inconsistent with
+linear indexing, which wasn't translated to use that same ordering. That is,
+linear indexing used the memory order of the pixels to translate an index to
+pixel coordinates, in the same way that it works for normal array. Thus,
+applying `reshape` (or `squeeze`, which applies a `reshape` to remove singleton
+dimensions) would change the pixels accessed at a given linear index, which is
+counter-intuitive. For example, in the following program `a` and `b` are
+different values:
 
 ```m
-    a{end};             % doesn't work!
-    a{numtensorel(a)};  % returns the last tensor component
+    img = dip_image(rand(10,11,8));
+    a = img(200);
+    img = reshape(orig,[11,8,10]);
+    b = img(200);
 ```
+
+*DIPimage 3* changed this behavior, such that `reshape` and `squeeze` are
+essentially free like they are for normal MATLAB arrays. Reshaping or squeezing
+an image is consistent with linear indexing (i.e. `a` and `b` above have the
+same value). However, this causes a different surprising behavior: `squeeze`
+reorders dimensions!
+
+MATLAB's array memory layout is such that a `dip_image`'s dimensions are ordered
+in memory like so: [2, 1, 3, 4, ...]. If `squeeze` were to remove dimension number
+1, subsequent dimensions would move left, meaning that dimension number 3 ends up
+in the location of dimension 1, but 2 stays where it was. An image of size 1x20x30,
+when squeezed, becomes an image of size 30x20, not 20x30 as one would expect.
+Similarly, removing dimension 2 would move dimension 1 to its place, and dimension
+3 to the place of 1. Thus, an image of size 20x1x30 becomes a image of size 30x20,
+not 20x30 as one would expect.
+
+Setting the preference \ref sec_dum_customizing_dippref_cheapsqueeze
+to <tt>'off'</tt> changes the behavior of `squeeze` to match its old behavior,
+possibly incurring a data copy. In essence, when the setting is <tt>'off'</tt>,
+then `squeeze` is implemented through `permute`, whereas when it is <tt>'on'</tt>
+(the default), it is implemented through `reshape`.
 
 \section sec_dum_dip_image_overloaded Overloaded methods with different behavior
 
@@ -531,14 +578,14 @@ how many spatial dimensions it has.
 The built-in *MATLAB* versions of these always operate along matrix columns,
 yielding a row vector where each element is the max/min/mean/etc. of the
 corresponding column. This is a max/min/mean/etc. projection. It is possible
-to have them work along a different array dimension, but not along multiple
-dimensions.
+to have them work along a different array dimension, and only since R2018b
+along multiple dimensions.
 
 The overloaded versions of these functions that operate on `dip_image`
 objects can work along any number of dimensions simultaneously. By default,
 they operate on all dimensions, such that `max(a)` returns the maximum
 value of the image `a`. And `max(a,[],[2,3])`, if `a` is a 3D image, returns
-a 3D mage with two singleton dimensions, where each pixel `i` contains the
+a 3D image with two singleton dimensions, where each pixel `i` contains the
 maximum over `a(i,:,:)`.
 
 Note there is a second argument to `max` that we didn't use above. The

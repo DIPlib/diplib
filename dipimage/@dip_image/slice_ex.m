@@ -8,13 +8,14 @@
 %   SLICE_EX(IN,PLANE) indexes along the last dimension of IN.
 %
 %   The output SLICE has the same properties as IN, but has one fewer
-%   dimension: it misses dimension DIM. However, as in DIP_IMAGE/RESHAPE
-%   and DIP_IMAGE/SQUEEZE, if dimension 1 or 2 are removed, other
-%   dimensions map in a non-obvious way. Given dimensions [1,2,3,4], if
-%   dimension 1 is removed, the output dimensions will be ordered
-%   [3,2,4]. If dimension 2 is removed, the output dimensions will be
-%   ordered [3,1,4]. This is because of the way that DIPimage stores
-%   image data (swapping the first and second dimensions).
+%   dimension: it misses dimension DIM. However, as in DIP_IMAGE/SQUEEZE,
+%   if dimension 1 or 2 are removed, other dimensions map in a non-obvious
+%   way. Given dimensions [1,2,3,4], if dimension 1 is removed, the output
+%   dimensions will be ordered [3,2,4]. If dimension 2 is removed, the
+%   output dimensions will be ordered [3,1,4]. This is because of the way
+%   that DIPimage stores image data (swapping the first and second
+%   dimensions). Note that the 'CheapSqueeze' preference does not affect
+%   how SLICE_EX works.
 %
 %   See also dip_image/slice_in, dip_image/slice_op, im2array, array2im.
 

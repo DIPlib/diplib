@@ -282,7 +282,7 @@ if nargin >= n
       if ~isa(in,'dip_image')
          in = dip_image(in);
       end
-      in = squeeze(in);
+      in = squeeze(in,false); % Use the expensive version of squeeze that doesn't reorder dimensions
       if isempty(in)
          error('DIPSHOW cannot handle empty images.')
       elseif ndims(in)>4
@@ -709,7 +709,7 @@ function udata = display_data_1D(axh,udata)
 cdata = mapcomplexdata(udata.imagedata,imagedisplay(udata.handle,'complexmapping'));
 sz = imsize(cdata);
 delete(get(axh,'Children'));
-cdata = squeeze(double(cdata))';
+cdata = squeeze(double(cdata)).';
 xdata = (0:sz)-0.5;
 xdata = reshape(repmat(xdata,2,1),[1,sz*2+2]);
 xdata = xdata(2:end-1);
@@ -722,7 +722,7 @@ else
    colors = get(0,'DefaultAxesColorOrder');
 end
 for ii=1:size(cdata,2)
-   ydata = reshape(repmat(cdata(:,ii)',2,1),[1,sz*2]);
+   ydata = reshape(repmat(cdata(:,ii).',2,1),[1,sz*2]);
    jj = mod(ii-1,size(colors,1))+1;
    line('parent',axh,'xdata',xdata,'ydata',ydata,'color',colors(jj,:),'linestyle','-');
 end

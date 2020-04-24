@@ -15,7 +15,7 @@
 %   correct size is for SLICE is to extract a slice using SLICE_EX.
 %
 %   SLICE_EX, with the same value for the parameter DIM, gives an image
-%   if correct size for SLICE_IN. See the example below.
+%   of correct size for SLICE_IN. See the example below.
 %
 %   Example:
 %      a = readim('chromo3d');

@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2017-2019, Cris Luengo.)
+[//]: # ([c]2017-2020, Cris Luengo.)
 [//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
@@ -36,7 +36,7 @@ The alternative way to display images is with the `viewslice` function.
 The figure windows created use the *DIPviewer* tool, which has better
 image display capabilities (for example it can show tensor images),
 but is not integrated equally well into *MATLAB*.
-See \ref viewer_ui "the *DIPviewer* documentation"
+See \ref viewer_ui "the DIPviewer documentation"
 for more information on these figure windows.
 
 The <tt>'DisplayFunction'</tt> option (see \ref sec_dum_customizing_dippref)

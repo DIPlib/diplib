@@ -72,7 +72,7 @@
 
 % DIPimage 3.0
 %
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2020, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -1389,7 +1389,7 @@ classdef dip_image
          im.NDims = nd;
          pxsz = im.PixelSize;
          if ~isempty(pxsz)
-            pxsz = ensurePixelSizeDimensionality(pxsz,nd);
+            pxsz = ensurePixelSizeDimensionality(pxsz,numel(sz));
             pxsz = [defaultPixelSize;pxsz];
             im.PixelSize = pxsz(k_orig+1); % where k_orig==0, read the default pixel size value
          end
@@ -1522,29 +1522,60 @@ classdef dip_image
          im.PixelSize = pxsz; % We set it even if we didn't change the value, so that 0D images can erase the array, etc.
       end
 
-      function im = squeeze(im)
+      function im = squeeze(im,use_cheap)
          %SQUEEZE   Remove singleton dimensions.
          %   B = SQUEEZE(A) returns an image B with the same elements as
          %   A but with all the singleton dimensions removed. A dimension
          %   is singleton if size(A,dim)==1.
          %
-         %   SQUEEZE never requires a data copy.
+         %   SQUEEZE, by default, never requires a data copy.
          %
-         %   SQUEEZE is implemented through RESHAPE, and can cause some dimension
-         %   flipping due to the way that data is stored in MATLAB: if size is
-         %   [1 N M], the squeezed size is [M N]. Preserving the dimension order
-         %   would require a data copy, and can be accomplished with PERMUTE.
+         %   SQUEEZE is implemented through RESHAPE, and can cause some
+         %   dimension flipping due to the way that data is stored in MATLAB:
+         %   if size is [1 N M], the squeezed size is [M N]. See the DIPimage
+         %   User Guide for more information
+         %
+         %   The 'CheapSqueeze' setting (see DIPSETPREF) can be turned off to
+         %   change the behavior of SQUEEZE. In this mode, SQUEEZE is
+         %   implemented through PERMUTE, and will not flip dimensions.
+         %   However, it potentially copies the data.
+         %
+         %   SQUEEZE(A,T) overrides the 'CheapSqueeze' setting with T. If T
+         %   evaluates to TRUE, the cheap version (RESHAPE) is always used.
+         %   if it evaluates to FALSE, the expensive version (PERMUTE) is used.
          %
          %   See also dip_image.reshape, dip_image.permute
+         if nargin < 2
+            use_cheap = dipgetpref('CheapSqueeze');
+         end
          sz = imsize(im);
-         if numel(sz)>1
+         nd = numel(sz);
+         ind = 1:nd;
+         expected_ind = ind(sz>1);
+         if nd>1
             sz = sz([2,1,3:end]);
+            ind = ind([2,1,3:end]);
          end
-         sz(sz==1) = [];
-         if numel(sz)>1
-            sz = sz([2,1,3:end]);
+         ind(sz==1) = [];
+         if numel(ind)>1
+            ind = ind([2,1,3:end]);
          end
-         im = reshape(im,sz);
+         if isequal(ind,expected_ind)
+            use_cheap = true; % we don't care what the user asks for, the cheap version does the right thing.
+         elseif nargin < 2
+            use_cheap = dipgetpref('CheapSqueeze');
+         end
+         if use_cheap
+            % use the cheap squeeze: reshape
+            sz = imsize(im);
+            sz = sz(ind);
+            pxsz = ensurePixelSizeDimensionality(im.PixelSize,nd);
+            im = reshape(im,sz);
+            im.PixelSize = pxsz(ind);
+         else
+            % use the expensive squeeze: permute
+            im = permute(im,expected_ind);
+         end
       end
 
       function im = flip(im,dim)
@@ -2561,9 +2592,9 @@ end
 % Makes sure that the PixelSize array has at least the given number of elements by replicating the last element
 function pxsz = ensurePixelSizeDimensionality(pxsz,dim)
    if isempty(pxsz)
-      pxsz(1:dim) = defaultPixelSize;
+      pxsz(1:dim,1) = defaultPixelSize;
    elseif numel(pxsz) < dim
-      pxsz(end+1:dim) = pxsz(end);
+      pxsz(end+1:dim,1) = pxsz(end);
    end
 end
 
@@ -2697,7 +2728,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
             if islogical(ind)
                error('Illegal indexing')
             elseif isa(ind,'dip_image')
-               if ndims(squeeze(ind))==0 % Added for Piet (BR)
+               if all(imsize(ind)==1) % Added for Piet (BR)
                   ind=double(ind);
                else
                   error('Illegal indexing');

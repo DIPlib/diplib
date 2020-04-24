@@ -45,12 +45,17 @@ porting your old code that used *DIPimage* to the new version.
     now all work along spatial dimensions only, leaving the tensor dimension unaffected.
 
   - The `reshape` method now takes pixels column-wise instead of row-wise from the input. This
-    is the natural way of doing it, as it doesn't require data copy. I don't remember why it
-    was row-wise in *DIPimage 2*, and I presume there are few (if any) programs that
-    depend on the old behavior.
+    is the natural way of doing it, as it doesn't require data copy. It also makes the function
+    consistent with linear indexing (reshaping an image doesn't change the linear index of the
+    pixels). We presume there are few (if any) programs that depend on the old behavior. See
+    [this section of the *DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_dip_image.html#sec_dum_dip_image_reshape)
+    for more details).
 
-  - Related to the previous point, `squeeze` now might reorder dimensions. But it's cheaper
-    this way!
+  - The `squeeze` method now might reorder dimensions, for the same reasoning as the change to
+    `reshape`. The new preference `'CheapSqueeze'` can be used to revert to the old behavior
+    if necessary. See
+    [this section of the *DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_dip_image.html#sec_dum_dip_image_reshape)
+    for more details).
 
   - There are slight changes to how array data types are handled when converting to a `dip_image`
     object and when using an array as input to a *DIPimage* function. Most importantly, the
@@ -111,6 +116,11 @@ porting your old code that used *DIPimage* to the new version.
   *DIPimage 2*:
 
    - Added settings:
+
+       - `'CheapSqueeze'` controls the behavior of the `dip_image/squeeze` method. Set it to `'off'`
+         to mimic the behavior of *DIPimage* versions prior to 3.0 (see the
+         [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_customizing.html#sec_dum_customizing_dippref_cheapsqueeze)
+         for more details).
 
        - `'DisplayFunction'` can be set to either `'dipshow'` (the default), `'viewslice'`, or
          `'view5d'`, and determines which of these functions is invoked by default when the

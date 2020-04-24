@@ -2,6 +2,10 @@
 %
 % SYNOPSIS:
 %  image_out = autocorrelation(image_in)
+%
+% NOTE:
+%  The 'FtOption' preference (see DIPSETPREF) can affect the output of this function.
+%  See FT for more information.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

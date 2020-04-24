@@ -17,7 +17,9 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-\warning This section needs updating, things have changed significantly since this was written
+\warning
+This section hasn't been updated yet for *DIPimage 3*.
+Most of the information here is no longer correct.
 
 \m_footernavigation
 
