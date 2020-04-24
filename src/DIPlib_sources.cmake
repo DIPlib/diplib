@@ -193,6 +193,7 @@ measurement/feature_grey_dimensions_ellipsoid.h
 measurement/feature_grey_inertia.h
 measurement/feature_grey_major_axes.h
 measurement/feature_grey_mu.h
+measurement/feature_grey_size.h
 measurement/feature_inertia.h
 measurement/feature_major_axes.h
 measurement/feature_mass.h
