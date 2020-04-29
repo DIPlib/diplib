@@ -18,16 +18,19 @@
 % EXAMPLE:
 %  In the directory /data/here, there are 16 files:
 %     myfile4.tif,myfile5.tif,myfile006.tif,...myfile020.tif
-%  out = readtimeseries('/data/here/myfile','tif')  or equivalent
-%  out = readtimeseries('/data/here/myfile012.tif') or equivalent
-%  out = readtimeseries('/data/here/myfile*.tif')
+%  We can read them as a 3D image using:
+%     out = readtimeseries('/data/here/myfile','tif')
+%  or equivalently naming any one file in the series:
+%     out = readtimeseries('/data/here/myfile012.tif')
+%  or equivalently using a wildcard:
+%     out = readtimeseries('/data/here/myfile*.tif')
 %
 % SEE ALSO:
 %  readim, readtiff
 %
 % NOTES:
 %  For files like myleica_z004_ch01.tif etc. use
-%  readtimeseries('myleica_z*_ch01.tif')
+%      readtimeseries('myleica_z*_ch01.tif')
 %
 %  The given file name can have only one wildcard '*'. The directory
 %  name or the extension cannot. The wildcard can be anywhere in the
@@ -136,10 +139,11 @@ end
 
 function out=find_files(filebase,ext,start,ending)
 
-if sum(filebase=='*')>1
-   error('Only one ''*'' wildcard accepted.')
-elseif sum(filebase=='*')==1
+if any(filebase=='*')
    wc = 1;
+   if sum(filebase=='*')>1
+      error('Only one ''*'' wildcard accepted.')
+   end
 else
    wc = 0;
 end
@@ -197,9 +201,7 @@ if isempty(ext)
 end
 
 jj = find(basename=='*');
-if length(jj)~=1
-   error('assertion failed!')
-end
+assert(length(jj)==1)
 kk = length(basename)-jj;
 xx = length(ext)-1;
 
