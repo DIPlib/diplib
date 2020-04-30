@@ -204,6 +204,10 @@ porting your old code that used *DIPimage* to the new version.
   - `resample` and `shift` shift the image in the opposite direction from what it did in
     *DIPimage 2*, where the shift was unintuitive.
 
+  - `resample` produces, by default, a floating-point output image also for linear interpolation.
+    The function now responds to the `'KeepDataType'` setting, making it possible to produce
+    an interpolated result of the same data type as the input image.
+
   - `affine_trans` rotates in the opposite direction it did before, to match the interpretation
     of angles in the rest of the toolbox. The function now also accepts an affine transformation
     matrix to direct the transformation. The function `transform` provided duplicate functionality

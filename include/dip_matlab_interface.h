@@ -179,7 +179,8 @@ inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
             out[ ii ] = data[ ii ];
          }
          return out;
-      } else if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      }
+      if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
          dip::uint n = mxGetNumberOfElements( mx );
          dip::BooleanArray out( n );
          double* data = mxGetPr( mx );
@@ -256,22 +257,21 @@ inline std::vector< dip::dfloat > GetStdVectorOfFloats( mxArray const* mx ) {
 /// where the output array is set. The output array has `nDims` elements. In MATLAB, dimensions start with 1.
 /// If `mx` is empty, all dimensions are to be processed.
 inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
-   if( !mxIsEmpty( mx )) {
-      dip::IntegerArray in;
-      try {
-         in = GetIntegerArray( mx );
-      } catch( dip::Error& ) {
-         DIP_THROW( "Process array must be an integer array" );
-      }
-      dip::BooleanArray out( nDims, false );
-      for( auto ii : in ) {
-         DIP_THROW_IF( ( ii <= 0 ) || ( ii > static_cast< dip::sint >( nDims )), "Process array contains index out of range" );
-         out[ static_cast< dip::uint >( ii - 1 ) ] = true;
-      }
-      return out;
-   } else {
+   if( mxIsEmpty( mx )) {
       return dip::BooleanArray( nDims, true );
    }
+   dip::IntegerArray in;
+   try {
+      in = GetIntegerArray( mx );
+   } catch( dip::Error& ) {
+      DIP_THROW( "Process array must be an integer array" );
+   }
+   dip::BooleanArray out( nDims, false );
+   for( auto ii : in ) {
+      DIP_THROW_IF( ( ii <= 0 ) || ( ii > static_cast< dip::sint >( nDims )), "Process array contains index out of range" );
+      out[ static_cast< dip::uint >( ii - 1 ) ] = true;
+   }
+   return out;
 }
 
 /// \brief Convert a coordinates array from `mxArray` to `dip::CoordinateArray` by copy.
@@ -294,7 +294,8 @@ inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
          ++data;
       }
       return out;
-   } else if( mxIsCell( mx ) && IsVector( mx )) {
+   }
+   if( mxIsCell( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::CoordinateArray out( n );
       dip::uint ndims = 0;
@@ -334,7 +335,8 @@ inline dip::FloatCoordinateArray GetFloatCoordinateArray( mxArray const* mx ) {
          ++data;
       }
       return out;
-   } else if( mxIsCell( mx ) && IsVector( mx )) {
+   }
+   if( mxIsCell( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::FloatCoordinateArray out( n );
       dip::uint ndims = 0;
@@ -650,7 +652,7 @@ inline mxArray* GetArray( dip::CoordinateArray const& in ) {
    dip::uint ndims = in[ 0 ].size();
    mxArray* mx = mxCreateDoubleMatrix( n, ndims, mxREAL );
    double* data = mxGetPr( mx );
-   for( auto& v : in ) {
+   for( auto const& v : in ) {
       DIP_ASSERT( v.size() == ndims );
       for( dip::uint ii = 0; ii < ndims; ++ii ) {
          data[ ii * n ] = static_cast< double >( v[ ii ] );
@@ -744,8 +746,7 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
          "numberOfImages",
          "history"
    };
-   mxArray* out;
-   out = mxCreateStructMatrix( 1, 1, nFields, fieldNames );
+   mxArray* out = mxCreateStructMatrix( 1, 1, nFields, fieldNames );
    mxSetField( out, 0, fieldNames[ 0 ], dml::GetArray( fileInformation.name ));
    mxSetField( out, 0, fieldNames[ 1 ], dml::GetArray( fileInformation.fileType ));
    mxSetField( out, 0, fieldNames[ 2 ], dml::GetArray( dip::String{ fileInformation.dataType.Name() } ));
@@ -1091,14 +1092,13 @@ inline dip::ImageArray GetImageArray( mxArray const* mx ) {
          out[ ii ] = GetImage( mxGetCell( mx, ii ));
       }
       return out;
-   } else {
-      try {
-         dip::ImageArray out( 1 );
-         out[ 0 ] = GetImage( mx );
-         return out;
-      } catch( dip::Error& ) {
-         DIP_THROW( "Image array expected" );
-      }
+   }
+   try {
+      dip::ImageArray out( 1 );
+      out[ 0 ] = GetImage( mx );
+      return out;
+   } catch( dip::Error& ) {
+      DIP_THROW( "Image array expected" );
    }
 }
 
@@ -1671,6 +1671,43 @@ class streambuf : public std::streambuf {
    private:
       std::streambuf* stdoutbuf;
 };
+
+namespace detail {
+
+template< typename T >
+T GetValueFromArray( mxArray const* array );
+
+template<>
+bool GetValueFromArray< bool >( mxArray const* array ) {
+   return GetBoolean( array );
+}
+
+template<>
+dip::dfloat GetValueFromArray< dip::dfloat >( mxArray const* array ) {
+   return GetFloat( array );
+}
+
+template<>
+dip::String GetValueFromArray< dip::String >( mxArray const* array ) {
+   return GetString( array );
+}
+
+} // namespace detail
+
+/// \brief Get the value of a property, equivalent to calling `dipgetpref` in MATLAB.
+///
+/// The template parameter `T` should be set to either `bool`, `dip::dfloat` or `dip::String`
+/// depending on the value selected. An exception will be thrown if the type of the
+/// value returned by `dipgetpref` doesn't match the template parameter. Note that
+/// both 'integer' and 'float' parameter values are stored as a `double`. Parameters
+/// that store an array are currently not supported.
+template< typename T >
+T GetPreference( dip::String const& preference ) {
+   mxArray* matPref = GetArray( preference );
+   mxArray* out;
+   mexCallMATLAB( 1, &out, 1, &matPref, "dipgetpref" );
+   return detail::GetValueFromArray< T >( out );
+}
 
 /// \}
 

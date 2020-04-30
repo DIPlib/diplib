@@ -94,6 +94,10 @@ void resample( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::StringArray boundaryCondition = nrhs > 4 ? dml::GetStringArray( prhs[ 4 ] ) : dip::StringArray{};
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
+   if(( method != "nearest" ) && ( method != "nn" ) && !dml::GetPreference< bool >( "KeepDataType" )) {
+      out.SetDataType( dip::DataType::SuggestFlex( in.DataType() ));
+      out.Protect();
+   }
    dip::Resampling( in, out, zoom, shift, method, boundaryCondition );
    plhs[ 0 ] = dml::GetArray( out );
 }

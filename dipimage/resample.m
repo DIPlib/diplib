@@ -31,6 +31,15 @@
 %  interpolation_method = ''
 %  boundary_condition = ''
 %
+% NOTE:
+%  By default, the output array will be of a floating-point type, unless the
+%  interpolation method is set to 'nearest' (or 'nn'), in which case it will
+%  have the same type as the input image.
+%
+%  The preference 'KeepDataType', when set to on, causes the output image to
+%  always have the same type as the input image. Note that his might cause
+%  clipping or rounding of interpolated values.
+%
 % EXAMPLE:
 %  a = readim;
 %  b = resample(a,[.5,1],[-40,0])

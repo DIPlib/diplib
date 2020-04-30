@@ -624,6 +624,8 @@ Otherwise, a type is chosen that can hold values from both input types. Typicall
 the larger of the two types is chosen, but when signed and unsigned integers are
 mixed, a larger type can result.
 
+The function `resample` also responds to this setting, see `help resample`.
+
 \subsection sec_dum_customizing_dippref_numberofthreads NumberOfThreads
 
 *Value*: integer
