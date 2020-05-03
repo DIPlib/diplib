@@ -307,7 +307,7 @@ void init_assorted( py::module& m ) {
    m.def( "AffineTransform", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const& >( &dip::AffineTransform ),
           "in"_a, "matrix"_a, "interpolationMethod"_a = dip::S::LINEAR );
    m.def( "WarpControlPoints", py::overload_cast< dip::Image const&, dip::FloatCoordinateArray const&, dip::FloatCoordinateArray const&, dip::dfloat, dip::String const& >( &dip::WarpControlPoints ),
-          "in"_a, "inCoordinates"_a, "outCoordinates"_a, "lambda"_a = 0.0, "interpolationMethod"_a = dip::S::LINEAR );
+          "in"_a, "inCoordinates"_a, "outCoordinates"_a, "regularizationLambda"_a = 0.0, "interpolationMethod"_a = dip::S::LINEAR );
    m.def( "LogPolarTransform2D", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LogPolarTransform2D ),
           "in"_a, "interpolationMethod"_a = dip::S::LINEAR );
 

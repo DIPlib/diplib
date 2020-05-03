@@ -134,11 +134,11 @@ void init_filtering( py::module& m ) {
    m.def( "MoveToLocalMinimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::MoveToLocalMinimum ),
           "bin"_a, "weights"_a );
    m.def( "PeronaMalikDiffusion", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::String const& >( &dip::PeronaMalikDiffusion ),
-          "in"_a, "iterations"_a = 5, "K"_a = 10, "lambda"_a = 0.25, "g"_a = "Gauss" );
+          "in"_a, "iterations"_a = 5, "K"_a = 10, "stepSizeLambda"_a = 0.25, "g"_a = "Gauss" );
    m.def( "GaussianAnisotropicDiffusion", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::String const& >( &dip::GaussianAnisotropicDiffusion ),
-          "in"_a, "iterations"_a = 5, "K"_a = 10, "lambda"_a = 0.25, "g"_a = "Gauss" );
+          "in"_a, "iterations"_a = 5, "K"_a = 10, "stepSizeLambda"_a = 0.25, "g"_a = "Gauss" );
    m.def( "RobustAnisotropicDiffusion", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat >( &dip::RobustAnisotropicDiffusion ),
-          "in"_a, "iterations"_a = 5, "sigma"_a = 10, "lambda"_a = 0.25 );
+          "in"_a, "iterations"_a = 5, "sigma"_a = 10, "stepSizeLambda"_a = 0.25 );
    m.def( "CoherenceEnhancingDiffusion", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::uint, dip::StringSet const& >( &dip::CoherenceEnhancingDiffusion ),
           "in"_a, "derivativeSigma"_a = 1, "regularizationSigma"_a = 3, "iterations"_a = 5, "flags"_a = dip::StringSet{} );
    m.def( "AdaptiveGauss", py::overload_cast< dip::Image const&, dip::ImageConstRefArray const&, dip::FloatArray const&, dip::UnsignedArray const&, dip::dfloat, dip::UnsignedArray const&, dip::String const&, dip::String const& >( &dip::AdaptiveGauss ),
