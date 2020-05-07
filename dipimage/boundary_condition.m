@@ -9,7 +9,8 @@
 %   are:
 %
 %   'mirror'        The data is mirrored, with the value at -1 equal to the
-%                   value at 0, at -2 equal to at 1, etc.
+%                   value at 1, at -2 equal to at 2, etc. The value at 0 is
+%                   not replicated
 %   'asym mirror'   The data is mirrored and inverted.
 %   'periodic'      The data is repeated periodically, with the value at -1
 %                   equal to the value of the last pixel.
@@ -18,8 +19,9 @@
 %   'add max'       The boundary is filled with the max value for the data type.
 %   'add min'       The boundary is filled with the min value for the data type.
 %   'zero order'    The value at the border is repeated indefinitely.
-%   'first order'   A linear function is defined based on the two values closest
-%                   to the border.
+%   'first order'   A linear function is defined based on the value closest
+%                   to the border, the function reaches zero at the end of the
+%                   extended boundary.
 %   'second order'  A quadratic function is defined based on the two values
 %                   closest to the border, the function reaches zero at the end
 %                   of the extended boundary.
