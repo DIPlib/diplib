@@ -1,6 +1,6 @@
 # PyDIP 3.0, Python bindings for DIPlib 3.0
 #
-# (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
+# (c)2017-2020, Flagship Biosciences, Inc., written by Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,3 +36,10 @@ import importlib.util
 if importlib.util.find_spec('PyDIP.PyDIPviewer') is not None:
     import PyDIP.PyDIPviewer as viewer
     hasDIPviewer = True
+
+# Here we import PyDIPjavaio if it exists
+hasDIPjavaio = False
+if importlib.util.find_spec('PyDIP.PyDIPjavaio') is not None:
+    import PyDIP.PyDIPjavaio as javaio
+    ImageRead = javaio.ImageRead
+    hasDIPjavaio = True
