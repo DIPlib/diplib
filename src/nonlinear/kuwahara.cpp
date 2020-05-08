@@ -42,7 +42,7 @@ struct SelectionLineFilterParameters {
    dip::sint outTensorStride;
    dip::uint tensorLength;
    dip::uint bufferLength;
-   std::vector< dip::sint > const& pixelTableOffsets;
+   std::vector< dip::sint > const pixelTableOffsets;
    std::vector< dfloat > const& pixelTableWeights;
    dfloat threshold;
    bool minimum;
