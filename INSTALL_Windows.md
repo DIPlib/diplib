@@ -51,10 +51,6 @@ so feel free to skip this section.
 If you intend to build a 64-bit version of *DIPlib* (recommended!) get the 64-bit
 version of *GLFW*. Extract the ZIP file and note the location.
 
-- Download the *GLEW* binaries from here: https://sourceforge.net/projects/glew/
-The ZIP file says "win32", but it includes the 64-bit binaries also. Extract the
-ZIP file and note the location.
-
 - TODO: *FFTW3*.
 
 - Download the *BioFormats* library from here: https://www.openmicroscopy.org/bio-formats/downloads.
@@ -94,14 +90,10 @@ Alternatively, `DIP_BUILD_PYDIP` can be set to `Off` to not build the PyDIP modu
 building 32-bit binaries.
 
 - If `DIP_BUILD_DIPVIEWER` is not on the list, you need to specify the locations for
-*GLFW* and *GLEW*. Click the "Advanced" check box, this will show additional parameters.
+*GLFW*. Click the "Advanced" check box, this will show additional parameters.
 Look for `GLFW_INCLUDE_DIR` and `GLFW_LIBRARY`. For both of these, click the "..." button
 at the right and navigate to where you extracted the *GLFW* ZIP file. Select the "include"
-directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second. Next, do
-the same for `GLEW_INCLUDE_DIR` and `GLEW_LIBRARY_RELEASE`: select "include" for the
-first parameter and "lib\Release\x64\glew32.lib" for the second. If the `GLEW_` parameters
-are not on the list, click on "Configure" again after entering the *GLFW* library
-location. This should populate the *GLEW* parameters.
+directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second.
 
 - If `DIP_BUILD_DIPVIEWER_JAVA` is not on the list but `DIP_BUILD_DIPVIEWER` is, you
 don't have MATLAB installed, you are building 32-bit binaries or the Java SDK could not

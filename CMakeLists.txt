@@ -137,10 +137,6 @@ endif()
 if(DIP_BUILD_DIPVIEWER)
    set(THREADS_PREFER_PTHREAD_FLAG ON)
    find_package(Threads REQUIRED)
-   if(WIN32)
-      # On Windows, GLEW is required for OpenGL extensions
-      find_package(GLEW REQUIRED)
-   endif()
    add_subdirectory(viewer)
 endif()
 

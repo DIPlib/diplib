@@ -7,7 +7,6 @@
   #ifdef _WIN32
     #define NOMINMAX // windows.h must not define min() and max(), which are conflicting with std::min() and std::max()
     #include <windows.h>
-    #include <gl/glew.h>  // Needed for OpenGL extensions
   #endif
   #include <GL/gl.h>
 #endif
