@@ -631,7 +631,7 @@ inline Image AdaptiveGauss(
 ///
 /// ```cpp
 ///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
-///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
+///     dip::Image st = dip::StructureTensor( in, {}, {1}, {3} );  // Defined in "diplib/analysis.h"
 ///     dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation", "curvature" } );
 ///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
 /// ```
