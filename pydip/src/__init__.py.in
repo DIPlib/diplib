@@ -23,7 +23,11 @@ See the User Manual online: https://diplib.github.io/diplib-docs/pydip_user_manu
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
 import os
 if os.name == 'nt':
-    os.environ["PATH"] += os.pathsep + "@CMAKE_INSTALL_PREFIX@/@LIBRARY_DESTINATION@"
+    pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
+    try:
+        os.add_dll_directory(pydip_dir)
+    except:
+        os.environ["PATH"] += os.pathsep + pydip_dir
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
@@ -40,6 +44,9 @@ if importlib.util.find_spec('PyDIP.PyDIPviewer') is not None:
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
 if importlib.util.find_spec('PyDIP.PyDIPjavaio') is not None:
-    import PyDIP.PyDIPjavaio as javaio
-    ImageRead = javaio.ImageRead
-    hasDIPjavaio = True
+    try:
+        import PyDIP.PyDIPjavaio as javaio
+        ImageRead = javaio.ImageRead
+        hasDIPjavaio = True
+    except ImportError as e:
+        print("PyDIPjavaio unavailable: ", e)
