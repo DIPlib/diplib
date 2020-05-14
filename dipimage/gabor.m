@@ -1,8 +1,8 @@
 %GABOR   Gabor filter
 %
 % SYNOPSIS:
-%  image_out = gabor(image_in,sigma,frequency,direction,method,boundaryCondition,process,truncation)
-%  image_out = gabor(image_in,sigma,frequencies,method,boundaryCondition,process,truncation)
+%  image_out = gabor(image_in,sigma,frequency,direction,method,boundaryCondition,dim,truncation)
+%  image_out = gabor(image_in,sigma,frequencies,method,boundaryCondition,dim,truncation)
 %
 % PARAMETERS:
 %  sigma:       Sigma in the spatial domain
@@ -16,7 +16,7 @@
 %                 of the convolution.
 %  boundary_condition: Defines how the boundary of the image is handled.
 %                      See HELP BOUNDARY_CONDITION
-%  process:     Dimensions to process, set to [] to process all dimensions
+%  dim:         Dimensions to process, set to [] to process all dimensions
 %  truncation:  Determines the size of the Gaussian filters.
 %
 % DEFAULTS:
@@ -25,7 +25,7 @@
 %  direction = pi
 %  method = 'iir'
 %  bounary_condition = 'mirror'
-%  process = []
+%  dim = []
 %  truncation = 3
 %
 % NOTES:

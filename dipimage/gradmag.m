@@ -1,15 +1,17 @@
 %GRADMAG   Gradient magnitude
 %
 % SYNOPSIS:
-%  image_out = gradmag(image_in,sigma,method,boundary_condition,process,truncation)
+%  image_out = gradmag(image_in,sigma,method,boundary_condition,dim,truncation)
 %
 % DEFAULTS:
 %  sigma = 1
 %
 %  IMAGE_IN is a scalar image with N dimensions.
 %
-%  PROCESS determines along which dimensions to take the derivative.
-%  For the N-dimensional image above, if PROCESS==1, then only the derivative
+%  DIM determines along which dimensions to take the derivative.
+%  It must be an array of integers in the range 1 to NDIMS(IMAGE_IN).
+%  The empty array indicates that all dimensions should be processed.
+%  For the N-dimensional image above, if DIM==1, then only the derivative
 %  along the first dimension is computed.
 %
 %  See DERIVATIVE for a description of the parameters and the defaults.

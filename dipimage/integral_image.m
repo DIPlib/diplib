@@ -1,15 +1,15 @@
 %INTEGRAL_IMAGE   Compute the integral image.
 %
 % SYNOPSIS:
-%  image_out = integral_image(image_in,mask,process)
+%  image_out = integral_image(image_in,mask,dim)
 %
 % PARAMETERS:
-%  mask:    Any pixels not selected by the mask are presumed to be zero.
-%  process: Array specifying over which dimensions the integral is computed.
+%  mask: Any pixels not selected by the mask are presumed to be zero.
+%  dim:  Array specifying over which dimensions the integral is computed.
 %
 % DEFAULTS:
 %  mask = []
-%  process = [] (all dimensions are processed)
+%  dim = [] (all dimensions are processed)
 %
 % EXAMPLE:
 %  img = readim;

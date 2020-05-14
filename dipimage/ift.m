@@ -1,7 +1,7 @@
 %IFT   Fourier transform (inverse)
 %
 % SYNOPSIS:
-%  image_out = ift(image_in,options,process)
+%  image_out = ift(image_in,options,dim)
 %
 %  OPTIONS is a cell array with strings specifying how the transform should
 %  be applied. These are the possible values:
@@ -20,12 +20,13 @@
 %     multiplied by `1/sqrt(size)` for each dimension. This makes the transform
 %     identical to how it was in versions of *DIPimage* prior to version 3.0.
 %
-%  PROCESS is an array specifying over which dimensions the transform should be
-%  computed. The empty array indicates that all dimensions should be processed.
+%  DIM is an array specifying over which dimensions the transform should be
+%  computed. It must be an array of integers in the range 1 to NDIMS(IMAGE_IN).
+%  The empty array indicates that all dimensions should be processed.
 %
 % DEFAULTS:
 %  options = {}
-%  process = [] (equivalent to all dimensions)
+%  dim = [] (equivalent to all dimensions)
 %
 % NOTES:
 %  This function calls FT adding the string 'inverse' to the options.

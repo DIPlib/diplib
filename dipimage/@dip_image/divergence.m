@@ -1,16 +1,9 @@
 %DIVERGENCE  Calculates the divergence of a vector image.
-%   DIVERGENCE(A,SIGMA) returns the divergence (scalar) of a vector
-%   image. SIGMA is the Gaussian smoothing. SIGMA defaults to 1.
-%   A is expected to have as many dimensions as vector elements.
+%   DIVERGENCE(A,SIGMA) returns the divergence (scalar) of a vector image.
+%   Identical to DIVERGENCEVECTOR, see that function's help for more details
+%   on additional parameters.
 %
-%   DIVERGENCE(A,SIGMA,METHOD,BOUNDARY_CONDITION,PROCESS,TRUNCATION)
-%   defines how the gradient is computed. See DERIVATIVE for a description
-%   of these parameters and their defaults.
-%
-%   PROCESS determines along which dimensions to apply the operation.
-%   If A has N dimensions but only M tensor elements, and PROCESS has
-%   M unique elements, then the operation is correctly defined as
-%   M-dimensional divergence.
+%   See also DIVERGENCEVECTOR.
 
 % (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

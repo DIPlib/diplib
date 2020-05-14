@@ -1,15 +1,17 @@
 %CURLVECTOR   Curl of a vector field
 %
 % SYNOPSIS:
-%  image_out = curlvector(image_in,sigma,method,boundary_condition,process,truncation)
+%  image_out = curlvector(image_in,sigma,method,boundary_condition,dim,truncation)
 %
 %  IMAGE_IN is a M-by-1 tensor image with N dimensions. M must be 2 or 3.
 %  IMAGE_OUT is a M-by-1 tensor image.
 %
-%  PROCESS determines along which dimensions to apply the operation.
-%  If A has N dimensions but only M tensor elements, and PROCESS has
-%  M unique elements, then the operation is correctly defined as
-%  M-dimensional rotation.
+%  DIM determines along which dimensions to apply the operation.
+%  It must be an array of integers in the range 1 to NDIMS(IMAGE_IN).
+%  The empty array indicates that all dimensions should be processed.
+%  If IMAGE_IN has N dimensions but only M tensor elements, and DIM
+%  has M unique elements, then the operation is correctly defined as
+%  M-dimensional curl.
 %
 %  See DERIVATIVE for a description of the parameters and the defaults.
 %

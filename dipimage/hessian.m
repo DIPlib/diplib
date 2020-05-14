@@ -1,15 +1,17 @@
 %HESSIAN   Hessian matrix of an image
 %
 % SYNOPSIS:
-%  image_out = hessian(image_in,sigma,method,boundary_condition,process,truncation)
+%  image_out = hessian(image_in,sigma,method,boundary_condition,dim,truncation)
 %
 %  IMAGE_IN is a scalar image with N dimensions.
 %  IMAGE_OUT is a N-by-N tensor image, where each image component
 %  is a second-order Gaussian derivative. That is, each
 %  pixel contains the Hessian matrix of the image at that point.
 %
-%  PROCESS determines along which dimensions to take the derivative.
-%  For the N-dimensional image above, if PROCESS==1, then the output
+%  DIM determines along which dimensions to take the derivative.
+%  It must be an array of integers in the range 1 to NDIMS(IMAGE_IN).
+%  The empty array indicates that all dimensions should be processed.
+%  For the N-dimensional image above, if DIM==1, then the output
 %  is a scalar image with only the second derivative along the first
 %  dimension.
 %
