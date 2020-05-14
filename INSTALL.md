@@ -142,7 +142,6 @@ numbers, but it has a copyleft license.
 
 *DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
 as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
-On Windows, [*GLEW*](http://glew.sourceforge.net) is also required.
 
 *DIPjavaio* requires that the Java 8 SDK (JDK 8) be installed. This module is intended as a
 bridge to [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), which you will need

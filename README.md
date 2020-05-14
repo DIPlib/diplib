@@ -183,7 +183,7 @@ limitations under the License.
 
 - A few *MATLAB* scripts from *OME Bio-Formats*  
   Copyright 2012-2017 Open Microscopy Environment  
-  GNU General Public License, Version 2  
+  GNU General Public License, Version 2 (**not compatible with the Apache License**)  
   see [`dipimage/private/bf*.m`](dipimage/private/bfGetReader.m)  
   (the full *Bio-Formats* library needs to be installed for these to be useful)
 
@@ -217,13 +217,6 @@ to the Apache License, except for *OME Bio-Formats*.
 - *OpenGL* (as installed on your system)  
   (free from licensing requirements)
 
-- *GLEW* (as installed on your system, for Windows only)  
-  Copyright 2008-2016, Nigel Stewart  
-  Copyright 2002-2008, Milan Ikits  
-  Copyright 2002-2008, Marcelo E. Magallon  
-  Copyright 2002, Lev Povalahev  
-  Modified BSD License
-
 *DIPjavaio* links against:
 
 - *JDK 8* (as installed on your system)  
@@ -232,7 +225,7 @@ to the Apache License, except for *OME Bio-Formats*.
 
 - *OME Bio-Formats* (optional, as installed on your system)  
   Copyright 2012-2017 Open Microscopy Environment  
-  GNU General Public License, Version 2
+  GNU General Public License, Version 2 (**not compatible with the Apache License**)
 
 Note that [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) is optional,
 but *DIPjavaio* is currently useless without it.
