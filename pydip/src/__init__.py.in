@@ -45,7 +45,7 @@ if importlib.util.find_spec('PyDIP.PyDIPviewer') is not None:
 hasDIPjavaio = False
 if importlib.util.find_spec('PyDIP.PyDIPjavaio') is not None:
     try:
-        import PyDIP.loadjvm
+        import PyDIP.loadjvm as loadjvm
         lib = loadjvm.load_jvm()
         import PyDIP.PyDIPjavaio as javaio
         ImageRead = javaio.ImageRead
