@@ -6,6 +6,7 @@ src/analysis.cpp
 src/assorted.cpp
 src/filtering.cpp
 src/image.cpp
+src/loadjvm.py
 src/math.cpp
 src/measurement.cpp
 src/morphology.cpp
