@@ -214,11 +214,13 @@ classdef dip_image
 
          % Fix input data
          if nargin < 1
+            img.Data = zeros(1,1,0,'single');
             return
          end
          if isequal(varargin{1},'array')
             % Quick method
             if nargin < 2
+               img.Data = zeros(1,1,0,'single');
                return
             end
             data = varargin{2};
@@ -230,125 +232,125 @@ classdef dip_image
                img.NDims = varargin{4}; % calls set.NDims, does checks
             % else: already set to 0 by set.Array.
             end
-         else
-            % User-friendly method
-            data = varargin{1};
-            tensor_shape = [];
-            datatype = [];
-            complex = false;
-            if nargin > 1
-               if validate_tensor_shape(varargin{2})
-                  tensor_shape = varargin{2};
+            return
+         end
+         % User-friendly method
+         data = varargin{1};
+         tensor_shape = [];
+         datatype = [];
+         complex = false;
+         if nargin > 1
+            if validate_tensor_shape(varargin{2})
+               tensor_shape = varargin{2};
+            else
+               [datatype,complex] = matlabtype(varargin{2});
+            end
+            if nargin > 2
+               if isempty(tensor_shape) && validate_tensor_shape(varargin{3})
+                  tensor_shape = varargin{3};
+               elseif isempty(datatype)
+                  [datatype,complex] = matlabtype(varargin{3});
                else
-                  [datatype,complex] = matlabtype(varargin{2});
+                  error('Unrecognized string');
                end
-               if nargin > 2
-                  if isempty(tensor_shape) && validate_tensor_shape(varargin{3})
-                     tensor_shape = varargin{3};
-                  elseif isempty(datatype)
-                     [datatype,complex] = matlabtype(varargin{3});
-                  else
-                     error('Unrecognized string');
+               if nargin > 3
+                  error('Too many arguments in call to dip_image constructor')
+               end
+            end
+         end
+         if isa(data,'dip_image')
+            % Convert dip_image to new dip_image
+            img = data;
+            % Data type conversion
+            if ~isempty(datatype)
+               if ~complex && iscomplex(img)
+                  warning('Ignoring data type conversion: complex data cannot be converted to requested type')
+               else
+                  if ~isa(img.Data,datatype)
+                     img.Data = array_convert_datatype(img.Data,datatype);
                   end
-                  if nargin > 3
-                     error('Too many arguments in call to dip_image constructor')
+                  if complex && ~iscomplex(img)
+                     img.Data = cat(1,img.Data,zeros(size(img.Data),class(img.Data)));
                   end
                end
             end
-            if isa(data,'dip_image')
-               % Convert dip_image to new dip_image
-               img = data;
+            % Tensor shape
+            if ~isempty(tensor_shape)
+               img.TensorShape = tensor_shape; % calls set.TensorShape
+            end
+         else
+            % Create a new dip_image from given data
+            if iscell(data)
+               % Convert cell array of scalar images to tensor dip_image
+               for ii=1:numel(data)
+                  tmp = data{ii};
+                  if ~isa(tmp,'dip_image')
+                     tmp = dip_image(tmp);
+                  end
+                  if ~isscalar(tmp)
+                     error('Images in cell array must be scalar')
+                  end
+                  sz = size(tmp.Data);
+                  sz = [sz(1:2),1,sz(3:end)]; % add a 2nd dimension of size 1, we'll concatenate along this dimension
+                  tmp.Data = reshape(tmp.Data,sz);
+                  data{ii} = tmp;
+               end
+               img = cat(2,data{:}); % concatenate along 2nd dimension. Note that the 2nd dimension is the fastest changing one, the first spatial dimension in storage order
+               sz = size(img.Data);
+               sz = sz([1,3:end]); % make 2nd dimension the tensor dimension
+               img.Data = reshape(img.Data,sz);
+               tshape = size(data);
+               if numel(tshape) > 2
+                  tshape = [prod(tshape),1];
+               end
+               if prod(tshape) ~= size(img.Data,2)
+                  tshape = [size(img.Data,2),1]; % this shouldn't happen!
+               end
+               img.TensorSizeInternal = tshape;
+               if isempty(tensor_shape)
+                  if tshape(2) == 1
+                     tensor_shape = 'column vector';
+                  elseif tshape(1) == 1
+                     tensor_shape = 'row vector';
+                  else
+                     tensor_shape = 'column-major matrix';
+                  end
+               end
+               img.TensorShape = tensor_shape; % calls set.TensorShape
+               return
+            elseif isnumeric(data) || islogical(data)
+               % Convert MATLAB array to new dip_image
                % Data type conversion
                if ~isempty(datatype)
-                  if ~complex && iscomplex(img)
+                  if ~isreal(data) && (datatype ~= 'single') && (datatype ~= 'double')
                      warning('Ignoring data type conversion: complex data cannot be converted to requested type')
-                  else
-                     if ~isa(img.Data,datatype)
-                        img.Data = array_convert_datatype(img.Data,datatype);
-                     end
-                     if complex && ~iscomplex(img)
-                        img.Data = cat(1,img.Data,zeros(size(img.Data),class(img.Data)));
-                     end
+                  elseif ~isa(data,datatype)
+                     data = array_convert_datatype(data,datatype);
                   end
                end
-               % Tensor shape
-               if ~isempty(tensor_shape)
-                  img.TensorShape = tensor_shape; % calls set.TensorShape
+               % Add tensor dimension
+               if isempty(tensor_shape)
+                  data = shiftdim(data,-1);
                end
             else
-               % Create a new dip_image from given data
-               if iscell(data)
-                  % Convert cell array of scalar images to tensor dip_image
-                  for ii=1:numel(data)
-                     tmp = data{ii};
-                     if ~isa(tmp,'dip_image')
-                        tmp = dip_image(tmp);
-                     end
-                     if ~isscalar(tmp)
-                        error('Images in cell array must be scalar')
-                     end
-                     sz = size(tmp.Data);
-                     sz = [sz(1:2),1,sz(3:end)]; % add a 2nd dimension of size 1, we'll concatenate along this dimension
-                     tmp.Data = reshape(tmp.Data,sz);
-                     data{ii} = tmp;
-                  end
-                  img = cat(2,data{:}); % concatenate along 2nd dimension. Note that the 2nd dimension is the fastest changing one, the first spatial dimension in storage order
-                  sz = size(img.Data);
-                  sz = sz([1,3:end]); % make 2nd dimension the tensor dimension
-                  img.Data = reshape(img.Data,sz);
-                  tshape = size(data);
-                  if numel(tshape) > 2
-                     tshape = [prod(tshape),1];
-                  end
-                  if prod(tshape) ~= size(img.Data,2)
-                     tshape = [size(img.Data,2),1]; % this shouldn't happen!
-                  end
-                  img.TensorSizeInternal = tshape;
-                  if isempty(tensor_shape)
-                     if tshape(2) == 1
-                        tensor_shape = 'column vector';
-                     elseif tshape(1) == 1
-                        tensor_shape = 'row vector';
-                     else
-                        tensor_shape = 'column-major matrix';
-                     end
-                  end
-                  img.TensorShape = tensor_shape; % calls set.TensorShape
-                  return
-               elseif isnumeric(data) || islogical(data)
-                  % Convert MATLAB array to new dip_image
-                  % Data type conversion
-                  if ~isempty(datatype)
-                     if ~isreal(data) && (datatype ~= 'single') && (datatype ~= 'double')
-                        warning('Ignoring data type conversion: complex data cannot be converted to requested type')
-                     elseif ~isa(data,datatype)
-                        data = array_convert_datatype(data,datatype);
-                     end
-                  end
-                  % Add tensor dimension
-                  if isempty(tensor_shape)
-                     data = shiftdim(data,-1);
-                  end
-               else
-                  error('Input image is not an image');
-               end
-               % Add the complex dimension
-               data = shiftdim(data,-1);
-               if ~isreal(data)
-                  data = cat(1,real(data),imag(data));
-               elseif complex
-                  data = cat(1,data,zeros(size(data),class(data)));
-               end
-               % Handle 1D images properly
-               sz = size(data);
-               if sum(sz(3:end)>1) == 1
-                  data = reshape(data,sz(1),sz(2),[]);
-               end
-               % Write properties
-               img.Array = data; % calls set.Array
-               if ~isempty(tensor_shape)
-                  img.TensorShape = tensor_shape; % calls set.TensorShape
-               end
+               error('Input image is not an image');
+            end
+            % Add the complex dimension
+            data = shiftdim(data,-1);
+            if ~isreal(data)
+               data = cat(1,real(data),imag(data));
+            elseif complex
+               data = cat(1,data,zeros(size(data),class(data)));
+            end
+            % Handle 1D images properly
+            sz = size(data);
+            if sum(sz(3:end)>1) == 1
+               data = reshape(data,sz(1),sz(2),[]);
+            end
+            % Write properties
+            img.Array = data; % calls set.Array
+            if ~isempty(tensor_shape)
+               img.TensorShape = tensor_shape; % calls set.TensorShape
             end
          end
       end
@@ -358,6 +360,11 @@ classdef dip_image
       function img = set.Array(img,data)
          if ( ~islogical(data) && ~isnumeric(data) ) || ~isreal(data)
             error('Pixel data must be real, and numeric or logical');
+         end
+         if isempty(data)
+            data = reshape(data,1,1,0);
+         elseif size(data,1) < 1 || size(data,1) > 2
+            error('Pixel data must have a 1st dimension with 1 (real) or 2 (complex) elements');
          end
          img.Data = data;
          img.TensorShapeInternal = 'column vector';
@@ -1027,9 +1034,6 @@ classdef dip_image
 
       function a = subsref(a,s)
          %SUBSREF   Overload for indexing syntax A{I,J}(X,Y,Z).
-         if isempty(a)
-            error('Cannot index into empty image')
-         end
          if strcmp(s(1).type,'.')
             name = s(1).subs;
             if strcmp(name,'Data') || ...
@@ -1072,6 +1076,9 @@ classdef dip_image
             end
             return
          end
+         if isempty(a)
+            error('Cannot index into empty image')
+         end
          telems = numtensorel(a);
          % Find the indices to use
          sz = imsize(a);
@@ -1091,9 +1098,6 @@ classdef dip_image
 
       function a = subsasgn(a,s,b)
          %SUBSASGN   Overload for indexing syntax A{I,J}(X,Y,Z) = B.
-         if isempty(a)
-            error('Cannot index into empty image')
-         end
          if strcmp(s(1).type,'.')
             name = s(1).subs;
             if strcmp(name,'Data') || ...
@@ -1142,6 +1146,9 @@ classdef dip_image
                a = builtin('subsasgn',a,s,b); % Call built-in method to access properties
             end
             return
+         end
+         if isempty(a)
+            error('Cannot index into empty image')
          end
          % Find the indices to use
          sz = imsize(a);

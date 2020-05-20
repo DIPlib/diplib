@@ -89,7 +89,9 @@ void besselj( mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    dip::uint nu = dml::GetUnsigned( prhs[ 0 ] );
    dip::Image in = dml::GetImage( prhs[ 1 ] );
    dip::Image out = mi.NewImage();
-   dip::BesselJN( in, out, nu );
+   if( in.IsForged() ) {
+      dip::BesselJN( in, out, nu );
+   }
    plhs[ 0 ] = dml::GetArray( out );
 }
 
@@ -100,7 +102,9 @@ void bessely( mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    dip::uint nu = dml::GetUnsigned( prhs[ 0 ] );
    dip::Image in = dml::GetImage( prhs[ 1 ] );
    dip::Image out = mi.NewImage();
-   dip::BesselYN( in, out, nu );
+   if( in.IsForged() ) {
+      dip::BesselYN( in, out, nu );
+   }
    plhs[ 0 ] = dml::GetArray( out );
 }
 

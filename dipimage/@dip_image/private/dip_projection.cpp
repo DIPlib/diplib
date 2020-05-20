@@ -178,6 +178,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       DML_MIN_ARGS( 2 );
       dip::String function = dml::GetString( prhs[ 0 ] );
       dip::Image in = dml::GetImage( prhs[ 1 ] );
+      if( !in.IsForged() ) {
+         plhs[ 0 ] = dml::GetArray( dip::Image{} );
+         if( nlhs > 1 ) {
+            plhs[ 1 ] = dml::GetArray( dip::Image{} );
+         }
+         return;
+      }
       prhs += 2;
       nrhs -= 2;
       bool doTensor = false;
