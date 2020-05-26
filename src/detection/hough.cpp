@@ -210,7 +210,7 @@ CoordinateArray FindHoughMaxima(
    auto it = measurement.FirstObject();
    for( dip::uint ii = 0; ii < candidates.size(); ++ii, ++it ) {
       auto c = it[ "MaxPos" ];
-      std::copy( c.begin(), c.end(), candidates[ ii ].pos.begin() ); // TODO: MSVC complains about implicit cast dfloat -> dip::uint
+      std::transform(c.begin(), c.end(), candidates[ii].pos.begin(), []( dfloat &x ) { return ( dip::uint ) x; } );
       candidates[ ii ].val = *it[ "MaxVal" ];
    }
 

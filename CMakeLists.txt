@@ -66,6 +66,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
    add_definitions(/wd4180) # Disable "qualifier applied to function type has no meaning; ignored" that happens in union_find.h as used in maxima.cpp
    add_definitions(/EHa) # This exception handling model apparently is what MATLAB uses (default is /EHsc)
+   add_definitions(/MP) # Enable Multi-Processor compilation
 endif()
 
 # RPATH
