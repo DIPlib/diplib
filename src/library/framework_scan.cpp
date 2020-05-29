@@ -391,6 +391,10 @@ void Scan(
       for( dip::uint ii = 1; ii < nThreads; ++ii ) {
          startCoords[ ii ] = startCoords[ ii - 1 ];
          startCoords[ ii ][ 0 ] += lineLength;        // `lineLength` in this case is the number of pixels per thread
+         if( startCoords[ ii ][ 0 ] >= sizes[ processingDim ] ) {
+            nThreads = ii;
+            break;
+         }
       }
    } else {
       dip::uint nDims = sizes.size();
@@ -401,6 +405,7 @@ void Scan(
          dip::uint firstDim = processingDim == 0 ? 1 : 0;
          dip::uint remaining = nLinesPerThread;
          do {
+            bool rewound = false;
             for( dip::uint dd = 0; dd < nDims; ++dd ) {
                if( dd == firstDim ) {
                   dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
@@ -408,6 +413,7 @@ void Scan(
                      // Rewinding, next loop iteration will increment the next coordinate
                      remaining -= n;
                      startCoords[ ii ][ dd ] = 0;
+                     rewound = true;
                   } else {
                      // Forward by `remaining`, then we're done.
                      startCoords[ ii ][ dd ] += remaining;
@@ -415,6 +421,7 @@ void Scan(
                      break;
                   }
                } else if( dd != processingDim ) {
+                  rewound = false;
                   // Increment coordinate
                   ++startCoords[ ii ][ dd ];
                   // Check whether we reached the last pixel of the line
@@ -423,7 +430,13 @@ void Scan(
                   }
                   // Rewind, the next loop iteration will increment the next coordinate
                   startCoords[ ii ][ dd ] = 0;
+                  rewound = true;
                }
+            }
+            if( rewound ) {
+               // Could not rewind; kill subsequent treads
+               nThreads = ii;
+               break;
             }
          } while( remaining > 0 );
       }

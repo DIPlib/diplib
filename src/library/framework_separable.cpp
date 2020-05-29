@@ -282,6 +282,7 @@ void Separable(
                dip::uint firstDim = processingDim == 0 ? 1 : 0;
                dip::uint remaining = nLinesPerThread;
                do {
+                  bool rewound = false;
                   for( dip::uint dd = 0; dd < nDims; ++dd ) {
                      if( dd == firstDim ) {
                         dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
@@ -289,6 +290,7 @@ void Separable(
                            // Rewinding, next loop iteration will increment the next coordinate
                            remaining -= n;
                            startCoords[ ii ][ dd ] = 0;
+                           rewound = true;
                         } else {
                            // Forward by `remaining`, then we're done.
                            startCoords[ ii ][ dd ] += remaining;
@@ -296,6 +298,7 @@ void Separable(
                            break;
                         }
                      } else if( dd != processingDim ) {
+                        rewound = false;
                         // Increment coordinate
                         ++startCoords[ ii ][ dd ];
                         // Check whether we reached the last pixel of the line
@@ -304,33 +307,23 @@ void Separable(
                         }
                         // Rewind, the next loop iteration will increment the next coordinate
                         startCoords[ ii ][ dd ] = 0;
+                        rewound = true;
                      }
                   }
-               } while( remaining > 0 );
-               // If we went past the last line to process, set startCoords to an empty array, the corresponding
-               // thread will not do any work. This situation arises when there are fewer image lines than threads
-               // along this dimension.
-               for( dip::uint jj = 0; jj < sizes.size(); ++jj ) {
-                  if( startCoords[ ii ][ jj ] >= sizes[ jj ] ) {
-                     startCoords[ ii ] = {}; //
+                  if( rewound ) {
+                     // Could not rewind; kill subsequent treads
+                     nThreads = ii;
                      break;
                   }
-               }
-               // If we have set startCoords to an empty array, the next ones will all also be empty.
-               if( startCoords[ ii ].empty() ) {
-                  for( ; ii < nThreads; ++ii ) {
-                     startCoords[ ii ] = {};
-                  }
-                  break;
-               }
+               } while( remaining > 0 );
             }
             //for( dip::uint ii = 1; ii < nThreads; ++ii ) {
             //   std::cout << "   startCoords[ " << ii << " ] = " << startCoords[ ii ] << std::endl;
             //}
          }
          #pragma omp barrier
-
-         if( !startCoords[ thread ].empty() ) {
+         
+         if( thread < nThreads ) {
 
             // Some values to use during this iteration
             dip::uint inLength = inSizes[ processingDim ];
