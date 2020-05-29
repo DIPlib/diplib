@@ -21,7 +21,7 @@
 
 namespace {
 
-dip::Image BufferToImage( py::buffer& buf ) {
+dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
    py::buffer_info info = buf.request();
    //std::cout << "--Constructing dip::Image from Python buffer.\n";
    //std::cout << "   info.ptr = " << info.ptr << std::endl;
@@ -112,11 +112,28 @@ dip::Image BufferToImage( py::buffer& buf ) {
    }};
    // Create an image with all of this.
    dip::Image out( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
-   // If it's a 3D image and the first dimension has <10 pixels, let's assume it's a tensor dimension:
-   if(( sizes.size() > 2 ) && ( sizes[ 0 ] < 10 )) {
-      out.SpatialToTensor( 0 );
+
+   if( auto_tensor ) {
+      // If it's a 3D image and the first or last dimension has <10 pixels, let's assume it's a tensor dimension:
+      if( (sizes.size() > 2) && (sizes[0] < 10 || sizes[ndim - 1] < 10) ) {
+         if( sizes[0] < sizes[ndim - 1] ) {
+            out.SpatialToTensor( 0 );
+         } else {
+            out.SpatialToTensor( ndim - 1 );
+         }
+      }
    }
    return out;
+}
+
+dip::Image BufferToImage( py::buffer& buf, dip::sint tensor_axis ) {
+   auto img = BufferToImage( buf, false );
+   tensor_axis = -tensor_axis - 1;
+   if( tensor_axis < 0 ) {
+      tensor_axis += img.Dimensionality();
+   }
+   img.SpatialToTensor( tensor_axis );
+   return img;
 }
 
 py::buffer_info ImageToBuffer( dip::Image const& image ) {
@@ -222,6 +239,8 @@ void init_image( py::module& m ) {
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), "The class that encapsulates DIPlib images of all types." );
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed
    img.def( py::init<>() );
+   img.def( py::init([](py::none const& ) { return dip::Image{}; }), "none"_a );
+   py::implicitly_convertible< py::none, dip::Image >();
    // Constructor, generic
    img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
    // Constructor that takes a Sample
@@ -234,7 +253,9 @@ void init_image( py::module& m ) {
    img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
    img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
    // Constructor that takes a Python raw buffer
-   img.def( py::init([]( py::buffer& buf ) { return BufferToImage( buf ); } ));
+   img.def( py::init( []( py::buffer& buf ) { return BufferToImage( buf ); } ), "array"_a);
+   img.def( py::init( []( py::buffer& buf, py::none const& ) { return BufferToImage( buf, false ); } ), "array"_a, "none"_a );
+   img.def( py::init( []( py::buffer& buf, dip::sint tensor_axis ) { return BufferToImage( buf, tensor_axis ); } ), "array"_a, "tensor_axis"_a );
    py::implicitly_convertible< py::buffer, dip::Image >();
    // Export a Python raw buffer
    img.def_buffer( []( dip::Image& self ) -> py::buffer_info { return ImageToBuffer( self ); } );
@@ -354,9 +375,13 @@ void init_image( py::module& m ) {
    img.def( "Imaginary", []( dip::Image const& image ) -> dip::Image { return image.Imaginary(); } );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
    // These don't exist, but we need to have a function for operation[] too
-   img.def( "TensorElement", []( dip::Image const& image, dip::sint index ) -> dip::Image { return image[ index ]; }, "index"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
+   img.def( "__call__", []( dip::Image const& image, dip::sint index ) -> dip::Image { return image[ index ]; }, "index"_a );
+   img.def( "__call__", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
+   img.def( "__call__", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
+   // NOTE: Compatibility with beta PyDIP. Remove?
+   img.def("TensorElement", [](dip::Image const& image, dip::sint index) -> dip::Image { return image[index]; }, "index"_a);
+   img.def("TensorElement", [](dip::Image const& image, dip::uint i, dip::uint j) -> dip::Image { return image[dip::UnsignedArray{ i, j }]; }, "i"_a, "j"_a);
+   img.def("TensorElement", [](dip::Image const& image, dip::Range const& range) -> dip::Image { return image[range]; }, "range"_a);
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));

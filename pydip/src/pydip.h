@@ -65,7 +65,25 @@ namespace detail {
 
 // Cast Python list types to our custom dynamic array type
 template< typename Type >
-struct type_caster< dip::DimensionArray< Type >>: list_caster< dip::DimensionArray< Type >, Type > {};
+struct type_caster< dip::DimensionArray< Type >>: list_caster< dip::DimensionArray< Type >, Type > {
+   using list_caster< dip::DimensionArray< Type >, Type >::value;
+   using value_conv = make_caster< Type >;
+   
+   bool load( handle src, bool convert ) {
+      if( isinstance<sequence>( src ) || isinstance<str>( src ) ) {
+         return list_caster< dip::DimensionArray< Type >, Type >::load( src, convert );
+      }
+
+      // Allow scalars to be interpreted as a single-element array
+      value.clear();
+      value_conv conv;
+      if( !conv.load( src, convert ) )
+         return false;
+      value.push_back( cast_op<Type &&>( std::move( conv ) ) );
+
+      return true;
+   }
+};
 
 // Cast Python string to dip::DataType
 template<>
