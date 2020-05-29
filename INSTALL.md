@@ -157,4 +157,3 @@ after installing *DIPimage*, to learn more).
 
 To build the *DIPlib* documentation (HTML), as well as the *DIPimage* and *PyDIP* User Manuals,
 [*Doxygen*](http://www.doxygen.org) is needed.
-There is a chance it will only work on Unix-like systems (not yet tested under Windows).

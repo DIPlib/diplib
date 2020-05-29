@@ -31,6 +31,14 @@ You can obtain the latest *CMake* here: https://cmake.org/download/.
 
 Again, download and install as directed.
 
+## *Doxygen*
+
+To compile the documentation yourself (which shouldn't be necessary, but some IDEs
+might require), you need *Doxygen*, which you can download here:
+http://www.doxygen.nl/download.html#srcbin.
+
+Again, download and install as directed.
+
 ## Cloning the repository
 
 Next, get the source repository from *GitHub*. Open the "Git GUI" program on your

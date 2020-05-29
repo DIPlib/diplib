@@ -30,8 +30,8 @@ If you want to compile *DIPviewer*, you need to install `freeglut` as well:
 sudo apt install freeglut3-dev
 ```
 
-To compile the documentation yourself (not really necessary, you can read the
-documentation directly in the header files), you need *Doxygen*:
+To compile the documentation yourself (note that the compiled documentation can be found
+online), you need *Doxygen*:
 ```bash
 sudo apt install doxygen
 ```
