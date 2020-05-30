@@ -235,6 +235,7 @@ void Separable(
    Image outImage;
    std::vector< UnsignedArray > startCoords( nThreads );
    dip::uint nLinesPerThread;
+   dip::uint dThreads;
 
    // Start threads, each thread makes its own buffers
    AssertionError assertionError;
@@ -275,14 +276,14 @@ void Separable(
             // image lines to process.
             nLinesPerThread = div_ceil( inImage.NumberOfPixels() / inSizes[ processingDim ], nThreads );
             DIP_ASSERT( nLinesPerThread == div_ceil( outImage.NumberOfPixels() / outSizes[ processingDim ], nThreads ));
+            dThreads = std::min( div_ceil( inImage.NumberOfPixels() / inSizes[ processingDim ], nLinesPerThread ), nThreads );
             startCoords[ 0 ] = UnsignedArray( nDims, 0 );
-            for( dip::uint ii = 1; ii < nThreads; ++ii ) {
+            for( dip::uint ii = 1; ii < dThreads; ++ii ) {
                startCoords[ ii ] = startCoords[ ii - 1 ];
                // To advance the iterator nLinesPerThread times, we increment it in whole-line steps.
                dip::uint firstDim = processingDim == 0 ? 1 : 0;
                dip::uint remaining = nLinesPerThread;
                do {
-                  bool rewound = false;
                   for( dip::uint dd = 0; dd < nDims; ++dd ) {
                      if( dd == firstDim ) {
                         dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
@@ -290,7 +291,6 @@ void Separable(
                            // Rewinding, next loop iteration will increment the next coordinate
                            remaining -= n;
                            startCoords[ ii ][ dd ] = 0;
-                           rewound = true;
                         } else {
                            // Forward by `remaining`, then we're done.
                            startCoords[ ii ][ dd ] += remaining;
@@ -298,7 +298,6 @@ void Separable(
                            break;
                         }
                      } else if( dd != processingDim ) {
-                        rewound = false;
                         // Increment coordinate
                         ++startCoords[ ii ][ dd ];
                         // Check whether we reached the last pixel of the line
@@ -307,13 +306,7 @@ void Separable(
                         }
                         // Rewind, the next loop iteration will increment the next coordinate
                         startCoords[ ii ][ dd ] = 0;
-                        rewound = true;
                      }
-                  }
-                  if( rewound ) {
-                     // Could not rewind; kill subsequent treads
-                     nThreads = ii;
-                     break;
                   }
                } while( remaining > 0 );
             }
@@ -322,8 +315,8 @@ void Separable(
             //}
          }
          #pragma omp barrier
-         
-         if( thread < nThreads ) {
+
+         if( thread < dThreads ) {
 
             // Some values to use during this iteration
             dip::uint inLength = inSizes[ processingDim ];
