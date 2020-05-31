@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2020, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,17 +78,28 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
                datatype = dip::DT_DCOMPLEX;
                break;
             default:
-               std::cout << "Attempted to convert buffer to dip.Image object: data type not compatible." << std::endl;
+               std::cout << "Attempted to convert buffer to dip.Image object: data type not compatible.\n";
                DIP_THROW( "Buffer data type not compatible with class Image" );
          }
          break;
       default:
-         std::cout << "Attempted to convert buffer to dip.Image object: data type not compatible." << std::endl;
+         std::cout << "Attempted to convert buffer to dip.Image object: data type not compatible.\n";
          DIP_THROW( "Buffer data type not compatible with class Image" );
    }
-   // Sizes, reversed
+   // An empty array leads to a raw image
    dip::uint ndim = static_cast< dip::uint >( info.ndim );
    DIP_ASSERT( ndim == info.shape.size() );
+   bool isEmpty = false;
+   for( dip::uint ii = 0; ii < ndim; ++ii ) {
+      isEmpty |= info.shape[ ii ] == 0;
+   }
+   //std::cout << "isEmpty = " << isEmpty << '\n';
+   if( isEmpty ) {
+      dip::Image out;
+      out.SetDataType( datatype );
+      return out;
+   }
+   // Sizes, reversed
    dip::UnsignedArray sizes( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
       sizes[ ii ] = static_cast< dip::uint >( info.shape[ ndim - ii - 1 ] );
@@ -130,13 +141,14 @@ dip::Image BufferToImage( py::buffer& buf, dip::sint tensor_axis ) {
    auto img = BufferToImage( buf, false );
    tensor_axis = -tensor_axis - 1;
    if( tensor_axis < 0 ) {
-      tensor_axis += img.Dimensionality();
+      tensor_axis += static_cast< dip::sint >( img.Dimensionality() );
    }
-   img.SpatialToTensor( tensor_axis );
+   img.SpatialToTensor( static_cast< dip::uint >( tensor_axis ));
    return img;
 }
 
 py::buffer_info ImageToBuffer( dip::Image const& image ) {
+   // Get data type and size
    dip::String format;
    switch( image.DataType() ) {
       case dip::DT_BIN:
@@ -182,17 +194,24 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
          DIP_THROW( "Image of unknown type" ); // should never happen
    }
    dip::sint itemsize = static_cast< dip::sint >( image.DataType().SizeOf() );
+   // Short cut for non-forged images
+   if( !image.IsForged() ) {
+      //std::cout << "Getting buffer of non-forged image\n";
+      return py::buffer_info{ nullptr, itemsize, format, 1, { 0 }, { 1 } };
+   }
+   // Get sizes and strides
+   dip::UnsignedArray sizes = image.Sizes();
    dip::IntegerArray strides = image.Strides();
    for( dip::sint& s : strides ) {
       s *= itemsize;
    }
-   dip::UnsignedArray sizes = image.Sizes();
    // Reverse sizes and strides arrays
    dip::uint nDims = sizes.size();
    for( dip::uint ii = 0; ii < nDims / 2; ++ii ) {
       std::swap( sizes[ ii ], sizes[ nDims - ii - 1 ] );
       std::swap( strides[ ii ], strides[ nDims - ii - 1 ] );
    }
+   // Add tensor dimension as the last array dimension
    if( !image.IsScalar() ) {
       sizes.push_back( image.TensorElements() );
       strides.push_back( image.TensorStride() * itemsize );
@@ -237,21 +256,15 @@ dip::String ImageRepr( dip::Image const& image ) {
 
 void init_image( py::module& m ) {
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), "The class that encapsulates DIPlib images of all types." );
-   // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed
+   // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed:
+   //   None implicitly converts to an image
    img.def( py::init<>() );
-   img.def( py::init([](py::none const& ) { return dip::Image{}; }), "none"_a );
+   img.def( py::init( []( py::none const& ) { return dip::Image{}; } ), "none"_a );
    py::implicitly_convertible< py::none, dip::Image >();
-   // Constructor, generic
-   img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
-   // Constructor that takes a Sample
+   // Constructor that takes a Sample: scalar implicitly converts to an image
    img.def( py::init< dip::Image::Sample const& >(), "sample"_a );
    img.def( py::init< dip::Image::Sample const&, dip::DataType >(), "sample"_a, "dt"_a );
-   // Constructor that takes a Pixel
-   img.def( py::init< dip::Image::Pixel const& >(), "pixel"_a );
-   img.def( py::init< dip::Image::Pixel const&, dip::DataType >(), "pixel"_a, "dt"_a );
-   // Create new similar image
-   img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
-   img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
+   py::implicitly_convertible< dip::Image::Sample, dip::Image >();
    // Constructor that takes a Python raw buffer
    img.def( py::init( []( py::buffer& buf ) { return BufferToImage( buf ); } ), "array"_a);
    img.def( py::init( []( py::buffer& buf, py::none const& ) { return BufferToImage( buf, false ); } ), "array"_a, "none"_a );
@@ -259,6 +272,11 @@ void init_image( py::module& m ) {
    py::implicitly_convertible< py::buffer, dip::Image >();
    // Export a Python raw buffer
    img.def_buffer( []( dip::Image& self ) -> py::buffer_info { return ImageToBuffer( self ); } );
+   // Constructor, generic
+   img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
+   // Create new similar image
+   img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
+   img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
    // Basic properties
    img.def( "__repr__", &ImageRepr );
    img.def( "__str__", []( dip::Image const& self ) { std::ostringstream os; os << self; return os.str(); } );
@@ -379,9 +397,9 @@ void init_image( py::module& m ) {
    img.def( "__call__", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "__call__", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
    // NOTE: Compatibility with beta PyDIP. Remove?
-   img.def("TensorElement", [](dip::Image const& image, dip::sint index) -> dip::Image { return image[index]; }, "index"_a);
-   img.def("TensorElement", [](dip::Image const& image, dip::uint i, dip::uint j) -> dip::Image { return image[dip::UnsignedArray{ i, j }]; }, "i"_a, "j"_a);
-   img.def("TensorElement", [](dip::Image const& image, dip::Range const& range) -> dip::Image { return image[range]; }, "range"_a);
+   img.def( "TensorElement", []( dip::Image const& image, dip::sint index ) -> dip::Image { return image[ index ]; }, "index"_a );
+   img.def( "TensorElement", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
+   img.def( "TensorElement", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));
@@ -464,7 +482,7 @@ void init_image( py::module& m ) {
    img.def( -py::self );
    img.def( "__invert__", []( dip::Image& a ) { return dip::Not( a ); }, py::is_operator() ); //img.def( ~py::self );
    // Iterators
-   // TODO: This does not work! Iterators need to return a writeable reference, which implies making dip::Image::Pixel available from within Pyton
+   // TODO: This does not work! Iterators need to return a writeable reference, which implies making dip::Image::Pixel available from within Python
    //img.def( "__iter__", []( dip::Image const& image ) {
    //         return py::make_iterator< py::return_value_policy::reference_internal,
    //                                   dip::GenericImageIterator<>,

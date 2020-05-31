@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2020, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,27 +59,28 @@ void init_assorted( py::module& m );
 namespace pybind11 {
 
 // py::buffer type that implicitly casts to c-style dense double arrays
-typedef array_t<dip::dfloat, array::c_style | array::forcecast> double_array_t;
+typedef array_t< dip::dfloat, array::c_style | array::forcecast > double_array_t;
 
 namespace detail {
 
 // Cast Python list types to our custom dynamic array type
 template< typename Type >
-struct type_caster< dip::DimensionArray< Type >>: list_caster< dip::DimensionArray< Type >, Type > {
+struct type_caster< dip::DimensionArray< Type >> : public list_caster< dip::DimensionArray< Type >, Type > {
    using list_caster< dip::DimensionArray< Type >, Type >::value;
    using value_conv = make_caster< Type >;
    
    bool load( handle src, bool convert ) {
-      if( isinstance<sequence>( src ) || isinstance<str>( src ) ) {
+      if( isinstance< sequence >( src ) || isinstance< str >( src )) {
          return list_caster< dip::DimensionArray< Type >, Type >::load( src, convert );
       }
 
       // Allow scalars to be interpreted as a single-element array
       value.clear();
       value_conv conv;
-      if( !conv.load( src, convert ) )
+      if( !conv.load( src, convert )) {
          return false;
-      value.push_back( cast_op<Type &&>( std::move( conv ) ) );
+      }
+      value.push_back( cast_op< Type&& >( std::move( conv )));
 
       return true;
    }
