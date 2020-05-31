@@ -7,7 +7,7 @@ import math
 ###
 
 img = dip.ImageReadICS('../cermet')
-grad = dip.GradientMagnitude(img, [5])  # TODO: fix syntax: allow scalar as sigma
+grad = dip.GradientMagnitude(img, 5)
 grad.Show()
 
 a = dip.Watershed(grad)
@@ -17,7 +17,7 @@ seeds = dip.Image(np.random.random(list(reversed(img.Sizes())))) > 0.999
 b = dip.SeededWatershed(grad, seeds, flags={"labels"})
 b.Show()
 
-smooth = dip.Gauss(img, [5])
+smooth = dip.Gauss(img, 5)
 seeds = dip.Minima(smooth)
 b = dip.SeededWatershed(grad, seeds, flags={"labels"})
 b.Show()
@@ -38,16 +38,16 @@ pp.show(block=False)
 ###
 
 a = dip.Image((20, 10), 3)
-dip.FillXCoordinate(a.TensorElement(0))
-dip.FillYCoordinate(a.TensorElement(1))
-dip.FillColoredNoise(a.TensorElement(2))
+dip.FillXCoordinate(a(0))
+dip.FillYCoordinate(a(1))
+dip.FillColoredNoise(a(2))
 a.Show()
 
 a.SetColorSpace('rgb')
 b = dip.ColorSpaceManager.Convert(a, 'Lab')
 b.Show()
 
-b.TensorElement(1).Show()
+b(1).Show()
 
 b, c = dip.Histogram(a)
 print(len(c))
@@ -60,7 +60,7 @@ color = list([1.0, 1.5, 0.5])
 for ii in range(0, 1000):
    random.shuffle(color)
    dip.DrawBandlimitedPoint(a, [random.uniform(-2, 252), random.uniform(-2, 262)], color,
-                            [random.uniform(1, 3), random.uniform(1, 3)])
+                               [random.uniform(1, 3), random.uniform(1, 3)])
 
 a.Show()
 
@@ -223,9 +223,9 @@ bin.Fill(1)
 bin[100,100] = 0
 
 out = dip.GreyWeightedDistanceTransform(weights, bin, mask)
-dip.viewer.Show(dip.Modulo(out, dip.Image(50)))
+dip.viewer.Show(dip.Modulo(out, 50))
 
 weights.SetPixelSize(dip.PixelSize([dip.PhysicalQuantity(0.8),dip.PhysicalQuantity(1.2)]))
 
 out2 = dip.GreyWeightedDistanceTransform(weights, bin, mask)
-dip.viewer.Show(dip.Modulo(out2, dip.Image(50)))
+dip.viewer.Show(dip.Modulo(out2, 50))

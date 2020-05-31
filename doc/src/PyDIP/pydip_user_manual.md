@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2017-2019, Cris Luengo.)
+[//]: # ([c]2017-2020, Cris Luengo.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
 [//]: # (you may not use this file except in compliance with the License.)
@@ -40,6 +40,7 @@ a Python binding, with the following exceptions:
   You can also pass a scalar here.
 
 - `dip::UnsignedArray`, `dip::FloatArray`, or similar: pass a Python list: `[5, 5]`.
+  A scalar is accepted as a one-element list.
 
 - `dip::StringArray`: pass a list of strings (<tt>['foo','bar']</tt>).
 
@@ -97,32 +98,47 @@ Python:
 Note that dimensions are ordered in reverse from how *NumPy* stores them
 (the first dimension is horizontal, or x).
 
-Unlike in *DIPlib*, the square brackets index into spatial dimensions.
-To index into tensor dimensions, use the `TensorElement` method to `dip.Image`:
+It is possible to assign to a subset of the image pixels using indexing:
 
 ```py
-   img.TensorElement(0)
-   img.TensorElement(0, 2)
-   img.TensorElement(slice(0, 3))
+   img[0] = 0
+   img[0:10] = img[20:30]
+   img[0:-1:2, 0:-1:2] = 255
+```
+
+Unlike in *DIPlib*, the square brackets index into spatial dimensions.
+To index into tensor dimensions, use round brackets (parenthesis):
+
+```py
+   img(0)
+   img(0, 2)
+   img(slice(0, 3))
 ```
 
 The output of any of these indexing operations shares data with the original
 image, so writing to that output also changes the original image:
 
 ```py
-   img.TensorElement(0).Fill(100)
-   img.TensorElement(1).Copy(img.TensorElement(0))
+   img2 = img(0)        # this copy shares data with img
+   img2.Fill(100)       # same as img(0).Fill(100)
+   img(1).Copy(img(0))
+   img(2)[:,:] = img(0)
+
+   img2 = img(0).Copy() # this copy does not share data with img
+   img2.Fill(100)       # does not affect img
 ```
 
 Irregular indexing using a mask image is also supported. This indexing
 returns a copy of the data, but an assignment form is also available:
 
 ```py
-   img2 = img[mask]
-   img2.Fill(0)     # does not affect img
-   img[mask] = 0    # sets all pixels in mask to 0
+   img2 = img[mask]  # this copy does not share data with img
+   img2.Fill(0)      # does not affect img
+   img[mask] = 0     # sets all pixels in mask to 0
 ```
 
 \section pum_testing Testing image validity
 
 Instead of `IsForged()`, use `IsEmpty()` to test if an image is forged.
+
+Functions that expect an image interpret `None` as an empty (non-forged) image.
