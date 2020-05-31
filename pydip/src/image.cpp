@@ -24,15 +24,15 @@ namespace {
 dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
    py::buffer_info info = buf.request();
    //std::cout << "--Constructing dip::Image from Python buffer.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndims = " << info.shape.size() << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndims = " << info.shape.size() << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    // Data type
    dip::DataType datatype;
    switch( info.format[ 0 ] ) {
@@ -115,10 +115,10 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
    // The containing Python object. We increase its reference count, and create a unique_ptr that decreases
    // its reference count again.
    PyObject* pyObject = buf.ptr();
-   //std::cout << "   *** Incrementing ref count for pyObject " << pyObject << std::endl;
+   //std::cout << "   *** Incrementing ref count for pyObject " << pyObject << '\n';
    Py_XINCREF( pyObject );
    dip::DataSegment dataSegment{ pyObject, []( void* obj ) {
-      //std::cout << "   *** Decrementing ref count for pyObject " << obj << std::endl;
+      //std::cout << "   *** Decrementing ref count for pyObject " << obj << '\n';
       Py_XDECREF( static_cast< PyObject* >( obj ));
    }};
    // Create an image with all of this.
@@ -218,15 +218,15 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
    }
    py::buffer_info info{ image.Origin(), itemsize, format, static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Image object.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndims = " << info.ndims << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndims = " << info.ndims << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    return info;
 }
 

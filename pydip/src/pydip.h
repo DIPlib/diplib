@@ -192,44 +192,44 @@ class type_caster< dip::Image::Sample > {
    public:
       using type = dip::Image::Sample;
       bool load( handle src, bool ) {
-         //std::cout << "Executing py::type_caster<dip::Sample>::load" << std::endl;
+         //std::cout << "Executing py::type_caster<dip::Sample>::load\n";
          if( !src ) {
-            //std::cout << "   Input is not" << std::endl;
+            //std::cout << "   Input is not\n";
             return false;
          }
          if( PyBool_Check( src.ptr() )) {
-            //std::cout << "   Input is bool" << std::endl;
+            //std::cout << "   Input is bool\n";
             value.swap( dip::Image::Sample( src.cast< bool >() ));
          } else if( PYBIND11_LONG_CHECK( src.ptr() )) {
-            //std::cout << "   Input is int" << std::endl;
+            //std::cout << "   Input is int\n";
             value.swap( dip::Image::Sample( src.cast< dip::sint >() ));
          } else if( PyFloat_Check( src.ptr() )) {
-            //std::cout << "   Input is float" << std::endl;
+            //std::cout << "   Input is float\n";
             value.swap( dip::Image::Sample( src.cast< dip::dfloat >() ));
          } else if( PyComplex_Check( src.ptr() )) {
-            //std::cout << "   Input is complex" << std::endl;
+            //std::cout << "   Input is complex\n";
             value.swap( dip::Image::Sample( src.cast< dip::dcomplex >() ));
          } else {
-            //std::cout << "   Input is not a scalar type" << std::endl;
+            //std::cout << "   Input is not a scalar type\n";
             return false;
          }
          //std::cout << "   Result: " << value << std::endl;
          return true;
       }
       static handle cast( dip::Image::Sample const& src, return_value_policy, handle ) {
-         //std::cout << "Executing py::type_caster<dip::Sample>::cast" << std::endl;
+         //std::cout << "Executing py::type_caster<dip::Sample>::cast\n";
          py::object out;
          if( src.DataType().IsBinary() ) {
-            //std::cout << "   Casting to bool" << std::endl;
+            //std::cout << "   Casting to bool\n";
             out = py::cast( static_cast< bool >( src ));
          } else if( src.DataType().IsComplex() ) {
-            //std::cout << "   Casting to complex" << std::endl;
+            //std::cout << "   Casting to complex\n";
             out = py::cast( static_cast< dip::dcomplex >( src ));
          } else if( src.DataType().IsFloat() ) {
-            //std::cout << "   Casting to float" << std::endl;
+            //std::cout << "   Casting to float\n";
             out = py::cast( static_cast< dip::dfloat >( src ));
          } else { // IsInteger()
-            //std::cout << "   Casting to int" << std::endl;
+            //std::cout << "   Casting to int\n";
             out = py::cast( static_cast< dip::sint >( src ));
          }
          return out.release();
@@ -243,9 +243,9 @@ class type_caster< dip::Image::Pixel > {
    public:
       using type = dip::Image::Pixel;
       bool load( handle src, bool ) {
-         //std::cout << "Executing py::type_caster<dip::Pixel>::load" << std::endl;
+         //std::cout << "Executing py::type_caster<dip::Pixel>::load\n";
          if( !src ) {
-            //std::cout << "   Input is not" << std::endl;
+            //std::cout << "   Input is not\n";
             return false;
          }
          if( PyList_Check( src.ptr() )) {
@@ -255,7 +255,7 @@ class type_caster< dip::Image::Pixel > {
                return false;
             }
             if( PyBool_Check( list[ 0 ].ptr() )) {
-               //std::cout << "   Input is bool" << std::endl;
+               //std::cout << "   Input is bool\n";
                value.swap( dip::Image::Pixel( dip::DT_BIN, n ));
                auto it = value.begin();
                for( auto& in : src ) {
@@ -263,7 +263,7 @@ class type_caster< dip::Image::Pixel > {
                   ++it;
                }
             } else if( PYBIND11_LONG_CHECK( list[ 0 ].ptr() )) {
-               //std::cout << "   Input is int" << std::endl;
+               //std::cout << "   Input is int\n";
                value.swap( dip::Image::Pixel( dip::DT_SINT64, n ));
                auto it = value.begin();
                for( auto& in : src ) {
@@ -271,7 +271,7 @@ class type_caster< dip::Image::Pixel > {
                   ++it;
                }
             } else if( PyFloat_Check( list[ 0 ].ptr() )) {
-               //std::cout << "   Input is float" << std::endl;
+               //std::cout << "   Input is float\n";
                value.swap( dip::Image::Pixel( dip::DT_DFLOAT, n ));
                auto it = value.begin();
                for( auto& in : src ) {
@@ -279,7 +279,7 @@ class type_caster< dip::Image::Pixel > {
                   ++it;
                }
             } else if( PyComplex_Check( list[ 0 ].ptr() )) {
-               //std::cout << "   Input is complex" << std::endl;
+               //std::cout << "   Input is complex\n";
                value.swap( dip::Image::Pixel( dip::DT_DCOMPLEX, n ));
                auto it = value.begin();
                for( auto& in : src ) {
@@ -287,7 +287,7 @@ class type_caster< dip::Image::Pixel > {
                   ++it;
                }
             } else {
-               //std::cout << "   Input is not a scalar type" << std::endl;
+               //std::cout << "   Input is not a scalar type\n";
                return false;
             }
             //std::cout << "   Result: " << value << std::endl;
@@ -296,25 +296,25 @@ class type_caster< dip::Image::Pixel > {
          return false;
       }
       static handle cast( dip::Image::Pixel const& src, return_value_policy, handle ) {
-         //std::cout << "Executing py::type_caster<dip::Pixel>::cast" << std::endl;
+         //std::cout << "Executing py::type_caster<dip::Pixel>::cast\n";
          py::list out;
          if( src.DataType().IsBinary() ) {
-            //std::cout << "   Casting to bool" << std::endl;
+            //std::cout << "   Casting to bool\n";
             for( auto& in : src ) {
                out.append( py::cast( static_cast< bool >( in )));
             }
          } else if( src.DataType().IsComplex() ) {
-            //std::cout << "   Casting to complex" << std::endl;
+            //std::cout << "   Casting to complex\n";
             for( auto& in : src ) {
                out.append( py::cast( static_cast< dip::dcomplex >( in )));
             }
          } else if( src.DataType().IsFloat() ) {
-            //std::cout << "   Casting to float" << std::endl;
+            //std::cout << "   Casting to float\n";
             for( auto& in : src ) {
                out.append( py::cast( static_cast< dip::dfloat >( in )));
             }
          } else { // IsInteger()
-            //std::cout << "   Casting to int" << std::endl;
+            //std::cout << "   Casting to int\n";
             for( auto& in : src ) {
                out.append( py::cast( static_cast< dip::sint >( in )));
             }

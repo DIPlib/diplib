@@ -43,15 +43,15 @@ py::buffer_info MeasurementFeatureToBuffer( dip::Measurement::IteratorFeature& f
                          itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Measurement::IteratorFeature object.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndim = " << info.ndim << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndim = " << info.ndim << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    return info;
 }
 
@@ -62,15 +62,15 @@ py::buffer_info MeasurementObjectToBuffer( dip::Measurement::IteratorObject& obj
    py::buffer_info info{ object.Data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Measurement::IteratorObject object.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndim = " << info.ndim << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndim = " << info.ndim << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    return info;
 }
 
@@ -82,37 +82,37 @@ py::buffer_info MeasurementToBuffer( dip::Measurement& msr ) {
                          itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Measurement object.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndim = " << info.ndim << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndim = " << info.ndim << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    return info;
 }
 
 dip::Polygon BufferToPolygon( py::buffer& buf ) {
    py::buffer_info info = buf.request();
    //std::cout << "--Constructing dip::Polygon from Python buffer.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndims = " << info.shape.size() << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndims = " << info.shape.size() << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    if( info.format[ 0 ] != py::format_descriptor< dip::dfloat >::c ) {
       // TODO: Cast other types to double floats
-      std::cout << "Attempted to convert buffer to dip.Polygon object: data must be double-precision floats." << std::endl;
+      std::cout << "Attempted to convert buffer to dip.Polygon object: data must be double-precision floats.\n";
       DIP_THROW( "Buffer data type not compatible with class Polygon" );
    }
    if(( info.shape.size() != 2 ) || ( info.shape[ 1 ] != 2 )) {
-      std::cout << "Attempted to convert buffer to dip.Polygon object: data must have two columns." << std::endl;
+      std::cout << "Attempted to convert buffer to dip.Polygon object: data must have two columns.\n";
       DIP_THROW( "Buffer size not compatible with class Polygon" );
    }
    // Copy data into polygon
@@ -139,15 +139,15 @@ py::buffer_info PolygonToBuffer( dip::Polygon& polygon ) {
    py::buffer_info info{ polygon.vertices.data(), itemsize, py::format_descriptor< dip::dfloat >::format(),
                          static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
    //std::cout << "--Constructed Python buffer for dip::Polygon object.\n";
-   //std::cout << "   info.ptr = " << info.ptr << std::endl;
-   //std::cout << "   info.format = " << info.format << std::endl;
-   //std::cout << "   info.ndim = " << info.ndim << std::endl;
-   //std::cout << "   info.size = " << info.size << std::endl;
-   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   //std::cout << "   info.ptr = " << info.ptr << '\n';
+   //std::cout << "   info.format = " << info.format << '\n';
+   //std::cout << "   info.ndim = " << info.ndim << '\n';
+   //std::cout << "   info.size = " << info.size << '\n';
+   //std::cout << "   info.itemsize = " << info.itemsize << '\n';
+   //std::cout << "   info.shape[0] = " << info.shape[0] << '\n';
+   //std::cout << "   info.shape[1] = " << info.shape[1] << '\n';
+   //std::cout << "   info.strides[0] = " << info.strides[0] << '\n';
+   //std::cout << "   info.strides[1] = " << info.strides[1] << '\n';
    return info;
 }
 
