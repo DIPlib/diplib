@@ -116,7 +116,7 @@ static ChainCodeArray dip__ChainCodes(
       for( coord.x = 0; coord.x <= dims.x; ++coord.x ) {
          bool process = false;
          dip::uint index = 0;
-         dip::uint newlabel = data[ pos ];
+         dip::uint newlabel = static_cast< dip::uint >( data[ pos ] );
          if( ( newlabel != 0 ) && ( newlabel != label ) ) {
             // Check whether newlabel is start of not processed object
             auto it = objectIDs.find( newlabel );
