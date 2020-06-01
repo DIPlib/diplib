@@ -475,6 +475,23 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_{floor|ceil|round} functions") 
    DOCTEST_CHECK( dip::div_round( -11l, -5l ) == 2 );
    DOCTEST_CHECK( dip::div_round( -11l, -4l ) == 3 );
    DOCTEST_CHECK( dip::div_round( -11l, -3l ) == 4 );
+
+   // Integer overflow caused all these operations below to return 0 before.
+   dip::uint m = std::numeric_limits< dip::uint >::max();
+   m = m / 2 + 1;
+   DOCTEST_CHECK( dip::div_ceil( m, m ) == 1 );
+   DOCTEST_CHECK( dip::div_floor( m, m ) == 1 );
+   dip::sint s = std::numeric_limits< dip::sint >::max();
+   s = s / 2 + 1;
+   DOCTEST_CHECK( dip::div_ceil( s, s ) == 1 );
+   DOCTEST_CHECK( dip::div_ceil( -s, s ) == -1 );
+   DOCTEST_CHECK( dip::div_ceil( s, -s ) == -1 );
+   DOCTEST_CHECK( dip::div_ceil( -s, -s ) == 1 );
+   DOCTEST_CHECK( dip::div_floor( s, s ) == 1 );
+   DOCTEST_CHECK( dip::div_floor( -s, s ) == -1 );
+   DOCTEST_CHECK( dip::div_floor( s, -s ) == -1 );
+   DOCTEST_CHECK( dip::div_floor( -s, -s ) == 1 );
+   DOCTEST_CHECK( dip::div_round( s, s ) == 1 );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::{floor|ceil|round}_cast functions") {

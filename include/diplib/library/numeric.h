@@ -71,19 +71,19 @@ constexpr inline dip::uint gcd( dip::uint a, dip::uint b ) {
 /// \brief Integer division, unsigned, return ceil.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
 constexpr T div_ceil( T lhs, T rhs ) {
-   if( lhs * rhs == 0 ) {
+   if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
    }
    return ( lhs - 1 ) / rhs + 1;
 }
 
-/// \brief Integer division, signed, return ceil.
+/// \brief Integer division, signed, return ceil. If signs differ, adding or subtracting one from `lhs` should not overflow.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 constexpr T div_ceil( T lhs, T rhs ) {
-   if( lhs * rhs == 0 ) {
+   if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
    }
-   if( lhs * rhs < 0 ) {
+   if(( lhs ^ rhs ) < 0 ) {
       return lhs / rhs;
    }
    if( lhs < 0 ) {
@@ -95,19 +95,19 @@ constexpr T div_ceil( T lhs, T rhs ) {
 /// \brief Integer division, unsigned, return floor.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && !std::is_signed< T >::value, int > = 0 >
 constexpr T div_floor( T lhs, T rhs ) {
-   if( lhs * rhs == 0 ) {
+   if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
    }
    return lhs / rhs;
 }
 
-/// \brief Integer division, signed, return floor.
+/// \brief Integer division, signed, return floor. If signs differ, adding or subtracting one from `lhs` should not overflow.
 template< typename T, typename std::enable_if_t< std::is_integral< T >::value && std::is_signed< T >::value, int > = 0 >
 constexpr T div_floor( T lhs, T rhs ) {
-   if( lhs * rhs == 0 ) {
+   if(( lhs == 0 ) || ( rhs == 0 )) {
       return 0;
    }
-   if( lhs * rhs < 0 ) {
+   if(( lhs ^ rhs ) < 0 ) {
       if( lhs < 0 ) {
          return ( lhs + 1 ) / rhs - 1;
       }
@@ -119,7 +119,11 @@ constexpr T div_floor( T lhs, T rhs ) {
 /// \brief Integer division, return rounded.
 template< typename T, typename = std::enable_if_t< std::is_integral< T >::value, T >>
 constexpr T div_round( T lhs, T rhs ) {
-   return div_floor( lhs + rhs / 2, rhs );
+   // Adapted from: https://stackoverflow.com/a/18067292/7328782
+   return ( lhs < 0 ) ? ( rhs < 0 ) ? (( lhs + ( -rhs + 1 ) / 2 ) / rhs + 1 )
+                                    : (( lhs + ( rhs + 1 ) / 2 ) / rhs - 1 )
+                      : ( rhs < 0 ) ? (( lhs - ( -rhs + 1 ) / 2 ) / rhs - 1 )
+                                    : (( lhs - ( rhs + 1 ) / 2 ) / rhs + 1 );
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.
