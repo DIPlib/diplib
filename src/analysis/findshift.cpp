@@ -438,57 +438,53 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift function") {
    // A shift
    dip::FloatArray shift{ 10.27, 6.08 };
    dip::Image in2 = dip::Shift( in1, shift, dip::S::CUBIC_ORDER_3 );
-   // Add a little bit of noise
-   dip::Random random( 0 );
-   dip::GaussianNoise( in1, in1, random, 0.005 * 0.005 );
-   dip::GaussianNoise( in2, in2, random, 0.005 * 0.005 );
 
    dip::FloatArray result;
 
    // Method: "integer only"
-   result = FindShift( in1, in2, dip::S::INTEGER_ONLY );
+   result = dip::FindShift( in1, in2, dip::S::INTEGER_ONLY );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( result[ 0 ] == std::round( shift[ 0 ] ));
    DOCTEST_CHECK( result[ 1 ] == std::round( shift[ 1 ] ));
 
    // Method: "CC"
-   result = FindShift( in1, in2, dip::S::CC );
+   result = dip::FindShift( in1, in2, dip::S::CC );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.03 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );
 
    // Method: "NCC"
-   result = FindShift( in1, in2, dip::S::NCC );
+   result = dip::FindShift( in1, in2, dip::S::NCC );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.15 );
-   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.15 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.17 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.17 );
 
    // Method: "CPF"
-   result = FindShift( in1, in2, dip::S::CPF );
+   result = dip::FindShift( in1, in2, dip::S::CPF );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.051 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.051 );
 
    // Method: "MTS"
-   result = FindShift( in1, in2, dip::S::MTS );
+   result = dip::FindShift( in1, in2, dip::S::MTS );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.007 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.007 );
 
    // Method: "ITER"
-   result = FindShift( in1, in2, dip::S::ITER );
+   result = dip::FindShift( in1, in2, dip::S::ITER );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.002 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.002 );
 
    // Method: "PROJ"
-   result = FindShift( in1, in2, dip::S::PROJ );
+   result = dip::FindShift( in1, in2, dip::S::PROJ );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.004 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.004 );
 
    // Method: "CC", with max shift
-   result = FindShift( in1, in2, dip::S::CC, 0, { 11 } );
+   result = dip::FindShift( in1, in2, dip::S::CC, 0, { 11 } );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.03 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );
