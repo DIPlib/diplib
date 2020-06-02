@@ -202,13 +202,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    error |= rng() != 2925816488UL;
 #endif
    DOCTEST_REQUIRE( !error );
+
    // Test Advance method
    dip::Random rng2 = rng;
    rng2.Advance( 10 );
    for( dip::uint ii = 0; ii < 10; ++ii ) { rng(); }
    DOCTEST_CHECK( rng() == rng2() );
+
+   // Size of tests
+   constexpr dip::uint N = 10000; // Ideally we'd use a larger set (previously this was an order of
+   //                                magnitude larger), but it takes too much time.
+
    // Test uniform distribution
-   constexpr dip::uint N = 100000;
    dip::UniformRandomGenerator uniform( rng );
    dip::VarianceAccumulator acc_uniform;
    for( dip::uint ii = 0; ii < N; ++ii ) {
@@ -216,28 +221,31 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    }
    DOCTEST_CHECK( std::abs( acc_uniform.Mean() - 3.0 ) < 0.01 );
    DOCTEST_CHECK( std::abs( acc_uniform.Variance() - 1.0 / 3.0 ) < 0.02 );
+
    // Test normal distribution
    dip::GaussianRandomGenerator normal( rng );
    dip::VarianceAccumulator acc_normal;
    for( dip::uint ii = 0; ii < N; ++ii ) {
       acc_normal.Push( normal( 2.0, 4.0 ));
    }
-   DOCTEST_CHECK( std::abs( acc_normal.Mean() - 2.0 ) < 0.01 );
+   DOCTEST_CHECK( std::abs( acc_normal.Mean() - 2.0 ) < 0.025 );
    DOCTEST_CHECK( std::abs( acc_normal.StandardDeviation() - 4.0 ) < 0.02 );
+
    // Test poisson distribution
    dip::PoissonRandomGenerator poisson( rng );
    dip::VarianceAccumulator acc_poisson;
    for( dip::uint ii = 0; ii < N; ++ii ) {
       acc_poisson.Push( static_cast< dip::dfloat >( poisson( 2.0 )));
    }
-   DOCTEST_CHECK( std::abs( acc_poisson.Mean() - 2.0 ) < 0.01 );
+   DOCTEST_CHECK( std::abs( acc_poisson.Mean() - 2.0 ) < 0.04 );
    DOCTEST_CHECK( std::abs( acc_poisson.Variance() - 2.0 ) < 0.01 );
    dip::VarianceAccumulator acc2_poisson;
    for( dip::uint ii = 0; ii < N; ++ii ) {
       acc2_poisson.Push( static_cast< dip::dfloat >( poisson( 2000.0 )));
    }
    DOCTEST_CHECK( std::abs( acc2_poisson.Mean() - 2000.0 ) < 1.0 );
-   DOCTEST_CHECK( std::abs( acc2_poisson.Variance() - 2000.0 ) < 15.0 );
+   DOCTEST_CHECK( std::abs( acc2_poisson.Variance() - 2000.0 ) < 20.0 );
+
    // Test binary distribution
    dip::BinaryRandomGenerator binary( rng );
    dip::uint count = 0;
@@ -247,6 +255,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
       }
    }
    DOCTEST_CHECK( std::abs( static_cast< dip::sint >( count ) - static_cast< dip::sint >( N / 2 )) < 1000 );
+
    // Test Split method to produce uncorrelated sequence, and test autocorrelation function also
    rng2 = rng.Split();
    dip::GaussianRandomGenerator normal2( rng2 );
@@ -279,7 +288,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
       max = std::max( max, std::abs( *( data1++ ))); // max value of auto-correlation
       max = std::max( max, std::abs( *( data2++ ))); // max value of cross-correlation
    }
-   DOCTEST_CHECK( max < norm / 50.0 ); // close to two orders of magnitude difference.
+   DOCTEST_CHECK( max < norm / 20.0 );
 }
 
 #endif // DIP__ENABLE_DOCTEST
