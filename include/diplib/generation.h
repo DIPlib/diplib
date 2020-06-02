@@ -398,6 +398,7 @@ inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& o
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillDelta( out, origin ));
 }
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
    Image out;
    CreateDelta( out, sizes, origin );
@@ -433,6 +434,7 @@ DIP_EXPORT void CreateGauss(
       dfloat truncation = 3.0,
       UnsignedArray exponents = { 0 }
 );
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image CreateGauss(
       FloatArray const& sigmas,
       UnsignedArray const& order = { 0 },
@@ -490,6 +492,7 @@ DIP_EXPORT void FTEllipsoid(
       FloatArray radius = { 1 },
       dfloat amplitude = 1
 );
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image FTEllipsoid(
       UnsignedArray const& sizes,
       FloatArray const& radius = { 1 },
@@ -511,6 +514,7 @@ DIP_EXPORT void FTBox(
       FloatArray length = { 1 },
       dfloat amplitude = 1
 );
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image FTBox(
       UnsignedArray const& sizes,
       FloatArray const& length = { 1 },
@@ -532,6 +536,7 @@ DIP_EXPORT void FTCross(
       FloatArray length = { 1 },
       dfloat amplitude = 1
 );
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image FTCross(
       UnsignedArray const& sizes,
       FloatArray const& length = { 1 },
@@ -554,6 +559,7 @@ DIP_EXPORT void FTGaussian(
       dfloat amplitude = 1,
       dfloat truncation = 3
 );
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image FTGaussian(
       UnsignedArray const& sizes,
       FloatArray const& sigma,
@@ -645,6 +651,7 @@ DIP_EXPORT void TestObject(
       TestObjectParams const& params,
       Random& random
 );
+/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image TestObject(
       UnsignedArray const& sizes,
       TestObjectParams const& params,
@@ -654,7 +661,22 @@ inline Image TestObject(
    TestObject( out, params, random );
    return out;
 }
-
+/// \brief Calls the main `dip::TestObject` function with a default-initialized `dip::Random` object.
+void TestObject(
+      Image& out,
+      TestObjectParams const& params = {}
+) {
+   Random random;
+   TestObject( out, params, random );
+}
+/// \brief Overload for the function above, which takes image sizes instead of an image.
+inline Image TestObject(
+      UnsignedArray const& sizes = { 256, 256 },
+      TestObjectParams const& params = {}
+) {
+   Random random;
+   return TestObject( sizes, params, random );
+}
 
 /// \brief Fills the binary image `out` with a Poisson point process of `density`.
 ///
