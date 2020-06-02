@@ -662,7 +662,7 @@ inline Image TestObject(
    return out;
 }
 /// \brief Calls the main `dip::TestObject` function with a default-initialized `dip::Random` object.
-void TestObject(
+inline void TestObject(
       Image& out,
       TestObjectParams const& params = {}
 ) {
