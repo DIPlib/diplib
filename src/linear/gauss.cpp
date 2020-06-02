@@ -441,4 +441,34 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    DOCTEST_CHECK( iir.At( 128 ).As< dip::dfloat >() == doctest::Approx( 2.0 ));
 }
 
+#ifdef _OPENMP
+
+#include "diplib/multithreading.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the separable framework under multithreading") {
+
+   // Compute using one thread
+   dip::SetNumberOfThreads( 1 );
+
+   // Generate test image
+   dip::Image img{ dip::UnsignedArray{ 256, 192, 59 }, 1, dip::DT_DFLOAT };
+   img.Fill( 0 );
+   dip::Random random( 0 );
+   dip::GaussianNoise( img, img, random );
+
+   // Apply separable filter using one thread
+   dip::Image out1 = dip::Gauss( img, { 2 } );
+
+   // Reset number of threads
+   dip::SetNumberOfThreads( 0 );
+
+   // Apply separable filter using all threads
+   dip::Image out2 = dip::Gauss( img, { 2 } );
+
+   // Compare
+   DOCTEST_CHECK( dip::testing::CompareImages( out1, out2, dip::Option::CompareImagesMode::EXACT ));
+}
+
+#endif // _OPENMP
+
 #endif // DIP__ENABLE_DOCTEST
