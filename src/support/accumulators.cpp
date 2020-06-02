@@ -228,8 +228,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    for( dip::uint ii = 0; ii < N; ++ii ) {
       acc_normal.Push( normal( 2.0, 4.0 ));
    }
-   DOCTEST_CHECK( std::abs( acc_normal.Mean() - 2.0 ) < 0.025 );
-   DOCTEST_CHECK( std::abs( acc_normal.StandardDeviation() - 4.0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( acc_normal.Mean() - 2.0 ) < 0.04 );
+   DOCTEST_CHECK( std::abs( acc_normal.StandardDeviation() - 4.0 ) < 0.03 );
 
    // Test poisson distribution
    dip::PoissonRandomGenerator poisson( rng );
@@ -238,7 +238,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
       acc_poisson.Push( static_cast< dip::dfloat >( poisson( 2.0 )));
    }
    DOCTEST_CHECK( std::abs( acc_poisson.Mean() - 2.0 ) < 0.04 );
-   DOCTEST_CHECK( std::abs( acc_poisson.Variance() - 2.0 ) < 0.01 );
+   DOCTEST_CHECK( std::abs( acc_poisson.Variance() - 2.0 ) < 0.02 );
    dip::VarianceAccumulator acc2_poisson;
    for( dip::uint ii = 0; ii < N; ++ii ) {
       acc2_poisson.Push( static_cast< dip::dfloat >( poisson( 2000.0 )));
