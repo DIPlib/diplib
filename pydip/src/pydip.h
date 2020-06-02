@@ -237,12 +237,13 @@ class type_caster< dip::Image::Sample > {
    PYBIND11_TYPE_CASTER( type, _( "Sample" ));
 };
 
-// Cast Python list to dip::Image::Pixel
+// Cast Python list or scalar to dip::Image::Pixel
 template<>
 class type_caster< dip::Image::Pixel > {
    public:
       using type = dip::Image::Pixel;
-      bool load( handle src, bool ) {
+      using sample_conv = make_caster< dip::Image::Sample >;
+      bool load( handle src, bool convert ) {
          //std::cout << "Executing py::type_caster<dip::Pixel>::load\n";
          if( !src ) {
             //std::cout << "   Input is not\n";
@@ -291,6 +292,13 @@ class type_caster< dip::Image::Pixel > {
                return false;
             }
             //std::cout << "   Result: " << value << std::endl;
+            return true;
+         } else {
+            sample_conv conv;
+            if ( !conv.load( src, convert )) {
+               return false;
+            }
+            value.swap( dip::Image::Pixel( std::move( conv )));
             return true;
          }
          return false;
