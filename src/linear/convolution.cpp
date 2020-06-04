@@ -409,7 +409,8 @@ void SeparableConvolution(
          default:
             DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED ); // This will never happen
       }
-      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::SeparableOption::AsScalarImage );
+      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter,
+                            Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::UseInputBuffer );
    DIP_END_STACK_TRACE
 }
 

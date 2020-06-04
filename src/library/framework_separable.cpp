@@ -349,16 +349,9 @@ void Separable(
                   inBuffer.tensorLength = lookUpTable.size();
                }
                inBuffer.tensorStride = 1;
-               if( inImage.Stride( processingDim ) == 0 ) {
-                  // A stride of 0 means all pixels are the same, allocate space for a single pixel
-                  inBuffer.stride = 0;
-                  inBufferStorage.resize( bufferType.SizeOf() * inBuffer.tensorLength );
-                  //std::cout << "   Using input buffer, stride = 0\n";
-               } else {
-                  inBuffer.stride = static_cast< dip::sint >( inBuffer.tensorLength );
-                  inBufferStorage.resize(( inLength + 2 * inBorder ) * bufferType.SizeOf() * inBuffer.tensorLength );
-                  //std::cout << "   Using input buffer, size = " << inBufferStorage.size() << std::endl;
-               }
+               inBuffer.stride = static_cast< dip::sint >( inBuffer.tensorLength );
+               inBufferStorage.resize(( inLength + 2 * inBorder ) * bufferType.SizeOf() * inBuffer.tensorLength );
+               //std::cout << "   Using input buffer, size = " << inBufferStorage.size() << std::endl;
                inBuffer.buffer = inBufferStorage.data() + inBorder * bufferType.SizeOf() * inBuffer.tensorLength;
             } else {
                inBuffer.tensorLength = inImage.TensorElements();
@@ -402,7 +395,7 @@ void Separable(
                         bufferType,
                         inBuffer.stride,
                         inBuffer.tensorStride,
-                        inLength, // if stride == 0, only a single pixel will be copied, because they're all the same
+                        inLength,
                         inBuffer.tensorLength,
                         lookUpTable );
                   if(( inBorder > 0 ) && ( inBuffer.stride != 0 )) {
