@@ -188,6 +188,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    img2.Flatten();
    img2.At( dip::Range{ -1 } ) = 8.0;
    DOCTEST_CHECK( img2.At( img2.NumberOfPixels() - 1 ) == 8 );
+   // Indexing in a 0D image: use linear indexing
+   dip::Image img3{ 1.0, 2.0, 3.0 };
+   DOCTEST_CHECK( img3.At( 0 )[ 0 ] == 1.0 );
+   DOCTEST_CHECK( img3.At( 0 )[ 1 ] == 2.0 );
+   DOCTEST_CHECK( img3.At( 0 )[ 2 ] == 3.0 );
+   dip::Image img4{ 1.0 }; // has tensor stride 0, because we never set it, but this should be fine.
+   DOCTEST_CHECK( img4.At( 0 )[ 0 ] == 1.0 );
    // Creating a window
    img2 = img.At( dip::Range{ 5, 10 }, dip::Range{ 0, -1, 2 }, dip::Range{ -1, 6 } );
    DOCTEST_CHECK( img2.Sizes() == dip::UnsignedArray( { 6, 10, 4 } ));

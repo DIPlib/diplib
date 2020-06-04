@@ -563,12 +563,13 @@ class Image::Pixel {
             using pointer = value_type*;        ///< The type of a pointer to a sample
 
             /// Default initializable, results in invalid iterator
-            Iterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ) {}
+            Iterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ), position_( 0 ) {}
 
             /// Swap two iterators
             void swap( Iterator& other ) {
                value_.swap( other.value_ );
                std::swap( tensorStride_, other.tensorStride_ );
+               std::swap( position_, other.position_ );
             }
 
             /// Dereference
@@ -580,19 +581,27 @@ class Image::Pixel {
             Iterator& operator++() {
                value_.origin_ = static_cast< uint8* >( value_.origin_ ) +
                                 tensorStride_ * static_cast< dip::sint >( value_.dataType_.SizeOf() );
+               ++position_;
                return *this;
             }
             /// Post-increment
-            Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
+            Iterator operator++( int ) {
+               Iterator tmp( *this );
+               operator++();
+               return tmp;
+            }
 
             /// Equality comparison
-            bool operator==( Iterator const& other ) const { return value_.Origin() == other.value_.Origin(); }
+            bool operator==( Iterator const& other ) const {
+               return ( value_.Origin() == other.value_.Origin() ) && ( position_ == other.position_ );
+            }
             /// Inequality comparison
             bool operator!=( Iterator const& other ) const { return !operator==( other ); }
 
          protected:
             value_type value_;
             dip::sint tensorStride_;
+            dip::uint position_; // we need to keep track of the position within the Pixel in case tensorStride_ == 0.
 
             // These classes need to use the private constructors:
             friend class Pixel;
@@ -602,10 +611,12 @@ class Image::Pixel {
 
             Iterator( void* origin, dip::DataType dataType, dip::sint tensorStride ):
                   value_( origin, dataType ),
-                  tensorStride_( tensorStride ) {}
+                  tensorStride_( tensorStride ),
+                  position_( 0 ) {}
             Iterator( void* origin, dip::DataType dataType, dip::sint tensorStride, dip::uint index ) :
                   value_( static_cast< uint8* >( origin ) + tensorStride * static_cast< dip::sint >( index * dataType.SizeOf() ), dataType ),
-                  tensorStride_( tensorStride ) {}
+                  tensorStride_( tensorStride ),
+                  position_( index ) {}
       };
 
       /// Returns an iterator to the first sample in the pixel.

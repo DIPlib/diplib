@@ -526,6 +526,16 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
    DOCTEST_CHECK( *it1 == *it2 );
    ++it1; ++it2;
    DOCTEST_CHECK( it2 == expect3.end() );
+   // Iterator with a tensor stride of 0
+   dip::Image img2{ 42.42 };
+   img2.ExpandSingletonTensor( 3 );
+   DOCTEST_CHECK( img2.TensorElements() == 3 );
+   dip::uint ii = 0;
+   for( auto it = img2.At( 0 ).begin(); it != img2.At( 0 ).end(); ++it ) {
+      DOCTEST_CHECK( *it == 42.42 );
+      ++ii;
+   }
+   DOCTEST_CHECK( ii == 3 );
 
    // Swapping
    s.swap( c );
