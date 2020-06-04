@@ -15,7 +15,7 @@
 %
 %   SEE ALSO: coordinates, ramp, xx1, yy1, zz1, rr, phiphi, thetatheta
 
-% (c)2017, Cris Luengo.
+% (c)2017-2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -31,26 +31,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ramp1(sz,dim,varargin)
-if nargin<1
-   sz = [256,256];
-end
-if nargin<2
-   dim = 1;
-end
-if isa(sz,'dip_image')
-   if isempty(sz)
-      out = dip_image;
-      return
-   end
-   sz = imsize(sz);
-elseif ~isvector(sz)
-   error('First input argument expected to be a dip_image or a size array')
-end
-nd = length(sz);
-I = true(1,nd);
-if nd >= dim
-    I(dim) = false;
-end
-sz(I) = 1;
-out = coordinates(sz,dim,varargin{:});
+function out = ramp1(varargin)
+out = internal_ramp('ramp','skinny',varargin{:});

@@ -9,7 +9,7 @@
 %
 %   SEE ALSO: coordinates, ramp, xx, yy1, zz, rr, phiphi, thetatheta
 
-% (c)2017, Cris Luengo.
+% (c)2017-2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -25,11 +25,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = yy(sz,varargin)
-if nargin<1
-   sz = [256,256];
-elseif ischar(sz)
-   varargin = [{sz},varargin];
-   sz = [256,256];
-end
-out = coordinates(sz,2,varargin{:});
+function out = yy(varargin)
+out = internal_ramp(2,'full',varargin{:});

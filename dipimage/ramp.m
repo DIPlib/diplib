@@ -9,7 +9,7 @@
 %
 %   SEE ALSO: coordinates, ramp1, xx, yy, zz, rr, phiphi, thetatheta
 
-% (c)2017, Cris Luengo.
+% (c)2017-2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -25,13 +25,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ramp(sz,dim,varargin)
-if nargin<1
-   sz = [256,256];
-end
-if nargin<2
-   dim = 1;
-end
-out = coordinates(sz,dim,varargin{:});
-% We pass the arguments directly too COORDINATES. This means that you can set
-% DIM to be a string, but let's not tell people they can do that. :)
+function out = ramp(varargin)
+out = internal_ramp('ramp','full',varargin{:});
