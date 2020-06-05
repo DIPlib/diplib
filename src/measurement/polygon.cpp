@@ -152,7 +152,7 @@ void InsertPoints( Polygon::Vertices& vertices, VertexFloat start, VertexFloat e
 Polygon& Polygon::Augment( dfloat distance ) {
    Polygon::Vertices newVertices;
    newVertices.reserve( vertices.size() ); // minimum number of points, but we'll probably have more...
-   for( size_t ii = 1; ii < vertices.size(); ++ii ) {
+   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
       InsertPoints( newVertices, vertices[ ii - 1 ], vertices[ ii ], distance );
    }
    InsertPoints( newVertices, vertices.back(), vertices.front(), distance );

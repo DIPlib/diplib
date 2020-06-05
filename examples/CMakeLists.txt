@@ -12,6 +12,10 @@ target_link_libraries(register_measurement_feature DIP)
 add_executable(time_dilations cpp/time_dilations.cpp)
 target_link_libraries(time_dilations DIP)
 
+# A program that times the FFT for different image sizes
+add_executable(time_fft cpp/time_fft.cpp)
+target_link_libraries(time_fft DIP)
+
 # A program that shows the difference between dip::VarianceAccumulator and dip::FastVarianceAccumulator
 add_executable(variance cpp/variance.cpp)
 target_link_libraries(variance DIP)

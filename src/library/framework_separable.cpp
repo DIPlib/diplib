@@ -77,7 +77,7 @@ void Separable(
    if( opts.Contains( SeparableOption::DontResizeOutput )) {
       outSizes = c_out.Sizes();
       DIP_THROW_IF( outSizes.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
-      for( size_t ii = 0; ii < nDims; ++ii ) {
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
          DIP_THROW_IF( !process[ ii ] && ( inSizes[ ii ] != outSizes[ ii ] ), "Output size must match input size for dimensions not being processed" );
       }
    } else {

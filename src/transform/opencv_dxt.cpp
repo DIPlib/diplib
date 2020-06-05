@@ -177,7 +177,7 @@ std::vector< int > DFTFactorize( int n ) {
 } // namespace
 
 template< typename T >
-void DFT< T >::Initialize( size_t nfft, bool inverse ) {
+void DFT< T >::Initialize( std::size_t nfft, bool inverse ) {
    DIP_ASSERT( nfft <= maximumDFTSize );
    nfft_ = static_cast< int >( nfft );
    inverse_ = inverse;
@@ -220,7 +220,7 @@ void DFT< T >::Initialize( size_t nfft, bool inverse ) {
       int radix[34];
       radix[ factors_.size() ] = 1;
       digits[ factors_.size() ] = 0;
-      for( size_t i = 0; i < factors_.size(); i++ ) {
+      for( std::size_t i = 0; i < factors_.size(); i++ ) {
          digits[ i ] = 0;
          radix[ factors_.size() - i - 1 ] = radix[ factors_.size() - i ] * factors_[ factors_.size() - i - 1 ];
       }
@@ -637,8 +637,8 @@ void DFT< T >::Apply(
 }
 
 // Explicit instantiations:
-template void DFT< float >::Initialize( size_t nfft, bool inverse );
-template void DFT< double >::Initialize( size_t nfft, bool inverse );
+template void DFT< float >::Initialize( std::size_t nfft, bool inverse );
+template void DFT< double >::Initialize( std::size_t nfft, bool inverse );
 template void DFT< float >::Apply(
       const std::complex< float >* src,
       std::complex< float >* dst,
@@ -837,14 +837,14 @@ constexpr unsigned int optimalDFTSizeTab[] = {
 
 } // namespace
 
-size_t GetOptimalDFTSize( size_t size0 ) {
-   size_t a = 0;
-   size_t b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
+std::size_t GetOptimalDFTSize( std::size_t size0 ) {
+   std::size_t a = 0;
+   std::size_t b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
    if( size0 > optimalDFTSizeTab[ b ] ) {
       return 0; // 0 indicates an error condition -- of course we don't do DFT on an empty array!
    }
    while( a < b ) {
-      size_t c = ( a + b ) >> 1;
+      std::size_t c = ( a + b ) >> 1u;
       if( size0 <= optimalDFTSizeTab[ c ] ) {
          b = c;
       } else {

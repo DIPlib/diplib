@@ -116,7 +116,7 @@ class DFT {
 /// the transform size is too large.
 DIP_EXPORT size_t GetOptimalDFTSize( size_t size0 );
 
-/// \brief The largest size supported by the DFT.
+/// \brief The largest size supported by the DFT (both the internal code and FFTW use `int` for sizes).
 constexpr size_t maximumDFTSize = static_cast< size_t >( std::numeric_limits< int >::max() );
 
 

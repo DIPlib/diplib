@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2019, Cris Luengo.
+ * (c)2014-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -88,9 +88,13 @@ class DIP_CLASS_EXPORT ExternalInterface {
    public:
       /// Allocates the data for an image. The function is required to set `strides`,
       /// `tensorStride` and `origin`, and return a `dip::DataSegment` that owns the
-      /// allocated data segment. Note that `strides` and `tensorStride` might have
-      /// been set by the user before calling `dip::Image::Forge`, and should be honored
-      /// if possible.
+      /// allocated data segment. `origin` does not need to be the same pointer as
+      /// stored in the returned `dip::DataSegment`. For example, the latter can point
+      /// to a container object (e.g. `std::vector`), and `origin` can point to data
+      /// owned by the container object (e.g. `std::vector::data()`).
+      ///
+      /// Note that `strides` and `tensorStride` might have been set by the user before
+      /// calling `dip::Image::Forge`, and should be honored if possible.
       virtual DataSegment AllocateData(
             void*& origin,
             dip::DataType dataType,
@@ -113,29 +117,22 @@ class DIP_CLASS_EXPORT ExternalInterface {
 ///     ExternalInterface* ei = dip::AlignedAllocInterface::GetInstance<64>();
 /// ```
 ///
-/// Note: this interface is only suitable for allocating blocks of memory that are
+/// Note: This interface is only suitable for allocating blocks of memory that are
 /// larger than the alignment size. Internally, the class allocates an oversized memory block
 /// padded with `alignment`, and returns an aligned pointer within that oversized block.
+///
+/// Note: Only the first pixel of the first image line is aligned at the given boundary.
+/// Subsequent pixels and subsequent lines are not.
+/// TODO: This allocator should make it so that each image line is aligned at such a boundary,
+///       by adding some padding in between image lines. This would make this allocator useful
+///       for compatibility with some libraries/UIs that expect that type of alignment.
 class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
    private:
       // Private constructor to enforce the singleton interface
-      explicit AlignedAllocInterface( size_t alignment ) : alignment_( alignment ) {}
-
-   protected:
-      class DIP_NO_EXPORT Deleter {
-         protected:
-            // The pointer to the unaligned data must be freed, not the aligned pointer -> store it
-            void* pUnaligned_;
-
-         public:
-            // Construct Deleter with pointer to unaligned memory
-            explicit Deleter( void* pUnaligned ) : pUnaligned_( pUnaligned ) {}
-            // Deletes the memory of a DataSegment allocated by AlignedAllocInterface::AllocateData()
-            DIP_EXPORT void operator()( void* pAligned );
-      };
+      explicit AlignedAllocInterface( dip::uint alignment ) : alignment_( alignment ) {}
 
       // Alignment in bytes
-      size_t alignment_;
+      dip::uint alignment_;
 
    public:
       /// Called by `dip::Image::Forge`.
@@ -151,7 +148,7 @@ class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
       /// \brief Singleton interface, templated in the alignment parameter.
       /// Only one instance is needed for each distinct alignment.
       /// `alignment` is in bytes.
-      template< size_t alignment >
+      template< dip::uint alignment >
       static AlignedAllocInterface* GetInstance() {
          static AlignedAllocInterface ei( alignment );
          return &ei;

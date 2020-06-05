@@ -470,11 +470,7 @@ void ConvolveFT(
    if( dt.IsBinary() ) {
       dt = DT_SFLOAT; // let's not go there...
    }
-#ifdef DIP__HAS_FFTW
-   if( !outSpatial ) { // write directly into out only if we don't need to inverse transform the output
-#else
    if( !outSpatial || !real ) { // write directly into out if out is not real-valued
-#endif
       DIP_STACK_TRACE_THIS( out.ReForge( inFT, dt ));
       outFT = out.QuickCopy();
    } else {

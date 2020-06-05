@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -157,15 +157,6 @@ void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray s
 } // namespace
 
 
-void AlignedAllocInterface::Deleter::operator()(
-      void* //pAligned
-) {
-   // Delete unaligned pointer
-   std::free( pUnaligned_ );
-   pUnaligned_ = nullptr;
-   //std::cout << "   Successfully freed image with aligned DataSegment " << pAligned << std::endl;
-}
-
 DataSegment AlignedAllocInterface::AllocateData(
       void*& origin,
       dip::DataType dataType,
@@ -175,27 +166,24 @@ DataSegment AlignedAllocInterface::AllocateData(
       dip::sint& tensorStride
 ) {
    // Determine image size
-   dip::uint numSamples = FindNumberOfPixels( sizes );
-   numSamples *= tensor.Elements();
-   dip::uint sampleSize = dataType.SizeOf();
+   dip::uint size = FindNumberOfPixels( sizes );
+   size *= tensor.Elements();
+   size *= dataType.SizeOf();
    // Allocate enough memory to store the data with an offset necessary for the requested alignment
-   size_t netSize = numSamples * sampleSize;
-   size_t unalignedSize = netSize + alignment_;
+   dip::uint unalignedSize = size + alignment_;
    // Allocate unaligned memory
    void* pUnaligned = std::malloc( unalignedSize );
    DIP_THROW_IF( !pUnaligned, "Failed to allocate memory" );
+   auto dataBlock = DataSegment{ pUnaligned, std::free };
    // Create pointer to the aligned block within the unaligned block
-   void* pAlignedFromUnaligned( pUnaligned ); // Pass this one to std::align() because it is modified by std::align(). We need the original pUnaligned pointer for the Deleter.
-   size_t alignedSize( unalignedSize ); // Altered by std::align(); always greater than size.
-   void* pAligned = std::align( alignment_, netSize, pAlignedFromUnaligned, alignedSize );
+   void* pAligned = std::align( alignment_, size, pUnaligned, unalignedSize );
    DIP_THROW_IF( !pAligned, "Failed to align memory" );
    // Set strides and tensorStride
    tensorStride = 1; // We set tensor strides to 1 by default.
-   // TODO: can we create better strides for FFTW?
    ComputeStrides( sizes, tensor.Elements(), strides );
-   // Set origin and create shared pointer.
+   // Set origin and return shared pointer to unaligned data block.
    origin = static_cast< uint8* >( pAligned );
-   return DataSegment{ pAligned, Deleter( pUnaligned ) };  // Pass deleter that deletes the pointer to the block allocated by malloc()
+   return dataBlock;
 }
 
 

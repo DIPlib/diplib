@@ -65,8 +65,8 @@ void Scan(
       ScanLineFilter& lineFilter,
       ScanOptions opts
 ) {
-   std::size_t nIn = c_in.size();
-   std::size_t nOut = c_out.size();
+   dip::uint nIn = c_in.size();
+   dip::uint nOut = c_out.size();
    if(( nIn == 0 ) && ( nOut == 0 )) {
       // Duh!
       return;

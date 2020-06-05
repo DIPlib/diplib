@@ -45,14 +45,24 @@ struct fftwapidef<T> \
    using r2r_kind = MANGLE( r2r_kind ); \
 \
    FFTW_TEMPLATED_API_FUNC( MANGLE, cost ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_dft_1d ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_dft_r2c_1d ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_dft_c2r_1d ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_r2r_1d ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_dft ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_split_dft ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_dft_r2c ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_split_dft_r2c ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_dft_c2r ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_split_dft_c2r ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, plan_guru_r2r ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, execute ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, execute_dft ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, execute_split_dft ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, execute_dft_r2c ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, execute_split_dft_r2c ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, execute_dft_c2r ); \
+   FFTW_TEMPLATED_API_FUNC( MANGLE, execute_split_dft_c2r ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, execute_r2r ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, init_threads ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, plan_with_nthreads ); \
