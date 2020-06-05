@@ -150,7 +150,7 @@ endif()
 # if there is no Python libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/pybind11/tools")
 set(PYBIND11_PYTHON_VERSION ${PYBIND11_PYTHON_VERSION} CACHE STRING "Python version to use for compiling modules")
-set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4 3.3) # TODO: This line will need to be updated when new versions of Python are released
+set(Python_ADDITIONAL_VERSIONS ${Python_ADDITIONAL_VERSIONS} 3.8 3.7 3.6 3.5 3.4 3.3) # TODO: This line will need to be updated when new versions of Python are released
    # CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
 find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION})
 

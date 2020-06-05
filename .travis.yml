@@ -1,22 +1,37 @@
 language: cpp
 matrix:
   include:
-     - os: linux
-       dist: xenial
-       compiler: clang
-     - os: linux
-       dist: xenial
-       compiler: gcc
-     - os: osx
-       osx_image: xcode10.2
-       compiler: clang
-     - os: windows
+    - os: linux
+      dist: xenial
+      compiler: clang
+      env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off -DPython_ADDITIONAL_VERSIONS=3.5"
+      before_install:
+        - pip3 install numpy
+    - os: linux
+      dist: xenial
+      compiler: gcc
+      env: DIP_CMAKE_OPTS="-DPython_ADDITIONAL_VERSIONS=3.5"
+      before_install:
+        - pip3 install numpy
+    - os: osx
+      osx_image: xcode10.2
+      compiler: clang
+      env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off"
+      before_install:
+    - os: windows
+      env: DIP_CMAKE_OPTS="-A x64"
+      before_install:
+        - choco install python3
+        # https://travis-ci.community/t/windows-builds-refreshenv-command-not-found/5803/4
+        - eval $(powershell -NonInteractive -Command 'write("export PATH=`"" + ([Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH","User")).replace("\","/").replace("C:","/c").replace(";",":") + ":`$PATH`"")')
+        - pip3 install numpy
 addons:
   apt:
     packages:
       - freeglut3-dev
       - libglfw3-dev
       - python3-dev
+      - python3-pip
   homebrew:
     packages:
       - freeglut
@@ -29,7 +44,6 @@ branches:
 script:
   - mkdir build
   - cd build
-  - export DIP_CMAKE_OPTS=$(if [[ $CC == "clang" ]]; then echo -n '-DDIP_ENABLE_MULTITHREADING=Off'; fi)
-  - cmake $DIP_CMAKE_OPTS ..
+  - cmake $DIP_CMAKE_OPTS -DDIP_ENABLE_ASSERT=ON ..
   - cmake --build . --parallel 2
   - cmake --build . --target check

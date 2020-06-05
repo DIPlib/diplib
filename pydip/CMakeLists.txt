@@ -32,6 +32,7 @@ update_deps_file("PyDIP_sources" "${PyDIPdeps}")
 pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC})
 target_link_libraries(PyDIP_bin PRIVATE DIP)
 set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "${rpath}")
+set_target_properties(PyDIP_bin PROPERTIES BUILD_WITH_INSTALL_RPATH OFF)
 
 # C++ version, etc.
 set_target_properties(PyDIP_bin PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
@@ -86,5 +87,23 @@ if(DIP_BUILD_JAVAIO)
    # Install PyDIPjavaio
    install(TARGETS PyDIPjavaio DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
    add_dependencies(PyDIP PyDIPjavaio)
+
+endif()
+
+# PyDIP unit tests
+if(DIP_ENABLE_DOCTEST)
+
+   # Resolve standard CMake variables
+   configure_file(${CMAKE_CURRENT_LIST_DIR}/test/unit_tests.py.in ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.py.out @ONLY)
+
+   # Resolve generator expressions
+   file(GENERATE
+      OUTPUT $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
+      INPUT ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.py.out
+   )
+
+   add_custom_target(PyDIP_check
+                     COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${PYTHON_EXECUTABLE} unit_tests.py)
+   add_dependencies(check PyDIP_check)
 
 endif()

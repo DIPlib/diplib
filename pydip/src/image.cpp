@@ -496,6 +496,9 @@ void init_image( py::module& m ) {
    //                                                        dip::GenericImageIterator<>() );
    //}, py::keep_alive< 0, 1 >() ); // Essential: keep object alive while iterator exists
 
+   m.def( "Create0D", []( dip::Image::Pixel const& in ) -> dip::Image {
+      return dip::Image( in );
+   } );
    m.def( "Create0D", []( dip::Image const& in ) -> dip::Image {
       DIP_THROW_IF( !in.IsForged(), dip::E::IMAGE_NOT_FORGED );
       DIP_THROW_IF( !in.IsScalar(), dip::E::IMAGE_NOT_SCALAR );
