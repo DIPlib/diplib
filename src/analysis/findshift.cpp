@@ -425,7 +425,7 @@ FloatArray FindShift(
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/generation.h"
 
@@ -490,4 +490,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift function") {
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -20,12 +20,12 @@ foreach (lib ${JNI_LIBRARIES})
 endforeach()
 set_target_properties(DIPjavaio PROPERTIES INSTALL_RPATH "${JNI_LIBRARY_PATHS}")
 
-target_compile_definitions(DIPjavaio PUBLIC DIP__HAS_JAVAIO)
+target_compile_definitions(DIPjavaio PUBLIC DIP_CONFIG_HAS_DIPJAVAIO)
 
 if(DIP_SHARED_LIBRARY)
-   target_compile_definitions(DIPjavaio PRIVATE DIP__JAVAIO_BUILD_SHARED)
+   target_compile_definitions(DIPjavaio PRIVATE DIP_CONFIG_DIPJAVAIO_BUILD_SHARED)
 else()
-   target_compile_definitions(DIPjavaio PUBLIC DIP__JAVAIO_IS_STATIC)
+   target_compile_definitions(DIPjavaio PUBLIC DIP_CONFIG_DIPJAVAIO_IS_STATIC)
 endif()
 
 install(TARGETS DIPjavaio EXPORT DIPlibTargets ${DIP_DESTINATIONS})

@@ -53,13 +53,13 @@
 /// it is considered best practice to not export such classes. The Windows run-time linker always
 /// maps local classes to those in the shared library, even when they are not exported.
 
-#ifdef DIP__IS_STATIC
+#ifdef DIP_CONFIG_DIP_IS_STATIC
 #   define DIP_EXPORT
 #   define DIP_NO_EXPORT
 #   define DIP_CLASS_EXPORT
 #else
 #   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
-#      ifdef DIP__BUILD_SHARED
+#      ifdef DIP_CONFIG_DIP_BUILD_SHARED
 #         define DIP_EXPORT __declspec(dllexport)
 #      else // We are using the library
 #         define DIP_EXPORT __declspec(dllimport)

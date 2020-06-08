@@ -592,7 +592,7 @@ Histogram& Histogram::Smooth( FloatArray sigma ) {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/random.h"
 
@@ -715,4 +715,4 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorCov[ 5 ] == 0.0 ); // covariance 2nd & 3rd
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

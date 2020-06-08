@@ -899,7 +899,7 @@ inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {
 template< typename T >
 inline void sortIndices( DimensionArray< typename DimensionArray< T >::size_type >& indices, DimensionArray< T > const& data ) {
    using size_type = typename DimensionArray< T >::size_type;
-   #ifdef DIP__ENABLE_ASSERT
+   #ifdef DIP_CONFIG_ENABLE_ASSERT
       for( size_type ii = 0; ii < indices.size(); ++ii ) {
          DIP_ASSERT( indices[ ii ] < data.size() );
       }

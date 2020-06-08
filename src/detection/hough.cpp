@@ -310,7 +310,7 @@ FloatCoordinateArray FindHoughCircles(
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/linear.h"
 #include "diplib/segmentation.h"
@@ -355,4 +355,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindHoughCircles function") {
    DOCTEST_CHECK( cir[1] == dip::FloatArray{350, 350, 25} );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

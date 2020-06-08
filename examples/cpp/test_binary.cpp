@@ -17,7 +17,7 @@ int main( int argc, char** argv ) {
 
    // Set default input and output paths.
    // Can be overridden by commandline arguments.
-   std::string inputPath = DIP__EXAMPLES_DIR;
+   std::string inputPath = DIP_EXAMPLES_DIR;
 
    // Arguments:
    // 1: input path (optional)

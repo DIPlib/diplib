@@ -216,7 +216,7 @@ constexpr inline bool ApproximatelyEquals( dfloat lhs, dfloat rhs, dfloat tolera
 
 /// \brief Counts the length of a (UTF-8 encoded) Unicode string.
 inline dip::uint LengthUnicode( String const& string ) {
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    dip::uint len = 0;
    for( auto& s : string ) {
       len += static_cast< dip::uint >(( s & 0xc0 ) != 0x80 );

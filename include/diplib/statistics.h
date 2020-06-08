@@ -45,14 +45,14 @@ namespace dip {
 /// See also \ref math_projection.
 /// \{
 
-#define DIP__DEFINE_VIEW_FUNCTION( name, ret_type ) \
+#define DIP_DEFINE_VIEW_FUNCTION( name, ret_type ) \
 inline ret_type name( Image::View const& in ) { \
    if( in.Offsets().empty() ) { return name( in.Reference(), in.Mask() ); } \
    else { return name( Image( in ) ); }}
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
 DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
-DIP__DEFINE_VIEW_FUNCTION( Count, dip::uint )
+DIP_DEFINE_VIEW_FUNCTION( Count, dip::uint )
 
 /// \brief Returns the coordinates of the maximum pixel in the image.
 ///
@@ -91,14 +91,14 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
 DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Image const& in, Image const& mask = {} );
-DIP__DEFINE_VIEW_FUNCTION( MaximumAndMinimum, MinMaxAccumulator )
+DIP_DEFINE_VIEW_FUNCTION( MaximumAndMinimum, MinMaxAccumulator )
 
 /// \brief Computes the first four central moments of the pixel intensities, within an optional mask.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the statistics over all sample values. The image must be real-valued.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Image const& in, Image const& mask = {} );
-DIP__DEFINE_VIEW_FUNCTION( SampleStatistics, StatisticsAccumulator )
+DIP_DEFINE_VIEW_FUNCTION( SampleStatistics, StatisticsAccumulator )
 
 /// \brief Computes the covariance and correlation between the two images, within an optional mask.
 ///
@@ -143,7 +143,7 @@ DIP_EXPORT FloatArray CenterOfMass( Image const& in, Image const& mask = {} );
 /// If `mask` is not forged, all input pixels are considered. `in` must be scalar and real-valued.
 DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 
-#undef DIP__DEFINE_VIEW_FUNCTION
+#undef DIP_DEFINE_VIEW_FUNCTION
 
 /// \}
 
@@ -157,7 +157,7 @@ DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 /// \brief Operators that project the image data onto fewer spatial dimensions, computing image statistics.
 /// \{
 
-#define DIP__DEFINE_PROJECTION_FUNCTIONS( name ) \
+#define DIP_DEFINE_PROJECTION_FUNCTIONS( name ) \
 inline Image name( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) { \
    Image out; name( in, mask, out, process ); return out; } \
 inline void name( Image::View const& in, Image& out ) { \
@@ -166,7 +166,7 @@ inline void name( Image::View const& in, Image& out ) { \
 inline Image name( Image::View const& in ) { \
    Image out; name( in, out ); return out; }
 
-#define DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( name, default_mode ) \
+#define DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( name, default_mode ) \
 inline Image name( Image const& in, Image const& mask = {}, String const& mode = default_mode, BooleanArray const& process = {} ) { \
    Image out; name( in, mask, out, mode, process ); return out; } \
 inline void name( Image::View const& in, Image& out, String const& mode = default_mode ) { \
@@ -194,7 +194,7 @@ inline Image name( Image::View const& in, String const& mode = default_mode ) { 
 ///
 /// An alias is defined such that `dip::Mean( img.At( mask ), mode )` is the same as `dip::Mean( img, mask, mode )`.
 DIP_EXPORT void Mean( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
+DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 
 /// \brief Calculates the sum of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -211,7 +211,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 ///
 /// An alias is defined such that `dip::Sum( img.At( mask ))` is the same as `dip::Sum( img, mask )`.
 DIP_EXPORT void Sum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( Sum )
+DIP_DEFINE_PROJECTION_FUNCTIONS( Sum )
 
 /// \brief Calculates the geometric mean of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -230,7 +230,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Sum )
 ///
 /// An alias is defined such that `dip::GeometricMean( img.At( mask ))` is the same as `dip::GeometricMean( img, mask )`.
 DIP_EXPORT void GeometricMean( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( GeometricMean )
+DIP_DEFINE_PROJECTION_FUNCTIONS( GeometricMean )
 
 /// \brief Calculates the product of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -249,7 +249,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( GeometricMean )
 ///
 /// An alias is defined such that `dip::Product( img.At( mask ))` is the same as `dip::Product( img, mask )`.
 DIP_EXPORT void Product( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( Product )
+DIP_DEFINE_PROJECTION_FUNCTIONS( Product )
 
 /// \brief Calculates the mean of the absolute pixel values over all those dimensions which are specified by `process`.
 ///
@@ -266,13 +266,13 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Product )
 ///
 /// An alias is defined such that `dip::MeanAbs( img.At( mask ))` is the same as `dip::MeanAbs( img, mask )`.
 DIP_EXPORT void MeanAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( MeanAbs )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MeanAbs )
 
 /// \brief Calculates the mean of the modulus of the pixel values. Alias to `dip::MeanAbs`.
 inline void MeanModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    MeanAbs( in, mask, out, process );
 }
-DIP__DEFINE_PROJECTION_FUNCTIONS( MeanModulus )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MeanModulus )
 
 /// \brief Calculates the sum of the absolute pixel values over all those dimensions which are specified by `process`.
 ///
@@ -289,13 +289,13 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MeanModulus )
 ///
 /// An alias is defined such that `dip::SumAbs( img.At( mask ))` is the same as `dip::SumAbs( img, mask )`.
 DIP_EXPORT void SumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( SumAbs )
+DIP_DEFINE_PROJECTION_FUNCTIONS( SumAbs )
 
 /// \brief Calculates the sum of the modulus of the pixel values. Alias to `dip::SumAbs`.
 inline void SumModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    SumAbs( in, mask, out, process );
 }
-DIP__DEFINE_PROJECTION_FUNCTIONS( SumModulus )
+DIP_DEFINE_PROJECTION_FUNCTIONS( SumModulus )
 
 /// \brief Calculates the mean of the square pixel values over all those dimensions which are specified by `process`.
 ///
@@ -314,7 +314,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( SumModulus )
 ///
 /// An alias is defined such that `dip::MeanSquare( img.At( mask ))` is the same as `dip::MeanSquare( img, mask )`.
 DIP_EXPORT void MeanSquare( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( MeanSquare )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MeanSquare )
 
 /// \brief Calculates the sum of the square pixel values over all those dimensions which are specified by `process`.
 ///
@@ -333,7 +333,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MeanSquare )
 ///
 /// An alias is defined such that `dip::SumSquare( img.At( mask ))` is the same as `dip::SumSquare( img, mask )`.
 DIP_EXPORT void SumSquare( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( SumSquare )
+DIP_DEFINE_PROJECTION_FUNCTIONS( SumSquare )
 
 /// \brief Calculates the mean of the square modulus of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -353,7 +353,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( SumSquare )
 ///
 /// An alias is defined such that `dip::MeanSquareModulus( img.At( mask ))` is the same as `dip::MeanSquareModulus( img, mask )`.
 DIP_EXPORT void MeanSquareModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( MeanSquareModulus )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MeanSquareModulus )
 
 /// \brief Calculates the sum of the square modulus of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -373,7 +373,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MeanSquareModulus )
 ///
 /// An alias is defined such that `dip::SumSquareModulus( img.At( mask ))` is the same as `dip::SumSquareModulus( img, mask )`.
 DIP_EXPORT void SumSquareModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( SumSquareModulus )
+DIP_DEFINE_PROJECTION_FUNCTIONS( SumSquareModulus )
 
 /// \brief Calculates the variance of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -401,7 +401,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( SumSquareModulus )
 ///
 /// An alias is defined such that `dip::Variance( img.At( mask ), mode )` is the same as `dip::Variance( img, mask, mode )`.
 DIP_EXPORT void Variance( Image const& in, Image const& mask, Image& out, String mode = S::FAST, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Variance, S::FAST )
+DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Variance, S::FAST )
 
 /// \brief Calculates the standard deviation of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -429,7 +429,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Variance, S::FAST )
 ///
 /// An alias is defined such that `dip::StandardDeviation( img.At( mask ), mode )` is the same as `dip::StandardDeviation( img, mask, mode )`.
 DIP_EXPORT void StandardDeviation( Image const& in, Image const& mask, Image& out, String mode = S::FAST, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( StandardDeviation, S::FAST )
+DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( StandardDeviation, S::FAST )
 
 /// \brief Calculates the maximum of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -452,7 +452,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( StandardDeviation, S::FAST )
 ///
 /// \see dip::MaximumAndMinimum, dip::MaximumPixel, dip::PositionMaximum, dip::Supremum
 DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( Maximum )
+DIP_DEFINE_PROJECTION_FUNCTIONS( Maximum )
 
 /// \brief Calculates the minimum of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -475,7 +475,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Maximum )
 ///
 /// \see dip::MaximumAndMinimum, dip::MinimumPixel, dip::PositionMinimum, dip::Infimum
 DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( Minimum )
+DIP_DEFINE_PROJECTION_FUNCTIONS( Minimum )
 
 /// \brief Calculates the maximum of the absolute pixel values over all those dimensions which are specified by `process`.
 ///
@@ -494,7 +494,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Minimum )
 ///
 /// An alias is defined such that `dip::MaximumAbs( img.At( mask ))` is the same as `dip::MaximumAbs( img, mask )`.
 DIP_EXPORT void MaximumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( MaximumAbs )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MaximumAbs )
 
 /// \brief Calculates the minimum of the absolute pixel values over all those dimensions which are specified by `process`.
 ///
@@ -513,7 +513,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MaximumAbs )
 ///
 /// An alias is defined such that `dip::MinimumAbs( img.At( mask ))` is the same as `dip::MinimumAbs( img, mask )`.
 DIP_EXPORT void MinimumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( MinimumAbs )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MinimumAbs )
 
 /// \brief Calculates the percentile of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -574,7 +574,7 @@ inline Image Percentile( Image::View const& in, dfloat percentile = 50 ) {
 inline void Median( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    Percentile( in, mask, out, 50.0, process );
 }
-DIP__DEFINE_PROJECTION_FUNCTIONS( Median )
+DIP_DEFINE_PROJECTION_FUNCTIONS( Median )
 
 /// \brief Computes the median absolute deviation (MAD)
 ///
@@ -602,7 +602,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( Median )
 ///
 /// \see dip::Median
 DIP_EXPORT void MedianAbsoluteDeviation( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( MedianAbsoluteDeviation )
+DIP_DEFINE_PROJECTION_FUNCTIONS( MedianAbsoluteDeviation )
 
 /// \brief Determines if all pixels have non-zero values over all those dimensions which are specified by `process`.
 ///
@@ -619,7 +619,7 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( MedianAbsoluteDeviation )
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 DIP_EXPORT void All( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( All )
+DIP_DEFINE_PROJECTION_FUNCTIONS( All )
 
 /// \brief Determines if any pixel has a non-zero value over all those dimensions which are specified by `process`.
 ///
@@ -636,10 +636,10 @@ DIP__DEFINE_PROJECTION_FUNCTIONS( All )
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 DIP_EXPORT void Any( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-DIP__DEFINE_PROJECTION_FUNCTIONS( Any )
+DIP_DEFINE_PROJECTION_FUNCTIONS( Any )
 
-#undef DIP__DEFINE_PROJECTION_FUNCTIONS
-#undef DIP__DEFINE_PROJECTION_FUNCTIONS_WITH_MODE
+#undef DIP_DEFINE_PROJECTION_FUNCTIONS
+#undef DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE
 
 /// \brief Calculates the position of the maximum of the pixel values in a single dimension specified by `dim`.
 ///

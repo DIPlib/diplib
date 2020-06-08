@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/generic_iterators.h"
 
@@ -345,4 +345,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing JointImageIterator and GenericJointImageIter
    }
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

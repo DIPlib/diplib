@@ -1364,7 +1364,7 @@ void PositionPercentile(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
@@ -1440,4 +1440,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 4, 2, 3 } )); // not {4,3,4}
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

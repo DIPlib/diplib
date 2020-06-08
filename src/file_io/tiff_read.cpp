@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__HAS_TIFF
+#ifdef DIP_CONFIG_HAS_TIFF
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -1136,7 +1136,7 @@ bool ImageIsTIFF(
 
 } // namespace dip
 
-#else // DIP__HAS_TIFF
+#else // DIP_CONFIG_HAS_TIFF
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -1181,4 +1181,4 @@ bool ImageIsTIFF( String const& ) {
 
 }
 
-#endif // DIP__HAS_TIFF
+#endif // DIP_CONFIG_HAS_TIFF

@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__HAS_ICS
+#ifdef DIP_CONFIG_HAS_ICS
 
 #include <cstdlib> // std::strtoul
 
@@ -239,7 +239,7 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
    }
    //std::cout << "order = " << order << std::endl;
    // Double-check our work
-#ifdef DIP__ENABLE_ASSERT
+#ifdef DIP_CONFIG_ENABLE_ASSERT
    DIP_ASSERT( jj == nDims );
    UnsignedArray tmp( nDims );
    std::copy( order.begin(), order.end(), tmp.begin() );
@@ -814,12 +814,12 @@ void ImageWriteICS(
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
-   dip::Image image = dip::ImageReadICS( DIP__EXAMPLES_DIR "/chromo3d.ics" );
+   dip::Image image = dip::ImageReadICS( DIP_EXAMPLES_DIR "/chromo3d.ics" );
    image.SetPixelSize( dip::PhysicalQuantityArray{ 6 * dip::Units::Micrometer(), 300 * dip::Units::Nanometer() } );
 
    dip::ImageWriteICS( image, "test1.ics", { "line1", "line2 is good" }, 7, { "v1", "uncompressed" } );
@@ -871,9 +871,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
    DOCTEST_CHECK( result.At( 11 ).As< dip::sint64 >() == 1234567890ll );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST
 
-#else // DIP__HAS_ICS
+#else // DIP_CONFIG_HAS_ICS
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -904,4 +904,4 @@ void ImageWriteICS( Image const&, String const&, StringArray const&, dip::uint, 
 
 }
 
-#endif // DIP__HAS_ICS
+#endif // DIP_CONFIG_HAS_ICS

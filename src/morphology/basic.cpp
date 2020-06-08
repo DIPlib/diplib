@@ -873,7 +873,7 @@ void BasicMorphology(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
@@ -1123,4 +1123,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the full framework under multithreading") {
 
 #endif // _OPENMP
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

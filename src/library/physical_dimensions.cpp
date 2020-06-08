@@ -24,7 +24,7 @@ namespace dip {
 
 namespace {
 
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
 
 constexpr char const micron[] = u8"\u00B5";
 static_assert( sizeof( micron ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
@@ -76,7 +76,7 @@ bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
       power = std::atoi( &( string[ ii ] ));
       ii += n;
    }
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    else {
       bool neg = false;
       if(( string[ ii ] == superN[ 0 ] ) && ( string[ ii + 1 ] == superN[ 1 ] ) && ( string[ ii + 2 ] == superN[ 2 ] )) {
@@ -165,7 +165,7 @@ bool ExpectCDot( dip::String const& string, dip::uint& ii ) {
       ++ii;
       return true;
    }
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    if(( string[ ii ] == cdot[ 0 ] ) && ( string[ ii + 1 ] == cdot[ 1 ] )) {
       ii += 2;
       return true;
@@ -215,7 +215,7 @@ Units::Units( dip::String const& string ) {
          thousands = -3; ++ii; break;
       case 'u':
          thousands = -2; ++ii; break;
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
       case micron[ 0 ]:
          if( string[ ii + 1 ] == micron[ 1 ] ) { thousands = -2; ii += 2; } break; // the micron character takes 2 bytes
 #endif
@@ -367,7 +367,7 @@ constexpr char const* CDot() {
 }
 
 constexpr char const* CDotUnicode() {
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    return cdot;
 #else
    return CDot();
@@ -379,7 +379,7 @@ std::string PowerAsString( dip::sint p ) {
 }
 
 std::string PowerAsStringUnicode( dip::sint p ) {
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    std::string str = std::to_string( p );
    std::string out;
    for( auto c : str ) {
@@ -411,7 +411,7 @@ void WritePrefix( dip::String& out, dip::sint n ) {
 }
 
 void WritePrefixUnicode( dip::String& out, dip::sint n ) {
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    switch( n ) {
       case -5: out += "f"; break;
       case -4: out += "p"; break;
@@ -517,7 +517,7 @@ dip::String Units::StringRepresentation( bool unicode ) const {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
@@ -550,7 +550,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    }
    DOCTEST_SUBCASE("String conversion") {
 
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
 
       dip::Units f = dip::Units::Meter();
       DOCTEST_CHECK(( f ).String() == "m" );
@@ -848,4 +848,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
    }
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

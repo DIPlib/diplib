@@ -70,7 +70,7 @@ void FiniteDifference(
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
@@ -93,4 +93,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the finite difference filter") {
    DOCTEST_CHECK( out.At( 128 ).As< dip::dfloat >() == doctest::Approx( 2.0 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

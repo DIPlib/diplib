@@ -458,7 +458,7 @@ Image::Pixel LookupTable::Apply( dfloat value, InterpolationMode interpolation )
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/iterators.h"
 
@@ -552,4 +552,4 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::LookupTable" ) {
    } while( ++outIt3 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

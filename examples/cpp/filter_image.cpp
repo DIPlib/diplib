@@ -44,7 +44,7 @@ int main( int argc, char *argv[] ) {
    }
 
    // Create a test image
-   dip::Image input = dip::ImageReadICS( DIP__EXAMPLES_DIR "/trui.ics" );
+   dip::Image input = dip::ImageReadICS( DIP_EXAMPLES_DIR "/trui.ics" );
    dip::Image output;
 
    // Try to separate the filter

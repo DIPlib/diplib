@@ -12,7 +12,7 @@
 
 int main() {
    // Read image
-   dip::Image input = dip::ImageReadICS( DIP__EXAMPLES_DIR "/trui.ics" );
+   dip::Image input = dip::ImageReadICS( DIP_EXAMPLES_DIR "/trui.ics" );
 
    // Create superpixels
    dip::Image superpixels = dip::Superpixels( input, 0.01, 1.0, "CW", { "no gaps" } );

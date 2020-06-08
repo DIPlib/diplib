@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__HAS_FREEGLUT
+#ifdef DIP_CONFIG_HAS_FREEGLUT
 
 #include <cstring>
 #include <cstdint>
@@ -242,4 +242,4 @@ void GLUTManager::click(int button, int state, int x, int y)
 
 }} // namespace dip::viewer
 
-#endif // DIP__HAS_FREEGLUT
+#endif // DIP_CONFIG_HAS_FREEGLUT

@@ -70,7 +70,7 @@ int main() {
 
       std::cout << "\n -- Part 2: OpenCV program that calls DIPlib function, method 1\n";
 
-      cv::Mat input = cv::imread( DIP__EXAMPLES_DIR "/DIP.tif", cv::IMREAD_UNCHANGED ); // cv::IMREAD_GRAYSCALE
+      cv::Mat input = cv::imread( DIP_EXAMPLES_DIR "/DIP.tif", cv::IMREAD_UNCHANGED ); // cv::IMREAD_GRAYSCALE
       DIP_THROW_IF( !input.data, "Failed reading file\n" );
       input = input.colRange( 5, 250 ); // Crop the image so it is not square, we want to see proper sizes in DIPlib
 

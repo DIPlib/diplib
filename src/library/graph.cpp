@@ -104,7 +104,7 @@ Graph::Graph( Image const& image, dip::uint connectivity, String const& weights 
 }
 
 Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) const {
-#ifdef DIP__ENABLE_ASSERT
+#ifdef DIP_CONFIG_ENABLE_ASSERT
    for( auto r : roots ) {
       DIP_ASSERT( r < NumberOfVertices() );
    }
@@ -519,7 +519,7 @@ LowestCommonAncestorSolver::LowestCommonAncestorSolver( Graph const& graph )
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Graph") {
@@ -597,4 +597,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Graph") {
    DOCTEST_CHECK( graph.OtherVertex( edges2[ 0 ], 2 ) == 1 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

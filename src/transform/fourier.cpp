@@ -27,7 +27,7 @@
 #include "diplib/geometry.h"
 #include "diplib/math.h"
 
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
    #ifdef _WIN32
       #define NOMINMAX // windows.h must not define min() and max(), which conflict with std::min() and std::max()
    #endif
@@ -43,7 +43,7 @@ constexpr BoundaryCondition DFT_PADDING_MODE = BoundaryCondition::ZERO_ORDER_EXT
 constexpr BoundaryCondition IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS;
 
 
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
 
 // FFTW documentation specifies 16-byte alignment required for SIMD implementations:
 // http://www.fftw.org/fftw3_doc/SIMD-alignment-and-fftw_005fmalloc.html#SIMD-alignment-and-fftw_005fmalloc
@@ -258,14 +258,14 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             BooleanArray const& process,
             bool inverse, bool corner, dfloat scale
       ) : scale_( static_cast< FloatType< TPI >>( scale )), shift_( !corner ) {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          fftw_.resize( outSize.size() );
 #else
          dft_.resize( outSize.size() );
 #endif
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
                // FFTW re-uses plans internally
                fftw_[ ii ].Initialize( outSize[ ii ], inverse );
 #else
@@ -285,7 +285,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
          }
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          ( void )threads;
 #else
          buffers_.resize( threads );
@@ -295,7 +295,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          auto const& fftw = fftw_[ params.dimension ];
          dip::uint length = fftw.TransformSize();
 #else
@@ -323,7 +323,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             ShiftCenterToCorner( in, length );
          } else if( border > 0 ) {
             // we only get here with "corner"+"fast", we cannot combine those with "inverse".
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
             DIP_ASSERT( !fftw.IsInverse() );
 #else
             DIP_ASSERT( !dft.IsInverse() );
@@ -332,7 +332,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             std::copy( in + border, in + length, in );
             // We copy the padded border as well, extending it appropriately
          }
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          fftw.Apply( in, out, scale );
 #else
          dft.Apply( in, out, buffers_[ params.thread ].data(), scale );
@@ -343,7 +343,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
       }
 
    private:
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
       std::vector< FFTW< FloatType< TPI >>> fftw_; // one for each dimension
 #else
       std::vector< DFT< FloatType< TPI >>> dft_; // one for each dimension
@@ -360,14 +360,14 @@ template< typename TPI >
 class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
    public:
       R2C_DFT_LineFilter( dip::uint outSize, bool corner ) : shift_( !corner ) {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          fftw_.Initialize( outSize, false );
 #else
          dft_.Initialize( outSize, false );
 #endif
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          ( void )threads;
 #else
          buffers_.resize( threads );
@@ -377,7 +377,7 @@ class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          dip::uint length = fftw_.TransformSize();
 #else
          if( buffers_[ params.thread ].size() != dft_.BufferSize() ) {
@@ -402,7 +402,7 @@ class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             std::copy( in + border, in + length, in );
             // We copy the padded border as well, extending it appropriately
          }
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          fftw_.Apply( in, out, 1 );
 #else
          dft_.Apply( in, out, buffers_[ params.thread ].data(), 1 );
@@ -413,7 +413,7 @@ class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
       }
 
    private:
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
       FFTW< FloatType< TPI >> fftw_;
 #else
       DFT< FloatType< TPI >> dft_;
@@ -428,14 +428,14 @@ template< typename TPI >
 class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
    public:
       C2R_IDFT_LineFilter( dip::uint outSize, dip::uint inSize, bool corner ) : shift_( !corner ), inSize_( inSize ) {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          fftw_.Initialize( outSize, true, true );
 #else
          dft_.Initialize( outSize, true );
 #endif
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          ( void )threads;
 #else
          buffers_.resize( threads );
@@ -445,7 +445,7 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          dip::uint length = fftw_.TransformSize();
 #else
          dip::uint length = dft_.TransformSize();
@@ -455,7 +455,7 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
          DIP_ASSERT( params.outBuffer.length == length );
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          TPI* tmp = out;
 #else
          buffers_[ params.thread ].resize( length + dft_.BufferSize() );
@@ -502,7 +502,7 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
          if( shift_ ) {
             ShiftCenterToCorner( tmp, length );
          }
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
          fftw_.Apply( out, out, 1 ); // note that tmp == out
 #else
          dft_.Apply( tmp, out, buffer, 1 );
@@ -513,7 +513,7 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
       }
 
    private:
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
       FFTW< FloatType< TPI >> fftw_;
 #else
       DFT< FloatType< TPI >> dft_;
@@ -695,7 +695,7 @@ void IDFT_C2R_1D_compute(
    DIP_ASSERT( !out.DataType().IsComplex() );
    dip::uint nDims = in.Dimensionality();
    DIP_ASSERT( dimension < nDims );
-#ifdef DIP__ENABLE_ASSERT
+#ifdef DIP_CONFIG_ENABLE_ASSERT
    UnsignedArray outSizes = out.Sizes();
    DIP_ASSERT( length <= outSizes[ dimension ] );
    outSizes[ dimension ] = length / 2 + 1;
@@ -899,7 +899,7 @@ dip::uint OptimalFourierTransformSize( dip::uint size ) {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/random.h"
 
@@ -952,7 +952,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the DFT function") {
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, true )) == 0 ); // prime
 }
 
-#ifdef DIP__HAS_FFTW
+#ifdef DIP_CONFIG_HAS_FFTW
 
 template< typename T >
 T dotest_FFTW( std::size_t nfft, bool inverse ) {
@@ -999,7 +999,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FFTW integration") {
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, true )) == 0 ); // prime
 }
 
-#endif // DIP__HAS_FFTW
+#endif // DIP_CONFIG_HAS_FFTW
 
 #include "diplib/generation.h"
 #include "diplib/statistics.h"
@@ -1295,4 +1295,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    DOCTEST_CHECK( maxmin.Minimum() > -2e-18 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

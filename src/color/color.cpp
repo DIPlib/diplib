@@ -382,7 +382,7 @@ void ColorSpaceManager::SetWhitePoint( XYZ whitePoint ) {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/math.h"
 
@@ -428,4 +428,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK_FALSE( xyz.At( 0 ) == out.At( 0 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

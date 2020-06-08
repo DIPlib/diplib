@@ -653,7 +653,7 @@ void Rotation(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/generation.h"
 #include "diplib/transform.h"
@@ -1123,4 +1123,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::ShiftFT() against dip::Shift()") {
    DOCTEST_CHECK( dip::testing::CompareImages( shifted, shifted2, 0.015 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

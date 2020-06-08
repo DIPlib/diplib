@@ -26,7 +26,7 @@ target_link_libraries(fractal_dimension DIP)
 
 # This is a simple program that replicates the dip::RadialMean function
 add_executable(radial_mean cpp/radial_mean.cpp)
-target_compile_definitions(radial_mean PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+target_compile_definitions(radial_mean PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(radial_mean DIP)
 
 # This is a program that demonstates how to generate various shapes
@@ -40,7 +40,7 @@ target_link_libraries(time_openmp DIP)
 
 # A program that tests the binary morphology functions
 add_executable(test_binary cpp/test_binary.cpp)
-target_compile_definitions(test_binary PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+target_compile_definitions(test_binary PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(test_binary DIP)
 
 # The `examples` target builds them all
@@ -61,12 +61,12 @@ if(DIP_BUILD_DIPVIEWER)
 
    # A test program that demonstrates some of the low-level functionality of DIPviewer
    add_executable(viewer cpp/viewer.cpp)
-   target_compile_definitions(viewer PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_compile_definitions(viewer PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(viewer DIP DIPviewer Threads::Threads)
 
    # An example program that does simple image manipulation and uses dip::viewer::ShowSimple
    add_executable(display cpp/display.cpp)
-   target_compile_definitions(display PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_compile_definitions(display PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(display DIP DIPviewer)
 
    # A simple tool that shows an image file using dip::viewer::Show
@@ -78,22 +78,22 @@ if(DIP_BUILD_DIPVIEWER)
 
    # An example program that shows how to delete small objects from a grey-value image, and use dip::viewer::ShowSimple
    add_executable(select_objects cpp/select_objects.cpp)
-   target_compile_definitions(select_objects PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_compile_definitions(select_objects PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(select_objects DIP DIPviewer)
 
    # An example program that shows how to apply a convolution with a custom kernel to an image
    add_executable(filter_image cpp/filter_image.cpp)
-   target_compile_definitions(filter_image PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_compile_definitions(filter_image PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(filter_image DIP DIPviewer)
 
    # An example program that shows how to use various geometric transformations
    add_executable(geometric_transformation cpp/geometric_transformation.cpp)
-   target_compile_definitions(geometric_transformation PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_compile_definitions(geometric_transformation PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(geometric_transformation DIP DIPviewer)
 
    # An example program that uses superpixel segmentation and graph manipulation
    add_executable(oversegmentation cpp/oversegmentation.cpp)
-   target_compile_definitions(oversegmentation PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_compile_definitions(oversegmentation PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(oversegmentation DIP DIPviewer)
 
    add_dependencies(examples
@@ -112,7 +112,7 @@ if(DIP_BUILD_DIPVIEWER)
 
       # An example program that uses both DIPlib and OpenCV
       add_executable(opencv_with_dip external_interfaces/opencv_with_dip.cpp)
-      target_compile_definitions(opencv_with_dip PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+      target_compile_definitions(opencv_with_dip PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
       target_link_libraries(opencv_with_dip DIP DIPviewer ${OpenCV_LIBS})
 
    endif()
@@ -124,7 +124,7 @@ if(DIP_BUILD_DIPVIEWER)
 
       # An example program that uses both DIPlib and Vigra
       add_executable(vigra_with_dip external_interfaces/vigra_with_dip.cpp)
-      target_compile_definitions(vigra_with_dip PRIVATE DIP__EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+      target_compile_definitions(vigra_with_dip PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
       target_include_directories(vigra_with_dip PRIVATE ${Vigra_INCLUDE_DIRS})
       target_link_libraries(vigra_with_dip DIP DIPviewer vigraimpex)
       if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

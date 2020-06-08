@@ -159,7 +159,7 @@ void DefineROI(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
@@ -216,4 +216,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    DOCTEST_CHECK( img.At( 10, 15, 2 )[ 0 ] == dip::scomplex{ 45.2f, 24.5f } );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

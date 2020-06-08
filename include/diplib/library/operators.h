@@ -58,7 +58,7 @@ template< typename T1, typename T2 >
 using EnableIfOneIsImageOrView = std::enable_if_t< ( detail::isImage< T1 >::value || detail::isView< T1 >::value ) ||
                                                    ( detail::isImage< T2 >::value || detail::isView< T2 >::value ) >;
 
-#define DIP__DEFINE_ARITHMETIC_OVERLOADS( name ) \
+#define DIP_DEFINE_ARITHMETIC_OVERLOADS( name ) \
 DIP_EXPORT void  name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
 inline     void  name( Image const& lhs, Image const& rhs, Image& out )  { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
 inline     Image name( Image const& lhs, Image const& rhs, DataType dt ) { Image out; name( lhs, rhs, out, dt ); return out; } \
@@ -70,12 +70,12 @@ template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name(
 template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs, DataType dt ) { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out, dt ); return out; } \
 template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )              { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
-#define DIP__DEFINE_DYADIC_OVERLOADS( name ) \
+#define DIP_DEFINE_DYADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
 template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )  { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
-#define DIP__DEFINE_TRIADIC_OVERLOADS( name ) \
+#define DIP_DEFINE_TRIADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& in, Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, Image const& lhs, T const& rhs, Image& out ) { name( in, lhs, Image{ rhs }, out ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, T const& lhs, Image const& rhs, Image& out ) { name( in, Image{ lhs }, rhs, out ); } \
@@ -102,7 +102,7 @@ template< typename T1, typename T2 > inline Image name( Image const& in, T1&& lh
 /// least one input is an image.
 ///
 /// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator+(Image const&, T const&)
-DIP__DEFINE_ARITHMETIC_OVERLOADS( Add )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( Add )
 
 /// \brief Subtracts two images, sample-wise, with singleton expansion, and using saturated arithmetic.
 ///
@@ -115,7 +115,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Add )
 /// least one input is an image.
 ///
 /// \see Add, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator-(Image const&, T const&)
-DIP__DEFINE_ARITHMETIC_OVERLOADS( Subtract )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 
 /// \brief Multiplies two images, pixel-wise, with singleton expansion, and using saturated arithmetic.
 ///
@@ -134,7 +134,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 /// least one input is an image.
 ///
 /// \see Add, Subtract, MultiplySampleWise, MultiplyConjugate, Divide, Modulo, Power, operator*(Image const&, T const&)
-DIP__DEFINE_ARITHMETIC_OVERLOADS( Multiply )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( Multiply )
 
 /// \brief Multiplies two images, sample-wise, with singleton expansion, and using saturated arithmetic.
 ///
@@ -146,7 +146,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Multiply )
 /// For binary types, saturated multiplication is equivalent to the Boolean AND operation.
 ///
 /// \see Add, Subtract, Multiply, Divide, Modulo, Power
-DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
 
 /// \brief Multiplies two images with complex conjugation, sample-wise, with singleton expansion.
 ///
@@ -160,7 +160,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
 /// least one input is an image.
 ///
 /// \see Add, Subtract, Multiply, Divide, Modulo, Power
-DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplyConjugate )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( MultiplyConjugate )
 
 /// \brief Divides two images, sample-wise, with singleton expansion.
 ///
@@ -173,7 +173,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplyConjugate )
 /// least one input is an image.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, SafeDivide, Modulo, Power, operator/(Image const&, T const&)
-DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( Divide )
 
 /// \brief Divides two images, sample-wise, with singleton expansion. Tests for division by zero, filling in 0 instead.
 ///
@@ -186,7 +186,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
 /// least one input is an image.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator/(Image const&, T const&)
-DIP__DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
 
 /// \brief Computes the modulo of two images, sample-wise, with singleton expansion.
 ///
@@ -198,7 +198,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, SafeDivide, Power, operator%(Image const&, T const&)
 DIP_EXPORT void  Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt );
-// We cannot use DIP__DEFINE_ARITHMETIC_OVERLOADS here because the default data type is computed differently:
+// We cannot use DIP_DEFINE_ARITHMETIC_OVERLOADS here because the default data type is computed differently:
 inline     void  Modulo( Image const& lhs, Image const& rhs, Image& out )  { Modulo( lhs, rhs, out, lhs.DataType() ); }
 inline     Image Modulo( Image const& lhs, Image const& rhs, DataType dt ) { Image out; Modulo( lhs, rhs, out, dt ); return out; }
 inline     Image Modulo( Image const& lhs, Image const& rhs )              { Image out; Modulo( lhs, rhs, out ); return out; }
@@ -220,7 +220,7 @@ template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modul
 /// least one input is an image.
 ///
 /// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo
-DIP__DEFINE_ARITHMETIC_OVERLOADS( Power )
+DIP_DEFINE_ARITHMETIC_OVERLOADS( Power )
 
 /// \brief Inverts each sample of the input image, yielding an image of the same type.
 ///
@@ -243,7 +243,7 @@ inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return ou
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see Or, Xor, operator&(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( And )
+DIP_DEFINE_DYADIC_OVERLOADS( And )
 
 /// \brief Bit-wise OR of two integer images, or logical OR of two binary images, sample-wise, with singleton expansion.
 ///
@@ -252,7 +252,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( And )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see And, Xor, operator|(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Or )
+DIP_DEFINE_DYADIC_OVERLOADS( Or )
 
 /// \brief Bit-wise XOR of two integer images, or logical XOR of two binary images, sample-wise, with singleton expansion.
 ///
@@ -263,7 +263,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( Or )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see And, Or, operator^(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Xor )
+DIP_DEFINE_DYADIC_OVERLOADS( Xor )
 
 /// \brief Bit-wise NOT of an integer image, or logical NOT of a binary image, sample-wise.
 ///
@@ -538,7 +538,7 @@ inline Image::View& operator^=( Image::View& lhs, T const& rhs ) {
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Equal )
+DIP_DEFINE_DYADIC_OVERLOADS( Equal )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
@@ -546,7 +546,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( Equal )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( NotEqual )
+DIP_DEFINE_DYADIC_OVERLOADS( NotEqual )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
@@ -554,7 +554,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( NotEqual )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Lesser )
+DIP_DEFINE_DYADIC_OVERLOADS( Lesser )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
@@ -562,7 +562,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( Lesser )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Greater )
+DIP_DEFINE_DYADIC_OVERLOADS( Greater )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
@@ -570,7 +570,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( Greater )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( NotGreater )
+DIP_DEFINE_DYADIC_OVERLOADS( NotGreater )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
@@ -578,7 +578,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( NotGreater )
 /// (or a scalar value that implicitly converts to one).
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( NotLesser )
+DIP_DEFINE_DYADIC_OVERLOADS( NotLesser )
 
 /// \brief In-range ternary comparison, sample-wise, with singleton expansion.
 ///
@@ -590,7 +590,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( NotLesser )
 ///
 /// Out will be binary. `in` must be an image, but `lhs` and `rhs` can also be a pixel or a sample
 /// (or a scalar value that implicitly converts to one).
-DIP__DEFINE_TRIADIC_OVERLOADS( InRange )
+DIP_DEFINE_TRIADIC_OVERLOADS( InRange )
 
 /// \brief Out-of-range ternary comparison, sample-wise, with singleton expansion.
 ///
@@ -602,7 +602,7 @@ DIP__DEFINE_TRIADIC_OVERLOADS( InRange )
 ///
 /// Out will be binary. `in` must be an image, but `lhs` and `rhs` can also be a pixel or a sample
 /// (or a scalar value that implicitly converts to one).
-DIP__DEFINE_TRIADIC_OVERLOADS( OutOfRange )
+DIP_DEFINE_TRIADIC_OVERLOADS( OutOfRange )
 
 
 //
@@ -649,9 +649,9 @@ inline Image operator>=( Image const& lhs, T const& rhs ) {
 /// \}
 
 
-#undef DIP__DEFINE_ARITHMETIC_OVERLOADS
-#undef DIP__DEFINE_DYADIC_OVERLOADS
-#undef DIP__DEFINE_TRIADIC_OVERLOADS
+#undef DIP_DEFINE_ARITHMETIC_OVERLOADS
+#undef DIP_DEFINE_DYADIC_OVERLOADS
+#undef DIP_DEFINE_TRIADIC_OVERLOADS
 
 
 } // namespace dip

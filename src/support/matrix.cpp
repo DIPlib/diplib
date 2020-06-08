@@ -402,7 +402,7 @@ void Solve(
 #endif
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
@@ -595,4 +595,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related f
    DOCTEST_CHECK( x[ 1 ] == doctest::Approx( 2.0 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

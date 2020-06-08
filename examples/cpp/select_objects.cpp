@@ -11,7 +11,7 @@
 
 int main() {
    // Create a test image
-   dip::Image input = -dip::ImageReadICS( DIP__EXAMPLES_DIR "/cermet.ics" );
+   dip::Image input = -dip::ImageReadICS( DIP_EXAMPLES_DIR "/cermet.ics" );
    input.At( input < 120 ) = 0;
    // Display
    dip::viewer::ShowSimple( input, "input image" );

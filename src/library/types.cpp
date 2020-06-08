@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/library/types.h"
 
@@ -210,4 +210,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    }
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -224,34 +224,34 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 /// anything. Turn the option off if your application would make no use of the stack trace, as building the stack
 /// trace does incur some runtime cost.
 
-#ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
+#ifdef DIP_CONFIG_ENABLE_STACK_TRACE
 
-#if DIP__HAS_PRETTY_FUNCTION
+#if DIP_CONFIG_HAS_PRETTY_FUNCTION
 // This is a better thing to use than __func__, if available
-#define DIP__FUNC__ __PRETTY_FUNCTION__
+#define DIP_FUNC_ __PRETTY_FUNCTION__
 #else
 // This is in the C++11 standard, so should always be available
-#define DIP__FUNC__ __func__
+#define DIP_FUNC_ __func__
 #endif
 
-#define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
+#define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP_FUNC_, __FILE__, __LINE__ )
 
 // Here we explicitly cast the output of `error.AddStackTrace` to the right type, since that function returns a
 // reference to the base class and we need the type of the thrown exception to be correct.
-#define DIP__THROW( type, str ) throw static_cast< type& >( DIP_ADD_STACK_TRACE( type( str )))
+#define DIP_THROW_INTERNAL( type, str ) throw static_cast< type& >( DIP_ADD_STACK_TRACE( type( str )))
 // This used to be as follows, but GCC 5.4 cannot handle such a thing in a constexpr function.
 // #define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
-#else // DIP__EXCEPTIONS_RECORD_STACK_TRACE
+#else // DIP_CONFIG_ENABLE_STACK_TRACE
 
 #define DIP_ADD_STACK_TRACE( error )
-#define DIP__THROW( type, str ) throw type( str )
+#define DIP_THROW_INTERNAL( type, str ) throw type( str )
 
-#endif // DIP__EXCEPTIONS_RECORD_STACK_TRACE
+#endif // DIP_CONFIG_ENABLE_STACK_TRACE
 
 
 /// \brief Throw a `dip::ParameterError`.
-#define DIP_THROW( str ) DIP__THROW( dip::ParameterError, str )
+#define DIP_THROW( str ) DIP_THROW_INTERNAL( dip::ParameterError, str )
 
 /// \brief Throw a `dip::ParameterError` that reads "Invalid flag: <flag>".
 #define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + std::string( flag ))
@@ -260,15 +260,15 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 #define DIP_THROW_IF( test, str ) if( test ) DIP_THROW( str )
 
 /// \brief Throw a `dip::RunTimeError`.
-#define DIP_THROW_RUNTIME( str ) DIP__THROW( dip::RunTimeError, str )
+#define DIP_THROW_RUNTIME( str ) DIP_THROW_INTERNAL( dip::RunTimeError, str )
 
 /// \brief Throw a `dip::AssertionError`.
-#define DIP_THROW_ASSERTION( str ) DIP__THROW( dip::AssertionError, str )
+#define DIP_THROW_ASSERTION( str ) DIP_THROW_INTERNAL( dip::AssertionError, str )
 
 /// \def DIP_ASSERT(test)
 /// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
 ///
-/// If `DIP_ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
+/// If the CMake variable `DIP_ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
 /// ```bash
 ///     cmake -DDIP_ENABLE_ASSERT=OFF ...
@@ -277,15 +277,15 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 /// You would typically disable assertions for production code, as assertions are only used to test internal
 /// consistency or detect bugs in the code.
 
-#ifdef DIP__ENABLE_ASSERT
+#ifdef DIP_CONFIG_ENABLE_ASSERT
 
 #define DIP_ASSERT( test ) if( !( test )) DIP_THROW_ASSERTION( "Failed assertion: " #test )
 
-#else // DIP__ENABLE_ASSERT
+#else // DIP_CONFIG_ENABLE_ASSERT
 
 #define DIP_ASSERT( test )
 
-#endif // DIP__ENABLE_ASSERT
+#endif // DIP_CONFIG_ENABLE_ASSERT
 
 
 /// \def DIP_START_STACK_TRACE
@@ -335,7 +335,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 ///
 /// See `#DIP_START_STACK_TRACE` for more information.
 
-#ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
+#ifdef DIP_CONFIG_ENABLE_STACK_TRACE
 
 // NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_END_STACK_TRACE.
 #define DIP_START_STACK_TRACE try {
@@ -345,13 +345,13 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 #define DIP_STACK_TRACE_THIS( statement ) do { DIP_START_STACK_TRACE statement; DIP_END_STACK_TRACE } while( false )
 
-#else // DIP__EXCEPTIONS_RECORD_STACK_TRACE
+#else // DIP_CONFIG_ENABLE_STACK_TRACE
 
 #define DIP_START_STACK_TRACE {
 #define DIP_END_STACK_TRACE }
 #define DIP_STACK_TRACE_THIS( statement ) statement
 
-#endif // DIP__EXCEPTIONS_RECORD_STACK_TRACE
+#endif // DIP_CONFIG_ENABLE_STACK_TRACE
 
 /// \}
 

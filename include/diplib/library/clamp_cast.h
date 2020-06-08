@@ -219,7 +219,7 @@ constexpr inline const ValueType clamp_upper( ValueType value, LimitType ) {
 
 } // namespace detail
 
-#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
 
 /// \brief Casts a value of any pixel type to any other pixel type, clamping it to the destination range.
 template< typename TargetType, typename SourceType >

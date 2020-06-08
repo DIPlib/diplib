@@ -8,9 +8,9 @@ file(GLOB DIP_VIEWER_SRC
 update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
 add_library(DIPviewer ${DIP_VIEWER_SRC})
 if(DIP_SHARED_LIBRARY)
-   target_compile_definitions(DIPviewer PRIVATE DIP__VIEWER_BUILD_SHARED)
+   target_compile_definitions(DIPviewer PRIVATE DIP_CONFIG_DIPVIEWER_BUILD_SHARED)
 else()
-   target_compile_definitions(DIPviewer PUBLIC DIP__VIEWER_IS_STATIC)
+   target_compile_definitions(DIPviewer PUBLIC DIP_CONFIG_DIPVIEWER_IS_STATIC)
 endif()
 
 # C++ version, etc.
@@ -20,14 +20,14 @@ set_target_properties(DIPviewer PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILI
 # Dependencies
 target_link_libraries(DIPviewer PRIVATE DIP Threads::Threads)
 if(FREEGLUT_FOUND)
-   target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
+   target_compile_definitions(DIPviewer PUBLIC DIP_CONFIG_HAS_FREEGLUT)
    target_link_libraries(DIPviewer PRIVATE FREEGLUT::FREEGLUT)
    if (FREEGLUT_STATIC)
       target_compile_definitions(DIPviewer PRIVATE FREEGLUT_STATIC)
    endif()
 endif()
 if(GLFW_FOUND)
-   target_compile_definitions(DIPviewer PUBLIC DIP__HAS_GLFW)
+   target_compile_definitions(DIPviewer PUBLIC DIP_CONFIG_HAS_GLFW)
    target_link_libraries(DIPviewer PRIVATE GLFW::GLFW)
 endif()
 if(TARGET OpenGL::GL)

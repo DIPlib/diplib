@@ -18,12 +18,12 @@
  * limitations under the License.
  */
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 
 // Define this value when compiling the unit_tests program
-#ifdef DIP__IMPLEMENT_UNIT_TESTS
+#ifdef DIP_IMPLEMENT_UNIT_TESTS
 
-#ifdef DIP__DOCTEST_IN_SHARED_LIB
+#ifdef DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
 #define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
 #include "doctest.h"
@@ -48,23 +48,23 @@ int main( int argc, const char* const* argv ) {
    return res; // the result from doctest is propagated here as well
 }
 
-#else // !DIP__DOCTEST_IN_SHARED_LIB
+#else // !DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#endif // DIP__DOCTEST_IN_SHARED_LIB
+#endif // DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
-#else //! DIP__IMPLEMENT_UNIT_TESTS
+#else // !DIP_IMPLEMENT_UNIT_TESTS
 
-#ifdef DIP__DOCTEST_IN_SHARED_LIB
+#ifdef DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
 #define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
-#endif // DIP__DOCTEST_IN_SHARED_LIB
+#endif // DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
-#endif // DIP__IMPLEMENT_UNIT_TESTS
+#endif // DIP_IMPLEMENT_UNIT_TESTS
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -148,7 +148,7 @@ std::vector< GaussianParameters > GaussianMixtureModel(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/generation.h"
 
@@ -202,4 +202,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing GaussianMixtureModel") {
    DOCTEST_CHECK( std::abs( params[ 1 ].amplitude -  30.0 / ( 20.0 * std::sqrt( 2.0 * dip::pi ))) < 0.1 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -215,7 +215,7 @@ void SeparableDistanceTransform(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
@@ -318,4 +318,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the distance transform") {
    }
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

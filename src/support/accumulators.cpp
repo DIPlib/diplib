@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 #include "diplib/accumulators.h"
@@ -188,7 +188,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the statistical accumulators") {
 DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    dip::Random rng( 0 );
    bool error = false;
-#if defined(__SIZEOF_INT128__) || defined(DIP__ALWAYS_128_PRNG)
+#if defined(__SIZEOF_INT128__) || defined(DIP_CONFIG_ALWAYS_128_PRNG)
    // 128-bit PRNG has 64-bit output, we expect the following values:
    error |= rng() != 74029666500212977ULL;
    error |= rng() != 8088122161323000979ULL;
@@ -284,4 +284,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    DOCTEST_CHECK( max < norm / 20.0 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

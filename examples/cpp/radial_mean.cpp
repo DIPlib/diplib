@@ -14,7 +14,7 @@
 int main() {
 
    // Input image
-   dip::Image input = dip::ImageReadICS( DIP__EXAMPLES_DIR "/cermet.ics" );
+   dip::Image input = dip::ImageReadICS( DIP_EXAMPLES_DIR "/cermet.ics" );
    dip::FourierTransform( input, input );
    dip::Norm( input, input );
 

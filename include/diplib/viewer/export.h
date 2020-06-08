@@ -33,13 +33,13 @@
 /// \brief Specifically for classes in a inheritance hierarchy and that must be passed across the
 /// executable/shared library interface. See `DIP_CLASS_EXPORT` for more details.
 
-#ifdef DIP__VIEWER_IS_STATIC
+#ifdef DIP_CONFIG_DIPVIEWER_IS_STATIC
 #   define DIPVIEWER_EXPORT
 #   define DIPVIEWER_NO_EXPORT
 #   define DIPVIEWER_CLASS_EXPORT
 #else
 #   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
-#      ifdef DIP__VIEWER_BUILD_SHARED
+#      ifdef DIP_CONFIG_DIPVIEWER_BUILD_SHARED
 #         define DIPVIEWER_EXPORT __declspec(dllexport)
 #      else // We are using the library
 #         define DIPVIEWER_EXPORT __declspec(dllimport)

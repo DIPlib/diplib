@@ -23,7 +23,7 @@
 
 #include "diplib.h"
 #include "diplib/file_io.h"
-#ifdef DIP__HAS_JAVAIO
+#ifdef DIP_CONFIG_HAS_DIPJAVAIO
 #include "diplib/javaio.h"
 #endif
 
@@ -51,7 +51,7 @@ namespace dip {
 /// Information about the file and all metadata are returned in the `FileInformation` output argument.
 ///
 /// If *DIPjavaio* is not linked against, the `"bioformats"` format will not exist. Note that when linking
-/// against the *DIPjavaio* library, `DIP__HAS_JAVAIO` should be defined (but might need to be defined manually
+/// against the *DIPjavaio* library, `DIP_CONFIG_HAS_DIPJAVAIO` should be defined (but might need to be defined manually
 /// if not using *CMake*).
 ///
 /// Use the filetype-specific functions directly for more control over how the image is read.
@@ -86,7 +86,7 @@ inline FileInformation ImageRead(
    } else if( format == "jpeg" ) {
       DIP_STACK_TRACE_THIS( info = ImageReadJPEG( out, filename ));
    }
-#ifdef DIP__HAS_JAVAIO
+#ifdef DIP_CONFIG_HAS_DIPJAVAIO
    else if( format == "bioformats" ) {
       DIP_STACK_TRACE_THIS( info = javaio::ImageReadJavaIO( out, filename, javaio::bioformatsInterface ));
    }

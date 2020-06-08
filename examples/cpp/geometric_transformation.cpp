@@ -12,7 +12,7 @@
 
 int main() {
    // A color input image
-   dip::Image input = dip::ImageRead( DIP__EXAMPLES_DIR "/DIP.tif" );
+   dip::Image input = dip::ImageRead( DIP_EXAMPLES_DIR "/DIP.tif" );
 
    // Mirroring and 90 degree rotations
    // These transformations are trivial, data is not copied!

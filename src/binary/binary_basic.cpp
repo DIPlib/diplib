@@ -224,7 +224,7 @@ void BinaryAreaOpening(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
 
@@ -263,4 +263,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the binary morphological filters") {
    DOCTEST_CHECK( out.At( 32, 20 ) == 1 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -757,7 +757,7 @@ void ExpandBuffer(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include <numeric>
 
@@ -1058,4 +1058,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

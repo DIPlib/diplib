@@ -189,7 +189,7 @@ dip::Polygon ChainCode::Polygon() const {
 
 }
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 #include "diplib/pixel_table.h"
@@ -223,4 +223,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to polygon") {
    }
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

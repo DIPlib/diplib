@@ -795,7 +795,7 @@ void GaussIIR(
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
@@ -872,4 +872,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the IIR Gaussian filter") {
    DOCTEST_CHECK( r1.At( 128 ).As< dip::dfloat >() == doctest::Approx( 6.0 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

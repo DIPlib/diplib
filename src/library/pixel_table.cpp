@@ -460,7 +460,7 @@ void PixelTable::AddDistanceToOriginAsWeights() {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
@@ -539,4 +539,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK_FALSE( pt5.HasWeights() );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

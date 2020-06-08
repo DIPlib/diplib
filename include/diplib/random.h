@@ -57,8 +57,9 @@ namespace dip {
 /// `%Random` has a 128-bit internal state, and produces 64-bit output with a period of 2<sup>128</sup>.
 /// On architectures where 128-bit integers are not natively supported, this changes to have a 64-bit internal state,
 /// and produce 32-bit output with a period of 2<sup>64</sup>. This lesser PRNG still has very good statistical
-/// properties. Defining `DIP_ALWAYS_128_PRNG` causes the better 128-bit PRNG engine to be used, using emulated
-/// 128-bit arithmetic. Note that, if *DIPlib* is compiled with this flag, code that links to it must also be
+/// properties. Defining the CMake variable `DIP_ALWAYS_128_PRNG` (preprocessor macro `DIP_CONFIG_ALWAYS_128_PRNG`)
+/// causes the better 128-bit PRNG engine to be used, using emulated 128-bit arithmetic.
+/// Note that, if *DIPlib* is compiled with this flag, code that links to it must also be
 /// compiled with this flag, or bad things will happen.
 ///
 /// Satisfies the requirements for [*UniformRandomBitGenerator*](https://en.cppreference.com/w/cpp/named_req/UniformRandomBitGenerator),
@@ -66,7 +67,7 @@ namespace dip {
 ///
 /// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
 class DIP_NO_EXPORT Random {
-#if defined(__SIZEOF_INT128__) || defined(DIP__ALWAYS_128_PRNG)
+#if defined(__SIZEOF_INT128__) || defined(DIP_CONFIG_ALWAYS_128_PRNG)
       using Engine = pcg64;
 #else
       using Engine = pcg32;

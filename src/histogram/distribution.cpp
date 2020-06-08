@@ -242,7 +242,7 @@ void Distribution::SetSampling(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/random.h"
 
@@ -320,4 +320,4 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Distribution" ) {
    DOCTEST_CHECK( dist[ 2 ].Y( 3 ) == doctest::Approx( 2.1 * ( 2.0 + 1.0 / 6.1 )));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__HAS_JPEG
+#ifdef DIP_CONFIG_HAS_JPEG
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -289,7 +289,7 @@ void ImageWriteJPEG(
 
 } // namespace dip
 
-#else // DIP__HAS_JPEG
+#else // DIP_CONFIG_HAS_JPEG
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -316,4 +316,4 @@ void ImageWriteJPEG( Image const&, String const&, dip::uint ) {
 
 }
 
-#endif // DIP__HAS_JPEG
+#endif // DIP_CONFIG_HAS_JPEG

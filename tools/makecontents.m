@@ -41,7 +41,7 @@ while true
    elseif isempty(t3)
       t3 = regexp(l,'set\(PROJECT_VERSION_PATCH "(.+)"\)','tokens');
   else
-      cc = regexp(l,'add_definitions\(-DDIP_COPYRIGHT_YEAR="(.+)"\)','tokens');
+      cc = regexp(l,'set\(DIP_COPYRIGHT_YEAR "(.+)"\)','tokens');
       if ~isempty(cc)
          break % This component is written last in the CMakeLists.txt file
       end

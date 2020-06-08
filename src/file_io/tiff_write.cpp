@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#ifdef DIP__HAS_TIFF
+#ifdef DIP_CONFIG_HAS_TIFF
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -372,12 +372,12 @@ void ImageWriteTIFF(
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
-   dip::Image image = dip::ImageReadTIFF( DIP__EXAMPLES_DIR "/fractal1.tiff" );
+   dip::Image image = dip::ImageReadTIFF( DIP_EXAMPLES_DIR "/fractal1.tiff" );
    image.SetPixelSize( dip::PhysicalQuantityArray{ 6 * dip::Units::Micrometer(), 300 * dip::Units::Nanometer() } );
 
    dip::ImageWriteTIFF( image, "test1.tif" );
@@ -401,9 +401,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
    DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST
 
-#else // DIP__HAS_TIFF
+#else // DIP_CONFIG_HAS_TIFF
 
 #include "diplib.h"
 #include "diplib/file_io.h"
@@ -418,4 +418,4 @@ void ImageWriteTIFF( Image const&, String const&, String const&, dip::uint ) {
 
 }
 
-#endif // DIP__HAS_TIFF
+#endif // DIP_CONFIG_HAS_TIFF

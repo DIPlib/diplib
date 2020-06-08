@@ -124,7 +124,7 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
 //#include "diplib/timer.h"
@@ -197,4 +197,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
    DOCTEST_CHECK( m.Maximum() < 1e-5 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

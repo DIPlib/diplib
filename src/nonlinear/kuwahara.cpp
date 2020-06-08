@@ -139,7 +139,7 @@ void SelectionFilter(
       ExtendImage( c_in, in, boundary, bc, Option::ExtendImage::Masked );
       ExtendImage( c_control, control, boundary, bc, Option::ExtendImage::Masked );
    DIP_END_STACK_TRACE
-#ifdef DIP__ENABLE_ASSERT
+#ifdef DIP_CONFIG_ENABLE_ASSERT
    // We have created a new `in` and `control`, so we expect normal strides here. Let's make sure this is the case!
    DIP_ASSERT( in.TensorStride() == 1 );
    for( dip::uint ii = 0; ii < in.Dimensionality(); ++ii ) {

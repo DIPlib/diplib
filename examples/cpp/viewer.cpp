@@ -12,7 +12,7 @@
 #include <diplib/linear.h>
 #include <diplib/math.h>
 
-#ifdef DIP__HAS_GLFW
+#ifdef DIP_CONFIG_HAS_GLFW
 #  include <diplib/viewer/glfw.h>
    dip::viewer::GLFWManager manager;
 #else
@@ -54,7 +54,7 @@ void run( dip::viewer::ImageViewer::Ptr const& viewer ) {
 int main() {
 
    // Read and display primary image
-   dip::Image image3 = dip::ImageReadICS( DIP__EXAMPLES_DIR "/chromo3d.ics" );
+   dip::Image image3 = dip::ImageReadICS( DIP_EXAMPLES_DIR "/chromo3d.ics" );
    image3.PixelSize().Set( 2, 5 );
    manager.createWindow( dip::viewer::SliceViewer::Create( image3, "chromo3d", 500, 400 ));
 

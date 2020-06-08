@@ -19,7 +19,7 @@
 
 #include "dipviewer.h"
 
-#ifdef DIP__HAS_GLFW
+#ifdef DIP_CONFIG_HAS_GLFW
 #include "diplib/viewer/glfw.h"
 using ViewerManager = dip::viewer::GLFWManager;
 #else

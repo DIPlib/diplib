@@ -234,7 +234,7 @@ dfloat BesselYN(
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/library/clamp_cast.h"
 #include "diplib/saturated_arithmetic.h"
@@ -545,4 +545,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::ApproximatelyEquals function") {
    DOCTEST_CHECK( dip::ApproximatelyEquals( 1.0, 1.0 + 1e-12 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

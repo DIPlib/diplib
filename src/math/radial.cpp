@@ -286,9 +286,6 @@ class ProjectionRadialMax : public ProjectionRadialMinMax< TPI, std::greater< TP
 
 enum class RadialProjectionType { sum, mean, min, max, };
 
-// RadialSum and RadialMean can be done for DIP__OVL__ALL. Output type: either DFLOAT or DCOMPLEX
-// RadialMin and RadialMax can be done for DIP__OVL__NONCOMPLEX. Output type: same as input type
-
 void RadialProjectionScan(
       RadialProjectionType type,
       Image const& c_in,

@@ -68,19 +68,24 @@ When using *CMake*, and importing the `DIP` target into your project in the righ
 to link against the `DIP` target and everything will be configured correctly. Otherwise, there are several
 macros that you should define when building any program that links against *DIPlib*:
 
-If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag was not set, then you need to define the `DIP__IS_STATIC`
+If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag not set, then you need to define the `DIP_CONFIG_DIP_IS_STATIC`
 macro when compiling the code that links against it. Likewise, if the `DIP_ALWAYS_128_PRNG` flag was set,
-then you must define a `DIP__ALWAYS_128_PRNG` macro when compiling your program. Mismatching this flag
+then you must define a `DIP_CONFIG_ALWAYS_128_PRNG` macro when compiling your program. Mismatching this flag
 could cause your program to not link, or worse, crash at runtime.
 
 The following flags do not need to be matched, but they should be if you want the inline functions to behave
 the same as the pre-compiled ones:
- - flag: `DIP_ENABLE_STACK_TRACE` -- macro: `DIP__EXCEPTIONS_RECORD_STACK_TRACE`
- - flag: `DIP_ENABLE_ASSERT` -- macro: `DIP__ENABLE_ASSERT`
+ - flag: `DIP_ENABLE_STACK_TRACE` -- macro: `DIP_CONFIG_ENABLE_STACK_TRACE`
+ - flag: `DIP_ENABLE_ASSERT` -- macro: `DIP_CONFIG_ENABLE_ASSERT`
 
-For DIPviewer, if `DIP_SHARED_LIBRARY` was not set, define the `DIP__VIEWER_IS_STATIC` macro. Also define
-`DIP__HAS_FREEGLUT` or `DIP__HAS_GLFW` depending on which back-end is used.
+Also, if your compiler supports `__PRETTY_FUNCTION__`, set the macro `DIP_CONFIG_HAS_PRETTY_FUNCTION` to
+get better stack traces.
 
+For DIPviewer, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPVIEWER_IS_STATIC` macro.
+Also define `DIP_CONFIG_HAS_FREEGLUT` or `DIP_CONFIG_HAS_GLFW` depending on which back-end is used.
+
+For DIPjavaio, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPJAVAIO_IS_STATIC` macro.
+Also define `DIP_CONFIG_HAS_DIPJAVAIO`.
 
 ## Contributing
 

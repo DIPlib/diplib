@@ -80,7 +80,7 @@ template<> struct LargerType< sint64 > { using type = __int128_t; };
 // Addition
 //
 
-#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
 
 /// \brief Adds two values using saturated arithmetic.
 template< typename T >
@@ -132,7 +132,7 @@ constexpr inline bin saturated_add( bin lhs, bin rhs ) {
 // Subtraction
 //
 
-#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
 
 /// \brief Subtracts two values using saturated arithmetic.
 template< typename T >
@@ -184,7 +184,7 @@ constexpr inline bin saturated_sub( bin lhs, bin rhs ) {
 // Multiplication
 //
 
-#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
 
 /// \brief Multiplies two values using saturated arithmetic.
 template< typename T >
@@ -234,7 +234,7 @@ constexpr inline bin saturated_mul( bin lhs, bin rhs ) {
 // Division
 //
 
-#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
 
 /// \brief Divides two values using saturated arithmetic.
 template< typename T >
@@ -279,7 +279,7 @@ constexpr inline bin saturated_safediv( bin lhs, bin rhs ) {
 // Inversion
 //
 
-#ifdef DIP__FAKE_DOCUMENTATION // This should never be defined when compiling!!!
+#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
 
 /// \brief Inverts a value using saturated arithmetic. This is the same as negation, but not for unsigned values.
 template< typename T >

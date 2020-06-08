@@ -15,7 +15,7 @@ int main() {
    try {
 
       // Read a 2D grey-value image
-      auto grey = dip::ImageReadICS( DIP__EXAMPLES_DIR "/cermet.ics" );
+      auto grey = dip::ImageReadICS( DIP_EXAMPLES_DIR "/cermet.ics" );
       // Show it
       DIP_STACK_TRACE_THIS( dip::viewer::ShowSimple( grey ));
 

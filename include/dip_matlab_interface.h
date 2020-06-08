@@ -27,7 +27,7 @@
 #include <streambuf>
 #include <iostream>
 #include <cstring>
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
 #include <codecvt>
 #include <locale>
 #endif
@@ -370,7 +370,7 @@ inline dip::String GetString( mxArray const* mx ) {
 
 /// \brief Convert a string from `mxArray` to a UTF-8 encoded `dip::String` by copy.
 inline dip::String GetStringUnicode( mxArray const* mx ) {
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    if( mxIsChar( mx ) && IsVector( mx )) {
       // We need to copy the UTF16 string in the mxArray because it is not null-terminated, as wstring_convert expects.
       char16_type const* data = reinterpret_cast< char16_type* >( mxGetChars( mx ));
@@ -678,7 +678,7 @@ inline mxArray* GetArray( dip::StringArray const& in ) {
 
 /// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
 inline mxArray* GetArrayUnicode( dip::String const& in ) {
-#ifdef DIP__ENABLE_UNICODE
+#ifdef DIP_CONFIG_ENABLE_UNICODE
    auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_type >, char16_type >{}.from_bytes( in );
    dip::uint sz[ 2 ] = { 1, u16str.size() };
    mxArray* out = mxCreateCharArray( 2, sz );

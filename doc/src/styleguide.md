@@ -70,10 +70,8 @@ Specifically:
   the C++ Standard Library to be useful.
 
 - Use all uppercase letters for preprocessor macros. Separate words with an underscore.
-  Macros always start with `DIP_`, or `DIP__` if it is an internal macro not meant to
-  be used outside the scope of the file in which it is defined. Include guards also
-  start with `DIP_`, and end with `_H`; the part in the middle is an all-uppercase
-  version of the file name.
+  Macros always start with `DIP_`. Include guards also start with `DIP_`, and end with
+  `_H`; the part in the middle is an all-uppercase version of the file name.
 
 - File names are in all lowercase and use underscores between words. There's no need
   to shorten names to 8 characters, so don't make the names cryptic.

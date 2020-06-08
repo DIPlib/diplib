@@ -484,7 +484,7 @@ NeighborList NeighborList::SelectForward( dip::uint procDim ) const {
 } // namespace dip
 
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
@@ -587,4 +587,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
    DOCTEST_CHECK( *( ot++ ) == +1 +10 );
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -10,10 +10,12 @@ add_library(DIP "${CMAKE_CURRENT_LIST_DIR}/support/matrix.cpp" ${DIPLIB_SOURCES}
 target_include_directories(DIP PUBLIC
                            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                            $<INSTALL_INTERFACE:include>)
+target_compile_definitions(DIP PRIVATE DIP_VERSION_STRING="${PROJECT_VERSION}")
+target_compile_definitions(DIP PRIVATE DIP_COPYRIGHT_YEAR="${DIP_COPYRIGHT_YEAR}")
 if(DIP_SHARED_LIBRARY)
-   target_compile_definitions(DIP PRIVATE DIP__BUILD_SHARED)
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_DIP_BUILD_SHARED)
 else()
-   target_compile_definitions(DIP PUBLIC DIP__IS_STATIC)
+   target_compile_definitions(DIP PUBLIC DIP_CONFIG_DIP_IS_STATIC)
 endif()
 
 # Debugging mode
@@ -48,17 +50,17 @@ endif()
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; }" HAS_PRETTY_FUNCTION)
 if(HAS_PRETTY_FUNCTION)
-   target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)
+   target_compile_definitions(DIP PUBLIC DIP_CONFIG_HAS_PRETTY_FUNCTION)
 endif()
 
 # Control exceptions
 set(DIP_ENABLE_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
 if(DIP_ENABLE_STACK_TRACE)
-   target_compile_definitions(DIP PUBLIC DIP__EXCEPTIONS_RECORD_STACK_TRACE)
+   target_compile_definitions(DIP PUBLIC DIP_CONFIG_ENABLE_STACK_TRACE)
 endif()
 set(DIP_ENABLE_ASSERT OFF CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
 if(DIP_ENABLE_ASSERT)
-   target_compile_definitions(DIP PUBLIC DIP__ENABLE_ASSERT)
+   target_compile_definitions(DIP PUBLIC DIP_CONFIG_ENABLE_ASSERT)
 endif()
 
 # Enable testing
@@ -68,24 +70,24 @@ set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the l
 if(DIP_ENABLE_DOCTEST)
    target_include_directories(DIP PRIVATE "${PROJECT_SOURCE_DIR}/dependencies/doctest")
    target_compile_definitions(DIP PRIVATE
-                              DIP__ENABLE_DOCTEST
+                              DIP_CONFIG_ENABLE_DOCTEST
                               DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
-                              DIP__EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
+                              DIP_EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
    if(DIP_SHARED_LIBRARY)
-      target_compile_definitions(DIP PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
+      target_compile_definitions(DIP PRIVATE DIP_CONFIG_DOCTEST_IN_SHARED_LIB)
    endif()
 endif()
 
 # UFT-8 or plain old ASCII?
 set(DIP_ENABLE_UNICODE ON CACHE BOOL "Enable UTF-8 encoded strings, if disabled, some text output will look more 'primitive'")
 if(DIP_ENABLE_UNICODE)
-   target_compile_definitions(DIP PRIVATE DIP__ENABLE_UNICODE)
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_ENABLE_UNICODE)
 endif()
 
 # Force 128-bit PRNG?
 set(DIP_ALWAYS_128_PRNG OFF CACHE BOOL "Use the 128-bit PRNG code even if 128-bit integers are not natively supported by your platform")
 if(DIP_ALWAYS_128_PRNG)
-   target_compile_definitions(DIP PUBLIC DIP__ALWAYS_128_PRNG)
+   target_compile_definitions(DIP PUBLIC DIP_CONFIG_ALWAYS_128_PRNG)
    set(HAS_128_INT TRUE)
 else()
    check_cxx_source_compiles("int main() { int v = __SIZEOF_INT128__; return 0; }" HAS_128_INT)
@@ -109,7 +111,7 @@ set(DIP_ENABLE_JPEG ON CACHE BOOL "Enable JPEG file support and compression in T
 if(DIP_ENABLE_JPEG)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libjpeg" "${PROJECT_BINARY_DIR}/libjpeg" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE jpeg)
-   target_compile_definitions(DIP PRIVATE DIP__HAS_JPEG)
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_JPEG)
 endif()
 
 # libics
@@ -118,7 +120,7 @@ if(DIP_ENABLE_ICS)
    set(LIBICS_INCLUDE_CPP Off) # TODO: we should start using the C++ interface
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libics" "${PROJECT_BINARY_DIR}/libics" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE libics)
-   target_compile_definitions(DIP PRIVATE DIP__HAS_ICS)
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_ICS)
 endif()
 
 # libtiff
@@ -126,7 +128,7 @@ set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 if(DIP_ENABLE_TIFF)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libtiff" "${PROJECT_BINARY_DIR}/libtiff" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE tiff)
-   target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_TIFF)
 endif()
 
 # Switch to link against the FFTW library for Fourier transforms
@@ -137,7 +139,7 @@ endif()
 if(DIP_ENABLE_FFTW)
    target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/dependencies/fftw")
    target_link_libraries(DIP PRIVATE ${FFTW3_LIBRARIES})
-   target_compile_definitions(DIP PRIVATE DIP__HAS_FFTW)
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_FFTW)
 endif()
 
 
@@ -158,11 +160,11 @@ if(DIP_ENABLE_DOCTEST)
    target_include_directories(unit_tests PRIVATE "${PROJECT_SOURCE_DIR}/dependencies/doctest")
    target_link_libraries(unit_tests PRIVATE DIP)
    target_compile_definitions(unit_tests PRIVATE
-                              DIP__IMPLEMENT_UNIT_TESTS
-                              DIP__ENABLE_DOCTEST
+                              DIP_IMPLEMENT_UNIT_TESTS
+                              DIP_CONFIG_ENABLE_DOCTEST
                               DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
    if(DIP_SHARED_LIBRARY)
-      target_compile_definitions(unit_tests PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
+      target_compile_definitions(unit_tests PRIVATE DIP_CONFIG_DOCTEST_IN_SHARED_LIB)
       if(APPLE)
          set_target_properties(unit_tests PROPERTIES INSTALL_RPATH "@loader_path")
       else()

@@ -246,7 +246,7 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
 
 } // namespace dip
 
-#ifdef DIP__ENABLE_DOCTEST
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing polygon manipulation") {
@@ -286,4 +286,4 @@ DOCTEST_TEST_CASE("[DIPlib] testing polygon manipulation") {
    DOCTEST_CHECK( p5.Length() == doctest::Approx( 35.0511 ));
 }
 
-#endif // DIP__ENABLE_DOCTEST
+#endif // DIP_CONFIG_ENABLE_DOCTEST

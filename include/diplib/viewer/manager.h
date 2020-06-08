@@ -29,7 +29,7 @@
 /// \brief Declares `dip::viewer::Manager`.
 
 #define KEY_MOD_SHIFT   0x01
-#if defined(__APPLE__) && defined(DIP__HAS_GLFW)
+#if defined(__APPLE__) && defined(DIP_CONFIG_HAS_GLFW)
 // We want to use the command key on MacOS computers, not control. But this code only works for GLFW.
 // GLUT is not supported on MacOS anyway.
 #define KEY_MOD_CONTROL 0x08
