@@ -168,7 +168,7 @@ void FillDelta( Image& out, String const& origin ) {
 
 namespace {
 
-class dip__Ramp : public Framework::ScanLineFilter {
+class RampLineFilter : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
@@ -190,7 +190,7 @@ class dip__Ramp : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Ramp( dip::uint index, Transformation t ) : index_( index ), offset_( t.offset ), scale_( t.scale ) {}
+      RampLineFilter( dip::uint index, Transformation t ) : index_( index ), offset_( t.offset ), scale_( t.scale ) {}
    private:
       dip::uint index_; // the index into the coordinates array to write into the scalar output
       dfloat offset_;
@@ -211,14 +211,14 @@ void FillRamp( Image& out, dip::uint dimension, StringSet const& mode ) {
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );
       Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode, out.PixelSize( dimension ));
-      dip__Ramp scanLineFilter( dimension, transformation );
+      RampLineFilter scanLineFilter( dimension, transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
 namespace {
 
-class dip__Radius : public Framework::ScanLineFilter {
+class RadiusLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 20; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -240,7 +240,7 @@ class dip__Radius : public Framework::ScanLineFilter {
             out += stride;
          }
       }
-      dip__Radius( TransformationArray const& transformation ) : transformation_( transformation ) {}
+      RadiusLineFilter( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -258,14 +258,14 @@ void FillRadiusCoordinate( Image& out, StringSet const& mode ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ));
       }
-      dip__Radius scanLineFilter( transformation );
+      RadiusLineFilter scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
 namespace {
 
-class dip__RadiusSquare : public Framework::ScanLineFilter {
+class RadiusSquareLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -287,7 +287,7 @@ class dip__RadiusSquare : public Framework::ScanLineFilter {
             out += stride;
          }
       }
-      dip__RadiusSquare( TransformationArray const& transformation ) : transformation_( transformation ) {}
+      RadiusSquareLineFilter( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -305,14 +305,14 @@ void FillRadiusSquareCoordinate( Image& out, StringSet const& mode ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ));
       }
-      dip__RadiusSquare scanLineFilter( transformation );
+      RadiusSquareLineFilter scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
 namespace {
 
-class dip__Phi : public Framework::ScanLineFilter {
+class PhiLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; } // worst case (dim != 2)
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -342,7 +342,7 @@ class dip__Phi : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Phi( TransformationArray const& transformation ) : transformation_( transformation ) {}
+      PhiLineFilter( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -361,14 +361,14 @@ void FillPhiCoordinate( Image& out, StringSet const& mode ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ));
       }
-      dip__Phi scanLineFilter( transformation );
+      PhiLineFilter scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
 namespace {
 
-class dip__Theta : public Framework::ScanLineFilter {
+class ThetaLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -406,7 +406,7 @@ class dip__Theta : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Theta( TransformationArray const& transformation ) : transformation_( transformation ) {}
+      ThetaLineFilter( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -425,14 +425,14 @@ void FillThetaCoordinate( Image& out, StringSet const& mode ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ));
       }
-      dip__Theta scanLineFilter( transformation );
+      ThetaLineFilter scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
 namespace {
 
-class dip__Coordinates : public Framework::ScanLineFilter {
+class CoordinatesLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorLength ) override {
          return spherical_ ? ( tensorLength == 2 ? 50 : 70 ) : ( 2 + tensorLength );
@@ -522,7 +522,7 @@ class dip__Coordinates : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Coordinates( bool spherical, TransformationArray const& transformation ) : transformation_( transformation ), spherical_( spherical ) {}
+      CoordinatesLineFilter( bool spherical, TransformationArray const& transformation ) : transformation_( transformation ), spherical_( spherical ) {}
    private:
       TransformationArray transformation_;
       bool spherical_; // true for polar/spherical coordinates, false for cartesian coordinates
@@ -544,7 +544,7 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ));
       }
-      dip__Coordinates scanLineFilter( spherical, transformation );
+      CoordinatesLineFilter scanLineFilter( spherical, transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }

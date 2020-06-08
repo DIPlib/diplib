@@ -34,7 +34,7 @@ using LabelSet = std::set< dip::uint >;
 namespace {
 
 template< typename TPI >
-class dip__GetLabels: public Framework::ScanLineFilter {
+class GetLabelsLineFilter: public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -68,7 +68,7 @@ class dip__GetLabels: public Framework::ScanLineFilter {
             }
          }
       }
-      dip__GetLabels( LabelSet& objectIDs ): objectIDs_( objectIDs ) {}
+      GetLabelsLineFilter( LabelSet& objectIDs ): objectIDs_( objectIDs ) {}
    private:
       LabelSet& objectIDs_;
 };
@@ -94,7 +94,7 @@ UnsignedArray GetObjectLabels(
 
    // Get pointer to overloaded scan function
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_UINT( scanLineFilter, dip__GetLabels, ( objectIDs ), label.DataType() );
+   DIP_OVL_NEW_UINT( scanLineFilter, GetLabelsLineFilter, ( objectIDs ), label.DataType() );
 
    // Do the scan
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, Framework::ScanOption::NoMultiThreading ));
@@ -122,7 +122,7 @@ UnsignedArray GetObjectLabels(
 namespace {
 
 template< typename TPI >
-class dip__Relabel: public Framework::ScanLineFilter {
+class RelabelLineFilter: public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -169,7 +169,7 @@ void Relabel( Image const& label, Image& out ) {
 
    // Get pointer to overloaded scan function
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_UINT( scanLineFilter, dip__Relabel, (), label.DataType() );
+   DIP_OVL_NEW_UINT( scanLineFilter, RelabelLineFilter, (), label.DataType() );
 
    // Do the scan
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( label, out, label.DataType(), label.DataType(), 1, *scanLineFilter, Framework::ScanOption::NoMultiThreading ));

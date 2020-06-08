@@ -55,9 +55,10 @@ Specifically:
   use underscores except for in a few special cases. Private class member variables
   end in an underscore. Constants are in all uppercase letters, with underscores to
   separate words if necessary. Internal names (the ones that are not meant to be used
-  directly by library users), if public, start with `dip__`, or are declared in the
-  `dip::detail` namespace; private internal names (declared static or inside an unnamed
-  namespace) do not need the prefix.
+  directly by library users), if public, do not have Doxygen documentation and clearly
+  warn the user by their name (such as `dip::Image::ShiftOriginUnsafe`), or are declared
+  in the `dip::detail` namespace; private internal names (declared static or inside
+  an unnamed namespace) do not have any specific requirements.
 
 - Setter member functions start with `Set`. But getter member functions do not start
   with `Get`. Query functions that return a boolean start with `Is`. Member functions
@@ -172,7 +173,7 @@ as first parameter, and output image as last image parameter:
   `<iterator>`, `<limits>`, `<memory>`, `<numeric>`, `<set>`, `<string>`, `<type_traits>`,
   `<utility>`, `<vector>`.
 
-\section documentation
+\section documentation Documentation
 
 - Always include a `\brief`, and keep it brief. Add additional paragraphs if needed.
 

@@ -262,7 +262,7 @@ void Separable(
             UnsignedArray sizes = inImage.Sizes();
             outImage = (( rep == order.size() - 1 ) ? ( output ) : ( useIntermediate ? intermediate : output )).QuickCopy();
             sizes[ processingDim ] = outSizes[ processingDim ];
-            outImage.dip__SetSizes( sizes );
+            outImage.SetSizesUnsafe( sizes );
 
             //std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
             //std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;

@@ -38,7 +38,7 @@ struct ObjectData { dip::uint index; bool done; };
 using ObjectIdList = std::map< dip::uint, ObjectData >; // key is the objectID (label)
 
 template< typename TPI >
-static ChainCode dip__OneChainCode(
+static ChainCode GetOneChainCode(
       void const* data_ptr,
       VertexInteger coord, // starting coordinates
       VertexInteger const& dims,  // largest coordinates in image
@@ -95,7 +95,7 @@ static ChainCode dip__OneChainCode(
 }
 
 template< typename TPI >
-static ChainCodeArray dip__ChainCodes(
+static ChainCodeArray GetImageChainCodesInternal(
       Image const& labels,
       ObjectIdList& objectIDs,
       dip::uint nObjects, // potentially different from the number of entries in objectIDs, if there were repeated elements in the original list.
@@ -128,7 +128,7 @@ static ChainCodeArray dip__ChainCodes(
             }
          }
          if( process ) {
-            ccArray[ index ] = dip__OneChainCode< TPI >( data + pos, coord, dims, connectivity, codeTable, true );
+            ccArray[ index ] = GetOneChainCode< TPI >( data + pos, coord, dims, connectivity, codeTable, true );
          }
          pos += strides[ 0 ];
       }
@@ -170,7 +170,7 @@ ChainCodeArray GetImageChainCodes(
    // Get the chain code for each label
    ChainCodeArray ccArray;
    DIP_OVL_CALL_ASSIGN_UINT( ccArray,
-                             dip__ChainCodes, ( labels, objectIdList, nObjects, connectivity, codeTable ),
+                             GetImageChainCodesInternal, ( labels, objectIdList, nObjects, connectivity, codeTable ),
                              labels.DataType() );
    return ccArray;
 }
@@ -194,7 +194,7 @@ ChainCode GetSingleChainCode(
    VertexInteger dims = { static_cast< dip::sint >( labels.Size( 0 ) - 1 ), static_cast< dip::sint >( labels.Size( 1 ) - 1 ) };
    ChainCode cc;
    DIP_OVL_CALL_ASSIGN_UNSIGNED( cc,
-                                 dip__OneChainCode, ( data, coord, dims, connectivity, codeTable ),
+                                 GetOneChainCode, ( data, coord, dims, connectivity, codeTable ),
                                  labels.DataType() );
    return cc;
 }

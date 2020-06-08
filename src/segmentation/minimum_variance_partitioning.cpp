@@ -316,7 +316,7 @@ class KDTree {
       }
 };
 
-class dip__PaintClusters : public Framework::ScanLineFilter {
+class PaintClustersLineFilter : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          LabelType* out = static_cast< LabelType* >( params.outBuffer[ 0 ].buffer );
@@ -334,7 +334,7 @@ class dip__PaintClusters : public Framework::ScanLineFilter {
             }
          } while( pos[ procDim ] < end );
       }
-      dip__PaintClusters( KDTree const& clusters ) : clusters_( clusters ) {}
+      PaintClustersLineFilter( KDTree const& clusters ) : clusters_( clusters ) {}
    private:
       KDTree const& clusters_;
 };
@@ -344,7 +344,7 @@ void PaintClusters( Image& labs, KDTree const& clusters ) {
    ImageRefArray outImage{ labs };
    DataTypeArray outBufferTypes{ DT_LABEL };
    DataTypeArray outImageTypes{ DT_LABEL };
-   dip__PaintClusters lineFilter( clusters );
+   PaintClustersLineFilter lineFilter( clusters );
    DIP_STACK_TRACE_THIS( Framework::Scan( {}, outImage, {}, outBufferTypes, outImageTypes, { 1 }, lineFilter,
                                           Framework::ScanOption::NeedCoordinates + Framework::ScanOption::NoMultiThreading ));
    labs.Protect( prot );

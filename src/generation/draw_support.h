@@ -38,7 +38,7 @@ void CopyPixelToVector( Image::Pixel const& in, std::vector< TPI >& out, dip::ui
    }
 }
 
-// We can determine ahead of time for which image lines the `dip__DrawEllipsoidLineFilter` line filter should
+// We can determine ahead of time for which image lines the `DrawEllipsoidLineFilter` line filter should
 // be called (potentially a small subset of them!). Here we adjust `out` to be the bounding box for these image
 // lines. `origin` is adjusted to match.
 // Returns false if there are no pixels to process
@@ -62,8 +62,8 @@ inline bool NarrowImageView(
       outOffset[ ii ] = static_cast< dip::uint >( start );
       outSizes[ ii ] = static_cast< dip::uint >( end - start + 1 );
    }
-   out.dip__SetOrigin( out.Pointer( outOffset ));
-   out.dip__SetSizes( outSizes );
+   out.SetOriginUnsafe( out.Pointer( outOffset ));
+   out.SetSizesUnsafe( outSizes );
    return true;
 }
 

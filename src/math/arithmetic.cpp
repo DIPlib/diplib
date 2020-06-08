@@ -451,7 +451,7 @@ void Power(
 
 //
 template< typename TPI >
-class dip__Invert : public Framework::ScanLineFilter {
+class InvertLineFilter : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );

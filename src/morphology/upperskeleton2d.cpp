@@ -79,7 +79,7 @@ inline bool GetBit( uint8 value, int bit ) {
 }
 
 template< typename TPI >
-void dip__UpperSkeleton2D(
+void UpperSkeleton2DInternal(
       Image& imgGrey,   // grey-value input image (TPI)
       Image& imgBin,  // skeleton output image (binary)
       std::vector< dip::sint >& offsets, // not sure why the algorithm writes to this list?
@@ -471,7 +471,7 @@ void UpperSkeleton2D(
 
    // Compute the skeleton
    DIP_START_STACK_TRACE
-      DIP_OVL_CALL_REAL( dip__UpperSkeleton2D, ( out, skeleton, offsets, lut, lut2 ), out.DataType() );
+      DIP_OVL_CALL_REAL( UpperSkeleton2DInternal, ( out, skeleton, offsets, lut, lut2 ), out.DataType() );
    DIP_END_STACK_TRACE
    offsets = {};
 

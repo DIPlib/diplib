@@ -283,8 +283,8 @@ void RecursiveAttenuationCorrectionLT1(
    for( dip::uint zz = 1; zz < inc.Size( 2 ); ++zz ) {
       // Copy inSlice to prevSlice and get new inSlice
       prevSlice.Copy( inSlice );
-      inSlice.dip__ShiftOrigin( inZOffset );
-      outSlice.dip__ShiftOrigin( outZOffset );
+      inSlice.ShiftOriginUnsafe( inZOffset );
+      outSlice.ShiftOriginUnsafe( outZOffset );
 
       // Update light distribution
       DIP_STACK_TRACE_THIS( LightDistribution( light, prevSlice, static_cast< sfloat >( threshold ),
@@ -371,8 +371,8 @@ void RecursiveAttenuationCorrectionLT2(
    for( dip::uint zz = 1; zz < inc.Size( 2 ); ++zz ) {
       // Copy inSlice to prevSlice and get new inSlice
       prevSlice.Copy( inSlice );
-      inSlice.dip__ShiftOrigin( inZOffset );
-      outSlice.dip__ShiftOrigin( outZOffset );
+      inSlice.ShiftOriginUnsafe( inZOffset );
+      outSlice.ShiftOriginUnsafe( outZOffset );
 
       // Update light distribution
       DIP_STACK_TRACE_THIS( LightCorrection( light, prevSlice, correction, static_cast< sfloat >( threshold ),

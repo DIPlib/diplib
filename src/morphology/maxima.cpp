@@ -141,7 +141,7 @@ void ProcessPixel(
 }
 
 template< typename TPI >
-void dip__Extrema(
+void ExtremaInternal(
       Image const& in,
       Image& out,
       IntegerArray const& neighborOffsetsIn,
@@ -256,7 +256,7 @@ void Extrema(
    BooleanArray isBackwardNeighbor = neighborList.FindBackward( procDim );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__Extrema, ( in, out, neighborOffsetsIn, neighborOffsetsOut, neighborList, isBackwardNeighbor,
+   DIP_OVL_CALL_REAL( ExtremaInternal, ( in, out, neighborOffsetsIn, neighborOffsetsOut, neighborList, isBackwardNeighbor,
                                       procDim, maxima ), in.DataType() );
 
    if( binaryOutput ) {

@@ -24,7 +24,7 @@ namespace dip { namespace viewer {
 namespace {
 
 template< typename TPI >
-void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
+void ApplyViewerColorMapInternal( Image const& slice, Image& out, ViewingOptions &options)
 {
    auto mapping = options.mapping_;
    auto lut = options.lut_;
@@ -101,7 +101,7 @@ void ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &option
    in2d.ExpandDimensionality(2);
 
    dip::Image mapped = dip::Image(in2d.Sizes(), 3, DT_UINT8);
-   DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( in2d, mapped, options ), in.DataType() );
+   DIP_OVL_CALL_NONCOMPLEX( ApplyViewerColorMapInternal, ( in2d, mapped, options ), in.DataType() );
 
    switch(options.lut_)
    {

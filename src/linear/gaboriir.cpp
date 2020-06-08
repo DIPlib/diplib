@@ -29,7 +29,7 @@ namespace {
 
 constexpr dip::uint MAX_IIR_ORDER = 6;
 
-struct dip__GaborIIRParams
+struct GaborIIRParams
 {
    dfloat sigma;
    dfloat frequency;
@@ -44,12 +44,12 @@ struct dip__GaborIIRParams
 };
 
 // Get Gabor IIR filter parameters for one dimension
-dip__GaborIIRParams dip__FillGaborIIRParams(
+GaborIIRParams FillGaborIIRParams(
    dfloat sigma,
    dfloat frequency,
    dfloat truncation
 ) {
-   dip__GaborIIRParams params;
+   GaborIIRParams params;
    params.sigma = sigma;
    params.frequency = frequency;
    params.border = static_cast< dip::uint >( std::round( sigma * truncation ));
@@ -126,13 +126,13 @@ dip__GaborIIRParams dip__FillGaborIIRParams(
 class GaborIIRLineFilter : public Framework::SeparableLineFilter
 {
 public:
-   GaborIIRLineFilter( std::vector< dip__GaborIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
+   GaborIIRLineFilter( std::vector< GaborIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
    virtual void SetNumberOfThreads( dip::uint threads ) override {
       buffers_.resize( threads );
    }
    virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
       // TODO: figure out how filter parameters affect amount of computation
-      //dip__GaborIIRParams const& fParams = filterParams_[ procDim ];
+      //GaborIIRParams const& fParams = filterParams_[ procDim ];
       return lineLength * 40;
    }
    virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -140,7 +140,7 @@ public:
       dcomplex* out = static_cast< dcomplex* >(params.outBuffer.buffer);
       DIP_ASSERT( params.inBuffer.stride == 1 );
       DIP_ASSERT( params.outBuffer.stride == 1 );
-      dip__GaborIIRParams const& fParams = filterParams_[ params.dimension ];
+      GaborIIRParams const& fParams = filterParams_[ params.dimension ];
       DIP_ASSERT( fParams.border == params.inBuffer.border );
 
       in -= fParams.border;
@@ -219,7 +219,7 @@ public:
       }
    }
 private:
-   std::vector< dip__GaborIIRParams > const& filterParams_; // one of each dimension
+   std::vector< GaborIIRParams > const& filterParams_; // one of each dimension
    std::vector< std::vector< dcomplex >> buffers_; // one for each thread
 };
 
@@ -248,7 +248,7 @@ void GaborIIR(
    }
 
    // Filter parameters
-   std::vector< dip__GaborIIRParams > filterParams( nDims );
+   std::vector< GaborIIRParams > filterParams( nDims );
    UnsignedArray border( nDims );
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
       if( process[ ii ] && ( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
@@ -261,7 +261,7 @@ void GaborIIR(
             }
          }
          if( !found ) {
-            filterParams[ ii ] = dip__FillGaborIIRParams( sigmas[ ii ], frequencies[ ii ], truncation );
+            filterParams[ ii ] = FillGaborIIRParams( sigmas[ ii ], frequencies[ ii ], truncation );
          }
          border[ ii ] = filterParams[ ii ].border;
       } else {

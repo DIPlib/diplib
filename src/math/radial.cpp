@@ -398,7 +398,7 @@ void RadialProjectionScan(
 
    if( type == RadialProjectionType::mean ) {
       // `out` was created with a column vector tensor (default shape). Strip the last tensor element.
-      out.dip__SetTensorSizes( in.TensorElements() );
+      out.SetTensorSizesUnsafe( in.TensorElements());
    }
 
    // After processing, reshape the output tensor to the input tensor shape

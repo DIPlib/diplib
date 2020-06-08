@@ -74,7 +74,7 @@ void AddSizes( AreaOpenRegionList< TPI, UnionFunction >& list, LabelType label, 
 }
 
 template< typename TPI >
-void dip__AreaOpening(
+void AreaOpeningInternal(
       Image& c_grey,
       Image& c_labels,
       std::vector< dip::sint > const& offsets,
@@ -255,7 +255,7 @@ void AreaOpening(
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( grey.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__AreaOpening, ( grey, labels, offsets, neighborOffsets, filterSize, lowFirst ), grey.DataType() );
+   DIP_OVL_CALL_REAL( AreaOpeningInternal, ( grey, labels, offsets, neighborOffsets, filterSize, lowFirst ), grey.DataType() );
 
    // Copy result to output
    grey.Crop( c_in.Sizes() );

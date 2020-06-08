@@ -136,9 +136,9 @@ void Histogram::Configuration::Complete( Measurement::IteratorFeature const& fea
 
 namespace {
 
-class dip__HistogramBase : public Framework::ScanLineFilter {
+class HistogramBaseLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__HistogramBase( Image& image ) : image_( image ) {}
+      HistogramBaseLineFilter( Image& image ) : image_( image ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          for( dip::uint ii = 1; ii < threads; ++ii ) {
             imageArray_.emplace_back( image_ );       // makes a copy; image_ is not yet forged, so data is not shared.
@@ -157,7 +157,7 @@ class dip__HistogramBase : public Framework::ScanLineFilter {
 };
 
 template< typename TPI >
-class dip__ScalarImageHistogram : public dip__HistogramBase {
+class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 6; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -209,14 +209,14 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             }
          }
       }
-      dip__ScalarImageHistogram( Image& image, Histogram::Configuration const& configuration ) :
-            dip__HistogramBase( image ), configuration_( configuration ) {}
+      ScalarImageHistogramLineFilter( Image& image, Histogram::Configuration const& configuration ) :
+            HistogramBaseLineFilter( image ), configuration_( configuration ) {}
    private:
       Histogram::Configuration const& configuration_;
 };
 
 template< typename TPI >
-class dip__JointImageHistogram : public dip__HistogramBase {
+class JointImageHistogramLineFilter : public HistogramBaseLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return ( tensorInput_ ? tensorElements : 2 ) * 6;
@@ -311,8 +311,8 @@ class dip__JointImageHistogram : public dip__HistogramBase {
             }
          }
       }
-      dip__JointImageHistogram( Image& image, Histogram::ConfigurationArray const& configuration, bool tensorInput ) :
-            dip__HistogramBase( image ), configuration_( configuration ), tensorInput_( tensorInput ) {}
+      JointImageHistogramLineFilter( Image& image, Histogram::ConfigurationArray const& configuration, bool tensorInput ) :
+            HistogramBaseLineFilter( image ), configuration_( configuration ), tensorInput_( tensorInput ) {}
    private:
       Histogram::ConfigurationArray const& configuration_;
       bool tensorInput_;
@@ -326,8 +326,8 @@ void Histogram::ScalarImageHistogram( Image const& input, Image const& mask, His
    binSizes_ = { configuration.binSize };
    data_.SetSizes( { configuration.nBins } );
    data_.SetDataType( DT_COUNT );
-   std::unique_ptr< dip__HistogramBase >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__ScalarImageHistogram, ( data_, configuration ), input.DataType() );
+   std::unique_ptr< HistogramBaseLineFilter >scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, ScalarImageHistogramLineFilter, ( data_, configuration ), input.DataType() );
    Framework::ScanOptions opts;
    if( GetNumberOfThreads() > 1 ) {
       dip::uint parallelOperations = input.NumberOfPixels() * 6;
@@ -353,8 +353,8 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
    }
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
-   std::unique_ptr< dip__HistogramBase >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, true ), input.DataType() );
+   std::unique_ptr< HistogramBaseLineFilter >scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, JointImageHistogramLineFilter, ( data_, configuration, true ), input.DataType() );
    Framework::ScanOptions opts;
    if( GetNumberOfThreads() > 1 ) {
       dip::uint parallelOperations = input.NumberOfPixels() * ndims * 6;
@@ -378,8 +378,8 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
    DataType dtype = DataType::SuggestDyadicOperation( input1.DataType(), input2.DataType() );
-   std::unique_ptr< dip__HistogramBase >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, false ), dtype );
+   std::unique_ptr< HistogramBaseLineFilter >scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, JointImageHistogramLineFilter, ( data_, configuration, false ), dtype );
    ImageConstRefArray inar{ input1, input2 };
    DataTypeArray inBufT{ dtype, dtype };
    Image mask;
@@ -475,7 +475,7 @@ void Histogram::HistogramFromDataPointer( Histogram::CountType const* data, Hist
 namespace {
 
 template< typename TPI >
-class dip__ReverseLookup : public Framework::ScanLineFilter {
+class ReverseLookupLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return tensorElements * 6;
@@ -512,7 +512,7 @@ class dip__ReverseLookup : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      dip__ReverseLookup( Image const& histogram, Histogram::ConfigurationArray const& configuration ) :
+      ReverseLookupLineFilter( Image const& histogram, Histogram::ConfigurationArray const& configuration ) :
             histogram_( histogram ), configuration_( configuration ) {}
    private:
       Image const& histogram_;
@@ -539,9 +539,9 @@ void Histogram::ReverseLookup( Image const& input, Image& output, BooleanArray e
       configuration[ ii ].excludeOutOfBoundValues = excludeOutOfBoundValues[ ii ];
    }
 
-   // Create and call dip__ReverseLookup line filter
+   // Create and call ReverseLookupLineFilter
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__ReverseLookup, ( data_, configuration ), input.DataType() );
+   DIP_OVL_NEW_REAL( scanLineFilter, ReverseLookupLineFilter, ( data_, configuration ), input.DataType() );
    ImageRefArray outar{ output };
    DIP_STACK_TRACE_THIS( Framework::Scan( { input }, outar, { input.DataType() }, { DT_COUNT }, { DT_COUNT }, { 1 }, *scanLineFilter ));
 }

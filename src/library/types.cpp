@@ -37,10 +37,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
    DOCTEST_CHECK( A != 100 );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::dip__Options class") {
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::detail::Options class") {
    enum class MyOption { clean, fresh, shine, flower, burn };
    //DIP_DECLARE_OPTIONS( MyOption, MyOptions ); // This does not work within a function
-   using MyOptions = dip::detail::dip__Options< MyOption >;
+   using MyOptions = dip::detail::Options< MyOption >;
    constexpr MyOptions MyOption_freshNclean = MyOptions( MyOption::fresh ) + MyOption::clean; // because we haven't declared the operator, this is a little bit more verbose than it should be
    MyOptions opts {};
    DOCTEST_CHECK( !opts.Contains( MyOption::clean ));

@@ -76,10 +76,10 @@ DIP__MONADIC_OPERATOR_FLOAT( Truncate, []( auto its ) { return std::trunc( *its[
 
 /// \brief Computes the fractional value of each sample (`out = in - dip::Truncate(in)`).
 /// Only defined for floating-point types, the output is the same type.
-DIP__MONADIC_OPERATOR_FLOAT( Fraction, []( auto its ) { return dipm__Fraction( *its[ 0 ] ); }, DataType::Class_Float, 1 )
+DIP__MONADIC_OPERATOR_FLOAT( Fraction, []( auto its ) { return dipm::Fraction( *its[ 0 ] ); }, DataType::Class_Float, 1 )
 
 /// \brief Computes the reciprocal of each sample: out = in == 0 ? 0 : 1/in.
-DIP__MONADIC_OPERATOR_FLEX( Reciprocal, []( auto its ) { return dipm__Reciprocal( *its[ 0 ] ); }, DataType::Class_NonBinary, 1 )
+DIP__MONADIC_OPERATOR_FLEX( Reciprocal, []( auto its ) { return dipm::Reciprocal( *its[ 0 ] ); }, DataType::Class_NonBinary, 1 )
 
 /// \brief Computes the square of each sample.
 DIP__MONADIC_OPERATOR_FLEX( Square, []( auto its ) { return *its[ 0 ] * *its[ 0 ]; }, DataType::Class_NonBinary, 1 )
@@ -173,13 +173,13 @@ DIP__MONADIC_OPERATOR_FLOAT( Sinc, []( auto its ) { return static_cast< decltype
 /// \{
 
 /// \brief True for each pixel that is NaN.
-DIP__MONADIC_OPERATOR_BIN( IsNotANumber, []( auto in ) { return dipm__IsNaN( in ); }, DataType::Class_Flex, false )
+DIP__MONADIC_OPERATOR_BIN( IsNotANumber, []( auto in ) { return dipm::IsNaN( in ); }, DataType::Class_Flex, false )
 
 /// \brief True for each pixel that is positive or negative infinity.
-DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm__IsInf( in ); }, DataType::Class_Flex, false )
+DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm::IsInf( in ); }, DataType::Class_Flex, false )
 
 /// \brief True for each pixel that is not NaN nor infinity.
-DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm__IsFinite( in ); }, DataType::Class_Flex, true )
+DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm::IsFinite( in ); }, DataType::Class_Flex, true )
 
 /// \}
 

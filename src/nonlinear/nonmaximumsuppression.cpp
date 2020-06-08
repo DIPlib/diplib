@@ -391,7 +391,7 @@ void NonMaximumSuppression(
 namespace {
 
 template< typename TPI >
-void dip__MoveToLocalMinimum(
+void MoveToLocalMinimumInternal(
       Image const& bin,       // binary
       Image const& weights,   // TPI
       Image& out,             // binary
@@ -554,7 +554,7 @@ void MoveToLocalMinimum(
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, 0 }, bin.Dimensionality() );
    IntegerArray weightsOffsets = neighbors.ComputeOffsets( weights.Strides() );
    IntegerArray outOffsets = neighbors.ComputeOffsets( out.Strides() );
-   DIP_OVL_CALL_REAL( dip__MoveToLocalMinimum, ( bin, weights, out, neighbors, weightsOffsets, outOffsets, procDim ), weights.DataType() );
+   DIP_OVL_CALL_REAL( MoveToLocalMinimumInternal, ( bin, weights, out, neighbors, weightsOffsets, outOffsets, procDim ), weights.DataType() );
 }
 
 } // namespace dip

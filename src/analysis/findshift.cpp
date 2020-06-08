@@ -342,13 +342,13 @@ FloatArray CorrectIntegerShift(
          origin[ ii ] = shift[ ii ] > 0 ? static_cast< dip::uint >( shift[ ii ] ) : 0;
          sizes[ ii ] -= static_cast< dip::uint >( std::abs( shift[ ii ] ));
       }
-      in2.dip__SetOrigin( in2.Pointer( origin ));
-      in2.dip__SetSizes( sizes );
+      in2.SetOriginUnsafe( in2.Pointer( origin ));
+      in2.SetSizesUnsafe( sizes );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          origin[ ii ] = shift[ ii ] < 0 ? static_cast< dip::uint >( -shift[ ii ] ) : 0;
       }
-      in1.dip__SetOrigin( in1.Pointer( origin ));
-      in1.dip__SetSizes( sizes );
+      in1.SetOriginUnsafe( in1.Pointer( origin ));
+      in1.SetSizesUnsafe( sizes );
    }
    return shift;
 }

@@ -20,7 +20,6 @@
 
 #include "diplib.h"
 #include "diplib/detection.h"
-#include "diplib/analysis.h"
 #include "diplib/generation.h"
 #include "diplib/transform.h"
 #include "diplib/mapping.h"
@@ -204,7 +203,7 @@ void ComputeProjectedParameterSpace_SubPixel(
 
 // Much like `SubpixelExtrema`, but for maxima only, using `WatershedMaxima` instead of `Maxima`,
 // with a fixed choice of separable parabolic fit, and for DT_SFLOAT images only.
-RadonCircleParametersArray dip_SubpixelMaxima(
+RadonCircleParametersArray RadonCircleSubpixelMaxima(
       Image const& in,
       double threshold
 ) {
@@ -354,7 +353,7 @@ RadonCircleParametersArray RadonTransformCircles(
 
    // Find circle parameters
    if( options.Contains( RadonTransformCirclesOption::detectMaxima )) {
-      DIP_STACK_TRACE_THIS( out_params = dip_SubpixelMaxima( parameterSpace[ 0 ], threshold ));
+      DIP_STACK_TRACE_THIS( out_params = RadonCircleSubpixelMaxima( parameterSpace[ 0 ], threshold ));
       dfloat radiusStep = static_cast< dfloat >( radii.Step() );
       if( parameterSpace.IsScalar() ) {
          // Full parameter space

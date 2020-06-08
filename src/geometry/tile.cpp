@@ -150,18 +150,18 @@ void Tile(
          if( oneDim < inSize.size() ) {
             inSize[ oneDim ] = src.Size( oneDim );
          }
-         tmp.dip__SetSizes( inSize );
+         tmp.SetSizesUnsafe( inSize );
          tmp.Copy( src );
          if( oneDim < inSize.size() ) {
-            tmp.dip__ShiftOrigin( stride * static_cast< dip::sint >( inSize[ oneDim ] ));
+            tmp.ShiftOriginUnsafe( stride * static_cast< dip::sint >( inSize[ oneDim ] ));
          } else {
-            tmp.dip__ShiftOrigin( stride );
+            tmp.ShiftOriginUnsafe( stride );
          }
       }
    } else {
       // In this case, all input images are guaranteed the same size
       Image tmp = out.QuickCopy();
-      tmp.dip__SetSizes( inSize );
+      tmp.SetSizesUnsafe( inSize );
       auto origin = tmp.Origin();
       IntegerArray strides = out.Strides();
       for( dip::uint ii = 0; ii < inSize.size(); ++ii ) {
@@ -172,8 +172,8 @@ void Tile(
       ImageIterator< uint8 > it( tile );
       for( dip::uint ii = 0; ii < nImages; ++ii, ++it ) {
          auto const& coords = it.Coordinates();
-         tmp.dip__SetOrigin( origin );
-         tmp.dip__ShiftOrigin( Image::Offset( coords, strides, tiling ));
+         tmp.SetOriginUnsafe( origin );
+         tmp.ShiftOriginUnsafe( Image::Offset( coords, strides, tiling ));
          tmp.Copy( in[ ii ].get() );
       }
    }

@@ -143,8 +143,8 @@ void ExtendImage(
          sizes[ ii ] -= 2 * borderSizes[ ii ];
 
       }
-      out.dip__ShiftOrigin( out.Offset( borderSizes )); // TODO: offset calculation does tests that are not necessary.
-      out.dip__SetSizes( sizes );
+      out.ShiftOriginUnsafe( out.Offset( borderSizes )); // TODO: offset calculation does tests that are not necessary.
+      out.SetSizesUnsafe( sizes );
    }
 }
 

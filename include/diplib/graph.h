@@ -166,7 +166,7 @@ class DIP_NO_EXPORT Graph {
             }
          }
          // Didn't find the edge, create it.
-         dip__AddEdgeNoCheck( v1, v2, weight );
+         AddEdgeNoCheck( v1, v2, weight );
       }
 
       /// \brief Add an edge between vertices `v1` and `v2`, with weight `weight`. If the edge already exists,
@@ -186,7 +186,7 @@ class DIP_NO_EXPORT Graph {
             }
          }
          // Didn't find the edge, create it.
-         dip__AddEdgeNoCheck( v1, v2, weight );
+         AddEdgeNoCheck( v1, v2, weight );
       }
 
       /// \brief Delete the edge between vertices `v1` and `v2`.
@@ -242,14 +242,14 @@ class DIP_NO_EXPORT Graph {
 
       // Adds an edge. Doesn't check for duplicates. If the edge already exists, disaster ensues.
       // And if v1 >= v2, disaster ensues.
-      void dip__AddEdgeNoCheck( Edge edge ) {
+      void AddEdgeNoCheck( Edge edge ) {
          EdgeIndex ii = edges_.size();
          vertices_[ edge.vertices[ 0 ]].edges.push_back( ii );
          vertices_[ edge.vertices[ 1 ]].edges.push_back( ii );
          edges_.push_back( std::move( edge ));
       }
-      void dip__AddEdgeNoCheck( VertexIndex v1, VertexIndex v2, dfloat weight ) {
-         dip__AddEdgeNoCheck( {{ v1, v2 }, weight } );
+      void AddEdgeNoCheck( VertexIndex v1, VertexIndex v2, dfloat weight ) {
+         AddEdgeNoCheck( {{ v1, v2 }, weight } );
       }
 
       /// \brief Re-computes edge weights as the absolute difference between vertex values.

@@ -30,9 +30,9 @@ namespace dip {
 namespace {
 
 template< typename TPI >
-class dip__DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
+class DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__DrawBandlimitedPointLineFilter( FloatArray const& sigmas, FloatArray const& origin, Image::Pixel const& value, dip::uint nTensor, dfloat truncation ) {
+      DrawBandlimitedPointLineFilter( FloatArray const& sigmas, FloatArray const& origin, Image::Pixel const& value, dip::uint nTensor, dfloat truncation ) {
          CopyPixelToVector( value, value_, nTensor );
          dip::uint nDims = sigmas.size();
          blob1d_.resize( nDims );
@@ -125,7 +125,7 @@ void DrawBandlimitedPoint(
       return;
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedPointLineFilter, ( sigmas, origin, value, tmp.TensorElements(), truncation ), tmp.DataType() );
+   DIP_OVL_NEW_NONBINARY( lineFilter, DrawBandlimitedPointLineFilter, ( sigmas, origin, value, tmp.TensorElements(), truncation ), tmp.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
@@ -135,10 +135,10 @@ void DrawBandlimitedPoint(
 namespace {
 
 template< typename TPI >
-class dip__DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
+class DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__DrawBandlimitedLineLineFilter( FloatArray const& start, FloatArray const& end, Image::Pixel const& value,
-                                          dip::uint nTensor, dfloat sigma, dfloat margin ):
+      DrawBandlimitedLineLineFilter( FloatArray const& start, FloatArray const& end, Image::Pixel const& value,
+                                     dip::uint nTensor, dfloat sigma, dfloat margin ):
             A_( start ), B_( end ), sigma_( sigma ), scale_( -0.5 / ( sigma_ * sigma_ )), margin2_( margin * margin ) {
          CopyPixelToVector( value, value_, nTensor );
          FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma_ ));
@@ -255,7 +255,7 @@ void DrawBandlimitedLine(
    start += origin;
    end += origin;
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedLineLineFilter, ( start, end, value, tmp.TensorElements(), sigma, margin ), tmp.DataType() );
+   DIP_OVL_NEW_NONBINARY( lineFilter, DrawBandlimitedLineLineFilter, ( start, end, value, tmp.TensorElements(), sigma, margin ), tmp.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
@@ -265,7 +265,7 @@ void DrawBandlimitedLine(
 namespace {
 
 template< typename TPI >
-void dip__AddLine(
+void AddLine(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -290,7 +290,7 @@ void dip__AddLine(
 }
 
 template< typename TPI >
-void dip__BallBlurredEdge(
+void BallBlurredEdge(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -324,7 +324,7 @@ void dip__BallBlurredEdge(
 }
 
 template< typename TPI >
-void dip__BallBlurredLine(
+void BallBlurredLine(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -358,10 +358,10 @@ void dip__BallBlurredLine(
 }
 
 template< typename TPI >
-class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
+class DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__DrawBandlimitedBallLineFilter( dfloat diameter, FloatArray const& origin, Image::Pixel const& value,
-                                            dip::uint nTensor, bool filled, dfloat sigma, dfloat margin ) :
+      DrawBandlimitedBallLineFilter( dfloat diameter, FloatArray const& origin, Image::Pixel const& value,
+                                     dip::uint nTensor, bool filled, dfloat sigma, dfloat margin ) :
             radius_( diameter / 2.0 ), origin_( origin ), filled_( filled ), sigma_( sigma ), margin_( margin ) {
          CopyPixelToVector( value, value_, nTensor );
          if( !filled_ ) {
@@ -403,23 +403,23 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
          dip::sint start = ceil_cast( origin_[ dim ] - outerWidth );
          dip::sint end = ceil_cast( origin_[ dim ] - innerWidth ) - 1;
          if( filled_ ) {
-            dip__BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
+            BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          } else {
-            dip__BallBlurredLine( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
+            BallBlurredLine( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          }
          if( innerWidth > 0 ) {
             start = end + 1;
             end = floor_cast( origin_[ dim ] + innerWidth );
             if( filled_ ) {
-               dip__AddLine( out, start, end, length, stride, value_, tensorStride );
+               AddLine( out, start, end, length, stride, value_, tensorStride );
             }
          }
          start = end + 1;
          end = floor_cast( origin_[ dim ] + outerWidth );
          if( filled_ ) {
-            dip__BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
+            BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          } else {
-            dip__BallBlurredLine( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
+            BallBlurredLine( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          }
       }
    private:
@@ -459,7 +459,7 @@ void DrawBandlimitedBall(
       return;
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedBallLineFilter, ( diameter, origin, value, tmp.TensorElements(), filled, sigma, margin ), tmp.DataType() );
+   DIP_OVL_NEW_NONBINARY( lineFilter, DrawBandlimitedBallLineFilter, ( diameter, origin, value, tmp.TensorElements(), filled, sigma, margin ), tmp.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
@@ -469,7 +469,7 @@ void DrawBandlimitedBall(
 namespace {
 
 template< typename TPI >
-void dip__AddWeightedLine(
+void AddWeightedLine(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -496,7 +496,7 @@ void dip__AddWeightedLine(
 }
 
 template< typename TPI >
-void dip__BoxBlurredEdge(
+void BoxBlurredEdge(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -530,7 +530,7 @@ void dip__BoxBlurredEdge(
 }
 
 template< typename TPI >
-void dip__BoxBlurredLine(
+void BoxBlurredLine(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -564,10 +564,10 @@ void dip__BoxBlurredLine(
 }
 
 template< typename TPI >
-class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
+class DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__DrawBandlimitedBoxLineFilter( FloatArray const& halfSizes, FloatArray const& origin, Image::Pixel const& value,
-                                            dip::uint nTensor, bool filled, dfloat sigma, dfloat margin ) :
+      DrawBandlimitedBoxLineFilter( FloatArray const& halfSizes, FloatArray const& origin, Image::Pixel const& value,
+                                    dip::uint nTensor, bool filled, dfloat sigma, dfloat margin ) :
             halfSizes_( halfSizes ), origin_( origin ), filled_( filled ), sigma_( sigma ), margin_( margin ) {
          CopyPixelToVector( value, value_, nTensor );
          if( !filled_ ) {
@@ -610,11 +610,11 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
                dfloat weight = filled_
                                ? 0.5 + 0.5 * std::erf( -distance / ( sigma_ * std::sqrt( 2.0 )))
                                : std::exp( -0.5 * distance * distance / ( sigma_ * sigma_ ));
-               dip__AddWeightedLine( out, start, end, length, stride, weight, value_, tensorStride );
+               AddWeightedLine( out, start, end, length, stride, weight, value_, tensorStride );
             } else {
                // We go through the middle of the box
                if( filled_ ) {
-                  dip__AddLine( out, start, end, length, stride, value_, tensorStride );
+                  AddLine( out, start, end, length, stride, value_, tensorStride );
                }
             }
          }
@@ -622,9 +622,9 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
          dip::sint start = ceil_cast( origin_[ dim ] - outerWidth );
          dip::sint end = ceil_cast( origin_[ dim ] - innerWidth ) - 1;
          if( filled_ ) {
-            dip__BoxBlurredEdge( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
+            BoxBlurredEdge( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
          } else {
-            dip__BoxBlurredLine( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
+            BoxBlurredLine( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
          }
          if( innerWidth == 0 ) {
             // we don't have a "core", start where we left off
@@ -634,9 +634,9 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
          }
          end = floor_cast( origin_[ dim ] + outerWidth );
          if( filled_ ) {
-            dip__BoxBlurredEdge( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
+            BoxBlurredEdge( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
          } else {
-            dip__BoxBlurredLine( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
+            BoxBlurredLine( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
          }
       }
    private:
@@ -685,7 +685,7 @@ void DrawBandlimitedBox(
       s /= 2.0; // compute half size
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedBoxLineFilter, ( sizes, origin, value, tmp.TensorElements(), filled, sigma, margin ), tmp.DataType() );
+   DIP_OVL_NEW_NONBINARY( lineFilter, DrawBandlimitedBoxLineFilter, ( sizes, origin, value, tmp.TensorElements(), filled, sigma, margin ), tmp.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
@@ -696,9 +696,9 @@ void DrawBandlimitedBox(
 namespace {
 
 template< typename TPI >
-class dip__GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
+class GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__GaussianEdgeClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
+      GaussianEdgeClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
             scale_( 1.0 / ( sigma * std::sqrt( 2.0 ))), margin_( sigma * truncation ) {
          CopyPixelToVector( value, value_, value.TensorElements() );
          for( auto& v: value_ ) {
@@ -755,16 +755,16 @@ void GaussianEdgeClip(
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    DataType ovlDataType = DataType::SuggestFloat( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_FLOAT( lineFilter, dip__GaussianEdgeClipLineFilter, ( value, sigma, truncation ), ovlDataType );
+   DIP_OVL_NEW_FLOAT( lineFilter, GaussianEdgeClipLineFilter, ( value, sigma, truncation ), ovlDataType );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, ovlDataType, ovlDataType, value.TensorElements(), *lineFilter ));
 }
 
 namespace {
 
 template< typename TPI >
-class dip__GaussianLineClipLineFilter : public Framework::ScanLineFilter {
+class GaussianLineClipLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__GaussianLineClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
+      GaussianLineClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
             scale_( -0.5 / ( sigma * sigma )), margin_( sigma * truncation ) {
          CopyPixelToVector( value, value_, value.TensorElements() );
          FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ));
@@ -820,7 +820,7 @@ void GaussianLineClip(
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
    DataType ovlDataType = DataType::SuggestFloat( in.DataType() );
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_FLOAT( lineFilter, dip__GaussianLineClipLineFilter, ( value, sigma, truncation ), ovlDataType );
+   DIP_OVL_NEW_FLOAT( lineFilter, GaussianLineClipLineFilter, ( value, sigma, truncation ), ovlDataType );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, ovlDataType, ovlDataType, value.TensorElements(), *lineFilter ));
 }
 

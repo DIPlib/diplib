@@ -508,7 +508,7 @@ class DIP_NO_EXPORT Image {
 
       /// \cond
       // Sets the sizes of the image. Do not use this function unless you know what you're doing.
-      void dip__SetSizes( UnsignedArray const& d ) {
+      void SetSizesUnsafe( UnsignedArray const& d ) {
          sizes_ = d;
       }
       /// \endcond
@@ -727,7 +727,7 @@ class DIP_NO_EXPORT Image {
 
       /// \cond
       // Sets the tensor sizes. Do not use this function unless you know what you're doing.
-      void dip__SetTensorSizes( dip::uint nelems ) {
+      void SetTensorSizesUnsafe( dip::uint nelems ) {
          tensor_.SetVector( nelems );
       }
       /// \endcond
@@ -1323,13 +1323,13 @@ class DIP_NO_EXPORT Image {
 
       // Sets the pointer to the first sample in the image. Do not use this function
       // unless you know what you're doing.
-      void dip__SetOrigin( void* origin ) {
+      void SetOriginUnsafe( void* origin ) {
          origin_ = origin;
       }
 
       // Shifts the pointer to the first sample in the image by offset. Do not use this
       // function unless you know what you're doing.
-      void dip__ShiftOrigin( dip::sint offset ) {
+      void ShiftOriginUnsafe( dip::sint offset ) {
          origin_ = static_cast< uint8* >( origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
       }
 

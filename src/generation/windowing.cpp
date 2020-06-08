@@ -29,7 +29,7 @@ namespace dip {
 namespace {
 
 template< typename TPI >
-void dip__SetBorder( Image& out, Image::Pixel const& value, UnsignedArray const& sizes ) {
+void SetBorderInternal( Image & out, Image::Pixel const& value, UnsignedArray const& sizes ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
    detail::ProcessBorders< TPI >(
@@ -48,7 +48,7 @@ void SetBorder( Image& out, Image::Pixel const& value, UnsignedArray const& size
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
-   DIP_OVL_CALL_ALL( dip__SetBorder, ( out, value, sizes ), out.DataType() );
+   DIP_OVL_CALL_ALL( SetBorderInternal, ( out, value, sizes ), out.DataType() );
 }
 
 

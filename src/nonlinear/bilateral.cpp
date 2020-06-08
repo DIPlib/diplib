@@ -199,8 +199,8 @@ void SelectBins( Histogram const& hist, std::vector< dip::uint >& binIndices, di
       return;
    }
    Image subHist = hist.GetImage();
-   subHist.dip__SetSizes( { last - first + 1 } );
-   subHist.dip__ShiftOrigin( static_cast< dip::sint >( first ));
+   subHist.SetSizesUnsafe( { last - first + 1 } );
+   subHist.ShiftOriginUnsafe( static_cast< dip::sint >( first ));
    if( Sum( subHist ).As< dip::uint >() < minSample ) {
       return;
    }

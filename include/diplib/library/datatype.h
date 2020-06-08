@@ -366,7 +366,7 @@ struct DIP_NO_EXPORT DataType {
    /// - `Class_Flex` and `Class_IntOrBin`
    /// - `Class_Binary`, `Class_Real` and `Class_Complex`
    /// - `Class_Binary`, `Class_Integer`, `Class_Float` and `Class_Complex`
-   using Classes = dip::detail::dip__Options< DT >;
+   using Classes = dip::detail::Options< DT >;
    DIP_EXPORT constexpr static Classes Class_Bin = DT::BIN;
    DIP_EXPORT constexpr static Classes Class_UInt8 = DT::UINT8;
    DIP_EXPORT constexpr static Classes Class_SInt8 = DT::SINT8;

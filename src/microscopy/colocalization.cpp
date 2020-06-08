@@ -239,11 +239,11 @@ dfloat CostesSignificanceTest(
    if( mask.IsForged() ) {
       dip::uint threshold = blockSizes.product() * 3 / 4; // three quarter pixels
       dip::Image block = mask.QuickCopy();
-      block.dip__SetSizes( blockSizes );
+      block.SetSizesUnsafe( blockSizes );
       dip::Image mask_blocks = mask.At( blocks );
       dip::ImageIterator< bin > mit( mask_blocks );
       do {
-         block.dip__SetOrigin( mit.Pointer() );
+         block.SetOriginUnsafe( mit.Pointer());
          if( Count( block ) > threshold ) {
             origins1.push_back( it.Pointer< 0 >());
             origins2.push_back( it.Pointer< 1 >());
@@ -260,17 +260,17 @@ dfloat CostesSignificanceTest(
    // Shuffle one array, and compute correlation between pairs of blocks
    Random rng;
    dip::Image block1 = channel1.QuickCopy();
-   block1.dip__SetSizes( blockSizes );
+   block1.SetSizesUnsafe( blockSizes );
    dip::Image block2 = channel2.QuickCopy();
-   block2.dip__SetSizes( blockSizes );
+   block2.SetSizesUnsafe( blockSizes );
    VarianceAccumulator var;
    //dip::uint smallerCount = 0;
    for( dip::uint ii = 0; ii < repetitions; ++ii ) {
       std::shuffle( origins2.begin(), origins2.end(), rng );
       CovarianceAccumulator cov;
       for( dip::uint jj = 0; jj < nBlocks; ++jj ) {
-         block1.dip__SetOrigin( origins1[ jj ] );
-         block2.dip__SetOrigin( origins2[ jj ] );
+         block1.SetOriginUnsafe( origins1[ jj ] );
+         block2.SetOriginUnsafe( origins2[ jj ] );
          cov += Covariance( block1, block2 );
       }
       dfloat corr = cov.Correlation();

@@ -65,7 +65,7 @@ constexpr std::array< dfloat, 10 > sa = {{
 }};
 
 template< typename TPI >
-static void dip__SurfaceArea(
+static void SurfaceAreaInternal(
       Image const& label,
       std::map< dip::uint, dip::uint > const& objectIndex,
       std::vector< dfloat >& surfaceArea,
@@ -201,7 +201,7 @@ std::vector< dfloat > SurfaceArea(
    nn[ 4 ] = -label.Stride( 1 );
    nn[ 5 ] = -label.Stride( 2 );
 
-   DIP_OVL_CALL_UINT( dip__SurfaceArea, ( label, objectIndex, surfaceArea, nn ), label.DataType() );
+   DIP_OVL_CALL_UINT( SurfaceAreaInternal, ( label, objectIndex, surfaceArea, nn ), label.DataType() );
 
    return surfaceArea;
 }

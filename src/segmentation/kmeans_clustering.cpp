@@ -39,7 +39,7 @@ struct Cluster {
 using ClusterArray = std::vector< Cluster >;
 
 template< typename TPI >
-class dip__Clustering : public Framework::ScanLineFilter {
+class ClusteringLineFilter : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // Either we have one input image, or one output image.
@@ -97,7 +97,7 @@ class dip__Clustering : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Clustering( ClusterArray& clusters ) : clusters_( clusters ) {}
+      ClusteringLineFilter( ClusterArray& clusters ) : clusters_( clusters ) {}
    private:
       ClusterArray& clusters_;
 };
@@ -113,7 +113,7 @@ dfloat Clustering(
       ovlDataType = DT_UINT8; // Reading binary images as if they were uint8.
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_REAL( lineFilter, dip__Clustering, ( clusters ), ovlDataType );
+   DIP_OVL_NEW_REAL( lineFilter, ClusteringLineFilter, ( clusters ), ovlDataType );
    ImageConstRefArray inImages;
    ImageRefArray outImages;
    DataTypeArray inBufferTypes;

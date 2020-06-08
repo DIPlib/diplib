@@ -158,7 +158,7 @@ void ProjectionScan(
    Image tempIn;
    tempIn.CopyProperties( input );
    tempIn.SetSizes( procSizes );
-   tempIn.dip__SetOrigin( input.Origin() );
+   tempIn.SetOriginUnsafe( input.Origin());
    tempIn.Squeeze(); // we want to make sure that function.Project() won't be looping over singleton dimensions
    // TODO: instead of Squeeze, do a FlattenAsMuchAsPossible. But Mask must be flattened in the same way.
    // Create view over mask image, identically to input
@@ -166,7 +166,7 @@ void ProjectionScan(
    if( hasMask ) {
       tempMask.CopyProperties( mask );
       tempMask.SetSizes( procSizes );
-      tempMask.dip__SetOrigin( mask.Origin() );
+      tempMask.SetOriginUnsafe( mask.Origin());
       tempMask.Squeeze(); // keep in sync with tempIn.
    }
    // Create view over output image that doesn't contain the processing dimensions or other singleton dimensions
@@ -195,7 +195,7 @@ void ProjectionScan(
    outSizes.resize( jj );
    nDims = jj;
    tempOut.SetSizes( outSizes );
-   tempOut.dip__SetOrigin( output.Origin() );
+   tempOut.SetOriginUnsafe( output.Origin());
    // Create a temporary output buffer, to collect a single sample in the data type requested by the calling function
    bool useOutputBuffer = false;
    Image outBuffer;
@@ -224,21 +224,21 @@ void ProjectionScan(
       dip::uint dd;
       for( dd = 0; dd < nDims; dd++ ) {
          ++position[ dd ];
-         tempIn.dip__ShiftOrigin( inStride[ dd ]);
+         tempIn.ShiftOriginUnsafe( inStride[ dd ] );
          if( hasMask ) {
-            tempMask.dip__ShiftOrigin( maskStride[ dd ]);
+            tempMask.ShiftOriginUnsafe( maskStride[ dd ] );
          }
-         tempOut.dip__ShiftOrigin( outStride[ dd ]);
+         tempOut.ShiftOriginUnsafe( outStride[ dd ] );
          // Check whether we reached the last pixel of the line
          if( position[ dd ] != outSizes[ dd ] ) {
             break;
          }
          // Rewind along this dimension
-         tempIn.dip__ShiftOrigin( -inStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
+         tempIn.ShiftOriginUnsafe( -inStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
          if( hasMask ) {
-            tempMask.dip__ShiftOrigin( -maskStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
+            tempMask.ShiftOriginUnsafe( -maskStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
          }
-         tempOut.dip__ShiftOrigin( -outStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
+         tempOut.ShiftOriginUnsafe( -outStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
          position[ dd ] = 0;
          // Continue loop to increment along next dimension
       }

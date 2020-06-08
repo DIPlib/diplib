@@ -28,7 +28,7 @@ namespace dip {
 
 namespace {
 
-class dip__Count : public Framework::ScanLineFilter {
+class CountLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -80,20 +80,20 @@ dip::uint Count(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   dip__Count scanLineFilter;
+   CountLineFilter scanLineFilter;
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, DT_BIN, scanLineFilter ));
    return scanLineFilter.GetResult();
 }
 
 namespace {
 
-class dip__MaxMinPixel : public Framework::ScanLineFilter {
+class MaxMinPixelLineFilter : public Framework::ScanLineFilter {
    public:
       virtual UnsignedArray GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__MaxPixel : public dip__MaxMinPixel {
+class MaxPixelLineFilter : public MaxMinPixelLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -165,7 +165,7 @@ class dip__MaxPixel : public dip__MaxMinPixel {
          coord_.resize( threads );
          value_.resize( threads, std::numeric_limits< TPI >::lowest() );
       }
-      dip__MaxPixel( bool first ) : first_( first ) {}
+      MaxPixelLineFilter( bool first ) : first_( first ) {}
       virtual UnsignedArray GetResult() override {
          dip::uint index = 0;
          for( dip::uint ii = 1; ii < coord_.size(); ++ii ) {
@@ -182,7 +182,7 @@ class dip__MaxPixel : public dip__MaxMinPixel {
 };
 
 template< typename TPI >
-class dip__MinPixel : public dip__MaxMinPixel {
+class MinPixelLineFilter : public MaxMinPixelLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -254,7 +254,7 @@ class dip__MinPixel : public dip__MaxMinPixel {
          coord_.resize( threads );
          value_.resize( threads, std::numeric_limits< TPI >::max() );
       }
-      dip__MinPixel( bool first ) : first_( first ) {}
+      MinPixelLineFilter( bool first ) : first_( first ) {}
       virtual UnsignedArray GetResult() override {
          dip::uint index = 0;
          for( dip::uint ii = 1; ii < coord_.size(); ++ii ) {
@@ -278,8 +278,8 @@ UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& po
    bool first;
    DIP_STACK_TRACE_THIS( first = BooleanFromString( positionFlag, S::FIRST, S::LAST ));
    DataType dataType = DataType::SuggestReal( in.DataType() );
-   std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), dataType );
+   std::unique_ptr< MaxMinPixelLineFilter > scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, MaxPixelLineFilter, ( first ), dataType );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter,
                                                      Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
@@ -291,8 +291,8 @@ UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& po
    bool first;
    DIP_STACK_TRACE_THIS( first = BooleanFromString( positionFlag, S::FIRST, S::LAST ));
    DataType dataType = DataType::SuggestReal( in.DataType() );
-   std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), dataType );
+   std::unique_ptr< MaxMinPixelLineFilter > scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, MinPixelLineFilter, ( first ), dataType );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter,
                                                      Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
@@ -347,13 +347,13 @@ void CumulativeSum(
 
 namespace {
 
-class dip__MaximumAndMinimumBase : public Framework::ScanLineFilter {
+class MaximumAndMinimumLineFilterBase : public Framework::ScanLineFilter {
    public:
       virtual MinMaxAccumulator GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
+class MaximumAndMinimumLineFilter : public MaximumAndMinimumLineFilterBase {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -414,8 +414,8 @@ MinMaxAccumulator MaximumAndMinimum(
       c_in.SplitComplex();
       // Note that mask will be singleton-expanded, which allows adding dimensions at the end.
    }
-   std::unique_ptr< dip__MaximumAndMinimumBase > scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__MaximumAndMinimum, (), c_in.DataType() );
+   std::unique_ptr< MaximumAndMinimumLineFilterBase > scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, MaximumAndMinimumLineFilter, (), c_in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( c_in, mask, c_in.DataType(), *scanLineFilter,
                                                      Framework::ScanOption::TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
@@ -423,13 +423,13 @@ MinMaxAccumulator MaximumAndMinimum(
 
 namespace {
 
-class dip__SampleStatisticsBase : public Framework::ScanLineFilter {
+class SampleStatisticsLineFilterBase : public Framework::ScanLineFilter {
    public:
       virtual StatisticsAccumulator GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__SampleStatistics : public dip__SampleStatisticsBase {
+class SampleStatisticsLineFilter : public SampleStatisticsLineFilterBase {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -478,8 +478,8 @@ StatisticsAccumulator SampleStatistics(
       Image const& mask
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   std::unique_ptr< dip__SampleStatisticsBase > scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__SampleStatistics, (), in.DataType() );
+   std::unique_ptr< SampleStatisticsLineFilterBase > scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, SampleStatisticsLineFilter, (), in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
                                                      Framework::ScanOption::TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
@@ -487,13 +487,13 @@ StatisticsAccumulator SampleStatistics(
 
 namespace {
 
-class dip__CovarianceBase : public Framework::ScanLineFilter {
+class CovarianceLineFilterBase : public Framework::ScanLineFilter {
    public:
       virtual CovarianceAccumulator GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__Covariance : public dip__CovarianceBase {
+class CovarianceLineFilter : public CovarianceLineFilterBase {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 10; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -565,8 +565,8 @@ CovarianceAccumulator Covariance(
       inBufT.push_back( mask.DataType() );
    }
    ImageRefArray outar{};
-   std::unique_ptr< dip__CovarianceBase > scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__Covariance, (), ovlDataType );
+   std::unique_ptr< CovarianceLineFilterBase > scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, CovarianceLineFilter, (), ovlDataType );
    DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter,
                                           Framework::ScanOption::TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
@@ -575,7 +575,7 @@ CovarianceAccumulator Covariance(
 namespace {
 
 template< typename TPI >
-std::vector< dip::uint > dip__ComputeRank( void const* ptr, std::vector< dip::uint >& indices ) {
+std::vector< dip::uint > ComputeRank( void const* ptr, std::vector< dip::uint >& indices ) {
    // First sort the indices
    // NOTE!!! The indices must be contiguous, starting at 0, and with max_element(indices) == indices.size()-1.
    TPI const* data = static_cast< TPI const* >( ptr );
@@ -608,7 +608,7 @@ std::vector< dip::uint > CreateRankArray( Image const& img ) {
    std::iota( indices.begin(), indices.end(), dip::uint( 0 ));
    // Get the rank for each pixel
    std::vector< dip::uint > rank;
-   DIP_OVL_CALL_ASSIGN_REAL( rank, dip__ComputeRank, ( img.Origin(), indices ), img.DataType() );
+   DIP_OVL_CALL_ASSIGN_REAL( rank, ComputeRank, ( img.Origin(), indices ), img.DataType() );
    return rank;
 }
 
@@ -647,13 +647,13 @@ dfloat SpearmanRankCorrelation( Image const& in1, Image const& in2, Image const&
 
 namespace {
 
-class dip__CenterOfMassBase : public Framework::ScanLineFilter {
+class CenterOfMassLineFilterBase : public Framework::ScanLineFilter {
    public:
       virtual FloatArray GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__CenterOfMass : public dip__CenterOfMassBase {
+class CenterOfMassLineFilter : public CenterOfMassLineFilterBase {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return nD_ + 1; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -691,7 +691,7 @@ class dip__CenterOfMass : public dip__CenterOfMassBase {
          }
          accArray_[ params.thread ] += vars;
       }
-      dip__CenterOfMass( dip::uint nD ) : nD_( nD ) {}
+      CenterOfMassLineFilter( dip::uint nD ) : nD_( nD ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
          for( dip::uint ii = 0; ii < threads; ++ii ) {
@@ -725,8 +725,8 @@ FloatArray CenterOfMass(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   std::unique_ptr< dip__CenterOfMassBase > scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__CenterOfMass, ( in.Dimensionality() ), in.DataType() );
+   std::unique_ptr< CenterOfMassLineFilterBase > scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, CenterOfMassLineFilter, ( in.Dimensionality() ), in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
                                                      Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
@@ -734,13 +734,13 @@ FloatArray CenterOfMass(
 
 namespace {
 
-class dip__MomentsBase : public Framework::ScanLineFilter {
+class MomentsLineFilterBase : public Framework::ScanLineFilter {
    public:
       virtual MomentAccumulator GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__Moments : public dip__MomentsBase {
+class MomentsLineFilter : public MomentsLineFilterBase {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return nD_ * ( nD_ + 1 ) / 2 * 3 + nD_ + 2;
@@ -774,7 +774,7 @@ class dip__Moments : public dip__MomentsBase {
          }
          accArray_[ params.thread ] += vars;
       }
-      dip__Moments( dip::uint nD ) : nD_( nD ) {}
+      MomentsLineFilter( dip::uint nD ) : nD_( nD ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads, MomentAccumulator( nD_ ));
       }
@@ -798,8 +798,8 @@ MomentAccumulator Moments(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   std::unique_ptr< dip__MomentsBase > scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Moments, ( in.Dimensionality() ), in.DataType() );
+   std::unique_ptr< MomentsLineFilterBase > scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, MomentsLineFilter, ( in.Dimensionality() ), in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
                                                      Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();

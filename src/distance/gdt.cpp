@@ -128,7 +128,7 @@ PriorityQueue CreateAndInitializePriorityQueue(
 
 
 template< typename TPI >
-void dip__FastMarchingAlgorithm(
+void FastMarchingAlgorithm(
       Image const& im_weights,
       Image& im_gdt,
       Image& im_flags,
@@ -252,7 +252,7 @@ void dip__FastMarchingAlgorithm(
 }
 
 template< typename TPI >
-void dip__ChamferMetricAlgorithm(
+void ChamferMetricAlgorithm(
       Image const& im_weights,
       Image& im_gdt,
       Image& im_pdt,
@@ -482,12 +482,12 @@ void GreyWeightedDistanceTransform(
       for( dip::uint ii = 0; ii < dims; ++ii ) {
          distances[ ii ] = out.PixelSize( ii ).magnitude;
       }
-      DIP_OVL_CALL_REAL( dip__FastMarchingAlgorithm, ( grey, out, flags, neighborhood, offsets, coordComputer, distances ), grey.DataType());
+      DIP_OVL_CALL_REAL( FastMarchingAlgorithm, ( grey, out, flags, neighborhood, offsets, coordComputer, distances ), grey.DataType());
    } else {
       if( outputDistance ) {
          out.swap( tmp ); // We need to use these in a different order...
       }
-      DIP_OVL_CALL_REAL( dip__ChamferMetricAlgorithm, ( grey, out, tmp, flags, neighborhood, offsets, coordComputer ), grey.DataType() );
+      DIP_OVL_CALL_REAL( ChamferMetricAlgorithm, ( grey, out, tmp, flags, neighborhood, offsets, coordComputer ), grey.DataType() );
    }
 }
 

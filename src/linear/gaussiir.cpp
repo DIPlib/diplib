@@ -31,7 +31,7 @@ using ComplexArray = std::array< dcomplex, 10 >;
 
 constexpr dip::uint MAX_IIR_ORDER = 6;
 
-struct dip__GaussIIRParams {
+struct GaussIIRParams {
    dfloat sigma;
    dip::uint border;
    std::array< dip::uint, 6 > iir_order_num;
@@ -77,7 +77,7 @@ dfloat q2sigma (
    return std::sqrt( var );
 }
 
-void dip__FillPoleCoef (
+void FillPoleCoefficients (
       dip::uint nn,
       ComplexArray& pp,
       dip::uint order,
@@ -206,7 +206,7 @@ void dip__FillPoleCoef (
    }
 }
 
-void dip__FilterCoef (
+void FilterCoefficients (
             dip::uint mm,
             dip::uint nn,
             ComplexArray& pp,
@@ -223,7 +223,7 @@ void dip__FilterCoef (
    }
    if( start > 1 ) {
       for( dip::uint ii = start; ii <= stop; ++ii ) {
-         dip__FilterCoef( mm, nn, pp, start - 1, ii - 1, tmp * pp[ ii ], bb );
+         FilterCoefficients( mm, nn, pp, start - 1, ii - 1, tmp * pp[ ii ], bb );
       }
    } else if( start == 1 ) {
       for( dip::uint ii = start; ii <= stop; ++ii ) {
@@ -234,14 +234,14 @@ void dip__FilterCoef (
    }
 }
 
-dip__GaussIIRParams dip__FillGaussIIRParams(
+GaussIIRParams FillGaussIIRParams(
       dfloat sigma,
       dip::uint order,
       dip::uint filterOrder,
       DesignMethod method,
       dfloat truncation
 ) {
-   dip__GaussIIRParams params;
+   GaussIIRParams params;
       params.border = std::max< dip::uint >( 5, static_cast< dip::uint >( sigma * truncation + 0.5 ));
       params.sigma = sigma;
 
@@ -253,7 +253,7 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
       // Fetch the desired poles, depending on the filter order and derivative order
       dip::uint nn = filterOrder;
       ComplexArray pp;
-      dip__FillPoleCoef( nn, pp, order, method ); // modifies `method`!
+   FillPoleCoefficients( nn, pp, order, method ); // modifies `method`!
       nn = static_cast< dip::uint >( pp[ 0 ].real() );
 
       // Compute the correct value for q based on the poles in the z-domain
@@ -333,7 +333,7 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
       // Compute the actual filter coefficients
       ComplexArray bb;
       for( dip::uint mm = 0; mm <= nn; ++mm ) {
-         dip__FilterCoef( mm, nn, pp, mm, nn, {}, bb );
+         FilterCoefficients( mm, nn, pp, mm, nn, {}, bb );
       }
       for( dip::uint mm = 0; mm <= nn; ++mm ) {
          bb[ nn - mm ] *= std::pow( -1.0, nn - mm ) / bb[ 0 ].real();
@@ -443,13 +443,13 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
 
 class GaussIIRLineFilter : public Framework::SeparableLineFilter {
    public:
-      GaussIIRLineFilter( std::vector< dip__GaussIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
+      GaussIIRLineFilter( std::vector< GaussIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
          // TODO: figure out how filter parameters affect amount of computation
-         //dip__GaussIIRParams const& fParams = filterParams_[ procDim ];
+         //GaussIIRParams const& fParams = filterParams_[ procDim ];
          return lineLength * 40;
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
@@ -457,7 +457,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
          dfloat* out = static_cast< dfloat* >( params.outBuffer.buffer );
          DIP_ASSERT( params.inBuffer.stride == 1 );
          DIP_ASSERT( params.outBuffer.stride == 1 );
-         dip__GaussIIRParams const& fParams = filterParams_[ params.dimension ];
+         GaussIIRParams const& fParams = filterParams_[ params.dimension ];
          DIP_ASSERT( fParams.border == params.inBuffer.border );
 
          in -= fParams.border;
@@ -712,7 +712,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
          }
       }
    private:
-      std::vector< dip__GaussIIRParams > const& filterParams_; // one of each dimension
+      std::vector< GaussIIRParams > const& filterParams_; // one of each dimension
       std::vector< std::vector< dfloat >> buffers_; // one for each thread
 };
 
@@ -749,7 +749,7 @@ void GaussIIR(
    DIP_STACK_TRACE_THIS( method = BooleanFromString( designMethod, S::FORWARD_BACKWARD, S::DISCRETE_TIME_FIT )
                                   ? DesignMethod::FORWARD_BACKWARD : DesignMethod::DISCRETE_TIME_FIT );
    // Filter parameters
-   std::vector< dip__GaussIIRParams > filterParams( nDims );
+   std::vector< GaussIIRParams > filterParams( nDims );
    UnsignedArray border( nDims );
    BooleanArray process( nDims, true );
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
@@ -763,7 +763,7 @@ void GaussIIR(
             }
          }
          if( !found ) {
-            filterParams[ ii ] = dip__FillGaussIIRParams( sigmas[ ii ], order[ ii ], filterOrder[ ii ], method, truncation );
+            filterParams[ ii ] = FillGaussIIRParams( sigmas[ ii ], order[ ii ], filterOrder[ ii ], method, truncation );
          }
          border[ ii ] = filterParams[ ii ].border;
       } else {

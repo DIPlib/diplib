@@ -167,17 +167,17 @@ void FourthOrderCubicSpline(
       TPF pos3 = pos2 * pos;
       TPF filter_m2 = ( pos3 - TPF( 2 ) * pos2 + pos ) / TPF( 12 );
       TPF filter_m1 = ( TPF( -7 ) * pos3 + TPF( 15 ) * pos2 - TPF( 8 ) * pos ) / TPF( 12 );
-      TPF filter__0 = ( TPF( 16 ) * pos3 - TPF( 28 ) * pos2 + TPF( 12 )) / TPF( 12 );
-      TPF filter__1 = ( TPF( -16 ) * pos3 + TPF( 20 ) * pos2 + TPF( 8 ) * pos ) / TPF( 12 );
-      TPF filter__2 = ( TPF( 7 ) * pos3 - TPF( 6 ) * pos2 - pos ) / TPF( 12 );
-      TPF filter__3 = ( -pos3 + pos2 ) / TPF( 12 );
+      TPF filter_0 = ( TPF( 16 ) * pos3 - TPF( 28 ) * pos2 + TPF( 12 )) / TPF( 12 );
+      TPF filter_1 = ( TPF( -16 ) * pos3 + TPF( 20 ) * pos2 + TPF( 8 ) * pos ) / TPF( 12 );
+      TPF filter_2 = ( TPF( 7 ) * pos3 - TPF( 6 ) * pos2 - pos ) / TPF( 12 );
+      TPF filter_3 = ( -pos3 + pos2 ) / TPF( 12 );
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
          *output = input[ -2 ] * filter_m2 +
                    input[ -1 ] * filter_m1 +
-                   input[  0 ] * filter__0 +
-                   input[  1 ] * filter__1 +
-                   input[  2 ] * filter__2 +
-                   input[  3 ] * filter__3;
+                   input[  0 ] * filter_0 +
+                   input[  1 ] * filter_1 +
+                   input[  2 ] * filter_2 +
+                   input[  3 ] * filter_3;
          ++input;
          ++output;
       }
@@ -219,14 +219,14 @@ void ThirdOrderCubicSpline(
       TPF pos2 = pos * pos;
       TPF pos3 = pos2 * pos;
       TPF filter_m1 = ( -pos3 + TPF( 2 ) * pos2 - pos ) / TPF( 2 );
-      TPF filter__0 = ( TPF( 3 ) * pos3 - TPF( 5 ) * pos2 + TPF( 2 )) / TPF( 2 );
-      TPF filter__1 = ( TPF( -3 ) * pos3 + TPF( 4 ) * pos2 + pos ) / TPF( 2 );
-      TPF filter__2 = ( pos3 - pos2 ) / TPF( 2 );
+      TPF filter_0 = ( TPF( 3 ) * pos3 - TPF( 5 ) * pos2 + TPF( 2 )) / TPF( 2 );
+      TPF filter_1 = ( TPF( -3 ) * pos3 + TPF( 4 ) * pos2 + pos ) / TPF( 2 );
+      TPF filter_2 = ( pos3 - pos2 ) / TPF( 2 );
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
          *output = input[ -1 ] * filter_m1 +
-                   input[  0 ] * filter__0 +
-                   input[  1 ] * filter__1 +
-                   input[  2 ] * filter__2;
+                   input[  0 ] * filter_0 +
+                   input[  1 ] * filter_1 +
+                   input[  2 ] * filter_2;
          ++input;
          ++output;
       }

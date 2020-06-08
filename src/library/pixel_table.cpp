@@ -403,9 +403,10 @@ void PixelTable::AsImage( Image& out ) const {
    }
 }
 
+namespace {
 
 template< typename TPI >
-void dip__AddWeights(
+void AddWeightsInternal(
       Image const& image,
       dip::sint stride,
       std::vector< PixelTable::PixelRun > const& runs,
@@ -423,6 +424,8 @@ void dip__AddWeights(
    }
 }
 
+} // namespace
+
 // Add weights from an image
 void PixelTable::AddWeights( Image const& image ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
@@ -431,7 +434,7 @@ void PixelTable::AddWeights( Image const& image ) {
    DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    weights_.reserve( nPixels_ );
    dip::sint stride = image.Stride( procDim_ );
-   DIP_OVL_CALL_REAL( dip__AddWeights, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
+   DIP_OVL_CALL_REAL( AddWeightsInternal, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
    DIP_ASSERT( weights_.size() == nPixels_ );
 }
 

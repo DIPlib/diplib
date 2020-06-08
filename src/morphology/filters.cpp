@@ -386,7 +386,7 @@ enum class AlternatingSequentialFilterMode {
       AREA
 };
 
-void dip__AlternatingSequentialFilter(
+void AlternatingSequentialFilterInternal(
       Image const& in,
       Image& out,
       dip::uint size,
@@ -455,10 +455,10 @@ void AlternatingSequentialFilter(
       DIP_THROW_INVALID_FLAG( s_mode );
    }
    auto size = sizes.begin();
-   DIP_STACK_TRACE_THIS( dip__AlternatingSequentialFilter( in, out, *size, shape, mode, openingFirst, boundaryCondition ));
+   DIP_STACK_TRACE_THIS( AlternatingSequentialFilterInternal( in, out, *size, shape, mode, openingFirst, boundaryCondition ));
    ++size;
    for( ; size != sizes.end(); ++size ) {
-      DIP_STACK_TRACE_THIS( dip__AlternatingSequentialFilter( out, out, *size, shape, mode, openingFirst, boundaryCondition ));
+      DIP_STACK_TRACE_THIS( AlternatingSequentialFilterInternal( out, out, *size, shape, mode, openingFirst, boundaryCondition ));
    }
 }
 

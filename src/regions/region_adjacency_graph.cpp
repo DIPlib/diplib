@@ -138,7 +138,7 @@ class WatershedRegionAdjacencyGraphLineFilter : public Framework::ScanLineFilter
       }
 };
 
-Graph dip__RegionAdjacencyGraph( Image const& label, String const& mode, std::vector< dfloat >& boundaryLength ) {
+Graph RegionAdjacencyGraphInternal( Image const& label, String const& mode, std::vector< dfloat >& boundaryLength ) {
    DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -164,7 +164,7 @@ Graph dip__RegionAdjacencyGraph( Image const& label, String const& mode, std::ve
 Graph RegionAdjacencyGraph( Image const& label, String const& mode ) {
    Graph graph;
    std::vector< dfloat > boundaryLength;
-   DIP_STACK_TRACE_THIS( graph = dip__RegionAdjacencyGraph( label, mode, boundaryLength ));
+   DIP_STACK_TRACE_THIS( graph = RegionAdjacencyGraphInternal( label, mode, boundaryLength ));
    for( auto& edge: graph.Edges() ) {
       if( edge.IsValid() ) {
          edge.weight = 1.0 - std::max(
@@ -178,7 +178,7 @@ Graph RegionAdjacencyGraph( Image const& label, String const& mode ) {
 Graph RegionAdjacencyGraph( Image const& label, Measurement::IteratorFeature const& featureValues, String const& mode ) {
    Graph graph;
    std::vector< dfloat > ignore;
-   DIP_STACK_TRACE_THIS( graph = dip__RegionAdjacencyGraph( label, mode, ignore ));
+   DIP_STACK_TRACE_THIS( graph = RegionAdjacencyGraphInternal( label, mode, ignore ));
    auto it = featureValues.FirstObject();
    do {
       graph.VertexValue( it.ObjectID() ) = *it;

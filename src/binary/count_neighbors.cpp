@@ -28,7 +28,7 @@ namespace dip {
 namespace {
 
 template< bool MAJORITY = false >
-class dip__CountNeighbors : public Framework::ScanLineFilter {
+class CountNeighborsLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return 2 * neighbors_.Size(); // number of neighbors we test. We don't count the cost of testing for image boundaries.
@@ -164,7 +164,7 @@ class dip__CountNeighbors : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__CountNeighbors( NeighborList const& neighbors, IntegerArray const& offsets, bool all, bool edgeCondition, UnsignedArray const& sizes ) :
+      CountNeighborsLineFilter( NeighborList const& neighbors, IntegerArray const& offsets, bool all, bool edgeCondition, UnsignedArray const& sizes ) :
             neighbors_( neighbors ), offsets_( offsets ), all_( all ), edgeCondition_( edgeCondition ), sizes_( sizes ) {}
    private:
       NeighborList const& neighbors_;
@@ -192,7 +192,7 @@ void CountNeighbors(
       IntegerArray offsets = neighbors.ComputeOffsets( in.Strides() );
       bool all = BooleanFromString( s_mode, S::ALL, S::FOREGROUND );
       bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
-      dip__CountNeighbors< false > scanLineFilter( neighbors, offsets, all, edgeCondition, in.Sizes() );
+      CountNeighborsLineFilter< false > scanLineFilter( neighbors, offsets, all, edgeCondition, in.Sizes() );
       // We're guaranteed here that the framework will not use a temporary input buffer, because:
       //  - The input image is DT_BIN, and we request a DT_BIN buffer, and
       //  - We did not give the ScanOption::ExpandTensorInBuffer option.
@@ -216,7 +216,7 @@ void MajorityVote(
       NeighborList neighbors( Metric( Metric::TypeCode::CONNECTED, connectivity ), in.Dimensionality() );
       IntegerArray offsets = neighbors.ComputeOffsets( in.Strides() );
       bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
-      dip__CountNeighbors< true > scanLineFilter( neighbors, offsets, true, edgeCondition, in.Sizes() );
+      CountNeighborsLineFilter< true > scanLineFilter( neighbors, offsets, true, edgeCondition, in.Sizes() );
       // We're guaranteed here that the framework will not use a temporary input buffer, because:
       //  - The input image is DT_BIN, and we request a DT_BIN buffer, and
       //  - We did not give the ScanOption::ExpandTensorInBuffer option.

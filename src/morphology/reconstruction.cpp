@@ -48,7 +48,7 @@ bool QitemComparator_HighFirst ( Qitem< TPI > const& a, Qitem< TPI > const& b ) 
 }
 
 template< typename TPI >
-void dip__MorphologicalReconstruction(
+void MorphologicalReconstructionInternal(
       Image const& c_in,
       Image& c_out,
       Image& c_done,
@@ -189,7 +189,7 @@ void MorphologicalReconstruction (
    IntegerArray neighborOffsetsDone = neighborList.ComputeOffsets( done.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_NONCOMPLEX( dip__MorphologicalReconstruction, ( in, out, done,
+   DIP_OVL_CALL_NONCOMPLEX( MorphologicalReconstructionInternal, ( in, out, done,
          neighborOffsetsIn, neighborOffsetsOut, neighborOffsetsDone, neighborList,
          minval, dilation ), in.DataType() );
 

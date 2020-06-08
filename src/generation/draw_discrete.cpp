@@ -38,7 +38,7 @@ namespace dip {
 namespace {
 
 template< typename TPI, typename F >
-void dip__DrawOneLine(
+void DrawOneLine(
       TPI* origin,
       dip::sint stride,
       BresenhamLineIterator& iterator,
@@ -55,7 +55,7 @@ void dip__DrawOneLine(
 }
 
 template< typename TPI, typename F >
-void dip__DrawLine(
+void DrawLineInternal(
       Image& out,
       BresenhamLineIterator& iterator,
       Image::Pixel const& value,
@@ -63,11 +63,11 @@ void dip__DrawLine(
 ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
-   dip__DrawOneLine( static_cast< TPI* >( out.Origin() ), out.TensorStride(), iterator, value_, blend);
+   DrawOneLine( static_cast< TPI* >( out.Origin() ), out.TensorStride(), iterator, value_, blend);
 }
 
 template< typename TPI, typename F >
-void dip__DrawLines(
+void DrawLinesInternal(
       Image& out,
       CoordinateArray const& points,
       Image::Pixel const& value,
@@ -82,7 +82,7 @@ void dip__DrawLines(
       if( jj != 1 ) {
          ++iterator; // skip the first point, it's already drawn
       }
-      dip__DrawOneLine( origin, stride, iterator, value_, blend);
+      DrawOneLine( origin, stride, iterator, value_, blend);
    }
 }
 
@@ -104,9 +104,9 @@ void DrawLine(
    DIP_THROW_IF( !( end < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    BresenhamLineIterator iterator( out.Strides(), start, end );
    if (blend == S::ASSIGN) {
-      DIP_OVL_CALL_ALL( dip__DrawLine, ( out, iterator, value, [](auto, auto b) { return b; } ), out.DataType() );
+      DIP_OVL_CALL_ALL( DrawLineInternal, ( out, iterator, value, [](auto, auto b) { return b; } ), out.DataType() );
    } else if (blend == S::ADD) {
-      DIP_OVL_CALL_ALL( dip__DrawLine, ( out, iterator, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
+      DIP_OVL_CALL_ALL( DrawLineInternal, ( out, iterator, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
    } else {
       DIP_THROW_INVALID_FLAG( blend );
    }
@@ -127,9 +127,9 @@ void DrawLines(
       DIP_THROW_IF( !( point < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    }
    if (blend == S::ASSIGN) {
-      DIP_OVL_CALL_ALL( dip__DrawLines, ( out, points, value, [](auto, auto b) { return b; } ), out.DataType() );
+      DIP_OVL_CALL_ALL( DrawLinesInternal, ( out, points, value, [](auto, auto b) { return b; } ), out.DataType() );
    } else if (blend == S::ADD) {
-      DIP_OVL_CALL_ALL( dip__DrawLines, ( out, points, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
+      DIP_OVL_CALL_ALL( DrawLinesInternal, ( out, points, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
    } else {
       DIP_THROW_INVALID_FLAG( blend );
    }
@@ -152,7 +152,7 @@ UnsignedArray VertexToUnsignedArray( VertexFloat p ) {
 }
 
 template< typename TPI >
-void dip__FillLine(
+void FillLine(
       TPI* out,         // points at the beginning of the line
       dip::sint start,
       dip::sint end,
@@ -177,7 +177,7 @@ void dip__FillLine(
 }
 
 template< typename TPI >
-void dip__DrawPolygon(
+void DrawPolygonInternal(
       Image& out,
       Polygon const& polygon,
       Image::Pixel const& value,
@@ -194,14 +194,14 @@ void dip__DrawPolygon(
       if( jj != 1 ) {
          ++iterator; // skip the first point, it's already drawn
       }
-      dip__DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
+      DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
       prev = cur;
    }
    if( !open ) {
       UnsignedArray cur = VertexToUnsignedArray( polygon.vertices[ 0 ] );
       BresenhamLineIterator iterator( out.Strides(), prev, cur );
       ++iterator; // skip the first point, it's already drawn
-      dip__DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
+      DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
    }
 }
 
@@ -258,7 +258,7 @@ struct ActiveEdge {
 };
 
 template< typename TPI >
-void dip__DrawFilledPolygon(
+void DrawFilledPolygon(
       Image& out,
       std::vector< PolygonEdge > const& edges,
       Image::Pixel const& value,
@@ -298,10 +298,10 @@ void dip__DrawFilledPolygon(
          // Draw elements
          //DIP_ASSERT( !( active.size() & 1 )); // It's odd!? No matter, we ignore the last edge.
          for( dip::uint jj = 0; jj < active.size() - 1; jj += 2 ) {
-            dip__FillLine( line.Pointer(),
-                           round_cast( active[ jj ].x ),
-                           round_cast( active[ jj + 1 ].x ),
-                           static_cast< dip::sint >( length ), stride, value_, tensorStride );
+            FillLine( line.Pointer(),
+                      round_cast( active[ jj ].x ),
+                      round_cast( active[ jj + 1 ].x ),
+                      static_cast< dip::sint >( length ), stride, value_, tensorStride );
          }
          // Next scan line, don't increment if y < 0!
          ++line;
@@ -361,27 +361,27 @@ void DrawPolygon2D(
       for( dip::uint ii = 1; ii < polygon.vertices.size(); ++ii ) {
          PolygonEdge e( polygon.vertices[ ii - 1 ], polygon.vertices[ ii ], horizontalScanLines );
          if( !e.IsAlongScanLine() ) {
-            edges.push_back( std::move( e ));
+            edges.push_back( e );
          }
       }
       PolygonEdge e( polygon.vertices.back(), polygon.vertices.front(), horizontalScanLines );
       if( !e.IsAlongScanLine() ) {
-         edges.push_back( std::move( e ));
+         edges.push_back( e );
       }
       DIP_THROW_IF( edges.size() < 2, "The polygon has a bad shape" );
       std::sort( edges.begin(), edges.end() );
-      DIP_OVL_CALL_ALL( dip__DrawFilledPolygon, ( out, edges, value, horizontalScanLines ), out.DataType() );
+      DIP_OVL_CALL_ALL( DrawFilledPolygon, ( out, edges, value, horizontalScanLines ), out.DataType() );
    } else {
       // Test all points to be within the image
       BoundingBoxInteger bb{ VertexInteger{ 0, 0 },
-                      VertexInteger{ static_cast< dip::sint >( out.Size( 0 ) - 1 ),
-                                     static_cast< dip::sint >( out.Size( 1 ) - 1 ) }};
+                             VertexInteger{ static_cast< dip::sint >( out.Size( 0 ) - 1 ),
+                                            static_cast< dip::sint >( out.Size( 1 ) - 1 ) }};
       for( auto point : polygon.vertices ) {
          point = point.Round();
          DIP_THROW_IF( !bb.Contains( point ), E::COORDINATES_OUT_OF_RANGE );
       }
       // Draw polygon as a set of Bresenham lines
-      DIP_OVL_CALL_ALL( dip__DrawPolygon, ( out, polygon, value, open ), out.DataType() );
+      DIP_OVL_CALL_ALL( DrawPolygonInternal, ( out, polygon, value, open ), out.DataType() );
    }
 }
 
@@ -396,9 +396,9 @@ namespace {
 enum class EllipsoidNorm{ L1, L2, Lmax };
 
 template< typename TPI >
-class dip__DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
+class DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
    public:
-      dip__DrawEllipsoidLineFilter( FloatArray const& scale, FloatArray const& origin, Image::Pixel const& value, dip::uint nTensor, EllipsoidNorm norm ) :
+      DrawEllipsoidLineFilter( FloatArray const& scale, FloatArray const& origin, Image::Pixel const& value, dip::uint nTensor, EllipsoidNorm norm ) :
             scale_( scale ), origin_( origin ), norm_( norm ) {
          CopyPixelToVector( value, value_, nTensor );
       }
@@ -454,7 +454,7 @@ class dip__DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
          }
          dip::sint start = ceil_cast( origin_[ dim ] - width );
          dip::sint end = floor_cast( origin_[ dim ] + width );
-         dip__FillLine( out, start, end, length, stride, value_, tensorStride );
+         FillLine( out, start, end, length, stride, value_, tensorStride );
       }
    private:
       FloatArray const& scale_;
@@ -463,7 +463,7 @@ class dip__DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
       EllipsoidNorm norm_;
 };
 
-void dip__DrawEllipsoid(
+void DrawEllipsoidInternal(
       Image& out,
       FloatArray sizes,
       FloatArray origin,
@@ -487,7 +487,7 @@ void dip__DrawEllipsoid(
       s = 2.0 / s; // modify `sizes` to be `scale`.
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
-   DIP_OVL_NEW_ALL( lineFilter, dip__DrawEllipsoidLineFilter, ( sizes, origin, value, tmp.TensorElements(), norm ), tmp.DataType() );
+   DIP_OVL_NEW_ALL( lineFilter, DrawEllipsoidLineFilter, ( sizes, origin, value, tmp.TensorElements(), norm ), tmp.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
@@ -502,7 +502,7 @@ void DrawEllipsoid(
       FloatArray const& origin,
       Image::Pixel const& value
 ) {
-   DIP_STACK_TRACE_THIS( dip__DrawEllipsoid( out, sizes, origin, value, EllipsoidNorm::L2 ));
+   DIP_STACK_TRACE_THIS( DrawEllipsoidInternal( out, sizes, origin, value, EllipsoidNorm::L2 ));
 }
 
 void DrawDiamond(
@@ -511,7 +511,7 @@ void DrawDiamond(
       FloatArray const& origin,
       Image::Pixel const& value
 ) {
-   DIP_STACK_TRACE_THIS( dip__DrawEllipsoid( out, sizes, origin, value, EllipsoidNorm::L1 ));
+   DIP_STACK_TRACE_THIS( DrawEllipsoidInternal( out, sizes, origin, value, EllipsoidNorm::L1 ));
 }
 
 void DrawBox(
@@ -520,7 +520,7 @@ void DrawBox(
       FloatArray const& origin,
       Image::Pixel const& value
 ) {
-   DIP_STACK_TRACE_THIS( dip__DrawEllipsoid( out, sizes, origin, value, EllipsoidNorm::Lmax ));
+   DIP_STACK_TRACE_THIS( DrawEllipsoidInternal( out, sizes, origin, value, EllipsoidNorm::Lmax ));
 }
 
 

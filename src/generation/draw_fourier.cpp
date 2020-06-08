@@ -48,7 +48,7 @@ dfloat ModifiedSinc( dfloat rr, dfloat scale, dfloat center ) {
    return std::sin( rr * scale ) / rr;
 }
 
-class dip__FTBox : public Framework::ScanLineFilter {
+class FTBoxLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return center_.size() * 20;
@@ -71,7 +71,7 @@ class dip__FTBox : public Framework::ScanLineFilter {
             *out = res * ModifiedSinc( pp, scale_[ dim ], center_[ dim ] );
          }
       }
-      dip__FTBox( FloatArray const& center, FloatArray const& scale, dfloat amplitude )
+      FTBoxLineFilter( FloatArray const& center, FloatArray const& scale, dfloat amplitude )
             : center_( center ), scale_( scale ), amplitude_( amplitude ) {}
    private:
       FloatArray const& center_;
@@ -79,7 +79,7 @@ class dip__FTBox : public Framework::ScanLineFilter {
       dfloat const amplitude_;
 };
 
-class dip__FTCross : public Framework::ScanLineFilter {
+class FTCrossLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return center_.size() * 20;
@@ -102,7 +102,7 @@ class dip__FTCross : public Framework::ScanLineFilter {
             *out = amplitude_ * ( res + ModifiedSinc( pp, scale_[ dim ], center_[ dim ] ));
          }
       }
-      dip__FTCross( FloatArray const& center, FloatArray const& scale, dfloat amplitude )
+      FTCrossLineFilter( FloatArray const& center, FloatArray const& scale, dfloat amplitude )
             : center_( center ), scale_( scale ), amplitude_( amplitude ) {}
    private:
       FloatArray const& center_;
@@ -198,7 +198,7 @@ void FTBox(
    }
    amplitude *= std::pow( 2.0, nDims );
 
-   dip__FTBox scanLineFilter( center, length, amplitude );
+   FTBoxLineFilter scanLineFilter( center, length, amplitude );
    Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
 }
 
@@ -221,7 +221,7 @@ void FTCross(
    }
    amplitude *= 2.0;
 
-   dip__FTCross scanLineFilter( center, length, amplitude );
+   FTCrossLineFilter scanLineFilter( center, length, amplitude );
    Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
 }
 

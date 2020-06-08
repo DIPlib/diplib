@@ -67,7 +67,7 @@ inline void CopyPixelWithInterpolation( std::complex< TPI > const* in, std::comp
 }
 
 template< typename TPI >
-class dip__DirectLUT_Integer : public Framework::ScanLineFilter {
+class DirectLUT_Integer : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and no index, to an input image of type uint64.
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
@@ -107,7 +107,7 @@ class dip__DirectLUT_Integer : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      dip__DirectLUT_Integer( Image const& values, LookupTable::OutOfBoundsMode outOfBoundsMode, dfloat outOfBoundsLowerValue, dfloat outOfBoundsUpperValue )
+      DirectLUT_Integer( Image const& values, LookupTable::OutOfBoundsMode outOfBoundsMode, dfloat outOfBoundsLowerValue, dfloat outOfBoundsUpperValue )
             : values_( values ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsLowerValue_( clamp_cast< TPI >( outOfBoundsLowerValue )),
               outOfBoundsUpperValue_( clamp_cast< TPI >( outOfBoundsUpperValue )) {}
    private:
@@ -118,7 +118,7 @@ class dip__DirectLUT_Integer : public Framework::ScanLineFilter {
 };
 
 template< typename TPI >
-class dip__DirectLUT_Float : public Framework::ScanLineFilter {
+class DirectLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and no index, to an input image of type dfloat.
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
@@ -187,8 +187,8 @@ class dip__DirectLUT_Float : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      dip__DirectLUT_Float( Image const& values, LookupTable::OutOfBoundsMode outOfBoundsMode, dfloat outOfBoundsLowerValue,
-                            dfloat outOfBoundsUpperValue, LookupTable::InterpolationMode interpolation )
+      DirectLUT_Float( Image const& values, LookupTable::OutOfBoundsMode outOfBoundsMode, dfloat outOfBoundsLowerValue,
+                       dfloat outOfBoundsUpperValue, LookupTable::InterpolationMode interpolation )
             : values_( values ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsLowerValue_( clamp_cast< TPI >( outOfBoundsLowerValue )),
               outOfBoundsUpperValue_( clamp_cast< TPI >( outOfBoundsUpperValue )), interpolation_( interpolation ) {}
    private:
@@ -200,7 +200,7 @@ class dip__DirectLUT_Float : public Framework::ScanLineFilter {
 };
 
 template< typename TPI >
-class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
+class IndexedLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and an index, to an input image of type dfloat.
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
@@ -267,8 +267,8 @@ class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      dip__IndexedLUT_Float( Image const& values, FloatArray const& index, LookupTable::OutOfBoundsMode outOfBoundsMode,
-                             dfloat outOfBoundsLowerValue, dfloat outOfBoundsUpperValue, LookupTable::InterpolationMode interpolation )
+      IndexedLUT_Float( Image const& values, FloatArray const& index, LookupTable::OutOfBoundsMode outOfBoundsMode,
+                        dfloat outOfBoundsLowerValue, dfloat outOfBoundsUpperValue, LookupTable::InterpolationMode interpolation )
             : values_( values ), index_( index ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsLowerValue_( clamp_cast< TPI >( outOfBoundsLowerValue )),
               outOfBoundsUpperValue_( clamp_cast< TPI >( outOfBoundsUpperValue )), interpolation_( interpolation ) {}
    private:
@@ -281,7 +281,7 @@ class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
 };
 
 template< typename TPI >
-class dip__IndexedArrayLUT_Float : public Framework::ScanLineFilter {
+class IndexedArrayLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT consisting of an array of value images with data type TPI, and an index, to an input image of type dfloat.
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
@@ -354,7 +354,7 @@ class dip__IndexedArrayLUT_Float : public Framework::ScanLineFilter {
             valueImageOffset += valuesStride;
          }
       }
-      dip__IndexedArrayLUT_Float(
+      IndexedArrayLUT_Float(
             FloatArray const& index, LookupTable::OutOfBoundsMode outOfBoundsMode,
             dfloat outOfBoundsLowerValue, dfloat outOfBoundsUpperValue, LookupTable::InterpolationMode interpolation
       ) : index_( index ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsLowerValue_( clamp_cast< TPI >( outOfBoundsLowerValue )),
@@ -395,14 +395,14 @@ void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpol
       std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
       dip::DataType inBufType;
       if( HasIndex() ) {
-         DIP_OVL_NEW_ALL( scanLineFilter, dip__IndexedLUT_Float, (values_, index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
+         DIP_OVL_NEW_ALL( scanLineFilter, IndexedLUT_Float, (values_, index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
          inBufType = DT_DFLOAT;
       } else {
          if( in.DataType().IsUnsigned() ) {
-            DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Integer, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_), values_.DataType() );
+            DIP_OVL_NEW_ALL( scanLineFilter, DirectLUT_Integer, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_), values_.DataType() );
             inBufType = DT_UINT64;
          } else {
-            DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Float, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
+            DIP_OVL_NEW_ALL( scanLineFilter, DirectLUT_Float, (values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation), values_.DataType() );
             inBufType = DT_DFLOAT;
          }
       }
@@ -428,7 +428,7 @@ void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpol
 
       // Call Scan framework
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_ALL( scanLineFilter, dip__IndexedArrayLUT_Float, ( index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), outDataType );
+      DIP_OVL_NEW_ALL( scanLineFilter, IndexedArrayLUT_Float, ( index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), outDataType );
       DIP_STACK_TRACE_THIS( Scan( inRefs, outRefs, inBufferTypes, outBufferTypes, { outDataType }, { valueImages_.front().get().TensorElements() }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 
    }
@@ -440,9 +440,9 @@ Image::Pixel LookupTable::Apply( dfloat value, InterpolationMode interpolation )
    DIP_ASSERT( valueImages_.empty() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    if( HasIndex() ) {
-      DIP_OVL_NEW_ALL( scanLineFilter, dip__IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), values_.DataType() );
+      DIP_OVL_NEW_ALL( scanLineFilter, IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), values_.DataType() );
    } else {
-      DIP_OVL_NEW_ALL( scanLineFilter, dip__DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), values_.DataType() );
+      DIP_OVL_NEW_ALL( scanLineFilter, DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsLowerValue_, outOfBoundsUpperValue_, interpolation ), values_.DataType() );
    }
    Image::Pixel out( values_.DataType(), values_.TensorElements() );
    out.ReshapeTensor( values_.Tensor() );

@@ -267,14 +267,14 @@ void HistogramViewPort::screenToView(int x, int y, double *ix, double *iy)
 namespace {
 
 template<class T>
-class viewer__Histogram : public dip::Framework::ScanLineFilter
+class HistogramLineFilter : public dip::Framework::ScanLineFilter
 {
    protected:
       dip::Image &histogram_;
       FloatRange range_;
 
    public:
-      viewer__Histogram(dip::Image &histogram, FloatRange range) : histogram_(histogram), range_(range) { }
+      HistogramLineFilter( dip::Image &histogram, FloatRange range) : histogram_( histogram), range_( range) { }
 
       virtual void Filter( dip::Framework::ScanLineFilterParameters const& params ) override
       {
@@ -311,7 +311,7 @@ void HistogramViewPort::calculate()
   histogram = 0;
 
   std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
-  DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, viewer__Histogram, ( histogram, viewer()->options().range_ ), in.DataType() );
+  DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, HistogramLineFilter, ( histogram, viewer()->options().range_ ), in.DataType() );
   dip::Framework::ScanSingleInput(in, {}, in.DataType(), *scanLineFilter);
   
   mutex_.lock();

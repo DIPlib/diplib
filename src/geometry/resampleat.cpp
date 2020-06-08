@@ -76,10 +76,10 @@ TPD ThirdOrderCubicSpline1D( TPD a, TPD b, TPD c, TPD d, dfloat pos ) {
    dfloat pos2 = pos * pos;
    dfloat pos3 = pos2 * pos;
    dfloat filter_m1 = ( -pos3 + 2.0 * pos2 - pos ) / 2.0;
-   dfloat filter__0 = ( 3.0 * pos3 - 5.0 * pos2 + 2.0) / 2.0;
-   dfloat filter__1 = ( -3.0 * pos3 + 4.0 * pos2 + pos ) / 2.0;
-   dfloat filter__2 = ( pos3 - pos2 ) / 2.0;
-   return a * filter_m1 + b * filter__0 + c * filter__1 + d * filter__2;
+   dfloat filter_0 = ( 3.0 * pos3 - 5.0 * pos2 + 2.0) / 2.0;
+   dfloat filter_1 = ( -3.0 * pos3 + 4.0 * pos2 + pos ) / 2.0;
+   dfloat filter_2 = ( pos3 - pos2 ) / 2.0;
+   return a * filter_m1 + b * filter_0 + c * filter_1 + d * filter_2;
 }
 
 //

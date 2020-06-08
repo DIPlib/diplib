@@ -42,7 +42,7 @@ namespace dip {
 namespace {
 
 template< typename T > // T is either dfloat or dcomplex
-void dip__SeparateFilter(
+void SeparateFilterInternal(
       Image& filter,
       std::vector< dfloat >& out,
       dip::uint nPixels,
@@ -100,10 +100,10 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
       if( length > 1 ) {
          nPixels /= length; // Number of pixels in remainder
          if( isComplex ) {
-            dip__SeparateFilter< dcomplex >( filter, out[ dim ].filter, nPixels, length );
+            SeparateFilterInternal< dcomplex >( filter, out[ dim ].filter, nPixels, length );
             out[ dim ].isComplex = true;
          } else {
-            dip__SeparateFilter< dfloat >( filter, out[ dim ].filter, nPixels, length );
+            SeparateFilterInternal< dfloat >( filter, out[ dim ].filter, nPixels, length );
          }
          if( out[ dim ].filter.empty() ) {
             return {}; // The filter is not separable

@@ -63,7 +63,7 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
                   dip::uint neighborIndex = index + indexStrides[ jj ];
                   dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
                   dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
-                  graph_.dip__AddEdgeNoCheck( index, neighborIndex, weight );
+                  graph_.AddEdgeNoCheck( index, neighborIndex, weight );
                }
             }
          }
@@ -75,7 +75,7 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
                dip::uint neighborIndex = index + indexStrides[ jj ];
                dfloat neighborValue = static_cast< dfloat >( in[ strides_[ jj ]] );
                dfloat weight = useDifferences_ ? std::abs( value - neighborValue ) : ( value + neighborValue ) / 2;
-               graph_.dip__AddEdgeNoCheck( index, neighborIndex, weight );
+               graph_.AddEdgeNoCheck( index, neighborIndex, weight );
             }
          }
       }
@@ -140,7 +140,7 @@ Graph Graph::MinimumSpanningForest( std::vector< dip::uint > const& roots ) cons
       }
       if( !visited[ q ] ) {
          visited[ q ] = true;
-         msf.dip__AddEdgeNoCheck( edges_[ edgeIndex ] );
+         msf.AddEdgeNoCheck( edges_[ edgeIndex ] );
          for( auto index : vertices_[ q ].edges ) {
             queue.push( index );
          }

@@ -624,8 +624,8 @@ void Rotation(
       origin[ dimension2 ] = origin2 - ( newSize[ dimension2 ] / 2 );
       DIP_ASSERT( origin[ dimension2 ] <= out.Size( dimension2 ) - newSize[ dimension2 ] );
    }
-   out.dip__SetOrigin( out.Pointer( origin ));
-   out.dip__SetSizes( cropSize );
+   out.SetOriginUnsafe( out.Pointer( origin ));
+   out.SetSizesUnsafe( cropSize );
    // Next, extend as needed
    if( extend1 || extend2 ) {
       Image newOut;

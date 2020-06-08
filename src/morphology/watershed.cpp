@@ -104,7 +104,7 @@ enum class FastWatershedOperation {
 };
 
 template< typename TPI >
-void dip__FastWatershed(
+void FastWatershedInternal(
       Image const& c_in,
       Image& c_labels,
       Image& c_binary,
@@ -329,7 +329,7 @@ void FastWatershed(
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( in.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__FastWatershed, ( in, labels, binary, offsets, neighborOffsets,
+   DIP_OVL_CALL_REAL( FastWatershedInternal, ( in, labels, binary, offsets, neighborOffsets,
          maxDepth, maxSize, lowFirst, binaryOutput, operation ), in.DataType() );
 }
 
@@ -444,7 +444,7 @@ inline void EnqueueNeighbors(
 }
 
 template< typename TPI >
-void dip__SeededWatershed(
+void SeededWatershedInternal(
       Image const& c_grey,
       Image& c_labels,
       IntegerArray const& neighborOffsetsGrey,
@@ -702,7 +702,7 @@ void SeededWatershed(
    IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, out,
+   DIP_OVL_CALL_REAL( SeededWatershedInternal, ( in, out,
          neighborOffsetsIn, neighborOffsetsOut, neighborList,
          numlabs, maxDepth, maxSize, lowFirst, binaryOutput, noGaps, uphillOnly ), in.DataType() );
 
@@ -752,7 +752,7 @@ inline void EnqueueNeighbors(
 }
 
 template< typename TPI >
-void dip__CompactWatershed(
+void CompactWatershedInternal(
       Image const& c_grey,
       Image& c_labels,
       IntegerArray const& neighborOffsetsGrey,
@@ -963,7 +963,7 @@ void CompactWatershed(
    IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__CompactWatershed, ( in, out,
+   DIP_OVL_CALL_REAL( CompactWatershedInternal, ( in, out,
          neighborOffsetsIn, neighborOffsetsOut, neighborList,
          compactness, lowFirst, binaryOutput, noGaps ), in.DataType() );
 
@@ -1107,7 +1107,7 @@ void ExactStochasticWatershed(
          dfloat q_size = static_cast< dfloat >( ds.Value( q_index )) / static_cast< dfloat >( nVertices );
          // Calculate edge weight based on p_size and q_size
          edge.weight = 1 - std::pow( 1 - p_size, nSeeds ) - std::pow( 1 - q_size, nSeeds ) + std::pow( 1 - ( p_size + q_size ), nSeeds );
-         result.dip__AddEdgeNoCheck( edge );
+         result.AddEdgeNoCheck( edge );
          ds.Union( p_index, q_index );
       }
       std::swap( graph, result );

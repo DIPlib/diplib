@@ -1015,7 +1015,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
          // remove the processing dimension
          UnsignedArray sizes = image_.Sizes();
          sizes[ procDim_ ] = 1;
-         image_.dip__SetSizes( sizes );
+         image_.SetSizesUnsafe( sizes );
          image_.Squeeze( procDim_ );
          // protect the image to avoid modifications
          image_.Protect();
@@ -1040,7 +1040,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
       ImageSliceIterator& operator++() {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
          ++coord_;
-         image_.dip__ShiftOrigin( stride_ );
+         image_.ShiftOriginUnsafe( stride_ );
          return *this;
       }
       /// Post-increment
@@ -1054,7 +1054,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
          if( coord_ != 0 ) {
             --coord_;
-            image_.dip__ShiftOrigin( -stride_ );
+            image_.ShiftOriginUnsafe( -stride_ );
          }
          return *this;
       }
@@ -1070,10 +1070,10 @@ class DIP_NO_EXPORT ImageSliceIterator {
          if( n < 0 ) {
             dip::uint nn = std::min( coord_, static_cast< dip::uint >( -n ));
             coord_ -= nn;
-            image_.dip__ShiftOrigin( -static_cast< dip::sint >( nn ) * stride_ );
+            image_.ShiftOriginUnsafe( -static_cast< dip::sint >( nn ) * stride_ );
          } else {
             coord_ += static_cast< dip::uint >( n );
-            image_.dip__ShiftOrigin( n * stride_ );
+            image_.ShiftOriginUnsafe( n * stride_ );
          }
          return * this;
       }

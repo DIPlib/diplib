@@ -38,7 +38,7 @@ constexpr uint8 BORDER = 2;
 using FifoQueue = std::queue< dip::sint >;
 
 template< typename TPI >
-void dip__GrowRegions(
+void GrowRegionsInternal(
       Image& im_label,
       Image& im_flags,
       dip::uint iterations,
@@ -203,9 +203,9 @@ void GrowRegions(
    CoordinatesComputer coordComputer = out.OffsetToCoordinatesComputer();
 
    // Do the data-type dependent part
-   DIP_OVL_CALL_UINT( dip__GrowRegions, ( out, flags, iterations,
-                                          neighborhood0, offsets0, neighborhood1, offsets1,
-                                          coordComputer ), out.DataType() );
+   DIP_OVL_CALL_UINT( GrowRegionsInternal, ( out, flags, iterations,
+                                             neighborhood0, offsets0, neighborhood1, offsets1,
+                                             coordComputer ), out.DataType() );
 }
 
 

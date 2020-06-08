@@ -34,26 +34,25 @@ namespace dip { namespace viewer {
 
 namespace {
 
-ViewerManager* manager__ = nullptr;
-size_t count__ = 0;
+std::unique_ptr< ViewerManager > manager_ = nullptr;
+size_t count_ = 0;
 
 String getWindowTitle( String const& title ) {
    if( !title.empty()) {
       return title;
    }
-   return String( "Window " ) + std::to_string( count__ );
+   return String( "Window " ) + std::to_string( count_ );
 }
 
 inline void Create() {
-   if( !manager__ ) {
-      manager__ = new ViewerManager();
-      count__ = 1;
+   if( !manager_ ) {
+      manager_.reset( new ViewerManager() );
+      count_ = 1;
    }
 }
 
 inline void Delete() {
-   delete manager__;
-   manager__ = nullptr;
+   manager_.reset( nullptr );
 }
 
 } // namespace
@@ -62,8 +61,8 @@ SliceViewer::Ptr Show( Image const& image, String const& title, dip::uint width,
    Create();
    SliceViewer::Ptr wdw;
    DIP_STACK_TRACE_THIS( wdw = SliceViewer::Create( image, getWindowTitle( title ), width, height ));
-   DIP_STACK_TRACE_THIS( manager__->createWindow( wdw ));
-   ++count__;
+   DIP_STACK_TRACE_THIS( manager_->createWindow( wdw ));
+   ++count_;
    
    return wdw;
 }
@@ -78,18 +77,18 @@ ImageViewer::Ptr ShowSimple( Image const& image, String const& title, dip::uint 
    tmp.ForceNormalStrides();
    ImageViewer::Ptr wdw;
    DIP_STACK_TRACE_THIS( wdw = ImageViewer::Create( tmp, getWindowTitle( title ), width, height ));
-   DIP_STACK_TRACE_THIS( manager__->createWindow( wdw ));
-   ++count__;
+   DIP_STACK_TRACE_THIS( manager_->createWindow( wdw ));
+   ++count_;
    
    return wdw;
 }
 
 void Spin() {
-   if( !manager__ ) {
+   if( !manager_ ) {
       return;
    }
    //std::this_thread::sleep_for( std::chrono::seconds( 1 )); // Wait a while to make sure the windows have finished drawing
-   while( manager__->activeWindows()) {
+   while( manager_->activeWindows()) {
       Draw();
       std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
    }
@@ -97,17 +96,17 @@ void Spin() {
 }
 
 void Draw() {
-   if( !manager__ ) {
+   if( !manager_ ) {
       return;
    }
-   manager__->processEvents();
+   manager_->processEvents();
 }
 
 void CloseAll() {
-   if( !manager__ ) {
+   if( !manager_ ) {
       return;
    }
-   manager__->destroyWindows();
+   manager_->destroyWindows();
    Spin();
 }
 

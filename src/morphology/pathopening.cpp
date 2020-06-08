@@ -114,9 +114,9 @@ void MakeNeighborLists(
 using PathLenType = uint16;
 constexpr auto DT_PATHLEN = DT_UINT16;
 
-constexpr uint8 DIP__PO_ACTIVE = 1;
-constexpr uint8 DIP__PO_QUEUED = 2;
-constexpr uint8 DIP__PO_CHANGED = 4;
+constexpr uint8 PO_ACTIVE = 1;
+constexpr uint8 PO_QUEUED = 2;
+constexpr uint8 PO_CHANGED = 4;
 
 using PixelQueue = std::queue< dip::sint >;
 
@@ -141,8 +141,8 @@ void ConstrainedPropagateChanges(
    // Enqueue the neighbors that are still active
    for( dip::uint jj = 0; jj < next.size(); ++jj ) {
       dip::sint ii = index + next[ jj ];
-      if( active[ ii ] & DIP__PO_ACTIVE ) {
-         active[ ii ] |= DIP__PO_QUEUED;
+      if( active[ ii ] & PO_ACTIVE ) {
+         active[ ii ] |= PO_QUEUED;
          queue.push( ii );
       }
    }
@@ -152,7 +152,7 @@ void ConstrainedPropagateChanges(
       index = queue.front();
       queue.pop();
       uint8* aptr = active + index;
-      *aptr &= ~DIP__PO_QUEUED; // Clear the queued bit
+      *aptr &= ~PO_QUEUED; // Clear the queued bit
       // Update this pixel's lengths looking backwards
       dip::sint ii = index + prev[ 0 ];
       PathLenType len_o = other_length[ ii ];
@@ -170,14 +170,14 @@ void ConstrainedPropagateChanges(
          // Enqueue the neighbors that are still active
          for( dip::uint jj = 0; jj < next.size(); ++jj ) {
             ii = index + next[ jj ];
-            if(( active[ ii ] & DIP__PO_ACTIVE ) && !( active[ ii ] & DIP__PO_QUEUED )) {
-               active[ ii ] |= DIP__PO_QUEUED;
+            if(( active[ ii ] & PO_ACTIVE ) && !( active[ ii ] & PO_QUEUED )) {
+               active[ ii ] |= PO_QUEUED;
                queue.push( ii );
             }
          }
          // Put this one on the 'changed' list
-         if( !( *aptr & DIP__PO_CHANGED )) {
-            *aptr |= DIP__PO_CHANGED; // this is to make sure they're only pushed once
+         if( !( *aptr & PO_CHANGED )) {
+            *aptr |= PO_CHANGED; // this is to make sure they're only pushed once
             changed.push( index );
          }
       }
@@ -185,13 +185,13 @@ void ConstrainedPropagateChanges(
          other_length[ index ] = len_o;
          // Enqueue the straight neighbor if still active
          ii = index + next[ 0 ];
-         if(( active[ ii ] & DIP__PO_ACTIVE ) && !( active[ ii ] & DIP__PO_QUEUED )) {
-            active[ ii ] |= DIP__PO_QUEUED;
+         if(( active[ ii ] & PO_ACTIVE ) && !( active[ ii ] & PO_QUEUED )) {
+            active[ ii ] |= PO_QUEUED;
             queue.push( ii );
          }
          // Put this one on the 'changed' list
-         if( !( *aptr & DIP__PO_CHANGED )) {
-            *aptr |= DIP__PO_CHANGED; // this is to make sure they're only pushed once
+         if( !( *aptr & PO_CHANGED )) {
+            *aptr |= PO_CHANGED; // this is to make sure they're only pushed once
             changed.push( index );
          }
       }
@@ -212,8 +212,8 @@ void PropagateChanges(
    // Enqueue the neighbors that are still active
    for( dip::uint jj = 0; jj < next.size(); ++jj ) {
       dip::sint ii = index + next[ jj ];
-      if( active[ ii ] & DIP__PO_ACTIVE ) {
-         active[ ii ] |= DIP__PO_QUEUED; // this is to make sure they're only pushed once
+      if( active[ ii ] & PO_ACTIVE ) {
+         active[ ii ] |= PO_QUEUED; // this is to make sure they're only pushed once
          queue.push( ii );
       }
    }
@@ -223,7 +223,7 @@ void PropagateChanges(
       index = queue.front();
       queue.pop();
       uint8* aptr = active + index;
-      *aptr &= ~DIP__PO_QUEUED; // Clear the queued bit
+      *aptr &= ~PO_QUEUED; // Clear the queued bit
       // Update this pixel's length looking backwards
       dip::sint ii = index + prev[ 0 ];
       PathLenType len = length[ ii ];
@@ -239,14 +239,14 @@ void PropagateChanges(
          // Enqueue the neighbors that are still active
          for( dip::uint jj = 0; jj < next.size(); ++jj ) {
             ii = index + next[ jj ];
-            if(( active[ ii ] & DIP__PO_ACTIVE ) && !( active[ ii ] & DIP__PO_QUEUED )) {
-               active[ ii ] |= DIP__PO_QUEUED;
+            if(( active[ ii ] & PO_ACTIVE ) && !( active[ ii ] & PO_QUEUED )) {
+               active[ ii ] |= PO_QUEUED;
                queue.push( ii );
             }
          }
          // Put this one on the 'changed' list
-         if( !( *aptr & DIP__PO_CHANGED )) {
-            *aptr |= DIP__PO_CHANGED; // this is to make sure they're only pushed once
+         if( !( *aptr & PO_CHANGED )) {
+            *aptr |= PO_CHANGED; // this is to make sure they're only pushed once
             changed.push( index );
          }
       }
@@ -258,7 +258,7 @@ void PropagateChanges(
 //
 
 template< typename TPI >
-void dip__ConstrainedPathOpening(
+void ConstrainedPathOpeningInternal(
       Image& im_grey,                     // grey in & out
       Image& im_active,                   // temp: marks active pixels
       Image& im_slup,                     // temp: upstream length, straight
@@ -282,7 +282,7 @@ void dip__ConstrainedPathOpening(
 
    for( dip::uint jj = 0; jj < offsets.size(); ++jj ) {
       dip::sint offset = offsets[ jj ];
-      if( !( active[ offset ] & DIP__PO_ACTIVE )) {
+      if( !( active[ offset ] & PO_ACTIVE )) {
          continue;
       }
       // Propagate changes upstream
@@ -294,23 +294,23 @@ void dip__ConstrainedPathOpening(
          dip::sint index = changed.front(); // we can use `index` because all images have the same strides.
          changed.pop();
          uint8* aptr = active + index;
-         *aptr &= ~DIP__PO_CHANGED;
+         *aptr &= ~PO_CHANGED;
          if(( static_cast< dip::uint >( slup[ index ] + oldn[ index ] ) < length + 1 ) &&
             ( static_cast< dip::uint >( olup[ index ] + sldn[ index ] ) < length + 1 )) {
             grey[ index ] = grey[ offset ];
-            active[ index ] &= ~DIP__PO_ACTIVE;
+            active[ index ] &= ~PO_ACTIVE;
             slup[ index ] = 0;
             olup[ index ] = 0;
             sldn[ index ] = 0;
             oldn[ index ] = 0;
          }
       }
-      active[ offset ] &= ~DIP__PO_ACTIVE;
+      active[ offset ] &= ~PO_ACTIVE;
    }
 }
 
 template< typename TPI >
-void dip__PathOpening(
+void PathOpeningInternal(
       Image& im_grey,                     // grey in & out
       Image& im_active,                   // temp: marks active pixels
       Image& im_lup,                      // temp: upstream length
@@ -330,7 +330,7 @@ void dip__PathOpening(
 
    for( dip::uint jj = 0; jj < offsets.size(); ++jj ) {
       dip::sint offset = offsets[ jj ];
-      if( !( active[ offset ] & DIP__PO_ACTIVE )) {
+      if( !( active[ offset ] & PO_ACTIVE )) {
          continue;
       }
       // Propagate changes upstream
@@ -342,15 +342,15 @@ void dip__PathOpening(
          dip::sint index = changed.front(); // we can use `index` because all images have the same strides.
          changed.pop();
          uint8* aptr = active + index;
-         *aptr &= ~DIP__PO_CHANGED;
+         *aptr &= ~PO_CHANGED;
          if( static_cast< dip::uint >( lup[ index ] + ldn[ index ] ) < length + 1 ) {
             grey[ index ] = grey[ offset ];
-            active[ index ] &= ~DIP__PO_ACTIVE;
+            active[ index ] &= ~PO_ACTIVE;
             lup[ index ] = 0;
             ldn[ index ] = 0;
          }
       }
-      active[ offset ] &= ~DIP__PO_ACTIVE;
+      active[ offset ] &= ~PO_ACTIVE;
    }
 }
 
@@ -519,7 +519,7 @@ void PathOpening(
          if( mask.IsForged() ) {
             active.Copy( mask );
          } else {
-            active.Fill( DIP__PO_ACTIVE );
+            active.Fill( PO_ACTIVE );
          }
          SetBorder( active, Image::Pixel( 0 ) ); // Set border pixels to inactive, we won't process them.
          len1.Fill( length );
@@ -531,11 +531,11 @@ void PathOpening(
 
          // Do the data-type-dependent thing
          if( constrained ) {
-            DIP_OVL_CALL_REAL( dip__ConstrainedPathOpening,
+            DIP_OVL_CALL_REAL( ConstrainedPathOpeningInternal,
                                ( tmp, active, len1, len2, len3, len4, offsets, offsetUp, offsetDown, length ),
                                ovlType );
          } else {
-            DIP_OVL_CALL_REAL( dip__PathOpening,
+            DIP_OVL_CALL_REAL( PathOpeningInternal,
                                ( tmp, active, len1, len2, offsets, offsetUp, offsetDown, length ),
                                ovlType );
          }
@@ -660,7 +660,7 @@ void DirectedPathOpening(
    if( mask.IsForged() ) {
       active.Copy( mask );
    } else {
-      active.Fill( DIP__PO_ACTIVE );
+      active.Fill( PO_ACTIVE );
    }
    SetBorder( active, Image::Pixel( 0 ) ); // Set border pixels to inactive, we won't process them.
 
@@ -703,11 +703,11 @@ void DirectedPathOpening(
 
    // Do the data-type-dependent thing
    if( constrained ) {
-      DIP_OVL_CALL_REAL( dip__ConstrainedPathOpening,
+      DIP_OVL_CALL_REAL( ConstrainedPathOpeningInternal,
                          ( out, active, len1, len2, len3, len4, offsets, offsetUp, offsetDown, length ),
                          ovlType );
    } else {
-      DIP_OVL_CALL_REAL( dip__PathOpening,
+      DIP_OVL_CALL_REAL( PathOpeningInternal,
                          ( out, active, len1, len2, offsets, offsetUp, offsetDown, length ),
                          ovlType );
    }

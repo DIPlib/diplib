@@ -612,51 +612,51 @@ using RangeArray = DimensionArray< Range >;
 namespace detail {
 
 template< typename Enum, typename = std::enable_if_t< std::is_enum< Enum >::value >>
-class DIP_NO_EXPORT dip__Options {
+class DIP_NO_EXPORT Options {
       using value_type = unsigned long;
       using enum_u_type = typename std::underlying_type< Enum >::type;
       value_type values = 0;
 
    private:
       // Private constructor used by `operator+` and `operator-`.
-      explicit constexpr dip__Options( value_type n ) noexcept : values{ n } {}
+      explicit constexpr Options( value_type n ) noexcept : values{ n } {}
 
    public:
-      constexpr dip__Options() noexcept = default;
-      constexpr dip__Options( Enum n ) noexcept : values{ value_type( 1u ) << static_cast< enum_u_type >( n ) } {}
+      constexpr Options() noexcept = default;
+      constexpr Options( Enum n ) noexcept : values{ value_type( 1u ) << static_cast< enum_u_type >( n ) } {}
 
       // Testing
-      constexpr bool operator==( dip__Options const other ) const noexcept {
+      constexpr bool operator==( Options const other ) const noexcept {
          return values == other.values;
       }
-      constexpr bool operator!=( dip__Options const other ) const noexcept {
+      constexpr bool operator!=( Options const other ) const noexcept {
          return !operator==( other );
       }
-      constexpr bool Contains( dip__Options const other ) const noexcept {
+      constexpr bool Contains( Options const other ) const noexcept {
          return ( values & other.values ) == other.values;
       }
 
       // Combining
-      constexpr dip__Options operator+( dip__Options const other ) const noexcept {
-         return dip__Options{ values | other.values };
+      constexpr Options operator+( Options const other ) const noexcept {
+         return Options{ values | other.values };
       }
-      constexpr dip__Options operator-( dip__Options const other ) const noexcept {
-         return dip__Options{ values & ~other.values };
+      constexpr Options operator-( Options const other ) const noexcept {
+         return Options{ values & ~other.values };
       }
-      dip__Options& operator+=( dip__Options const other ) noexcept {
+      Options& operator+=( Options const other ) noexcept {
          values |= other.values;
          return *this;
       }
-      dip__Options& operator-=( dip__Options const other ) noexcept {
+      Options& operator-=( Options const other ) noexcept {
          values &= ~other.values;
          return *this;
       }
 };
 
 // This operator enables `enum_value + options`, for symmetry with the operator defined
-// as a member of `dip__Options`.
+// as a member of `Options`.
 template< typename T >
-constexpr dip__Options< T > operator+( T a, dip__Options< T > b ) noexcept {
+constexpr Options< T > operator+( T a, Options< T > b ) noexcept {
    return b + a;
 }
 
@@ -690,7 +690,7 @@ constexpr dip__Options< T > operator+( T a, dip__Options< T > b ) noexcept {
 /// This macro will not work within a class definition -- You will need to manually declare the type alias
 /// and define the operator outside of the class.
 #define DIP_DECLARE_OPTIONS( EnumType, OptionsType ) \
-   using OptionsType = dip::detail::dip__Options< EnumType >; \
+   using OptionsType = dip::detail::Options< EnumType >; \
    constexpr OptionsType operator+( EnumType a, EnumType b ) noexcept { return OptionsType{ a } + b; }
 // The `operator+` allows the addition of two enumerator values to produce an options object.
 

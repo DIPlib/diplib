@@ -253,7 +253,7 @@ SubpixelExtremumMethod ParseMethod( String const& s_method, dip::uint nDims ) {
 }
 
 template< typename TPI >
-SubpixelLocationResult dip__SubpixelLocation(
+SubpixelLocationResult SubpixelLocationInternal(
       Image const& input,
       UnsignedArray const& position,
       SubpixelExtremumMethod method,
@@ -453,7 +453,7 @@ SubpixelLocationResult SubpixelLocation(
    DIP_END_STACK_TRACE
    // Data-type dependent stuff
    SubpixelLocationResult out;
-   DIP_OVL_CALL_ASSIGN_REAL( out, dip__SubpixelLocation, ( in, position, method, invert ), in.DataType() );
+   DIP_OVL_CALL_ASSIGN_REAL( out, SubpixelLocationInternal, ( in, position, method, invert ), in.DataType() );
    return out;
 }
 
@@ -504,9 +504,9 @@ SubpixelLocationArray SubpixelExtrema(
       return out;
    }
 
-   // Find the version of `dip__SubpixelLocation` to call, depending on input data type.
-   auto SubpixelLocationFunction = dip__SubpixelLocation< sfloat >; // any of them, for the sake of finding out the type.
-   DIP_OVL_ASSIGN_REAL( SubpixelLocationFunction, dip__SubpixelLocation, in.DataType() );
+   // Find the version of `SubpixelLocationInternal` to call, depending on input data type.
+   auto SubpixelLocationFunction = SubpixelLocationInternal< sfloat >; // any of them, for the sake of finding out the type.
+   DIP_OVL_ASSIGN_REAL( SubpixelLocationFunction, SubpixelLocationInternal, in.DataType() );
 
    // For each extremum: find sub-pixel location and write to output
    FloatArray coords( nDims );

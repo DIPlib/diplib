@@ -182,7 +182,7 @@ namespace dip {
 
 namespace javaio {
 
-static JNINativeMethodCPP image_natives__[] = {
+static JNINativeMethodCPP image_natives_[] = {
    {"Sizes",           "(J)[J",                    (void*)Java_org_diplib_Image_Sizes },
    {"SetSizes",        "(J[J)V",                   (void*)Java_org_diplib_Image_SetSizes },
    {"Strides",         "(J)[J",                    (void*)Java_org_diplib_Image_Strides },
@@ -212,7 +212,7 @@ void RegisterImageNatives( JNIEnv *env ) {
       DIP_THROW_RUNTIME( "Registering native functions: cannot find org.diplib.Image" );
    }   
    
-   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives__, 19) < 0 ) {
+   if ( env->RegisterNatives(cls, (JNINativeMethod*) image_natives_, 19) < 0 ) {
       DIP_THROW_RUNTIME( "Failed to register native functions for org.diplib.Image" );
    }   
 }

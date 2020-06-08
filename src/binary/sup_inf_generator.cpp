@@ -273,16 +273,16 @@ void ExpandInputImage(
             origin[ ii ] = -static_cast< dip::sint >( border[ ii ] );
             sizes[ ii ] += 2 * border[ ii ];
          }
-         largerIn.dip__ShiftOrigin( largerIn.Offset( origin ));
-         largerIn.dip__SetSizes( sizes );
+         largerIn.ShiftOriginUnsafe( largerIn.Offset( origin ));
+         largerIn.SetSizesUnsafe( sizes );
          // Copy
          if( !out.DataType().IsBinary() ) {
             DIP_STACK_TRACE_THIS( out.Strip()); // Make sure we don't get a data type conversion here
          }
          DIP_STACK_TRACE_THIS( out.Copy( largerIn ));
          // Out must be a view on this
-         out.dip__ShiftOrigin( out.Offset( border ));
-         out.dip__SetSizes( in.Sizes());
+         out.ShiftOriginUnsafe( out.Offset( border ));
+         out.SetSizesUnsafe( in.Sizes());
       }
    }
 }
