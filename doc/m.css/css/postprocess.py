@@ -3,7 +3,7 @@
 #
 #   This file is part of m.css.
 #
-#   Copyright © 2017, 2018, 2019 Vladimír Vondruš <mosra@centrum.cz>
+#   Copyright © 2017, 2018, 2019, 2020 Vladimír Vondruš <mosra@centrum.cz>
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the "Software"),
@@ -134,14 +134,14 @@ def postprocess(files, process_imports, out_file):
             else:
                 out.write(line)
 
-    with open(out_file, mode='w') as out:
+    with open(out_file, mode='w', encoding='utf8') as out:
         # Put a helper comment and a license blob on top
         out.write("""/* Generated using `./postprocess.py {}`. Do not edit. */
 
 /*
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019 Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2017, 2018, 2019, 2020 Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -164,14 +164,14 @@ def postprocess(files, process_imports, out_file):
 """.format(' '.join(sys.argv[1:])))
 
         # Parse the top-level file
-        with open(files[0]) as f: parse(f)
+        with open(files[0], encoding='utf8') as f: parse(f)
 
         # Now open the imported files and parse them as well. Not doing any
         # recursive parsing.
         for i, file in enumerate(imported_files + files[1:]):
             if i: out.write('\n')
 
-            with open(file) as f: parse(f)
+            with open(file, encoding='utf8') as f: parse(f)
 
     return 0
 
