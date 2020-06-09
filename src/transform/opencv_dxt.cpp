@@ -136,9 +136,11 @@ constexpr static const std::complex< double > DFTTab[] = {
       { 1.00000000000000000,  -0.00000000292583616 }
 };
 
+constexpr int maxFactors = 34;  // seems to be the max number of factors we'll ever get (given 31-bit limit?)
+
 std::vector< int > DFTFactorize( int n ) {
    std::vector< int > factors;
-   factors.reserve( 34 ); // seems to be the max number of factors we'll ever get (given 31-bit limit?)
+   factors.reserve( maxFactors );
 
    if( n <= 5 ) {
       factors.push_back( n );
@@ -215,9 +217,9 @@ void DFT< T >::Initialize( std::size_t nfft, bool inverse ) {
       m = 2;
    } else {
       // radix[] is initialized from index 'nf' down to zero
-      DIP_ASSERT ( factors_.size() < 34 );
-      int digits[34];
-      int radix[34];
+      DIP_ASSERT ( factors_.size() < maxFactors );
+      int radix[ maxFactors ];
+      int digits[ maxFactors ];
       radix[ factors_.size() ] = 1;
       digits[ factors_.size() ] = 0;
       for( std::size_t i = 0; i < factors_.size(); i++ ) {
@@ -243,7 +245,7 @@ void DFT< T >::Initialize( std::size_t nfft, bool inverse ) {
                itab_[ i + 3 ] = j + na2 + na4;
             }
          } else {
-            int shift = 34 - m;
+            int shift = maxFactors - m;
             for( int i = 0; i < n; i += 4 ) {
                int i4 = i >> 2;
                int j = BitRev( i4, shift ) * a;

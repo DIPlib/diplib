@@ -65,7 +65,7 @@ namespace dip {
 ///   - "inverse": compute the inverse transform; not providing this string causes the the forward
 ///     transform to be computed.
 ///   - "real": assumes that the (complex) input is conjugate symmetric, and returns a real-valued
-///     result.
+///     result. Only to be used together with "inverse".
 ///   - "fast": pads the input to a "nice" size, multiple of 2, 3 and 5, which can be processed faster.
 ///     Note that "fast" causes the output to be interpolated. This is not always a problem
 ///     when computing convolutions or correlations, but will introduce e.g. edge effects in the result
@@ -77,6 +77,13 @@ namespace dip {
 ///     dimension. This makes the transform identical to how it was in *DIPlib 2*.
 ///
 /// For tensor images, each plane is transformed independently.
+///
+/// With the "fast" mode, the input will be padded. If "corner" is given, the padding is to the right.
+/// Otherwise it is split evenly on both sides, in such a way that the origin remains in the middle pixel.
+/// For the forward transform, the padding applied is the "zero order" boundary condition (see `dip::BoundaryCondition`).
+/// Its effect is similar to padding with zeros, but with reduced edge effects.
+/// For the inverse transform, padding is with zeros ("add zeros" boundary condition). However, the combination
+/// of "fast", "corner" and "inverse" is not allowed, since padding in that case is non-trivial.
 ///
 /// \warning The largest size that can be transformed is 2<sup>31</sup>-1. In DIPlib, image sizes are
 /// represented by a `dip::uint`, which on a 64-bit system can hold values up to 2<sup>64</sup>-1. But this function

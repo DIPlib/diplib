@@ -48,16 +48,19 @@ namespace dip {
 /// ```cpp
 ///     DFT dft( size, inverse );               // creates the object with all the data ready to start running DFTs.
 ///     std::vector< std::complex< T >> buf( opts.BufferSize() ); // creates a buffer
-///     dft.Apply( in, out, buf.data() );                         // runs a DFT, repeat as necessary
+///     dft.Apply( in, out, buf.data() );                         // computes a DFT, repeat as necessary
 ///     dft.Initialize( size2, inverse );                         // changes the options for the new size / direction
 ///     buf.resize( opts.BufferSize() );                          // resizes the buffer
-///     dft.Apply( in, out, buf.data() );                         // runs a different DFT, repeat as necessary
+///     dft.Apply( in, out, buf.data() );                         // computes a different DFT, repeat as necessary
 /// ```
 ///
 /// Note that this code uses `int` for sizes, rather than `dip::uint`. `maximumDFTSize` is the largest length
 /// of the transform.
 ///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
+///
+/// The DFT is computed using an FFT algorithm that is optimized for lengths that are a multiple of 2, 3 and 5.
+/// The larger the factors above 5, the longer the algorithm will take.
 template< typename T >
 class DFT {
    public:
@@ -83,6 +86,9 @@ class DFT {
       ///
       /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
       /// the inverse transform, and 1 for the forward transform.
+      ///
+      /// `source` and `destination` can only point to the same buffer if all factors of `TransformSize()` are
+      /// the same. One should avoid this in general situations.
       DIP_EXPORT void Apply(
             const std::complex< T >* source,
             std::complex< T >* destination,
