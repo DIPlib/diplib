@@ -598,6 +598,8 @@ inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& fun
 /// `SeparableOption::DontResizeOutput`     | The output image has the right size; it can differ from the input size.
 /// `SeparableOption::UseInputBuffer`       | The line filter can modify the input data without affecting the input image; samples are guaranteed to be contiguous.
 /// `SeparableOption::UseOutputBuffer`      | The output buffer is guaranteed to have contiguous samples.
+/// `SeparableOption::CanWorkInPlace`       | The input and output buffer are allowed to both point to the same memory.
+/// `SeparableOption::UseRealComponentOfOutput` | If the buffer type is complex, and the output type is not, cast by taking the real component of the complex data, rather than the modulus.
 ///
 /// Combine options by adding constants together.
 enum class SeparableOption {
@@ -607,7 +609,9 @@ enum class SeparableOption {
       UseOutputBorder,
       DontResizeOutput,
       UseInputBuffer,
-      UseOutputBuffer
+      UseOutputBuffer,
+      CanWorkInPlace,
+      UseRealComponentOfOutput
 };
 DIP_DECLARE_OPTIONS( SeparableOption, SeparableOptions )
 
@@ -674,7 +678,7 @@ class DIP_EXPORT SeparableLineFilter {
       /// a convolution-like operation.
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint nTensorElements, dip::uint border, dip::uint procDim ) {
          ( void )procDim; // not used in this function, but useful for some line filters.
-         return lineLength * nTensorElements * 4 * border; // 2*border is filter size, double that for the number of multiply-adds.
+         return lineLength * nTensorElements * 2 * ( 2 * border + 1 ); // 2*border+1 is filter size, double that for the number of multiply-adds.
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~SeparableLineFilter() = default;
@@ -756,6 +760,9 @@ class DIP_EXPORT SeparableLineFilter {
 /// That is, the tensor elements for each pixel are contiguous, and the pixels
 /// are contiguous. This is useful when calling external code to process the
 /// buffers, and that external code expects input data to be contiguous.
+/// Forcing the use of an input buffer is also useful when the algorithm needs
+/// to write temporary data to its input, for example, to compute the median of
+/// the input data by sorting.
 /// If the input has a stride of 0 in the dimension being processed
 /// (this happens when expanding singleton dimensions), it means that a single
 /// pixel is repeated across the whole line. This property is preserved in the
@@ -778,13 +785,13 @@ class DIP_EXPORT SeparableLineFilter {
 ///
 /// If `in` and `out` share their data segments, then the input image might be
 /// overwritten with the processing result. However, the input and output buffers
-/// will never share memory. That is, the line filter can freely write in the
+/// will not share memory. That is, the line filter can freely write in the
 /// output buffer without invalidating the input buffer, even when the filter is
-/// being applied in-place.
-/// With the `dip::FrameWork::SeparableOption::UseInputBuffer` option, the input buffer
-/// never points to the input image, the input data are always copied to a temporary
-/// buffer. This allows the `lineFilter` to modify the input, which is useful for,
-/// for example, computing the median of the input data by sorting.
+/// being applied in-place. The `dip::FrameWork::SeparableOption::CanWorkInPlace` option
+/// causes the input and output buffer to potentially both point to the same image data,
+/// if input and output images are the same and everything else falls into place as well.
+/// It is meant to save some copy work for those algorithms that can work in-place,
+/// but does not guarantee that the output buffer points to the input data.
 ///
 /// If `in` and `out` share their data segments (e.g. they are the same image),
 /// then the filtering operation can be applied completely in place, without any

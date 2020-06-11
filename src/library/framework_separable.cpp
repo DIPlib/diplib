@@ -335,8 +335,10 @@ void Separable(
             }
             if( !inUseBuffer && !outUseBuffer && ( inImage.Origin() == outImage.Origin() )) {
                // If input and output images are the same, we need to use at least one buffer!
-               inUseBuffer = true;
+               inUseBuffer = !opts.Contains( SeparableOption::CanWorkInPlace );
             }
+            bool useRealComponentOfOutput = outUseBuffer && bufferType.IsComplex() && !outImage.DataType().IsComplex()
+                                            && opts.Contains( SeparableOption::UseRealComponentOfOutput );
 
             // Create buffer data structs and (re-)allocate buffers
             SeparableBuffer inBuffer;
@@ -422,17 +424,31 @@ void Separable(
 
                // Copy back the line from output buffer to the image
                if( outUseBuffer ) {
-                  detail::CopyBuffer(
-                        outBuffer.buffer,
-                        bufferType,
-                        outBuffer.stride,
-                        outBuffer.tensorStride,
-                        it.OutPointer(),
-                        outImage.DataType(),
-                        outImage.Stride( processingDim ),
-                        outImage.TensorStride(),
-                        outLength,
-                        outBuffer.tensorLength );
+                  if( useRealComponentOfOutput ) {
+                     detail::CopyBuffer(
+                           outBuffer.buffer,
+                           bufferType.Real(),
+                           outBuffer.stride * 2,
+                           outBuffer.tensorStride * 2,
+                           it.OutPointer(),
+                           outImage.DataType(),
+                           outImage.Stride( processingDim ),
+                           outImage.TensorStride(),
+                           outLength,
+                           outBuffer.tensorLength );
+                  } else {
+                     detail::CopyBuffer(
+                           outBuffer.buffer,
+                           bufferType,
+                           outBuffer.stride,
+                           outBuffer.tensorStride,
+                           it.OutPointer(),
+                           outImage.DataType(),
+                           outImage.Stride( processingDim ),
+                           outImage.TensorStride(),
+                           outLength,
+                           outBuffer.tensorLength );
+                  }
                }
             }
          }
