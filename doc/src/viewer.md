@@ -184,7 +184,7 @@ There are also a few keyboard shortcuts:
 - \m_class{m-label m-warning} **F** and \m_class{m-label m-warning} **B**:
   Step through the fourth image dimension.
 
-- \m_class{m-label m-warning} **1** through \m_class{m-label m-warning} **0** 
+- \m_class{m-label m-warning} **1** through \m_class{m-label m-warning} **0**:
   Select tensor element (first element is leftmost).
 
 - \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **1**:

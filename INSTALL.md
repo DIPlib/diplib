@@ -45,14 +45,13 @@ See below for optional dependencies that you can install to improve your *DIPlib
 
 Available `make` targets:
 
-    all (default) # builds DIPlib, DIPimage and PyDIP, if configured
-    install       # builds 'all' and installs DIPlib and DIPimage
+    all (default) # builds all configured targets (see below)
+    install       # builds 'all' and installs everything except PyDIP
     check         # builds the unit_tests program and runs it
     check_memory  # ...and runs it under valgrind
-    apidoc        # builds the HTML documentation for the library API
-                  #    (as well as the user manuals for DIPimage and PyDIP)
+    apidoc        # builds all the HTML documentation
     examples      # builds the examples
-    package       # creates a distributable package
+    package       # creates a distributable package for 'install'
     bdist_wheel   # builds a Python wheel for PyDIP
     pip_install   # builds and installs a Python wheel for PyDIP
     pip_uninstall # uninstalls PyDIP
@@ -114,6 +113,8 @@ Controlling the build of *PyDIP*:
 
     -DDIP_BUILD_PYDIP=Off              # don't build the PyDIP Python module
     -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
+    -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On  # include libraries in PyDIP wheel (turn on for
+                                       # binary distribution, keep off for personal builds)
 
 Some of these options might not be available on your system. For example, if you don't have
 MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
