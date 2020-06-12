@@ -1,0 +1,28 @@
+import os, shutil, platform
+
+source_dir = '${CMAKE_CURRENT_LIST_DIR}'
+staging_dir = os.path.join('$<TARGET_FILE_DIR:PyDIP_bin>', 'staging')
+files = '${DIP_PYTHON_PY}'.split(';')
+binaries = ['$<TARGET_FILE:PyDIP_bin>',
+            '$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:$<TARGET_FILE:PyDIPviewer>>',
+            '$<$<BOOL:${DIP_BUILD_JAVAIO}>:$<TARGET_FILE:PyDIPjavaio>>',
+            '$<TARGET_FILE:DIP>',
+            '$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:$<TARGET_FILE:DIPviewer>>',
+            '$<$<BOOL:${DIP_BUILD_JAVAIO}>:$<TARGET_FILE:DIPjavaio>>']
+
+if $<BOOL:${DIP_BUILD_JAVAIO}>:
+    binaries.append(os.path.join('${CMAKE_BINARY_DIR}', 'javaio', 'DIPjavaio.jar'))
+
+# Set up directories
+diplib_dir = os.path.join(staging_dir, 'diplib')
+shutil.rmtree(staging_dir, ignore_errors=True)
+os.makedirs(diplib_dir)
+
+# Copy files
+shutil.copy(os.path.join(source_dir, 'setup', 'README.md'), staging_dir)
+shutil.copy(os.path.join(source_dir, '..', 'LICENSE.txt'), staging_dir)
+for f in files:
+    shutil.copy(f, diplib_dir)
+for f in binaries:
+    if f:
+        shutil.copy(f, diplib_dir)

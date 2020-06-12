@@ -18,20 +18,13 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-import PyDIP
+from .PyDIP_bin import ImageDisplay
 import importlib.util
 import os.path
 
 hasMatPlotLib = True
+reportedPlotLib = False
 if importlib.util.find_spec('matplotlib') is None:
-    print("""
-PyDIP requires matplotlib for its display functionality. Matplotlib was not found
-on your system. Image display (PyDIP.Show and PyDIP.Image.Show) will not do anything.
-You can install matplotlib by typing on your Linux/MacOS command prompt:
-    pip3 install matplotlib
-or under Windows:
-    python3 -m pip install matplotlib
-""")
     hasMatPlotLib = False
 else:
     import matplotlib
@@ -125,8 +118,9 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     `colormap` is ignored. Note that, if `dim1==dim2`, a 2D image is also
     projected as described above for higher-dimensional images.
     """
+    global reportedPlotLib
     if hasMatPlotLib:
-        out = PyDIP.ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
+        out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
         if out.Dimensionality() == 1:
             axes = pp.gca()
             axes.clear()
@@ -150,6 +144,14 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             pp.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none')
         pp.draw()
         pp.pause(0.001)
-
-
-PyDIP.Image.Show = Show
+    elif not reportedPlotLib:
+        print("""
+    PyDIP requires matplotlib for its display functionality. Matplotlib was not found
+    on your system. Image display (diplib.Show and diplib.Image.Show) will not do anything.
+    You can install matplotlib by typing on your Linux/MacOS command prompt:
+        pip3 install matplotlib
+    or under Windows:
+        python3 -m pip install matplotlib
+    Alternatively, use diplib.viewer.ShowModal or diplib.viewer.Show/diplib.viewer.Spin
+    """)
+        reportedPlotLib = True

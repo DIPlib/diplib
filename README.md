@@ -181,9 +181,9 @@ limitations under the License.
   3-Clause BSD License  
   see [`dependencies/pybind11/LICENSE`](dependencies/pybind11/LICENSE)
 
-- *python-javabridge* (only used in the *Python* bindings)
-  Copyright (c) 2003-2009 Massachusetts Institute of Technology
-  Copyright (c) 2009-2013 Broad Institute
+- *python-javabridge* (only used in the *Python* bindings)  
+  Copyright (c) 2003-2009 Massachusetts Institute of Technology  
+  Copyright (c) 2009-2013 Broad Institute  
   3-Clause BSD License  
   see [`pydip/src/loadjvm.py`](pydip/src/loadjvm.py)
 

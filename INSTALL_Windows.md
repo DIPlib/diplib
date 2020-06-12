@@ -86,14 +86,6 @@ directory to your liking here. Note that the default directory requires administ
 privileges (I was not able to install there, even though I have the administrator
 password). Let's say we select `C:\Users\<name>\DIPlib`.
 
-- `PYDIP_INSTALL_PATH` should be set to a place where Python will find the PyDIP module.
-If defaults to the correct system-wide location for your version of Python. You might
-need administrator privileges to install there. You can set this to
-`%APPDATA%\Python\PythonXY\site-packages` (where `XY` is the Python version number),
-this directory name can be obtained by executing `python3 -m site --user-site` on the
-command line.
-Alternatively, `DIP_BUILD_PYDIP` can be set to `Off` to not build the PyDIP module.
-
 - If `DIP_BUILD_DIPIMAGE` is not on the list, you don't have MATLAB installed, or you are
 building 32-bit binaries.
 
@@ -123,10 +115,11 @@ open it. Also, *CMake* will prompt you to open this file after it has generated 
 
 Opening the solution file will launch *Visual Studio*. In the "Solution Explorer" you'll
 find a list of targets (if configured for *DIPimage*, there will be very many targets!).
-The `DIP` target is the *DIPlib* library itself. To build the *DIPimage* toolbox and
-*PyDIP* (the *Python* interface), use the `INSTALL` target. This target builds everything
+The `DIP` target is the *DIPlib* library itself. To build the *DIPimage* toolbox, use
+the `INSTALL` target. This target builds everything
 and installs it in the destination directory you specified in *CMake*
 (`C:\Users\<name>\DIPlib` in our example). This is the target you will want to build.
+To additionally install *PyDIP*, use the `pip_install` target.
 
 In the tool bar, make sure that "Release" and "x64" are selected (or x86 if you want to
 build 32-bit binaries). Right-click on `INSTALL` and select "Build".
@@ -143,7 +136,7 @@ building your own C++ programs using *DIPlib*.
 
 - `C:\Users\<name>\DIPlib\share\DIPimage`: The *DIPimage* toolbox for MATLAB.
 
-- In your selected Python package path: `PyDIP` (the *Python* module).
+- In your selected Python package path: `diplib` (the *Python* module).
 
 
 ## Using *DIPimage*
@@ -169,11 +162,11 @@ dipimage
 
 ## Using *PyDIP*
 
-Once the `INSTALL` target has finished building and installing, start *Python*.
+Once the `pip_install` target has finished installing, start *Python*.
 The following command will import the *PyDIP* package as `dip`, which is shorter to
 type and mimics the namespace used in the C++ library:
 ```python
-import PyDIP as dip
+import diplib as dip
 ```
 
 To get started using *PyDIP*, look through the help, starting at

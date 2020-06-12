@@ -46,13 +46,16 @@ See below for optional dependencies that you can install to improve your *DIPlib
 Available `make` targets:
 
     all (default) # builds DIPlib, DIPimage and PyDIP, if configured
-    install       # builds and installs target 'all'
+    install       # builds 'all' and installs DIPlib and DIPimage
     check         # builds the unit_tests program and runs it
     check_memory  # ...and runs it under valgrind
     apidoc        # builds the HTML documentation for the library API
                   #    (as well as the user manuals for DIPimage and PyDIP)
     examples      # builds the examples
     package       # creates a distributable package
+    bdist_wheel   # builds a Python wheel for PyDIP
+    pip_install   # builds and installs a Python wheel for PyDIP
+    pip_uninstall # uninstalls PyDIP
 
 The following `make` targets are part of the `all` target:
 
@@ -61,6 +64,8 @@ The following `make` targets are part of the `all` target:
     DIPjavaio     # builds the DIPjavaio module (plus the DIPlib library)
     PyDIP         # builds the PyDIP Python module (includes DIP, DIPviewer and
                   #    DIPjavaio targets)
+    dipview       # builds the standalone DIP image viewer
+    dipviewjava   # builds the java-enabled standalone DIP image viewer
 
 The `apidoc` target requires that *Doxygen* be installed, the target will not be available
 if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be
@@ -107,8 +112,7 @@ Controlling the build of *DIPimage*:
 
 Controlling the build of *PyDIP*:
 
-    -DDIP_BUILD_PYDIP=Off              # don't build/install the PyDIP Python module
-    -DPYDIP_INSTALL_PATH=$HOME/...     # choose an instal location for PyDIP (see below)
+    -DDIP_BUILD_PYDIP=Off              # don't build the PyDIP Python module
     -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
 
 Some of these options might not be available on your system. For example, if you don't have
@@ -117,15 +121,6 @@ it to `Off` will yield a warning message when running CMake.
 
 Note that on some platforms, the Python module requires the *DIPlib* library to build as
 a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
-
-The `PYDIP_INSTALL_PATH` option defaults to the system-wide site packages directory for the
-selected version of Python. To obtain the user-specific site packages directory, use the
-following shell command: `python3 -m site --user-site`. The output can be used for the *PyDIP*
-installation path for users that cannot or do not want to install in the system-wide directory.
-For example:
-```bash
-cmake /path/to/dip/root/directory -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
-```
 
 ## Dependencies
 

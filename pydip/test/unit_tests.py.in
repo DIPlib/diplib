@@ -19,15 +19,8 @@ import os
 import sys
 import doctest
 
-if os.name == 'nt':
-    dll_dir = "$<TARGET_FILE_DIR:DIP>"
-    try:
-        os.add_dll_directory(dll_dir)
-    except:
-        os.environ["PATH"] += os.pathsep + dll_dir
-
-import PyDIP_bin
-sys.modules['PyDIP'] = PyDIP_bin
+import staging.diplib
+sys.modules['diplib'] = staging.diplib
 
 (failure_count, test_count) = doctest.testfile(os.path.join("@CMAKE_CURRENT_LIST_DIR@", "test", "unit_tests.md"), module_relative=False, optionflags=doctest.IGNORE_EXCEPTION_DETAIL)
 

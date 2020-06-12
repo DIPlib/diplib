@@ -149,14 +149,12 @@ endif()
 # build to fail if Python is not installed. Here we disable the `DIP_BUILD_PYDIP` setting
 # if there is no Python libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/pybind11/tools")
-set(PYBIND11_PYTHON_VERSION ${PYBIND11_PYTHON_VERSION} CACHE STRING "Python version to use for compiling modules")
-set(Python_ADDITIONAL_VERSIONS ${Python_ADDITIONAL_VERSIONS} 3.8 3.7 3.6 3.5 3.4 3.3) # TODO: This line will need to be updated when new versions of Python are released
+set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.8 3.7 3.6 3.5 3.4 3.3) # TODO: This line will need to be updated when new versions of Python are released
    # CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
-find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION})
+find_package(PythonLibsNew)
 
 if(PYTHONLIBS_FOUND)
    set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
-   set(PYDIP_INSTALL_PATH ${PYTHON_SITE_PACKAGES} CACHE PATH "PyDIP install path")
 endif()
 
 if(DIP_BUILD_PYDIP)
@@ -377,11 +375,10 @@ endif()
 if(DIP_BUILD_PYDIP)
    message(" * PyDIP module added to 'all' target")
    message(" * PyDIP compiled for Python version ${PYTHON_VERSION_STRING}")
-   message(" * PyDIP installed to: ${PYDIP_INSTALL_PATH}/PyDIP")
-   if(DIP_PYDIP_RELATIVE_LOCATION)
-      message(" * PyDIP uses the relative path to DIPlib")
+   if(DIP_PYDIP_WHEEL_INCLUDE_LIBS)
+      message(" * PyDIP includes libraries in binary wheel")
    else()
-      message(" * PyDIP uses the absolute path to DIPlib")
+      message(" * PyDIP does not include libraries in binary wheel")
    endif()
 else()
    message(" * PyDIP module not configured")

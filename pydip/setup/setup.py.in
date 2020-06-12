@@ -1,0 +1,73 @@
+import sys, platform, os
+from setuptools import setup, Extension, Distribution
+from wheel.bdist_wheel import bdist_wheel
+
+# https://stackoverflow.com/questions/51939257/how-do-you-get-the-filename-of-a-python-wheel-when-running-setup-py
+def wheel_name(**kwargs):
+    # create a fake distribution from arguments
+    dist = Distribution(attrs=kwargs)
+    # finalize bdist_wheel command
+    bdist_wheel_cmd = dist.get_command_obj('bdist_wheel')
+    bdist_wheel_cmd.ensure_finalized()
+    # assemble wheel file name
+    distname = bdist_wheel_cmd.wheel_dist_name
+    tag = '-'.join(bdist_wheel_cmd.get_tag())
+    return '{0}-{1}.whl'.format(distname, tag)
+
+try:
+    with open("README.md", "r") as fh:
+        long_description = fh.read()
+except:
+    long_description = ""
+
+if platform.system() == "Windows":
+    os_classifier = "Operating System :: Microsoft :: Windows"
+elif platform.system() == "Darwin":
+    os_classifier = "Operating System :: MacOS :: MacOS X"
+elif platform.system() == "Linux":
+    os_classifier = "Operating System :: POSIX :: Linux"
+
+libraries = [$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:'$<TARGET_FILE_NAME:PyDIPviewer>',>
+             $<$<BOOL:${DIP_BUILD_JAVAIO}>:'$<TARGET_FILE_NAME:PyDIPjavaio>',>
+             '$<TARGET_FILE_NAME:PyDIP_bin>']
+if @pydip_wheel_include_libs@:
+    libraries.extend([$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:'$<TARGET_FILE_NAME:DIPviewer>',>
+                      $<$<BOOL:${DIP_BUILD_JAVAIO}>:'$<TARGET_FILE_NAME:DIPjavaio>',>
+                      '$<TARGET_FILE_NAME:DIP>'])
+
+    if $<BOOL:${DIP_BUILD_JAVAIO}>:
+        libraries.append('DIPjavaio.jar')
+
+setup_kwargs = dict(
+    name="diplib",
+    version="${PROJECT_VERSION}",
+    description="Python bindings for DIPlib, the quantitative image analysis library",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/DIPlib/diplib",
+    author="Cris Luengo and others",
+    author_email="luengo@ieee.org",
+    license='Apache',
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache Software License",
+        os_classifier,
+        "Programming Language :: C++",
+        "Programming Language :: Python :: 3",
+        "Topic :: Scientific/Engineering :: Image Recognition" 
+    ],
+    keywords="image-analysis image-viewer image-processing filtering",
+    packages=['diplib'],
+    ext_modules=[Extension('diplib.PyDIP_bin', [])],
+    package_data={'diplib': libraries},
+    python_requires='==${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.*'
+)
+
+name = os.path.join("$<TARGET_FILE_DIR:PyDIP_bin>", "staging", "dist", wheel_name(**setup_kwargs))
+
+setup(**setup_kwargs)
+print("To install, run\n  ${PYTHON_EXECUTABLE} -m pip install --upgrade ", name)
+
+with open('$<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt', 'w') as f:
+    print(name, file=f)

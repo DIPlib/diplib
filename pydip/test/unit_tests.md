@@ -3,7 +3,7 @@
 
 First import ``PyDIP``. Usually, we put it in the ``dip`` namespace.
 
-    >>> import PyDIP as dip
+    >>> import diplib as dip
 
 ``PyDIP`` is compatible with ``numpy``. Let's get that too.
 

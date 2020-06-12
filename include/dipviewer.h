@@ -42,7 +42,7 @@ class ImageViewer;
 /// A new interactive `dip::viewer::SliceViewer` window is created for the image. `title` sets the window title.
 /// If both `width` and `height` are larger than zero, they specify the size of the window created.
 ///
-/// Call `dip::viewer::Draw` or `dip::Viewer::Spin` to enable user interaction.
+/// Call `dip::viewer::Draw` or `dip::viewer::Spin` to enable user interaction.
 ///
 /// Calling `%dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
 /// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and

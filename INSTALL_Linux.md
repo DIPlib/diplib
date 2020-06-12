@@ -66,11 +66,16 @@ make -j install
 This will install to `/usr/local`. If you prefer to install elsewhere, change the
 `cmake` line with the following:
 ```bash
-cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip -DPYDIP_INSTALL_PATH=$(python3 -m site --user-site)
+cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip
 ```
 This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documentation
-under the `dip` directory in your home directory, and *PyDIP* in the user site packages
-directory.
+under the `dip` directory in your home directory
+
+*PyDIP* is installed separately through `pip`. Once the `install` target has finished building
+and installing, run
+```bash
+make pip_install
+```
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
@@ -115,11 +120,11 @@ dipimage
 
 ## Using *PyDIP*
 
-Once the `install` target has finished building and installing, start *Python*.
+Once the `pip_install` target has finished installing, start *Python*.
 The following command will import the *PyDIP* package as `dip`, which is shorter to
 type and mimics the namespace used in the C++ library:
 ```python
-import PyDIP as dip
+import diplib as dip
 ```
 
 To get started using *PyDIP*, look through the help, starting at

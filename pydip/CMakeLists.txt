@@ -5,23 +5,18 @@ file(GLOB DIP_PYTHON_SRC "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp" "${CMAKE_CURRENT_
 set(PyDIPdeps "${DIP_PYTHON_SRC}")
 file(GLOB DIP_PYTHON_PY "${CMAKE_CURRENT_LIST_DIR}/src/*.py")
 list(APPEND PyDIPdeps "${DIP_PYTHON_PY}")
-# Insert DIP.dll location into __init__.py -- Windows only!
-if(WIN32)
-   set(DIP_PYDIP_RELATIVE_LOCATION OFF CACHE BOOL "PyDIP uses relative path to find the DIPlib library (turn on for binary distribution, keep off for personal builds)")
+set(DIP_PYDIP_WHEEL_INCLUDE_LIBS OFF CACHE BOOL "Include libraries in PyDIP wheel (turn on for binary distribution, keep off for personal builds)")
+if(APPLE)
+   set(rpath "@loader_path")
 else()
-   set(DIP_PYDIP_RELATIVE_LOCATION OFF)
+   set(rpath "$ORIGIN")
 endif()
-if(DIP_PYDIP_RELATIVE_LOCATION)
-   file(RELATIVE_PATH diplib_dir "${PYDIP_INSTALL_PATH}/PyDIP" "${CMAKE_INSTALL_PREFIX}/${LIBRARY_DESTINATION}") # this variable also used in __init__.py
-   set(py_init_use_relative_location True) # set variable used in __init__.py
-   if(APPLE)
-      set(rpath "@loader_path/${diplib_dir}")
-   else()
-      set(rpath "$ORIGIN/${diplib_dir}")
-   endif()
+if (DIP_PYDIP_WHEEL_INCLUDE_LIBS)
+   set(pydip_wheel_include_libs True)
 else()
-   set(py_init_use_relative_location False) # set variable used in __init__.py
-   set(rpath "${CMAKE_INSTALL_PREFIX}/${LIBRARY_DESTINATION}")
+   set(pydip_wheel_include_libs False)
+   # Still search current directory first, for unit tests
+   set(rpath "${rpath};${CMAKE_INSTALL_PREFIX}/${LIBRARY_DESTINATION}")
 endif()
 configure_file("${CMAKE_CURRENT_LIST_DIR}/src/__init__.py.in" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" @ONLY)
 list(APPEND DIP_PYTHON_PY "${CMAKE_CURRENT_BINARY_DIR}/__init__.py")
@@ -32,17 +27,10 @@ update_deps_file("PyDIP_sources" "${PyDIPdeps}")
 pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC})
 target_link_libraries(PyDIP_bin PRIVATE DIP)
 set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "${rpath}")
-set_target_properties(PyDIP_bin PROPERTIES BUILD_WITH_INSTALL_RPATH OFF)
 
 # C++ version, etc.
 set_target_properties(PyDIP_bin PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
 set_target_properties(PyDIP_bin PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
-
-# Install PyDIP_bin
-install(TARGETS PyDIP_bin DESTINATION "${PYDIP_INSTALL_PATH}/PyDIP")
-
-# Install .py files
-install(FILES ${DIP_PYTHON_PY} DESTINATION "${PYDIP_INSTALL_PATH}/PyDIP")
 
 add_custom_target(PyDIP DEPENDS PyDIP_bin)
 
@@ -62,8 +50,6 @@ if(DIP_BUILD_DIPVIEWER)
    set_target_properties(PyDIPviewer PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
    set_target_properties(PyDIPviewer PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
 
-   # Install PyDIPviewer
-   install(TARGETS PyDIPviewer DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
    add_dependencies(PyDIP PyDIPviewer)
 
 endif()
@@ -84,11 +70,42 @@ if(DIP_BUILD_JAVAIO)
    set_target_properties(PyDIPjavaio PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED On CXX_EXTENSIONS Off)
    set_target_properties(PyDIPjavaio PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN 1)
 
-   # Install PyDIPjavaio
-   install(TARGETS PyDIPjavaio DESTINATION ${PYDIP_INSTALL_PATH}/PyDIP)
    add_dependencies(PyDIP PyDIPjavaio)
 
 endif()
+
+# PyDIP wheel creation
+configure_file(${CMAKE_CURRENT_LIST_DIR}/setup/stage_wheel.py.in ${CMAKE_CURRENT_BINARY_DIR}/stage_wheel.py.out)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/setup/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/setup.py.out)
+
+file(GENERATE
+   OUTPUT "$<TARGET_FILE_DIR:PyDIP_bin>/stage_wheel.py"
+   INPUT "${CMAKE_CURRENT_BINARY_DIR}/stage_wheel.py.out"
+)
+file(GENERATE
+   OUTPUT "$<TARGET_FILE_DIR:PyDIP_bin>/setup.py"
+   INPUT "${CMAKE_CURRENT_BINARY_DIR}/setup.py.out"
+)
+file(GENERATE
+   OUTPUT "$<TARGET_FILE_DIR:PyDIP_bin>/cmake_pip_install.cmake"
+   CONTENT "file(STRINGS $<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt PYDIP_WHEEL_NAME)
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade \${PYDIP_WHEEL_NAME})"
+)
+
+add_custom_target(staging
+                  COMMAND ${PYTHON_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/stage_wheel.py
+                  DEPENDS PyDIP)
+
+add_custom_target(bdist_wheel
+                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin>/staging ${PYTHON_EXECUTABLE} ../setup.py bdist_wheel
+                  DEPENDS staging)
+
+add_custom_target(pip_install
+                  COMMAND ${CMAKE_COMMAND} -P $<TARGET_FILE_DIR:PyDIP_bin>/cmake_pip_install.cmake
+                  DEPENDS bdist_wheel)
+
+add_custom_target(pip_uninstall
+                  COMMAND ${PYTHON_EXECUTABLE} -m pip uninstall diplib)
 
 # PyDIP unit tests
 if(DIP_ENABLE_DOCTEST)
@@ -103,7 +120,8 @@ if(DIP_ENABLE_DOCTEST)
    )
 
    add_custom_target(PyDIP_check
-                     COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${PYTHON_EXECUTABLE} unit_tests.py)
+                     COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${PYTHON_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
+                     DEPENDS staging)
    add_dependencies(check PyDIP_check)
 
 endif()

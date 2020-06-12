@@ -172,11 +172,20 @@ shared between the windows. Right-click to unlink.
 
 There are also a few keyboard shortcuts:
 
+- \m_class{m-label m-warning} **D** and \m_class{m-label m-warning} **A**:
+  Step through the first image dimension.
+
+- \m_class{m-label m-warning} **S** and \m_class{m-label m-warning} **W**:
+  Step through the second image dimension.
+
 - \m_class{m-label m-warning} **N** and \m_class{m-label m-warning} **P**:
   Step through the third image dimension.
 
 - \m_class{m-label m-warning} **F** and \m_class{m-label m-warning} **B**:
   Step through the fourth image dimension.
+
+- \m_class{m-label m-warning} **1** through \m_class{m-label m-warning} **0** 
+  Select tensor element (first element is leftmost).
 
 - \m_class{m-label m-warning} **Ctrl** + \m_class{m-label m-warning} **1**:
   Sets a 1:1 image pixel to screen pixel zoom for all dimensions.
@@ -227,4 +236,4 @@ instead call
 periodically. Make sure to call `dip::viewer::Spin( )` when you're done to
 ensure a clean exit.
 
-See `examples/viewer.cpp` for a usage example of the full interface.
+See `examples/cpp/viewer.cpp` for a usage example of the full interface.

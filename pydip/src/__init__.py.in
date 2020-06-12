@@ -22,11 +22,8 @@ See the User Manual online: https://diplib.github.io/diplib-docs/pydip_user_manu
 
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
 import os
-if os.name == 'nt':
-    if @py_init_use_relative_location@:  # condition configured by installation script
-        pydip_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "@diplib_dir@")
-    else:
-        pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
+if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
+    pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
     try:
         os.add_dll_directory(pydip_dir)
     except:
@@ -34,23 +31,28 @@ if os.name == 'nt':
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
-from PyDIP.PyDIP_bin import *
-from PyDIP.PyDIP_py import *
+from .PyDIP_bin import *
+from .PyDIP_py import *
+Image.Show = Show
 
 # Here we import PyDIPviewer if it exists
 hasDIPviewer = False
 import importlib.util
-if importlib.util.find_spec('PyDIP.PyDIPviewer') is not None:
-    import PyDIP.PyDIPviewer as viewer
+if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
+    from . import PyDIPviewer as viewer
     hasDIPviewer = True
+    def ShowModal(*args, **kwargs):
+        viewer.Show(*args, **kwargs)
+        viewer.Spin()
+    viewer.ShowModal = ShowModal
 
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
-if importlib.util.find_spec('PyDIP.PyDIPjavaio') is not None:
+if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
     try:
-        import PyDIP.loadjvm as loadjvm
+        from . import loadjvm
         lib = loadjvm.load_jvm()
-        import PyDIP.PyDIPjavaio as javaio
+        from . import PyDIPjavaio as javaio
         ImageRead = javaio.ImageRead
         hasDIPjavaio = True
     except ImportError as e:

@@ -57,7 +57,7 @@ The class `dip.Image` has a method `Show()`. There is an identical function
 *matplotlib* is installed:
 
 ```py
-   import PyDIP as dip
+   import diplib as dip
    img = dip.ImageReadTIFF('cameraman')
    img.Show()
 ```
@@ -76,7 +76,7 @@ can be changed for example as follows:
 
 Type `help(dip.Show)` in Python to learn about many more options.
 
-If *DIPviewer* is installed, its functionality will be in the `PyDIP.viewer`
+If *DIPviewer* is installed, its functionality will be in the `diplib.viewer`
 namespace. Use `dip.viewer.Show(img)`. Depending on the backend used, it
 will be necessary to do `dip.viewer.Spin()` to interact with the created
 window. `Spin()` interrupts the interactive session until all *DIPviewer*
