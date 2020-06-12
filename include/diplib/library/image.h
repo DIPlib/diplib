@@ -2088,6 +2088,15 @@ class DIP_NO_EXPORT Image {
       /// `BOTTOM_RIGHT`           | "bottom right"
       DIP_EXPORT Image& Crop( UnsignedArray const& sizes, String const& cropLocation );
 
+      /// \brief Returns the `dip::RangeArray` indexing data that corresponds to the result of `dip::Image::Crop`.
+      DIP_EXPORT RangeArray CropWindow(
+            UnsignedArray const& sizes,
+            Option::CropLocation cropLocation = Option::CropLocation::CENTER
+      ) const;
+
+      /// \brief Returns the `dip::RangeArray` indexing data that corresponds to the result of `dip::Image::Crop`.
+      DIP_EXPORT RangeArray CropWindow( UnsignedArray const& sizes, String const& cropLocation ) const;
+
       /// \}
 
       //

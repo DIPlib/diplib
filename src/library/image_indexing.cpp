@@ -84,15 +84,15 @@ Image::Pixel Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index 
 }
 
 Image::View Image::Cropped( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
-   Image tmp = *this;
-   tmp.Crop( sizes, cropLocation );
-   return View( std::move( tmp ));
+   RangeArray window;
+   DIP_STACK_TRACE_THIS( window = CropWindow( sizes, cropLocation ));
+   return At( window );
 }
 
 Image::View Image::Cropped( UnsignedArray const& sizes, String const& cropLocation ) const {
-   Image tmp = *this;
-   tmp.Crop( sizes, cropLocation );
-   return View( std::move( tmp ));
+   RangeArray window;
+   DIP_STACK_TRACE_THIS( window = CropWindow( sizes, cropLocation ));
+   return At( window );
 }
 
 Image::View Image::Real() const {

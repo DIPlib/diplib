@@ -533,33 +533,59 @@ Image& Image::ReinterpretCast( dip::DataType dataType ) {
 }
 
 
-Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint nDims = sizes_.size();
-   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
+namespace {
+
+UnsignedArray GetWindowOrigin( UnsignedArray const& inSizes, UnsignedArray const& outSizes, Option::CropLocation cropLocation ) {
+   dip::uint nDims = inSizes.size();
    UnsignedArray origin( nDims, 0 );
    switch( cropLocation ) {
       case Option::CropLocation::CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            dip::uint diff = sizes_[ ii ] - sizes[ ii ];
-            origin[ ii ] = diff / 2 + ( !( sizes_[ ii ] & 1u ) && ( sizes[ ii ] & 1u )); // add one if input is even in size and output is odd in size
+            dip::uint diff = inSizes[ ii ] - outSizes[ ii ];
+            origin[ ii ] = diff / 2 + ( !( inSizes[ ii ] & 1u ) && ( outSizes[ ii ] & 1u )); // add one if input is even in size and output is odd in size
          }
          break;
       case Option::CropLocation::MIRROR_CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            dip::uint diff = sizes_[ ii ] - sizes[ ii ];
-            origin[ ii ] = diff / 2 + (( sizes_[ ii ] & 1u ) && !( sizes[ ii ] & 1u )); // add one if input is odd in size and output is even in size
+            dip::uint diff = inSizes[ ii ] - outSizes[ ii ];
+            origin[ ii ] = diff / 2 + (( inSizes[ ii ] & 1u ) && !( outSizes[ ii ] & 1u )); // add one if input is odd in size and output is even in size
          }
          break;
       case Option::CropLocation::TOP_LEFT:
          // Origin stays at 0
          break;
       case Option::CropLocation::BOTTOM_RIGHT:
-         origin = sizes_;
-         origin -= sizes;
+         origin = inSizes;
+         origin -= outSizes;
          break;
    }
+   return origin;
+}
+
+Option::CropLocation TranslateCropLocationFlag( String const& cropLocation ) {
+   if( cropLocation == S::CENTER ) {
+      return Option::CropLocation::CENTER;
+   }
+   if( cropLocation == S::MIRROR_CENTER ) {
+      return Option::CropLocation::MIRROR_CENTER;
+   }
+   if( cropLocation == S::TOP_LEFT ) {
+      return Option::CropLocation::TOP_LEFT;
+   }
+   if( cropLocation == S::BOTTOM_RIGHT ) {
+      return Option::CropLocation::BOTTOM_RIGHT;
+   }
+   DIP_THROW_INVALID_FLAG( cropLocation );
+}
+
+} // namespace
+
+Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = sizes_.size();
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
+   UnsignedArray origin = GetWindowOrigin( sizes_, sizes, cropLocation );
    origin_ = Pointer( origin );
    sizes_ = sizes;
    return *this;
@@ -567,18 +593,27 @@ Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocatio
 
 Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
    Option::CropLocation flag;
-   if( cropLocation == S::CENTER ) {
-      flag = Option::CropLocation::CENTER;
-   } else if( cropLocation == S::MIRROR_CENTER ) {
-      flag = Option::CropLocation::MIRROR_CENTER;
-   } else if( cropLocation == S::TOP_LEFT ) {
-      flag = Option::CropLocation::TOP_LEFT;
-   } else if( cropLocation == S::BOTTOM_RIGHT ) {
-      flag = Option::CropLocation::BOTTOM_RIGHT;
-   } else {
-      DIP_THROW_INVALID_FLAG( cropLocation );
-   }
+   DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
    return Crop( sizes, flag );
+}
+
+RangeArray Image::CropWindow( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = sizes_.size();
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
+   UnsignedArray origin = GetWindowOrigin( sizes_, sizes, cropLocation );
+   RangeArray out( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      out[ ii ] = { static_cast< dip::sint >( origin[ ii ] ), static_cast< dip::sint >( origin[ ii ] + sizes[ ii ] - 1 ) };
+   }
+   return out;
+}
+
+RangeArray Image::CropWindow( UnsignedArray const& sizes, String const& cropLocation ) const {
+   Option::CropLocation flag;
+   DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
+   return CropWindow( sizes, flag );
 }
 
 } // namespace dip
