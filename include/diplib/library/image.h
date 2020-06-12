@@ -1778,6 +1778,11 @@ class DIP_NO_EXPORT Image {
       /// \see dip::Image::ExpandSingletonDimension, dip::Image::IsSingletonExpanded
       DIP_EXPORT Image& ExpandSingletonTensor( dip::uint sz );
 
+      /// \brief Mirror the image about a single axes.
+      ///
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
+      DIP_EXPORT Image& Mirror( dip::uint dimension );
+
       /// \brief Mirror the image about selected axes.
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).

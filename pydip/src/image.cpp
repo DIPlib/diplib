@@ -347,7 +347,8 @@ void init_image( py::module& m ) {
    img.def( "UnexpandSingletonDimensions", &dip::Image::UnexpandSingletonDimensions, py::return_value_policy::reference_internal );
    img.def( "IsSingletonExpansionPossible", &dip::Image::IsSingletonExpansionPossible, "newSizes"_a );
    img.def( "ExpandSingletonTensor", &dip::Image::ExpandSingletonTensor, "size"_a, py::return_value_policy::reference_internal );
-   img.def( "Mirror", &dip::Image::Mirror, "process"_a, py::return_value_policy::reference_internal );
+   img.def( "Mirror", py::overload_cast< dip::uint >( &dip::Image::Mirror ), "dimension"_a, py::return_value_policy::reference_internal );
+   img.def( "Mirror", py::overload_cast< dip::BooleanArray >( &dip::Image::Mirror ), "process"_a, py::return_value_policy::reference_internal );
    img.def( "Rotation90", py::overload_cast< dip::sint, dip::uint, dip::uint >( &dip::Image::Rotation90 ), "n"_a, "dimension1"_a, "dimension2"_a, py::return_value_policy::reference_internal );
    img.def( "Rotation90", py::overload_cast< dip::sint, dip::uint >( &dip::Image::Rotation90 ), "n"_a, "axis"_a, py::return_value_policy::reference_internal );
    img.def( "Rotation90", py::overload_cast< dip::sint >( &dip::Image::Rotation90 ), "n"_a, py::return_value_policy::reference_internal );

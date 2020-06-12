@@ -270,14 +270,20 @@ Image& Image::ExpandSingletonTensor( dip::uint sz ) {
 }
 
 
-Image& Image::Mirror( BooleanArray process ) {
+Image& Image::Mirror( dip::uint dimension ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( dimension >= sizes_.size(), E::ILLEGAL_DIMENSION );
+   origin_ = Pointer( static_cast< dip::sint >( sizes_[ dimension ] - 1 ) * strides_[ dimension ] );
+   strides_[ dimension ] = -strides_[ dimension ];
+   return *this;
+}
+
+Image& Image::Mirror( BooleanArray process ) {
    dip::uint nd = sizes_.size();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( process, nd, true ));
    for( dip::uint ii = 0; ii < nd; ++ii ) {
       if( process[ ii ] ) {
-         origin_ = Pointer( static_cast< dip::sint >( sizes_[ ii ] - 1 ) * strides_[ ii ] );
-         strides_[ ii ] = -strides_[ ii ];
+         Mirror( ii );
       }
    }
    return *this;
