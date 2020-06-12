@@ -26,6 +26,7 @@ namespace dip {
 
 Image::View::View( Image reference, Range range ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
+   reference_.protect_ = false;
    DIP_STACK_TRACE_THIS( range.Fix( reference_.TensorElements() ));
    reference_.origin_ = reference_.Pointer( range.start * reference_.TensorStride() );
    reference_.tensor_.SetVector( range.Size() );
@@ -37,6 +38,7 @@ Image::View::View( Image reference, Range range ) : reference_( std::move( refer
 
 Image::View::View( Image reference, RangeArray ranges ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
+   reference_.protect_ = false;
    dip::uint nDims = reference_.Dimensionality();
    DIP_THROW_IF( nDims != ranges.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -55,6 +57,7 @@ Image::View::View( Image reference, RangeArray ranges ) : reference_( std::move(
 Image::View::View( Image reference, Image mask ) : reference_( std::move( reference )), mask_( std::move( mask )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask_.IsForged(), E::IMAGE_NOT_FORGED );
+   reference_.protect_ = false;
    if( mask_.TensorElements() > 1 ) {
       // We're indexing samples
       reference_.TensorToSpatial( 0 ); // will always work, even if it's scalar
@@ -66,6 +69,7 @@ Image::View::View( Image reference, Image mask ) : reference_( std::move( refere
 Image::View::View( Image reference, UnsignedArray const& indices ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( indices.empty(), E::ARRAY_PARAMETER_EMPTY );
+   reference_.protect_ = false;
    dip::uint maxIndex = reference_.NumberOfPixels();
    for( auto const& ii : indices ) {
       DIP_THROW_IF( ii >= maxIndex, E::INDEX_OUT_OF_RANGE );
@@ -82,6 +86,7 @@ Image::View::View( Image reference, UnsignedArray const& indices ) : reference_(
 Image::View::View( Image reference, CoordinateArray const& coordinates ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( coordinates.empty(), E::ARRAY_PARAMETER_EMPTY );
+   reference_.protect_ = false;
    dip::uint nDims = reference_.Dimensionality();
    for( UnsignedArray const& pp : coordinates ) {
       DIP_THROW_IF( pp.size() != nDims, E::COORDINATES_OUT_OF_RANGE );

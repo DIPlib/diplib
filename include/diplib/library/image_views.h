@@ -1117,9 +1117,11 @@ class Image::View {
       // Private constructors, only `dip::Image` can construct one of these:
       explicit View( Image const& reference ) : reference_( reference ) {           // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
+         reference_.protect_ = false;
       }
       explicit View( Image&& reference ) : reference_( std::move( reference )) {    // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
+         reference_.protect_ = false;
       }
       DIP_EXPORT View( Image reference, Range range );                              // index tensor elements using range
       DIP_EXPORT View( Image reference, RangeArray ranges );                        // index pixels using regular grid
