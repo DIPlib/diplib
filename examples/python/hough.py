@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Tests some functions for finding circles using the Hough transform
-import PyDIP as dip
+import diplib as dip
 
 # Prepare image
 a = dip.Image((512, 512))

@@ -1,4 +1,4 @@
-import PyDIP as dip
+import diplib as dip
 import numpy as np
 import matplotlib.pyplot as pp
 import random

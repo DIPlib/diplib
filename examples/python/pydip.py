@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-# Interactive PyDIP session. Pre-imports PyDIP as dip.
+# Interactive PyDIP session. Pre-imports diplib as dip.
 # Allows interactive plotting using Show()
 # You will need to close the windows when exiting the interactive
 # session (either before or after ^D, doesn't matter).
 
 import threading, code, time
-import PyDIP as dip
+import diplib as dip
 
 
 def replThread():
