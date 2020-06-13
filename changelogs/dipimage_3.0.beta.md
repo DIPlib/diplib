@@ -214,6 +214,9 @@ porting your old code that used *DIPimage* to the new version.
     and no longer exists. `find_affine_trans` no longer exists, as `fmmatch` provides a much better
     algorithm to do the same.
 
+  - `label` now returns an unsigned integer image (previously it was a signed integer image).
+    All functions that work on labeled images expect an unsigned integer image as input.
+
   - `readim` and `writeim` work differently now, in part because *DIPlib* natively supports
     fewer file types now. The `file_info` struct output for `readim` has changed somewhat. The last
     two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):

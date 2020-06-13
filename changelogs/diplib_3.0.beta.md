@@ -270,7 +270,9 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
   normalized, inverse transform normalized by 1/N), but an option (`"symmetric"`) allows to change
   the normalization to be consistent with *DIPlib 2*, which used a symmetric normalization
-  scheme (both forward and backward transforms use 1/N<sup>1/2</sup>)
+  scheme (both forward and backward transforms use 1/N<sup>1/2</sup>). It also has options
+  to specify where the origin of the transform is (`"corner"`) and for padding to a nice
+  size (`"fast"`).
 
 - `dip::Histogram` misses a few of the options that `dip_MultiDimensionalHistogram` had, but I
   don't think they are relevant. They can be added easily if necessary. Histograms now use
@@ -311,6 +313,9 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 
 - `dip::FindShift` now returns the shift with inverse sign compared to before, to match the reversal
   in `dip::Shift`.
+
+- `dip::Label` now returns an unsigend integer image (previously it was a signed integer image).
+  All functions that work on labeled images expect an unsigned integer image as input.
 
 - `dip::ImageWriteICS` now has a `"fast"` option that causes dimensions to be written to file in
   the order in which they are stored in memory, rather than in standard increasing order. This
