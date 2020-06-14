@@ -1,3 +1,4 @@
+# Monkey patch to not strip relative paths from rpath
 # https://github.com/pykaldi/pykaldi/issues/72
 
 # -*- coding: utf-8 -*-
@@ -11,6 +12,7 @@ from subprocess import check_call, check_output
 
 from auditwheel.main import main
 from auditwheel import repair
+from auditwheel.policy import _POLICIES as POLICIES
 
 logger = logging.getLogger('auditwheel.repair')
 
@@ -23,6 +25,11 @@ def patchelf_set_rpath(fn, libdir):
     check_call(['patchelf', '--force-rpath', '--set-rpath', rpath, fn])
 
 repair.patchelf_set_rpath = patchelf_set_rpath
+
+# libjvm is loaded dynamically; do not include it
+for p in POLICIES:
+    if p['name'] == 'manylinux2010_x86_64':
+        p['lib_whitelist'].append('libjvm.so')
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])

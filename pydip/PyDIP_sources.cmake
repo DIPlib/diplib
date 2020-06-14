@@ -2,6 +2,7 @@
 set(PyDIP_sources_bogus
 src/PyDIP_py.py
 src/__init__.py.in
+src/__main__.py
 src/analysis.cpp
 src/assorted.cpp
 src/filtering.cpp

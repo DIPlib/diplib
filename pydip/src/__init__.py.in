@@ -31,7 +31,13 @@ if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
-from .PyDIP_bin import *
+try:
+    from .PyDIP_bin import *
+except:
+    if os.name == 'nt' and @pydip_wheel_include_libs@ == True:
+        print("Could not load PyDIP binary extension. Did you install the Microsoft Visual C++ Redistributable?")
+    raise
+
 from .PyDIP_py import *
 Image.Show = Show
 
@@ -56,4 +62,7 @@ if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
         ImageRead = javaio.ImageRead
         hasDIPjavaio = True
     except ImportError as e:
-        print("PyDIPjavaio unavailable: ", e, " (preload returned '", lib, "'")
+        if lib:
+            print("PyDIPjavaio unavailable: ", e, " (preload returned '", lib, "')")
+        else:
+            print("PyDIPjavaio unavailable: ", e, " (libjvm not found)")
