@@ -1,0 +1,29 @@
+# https://github.com/pykaldi/pykaldi/issues/72
+
+# -*- coding: utf-8 -*-
+import re
+import sys
+
+import logging
+from os.path import relpath, dirname
+from os.path import join as pjoin
+from subprocess import check_call, check_output
+
+from auditwheel.main import main
+from auditwheel import repair
+
+logger = logging.getLogger('auditwheel.repair')
+
+def patchelf_set_rpath(fn, libdir):
+    rpath = check_output(['patchelf', '--print-rpath', fn]).decode("utf-8").strip()
+    rpath = list(filter(lambda x: x.startswith('$ORIGIN'), rpath.split(":")))
+    rpath.append(pjoin('$ORIGIN', relpath(libdir, dirname(fn))))
+    rpath = ":".join(rpath)
+    logger.debug('Setting RPATH: %s to "%s"', fn, rpath)
+    check_call(['patchelf', '--force-rpath', '--set-rpath', rpath, fn])
+
+repair.patchelf_set_rpath = patchelf_set_rpath
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())

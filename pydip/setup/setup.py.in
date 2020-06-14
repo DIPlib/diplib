@@ -61,7 +61,7 @@ setup_kwargs = dict(
     packages=['diplib'],
     ext_modules=[Extension('diplib.PyDIP_bin', [])],
     package_data={'diplib': libraries},
-    python_requires='==${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}.*'
+    python_requires='>=3.6'
 )
 
 name = os.path.join("$<TARGET_FILE_DIR:PyDIP_bin>", "staging", "dist", wheel_name(**setup_kwargs))
