@@ -19,7 +19,7 @@ Both the default constructor and a ``None`` argument lead to an unforged image.
     >>> dip.Image(None)
     <Empty image>
 
-A single number is interpreted as a 0D image, whose datatype can be set optionally.
+A single number is interpreted as a 0D image, whose data type can be set optionally.
 
     >>> dip.Image(50)
     <Scalar image, SINT64, 0D>
@@ -31,7 +31,7 @@ A tuple or list is interpreted as the image size.
     >>> dip.Image((50,))
     <Scalar image, SFLOAT, sizes {50}>
 
-This means there is no constructor to create a 0D tensor image. Use dip.Create0D instead.
+This means there is no constructor to create a 0D tensor image. Use ``dip.Create0D`` instead.
 
     >>> dip.Create0D([50])
     <Scalar image, SINT64, 0D>

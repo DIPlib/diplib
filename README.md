@@ -106,7 +106,7 @@ If you found an error in the documentation, we consider this a bug. See above ho
 
 ## License
 
-Copyright 2014-2019 Cris Luengo and contributors  
+Copyright 2014-2020 Cris Luengo and contributors  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");

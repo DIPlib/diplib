@@ -20,13 +20,6 @@ try:
 except:
     long_description = ""
 
-if platform.system() == "Windows":
-    os_classifier = "Operating System :: Microsoft :: Windows"
-elif platform.system() == "Darwin":
-    os_classifier = "Operating System :: MacOS :: MacOS X"
-elif platform.system() == "Linux":
-    os_classifier = "Operating System :: POSIX :: Linux"
-
 libraries = [$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:'$<TARGET_FILE_NAME:PyDIPviewer>',>
              $<$<BOOL:${DIP_BUILD_JAVAIO}>:'$<TARGET_FILE_NAME:PyDIPjavaio>',>
              '$<TARGET_FILE_NAME:PyDIP_bin>']
@@ -50,12 +43,19 @@ setup_kwargs = dict(
     license='Apache',
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
-        os_classifier,
-        "Programming Language :: C++",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3",
-        "Topic :: Scientific/Engineering :: Image Recognition" 
+        "Programming Language :: C++",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Scientific/Engineering :: Image Recognition",
+        "Topic :: Scientific/Engineering :: Atmospheric Science",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Scientific/Engineering :: Visualization",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers"
     ],
     keywords="image-analysis image-viewer image-processing filtering",
     packages=['diplib'],
