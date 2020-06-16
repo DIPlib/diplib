@@ -1,0 +1,25 @@
+import sys, re
+from delocate.cmd.delocate_wheel import main
+import delocate.delocating
+
+def filter_system_libs(libname):
+   return not (libname.startswith('/usr/lib') or
+               libname.startswith('/System') or
+               libname.find('libjvm.dylib') >= 0)
+
+def delocate_wheel(in_wheel,
+                   out_wheel = None,
+                   lib_sdir = '.dylibs',
+                   lib_filt_func = None,
+                   copy_filt_func = filter_system_libs,
+                   require_archs = None,
+                   check_verbose = False,
+                  ):
+    return delocate.delocating.delocate_wheel(in_wheel, out_wheel, lib_sdir,
+                  lib_filt_func, copy_filt_func, require_archs, check_verbose)
+
+delocate.cmd.delocate_wheel.delocate_wheel = delocate_wheel
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())
