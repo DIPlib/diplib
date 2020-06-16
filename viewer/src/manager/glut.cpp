@@ -45,6 +45,7 @@ GLUTManager::GLUTManager()
 
   instance_ = this;
   continue_ = true;
+  active_ = false;
   
   thread_ = std::thread(&GLUTManager::run, this);
 }
