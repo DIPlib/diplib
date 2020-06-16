@@ -20,6 +20,7 @@ boundary_condition.m
 bpropagation.m
 brmedgeobjs.m
 bskeleton.m
+cal_readnoise.m
 canny.m
 ced.m
 cell2im.m
@@ -32,6 +33,7 @@ convolve.m
 coord2image.m
 coordinates.m
 cornerdetector.m
+correctshift.m
 countingframe.m
 countneighbors.m
 crosscorrelation.m
@@ -99,6 +101,8 @@ errormeasure.m
 extend.m
 extendregion.m
 fillholes.m
+findlocalshift.m
+findlocmax.m
 findmaxima.m
 findminima.m
 findshift.m
@@ -145,6 +149,7 @@ laplace_min_dgg.m
 laplace_plus_dgg.m
 lee.m
 linedetector.m
+localshift.m
 loggabor.m
 lut.m
 mat2im.m
@@ -167,6 +172,7 @@ noisestd.m
 nonmaximumsuppression.m
 normconv.m
 opening.m
+opticflow.m
 orientation.m
 orientationspace.m
 overlay.m
@@ -207,6 +213,8 @@ riesz.m
 rngseed.m
 rotation.m
 rr.m
+scale2rgb.m
+scalespace.m
 select.m
 selectionf.m
 semivariogram.m

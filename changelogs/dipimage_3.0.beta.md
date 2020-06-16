@@ -289,13 +289,13 @@ porting your old code that used *DIPimage* to the new version.
   Use `help <functionname>` in *MATLAB* to learn what these functions provide.
 
 - Old functions not (yet) ported:
-  `afm_flatten`, `arcf`, `backgroundoffset`, `cal_readnoise`, `change_chroma`, `change_gamma`, `change_xyz`,
-  `color_rotation`, `correctshift`, `cpf`, `deblock`, `distancebetweenpointsets`, `dpr`, `find_lambda`, `findlocalshift`,
-  `findlocmax`, `findospeaks`, `frc`, `gamut_destretch`, `gamut_mapping`, `gamut_stretch`, `huecorr`, `hybridf`,
-  `iso_luminance_lines`, `jpeg_quality_score`, `lfmse`, `localshift`, `luminance_steered_dilation`, `luminance_steered_erosion`,
-  `make_gamut`, `mappg`, `mcd`, `morphscales`, `nufft_type1`, `nufft_type2`, `opticflow`, `orientationplot`, `out_of_gamut`,
-  `percf_adap`, `percf_adap_banana`, `plot_gamut`, `pst`, `quadraturetensor`, `rgb_to_border`, `rotation3d`, `scale2rgb`,
-  `scalespace`, `splitandmerge`, `structf`, `tikhonovmiller`, `write_add`.
+  `afm_flatten`, `arcf`, `backgroundoffset`, `change_chroma`, `change_gamma`, `change_xyz`,
+  `color_rotation`, `cpf`, `deblock`, `distancebetweenpointsets`, `dpr`, `find_lambda`,
+  `findospeaks`, `frc`, `gamut_destretch`, `gamut_mapping`, `gamut_stretch`, `huecorr`, `hybridf`,
+  `iso_luminance_lines`, `jpeg_quality_score`, `lfmse`, `luminance_steered_dilation`, `luminance_steered_erosion`,
+  `make_gamut`, `mappg`, `mcd`, `morphscales`, `nufft_type1`, `nufft_type2`, `orientationplot`, `out_of_gamut`,
+  `percf_adap`, `percf_adap_banana`, `plot_gamut`, `pst`, `quadraturetensor`, `rgb_to_border`, `rotation3d`,
+  `splitandmerge`, `structf`, `tikhonovmiller`, `write_add`.
   These functions will be ported as they are needed.
 
 - Old functions that will not be ported:
