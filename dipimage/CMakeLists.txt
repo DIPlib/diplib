@@ -118,15 +118,13 @@ endif()
 if(WIN32)
 	add_custom_command(
 		  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
-		  COMMAND ${Matlab_MAIN_PROGRAM}
-		  -nojvm -wait -nosplash -r "try, makecontents('${CMAKE_CURRENT_BINARY_DIR}'), catch ME, disp(ME.message), exit(1), end, exit(0)"
+		  COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -wait -nosplash -r "try, makecontents('${CMAKE_CURRENT_BINARY_DIR}'), catch ME, disp(ME.message), exit(1), end, exit(0)"
 		  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
 		  DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
 else()
 	add_custom_command(
 		  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Contents.m
-		  COMMAND ${Matlab_MAIN_PROGRAM}
-		  -nojvm -nodisplay -nosplash -r "try, makecontents\\(\\'${CMAKE_CURRENT_BINARY_DIR}\\'\\), catch ME, disp\\(ME.message\\), exit\\(1\\), end, exit\\(0\\)"
+		  COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -nosplash -r "try, makecontents\\(\\'${CMAKE_CURRENT_BINARY_DIR}\\'\\), catch ME, disp\\(ME.message\\), exit\\(1\\), end, exit\\(0\\)"
 		  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/tools"
 		  DEPENDS "${DIPIMAGE_MFILES}" "${DIPVIEWER_MFILES}")
 endif()

@@ -1,7 +1,7 @@
 /*
  * DIPimage 3.0
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -174,21 +174,28 @@ void superpixels( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 }
 
 void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
-   dip::String method = nrhs > 1 ? dml::GetString( prhs[ 1 ] ) : "isodata";
+   dip::Image mask;
+   int index = 1;
+   if(( nrhs > index ) && !mxIsChar( prhs[ index ] )) {
+      mask = dml::GetImage( prhs[ index ] );
+      ++index;
+   }
+   dip::String method = nrhs > index ? dml::GetString( prhs[ index ] ) : "isodata";
+   ++index;
+   DML_MAX_ARGS( index + 1 );
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
    if(( method == "double" ) || ( method == "hysteresis" )) {
       dip::dfloat param1;
       dip::dfloat param2;
-      if( nrhs > 2 ) {
-         dip::FloatArray parameter = dml::GetFloatArray( prhs[ 2 ] );
+      if( nrhs > index ) {
+         dip::FloatArray parameter = dml::GetFloatArray( prhs[ index ] );
          DIP_THROW_IF( parameter.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
          param1 = parameter[ 0 ];
          param2 = parameter[ 1 ];
       } else {
-         auto lims = dip::MaximumAndMinimum( in );
+         auto lims = dip::MaximumAndMinimum( in, mask );
          dip::dfloat range = lims.Maximum() - lims.Minimum();
          param1 = lims.Minimum() + range / 3.0;
          param2 = lims.Minimum() + 2.0 * range / 3.0;
@@ -203,23 +210,23 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       }
    } else if(( method == "isodata" ) || ( method == "kmeans" ) || ( method == "gmm" )) {
       dip::uint nThresholds = 1;
-      if( nrhs > 2 ) {
-         dip::dfloat parameter = dml::GetFloat( prhs[ 2 ] );
+      if( nrhs > index ) {
+         dip::dfloat parameter = dml::GetFloat( prhs[ index ] );
          if(( parameter > 1.0 ) && ( parameter <= std::numeric_limits< dip::uint16 >::max() )) {
             nThresholds = static_cast< dip::uint >( parameter );
          }
       }
-      dip::FloatArray thresholds = ( method == "gmm" ) ? GaussianMixtureModelThreshold( in, {}, out, nThresholds )
-                                                       : IsodataThreshold( in, {}, out, nThresholds );
+      dip::FloatArray thresholds = ( method == "gmm" ) ? GaussianMixtureModelThreshold( in, mask, out, nThresholds )
+                                                       : IsodataThreshold( in, mask, out, nThresholds );
       if( nlhs > 1 ) {
          plhs[ 1 ] = dml::GetArray( thresholds );
       }
    } else {
       dip::dfloat parameter = std::numeric_limits< dip::dfloat >::infinity();
-      if( nrhs > 2 ) {
-         parameter = dml::GetFloat( prhs[ 2 ] );
+      if( nrhs > index ) {
+         parameter = dml::GetFloat( prhs[ index ] );
       }
-      dip::dfloat threshold = dip::Threshold( in, out, method, parameter );
+      dip::dfloat threshold = dip::Threshold( in, mask, out, method, parameter );
       if( nlhs > 1 ) {
          plhs[ 1 ] = dml::GetArray( threshold );
       }

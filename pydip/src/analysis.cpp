@@ -248,11 +248,11 @@ void init_analysis( py::module& m ) {
           "in"_a, "lowThreshold"_a, "highThreshold"_a );
    m.def( "MultipleThresholds", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::MultipleThresholds ),
           "in"_a, "thresholds"_a );
-   m.def( "Threshold", []( dip::Image const& in, dip::String const& method, dip::dfloat parameter ) {
+   m.def( "Threshold", []( dip::Image const& in, dip::Image const& mask, dip::String const& method, dip::dfloat parameter ) {
              dip::Image out;
-             dip::dfloat threshold = Threshold( in, out, method, parameter );
+             dip::dfloat threshold = Threshold( in, mask, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
-          }, "in"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
+          }, "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
    m.def( "PerObjectEllipsoidFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> sizeBounds, dip::dfloat minEllipsoidFit,
                                      std::pair<dip::dfloat, dip::dfloat> aspectRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
              return dip::PerObjectEllipsoidFit( in, { sizeBounds.first, sizeBounds.second, minEllipsoidFit, aspectRatioBounds.first,

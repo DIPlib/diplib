@@ -2,8 +2,11 @@
 %
 % SYNOPSIS:
 %  [out,value] = threshold(in,type,parameter)
+%  [out,value] = threshold(in,mask,type,parameter)
 %
 % PARAMETERS:
+%  mask:      limits the region used to determine the threshold. The
+%             threshold itself is applied to the image as a whole.
 %  type:      'isodata', 'otsu', 'minerror', 'triangle', 'background',
 %             'fixed', 'double', 'volume', or 'hysteresis'.
 %  parameter: parameter to the algorithm, see below. Inf selects the
@@ -12,6 +15,7 @@
 %  value: The second output argument is the selected threshold value.
 %
 % DEFAULT:
+%  mask:      []
 %  type:      'isodata'
 %  parameter: Inf
 %
@@ -42,9 +46,11 @@
 %  - fixed: Thresholding at a fixed value. PARAMETER is the threshold value.
 %    Default is halfway between minimum and maximum value. Use a vector with
 %    multiple values to produce a labeled image with multiple classes.
+%    Ignores MASK parameter.
 %
 %  - double: Thresholding between two fixed values, given by the two values
 %    in PARAMETER. Default is min+[1/3,2/3]*(max-min).
+%    Ignores MASK parameter if PARAMETER is given.
 %
 %  - volume: Thresholding to obtain a set volume fraction, specified through
 %    PARAMETER.
@@ -52,12 +58,14 @@
 %  - hysteresis: From the binary image (in>low) only those regions are
 %    selected for which at least one pixel is (in>high). PARAMETER contains
 %    two values: [low,high]. Default is min+[1/3,2/3]*(max-min).
+%    Ignores MASK parameter if PARAMETER is given.
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::Threshold,
-%  dip::IsodataThreshold, dip::RangeThreshold and dip::HysteresisThreshold.
+%  dip::IsodataThreshold, dip::GaussianMixtureModelThreshold,
+%  dip::RangeThreshold and dip::HysteresisThreshold.
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2020, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for segmentation functions
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -391,7 +391,12 @@ inline Image MultipleThresholds(
 /// \brief Automated threshold using `method`.
 ///
 /// This function computes an optimal threshold value for `in` using `method`, and applies it. Returns the found
-/// threshold value. `in` must be scalar and real-valued.
+/// threshold value. `in` must be scalar and real-valued. `mask` can optionally select the pixels used to determine
+/// the threshold value. The threshold is applied to the image as a whole, you can combine it with the mask afterwards:
+/// ```cpp
+///     dip::Image bin = dip::Threshold( image, mask, "otsu" );
+///     bin &= mask;
+/// ```
 ///
 /// `method` can be one of:
 ///  - "isodata": see <tt>\ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint) "dip::IsodataThreshold"</tt>.
@@ -406,52 +411,69 @@ inline Image MultipleThresholds(
 /// If `parameter` is `dip::infinity`, the default parameter value for the method will be used.
 inline dfloat Threshold(
       Image const& in,
+      Image const& mask,
       Image& out,
       String const& method = S::OTSU,
       dfloat parameter = infinity
 ) {
    if( method == "isodata" ) {
-      FloatArray values = IsodataThreshold( in, {}, out, 1 );
+      FloatArray values = IsodataThreshold( in, mask, out, 1 );
       return values[ 0 ];
-   } else if( method == S::OTSU ) {
-      return OtsuThreshold( in, {}, out );
-   } else if( method == "minerror" ) {
-      return MinimumErrorThreshold( in, {}, out );
-   } else if( method == "gmm" ) {
-      FloatArray values = GaussianMixtureModelThreshold( in, {}, out, 1 );
+   }
+   if( method == S::OTSU ) {
+      return OtsuThreshold( in, mask, out );
+   }
+   if( method == "minerror" ) {
+      return MinimumErrorThreshold( in, mask, out );
+   }
+   if( method == "gmm" ) {
+      FloatArray values = GaussianMixtureModelThreshold( in, mask, out, 1 );
       return values[ 0 ];
-   } else if( method == "triangle" ) {
-      return TriangleThreshold( in, {}, out );
-   } else if( method == "background" ) {
-      if( parameter == infinity ) {
-         return BackgroundThreshold( in, {}, out );
-      } else {
-         return BackgroundThreshold( in, {}, out, parameter );
-      }
-   } else if( method == "volume" ) {
-      if( parameter == infinity ) {
-         return VolumeThreshold( in, {}, out );
-      } else {
-         return VolumeThreshold( in, {}, out, parameter );
-      }
-   } else if( method == "fixed" ) {
+   }
+   if( method == "triangle" ) {
+      return TriangleThreshold( in, mask, out );
+   }
+   if( method == "background" ) {
+      return ( parameter == infinity ) ? BackgroundThreshold( in, mask, out )
+                                       : BackgroundThreshold( in, mask, out, parameter );
+   }
+   if( method == "volume" ) {
+      return ( parameter == infinity ) ? VolumeThreshold( in, mask, out )
+                                       : VolumeThreshold( in, mask, out, parameter );
+   }
+   if( method == "fixed" ) {
       if( parameter == infinity ) {
          parameter = 128.0;
       }
       FixedThreshold( in, out, parameter );
       return parameter;
-   } else {
-      DIP_THROW_INVALID_FLAG( method );
    }
+   DIP_THROW_INVALID_FLAG( method );
+}
+inline dfloat Threshold(
+      Image const& in,
+      Image& out,
+      String const& method = S::OTSU,
+      dfloat parameter = infinity
+) {
+   return Threshold( in, {}, out, method, parameter );
+}
+inline Image Threshold(
+      Image const& in,
+      Image const& mask,
+      String const& method = S::OTSU,
+      dfloat parameter = infinity
+) {
+   Image out;
+   Threshold( in, mask, out, method, parameter );
+   return out;
 }
 inline Image Threshold(
       Image const& in,
       String const& method = S::OTSU,
       dfloat parameter = infinity
 ) {
-   Image out;
-   Threshold( in, out, method, parameter );
-   return out;
+   return Threshold( in, {}, method, parameter );
 }
 
 /// \brief Defines the parameters for the `PerObjectEllipsoidFit` function.
