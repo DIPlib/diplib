@@ -1,11 +1,11 @@
 ``pydip`` unit tests
 ===
 
-First import ``PyDIP``. Usually, we put it in the ``dip`` namespace.
+First import PyDIP (``diplib``). Usually, we put it in the ``dip`` namespace.
 
     >>> import diplib as dip
 
-``PyDIP`` is compatible with ``numpy``. Let's get that too.
+PyDIP is compatible with ``numpy``. Let's get that too.
 
     >>> import numpy as np
 

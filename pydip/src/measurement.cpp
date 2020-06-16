@@ -212,7 +212,7 @@ void init_measurement( py::module& m ) {
    obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ));
 
    // dip::Measurement
-   auto meas = py::class_< dip::Measurement >( mm, "Measurement", py::buffer_protocol(), "The result of a call to PyDIP.MeasurementTool.Measure, a table with a column group for\neach feature and a row for each object." );
+   auto meas = py::class_< dip::Measurement >( mm, "Measurement", py::buffer_protocol(), "The result of a call to dip.MeasurementTool.Measure, a table with a column group for\neach feature and a row for each object." );
    meas.def_buffer( []( dip::Measurement& self ) -> py::buffer_info { return MeasurementToBuffer( self ); } );
    meas.def( "__repr__", []( dip::Measurement const& self ) {
                 std::ostringstream os;

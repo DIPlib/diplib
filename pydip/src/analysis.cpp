@@ -58,7 +58,7 @@ void init_analysis( py::module& m ) {
 
    // diplib/analysis.h
 
-   auto loc = py::class_< dip::SubpixelLocationResult >( m, "SubpixelLocationResult", "The result of a call to PyDIP.SubpixelLocation." );
+   auto loc = py::class_< dip::SubpixelLocationResult >( m, "SubpixelLocationResult", "The result of a call to dip.SubpixelLocation." );
    loc.def_readonly( "coordinates", &dip::SubpixelLocationResult::coordinates );
    loc.def_readonly( "value", &dip::SubpixelLocationResult::value );
    loc.def( "__repr__", []( dip::SubpixelLocationResult const& self ) {
@@ -117,7 +117,7 @@ void init_analysis( py::module& m ) {
 
    // diplib/detection.h
 
-   auto rcp = py::class_< dip::RadonCircleParameters >( m, "RadonCircleParameters", "The result of a call to PyDIP.SubpixelLocation." );
+   auto rcp = py::class_< dip::RadonCircleParameters >( m, "RadonCircleParameters", "The result of a call to dip.SubpixelLocation." );
    rcp.def_readonly( "origin", &dip::RadonCircleParameters::origin );
    rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius );
    rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {

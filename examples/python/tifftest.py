@@ -10,7 +10,7 @@
 # To run this test, you need to fist run `generate_tiff_tests.sh`
 # in ../tools.
 
-import PyDIP as dip
+import diplib as dip
 
 # Step 1: Read in full images, make sure they are the same
 
