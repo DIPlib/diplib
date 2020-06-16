@@ -665,7 +665,6 @@ void IDFT_C2R_1D_prepare(
       bool corner
 ) {
    DIP_ASSERT( in.IsForged() );
-   DIP_ASSERT( in.DataType().IsComplex() );
    dip::uint nDims = in.Dimensionality();
    DIP_ASSERT( dimension < nDims );
    UnsignedArray outSize = out.Sizes(); // NOTE!!! we're reading  the sizes from `out`, but then modifying them
