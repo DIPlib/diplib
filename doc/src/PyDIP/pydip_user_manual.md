@@ -22,6 +22,15 @@ those in *DIPlib*. Please see the documentation for *DIPlib* to learn how to use
 these functions. Type \m_class{m-label m-warning} **t** here to bring up a search
 dialog box where you can find functions by name.
 
+To install the package from PyPI, use
+```bash
+    pip install diplib
+```
+To read images through the Bio-Formats library, you will need to download it separately:
+```bash
+    python -m diplib download_bioformats
+```
+
 This user manual discusses the differences with the *DIPlib* library.
 
 \section pum_correspondences Type correspondences
