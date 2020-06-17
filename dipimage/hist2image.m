@@ -36,8 +36,9 @@
 % SEE ALSO:
 %  hist2d, mdhistogram, mdhistogrammap, diproi
 
-% (c)2007, Max-Planck-Institute for Biophysical Chemistry (Göttingen), written by Bernd Rieger.
 % (c)2018, Cris Luengo.
+% Based on original DIPimage code: (c)2007, Delft University of Technology.
+% Originally written by Bernd Rieger.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

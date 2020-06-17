@@ -6,7 +6,7 @@
 % orientation of the structure, not the direction of the normal).
 %
 % SYNOPSIS:
-%  out = orientation4d(in,method,sg,st,subsample)
+%  out = orientation(in,method,sg,st,subsample)
 %
 %  method:    'line', 'surface'; see below
 %  sg:        sigma of the gradient derivative

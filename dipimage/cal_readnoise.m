@@ -25,7 +25,7 @@
 %  Digital Fluorescence Imaging Using Cooled CCD Array Cameras, pp.109-120, 1998
 
 % (c)2020, Delft University of Technology, by Yan Guo
-% Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+% Based on original DIPimage code: (c)2004, Delft University of Technology.
 % Originally written by Bernd Rieger and Rainer Heintzmann.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");

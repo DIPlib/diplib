@@ -40,8 +40,9 @@
 % SEE ALSO:
 %  hist2image, diphist, mdhistogram
 
-% (c)2004, Max-Planck-Institute for Biophysical Chemistry (Göttingen), written by Bernd Rieger.
 % (c)2017-2018, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
+% Originally written by Bernd Rieger.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

@@ -22,7 +22,6 @@
 %
 %   See also: MDHISTOGRAM, DIPHIST2D
 
-
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

@@ -19,7 +19,7 @@
 %  findlocalshift, orientation/vectorplot
 
 % (c)2020, Delft University of Technology, by Yan Guo
-% Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
+% Based on original DIPimage code: (c)2005, Delft University of Technology.
 % Originally written by Bernd Rieger.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
