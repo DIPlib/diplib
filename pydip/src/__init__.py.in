@@ -55,13 +55,14 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
 if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
+    lib = None
     try:
         from . import loadjvm
         lib = loadjvm.load_jvm()
         from . import PyDIPjavaio as javaio
         ImageRead = javaio.ImageRead
         hasDIPjavaio = True
-    except ImportError as e:
+    except Exception as e:
         if lib:
             print("PyDIPjavaio unavailable: ", e, " (preload returned '", lib, "')")
         else:

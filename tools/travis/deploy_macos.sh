@@ -1,18 +1,13 @@
-# Run this on a MacOS with Xcode and Homebrew
+# Run this on MacOS with Xcode from the diplib diretory
+# set $PYPI_TOKEN to the PyPI token for the diplib project
 
 # Setup
-brew install cmake git wget libomp glfw python3 python@3.8
-python3 -m pip install twine delocate
-export BUILD_THREADS=4
-export DELOCATE=`pwd`/diplib/pydip/setup/delocate
+export BUILD_THREADS=2
+export DELOCATE=`pwd`/tools/travis/delocate
 
-# Clone diplib repository
-git clone https://github.com/diplib/diplib
-cd diplib
-git checkout pydip-experimental
 mkdir build
 cd build
-#wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
+wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
 
 # Basic configuration
 cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off
@@ -22,14 +17,14 @@ export PYTHON=/usr/local/opt/python@3/bin/python3
 export PYTHON_VERSION=3.7
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
-python3 $DELOCATE -w pydip-fixed/ -v pydip/staging/dist/*.whl
+python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.8
 export PYTHON=/usr/local/opt/python@3.8/bin/python3
 export PYTHON_VERSION=3.8
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
-python3 $DELOCATE -w pydip-fixed/ -v pydip/staging/dist/*.whl
+python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Upload to pypi.org
-python3 -m twine upload pydip-fixed/*.whl
+python3 -m twine upload -u __token__ -p $PYPI_TOKEN wheelhouse/*.whl
