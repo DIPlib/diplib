@@ -1,11 +1,12 @@
-# docker run -i -t quay.io/pypa/manylinux2010_x86_64 /bin/bash
+#!/bin/bash
+# Run this in a manylinux2010 docker container with /io mounted to some local directory
 
 # Setup
 yum -y install wget freeglut-devel java-1.8.0-openjdk-devel.x86_64
-/opt/python/cp37-cp37m/bin/python -m pip install cmake twine
+/opt/python/cp37-cp37m/bin/python -m pip install cmake
 export CMAKE=/opt/python/cp37-cp37m/lib/python3.7/site-packages/cmake/data/bin/cmake
-export BUILD_THREADS=8
-export AUDITWHEEL=`pwd`/diplib/pydip/setup/auditwheel
+export BUILD_THREADS=2
+export AUDITWHEEL=`pwd`/diplib/tools/travis/auditwheel
 
 # Clone diplib repository
 git clone https://github.com/diplib/diplib
@@ -39,5 +40,4 @@ $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/pyt
 make -j $BUILD_THREADS bdist_wheel
 /opt/python/cp37-cp37m/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
 
-# Upload to test.pypi.org
-/opt/python/cp37-cp37m/bin/python -m twine upload --repository testpypi wheelhouse/*.whl
+mv wheelhouse /io

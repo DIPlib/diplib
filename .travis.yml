@@ -1,24 +1,35 @@
 language: cpp
+env:
+  global:
+    - secure: "hvAOP+3VOg3usLIPIqO+eMRCsIEFZtfiEIC9u5gVeLpFzhDdgTNw6FzimFQ4ZFCct4QQp77k9vDHtV/8Ngnx690JCTpj2o6D9vrlxzLlkCmCxU+/cKyKMdJJa0D5dSo4nbQyAuRnEb7pcksZ8+LCeNcqsW5h6D25Qko9kYYmtSz1uyVMmZqWx0ZAjEvfwXB/TDFNjQ5ZFFTBMiCTfRXSXo7zjod/qm6rFISiXXXG6uFhPf114W07FkE2EQX9ChRZQbJ9te3P3O4NbeWTxAzDPgV8pdYzCNgNz5nn0rT8j47/dGdCNMXVHvBUEv25RG2x04mvJH83VDkdJ2v7z0TtCLP+gx4xIn5t4WNJQVFKaTFWwg0WrRgPr7VGXERF5c3FEFMFQVZOSsgKU/q1TMnzeAkE5HKvAGjJYkQ5zXxS//QmtLw2sE9qWEURsWpIHNfEakxqXskYkEAjgbwWsZfI7FTf8ShMe7GNR4rJKq6MeEUE8RQleTGpDuK5Y0PkhkI212BNw4xr1QH9Ep74LAYO+5hFcM/YxwR1+fJhkmBs2vnhS6D74IwjdpH0Tzly1LsOr67JENsj21ZNpQ86hpN3DccrTtgZRdrW1qCnf//krOTmmhGJILc1Kv+yt19YSsK69cnpBHBJiqHl3bnc5YCyeW84B9EnsQzX2f+Z1zmAk0M="
 matrix:
   include:
-    - os: linux
+    - name: linux-clang
+      os: linux
       dist: xenial
       compiler: clang
       env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off -DPYBIND11_PYTHON_VERSION=3.5"
-    - os: linux
+    - name: linux-gcc
+      os: linux
       dist: xenial
       compiler: gcc
       env: DIP_CMAKE_OPTS="-DPYBIND11_PYTHON_VERSION=3.5"
-    - os: osx
+    - name: osx
+      os: osx
       osx_image: xcode10.2
       compiler: clang
       env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off"
       before_install:
-        - brew install glfw
-    - os: windows
+        - brew install libomp glfw python@3.8
+    - name: windows
+      os: windows
       env: DIP_CMAKE_OPTS="-A x64"
       before_install:
-        - choco install python3
+        - choco install openjdk8
+        - choco install python3 --version=3.7.7 --params "/InstallDir:C:\Python37"
+        - C:/Python37/python -m pip install wheel setuptools
+        - choco install python3 --version=3.8.2 --params "/InstallDir:C:\Python38"
+        - C:/Python38/python -m pip install wheel setuptools
         # https://travis-ci.community/t/windows-builds-refreshenv-command-not-found/5803/4
         - eval $(powershell -NonInteractive -Command 'write("export PATH=`"" + ([Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH","User")).replace("\","/").replace("C:","/c").replace(";",":") + ":`$PATH`"")')
 addons:
@@ -32,10 +43,30 @@ branches:
     - cris
 
 script:
-  - pip3 install numpy wheel setuptools
+  - pip3 install numpy wheel setuptools twine==1.15.0
+  - pip3 install delocate wget
   - mkdir build
   - cd build
   - cmake $DIP_CMAKE_OPTS -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON ..
   - cmake --build . --parallel 2
   - cmake --build . --target check
   - cmake --build . --target bdist_wheel
+  - cd ..
+
+deploy:
+  - provider: script
+    script: bash tools/travis/deploy_linux.sh
+    on:
+      tags: true
+      condition: $TRAVIS_JOB_NAME = linux-gcc
+  - provider: script
+    script: bash tools/travis/deploy_macos.sh
+    on:
+      tags: true
+      condition: $TRAVIS_JOB_NAME = osx
+  - provider: script
+    script: tools/travis/deploy_windows.bat
+    on:
+      tags: true
+      condition: $TRAVIS_JOB_NAME = windows
+  
