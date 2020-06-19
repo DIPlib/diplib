@@ -16,9 +16,9 @@ matrix:
       env: DIP_CMAKE_OPTS="-DPYBIND11_PYTHON_VERSION=3.5"
     - name: osx
       os: osx
-      osx_image: xcode10.2
+      osx_image: xcode11.3
       compiler: clang
-      env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off"
+      env: DIP_CMAKE_OPTS=
       before_install:
         - brew install libomp glfw python@3.8
     - name: windows
@@ -69,4 +69,4 @@ deploy:
     on:
       tags: true
       condition: $TRAVIS_JOB_NAME = windows
-  
+
