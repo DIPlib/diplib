@@ -143,7 +143,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     for (size_t ii=0; ii < image.Dimensionality(); ++ii)
     {
       operating_point_[ii] = (dip::uint) image.Size(ii)/2;
-      if (zoom_[ii] == 0 || !isfinite(zoom_[ii]))
+      if (zoom_[ii] == 0 || !std::isfinite(zoom_[ii]))
         zoom_[ii] = 1;
     }
     

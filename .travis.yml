@@ -43,7 +43,8 @@ branches:
     - cris
 
 script:
-  - pip3 install numpy wheel setuptools twine==1.15.0
+  - pip3 install setuptools
+  - pip3 install numpy wheel twine==1.15.0
   - pip3 install delocate wget
   - mkdir build
   - cd build
