@@ -133,7 +133,17 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
       for (auto it = windows_.begin(); it != windows_.end(); ++it)
         it->second->destroy();
     }
-    
+
+    virtual void setWindowPosition(Window* window, int x, int y)
+    {
+      // TODO
+    }
+
+    virtual void setWindowSize(Window* window, int width, int height)
+    {
+      // TODO
+    }
+
     virtual void processEvents()
     {
     }

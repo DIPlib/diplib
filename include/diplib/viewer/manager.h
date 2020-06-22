@@ -78,7 +78,13 @@ class DIPVIEWER_EXPORT Window
 
     /// \brief Returns the window's height.
     int height() { return height_; }
-  protected:
+
+    /// \brief Set the window's screen position.
+    void setPosition(int x, int y);
+
+    /// \brief Set the window's size.
+    void setSize(int width, int height);
+protected:
     /// \brief Returns the dip::viewer::Manager that manages this window.
     Manager *manager() { return manager_; }
     
@@ -205,6 +211,12 @@ class DIPVIEWER_EXPORT Manager
 
     /// \brief Refresh a Window's contents.
     virtual void refreshWindow(Window *window) = 0;
+
+    /// \brief Set a Window's screen position.
+    virtual void setWindowPosition(Window* window, int x, int y) = 0;
+
+    /// \brief Set a Window's size.
+    virtual void setWindowSize(Window* window, int width, int height) = 0;
 };
 
 /// \}

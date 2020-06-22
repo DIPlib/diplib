@@ -195,6 +195,26 @@ void GLUTManager::refreshWindow(Window *window)
   glutPostWindowRedisplay((int)(intptr_t)window->id());
 }
 
+void GLUTManager::setWindowPosition(Window* window, int x, int y)
+{
+  mutex_.lock();
+  int id = glutGetWindow();
+  glutSetWindow((int)(intptr_t)window->id());
+  glutPositionWindow(x, y);
+  glutSetWindow(id);
+  mutex_.unlock();
+}
+
+void GLUTManager::setWindowSize(Window* window, int width, int height)
+{
+  mutex_.lock();
+  int id = glutGetWindow();
+  glutSetWindow((int)(intptr_t)window->id());
+  glutReshapeWindow(width, height);
+  glutSetWindow(id);
+  mutex_.unlock();
+}
+
 void GLUTManager::key(unsigned char k, int x, int y)
 {
   WindowPtr window = instance_->getCurrentWindow();

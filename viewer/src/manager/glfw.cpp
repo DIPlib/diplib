@@ -165,6 +165,18 @@ void GLFWManager::refreshWindow(Window* window)
       it->second.refresh = true;
 }
 
+void GLFWManager::setWindowPosition(Window* window, int x, int y)
+{
+  Guard guard(mutex_);
+  glfwSetWindowPos((GLFWwindow*)window->id(), x, y);
+}
+
+void GLFWManager::setWindowSize(Window* window, int width, int height)
+{
+  Guard guard(mutex_);
+  glfwSetWindowSize((GLFWwindow*)window->id(), width, height);
+}
+
 void GLFWManager::makeCurrent(Window *window)
 {
   glfwMakeContextCurrent((GLFWwindow*)window->id());

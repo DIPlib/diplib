@@ -46,6 +46,16 @@ size_t Window::drawString(const char *string)
   return movex;
 }
 
+void Window::setPosition(int x, int y)
+{
+  manager()->setWindowPosition(this, x, y);
+}
+
+void Window::setSize(int width, int height)
+{
+  manager()->setWindowSize(this, width, height);
+}
+
 void Window::refresh()
 {
   manager()->refreshWindow(this);
