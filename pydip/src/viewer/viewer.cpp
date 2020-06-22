@@ -44,7 +44,7 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    sv.def_property( "element", []( dip::viewer::SliceViewer& self ) {
       dip::viewer::SliceViewer::Guard guard( self );
       return self.options().element_;
-   }, []( dip::viewer::SliceViewer &self, int element ) {
+   }, []( dip::viewer::SliceViewer &self, dip::uint element ) {
       dip::viewer::SliceViewer::Guard guard( self );
       DIP_THROW_IF( element >= self.image().TensorElements(), dip::E::INDEX_OUT_OF_RANGE );
       self.options().element_ = element;

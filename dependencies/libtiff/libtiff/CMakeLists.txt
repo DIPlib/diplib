@@ -62,11 +62,11 @@ set(tiff_SOURCES
   tif_fax3sm.c
   tif_flush.c
   tif_getimage.c
-  tif_jbig.c
+  #tif_jbig.c
   tif_jpeg.c
-  tif_jpeg_12.c
+  #tif_jpeg_12.c
   tif_luv.c
-  tif_lzma.c
+  #tif_lzma.c
   tif_lzw.c
   tif_next.c
   tif_ojpeg.c
@@ -82,10 +82,11 @@ set(tiff_SOURCES
   tif_tile.c
   tif_version.c
   tif_warning.c
-  tif_webp.c
+  #tif_webp.c
   tif_write.c
   tif_zip.c
-  tif_zstd.c)
+  #tif_zstd.c
+)
 
 if(WIN32_IO)
   list(APPEND tiff_SOURCES tif_win32.c)
