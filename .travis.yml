@@ -8,12 +8,16 @@ matrix:
       os: linux
       dist: xenial
       compiler: clang
-      env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off -DPYBIND11_PYTHON_VERSION=3.5"
+      env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off -DPYBIND11_PYTHON_VERSION=3.6"
+      before_install:
+        - pyenv global 3.6.7
     - name: linux-gcc
       os: linux
       dist: xenial
       compiler: gcc
-      env: DIP_CMAKE_OPTS="-DPYBIND11_PYTHON_VERSION=3.5"
+      env: DIP_CMAKE_OPTS="-DPYBIND11_PYTHON_VERSION=3.6"
+      before_install:
+        - pyenv global 3.6.7
     - name: osx
       os: osx
       osx_image: xcode11.3
