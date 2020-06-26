@@ -246,6 +246,28 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     }
   }
 
+  /// \brief Sets mapping range based on mapping
+  void setMappingRange(ViewingOptions::Mapping mapping)
+  {
+    switch (mapping)
+    {
+      case ViewingOptions::Mapping::ZeroOne:
+          mapping_range_ = { 0, 1 };
+          break;
+      case ViewingOptions::Mapping::Angle:
+          mapping_range_ = { -dip::pi, dip::pi };
+          break;
+      case ViewingOptions::Mapping::Normal:
+          mapping_range_ = { 0, 255 };
+          break;
+      case ViewingOptions::Mapping::Linear:
+      case ViewingOptions::Mapping::Symmetric:
+      case ViewingOptions::Mapping::Logarithmic:
+          setAutomaticRange();
+          break;
+    }
+  }
+
   /// \brief Returns a textual description of the current complex-to-real mapping
   dip::String getComplexDescription()
   {

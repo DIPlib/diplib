@@ -91,7 +91,11 @@ will be necessary to do `dip.viewer.Spin()` to interact with the created
 window. `Spin()` interrupts the interactive session until all *DIPviewer*
 windows have been closed. Even when `Spin()` is not needed to interact
 with the windows, it should be run before closing the Python session to
-avoid a series of error messages.
+avoid a series of error messages. Alternatively, periodically call
+`dip.viewer.Draw()`.
+`dip.viewer.Show()` has additional parameters
+that can be used to set viewing options; type `help(dip.viewer.Show)` for details.
+It also returns an object that can be used for further interaction.
 
 \section pum_indexing Indexing into images
 

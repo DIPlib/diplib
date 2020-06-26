@@ -490,9 +490,9 @@ created by `dipshow`, as do the interactive tools described in
 
 `viewslice` is an alternate method. It uses the *DIPviewer* tool. This tool has
 no limitations to what type of images can be shown (i.e. it can show images
-with more than 4 dimensions, as well as tensor images). However, no programmatic
-interaction with the figure windows is supported, and a new window will always
-be opened for each display command.
+with more than 4 dimensions, as well as tensor images). However, programmatic
+interaction with the figure windows is limited to basic window manipulation and
+updating the image.
 See \ref viewer_ui "the DIPviewer documentation" for more information on how
 to interact with these figure windows.
 
@@ -500,7 +500,7 @@ to interact with these figure windows.
 View5D Java applet, which needs to be installed separately. See `help view5d`
 for instructions on installation.
 See [the tool's documentation](http://www.nanoimaging.de/View5D/)
-for instructions and tutorials. This applet does allow updating the image
+for instructions and tutorials. The applet allows updating the image
 shown, and a series of methods of the Java object can be invoked to
 programmatically control some aspects of the figure window.
 

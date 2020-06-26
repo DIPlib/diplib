@@ -22,6 +22,21 @@
 
 #include "../pydip.h"
 
+static dip::String toString( dip::uint idx, dip::String const* options, int n ) {
+   DIP_THROW_IF( idx >= n, dip::E::INDEX_OUT_OF_RANGE );
+   return options[ idx ];
+}
+
+static dip::uint toIndex( dip::String str, dip::String const* options, int n ) {
+   for ( dip::uint idx=0; idx < n; ++idx ) {
+      if ( options[idx] == str ) {
+         return idx;
+      }
+   }
+    
+   DIP_THROW_INVALID_FLAG( str );
+}
+
 PYBIND11_MODULE( PyDIPviewer, m ) {
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
    sv.def( "SetImage", []( dip::viewer::SliceViewer &self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
@@ -70,6 +85,32 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
       self.options().origin_ = origin;
       self.updateLinkedViewers();
    });
+
+   sv.def_property( "mapping_range", []( dip::viewer::SliceViewer& self ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      return self.options().mapping_range_;
+   }, []( dip::viewer::SliceViewer &self, dip::FloatArray const &range ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      DIP_THROW_IF( range.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
+      self.options().mapping_range_ = dip::viewer::FloatRange( range[0], range[1] );
+   } );
+
+   dip::String mappings[] = { "unit", "angle", "8bit", "lin", "base", "log" };
+   sv.def_property( "mapping", [=]( dip::viewer::SliceViewer& self ) {
+      return toString( ( dip::uint ) self.options().mapping_, mappings, 6 );
+   }, [=]( dip::viewer::SliceViewer &self, dip::String const &mapping ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      self.options().mapping_ = ( dip::viewer::ViewingOptions::Mapping ) toIndex( mapping, mappings, 6 );
+      self.options().setMappingRange( self.options().mapping_ );
+   } );
+
+   dip::String luts[] = { "original", "ternary", "grey", "sequential", "divergent", "periodic", "labels" };
+   sv.def_property( "lut", [=]( dip::viewer::SliceViewer& self ) {
+      return toString((dip::uint) self.options().lut_, luts, 7 );
+   }, [=]( dip::viewer::SliceViewer &self, dip::String const &lut ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      self.options().lut_ = ( dip::viewer::ViewingOptions::LookupTable ) toIndex( lut, luts, 7 );
+   } );
 
    m.def( "Show", []( dip::Image const& image, dip::String const& title ) { return dip::viewer::Show( image, title ); }, "in"_a, "title"_a = "", "Show an image in the slice viewer." );
    m.def( "Draw", &dip::viewer::Draw, "Process user event queue." );

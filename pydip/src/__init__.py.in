@@ -52,6 +52,57 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
         viewer.Spin()
     viewer.ShowModal = ShowModal
 
+    __ShowViewer = viewer.Show
+    def ShowViewer(*args, **kwargs):
+        """Show an image in a new SliceViewer window.
+        
+        Parameters
+        ----------
+        in : dip.Image
+            Image to show.
+        title : str, optional
+            Window title.
+        position : tuple of int, optional
+            Window position (x and y).
+        size : tuple of int, optional
+            Window size (width and height).
+        operating_point : tuple of float, optional
+            Selected point.
+        element : int, optional
+            Selected tensor element.
+        zoom : tuple of float, optional
+            Zoom factor.
+        origin : tuple of int, optional
+            Pixel displayed at top left of window.
+        mapping_range : tuple of float, optional
+            Black and white levels.
+        mapping : {"unit", "angle", "8bit", "lin", "base", "log"}, optional
+            Automatic mapping range setting.
+        lut : {"original", "ternary", "grey", "sequential", "divergent", "periodic", "labels"}, optional
+            Color lookup table setting.
+
+        Returns
+        -------
+        dip.viewer.SliceViewer
+            SliceViewer object for further interaction.
+        """
+        showargs = dict(filter(lambda elem: elem[0] == 'in' or elem[0] == 'title', kwargs.items()))
+        v = __ShowViewer(*args, **showargs)
+
+        for elem in kwargs.items():
+            if elem[0] == 'in' or elem[0] == 'title':
+                continue
+            elif elem[0] == 'position':
+                v.SetPosition(elem[1][0], elem[1][1])
+            elif elem[0] == 'size':
+                v.SetSize(elem[1][0], elem[1][1])
+            else:
+                setattr(v, elem[0], elem[1])
+
+        return v
+
+    viewer.Show = ShowViewer
+
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
 if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
