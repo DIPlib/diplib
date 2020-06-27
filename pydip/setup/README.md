@@ -65,7 +65,7 @@ To install, simply type
 
     pip install diplib
 
-To read images through the *Bio-Formats* library, you will need to download it
+Windows users might need to install the [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads). To read images through the *Bio-Formats* library, you will need to download it
 separately:
 
     python -m diplib download_bioformats
