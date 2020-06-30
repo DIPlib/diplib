@@ -63,6 +63,7 @@ constexpr char const* INCOHERENT = "incoherent";
 constexpr char const* TRANSLATION = "translation";
 constexpr char const* ROTATION = "rotation";
 constexpr char const* EXACT = "exact";
+constexpr char const* GREY = "grey";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

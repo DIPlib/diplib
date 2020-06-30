@@ -22,12 +22,12 @@
 
 #include "../pydip.h"
 
-static dip::String toString( dip::uint idx, dip::String const* options, int n ) {
+static dip::String toString( dip::uint idx, dip::String const* options, dip::uint n ) {
    DIP_THROW_IF( idx >= n, dip::E::INDEX_OUT_OF_RANGE );
    return options[ idx ];
 }
 
-static dip::uint toIndex( dip::String str, dip::String const* options, int n ) {
+static dip::uint toIndex( dip::String str, dip::String const* options, dip::uint n ) {
    for ( dip::uint idx=0; idx < n; ++idx ) {
       if ( options[idx] == str ) {
          return idx;

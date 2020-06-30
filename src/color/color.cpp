@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains main functionality for color image support.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2020, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
@@ -51,8 +51,8 @@ constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantE;
 
 ColorSpaceManager::ColorSpaceManager() {
    // grey (or gray)
-   Define( "grey", 1 );
-   DefineAlias( "gray", "grey" );
+   Define( dip::S::GREY, 1 );
+   DefineAlias( "gray", dip::S::GREY );
    // RGB
    Define( "RGB", 3 );
    DefineAlias( "rgb", "RGB" );
@@ -152,7 +152,7 @@ using ConversionStepArray = std::vector< ConversionStep >;
 
 class ConverterLineFilter : public Framework::ScanLineFilter {
    public:
-      ConverterLineFilter( ConversionStepArray const& steps ) : steps_( steps ) {
+      explicit ConverterLineFilter( ConversionStepArray const& steps ) : steps_( steps ) {
          maxIntermediateChannels_ = steps[ 0 ].nOutputChannels;
          for( dip::uint ii = 1; ii < steps.size() - 1; ++ii ) {
             maxIntermediateChannels_ = std::max( maxIntermediateChannels_, steps[ 1 ].nOutputChannels );
@@ -233,12 +233,12 @@ void ColorSpaceManager::Convert(
 ) const {
    // Make sure the input color space is consistent
    String const& startColorSpace = in.ColorSpace();
-   dip::uint endIndex = Index( endColorSpace.empty() ? "grey" : endColorSpace );
+   dip::uint endIndex = Index( endColorSpace.empty() ? dip::S::GREY : endColorSpace );
    if( startColorSpace.empty() && in.TensorElements() > 1 ) {
       DIP_THROW_IF( colorSpaces_[ endIndex].nChannels != in.TensorElements(), E::INCONSISTENT_COLORSPACE );
       out = in;
    } else {
-      dip::uint startIndex = Index( startColorSpace.empty() ? "grey" : startColorSpace );
+      dip::uint startIndex = Index( startColorSpace.empty() ? dip::S::GREY : startColorSpace );
       DIP_THROW_IF( in.TensorElements() != colorSpaces_[ startIndex ].nChannels, E::INCONSISTENT_COLORSPACE );
       // Get the output color space
       if( startIndex == endIndex ) {
@@ -249,8 +249,8 @@ void ColorSpaceManager::Convert(
       // Find a path from start to end
       std::vector< dip::uint > path = FindPath( startIndex, endIndex );
       DIP_THROW_IF( path.empty(), "No conversion possible between color spaces " +
-                                  ( startColorSpace.empty() ? "grey" : startColorSpace ) + " and " +
-                                  ( endColorSpace.empty() ? "grey" : endColorSpace ) );
+                                  ( startColorSpace.empty() ? dip::S::GREY : startColorSpace ) + " and " +
+                                  ( endColorSpace.empty() ? dip::S::GREY : endColorSpace ) );
       DIP_ASSERT( path.size() > 1 ); // It should have at least start and stop on it!
       // Collect information about the converter functions along the path
       dip::uint nSteps = path.size() - 1;
@@ -268,19 +268,12 @@ void ColorSpaceManager::Convert(
       // Call scan framework
       DIP_START_STACK_TRACE
          ConverterLineFilter lineFilter( steps );
-         Framework::ScanMonadic(
-               in,
-               out,
-               DT_DFLOAT,
-               DataType::SuggestFloat( in.DataType() ),
-               steps.back().nOutputChannels,
-               lineFilter
-         );
+         Framework::ScanMonadic( in, out, DT_DFLOAT, DataType::SuggestFloat( in.DataType() ), steps.back().nOutputChannels, lineFilter );
       DIP_END_STACK_TRACE
       out.ReshapeTensorAsVector();
    }
    String const& newColorSpace = colorSpaces_[ endIndex ].name;
-   if( newColorSpace == "grey" ) {
+   if( newColorSpace == dip::S::GREY ) {
       out.ResetColorSpace();
    } else {
       out.SetColorSpace( colorSpaces_[ endIndex ].name );
@@ -293,7 +286,7 @@ struct QueueElement {
    dip::uint index;
    bool operator >( QueueElement const& other ) const { return cost > other.cost; }
 };
-using PriorityQueueLowFirst = std::priority_queue< QueueElement, std::vector< QueueElement >, std::greater< QueueElement >>;
+using PriorityQueueLowFirst = std::priority_queue< QueueElement, std::vector< QueueElement >, std::greater<>>;
 } // namespace
 
 std::vector< dip::uint > ColorSpaceManager::FindPath( dip::uint start, dip::uint stop ) const {
@@ -314,7 +307,7 @@ std::vector< dip::uint > ColorSpaceManager::FindPath( dip::uint start, dip::uint
          // We're done.
          break;
       }
-      for( auto& edge : colorSpaces_[ k ].edges ) {
+      for( auto const& edge : colorSpaces_[ k ].edges ) {
          dip::uint nk = edge.first; // target color space
          dip::uint nc = c + edge.second->Cost();
          if( cost[ nk ] > nc ) {
@@ -373,14 +366,14 @@ void ColorSpaceManager::SetWhitePoint( XYZ whitePoint ) {
    whitePoint[ 2 ] /= whitePoint[ 1 ]; // Zn
    whitePoint[ 1 ] = 1.0;              // Yn
    XYZMatrix matrix = ComputeXYZMatrix( whitePoint );
-   static_cast< rgb2grey* >( GetColorSpaceConverter( "RGB",  "grey" ) )->SetWhitePoint( matrix );
-   static_cast< grey2xyz* >( GetColorSpaceConverter( "grey", "XYZ"  ) )->SetWhitePoint( whitePoint );
-   static_cast< rgb2xyz*  >( GetColorSpaceConverter( "RGB",  "XYZ"  ) )->SetWhitePoint( matrix );
-   static_cast< xyz2rgb*  >( GetColorSpaceConverter( "XYZ",  "RGB"  ) )->SetWhitePoint( matrix );
-   static_cast< xyz2lab*  >( GetColorSpaceConverter( "XYZ",  "Lab"  ) )->SetWhitePoint( whitePoint );
-   static_cast< lab2xyz*  >( GetColorSpaceConverter( "Lab",  "XYZ"  ) )->SetWhitePoint( whitePoint );
-   static_cast< xyz2luv*  >( GetColorSpaceConverter( "XYZ",  "Luv"  ) )->SetWhitePoint( whitePoint );
-   static_cast< luv2xyz*  >( GetColorSpaceConverter( "Luv",  "XYZ"  ) )->SetWhitePoint( whitePoint );
+   dynamic_cast< rgb2grey* >( GetColorSpaceConverter( "RGB",  dip::S::GREY ) )->SetWhitePoint( matrix );
+   dynamic_cast< grey2xyz* >( GetColorSpaceConverter( dip::S::GREY, "XYZ"  ) )->SetWhitePoint( whitePoint );
+   dynamic_cast< rgb2xyz*  >( GetColorSpaceConverter( "RGB",  "XYZ"  ) )->SetWhitePoint( matrix );
+   dynamic_cast< xyz2rgb*  >( GetColorSpaceConverter( "XYZ",  "RGB"  ) )->SetWhitePoint( matrix );
+   dynamic_cast< xyz2lab*  >( GetColorSpaceConverter( "XYZ",  "Lab"  ) )->SetWhitePoint( whitePoint );
+   dynamic_cast< lab2xyz*  >( GetColorSpaceConverter( "Lab",  "XYZ"  ) )->SetWhitePoint( whitePoint );
+   dynamic_cast< xyz2luv*  >( GetColorSpaceConverter( "XYZ",  "Luv"  ) )->SetWhitePoint( whitePoint );
+   dynamic_cast< luv2xyz*  >( GetColorSpaceConverter( "Luv",  "XYZ"  ) )->SetWhitePoint( whitePoint );
 }
 
 } // namespace dip

@@ -53,18 +53,25 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
          dip::Image in = dml::GetImage( prhs[ 0 ] );
          dip::String col = dml::GetString( prhs[ 1 ] );
 
-         if( !in.IsColor() && in.TensorElements() > 1 ) {
-            // Set the color space, if correct number of tensor elements
-            DIP_THROW_IF( csm.NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
-            plhs[ 0 ] = mxDuplicateArray( prhs[ 0 ] );
-            mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm.CanonicalName( col )));
-         } else {
-            // Convert the color space
-            dml::MatlabInterface mi;
-            dip::Image out = mi.NewImage();
-            csm.Convert( in, out, col );
-            plhs[ 0 ] = dml::GetArray( out );
+         if( !in.IsColor() ) {
+            if( csm.NumberOfChannels( col ) == in.TensorElements() ) {
+               // Set the color space, if correct number of tensor elements
+               plhs[ 0 ] = mxDuplicateArray( prhs[ 0 ] );
+               col = csm.CanonicalName( col );
+               if( col == dip::S::GREY ) {
+                  col = "";
+               }
+               mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( col ));
+               return;
+            }
+            DIP_THROW_IF( in.TensorElements() > 1, dip::E::INCONSISTENT_COLORSPACE );
          }
+
+         // Convert the color space -- we get here if `in` has a ColorSpace string or if it's scalar.
+         dml::MatlabInterface mi;
+         dip::Image out = mi.NewImage();
+         csm.Convert( in, out, col );
+         plhs[ 0 ] = dml::GetArray( out );
 
       }
 

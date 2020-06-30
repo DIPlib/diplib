@@ -848,8 +848,6 @@ classdef dip_image
          % DISP   Display information on the DIP_IMAGE object.
          if isempty(obj)
             disp('Empty image:');
-         elseif isscalar(obj)
-            disp('Scalar image:');
          else
             sz = obj.TensorSizeInternal;
             shape = obj.TensorShapeInternal;
@@ -857,6 +855,8 @@ classdef dip_image
                       num2str(numtensorel(obj)),' elements'];
             if iscolor(obj)
                disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
+            elseif isscalar(obj)
+               disp('Scalar image:');
             else
                disp(['Tensor image (',tensor,'):']);
             end

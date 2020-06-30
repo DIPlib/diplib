@@ -40,6 +40,7 @@
 %       Lab (or L*a*b*, CIELAB)
 %       Luv (or L*u*v*, "CIELUV")
 %       LCH (or L*C*H*)
+%       wavelength
 %
 %    See the DIPlib documentation for dip::ColorSpaceManager for more
 %    information on the color spaces.
