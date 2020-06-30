@@ -39,6 +39,7 @@ using XYZMatrix = std::array< dfloat, 9 >;
 #include "hcv.h"
 #include "xyz.h"
 #include "lab.h"
+#include "wavelength.h"
 
 namespace dip {
 
@@ -133,6 +134,9 @@ ColorSpaceManager::ColorSpaceManager() {
    Register( new lab2lch );
    Register( new lch2lab );
    Register( new lch2grey );
+   // wavelength
+   Define( "wavelength", 1 );
+   Register( new wavelength2xyz );
 }
 
 

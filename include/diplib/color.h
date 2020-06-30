@@ -113,6 +113,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromacity coordinates. A color space that is much closer to being perceptually uniform than Yxy.
 /// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromacity coordinates. An alternative to CIE Lab.
 /// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
+/// `"wavelength"`  |     | Can only be converted from, not to. Yields an approximate color representation for the given wavelength in nanometers, in the range 380 through 780 nanometers. For values outside the range, produces black.
 //
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
 class DIP_NO_EXPORT ColorSpaceManager {

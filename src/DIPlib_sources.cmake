@@ -88,6 +88,7 @@ color/hsi.h
 color/ish.h
 color/lab.h
 color/rgb.h
+color/wavelength.h
 color/xyz.h
 detection/corners.cpp
 detection/hough.cpp
