@@ -136,11 +136,17 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
 
     virtual void setWindowPosition(Window* window, int x, int y)
     {
+      (void) window;
+      (void) x;
+      (void) y;
       // TODO
     }
 
     virtual void setWindowSize(Window* window, int width, int height)
     {
+       (void) window;
+       (void) width;
+       (void) height;
       // TODO
     }
 
