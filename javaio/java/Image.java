@@ -121,6 +121,10 @@ public class Image {
       verify();
       SetPixelSize( ptr_, size );
    }
+   public void Squeeze( ) {
+      verify();
+      Squeeze( ptr_ );
+   }
    public void Forge( ) {
       verify();
       Forge( ptr_ );
@@ -150,6 +154,7 @@ public class Image {
    protected native void SetColorSpace( long ptr, String cs );
    protected native PhysicalQuantity[] PixelSize( long ptr );
    protected native void SetPixelSize( long ptr, PhysicalQuantity[] size );
+   protected native void Squeeze( long ptr );
    protected native void Forge( long ptr );
    protected native void Strip( long ptr );
    protected native ByteBuffer Origin( long ptr );

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import loci.formats.ImageReader;
 import loci.formats.FormatTools;
 import ome.units.quantity.Length;
+import ome.units.quantity.Time;
 
 import loci.common.DebugTools;
 import loci.common.services.ServiceFactory;
@@ -46,43 +47,46 @@ public class BioFormatsInterface {
       reader.setMetadataStore( meta );
       reader.setId( file );
       
+      // We assume full 5D data and squeeze afterwards
       PhysicalQuantity[] pixelSize = { GetPhysicalQuantity( meta.getPixelsPhysicalSizeX( 0 ) ), 
                                        GetPhysicalQuantity( meta.getPixelsPhysicalSizeY( 0 ) ),
-                                       GetPhysicalQuantity( meta.getPixelsPhysicalSizeZ( 0 ) ) };
+                                       GetPhysicalQuantity( meta.getPixelsPhysicalSizeZ( 0 ) ),
+                                       GetPhysicalQuantity( meta.getPixelsTimeIncrement( 0 ) ) };
       
-      if ( reader.getImageCount() == 1 ) {
-         // 2D
-         long[] sizes = { reader.getSizeX(), reader.getSizeY() };
-         image.SetSizes( sizes );
-         pixelSize = Arrays.copyOfRange( pixelSize, 0, 2 );
-         image.SetTensorSizes( reader.getRGBChannelCount() );
-         
-         if ( reader.isInterleaved() ) {
-            long[] strides = { reader.getRGBChannelCount(), reader.getSizeX()*reader.getRGBChannelCount() };
-            image.SetStrides( strides );
-            image.SetTensorStride( 1 );
-         } else {
-            long[] strides = { 1, reader.getSizeX() };
-            image.SetStrides( strides );
-            image.SetTensorStride( reader.getSizeX()*reader.getSizeY() );
+      long[] sizes = { reader.getSizeX(), reader.getSizeY(), reader.getSizeZ(), reader.getSizeT() };
+      image.SetSizes( sizes );
+      image.SetTensorSizes( reader.getSizeC() );
+
+      // Undo BioFormats standard of always putting XY first, even if data is interleaved
+      String order = reader.getDimensionOrder();
+      if ( reader.isInterleaved() )
+         order = "CXY" + order.charAt( 3 ) + order.charAt( 4 );
+
+      // Calculate strides
+      long[] strides = { 0, 0, 0, 0 };
+      long tstride = 0;
+      for ( int oo=0, ss=0, stride=1; oo < 5; oo++ ) {
+         long sz = 0;
+         switch ( order.charAt( oo ) )
+         {
+            case 'X': sz = reader.getSizeX(); break;
+            case 'Y': sz = reader.getSizeY(); break;
+            case 'C': sz = reader.getSizeC(); break;
+            case 'Z': sz = reader.getSizeZ(); break;
+            case 'T': sz = reader.getSizeT(); break;
          }
-      } else {
-         // More than 2D. Read only first series, and interpret all images as third dimension.
-         long[] sizes = { reader.getSizeX(), reader.getSizeY(), reader.getImageCount() };
-         image.SetSizes( sizes );
-         image.SetTensorSizes( reader.getRGBChannelCount() );
-         
-         if ( reader.isInterleaved() ) {
-            long[] strides = { reader.getRGBChannelCount(), reader.getSizeX()*reader.getRGBChannelCount(), reader.getSizeX()*reader.getSizeY()*reader.getRGBChannelCount() };
-            image.SetStrides( strides );
-            image.SetTensorStride( 1 );
-         } else {
-            long[] strides = { 1, reader.getSizeX(), reader.getSizeX()*reader.getSizeY() };
-            image.SetStrides( strides );
-            image.SetTensorStride( reader.getSizeX()*reader.getSizeY()*reader.getImageCount() );
-         }
+ 		
+         if ( order.charAt( oo ) == 'C' )
+            tstride = stride;
+         else
+            strides[ ss++ ] = stride;
+
+         stride *= sz;
       }
-      
+
+      image.SetStrides( strides );
+      image.SetTensorStride( tstride );
+
       switch ( reader.getPixelType() ) {
          case FormatTools.INT8:   image.SetDataType( "INT8" );
                                   break;
@@ -110,6 +114,7 @@ public class BioFormatsInterface {
       }
       
       image.Forge();
+      image.Squeeze();
       ByteBuffer buf = image.Origin();
       
       for (int ii=0; ii < reader.getImageCount(); ii++)
@@ -140,5 +145,13 @@ public class BioFormatsInterface {
       }
       
       return new PhysicalQuantity( length.value().doubleValue(), length.unit().getSymbol() );
+   }
+
+   protected static PhysicalQuantity GetPhysicalQuantity( Time time ) {
+      if ( time == null ) {
+         return new PhysicalQuantity( 1, "px" );
+      }
+      
+      return new PhysicalQuantity( time.value().doubleValue(), time.unit().getSymbol() );
    }
 }

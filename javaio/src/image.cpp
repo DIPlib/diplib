@@ -131,6 +131,13 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_SetPixelSize( JNIEnv *env, jobject,
    image->SetPixelSize( PhysicalQuantityArrayFromJava( env, size ) );
 }
 
+// dip::Image::Squeeze()
+JNIEXPORT void JNICALL Java_org_diplib_Image_Squeeze( JNIEnv *, jobject, jlong ptr ) {
+   Image *image = (Image*) ptr;
+
+   image->Squeeze();
+}
+
 // dip::Image::Forge()
 JNIEXPORT void JNICALL Java_org_diplib_Image_Forge( JNIEnv *, jobject, jlong ptr ) {
    Image *image = (Image*) ptr;
@@ -197,6 +204,7 @@ static JNINativeMethodCPP image_natives_[] = {
    {"SetColorSpace",   "(JLjava/lang/String;)V",   (void*)Java_org_diplib_Image_SetColorSpace },
    {"PixelSize",       "(J)[Lorg/diplib/PhysicalQuantity;",  (void*)Java_org_diplib_Image_PixelSize },
    {"SetPixelSize",    "(J[Lorg/diplib/PhysicalQuantity;)V", (void*)Java_org_diplib_Image_SetPixelSize },
+   {"Squeeze",         "(J)V",                     (void*)Java_org_diplib_Image_Squeeze },
    {"Forge",           "(J)V",                     (void*)Java_org_diplib_Image_Forge },
    {"Strip",           "(J)V",                     (void*)Java_org_diplib_Image_Strip },
    {"Origin",          "(J)Ljava/nio/ByteBuffer;", (void*)Java_org_diplib_Image_Origin },
