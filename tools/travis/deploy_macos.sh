@@ -13,7 +13,7 @@ wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats
 cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off
 
 # Python 3.7
-export PYTHON=/usr/local/opt/python@3/bin/python3
+export PYTHON=/usr/local/opt/python@3.7/bin/python3
 export PYTHON_VERSION=3.7
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel

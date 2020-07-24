@@ -24,7 +24,7 @@ matrix:
       compiler: clang
       env: DIP_CMAKE_OPTS=
       before_install:
-        - brew install libomp glfw python@3.8
+        - brew install libomp glfw python@3.7
     - name: windows
       os: windows
       env: DIP_CMAKE_OPTS="-A x64"
