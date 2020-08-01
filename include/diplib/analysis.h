@@ -246,6 +246,21 @@ inline Image CrossCorrelationFT(
    return out;
 }
 
+/// \brief Computes the auto-correlation function.
+///
+/// Equivalent to calling `dip::CrossCorrelationFT` with the same image as the two inputs, and the
+/// `normalize` flag set to `"don't normalize"` (normalization would yield a very boring output indeed).
+///
+/// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
+/// the center in case of an even-sized image.
+///
+/// If `in` is already Fourier transformed, set `inRepresentation` to `"frequency"`.
+/// Similarly, if `outRepresentation` is `"frequency"`, the output will not be
+/// inverse-transformed, so will be in the frequency domain.
+///
+/// `in` must be a scalar image. Spatial-domain images must be real-valued, and a frequency-domain image
+/// is assumed (but not tested) to be conjugate-symmetric (i.e. the Fourier transform of real-valued image).
+/// `out` will be real-valued if `outRepresentation` is `"spatial"`.
 DIP_EXPORT void AutoCorrelationFT(
       Image const& in,
       Image& out,

@@ -745,7 +745,7 @@ inline Image AffineTransform(
 ///
 /// `interpolationMethod` has a restricted set of options: `"linear"`, `"3-cubic"`, or `"nearest"`.
 /// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
-///// ignored, nearest neighbor interpolation will be used.
+/// ignored, nearest neighbor interpolation will be used.
 DIP_EXPORT void WarpControlPoints(
       Image const& in,
       Image& out,

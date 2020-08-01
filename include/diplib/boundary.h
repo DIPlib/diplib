@@ -60,7 +60,7 @@ namespace dip {
 /// `SECOND_ORDER_EXTRAPOLATE` | "second order"           | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
 /// `THIRD_ORDER_EXTRAPOLATE`  | "third order"            | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                  | "default" or ""          | The default value, currently equal to `SYMMETRIC_MIRROR`.
-/// `ALREADY_EXPANDED`         | "already expanded"       | The dangerous option. The image is an ROI of a larger image, and the operation cannot reach outside this larger image. Not supported by all functions, and can always be combined with other options.
+/// `ALREADY_EXPANDED`         | "already expanded"       | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
 enum class DIP_NO_EXPORT BoundaryCondition {
       SYMMETRIC_MIRROR,
       ASYMMETRIC_MIRROR,
