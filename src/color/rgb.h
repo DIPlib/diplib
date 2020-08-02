@@ -22,10 +22,13 @@ namespace dip {
 
 namespace {
 
+constexpr char const* RGB_name = "RGB";
+constexpr char const* sRGB_name = "sRGB";
+
 class rgb2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "RGB"; }
-      virtual String OutputColorSpace() const override { return "grey"; }
+      virtual String InputColorSpace() const override { return RGB_name; }
+      virtual String OutputColorSpace() const override { return dip::S::GREY; }
       virtual dip::uint Cost() const override { return 100; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -45,8 +48,8 @@ class rgb2grey : public ColorSpaceConverter {
 
 class grey2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "grey"; }
-      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual String InputColorSpace() const override { return dip::S::GREY; }
+      virtual String OutputColorSpace() const override { return RGB_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
@@ -83,8 +86,8 @@ inline dfloat SToLinear( dfloat in ) {
 
 class rgb2srgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "RGB"; }
-      virtual String OutputColorSpace() const override { return "sRGB"; }
+      virtual String InputColorSpace() const override { return RGB_name; }
+      virtual String OutputColorSpace() const override { return sRGB_name; }
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -97,8 +100,8 @@ class rgb2srgb : public ColorSpaceConverter {
 
 class srgb2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "sRGB"; }
-      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual String InputColorSpace() const override { return sRGB_name; }
+      virtual String OutputColorSpace() const override { return RGB_name; }
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {

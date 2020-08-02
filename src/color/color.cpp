@@ -32,6 +32,7 @@ using XYZMatrix = std::array< dfloat, 9 >;
 }
 }
 
+// Note order of inclusion must not change, some include files depend on stuff previously declared in others.
 #include "rgb.h"
 #include "cmyk.h"
 #include "hsi.h"
@@ -54,89 +55,90 @@ ColorSpaceManager::ColorSpaceManager() {
    Define( dip::S::GREY, 1 );
    DefineAlias( "gray", dip::S::GREY );
    // RGB
-   Define( "RGB", 3 );
-   DefineAlias( "rgb", "RGB" );
+   Define( RGB_name, 3 );
+   DefineAlias( "rgb", RGB_name );
    Register( new grey2rgb );
    Register( new rgb2grey );
    // nlRGB (or R'G'B')
-   Define( "sRGB", 3 );
-   DefineAlias( "srgb", "sRGB" );
+   Define( sRGB_name, 3 );
+   DefineAlias( "srgb", sRGB_name );
    Register( new rgb2srgb );
    Register( new srgb2rgb );
    // CMY
-   Define( "CMY", 3 );
-   DefineAlias( "cmy", "CMY" );
+   Define( CMY_name, 3 );
+   DefineAlias( "cmy", CMY_name );
    Register( new rgb2cmy );
    Register( new cmy2rgb );
    // CMYK
-   Define( "CMYK", 4 );
-   DefineAlias( "cmyk", "CMYK" );
+   Define( CMYK_name, 4 );
+   DefineAlias( "cmyk", CMYK_name );
    Register( new cmy2cmyk );
    Register( new cmyk2cmy );
    // HSI
-   Define( "HSI", 3 );
-   DefineAlias( "hsi", "HSI" );
+   Define( HSI_name, 3 );
+   DefineAlias( "hsi", HSI_name );
    Register( new grey2hsi );
    Register( new hsi2grey );
    Register( new rgb2hsi );
    Register( new hsi2rgb );
    // HCV
-   Define( "HCV", 3 );
-   DefineAlias( "hcv", "HCV" );
+   Define( HCV_name, 3 );
+   DefineAlias( "hcv", HCV_name );
    Register( new rgb2hcv );
    Register( new hcv2rgb );
    // HSV
-   Define( "HSV", 3 );
-   DefineAlias( "hsv", "HSV" );
+   Define( HSV_name, 3 );
+   DefineAlias( "hsv", HSV_name );
    Register( new hcv2hsv );
    Register( new hsv2hcv );
    // XYZ
-   Define( "XYZ", 3 );
-   DefineAlias( "xyz", "XYZ" );
+   Define( XYZ_name, 3 );
+   DefineAlias( "xyz", XYZ_name );
    Register( new grey2xyz );
    Register( new rgb2xyz );
    Register( new xyz2grey );
    Register( new xyz2rgb );
    // Yxy
-   Define( "Yxy", 3 );
-   DefineAlias( "yxy", "Yxy" );
+   Define( Yxy_name, 3 );
+   DefineAlias( "yxy", Yxy_name );
    Register( new xyz2yxy );
    Register( new yxy2grey );
    Register( new yxy2xyz );
    // Lab (or L*a*b*, CIELAB)
-   Define( "Lab", 3 );
-   DefineAlias( "lab", "Lab" );
-   DefineAlias( "L*a*b*", "Lab" );
-   DefineAlias( "l*a*b*", "Lab" );
-   DefineAlias( "CIELAB", "Lab" );
-   DefineAlias( "cielab", "Lab" );
+   Define( Lab_name, 3 );
+   DefineAlias( "lab", Lab_name );
+   DefineAlias( "L*a*b*", Lab_name );
+   DefineAlias( "l*a*b*", Lab_name );
+   DefineAlias( "CIELAB", Lab_name );
+   DefineAlias( "cielab", Lab_name );
    Register( new grey2lab );
    Register( new xyz2lab );
    Register( new lab2grey );
    Register( new lab2xyz );
    // Luv (or L*u*v*, CIELUV)
-   Define( "Luv", 3 );
-   DefineAlias( "luv", "Luv" );
-   DefineAlias( "L*u*v*", "Luv" );
-   DefineAlias( "l*u*v*", "Luv" );
-   DefineAlias( "CIELUV", "Luv" );
-   DefineAlias( "cieluv", "Luv" );
+   Define( Luv_name, 3 );
+   DefineAlias( "luv", Luv_name );
+   DefineAlias( "L*u*v*", Luv_name );
+   DefineAlias( "l*u*v*", Luv_name );
+   DefineAlias( "CIELUV", Luv_name );
+   DefineAlias( "cieluv", Luv_name );
    Register( new grey2luv );
    Register( new xyz2luv );
    Register( new luv2xyz );
    Register( new luv2grey );
    // LCH
-   Define( "LCH", 3 );
-   DefineAlias( "lch", "LCH" );
-   DefineAlias( "L*C*H*", "LCH" );
-   DefineAlias( "l*c*h*", "LCH" );
+   Define( LCH_name, 3 );
+   DefineAlias( "lch", LCH_name );
+   DefineAlias( "L*C*H*", LCH_name );
+   DefineAlias( "l*c*h*", LCH_name );
    Register( new grey2lch );
    Register( new lab2lch );
    Register( new lch2lab );
    Register( new lch2grey );
    // wavelength
-   Define( "wavelength", 1 );
+   Define( wavelength_name, 1 );
    Register( new wavelength2xyz );
+   Register( new wavelength2rgb );
 }
 
 

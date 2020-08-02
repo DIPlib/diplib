@@ -22,10 +22,13 @@ namespace dip {
 
 namespace {
 
+constexpr char const* XYZ_name = "XYZ";
+constexpr char const* Yxy_name = "Yxy";
+
 class xyz2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "XYZ"; }
-      virtual String OutputColorSpace() const override { return "grey"; }
+      virtual String InputColorSpace() const override { return XYZ_name; }
+      virtual String OutputColorSpace() const override { return dip::S::GREY; }
       virtual dip::uint Cost() const override { return 100; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -36,13 +39,13 @@ class xyz2grey : public ColorSpaceConverter {
 
 class yxy2grey : public xyz2grey {
    public:
-      virtual String InputColorSpace() const override { return "Yxy"; }
+      virtual String InputColorSpace() const override { return Yxy_name; }
 };
 
 class grey2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "grey"; }
-      virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual String InputColorSpace() const override { return dip::S::GREY; }
+      virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ] * whitePoint_[ 0 ] / 255;
@@ -59,8 +62,8 @@ class grey2xyz : public ColorSpaceConverter {
 
 class rgb2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "RGB"; }
-      virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual String InputColorSpace() const override { return RGB_name; }
+      virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = ( input[ 0 ] * matrix_[ 0 ] + input[ 1 ] * matrix_[ 3 ] + input[ 2 ] * matrix_[ 6 ] ) / 255;
@@ -89,8 +92,8 @@ class rgb2xyz : public ColorSpaceConverter {
 
 class xyz2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "XYZ"; }
-      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual String InputColorSpace() const override { return XYZ_name; }
+      virtual String OutputColorSpace() const override { return RGB_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = ( input[ 0 ] * invMatrix_[ 0 ] + input[ 1 ] * invMatrix_[ 3 ] + input[ 2 ] * invMatrix_[ 6 ] ) * 255;
@@ -119,8 +122,8 @@ class xyz2rgb : public ColorSpaceConverter {
 
 class yxy2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "Yxy"; }
-      virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual String InputColorSpace() const override { return Yxy_name; }
+      virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 1 ];
@@ -133,8 +136,8 @@ class yxy2xyz : public ColorSpaceConverter {
 
 class xyz2yxy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "XYZ"; }
-      virtual String OutputColorSpace() const override { return "Yxy"; }
+      virtual String InputColorSpace() const override { return XYZ_name; }
+      virtual String OutputColorSpace() const override { return Yxy_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat sum = input[ 2 ] == 0 ? 0 : input[ 0 ] / input[ 2 ];

@@ -22,6 +22,9 @@ namespace dip {
 
 namespace {
 
+constexpr char const* HCV_name = "HCV";
+constexpr char const* HSV_name = "HSV";
+
 // Ranges:
 //    0 < Value < 255
 //    0 < Chroma < 255
@@ -30,8 +33,8 @@ namespace {
 
 class rgb2hcv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "RGB"; }
-      virtual String OutputColorSpace() const override { return "HCV"; }
+      virtual String InputColorSpace() const override { return RGB_name; }
+      virtual String OutputColorSpace() const override { return HCV_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             // Input
@@ -68,8 +71,8 @@ class rgb2hcv : public ColorSpaceConverter {
 
 class hcv2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "HCV"; }
-      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual String InputColorSpace() const override { return HCV_name; }
+      virtual String OutputColorSpace() const override { return RGB_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             // Input
@@ -104,8 +107,8 @@ class hcv2rgb : public ColorSpaceConverter {
 
 class hcv2hsv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "HCV"; }
-      virtual String OutputColorSpace() const override { return "HSV"; }
+      virtual String InputColorSpace() const override { return HCV_name; }
+      virtual String OutputColorSpace() const override { return HSV_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
@@ -117,8 +120,8 @@ class hcv2hsv : public ColorSpaceConverter {
 
 class hsv2hcv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "HSV"; }
-      virtual String OutputColorSpace() const override { return "HCV"; }
+      virtual String InputColorSpace() const override { return HSV_name; }
+      virtual String OutputColorSpace() const override { return HCV_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];

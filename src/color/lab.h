@@ -22,14 +22,18 @@ namespace dip {
 
 namespace {
 
+constexpr char const* Lab_name = "Lab";
+constexpr char const* Luv_name = "Luv";
+constexpr char const* LCH_name = "LCH";
+
 constexpr dfloat epsilon = 0.008856;
 constexpr dfloat epsilon1_3 = 0.206893; // ==  std::cbrt( epsilon );
 constexpr dfloat kappa = 903.3;
 
 class lab2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "Lab"; }
-      virtual String OutputColorSpace() const override { return "grey"; }
+      virtual String InputColorSpace() const override { return Lab_name; }
+      virtual String OutputColorSpace() const override { return dip::S::GREY; }
       virtual dip::uint Cost() const override { return 101; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -48,8 +52,8 @@ class lab2grey : public ColorSpaceConverter {
 
 class grey2lab : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "grey"; }
-      virtual String OutputColorSpace() const override { return "Lab"; }
+      virtual String InputColorSpace() const override { return dip::S::GREY; }
+      virtual String OutputColorSpace() const override { return Lab_name; }
       virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -65,8 +69,8 @@ class grey2lab : public ColorSpaceConverter {
 
 class lab2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "Lab"; }
-      virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual String InputColorSpace() const override { return Lab_name; }
+      virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -96,8 +100,8 @@ class lab2xyz : public ColorSpaceConverter {
 
 class xyz2lab : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "XYZ"; }
-      virtual String OutputColorSpace() const override { return "Lab"; }
+      virtual String InputColorSpace() const override { return XYZ_name; }
+      virtual String OutputColorSpace() const override { return Lab_name; }
       virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -127,20 +131,20 @@ class xyz2lab : public ColorSpaceConverter {
 
 class luv2grey : public lab2grey {
    public:
-      virtual String InputColorSpace() const override { return "Luv"; }
+      virtual String InputColorSpace() const override { return Luv_name; }
       // Luv to grey is identical to Lab to grey, so we re-use its code.
 };
 
 class grey2luv : public grey2lab {
    public:
-      virtual String OutputColorSpace() const override { return "Luv"; }
+      virtual String OutputColorSpace() const override { return Luv_name; }
       // Grey to Luv is identical to grey to Lab, so we re-use its code.
 };
 
 class luv2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "Luv"; }
-      virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual String InputColorSpace() const override { return Luv_name; }
+      virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -172,8 +176,8 @@ class luv2xyz : public ColorSpaceConverter {
 
 class xyz2luv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "XYZ"; }
-      virtual String OutputColorSpace() const override { return "Luv"; }
+      virtual String InputColorSpace() const override { return XYZ_name; }
+      virtual String OutputColorSpace() const override { return Luv_name; }
       virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -201,20 +205,20 @@ class xyz2luv : public ColorSpaceConverter {
 
 class lch2grey : public lab2grey {
    public:
-      virtual String InputColorSpace() const override { return "LCH"; }
+      virtual String InputColorSpace() const override { return LCH_name; }
       // LCH to grey is identical to Lab to grey, so we re-use its code.
 };
 
 class grey2lch : public grey2lab {
    public:
-      virtual String OutputColorSpace() const override { return "LCH"; }
+      virtual String OutputColorSpace() const override { return LCH_name; }
       // Grey to LCH is identical to grey to Lab, so we re-use its code.
 };
 
 class lch2lab : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "LCH"; }
-      virtual String OutputColorSpace() const override { return "Lab"; }
+      virtual String InputColorSpace() const override { return LCH_name; }
+      virtual String OutputColorSpace() const override { return Lab_name; }
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
@@ -228,8 +232,8 @@ class lch2lab : public ColorSpaceConverter {
 
 class lab2lch : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "Lab"; }
-      virtual String OutputColorSpace() const override { return "LCH"; }
+      virtual String InputColorSpace() const override { return Lab_name; }
+      virtual String OutputColorSpace() const override { return LCH_name; }
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {

@@ -72,32 +72,84 @@ constexpr dfloat wl_step = 5.0;
 
 static_assert( start_wl + ( X.size() - 1 ) * wl_step == end_wl, "Error in the definition of CIE data arrays" );
 
+void ConvertWavelengthToXYZ( dfloat wavelength, dfloat& outX, dfloat& outY, dfloat& outZ ) {
+   dfloat w = ( wavelength - start_wl ) / wl_step;
+   dfloat d_index = std::floor( w );
+   if(( d_index < 0 ) || ( d_index > static_cast< dfloat >( X.size() - 1 ))) {
+      outX = outY = outZ = 0.0;
+   } else {
+      w -= d_index;
+      dip::uint index = static_cast< dip::uint >( d_index );
+      if( index + 1 >= X.size()) {
+         outX = X[ index ];
+         outY = Y[ index ];
+         outZ = Z[ index ];
+      } else {
+         // Apply linear interpolation on our tables.
+         outX = ( 1.0 - w ) * X[ index ] + w * X[ index + 1 ];
+         outY = ( 1.0 - w ) * Y[ index ] + w * Y[ index + 1 ];
+         outZ = ( 1.0 - w ) * Z[ index ] + w * Z[ index + 1 ];
+      }
+   }
+}
+
+constexpr char const* wavelength_name = "wavelength";
+
 class wavelength2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "wavelength"; }
-      virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual String InputColorSpace() const override { return wavelength_name; }
+      virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
          do {
-            double w = ( input[ 0 ] - start_wl ) / wl_step;
-            double d_index = std::floor( w );
-            if(( d_index < 0 ) || ( d_index > static_cast< dfloat >( X.size() - 1 ))) {
-               output[ 0 ] = output[ 1 ] = output[ 2 ] = 0.0;
-            } else {
-               w -= d_index;
-               dip::uint index = static_cast< dip::uint >( d_index );
-               if( index + 1 >= X.size()) {
-                  output[ 0 ] = X[ index ];
-                  output[ 1 ] = Y[ index ];
-                  output[ 2 ] = Z[ index ];
-               } else {
-                  // Apply linear interpolation on our tables.
-                  output[ 0 ] = ( 1.0 - w ) * X[ index ] + w * X[ index + 1 ];
-                  output[ 1 ] = ( 1.0 - w ) * Y[ index ] + w * Y[ index + 1 ];
-                  output[ 2 ] = ( 1.0 - w ) * Z[ index ] + w * Z[ index + 1 ];
-               }
-            }
+            ConvertWavelengthToXYZ( input[ 0 ], output[ 0 ], output[ 1 ], output[ 2 ] );
          } while( ++input, ++output );
       }
+};
+
+void adjustToGammut( dfloat& R, dfloat& G, dfloat& B, dfloat Y, dfloat channel ) {
+   dfloat F = Y / ( Y - channel );
+   R = Y + F * ( R - Y );
+   G = Y + F * ( G - Y );
+   B = Y + F * ( B - Y );
+}
+
+class wavelength2rgb : public ColorSpaceConverter {
+   public:
+      virtual String InputColorSpace() const override { return wavelength_name; }
+      virtual String OutputColorSpace() const override { return RGB_name; }
+      virtual void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
+         do {
+            // Look up XYZ value for wavelength
+            dfloat X, Y, Z;
+            ConvertWavelengthToXYZ( input[ 0 ], X, Y, Z );
+            // Convert XYZ to RGB, divide by 1.85
+            dfloat R = ( X * invMatrix_[ 0 ] + Y * invMatrix_[ 3 ] + Z * invMatrix_[ 6 ] ) / 1.85; // Matrix and multiplication from xyz2rgb, but leaving out the multiplication by 255, instead dividing by 1.85.
+            dfloat G = ( X * invMatrix_[ 1 ] + Y * invMatrix_[ 4 ] + Z * invMatrix_[ 7 ] ) / 1.85;
+            dfloat B = ( X * invMatrix_[ 2 ] + Y * invMatrix_[ 5 ] + Z * invMatrix_[ 8 ] ) / 1.85;
+            // Move the RGB value to be inside gamut
+            if( R < 0 ) { adjustToGammut( R, G, B, Y, R ); }
+            if( G < 0 ) { adjustToGammut( R, G, B, Y, G ); }
+            if( B < 0 ) { adjustToGammut( R, G, B, Y, B ); }
+            // Adjust brightness (saturation)
+            R *= 1.85;
+            G *= 1.85;
+            B *= 1.85;
+            dfloat m = std::max( std::max( R, G ), B );
+            if( m > 1 ) {
+               R /= m;
+               G /= m;
+               B /= m;
+            }
+            output[ 0 ] = R * 255;
+            output[ 1 ] = G * 255;
+            output[ 2 ] = B * 255;
+         } while( ++input, ++output );
+      }
+      void SetWhitePoint( XYZMatrix const& matrix ) {
+         Inverse( 3, matrix.data(), invMatrix_.data() );
+      }
+   private:
+      XYZMatrix invMatrix_{{ 3.241300, -0.969197, 0.0556395, -1.53754, 1.87588, -0.204012, -0.498662, 0.0415531, 1.05715 }};
 };
 
 } // namespace

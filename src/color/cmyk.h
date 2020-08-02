@@ -22,10 +22,13 @@ namespace dip {
 
 namespace {
 
+constexpr char const* CMY_name = "CMY";
+constexpr char const* CMYK_name = "CMYK";
+
 class rgb2cmy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "RGB"; }
-      virtual String OutputColorSpace() const override { return "CMY"; }
+      virtual String InputColorSpace() const override { return RGB_name; }
+      virtual String OutputColorSpace() const override { return CMY_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = 255.0 - input[ 0 ];
@@ -37,8 +40,8 @@ class rgb2cmy : public ColorSpaceConverter {
 
 class cmy2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "CMY"; }
-      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual String InputColorSpace() const override { return CMY_name; }
+      virtual String OutputColorSpace() const override { return RGB_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = ( 255.0 - input[ 0 ] );
@@ -50,8 +53,8 @@ class cmy2rgb : public ColorSpaceConverter {
 
 class cmy2cmyk : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "CMY"; }
-      virtual String OutputColorSpace() const override { return "CMYK"; }
+      virtual String InputColorSpace() const override { return CMY_name; }
+      virtual String OutputColorSpace() const override { return CMYK_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat k = std::min( std::min( input[ 0 ], input[ 1 ] ), input[ 2 ] );
@@ -67,8 +70,8 @@ class cmy2cmyk : public ColorSpaceConverter {
 
 class cmyk2cmy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "CMYK"; }
-      virtual String OutputColorSpace() const override { return "CMY"; }
+      virtual String InputColorSpace() const override { return CMYK_name; }
+      virtual String OutputColorSpace() const override { return CMY_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat k = input[ 3 ];

@@ -103,7 +103,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"sRGB"` |            | Industry-standard non-linear RGB, gamma-corrected linear RGB (average gamma is approximately 2.2, with a linear segment near 0). Values in the range is [0,255].
 /// `"CMY"`  |            | Cyan-Magenta-Yellow. Subtractive colors, defined simply as 255-RGB. Values in the range is [0,255].
 /// `"CMYK"` |            | Cyan-Magenta-Yellow-blacK. Subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
-/// `"HSI"`  |            | Hue-Saturation-Intensity. \f$L^1\f$ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra, "Colour image analysis in 3d-polar coordinates", Joint Pattern Recognition Symposium, 2003.
+/// `"HSI"`  |            | Hue-Saturation-Intensity. \f$L^1\f$ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra (2003).
 /// `"ICH"`  |            | Intensity-Chroma-Hue. Rotation of the RGB cube, where I is along the black-white diagonal of the cube, and the CH-plane is perpendicular. I is in the range [0,255], H is an angle in degrees.
 /// `"ISH"`  |            | Intensity-Saturation-Hue. Based in ICH, where S is the C channel normalized so that the maximum saturation for each H is 1. For each H, the largest value of C is attained for a different value of I.
 /// `"HCV"`  |            | Hue-Chroma-Value. V is the max of R, G and B, and C is the difference between largest and smallest RGB intensities. C and V are in range [0,255], H is an angle in degrees.
@@ -113,8 +113,12 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromacity coordinates. A color space that is much closer to being perceptually uniform than Yxy.
 /// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromacity coordinates. An alternative to CIE Lab.
 /// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
-/// `"wavelength"`  |     | Can only be converted from, not to. Yields an approximate color representation for the given wavelength in nanometers, in the range 380 through 780 nanometers. For values outside the range, produces black.
-//
+/// `"wavelength"` |      | Can only be converted from, not to. Yields an approximate color representation for the given wavelength in nanometers, in the range 380 through 780 nanometers. For values outside the range, produces black. The conversion to XYZ is according to CIE rec. 709, but most of these colors lie outside of the RGB gamut. The conversion to RGB produces colors within the gamut, computed according to Young (2012).
+///
+/// \literature
+/// <li>A. Hanbury and J. Serra, "Colour image analysis in 3D-polar coordinates", Joint Pattern Recognition Symposium, 2003.
+/// <li>A.T. Young, "Rendering Spectra", 2012. https://aty.sdsu.edu/explain/optics/rendering.html (retrieved August 1, 2020).
+/// \endliterature
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
 class DIP_NO_EXPORT ColorSpaceManager {
       using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >; // TODO: MSVC does not like us using a unique_ptr here, which is really what we want to do.
