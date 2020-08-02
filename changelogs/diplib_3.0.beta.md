@@ -85,7 +85,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - The *dipIO* library no longer exists. Some `dipio_Xxx` functions are now defined in the
   `diplib/file_io.h` header file (reading and writing ICS, TIFF and JPEG files).
   `dipio_MeasurementWriteCSV` is is `diplib/measurement.h`.
-  `dipio_Colour2Gray` functionality is replaced by `dip::ColorSpaceManager`.
+  `dipio_Colour2Gray` functionality is replaced (significantly improved) by `dip::ColorSpaceManager`.
   Other functionality no longer exists.
 
 
@@ -322,6 +322,9 @@ this list will help in porting your old code that used *DIPlib* to the new versi
   makes writing a lot faster if strides are non-standard. `dip::ImageReadICS` has a similar option
   that re-orders strides for the output image to match those of the file, again potentially decreasing
   reading times significantly.
+
+- `dip::ImageReadJPEG` and `dip::ImageReadTIFF` now set the color space of RGB images read to `"sRGB"`,
+  rather than (linear) `"RGB"`.
 
 - `dip::Canny` and `dip::MaximumSuppression` have been generalized from 2D only to any
    number of dimensions.

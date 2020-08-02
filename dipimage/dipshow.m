@@ -713,7 +713,7 @@ cdata = squeeze(double(cdata)).';
 xdata = (0:sz)-0.5;
 xdata = reshape(repmat(xdata,2,1),[1,sz*2+2]);
 xdata = xdata(2:end-1);
-if strcmp(udata.imagedata.colorspace,'RGB')
+if any(strcmp(udata.imagedata.colorspace,{'RGB','sRGB'}))
    % These colors are taken from 'DefaultAxesColorOrder' on R2017a
    colors = [0.850, 0.325, 0.098;... % most red color
              0.466, 0.674, 0.188;... % most green color

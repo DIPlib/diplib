@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for reading and writing images from/to files
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -190,6 +190,9 @@ DIP_EXPORT void ImageWriteICS(
 ///
 /// The pixels per inch value in the TIFF file will be used to set the pixel size of `out`.
 ///
+/// Color TIFF files produce an image with proper color space name set: either sRGB, CMY, CMYK or Lab. Other
+/// multi-channel TIFF files are read as vector images without color space information.
+///
 /// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
 /// more common ones. These are the most obvious limitations:
 ///  - Only 1, 4, 8, 16 and 32 bits per pixel integer grey values are read, as well as 32-bit and 64-bit
@@ -278,13 +281,21 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 ///
 /// The TIFF image file format is very flexible in how data can be written, but is limited to multiple pages
 /// of 2D images. A 3D image will be written as a multi-page TIFF file (not yet implemented).
+///
 /// A tensor image will be written as an image with multiple samples per pixel, but the tensor shape will be lost.
-/// Color space information and pixel size are not saved either, though the pixel size, if in units of length,
-/// will set the pixels per centimeter value in the TIFF file.
+/// If the tensor image has color space information, and it is one of the few color spaces known to the TIFF
+/// standard, this information will be stored; images in other color spaces are stored without color space information.
+/// No color space transformation will be applied. Recognized color spaces are sRGB, CMY, CMYK and Lab. Linear RGB
+/// images are currently also tagged as sRGB, though this might not be ideal. It is recommended to transform any
+/// color image to the sRGB color space before saving as TIFF.
+///
+/// Pixel sizes, if in units of length, will set the pixels per centimeter value in the TIFF file.
 ///
 /// The samples of `image` are written directly to the TIFF file, no matter what their data type is. Complex data
 /// are not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
-/// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format.
+/// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format. If the image
+/// needs to be read by other software, it is recommended to convert the image to `dip::DT_UINT8` before saving as
+/// TIFF.
 ///
 /// If `filename` does not have an extension, ".tif" will be added. Overwrites any other file with the same name.
 ///
@@ -311,6 +322,8 @@ DIP_EXPORT void ImageWriteTIFF(
 /// The function tries to open `filename` as given first, and if that fails, it appends ".jpg" and ".jpeg" to the
 /// name and tries again.
 ///
+/// JPEG images are either gray-scale (scalar) or sRGB images, the color space information will be set accordingly.
+///
 /// The pixels per inch value in the JPEG file will be used to set the pixel size of `out`.
 DIP_EXPORT FileInformation ImageReadJPEG(
       Image& out,
@@ -334,8 +347,8 @@ DIP_EXPORT bool ImageIsJPEG( String const& filename );
 /// \brief Writes `image` as a JPEG file.
 ///
 /// `image` must be 2D, and either scalar or with three tensor elements.
-/// If the image has three tensor elements, it will be saved as an RGB image, even if the color space
-/// is not RGB (no color space conversion is done, the data is simply tagged as RGB).
+/// If the image has three tensor elements, it will be saved as an sRGB image, even if the color space
+/// is not sRGB (no color space conversion is done, the data is simply tagged as sRGB).
 /// If the image is not `dip::DT_UINT8`, it will be converted to it (complex numbers are cast to real values
 /// by taking their magnitude, and real numbers are rounded and clamped to the output range), no scaling will
 /// be applied.

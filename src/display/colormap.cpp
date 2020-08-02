@@ -1676,7 +1676,7 @@ void ApplyColorMap(
    Image im( values, { 256 }, 3 );
    LookupTable lut( im );
    DIP_STACK_TRACE_THIS( lut.Apply( in, out ));
-   out.SetColorSpace( "RGB" );
+   out.SetColorSpace( "sRGB" );
 }
 
 void Overlay(
@@ -1698,14 +1698,14 @@ void Overlay(
       //    we create a grey-value output.
       if( in.IsScalar() ) {
          in.ExpandSingletonTensor( 3 );
-         in.SetColorSpace( "RGB" );
+         in.SetColorSpace( "sRGB" );
          if( out.Aliases( in )) {
             out.Strip(); // if &out == &in, we need a new bit of memory for out
          }
       } else {
          DIP_THROW_IF( in.TensorElements() != 3, "Input image must have 1 or 3 tensor elements" );
-         DIP_THROW_IF( in.IsColor() && ( in.ColorSpace() != "RGB" ), "Convert input image to RGB color space first" );
-         in.SetColorSpace( "RGB" );
+         DIP_THROW_IF( in.IsColor() && ( in.ColorSpace() != "sRGB" ), "Convert input image to sRGB color space first" );
+         in.SetColorSpace( "sRGB" );
       }
    }
    if( in.DataType().IsBinary() ) {

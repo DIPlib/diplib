@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition of the ImageDisplay class
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,9 +39,9 @@ void ImageDisplay::ComputeLimits( bool set ) {
       if( std::isnan( lims->lower )) {
          // Compute from image_
          tmp = image_.QuickCopy();
-         if( !colorspace_.empty() && ( colorspace_ != "RGB" )) {
+         if( !colorspace_.empty() && ( colorspace_ != "sRGB" )) {
             tmp.SetColorSpace( colorspace_ );
-            colorSpaceManager_->Convert( tmp, tmp, "RGB" );
+            colorSpaceManager_->Convert( tmp, tmp, "sRGB" );
          };
       }
    } else {
@@ -177,31 +177,33 @@ void ImageDisplay::UpdateSlice() {
 void ImageDisplay::UpdateRgbSlice() {
    UpdateSlice();
    if( rgbSliceIsDirty_ ) {
-      if( slice_.IsScalar() || ( colorspace_ == "RGB" )) {
-         rgbSlice_ = slice_.QuickCopy();
-      } else if( colorspace_.empty() ) {
-         if( rgbSlice_.SharesData( slice_ )) {
-            rgbSlice_.Strip();
-         }
-         rgbSlice_.ReForge( slice_.Sizes(), 3, slice_.DataType() );
-         if( red_ >= 0 ) {
-            rgbSlice_[ 0 ].Copy( slice_[ red_ ] );
+      if( colorspace_.empty() ) {
+         if( slice_.IsScalar() || ( colorspace_ == "sRGB" )) {
+            rgbSlice_ = slice_.QuickCopy();
          } else {
-            rgbSlice_[ 0 ].Fill( 0 );
-         }
-         if( green_ >= 0 ) {
-            rgbSlice_[ 1 ].Copy( slice_[ green_ ] );
-         } else {
-            rgbSlice_[ 1 ].Fill( 0 );
-         }
-         if( blue_ >= 0 ) {
-            rgbSlice_[ 2 ].Copy( slice_[ blue_ ] );
-         } else {
-            rgbSlice_[ 2 ].Fill( 0 );
+            if( rgbSlice_.SharesData( slice_ )) {
+               rgbSlice_.Strip();
+            }
+            rgbSlice_.ReForge( slice_.Sizes(), 3, slice_.DataType() );
+            if( red_ >= 0 ) {
+               rgbSlice_[ 0 ].Copy( slice_[ red_ ] );
+            } else {
+               rgbSlice_[ 0 ].Fill( 0 );
+            }
+            if( green_ >= 0 ) {
+               rgbSlice_[ 1 ].Copy( slice_[ green_ ] );
+            } else {
+               rgbSlice_[ 1 ].Fill( 0 );
+            }
+            if( blue_ >= 0 ) {
+               rgbSlice_[ 2 ].Copy( slice_[ blue_ ] );
+            } else {
+               rgbSlice_[ 2 ].Fill( 0 );
+            }
          }
       } else {
          slice_.SetColorSpace( colorspace_ );
-         colorSpaceManager_->Convert( slice_, rgbSlice_, "RGB" );
+         colorSpaceManager_->Convert( slice_, rgbSlice_, "sRGB" );
       }
       rgbSliceIsDirty_ = false;
       outputIsDirty_ = true;
@@ -417,7 +419,7 @@ Image::Pixel ImageDisplay::MapSinglePixel( Image::Pixel const& input ) {
    DIP_THROW_IF( input.TensorElements() != image_.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    UpdateOutput(); // needed to have `range_` updated, etc.
    Image::Pixel rgb( input.DataType(), 3 );
-   if( slice_.IsScalar() || ( colorspace_ == "RGB" ) ) {
+   if( slice_.IsScalar() || ( colorspace_ == "sRGB" ) ) {
       rgb = input;
    } else if( colorspace_.empty() ) {
       if( red_ >= 0 ) {
@@ -438,7 +440,7 @@ Image::Pixel ImageDisplay::MapSinglePixel( Image::Pixel const& input ) {
    } else {
       Image tmp( input );
       tmp.SetColorSpace( colorspace_ );
-      tmp = colorSpaceManager_->Convert( tmp, "RGB" );
+      tmp = colorSpaceManager_->Convert( tmp, "sRGB" );
       rgb = tmp.At( 0 );
    }
    // Mapping function

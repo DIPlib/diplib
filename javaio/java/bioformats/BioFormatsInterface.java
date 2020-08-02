@@ -108,9 +108,9 @@ public class BioFormatsInterface {
       
       image.SetPixelSize( pixelSize );
       
-      // Assume that 3-channel images are RGB
+      // Assume that 3-channel images are sRGB
       if ( reader.getRGBChannelCount() == 3 ) {
-         image.SetColorSpace( "RGB" );
+         image.SetColorSpace( "sRGB" );
       }
       
       image.Forge();

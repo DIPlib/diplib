@@ -322,8 +322,8 @@ void ImageWriteTIFF(
 
    if( image.DataType().IsBinary() ) {
       WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
-   } else if( image.ColorSpace() == "RGB" ) {
-      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB ));
+   } else if(( image.ColorSpace() == "RGB" ) || ( image.ColorSpace() == "sRGB" )){
+      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB )); // TODO: Both linear RGB and non-linear sRGB are mapped to 'RGB' photometric interpretation, not ideal.
    } else if( image.ColorSpace() == "Lab" ) {
       WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_CIELAB ));
    } else if(( image.ColorSpace() == "CMY" ) || ( image.ColorSpace() == "CMYK" )) {

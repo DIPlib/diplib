@@ -153,7 +153,7 @@ FileInformation GetJPEGInfo( JpegInput& jpeg ) {
    fileInformation.significantBits = 8;
    fileInformation.dataType = DT_UINT8;
    fileInformation.tensorElements = static_cast< dip::uint >( jpeg.cinfo().num_components );
-   fileInformation.colorSpace = fileInformation.tensorElements == 3 ? "RGB" : "";
+   fileInformation.colorSpace = fileInformation.tensorElements == 3 ? "sRGB" : "";
    fileInformation.sizes = { jpeg.cinfo().image_width, jpeg.cinfo().image_height };
    PhysicalQuantity units;
    switch (jpeg.cinfo().density_unit) {
@@ -254,7 +254,7 @@ void ImageWriteJPEG(
    jpeg.cinfo().image_height = static_cast< JDIMENSION >( image.Size( 1 ));
    jpeg.cinfo().input_components = nchan;
    jpeg.cinfo().in_color_space = nchan > 1 ? JCS_RGB : JCS_GRAYSCALE;
-   jpeg_set_defaults( jpeg.cinfoptr());
+   jpeg_set_defaults( jpeg.cinfoptr() );
    jpeg_set_quality( jpeg.cinfoptr(), static_cast< int >( jpegLevel ), FALSE );
    jpeg.cinfo().density_unit = 2; // dots per cm
    jpeg.cinfo().X_density = static_cast< UINT16 >( 0.01 / image.PixelSize( 0 ).RemovePrefix().magnitude ); // let's assume it's meter

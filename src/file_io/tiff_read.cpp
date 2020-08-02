@@ -165,13 +165,13 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
       case PHOTOMETRIC_LOGL:
          DIP_THROW_RUNTIME( "Unsupported TIFF: Log-compressed image (LogLuv or LogL)" );
       case PHOTOMETRIC_PALETTE:
-         data.fileInformation.colorSpace = "RGB";
+         data.fileInformation.colorSpace = "sRGB";
          data.fileInformation.tensorElements = 3;
          data.fileInformation.dataType = DT_UINT16;
          break;
       case PHOTOMETRIC_RGB:
          if( samplesPerPixel == 3 ) {
-            data.fileInformation.colorSpace = "RGB";
+            data.fileInformation.colorSpace = "sRGB";
          }
          break;
       case PHOTOMETRIC_SEPARATED:
@@ -279,7 +279,7 @@ inline void ExpandColourMap4(
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint16* dest_pixel = dest;
       for( dip::uint jj = 0; jj < width; ) {
-         dip::uint index = ( static_cast< dip::uint >( *src ) >> 4 ) & 0x0Fu;
+         dip::uint index = ( static_cast< dip::uint >( *src ) >> 4u ) & 0x0Fu;
          *dest_pixel = ColourMapRed[ index ];
          *( dest_pixel + green ) = ColourMapGreen[ index ];
          *( dest_pixel + blue ) = ColourMapBlue[ index ];
@@ -400,7 +400,7 @@ inline void CopyBuffer1(
       uint8* dest_pixel = dest;
       dip::sint kk = 7;
       for( dip::uint jj = 0; jj < width; ++jj ) {
-         *dest_pixel = (( *src ) & ( 1 << kk )) ? 1 : 0;
+         *dest_pixel = (( *src ) & ( 1u << kk )) ? 1 : 0;
          dest_pixel += strides[ 0 ];
          --kk;
          if( kk < 0 ) {
@@ -427,7 +427,7 @@ inline void CopyBufferInv1(
       uint8* dest_pixel = dest;
       dip::sint kk = 7;
       for( dip::uint jj = 0; jj < width; ++jj ) {
-         *dest_pixel = (( *src ) & ( 1 << kk )) ? 0 : 1;
+         *dest_pixel = (( *src ) & ( 1u << kk )) ? 0 : 1;
          dest_pixel += strides[ 0 ];
          --kk;
          if( kk < 0 ) {

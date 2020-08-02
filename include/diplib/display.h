@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the ImageDisplay class
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2020, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,8 +48,10 @@ namespace dip {
 /// settable by a user using the image display window.
 ///
 /// For a scalar input image, the output is always scalar (grey-value). For a color image, if it can be converted
-/// to RGB, and RGB output image is produced. For other tensor images, an RGB image is also produced, the user
-/// can select which tensor element is shown in each of the three color channels.
+/// to sRGB, and RGB output image is produced. For other tensor images, an RGB image is also produced, the user
+/// can select which tensor element is shown in each of the three color channels. Note that for color images,
+/// the non-linear sRGB color space is used for display, linear RGB images are gamma-corrected in this way to
+/// improve display.
 ///
 /// See the `dipimage/private/imagedisplay.cpp` file implementing the MATLAB interface to this class, and the
 /// `dipimage/dipshow.m` function, for an example of how this can be used.
@@ -93,7 +95,7 @@ class DIP_NO_EXPORT ImageDisplay {
       /// \brief The constructor takes an image with at least 1 dimension.
       ///
       /// If `colorSpaceManager` is not `nullptr`, it points to the color space manager object to be
-      /// used to convert the color image `image` to RGB. If `image` is not color, or is RGB, the color
+      /// used to convert the color image `image` to sRGB. If `image` is not color, or already is sRGB, the color
       /// space manager is not used. If no color space manager is given, `image` will be shown as is,
       /// no color space conversion is applied.
       ///
@@ -102,7 +104,7 @@ class DIP_NO_EXPORT ImageDisplay {
       ///
       /// Both `colorSpaceManager` and `externalInterface`, if given, must exist for as long as the
       /// `%ImageDisplay` object exists.
-      ImageDisplay( Image const& image, ColorSpaceManager* colorSpaceManager = nullptr, ExternalInterface* externalInterface = nullptr ) :
+      explicit ImageDisplay( Image const& image, ColorSpaceManager* colorSpaceManager = nullptr, ExternalInterface* externalInterface = nullptr ) :
             image_( image ), colorspace_( image.ColorSpace() ), colorSpaceManager_( colorSpaceManager ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          // Dimensionality
@@ -115,31 +117,27 @@ class DIP_NO_EXPORT ImageDisplay {
             FillOrthogonal();
          }
          // Tensor dimension
-         if( image_.IsScalar() ) {
-            // grey-value image
-            colorspace_.clear();
-            colorSpaceManager_ = nullptr;
-         } else {
-            if( !colorspace_.empty() ) {
-               if( !colorSpaceManager_ ||
-                   !colorSpaceManager_->IsDefined( colorspace_ ) ||
-                    colorSpaceManager_->NumberOfChannels( colorspace_ ) != image_.TensorElements() ) {
-                  // We won't be able to convert this image to RGB, let's treat it as a tensor image.
-                  colorspace_.clear();
-               }
+         if( !colorspace_.empty() ) {
+            if( !colorSpaceManager_ ||
+                !colorSpaceManager_->IsDefined( colorspace_ ) ||
+                colorSpaceManager_->NumberOfChannels( colorspace_ ) != image_.TensorElements() ) {
+               // We won't be able to convert this image to sRGB, let's treat it as a tensor image.
+               colorspace_.clear();
             }
-            if( colorspace_.empty() ) {
+         }
+         if( colorspace_.empty() ) {
+            colorSpaceManager_ = nullptr;
+            if( !image_.IsScalar() ) {
                // tensor image
                green_ = 1;
                if( image_.TensorElements() > 2 ) {
                   blue_ = 2;
                }
-               colorSpaceManager_ = nullptr;
-            } else {
-               // color image, shown as RGB
-               green_ = 1;
-               blue_ = 2;
-            }
+            } // else grey-value image
+         } else {
+            // color image, shown as RGB
+            green_ = 1;
+            blue_ = 2;
          }
          // Data type
          if( IsBinary() ) {
@@ -599,7 +597,7 @@ class DIP_NO_EXPORT ImageDisplay {
 /// \brief Applies a color map to an image prepared for display using `dip::ImageDisplay`.
 ///
 /// `in` is a scalar, 8-bit unsigned image. `out` will be an image of the same size and type
-/// but with three tensor components, and in the "RGB" color space.
+/// but with three tensor components, and in the "sRGB" color space.
 ///
 /// `colorMap` can currently be one of the following color maps:
 ///  - `"grey"`: Each grey level maps to an RGB value that represents the same grey level.

@@ -107,6 +107,10 @@ porting your old code that used *DIPimage* to the new version.
      options in the "Actions" menu. The two functions that implemented this functionality,
      `diporien` and `dipprojection`, have also been removed.
 
+   - Color images are converted to the sRGB color space for display, instead of the linear RGB color
+     space. This replaces the previously used `'Gamma'` preference setting, which is no longer
+     applied. The `'GammaGrey'` setting is also no longer applied.
+
    - A new function `viewslice` can be used to display any image (including tensor images and
      higher-dimensional images) in [*DIPviewer*](https://diplib.github.io/diplib-docs/group__viewer.html#viewer_ui).
      This is an alternative way to examine images, but none of the tools to programmatically
@@ -140,6 +144,8 @@ porting your old code that used *DIPimage* to the new version.
          the result is different when mixing signed and unsigned integers. (see the
          [*DIPimage* User Manual](https://diplib.github.io/diplib-docs/sec_dum_customizing.html#sec_dum_customizing_dippref_keepdatatype)
          for details on the current logic).
+
+       - `'Gamma'` and `'GammaGrey'` are no longer active, though they haven't (yet) been removed.
 
    - Removed settings:
 
@@ -222,7 +228,8 @@ porting your old code that used *DIPimage* to the new version.
     two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
     to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
     always given by the image, use `dip_image/pixelsize` to set it. `readics` and `readtiff` are
-    the interfaces to the corresponding *DIPlib* file reading functions.
+    the interfaces to the corresponding *DIPlib* file reading functions. RGB TIFF and JPEG images
+    are now set to the `'sRGB'` color space, rather than the (linear) `'RGB'` color space.
 
   - The AVI reading and writing functions `readavi`, `writeavi` and `writedisplayavi` depended on
     outdated *MATLAB* functionality and have been removed. You can use *MATLAB*'s video reading and

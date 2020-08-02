@@ -119,11 +119,12 @@ inline Image ImageRead(
 /// The ICS format can store any image, with all its information, such that reading the file using `dip::ImageRead`
 /// or `dip::ImageReadICS` yields an image that is identical (except the strides might be different).
 ///
-/// The TIFF format can store 2D images, as well as 3D images as a series of 2D slides (not yet implemented). Most
-/// metadata will be lost. Complex data is not supported, other data types are. But note that images other than
-/// 8-bit or 16-bit unsigned integer lead to files that are not recognized by most readers.
+/// The TIFF format can store 2D images, as well as 3D images as a series of 2D slides (not yet implemented).
+/// A limited set of color spaces are recognized, other color images are stored without color space information.
+/// Complex data is not supported, other data types are. But note that images other than 8-bit or 16-bit unsigned
+/// integer lead to files that are not recognized by most readers.
 ///
-/// The JPEG format can store 2D images. Tensor images are always tagged as RGB. Most metadata will be lost.
+/// The JPEG format can store 2D images. Tensor images are always tagged as sRGB. Most metadata will be lost.
 /// Image data is converted to 8-bit unsigned integer, without scaling.
 ///
 /// `compression` determines the compression method used when writing the pixel data. It can be one of the
@@ -135,7 +136,7 @@ inline Image ImageRead(
 /// For the JPEG format, `compression` is ignored.
 ///
 /// Use the filetype-specific functions directly for more control over how the image is written. See those
-/// functions for more information about the file types.
+/// functions for more information about the file types and how images are written to them.
 inline void ImageWrite(
       Image const& image,
       String const& filename,
