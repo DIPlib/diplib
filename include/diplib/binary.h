@@ -316,8 +316,9 @@ inline Image ConditionalThickening2D(
 /// a connectivity of 1. The topology preserved is that of the 8-connected foreground. `iterations` iterations
 /// are applied. If `iterations` is 0, the algorithm iterates until idempotency.
 ///
-/// `endPixelCondition` determines if branches are kept, and how many are generated. See `dip::EuclideanSkeleton`
-/// for a list of possible values.
+/// `endPixelCondition` determines if background branches are kept. The string `"keep"` is equivalent to the
+/// `"natural"` end pixel condition in `dip::EuclideanSkeleton`, and `"lose"` causes branches to not be kept
+/// (meaning that only single background pixels and loops in background are kept).
 ///
 /// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
 /// or as background (`"background"`). Note that the algorithm doesn't propagate into the pixels around the edge

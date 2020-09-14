@@ -62,6 +62,9 @@ namespace dip {
 ///    edges of the image are considered the same object.
 ///  - `"remove"`: causing objects that touch the image edge to be removed.
 /// `boundaryCondition` can also be an empty array, using the default behavior for all dimensions.
+///
+/// Returns the number of connected components found. The returned value is thus the maximum
+/// value in the output image.
 DIP_EXPORT dip::uint Label(
       Image const& binary,
       Image& out,
