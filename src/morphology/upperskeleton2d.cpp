@@ -23,59 +23,25 @@
 #include "diplib/generation.h"
 #include "diplib/overload.h"
 #include "watershed_support.h"
+#include "../binary/hilditch_condition_lut.h"
 
 namespace dip {
 
 namespace {
 
-// Globals (copied from src/binary/skeleton.cpp) TODO: avoid this copy by keeping a single definition of these tables.
-constexpr uint8 luthil[ 4 ][ 256 ] = {
-      {
-            1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-            0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
-      }, {
-            1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
-      }, {
-            1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
-      }, {
-            1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-            1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
-      }};
+inline void SetBit( uint8& value, unsigned int bit ) {
+   value = static_cast< uint8 >( value | ( 1u << bit ));
+}
+inline void ResetBit( uint8& value, unsigned int bit ) {
+   value = static_cast< uint8 >( value & ~( 1u << bit ));
+}
+inline bool GetBit( uint8 value, unsigned int bit ) {
+   return ( value & ( 1u << bit )) != 0;
+}
 
-inline void SetBit( uint8& value, int bit ) {
-   value = static_cast< uint8 >( value | ( 1 << bit ));
-}
-inline void ResetBit( uint8& value, int bit ) {
-   value = static_cast< uint8 >( value & ~( 1 << bit ));
-}
-inline bool GetBit( uint8 value, int bit ) {
-   return ( value & ( 1 << bit )) != 0;
+dip::uint cast_with_check( dip::sint v ) {
+   DIP_ASSERT( v >= 0 );
+   return static_cast< dip::uint >( v );
 }
 
 template< typename TPI >
@@ -86,21 +52,15 @@ void UpperSkeleton2DInternal(
       const uint8* lut,
       const uint8* lut2
 ) {
-   constexpr unsigned short BUCKETS = 16; // unsigned short converts to dip::sint and dip::uint without warnings.
-   constexpr unsigned short MAX_DISTANCE = 5000;
-   constexpr bool goodmetric = true;         // code would be simpler with this set to false
-   constexpr int dataBit = 0;                // the bit in `imgBin` that contains the skeleton
-   constexpr int mtBit = 6;                  // the bit in `imgBin` that is used internally
+   constexpr unsigned short nBuckets = 16; // unsigned short converts to dip::sint and dip::uint without warnings.
+   constexpr bool goodMetric = true;       // code would be simpler with this set to false
+   constexpr unsigned int dataBit = 0;     // the bit in `imgBin` that contains the skeleton
+   constexpr unsigned int mtBit = 6;       // the bit in `imgBin` that is used internally
 
    TPI* pGrey = static_cast< TPI* >( imgGrey.Origin() );
    uint8* pBin = static_cast< uint8* >( imgBin.Origin() ); // even though it's a binary image, we want to access different bits easily.
-
-   dip::sint* pibuck[BUCKETS];
-   dip::sint countbuck[BUCKETS];
-   dip::sint distc[MAX_DISTANCE];
-
-   dip::sint* indices = offsets.data();
-   dip::sint size = static_cast< dip::sint >( offsets.size() );
+   dip::sint* const indices = offsets.data();
+   dip::sint* const indices_end = indices + offsets.size();
 
    dip::sint pdx = imgGrey.Stride( 0 );
    dip::sint pdy = imgGrey.Stride( 1 );
@@ -112,7 +72,8 @@ void UpperSkeleton2DInternal(
    dip::sint* pir = indices;
    dip::sint* piw = indices;
    dip::sint* pir2 = nullptr;
-   while(( pir - indices ) < size ) {
+   std::array< dip::sint*, nBuckets > pibuck{ 0 };
+   while( pir < indices_end ) {
       TPI cb = pGrey[ *pir ];
       dip::sint* pibuck0 = pibuck[ 0 ] = piw;
       while( true ) {
@@ -127,32 +88,32 @@ void UpperSkeleton2DInternal(
          // 4-c neighbor of lower distance?
 
          // local minimum
-         int ee = 0;
+         uint8 ee = 0;
          if( *( pc + pdx ) < vc ) {
-            ee |= 1;
+            ee |= 1u;
             if( !GetBit( *( pb + pdx ), dataBit )) {
-               ee |= 2;
+               ee |= 2u;
                goto skip;
             }
          }
          if( *( pc - pdx ) < vc ) {
-            ee |= 1;
+            ee |= 1u;
             if( !GetBit( *( pb - pdx ), dataBit )) {
-               ee |= 2;
+               ee |= 2u;
                goto skip;
             }
          }
          if( *( pc + pdy ) < vc ) {
-            ee |= 1;
+            ee |= 1u;
             if( !GetBit( *( pb + pdy ), dataBit )) {
-               ee |= 2;
+               ee |= 2u;
                goto skip;
             }
          }
          if( *( pc - pdy ) < vc ) {
-            ee |= 1;
+            ee |= 1u;
             if( !GetBit( *( pb - pdy ), dataBit )) {
-               ee |= 2;
+               ee |= 2u;
             }
          }
 
@@ -170,34 +131,32 @@ void UpperSkeleton2DInternal(
 
          }
          ++pir;
-         if(( pir - indices ) >= size ) {
+         if( pir >= indices_end ) {
             break;
          }
       }
 
-      dip::sint go;
-      distc[ 0 ] = countbuck[ 0 ] = piw - pibuck[ 0 ];
+      std::array< dip::uint, nBuckets > countbuck{};   // This zero-initializes the array, but is it guaranteed?
+      countbuck.fill( 0 );                            // I'm not counting on it!
+      countbuck[ 0 ] = cast_with_check( piw - pibuck[ 0 ] );
+      std::vector< dip::uint > distc;
+      distc.reserve( 5000 ); // This should be enough in most cases.
+      distc.push_back( countbuck[ 0 ] );
+      dip::sint go = 0;
       if( distc[ 0 ] ) {
-         go = BUCKETS;
-      } else {
-         go = 0;
-      }
-      for( dip::sint count = 1; count < BUCKETS; ++count ) {
-         countbuck[ count ] = 0;
+         go = nBuckets;
       }
 
-      dip::sint dist;
-      for( dist = 1; go > 0; ++dist ) {
-         DIP_THROW_IF( dist >= MAX_DISTANCE, "MAX_DISTANCE is too small for this image!" );
-         pibuck[ dist % BUCKETS ] = piw;
-         dip::sint count;
+      dip::uint dist = 1;
+      while( go > 0 ) {
+         dist = distc.size();
+         pibuck[ dist % nBuckets ] = piw;
+         dip::uint count = 0;
          if( dist >= 5 ) {
-            count = countbuck[ ( dist - 5 ) % BUCKETS ];
-            pir2 = pibuck[ ( dist - 5 ) % BUCKETS ];
-         } else {
-            count = 0;
+            count = countbuck[ ( dist - 5 ) % nBuckets ];
+            pir2 = pibuck[ ( dist - 5 ) % nBuckets ];
          }
-         while( --count >= 0 ) {
+         while( count-- > 0 ) {
             dip::sint ci = *( pir2++ );
             TPI* pc = pGrey + ci;
             TPI vc = *pc;
@@ -219,13 +178,13 @@ void UpperSkeleton2DInternal(
                SetBit( *( pb - pdy ), dataBit );
             }
          }
-         if(( dist >= 7 ) && goodmetric) {
-            count = countbuck[ ( dist - 7 ) % BUCKETS ];
-            pir2 = pibuck[ ( dist - 7 ) % BUCKETS ];
+         if(( dist >= 7 ) && goodMetric) {
+            count = countbuck[ ( dist - 7 ) % nBuckets ];
+            pir2 = pibuck[ ( dist - 7 ) % nBuckets ];
          } else {
             count = 0;
          }
-         while( --count >= 0 ) {
+         while( count-- > 0 ) {
             dip::sint ci = *( pir2++ );
             TPI* pc = pGrey + ci;
             TPI vc = *pc;
@@ -251,13 +210,13 @@ void UpperSkeleton2DInternal(
                SetBit( *( pb - pdx - pdy ), dataBit );
             }
          }
-         if(( dist >= 11 ) && goodmetric ) {
-            count = countbuck[ ( dist - 11 ) % BUCKETS ];
-            pir2 = pibuck[ ( dist - 11 ) % BUCKETS ];
+         if(( dist >= 11 ) && goodMetric ) {
+            count = countbuck[ ( dist - 11 ) % nBuckets ];
+            pir2 = pibuck[ ( dist - 11 ) % nBuckets ];
          } else {
             count = 0;
          }
-         while( --count >= 0 ) {
+         while( count-- > 0 ) {
             dip::sint ci = *( pir2++ );
             TPI* pc = pGrey + ci;
             TPI vc = *pc;
@@ -327,19 +286,19 @@ void UpperSkeleton2DInternal(
                SetBit( *( pb - pdx - 2 * pdy ), dataBit );
             }
          }
-         distc[ dist ] = countbuck[ dist % BUCKETS ] = piw - pibuck[ dist % BUCKETS ];
-         if( distc[ dist ] == 0 ) {
+         distc.push_back( countbuck[ dist % nBuckets ] = cast_with_check( piw - pibuck[ dist % nBuckets ] ));
+         if( distc.back() == 0 ) {
             --go;
          } else {
-            go = BUCKETS;
+            go = nBuckets;
          }
       }
 
       // skeletonization
 
       pir2 = pibuck0;
-      for( dip::sint cd = 0; cd < dist; ++cd ) {
-         for( dip::sint count = distc[ cd ]; --count >= 0; ) {
+      for( dip::uint cd = 0; cd < dist; ++cd ) {
+         for( dip::uint count = distc[ cd ]; count > 0; --count ) {
             uint8* pb = pBin + *( pir2++ );
             uint8 ee = 0;
             if( GetBit( *( pb + 1 ), dataBit )) { SetBit( ee, 0 ); }
@@ -377,7 +336,7 @@ void UpperSkeleton2DInternal(
             }
          }
          pir2 -= distc[ cd ];
-         for( dip::sint count = distc[ cd ]; --count >= 0; ) {
+         for( dip::uint count = distc[ cd ]; count > 0; --count ) {
             dip::sint ci = *( pir2++ );
             uint8* pb = pBin + ci;
             if( GetBit( *pb, mtBit )) {
