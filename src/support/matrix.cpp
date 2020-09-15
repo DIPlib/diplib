@@ -56,7 +56,7 @@ void SymmetricEigenDecomposition(
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 ); // TODO: (here and other asserts in this file) Eigen doesn't support negative strides, but there's a ticket for that: http://eigen.tuxfamily.org/bz/show_bug.cgi?id=747
+   DIP_ASSERT( input.Stride() >= 0 ); // TODO: (here and other asserts in this file) Eigen doesn't support negative strides, but there's a ticket for that: https://gitlab.com/libeigen/eigen/-/issues/747
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );

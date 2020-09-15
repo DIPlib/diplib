@@ -127,7 +127,7 @@ void init_statistics( py::module& m ) {
    m.def( "MutualInformation", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::uint >( &dip::MutualInformation ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
 
-   m.def( "SpatialOverlap", &dip::SpatialOverlap, "in"_a, "reference"_a ); // TODO: return type?
+   m.def( "SpatialOverlap", &dip::SpatialOverlap, "in"_a, "reference"_a );
    m.def( "DiceCoefficient", &dip::DiceCoefficient, "in"_a, "reference"_a );
    m.def( "JaccardIndex", &dip::JaccardIndex, "in"_a, "reference"_a );
    m.def( "Specificity", &dip::Specificity, "in"_a, "reference"_a );

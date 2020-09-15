@@ -25,8 +25,6 @@
 #include "diplib/math.h"
 #include "diplib/morphology.h"
 
-#include "diplib/statistics.h" // TODO! Temporary
-
 namespace dip {
 
 void Superpixels(
