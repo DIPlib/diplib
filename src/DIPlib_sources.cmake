@@ -78,6 +78,7 @@ binary/binary_support.cpp
 binary/binary_support.h
 binary/bucket.h
 binary/count_neighbors.cpp
+binary/hilditch_condition_lut.h
 binary/skeleton.cpp
 binary/sup_inf_generator.cpp
 binary/thick_thin_2D.cpp

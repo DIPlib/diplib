@@ -77,16 +77,13 @@ def suggest_javahome():
             'SOFTWARE\\JavaSoft\\JDK'
         )
         for java_key_path in java_key_paths:
-            looking_for = java_key_path
             try:
                 kjava = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, java_key_path)
-                looking_for = java_key_path + "\\CurrentVersion"
                 kjava_values = dict([winreg.EnumValue(kjava, i)[:2]
                                      for i in range(winreg.QueryInfoKey(kjava)[1])])
                 current_version = kjava_values['CurrentVersion']
                 looking_for = java_key_path + '\\' + current_version
-                kjava_current = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                                                looking_for)
+                kjava_current = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, looking_for)
                 kjava_current_values = dict([winreg.EnumValue(kjava_current, i)[:2]
                                              for i in range(winreg.QueryInfoKey(kjava_current)[1])])
                 yield kjava_current_values['JavaHome']

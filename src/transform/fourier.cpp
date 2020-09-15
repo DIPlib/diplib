@@ -648,7 +648,6 @@ void DFT_R2C_1D_finalize(
             flip[ ii ] = true;
             rightWindow[ ii ].start = 1;
          }
-      } else {
       }
    }
    DIP_STACK_TRACE_THIS( right.Copy( left ));

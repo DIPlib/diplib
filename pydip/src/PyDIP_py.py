@@ -20,7 +20,6 @@ The portion of the PyDIP module that contains Python code.
 
 from .PyDIP_bin import ImageDisplay
 import importlib.util
-import os.path
 
 hasMatPlotLib = True
 reportedPlotLib = False
