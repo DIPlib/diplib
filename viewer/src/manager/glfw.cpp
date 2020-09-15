@@ -59,6 +59,9 @@ GLFWManager::GLFWManager()
 
   instance_ = this;
 
+#ifdef GLFW_COCOA_CHDIR_RESOURCES
+  glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GL_FALSE);
+#endif
   GLFW_THROW_IF(glfwInit() != GL_TRUE, "Failed to initialize GLFW");
 }
 
