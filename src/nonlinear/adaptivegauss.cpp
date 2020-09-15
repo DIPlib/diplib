@@ -123,26 +123,19 @@ class KernelTransformScale {
          } else {
             DIP_THROW( "Scale parameter image tensor has wrong size, must have " + std::to_string( inputTensorElements ) + " rows and " + std::to_string( nDims ) + " columns" );
          }
-
-         // Multiply the LUT elements with the tensor stride so that we don't have to do that later
-         for( auto& s : scaleTensorLUT_ ) {
-            s *= kernelScale_.TensorStride();
-         }
       }
 
       // Computes scaleAtImgCoords_.
       // Prerequisite: SetImageCoords() must have been called to populate the image coords
       void SetScaleAtImgCoords( UnsignedArray const& imgCoords ) {
-         /// Given a tensor with `M` rows and `N` columns, tensor element `(m,n)` can
-         /// be found by adding `Tensor::LookUpTable()[n*M+m] * tstride` to the pixel's pointer.
+         // Given a tensor with `M` rows and `N` columns, tensor element `(m,n)` has the linear
+         // index given by `scaleTensorLUT_[n*M+m] = Tensor::LookUpTable()[n*M+m]`.
+         Image::Pixel scalePixel = kernelScale_.At( imgCoords );
          for( dip::uint iTE = 0; iTE < inputTensorElements_; ++iTE ) {
-            dip::uint scaleTensorRowIndex = iTE; // The scale tensor has a row for each input tensor element.
-            dip::sint scaleOffset = kernelScale_.Offset( imgCoords );
+            // scaleTensorRowIndex = iTE : The scale tensor has a row for each input tensor element.
             for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-               dip::uint scaleTensorColIndex = iDim; // The scale tensor has a column for each kernel/input dimension ( 0 for X, 1 for Y ).
-               dip::sint offset = scaleOffset + scaleTensorLUT_[ scaleTensorColIndex * inputTensorElements_ + scaleTensorRowIndex ];
-               void* scalePtr = static_cast< uint8* >( kernelScale_.Origin() ) + offset * static_cast< dip::sint >( kernelScale_.DataType().SizeOf() );
-               scaleAtImgCoords_[ iTE ][ iDim ] = *static_cast< dfloat* >( scalePtr );   // TODO: either assert that kernelScale_ is of type dfloat or support multiple types
+               // scaleTensorColIndex = iDim : The scale tensor has a column for each kernel/input dimension ( 0 for X, 1 for Y ).
+               scaleAtImgCoords_[ iTE ][ iDim ] = scalePixel[ scaleTensorLUT_[ iDim * inputTensorElements_ + iTE ]].template As< dfloat >();
             }
          }
       }
@@ -685,7 +678,7 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
          PixelTableOffsets const& pixelTableOffsets = params.pixelTable;
          std::vector< dfloat > const& weights = pixelTableOffsets.Weights();
          UnsignedArray inCoords( params.position );
-         PixelTable pixelTable = kernel_.PixelTable( in_.Dimensionality(), params.dimension );  // Todo: move to constructor
+         PixelTable pixelTable = kernel_.PixelTable( in_.Dimensionality(), params.dimension );  // TODO: move to constructor
          FloatArray transformedKernelCoords( in_.Dimensionality() );
 
          // Obtain kernel transform for this thread
@@ -801,7 +794,6 @@ void AdaptiveFilter(
       String const& transform
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   // TODO: all param images must be of type DT_DFLOAT?
 
    // Prepare parameter images: expand singleton dimensions, including the tensor
    ImageArray paramImages( params.size() );

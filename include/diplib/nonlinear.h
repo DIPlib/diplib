@@ -529,8 +529,8 @@ inline Image CoherenceEnhancingDiffusion(
 /// For intrinsic 1D structures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
 ///
 /// The kernel scale parameter image is interpreted as follows.
-/// Each input tensor element corresponds with a tensor row in the scale image.
-/// Each tensor column in the scale image corresponds with a convolution kernel dimension.
+/// Each input tensor element corresponds to a tensor row in the scale image.
+/// Each tensor column in the scale image corresponds to a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
 /// ```txt
@@ -540,7 +540,7 @@ inline Image CoherenceEnhancingDiffusion(
 /// ```
 ///
 /// The kernel is first scaled and then rotated before it is applied.
-/// The scale parameter image is automatically expanded if the image or the tensor is too small.
+/// The scale parameter image is automatically expanded if the image or the tensor are too small.
 /// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
 /// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
 /// For more information on scaling, also see "Structure-adaptive applicability function" in Pham et al. (2006).
@@ -560,7 +560,7 @@ inline Image CoherenceEnhancingDiffusion(
 ///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
 ///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
 ///     dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation" } );
-///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
+///     dip::Image out = dip::AdaptiveGauss( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
 /// ```
 ///
 /// \literature
@@ -604,8 +604,8 @@ inline Image AdaptiveGauss(
 /// - `params[2]` (optional) is a tensor image with the local kernel scale
 ///
 /// The kernel scale parameter image is interpreted as follows.
-/// Each input tensor element corresponds with a tensor row in the scale image.
-/// Each tensor column in the scale image corresponds with a convolution kernel dimension.
+/// Each input tensor element corresponds to a tensor row in the scale image.
+/// Each tensor column in the scale image corresponds to a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
 /// ```txt
@@ -615,10 +615,10 @@ inline Image AdaptiveGauss(
 /// ```
 ///
 /// The kernel is first scaled and then rotated before it is applied.
-/// The scale parameter image is automatically expanded if the image or the tensor is too small.
+/// The scale parameter image is automatically expanded if the image or the tensor are too small.
 /// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
 /// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
-/// For more information on scaling, also see "Structure-adaptive applicability function" in in Pham et al. (2006).
+/// For more information on scaling, also see "Structure-adaptive applicability function" in Pham et al. (2006).
 ///
 /// The sigma for each kernel dimension is passed by `sigmas`. The first value is along the contour,
 /// the second perpendicular to it. If a value is zero, no convolution is done is this direction.
