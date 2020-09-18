@@ -37,6 +37,21 @@ namespace dip {
 /// \brief Assorted analysis tools.
 /// \{
 
+
+/// \brief Finds the coordinates for all non-zero pixels in the scalar image `in`, optionally constrained to the pixels selected by `mask`.
+///
+/// `in` must be scalar, but can have any data type. `mask`, if forged, must be of the same sizes as `in`, or be
+/// singleton expandable to that size, and must be binary.
+///
+/// The output array contains the coordinates for all non-zero pixels, in linear index order (that is, the image is
+/// traversed row-wise to find the pixels). Note that this function is intended to be used with images that have
+/// relatively few non-zero pixels, and there usually is a better alternative than to list the coordinates of
+/// all non-zero pixels.
+///
+/// \see dip::Count
+DIP_EXPORT CoordinateArray Find( Image const& in, Image const& mask = {} );
+
+
 /// \brief Contains the result of the function `dip::SubpixelLocation`.
 struct SubpixelLocationResult {
    FloatArray coordinates; ///< Coordinates of local extremum

@@ -51,6 +51,11 @@ inline ret_type name( Image::View const& in ) { \
    else { return name( Image( in ) ); }}
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
+///
+/// `in` must be scalar, but can have any data type. `mask`, if forged, must be of the same sizes as `in`, or be
+/// singleton expandable to that size, and must be binary.
+///
+/// \see dip::Find
 DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 DIP_DEFINE_VIEW_FUNCTION( Count, dip::uint )
 

@@ -67,6 +67,8 @@ void init_analysis( py::module& m ) {
                return os.str();
             } );
 
+   m.def( "Find", &dip::Find,
+          "in"_a, "mask"_a = dip::Image{} );
    m.def( "SubpixelLocation", &dip::SubpixelLocation,
           "in"_a, "position"_a, "polarity"_a = dip::S::MAXIMUM, "method"_a = dip::S::PARABOLIC_SEPARABLE );
    m.def( "SubpixelMaxima", &dip::SubpixelMaxima,

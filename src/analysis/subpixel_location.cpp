@@ -25,8 +25,52 @@
 #include "diplib/geometry.h" // ResampleAtUnchecked
 #include "diplib/measurement.h" // MeasurementTool
 #include "diplib/overload.h"
+#include "diplib/iterators.h"
 
 namespace dip {
+
+namespace {
+
+template< typename T >
+CoordinateArray Find(
+      Image const& in,
+      Image const& mask,
+      CoordinateArray& out
+) {
+   if( !mask.IsForged() ) {
+      ImageIterator< T > it( in );
+      do {
+         if( *it != T( 0 )) {
+            out.push_back( it.Coordinates() );
+         }
+      } while( ++it );
+   } else {
+      mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW );
+      Image mask_expanded = mask.QuickCopy();
+      mask_expanded.ExpandSingletonDimensions( in.Sizes() );
+      JointImageIterator< T, dip::bin > it( { in, mask_expanded } );
+      do {
+         if( it.template Sample< 1 >() && ( it.template Sample< 0 >() != T( 0 ))) {
+            out.push_back( it.Coordinates() );
+         }
+      } while( ++it );
+   }
+   return out;
+}
+
+} // namespace
+
+CoordinateArray Find(
+      Image const& in,
+      Image const& mask
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   CoordinateArray out;
+   DIP_STACK_TRACE_THIS( DIP_OVL_CALL_ALL( Find, ( in, mask, out ), in.DataType() ));
+   return out;
+}
+
 
 namespace {
 
