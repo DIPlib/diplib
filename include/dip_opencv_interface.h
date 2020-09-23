@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality for the OpenCV 2 interface.
  *
- * (c)2018, Flagship Biosciences. Written by Cris Luengo.
+ * (c)2018-2020, Flagship Biosciences. Written by Cris Luengo.
  * Based on dip_matlab_interface.h: (c)2015-2017, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,6 +89,20 @@ namespace dip_opencv {
 ///
 /// If the *OpenCV* image `mat` has depth `CV_32S` (32-bit signed integer), and `forceUnsigned` is `true`, then
 /// the output `dip::Image` will be of type `dip::DT_UINT32`, instead of `dip::DT_SINT32`.
+///
+/// For a "binary" *OpenCV* image (these are images of type `CV_8U` with pixel values of 0 and 255), the mapped
+/// *DIPlib* image is of type `dip::DT_UINT8`, because this function cannot know if the input `mat` was used as
+/// an 8-bit unsigned integer image or as a binary image. The simplest way to obtain a binary *DIPlib* image is
+/// to threshold the output of `MatToDip`. However, this leads to an image that doesn't share the data segment
+/// with the original `mat`:
+/// ```cpp
+///     cv::Mat bin_mat = cv::threshold(...);                 // This is a "binary" OpenCV image
+///     dip::Image bin_dip = dip_opencv::MatToDip( bin_mat ); // This is a dip::DT_UINT8 DIPlib image, not dip::DT_BIN
+///     bin_dip = bin_dip > 0;
+/// ```
+/// There currently is no simple solution to creating a `dip::DT_BIN` image that encapsulates the data from a
+/// `cv::Mat` image. However, one can encapsulate the data of a binary `dip::Image` in a `cv::Mat`, see the example
+/// in `dip_opencv::FixBinaryImageForOpenCv`.
 inline dip::Image MatToDip( cv::Mat const& mat, bool forceUnsigned = false ) {
    if( mat.empty() ) {
       return {};
@@ -442,6 +456,8 @@ class ExternalInterface : public dip::ExternalInterface {
 
 
 /// \brief Fixes the binary image `img` to match expectations of *DIPlib* (i.e. only the bottom bit is used).
+///
+/// The input image is expected to be binary. See `dip_opencv::FixBinaryImageForOpenCv` for a use case.
 inline void FixBinaryImageForDip( dip::Image& img ) {
    dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
    do {
@@ -452,6 +468,18 @@ inline void FixBinaryImageForDip( dip::Image& img ) {
 }
 
 /// \brief Fixes the binary image `img` to match expectations of *OpenCV* (i.e. all bits have the same value).
+///
+/// The input image is expected to be binary. The data segment for the image is modified such that it is no
+/// longer useful for use in *DIPlib*, but becomes useful for use in *OpenCV*.
+/// ```cpp
+///     dip::Image bin_dip = dip::Threshold(...);          // This is a DIPlib binary image
+///     cv::Mat bin_mat = dip_opencv::DipToMat( bin_dip ); // This is an OpenCV CV_8U image with values 0 and 1
+///     // use bin_dip with DIPlib functions here...
+///     dip_opencv::FixBinaryImageForOpenCv( bin_dip );    // Now both bin_dip and bin_mat have values 0 and 255
+///     // use bin_mat with OpenCV functions here...
+///     dip_opencv::FixBinaryImageForDip( bin_dip );       // Now both bin_dip and bin_mat have values 0 and 1
+///     // use bin_dip with DIPlib functions here...
+/// ```
 inline void FixBinaryImageForOpenCv( dip::Image& img ) {
    dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
    do {
