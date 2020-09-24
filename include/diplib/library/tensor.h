@@ -252,11 +252,13 @@ class DIP_NO_EXPORT Tensor {
          DIP_THROW_IF( rows == 0, "Number of rows must be non-zero" );
          DIP_THROW_IF( cols == 0, "Number of columns must be non-zero" );
          switch( shape_ ) {
-            case Shape::COL_VECTOR: DIP_THROW_IF( cols != 1, "A column vector can have only one column" );
+            case Shape::COL_VECTOR:
+               DIP_THROW_IF( cols != 1, "A column vector can have only one column" );
                elements_ = rows;
                rows_ = rows;
                break;
-            case Shape::ROW_VECTOR: DIP_THROW_IF( rows != 1, "A column vector can have only one column" );
+            case Shape::ROW_VECTOR:
+               DIP_THROW_IF( rows != 1, "A column vector can have only one column" );
                elements_ = cols;
                rows_ = 1;
                break;
@@ -266,16 +268,19 @@ class DIP_NO_EXPORT Tensor {
                rows_ = rows;
                CorrectShape();
                break;
-            case Shape::DIAGONAL_MATRIX: DIP_THROW_IF( rows != cols, "A diagonal matrix must be square" );
+            case Shape::DIAGONAL_MATRIX:
+               DIP_THROW_IF( rows != cols, "A diagonal matrix must be square" );
                elements_ = rows;
                rows_ = rows;
                break;
-            case Shape::SYMMETRIC_MATRIX: DIP_THROW_IF( rows != cols, "A symmetric matrix must be square" );
+            case Shape::SYMMETRIC_MATRIX:
+               DIP_THROW_IF( rows != cols, "A symmetric matrix must be square" );
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
             case Shape::UPPTRIANG_MATRIX:
-            case Shape::LOWTRIANG_MATRIX: DIP_THROW_IF( rows != cols, "A triangular matrix must be square" );
+            case Shape::LOWTRIANG_MATRIX:
+               DIP_THROW_IF( rows != cols, "A triangular matrix must be square" );
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
@@ -381,7 +386,7 @@ class DIP_NO_EXPORT Tensor {
             dip::uint m = rows_;
             dip::uint n = Columns();
             SetVector( std::min( m, n ) );
-            if( shape_ == Tensor::Shape::COL_MAJOR_MATRIX ) {
+            if( shape_ == Shape::COL_MAJOR_MATRIX ) {
                stride *= static_cast< dip::sint >( m + 1 );
             } else { // row-major matrix
                stride *= static_cast< dip::sint >( n + 1 );
@@ -396,20 +401,20 @@ class DIP_NO_EXPORT Tensor {
          dip::uint N = Columns();
          dip::sint offset = 0;
          switch( TensorShape() ) {
-            case Tensor::Shape::COL_VECTOR:
-            case Tensor::Shape::COL_MAJOR_MATRIX:
+            case Shape::COL_VECTOR:
+            case Shape::COL_MAJOR_MATRIX:
                offset = static_cast< dip::sint >( index ) * stride;
                stride *= static_cast< dip::sint >( rows_ );
                break;
-            case Tensor::Shape::ROW_VECTOR:
-            case Tensor::Shape::ROW_MAJOR_MATRIX:
+            case Shape::ROW_VECTOR:
+            case Shape::ROW_MAJOR_MATRIX:
                offset = static_cast< dip::sint >( index * N ) * stride;
                // stride doesn't change
                break;
             default:
                DIP_THROW( "Cannot obtain row for non-full tensor representation." );
          }
-         SetShape( Tensor::Shape::ROW_VECTOR, 1, N );
+         SetShape( Shape::ROW_VECTOR, 1, N );
          return offset;
       }
       /// \brief Transforms the tensor such that it becomes a vector referencing the elements along the given
@@ -420,20 +425,20 @@ class DIP_NO_EXPORT Tensor {
          DIP_THROW_IF( index >= N, E::INDEX_OUT_OF_RANGE );
          dip::sint offset = 0;
          switch( TensorShape() ) {
-            case Tensor::Shape::COL_VECTOR:
-            case Tensor::Shape::COL_MAJOR_MATRIX:
+            case Shape::COL_VECTOR:
+            case Shape::COL_MAJOR_MATRIX:
                offset = static_cast< dip::sint >( index * rows_ ) * stride;
                // stride doesn't change
                break;
-            case Tensor::Shape::ROW_VECTOR:
-            case Tensor::Shape::ROW_MAJOR_MATRIX:
+            case Shape::ROW_VECTOR:
+            case Shape::ROW_MAJOR_MATRIX:
                offset = static_cast< dip::sint >( index ) * stride;
                stride *= static_cast< dip::sint >( N );
                break;
             default:
                DIP_THROW( "Cannot obtain row for non-full tensor representation." );
          }
-         SetShape( Tensor::Shape::COL_VECTOR, rows_, 1 );
+         SetShape( Shape::COL_VECTOR, rows_, 1 );
          return offset;
       }
 
@@ -476,27 +481,27 @@ class DIP_NO_EXPORT Tensor {
          dip::uint n = Columns();
          DIP_THROW_IF(( i >= m ) || ( j >= n ), E::INDEX_OUT_OF_RANGE );
          switch( shape_ ) {
-            case Tensor::Shape::COL_VECTOR:
+            case Shape::COL_VECTOR:
                break;
-            case Tensor::Shape::ROW_VECTOR:
+            case Shape::ROW_VECTOR:
                i = j;
                break;
-            case Tensor::Shape::ROW_MAJOR_MATRIX:
+            case Shape::ROW_MAJOR_MATRIX:
                std::swap( i, j );
                // fallthrough
-            case Tensor::Shape::COL_MAJOR_MATRIX:
+            case Shape::COL_MAJOR_MATRIX:
                i += j * m;
                break;
-            case Tensor::Shape::DIAGONAL_MATRIX:
+            case Shape::DIAGONAL_MATRIX:
                DIP_THROW_IF( i != j, E::INDEX_OUT_OF_RANGE );
                break;
-            case Tensor::Shape::LOWTRIANG_MATRIX:
+            case Shape::LOWTRIANG_MATRIX:
                std::swap( i, j );
                // fallthrough
-            case Tensor::Shape::UPPTRIANG_MATRIX:
+            case Shape::UPPTRIANG_MATRIX:
                DIP_THROW_IF( i > j, E::INDEX_OUT_OF_RANGE );
                // fallthrough
-            case Tensor::Shape::SYMMETRIC_MATRIX:
+            case Shape::SYMMETRIC_MATRIX:
                if( i != j ) {
                   // |0 4 5 6|     |0 1 2|
                   // |x 1 7 8| --\ |x 3 4| (index + 4)
