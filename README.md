@@ -130,12 +130,14 @@ limitations under the License.
 *DIPlib* includes the following libraries / external code:
 
 - *Eigen 3*  
+  Copyright 2008 Gael Guennebaud  
+  Copyright 2007-2011 Benoit Jacob  
   Mozilla Public License Version 2.0  
   see [`dependencies/eigen3/LICENSE.txt`](dependencies/eigen3/LICENSE.txt)  
   (we do not use any of the components with more restrictive licenses)
 
 - *DocTest* (its use can be disabled)  
-  Copyright 2016-2017 Viktor Kirilov  
+  Copyright 2016-2019 Viktor Kirilov  
   The MIT License (MIT)  
   see [`dependencies/doctest/LICENSE.txt`](dependencies/doctest/LICENSE.txt)
 
