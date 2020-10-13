@@ -289,7 +289,8 @@ porting your old code that used *DIPimage* to the new version.
 
 - New functions not mentioned above: `abssqr`, `areaclosing`, `areaopening`, `asf`, `cell2im`, `cluster`,
   `compactwaterseed`, `coordinates`,  `cornerdetector`, `curlvector`, `distancedistribution`, `divergencevector`,
-  `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `im2cell`, `integral_image`, `lee`,
+  `drawshape`, `extendregion`, `getmaximumandminimum`, `getsamplestatistics`, `growregions`, `growregionsweighted`,
+  `im2cell`, `integral_image`, `lee`,
   `linedetector`, `loggabor`, `nonmaximumsuppression`, `pathclosing`, `pathopening`, `perobjecthist`, `psf`,
   `quantize`, `randomseeds`, `rngseed`, `select`, `semivariogram`, `setborder`, `skew`, `smallobjectsremove`,
   `stochasticwatershed`, `superpixels`, `thetatheta`, `traceobjects`, `warp_subpixel`, `window`, `wrap`.
@@ -323,3 +324,242 @@ porting your old code that used *DIPimage* to the new version.
 
 - `getparams` no longer exists. It was a nifty idea but incurred a large overhead. Each function now must
   do its own input parameter checking, for example through `inputParser` and/or `validateattributes`.
+
+- The low-level interface has been removed. This interface was composed of functions starting with `dip_` or `dipio_`,
+  and directly mapped the *DIPlib* functions. Removing this interface simplifies the toolbox code,
+  as the "normal" toolbox functions did a bunch of parameter parsing, and then called the relevant *DIPlib* function
+  through this low-level interface. Now, the "normal" toolbox functions directly call the relevant *DIPlib* function,
+  which does the parameter parsing. Most of the toolbox code is now composed of functionality to translate *MATLAB*
+  data to *DIPlib* data. This is a list of old low-level interface functions, with the corresponding function
+  to replace it with:
+    - `dip_adaptivebanana` → `gaussf_adap_banana`
+    - `dip_adaptivegauss` → `gaussf_adap`
+    - `dip_adaptivepercentile` → not available
+    - `dip_adaptivepercentilebanana` → not available
+    - `dip_and` → `&`
+    - `dip_arcfilter` → not available
+    - `dip_areaopening` → `areaopening` or `areaclosing`
+    - `dip_arith` → `+`, `-`, `*`, `/`.
+    - `dip_armdhistogram` → `mdhistogram`
+    - `dip_armdhistogrammap` → `mdhistogrammap`
+    - `dip_attenuationcorrection` → not available (but exists in *DIPlib*)
+    - `dip_biasedsigma` → not available
+    - `dip_bilateral` → `bilateralf`
+    - `dip_bilateralfilter` → `bilateralf`
+    - `dip_bilateralfilter2` → `bilateralf`
+    - `dip_binaryanchorskeleton2d` → not available
+    - `dip_binaryclosing` → `bclosing`
+    - `dip_binarydilation` → `bdilation`
+    - `dip_binaryerosion` → `berosion`
+    - `dip_binarynoise` → `noise`
+    - `dip_binaryopening` → `bopening`
+    - `dip_binarypropagation` → `bpropagation`
+    - `dip_binaryrandomvariable` → not available, *MATLAB* has built-in support for random number generation
+    - `dip_binaryskeleton3d` → not available, but `bskeleton` produces a 3D skeleton, if not always correct
+    - `dip_canny` → `canny`
+    - `dip_changebyteorder` → not available
+    - `dip_chordlength` → `chordlength`
+    - `dip_cityblockdistancetopoint` → not available (but exists in *DIPlib*)
+    - `dip_clip` → `clip`
+    - `dip_closing` → `closing`
+    - `dip_compare` → `<`, `<=`, `~=`, `==`, `>=`, `>`
+    - `dip_contraststretch` → `stretch`
+    - `dip_convolve1d` → `convolve`
+    - `dip_convolveft` → `convolve`
+    - `dip_crop` → `cut`
+    - `dip_croptobetterfouriersize` → not available, but see the `fast` mode of the `ft` function
+    - `dip_crosscorrelationft` → `crosscorrelation`
+    - `dip_cumulativesum` → `integral_image`
+    - `dip_danielsonlinedetector` → `linedetector`
+    - `dip_derivative` → `derivative`
+    - `dip_dgg` → `dgg`
+    - `dip_dilation` → `dilation`
+    - `dip_directedpathopening` → `pathopening`, `pathclosing`
+    - `dip_distancebetweenpointsets` → not available
+    - `dip_dmllibfile` → not available
+    - `dip_drawline` → `drawline`
+    - `dip_drawlines` → `drawline`
+    - `dip_edgeobjectsremove` → `brmedgeobjs`
+    - `dip_edt` → `dt`
+    - `dip_ellipticdistancetopoint` → not available (but exists in *DIPlib*)
+    - `dip_erfclip` → `erfclip`
+    - `dip_erosion` → `erosion`
+    - `dip_euclideandistancetopoint` → not available (but exists in *DIPlib*)
+    - `dip_euclideanskeleton` → `bskeleton`
+    - `dip_exit` → not available
+    - `dip_exponentialfitcorrection` → not available (but exists in *DIPlib*)
+    - `dip_extendregion` → `extendregion`
+    - `dip_findshift` → `findshift`
+    - `dip_finitedifference` → `derivative`
+    - `dip_finitedifferenceex` → `derivative`
+    - `dip_fm` → not available, but `gdt` provides a different implementation of the Fast Marching algorithm
+    - `dip_fouriertransform` → `ft`, `ift`
+    - `dip_ftbox` → `testobject`
+    - `dip_ftcross` → `testobject`
+    - `dip_ftcube` → `testobject`
+    - `dip_ftellipsoid` → `testobject`
+    - `dip_ftgaussian` → `testobject`
+    - `dip_ftsphere` → `testobject`
+    - `dip_gaboriir` → `gabor`
+    - `dip_gauss` → `gaussf`
+    - `dip_gaussft` → `gaussf`
+    - `dip_gaussiannoise` → `noise`
+    - `dip_gaussianrandomvariable` → not available, *MATLAB* has built-in support for random number generation
+    - `dip_gaussiansigma` → not available
+    - `dip_gaussiir` → `gaussf`
+    - `dip_gdt` → `gdt`
+    - `dip_generalconvolution` → `convolve`
+    - `dip_generalisedkuwahara` → `selectionf`
+    - `dip_generalisedkuwaharaimproved` → `selectionf`
+    - `dip_generateramp` → `ramp`, `xx`, `yy`, `zz`
+    - `dip_getboundary` → not available (the boundary condition is now a parameter to functions that use it)
+    - `dip_getlibraryinformation` → not available
+    - `dip_getmaximumandminimum` → `getmaximumandminimum`
+    - `dip_getmeasurefeatures` → `measure('features')`
+    - `dip_getnumberofthreads` → `dipgetpref('numberofthreads')`
+    - `dip_getobjectlabels` → `unique(dip_array(img))`
+    - `dip_gettruncation` → not available (the truncation is now a parameter to functions that use it)
+    - `dip_gradientdirection2d` → `angle(gradientvector(img))`
+    - `dip_gradientmagnitude` → `gradmag`
+    - `dip_growregions` → `growregions`
+    - `dip_growregionsweighted` → `growregionsweighted`
+    - `dip_hartleytransform` → not available
+    - `dip_hysteresisthreshold` → `threshold` with the `'hysteresis'` method
+    - `dip_idivergence` → `errormeasure`
+    - `dip_imagechaincode` → `traceobjects`
+    - `dip_imagelut` → `lut`
+    - `dip_imarinvlut` → not available
+    - `dip_imarlut` → not available
+    - `dip_incoherentotf` → `psf`
+    - `dip_incoherentpsf` → `psf`
+    - `dip_initialise_libs` → not available
+    - `dip_isodatathreshold` → `threshold` with the `'isodata'` method
+    - `dip_kuwahara` → `kuwahara`
+    - `dip_kuwaharaimproved` → `kuwahara`
+    - `dip_label` → `label`
+    - `dip_laplace` → `laplace`
+    - `dip_laplacemindgg` → `laplace_min_dgg`
+    - `dip_laplaceplusdgg` → `laplace_plus_dgg`
+    - `dip_lee` → `lee`
+    - `dip_linefit` → not available
+    - `dip_localminima` → not available (but exists in *DIPlib*) TODO: `dip::WatershedMinima
+    - `dip_map` → `mirror`, `dip_image/permute`
+    - `dip_maxima` → `maxima`
+    - `dip_maximum` → `dip_image/max`
+    - `dip_maximumpixel` → `dip_image/max`
+    - `dip_mdhistogram` → `mdhistogram`
+    - `dip_mdhistogrammap` → `mdhistogrammap`
+    - `dip_mean` → `dip_image/mean`
+    - `dip_measure` → `measure`
+    - `dip_medianfilter` → `medif`
+    - `dip_minima` → `minima`
+    - `dip_minimum` → `dip_image/min`
+    - `dip_minimumpixel` → `dip_image/min`
+    - `dip_mirror` → `mirror`
+    - `dip_modulofloatperiodic` → `dip_image/mod`
+    - `dip_morphologicalgradmag` → not available (but exist in *DIPlib*)
+    - `dip_morphologicalrange` → not available (but exist in *DIPlib*)
+    - `dip_morphologicalreconstruction` → `reconstruction`
+    - `dip_morphologicalsmoothing` → not available (but exist in *DIPlib*)
+    - `dip_morphologicalthreshold` → not available (but exist in *DIPlib*)
+    - `dip_multiscalemorphgrad` → not available (but exist in *DIPlib*)
+    - `dip_nonmaximumsuppression` → `nonmaximumsuppression`
+    - `dip_objecttomeasurement` → `msr2obj`
+    - `dip_opening` → `opening`
+    - `dip_or` → `|`
+    - `dip_orientationspace` → `orientationspace`
+    - `dip_orientedgauss` → not available, but can be emulated with `gaussf_adap`
+    - `dip_paircorrelation` → `paircorrelation`
+    - `dip_pathopening` → `pathopening`, `pathclosing`
+    - `dip_percentile` → `dip_image/percentile`
+    - `dip_percentilefilter` → `percf`
+    - `dip_pgst3dline` → not available
+    - `dip_pgst3dsurface` → not available
+    - `dip_poissonnoise` → `noise`
+    - `dip_poissonrandomvariable` → not available, *MATLAB* has built-in support for random number generation
+    - `dip_positionmaximum` → `dip_image/max`
+    - `dip_positionminimum` → `dip_image/min`
+    - `dip_positionpercentile` → `dip_image/percentile`
+    - `dip_probabilisticcorrelation` → `paircorrelation`
+    - `dip_prod` → `dip_image/prod`
+    - `dip_pseudoinverse` → not available
+    - `dip_quantizedbilateralfilter` → `bilateralf`
+    - `dip_radialdistribution` → not available
+    - `dip_radialmaximum` → `radialmax`
+    - `dip_radialmean` → `radialmean`
+    - `dip_radialminimum` → `radialmin`
+    - `dip_radialsum` → `radialsum`
+    - `dip_randomseed` → `rngseed`
+    - `dip_randomvariable` → not available, *MATLAB* has built-in support for random number generation
+    - `dip_rangethreshold` → `threshold` with the `'double'` method.
+    - `dip_rankcontrastfilter` → not available
+    - `dip_resampleat` → `get_subpixel`
+    - `dip_resampling` → `resample`
+    - `dip_resamplingft` → `resample`
+    - `dip_rotation` → `rotation`
+    - `dip_rotation_with_bgval` → not available, but can be implemented by first extending the image with the given background value, and then selecting the appropriate boundary condition in `rotation`
+    - `dip_rotation3d` → not available (but exist in *DIPlib*)
+    - `dip_rotation3d_axis` → `rotation`
+    - `dip_rotation3daxis` → `rotation`
+    - `dip_seededwatershed` → `waterseed`
+    - `dip_separableconvolution` → `convolve`
+    - `dip_setboundary` → not available (the boundary condition is now a parameter to functions that use it)
+    - `dip_setnumberofthreads` → dipsetpref('numberofthreads')
+    - `dip_settruncation` → not available (the truncation is now a parameter to functions that use it)
+    - `dip_sharpen` → not available (but exist in *DIPlib*), can be implemented with `img - weight*laplace(img)`
+    - `dip_shift` → `shift`
+    - `dip_sigma` → not available
+    - `dip_simplegaussfitimage` → not available (but exist in *DIPlib*)
+    - `dip_simulatedattenuation` → not available (but exist in *DIPlib*)
+    - `dip_skewing` → `skew`
+    - `dip_smallobjectsremove` → `smallobjectsremove`
+    - `dip_sobelgradient` → `sobelf`
+    - `dip_sortindices` → not available
+    - `dip_standarddeviation` → `dip_image/std`
+    - `dip_structureadaptivegauss` → `gaussf_adap`
+    - `dip_structureanalysis` → not available (but exist in *DIPlib*)
+    - `dip_structuretensor2d` → `structuretensor`
+    - `dip_structuretensor3d` → `structuretensor`
+    - `dip_subpixellocation` → `subpixlocation`
+    - `dip_subpixelmaxima` → `findmaxima`
+    - `dip_subpixelminima` → `findminima`
+    - `dip_subsampling` → `subsample`
+    - `dip_sum` → `dip_image/sum`
+    - `dip_svd` → `dip_image/svd`
+    - `dip_symmetriceigensystem2` → `dip_image/eig`
+    - `dip_symmetriceigensystem3` → `dip_image/eig`
+    - `dip_systemdoctor` → not available
+    - `dip_tensorimageinverse` → `dip_image/inv`
+    - `dip_testobjectaddnoise` → `testobject`
+    - `dip_testobjectblur` → `testobject`
+    - `dip_testobjectcreate` → `testobject`
+    - `dip_testobjectmodulate` → `testobject`
+    - `dip_threshold` → `threshold` with the `'fixed'` method, or just `>=`
+    - `dip_tikhonovmiller` → not available
+    - `dip_tikhonovregparam` → not available
+    - `dip_tophat` → `tophat`
+    - `dip_uniform` → `unif`
+    - `dip_uniformnoise` → `noise`
+    - `dip_uniformrandomvariable` → not available, *MATLAB* has built-in support for random number generation
+    - `dip_upperenvelope` → not available
+    - `dip_upperskeleton2d` →  not available (but exist in *DIPlib*)
+    - `dip_variancefilter` → `varif`
+    - `dip_vdt` → `vdt`
+    - `dip_watershed` → `watershed`
+    - `dip_wiener` → `wiener`
+    - `dip_wrap` → `wrap`
+    - `dip_xor` → `dip_image/xor`
+    - `dipio_appendrawdata` → not available
+    - `dipio_colour2gray` → `dip_image/colorspace`
+    - `dipio_getimagereadformats` → not available
+    - `dipio_getimagewriteformats` → not available
+    - `dipio_getlibraryinformation` → not available
+    - `dipio_imagefilegetinfo` → not available (`readim` returns file info as as 2nd output arguments)
+    - `dipio_imageread` → `readim`, `readrawim`, `readics`, `readtiff`
+    - `dipio_imagereadcolour` → `readim`
+    - `dipio_imagereadcolourseries` → `readtimeseries`
+    - `dipio_imagereadroi` → `readroiim`
+    - `dipio_imagereadtiff` → `readtiff`
+    - `dipio_imagewrite` → `writeim`, `writeics`, `writetiff`
+    - `dipio_imagewritecolour` → `writeim`
+    - `dipio_imagewriteics` → `writeics`

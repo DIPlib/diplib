@@ -168,7 +168,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - `dip_LabelSetBorder`, `dip_ImageDoEdge` and `dip_PlaneDoEdge` are merged into `dip::SetBorder`,
   which additionally can specify the border size.
 
-- `dip_LocalMinima` is now called `dip::WatershedMinima`. There's also a maxima variant.
+- `dip_LocalMinima` is now called `dip::WatershedMinima`. There's also a maxima variant, `dip::WatershedMaxima`.
 
 - `dip_GetMaximumAndMinimum` is now called `dip::MaximumAndMinimum` for consistency.
 
@@ -453,7 +453,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
   `dip::MandersOverlapCoefficient`, `dip::IntensityCorrelationQuotient`, `dip::MandersColocalizationCoefficients`,
   `dip::CostesColocalizationCoefficients`, `dip::CostesSignificanceTest`.
 
-- New segmentation functions: `dip::CompactWatershed`, `dip::StochasticWatershed`, `dip::WatershedMinima`, `dip::WatershedMaxima`,
+- New segmentation functions: `dip::CompactWatershed`, `dip::StochasticWatershed`,
   `dip::MinimumVariancePartitioning`, `dip::OtsuThreshold`, `dip::MinimumErrorThreshold`, `dip::GaussianMixtureModelThreshold`,
   `dip::TriangleThreshold`, `dip::BackgroundThreshold`, `dip::VolumeThreshold`, `dip::MultipleThresholds`, `dip::Superpixels`.
 

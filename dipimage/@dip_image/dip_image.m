@@ -2096,7 +2096,7 @@ classdef dip_image
       end
 
       function im = angle(im)
-         %ANGLE   Phase angle of complex values or angle of vector.
+         %ANGLE   Phase angle of complex values, or angle of vector.
          %   ANGLE(C), with C a complex-valued image, returns the phase angle of the
          %   values in C.
          %
