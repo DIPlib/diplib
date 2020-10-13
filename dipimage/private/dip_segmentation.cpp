@@ -43,6 +43,45 @@ void label( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void growregions( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 4 );
+   dip::Image const label = dml::GetImage( prhs[ 0 ] );
+   dip::Image const mask = nrhs > 1 ? dml::GetImage( prhs[ 1 ] ) : dip::Image{};
+   dip::sint connectivity = nrhs > 2 ? dml::GetInteger( prhs[ 2 ] ) : -1;
+   dip::uint iterations = nrhs > 3 ? dml::GetUnsigned( prhs[ 3 ] ) : 0;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::GrowRegions( label, mask, out, connectivity, iterations );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void growregionsweighted( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 4 );
+   dip::Image const label = dml::GetImage( prhs[ 0 ] );
+   dip::Image const grey = dml::GetImage( prhs[ 1 ] );
+   dip::Image const mask = nrhs > 2 ? dml::GetImage( prhs[ 2 ] ) : dip::Image{};
+   dip::uint chamfer = nrhs > 3 ? dml::GetUnsigned( prhs[ 3 ] ) : 5;
+   dip::Metric metric;
+   switch( chamfer ) {
+      case 1:
+         metric = dip::Metric( dip::S::CONNECTED, 1 );
+         break;
+      case 3:
+         metric = dip::Metric( dip::S::CHAMFER, 1 );
+         break;
+      case 5:
+         metric = dip::Metric( dip::S::CHAMFER, 2 );
+         break;
+      default:
+         DIP_THROW( "Illegal value for CHAMFER parameter" );
+   }
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::GrowRegionsWeighted( label, grey, mask, out, metric );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void smallobjectsremove( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
@@ -402,6 +441,10 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       if( function == "label" ) {
          label( plhs, nrhs, prhs );
+      } else if( function == "growregions" ) {
+         growregions( plhs, nrhs, prhs );
+      } else if( function == "growregionsweighted" ) {
+         growregionsweighted( plhs, nrhs, prhs );
       } else if( function == "smallobjectsremove" ) {
          smallobjectsremove( plhs, nrhs, prhs );
       } else if( function == "traceobjects" ) {

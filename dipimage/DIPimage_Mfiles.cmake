@@ -127,6 +127,8 @@ getsinglepixel.m
 gradientvector.m
 gradmag.m
 granulometry.m
+growregions.m
+growregionsweighted.m
 gvf.m
 hessian.m
 hist2image.m
