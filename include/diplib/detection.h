@@ -78,11 +78,13 @@ inline Image HoughTransformCircleCenters(
 
 /// \brief Find local maxima in Hough parameter space.
 ///
-/// Finds the local maxima (using `dip::WatershedMaxima`) in the given Hough parameter space. Maxima
-/// `distance` pixels away from a higher maximum are filtered out.
+/// Finds the local maxima (using `dip::WatershedMaxima`) in the given Hough parameter space.
+/// Maxima `distance` pixels away from a higher maximum are filtered out.
+/// Maxima lower than `fraction` times the highest maximum are ignored. `fraction` should be lower than 1.
 DIP_EXPORT CoordinateArray FindHoughMaxima(
       Image const& in,
-      dfloat distance
+      dfloat distance = 10.0,
+      dfloat fraction = 0.1
 );
 
 /// \brief Compute distance distribution for a set of points.
@@ -106,14 +108,19 @@ DIP_EXPORT Distribution PointDistanceDistribution(
 /// only a single radius is returned per center coordinates.
 ///
 /// `gv` is a vector image of the same sizes as `in`, with the gradient vector for each pixel of `in`.
+///
 /// `range` must be empty, or have exactly two elements representing the minimum and maximum radius to
 /// be considered. If empty, the minimum radius is 0, and the maximum is the length of the image diagonal.
+///
 /// `distance` is the minimum distance between centers, used to suppress noisy results.
+/// `fraction` is the minimum height of a peak in the Hough transform, with respect to the largest peak,
+/// that should be considered, again to suppress noisy results.
 DIP_EXPORT FloatCoordinateArray FindHoughCircles(
       Image const& in,
       Image const& gv,
-      UnsignedArray const& range,
-      dfloat distance
+      UnsignedArray const& range = {},
+      dfloat distance = 10.0,
+      dfloat fraction = 0.1
 );
 
 /// \brief Stores the parameters for one hypersphere (circle, sphere).

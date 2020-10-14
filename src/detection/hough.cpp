@@ -192,8 +192,10 @@ void HoughTransformCircleCenters(
 
 CoordinateArray FindHoughMaxima(
       Image const& in,
-      dfloat distance
+      dfloat distance,
+      dfloat fraction
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
 
    dfloat distancesq = distance * distance;
@@ -201,25 +203,35 @@ CoordinateArray FindHoughMaxima(
    // Find local maxima
    // TODO: Watershed parameters?
    Image lma;
-   DIP_STACK_TRACE_THIS( lma = WatershedMaxima( in, {}, 1, 0, 0, S::LABELS ));
+   DIP_STACK_TRACE_THIS( lma = WatershedMaxima( in, {}, 2, 2, 0, S::LABELS ));
    MeasurementTool msrTool;
-   auto measurement = msrTool.Measure( lma, in, { "MaxPos", "MaxVal" } );
+   auto measurement = msrTool.Measure( lma, in, { "Center", "Mean" } );
+   // Note: All pixels within one region have the same value. "Center" gives the centroid, rather than the first
+   //       pixel found. But the region having more than one pixel is not likely
 
    // Copy to candidate array
    std::vector< Candidate > candidates( measurement.NumberOfObjects(), Candidate( UnsignedArray( in.Dimensionality() )));
    auto it = measurement.FirstObject();
    for( dip::uint ii = 0; ii < candidates.size(); ++ii, ++it ) {
-      auto c = it[ "MaxPos" ];
-      std::transform(c.begin(), c.end(), candidates[ii].pos.begin(), []( dfloat &x ) { return ( dip::uint ) x; } );
-      candidates[ ii ].val = *it[ "MaxVal" ];
+      auto c = it[ "Center" ];
+      std::transform(c.begin(), c.end(), candidates[ii].pos.begin(), []( dfloat &x ) { return static_cast< dip::uint >( x + 0.5 ); } ); // +0.5 to round to nearest integer location
+      candidates[ ii ].val = *it[ "Mean" ];
    }
 
    // Sort in descending order
    std::sort( candidates.begin(), candidates.end(), std::greater<>() );
 
-   // Filter
+   // Filter by value
+   dfloat threshold = candidates[0].val * fraction;
    for( dip::uint ii = 0; ii < candidates.size(); ++ii ) {
-      // Invalidate all candidates smaller than this one within given distance
+      if( candidates[ ii ].val < threshold ) {
+         candidates[ ii ].valid = false;
+      }
+   }
+
+   // Filter by distance
+   for( dip::uint ii = 0; ii < candidates.size(); ++ii ) {
+      // Invalidate all candidates smaller than this one within given distance -- even if this one is invalid!
       for( dip::uint jj = ii + 1; jj < candidates.size(); ++jj ) {
          if( candidates[ jj ].valid ) {
             if( norm_square( candidates[ ii ].pos, candidates[ jj ].pos ) < distancesq ) {
@@ -245,6 +257,7 @@ Distribution PointDistanceDistribution(
       CoordinateArray const& points,
       UnsignedArray range
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
 
    if( range.empty() ) {
@@ -281,7 +294,8 @@ FloatCoordinateArray FindHoughCircles(
       Image const& in,
       Image const& gv,
       UnsignedArray const& range,
-      dfloat distance
+      dfloat distance,
+      dfloat fraction
 ) {
    // Perform Hough transform for circle centers
    Image hough;
@@ -289,7 +303,7 @@ FloatCoordinateArray FindHoughCircles(
 
    // Find centers
    CoordinateArray centers;
-   DIP_STACK_TRACE_THIS( centers = FindHoughMaxima( hough, distance ));
+   DIP_STACK_TRACE_THIS( centers = FindHoughMaxima( hough, distance, fraction ));
 
    // Get radius distributions
    Distribution dist;
@@ -347,7 +361,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindHoughCircles function") {
    auto gv  = dip::Gradient( a );
    auto gm  = dip::Norm( gv );
    auto bin = dip::IsodataThreshold( gm, { } );
-   auto cir = dip::FindHoughCircles( bin, gv, { }, 10 );
+   auto cir = dip::FindHoughCircles( bin, gv, { }, 10.0, 0.5 );
 
    // Check result
    DOCTEST_REQUIRE( cir.size() == 2 );

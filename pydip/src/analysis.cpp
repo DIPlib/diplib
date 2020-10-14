@@ -130,12 +130,12 @@ void init_analysis( py::module& m ) {
 
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
-   m.def( "FindHoughMaxima", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::FindHoughMaxima ),
-          "in"_a, "distance"_a );
+   m.def( "FindHoughMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat >( &dip::FindHoughMaxima ),
+          "in"_a, "distance"_a = 10.0, "fraction"_a = 0.1 );
    m.def( "PointDistanceDistribution", py::overload_cast< dip::Image const&, dip::CoordinateArray const&, dip::UnsignedArray >( &dip::PointDistanceDistribution ),
           "in"_a, "points"_a, "range"_a = dip::UnsignedArray{} );
-   m.def( "FindHoughCircles", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const&, dip::dfloat >( &dip::FindHoughCircles ),
-          "in"_a, "gv"_a, "range"_a, "distance"_a );
+   m.def( "FindHoughCircles", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const&, dip::dfloat, dip::dfloat >( &dip::FindHoughCircles ),
+          "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{}, "distance"_a = 10.0, "fraction"_a = 0.1 );
           
    m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
              dip::Image out;
