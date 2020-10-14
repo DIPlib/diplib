@@ -131,9 +131,10 @@ class UnionFind {
       ///
       /// Returns the number of unique labels.
       ///
-      /// \warning This function destroys the tree structure. After this call, you can only use `Label`.
+      /// \warning This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
       dip::uint Relabel() {
          std::vector< IndexType > newLabels( list.size(), 0 );
+         std::vector< ValueType > newValues( list.size() );
          IndexType lab = 0;
          IndexType maxLab = static_cast< IndexType >( list.size() );
          // Assign a new, unique and consecutive label to each tree.
@@ -141,12 +142,15 @@ class UnionFind {
             IndexType index = FindRoot( ii );
             if(( index > 0 ) && ( newLabels[ index ] == 0 )) {
                newLabels[ index ] = ++lab;
+               newValues[ index ] = list[ index ].value;
             }
          }
          // Write the new labels to the list.
          for( IndexType ii = 1; ii < maxLab; ++ii ) {
             // Note that we've called FindRoot on each list element, so they all directly point at their root now.
-            list[ ii ].parent = newLabels[ list[ ii ].parent ];
+            IndexType root = list[ ii ].parent;
+            list[ ii ].parent = newLabels[ root ];
+            list[ ii ].value = newValues[ root ];
          }
          return lab;
       }
@@ -158,10 +162,11 @@ class UnionFind {
       ///
       /// Returns the number of unique labels.
       ///
-      /// \warning This function destroys the tree structure. After this call, you can only use `Label`.
+      /// \warning This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
       template< typename Constraint >
       dip::uint Relabel( Constraint constraint ) {
          std::vector< IndexType > newLabels( list.size(), 0 );
+         std::vector< ValueType > newValues( list.size() );
          IndexType lab = 0;
          IndexType maxLab = static_cast< IndexType >( list.size() );
          // Assign a new, unique and consecutive label to each tree.
@@ -169,20 +174,25 @@ class UnionFind {
             IndexType index = FindRoot( ii );
             if(( index > 0 ) && ( newLabels[ index ] == 0 ) && constraint( list[ index ].value )) {
                newLabels[ index ] = ++lab;
+               newValues[ index ] = list[ index ].value;
             }
          }
          // Write the new labels to the list.
          for( IndexType ii = 1; ii < maxLab; ++ii ) {
             // Note that we've called FindRoot on each list element, so they all directly point at their root now.
-            list[ ii ].parent = newLabels[ list[ ii ].parent ];
+            IndexType root = list[ ii ].parent;
+            list[ ii ].parent = newLabels[ root ];
+            list[ ii ].value = newValues[ root ];
          }
          return lab;
       }
 
       /// \brief Returns the new label associated to the tree that contains `index`. Only useful after calling `Relabel`.
-      IndexType Label( IndexType index ) const {
-         return list[ index ].parent;
-      }
+      IndexType Label( IndexType index ) const { return list[ index ].parent; }
+
+      /// \brief Returns a const reference to the value associated to the tree that contains `index`. Only useful after
+      /// calling `Relabel`.
+      ValueType const& LabelValue( IndexType index ) const { return list[ index ].value; }
 
    private:
       // The union-find algorithm stores a set of trees in an array (`list`). Each element of the array is part

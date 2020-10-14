@@ -187,10 +187,9 @@ void FastWatershedInternal(
          ImageIterator< LabelType > it( c_labels );
          it.OptimizeAndFlatten();
          do {
-            LabelType lab1 = *it;
-            if( lab1 > 0 ) {
-               LabelType lab2 = regions.Label( lab1 );
-               *it = lab2;
+            LabelType lab = *it;
+            if( lab > 0 ) {
+               *it = regions.Label( lab );
             }
          } while( ++it );
       }
@@ -215,7 +214,7 @@ void FastWatershedInternal(
          do {
             LabelType lab = it.Out();
             if( lab > 0 ) {
-               it.Out() = it.In() == regions.Value( lab ).lowest ? lab : LabelType( 0 );
+               it.Out() = ( it.In() == regions.LabelValue( lab ).lowest ) ? regions.Label( lab ) : LabelType( 0 );
             }
          } while( ++it );
       }

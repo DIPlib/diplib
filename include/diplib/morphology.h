@@ -885,7 +885,7 @@ inline Image RankMaxOpening(
 ///   such that local maxima are at the centers of the basins, and the watershed lines run along
 ///   the low valleys.
 /// - `"fast"` or `"correct"`: determines which algorithm is used:
-///   - `"fast"` is an algorithm that takes a few shortcuts, but usually manages to produce good results
+///   - `"fast"` (the default) is an algorithm that takes a few shortcuts, but usually manages to produce good results
 ///     any way. One shortcut leads to all border pixels being marked as watershed lines. It is possible
 ///     to extend the image by one pixel before processing to circumvent this. The other shortcut means
 ///     that plateaus are not handled correctly. A plateau is a region in the image where pixels have
