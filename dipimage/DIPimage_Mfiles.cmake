@@ -252,6 +252,8 @@ view5d.m
 warp_subpixel.m
 waterseed.m
 watershed.m
+watershedmaxima.m
+watershedminima.m
 wiener.m
 window.m
 wrap.m

@@ -293,7 +293,8 @@ porting your old code that used *DIPimage* to the new version.
   `im2cell`, `integral_image`, `lee`,
   `linedetector`, `loggabor`, `nonmaximumsuppression`, `pathclosing`, `pathopening`, `perobjecthist`, `psf`,
   `quantize`, `randomseeds`, `rngseed`, `select`, `semivariogram`, `setborder`, `skew`, `smallobjectsremove`,
-  `stochasticwatershed`, `superpixels`, `thetatheta`, `traceobjects`, `warp_subpixel`, `window`, `wrap`.
+  `stochasticwatershed`, `superpixels`, `thetatheta`, `traceobjects`, `warp_subpixel`,
+  `watershedmaxima`, `watershedminima`, `window`, `wrap`.
   Use `help <functionname>` in *MATLAB* to learn what these functions provide.
 
 - Old functions not (yet) ported:
@@ -442,7 +443,7 @@ porting your old code that used *DIPimage* to the new version.
     - `dip_laplaceplusdgg` → `laplace_plus_dgg`
     - `dip_lee` → `lee`
     - `dip_linefit` → not available
-    - `dip_localminima` → not available (but exists in *DIPlib*) TODO: `dip::WatershedMinima
+    - `dip_localminima` → `watershedminima`, `watershedmaxima`
     - `dip_map` → `mirror`, `dip_image/permute`
     - `dip_maxima` → `maxima`
     - `dip_maximum` → `dip_image/max`

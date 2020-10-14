@@ -115,7 +115,6 @@ void lee( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
 using FlagParamFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip::uint, dip::String const& );
 void FlagParamFilter( FlagParamFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   DML_MIN_ARGS( 1 );
    DML_MAX_ARGS( 3 );
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::uint connectivity = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 1;
@@ -265,6 +264,20 @@ void stochasticwatershed( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+using MergeParamFilterFunction = void ( * )( dip::Image const&, dip::Image const&, dip::Image&, dip::uint, dip::dfloat, dip::uint, dip::String const& );
+void MergeParamFilter( MergeParamFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 5 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::uint connectivity = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 1;
+   dip::dfloat maxDepth = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.0;
+   dip::uint maxSize = nrhs > 3 ? dml::GetUnsigned( prhs[ 3 ] ) : 0;
+   dip::String flag = nrhs > 4 ? dml::GetString( prhs[ 4 ] ) : dip::S::BINARY;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   function( in, {}, out, connectivity, maxDepth, maxSize, flag );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 dip::String GetEdgeCondition( int index, int nrhs, const mxArray* prhs[], char const* defaultValue ) {
    dip::String edgeCondition = defaultValue;
    if( nrhs > index ) {
@@ -411,6 +424,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          watershed( plhs, nrhs, prhs );
       } else if( function == "stochasticwatershed" ) {
          stochasticwatershed( plhs, nrhs, prhs );
+      } else if( function == "watershedmaxima" ) {
+         MergeParamFilter( dip::WatershedMaxima, plhs, nrhs, prhs );
+      } else if( function == "watershedminima" ) {
+         MergeParamFilter( dip::WatershedMinima, plhs, nrhs, prhs );
 
       } else if( function == "bclosing" ) {
          BinaryBasicFilter( dip::BinaryClosing, plhs, nrhs, prhs, dip::S::SPECIAL );
