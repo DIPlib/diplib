@@ -67,7 +67,8 @@ Image::Pixel ReadPixelWithBoundaryCondition(
                break;
             case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
             case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
-            case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
+            case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
+            default:
                DIP_THROW("Boundary condition not implemented" );
          }
       }

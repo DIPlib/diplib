@@ -83,20 +83,20 @@ using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An arra
 /// \brief Convert a string to a boundary condition.
 inline BoundaryCondition StringToBoundaryCondition( String const& bc ) {
    if( bc.empty() ) { return BoundaryCondition::DEFAULT; }
-   else if( bc == S::DEFAULT ) { return BoundaryCondition::DEFAULT; }
-   else if( bc == S::SYMMETRIC_MIRROR ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
-   else if( bc == S::ASYMMETRIC_MIRROR ) { return BoundaryCondition::ASYMMETRIC_MIRROR; }
-   else if( bc == S::PERIODIC ) { return BoundaryCondition::PERIODIC; }
-   else if( bc == S::ASYMMETRIC_PERIODIC ) { return BoundaryCondition::ASYMMETRIC_PERIODIC; }
-   else if( bc == S::ADD_ZEROS ) { return BoundaryCondition::ADD_ZEROS; }
-   else if( bc == S::ADD_MAX_VALUE ) { return BoundaryCondition::ADD_MAX_VALUE; }
-   else if( bc == S::ADD_MIN_VALUE ) { return BoundaryCondition::ADD_MIN_VALUE; }
-   else if( bc == S::ZERO_ORDER_EXTRAPOLATE ) { return BoundaryCondition::ZERO_ORDER_EXTRAPOLATE; }
-   else if( bc == S::FIRST_ORDER_EXTRAPOLATE ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
-   else if( bc == S::SECOND_ORDER_EXTRAPOLATE ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
-   else if( bc == S::THIRD_ORDER_EXTRAPOLATE ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
-   else if( bc == S::ALREADY_EXPANDED ) { return BoundaryCondition::ALREADY_EXPANDED; }
-   else DIP_THROW( "Boundary condition not recognized: " + bc );
+   if( bc == S::DEFAULT ) { return BoundaryCondition::DEFAULT; }
+   if( bc == S::SYMMETRIC_MIRROR ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
+   if( bc == S::ASYMMETRIC_MIRROR ) { return BoundaryCondition::ASYMMETRIC_MIRROR; }
+   if( bc == S::PERIODIC ) { return BoundaryCondition::PERIODIC; }
+   if( bc == S::ASYMMETRIC_PERIODIC ) { return BoundaryCondition::ASYMMETRIC_PERIODIC; }
+   if( bc == S::ADD_ZEROS ) { return BoundaryCondition::ADD_ZEROS; }
+   if( bc == S::ADD_MAX_VALUE ) { return BoundaryCondition::ADD_MAX_VALUE; }
+   if( bc == S::ADD_MIN_VALUE ) { return BoundaryCondition::ADD_MIN_VALUE; }
+   if( bc == S::ZERO_ORDER_EXTRAPOLATE ) { return BoundaryCondition::ZERO_ORDER_EXTRAPOLATE; }
+   if( bc == S::FIRST_ORDER_EXTRAPOLATE ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
+   if( bc == S::SECOND_ORDER_EXTRAPOLATE ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
+   if( bc == S::THIRD_ORDER_EXTRAPOLATE ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
+   if( bc == S::ALREADY_EXPANDED ) { return BoundaryCondition::ALREADY_EXPANDED; }
+   DIP_THROW( "Boundary condition not recognized: " + bc );
 }
 
 /// \brief Convert an array of strings to an array of boundary conditions.
