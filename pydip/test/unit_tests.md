@@ -61,8 +61,32 @@ Note the reverse order of the dimensions!
 
 The data type is preserved.
 
-    >>> dip.Image(np.zeros((10, 20), dtype=np.float32))
+    >>> dip.Image(np.zeros((10, 20), dtype=np.bool))
+    <Scalar image, BIN, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.uint8))
+    <Scalar image, UINT8, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.uint16))
+    <Scalar image, UINT16, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.uint32))
+    <Scalar image, UINT32, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.uint64))
+    <Scalar image, UINT64, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.int8))
+    <Scalar image, SINT8, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.int16))
+    <Scalar image, SINT16, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.int32))
+    <Scalar image, SINT32, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.int64))
+    <Scalar image, SINT64, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.single))
     <Scalar image, SFLOAT, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.float))
+    <Scalar image, DFLOAT, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.singlecomplex))
+    <Scalar image, SCOMPLEX, sizes {20, 10}>
+    >>> dip.Image(np.zeros((10, 20), dtype=np.complex))
+    <Scalar image, DCOMPLEX, sizes {20, 10}>
 
 As a convenience, images with the first or last dimension having less than 10 elements are interpreted as tensor images along that dimension.
 
@@ -80,6 +104,48 @@ Alternatively, ``axis`` may be used to manually specify the tensor dimension.
 
     >>> dip.Image(np.zeros((3, 10, 20)), -1)
     <Tensor image (20x1 column vector, 20 elements), DFLOAT, sizes {10, 3}>
+
+Use as and conversion to NumPy arrays
+---
+
+You can use a `dip.Image` object anywhere where a NumPy array is expected.
+
+    >>> img = dip.Image(np.zeros((2, 5)))
+    >>> np.sort(img)
+    array([[0., 0., 0., 0., 0.],
+           [0., 0., 0., 0., 0.]])
+
+You can explicitly convert to a NumPy array.
+
+    >>> img = dip.Image((3,2), dt='UINT8')
+    >>> img.Fill(0)
+    >>> np.array(dip.Convert(img, 'BIN'))
+    array([[False, False, False],
+           [False, False, False]])
+    >>> np.array(dip.Convert(img, 'UINT8'))
+    array([[0, 0, 0],
+           [0, 0, 0]], dtype=uint8)
+    >>> np.array(dip.Convert(img, 'UINT16'))
+    array([[0, 0, 0],
+           [0, 0, 0]], dtype=uint16)
+    >>> np.array(dip.Convert(img, 'UINT32'))
+    array([[0, 0, 0],
+           [0, 0, 0]], dtype=uint32)
+    >>> np.array(dip.Convert(img, 'UINT64'))
+    array([[0, 0, 0],
+           [0, 0, 0]], dtype=uint64)
+    >>> np.array(dip.Convert(img, 'SFLOAT'))
+    array([[0., 0., 0.],
+           [0., 0., 0.]], dtype=float32)
+    >>> np.array(dip.Convert(img, 'DFLOAT'))
+    array([[0., 0., 0.],
+           [0., 0., 0.]])
+    >>> np.array(dip.Convert(img, 'SCOMPLEX'))
+    array([[0.+0.j, 0.+0.j, 0.+0.j],
+           [0.+0.j, 0.+0.j, 0.+0.j]], dtype=complex64)
+    >>> np.array(dip.Convert(img, 'DCOMPLEX'))
+    array([[0.+0.j, 0.+0.j, 0.+0.j],
+           [0.+0.j, 0.+0.j, 0.+0.j]])
 
 Indexing
 ---

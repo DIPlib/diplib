@@ -36,45 +36,53 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
    // Data type
    dip::DataType datatype;
    switch( info.format[ 0 ] ) {
-      case py::format_descriptor< bool >::c:
+      case '?':
          datatype = dip::DT_BIN;
          break;
-      case py::format_descriptor< dip::uint8 >::c:
+      case 'B':
          datatype = dip::DT_UINT8;
          break;
-      case py::format_descriptor< dip::uint16 >::c:
+      case 'H':
          datatype = dip::DT_UINT16;
          break;
-      case py::format_descriptor< dip::uint32 >::c:
+      case 'I':
          datatype = dip::DT_UINT32;
          break;
-      case py::format_descriptor< dip::uint64 >::c:
+      case 'L':
+         datatype = dip::DataType( static_cast<unsigned long>( 0 )); // This size varies for 32-bit and 64-bit Linux, and Windows.
+         break;
+      case 'K': // The documentation mentions this one
+      case 'Q': // The pybind11 sources use this one
          datatype = dip::DT_UINT64;
          break;
-      case py::format_descriptor< dip::sint8 >::c:
+      case 'b':
          datatype = dip::DT_SINT8;
          break;
-      case py::format_descriptor< dip::sint16 >::c:
+      case 'h':
          datatype = dip::DT_SINT16;
          break;
-      case py::format_descriptor< dip::sint32 >::c:
+      case 'i':
          datatype = dip::DT_SINT32;
          break;
-      case py::format_descriptor< dip::sint64 >::c:
+      case 'l':
+         datatype = dip::DataType( long{} ); // This size varies for 32-bit and 64-bit Linux, and Windows.
+         break;
+      case 'k': // The documentation mentions this one
+      case 'q': // The pybind11 sources use this one
          datatype = dip::DT_SINT64;
          break;
-      case py::format_descriptor< dip::sfloat >::c:
+      case 'f':
          datatype = dip::DT_SFLOAT;
          break;
-      case py::format_descriptor< dip::dfloat >::c:
+      case 'd':
          datatype = dip::DT_DFLOAT;
          break;
       case 'Z':
          switch( info.format[ 1 ] ) {
-            case py::format_descriptor< dip::scomplex >::c:
+            case 'f':
                datatype = dip::DT_SCOMPLEX;
                break;
-            case py::format_descriptor< dip::dcomplex >::c:
+            case 'd':
                datatype = dip::DT_DCOMPLEX;
                break;
             default:
@@ -152,43 +160,43 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
    dip::String format;
    switch( image.DataType() ) {
       case dip::DT_BIN:
-         format = py::format_descriptor< bool >::format();
+         format = "?";
          break;
       case dip::DT_UINT8:
-         format = py::format_descriptor< dip::uint8 >::format();
+         format = "B";
          break;
       case dip::DT_UINT16:
-         format = py::format_descriptor< dip::uint16 >::format();
+         format = "H";
          break;
       case dip::DT_UINT32:
-         format = py::format_descriptor< dip::uint32 >::format();
+         format = "I";
          break;
       case dip::DT_UINT64:
-         format = py::format_descriptor< dip::uint64 >::format();
+         format = "Q";
          break;
       case dip::DT_SINT8:
-         format = py::format_descriptor< dip::sint8 >::format();
+         format = "b";
          break;
       case dip::DT_SINT16:
-         format = py::format_descriptor< dip::sint16 >::format();
+         format = "h";
          break;
       case dip::DT_SINT32:
-         format = py::format_descriptor< dip::sint32 >::format();
+         format = "i";
          break;
       case dip::DT_SINT64:
-         format = py::format_descriptor< dip::sint64 >::format();
+         format = "q";
          break;
       case dip::DT_SFLOAT:
-         format = py::format_descriptor< dip::sfloat >::format();
+         format = "f";
          break;
       case dip::DT_DFLOAT:
-         format = py::format_descriptor< dip::dfloat >::format();
+         format = "d";
          break;
       case dip::DT_SCOMPLEX:
-         format = py::format_descriptor< dip::scomplex >::format();
+         format = "Zf";
          break;
       case dip::DT_DCOMPLEX:
-         format = py::format_descriptor< dip::dcomplex >::format();
+         format = "Zd";
          break;
       default:
          DIP_THROW( "Image of unknown type" ); // should never happen
