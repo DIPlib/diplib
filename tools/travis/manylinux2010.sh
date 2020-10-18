@@ -11,7 +11,6 @@ export AUDITWHEEL=`pwd`/diplib/tools/travis/auditwheel
 # Clone diplib repository
 git clone https://github.com/diplib/diplib
 cd diplib
-git checkout pydip-experimental
 mkdir build
 cd build
 wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
