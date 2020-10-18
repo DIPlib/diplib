@@ -159,6 +159,8 @@ struct DIP_NO_EXPORT DataType {
    constexpr explicit DataType( T );
    constexpr explicit DataType( unsigned long long ); // On some platforms, a long long is not the same as uint64_t!
    constexpr explicit DataType( long long );
+   constexpr explicit DataType( unsigned long ); // On some platforms, a long is not the same as uint32_t nor uint64_t!
+   constexpr explicit DataType( long );
 
    /// \brief A string can be cast to a data type. See \ref types for recognized strings.
    explicit DataType( String const& name ) {
@@ -605,12 +607,15 @@ constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT64; }
 template< typename T >
 constexpr DataType::DataType( T v ) : dt( detail::MakeDataType( v ).dt ) {}
 
-constexpr DataType::DataType( unsigned long long ) : dt( DataType::DT::UINT64 ) {
-   DIP_ASSERT( sizeof( unsigned long long ) == 8 ); // Include an assertion in case this is compiled on a platform where `long long` is not 64 bits.
-}
-constexpr DataType::DataType( long long ) : dt( DataType::DT::SINT64 ) {
-   DIP_ASSERT( sizeof( long long ) == 8 );// Include an assertion in case this is compiled on a platform where `long long` is not 64 bits.
-}
+static_assert( sizeof( unsigned long long ) == 8, "unsigned long long type is not 64 bits" );
+constexpr DataType::DataType( unsigned long long ) : dt( DataType::DT::UINT64 ) {}
+static_assert( sizeof( long long ) == 8, "long long type is not 64 bits" );
+constexpr DataType::DataType( long long ) : dt( DataType::DT::SINT64 ) {}
+
+static_assert( sizeof( unsigned long ) == 8 || sizeof( unsigned long ) == 4, "unsigned long type is not 32 nor 64 bits" );
+constexpr DataType::DataType( unsigned long ) : dt( sizeof( unsigned long ) == 8 ? DataType::DT::UINT64 : DataType::DT::UINT32 ) {}
+static_assert( sizeof( long ) == 8 || sizeof( long ) == 4, "long type is not 32 nor 64 bits" );
+constexpr DataType::DataType( long ) : dt( sizeof( long ) == 8 ? DataType::DT::SINT64 : DataType::DT::SINT32 ) {}
 
 /// \endcond
 
