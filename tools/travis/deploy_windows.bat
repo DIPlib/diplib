@@ -5,8 +5,7 @@ mkdir build
 cd build
 mkdir wheelhouse
 
-REM python -m wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
-type NUL > bioformats_package.jar
+python -m wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
 python -m wget https://sourceforge.net/projects/freeglut/files/freeglut/3.0.0/freeglut-3.0.0.tar.gz/download
 python -c "import tarfile; tar = tarfile.open('download'); tar.extractall()"
 cd freeglut-3.0.0
