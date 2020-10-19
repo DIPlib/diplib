@@ -22,9 +22,7 @@ matrix:
       os: osx
       osx_image: xcode11.3
       compiler: clang
-      env:
-        - DIP_CMAKE_OPTS=
-        - HOMEBREW_NO_AUTO_UPDATE=1
+      env: DIP_CMAKE_OPTS=
       before_install:
         - brew install libomp glfw python@3.7 python@3.8
     - name: windows
@@ -49,7 +47,9 @@ branches:
     - cris
 
 script:
-  - python3 -m pip install setuptools numpy
+  - python3 -m pip install setuptools
+  - python3 -m pip install numpy wheel twine==1.15.0
+  - python3 -m pip install delocate wget
   - mkdir build
   - cd build
   - cmake $DIP_CMAKE_OPTS -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON ..

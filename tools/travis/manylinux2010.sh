@@ -3,7 +3,7 @@
 
 # Setup
 yum -y install wget freeglut-devel java-1.8.0-openjdk-devel.x86_64
-/opt/python/cp37-cp37m/bin/python -m pip install cmake auditwheel wheel twine==1.15.0
+/opt/python/cp37-cp37m/bin/python -m pip install cmake auditwheel
 export CMAKE=/opt/python/cp37-cp37m/lib/python3.7/site-packages/cmake/data/bin/cmake
 export BUILD_THREADS=2
 export AUDITWHEEL=`pwd`/diplib/tools/travis/auditwheel

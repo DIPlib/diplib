@@ -5,8 +5,6 @@ mkdir build
 cd build
 mkdir wheelhouse
 
-python -m pip install wget wheel twine==1.15.0
-
 REM python -m wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
 type NUL > bioformats_package.jar
 python -m wget https://sourceforge.net/projects/freeglut/files/freeglut/3.0.0/freeglut-3.0.0.tar.gz/download
