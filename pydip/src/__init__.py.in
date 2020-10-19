@@ -114,7 +114,9 @@ if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
         ImageRead = javaio.ImageRead
         hasDIPjavaio = True
     except Exception as e:
+        print("PyDIPjavaio unavailable:")
+        print(e)
         if lib:
-            print("PyDIPjavaio unavailable: ", e, " (preload returned '", lib, "')")
+            print("\nload_jvm returned '" + lib + "'")
         else:
-            print("PyDIPjavaio unavailable: ", e, " (libjvm not found)")
+            print("\nlibjvm not found")

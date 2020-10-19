@@ -7,7 +7,10 @@ export DELOCATE=`pwd`/tools/travis/delocate
 
 mkdir build
 cd build
-wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
+#wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats_package.jar
+touch bioformats_package.jar
+
+python3 -m pip install delocate wheel twine==1.15.0
 
 # Basic configuration
 cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off
