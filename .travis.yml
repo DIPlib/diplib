@@ -9,26 +9,28 @@ matrix:
       dist: xenial
       compiler: clang
       env: DIP_CMAKE_OPTS="-DDIP_ENABLE_MULTITHREADING=Off -DPYBIND11_PYTHON_VERSION=3.6"
-      before_install:
+      before_script:
         - pyenv global 3.6.7
+        - python3 -m pip install setuptools numpy wheel twine==1.15.0
     - name: linux-gcc
       os: linux
       dist: xenial
       compiler: gcc
       env: DIP_CMAKE_OPTS="-DPYBIND11_PYTHON_VERSION=3.6"
-      before_install:
+      before_script:
         - pyenv global 3.6.7
+        - python3 -m pip install setuptools numpy wheel twine==1.15.0
     - name: osx
       os: osx
       osx_image: xcode11.3
       compiler: clang
       env: DIP_CMAKE_OPTS=
-      before_install:
-        - brew install libomp glfw python@3.7 python@3.8 || true
+      before_script:
+        - python3 -m pip install setuptools numpy wheel twine==1.15.0 delocate
     - name: windows
       os: windows
       env: DIP_CMAKE_OPTS="-A x64"
-      before_install:
+      before_script:
         - choco install openjdk8
         - choco install python3 --version=3.7.7 --params "/InstallDir:C:\Python37"
         - C:/Python37/python -m pip install wheel setuptools
@@ -36,20 +38,25 @@ matrix:
         - C:/Python38/python -m pip install wheel setuptools
         # https://travis-ci.community/t/windows-builds-refreshenv-command-not-found/5803/4
         - eval $(powershell -NonInteractive -Command 'write("export PATH=`"" + ([Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH","User")).replace("\","/").replace("C:","/c").replace(";",":") + ":`$PATH`"")')
+        - python -m pip install numpy twine==1.15.0 wget
 addons:
   apt:
     packages:
       - freeglut3-dev
       - python3-dev
       - python3-pip
+  homebrew:
+    packages:
+      - libomp
+      - glfw
+      - python@3.7
+      - python@3.8
+    update: true
 branches:
   except:
     - cris
 
 script:
-  - python3 -m pip install setuptools
-  - python3 -m pip install numpy wheel twine==1.15.0
-  - python3 -m pip install delocate wget
   - mkdir build
   - cd build
   - cmake $DIP_CMAKE_OPTS -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON ..
