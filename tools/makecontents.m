@@ -71,6 +71,7 @@ mfiles = [];
 mfiledirs = mfiledirs(I);
 I = strncmp('dip_',mfilenames,4);
 mfilenames(I) = [];
+mfiledirs(I) = [];
 mfileused = false(size(mfilenames));
 
 % Create Contents.m
@@ -152,11 +153,13 @@ function descr = getdescription(funcname,dirname)
 descr = '';
 f = fopen(fullfile(dirname,[funcname,'.m']),'r');
 if f < 0
+   warning(['Couldn''t open file ',funcname,' in directory ',dirname])
    return
 end
 while isempty(descr)
    descr = fgetl(f);
    if feof(f)
+      warning(['End of file reached in ',funcname,' in directory ',dirname])
       fclose(f);
       descr = '';
       return
@@ -165,11 +168,15 @@ end
 fclose(f);
 tokens = regexp(descr,'^\s*%\s*(\S*)\s*(.*)','tokens','once','dotexceptnewline');
 if isempty(tokens)
+   warning(['regexp failed in ',funcname,' in directory ',dirname])
    descr = '';
 else
    if ~strcmp(tokens{1},upper(funcname))
       warning([funcname,' doesn''t report the right name in the H-1 line'])
    end
    descr = tokens{2};
+   if isempty(descr)
+      warning(['token empty in ',funcname,' in directory ',dirname])
+   end
 end
 end
