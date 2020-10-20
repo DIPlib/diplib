@@ -1,9 +1,9 @@
 %ROTATION   Rotate an image within an orthogonal plane
 %
 % SYNOPSIS:
-%  image_out = rotation(image_in, angle, interpolation_method, boundary_condition) % (for 2D images only)
-%  image_out = rotation(image_in, angle, axis, interpolation_method, boundary_condition) % (for 3D images only)
-%  image_out = rotation(image_in, angle, dimension1, dimension2, interpolation_method, boundary_condition) % (the general case)
+%  image_out = rotation(image_in,angle,interpolation_method,boundary_condition) % (for 2D images only)
+%  image_out = rotation(image_in,angle,axis,interpolation_method,boundary_condition) % (for 3D images only)
+%  image_out = rotation(image_in,angle,dimension1,dimension2,interpolation_method,boundary_condition) % (the general case)
 %
 % PARAMETERS:
 %  angle: Angle (in radian) to rotate over
@@ -38,12 +38,14 @@
 %  note the y-axis is positive downwards! Thus: left turning has negative
 %  sign, and right positive.
 %
+%  The output image has the same data type as the input image.
+%
 %  For exact rotations of multiples of 90 degrees, use the rot90 method
 %  instead. Note that rot90 reverses the sign of the angle as compared to
 %  this function.
 %
 % SEE ALSO:
-%  skew, affine_trans
+%  rotation3d, skew, affine_trans, resample
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Rotation.

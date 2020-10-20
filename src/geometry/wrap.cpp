@@ -100,12 +100,13 @@ void RotationMatrix3D( Image& out, dfloat alpha, dfloat beta, dfloat gamma ) {
                 0.0,  0.0,  1.0 } );
    // Now we have: out = Q_gamma
    Image tmp( {}, 9, DT_SFLOAT );
+   tmp.ReshapeTensor( 3, 3 );
    cosA = std::cos( beta );
    sinA = std::sin( beta );
    // Note! column-major ordering, meaning the display here is transposed wrt what we actually build
-   tmp.Fill( {  cosA, 0.0, sinA,
-                0.0,  1.0, 0.0,
-               -sinA, 0.0, cosA } );
+   tmp.Fill( { cosA, 0.0, -sinA,
+               0.0,  1.0,  0.0,
+               sinA, 0.0,  cosA } );
    out *= tmp; // Now we have: out = Q_gamma * Q_beta
    cosA = std::cos( alpha );
    sinA = std::sin( alpha );

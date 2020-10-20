@@ -214,6 +214,7 @@ resample.m
 riesz.m
 rngseed.m
 rotation.m
+rotation3d.m
 rr.m
 scale2rgb.m
 scalespace.m

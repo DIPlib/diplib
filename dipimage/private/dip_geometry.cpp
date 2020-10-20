@@ -70,6 +70,7 @@ void affine_trans( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) 
       // affine_trans( image_in, R [, method] )
       dip::uint nDims = in.Dimensionality();
       mxArray const* R = prhs[ 1 ];
+      DIP_THROW_IF( !mxIsDouble( R ) || mxIsComplex( R ), "Matrix R is not of type double real" );
       DIP_THROW_IF( mxGetM( R ) != nDims, "Matrix R of wrong size" );
       dip::uint cols = mxGetN( R );
       DIP_THROW_IF(( cols != nDims ) && ( cols != nDims + 1 ), "Matrix R of wrong size" );
@@ -173,6 +174,47 @@ void rotation( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image out = mi.NewImage();
    dip::Rotation( in, out, angle, dimension1, dimension2, method, boundaryCondition );
    plhs[ 0 ] = dml::GetArray( out );
+}
+
+void rotation3d( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 4 );
+   DML_MAX_ARGS( 6 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims != 3, "Defined only for images with 3 dimensions" );
+   dip::dfloat alpha = dml::GetFloat( prhs[ 1 ] );
+   dip::dfloat beta = dml::GetFloat( prhs[ 2 ] );
+   dip::dfloat gamma = dml::GetFloat( prhs[ 3 ] );
+   dip::String method = nrhs > 4 ? dml::GetString( prhs[ 4 ] ) : "";
+   dip::String boundaryCondition = nrhs > 5 ? dml::GetString( prhs[ 5 ] ) : dip::S::ADD_ZEROS;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::Rotation3D( in, out, alpha, beta, gamma, method, boundaryCondition );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void rotationmatrix( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   // rotationmatrix is an undocumented function, used in ROTATION3D.
+   DML_MAX_ARGS( 1 );
+   dip::FloatArray angles = dml::GetFloatArray( prhs[ 0 ] );
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   out.SetDataType( dip::DT_DFLOAT ); // Force double output
+   out.Protect();
+   switch( angles.size() ) {
+      case 1:
+         dip::RotationMatrix2D( out, angles[ 0 ] );
+         break;
+      case 3:
+         dip::RotationMatrix3D( out, angles[ 0 ], angles[ 1 ], angles[ 2 ] );
+         break;
+      default:
+         DIP_THROW( "Rotation angle input must be either PHI or [ALPHA,BETA,GAMMA]" );
+   }
+   plhs[ 0 ] = dml::GetArrayAsArray( out );
+   DIP_ASSERT( mxGetNumberOfElements( plhs[ 0 ] ) == 9 );
+   mxSetN( plhs[ 0 ], 3 );
+   mxSetM( plhs[ 0 ], 3 );
 }
 
 void skew( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
@@ -389,6 +431,10 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          resample( plhs, nrhs, prhs );
       } else if( function == "rotation" ) {
          rotation( plhs, nrhs, prhs );
+      } else if( function == "rotation3d" ) {
+         rotation3d( plhs, nrhs, prhs );
+      } else if( function == "rotationmatrix" ) {
+         rotationmatrix( plhs, nrhs, prhs );
       } else if( function == "skew" ) {
          skew( plhs, nrhs, prhs );
       } else if( function == "wrap" ) {

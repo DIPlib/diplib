@@ -6,7 +6,7 @@
 %
 % PARAMETERS:
 %  zoom:        array containing a zoom
-%  translation: array containing a transloation
+%  translation: array containing a translation
 %  angle:       rotation angle [in radian]
 %  R:           linear transformation matrix
 %  method:      one of: 'linear', '3-cubic', 'nearest'
@@ -34,8 +34,10 @@
 %  The rotation is performed around the central pixel of the image. This
 %  is the pixel to the right of the true center if the image is even-sized.
 %
+%  The output image has the same data type as the input image.
+%
 % SEE ALSO:
-%  rotation, resample, fmmatch
+%  rotation, rotation3d, resample, fmmatch
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::AffineTransform.
