@@ -220,6 +220,8 @@ porting your old code that used *DIPimage* to the new version.
     and no longer exists. `find_affine_trans` no longer exists, as `fmmatch` provides a much better
     algorithm to do the same.
 
+  - `rotation3d` now produces consistent output with the `'direct'` and `'9 shears'` methods.
+
   - `label` now returns an unsigned integer image (previously it was a signed integer image).
     All functions that work on labeled images expect an unsigned integer image as input.
 
@@ -303,7 +305,7 @@ porting your old code that used *DIPimage* to the new version.
   `findospeaks`, `frc`, `gamut_destretch`, `gamut_mapping`, `gamut_stretch`, `huecorr`, `hybridf`,
   `iso_luminance_lines`, `jpeg_quality_score`, `lfmse`, `luminance_steered_dilation`, `luminance_steered_erosion`,
   `make_gamut`, `mappg`, `mcd`, `morphscales`, `nufft_type1`, `nufft_type2`, `orientationplot`, `out_of_gamut`,
-  `percf_adap`, `percf_adap_banana`, `plot_gamut`, `pst`, `quadraturetensor`, `rgb_to_border`, `rotation3d`,
+  `percf_adap`, `percf_adap_banana`, `plot_gamut`, `pst`, `quadraturetensor`, `rgb_to_border`,
   `splitandmerge`, `structf`, `tikhonovmiller`, `write_add`.
   These functions will be ported as they are needed.
 
@@ -330,15 +332,14 @@ porting your old code that used *DIPimage* to the new version.
   and directly mapped the *DIPlib* functions. Removing this interface simplifies the toolbox code,
   as the "normal" toolbox functions did a bunch of parameter parsing, and then called the relevant *DIPlib* function
   through this low-level interface. Now, the "normal" toolbox functions directly call the relevant *DIPlib* function,
-  which does the parameter parsing. Most of the toolbox code is now composed of functionality to translate *MATLAB*
-  data to *DIPlib* data. This is a list of old low-level interface functions, with the corresponding function
+  which does the parameter parsing. This is a list of old low-level interface functions, with the corresponding function
   to replace it with:
     - `dip_adaptivebanana` → `gaussf_adap_banana`
     - `dip_adaptivegauss` → `gaussf_adap`
-    - `dip_adaptivepercentile` → not available
-    - `dip_adaptivepercentilebanana` → not available
+    - `dip_adaptivepercentile` → `percf_adap`, but not yet ported
+    - `dip_adaptivepercentilebanana` → `percf_adap_banana`, but not yet ported
     - `dip_and` → `&`
-    - `dip_arcfilter` → not available
+    - `dip_arcfilter` → `arcf`, but not yet ported
     - `dip_areaopening` → `areaopening` or `areaclosing`
     - `dip_arith` → `+`, `-`, `*`, `/`.
     - `dip_armdhistogram` → `mdhistogram`
@@ -377,7 +378,7 @@ porting your old code that used *DIPimage* to the new version.
     - `dip_dilation` → `dilation`
     - `dip_directedpathopening` → `pathopening`, `pathclosing`
     - `dip_distancebetweenpointsets` → not available
-    - `dip_dmllibfile` → not available
+    - `dip_dmllibfile` → not available, no longer meaningful
     - `dip_drawline` → `drawline`
     - `dip_drawlines` → `drawline`
     - `dip_edgeobjectsremove` → `brmedgeobjs`
@@ -387,7 +388,7 @@ porting your old code that used *DIPimage* to the new version.
     - `dip_erosion` → `erosion`
     - `dip_euclideandistancetopoint` → not available (but exists in *DIPlib*)
     - `dip_euclideanskeleton` → `bskeleton`
-    - `dip_exit` → not available
+    - `dip_exit` → not available, no longer necessary
     - `dip_exponentialfitcorrection` → not available (but exists in *DIPlib*)
     - `dip_extendregion` → `extendregion`
     - `dip_findshift` → `findshift`
@@ -414,7 +415,7 @@ porting your old code that used *DIPimage* to the new version.
     - `dip_generalisedkuwaharaimproved` → `selectionf`
     - `dip_generateramp` → `ramp`, `xx`, `yy`, `zz`
     - `dip_getboundary` → not available (the boundary condition is now a parameter to functions that use it)
-    - `dip_getlibraryinformation` → not available
+    - `dip_getlibraryinformation` → not available, information is available in the `Contents.m` file
     - `dip_getmaximumandminimum` → `getmaximumandminimum`
     - `dip_getmeasurefeatures` → `measure('features')`
     - `dip_getnumberofthreads` → `dipgetpref('numberofthreads')`
@@ -433,7 +434,7 @@ porting your old code that used *DIPimage* to the new version.
     - `dip_imarlut` → not available
     - `dip_incoherentotf` → `psf`
     - `dip_incoherentpsf` → `psf`
-    - `dip_initialise_libs` → not available
+    - `dip_initialise_libs` → not available, no longer necessary
     - `dip_isodatathreshold` → `threshold` with the `'isodata'` method
     - `dip_kuwahara` → `kuwahara`
     - `dip_kuwaharaimproved` → `kuwahara`
@@ -499,13 +500,13 @@ porting your old code that used *DIPimage* to the new version.
     - `dip_resamplingft` → `resample`
     - `dip_rotation` → `rotation`
     - `dip_rotation_with_bgval` → not available, but can be implemented by first extending the image with the given background value, and then selecting the appropriate boundary condition in `rotation`
-    - `dip_rotation3d` → not available (but exist in *DIPlib*)
+    - `dip_rotation3d` → `rotation3d`
     - `dip_rotation3d_axis` → `rotation`
     - `dip_rotation3daxis` → `rotation`
     - `dip_seededwatershed` → `waterseed`
     - `dip_separableconvolution` → `convolve`
     - `dip_setboundary` → not available (the boundary condition is now a parameter to functions that use it)
-    - `dip_setnumberofthreads` → dipsetpref('numberofthreads')
+    - `dip_setnumberofthreads` → `dipsetpref('numberofthreads')`
     - `dip_settruncation` → not available (the truncation is now a parameter to functions that use it)
     - `dip_sharpen` → not available (but exist in *DIPlib*), can be implemented with `img - weight*laplace(img)`
     - `dip_shift` → `shift`
