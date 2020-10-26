@@ -308,10 +308,24 @@ void init_measurement( py::module& m ) {
                  os << "<ChainCode for object #" << self.objectID << ">";
                  return os.str();
               } );
+   chain.def_property_readonly( "codes", []( dip::ChainCode const& self ) {
+      // We don't make this into a buffer protocol thing, because each code has two values: the code and IsBorder().
+      // This latter is encoded in the 4th bit of the number. So exposing that directly to the user would be confusing.
+      // We don't do so un C++ either. One alternative is to encapsulate the `Code` object, the other is to copy the
+      // chain code value into a Python list. We do the copy, as it is less work. Encapsulating the `Code` object would
+      // provide more functionality, but I doubt it will be used by anyone.
+      py::list list( self.codes.size() );
+      py::ssize_t index = 0;
+      for( auto value: self.codes ) {
+         PyList_SET_ITEM( list.ptr(), index++, py::cast( static_cast< unsigned >( value )).release().ptr() ); // Casting to unsigned gets the numeric value of the chain code
+      }
+      return list.release();
+   } );
    chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ).release(); } );
    chain.def_readonly( "objectID", &dip::ChainCode::objectID );
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );
    chain.def( "ConvertTo8Connected", &dip::ChainCode::ConvertTo8Connected );
+   chain.def( "Empty", &dip::ChainCode::Empty );
    chain.def( "Length", &dip::ChainCode::Length );
    chain.def( "Feret", &dip::ChainCode::Feret, "angleStep"_a = 5.0 / 180.0 * dip::pi );
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy );
