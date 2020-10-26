@@ -676,6 +676,13 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 
 
 /// \brief The contour of an object as a chain code sequence.
+///
+/// This class supports 4-connected and 8-connected chain codes, see the `Code` definition for a description of the
+/// chain codes.
+///
+/// A default-initialized `%ChainCode` represents no object (`Empty` returns true). Set the `start` value to
+/// represent a 1-pixel object. Larger objects have at least two values in the chain code. A chain code with a
+/// single value is illegal.
 struct DIP_NO_EXPORT ChainCode {
 
    DIP_EXPORT static constexpr VertexInteger deltas4[4] = {{  1,  0 },
@@ -717,8 +724,10 @@ struct DIP_NO_EXPORT ChainCode {
          }
    };
 
-   /// \brief Encodes a single chain code, as used by `dip::ChainCode`. Chain codes are between 0 and 3 for connectivity = 1,
-   /// and between 0 and 7 for connectivity = 2. The border flag marks pixels at the border of the image.
+   /// \brief Encodes a single chain code, as used by `dip::ChainCode`.
+   ///
+   /// Chain codes are between 0 and 3 for connectivity = 1, and between 0 and 7 for connectivity = 2.
+   /// 0 means to the right in both cases. The border flag marks pixels at the border of the image.
    class DIP_NO_EXPORT Code {
       public:
          /// Default constructor
@@ -753,7 +762,7 @@ struct DIP_NO_EXPORT ChainCode {
    };
 
    std::vector< Code > codes;       ///< The chain codes
-   VertexInteger start = { 0, 0 };  ///< The coordinates of the start pixel
+   VertexInteger start = { -1, -1 };///< The coordinates of the start pixel, the default value is outside the image to indicate there's no chain code here
    dip::uint objectID = 0;          ///< The label of the object from which this chain code is taken
    bool is8connected = true;        ///< Is false when connectivity = 1, true when connectivity = 2
 
@@ -763,18 +772,23 @@ struct DIP_NO_EXPORT ChainCode {
    /// \brief Returns a table that is useful when processing the chain code
    CodeTable PrepareCodeTable( IntegerArray const& strides ) const {
       DIP_THROW_IF( strides.size() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-      return CodeTable( is8connected, strides );
+      return { is8connected, strides };
    }
 
    /// \brief Returns a table that is useful when processing the chain code
    static CodeTable PrepareCodeTable( dip::uint connectivity, IntegerArray const& strides ) {
       DIP_THROW_IF( strides.size() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
       DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
-      return CodeTable( connectivity != 1, strides ); // 0 means 8-connected also
+      return { connectivity != 1, strides }; // 0 means 8-connected also
    }
 
    /// \brief Creates a new chain code object that is 8-connected and represents the same shape.
    DIP_EXPORT ChainCode ConvertTo8Connected() const;
+
+   /// \brief A chain code whose `start` value hasn't been set is considered empty.
+   bool Empty() const {
+      return start == VertexInteger{ -1, -1 };
+   }
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders.
    ///
@@ -813,6 +827,9 @@ struct DIP_NO_EXPORT ChainCode {
    /// compute the measures on that.
    dfloat Area() const {
       // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
+      if( Empty() ) {
+         return 0;
+      }
       return Polygon().Area() + 0.5;
    }
 

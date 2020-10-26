@@ -204,6 +204,9 @@ void ChainCode::Image( dip::Image& out ) const {
    UnsignedArray size { bb.Size() };
    out.ReForge( size, 1, DT_BIN );
    out = false; // set all pixels to false
+   if( Empty() ) {
+      return;
+   }
    ChainCode::CodeTable freeman = PrepareCodeTable( out.Strides() );
    VertexInteger coord = start - bb.topLeft;
    dip::sint offset = coord.x * out.Stride( 0 ) + coord.y * out.Stride( 1 );

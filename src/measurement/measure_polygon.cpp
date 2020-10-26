@@ -55,7 +55,7 @@ VertexFloat Polygon::Centroid() const {
 dip::CovarianceMatrix Polygon::CovarianceMatrix( VertexFloat const& g ) const {
    dip::CovarianceMatrix C;
    if( vertices.size() >= 3 ) {
-      for( auto& v : vertices ) {
+      for( auto v : vertices ) {
          C += dip::CovarianceMatrix( v - g );
       }
       C /= static_cast< dfloat >( vertices.size() );
@@ -131,7 +131,7 @@ FeretValues ConvexHull::Feret() const {
          feret.maxDiameter = 1;
          feret.minDiameter = 1;
          feret.maxPerpendicular = 1;
-      }
+      } // else if empty, keep the defaults, which are all 0.
       return feret;
    }
 
@@ -235,6 +235,7 @@ dfloat Polygon::FractalDimension( dfloat length ) const {
    dfloat sigmaMax = length / 16;
    if( sigmaMax <= 2 ) {
       // This ensures that nScales >= 3, and that log2(sigmaMax) is not a negative number
+      // We end up here also if the polygon has few or no vertices.
       return 1.0;
    }
    dip::uint nScales = dip::uint( std::ceil( std::log2( sigmaMax ))) + 1; // Guaranteed >= 3.
@@ -327,19 +328,38 @@ dfloat Polygon::BendingEnergy() const {
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    dip::ChainCode cc;
+   DOCTEST_CHECK( cc.Empty() );
+   DOCTEST_CHECK( cc.Area() == 0.0 );
+
    dip::Polygon p = cc.Polygon();
+   DOCTEST_CHECK( p.vertices.size() == 0 );
+   DOCTEST_CHECK( p.Area() == 0.0 );
+   DOCTEST_CHECK( p.Length() == 0.0 );
+   dip::ConvexHull h = p.ConvexHull();
+   DOCTEST_CHECK( h.Polygon().vertices.size() == 0 );
+   DOCTEST_CHECK( h.Area() == 0.0 );
+   DOCTEST_CHECK( h.Perimeter() == 0.0 );
+   auto f = h.Feret();
+   DOCTEST_CHECK( f.maxDiameter == 0.0 );
+   DOCTEST_CHECK( f.minDiameter == 0.0 );
+
+   cc.start = { 0, 0 };
+   DOCTEST_CHECK( !cc.Empty() );
+   DOCTEST_CHECK( cc.Area() == doctest::Approx( 1.0 ));
+   p = cc.Polygon();
    DOCTEST_CHECK( p.vertices.size() == 4 );
    DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( p.Length() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
-   dip::ConvexHull h = p.ConvexHull();
+   h = p.ConvexHull();
    DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
-   auto f = h.Feret();
+   f = h.Feret();
    DOCTEST_CHECK( f.maxDiameter == doctest::Approx( 1.0 ));
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( std::sqrt( 2 ) / 2.0 ));
 
    cc.codes = { 0, 6, 4, 2 }; // A chain code that is a little square.
+   DOCTEST_CHECK( cc.Area() == doctest::Approx( 4.0 ));
    p = cc.Polygon();
    DOCTEST_CHECK( p.vertices.size() == 8 );
    DOCTEST_CHECK( p.Area() == doctest::Approx( 4 - 0.5 ));

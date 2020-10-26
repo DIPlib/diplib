@@ -150,20 +150,24 @@ void InsertPoints( Polygon::Vertices& vertices, VertexFloat start, VertexFloat e
 }
 
 Polygon& Polygon::Augment( dfloat distance ) {
-   Polygon::Vertices newVertices;
-   newVertices.reserve( vertices.size() ); // minimum number of points, but we'll probably have more...
-   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-      InsertPoints( newVertices, vertices[ ii - 1 ], vertices[ ii ], distance );
+   if( !vertices.empty() ) {
+      Polygon::Vertices newVertices;
+      newVertices.reserve( vertices.size()); // minimum number of points, but we'll probably have more...
+      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+         InsertPoints( newVertices, vertices[ ii - 1 ], vertices[ ii ], distance );
+      }
+      InsertPoints( newVertices, vertices.back(), vertices.front(), distance );
+      vertices = std::move( newVertices );
    }
-   InsertPoints( newVertices, vertices.back(), vertices.front(), distance );
-   vertices = std::move( newVertices );
    return *this;
 }
 
 Polygon& Polygon::Smooth( dfloat sigma ) {
-   Image img( reinterpret_cast< dfloat* >( vertices.data() ), { 2, vertices.size() } );
-   img.Protect();
-   GaussFIR( img, img, { 0, sigma }, { 0, 0 }, { S::PERIODIC } );
+   if( !vertices.empty() ) {
+      Image img( reinterpret_cast< dfloat* >( vertices.data() ), { 2, vertices.size() } );
+      img.Protect();
+      GaussFIR( img, img, { 0, sigma }, { 0, 0 }, { S::PERIODIC } );
+   }
    return *this;
 }
 

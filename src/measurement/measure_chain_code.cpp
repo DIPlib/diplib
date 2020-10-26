@@ -30,8 +30,9 @@ namespace dip {
 dfloat ChainCode::Length() const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
    if( codes.empty() ) {
-      return pi;
-   } else if( is8connected ) {
+      return 0;
+   }
+   if( is8connected ) {
       dip::uint Ne = 0;
       dip::uint No = 0;
       dip::uint Nc = 0;
@@ -73,6 +74,9 @@ dfloat ChainCode::Length() const {
 FeretValues ChainCode::Feret( dfloat angleStep ) const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
    FeretValues feret;
+   if( Empty() ) {
+      return feret;
+   }
    if( codes.empty() ) {
       // Fill in some values
       feret.maxDiameter = 1.0;

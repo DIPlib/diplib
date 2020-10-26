@@ -69,15 +69,21 @@ ChainCode ChainCode::Offset() const {
    ChainCode out;
    out.objectID = objectID;
    out.is8connected = true;
+   if( Empty() ) {
+      return {}; // There's no chain code, return an empty polygon
+   }
+   if( codes.empty() ) {
+      out.start = start + deltas8[ 2 ];
+      out.Push( 7 );
+      out.Push( 5 );
+      out.Push( 3 );
+      out.Push( 1 );
+      return out;
+   }
    unsigned prev = codes.back();
    out.start = start + deltas8[ ( prev + ( codes.back().IsEven() ? 2u : 3u )) % 8u ];
    for( auto code : codes ) {
-      unsigned n;
-      if( code < prev ) {
-         n = code + 8u - prev;
-      } else {
-         n = code - prev;
-      }
+      unsigned n = ( code < prev ) ? ( code + 8u - prev ) : ( code - prev );
       if( code.IsEven() ) {
          switch( n ) {
             case 4: // -4
@@ -134,6 +140,10 @@ inline void DecrementMod4( unsigned& k ) {
 // http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/
 dip::Polygon ChainCode::Polygon() const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
+
+   if( Empty() ) {
+      return {}; // There's no chain code, return an empty polygon
+   }
 
    // This function works only for 8-connected chain codes, convert it if it's 4-connected.
    ChainCode const& cc = is8connected ? *this : ConvertTo8Connected();
