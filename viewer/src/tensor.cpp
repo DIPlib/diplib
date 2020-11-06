@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "diplib/viewer/include_gl.h"
+#include "include_gl.h"
 #include "diplib/viewer/tensor.h"
 
 namespace dip { namespace viewer {

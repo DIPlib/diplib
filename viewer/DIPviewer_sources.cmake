@@ -6,7 +6,6 @@ set(DIPviewer_sources_bogus
 ../include/diplib/viewer/glut.h
 ../include/diplib/viewer/histogram.h
 ../include/diplib/viewer/image.h
-../include/diplib/viewer/include_gl.h
 ../include/diplib/viewer/link.h
 ../include/diplib/viewer/manager.h
 ../include/diplib/viewer/proxy.h
@@ -21,6 +20,7 @@ src/dipviewer.cpp
 src/fg_font_data.h
 src/histogram.cpp
 src/image.cpp
+src/include_gl.h
 src/link.cpp
 src/manager.cpp
 src/manager/glfw.cpp

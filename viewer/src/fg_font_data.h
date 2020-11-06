@@ -50,7 +50,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "diplib/viewer/include_gl.h"
+#include "include_gl.h"
 
 namespace dip { namespace viewer {
 

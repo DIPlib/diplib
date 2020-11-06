@@ -21,7 +21,7 @@
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
 
-#include "diplib/viewer/include_gl.h"
+#include "include_gl.h"
 #include "diplib/viewer/histogram.h"
 
 namespace dip { namespace viewer {

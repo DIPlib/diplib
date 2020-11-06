@@ -22,7 +22,7 @@
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
 
-#include "diplib/viewer/include_gl.h"
+#include "include_gl.h"
 #include "diplib/viewer/slice.h"
 
 #define CHAR_WIDTH   8
