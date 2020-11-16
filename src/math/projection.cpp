@@ -88,7 +88,7 @@ void ProjectionScan(
    UnsignedArray procSizes = inSizes;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( inSizes[ ii ] == 1 ) {
-         process[ ii ] = false;
+         process[ ii ] = true; // We want to process this dimension, even if this means a no-op, because it maximizes the possibility to skip the looping.
       }
       if( process[ ii ] ) {
          outSizes[ ii ] = 1;
@@ -96,13 +96,9 @@ void ProjectionScan(
          procSizes[ ii ] = 1;
       }
    }
-
-   // Is there anything to do?
-   if( !process.any() ) {
-      //std::cout << "Projection framework: nothing to do!\n";
-      out = c_in; // This ignores the mask image
-      return;
-   }
+   // NOTE: even if all `process` are 0 now, we still want to do the processing below. Many projection types incur some change to the
+   // data that we need. For example, the `MaximumAbs` projection would be awkward if `Abs` wasn't applied, or the `SumSquare` projection
+   // would be awkward if `Square` wasn't applied.
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
@@ -158,7 +154,7 @@ void ProjectionScan(
    Image tempIn;
    tempIn.CopyProperties( input );
    tempIn.SetSizes( procSizes );
-   tempIn.SetOriginUnsafe( input.Origin());
+   tempIn.SetOriginUnsafe( input.Origin() );
    tempIn.Squeeze(); // we want to make sure that function.Project() won't be looping over singleton dimensions
    // TODO: instead of Squeeze, do a FlattenAsMuchAsPossible. But Mask must be flattened in the same way.
    // Create view over mask image, identically to input
@@ -1367,12 +1363,11 @@ void PositionPercentile(
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
-   // We mostly test that the ProjectionScan framework works appropriately.
-   // Whether the computations are performed correctly is trivial to verify during use.
+DOCTEST_TEST_CASE("[DIPlib] testing the projection function mechanics") {
+   // Testing that the ProjectionScan framework works appropriately.
    dip::Image img{ dip::UnsignedArray{ 3, 4, 2 }, 3, dip::DT_UINT8 };
    img = { 1, 1, 1 };
-   img.At( 0, 0, 0 ) = { 2, 3, 4 };
+   img.At( 1, 2, 0 ) = { 2, 3, 4 };
 
    // Project over all dimensions except the tensor dimension
    dip::Image out = dip::Maximum( img );
@@ -1388,8 +1383,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.NumberOfPixels() == 3 );
    DOCTEST_CHECK( out.Size( 0 ) == 3 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
-   DOCTEST_CHECK( out.At( 1, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 1, 0, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
    DOCTEST_CHECK( out.At( 2, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
 
    // Project over another two dimensions
@@ -1398,10 +1393,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.NumberOfPixels() == 4 );
    DOCTEST_CHECK( out.Size( 1 ) == 4 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
+   DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
    DOCTEST_CHECK( out.At( 0, 1, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
-   DOCTEST_CHECK( out.At( 0, 2, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 0, 2, 0 ) == dip::Image::Pixel( { 2, 3, 4 } ));
    DOCTEST_CHECK( out.At( 0, 3, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+
+   // Project over no dimensions -- square must still be applied
+   out = dip::MeanSquare( img, {}, { false, false, false } );
+   DOCTEST_CHECK( out.Sizes() == img.Sizes() );
+   DOCTEST_CHECK( out.TensorElements() == 3 );
+   DOCTEST_CHECK( out.At( 0, 2, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 1, 2, 0 ) == dip::Image::Pixel( { 4, 9, 16 } ));
+   DOCTEST_CHECK( out.At( 2, 2, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 1, 0, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 1, 1, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 1, 3, 0 ) == dip::Image::Pixel( { 1, 1, 1 } ));
+   DOCTEST_CHECK( out.At( 1, 2, 1 ) == dip::Image::Pixel( { 1, 1, 1 } ));
 
    // No looping at all, we project over all dimensions and have no tensor dimension
    img = dip::Image{ dip::UnsignedArray{ 3, 4, 2 }, 1, dip::DT_SFLOAT };
@@ -1418,8 +1425,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 1 );
    DOCTEST_CHECK( out.TensorElements() == 1 );
-   DOCTEST_CHECK( out.As< dip::dfloat >() == doctest::Approx(
-         std::atan2( std::sin( 1 ), std::cos( 1 ) + ( 3 * 4 * 2 - 1 ))));
+   DOCTEST_CHECK( out.As< dip::dfloat >() == doctest::Approx( std::atan2( std::sin( 1 ), std::cos( 1 ) + ( 3 * 4 * 2 - 1 ))));
 
    // Using a mask
    img = dip::Image{ dip::UnsignedArray{ 3, 4, 2 }, 3, dip::DT_UINT8 };
@@ -1438,6 +1444,72 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    // Using a view
    out = dip::Maximum( img.At( mask ));
    DOCTEST_CHECK( out.At( 0, 0, 0 ) == dip::Image::Pixel( { 4, 2, 3 } )); // not {4,3,4}
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the projection function computations") {
+   // Testing each of the projection functions to verify they do the right thing
+   dip::Image img({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, dip::DT_UINT8 );
+   img.TensorToSpatial();
+   DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 10 } );
+   DOCTEST_CHECK( dip::Mean( img ).As< double >() == doctest::Approx( 5.5 ));
+   DOCTEST_CHECK( dip::Sum( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::GeometricMean( img ).As< double >() == doctest::Approx( 4.5287 ));
+   DOCTEST_CHECK( dip::Product( img ).As< double >() == doctest::Approx( 3628800 ));
+   DOCTEST_CHECK( dip::MeanSquare( img ).As< double >() == doctest::Approx( 38.5 ));
+   DOCTEST_CHECK( dip::SumSquare( img ).As< double >() == doctest::Approx( 385 ));
+   DOCTEST_CHECK( dip::Variance( img ).As< double >() == doctest::Approx( 9.1667 ));
+   DOCTEST_CHECK( dip::StandardDeviation( img ).As< double >() == doctest::Approx( 3.02765 ));
+   DOCTEST_CHECK( dip::Maximum( img ).As< double >() == doctest::Approx( 10 ));
+   DOCTEST_CHECK( dip::Minimum( img ).As< double >() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( dip::Percentile( img, {}, 70 ).As< double >() == doctest::Approx( 7 ));
+
+   dip::Image out = dip::MeanAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
+   DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
+   out = dip::MaximumAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+
+   img.Convert( dip::DT_SINT8 );
+   dip::Invert( img, img );
+   out = dip::MeanAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
+   DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
+   out = dip::MaximumAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+
+   img.Convert( dip::DT_DFLOAT );
+   out = dip::MeanAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_DFLOAT );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
+   DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
+   out = dip::MaximumAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_DFLOAT );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
+
+   img.Convert( dip::DT_SCOMPLEX );
+   out = dip::MeanAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 5.5 ));
+   DOCTEST_CHECK( dip::SumAbs( img ).As< double >() == doctest::Approx( 55 ));
+   DOCTEST_CHECK( dip::MeanSquareModulus( img ).As< double >() == doctest::Approx( 38.5 ));
+   DOCTEST_CHECK( dip::SumSquareModulus( img ).As< double >() == doctest::Approx( 385 ));
+   out = dip::MaximumAbs( img );
+   DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( out.As< double >() == doctest::Approx( 10 ));
+   DOCTEST_CHECK( dip::MinimumAbs( img ).As< double >() == doctest::Approx( 1 ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

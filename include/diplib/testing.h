@@ -160,8 +160,9 @@ inline bool CompareImages(
       dfloat mae = MaximumAbsoluteError( img1, img2 );
       if( mae > epsilon ) {
          std::cout << "[dip::testing::CompareImages] Maximum absolute error = " << mae << " > " << epsilon << '\n';
+         return false;
       }
-      return mae <= epsilon;
+      return true;
    }
    if( img1.TensorElements() > 1 ) {
       Image tmp1 = img1.QuickCopy(); tmp1.TensorToSpatial();

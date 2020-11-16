@@ -271,7 +271,7 @@ DataType DataType::SuggestDyadicOperation( DataType type1, DataType type2 ) {
       }
       return DT_SINT8;
    }
-   //if( type1 == DT_UINT8 ) // is always the case: if it's DT_BIN, then type2 is also DT_BIN, and we returned at the first test in this function.
+   DIP_ASSERT( type1 == DT_UINT8  ) // is always the case: if it's DT_BIN, then type2 is also DT_BIN, and we returned at the first test in this function.
    return DT_UINT8;
 }
 

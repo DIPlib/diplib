@@ -34,7 +34,7 @@ namespace dip {
 
 dfloat MeanError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_STACK_TRACE_THIS( error = Mean( in1 - in2, mask ));
+   DIP_STACK_TRACE_THIS( Mean( in1 - in2, mask, error ));
    DIP_THROW_IF( error.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED ); // means one of the inputs was complex
    if( !error.IsScalar() ) {
       error = MeanTensorElement( error );
@@ -46,9 +46,9 @@ dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask ) 
    Image error;
    DIP_STACK_TRACE_THIS( error = in1 - in2 );
    if( error.DataType().IsComplex() ) {
-      error = Modulus( error );
+      Modulus( error, error );
    }
-   DIP_STACK_TRACE_THIS( error = MeanSquare( error, mask ));
+   DIP_STACK_TRACE_THIS( MeanSquare( error, mask, error ));
    if( !error.IsScalar() ) {
       error = MeanTensorElement( error );
    }
@@ -57,7 +57,7 @@ dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask ) 
 
 dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_STACK_TRACE_THIS( error = MeanAbs( in1 - in2, mask ));
+   DIP_STACK_TRACE_THIS( MeanAbs( in1 - in2, mask, error ));
    if( !error.IsScalar() ) {
       error = MeanTensorElement( error );
    }
@@ -66,7 +66,7 @@ dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask 
 
 dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_STACK_TRACE_THIS( error = MaximumAbs( in1 - in2, mask ));
+   DIP_STACK_TRACE_THIS( MaximumAbs( in1 - in2, mask, error ));
    if( !error.IsScalar() ) {
       error = MaximumTensorElement( error );
    }
@@ -174,10 +174,10 @@ dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask, dfloa
    Image error;
    DIP_STACK_TRACE_THIS( error = in1 - in2 );
    if( error.DataType().IsComplex() ) {
-      error = SquareModulus( error );
-      error = Power( error, order / 2.0 );
+      SquareModulus( error, error );
+      Power( error, order / 2.0, error );
    } else {
-      error = Power( error, order );
+      Power( error, order, error );
    }
    dip::uint N = mask.IsForged() ? Count( mask ) : error.NumberOfPixels();
    DIP_STACK_TRACE_THIS( error = Sum( error, mask ));
@@ -245,7 +245,7 @@ dfloat SSIM( Image const& in, Image const& reference, Image const& mask, dfloat 
    meanProduct /= inMean;
    inMean.Strip();
    Image error;
-   DIP_STACK_TRACE_THIS( error = Mean( meanProduct, mask ));
+   DIP_STACK_TRACE_THIS( Mean( meanProduct, mask, error ));
    if( !error.IsScalar() ) {
       error = MeanTensorElement( error );
    }
@@ -298,7 +298,7 @@ dfloat EstimateNoiseVariance( Image const& in, Image const& c_mask ) {
    DIP_START_STACK_TRACE
       FiniteDifference( in, error, { 2 } ); // In 2D, this is the [1,-2,1;-2,4,-2;1,-2,1] matrix from the paper.
       // TODO: Not sure how this filter extends to higher dimensionalities.
-      error = MeanSquare( error, mask );
+      MeanSquare( error, mask, error );
    DIP_END_STACK_TRACE
    if( !error.IsScalar() ) {
       error = MeanTensorElement( error );
