@@ -167,14 +167,14 @@ void LinearCombination( Image const& a, Image const& b, Image& out, dfloat aWeig
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_FLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, dt, *scanLineFilter ));
 }
 
 void LinearCombination( Image const& a, Image const& b, Image& out, dcomplex aWeight, dcomplex bWeight ) {
    DataType dt = DataType::SuggestArithmetic( DataType::SuggestComplex( a.DataType() ), DataType::SuggestComplex( b.DataType() ));
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_COMPLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( a, b, out, dt, dt, dt, *scanLineFilter ));
 }
 
 } // namespace dip

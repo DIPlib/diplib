@@ -35,7 +35,7 @@ void And(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] & *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -49,7 +49,7 @@ void Or(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] | *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -63,7 +63,7 @@ void Xor(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] ^ *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
 }
 
 //

@@ -95,6 +95,7 @@ template< typename T1, typename T2 > inline Image name( Image const& in, T1&& lh
 ///
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
+/// Pixel values from both images will be cast to type `dt` before applying the operation.
 ///
 /// For binary types, saturated addition is equivalent to the Boolean OR operation.
 ///
@@ -108,6 +109,7 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( Add )
 ///
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
+/// Pixel values from both images will be cast to type `dt` before applying the operation.
 ///
 /// For binary types, saturated subtraction is equivalent to the Boolean AND NOT operation.
 ///
@@ -192,6 +194,9 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
 ///
 /// The image `out` will have the type `dt`, which defaults to `lhs.DataType()` if left out.
 /// Works for all real types (i.e. not complex). For floating-point types, uses `std::fmod`.
+/// Pixel values from both images will be cast to type `dt` (with saturation as usual) before applying the modulo
+/// operation, which might yield surprising results if `lhs` is an integer type and `rhs` has a fractional component,
+/// or if `rhs` saturates in the cast.
 ///
 /// Either `lhs` or `rhs` can be a scalar value of any of the supported pixel types, as long as at
 /// least one input is an image.
@@ -213,8 +218,8 @@ template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modul
 
 /// \brief Elevates `lhs` to the power of `rhs`, sample-wise, with singleton expansion.
 ///
-/// The image `out` will have the type `dt`, as long as `dt` is a floating-point or complex type.
-/// It defaults to `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
 /// Either `lhs` or `rhs` can be a scalar value of any of the supported pixel types, as long as at
 /// least one input is an image.

@@ -394,8 +394,9 @@ inline void ScanDyadic(
       Image const& in1,                ///< Input image 1
       Image const& in2,                ///< Input image 2
       Image& out,                      ///< Output image
-      DataType inType,                 ///< Data type for all input buffers
-      DataType outType,                ///< Data type for output image and output buffer
+      DataType inBufferType,           ///< Data type for all input buffers
+      DataType outBufferType,          ///< Data type for output buffer
+      DataType outImageType,           ///< Data type for output image
       ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
@@ -417,9 +418,9 @@ inline void ScanDyadic(
    }
    ImageConstRefArray inar{ in1, in2 };
    ImageRefArray outar{ out };
-   DataTypeArray inBufT{ inType, inType };
-   DataTypeArray outBufT{ outType };
-   DataTypeArray outImT{ outType };
+   DataTypeArray inBufT{ inBufferType, inBufferType };
+   DataTypeArray outBufT{ outBufferType };
+   DataTypeArray outImT{ outImageType };
    UnsignedArray nElem{ outTensor.Elements() };
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, opts );
    out.ReshapeTensor( outTensor );

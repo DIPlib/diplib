@@ -36,7 +36,7 @@ void Add(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -50,7 +50,7 @@ void Subtract(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_sub( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -273,14 +273,16 @@ void Multiply(
       Image const& lhs,
       Image const& rhs,
       Image& out,
-      DataType dt
+      DataType dt_out
 ) {
    if( lhs.IsScalar() || rhs.IsScalar() ) {
-      DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt ));
+      DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt_out ));
       return;
-   } else if( lhs.TensorColumns() != rhs.TensorRows() ) {
+   }
+   if( lhs.TensorColumns() != rhs.TensorRows() ) {
       DIP_THROW( "Inner tensor dimensions must match in multiplication" );
    }
+   DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    Tensor lhsTensorTransposed = lhs.Tensor();
    lhsTensorTransposed.Transpose();
    if(( lhsTensorTransposed == rhs.Tensor() ) && lhs.IsIdenticalView( rhs )) {
@@ -289,9 +291,9 @@ void Multiply(
       dip::uint nInner = lhs.TensorColumns();
       Tensor outTensor = Tensor( Tensor::Shape::SYMMETRIC_MATRIX, nOuter, nOuter );
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_ALL( scanLineFilter, MultiplySymmetricLineFilter, ( nOuter, nInner ), dt );
+      DIP_OVL_NEW_FLEXBIN( scanLineFilter, MultiplySymmetricLineFilter, ( nOuter, nInner ), dt );
       ImageRefArray outar{ out };
-      DIP_STACK_TRACE_THIS( Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
+      DIP_STACK_TRACE_THIS( Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt_out }, { outTensor.Elements() }, *scanLineFilter,
                                              Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace ));
       out.ReshapeTensor( outTensor );
    } else {
@@ -333,9 +335,9 @@ void Multiply(
             DIP_ASSERT( lhs_copy.TensorColumns() == rhs_copy.TensorElements() );
             // We've transformed the problem to one of the two cases: full*diag or symm*diag
             std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-            DIP_OVL_NEW_ALL( scanLineFilter, MultiplyDiagonalLineFilter, ( lhs_copy.Tensor(), transposeOutput ), dt );
+            DIP_OVL_NEW_FLEXBIN( scanLineFilter, MultiplyDiagonalLineFilter, ( lhs_copy.Tensor(), transposeOutput ), dt );
             ImageRefArray outar{ out };
-            DIP_STACK_TRACE_THIS( Framework::Scan( { lhs_copy, rhs_copy }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
+            DIP_STACK_TRACE_THIS( Framework::Scan( { lhs_copy, rhs_copy }, outar, { dt, dt }, { dt }, { dt_out }, { outTensor.Elements() }, *scanLineFilter,
                                                    Framework::ScanOption::NotInPlace ));
             out.ReshapeTensor( outTensor );
          }
@@ -343,9 +345,9 @@ void Multiply(
          // General case: tri*diag, diag*tri, or anything not involving a diagonal matrix
          Tensor outTensor = Tensor( lhs.TensorRows(), rhs.TensorColumns() );
          std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-         DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter, ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
+         DIP_OVL_NEW_FLEXBIN( scanLineFilter, MultiplyLineFilter, ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
          ImageRefArray outar{ out };
-         DIP_STACK_TRACE_THIS( Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
+         DIP_STACK_TRACE_THIS( Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt_out }, { outTensor.Elements() }, *scanLineFilter,
                                                 Framework::ScanOption::ExpandTensorInBuffer + Framework::ScanOption::NotInPlace ));
          out.ReshapeTensor( outTensor );
       }
@@ -356,29 +358,31 @@ void MultiplySampleWise(
       Image const& lhs,
       Image const& rhs,
       Image& out,
-      DataType dt
+      DataType dt_out
 ) {
+   DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_mul( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
 }
 
 void MultiplyConjugate(
       Image const& lhs,
       Image const& rhs,
       Image& out,
-      DataType dt
+      DataType dt_out
 ) {
+   DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    if( rhs.DataType().IsComplex() && dt.IsComplex() ) {
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
             []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }, 4
       ), dt );
-      DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+      DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
    } else {
-      DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt ));
+      DIP_STACK_TRACE_THIS( MultiplySampleWise( lhs, rhs, out, dt_out ));
    }
 }
 
@@ -387,13 +391,14 @@ void Divide(
       Image const& lhs,
       Image const& rhs,
       Image& out,
-      DataType dt
+      DataType dt_out
 ) {
+   DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLEXBIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_div( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
 }
 
 //
@@ -401,17 +406,18 @@ void SafeDivide(
       Image const& lhs,
       Image const& rhs,
       Image& out,
-      DataType dt
+      DataType dt_out
 ) {
+   DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    if( dt.IsBinary() ) {
-      Divide( lhs, rhs, out, dt );
+      Divide( lhs, rhs, out, dt_out );
       return;
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_safediv( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
 }
 
 //
@@ -431,7 +437,7 @@ void Modulo(
             []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] % *its[ 1 ] ); }
       ), dt );
    }
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt, *scanLineFilter ));
 }
 
 //
@@ -439,14 +445,17 @@ void Power(
       Image const& lhs,
       Image const& rhs,
       Image& out,
-      DataType dt
+      DataType dt_out
 ) {
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   dt = DataType::SuggestFlex( dt );
+   DataType dt = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+   if( dt.IsBinary() ) {
+      dt = DataType::SuggestFlex( dt_out );
+   }
    DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }, 20 // Rough guess at the cost
    ), dt );
-   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter ));
+   DIP_STACK_TRACE_THIS( Framework::ScanDyadic( lhs, rhs, out, dt, dt, dt_out, *scanLineFilter ));
 }
 
 //
@@ -486,6 +495,7 @@ void Invert(
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/math.h"
+#include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
    // Case 1: general case:
@@ -574,21 +584,34 @@ DOCTEST_TEST_CASE("[DIPlib] testing the operator overloading") {
    dip::Image rhs( { 1.0, 10.0, 100.0 } );
    dip::Image out;
    Add( lhs, rhs, out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, lhs + rhs, dip::Option::CompareImagesMode::FULL ));
    Add( lhs[ 0 ], rhs, out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, lhs[ 0 ] + rhs, dip::Option::CompareImagesMode::FULL ));
    Add( lhs, rhs[ 0 ], out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, lhs + rhs[ 0 ], dip::Option::CompareImagesMode::FULL ));
    Add( lhs[ 0 ], rhs[ 0 ], out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, lhs[ 0 ] + rhs[ 0 ], dip::Option::CompareImagesMode::FULL ));
    Add( lhs, 1, out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, lhs + 1, dip::Option::CompareImagesMode::FULL ));
    Add( 1, rhs, out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, 1 + rhs, dip::Option::CompareImagesMode::FULL ));
    Add( lhs[ 0 ], 1, out );
+   DOCTEST_CHECK( dip::testing::CompareImages( out, lhs[ 0 ] + 1, dip::Option::CompareImagesMode::FULL ));
    Add( 1, rhs[ 0 ], out );
-   out = lhs + rhs;
-   out = lhs[ 0 ] + rhs;
-   out = lhs + rhs[ 0 ];
-   out = lhs[ 0 ] + rhs[ 0 ];
-   out = lhs + 1;
-   out = 1 + rhs;
-   out = lhs[ 0 ] + 1;
-   out = 1 + rhs[ 0 ];
+   DOCTEST_CHECK( dip::testing::CompareImages( out, 1 + rhs[ 0 ], dip::Option::CompareImagesMode::FULL ));
+}
+
+DOCTEST_TEST_CASE("[DIPlib] inplace arithmetic produces correct values") {
+   dip::Image floatim( { 1.0 } );
+   dip::Image intim = dip::Convert( floatim, dip::DT_SINT32 );
+   DOCTEST_CHECK( dip::testing::CompareImages( intim * 2, floatim * 2 ));
+   DOCTEST_CHECK( dip::testing::CompareImages( intim * 0.5, floatim * 0.5 ));
+   floatim *= 2;
+   intim *= 2;
+   DOCTEST_CHECK( dip::testing::CompareImages( intim, floatim ));
+   floatim *= 0.5;
+   intim *= 0.5; // There's a bug where this value is converted to int before multiplying
+   DOCTEST_CHECK( dip::testing::CompareImages( intim, floatim ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
