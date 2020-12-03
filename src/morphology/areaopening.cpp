@@ -42,6 +42,7 @@ struct AreaOpenRegion {
    dip::uint size = 0;
    TPI lowest = 0;
 
+   AreaOpenRegion() = default;
    explicit AreaOpenRegion( TPI value ) : size( 1 ), lowest( value ) {}
 
    AreaOpenRegion& operator+=( AreaOpenRegion const& other ) {
@@ -71,6 +72,7 @@ struct VolumeOpenRegion {
    dfloat volume = 0;
    TPI lowest = 0;
 
+   VolumeOpenRegion() = default;
    explicit VolumeOpenRegion( TPI value ) : size( 1 ), lowest( value ) {}
 
    VolumeOpenRegion& operator+=( VolumeOpenRegion const& other ) {
