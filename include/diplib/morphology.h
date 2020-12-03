@@ -1434,12 +1434,16 @@ inline Image Leveling(
    return out;
 }
 
-/// \brief Computes the area opening or closing
+/// \brief Computes the area opening or closing. This is a parametric opening.
 ///
 /// The area opening removes all local maxima that have an area smaller than the given parameter `filterSize`,
 /// and is equivalent to the supremum of openings with all possible connected flat structuring elements of that area.
 /// The output has all maxima being connected components with a size of at least `filterSize`. The area closing is the
 /// dual operation.
+///
+/// Note that we refer to "area" here as the number of pixels, which readily extends to any number of dimensions.
+///
+/// `in` must be scalar and real-valued or binary.
 ///
 /// `mask` restricts the image regions used for the operation.
 ///
@@ -1459,7 +1463,7 @@ inline Image Leveling(
 ///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
 /// \endliterature
 ///
-/// \see dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
+/// \see dip::AreaClosing, dip::VolumeOpening, dip::VolumeClosing, dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
 DIP_EXPORT void AreaOpening(
       Image const& in,
       Image const& mask,
@@ -1499,6 +1503,79 @@ inline Image AreaClosing(
 ) {
    Image out;
    AreaClosing( in, mask, out, filterSize, connectivity );
+   return out;
+}
+
+/// \brief Computes the volume opening or closing. This is a parametric opening.
+///
+/// The volume opening removes all local maxima that have a volume smaller than the given parameter `filterSize`. The
+/// "volume" is the integral over the pixel values, offset by the graylevel at which the maximum is cut.
+/// The volume closing is the dual operation.
+///
+/// Comparing to the area opening, which removes peaks by the area of their support, this function removes peaks by
+/// the volume being removed. The difference of the opening with the input image, in the case of the area opening,
+/// is a series of peaks surrounded by zero-valued pixels, who all have at most `filterSize` pixels.
+/// In the case of the volume opening, these peaks all have an integral of at most `filterSize`.
+///
+/// `in` must be scalar and real-valued. Binary images are not allowed.
+///
+/// `mask` restricts the image regions used for the operation.
+///
+/// `connectivity` determines what a connected component is. See \ref connectivity for information on the
+/// connectivity parameter.
+///
+/// `polarity` can be `"opening"` (the default) or `"closing"`, to compute the area opening or area closing, respectively.
+///
+/// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
+/// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`).
+///
+/// \literature
+/// <li>L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
+///     Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
+/// <li>A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
+///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
+/// \endliterature
+///
+/// \see dip::VolumeClosing, dip::AreaOpening, dip::AreaClosing, dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
+DIP_EXPORT void VolumeOpening(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dfloat filterSize,
+      dip::uint connectivity = 0,
+      // TODO: we could use a boundary condition parameter here (keep or preserve smaller areas at the image edge)
+      String const& polarity = S::OPENING
+);
+inline Image VolumeOpening(
+      Image const& in,
+      Image const& mask,
+      dfloat filterSize,
+      dip::uint connectivity = 0,
+      String const& polarity = S::OPENING
+) {
+   Image out;
+   VolumeOpening( in, mask, out, filterSize, connectivity, polarity );
+   return out;
+}
+
+/// \brief Computes the area closing, calling `dip::VolumeOpening` with `polarity="closing"`.
+inline void VolumeClosing(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dfloat filterSize,
+      dip::uint connectivity = 0
+) {
+   VolumeOpening( in, mask, out, filterSize, connectivity, S::CLOSING );
+}
+inline Image VolumeClosing(
+      Image const& in,
+      Image const& mask,
+      dfloat filterSize,
+      dip::uint connectivity = 0
+) {
+   Image out;
+   VolumeClosing( in, mask, out, filterSize, connectivity );
    return out;
 }
 
@@ -1662,7 +1739,7 @@ inline Image ClosingByReconstruction(
 /// opening and closing of a single size (as in `dip::MorphologicalSmoothing`).
 /// `polarity` can be `"open-close"` or `"close-open"`, and determines which of the operations is applied first.
 ///
-/// For example, if `sizes` is `{3,7,2}` and `polarity` is `"opening"`, the following operations are applied:
+/// For example, if `sizes` is `{3,7,2}` and `polarity` is `"open-close"`, the following operations are applied:
 ///
 /// ```cpp
 ///     dip::Opening( in,  out, { 3, shape } );
@@ -1740,7 +1817,7 @@ inline Image HitAndMiss(
    return out;
 }
 
-/// \brief The Hit-and-Miss transform, in the form of a small image, defined with a single structuring element that
+/// \brief The Hit-and-Miss transform, uses a single structuring element in the form of a small image that
 /// has "hit", "miss" and "don't care" values.
 ///
 /// The `hit` SE is `se == 1`, the `miss` SE is `se == 0`. "Don't care" values are any other value.

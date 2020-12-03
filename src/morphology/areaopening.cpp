@@ -39,58 +39,99 @@ This value can then be used to paint all pixels that are larger/smaller within t
 
 template< typename TPI >
 struct AreaOpenRegion {
-   dip::uint size;
-   TPI lowest;
-   AreaOpenRegion(): size( 0 ), lowest( 0 ) {}
-   AreaOpenRegion( TPI value ): size( 1 ), lowest( value ) {}
-   AreaOpenRegion( dip::uint sz, TPI value ): size( sz ), lowest( value ) {}
-};
-template< typename TPI >
-AreaOpenRegion< TPI > AddRegionsLowFist( AreaOpenRegion< TPI > const& region1, AreaOpenRegion< TPI > const& region2 ) {
-   return { region1.size + region2.size, std::max( region1.lowest, region2.lowest ) };
-}
-template< typename TPI >
-AreaOpenRegion< TPI > AddRegionsHighFist( AreaOpenRegion< TPI > const& region1, AreaOpenRegion< TPI > const& region2 ) {
-   return { region1.size + region2.size, std::min( region1.lowest, region2.lowest ) };
-}
+   dip::uint size = 0;
+   TPI lowest = 0;
 
-template< typename TPI, typename UnionFunction >
-using AreaOpenRegionList = UnionFind< LabelType, AreaOpenRegion< TPI >, UnionFunction >;
+   explicit AreaOpenRegion( TPI value ) : size( 1 ), lowest( value ) {}
 
-template< typename TPI, typename UnionFunction >
-void AddPixel( AreaOpenRegionList< TPI, UnionFunction >& list, LabelType index, TPI value, dip::uint filterSize ) {
-   AreaOpenRegion< TPI >& region = list.Value( index );
-   if( region.size < filterSize ) {
-      ++( region.size );
-      region.lowest = value;
+   AreaOpenRegion& operator+=( AreaOpenRegion const& other ) {
+      size += other.size;
+      return *this;
    }
-}
 
-template< typename TPI, typename UnionFunction >
-void AddSizes( AreaOpenRegionList< TPI, UnionFunction >& list, LabelType label, LabelType other ) {
-   AreaOpenRegion< TPI >& region1 = list.Value( label );
-   AreaOpenRegion< TPI >& region2 = list.Value( other );
-   region1.size += region2.size;
-}
+   bool operator<( dip::uint param ) {
+      return size < param;
+   }
+
+   void AddPixel( TPI value, dip::uint filterSize ) {
+      if( size < filterSize ) {
+         ++size;
+         lowest = value;
+      }
+   }
+};
+
+/*
+For the volume opening, we do the same thing but track the volume of the peak instead of its area.
+*/
 
 template< typename TPI >
-void AreaOpeningInternal(
+struct VolumeOpenRegion {
+   dip::uint size = 0;
+   dfloat volume = 0;
+   TPI lowest = 0;
+
+   explicit VolumeOpenRegion( TPI value ) : size( 1 ), lowest( value ) {}
+
+   VolumeOpenRegion& operator+=( VolumeOpenRegion const& other ) {
+      size += other.size;
+      volume += other.volume;
+      return *this;
+   }
+
+   bool operator<( dfloat param ) {
+      return volume < param;
+   }
+
+   void AddPixel( TPI value, dfloat filterSize ) {
+      if( volume < filterSize ) {
+         volume += static_cast< dfloat >( size ) * std::abs( static_cast< dfloat >( lowest ) - static_cast< dfloat >( value ));
+         ++size;
+         lowest = value;
+      }
+   }
+};
+
+
+template< typename TPI, typename RegionType >
+RegionType AddRegionsLowFist( RegionType region1, RegionType const& region2 ) {
+   region1 += region2;
+   region1.lowest = std::max( region1.lowest, region2.lowest );
+   return region1;
+}
+template< typename TPI, typename RegionType >
+RegionType AddRegionsHighFist( RegionType region1, RegionType const& region2 ) {
+   region1 += region2;
+   region1.lowest = std::min( region1.lowest, region2.lowest );
+   return region1;
+}
+
+
+template< typename UnionFunction, typename RegionType >
+using ParametricOpenRegionList = UnionFind< LabelType, RegionType, UnionFunction >;
+
+
+template< typename TPI, typename RegionType, typename ParamType >
+void ParametricOpeningInternal(
       Image& c_grey,
       Image& c_labels,
       std::vector< dip::sint > const& offsets,
       IntegerArray const& neighborOffsets,
-      dip::uint filterSize,
+      ParamType filterSize,
       bool lowFirst
 ) {
+   std::cout << "[ParametricOpeningInternal] filterSize = " << filterSize << '\n';
+
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
 
-   auto AddRegions = lowFirst ? AddRegionsLowFist< TPI > : AddRegionsHighFist< TPI >;
-   AreaOpenRegionList< TPI, decltype( AddRegions ) > regions( AddRegions );
+   auto AddRegions = lowFirst ? AddRegionsLowFist< TPI, RegionType >
+                              : AddRegionsHighFist< TPI, RegionType >;
+   ParametricOpenRegionList< decltype( AddRegions ), RegionType > regions( AddRegions );
    NeighborLabels neighborLabels;
 
    // Process first pixel
-   labels[ offsets[ 0 ]] = regions.Create( grey[ offsets[ 0 ]] );
+   labels[ offsets[ 0 ]] = regions.Create( RegionType( grey[ offsets[ 0 ]] ));
 
    // Process other pixels
    for( dip::uint ii = 1; ii < offsets.size(); ++ii ) {
@@ -105,13 +146,13 @@ void AreaOpeningInternal(
       switch( neighborLabels.Size() ) {
          case 0:
             // Not touching a label: new label
-            labels[ offset ] = regions.Create( grey[ offset ] );
+            labels[ offset ] = regions.Create( RegionType( grey[ offset ] ));
             break;
          case 1: {
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
             labels[ offset ] = lab;
-            AddPixel( regions, lab, grey[ offset ], filterSize );
+            regions.Value( lab ).AddPixel( grey[ offset ], filterSize );
             break;
          }
          default: {
@@ -119,25 +160,25 @@ void AreaOpeningInternal(
             // Find a small region, if it exists
             LabelType lab = 0;
             for( auto nlab : neighborLabels ) {
-               if( regions.Value( nlab ).size < filterSize ) {
+               if( regions.Value( nlab ) < filterSize ) {
                   lab = nlab;
                   break;
                }
             }
             // If there was a small region, assign this pixel to it, then combine information from the other regions
-            if( regions.Value( lab ).size < filterSize ) {
+            if( regions.Value( lab ) < filterSize ) {
                labels[ offset ] = lab;
-               AddPixel( regions, lab, grey[ offset ], filterSize );
+               regions.Value( lab ).AddPixel( grey[ offset ], filterSize );
                // This region is small, let's merge all other small regions into it, and increase the size
                // with that of the large regions as well.
                for( LabelType lab2 : neighborLabels ) {
                   if( lab != lab2 ) {
-                     if( regions.Value( lab2 ).size < filterSize ) {
+                     if( regions.Value( lab2 ) < filterSize ) {
                         // A small neighboring region should be merged in
                         regions.Union( lab, lab2 );
                      } else {
                         // A large neighboring region should lend its size to the small regions
-                        AddSizes( regions, lab, lab2 );
+                        regions.Value( lab ) += regions.Value( lab2 );
                      }
                   }
                }
@@ -175,35 +216,53 @@ void AreaOpeningInternal(
    }
 }
 
-} // namespace
+template< typename TPI >
+void AreaOpeningInternal(
+      Image& grey,
+      Image& labels,
+      std::vector< dip::sint > const& offsets,
+      IntegerArray const& neighborOffsets,
+      dip::uint filterSize,
+      bool lowFirst
+) {
+   ParametricOpeningInternal< TPI, AreaOpenRegion< TPI >>( grey, labels, offsets, neighborOffsets, filterSize, lowFirst );
+}
 
-void AreaOpening(
+template< typename TPI >
+void VolumeOpeningInternal(
+      Image& grey,
+      Image& labels,
+      std::vector< dip::sint > const& offsets,
+      IntegerArray const& neighborOffsets,
+      dfloat filterSize,
+      bool lowFirst
+) {
+   ParametricOpeningInternal< TPI, VolumeOpenRegion< TPI >>( grey, labels, offsets, neighborOffsets, filterSize, lowFirst );
+}
+
+enum class ParametricOpeningMode {
+      AREA_OPENING,
+      VOLUME_OPENING
+};
+
+void ParametricOpening(
       Image const& c_in,
       Image const& c_mask,
       Image& out,
-      dip::uint filterSize,
+      void* filterSizePtr, // Points to either a dip::uint or a dip::dfloat, depending on `mode`. Sorry, don't know how else to do this nicely without a `constexpr if`. TODO: Upgrade to C++17?
       dip::uint connectivity,
-      String const& polarity
+      String const& polarity,
+      ParametricOpeningMode mode
 ) {
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   bool lowFirst;
-   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, S::CLOSING, S::OPENING ));
-   if( c_in.DataType().IsBinary() ) {
-      DIP_START_STACK_TRACE
-         if( lowFirst ) {
-            BinaryAreaClosing( c_in, out, filterSize, connectivity );
-         } else {
-            BinaryAreaOpening( c_in, out, filterSize, connectivity );
-         }
-      DIP_END_STACK_TRACE
-      return;
-   }
    DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
+   bool lowFirst;
+   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, S::CLOSING, S::OPENING ));
 
    // Add a 1-pixel boundary around the input image
    Image grey;
@@ -223,7 +282,7 @@ void AreaOpening(
    bool hasMask = false;
    if( c_mask.IsForged() ) {
       mask = c_mask.QuickCopy();
-      UnsignedArray inSizes = c_in.Sizes();
+      UnsignedArray const& inSizes = c_in.Sizes();
       DIP_START_STACK_TRACE
          mask.CheckIsMask( inSizes, Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
          mask.ExpandSingletonDimensions( inSizes );
@@ -255,13 +314,56 @@ void AreaOpening(
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( grey.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( AreaOpeningInternal, ( grey, labels, offsets, neighborOffsets, filterSize, lowFirst ), grey.DataType() );
+   DIP_START_STACK_TRACE
+      if( mode == ParametricOpeningMode::AREA_OPENING ) {
+         DIP_OVL_CALL_REAL( AreaOpeningInternal, ( grey, labels, offsets, neighborOffsets, *static_cast< dip::uint* >( filterSizePtr ), lowFirst ), grey.DataType());
+      } else {
+         DIP_OVL_CALL_REAL( VolumeOpeningInternal, ( grey, labels, offsets, neighborOffsets, *static_cast< dfloat* >( filterSizePtr ), lowFirst ), grey.DataType());
+      }
+   DIP_END_STACK_TRACE
 
    // Copy result to output
    grey.Crop( c_in.Sizes() );
    PixelSize pixelSize = c_in.PixelSize();
    out.Copy( grey );
    out.SetPixelSize( pixelSize );
+}
+
+} // namespace
+
+void AreaOpening(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint filterSize,
+      dip::uint connectivity,
+      String const& polarity
+) {
+   bool lowFirst;
+   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, S::CLOSING, S::OPENING ));
+   if( in.DataType().IsBinary() ) {
+      DIP_START_STACK_TRACE
+         if( lowFirst ) {
+            BinaryAreaClosing( in, out, filterSize, connectivity );
+         } else {
+            BinaryAreaOpening( in, out, filterSize, connectivity );
+         }
+      DIP_END_STACK_TRACE
+      return;
+   }
+   DIP_STACK_TRACE_THIS( ParametricOpening( in, mask, out, &filterSize, connectivity, polarity, ParametricOpeningMode::AREA_OPENING ));
+}
+
+void VolumeOpening(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dfloat filterSize,
+      dip::uint connectivity,
+      String const& polarity
+) {
+   DIP_THROW_IF( filterSize <= 0, E::INVALID_PARAMETER );
+   DIP_STACK_TRACE_THIS( ParametricOpening( in, mask, out, &filterSize, connectivity, polarity, ParametricOpeningMode::VOLUME_OPENING ));
 }
 
 } // namespace dip
