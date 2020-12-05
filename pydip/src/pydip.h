@@ -27,6 +27,14 @@
 #include <pybind11/operators.h>
 #include <pybind11/numpy.h>
 
+#ifdef __clang__
+// Clang has a stupid warning for `a -= a`, `a /= a` and `a %= a`, which pybind11 uses to
+// generate Python operator overloads. See https://github.com/pybind/pybind11/issues/1893
+// Here we turn off this diagnostic for all of the PyDIP code, it's easier than selectively
+// turning it off around the relevant code, and the diagnostic is totally useless anyway.
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
+
 using namespace pybind11::literals;
 namespace py = pybind11;
 
