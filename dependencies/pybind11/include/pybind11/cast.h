@@ -663,8 +663,8 @@ public:
         if (src.is_none()) {
             // Defer accepting None to other overloads (if we aren't in convert mode):
             if (!convert) return false;
-            value = nullptr;
-            return true;
+            //value = nullptr;
+            //return true;
         }
 
         auto &this_ = static_cast<ThisT &>(*this);
