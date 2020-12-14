@@ -198,7 +198,8 @@ inline Image GaussianMixtureModel(
 ///
 /// The `normalize` flag determines whether to compute the regular cross-correlation (`"don't normalize"`)
 /// or to normalize the frequency-domain inputs so that only the phase information is of importance
-/// (`"normalize"` or `"phase"`). This results as a very sharp peak in the spatial domain.
+/// (`"normalize"` or `"phase"`). The normalization results as a very sharp peak in the spatial domain, which
+/// increases the precision with which a shift between the two images can be determined.
 /// Note that this normalization is not related to what is commonly referred to as "normalized cross-correlation",
 /// where the input images are whitened (in the spatial domain) before the cross-correlations is computed. The
 /// method is instead related to the "phase correlation" as proposed by Kuglin and Hines (1975).
@@ -217,8 +218,9 @@ inline Image GaussianMixtureModel(
 ///
 /// (See `dip::Conjugate`, `dip::SquareModulus` and `dip::Modulus`.)
 /// These two approaches are identical if the only difference between `in1` and `in2` is a shift, except that
-/// `"normalize"` is computationally cheaper than `"phase"`. If the images are obtained with different
-/// modalities, or if important differences exist in the images, the `"phase"` method might be the better choice.
+/// `"normalize"` is computationally cheaper than `"phase"`. If the images are otherwise not identical, then
+/// the `"phase"` method might be the better choice. If there exist strong differences, the non-normalized
+/// method can be the best option.
 ///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image. Thus, for `in1==in2`, only this pixel will be set.
