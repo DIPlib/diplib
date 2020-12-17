@@ -27,27 +27,27 @@ this list will help in porting your old code that used *DIPlib* to the new versi
   Many of these class methods have names similar to the original access functions, but not
   always. For example, `dip_ImageSetStride` now is `dip::Image::SetStrides`.
 
-   - `dip_Assimilate` is the `dip::Image::ReForge` method.
+    - `dip_Assimilate` is the `dip::Image::ReForge` method.
 
-   - We used to call the image size its dimension. `dip_Dimensions` is now `dip::Image::Sizes`.
-     The reason is that it was too confusing talking about a dimension as an image axis (the
-     2<sup>nd</sup> dimension), and the dimension of that dimension (the size of the image along that
-     axis).
+    - We used to call the image size its dimension. `dip_Dimensions` is now `dip::Image::Sizes`.
+      The reason is that it was too confusing talking about a dimension as an image axis (the
+      2<sup>nd</sup> dimension), and the dimension of that dimension (the size of the image along that
+      axis).
 
-   - Images now can have a tensor as pixel value, as was possible in *DIPimage*. To port old
-     functions, you can test for `dip::Image::IsScalar` and ignore this new feature, or
-     modify the old function to work with tensor values.
+    - Images now can have a tensor as pixel value, as was possible in *DIPimage*. To port old
+      functions, you can test for `dip::Image::IsScalar` and ignore this new feature, or
+      modify the old function to work with tensor values.
 
-   - Images now carry the physical dimension in them (referred to as pixel size). When porting
-     functions, think about whether this data needs to be maintained, modified, or removed.
+    - Images now carry the physical dimension in them (referred to as pixel size). When porting
+      functions, think about whether this data needs to be maintained, modified, or removed.
 
-   - The same is true for the color space. A function that changes the number of tensor
-     elements must also remove the color space information.
+    - The same is true for the color space. A function that changes the number of tensor
+      elements must also remove the color space information.
 
-   - We have added 64-bit signed and unsigned integers to the set of allowed data types for pixels.
+    - We have added 64-bit signed and unsigned integers to the set of allowed data types for pixels.
 
-   - Please read the documentation to the `dip::Image` class before doing any work with the
-     library!
+    - Please read the documentation to the `dip::Image` class before doing any work with the
+      library!
 
 - The framework functions all have different names:
     - `dip_SeparableFrameWork` &rarr; `dip::Framework::Separable`
@@ -92,7 +92,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 ## Changes in algorithm interface
 
 - Function parameters expressing options are now represented by strings rather than
-  \c \#define or `enum` constants (except for low-level library functionality).
+  `#define` or `enum` constants (except for low-level library functionality).
 
 - The library now makes a distinction between signed and unsigned integers. This affects many
   function parameters.
@@ -118,14 +118,14 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
   that knows about defined measurement features.
 
-   - Measurement features are registered with a `dip::MeasurementTool` object, not in the
-     global registry.
+    - Measurement features are registered with a `dip::MeasurementTool` object, not in the
+      global registry.
 
-   - Measurement features have a much simpler programmer's interface, it should be easier to
-     write new features now.
+    - Measurement features have a much simpler programmer's interface, it should be easier to
+      write new features now.
 
-   - Computed measurements are now in an object of type `dip::Measurement`, whose interface is
-     much easier to use than the old `dip_Measurement`.
+    - Computed measurements are now in an object of type `dip::Measurement`, whose interface is
+      much easier to use than the old `dip_Measurement`.
 
 - `dip_ObjectToMeasurement` now takes a feature iterator rather than computing the feature;
   this might be more flexible.
@@ -355,10 +355,10 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 
 ## New functionality
 
-- New external library *DIPviewer* adds interactive image display, see [its documentation](https://diplib.github.io/diplib-docs/group__viewer.html).
+- New external library *DIPviewer* adds interactive image display, see [its documentation](https://diplib.org/diplib-docs/group__viewer.html).
 
 - New external library *DIPjavaio* adds the option to use *Bio-Formats* to read hundreds of image file formats,
-  see [its documentation](https://diplib.github.io/diplib-docs/group__javaio.html).
+  see [its documentation](https://diplib.org/diplib-docs/group__javaio.html).
 
 - New analysis functions: `dip::AutoCorrelationFT`, `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
   `dip::MonogenicSignalAnalysis`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
@@ -462,4 +462,4 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - New transform functions: `dip::OptimalFourierTransformSize`, `dip::RieszTransform`, `dip::StationaryWaveletTransform`.
 
 - There is also a lot of new functionality in the library infrastructure, which we cannot all list here.
-  See [the library infrastructure documentation](https://diplib.github.io/diplib-docs/group__infrastructure.html).
+  See [the library infrastructure documentation](https://diplib.org/diplib-docs/group__infrastructure.html).

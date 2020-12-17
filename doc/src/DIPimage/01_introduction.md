@@ -60,7 +60,7 @@ functions will list the *DIPlib* function that is called.
 to learn more details about the algorithm and the meaning of the parameters.
 
 More information on *DIPlib* can be found at
-<https://diplib.github.io/diplib-docs/> and <http://www.diplib.org/>.
+<https://diplib.org/diplib-docs/> and <http://diplib.org/>.
 
 \section sec_dum_introduction_image_analysis Image Analysis
 

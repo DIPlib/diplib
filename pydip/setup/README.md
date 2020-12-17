@@ -57,7 +57,7 @@ and *DIPjavaio*, an interface to the
 The package is compatible with NumPy and any image processing package that uses
 a NumPy-compatible way of representing images.
 
-See [the *DIPlib* website](https://diplib.github.io/) for more information.
+See [the *DIPlib* website](https://diplib.org/) for more information.
 
 ## Installation
 
@@ -74,7 +74,7 @@ separately:
 
 The interface only has automatically generated docstrings that show the names
 of each of the parameters. Use the *DIPlib* reference to learn how to use each
-function. Get started by reading [the User Manual](https://diplib.github.io/diplib-docs/pydip_user_manual.html).
+function. Get started by reading [the User Manual](https://diplib.org/diplib-docs/pydip_user_manual.html).
 
 These Jupyter notebooks give a short introduction:
 

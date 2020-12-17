@@ -191,7 +191,7 @@ function info = toolboxinformation
 info.name = 'DIPimage Toolbox for Quantitative Image Analysis';
 info.version = 'Version unknown';
 info.copyright = {'(c)2016-, Cris Luengo and contributors','(c)1999-2014, Delft University of Technology'};
-info.URL = 'http://www.diplib.org';
+info.URL = 'http://diplib.org';
 p = fileparts(mfilename('fullpath'));
 f = fopen(fullfile(p,'Contents.m'),'r');
 if f>0

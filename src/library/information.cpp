@@ -26,7 +26,7 @@ DIP_EXPORT const LibraryInformation libraryInformation{
       "DIPlib",
       "a quantitative image analysis library",
       "(c)2014-" DIP_COPYRIGHT_YEAR ", Cris Luengo and contributors\n(c)1995-2014, Delft University of Technology",
-      "http://www.diplib.org",
+      "http://diplib.org",
       DIP_VERSION_STRING,
       __DATE__,
 #if DIP_DEBUG_VERSION

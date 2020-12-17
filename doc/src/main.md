@@ -80,11 +80,11 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
 \m_class{m-spaced-list}
 
-- *MATLAB*: [*DIPimage*](https://diplib.github.io/DIPimage.html) is a MATLAB
+- *MATLAB*: [*DIPimage*](https://diplib.org/DIPimage.html) is a MATLAB
   toolbox that gives access to most functionality in *DIPlib*, but goes beyond
   that by providing a lot of additional functionality as M-file functions.
 
-- *Python*: [*PyDIP*](https://diplib.github.io/PyDIP.html) is a thin wrapper of
+- *Python*: [*PyDIP*](https://diplib.org/PyDIP.html) is a thin wrapper of
   most functionality in *DIPlib*.
 
 - *Bio-Formats*: \ref javaio is an interface to Java-based image readers. It

@@ -61,7 +61,7 @@ was an issue in the tracker for the bug (use the actual issue number of course).
 In short, fork the project, create a new branch for your contribution, and send a pull request
 (see below).
 
-For C++ code, please follow our [style guide](https://diplib.github.io/diplib-docs/styleguide.html).
+For C++ code, please follow our [style guide](https://diplib.org/diplib-docs/styleguide.html).
 In general, try to match the style of the file you are making edits to.
 
 Try to contain changes to single files and/or single functions as much as possible. This makes it
@@ -98,7 +98,7 @@ For any new *DIPlib* function, please include, if possible, a Python wrapper in 
 a MATLAB function in *DIPimage*. We are aware that not everyone will use both (or either) of
 these, and we will not reject a contribution just because these are missing.
 
-We expect C++ code to conform to our [style guide](https://diplib.github.io/diplib-docs/styleguide.html).
+We expect C++ code to conform to our [style guide](https://diplib.org/diplib-docs/styleguide.html).
 
 See below for how to submit a pull request. Make sure you reference the issue used to discuss
 the contribution as follows: `#1`. Add "`Closes #1`" to the commit message
@@ -128,7 +128,7 @@ issues in the issue tracker using the syntax `#<number>` (for example, `#1` to r
 If a commit fixes a bug reported in an issue, add "`Fixes #<number>`" to the commit message. If the commit
 closes an issue that is not a bug, add "`Closes #<number>`".
 
-We expect C++ code to conform to our [style guide](https://diplib.github.io/diplib-docs/styleguide.html).
+We expect C++ code to conform to our [style guide](https://diplib.org/diplib-docs/styleguide.html).
 
 When submitting the pull request, include a meaningful title and clearly describe the contents
 of the pull request. This description should include the intended goal of the contribution, and
