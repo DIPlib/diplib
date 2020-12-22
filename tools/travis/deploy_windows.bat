@@ -29,6 +29,11 @@ cmake .. -A x64 -DPYTHON_EXECUTABLE=C:/Python38/python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
+REM Python 3.9
+cmake .. -A x64 -DPYTHON_EXECUTABLE=C:/Python39/python.exe
+cmake --build . --target bdist_wheel --config Release
+copy pydip\Release\staging\dist\*.whl wheelhouse
+
 REM Upload to pypi.org
 cd wheelhouse
 @python -m twine upload *.whl -u __token__ -p %PYPI_TOKEN%

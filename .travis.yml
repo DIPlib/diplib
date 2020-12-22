@@ -32,10 +32,12 @@ matrix:
       env: DIP_CMAKE_OPTS="-A x64"
       before_script:
         - choco install openjdk8
-        - choco install python3 --version=3.7.7 --params "/InstallDir:C:\Python37"
+        - choco install python3 --version=3.7.9 --params "/InstallDir:C:\Python37"
         - C:/Python37/python -m pip install wheel setuptools
-        - choco install python3 --version=3.8.2 --params "/InstallDir:C:\Python38"
+        - choco install python3 --version=3.8.7 --params "/InstallDir:C:\Python38"
         - C:/Python38/python -m pip install wheel setuptools
+        - choco install python3 --version=3.9.1 --params "/InstallDir:C:\Python39"
+        - C:/Python39/python -m pip install wheel setuptools
         # https://travis-ci.community/t/windows-builds-refreshenv-command-not-found/5803/4
         - eval $(powershell -NonInteractive -Command 'write("export PATH=`"" + ([Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH","User")).replace("\","/").replace("C:","/c").replace(";",":") + ":`$PATH`"")')
         - python -m pip install numpy twine==1.15.0 wget
