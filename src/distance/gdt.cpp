@@ -405,6 +405,14 @@ void GreyWeightedDistanceTransform(
    c_out.Fill( 0 );
    c_out.At( c_bin ) = infinity;
 
+   // Remove any singleton dimensions for processing, and prevent negative strides.
+   // (We do this for the other images later, we create them all to emulate c_out, not out.)
+   Image out = c_out.QuickCopy();
+   out.StandardizeStrides();
+   dims = out.Dimensionality();
+   // Create neighborhood, we need some information from it soon.
+   NeighborList neighborhood{ metric, dims };
+
    // Copy grey if necessary
    greyIsOK = greyIsOK && ( grey.Strides() == c_out.Strides() );
    if( grey.IsForged() && !greyIsOK ){
@@ -426,6 +434,20 @@ void GreyWeightedDistanceTransform(
    DIP_STACK_TRACE_THIS( flags.Forge() );
    DIP_ASSERT( flags.Strides() == c_out.Strides() );
 
+   // Initialize `flags` image
+   UnsignedArray border = neighborhood.Border();
+   flags.Fill( 0 );
+   SetBorder( flags, { BORDER }, border );
+   if( mask.IsForged() ) {
+      JointImageIterator< uint8, dip::bin > it( { flags, mask } );
+      it.OptimizeAndFlatten( 1 );
+      do {
+         if( !it.Sample< 1 >() ) {
+            Set( it.Sample< 0 >(), MASKED );
+         }
+      } while( ++it );
+   }
+
    // Create temporary distance image
    Image tmp;
    if( outputDistance ) {
@@ -438,8 +460,6 @@ void GreyWeightedDistanceTransform(
    }
 
    // Remove any singleton dimensions for processing, and prevent negative strides.
-   Image out = c_out; // copy also the pixel sizes!
-   out.StandardizeStrides();
    flags.StandardizeStrides();
    DIP_ASSERT( flags.Sizes() == out.Sizes() );
    DIP_ASSERT( flags.Strides() == out.Strides() );
@@ -453,25 +473,9 @@ void GreyWeightedDistanceTransform(
       DIP_ASSERT( tmp.Sizes() == out.Sizes() );
       DIP_ASSERT( tmp.Strides() == out.Strides() );
    }
-   dims = out.Dimensionality();
 
-   // Get neighborhood with offsets
-   NeighborList neighborhood{ metric, dims };
+   // Get neighborhood offsets
    IntegerArray offsets = neighborhood.ComputeOffsets( out.Strides() );
-
-   // Initialize `flags` image
-   UnsignedArray border = neighborhood.Border(); // is always 1 here
-   flags.Fill( 0 );
-   SetBorder( flags, { BORDER }, border );
-   if( mask.IsForged() ) {
-      JointImageIterator< uint8, dip::bin > it( { flags, mask } );
-      it.OptimizeAndFlatten( 1 );
-      do {
-         if( !it.Sample< 1 >() ) {
-            Set( it.Sample< 0 >(), MASKED );
-         }
-      } while( ++it );
-   }
 
    // Create coordinate computer
    CoordinatesComputer coordComputer = out.OffsetToCoordinatesComputer();
