@@ -112,7 +112,7 @@ connected component found for that label will be measured.
 \section shape_features Shape features
 
 \subsection shape_features_AspectRatioFeret AspectRatioFeret
-The ratio `Feret::PerpMin`/`Feret::Min`, two of the values returned by the \ref size_features_Feret feature.
+The ratio `PerpMin`/`Min`, two of the values returned by the \ref size_features_Feret feature.
 
 \subsection shape_features_Radius Radius
 Statistics on the radius of the object, computed from the chain code using
@@ -152,9 +152,9 @@ this measure takes only the outer boundary into account.
 
 \subsection shape_features_Circularity Circularity
 Circularity is a measure of similarity to a circle, and is given by coefficient of variation
-of the radii of the object. It is computed by the ratio `Radius::StD`/`Radius::Mean`
+of the radii of the object. It is computed by the ratio `StD`/`Mean`
 of the \ref shape_features_Radius feature, and is 0 for a perfect circle.
-See `dip::Polygon::RadiusStatistics::Circularity`.
+See `dip::RadiusValues::Circularity`.
 
 \subsection shape_features_PodczeckShapes PodczeckShapes
 Computes the 5 Podczeck shape descriptors using the results of features \ref size_features_Size,
@@ -167,7 +167,7 @@ Computes the 5 Podczeck shape descriptors using the results of features \ref siz
 
 where \f$a\f$ is the object area, \f$p\f$ the perimeter, \f$l\f$ the largest Feret diameter, \f$w\f$ the
 smallest Feret diameter, and \f$h\f$ the diameter perpendicular to the smallest diameter
-(`Feret::PerpMin` value).
+(`PerpMin` value of the \ref size_features_Feret feature).
 
 \subsection shape_features_Solidity Solidity
 The ratio `Size/ConvexArea` of the features \ref size_features_Size and \ref size_features_ConvexArea.
