@@ -3,7 +3,7 @@
 /*
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019 Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2017, 2018, 2019, 2020 Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -444,6 +444,9 @@ mark {
   background-color: #add9d9;
   color: #000000;
 }
+.m-link-wrap {
+  word-break: break-all;
+}
 pre, code {
   font-family: 'Source Code Pro', monospace, monospace, monospace;
   font-size: 0.95em;
@@ -469,6 +472,11 @@ pre.m-console-wrap {
 }
 code {
   padding: 0.125rem;
+}
+a > code {
+   color: inherit;
+   background-color: inherit;
+   padding: none;
 }
 *:focus { outline-color: #00b3b3; }
 div.m-scroll {
@@ -1302,7 +1310,7 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
   color: #ff7400;
 }
 .m-block.m-flat { border-color: transparent; }
-.m-block.m-flat h3, .m-block.m-flat h4, .m-block.m-flat h5. .m-block.m-flat h6 {
+.m-block.m-flat h3, .m-block.m-flat h4, .m-block.m-flat h5, .m-block.m-flat h6 {
   color: #000000;
 }
 .m-block.m-default h3 a:hover, .m-block.m-default h3 a:focus, .m-block.m-default h3 a:active,
@@ -2726,15 +2734,16 @@ ul.m-doc {
   border-left-style: solid;
 }
 ul.m-doc li {
-  text-indent: -1rem;
-  padding-left: 1rem;
+  text-indent: 0;
+  padding-left: 0.7rem;
   margin-bottom: 0.5rem;
 }
 ul.m-doc li.m-doc-expansible > ul {
   display: none;
 }
 ul.m-doc li.m-doc-expansible, ul.m-doc li.m-doc-collapsible {
-  padding-left: 0.6rem;
+  padding-left: 0.7rem;
+  text-indent: -1rem;
 }
 ul.m-doc li.m-doc-expansible > ul.m-doc, ul.m-doc li.m-doc-collapsible > ul.m-doc {
   margin-top: 0.5rem;
@@ -2743,7 +2752,7 @@ ul.m-doc li.m-doc-expansible > ul.m-doc, ul.m-doc li.m-doc-collapsible > ul.m-do
 ul.m-doc li.m-doc-expansible > a:first-child:before, ul.m-doc li.m-doc-collapsible > a:first-child:before {
   background-color: #ffffff;
   display: inline-block;
-  width: 0.4rem;
+  width: 1rem;
   font-weight: bold;
 }
 ul.m-doc li.m-doc-expansible > a:first-child:before { content: '⊕'; }
