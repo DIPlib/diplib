@@ -81,6 +81,11 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(select_objects PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(select_objects DIP DIPviewer)
 
+   # An example program that shows how to quantize colors in an RGB image, and use dip::viewer::ShowSimple
+   add_executable(color_quantization cpp/color_quantization.cpp)
+   target_compile_definitions(color_quantization PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(color_quantization DIP DIPviewer)
+
    # An example program that shows how to apply a convolution with a custom kernel to an image
    add_executable(filter_image cpp/filter_image.cpp)
    target_compile_definitions(filter_image PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")

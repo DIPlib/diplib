@@ -119,8 +119,8 @@ class KDTree {
 
          // Splits this partition along `optimalDim`, putting the right half into `other`
          void Split( Partition& other ) {
-            std::cout << "Splitting along dimension " << optimalDim << ", threshold = " << threshold << '\n';
-            std::cout << "leftEdge = " << leftEdges[ optimalDim ] << ", rightEdge = " << rightEdges[ optimalDim ] << '\n';
+            //std::cout << "Splitting along dimension " << optimalDim << ", threshold = " << threshold << '\n';
+            //std::cout << "leftEdge = " << leftEdges[ optimalDim ] << ", rightEdge = " << rightEdges[ optimalDim ] << '\n';
             dip::uint n = nPixels / ( rightEdges[ optimalDim ] - leftEdges[ optimalDim ] + 1 );
             dip::uint leftSize = threshold - leftEdges[ optimalDim ] + 1;
             dip::uint rightSize = rightEdges[ optimalDim ] - threshold;

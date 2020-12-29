@@ -51,6 +51,7 @@ namespace dip {
 /// (e.g. determined by times each cluster center is found) can be necessary.
 ///
 /// The returned `dip::CoordinateArray` contains the cluster centers.
+/// Element `i` in this array corresponds to label `i+1`.
 DIP_EXPORT CoordinateArray KMeansClustering(
       Image const& in,
       Image& out,
@@ -70,15 +71,17 @@ inline Image KMeansClustering(
 ///
 /// Minimum variance partitioning builds a k-d tree, where, for each node, the orthogonal projection
 /// with the largest variance is split using the same logic as Otsu thresholding applies to a histogram.
-///
-/// Note that this creates a spatial partitioning, not a partitioning of image intensities.
+/// Note that this creates a spatial partitioning, not a partitioning of image intensities. `out` is
+/// a labeled image with `nClusters` regions tiling the image. Each region is identified by a different
+/// label.
 ///
 /// Minimum variance partitioning is much faster than k-means clustering, though its result might not be
 /// as good. It is also deterministic.
 ///
 /// `in` must be scalar and real-valued.
 ///
-/// The returned `dip::CoordinateArray` contains the centers of gravity.
+/// The returned `dip::CoordinateArray` contains the centers of gravity for each cluster.
+/// Element `i` in this array corresponds to label `i+1`.
 DIP_EXPORT CoordinateArray MinimumVariancePartitioning(
       Image const& in,
       Image& out,
