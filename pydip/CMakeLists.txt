@@ -1,3 +1,4 @@
+set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION}) # Avoid a warning message
 add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
 
 # Find sources
