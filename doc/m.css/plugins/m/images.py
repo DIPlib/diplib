@@ -187,13 +187,21 @@ class Figure(Image):
             elif not (isinstance(first_node, nodes.comment)
                       and len(first_node) == 0):
                 error = self.state_machine.reporter.error(
-                      'Figure caption must be a paragraph or empty comment.',
+                      'Figure caption must be a paragraph or empty comment, got %s' % type(first_node),
                       nodes.literal_block(self.block_text, self.block_text),
                       line=self.lineno)
                 return [figure_node, error]
             if len(node) > 1:
                 figure_node += nodes.legend('', *node[1:])
         return [figure_node]
+
+# Adapter to accommodate breaking change in Pillow 7.2
+# https://pillow.readthedocs.io/en/stable/releasenotes/7.2.0.html#moved-to-imagefiledirectory-v2-in-image-exif
+def _to_numerator_denominator_tuple(ratio):
+    if isinstance(ratio, tuple):
+        return ratio
+    else:
+        return ratio.numerator, ratio.denominator
 
 class ImageGrid(rst.Directive):
     has_content = True
@@ -231,9 +239,10 @@ class ImageGrid(rst.Directive):
                 # Not all info might be present
                 caption = []
                 if 'FNumber' in exif:
-                    caption += ["F{}".format(float(float(exif['FNumber'][0])/float(exif['FNumber'][1])))]
+                    numerator, denominator = _to_numerator_denominator_tuple(exif['FNumber'])
+                    caption += ["F{}".format(float(numerator)/float(denominator))]
                 if 'ExposureTime' in exif:
-                    numerator, denominator = exif['ExposureTime']
+                    numerator, denominator = _to_numerator_denominator_tuple(exif['ExposureTime'])
                     if int(numerator) > int(denominator):
                         caption += ["{} s".format(float(numerator)/float(denominator))]
                     else:
@@ -300,6 +309,6 @@ def _pelican_configure(pelicanobj):
     register_mcss(mcss_settings=settings)
 
 def register(): # for Pelican
-    import pelican.signals
+    from pelican import signals
 
-    pelican.signals.initialized.connect(_pelican_configure)
+    signals.initialized.connect(_pelican_configure)

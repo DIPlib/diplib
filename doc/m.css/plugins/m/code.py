@@ -62,6 +62,11 @@ def _highlight(code, language, options, *, is_block, filters=[]):
     else:
         class_ = 'm-code'
 
+    # Pygments wants the underscored option
+    if 'hl-lines' in options:
+        options['hl_lines'] = options['hl-lines']
+        del options['hl-lines']
+
     if isinstance(lexer, ansilexer.AnsiLexer):
         formatter = ansilexer.HtmlAnsiFormatter(**options)
     else:
@@ -97,6 +102,8 @@ class Code(Directive):
     optional_arguments = 0
     final_argument_whitespace = True
     option_spec = {
+        'hl-lines': directives.unchanged,
+        # Legacy alias to hl-lines (I hate underscores)
         'hl_lines': directives.unchanged,
         'class': directives.class_option,
         'filters': directives.unchanged
@@ -111,6 +118,11 @@ class Code(Directive):
         if 'classes' in self.options:
             classes += self.options['classes']
             del self.options['classes']
+
+        # Legacy alias to hl-lines
+        if 'hl_lines' in self.options:
+            self.options['hl-lines'] = self.options['hl_lines']
+            del self.options['hl_lines']
 
         filters = self.options.pop('filters', '').split()
 
@@ -133,7 +145,8 @@ class Include(docutils.parsers.rst.directives.misc.Include):
         'end-before': directives.unchanged,
         'strip-prefix': directives.unchanged,
         'class': directives.class_option,
-        'filters': directives.unchanged
+        'filters': directives.unchanged,
+        'hl-lines': directives.unchanged
     }
 
     def run(self):
@@ -310,6 +323,6 @@ def _pelican_configure(pelicanobj):
     register_mcss(mcss_settings=settings)
 
 def register(): # for Pelican
-    import pelican.signals
+    from pelican import signals
 
-    pelican.signals.initialized.connect(_pelican_configure)
+    signals.initialized.connect(_pelican_configure)

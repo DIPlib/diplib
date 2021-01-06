@@ -725,7 +725,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             add_css_class = parsed.add_css_class
 
             # Bubble up also footer / example navigation, search keywords,
-            # deprecation flag
+            # deprecation flag, since badges
             if parsed.footer_navigation: out.footer_navigation = True
             if parsed.example_navigation: out.example_navigation = parsed.example_navigation
             out.search_keywords += parsed.search_keywords
@@ -836,6 +836,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
                 # Not continuing with a section from before, put a header in
                 if not previous_section or (i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text):
+                    # TODO: make it possible to override the class using @m_class,
+                    # document this and document behavior of @par
+
                     if i.attrib['kind'] == 'see':
                         title = 'See also'
                         css_class = 'm-default'
@@ -1092,9 +1095,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         elif i.tag == 'htmlonly':
             # The @htmlonly command has a block version, which is able to get
             # rid of the wrapping paragraph. But @htmlonly is not exposed to
-            # XML. Only @htmlinclude is exposed in XML and that one is always
-            # wrapped in a paragraph. I need to submit another patch to make it
-            # less freaking insane. I guess.
+            # XML because of https://github.com/doxygen/doxygen/pull/381. Only
+            # @htmlinclude is exposed in XML and that one is always wrapped in
+            # a paragraph.
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             if i.text: out.parsed += i.text
 
@@ -2347,6 +2350,7 @@ def postprocess_state(state: State):
     # Resolve navbar links that are just an ID
     def resolve_link(html, title, url, id):
         if not html and not title and not url:
+            assert id in state.compounds, "Navbar references {} which wasn't found".format(id)
             found = state.compounds[id]
             title, url = found.name, found.url
         return html, title, url, id
@@ -3017,7 +3021,7 @@ def parse_xml(state: State, xml: str):
                     # Ignore friend classes. This does not ignore friend
                     # classes written as `friend Foo;`, those are parsed as
                     # variables (ugh).
-                    if memberdef.find('type').text in ['friend class', 'friend struct', 'friend union']:
+                    if memberdef.find('type').text in ['class', 'struct', 'union', 'friend class', 'friend struct', 'friend union']:
                         # Print a warning in case these are documented
                         if (''.join(memberdef.find('briefdescription').itertext()).strip() or ''.join(memberdef.find('detaileddescription').itertext()).strip()):
                             logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))
@@ -3068,8 +3072,9 @@ def parse_xml(state: State, xml: str):
                         # Ignore friend classes. This does not ignore friend
                         # classes written as `friend Foo;`, those are parsed as
                         # variables (ugh).
-                        if memberdef.find('type').text in ['friend class', 'friend struct', 'friend union'] and (memberdef.find('briefdescription').text or memberdef.find('detaileddescription').text):
-                            logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))
+                        if memberdef.find('type').text in ['friend class', 'friend struct', 'friend union']:
+                            if (memberdef.find('briefdescription').text or memberdef.find('detaileddescription').text):
+                                logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))
                         # Only friend functions left, hopefully, parse as a func
                         else:
                             func = parse_func(state, memberdef)
@@ -3393,7 +3398,10 @@ def parse_index_xml(state: State, xml):
     return parsed
 
 def parse_doxyfile(state: State, doxyfile, values = None):
-    state.basedir = os.path.dirname(doxyfile)
+    # Use top-level Doxyfile path as base, don't let it get overriden by
+    # subsequently @INCLUDE'd Doxyfile
+    if not state.basedir:
+        state.basedir = os.path.dirname(doxyfile)
 
     logging.debug("Parsing configuration from {}".format(doxyfile))
 
@@ -3886,8 +3894,10 @@ if __name__ == '__main__': # pragma: no cover
     parse_doxyfile(state, doxyfile)
 
     # Doxygen is stupid and can't create nested directories, create the input
-    # directory for it
-    os.makedirs(state.doxyfile['OUTPUT_DIRECTORY'], exist_ok=True)
+    # directory for it. Don't do it when the argument is empty, because
+    # apparently makedirs() is also stupid.
+    if state.doxyfile['OUTPUT_DIRECTORY']:
+        os.makedirs(state.doxyfile['OUTPUT_DIRECTORY'], exist_ok=True)
 
     if not args.no_doxygen:
         logging.debug("running Doxygen on {}".format(doxyfile))
