@@ -63,7 +63,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image lhs = dml::GetImage( prhs[ 1 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
       dip::Image rhs;
       if( *ch == 'm' ) {
-         DIP_THROW_IF( nrhs != ( ch[ 1 ] == 'p' ? 3 : 2 ), "Wrong number of input arguments." ); // pinv has an optional 2nd input argument
+         DIP_THROW_IF( nrhs != ( ch[ 1 ] == 'p' ? 3 : 2 ), "Wrong number of input arguments." ); // pinv has a 2nd input argument
          returnEmpty = !lhs.IsForged();
       } else {
          DIP_THROW_IF(( nrhs < 3 ) || ( nrhs > 4 ), "Wrong number of input arguments." );

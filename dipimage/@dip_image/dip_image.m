@@ -2202,16 +2202,19 @@ classdef dip_image
          im = dip_operators('mo',im);
       end
 
-      function im = pinv(varargin)
+      function im = pinv(im,tol)
          %PINV   Pseudoinverse or a tensor image.
          %   X = PINV(A,TOL)
          %
          %   X is of dimension A' and fullfills A*X*A = A, X*A*X = X. The computation
          %   is based on SVD(A) and any singular values less than a TOL are treated
-         %   as zero.
+         %   as zero. By default, TOL = 1e-6.
          %
          %   See also: DIP_IMAGE/INV, DIP_IMAGE/SVD
-         im = dip_operators('mp',varargin{:});
+         if nargin < 2
+            tol = 1e-6;
+         end
+         im = dip_operators('mp',im,tol);
       end
 
       function im = cos(im)
