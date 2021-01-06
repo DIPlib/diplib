@@ -56,7 +56,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
     - `dip_MonadicPointData` &rarr; `dip::Framework::ScanMonadic`
     - `dip_PixelTableArrayFrameWork` &rarr; doesn't exist any more, was used meaningfully only in `dip_GeneralisedKuwaharaImproved`
     - `dip_PixelTableFrameWork` &rarr; `dip::Framework::Full`
-    - `dip_ScanFrameWork` &rarr; `dip::Framework::Scan()` / `dip::Framework::ScanDyadic`
+    - `dip_ScanFrameWork` &rarr; `dip::Framework::Scan` / `dip::Framework::ScanDyadic`
     - `dip_SingleOutputFrameWork` &rarr; `dip::Framework::ScanSingleOutput`
     - `dip_SingleOutputPoint` &rarr; `dip::Framework::ScanSingleOutput`
 
