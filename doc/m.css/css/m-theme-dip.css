@@ -69,6 +69,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   /* Basics */
   --background-color: #ffffff;
   --color: #000000;
+  --muted-color: #888888;
   --line-color: var(--cs-primary-base);
   --link-color: var(--cs-primary-base);
   --link-active-color: var(--cs-primary-darker);
@@ -122,6 +123,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --article-footer-color: #969696;
   --article-heading-color: var(--cs-primary-base);
   --article-heading-active-color: var(--cs-primary-darker);
+  --header-breadcrumb-color: var(--muted-color);
 
   /* Right navigation panel */
   --navpanel-link-color: #292929;

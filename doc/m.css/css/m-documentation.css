@@ -63,9 +63,10 @@ h3 a.m-doc-external {
 }
 span.m-doc-wrap-bumper {
   margin-right: -1rem;
+  vertical-align: text-top;
 }
 span.m-doc-wrap {
-  padding-left: 1rem;
+  margin-left: 1rem;
   display: inline-block;
   vertical-align: text-top;
   white-space: pre-line;
@@ -136,10 +137,10 @@ h3 .m-doc-template, h3 .m-doc-include {
   font-weight: normal;
 }
 .m-doc-template, dl.m-doc dd, ul.m-doc li > span.m-doc {
-  color: var(--dim-color);
+  color: var(--muted-color);
 }
 dl.m-doc dd svg.m-math, ul.m-doc li > span.m-doc svg.m-math {
-  fill: var(--dim-color);
+  fill: var(--muted-color);
 }
 .m-doc-template a, dl.m-doc dd a, ul.m-doc li > span.m-doc a {
   color: var(--dim-link-color);

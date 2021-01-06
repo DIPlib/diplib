@@ -271,7 +271,7 @@ article h1 {
   font-size: 1.75rem;
 }
 article h1 .m-breadcrumb {
-  color: var(--dim-color);
+  color: var(--muted-color);
   font-weight: normal;
 }
 article h1 .m-breadcrumb a {

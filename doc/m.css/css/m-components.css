@@ -208,6 +208,7 @@ div.m-scroll {
 .m-text.m-big { font-size: 117%; }
 h1 .m-thin, h2 .m-thin, h3 .m-thin, h4 .m-thin, h5 .m-thin, h6 .m-thin {
   font-weight: normal;
+  color: var(--muted-color)
 }
 
 /* Lists */
@@ -421,6 +422,10 @@ table.m-table th, table.m-table td {
   border-width: 0;
   border-color: var(--link-active-color);
   padding: 0.1rem 0.3rem;
+}
+table.m-first-tight td:first-child {
+  width: 1%;
+  white-space: nowrap;
 }
 table.m-table caption {
   padding-bottom: 0.5rem;
