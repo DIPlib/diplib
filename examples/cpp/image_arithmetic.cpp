@@ -87,7 +87,7 @@ int main() {
       return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset ));
    };
    dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > diadicLineFilter( sampleOperator );
-   dip::Framework::ScanDyadic( in1, in2, tmp, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter );
+   dip::Framework::ScanDyadic( in1, in2, tmp, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter );
    timer.Stop();
    std::cout << "diadicLineFilter: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
@@ -100,7 +100,7 @@ int main() {
    DIP_OVL_CALL_ASSIGN_REAL( diadicLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
          [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset )); }
    ), dt );
-   dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, *diadicLineFilter2 );
+   dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, dt, *diadicLineFilter2 );
    timer.Stop();
    std::cout << "diadicLineFilter2: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
