@@ -165,8 +165,6 @@ code {
 }
 a > code {
    color: inherit;
-   background-color: inherit;
-   padding: none;
 }
 
 /* Focus outline on link, canvas and input: match the focused header item. */

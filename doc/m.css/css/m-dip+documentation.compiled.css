@@ -475,8 +475,6 @@ code {
 }
 a > code {
    color: inherit;
-   background-color: inherit;
-   padding: none;
 }
 *:focus { outline-color: #00b3b3; }
 div.m-scroll {
