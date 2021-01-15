@@ -201,7 +201,7 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
 /// Either `lhs` or `rhs` can be a scalar value of any of the supported pixel types, as long as at
 /// least one input is an image.
 ///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, SafeDivide, Power, operator%(Image const&, T const&)
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, SafeDivide, Power, operator%(T1 const&, T2 const&)
 DIP_EXPORT void  Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt );
 // We cannot use DIP_DEFINE_ARITHMETIC_OVERLOADS here because the default data type is computed differently:
 inline     void  Modulo( Image const& lhs, Image const& rhs, Image& out )  { Modulo( lhs, rhs, out, lhs.DataType() ); }

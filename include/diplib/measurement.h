@@ -74,7 +74,7 @@ struct DIP_NO_EXPORT Information {
 };
 
 /// \brief %Information about the known measurement features
-/// \relates dip::Information
+/// \relates Information
 using InformationArray = std::vector< Information >;
 
 /// \brief %Information about a measurement value, one of the components of a feature
@@ -85,7 +85,7 @@ struct DIP_NO_EXPORT ValueInformation {
 
 /// \brief %Information about the values of a measurement feature, or all values of all measurement features
 /// in a `dip::Measurement` object.
-/// \relates dip::ValueInformation
+/// \relates ValueInformation
 using ValueInformationArray = std::vector< ValueInformation >;
 
 } // namespace Feature
