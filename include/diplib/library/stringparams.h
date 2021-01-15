@@ -64,6 +64,8 @@ constexpr char const* TRANSLATION = "translation";
 constexpr char const* ROTATION = "rotation";
 constexpr char const* EXACT = "exact";
 constexpr char const* GREY = "grey";
+constexpr char const* APPLY = "apply";
+constexpr char const* IGNORE = "ignore";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

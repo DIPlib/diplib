@@ -183,10 +183,17 @@ DIP_EXPORT void ImageWriteICS(
 /// image. Some Zeiss confocal microscopes write TIFF files (with an ".lsm" extension) in which image
 /// planes and thumbnails alternate. A range such as {0,-1,2} reads all image planes skipping the
 /// thumbnails.
+/// It is currently not possible to read multiple pages from a binary or color-mapped image.
 ///
 /// `roi` can be set to read in a subset of the pixels in the 2D image. If only one array element is given,
 /// it is used for both dimensions. An empty array indicates that all pixels should be read. Tensor dimensions
 /// are not included in the `roi` parameter, but are set through the `channels` parameter.
+/// It is currently not possible to read an ROI from a binary or a color-mapped image.
+///
+/// Color-mapped (palette) images are read as sRGB images by applying the color map. Set `useColorMap`
+/// to `"ignore"` to return the color map indices as pixel values, ignoring the color map.
+/// With this option set, it becomes possible to read an ROI of a color-mapped image, or to read a
+/// multi-paged color-mapped image.
 ///
 /// The pixels per inch value in the TIFF file will be used to set the pixel size of `out`.
 ///
@@ -200,22 +207,25 @@ DIP_EXPORT void ImageWriteICS(
 ///  - Only 4 and 8 bits per pixel color-mapped images are read.
 ///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
 ///  - Some non-standard compression schemes are not recognized (most notably JPEG2000).
-// TODO: Option to read an indexed image without applying the color map, and reading in the color map separately.
+/// TODO: How do we return the color map if we choose Option::TIFFColorMap::IGNORE?
+///       We should probably create a separate function for this.
 DIP_EXPORT FileInformation ImageReadTIFF(
       Image& out,
       String const& filename,
       Range imageNumbers = Range{ 0 },
       RangeArray const& roi = {},
-      Range const& channels = {}
+      Range const& channels = {},
+      String const& useColorMap = S::APPLY
 );
 inline Image ImageReadTIFF(
       String const& filename,
       Range const& imageNumbers = Range{ 0 },
       RangeArray const& roi = {},
-      Range const& channels = {}
+      Range const& channels = {},
+      String const& useColorMap = S::APPLY
 ) {
    Image out;
-   ImageReadTIFF( out, filename, imageNumbers, roi, channels );
+   ImageReadTIFF( out, filename, imageNumbers, roi, channels, useColorMap );
    return out;
 }
 
@@ -239,7 +249,8 @@ DIP_EXPORT FileInformation ImageReadTIFF(
       UnsignedArray const& origin,
       UnsignedArray const& sizes = {},
       UnsignedArray const& spacing = {},
-      Range const& channels = {}
+      Range const& channels = {},
+      String const& useColorMap = S::APPLY
 );
 inline Image ImageReadTIFF(
       String const& filename,
@@ -247,10 +258,11 @@ inline Image ImageReadTIFF(
       UnsignedArray const& origin,
       UnsignedArray const& sizes = {},
       UnsignedArray const& spacing = {},
-      Range const& channels = {}
+      Range const& channels = {},
+      String const& useColorMap = S::APPLY
 ) {
    Image out;
-   ImageReadTIFF( out, filename, imageNumbers, origin, sizes, spacing, channels );
+   ImageReadTIFF( out, filename, imageNumbers, origin, sizes, spacing, channels, useColorMap );
    return out;
 }
 
@@ -258,15 +270,20 @@ inline Image ImageReadTIFF(
 ///
 /// `filenames` contains the paths to the TIFF files, which are read in the order given, and concatenated along the 3rd
 /// dimension. Only the first page of each TIFF file is read.
+///
+/// Set `useColorMap` to `"ignore"` to return the color map indices as pixel values, ignoring the color map.
+/// This option only has effect for TIFF files with a color-mapped (palette) image.
 DIP_EXPORT void ImageReadTIFFSeries(
       Image& out,
-      StringArray const& filenames
+      StringArray const& filenames,
+      String const& useColorMap = S::APPLY
 );
 inline Image ImageReadTIFFSeries(
-      StringArray const& filenames
+      StringArray const& filenames,
+      String const& useColorMap = S::APPLY
 ) {
    Image out;
-   ImageReadTIFFSeries( out, filenames );
+   ImageReadTIFFSeries( out, filenames, useColorMap );
    return out;
 }
 

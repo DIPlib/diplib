@@ -136,7 +136,27 @@ struct GetTIFFInfoData {
    uint16 photometricInterpretation;
 };
 
-GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
+bool IsTrulyPalette( TiffFile& tiff ) {
+   // So you say your TIFFTAG_PHOTOMETRIC == PHOTOMETRIC_PALETTE, but this is not always true!
+   // 1. Ensure there's actually a palette in the file.
+   uint16* CMRed;
+   uint16* CMGreen;
+   uint16* CMBlue;
+   if( !TIFFGetField( tiff, TIFFTAG_COLORMAP, &CMRed, &CMGreen, &CMBlue )) {
+      return false;
+   }
+   // 2. Make sure bits per sample is valid
+   uint16 bitsPerSample;
+   if( !TIFFGetField( tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample )) {
+      return false;
+   }
+   if(( bitsPerSample != 4 ) && ( bitsPerSample != 8 )) {
+      return false;
+   }
+   return true;
+}
+
+GetTIFFInfoData GetTIFFInfo( TiffFile& tiff, bool useColorMap ) {
    GetTIFFInfoData data;
 
    data.fileInformation.name = tiff.FileName();
@@ -164,11 +184,17 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
       case PHOTOMETRIC_LOGLUV:
       case PHOTOMETRIC_LOGL:
          DIP_THROW_RUNTIME( "Unsupported TIFF: Log-compressed image (LogLuv or LogL)" );
-      case PHOTOMETRIC_PALETTE:
+      case PHOTOMETRIC_PALETTE: {
+         if( !useColorMap || !IsTrulyPalette( tiff )) {
+            data.photometricInterpretation = PHOTOMETRIC_MINISBLACK;
+            break;
+         }
+         // Color-mapped images have 3 channels and 16 bits per channel.
          data.fileInformation.colorSpace = "sRGB";
          data.fileInformation.tensorElements = 3;
          data.fileInformation.dataType = DT_UINT16;
          break;
+      }
       case PHOTOMETRIC_RGB:
          if( samplesPerPixel == 3 ) {
             data.fileInformation.colorSpace = "sRGB";
@@ -195,7 +221,9 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
       case PHOTOMETRIC_MINISWHITE:
       case PHOTOMETRIC_MINISBLACK:
       case PHOTOMETRIC_MASK:
+         break;
       default:
+         // If we don't recognize the photometric interpretation, just read the data as-is and don't set a color space
          break;
    }
 
@@ -206,6 +234,8 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
    if( data.fileInformation.dataType == DT_BIN ) {
       data.fileInformation.significantBits = 1;
    } else {
+      // TODO: 12-bit TIFF files will have 16 significant bits. Is there a tag
+      //       we need to look at for this?
       data.fileInformation.significantBits = data.fileInformation.dataType.SizeOf() * 8;
    }
 
@@ -255,6 +285,12 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
 
    // Number of images in file
    data.fileInformation.numberOfImages = TIFFNumberOfDirectories( tiff );
+
+   // Metadata: the ImageDescription tag is often used to store metadata as XML or JSON.
+   char const* string;
+   if( TIFFGetField( tiff, TIFFTAG_IMAGEDESCRIPTION, &string )) {
+      data.fileInformation.history.push_back( string );
+   }
 
    return data;
 }
@@ -344,9 +380,6 @@ void ReadTIFFColorMap(
    if(( bitsPerSample != 4 ) && ( bitsPerSample != 8 )) {
       DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
    }
-   //std::vector< uint16 > CMRed( 1u << bitsPerSample );
-   //std::vector< uint16 > CMGreen( 1u << bitsPerSample );
-   //std::vector< uint16 > CMBlue( 1u << bitsPerSample );
    uint16* CMRed;
    uint16* CMGreen;
    uint16* CMBlue;
@@ -398,14 +431,15 @@ inline void CopyBuffer1(
 ) {
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
-      dip::sint kk = 7;
+      dip::uint kk = 7;
       for( dip::uint jj = 0; jj < width; ++jj ) {
          *dest_pixel = (( *src ) & ( 1u << kk )) ? 1 : 0;
          dest_pixel += strides[ 0 ];
-         --kk;
-         if( kk < 0 ) {
+         if( kk == 0 ) {
             kk = 7;
             ++src;
+         } else {
+            --kk;
          }
       }
       if( kk != 7 ) {
@@ -425,14 +459,15 @@ inline void CopyBufferInv1(
 ) {
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
-      dip::sint kk = 7;
+      dip::uint kk = 7;
       for( dip::uint jj = 0; jj < width; ++jj ) {
          *dest_pixel = (( *src ) & ( 1u << kk )) ? 0 : 1;
          dest_pixel += strides[ 0 ];
-         --kk;
-         if( kk < 0 ) {
+         if( kk == 0 ) {
             kk = 7;
             ++src;
+         } else {
+            --kk;
          }
       }
       if( kk != 7 ) {
@@ -911,7 +946,8 @@ void ImageReadTIFFStack(
       TiffFile& tiff,
       GetTIFFInfoData& data,
       Range const& imageNumbers,
-      RoiSpec& roiSpec
+      RoiSpec& roiSpec,
+      bool useColorMap
 ) {
    // Forge the image
    data.fileInformation.pixelSize.Set( data.fileInformation.sizes.size(), Units::Pixel() );
@@ -924,7 +960,14 @@ void ImageReadTIFFStack(
    dip::sint z_stride = image.Stride( 2 ) * static_cast< dip::sint >( data.fileInformation.dataType.SizeOf() );
 
    // Read the image data for first plane
-   DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
+   if( data.photometricInterpretation == PHOTOMETRIC_PALETTE ) {
+      // TODO: To implement this, we need to separate out the core of ReadTIFFColorMap() to a separate function we can call here
+      DIP_THROW( "Reading stacks of color-mapped images from a TIFF file is not yet implemented" );
+   } else if( data.fileInformation.dataType.IsBinary() ) {
+      DIP_THROW( "Reading stacks of binary images from a TIFF file is not yet implemented" );
+   } else {
+      DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
+   }
 
    // Read the image data for other planes
    dip::uint directory = imageNumbers.Offset();
@@ -953,6 +996,10 @@ void ImageReadTIFFStack(
       if( !TIFFGetField( tiff, TIFFTAG_PHOTOMETRIC, &photometricInterpretation )) {
          photometricInterpretation = PHOTOMETRIC_MINISBLACK;
       }
+      if(( photometricInterpretation == PHOTOMETRIC_PALETTE ) &&
+         ( !useColorMap || !IsTrulyPalette( tiff ))) {
+         photometricInterpretation = PHOTOMETRIC_MINISBLACK;
+      }
       DataType dataType;
       uint16 samplesPerPixel;
       if( photometricInterpretation == PHOTOMETRIC_PALETTE ) {
@@ -972,7 +1019,12 @@ void ImageReadTIFFStack(
       }
 
       // Read the image data for this plane
-      DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
+      if (data.photometricInterpretation == PHOTOMETRIC_PALETTE ) {
+         // TODO: Implement!
+         DIP_THROW( "Reading stacks of color-mapped images from a TIFF file is not yet implemented" );
+      } else {
+         DIP_STACK_TRACE_THIS( ReadTIFFData( imagedata, image.Strides(), image.TensorStride(), image.DataType(), tiff, data.fileInformation, roiSpec ));
+      }
    }
 }
 
@@ -983,8 +1035,12 @@ FileInformation ImageReadTIFF(
       String const& filename,
       Range imageNumbers,
       RangeArray const& roi,
-      Range const& channels
+      Range const& channels,
+      String const& useColorMapString
 ) {
+   // Parse input arguments
+   bool useColorMap = BooleanFromString( useColorMapString, S::APPLY, S::IGNORE );
+
    // Open TIFF file
    TiffFile tiff( filename );
 
@@ -998,7 +1054,7 @@ FileInformation ImageReadTIFF(
 
    // Get info
    GetTIFFInfoData data;
-   DIP_STACK_TRACE_THIS( data = GetTIFFInfo( tiff ));
+   DIP_STACK_TRACE_THIS( data = GetTIFFInfo( tiff, useColorMap ));
 
    // Check & fix ROI information
    //dip::uint nDims = imageNumbers.start == imageNumbers.stop ? 2 : 3;
@@ -1007,21 +1063,8 @@ FileInformation ImageReadTIFF(
 
    if( imageNumbers.start != imageNumbers.stop ) {
       // Read in multiple pages as a 3D image
-      DIP_STACK_TRACE_THIS( ImageReadTIFFStack( out, tiff, data, imageNumbers, roiSpec ));
+      DIP_STACK_TRACE_THIS( ImageReadTIFFStack( out, tiff, data, imageNumbers, roiSpec, useColorMap ));
    } else {
-      // Hack by Bernd Rieger to recognize Leica 12 bit TIFFs
-      // These are written as color-mapped images, but they are not
-      if( data.photometricInterpretation == PHOTOMETRIC_PALETTE ) {
-         uint16 bitsPerSample;
-         String artist( 128, ' ' );
-         if(( TIFFGetField( tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample )) &&
-            ( TIFFGetField( tiff, TIFFTAG_ARTIST, &( artist[ 0 ] )))) {
-            if(( artist == "Yves Nicodem" ) || ( artist == "TCS User" )) {
-               data.fileInformation.colorSpace = "";
-               data.photometricInterpretation = PHOTOMETRIC_MINISBLACK;
-            }
-         }
-      }
       if( data.photometricInterpretation == PHOTOMETRIC_PALETTE ) {
          DIP_THROW_IF( !roiSpec.isFullImage, "Reading ROI not supported for colormapped images" );
          DIP_STACK_TRACE_THIS( ReadTIFFColorMap( out, tiff, data ));
@@ -1053,17 +1096,19 @@ FileInformation ImageReadTIFF(
       UnsignedArray const& origin,
       UnsignedArray const& sizes,
       UnsignedArray const& spacing,
-      Range const& channels
+      Range const& channels,
+      String const& useColorMap
 ) {
    RangeArray roi;
    DIP_STACK_TRACE_THIS( roi = ConvertRoiSpec( origin, sizes, spacing ));
    DIP_THROW_IF( roi.size() > 2, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   return ImageReadTIFF( out, filename, imageNumbers, roi, channels );
+   return ImageReadTIFF( out, filename, imageNumbers, roi, channels, useColorMap );
 }
 
 void ImageReadTIFFSeries(
       Image& out,
-      StringArray const& filenames
+      StringArray const& filenames,
+      String const& useColorMap
 ) {
    DIP_THROW_IF( filenames.size() < 1, E::ARRAY_PARAMETER_EMPTY );
 
@@ -1118,7 +1163,7 @@ FileInformation ImageReadTIFFInfo(
 
    // Get info
    GetTIFFInfoData data;
-   DIP_STACK_TRACE_THIS( data = GetTIFFInfo( tiff ));
+   DIP_STACK_TRACE_THIS( data = GetTIFFInfo( tiff, true ));
 
    return data.fileInformation;
 }

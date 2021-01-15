@@ -119,9 +119,9 @@ void init_assorted( py::module& m ) {
    m.def( "ImageIsICS", &dip::ImageIsICS, "filename"_a );
    m.def( "ImageWriteICS", &dip::ImageWriteICS, "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
 
-   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const& >( &dip::ImageReadTIFF ),
-          "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{} );
-   m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const& >( &dip::ImageReadTIFFSeries ), "filenames"_a );
+   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadTIFF ),
+          "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
+   m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const&, dip::String const& >( &dip::ImageReadTIFFSeries ), "filenames"_a, "useColorMap"_a = dip::S::APPLY );
    m.def( "ImageIsTIFF", &dip::ImageIsTIFF, "filename"_a );
    m.def( "ImageWriteTIFF", &dip::ImageWriteTIFF, "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
 
