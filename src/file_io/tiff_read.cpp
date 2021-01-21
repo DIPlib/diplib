@@ -1039,7 +1039,7 @@ FileInformation ImageReadTIFF(
       String const& useColorMapString
 ) {
    // Parse input arguments
-   bool useColorMap = BooleanFromString( useColorMapString, S::APPLY, S::IGNORE );
+   bool useColorMap = BooleanFromString( useColorMapString, S::APPLY, "ignore" );
 
    // Open TIFF file
    TiffFile tiff( filename );

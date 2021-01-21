@@ -207,7 +207,7 @@ DIP_EXPORT void ImageWriteICS(
 ///  - Only 4 and 8 bits per pixel color-mapped images are read.
 ///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
 ///  - Some non-standard compression schemes are not recognized (most notably JPEG2000).
-/// TODO: How do we return the color map if we choose Option::TIFFColorMap::IGNORE?
+/// TODO: How do we return the color map if we choose useColorMap = "ignore"?
 ///       We should probably create a separate function for this.
 DIP_EXPORT FileInformation ImageReadTIFF(
       Image& out,
