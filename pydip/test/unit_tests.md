@@ -61,7 +61,7 @@ Note the reverse order of the dimensions!
 
 The data type is preserved.
 
-    >>> dip.Image(np.zeros((10, 20), dtype=np.bool))
+    >>> dip.Image(np.zeros((10, 20), dtype=bool))
     <Scalar image, BIN, sizes {20, 10}>
     >>> dip.Image(np.zeros((10, 20), dtype=np.uint8))
     <Scalar image, UINT8, sizes {20, 10}>
@@ -81,11 +81,11 @@ The data type is preserved.
     <Scalar image, SINT64, sizes {20, 10}>
     >>> dip.Image(np.zeros((10, 20), dtype=np.single))
     <Scalar image, SFLOAT, sizes {20, 10}>
-    >>> dip.Image(np.zeros((10, 20), dtype=np.float))
+    >>> dip.Image(np.zeros((10, 20), dtype=float))
     <Scalar image, DFLOAT, sizes {20, 10}>
     >>> dip.Image(np.zeros((10, 20), dtype=np.singlecomplex))
     <Scalar image, SCOMPLEX, sizes {20, 10}>
-    >>> dip.Image(np.zeros((10, 20), dtype=np.complex))
+    >>> dip.Image(np.zeros((10, 20), dtype=complex))
     <Scalar image, DCOMPLEX, sizes {20, 10}>
 
 As a convenience, images with the first or last dimension having less than 10 elements are interpreted as tensor images along that dimension.
