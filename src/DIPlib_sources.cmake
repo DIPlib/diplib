@@ -51,7 +51,6 @@ set(DIPlib_sources_bogus
 ../include/diplib/overload.h
 ../include/diplib/pixel_table.h
 ../include/diplib/private/constfor.h
-../include/diplib/private/monadic_operators.h
 ../include/diplib/random.h
 ../include/diplib/regions.h
 ../include/diplib/saturated_arithmetic.h
