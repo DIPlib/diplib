@@ -748,6 +748,7 @@ enum class DIP_NO_EXPORT CropLocation {
 /// `CmpProp::TensorStride`    | Compares tensor stride
 /// `CmpProp::ColorSpace`      | Compares color space
 /// `CmpProp::PixelSize`       | Compares pixel size
+/// `CmpProp::AllSizes`        | `CmpProp::Sizes` + `CmpProp::TensorElements`
 /// `CmpProp::Samples`         | `CmpProp::DataType` + `CmpProp::Sizes` + `CmpProp::TensorElements`
 /// `CmpProp::Shape`           | `CmpProp::DataType` + `CmpProp::Sizes` + `CmpProp::TensorShape`
 /// `CmpProp::Full`            | `CmpProp::Shape` + `CmpProp::Strides` + `CmpProp::TensorStride`
@@ -776,10 +777,11 @@ constexpr CmpPropFlags TensorElements = CmpPropEnumerator::TensorElements;
 constexpr CmpPropFlags TensorStride = CmpPropEnumerator::TensorStride;
 constexpr CmpPropFlags ColorSpace = CmpPropEnumerator::ColorSpace;
 constexpr CmpPropFlags PixelSize = CmpPropEnumerator::PixelSize;
-constexpr CmpPropFlags Samples = CmpPropEnumerator::DataType + CmpPropEnumerator::Sizes + CmpPropEnumerator::TensorElements;
-constexpr CmpPropFlags Shape = CmpPropEnumerator::DataType + CmpPropEnumerator::Sizes + CmpPropEnumerator::TensorShape;
-constexpr CmpPropFlags Full = Shape + CmpPropEnumerator::Strides + CmpPropEnumerator::TensorStride;
-constexpr CmpPropFlags All = Shape + CmpPropEnumerator::ColorSpace + CmpPropEnumerator::PixelSize;
+constexpr CmpPropFlags AllSizes = Sizes + TensorElements;
+constexpr CmpPropFlags Samples = DataType + Sizes + TensorElements;
+constexpr CmpPropFlags Shape = DataType + Sizes + TensorShape;
+constexpr CmpPropFlags Full = Shape + Strides + TensorStride;
+constexpr CmpPropFlags All = Shape + ColorSpace + PixelSize;
 }
 
 } // namespace Option

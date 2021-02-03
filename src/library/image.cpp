@@ -32,55 +32,55 @@ bool Image::CompareProperties(
       Option::CmpPropFlags cmpProps,
       Option::ThrowException throwException
 ) const {
-   if( cmpProps.Contains( Option::CmpProp::DataType )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::DataType )) {
       if( dataType_ != src.dataType_ ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Data type doesn't match" );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::Dimensionality )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::Dimensionality )) {
       if( sizes_.size() != src.sizes_.size() ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Dimensionality doesn't match" );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::Sizes )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::Sizes )) {
       if( sizes_ != src.sizes_ ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::SIZES_DONT_MATCH );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::Strides )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::Strides )) {
       if( strides_ != src.strides_ ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Strides don't match" );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::TensorShape )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::TensorShape )) {
       if( tensor_ != src.tensor_ ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Tensor shape doesn't match" );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::TensorElements )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::TensorElements )) {
       if( tensor_.Elements() != src.tensor_.Elements() ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, E::NTENSORELEM_DONT_MATCH );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::TensorStride )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::TensorStride )) {
       if( tensorStride_ != src.tensorStride_ ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Tensor stride doesn't match" );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::ColorSpace )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::ColorSpace )) {
       if( colorSpace_ != src.colorSpace_ ) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Color space doesn't match" );
          return false;
       }
    }
-   if( cmpProps.Contains( Option::CmpProp::PixelSize )) {
+   if( cmpProps.Contains( Option::CmpPropEnumerator::PixelSize )) {
       if( !pixelSize_.ApproximatelyEquals( src.pixelSize_, Dimensionality() )) {
          DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW, "Pixel sizes don't match" );
          return false;

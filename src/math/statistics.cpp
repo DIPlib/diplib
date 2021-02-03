@@ -546,7 +546,7 @@ CovarianceAccumulator Covariance(
       Image const& in2,
       Image const& c_mask ) {
    DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProp::Sizes + Option::CmpProp::TensorElements ));
+   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProp::AllSizes ));
    DataType ovlDataType = DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
    ImageConstRefArray inar;
    inar.reserve( 3 );
@@ -616,7 +616,7 @@ std::vector< dip::uint > CreateRankArray( Image const& img ) {
 
 dfloat SpearmanRankCorrelation( Image const& in1, Image const& in2, Image const& mask ) {
    DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProp::Sizes + Option::CmpProp::TensorElements ));
+   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProp::AllSizes ));
    // Get the data in normal stride order. We need the data to be contiguous and the two images to have
    // the same strides. This is a simple way of accomplishing that.
    Image in1_c;
