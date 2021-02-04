@@ -27,13 +27,13 @@
 
 /// \file
 /// \brief Functions for geometric image transformations
-/// \see geometry
+/// See \ref geometry.
 
 
 namespace dip {
 
 
-/// \defgroup geometry Geometric transformations
+/// \group geometry Geometric transformations
 /// \brief Geometric image transformations.
 ///
 /// \section interpolation_methods Interpolation methods
@@ -43,42 +43,42 @@ namespace dip {
 /// called `interpolationMethod`, which determines how image data are interpolated. It can be set to one of
 /// the following strings:
 ///
-///  - `"3-cubic"` (or `""`): Third-order cubic spline interpolation (Keys, 1981), using 4 input samples to
-///    compute each output sample. This is the default method for most functions.
+/// - `"3-cubic"` (or `""`): Third-order cubic spline interpolation (Keys, 1981), using 4 input samples to
+///   compute each output sample. This is the default method for most functions.
 ///
-///  - `"4-cubic"`: Fourth-order cubic spline interpolation (Keys, 1981), using 6 input samples to compute
-///    compute each output sample.
+/// - `"4-cubic"`: Fourth-order cubic spline interpolation (Keys, 1981), using 6 input samples to compute
+///   compute each output sample.
 ///
-///  - `"linear"`: Linear interpolation, using 2 input samples to compute each output sample.
+/// - `"linear"`: Linear interpolation, using 2 input samples to compute each output sample.
 ///
-///  - `"nearest"` (or `"nn"`): Nearest neighbor interpolation, samples are simply shifted and replicated.
+/// - `"nearest"` (or `"nn"`): Nearest neighbor interpolation, samples are simply shifted and replicated.
 ///
-///  - `"inverse nearest"` (or `"nn2"`): Nearest neighbor interpolation, but resolves the rounding of x.5 in
-///    the opposite direction that `"nearest"` does. This is useful when applying the inverse of an earlier
-///    transform, to be able to obtain the original geometry back.
+/// - `"inverse nearest"` (or `"nn2"`): Nearest neighbor interpolation, but resolves the rounding of x.5 in
+///   the opposite direction that `"nearest"` does. This is useful when applying the inverse of an earlier
+///   transform, to be able to obtain the original geometry back.
 ///
-///  - `"bspline"`: A third-order cardinal B-spline is computed for all samples on an image line, which is
-///    sampled anew to obtain the interpolated sample values. All input samples are used to compute all
-///    output samples, but only about 10 input samples significantly influence each output value.
+/// - `"bspline"`: A third-order cardinal B-spline is computed for all samples on an image line, which is
+///   sampled anew to obtain the interpolated sample values. All input samples are used to compute all
+///   output samples, but only about 10 input samples significantly influence each output value.
 ///
-///  - `"lanczos8"`: Lanczos interpolation with *a* = 8, using 16 input samples to compute each output sample.
-///    The Lanczos kernel is a sinc function windowed by a larger sinc function, where *a* is the width of
-///    the larger sinc function. The kernel is normalized.
+/// - `"lanczos8"`: Lanczos interpolation with *a* = 8, using 16 input samples to compute each output sample.
+///   The Lanczos kernel is a sinc function windowed by a larger sinc function, where *a* is the width of
+///   the larger sinc function. The kernel is normalized.
 ///
-///  - `"lanczos6"`: Lanczos interpolation with *a* = 6, using 12 input samples to compute each output sample.
+/// - `"lanczos6"`: Lanczos interpolation with *a* = 6, using 12 input samples to compute each output sample.
 ///
-///  - `"lanczos4"`: Lanczos interpolation with *a* = 4, using 8 input samples to compute each output sample.
+/// - `"lanczos4"`: Lanczos interpolation with *a* = 4, using 8 input samples to compute each output sample.
 ///
-///  - `"lanczos3"`: Lanczos interpolation with *a* = 3, using 6 input samples to compute each output sample.
+/// - `"lanczos3"`: Lanczos interpolation with *a* = 3, using 6 input samples to compute each output sample.
 ///
-///  - `"lanczos2"`: Lanczos interpolation with *a* = 2, using 4 input samples to compute each output sample.
+/// - `"lanczos2"`: Lanczos interpolation with *a* = 2, using 4 input samples to compute each output sample.
 ///
-///  - `"ft"`: Interpolation through padding and cropping, and/or modifying the phase component of the
-///    Fourier transform of the image line. Padding with zeros increases the sampling density, cropping
-///    reduces the sampling density, and multiplying the phase component by \f$-j s \omega\f$ shifts
-///    the image. Equivalent to interpolation with a sinc kernel. All input samples are used to compute
-///    all output samples. The boundary condition is ignored, as the Fourier transform imposes a periodic
-///    boundary condition.
+/// - `"ft"`: Interpolation through padding and cropping, and/or modifying the phase component of the
+///   Fourier transform of the image line. Padding with zeros increases the sampling density, cropping
+///   reduces the sampling density, and multiplying the phase component by $-j s \omega$ shifts
+///   the image. Equivalent to interpolation with a sinc kernel. All input samples are used to compute
+///   all output samples. The boundary condition is ignored, as the Fourier transform imposes a periodic
+///   boundary condition.
 ///
 /// Not all methods are available for all functions. If so, this is described in the function's documentation.
 /// For operations on binary images, the interpolation method is ignored, and `"nearest"` is always used.
@@ -87,15 +87,14 @@ namespace dip {
 /// each output sample. For B-spline interpolation, a boundary extension of 5 is used. For the nearest neighbor
 /// and Fourier interpolation methods, no boundary extension is needed.
 ///
-/// \literature
-/// <li>R.G. Keys, "Cubic Convolution Interpolation for Digital Image Processing", IEEE Transactions on
-///     Acoustics, Speech, and Signal Processing 29(6):1153-1160, 1981.
-/// \endliterature
-/// \{
+/// !!! literature
+///     - R.G. Keys, "Cubic Convolution Interpolation for Digital Image Processing", IEEE Transactions on
+///       Acoustics, Speech, and Signal Processing 29(6):1153-1160, 1981.
+/// \addtogroup
 
 /// \brief Shifts the input image by an integer number of pixels, wrapping the pixels around.
 ///
-/// `%dip::Wrap` is equivalent to `dip::Shift` with nearest neighbor interpolation and periodic
+/// `dip::Wrap` is equivalent to \ref dip::Shift with nearest neighbor interpolation and periodic
 /// boundary condition, but faster.
 DIP_EXPORT void Wrap(
       Image const& in,
@@ -116,7 +115,7 @@ inline Image Wrap(
 ///
 /// The input image is subsampled by `sample[ ii ]` along dimension `ii`. The output image shares
 /// the data segment of the input image, meaning that no data are copied. If a data copy is required,
-/// calling `dip::Image::ForceContiguousData` after subsampling should trigger a data copy.
+/// calling \ref dip::Image::ForceContiguousData after subsampling should trigger a data copy.
 ///
 /// If `out` has an external interface different from that of `in`, the data will be copied.
 inline void Subsampling(
@@ -142,10 +141,10 @@ inline Image Subsampling(
 ///
 /// The shift is applied first, and causes part of the image to shift out of the field of view.
 /// Thus, `shift` is in input pixels. `boundaryCondition` determines how the new areas are filled in.
-/// See `dip::BoundaryCondition`. Note that the shift can be in fractional pixels. There is no largest
+/// See \ref dip::BoundaryCondition. Note that the shift can be in fractional pixels. There is no largest
 /// possible shift, but applying very large shifts is not optimized for, and will use more computation
 /// and temporary memory than necessary. This is true even for the periodic boundary condition; use
-/// `dip::Wrap` to apply the integer shift with periodic boundary condition, then use `%Resampling` for
+/// \ref dip::Wrap to apply the integer shift with periodic boundary condition, then use `Resampling` for
 /// the remaining sub-pixel shift. The exception is the `"ft"` interpolation method, which uses the same
 /// memory and time for large as for small shifts.
 ///
@@ -165,9 +164,10 @@ inline Image Subsampling(
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
-/// \bug The current implementation doesn't handle the `"asym"` boundary conditions properly.
-/// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
-/// of properly using the saturated inversion.
+/// !!! bug
+///     The current implementation doesn't handle the `"asym"` boundary conditions properly.
+///     For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
+///     of properly using the saturated inversion.
 DIP_EXPORT void Resampling(
       Image const& in,
       Image& out,
@@ -188,7 +188,7 @@ inline Image Resampling(
    return out;
 }
 
-/// \brief Shift an image. Calls `dip::Resampling` with `zoom` set to 1, and uses the "ft" method by default.
+/// \brief Shift an image. Calls \ref dip::Resampling with `zoom` set to 1, and uses the "ft" method by default.
 inline void Shift(
       Image const& in,
       Image& out,
@@ -216,17 +216,17 @@ inline Image Shift(
 /// to change its phase in such a way that the image `img` will be shifted. For example:
 ///
 /// ```cpp
-///     dip::Image img = dip::ImageReadTIFF( "erika" );
-///     dip::Image ft = dip::FourierTransform( img );
-///     dip::ShiftFT( ft, ft, { 10.3, -5.2 } );
-///     dip::Image shifted = dip::FourierTransform( img, { "inverse", "real" } );
+/// dip::Image img = dip::ImageReadTIFF( "erika" );
+/// dip::Image ft = dip::FourierTransform( img );
+/// dip::ShiftFT( ft, ft, { 10.3, -5.2 } );
+/// dip::Image shifted = dip::FourierTransform( img, { "inverse", "real" } );
 /// ```
 ///
 /// Produces the same output as:
 ///
 /// ```cpp
-///     dip::Image img = dip::ImageReadTIFF( "erika" );
-///     dip::Image shifted = dip::Shift( img, { 10.3, -5.2 }, "fourier" );
+/// dip::Image img = dip::ImageReadTIFF( "erika" );
+/// dip::Image shifted = dip::Shift( img, { 10.3, -5.2 }, "fourier" );
 /// ```
 DIP_EXPORT void ShiftFT(
       Image const& in,
@@ -283,14 +283,15 @@ DIP_EXPORT Image::Pixel ResampleAt(
       Image::Pixel const& fill = { 0 }
 );
 
+/// \brief Pointer to an interpolation function. Only use pointers returned by \ref dip::PrepareResampleAtUnchecked.
 using InterpolationFunctionPointer = void ( * )( Image const&, Image::Pixel const&, FloatArray );
-/// \brief Prepare for repeated calls to `dip::ResampleAtUnchecked`. See `dip::ResampleAt`.
+/// \brief Prepare for repeated calls to \ref dip::ResampleAtUnchecked. See \ref dip::ResampleAt.
 DIP_EXPORT InterpolationFunctionPointer PrepareResampleAtUnchecked(
       Image const& in,
       String const& interpolationMethod
 );
-/// \brief Similar to `dip::ResampleAt`, but optimized for repeated calls using the same parameters.
-///  See `dip::ResampleAt`. `function` comes from `PrepareResampleAtUnchecked`. `fill` is always 0.
+/// \brief Similar to \ref dip::ResampleAt, but optimized for repeated calls using the same parameters.
+/// `function` comes from `PrepareResampleAtUnchecked`. `fill` is always 0.
 DIP_EXPORT Image::Pixel ResampleAtUnchecked(
       Image const& in,
       FloatArray const& coordinates,
@@ -364,15 +365,17 @@ DIP_EXPORT dip::UnsignedArray Skew(
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
 /// `boundaryCondition` determines how data outside of the input image domain are filled in. See
-/// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
+/// \ref dip::BoundaryCondition. If it is `"periodic"`, a periodic skew is applied. This means that
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.
 ///
-/// \bug The current implementation doesn't handle the `"asym"` boundary conditions properly.
-/// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
-/// of properly using the saturated inversion.
+/// !!! bug
+///     The current implementation doesn't handle the `"asym"` boundary conditions properly.
+///     For unsigned types, resulting samples outside the original image domain are clamped to 0,
+///     instead of properly using the saturated inversion.
 ///
-/// \warning The `"ft"` interpolation method is not (yet?) supported.
+/// !!! warning
+///     The `"ft"` interpolation method is not (yet?) supported.
 inline void Skew(
       Image const& in,
       Image& out,
@@ -411,20 +414,22 @@ inline Image Skew(
 /// The output image has the same data type as the input image.
 ///
 /// `shear` must have a magnitude smaller than &pi;/2. Note that the definition of `shear` is different
-/// from that of `shearArray` in the other version of `dip::Skew`, documented above.
+/// from that of `shearArray` in the other version of \ref dip::Skew, documented above.
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
 /// `boundaryCondition` determines how data outside of the input image domain are filled in. See
-/// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
+/// \ref dip::BoundaryCondition. If it is `"periodic"`, a periodic skew is applied. This means that
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.
 ///
-/// \bug The current implementation doesn't handle the `"asym"` boundary conditions properly.
-/// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
-/// of properly using the saturated inversion.
+/// !!! bug
+///     The current implementation doesn't handle the `"asym"` boundary conditions properly.
+///     For unsigned types, resulting samples outside the original image domain are clamped to 0,
+///     instead of properly using the saturated inversion.
 ///
-/// \warning The `"ft"` interpolation method is not (yet?) supported.
+/// !!! warning
+///     The `"ft"` interpolation method is not (yet?) supported.
 inline void Skew(
       Image const& in,
       Image& out,
@@ -468,20 +473,23 @@ inline Image Skew(
 /// Rotates an image in the plane defined by `dimension1` and `dimension2`, over an angle `angle`, in radian.
 /// The origin of the rotation is the central pixel (see \ref coordinates_origin).
 ///
-/// \attention The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
-/// Therefore, positive angles are clock-wise.
+/// !!! attention
+///     The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
+///     Therefore, positive angles are clock-wise.
 ///
 /// The output image has the same data type as the input image.
 ///
-/// The rotation is computed by three consecutive calls to `dip::Skew`. See that function for the meaning of
+/// The rotation is computed by three consecutive calls to \ref dip::Skew. See that function for the meaning of
 /// `interpolationMethod` and `boundaryCondition`.
 ///
-/// \attention The `"periodic"` boundary condition currently produces an output image of the same size as
-/// the input, where the corners of the image that rotate out of the field of view are cut off and fill the
-/// sections that were outside of the input field of view. This is due to the way that `dip::Skew` handles
-/// the `"periodic"` boundary condition. [TODO: This is something that we probably want to fix at some point.]
+/// !!! attention
+///     The `"periodic"` boundary condition currently produces an output image of the same size as
+///     the input, where the corners of the image that rotate out of the field of view are cut off and fill the
+///     sections that were outside of the input field of view. This is due to the way that \ref dip::Skew handles
+///     the `"periodic"` boundary condition. [TODO: This is something that we probably want to fix at some point.]
 ///
-/// \warning The `"ft"` interpolation method is not (yet?) supported.
+/// !!! warning
+///     The `"ft"` interpolation method is not (yet?) supported.
 DIP_EXPORT void Rotation(
       Image const& in,
       Image& out,
@@ -506,7 +514,7 @@ inline Image Rotation(
 
 /// \brief Rotates a 2D image
 ///
-/// Calls `dip::Rotation`, setting the dimension parameters to 0 and 1. Provides a simplified
+/// Calls \ref dip::Rotation, setting the dimension parameters to 0 and 1. Provides a simplified
 /// interface for 2D images.
 inline void Rotation2D(
       Image const& in,
@@ -531,7 +539,7 @@ inline Image Rotation2D(
 
 /// \brief Rotates a 3D image in one orthogonal plane
 ///
-/// Calls `dip::Rotation`, setting the dimension parameters according to `axis`. Provides a simplified
+/// Calls \ref dip::Rotation, setting the dimension parameters according to `axis`. Provides a simplified
 /// interface for 3D images.
 inline void Rotation3D(
       Image const& in,
@@ -575,13 +583,14 @@ inline Image Rotation3D(
 
 /// \brief Applies an arbitrary 3D rotation to a 3D image
 ///
-/// Rotates a 3D image over the Euler angles `alpha`, `beta` and `gamma`, by calling `dip::Rotation`
+/// Rotates a 3D image over the Euler angles `alpha`, `beta` and `gamma`, by calling \ref dip::Rotation
 /// three times (i.e. using nine skews).
 /// The first rotation is over `alpha` radian around the initial z-axis. The second rotation is over `beta` radian
 /// around the intermediate y-axis. The last rotation is over `gamma` radian around the final z-axis.
 ///
-/// \attention The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
-/// Therefore, positive angles are clock-wise.
+/// !!! attention
+///     The function implements the rotation in the mathematical sense, but the y-axis is positive downwards.
+///     Therefore, positive angles are clock-wise.
 ///
 /// The rotation is over the center of the image, see \ref coordinates_origin.
 // TODO: Implement the rotation using 4 skews as described by Chen and Kaufman, Graphical Models 62:308-322, 2000.
@@ -616,20 +625,20 @@ inline Image Rotation3D(
 
 /// \brief Creates a 0D (one pixel) 2x2 matrix image containing a 2D rotation matrix.
 ///
-/// Multiplying the output of `dip::CreateCoordinates` by this rotation matrix will produce
+/// Multiplying the output of \ref dip::CreateCoordinates by this rotation matrix will produce
 /// an image with a rotated coordinate system. The rotation matrix must be on the left-hand-side
 /// of the multiplication operator.
 ///
 /// The rotation is over `angle` radian. Note that when transforming a coordinate system
 /// (a passive transformation), then the transpose of the matrix must be used.
 ///
-/// `out` is of type `dip::DT_SFLOAT` by default.
+/// `out` is of type \ref dip::DT_SFLOAT by default.
 ///
 /// Example:
 ///
 /// ```cpp
-///     dip::Image coords = dip::CreateCoordinates( { 256, 256 }, { "frequency" } );
-///     dip::Image rotatedCoords = dip::RotationMatrix2D( dip::pi/4 ) * coords;
+/// dip::Image coords = dip::CreateCoordinates( { 256, 256 }, { "frequency" } );
+/// dip::Image rotatedCoords = dip::RotationMatrix2D( dip::pi/4 ) * coords;
 /// ```
 DIP_EXPORT void RotationMatrix2D( Image& out, dfloat angle );
 inline Image RotationMatrix2D( dfloat angle ) {
@@ -640,7 +649,7 @@ inline Image RotationMatrix2D( dfloat angle ) {
 
 /// \brief Creates a 0D (one pixel) 3x3 matrix image containing a 3D rotation matrix.
 ///
-/// Multiplying the output of `dip::CreateCoordinates` by this rotation matrix will produce
+/// Multiplying the output of \ref dip::CreateCoordinates by this rotation matrix will produce
 /// an image with a rotated coordinate system. The rotation matrix must be on the left-hand-side
 /// of the multiplication operator.
 ///
@@ -649,13 +658,13 @@ inline Image RotationMatrix2D( dfloat angle ) {
 /// y-axis. The last rotation is over `gamma` radian around the final z-axis. Note that when transforming
 /// a coordinate system (a passive transformation), then the transpose of the matrix must be used.
 ///
-/// `out` is of type `dip::DT_SFLOAT` by default.
+/// `out` is of type \ref dip::DT_SFLOAT by default.
 ///
 /// Example:
 ///
 /// ```cpp
-///     dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
-///     dip::Image rotatedCoords = dip::RotationMatrix3D( dip::pi/4, 0, dip::pi ) * coords;
+/// dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
+/// dip::Image rotatedCoords = dip::RotationMatrix3D( dip::pi/4, 0, dip::pi ) * coords;
 /// ```
 DIP_EXPORT void RotationMatrix3D( Image& out, dfloat alpha, dfloat beta, dfloat gamma );
 inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
@@ -666,7 +675,7 @@ inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
 
 /// \brief Creates a 0D (one pixel) 3x3 matrix image containing a 3D rotation matrix.
 ///
-/// Multiplying the output of `dip::CreateCoordinates` by this rotation matrix will produce
+/// Multiplying the output of \ref dip::CreateCoordinates by this rotation matrix will produce
 /// an image with a rotated coordinate system. The rotation matrix must be on the left-hand-side
 /// of the multiplication operator.
 ///
@@ -674,13 +683,13 @@ inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
 /// not be affected by the rotation. Note that when transforming a coordinate system (a passive
 /// transformation), then the transpose of the matrix must be used.
 ///
-/// `out` is of type `dip::DT_SFLOAT` by default.
+/// `out` is of type \ref dip::DT_SFLOAT by default.
 ///
 /// Example:
 ///
 /// ```cpp
-///     dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
-///     dip::Image rotatedCoords = dip::RotationMatrix3D( { 1.0, 0.0, 0.0 }, dip::pi/4 ) * coords;
+/// dip::Image coords = dip::CreateCoordinates( { 50, 50, 50 } );
+/// dip::Image rotatedCoords = dip::RotationMatrix3D( { 1.0, 0.0, 0.0 }, dip::pi/4 ) * coords;
 /// ```
 DIP_EXPORT void RotationMatrix3D( Image& out, FloatArray const& vector, dfloat angle );
 inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
@@ -697,15 +706,15 @@ inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
 /// matrix using homogeneous coordinates, but with the bottom row removed (which is expected
 /// to be `{0,0,1}` in 2D or `{0,0,0,1}` in 3D). The values are stored in column-major order:
 ///
-/// ```txt
-///            ⎡ matrix[0]  matrix[2]  matrix[4] ⎤
-///     T_2D = ⎢ matrix[1]  matrix[3]  matrix[5] ⎥
-///            ⎣    0          0          1      ⎦
+/// ```text
+///        ⎡ matrix[0]  matrix[2]  matrix[4] ⎤
+/// T_2D = ⎢ matrix[1]  matrix[3]  matrix[5] ⎥
+///        ⎣    0          0          1      ⎦
 ///
-///            ⎡ matrix[0]  matrix[3]  matrix[6]  matrix[ 9] ⎤
-///     T_3D = ⎢ matrix[1]  matrix[4]  matrix[7]  matrix[10] ⎥
-///            ⎢ matrix[2]  matrix[5]  matrix[8]  matrix[11] ⎥
-///            ⎣    0          0          0          1       ⎦
+///        ⎡ matrix[0]  matrix[3]  matrix[6]  matrix[ 9] ⎤
+/// T_3D = ⎢ matrix[1]  matrix[4]  matrix[7]  matrix[10] ⎥
+///        ⎢ matrix[2]  matrix[5]  matrix[8]  matrix[11] ⎥
+///        ⎣    0          0          0          1       ⎦
 /// ```
 ///
 /// The coordinates of each pixel in `in` (the origin of the coordinate system is the central pixel,
@@ -769,7 +778,7 @@ inline Image WarpControlPoints(
 /// \brief Computes the log-polar transform of the 2D image.
 ///
 /// By default, `out` will be a square image with side equal to the smaller of the two sides of `in`. However,
-/// if `out` is protected (see `dip::Image::Protect`), its sizes will be preserved, even if not forged.
+/// if `out` is protected (see \ref dip::Image::Protect), its sizes will be preserved, even if not forged.
 ///
 /// The x-axis (horizontal) of `out` is the logarithm of the radius, and the y-axis is the angle.
 ///
@@ -777,7 +786,7 @@ inline Image WarpControlPoints(
 /// See \ref interpolation_methods for their definition. If `in` is binary, `interpolationMethod` will be
 /// ignored, nearest neighbor interpolation will be used.
 ///
-/// This function is an integral part of the Fourier-Mellin transform, see `dip::FourierMellinMatch2D`.
+/// This function is an integral part of the Fourier-Mellin transform, see \ref dip::FourierMellinMatch2D.
 DIP_EXPORT void LogPolarTransform2D(
       Image const& in,
       Image& out,
@@ -800,23 +809,23 @@ inline Image LogPolarTransform2D(
 /// can be given in `in`. If `in` has fewer images, the corresponding locations in `out` will be zero. If `in`
 /// has 6 images, they will be placed as follows:
 ///
-/// ```txt
-///    | in[0], in[1], in[2] |
-///    | in[3], in[4], in[5] |
+/// ```text
+/// | in[0], in[1], in[2] |
+/// | in[3], in[4], in[5] |
 /// ```
 ///
 /// That is, images are tiled row-wise, from left to right and then top to bottom. `tiling` can have any number
-/// of elements, it is for example possible to tile 2D images along the 4<sup>th</sup> dimension.
+/// of elements, it is for example possible to tile 2D images along the 4^th^ dimension.
 ///
 /// If `tiling` is an empty array (the default), then `ceil(sqrt(in.size()))` images will be placed horizontally,
 /// in however many rows are necessary to fit all images.
 ///
 /// The input images must all have the same sizes, with the exception for the case where all images are tiled
-/// along a single dimension, in which case their sizes can differ along that dimension (see `dip::Concatenate`)
+/// along a single dimension, in which case their sizes can differ along that dimension (see \ref dip::Concatenate)
 ///
 /// The input images must all have the same number of tensor elements. If their tensor representations do not
 /// match, the output image will be a default column vector. If images are differing data types, the output will
-/// be of a type that best can represent the input (see `dip::DataType::SuggestDyadicOperation`).
+/// be of a type that best can represent the input (see \ref dip::DataType::SuggestDyadicOperation).
 DIP_EXPORT void Tile(
       ImageConstRefArray const& in,
       Image& out,
@@ -856,7 +865,7 @@ inline Image TileTensorElements(
 ///
 /// The input images must all have the same number of tensor elements. If their tensor representations do not
 /// match, the output image will be a default column vector. If images are differing data types, the output will
-/// be of a type that best can represent the input (see `dip::DataType::SuggestDyadicOperation`).
+/// be of a type that best can represent the input (see \ref dip::DataType::SuggestDyadicOperation).
 inline void Concatenate(
       ImageConstRefArray const& in,
       Image& out,
@@ -900,7 +909,7 @@ inline Image Concatenate(
 /// and be scalar.
 ///
 /// If images are differing data types, the output will be of a type that best can represent the input
-/// (see `dip::DataType::SuggestDyadicOperation`). `out` will be a vector image with `in.size()` samples per pixel.
+/// (see \ref dip::DataType::SuggestDyadicOperation). `out` will be a vector image with `in.size()` samples per pixel.
 DIP_EXPORT void JoinChannels(
       ImageConstRefArray const& in,
       Image& out
@@ -914,7 +923,7 @@ inline Image JoinChannels(
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

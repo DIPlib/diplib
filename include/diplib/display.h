@@ -27,24 +27,23 @@
 
 /// \file
 /// \brief Tools to prepare images for display.
-/// \see display
+/// See \ref display.
 
 
 namespace dip {
 
 
-/// \defgroup display Display
-/// \brief %Image display
-/// \{
-
+/// \group display Display
+/// \brief Image display
+/// \addtogroup
 
 /// \brief Encapsulates state of an image in a display window, and provides the functionality for converting the
 /// image to a form suitable for display.
 ///
 /// An object is created for a particular image; the image cannot be replaced. Different display options can then
-/// be set. When the `dip::ImageDisplay::Output` method is called, a 1D or 2D, grey-value or RGB, UINT8 image is
+/// be set. When the \ref Output method is called, a 1D or 2D, grey-value or RGB, UINT8 image is
 /// prepared for display. A const reference to this image is returned. The image is updated every time the
-/// `%Output` method is called, not when display options are set. The display options are designed to be
+/// `Output` method is called, not when display options are set. The display options are designed to be
 /// settable by a user using the image display window.
 ///
 /// For a scalar input image, the output is always scalar (grey-value). For a color image, if it can be converted
@@ -73,7 +72,7 @@ class DIP_NO_EXPORT ImageDisplay {
       };
       /// Enumerator for the intensity mapping mode
       enum class MappingMode : unsigned char {
-         MANUAL,     ///< `Limits` are used as-is
+         MANUAL,     ///< \ref Limits are used as-is
          MAXMIN,     ///< The max and min values are taken as the display limits
          PERCENTILE, ///< The 5% and 95% values are taken as the display limits
          BASED,      ///< 0 should remain at the middle of the output range
@@ -103,7 +102,7 @@ class DIP_NO_EXPORT ImageDisplay {
       /// output image.
       ///
       /// Both `colorSpaceManager` and `externalInterface`, if given, must exist for as long as the
-      /// `%ImageDisplay` object exists.
+      /// `ImageDisplay` object exists.
       explicit ImageDisplay( Image const& image, ColorSpaceManager* colorSpaceManager = nullptr, ExternalInterface* externalInterface = nullptr ) :
             image_( image ), colorspace_( image.ColorSpace() ), colorSpaceManager_( colorSpaceManager ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
@@ -159,7 +158,7 @@ class DIP_NO_EXPORT ImageDisplay {
       /// \brief Retrieves a reference to the raw slice image.
       ///
       /// This function also causes an update of the slice if the projection changed. The raw slice image contains
-      /// the input data for the what is shown in `Output`.
+      /// the input data for the what is shown in \ref Output.
       Image const& Slice() {
          UpdateSlice();
          return slice_;
@@ -170,28 +169,28 @@ class DIP_NO_EXPORT ImageDisplay {
       /// This function also causes an update of the output if any of the modes changed.
       ///
       /// The output image data segment will be allocated using the external interface provided to the
-      /// `%ImageDisplay` constructor.
+      /// `ImageDisplay` constructor.
       Image const& Output() {
          UpdateOutput();
          return output_;
       }
 
-      /// \brief Puts a single pixel through the same mapping the image will go through to become `Output`.
+      /// \brief Puts a single pixel through the same mapping the image will go through to become \ref Output.
       DIP_EXPORT Image::Pixel MapSinglePixel( Image::Pixel const& input );
 
-      /// \brief Returns true if the next call to `Output` will yield a different result from the previous one.
+      /// \brief Returns true if the next call to \ref Output will yield a different result from the previous one.
       /// That is, the display needs to be redrawn.
       bool OutIsDirty() const { return outputIsDirty_ || rgbSliceIsDirty_ || sliceIsDirty_; }
 
-      /// \brief Returns true if the next call to `Output` will yield a different slice
+      /// \brief Returns true if the next call to \ref Output will yield a different slice
       bool SliceIsDirty() const { return sliceIsDirty_; }
 
-      /// \brief Returns true if the next call to `Output` will yield an output of a different size. That is,
+      /// \brief Returns true if the next call to \ref Output will yield an output of a different size. That is,
       /// the slicing direction has changed, and this yields a change in sizes.
       bool SizeIsDirty() const { return sizeIsDirty_; }
 
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
-      /// In case of a 1D `Output`, `y` is ignored.
+      /// In case of a 1D \ref Output, `y` is ignored.
       DIP_EXPORT Image::Pixel Pixel( dip::uint x, dip::uint y = 0 ) {
          UpdateSlice();
          if( x >= slice_.Size( 0 )) {
@@ -451,7 +450,7 @@ class DIP_NO_EXPORT ImageDisplay {
       /// \brief Get the projection/slicing direction. The two values returned are identical when output is 1D.
       std::pair< dip::uint, dip::uint > GetDirection() const { return { dim1_, dim2_ }; };
 
-      /// \brief Returns the array of dimensions orthogonal to those returned by `GetDirection`. These are the
+      /// \brief Returns the array of dimensions orthogonal to those returned by \ref GetDirection. These are the
       /// dimensions not displayed.
       UnsignedArray const& GetOrthogonal() const { return orthogonal_; }
 
@@ -594,34 +593,34 @@ class DIP_NO_EXPORT ImageDisplay {
       }
 };
 
-/// \brief Applies a color map to an image prepared for display using `dip::ImageDisplay`.
+/// \brief Applies a color map to an image prepared for display using \ref dip::ImageDisplay.
 ///
 /// `in` is a scalar, 8-bit unsigned image. `out` will be an image of the same size and type
 /// but with three tensor components, and in the "sRGB" color space.
 ///
 /// `colorMap` can currently be one of the following color maps:
-///  - `"grey"`: Each grey level maps to an RGB value that represents the same grey level.
-///  - `"saturation"`: Each grey level maps to an RGB value that represents the same grey level, except pixels
-///    with a value 0 and 255, which are colored blue and red respectively. This can be used to show which
-///    pixels were likely saturated during acquisition.
-///  - `"linear"`: A blue-magenta-yellow highly saturated, perceptually linear color map.
-///  - `"diverging"`: A blue-grey-red diverging, perceptually linear color map, where the middle value maps
-///    to a neutral grey-value, high values map to increasingly bright reds, and low values map to increasingly
-///    bright blues. This is meant to be used in combination with the `"base"` range mode of `dip::ImageDisplay`.
-///  - `"cyclic"`: A magenta-yellow-green-blue cyclic, perceptually linear color map, which allows four orientations
-///    or angles to be visualised. Use in combination with the `"angle"` or `"orientation"` range mode of
-///    `dip::ImageDisplay`.
-///  - `"label"`: For labeled images, each grey value gets a color that can easily be distinguished from
-///    that of nearby grey values. 16 different colors are used. The 0 grey value is considered background
-///    and colored black. Use with the `"modulo"` range mode of `dip::ImageDisplay`.
 ///
-/// For more information regarding the range modes of `dip::ImageDisplay`, see `dip::ImageDisplay::SetRange`.
+/// - `"grey"`: Each grey level maps to an RGB value that represents the same grey level.
+/// - `"saturation"`: Each grey level maps to an RGB value that represents the same grey level, except pixels
+///   with a value 0 and 255, which are colored blue and red respectively. This can be used to show which
+///   pixels were likely saturated during acquisition.
+/// - `"linear"`: A blue-magenta-yellow highly saturated, perceptually linear color map.
+/// - `"diverging"`: A blue-grey-red diverging, perceptually linear color map, where the middle value maps
+///   to a neutral grey-value, high values map to increasingly bright reds, and low values map to increasingly
+///   bright blues. This is meant to be used in combination with the `"base"` range mode of \ref dip::ImageDisplay.
+/// - `"cyclic"`: A magenta-yellow-green-blue cyclic, perceptually linear color map, which allows four orientations
+///   or angles to be visualised. Use in combination with the `"angle"` or `"orientation"` range mode of
+///   \ref dip::ImageDisplay.
+/// - `"label"`: For labeled images, each grey value gets a color that can easily be distinguished from
+///   that of nearby grey values. 16 different colors are used. The 0 grey value is considered background
+///   and colored black. Use with the `"modulo"` range mode of \ref dip::ImageDisplay.
+///
+/// For more information regarding the range modes of \ref dip::ImageDisplay, see \ref dip::ImageDisplay::SetRange.
 ///
 /// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](http://peterkovesi.com/projects/colourmaps/index.html).
 ///
-/// \literature
-/// <li>Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
-/// \endliterature
+/// !!! literature
+///     - Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
 DIP_EXPORT void ApplyColorMap(
       Image const& in,
       Image& out,
@@ -644,7 +643,7 @@ inline Image ApplyColorMap(
 /// which defaults to red. If `color` is a scalar value, it will be interpreted as an intensity value, producing
 /// a grey overlay. In this latter case, if `in` was a scalar image, then the output will be scalar as well.
 ///
-/// In the case of an integer overlay image, `dip::ApplyColorMap` with the `"label"` option will be used to
+/// In the case of an integer overlay image, \ref dip::ApplyColorMap with the `"label"` option will be used to
 /// create a label image overlay. `color` will be ignored.
 DIP_EXPORT void Overlay(
       Image const& in,
@@ -680,7 +679,7 @@ inline Image MarkLabelEdges(
    return out;
 }
 
-// \}
+/// \endgroup
 
 } // namespace dip
 

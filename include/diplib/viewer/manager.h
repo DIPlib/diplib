@@ -26,7 +26,7 @@
 #include <memory>
 
 /// \file
-/// \brief Declares `dip::viewer::Manager`.
+/// \brief Declares \ref dip::viewer::Manager.
 
 #define KEY_MOD_SHIFT   0x01
 #if defined(__APPLE__) && defined(DIP_CONFIG_HAS_GLFW)
@@ -39,6 +39,8 @@
 #define KEY_MOD_ALT     0x04
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 /// Simple GL window
 class DIPVIEWER_EXPORT Window
@@ -65,7 +67,7 @@ class DIPVIEWER_EXPORT Window
     
     /// \brief Returns whether the window is marked for destruction.
     ///
-    /// This is set either from a callback, or by calling destroy().
+    /// This is set either from a callback, or by calling \ref destroy.
     bool destroyed() { return destroyed_; }
     
     /// \brief Draw a string onto the window.
@@ -85,7 +87,7 @@ class DIPVIEWER_EXPORT Window
     /// \brief Set the window's size.
     void setSize(int width, int height);
 protected:
-    /// \brief Returns the dip::viewer::Manager that manages this window.
+    /// \brief Returns the \ref dip::viewer::Manager that manages this window.
     Manager *manager() { return manager_; }
     
     /// \brief Returns the window's identity.
@@ -103,7 +105,7 @@ protected:
     
     /// \brief Suggests a window's size.
     ///
-    /// *** Note *** that this function must be called before the create() callback is called.
+    /// Note that this function must be called before the \ref create callback is called.
     void requestSize(size_t width, size_t height)
     {
       if (!manager_)
@@ -152,12 +154,10 @@ protected:
     
     /// \brief Sets the window's size.
     ///
-    /// *** Note *** that this does not actually resize the window!
+    /// Note that this does not actually resize the window!
     void resize(int width, int height) { width_ = width; height_ = height; }
 };
 
-/// \addtogroup viewer
-/// \{
 
 /// \brief Shared pointer to a Window
 typedef std::shared_ptr<Window> WindowPtr;
@@ -175,7 +175,7 @@ class DIPVIEWER_EXPORT Manager
     /// Example usage:
     ///
     /// ```cpp
-    ///     manager.createWindow( dip::viewer::SliceViewer::Create( image ));
+    /// manager.createWindow( dip::viewer::SliceViewer::Create( image ));
     /// ```
     virtual void createWindow(WindowPtr window) = 0;
     
@@ -191,10 +191,10 @@ class DIPVIEWER_EXPORT Manager
     /// Example usage:
     ///
     /// ```cpp
-    ///     while ( manager.activeWindows()) {
-    ///        manager.processEvents();
-    ///        std::this_thread::sleep_for( std::chrono::microseconds( 1000 ) );
-    ///     }
+    /// while ( manager.activeWindows()) {
+    ///    manager.processEvents();
+    ///    std::this_thread::sleep_for( std::chrono::microseconds( 1000 ) );
+    /// }
     /// ```
     virtual void processEvents() = 0;
     
@@ -219,7 +219,7 @@ class DIPVIEWER_EXPORT Manager
     virtual void setWindowSize(Window* window, int width, int height) = 0;
 };
 
-/// \}
+/// \endgroup
 
 }} // namespace dip::viewer
 

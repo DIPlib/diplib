@@ -26,15 +26,15 @@
 
 /// \file
 /// \brief The Fourier and related transforms.
-/// \see transform
+/// See \ref transform.
 
 
 namespace dip {
 
 
-/// \defgroup transform Transforms
+/// \group transform Transforms
 /// \brief The Fourier and other transforms.
-/// \{
+/// \addtogroup
 
 
 /// \brief Computes the forward and inverse Fourier Transform
@@ -62,33 +62,35 @@ namespace dip {
 /// `process` is an empty array, all dimensions will be processed (normal multi-dimensional transform).
 ///
 /// `options` is an set of strings that indicate how the transform is applied:
-///   - "inverse": compute the inverse transform; not providing this string causes the the forward
-///     transform to be computed.
-///   - "real": assumes that the (complex) input is conjugate symmetric, and returns a real-valued
-///     result. Only to be used together with "inverse".
-///   - "fast": pads the input to a "nice" size, multiple of 2, 3 and 5, which can be processed faster.
-///     Note that "fast" causes the output to be interpolated. This is not always a problem
-///     when computing convolutions or correlations, but will introduce e.g. edge effects in the result
-///     of the convolution.
-///   - "corner": sets the origin to the top-left corner of the image (both in the spatial and the
-///     frequency domain). This yields a standard DFT (Discrete Fourier Transform).
-///   - "symmetric": the normalization is made symmetric, where both forward and inverse transforms
-///     are normalized by the same amount. Each transform is multiplied by `1/sqrt(size)` for each
-///     dimension. This makes the transform identical to how it was in *DIPlib 2*.
+///
+/// - "inverse": compute the inverse transform; not providing this string causes the the forward
+///   transform to be computed.
+/// - "real": assumes that the (complex) input is conjugate symmetric, and returns a real-valued
+///   result. Only to be used together with "inverse".
+/// - "fast": pads the input to a "nice" size, multiple of 2, 3 and 5, which can be processed faster.
+///   Note that "fast" causes the output to be interpolated. This is not always a problem
+///   when computing convolutions or correlations, but will introduce e.g. edge effects in the result
+///   of the convolution.
+/// - "corner": sets the origin to the top-left corner of the image (both in the spatial and the
+///   frequency domain). This yields a standard DFT (Discrete Fourier Transform).
+/// - "symmetric": the normalization is made symmetric, where both forward and inverse transforms
+///   are normalized by the same amount. Each transform is multiplied by `1/sqrt(size)` for each
+///   dimension. This makes the transform identical to how it was in *DIPlib 2*.
 ///
 /// For tensor images, each plane is transformed independently.
 ///
 /// With the "fast" mode, the input will be padded. If "corner" is given, the padding is to the right.
 /// Otherwise it is split evenly on both sides, in such a way that the origin remains in the middle pixel.
-/// For the forward transform, the padding applied is the "zero order" boundary condition (see `dip::BoundaryCondition`).
+/// For the forward transform, the padding applied is the "zero order" boundary condition (see \ref dip::BoundaryCondition).
 /// Its effect is similar to padding with zeros, but with reduced edge effects.
 /// For the inverse transform, padding is with zeros ("add zeros" boundary condition). However, the combination
 /// of "fast", "corner" and "inverse" is not allowed, since padding in that case is non-trivial.
 ///
-/// \warning The largest size that can be transformed is 2<sup>31</sup>-1. In DIPlib, image sizes are
-/// represented by a `dip::uint`, which on a 64-bit system can hold values up to 2<sup>64</sup>-1. But this function
-/// uses `int` internally to represent sizes, and therefore has a more strict limit to image sizes. Note
-/// that this limit refers to the size of one image dimension, not to the total number of pixels in the image.
+/// !!! warning
+///     The largest size that can be transformed is 2^31^-1. In *DIPlib*, image sizes are
+///     represented by a \ref dip::uint, which on a 64-bit system can hold values up to 2^64^-1. But this function
+///     uses `int` internally to represent sizes, and therefore has a more strict limit to image sizes. Note
+///     that this limit refers to the size of one image dimension, not to the total number of pixels in the image.
 DIP_EXPORT void FourierTransform(
       Image const& in,
       Image& out,
@@ -106,7 +108,7 @@ inline Image FourierTransform(
 }
 
 /// \brief Returns the next higher multiple of {2, 3, 5}. The largest value that can be returned is 2125764000
-/// (smaller than 2<sup>31</sup>-1, the largest possible value of an `int` on most platforms).
+/// (smaller than 2^31^-1, the largest possible value of an `int` on most platforms).
 DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
 
 
@@ -115,9 +117,9 @@ DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
 /// The Riesz transform is the multi-dimensional generalization of the Hilbert transform, and identical to it for
 /// one-dimensional images. It is computed through the Fourier domain by
 ///
-/// \f[ R_j f = \mathcal{F}^{-1} \left\{ -i\frac{x_j}{|x|}(\mathcal{F}f) \right\} \; , \f]
+/// $$ R_j f = \mathcal{F}^{-1} \left\{ -i\frac{x_j}{|x|}(\mathcal{F}f) \right\} \; , $$
 ///
-/// where \f$f\f$ is the input image and \f$x\f$ is the coordinate vector.
+/// where $f$ is the input image and $x$ is the coordinate vector.
 ///
 /// `out` is a vector image with one element per image dimension. If `process` is given, it specifies which
 /// dimensions to include in the output vector image. `in` must be scalar.
@@ -155,27 +157,27 @@ inline Image RieszTransform(
 /// slice corresponds to the residue. There are `nLevels + 1` slices in total.
 ///
 /// The filter used to smooth the image for the first level is `[1/16, 1/4, 3/8, 1/4, 1/16]`,
-/// applied to each dimension in sequence through `dip::SeparableConvolution`.
+/// applied to each dimension in sequence through \ref dip::SeparableConvolution.
 /// For subsequent levels, zeros are inserted into this filter.
 ///
-/// `boundaryCondition` is passed to `dip::SeparableConvolution` to determine how to extend the
+/// `boundaryCondition` is passed to \ref dip::SeparableConvolution to determine how to extend the
 /// input image past its boundary. `process` can be used to exclude some dimensions from the
 /// filtering.
 ///
 /// `in` can have any number of dimensions, any number of tensor elements, and any data type.
 /// `out` will have the smallest signed data type that can hold all values if `in` (see
-/// `dip::DataType::SuggestSigned`. Note that the first `nLevels` slices will contain negative
+/// \ref dip::DataType::SuggestSigned. Note that the first `nLevels` slices will contain negative
 /// values, even if `in` is purely positive, as these levels are the difference between two
 /// differently smoothed images.
 ///
 /// Summing the output image along its last dimension will yield the input image:
 ///
 /// ```cpp
-///     dip::Image img = ...;
-///     dip::Image swt = StationaryWaveletTransform( img );
-///     dip::BooleanArray process( swt.Dimensionality(), false );
-///     process.back() = true;
-///     img == dip.Sum( swt, {}, process ).Squeeze();
+/// dip::Image img = ...;
+/// dip::Image swt = StationaryWaveletTransform( img );
+/// dip::BooleanArray process( swt.Dimensionality(), false );
+/// process.back() = true;
+/// img == dip.Sum( swt, {}, process ).Squeeze();
 /// ```
 DIP_EXPORT void StationaryWaveletTransform(
       Image const& in,
@@ -196,7 +198,7 @@ inline Image StationaryWaveletTransform(
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

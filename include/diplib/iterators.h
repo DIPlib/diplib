@@ -28,21 +28,20 @@
 
 /// \file
 /// \brief Defines image iterators and line iterators.
-/// \see iterators
+/// See \ref iterators.
 
 
 namespace dip {
 
 
-/// \defgroup iterators Iterators
+/// \group iterators Iterators
 /// \ingroup infrastructure
 /// \brief Objects to iterate over images and image lines in different ways.
 ///
 /// See \ref using_iterators
 /// for a mini-tutorial on how to use each of the different iterator types. Next, read the documentation
 /// for the iterator you plan to use, to learn about additional options and possibilities.
-/// \{
-
+/// \addtogroup
 
 //
 // Line iterator, does 1D loop over the pixels in an image line
@@ -51,7 +50,7 @@ namespace dip {
 
 /// \brief An iterator to iterate over all pixels of an image line.
 ///
-/// This iterator is constructed from a `dip::ImageIterator`, but can also be constructed manually
+/// This iterator is constructed from a \ref dip::ImageIterator, but can also be constructed manually
 /// if necessary.
 ///
 /// The iterator can be incremented until it reaches the end of the line. At this point, the
@@ -63,21 +62,25 @@ namespace dip {
 /// One can index using the `[]` operator to obtain each of the samples of the tensor
 /// (`it[ 0 ]` .. `it[ image.TensorElements() - 1 ]`).
 ///
-/// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor
+/// Alternatively, a \ref dip::SampleIterator can be obtained to iterate over the samples of the tensor
 /// (`it.begin()` .. `it.end()`).
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see \ref using_iterators, ImageIterator, JointImageIterator, BresenhamLineIterator, SampleIterator
+/// \see using_iterators, ImageIterator, JointImageIterator, BresenhamLineIterator, SampleIterator
 template< typename T >
 class DIP_NO_EXPORT LineIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
-      using reference = T&;               ///< The type of a reference to a pixel
-      using pointer = T*;                 ///< The type of a pointer to a pixel
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The data type of the pixel, obtained when dereferencing the iterator
+      using value_type = T;
+      /// The type of a reference to a pixel
+      using reference = T&;
+      /// The type of a pointer to a pixel
+      using pointer = T*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       LineIterator() = default;
@@ -247,7 +250,7 @@ inline void swap( LineIterator< T >& v1, LineIterator< T >& v2 ) {
 /// \brief A const iterator to iterate over all pixels of an image line.
 /// \relates dip::LineIterator
 ///
-/// This iterator is identical to `dip::LineIterator`, but with a const value type.
+/// This iterator is identical to \ref dip::LineIterator, but with a const value type.
 ///
 /// Satisfies all the requirements for a non-mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 template< typename T >
@@ -286,7 +289,7 @@ using ConstLineIterator = LineIterator< T const >;
 ///
 /// If it is created with the processing dimension set, then the processing dimension indicates
 /// a dimension over which this iterator does not iterate. That is, it will iterate over all pixels
-/// that have a coordinate equal to 0 along this dimension. In this case, a `dip::LineIterator`
+/// that have a coordinate equal to 0 along this dimension. In this case, a \ref dip::LineIterator
 /// can be obtained to iterate over the line that starts at the current pixel (using the
 /// `GetLineIterator` method).
 ///
@@ -301,20 +304,20 @@ using ConstLineIterator = LineIterator< T const >;
 /// One can index using the `[]` operator to obtain each of the samples of the tensor
 /// (`it[ 0 ]` .. `it[ image.TensorElements() - 1 ]`).
 ///
-/// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor
+/// Alternatively, a \ref dip::SampleIterator can be obtained to iterate over the samples of the tensor
 /// (`it.begin()` .. `it.end()`).
 ///
 /// It is possible to obtain neighboring pixel values by adding the neighbor's offset to the current
 /// pointer:
 ///
 /// ```cpp
-///     *( it.Pointer() + offset )
+/// *( it.Pointer() + offset )
 /// ```
 ///
 /// Note that this offset can cause a read-out-of-bounds or simply access the wrong pixel if the neighbor
 /// is not within the image domain. One would have to test for `it.Coordinates()` to be far enough away
 /// from the edge of the image. The most optimal way to access neighbors is to iterate over a window
-/// within a larger image, such that one can be sure that neighbors always exist. See `dip::ExtendImage`.
+/// within a larger image, such that one can be sure that neighbors always exist. See \ref dip::ExtendImage.
 ///
 /// By default, the iterator loops over pixels (or image lines) in linear index order. That is, coordinates
 /// change as: {0,0}, {1,0}, {2,0}, ... {0,1}, {1,1}, ... If the image does not have normal strides, this
@@ -326,14 +329,18 @@ using ConstLineIterator = LineIterator< T const >;
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see \ref using_iterators, JointImageIterator, LineIterator, SampleIterator, GenericImageIterator
+/// \see using_iterators, JointImageIterator, LineIterator, SampleIterator, GenericImageIterator
 template< typename T >
 class DIP_NO_EXPORT ImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = T;               ///< The data type of the sample, obtained when dereferencing the iterator
-      using reference = T&;               ///< The type of a reference to a sample
-      using pointer = T*;                 ///< The type of a pointer to a pixel
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The data type of the sample, obtained when dereferencing the iterator
+      using value_type = T;
+      /// The type of a reference to a sample
+      using reference = T&;
+      /// The type of a pointer to a pixel
+      using pointer = T*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       ImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ) {}
@@ -353,7 +360,7 @@ class DIP_NO_EXPORT ImageIterator {
       /// \brief To construct a useful iterator, provide an image, an ROI, and optionally a processing dimension.
       ///
       /// `spacing` can be an empty array or a scalar, but `origin` and `sizes` are expected to contain one value
-      /// per image dimension. %Iterator coordinates are within the ROI.
+      /// per image dimension. Iterator coordinates are within the ROI.
       ImageIterator(
             Image const& image,
             UnsignedArray const& origin, // TODO: Add a similar constructor to the other image iterators
@@ -566,7 +573,7 @@ class DIP_NO_EXPORT ImageIterator {
       /// \brief Optimizes the order in which the iterator visits the image pixels.
       ///
       /// The iterator internally reorders and flips image dimensions to change the linear index to match
-      /// the storage order (see `dip::Image::StandardizeStrides`).
+      /// the storage order (see \ref dip::Image::StandardizeStrides).
       /// If the image's strides were not normal, this will significantly increase the speed of reading or
       /// writing to the image. Expanded singleton dimensions are eliminated, meaning that each pixel is
       /// always only accessed once. Additionally, singleton dimensions are ignored.
@@ -636,7 +643,7 @@ inline void swap( ImageIterator< T >& v1, ImageIterator< T >& v2 ) {
 /// \brief A const iterator to iterate over all pixels of an image, or all lines of an image.
 /// \relates dip::ImageIterator
 ///
-/// This iterator is identical to `dip::ImageIterator`, but with a const value type.
+/// This iterator is identical to \ref dip::ImageIterator, but with a const value type.
 ///
 /// Satisfies all the requirements for a non-mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 template< typename T >
@@ -665,14 +672,14 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 /// \brief An iterator to iterate over all pixels of multiple images.
 ///
 /// The images must have the same sizes except along the processing dimension. It behaves similarly to
-/// `dip::ImageIterator` with the following differences:
+/// \ref dip::ImageIterator with the following differences:
 ///
 /// - This iterator is not dereferenceable and has no `[]` operator. The reason is that it points at multiple
-/// pixels at the same time (that is, one pixel in each image). Instead, use the `Sample<N>` method to obtain
-/// a reference to a sample of the pixel in image `N`.
+///   pixels at the same time (that is, one pixel in each image). Instead, use the `Sample<N>` method to obtain
+///   a reference to a sample of the pixel in image `N`.
 ///
 /// - The `GetLineIterator`, `Pointer` and `Offset` methods are templated also, requiring a template parameter
-/// `N` as in `Offset<N>`.
+///   `N` as in `Offset<N>`.
 ///
 /// - The `Optimize` method sorts image dimensions to optimize looping over the first image. The iterator will
 ///   be most efficient if all images share dimension ordering.
@@ -684,15 +691,15 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 /// that the method is a template:
 ///
 /// ```cpp
-///     template< typename TPI >
-///     void Function( ... ) {
-///        JointImageIterator< TPI, bin > it( { in, mask } );
-///        do {
-///           if( it.template Sample< 1 >() ) {   // Note `template` on this line
-///               it.template Sample< 0 >() = 0;  // Note `template` on this line
-///           }
-///        } while( ++it );
-///     }
+/// template< typename TPI >
+/// void Function( ... ) {
+///    JointImageIterator< TPI, bin > it( { in, mask } );
+///    do {
+///       if( it.template Sample< 1 >() ) {   // Note `template` on this line
+///           it.template Sample< 0 >() = 0;  // Note `template` on this line
+///       }
+///    } while( ++it );
+/// }
 /// ```
 ///
 /// There exist aliases `InXxx` for `Xxx<0>`, and `OutXxx` for `Xxx<1>`, where `Xxx` is `Sample`, `Pointer` or `Offset`.
@@ -700,14 +707,18 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see \ref using_iterators, ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
+/// \see using_iterators, ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
 template< typename... Types >
 class DIP_NO_EXPORT JointImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      template< dip::uint I > using value_type = typename std::tuple_element< I, std::tuple< Types ... >>::type; ///< The data type of the sample, obtained when dereferencing the iterator
-      template< dip::uint I > using reference = value_type< I >&; ///< The type of a reference to a sample
-      template< dip::uint I > using pointer = value_type< I >*;   ///< The type of a pointer to a sample
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The data type of the sample, obtained when dereferencing the iterator
+      template< dip::uint I > using value_type = typename std::tuple_element< I, std::tuple< Types ... >>::type;
+      /// The type of a reference to a sample
+      template< dip::uint I > using reference = value_type< I >&;
+      /// The type of a pointer to a sample
+      template< dip::uint I > using pointer = value_type< I >*;
 
       /// \brief Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an
       /// end iterator.
@@ -965,7 +976,7 @@ class DIP_NO_EXPORT JointImageIterator {
       /// \brief Optimizes the order in which the iterator visits the image pixels.
       ///
       /// The iterator internally reorders and flips image dimensions to change the linear index to match
-      /// the storage order of the first image (see `dip::Image::StandardizeStrides`), or image `n`
+      /// the storage order of the first image (see \ref dip::Image::StandardizeStrides), or image `n`
       /// if a parameter is given.
       /// If the image's strides were not normal, this will significantly increase the speed of reading or
       /// writing to the image. Expanded singleton dimensions are eliminated only if the dimension is expanded
@@ -1095,7 +1106,7 @@ inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, 
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

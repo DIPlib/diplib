@@ -1,23 +1,22 @@
-# The dip_image Object {#sec_dum_dip_image}
+\comment DIPlib 3.0
 
-[//]: # (DIPlib 3.0)
+\comment (c)2017-2020, Cris Luengo.
+\comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
-[//]: # ([c]2017-2020, Cris Luengo.)
-[//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
 
-[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
-[//]: # (you may not use this file except in compliance with the License.)
-[//]: # (You may obtain a copy of the License at)
-[//]: # ()
-[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
-[//]: # ()
-[//]: # (Unless required by applicable law or agreed to in writing, software)
-[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
-[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
-[//]: # (See the License for the specific language governing permissions and)
-[//]: # (limitations under the License.)
 
-\m_footernavigation
+\page sec_dum_dip_image The `dip_image` Object
 
 Images used by this toolbox are encapsulated in an object called
 `dip_image`. Objects of this type are unlike regular *MATLAB* arrays in
@@ -28,9 +27,7 @@ For more information on the functions mentioned in this chapter (and
 elsewhere) use the *MATLAB* help system. At the *MATLAB* command prompt, type
 `help <function_name>`.
 
-\tableofcontents
-
-\section sec_dum_dip_image_creating Creating a dip_image object
+\section sec_dum_dip_image_creating Creating a `dip_image` object
 
 To create a `dip_image` object, the function `dip_image` must be used.
 It converts any numeric array into an image object. The optional second
@@ -43,27 +40,26 @@ the table below. This table also lists some alternative names
 that are mapped to the names on the left; these are just to make
 specifying the data type easier.
 
-<table>
-<tr><th>Data type  <th> Description               <th> Other allowed names
-<tr><td>`bin`      <td> binary (in 8-bit integer) <td>
-<tr><td>`uint8`    <td> 8-bit unsigned integer    <td>
-<tr><td>`uint16`   <td> 16-bit unsigned integer   <td>
-<tr><td>`uint32`   <td> 32-bit unsigned integer   <td>
-<tr><td>`uint64`   <td> 64-bit unsigned integer   <td>
-<tr><td>`sint8`    <td> 8-bit signed integer      <td> `int8`
-<tr><td>`sint16`   <td> 16-bit signed integer     <td> `int16`
-<tr><td>`sint32`   <td> 32-bit signed integer     <td> `int32`
-<tr><td>`sint64`   <td> 64-bit signed integer     <td> `int64`
-<tr><td>`sfloat`   <td> single precision float    <td> `single`
-<tr><td>`dfloat`   <td> double precision float    <td> `double`
-<tr><td>`scomplex` <td> single precision complex  <td>
-<tr><td>`dcomplex` <td> double precision complex  <td>
-</table>
+Data type  | Description               | Other allowed names
+---------- | ------------------------- | -------------------
+`bin`      | binary (in 8-bit integer) |
+`uint8`    | 8-bit unsigned integer    |
+`uint16`   | 16-bit unsigned integer   |
+`uint32`   | 32-bit unsigned integer   |
+`uint64`   | 64-bit unsigned integer   |
+`sint8`    | 8-bit signed integer      | `int8`
+`sint16`   | 16-bit signed integer     | `int16`
+`sint32`   | 32-bit signed integer     | `int32`
+`sint64`   | 64-bit signed integer     | `int64`
+`sfloat`   | single precision float    | `single`
+`dfloat`   | double precision float    | `double`
+`scomplex` | single precision complex  |
+`dcomplex` | double precision complex  |
 
 For example,
 
-```m
-    a = dip_image(a,'sfloat');
+```matlab
+a = dip_image(a,'sfloat');
 ```
 
 will convert the data in `a` to `single` (4-byte) floats before creating
@@ -79,17 +75,17 @@ convert the `dip_image` object to a *MATLAB* array of the specified class.
 There are also some commands to create an image from scratch. `newim` is
 equivalent to the `zeros` function, but returns a `dip_image` object.
 
-```m
-    a = newim(256,256);
+```matlab
+a = newim(256,256);
 ```
 
 creates an image with 256x256 pixels set to zero. An additional
 parameter (as in the table above) can be used to specify the
-data type of the new image. The default is <tt>'sfloat'</tt>. If `b` is an
+data type of the new image. The default is `'sfloat'`. If `b` is an
 object of type `dip_image`, then
 
-```m
-    a = newim(b);
+```matlab
+a = newim(b);
 ```
 
 creates an image of the same size (this is the same as
@@ -98,8 +94,8 @@ create an image containing the coordinates of its pixels, and can be
 used in formulas that need them. For example, `rr([256,256])<64` creates a
 binary image with a disk of radius 64. The expression
 
-```m
-    a = (yy('corner'))*sin((xx('corner'))^2/300)
+```matlab
+a = (yy('corner'))*sin((xx('corner'))^2/300)
 ```
 
 generates a nice test pattern with increasing frequency along the
@@ -108,7 +104,7 @@ have 256x256 pixels as the default output size, and allow as a parameter
 either the size of an image, or an image whose size is to be copied. For
 example, `a*xx(a)` is an image multiplied by its x-coordinates.
 
-\section sec_dum_dip_image_displaying Displaying dip_image objects
+\section sec_dum_dip_image_displaying Displaying `dip_image` objects
 
 When a *MATLAB* command does not end with a semicolon, the display method
 is called for the resulting values, if any. This method defaults to
@@ -122,7 +118,7 @@ meaning that a 4x1x6 image will be displayed as if it were a 4x6 image.
 
 The `disp` method shows only the image size and data type instead. If
 you want `display` to call `disp` instead of `dipshow`, you can change
-the <tt>'DisplayToFigure'</tt> preference using `dipsetpref` (see
+the `'DisplayToFigure'` preference using `dipsetpref` (see
 \ref sec_dum_functions_dippref and \ref sec_dum_customizing_dippref).
 
 For images that cannot be displayed by `dipshow`, (e.g. zero-dimensional
@@ -132,7 +128,7 @@ There exist overloaded methods to query image properties, such as `size`
 and `ndims`, and some methods that are specific to `dip_image` objects,
 such as `imsize`, `ntensordims` and `datatype`.
 
-\section sec_dum_dip_image_operations Operations on dip_image objects
+\section sec_dum_dip_image_operations Operations on `dip_image` objects
 
 All mathematical operations have been overloaded for the `dip_image`
 object. The matrix multiplication (`*`)
@@ -145,14 +141,14 @@ treat any non-zero value in those images as true and zero as false. For
 example, to do a threshold we do not need a special function, since we
 have the relational operators:
 
-```m
-    b = a > 100;
+```matlab
+b = a > 100;
 ```
 
 A double threshold would be (note *MATLAB*'s operator precedence):
 
-```m
-    b = a > 50 & a < 200;
+```matlab
+b = a > 50 & a < 200;
 ```
 
 When the two images in the operation do not have the same number of
@@ -185,23 +181,21 @@ there are some other functions that are only defined for objects of type
 functions. That section also lists some functions that behave
 differently than usual when applied to images.
 
-<table>
-<caption>Arithmetic functions defined for objects of type `dip_image` (image in, image out)</caption>
-<tr><td>`abs`   <td> `acos`    <td> `and`, `&` <td> `angle`   <td> `asin`     <td> `atan`
-<tr><td>`atan2` <td> `besselj` <td> `ceil`     <td> `complex` <td> `conj`     <td> `cos`
-<tr><td>`erf`   <td> `exp`     <td> `fix`      <td> `floor`   <td> `hypot`    <td> `imag`
-<tr><td>`log`   <td> `log10`   <td> `log2`     <td> `mod`     <td> `not`, `~` <td>  `or`, `|`
-<tr><td>`phase` <td> `pow10`   <td> `pow2`     <td> `real`    <td> `round`    <td> `sign`
-<tr><td>`sin`   <td> `sqrt`    <td> `tan`      <td> `xor`     <td> `-`        <td> `+`
-<tr><td>`*`     <td> `.*`      <td> `./`       <td> `/`       <td> `\^`       <td> `.^`
-<tr><td>`==`    <td> `~=`      <td> `>`        <td> `>=`      <td> `<`        <td> `<=`
-</table>
+| Arithmetic functions defined for objects of type `dip_image` (image in, image out) { colspan="6" } ||||||
+| ------- | --------- | ---------- | --------- | ---------- | ---------- |
+| `abs`   | `acos`    | `and`, `&` | `angle`   | `asin`     | `atan`     |
+| `atan2` | `besselj` | `ceil`     | `complex` | `conj`     | `cos`      |
+| `erf`   | `exp`     | `fix`      | `floor`   | `hypot`    | `imag`     |
+| `log`   | `log10`   | `log2`     | `mod`     | `not`, `~` |  `or`, `|` |
+| `phase` | `pow10`   | `pow2`     | `real`    | `round`    | `sign`     |
+| `sin`   | `sqrt`    | `tan`      | `xor`     | `-`        | `+`        |
+| `*`     | `.*`      | `./`       | `/`       | `\^`       | `.^`       |
+| `==`    | `~=`      | `>`        | `>=`      | `<`        | `<=`       |
 
-<table>
-<caption>Arithmetic functions defined for objects of type `dip_image` (image in, scalar out)</caption>
-<tr><td>`all`        <td> `any`  <td> `max` <td> `mean` <td> `median` <td> `min`
-<tr><td>`percentile` <td> `prod` <td> `std` <td> `sum`  <td> `var`    <td>
-</table>
+| Arithmetic functions defined for objects of type `dip_image` (image in, scalar out) { colspan="6" } ||||||
+| ------------ | ------ | ----- | ------ | -------- | --------- |
+| `all`        | `any`  | `max` | `mean` | `median` | `min`     |
+| `percentile` | `prod` | `std` | `sum`  | `var`    |           |
 
 \section sec_dum_dip_image_dimensions Dimensions
 
@@ -261,37 +255,37 @@ Any numeric type can be assigned into a `dip_image` object, without
 changing the image data type (that is, the element assigned into the
 image is converted to the image data type). For example,
 
-```m
-    b(:,0) = 0;
+```matlab
+b(:,0) = 0;
 ```
 
 sets the top row of the image in `b` to 0. Note that indexing
 expressions can become as complicated as you like. For example, to
 sub-sample the image by a factor 3, we could write
 
-```m
-    b = b(1:3:end,1:3:end);
+```matlab
+b = b(1:3:end,1:3:end);
 ```
 
 Instead of using full indexing (indexing each dimension separately), it
 is also possible to index using a single (linear) index. As with standard
 *MATLAB* arrays, the indices increase in the vertical direction, which is
 how pixels are stored in memory. However they start at 0 for `dip_image`
-objects (\f$i = y + x \cdot \textrm{height}\f$). The output is always a 1D image.
+objects ($i = y + x \cdot \textrm{height}$). The output is always a 1D image.
 
 Finally, it is also possible to index using a mask image. Any binary
 image (or logical array) can be used as mask, but it must be of the same
 size as the image into which is being indexed. For example,
 
-```m
-    a(m) = 0;
+```matlab
+a(m) = 0;
 ```
 
 sets all pixels in `a`, where `m` is one, to zero. A very common
 expression is of the form
 
-```m
-    a(a<0) = 0;
+```matlab
+a(a<0) = 0;
 ```
 
 (which sets all negative pixels to zero).
@@ -315,8 +309,8 @@ for higher-rank tensor images.
 
 The function `newtensorim` creates a new tensor image filled with zeros:
 
-```m
-    A = newtensorim([2,2],[256,256])
+```matlab
+A = newtensorim([2,2],[256,256])
 ```
 
 creates a 2-by-2 tensor image of 256 by 256 pixels.
@@ -334,10 +328,10 @@ a matrix multiplication between each corresponding pair of pixels. For
 example, the following code applies a matrix multiplication to the
 2-vector image `b`, yielding a 2-by-2 matrix image `c`:
 
-```m
-    a = readim('trui');
-    b = gradient(a)      % yields a 2-vector
-    c = b * b'           % yields a 2-by-2 matrix
+```matlab
+a = readim('trui');
+b = gradient(a)      % yields a 2-vector
+c = b * b'           % yields a 2-by-2 matrix
 ```
 
 The pixels of a tensor image can be indexed like a normal image,
@@ -353,9 +347,9 @@ It is possible to combine spatial and tensor indexing, but the curly
 braces have to come first (this is a limitation of the *MATLAB* parser).
 Thus, write `c{1}(0,0)`, not `c(0,0){1}`.
 
-\warning
-Note that the function `end` only works correctly for spatial indexing
-(within `()`), not for tensor images (within `{}`).
+!!! warning
+    Note that the function `end` only works correctly for spatial indexing
+    (within `()`), not for tensor images (within `{}`).
 
 Because of limitations in the *MATLAB* language, it is impossible to know,
 for the overloaded `end` method, if it is being used inside curly or
@@ -365,9 +359,9 @@ have adopted is to always assume round braces (`()`). Never use `end`
 within curly braces (`{}`). You can use `tensorsize` or `numtensorel`
 to compute indices from the end for tensor indexing:
 
-```m
-    a{end};             % doesn't work!
-    a{numtensorel(a)};  % returns the last tensor component
+```matlab
+a{end};             % doesn't work!
+a{numtensorel(a)};  % returns the last tensor component
 ```
 
 Note here that the image `c` above is a special type of matrix image:
@@ -389,7 +383,8 @@ these are stored.
 The method `numtensorel` returns the number of tensor elements, and
 the method `tensorsize` returns the size of the tensor.
 
-\todo Document how to set and change the tensor shape.
+!!! todo
+    Document how to set and change the tensor shape.
 
 To get the array at a single pixel, use the `double` function:
 `c(0,0)` is a tensor image with a single pixel, and `double(c(0,0))` is
@@ -398,12 +393,11 @@ a *MATLAB* array with the tensor values at the first pixel.
 Functions defined specifically for tensor images are summarized in the
 following table. See \ref sec_dum_dip_image_overloaded.
 
-<table>
-<caption>Functions defined for tensor images</caption>
-<tr><td>`cross` <td> `curl`  <td> `det` <td> `diag` <td> `divergence` <td> `dot`
-<tr><td>`eig`   <td> `eye`   <td> `inv` <td> `norm` <td> `pinv`       <td> `rotate`
-<tr><td>`svd`   <td> `trace` <td> `*`   <td> `.'`   <td> <tt>'</tt>   <td>
-</table>
+| Functions defined for tensor images  { colspan="6" }    ||||||
+| ------- | ------- | ----- | ------ | ------------ | -------- |
+| `cross` | `curl`  | `det` | `diag` | `divergence` | `dot`    |
+| `eig`   | `eye`   | `inv` | `norm` | `pinv`       | `rotate` |
+| `svd`   | `trace` | `*`   | `.'`   | `'`          |          |
 
 \section sec_dum_dip_image_color Color images
 
@@ -414,8 +408,8 @@ the tensor image that represents it should have at least two components.
 Use the `colorspace` function to add this color space information to a
 tensor image:
 
-```m
-    C = colorspace(A,'RGB')
+```matlab
+C = colorspace(A,'RGB')
 ```
 
 A color space is any string recognized by the system. See `help colorspace`
@@ -434,15 +428,15 @@ color-space-less tensor image, and then to the final color space.
 The function `joinchannels` combines two or more images into a color
 image using the specified color space:
 
-```m
-    C = joinchannels('RGB',a,b,c)
+```matlab
+C = joinchannels('RGB',a,b,c)
 ```
 
 The function `newcolorim` creates a new color image of the given
 color space, filled with zeros:
 
-```m
-    C = newcolorim([256,256],'RGB');
+```matlab
+C = newcolorim([256,256],'RGB');
 ```
 
 All operations that are defined for tensor images can be applied to
@@ -458,12 +452,11 @@ Functions used in *MATLAB* to manipulate array dimensions have been
 overloaded to do the same thing with images. They are listed in
 the table below.
 
-<table>
-<caption>Dimension manipulation functions defined for objects of type `dip_image`</caption>
-<tr><td>`cat`     <td> `circshift`       <td> `expanddim`       <td> `flipdim` <td> `fliplr`   <td> `flipud`
-<tr><td>`permute` <td> `repmat`          <td> `reshape`         <td> `rot90`   <td> `shiftdim` <td> `squeeze`
-<tr><td>`swapdim` <td> `tensortospatial` <td> `spatialtotensor` <td>           <td>            <td>
-</table>
+| Dimension manipulation functions defined for objects of type `dip_image` { colspan="6" } ||||||
+| --------- | ----------------- | ----------------- | --------- | ---------- | --------- |
+| `cat`     | `circshift`       | `expanddim`       | `flipdim` | `fliplr`   | `flipud`  |
+| `permute` | `repmat`          | `reshape`         | `rot90`   | `shiftdim` | `squeeze` |
+| `swapdim` | `tensortospatial` | `spatialtotensor` |           |            |           |
 
 A few of these functions are unique to `dip_image` objects.
 The function `expanddim` adds trailing singleton dimensions, and `swapdim`
@@ -507,11 +500,11 @@ dimensions) would change the pixels accessed at a given linear index, which is
 counter-intuitive. For example, in the following program `a` and `b` are
 different values:
 
-```m
-    img = dip_image(rand(10,11,8));
-    a = img(200);
-    img = reshape(orig,[11,8,10]);
-    b = img(200);
+```matlab
+img = dip_image(rand(10,11,8));
+a = img(200);
+img = reshape(orig,[11,8,10]);
+b = img(200);
 ```
 
 *DIPimage 3* changed this behavior, such that `reshape` and `squeeze` are
@@ -530,9 +523,9 @@ Similarly, removing dimension 2 would move dimension 1 to its place, and dimensi
 not 20x30 as one would expect.
 
 Setting the preference \ref sec_dum_customizing_dippref_cheapsqueeze
-to <tt>'off'</tt> changes the behavior of `squeeze` to match its old behavior,
-possibly incurring a data copy. In essence, when the setting is <tt>'off'</tt>,
-then `squeeze` is implemented through `permute`, whereas when it is <tt>'on'</tt>
+to `'off'` changes the behavior of `squeeze` to match its old behavior,
+possibly incurring a data copy. In essence, when the setting is `'off'`,
+then `squeeze` is implemented through `permute`, whereas when it is `'on'`
 (the default), it is implemented through `reshape`.
 
 \section sec_dum_dip_image_overloaded Overloaded methods with different behavior
@@ -542,7 +535,7 @@ Most overloaded methods behave in a consistent manner with the built-in
 the `dip_image` object, some behave somewhat differently. We summarize
 these functions here.
 
-\subsection sec_dum_dip_image_find find, findcoord
+\subsection sec_dum_dip_image_find `find`, `findcoord`
 
 `find` works similarly to the base version, except it is not possible
 to obtain `[I,J]` indices as output. The indices returned are always
@@ -553,13 +546,13 @@ as a single array, with as many columns as dimensions in the input
 image, and one row for every non-zero pixel. Note that this matrix
 cannot be used directly to index an image.
 
-\subsection sec_dum_dip_image_gradient gradient
+\subsection sec_dum_dip_image_gradient `gradient`
 
 The overloaded version of `gradient` returns a vector image, instead of
 multiple outputs. The derivatives are computed using Gaussian
 derivatives by default.
 
-\subsection sec_dum_dip_image_ind2sub ind2sub, sub2ind
+\subsection sec_dum_dip_image_ind2sub `ind2sub`, `sub2ind`
 
 These functions have the same function as their base counterparts, but
 instead of using subscripts specified with one array for each dimension,
@@ -567,13 +560,13 @@ they take and return a single coordinate array, compatible to that
 returned by `findcoord`. Also, instead of a size array, they take an
 image as input.
 
-\subsection sec_dum_dip_image_isscalar isscalar, isvector, isrow, iscolumn, ismatrix
+\subsection sec_dum_dip_image_isscalar `isscalar`, `isvector`, `isrow`, `iscolumn`, `ismatrix`
 
 These functions examine the tensor shape, not the image shape. A scalar
 image (it has a single channel) tests true with `isscalar`, no matter
 how many spatial dimensions it has.
 
-\subsection sec_dum_dip_image_max max, min, mean, median, std, var, prod, sum, all, any
+\subsection sec_dum_dip_image_max `max`, `min`, `mean`, `median`, `std`, `var`, `prod`, `sum`, `all`, `any`
 
 The built-in *MATLAB* versions of these always operate along matrix columns,
 yielding a row vector where each element is the max/min/mean/etc. of the
@@ -593,8 +586,8 @@ projection functions all take a mask image as an optional second argument.
 The projection is taken only over those pixels selected by the mask. For
 example,
 
-```m
-    mean(a,a>0,1)
+```matlab
+mean(a,a>0,1)
 ```
 
 computes the mean projection along the first dimension (x axis), but only
@@ -603,14 +596,14 @@ computes the mean over the positive pixels.
 The function `percentile` is also projection function, but does not have a
 counterpart for *MATLAB* arrays (unless you have the statistics toolbox).
 
-\subsection sec_dum_dip_image_ndims ndims
+\subsection sec_dum_dip_image_ndims `ndims`
 
 This method can return 0 or 1 (for 0D and 1D images, respectively).
 For normal *MATLAB* arrays it always returns at least 2. Note that
 `ndims(a)` is not necessarily equal to `length(size(a))`, but it is
 equal to `length(imsize(a))`.
 
-\subsection sec_dum_dip_image_numel numel
+\subsection sec_dum_dip_image_numel `numel`
 
 The overloaded `numel` is the number of samples in the image. Note that
 `prod(size(a))` is not equal to `numel(a)`, as it is for regular arrays.
@@ -622,14 +615,14 @@ Instead, the following relations hold:
 
 - `numpixels(a) * numtensorel(a) == numel(a)`
 
-\subsection sec_dum_dip_image_rotate rotate
+\subsection sec_dum_dip_image_rotate `rotate`
 
 The overloaded method `rotate` has nothing to with *MATLAB*'s `rotate`
 (a handle graphics function).
 Applied to a 3-vector image, it rotates the vectors around an axis
 given by a second vector image or vector.
 
-\section sec_dum_dip_image_review Review of the differences between a dip_image and a MATLAB array
+\section sec_dum_dip_image_review Review of the differences between a `dip_image` and a *MATLAB* array
 
 As we have seen, objects of type `dip_image` have some differences with
 respect of regular *MATLAB* arrays. The main difference is in indexing. We
@@ -655,7 +648,7 @@ window, instead of having its pixel values shown in the command window.
 This is the default behavior, but can be overridden.
 
 All operators work on a pixel-by-pixel basis. For example, the transpose
-operators <tt>'</tt> and <tt>.'</tt> transpose the vector or matrix at each pixel,
+operators `'` and `.'` transpose the vector or matrix at each pixel,
 not the image itself, and the multiplication operator `*` applies matrix
 multiplication to each of the corresponding pixel pairs.
 All functions that work on the columns of numeric arrays (such as `sum`

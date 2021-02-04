@@ -26,7 +26,7 @@
 
 /// \file
 /// \brief Defines templated functions for saturated arithmetic.
-/// \see sample_operators
+/// See \ref pixeltypes.
 
 
 // NOTE: A different strategy is described in http://locklessinc.com/articles/sat_arithmetic/
@@ -41,19 +41,7 @@
 namespace dip {
 
 
-/// \addtogroup sample_operators
-///
-/// `dip::saturated_XXX` are templated functions for saturated arithmetic. Most *DIPlib* functions take care
-/// of properly clamping the result of operations on pixels by using these functions to perform arithmetic.
-/// For example,
-///
-/// ```cpp
-///     10u - 20u == 4294967286u;
-///     dip::saturated_sub(10u, 20u) == 0u;
-/// ```
-///
-/// Saturated arithmetic is made available by including `diplib/saturated_arithmetic.h`.
-/// \{
+/// \addtogroup pixeltypes
 
 
 namespace detail {
@@ -80,14 +68,7 @@ template<> struct LargerType< sint64 > { using type = __int128_t; };
 // Addition
 //
 
-#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
-
 /// \brief Adds two values using saturated arithmetic.
-template< typename T >
-constexpr inline T saturated_add( T lhs, T rhs ) {}
-
-#endif
-
 // Floats and complex don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
                                               || detail::is_complex< T >::value, int > = 0 >
@@ -132,14 +113,7 @@ constexpr inline bin saturated_add( bin lhs, bin rhs ) {
 // Subtraction
 //
 
-#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
-
 /// \brief Subtracts two values using saturated arithmetic.
-template< typename T >
-constexpr inline T saturated_sub( T lhs, T rhs ) {}
-
-#endif
-
 // Floats and complex don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
                                               || detail::is_complex< T >::value, int > = 0 >
@@ -184,14 +158,7 @@ constexpr inline bin saturated_sub( bin lhs, bin rhs ) {
 // Multiplication
 //
 
-#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
-
 /// \brief Multiplies two values using saturated arithmetic.
-template< typename T >
-constexpr inline T saturated_mul( T lhs, T rhs ) {}
-
-#endif
-
 // Floats and complex don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
                                               || detail::is_complex< T >::value, int > = 0 >
@@ -234,14 +201,7 @@ constexpr inline bin saturated_mul( bin lhs, bin rhs ) {
 // Division
 //
 
-#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
-
 /// \brief Divides two values using saturated arithmetic.
-template< typename T >
-constexpr inline T saturated_div( T lhs, T rhs ) {}
-
-#endif
-
 // Floats, complex and unsigned integers don't overflow
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
                                               || detail::is_complex< T >::value
@@ -279,14 +239,7 @@ constexpr inline bin saturated_safediv( bin lhs, bin rhs ) {
 // Inversion
 //
 
-#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
-
 /// \brief Inverts a value using saturated arithmetic. This is the same as negation, but not for unsigned values.
-template< typename T >
-constexpr inline T saturated_inv( T v ) {}
-
-#endif
-
 // Floats and complex are straight-forward
 template< typename T, typename std::enable_if_t< detail::is_floating_point< T >::value
                                                  || detail::is_complex< T >::value, int > = 0 >
@@ -311,7 +264,7 @@ constexpr inline bin saturated_inv( bin v ) {
    return !v;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

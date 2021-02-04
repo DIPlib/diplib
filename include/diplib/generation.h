@@ -27,7 +27,7 @@
 
 /// \file
 /// \brief Functions for generating image data.
-/// \see generation
+/// See \ref generation.
 
 
 namespace dip {
@@ -35,14 +35,13 @@ namespace dip {
 // Forward declaration, defined in chain_code.h
 struct DIP_NO_EXPORT Polygon;
 
-/// \defgroup generation Generation
+/// \group generation Generation
 /// \brief Filling images with generated data, and creating test images.
 
-
-/// \defgroup generation_drawing Drawing
+/// \group generation_drawing Drawing
 /// \ingroup generation
 /// \brief Drawing in images
-/// \{
+/// \addtogroup
 
 /// \brief Sets the pixels at the border of `out` to `value`.
 ///
@@ -55,20 +54,21 @@ DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, Unsign
 /// \brief Multiplies the image with a windowing function.
 ///
 /// `type` can be one of the following windowing functions:
-///  - "Hamming": A cosine window. Set `parameter` to 0.5 to get a Hann window, and to 25.0/46.0 to get
-///    a Hamming window. With 0.53836, a small refinement to the Hamming optimum, yields the minimum peak
-///    side-lobe level.
-///  - "Gaussian": A Gaussian window, this is the only one that is isotropic. `parameter` is the sigma, as a function
-///    of the image half-width. Choose a value smaller or equal to 0.5. At 0.5, 4 sigmas fit in the image width.
-///  - "Tukey": A rectangular window convolved with a Hann window. `parameter` is the fraction of image
-///    width occupied by the cosine lobe. If `parameter` is 1.0, it is a Hann window, if it is 0.0 it is a rectangular
-///    window.
-///  - "GaussianTukey": A rectangular window convolved with a Gaussian window. `parameter` is the sigma in pixels,
-///    a value of the order of 10 is a good choice. The rectangular window is of the size of the image minus 3 sigma
-///    on each edge.
-///    This is the only window where the tapering is independent of the image width, and thus equal along each image
-///    dimension even if the image is not square. If the image size along one dimension is too small to accommodate
-///    the window shape, a Gaussian window is created instead.
+///
+/// - "Hamming": A cosine window. Set `parameter` to 0.5 to get a Hann window, and to 25.0/46.0 to get
+///   a Hamming window. With 0.53836, a small refinement to the Hamming optimum, yields the minimum peak
+///   side-lobe level.
+/// - "Gaussian": A Gaussian window, this is the only one that is isotropic. `parameter` is the sigma, as a function
+///   of the image half-width. Choose a value smaller or equal to 0.5. At 0.5, 4 sigmas fit in the image width.
+/// - "Tukey": A rectangular window convolved with a Hann window. `parameter` is the fraction of image
+///   width occupied by the cosine lobe. If `parameter` is 1.0, it is a Hann window, if it is 0.0 it is a rectangular
+///   window.
+/// - "GaussianTukey": A rectangular window convolved with a Gaussian window. `parameter` is the sigma in pixels,
+///   a value of the order of 10 is a good choice. The rectangular window is of the size of the image minus 3 sigma
+///   on each edge.
+///   This is the only window where the tapering is independent of the image width, and thus equal along each image
+///   dimension even if the image is not square. If the image size along one dimension is too small to accommodate
+///   the window shape, a Gaussian window is created instead.
 ///
 /// In all these cases, the window is applied to each dimension independently, meaning that the multi-dimensional
 /// window is the outer product of the 1D windows.
@@ -84,8 +84,9 @@ inline Image ApplyWindow( Image const& in, String const& type = "Hamming", dfloa
 /// The line goes from `start` to `end`, both points included. These points must be within the image.
 /// Pixels in `out` on the line are set to `value`, other pixels are not touched.
 /// `blend` can be one of the following strings:
-///  - `"assign"`: The pixels are set to `value`.
-///  - `"add"`: `value` is added to the pixels using saturated arithmetic.
+///
+/// - `"assign"`: The pixels are set to `value`.
+/// - `"add"`: `value` is added to the pixels using saturated arithmetic.
 DIP_EXPORT void DrawLine(
       Image& out,
       UnsignedArray const& start,
@@ -103,8 +104,9 @@ DIP_EXPORT void DrawLine(
 /// `points` must have at least two points, and all points must be within the image.
 /// Pixels in `out` on the lines are set to `value`, other pixels are not touched.
 /// `blend` can be one of the following strings:
-///  - `"assign"`: The pixels are set to `value`.
-///  - `"add"`: `value` is added to the pixels using saturated arithmetic.
+///
+/// - `"assign"`: The pixels are set to `value`.
+/// - `"add"`: `value` is added to the pixels using saturated arithmetic.
 ///
 /// `out` must have at least two dimensions.
 DIP_EXPORT void DrawLines(
@@ -117,16 +119,18 @@ DIP_EXPORT void DrawLines(
 /// \brief Draws a polygon in a 2D image.
 ///
 /// Draws a polygon going through each of the points in `polygon`. `mode` can be one of the following strings:
-///  - `"open"`: the start and end points are not connected.
-///  - `"closed"`: the start and end points are connected.
-///  - `"filled"`: the polygon is filled, that is, all pixels within the polygon are painted (default).
+///
+/// - `"open"`: the start and end points are not connected.
+/// - `"closed"`: the start and end points are connected.
+/// - `"filled"`: the polygon is filled, that is, all pixels within the polygon are painted (default).
+///
 /// For a filled polygon, the vertices do not need to be within the image, but for non-filled polygons they
 /// must all be within the image.
 ///
 /// Pixels in `out` on the polygon (and within the polygon for filled polygons) are set to `value`, other pixels
 /// are not touched.
 ///
-/// The `dip::Polygon` struct is defined in `diplib/chain_code.h`, which you'll need to include to use this function.
+/// The \ref dip::Polygon struct is defined in \ref "diplib/chain_code.h", which you'll need to include to use this function.
 ///
 /// `out` must have two dimensions.
 DIP_EXPORT void DrawPolygon2D(
@@ -218,7 +222,7 @@ DIP_EXPORT void DrawBandlimitedPoint(
 ///
 /// `out` must not be binary and have at least two dimensions.
 ///
-/// If `start` and `end` are identical, calls `dip::DrawBandlimitedPoint`.
+/// If `start` and `end` are identical, calls \ref dip::DrawBandlimitedPoint.
 DIP_EXPORT void DrawBandlimitedLine(
       Image& out,
       FloatArray start,
@@ -287,13 +291,13 @@ DIP_EXPORT void DrawBandlimitedBox(
       dfloat truncation = 3.0
 );
 
-/// \}
+/// \endgroup
 
 
-/// \defgroup generation_test Test image generation
+/// \group generation_test Test image generation
 /// \ingroup generation
 /// \brief Generating images with test objects or functions
-/// \{
+/// \addtogroup
 
 /// \brief Maps input values through an error function, can be used to generate arbitrary band-limited objects.
 ///
@@ -312,10 +316,10 @@ DIP_EXPORT void DrawBandlimitedBox(
 /// width, and different sub-pixel shifts. The foreground has a value of 255, and the background of 0.
 ///
 /// ```cpp
-///     dip::UnsignedArray outSize{ 256, 256 };
-///     dip::Image xx = 20.5 - dip::Abs( dip::CreateXCoordinate( outSize ) + 21.3 );
-///     dip::Image yy = 20.5 - dip::Abs( dip::CreateYCoordinate( outSize ) - 7.8 );
-///     dip::Image cross = dip::GaussianEdgeClip( dip::Supremum( xx, yy ), { 255 } );
+/// dip::UnsignedArray outSize{ 256, 256 };
+/// dip::Image xx = 20.5 - dip::Abs( dip::CreateXCoordinate( outSize ) + 21.3 );
+/// dip::Image yy = 20.5 - dip::Abs( dip::CreateYCoordinate( outSize ) - 7.8 );
+/// dip::Image cross = dip::GaussianEdgeClip( dip::Supremum( xx, yy ), { 255 } );
 /// ```
 DIP_EXPORT void GaussianEdgeClip(
       Image const& in,
@@ -353,10 +357,10 @@ inline Image GaussianEdgeClip(
 /// a value of 0.
 ///
 /// ```cpp
-///     dip::UnsignedArray outSize{ 256, 256 };
-///     dip::Image xx = 20.5 - dip::Abs( dip::CreateXCoordinate( outSize ) + 21.3 );
-///     dip::Image yy = 20.5 - dip::Abs( dip::CreateYCoordinate( outSize ) - 7.8 );
-///     dip::Image cross = dip::GaussianLineClip( dip::Supremum( xx, yy ), { 1500 } );
+/// dip::UnsignedArray outSize{ 256, 256 };
+/// dip::Image xx = 20.5 - dip::Abs( dip::CreateXCoordinate( outSize ) + 21.3 );
+/// dip::Image yy = 20.5 - dip::Abs( dip::CreateYCoordinate( outSize ) - 7.8 );
+/// dip::Image cross = dip::GaussianLineClip( dip::Supremum( xx, yy ), { 1500 } );
 /// ```
 DIP_EXPORT void GaussianLineClip(
       Image const& in,
@@ -382,18 +386,19 @@ inline Image GaussianLineClip(
 /// `out` must be forged, and scalar.
 ///
 /// `origin` specifies where the origin lies:
-///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
-///    `size/2`). This is the default.
-///  - `"left"`: The origin is on the pixel left of the center (at integer division result of
-///    `(size-1)/2`).
-///  - `"corner"`: The origin is on the first pixel. This is the default if no other option is given.
+///
+/// - `"right"`: The origin is on the pixel right of the center (at integer division result of
+///   `size/2`). This is the default.
+/// - `"left"`: The origin is on the pixel left of the center (at integer division result of
+///   `(size-1)/2`).
+/// - `"corner"`: The origin is on the first pixel. This is the default if no other option is given.
 DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
 
 /// \brief Creates a delta function image.
 ///
 /// All pixels will be zero except at the origin, where it will be 1.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
-/// See `dip::FillDelta` for the meaning of `origin`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
+/// See \ref dip::FillDelta for the meaning of `origin`.
 inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& origin = "" ) {
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillDelta( out, origin ));
@@ -483,10 +488,9 @@ inline Image CreateGabor(
 /// The function is defined for images between 1 and 3 dimensions. `out` must be forged, scalar, and of a
 /// floating-point type.
 ///
-/// \literature
-/// <li>L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images",
-///     Ph.D. thesis, Delft University of Technology, 1993.
-/// \endliterature
+/// !!! literature
+///     - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images",
+///       Ph.D. thesis, Delft University of Technology, 1993.
 DIP_EXPORT void FTEllipsoid(
       Image& out,
       FloatArray radius = { 1 },
@@ -572,7 +576,7 @@ inline Image FTGaussian(
 }
 
 
-/// \brief Describes the parameters for a test object, used by `dip::TestObject`.
+/// \brief Describes the parameters for a test object, used by \ref dip::TestObject.
 struct TestObjectParams {
    // Object description
    String objectShape = S::ELLIPSOID;        ///< Can be `"ellipsoid"`, `"ellipsoid shell"`, `"box"`, `"box shell"`, or `"custom"`.
@@ -599,51 +603,55 @@ struct TestObjectParams {
 /// The test object can optionally be modulated using a sine function, blurred, and have noise added.
 ///
 /// `params` describes how the object is generated:
-///  - `params.generationMethod` can be one of:
-///      - `"gaussian"`: creates the shape directly in the spatial domain, the shape will have Gaussian edges with
-///        a sigma of 0.9.
-///      - `"fourier"`: creates the shape in the frequency domain, the shape will be truly bandlimited.
-///  - `params.objectShape` can be one of:
-///      - `"ellipsoid"` or `"ellipsoid shell"`: the shape is drawn with `dip::DrawBandlimitedBall` or
-///        `dip::FTEllipsoid`, depending on the generation method. In the case of `"gaussian"` (spatial-domain
-///        generation), the shape must be isotropic (have same sizes in all dimensions). In the case of `"fourier"`,
-///        the image cannot have more than three dimensions.
-///      - `"box"` or `"box shell"`: the shape is drawn with `dip::DrawBandlimitedBox` or
-///        `dip::FTBox`, depending on the generation method.
-///      - `"custom"`: `out` already contains a shape, which is used as-is. In the case that `params.generationMethod`
-///        is `"gaussian"`, `out` is taken to be in the spatial domain, and in the case of `"fourier"`, in the
-///        frequency domain.
-///  - `params.objectSizes` determines the extent of the object along each dimension. Must have either one element
-///    or as many elements as image dimensions in `out`.
-///  - `params.objectAmplitude` determines the brightness of the object.
-///  - `params.randomShift`, if `true`, shifts the object with a random sub-pixel shift in the range [-0.5,0.5].
-///    This sub-pixel shift can be used to avoid bias due to digitization error over a sequence of generated objects.
+///
+/// - `params.generationMethod` can be one of:
+///     - `"gaussian"`: creates the shape directly in the spatial domain, the shape will have Gaussian edges with
+///       a sigma of 0.9.
+///     - `"fourier"`: creates the shape in the frequency domain, the shape will be truly bandlimited.
+/// - `params.objectShape` can be one of:
+///     - `"ellipsoid"` or `"ellipsoid shell"`: the shape is drawn with \ref dip::DrawBandlimitedBall or
+///       \ref dip::FTEllipsoid, depending on the generation method. In the case of `"gaussian"` (spatial-domain
+///       generation), the shape must be isotropic (have same sizes in all dimensions). In the case of `"fourier"`,
+///       the image cannot have more than three dimensions.
+///     - `"box"` or `"box shell"`: the shape is drawn with \ref dip::DrawBandlimitedBox or
+///       \ref dip::FTBox, depending on the generation method.
+///     - `"custom"`: `out` already contains a shape, which is used as-is. In the case that `params.generationMethod`
+///       is `"gaussian"`, `out` is taken to be in the spatial domain, and in the case of `"fourier"`, in the
+///       frequency domain.
+/// - `params.objectSizes` determines the extent of the object along each dimension. Must have either one element
+///   or as many elements as image dimensions in `out`.
+/// - `params.objectAmplitude` determines the brightness of the object.
+/// - `params.randomShift`, if `true`, shifts the object with a random sub-pixel shift in the range [-0.5,0.5].
+///   This sub-pixel shift can be used to avoid bias due to digitization error over a sequence of generated objects.
 ///
 /// `params` also describes what effects are applied to the image:
 ///
 /// Modulation is an additive sine wave along each dimension, and is controlled by:
-///  - `params.modulationDepth` controls the strength of the modulation. If this value is zero, no modulation is applied.
-///  - `params.modulationFrequency` controls the frequency along each image axis. The units are number of periods per
-///    pixel, and hence values below 0.5 should be given to prevent aliasing.
+///
+/// - `params.modulationDepth` controls the strength of the modulation. If this value is zero, no modulation is applied.
+/// - `params.modulationFrequency` controls the frequency along each image axis. The units are number of periods per
+///   pixel, and hence values below 0.5 should be given to prevent aliasing.
 ///
 /// Blurring is controlled by:
-///  - `params.pointSpreadFunction` determines the point spread function (PSF) used. It can be `"gaussian"` for
-///     Gaussian blurring, `"incoherent"` for a 2D, in-focus, diffraction limited incoherent PSF (applied through
-///     Fourier domain filtering), or `"none"` for no blurring.
-///  - `params.oversampling` determines the size of the PSF. In the case of `"gaussian"`, the sigma used for blurring
-///    is `0.9 * params.oversampling`. In the case of `"incoherent"`, this is the `oversampling` parameter passed to
-///    `dip::IncoherentOTF`.
+///
+/// - `params.pointSpreadFunction` determines the point spread function (PSF) used. It can be `"gaussian"` for
+///    Gaussian blurring, `"incoherent"` for a 2D, in-focus, diffraction limited incoherent PSF (applied through
+///    Fourier domain filtering), or `"none"` for no blurring.
+/// - `params.oversampling` determines the size of the PSF. In the case of `"gaussian"`, the sigma used for blurring
+///   is `0.9 * params.oversampling`. In the case of `"incoherent"`, this is the `oversampling` parameter passed to
+///   \ref dip::IncoherentOTF.
 ///
 /// Noise is controlled by:
-///  - `params.backgroundValue` determines the background intensity added to the image. This is relevant for the
-///    Poisson noise.
-///  - `params.signalNoiseRatio` determines the signal to noise ratio (SNR), which we define as the average object
-///    energy divided by average noise power (i.e. not in dB). If the SNR is larger than 0, a mixture of Gaussian
-///    and Poisson noise is added to the whole image.
-///  - `params.gaussianNoise` determines the relative amount of Gaussian noise used.
-///  - `params.poissonNoise` determines the relative amount of Poisson noise used. The magnitude of these two
-///    quantities is not relevant, only their relative values are. If they are equal, the requested SNR is divided
-///    equally between the Gaussian and the Poisson noise.
+///
+/// - `params.backgroundValue` determines the background intensity added to the image. This is relevant for the
+///   Poisson noise.
+/// - `params.signalNoiseRatio` determines the signal to noise ratio (SNR), which we define as the average object
+///   energy divided by average noise power (i.e. not in dB). If the SNR is larger than 0, a mixture of Gaussian
+///   and Poisson noise is added to the whole image.
+/// - `params.gaussianNoise` determines the relative amount of Gaussian noise used.
+/// - `params.poissonNoise` determines the relative amount of Poisson noise used. The magnitude of these two
+///   quantities is not relevant, only their relative values are. If they are equal, the requested SNR is divided
+///   equally between the Gaussian and the Poisson noise.
 ///
 /// `random` is the random number generator used for both the sub-pixel shift and the noise added to the image.
 DIP_EXPORT void TestObject(
@@ -661,7 +669,7 @@ inline Image TestObject(
    TestObject( out, params, random );
    return out;
 }
-/// \brief Calls the main `dip::TestObject` function with a default-initialized `dip::Random` object.
+/// \brief Calls the main \ref dip::TestObject function with a default-initialized \ref dip::Random object.
 inline void TestObject(
       Image& out,
       TestObjectParams const& params = {}
@@ -720,8 +728,8 @@ inline Image CreatePoissonPointProcess(
 /// `density` determines the grid density. On average, one of every `1/density` pixels will be set. The grid is
 /// sampled equally densely along all dimensions. If the density doesn't lead to an integer grid spacing, the grid
 /// locations will be rounded, leading to an uneven spacing. `density` must be such that the grid spacing is at
-/// least 2. Therefore, `density` must be smaller than \f$\frac{1}{2^d}\f$, with \f$d\f$ the image dimensionality,
-/// in the rectangular case. In the hexagonal case, this is \f$\frac{1}{2 \sqrt 3} \approx 0.2887\f$.
+/// least 2. Therefore, `density` must be smaller than $\frac{1}{2^d}$, with $d$ the image dimensionality,
+/// in the rectangular case. In the hexagonal case, this is $\frac{1}{2 \sqrt 3} \approx 0.2887$.
 ///
 /// `mode` determines how the random grid location is determined. It can be either `"translation"` or `"rotation"`.
 /// In the first case, only a random translation is applied to the grid, it will be aligned with the image axes.
@@ -740,7 +748,7 @@ DIP_EXPORT void FillRandomGrid(
 ///
 /// `out` will be of size `sizes`, binary and scalar.
 ///
-/// See `dip::FillRandomGrid` for the meaning of the remainder of the parameters, which define the grid.
+/// See \ref dip::FillRandomGrid for the meaning of the remainder of the parameters, which define the grid.
 inline void CreateRandomGrid(
       Image& out,
       UnsignedArray const& sizes,
@@ -764,20 +772,20 @@ inline Image CreateRandomGrid(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
-/// \defgroup generation_coordinates Coordinate generation
+/// \group generation_coordinates Coordinate generation
 /// \ingroup generation
 /// \brief Generating images with coordinates
-/// \{
+/// \addtogroup
 
 /// \brief Fills an image with a ramp function.
 ///
 /// The ramp function increases along dimension `dimension`, and is
 /// equivalent to the cartesian coordinate for dimension `dimension`. `dimension` must be
 /// one of the dimensions of `out`. `out` must be forged, scalar, and of a real type.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode = {} );
 
 /// \brief Creates a ramp function image.
@@ -785,11 +793,11 @@ DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode
 /// The ramp function increases along dimension `dimension`, and is equivalent to the cartesian
 /// coordinate for dimension `dimension`. `dimension` must be smaller than `sizes.size()`.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT. All dimensions except
 /// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
 /// output image only stores `sizes[dimension]` pixels.
 ///
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateRamp(
       Image& out,
       UnsignedArray const& sizes,
@@ -818,7 +826,7 @@ inline Image CreateRamp(
 ///
 /// The ramp function is equivalent to the cartesian coordinate for the x-axis.
 /// `out` must be forged, scalar, and of a real type.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( FillRamp( out, 0, mode ));
 }
@@ -828,11 +836,11 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
 /// The ramp function increases along the x-axis, and is equivalent to the cartesian coordinate
 /// for the x-axis.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT. All dimensions except
 /// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
 /// output image only stores `sizes[dimension]` pixels.
 ///
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateXCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 0, mode ));
 }
@@ -846,7 +854,7 @@ inline Image CreateXCoordinate( UnsignedArray const& sizes, StringSet const& mod
 ///
 /// The ramp function is equivalent to the cartesian coordinate for the y-axis.
 /// `out` must be forged, scalar, of a real type, and have at least two dimensions.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( FillRamp( out, 1, mode ));
 }
@@ -856,11 +864,11 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
 /// The ramp function increases along the y-axis, and is equivalent to the cartesian coordinate
 /// for the y-axis. `size` must have at least two elements.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT. All dimensions except
 /// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
 /// output image only stores `sizes[dimension]` pixels.
 ///
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateYCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 1, mode ));
 }
@@ -874,7 +882,7 @@ inline Image CreateYCoordinate( UnsignedArray const& sizes, StringSet const& mod
 ///
 /// The ramp function is equivalent to the cartesian coordinate for the z-axis.
 /// `out` must be forged, scalar, of a real type, and have at least three dimensions.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( FillRamp( out, 2, mode ));
 }
@@ -884,11 +892,11 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
 /// The ramp function increases along the z-axis, and is equivalent to the cartesian coordinate
 /// for the z-axis. `sizes` must have at least three elements.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT. All dimensions except
 /// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
 /// output image only stores `sizes[dimension]` pixels.
 ///
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateZCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 2, mode ));
 }
@@ -904,15 +912,15 @@ inline Image CreateZCoordinate( UnsignedArray const& sizes, StringSet const& mod
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
 /// `out` must be forged, scalar, and of a real type.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 DIP_EXPORT void FillRadiusCoordinate( Image& out, StringSet const& mode = {} );
 
 /// \brief Creates an image filled with the distance to the origin.
 ///
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateRadiusCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillRadiusCoordinate( out, mode ));
@@ -929,15 +937,15 @@ inline Image CreateRadiusCoordinate( UnsignedArray const& sizes, StringSet const
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
 /// `out` must be forged, scalar, and of a real type.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 DIP_EXPORT void FillRadiusSquareCoordinate( Image& out, StringSet const& mode = {} );
 
 /// \brief Creates an image filled with the square distance to the origin.
 ///
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateRadiusSquareCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillRadiusSquareCoordinate( out, mode ));
@@ -954,15 +962,15 @@ inline Image CreateRadiusSquareCoordinate( UnsignedArray const& sizes, StringSet
 /// The angle function is equivalent to the phi component of the polar or spherical
 /// coordinate system.
 /// `out` must be forged, scalar, of a real type, and have two or three dimensions.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 DIP_EXPORT void FillPhiCoordinate( Image& out, StringSet const& mode = {} );
 
 /// \brief Creates an image filled with the angle to the x-axis within the x-y plane.
 ///
 /// The angle function is equivalent to the phi component of the polar or spherical
 /// coordinate system. `size` must have two or three elements.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreatePhiCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillPhiCoordinate( out, mode ));
@@ -978,15 +986,15 @@ inline Image CreatePhiCoordinate( UnsignedArray const& sizes, StringSet const& m
 ///
 /// The angle function is equivalent to the theta component of the spherical coordinate system.
 /// `out` must be forged, scalar, of a real type, and have three dimensions.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 DIP_EXPORT void FillThetaCoordinate( Image& out, StringSet const& mode = {} );
 
 /// \brief Creates an image filled with the angle to the z-axis.
 ///
 /// The angle function is equivalent to the theta component of the spherical coordinate
 /// system. `size` must have three elements.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
-/// See `dip::FillCoordinates` for the meaning of `mode`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
+/// See \ref dip::FillCoordinates for the meaning of `mode`.
 inline void CreateThetaCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillThetaCoordinate( out, mode ));
@@ -1007,30 +1015,35 @@ inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const&
 /// dimensions.
 ///
 /// `system` determines the coordinate system. It is one of the following strings:
-///  - `"cartesian"`: Uses cartesian coordinates.
-///  - `"spherical"`: Uses polar (2D) or spherical (3D) coordinates. The image must have
-///    two or three dimensions.
+///
+/// - `"cartesian"`: Uses cartesian coordinates.
+/// - `"spherical"`: Uses polar (2D) or spherical (3D) coordinates. The image must have
+///   two or three dimensions.
 ///
 /// `mode` specifies the origin and scaling of the coordinates. It can contain one of the
 /// following strings:
-///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
-///    `size/2`). This is the default if no other option is given.
-///  - `"left"`: The origin is on the pixel left of the center (at integer division result of
-///    `(size-1)/2`).
-///  - `"true"`: The origin is halfway the first and last pixel, in between pixels if necessary
-///    (at floating-point division result of `size/2`).
-///  - `"corner"`: The origin is on the first pixel.
-///  - `"frequency"`: The coordinates used are as for the Fourier transform.
-///    The origin is as for `"right"`, and the coordinates are in the range [0.5,0.5).
+///
+/// - `"right"`: The origin is on the pixel right of the center (at integer division result of
+///   `size/2`). This is the default if no other option is given.
+/// - `"left"`: The origin is on the pixel left of the center (at integer division result of
+///   `(size-1)/2`).
+/// - `"true"`: The origin is halfway the first and last pixel, in between pixels if necessary
+///   (at floating-point division result of `size/2`).
+/// - `"corner"`: The origin is on the first pixel.
+/// - `"frequency"`: The coordinates used are as for the Fourier transform.
+///   The origin is as for `"right"`, and the coordinates are in the range [0.5,0.5).
+///
 /// Additionally, `mode` can contain the following strings:
-///  - `"math"`: The y axis is inverted, such that it increases upwards.
-///  - `"radial"`: In combination with "frequency", changes the range to [-&pi;,&pi;), as with radial
-///    frequencies.
-///  - `"physical"`: The coordinate system is in physical units rather than providing indices.
-///    That is, instead of unit increments between pixels, the pixel size magnitudes are used to
-///    scale distances. Units are ignored, so if they differ, polar/spherical coordinates might
-///    not make sense.
-///    In combination with `"frequency"`, yields the same result as in combination with `"right"`.
+///
+/// - `"math"`: The y axis is inverted, such that it increases upwards.
+/// - `"radial"`: In combination with "frequency", changes the range to [-&pi;,&pi;), as with radial
+///   frequencies.
+/// - `"physical"`: The coordinate system is in physical units rather than providing indices.
+///   That is, instead of unit increments between pixels, the pixel size magnitudes are used to
+///   scale distances. Units are ignored, so if they differ, polar/spherical coordinates might
+///   not make sense.
+///   In combination with `"frequency"`, yields the same result as in combination with `"right"`.
+///
 /// The string `"radfreq"` is equivalent to both `"frequency"` and `"radial"`.
 DIP_EXPORT void FillCoordinates(
       Image& out,
@@ -1040,9 +1053,9 @@ DIP_EXPORT void FillCoordinates(
 
 /// \brief Creates an image filled with the coordinates of each pixel.
 ///
-/// `out` will be of size `sizes`, with `sizes.size()` vector elements, and of type `dip::DT_SFLOAT`.
+/// `out` will be of size `sizes`, with `sizes.size()` vector elements, and of type \ref dip::DT_SFLOAT.
 ///
-/// See `dip::FillCoordinates` for the meaning of `mode` and `system`.
+/// See \ref dip::FillCoordinates for the meaning of `mode` and `system`.
 inline void CreateCoordinates(
       Image& out,
       UnsignedArray const& sizes,
@@ -1084,9 +1097,9 @@ DIP_EXPORT void FillDistanceToPoint(
 
 /// \brief Creates an image filled with the distance to a given point.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
 ///
-/// See `dip::FillDistanceToPoint` for the meaning of `point`, `distance` and `scaling`.
+/// See \ref dip::FillDistanceToPoint for the meaning of `point`, `distance` and `scaling`.
 inline void DistanceToPoint(
       Image& out,
       UnsignedArray const& sizes,
@@ -1110,9 +1123,9 @@ inline Image DistanceToPoint(
 
 /// \brief Creates an image filled with the Euclidean distance to a given point.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
 ///
-/// See `dip::FillDistanceToPoint` for the meaning of `point` and `scaling`.
+/// See \ref dip::FillDistanceToPoint for the meaning of `point` and `scaling`.
 inline void EuclideanDistanceToPoint(
       Image& out,
       UnsignedArray const& sizes,
@@ -1133,9 +1146,9 @@ inline Image EuclideanDistanceToPoint(
 
 /// \brief Creates an image filled with the city block distance to a given point.
 ///
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+/// `out` will be of size `sizes`, scalar, and of type \ref dip::DT_SFLOAT.
 ///
-/// See `dip::FillDistanceToPoint` for the meaning of `point` and `scaling`.
+/// See \ref dip::FillDistanceToPoint for the meaning of `point` and `scaling`.
 inline void CityBlockDistanceToPoint(
       Image& out,
       UnsignedArray const& sizes,
@@ -1154,13 +1167,13 @@ inline Image CityBlockDistanceToPoint(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
-/// \defgroup generation_noise Noise generation
+/// \group generation_noise Noise generation
 /// \ingroup generation
 /// \brief Adding noise to an image
-/// \{
+/// \addtogroup
 
 /// \brief Adds uniformly distributed white noise to the input image.
 ///
@@ -1170,11 +1183,11 @@ inline Image CityBlockDistanceToPoint(
 ///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
-/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// which is essentially a copy of `random` set to a different random stream. Given a \ref dip::Random object in an
 /// identical state before calling this function, the output image will be different depending on the number of
 /// threads used.
 ///
-/// \see dip::UniformRandomGenerator.
+/// \see dip::UniformRandomGenerator
 DIP_EXPORT void UniformNoise(
       Image const& in,
       Image& out,
@@ -1201,11 +1214,11 @@ inline Image UniformNoise(
 ///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
-/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// which is essentially a copy of `random` set to a different random stream. Given a \ref dip::Random object in an
 /// identical state before calling this function, the output image will be different depending on the number of
 /// threads used.
 ///
-/// \see dip::GaussianRandomGenerator.
+/// \see dip::GaussianRandomGenerator
 DIP_EXPORT void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0 );
 inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1.0 ) {
    Image out;
@@ -1225,11 +1238,11 @@ inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1
 ///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
-/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// which is essentially a copy of `random` set to a different random stream. Given a \ref dip::Random object in an
 /// identical state before calling this function, the output image will be different depending on the number of
 /// threads used.
 ///
-/// \see dip::PoissonRandomGenerator.
+/// \see dip::PoissonRandomGenerator
 DIP_EXPORT void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversion = 1.0 );
 inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 1.0 ) {
    Image out;
@@ -1253,40 +1266,40 @@ inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 
 /// governed by `D`.
 ///
 /// ```cpp
-///     dip::Random random;
-///     dip::dfloat D = 0.001;
-///     dip::Image poissonPoint( { 256, 256 }, 1, dip::DT_BIN );
-///     poissonPoint.Fill( 0 );
-///     BinaryNoise( poissonPoint, poissonPoint, random, 0, D );
+/// dip::Random random;
+/// dip::dfloat D = 0.001;
+/// dip::Image poissonPoint( { 256, 256 }, 1, dip::DT_BIN );
+/// poissonPoint.Fill( 0 );
+/// BinaryNoise( poissonPoint, poissonPoint, random, 0, D );
 /// ```
 ///
 /// The binary noise added to an all-zero image as in the code snippet above is equivalent to thresholding
 /// uniformly-distributed noise at a fraction `D` of the noise range, from the max value:
 ///
 /// ```cpp
-///     dip::Image poissonPoint2( { 256, 256 }, 1, dip::DT_SFLOAT );
-///     poissonPoint2.Fill( 0 );
-///     UniformNoise( poissonPoint2, poissonPoint2, random, 0, 1 );
-///     poissonPoint2 = poissonPoint2 >= ( 1 - D );
+/// dip::Image poissonPoint2( { 256, 256 }, 1, dip::DT_SFLOAT );
+/// poissonPoint2.Fill( 0 );
+/// UniformNoise( poissonPoint2, poissonPoint2, random, 0, 1 );
+/// poissonPoint2 = poissonPoint2 >= ( 1 - D );
 /// ```
 ///
 /// Using blue noise it is possible to create a point process with similar density, but more equally-distributed
 /// points:
 ///
 /// ```cpp
-///     dip::Image poissonPoint3( { 256, 256 }, 1, dip::DT_SFLOAT );
-///     FillColoredNoise( poissonPoint3, random, 1, 1 );
-///     dip::dfloat threshold = Percentile( poissonPoint3, {}, 100 * ( 1 - D )).As< dip::dfloat >();
-///     poissonPoint3 = poissonPoint3 >= threshold;
+/// dip::Image poissonPoint3( { 256, 256 }, 1, dip::DT_SFLOAT );
+/// FillColoredNoise( poissonPoint3, random, 1, 1 );
+/// dip::dfloat threshold = Percentile( poissonPoint3, {}, 100 * ( 1 - D )).As< dip::dfloat >();
+/// poissonPoint3 = poissonPoint3 >= threshold;
 /// ```
 ///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
-/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// which is essentially a copy of `random` set to a different random stream. Given a \ref dip::Random object in an
 /// identical state before calling this function, the output image will be different depending on the number of
 /// threads used.
 ///
-/// \see dip::BinaryRandomGenerator.
+/// \see dip::BinaryRandomGenerator
 DIP_EXPORT void BinaryNoise(
       Image const& in,
       Image& out,
@@ -1318,11 +1331,11 @@ inline Image BinaryNoise(
 ///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
-/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// which is essentially a copy of `random` set to a different random stream. Given a \ref dip::Random object in an
 /// identical state before calling this function, the output image will be different depending on the number of
 /// threads used.
 ///
-/// \see dip::UniformRandomGenerator.
+/// \see dip::UniformRandomGenerator
 DIP_EXPORT void SaltPepperNoise(
       Image const& in,
       Image& out,
@@ -1349,11 +1362,13 @@ inline Image SaltPepperNoise(
 ///
 /// The output image will have a variance of `variance`. `color` indicates the color of the noise (and is equal to
 /// the power of the function used to modulate the frequency spectrum):
+///
 /// - -2.0: Brownian noise (a.k.a. brown or red noise), with a frequency spectrum proportional to \$1/f^2\$.
 /// - -1.0: pink noise, with a frequency spectrum proportional to \$1/f\$.
-/// - 0.0: white noise, equal to `dip::GaussianNoise` (but much more expensive).
+/// - 0.0: white noise, equal to \ref "dip::GaussianNoise" (but much more expensive).
 /// - 1.0: blue noise, with a frequency spectrum proportional to \$f\$.
 /// - 2.0: violet noise, with a frequency spectrum proportional to \$f^2\$.
+///
 /// It is possible to specify any values in between these, to tune the color more precisely. Values larger than
 /// 2.0 and smaller than -2.0 are possible also, but the results become less interesting quickly as the magnitude
 /// increases.
@@ -1376,7 +1391,7 @@ DIP_EXPORT void FillColoredNoise(
 
 /// \brief Adds colored (Brownian, pink, blue, violet) noise to `in`.
 ///
-/// Equivalent to adding the output of `dip::FillColoredNoise` to `in`. See the reference for that function for
+/// Equivalent to adding the output of \ref dip::FillColoredNoise to `in`. See the reference for that function for
 /// information on the input parameters. `out` will have the data type of `in`.
 inline void ColoredNoise(
       Image const& in,
@@ -1401,7 +1416,7 @@ inline Image ColoredNoise(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
 inline void FillPoissonPointProcess(
@@ -1418,6 +1433,5 @@ inline void FillPoissonPointProcess(
 
 
 } // namespace dip
-
 
 #endif // DIP_GENERATION_H

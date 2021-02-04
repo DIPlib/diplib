@@ -34,14 +34,14 @@ inline int omp_get_max_threads() { return 1; }
 
 
 /// \file
-/// \brief Declares functions to control multithreading within DIPlib, and imports the OpenMP header.
-/// \see infrastructure
+/// \brief Declares functions to control multithreading within *DIPlib*, and imports the *OpenMP* header.
+/// See \ref infrastructure.
 
 
 namespace dip {
 
+
 /// \addtogroup infrastructure
-/// \{
 
 
 /// \brief Sets the maximum number of threads to be using in computations.
@@ -52,21 +52,21 @@ namespace dip {
 /// Note that parallelized algorithms only spawn multiple threads for the computation if the amount of work
 /// to be done is large enough to compensate for the overhead of spawning threads.
 ///
-/// If `nThreads` is 1, disables multithreading within DIPlib. Usually it is more beneficial to manage multithreading
+/// If `nThreads` is 1, disables multithreading within *DIPlib*. Usually it is more beneficial to manage multithreading
 /// at a higher level, for example by processing multiple images at the same time. If yo do so, set `nThreads` to 1.
 ///
 /// If `nThreads` is 0, resets the maximum number of threads to the default value.
 ///
-/// If DIPlib was compiled without OpenMP support, this function does nothing.
+/// If *DIPlib* was compiled without *OpenMP* support, this function does nothing.
 DIP_EXPORT void SetNumberOfThreads( dip::uint nThreads );
 
 
 /// \brief Gets the maximum number of threads that can be used in computations.
 ///
-/// Returns the value given in the last call to `dip::SetNumberOfThreads`, or the default maximum value if that
+/// Returns the value given in the last call to \ref dip::SetNumberOfThreads, or the default maximum value if that
 /// function was never called.
 ///
-/// If DIPlib was compiled without OpenMP support, this function always returns 1.
+/// If *DIPlib* was compiled without *OpenMP* support, this function always returns 1.
 DIP_EXPORT dip::uint GetNumberOfThreads();
 
 
@@ -76,7 +76,7 @@ DIP_EXPORT dip::uint GetNumberOfThreads();
 // threshold for single vs multithreaded computation, not a threshold per thread created.
 constexpr dip::uint threadingThreshold = 70000;
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

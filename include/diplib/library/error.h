@@ -34,18 +34,17 @@
 #include "diplib/library/export.h"
 
 /// \file
-/// \brief Defines error macros and default error strings. This file is always included through `diplib.h`.
-/// \see infrastructure
+/// \brief Defines error macros and default error strings. This file is always included through \ref "diplib.h".
+/// See \ref error.
 
 
 namespace dip {
 
 
-/// \defgroup error Error management
+/// \group error Error management
 /// \ingroup infrastructure
 /// \brief Exception classes and error management functionality
-/// \{
-
+/// \addtogroup
 
 /// \brief Base exception class. All exceptions thrown in *DIPlib* are derived of this class.
 ///
@@ -66,7 +65,7 @@ class DIP_CLASS_EXPORT Error : public std::exception {
       /// exception. Some calling functions will catch such an exception, add its name to the stack trace,
       /// and re-throw the exception.
       ///
-      /// \see DIP_ADD_STACK_TRACE, DIP_TRY, DIP_CATCH
+      /// \see DIP_ADD_STACK_TRACE, DIP_START_STACK_TRACE, DIP_END_STACK_TRACE, DIP_STACK_TRACE_THIS
       char const* what() const noexcept override {
          return message_.c_str();
       }
@@ -76,7 +75,7 @@ class DIP_CLASS_EXPORT Error : public std::exception {
          return message_.substr( 0, message_.find_first_of( '\n' )); // TODO: this is a good place to introduce a StringView type.
       }
 
-      /// \brief Add an entry to the stack trace. Typically called through the `#DIP_ADD_STACK_TRACE` macro.
+      /// \brief Add an entry to the stack trace. Typically called through the \ref DIP_ADD_STACK_TRACE macro.
       Error& AddStackTrace(
             std::string const& functionName,
             std::string const& fileName,
@@ -100,7 +99,7 @@ class DIP_CLASS_EXPORT Error : public std::exception {
 ///
 /// You shouldn't need to catch exceptions of this type.
 ///
-/// To throw an exception of this type, use the `#DIP_THROW_ASSERTION` and `#DIP_ASSERT` macros.
+/// To throw an exception of this type, use the \ref DIP_THROW_ASSERTION and \ref DIP_ASSERT macros.
 class DIP_CLASS_EXPORT AssertionError : public Error {
       using Error::Error;
 };
@@ -110,7 +109,7 @@ class DIP_CLASS_EXPORT AssertionError : public Error {
 ///
 /// Catch exceptions of this type only if you don't control the input arguments (i.e. in a use interface).
 ///
-/// To throw an exception of this type, use the `#DIP_THROW` and `#DIP_THROW_IF` macros.
+/// To throw an exception of this type, use the \ref DIP_THROW and \ref DIP_THROW_IF macros.
 class DIP_CLASS_EXPORT ParameterError : public Error {
       using Error::Error;
 };
@@ -121,7 +120,7 @@ class DIP_CLASS_EXPORT ParameterError : public Error {
 /// errors are typically `std::bad_alloc`, unless a different allocator is chosen. None of the
 /// library functions catch and translate this exception.
 ///
-/// To throw an exception of this type, use the `#DIP_THROW_RUNTIME` macro.
+/// To throw an exception of this type, use the \ref DIP_THROW_RUNTIME macro.
 class DIP_CLASS_EXPORT RunTimeError : public Error {
       using Error::Error;
 };
@@ -201,25 +200,25 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 // Test and throw exception
 //
 
-/// \def DIP_ADD_STACK_TRACE(error)
-/// \brief Adds information from current function (including source file and location within file) to the `dip::Error`.
+/// \macro DIP_ADD_STACK_TRACE(error)
+/// \brief Adds information from current function (including source file and location within file) to the \ref dip::Error.
 ///
-/// This macro is useful for building a stack trace. If you want a stack trace, each function must catch `dip::Error`,
+/// This macro is useful for building a stack trace. If you want a stack trace, each function must catch \ref dip::Error,
 /// add its name to the stack trace, and re-throw the exception.
 ///
 /// You can use this macro as follows:
 ///
 /// ```cpp
-///     try {
-///        // some DIPlib functions that might throw here
-///     }
-///     catch( dip::Error& e ) {
-///        DIP_ADD_STACK_TRACE( e );
-///        throw;
-///     }
+/// try {
+///    // some DIPlib functions that might throw here
+/// }
+/// catch( dip::Error& e ) {
+///    DIP_ADD_STACK_TRACE( e );
+///    throw;
+/// }
 /// ```
 ///
-/// The `#DIP_START_STACK_TRACE`, `#DIP_END_STACK_TRACE` and `DIP_STACK_TRACE_THIS` macros help build this code.
+/// The \ref DIP_START_STACK_TRACE, \ref DIP_END_STACK_TRACE and \ref DIP_STACK_TRACE_THIS macros help build this code.
 /// When compiling with the CMake configuration flag `DIP_ENABLE_STACK_TRACE` set to `OFF`, these macros don't do
 /// anything. Turn the option off if your application would make no use of the stack trace, as building the stack
 /// trace does incur some runtime cost.
@@ -250,28 +249,33 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 #endif // DIP_CONFIG_ENABLE_STACK_TRACE
 
 
-/// \brief Throw a `dip::ParameterError`.
+/// \macro DIP_THROW(str)
+/// \brief Throw a \ref dip::ParameterError.
 #define DIP_THROW( str ) DIP_THROW_INTERNAL( dip::ParameterError, str )
 
-/// \brief Throw a `dip::ParameterError` that reads "Invalid flag: <flag>".
+/// \macro DIP_THROW_INVALID_FLAG(str)
+/// \brief Throw a \ref dip::ParameterError that reads "Invalid flag: <flag>".
 #define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + std::string( flag ))
 
-/// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
+/// \macro DIP_THROW_IF(str)
+/// \brief Test a condition, throw a \ref dip::ParameterError if the condition is met.
 #define DIP_THROW_IF( test, str ) if( test ) DIP_THROW( str )
 
-/// \brief Throw a `dip::RunTimeError`.
+/// \macro DIP_THROW_RUNTIME(str)
+/// \brief Throw a \ref dip::RunTimeError.
 #define DIP_THROW_RUNTIME( str ) DIP_THROW_INTERNAL( dip::RunTimeError, str )
 
-/// \brief Throw a `dip::AssertionError`.
+/// \macro DIP_THROW_ASSERTION(str)
+/// \brief Throw a \ref dip::AssertionError.
 #define DIP_THROW_ASSERTION( str ) DIP_THROW_INTERNAL( dip::AssertionError, str )
 
-/// \def DIP_ASSERT(test)
-/// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
+/// \macro DIP_ASSERT(test)
+/// \brief Test a condition, throw a \ref dip::AssertionError if the condition is not met.
 ///
 /// If the CMake variable `DIP_ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
 /// ```bash
-///     cmake -DDIP_ENABLE_ASSERT=OFF ...
+/// cmake -DDIP_ENABLE_ASSERT=OFF ...
 /// ```
 ///
 /// You would typically disable assertions for production code, as assertions are only used to test internal
@@ -288,52 +292,53 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 #endif // DIP_CONFIG_ENABLE_ASSERT
 
 
-/// \def DIP_START_STACK_TRACE
+/// \macro DIP_START_STACK_TRACE
 /// \brief Starts a try/catch block that builds a stack trace when an exception is thrown.
 ///
 /// To build a stack trace, some library functions catch *DIPlib* exceptions, add their name and other info to it,
 /// then re-throw. To simplify this mechanism and make it easier to future changes, this macro and its partner
-/// `#DIP_END_STACK_TRACE` are used by these library functions. Use then as follows:
+/// \ref DIP_END_STACK_TRACE are used by these library functions. Use then as follows:
 ///
 /// ```cpp
-///     DIP_START_STACK_TRACE
-///     // some DIPlib functions that might throw here
-///     DIP_END_STACK_TRACE
+/// DIP_START_STACK_TRACE
+///    // some DIPlib functions that might throw here
+/// DIP_END_STACK_TRACE
 /// ```
 ///
-/// This expands to the exact same code as shown under `#DIP_ADD_STACK_TRACE`, but with an additional `catch`
-/// statement that catches `std::exception`, and throws a `dip::RunTimeError` with the original exception's `what()`
+/// This expands to the exact same code as shown under \ref DIP_ADD_STACK_TRACE, but with an additional `catch`
+/// statement that catches `std::exception`, and throws a \ref dip::RunTimeError with the original exception's `what()`
 /// string.
 ///
-/// NOTE! `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with `#DIP_END_STACK_TRACE` to
-/// prevent malformed syntax. Thus you should never use one of these two macros without the other one.
+/// !!! Attention
+///     `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with \ref DIP_END_STACK_TRACE to
+///     prevent malformed syntax. Thus you should never use one of these two macros without the other one.
 ///
 /// When compiling with the CMake configuration flag `DIP_ENABLE_STACK_TRACE` set to `OFF`, these macros don't do
 /// anything. Turn the option off if your application would make no use of the stack trace, as building the stack
 /// trace does incur some runtime cost.
 
-/// \def DIP_END_STACK_TRACE
-/// \brief Ends a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_START_STACK_TRACE`.
+/// \macro DIP_END_STACK_TRACE
+/// \brief Ends a try/catch block that builds a stack trace when an exception is thrown. See \ref DIP_START_STACK_TRACE.
 
-/// \def DIP_STACK_TRACE_THIS
+/// \macro DIP_STACK_TRACE_THIS
 /// \brief Encapsulates a statement in a try/catch block that builds a stack trace when an exception is thrown.
 ///
 /// To build a stack trace, some library functions catch *DIPlib* exceptions, add their name and other info to it,
 /// then re-throw. This macro helps by catching and re-throwing exceptions thrown within a single statement:
 ///
 /// ```cpp
-///     DIP_STACK_TRACE_THIS( dip::FunctionCall() );
+/// DIP_STACK_TRACE_THIS( dip::FunctionCall() );
 /// ```
 ///
 /// This expands to:
 ///
 /// ```cpp
-///     DIP_START_STACK_TRACE
-///        dip::FunctionCall();
-///     DIP_END_STACK_TRACE
+/// DIP_START_STACK_TRACE
+///    dip::FunctionCall();
+/// DIP_END_STACK_TRACE
 /// ```
 ///
-/// See `#DIP_START_STACK_TRACE` for more information.
+/// See \ref DIP_START_STACK_TRACE for more information.
 
 #ifdef DIP_CONFIG_ENABLE_STACK_TRACE
 
@@ -353,7 +358,7 @@ constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
 
 #endif // DIP_CONFIG_ENABLE_STACK_TRACE
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

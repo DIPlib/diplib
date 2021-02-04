@@ -27,27 +27,26 @@
 
 /// \file
 /// \brief Non-linear filters.
-/// \see nonlinear
+/// See \ref nonlinear.
 
 
 namespace dip {
 
 
-/// \defgroup nonlinear Non-linear filters
+/// \group nonlinear Non-linear filters
 /// \ingroup filtering
 /// \brief Non-linear filters for noise reduction, detection, etc., excluding morphological filters.
-/// \{
-
+/// \addtogroup
 
 /// \brief Applies a percentile filter to `in`.
 ///
 /// Determines the `percentile` percentile within the filter window, and assigns that value to the output pixel.
-/// See also `dip::RankFilter`, which does the same thing but uses a rank instead of a percentile as input argument.
+/// See also \ref dip::RankFilter, which does the same thing but uses a rank instead of a percentile as input argument.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+/// shape with corresponding sizes, or through a binary image. See \ref dip::Kernel.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 DIP_EXPORT void PercentileFilter(
       Image const& in,
       Image& out,
@@ -69,11 +68,11 @@ inline Image PercentileFilter(
 /// \brief The median filter, a non-linear smoothing filter.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+/// shape with corresponding sizes, or through a binary image. See \ref dip::Kernel.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
-/// Calls `dip::PercentileFilter` with the `percentile` parameter set to 50.
+/// Calls \ref dip::PercentileFilter with the `percentile` parameter set to 50.
 inline void MedianFilter(
       Image const& in,
       Image& out,
@@ -96,11 +95,11 @@ inline Image MedianFilter(
 /// \brief Computes, for each pixel, the sample variance within a filter window around the pixel.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+/// shape with corresponding sizes, or through a binary image. See \ref dip::Kernel.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
-/// Uses `dip::FastVarianceAccumulator` for the computation.
+/// Uses \ref dip::FastVarianceAccumulator for the computation.
 DIP_EXPORT void VarianceFilter(
       Image const& in,
       Image& out,
@@ -130,34 +129,34 @@ inline Image VarianceFilter(
 /// and at the same distance to the central pixel are solved arbitrarily (in the current implementation, the first
 /// of these pixels encountered is used).
 ///
-/// The Kuwahara-Nagao operator (see `dip::Kuwahara`) is implemented in terms of the `%SelectionFilter`:
+/// The Kuwahara-Nagao operator (see \ref dip::Kuwahara) is implemented in terms of the `SelectionFilter`:
 ///
 /// ```cpp
-///     Image value = dip::Uniform( in, kernel );
-///     Image control = dip::VarianceFilter( in, kernel );
-///     kernel.Mirror();
-///     Image out = dip::SelectionFilter( value, control, kernel );
+/// Image value = dip::Uniform( in, kernel );
+/// Image control = dip::VarianceFilter( in, kernel );
+/// kernel.Mirror();
+/// Image out = dip::SelectionFilter( value, control, kernel );
 /// ```
 ///
 /// Note that the following reproduces the result of the erosion (albeit in a very costly manner):
 ///
 /// ```cpp
-///     Image out = dip::SelectionFilter( in, in, kernel );
+/// Image out = dip::SelectionFilter( in, in, kernel );
 /// ```
 ///
 /// Nonetheless, this can used to implement color morphology, for example (note there are much better approaches to
 /// build the `control` image):
 ///
 /// ```cpp
-///     // Image in is a color image
-///     Image control = dip::SumTensorElements( in );
-///     Image out = dip::SelectionFilter( in, control, kernel, 0.0, "maximum" );
+/// // Image in is a color image
+/// Image control = dip::SumTensorElements( in );
+/// Image out = dip::SelectionFilter( in, control, kernel, 0.0, "maximum" );
 /// ```
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+/// shape with corresponding sizes, or through a binary image. See \ref dip::Kernel.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// `control` must be a real-valued scalar image. `in` can be of any data type and tensor size. `out` will be of
 /// the same size, tensor size, and data type as `in`.
@@ -202,24 +201,23 @@ inline Image SelectionFilter(
 /// parameter, then the filtering window is not shifted.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+/// shape with corresponding sizes, or through a binary image. See \ref dip::Kernel.
 ///
 /// If `in` is non-scalar (e.g. a color image), then the variance is computed per-channel, and the maximum variance
 /// at each pixel (i.e. the maximum across tensor elements) is used to direct the filtering for all channels.
 /// If the Kuwahara filter were applied to each channel independently, false colors would appear.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
-/// \literature
-/// <li>M. Kuwahara, K. Hachimura and M. Kinoshita, "Image enhancement and left ventricular contour extraction techniques
-///     applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
-/// <li>M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and %Image Processing 9:394-407, 1979.
-/// <li>P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
-/// <li>P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
-///     The Netherlands, 2002.
-/// \endliterature
+/// \see dip::SelectionFilter
 ///
-/// \see dip::SelectionFilter.
+/// !!! literature
+///     - M. Kuwahara, K. Hachimura and M. Kinoshita, "Image enhancement and left ventricular contour extraction techniques
+///       applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
+///     - M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and Image Processing 9:394-407, 1979.
+///     - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
+///     - P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
+///       The Netherlands, 2002.
 DIP_EXPORT void Kuwahara(
       Image const& in,
       Image& out,
@@ -246,10 +244,10 @@ inline Image Kuwahara(
 /// of `gradient`, and that only the direction of the vectors (or orientation) is used.
 ///
 /// `gradmag` and `gradient` must be of the same floating-point type (i.e. they are either
-/// `dip::DT_SFLOAT` or `dip::DT_DFLOAT`). `gradmag` must be scalar, and `gradient` must have as
+/// \ref dip::DT_SFLOAT or \ref dip::DT_DFLOAT). `gradmag` must be scalar, and `gradient` must have as
 /// many tensor elements as spatial dimensions. In the 1D case, `gradient` is not used.
 ///
-/// If `gradmag` is not forged, the magnitude (`dip::Norm`) of `gradient` is used instead.
+/// If `gradmag` is not forged, the magnitude (\ref dip::Norm) of `gradient` is used instead.
 ///
 /// `mask`, if forged, must be a binary scalar image. Only those pixels are evaluated that are set in `mask`.
 ///
@@ -307,25 +305,25 @@ inline Image MoveToLocalMinimum(
 ///
 /// Applies `iterations` steps of the anisotropic diffusion as proposed by Perona and Malik:
 ///
-/// \f[ I^{t+1} = I^t + \lambda \sum_\eta \left( c_\eta^t \nabla_\eta I^t \right) \; , \f]
+/// $$ I^{t+1} = I^t + \lambda \sum_\eta \left( c_\eta^t \nabla_\eta I^t \right) \; , $$
 ///
-/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\eta\f$ are the each of the cardinal directions,
-/// \f$\nabla_\eta\f$ is the finite difference in direction \f$\eta\f$,
+/// where $\lambda$ is set with the `lambda` parameter, $\eta$ are the each of the cardinal directions,
+/// $\nabla_\eta$ is the finite difference in direction $\eta$,
 ///
-/// \f[ c_\eta^t = g\left( \| \nabla_\eta I^t \| \right) \; , \f]
+/// $$ c_\eta^t = g\left( \| \nabla_\eta I^t \| \right) \; , $$
 ///
-/// and \f$g\f$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
+/// and $g$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
 /// by the `K` parameter:
-///  - `"Gauss"`: \f$ g(x) = \exp(-(\frac{x}{K})^2) \f$
-///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (\frac{x}{K})^2) \f$
-///  - `"exponential"`: \f$ g(x) = \exp(-\frac{x}{K}) \f$
+///
+/// - `"Gauss"`: $g(x) = \exp(-(\frac{x}{K})^2)$
+/// - `"quadratic"`: $g(x) = 1 / (1 + (\frac{x}{K})^2)$
+/// - `"exponential"`: $g(x) = \exp(-\frac{x}{K})$
 ///
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
-/// \literature
-/// <li>P. Perona and J. Malik, "Scale-space and edge detection using anisotropic diffusion",
-///     IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
-/// \endliterature
+/// !!! literature
+///     - P. Perona and J. Malik, "Scale-space and edge detection using anisotropic diffusion",
+///       IEEE Transactions on Pattern Analysis and Machine Intelligence 12(7):629:639, 1990.
 DIP_EXPORT void PeronaMalikDiffusion(
       Image const& in,
       Image& out,
@@ -350,20 +348,21 @@ inline Image PeronaMalikDiffusion(
 ///
 /// Applies `iterations` steps of the generic anisotropic diffusion equation:
 ///
-/// \f[ I^{t+1} = I^t + \lambda \, \mathrm{div} \left( c^t \nabla I^t \right) \; , \f]
+/// $$ I^{t+1} = I^t + \lambda \, \mathrm{div} \left( c^t \nabla I^t \right) \; , $$
 ///
-/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\nabla\f$ and \f$\mathrm{div}\f$ are computed using
-/// Gaussian gradients (`dip::Gradient` and `dip::Divergence`),
+/// where $\lambda$ is set with the `lambda` parameter, $\nabla$ and $\mathrm{div}$ are computed using
+/// Gaussian gradients (\ref dip::Gradient and \ref dip::Divergence),
 ///
-/// \f[ c^t = g\left( \| \nabla I^t \| \right) \; , \f]
+/// $$ c^t = g\left( \| \nabla I^t \| \right) \; , $$
 ///
-/// and \f$g\f$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
+/// and $g$ is a monotonically decreasing function, selected with the `g` parameter, and modulated
 /// by the `K` parameter:
-///  - `"Gauss"`: \f$ g(x) = \exp(-(\frac{x}{K})^2) \f$
-///  - `"quadratic"`: \f$ g(x) = 1 / (1 + (\frac{x}{K})^2) \f$
-///  - `"exponential"`: \f$ g(x) = \exp(-\frac{x}{K}) \f$
 ///
-/// Note that the parameters here are identical to those in `dip::PeronaMalik`. The Perona-Malik diffusion
+/// - `"Gauss"`: $g(x) = \exp(-(\frac{x}{K})^2)$
+/// - `"quadratic"`: $g(x) = 1 / (1 + (\frac{x}{K})^2)$
+/// - `"exponential"`: $g(x) = \exp(-\frac{x}{K})$
+///
+/// Note that the parameters here are identical to those in \ref dip::PeronaMalikDiffusion. The Perona-Malik diffusion
 /// is a discrete differences approximation to the generic anisotropic diffusion equation. This function uses Gaussian
 /// gradients as a discretization strategy.
 ///
@@ -392,27 +391,24 @@ inline Image GaussianAnisotropicDiffusion(
 ///
 /// Applies `iterations` steps of the robust anisotropic diffusion using Tukey's biweight (Black et al., 1998):
 ///
-/// \f[ I^{t+1} = I^t + \lambda \sum_\eta \psi ( \nabla_\eta I^t, \sigma ) \; , \f]
+/// $$ I^{t+1} = I^t + \lambda \sum_\eta \psi ( \nabla_\eta I^t, \sigma ) \; , $$
 ///
-/// where \f$\lambda\f$ is set with the `lambda` parameter, \f$\eta\f$ are each of the cardinal directions,
-/// \f$\nabla_\eta\f$ is the finite difference in direction \f$\eta\f$, and
+/// where $\lambda$ is set with the `lambda` parameter, $\eta$ are each of the cardinal directions,
+/// $\nabla_\eta$ is the finite difference in direction $\eta$, and
 ///
-/// \f[
-///    \psi(x,\sigma) =
+/// $$ \psi(x,\sigma) =
 ///       \begin{cases}
 ///          x\,\left(1-\frac{x^2}{\sigma^2}\right)^2, & \text{if}\ |x| < \sigma
 ///       \\ 0, & \text{otherwise}
-///       \end{cases}
-/// \f]
+///       \end{cases} $$
 ///
-/// \f$\sigma\f$ is set by the `sigma` parameter.
+/// $\sigma$ is set by the `sigma` parameter.
 ///
 /// The diffusion is generalized to any image dimensionality. `in` must be scalar and real-valued.
 ///
-/// \literature
-/// <li>M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion",
-///     IEEE Transactions on %Image Processing 7(3):421-432, 1998.
-/// \endliterature
+/// !!! literature
+///     - M.J. Black, G. Sapiro, D.H. Marimont and D. Heeger, "Robust anisotropic diffusion",
+///       IEEE Transactions on Image Processing 7(3):421-432, 1998.
 inline void RobustAnisotropicDiffusion(
       Image const& in,
       Image& out,
@@ -437,20 +433,23 @@ inline Image RobustAnisotropicDiffusion(
 ///
 /// Applies `iterations` steps of the coherence enhancing diffusion:
 ///
-/// \f[ I^{t+1} = I^t + \lambda \, \mathrm{div} \left( D \nabla I^t \right) \; , \f]
+/// $$ I^{t+1} = I^t + \lambda \, \mathrm{div} \left( D \nabla I^t \right) \; , $$
 ///
-/// where \f$\lambda\f$ is set with the `lambda` parameter, and \f$D\f$ is the diffusion tensor, derived from
-/// the structure tensor (see `dip::StructureTensor`). `derivativeSigma` and `regularizationSigma`
+/// where $\lambda$ is set with the `lambda` parameter, and $D$ is the diffusion tensor, derived from
+/// the structure tensor (see \ref dip::StructureTensor). `derivativeSigma` and `regularizationSigma`
 /// are the sigmas for the Gaussian derivatives and smoothing in the structure tensor. The gradient and
 /// divergence are computed using Gaussian derivatives also, using a sigma of 0.5.
 ///
 /// `flags` allows the selection of different computational options:
-/// - `"const"`: \f$D\f$ is taken as constant, simplifying the computation from
-///   \f$ \frac{\partial}{\partial x} \left( D_{xx} \frac{\partial}{\partial x} I^t \right) \f$
-///   to \f$ D_{xx} \frac{\partial^2}{\partial x^2} I^t \f$, reducing the number of filters to apply from
+///
+/// - `"const"`: $D$ is taken as constant, simplifying the computation from
+///   $\frac{\partial}{\partial x} \left( D_{xx} \frac{\partial}{\partial x} I^t \right)$
+///   to $D_{xx} \frac{\partial^2}{\partial x^2} I^t$, reducing the number of filters to apply from
 ///   4 to 3. The opposite is `"variable"`, which is the default.
-/// - `"all"`: \f$D\f$ is obtained in a simple manner from the structure tensor, where all eigenvalues of \f$D\f$
+///
+/// - `"all"`: $D$ is obtained in a simple manner from the structure tensor, where all eigenvalues of $D$
 ///   are adjusted. The opposite is `"first"`, which is the default. See below for more information.
+///
 /// - `"resample"`: the output is twice the size of the input. Computations are always done on the larger image,
 ///   this flag returns the larger image instead of the subsampled one.
 ///
@@ -458,32 +457,31 @@ inline Image RobustAnisotropicDiffusion(
 /// The `"first"` flag is only supported for 2D images, if `in` has more dimensions, the `"first"` flag is
 /// ignored and `"all"` is assumed.
 ///
-/// In `"all"` mode, \f$D\f$ is composed from the eigen decomposition of the structure tensor \f$S\f$:
+/// In `"all"` mode, $D$ is composed from the eigen decomposition of the structure tensor $S$:
 ///
-/// \f[ S = V \, E \, V^T \; \rightarrow \; D = V \, E' \, V^T \; , \f]
+/// $$ S = V \, E \, V^T \; \rightarrow \; D = V \, E' \, V^T \; , $$
 ///
 /// with
 ///
-/// \f[ E' = \frac{1}{\mathrm{trace}\,E^{-1}} \, E^{-1} \f]
+/// $$ E' = \frac{1}{\mathrm{trace}\,E^{-1}} \, E^{-1} \; . $$
 ///
-/// In `"first"` mode, \f$D\f$ is composed similarly, but the two eigenvalues of \f$D\f$, \f$d_i\f$, are determined
-/// from the eigenvalues \f$\mu_i\f$ of \f$S\f$ (with \f$\mu_1 \ge \mu_2\f$) as follows:
+/// In `"first"` mode, $D$ is composed similarly, but the two eigenvalues of $D$, $d_i$, are determined
+/// from the eigenvalues $\mu_i$ of $S$ (with $\mu_1 \ge \mu_2$) as follows:
 ///
-/// \f{eqnarray*}{
+/// \begin{eqnarray*}
 ///       d_1 &=& \alpha
 ///    \\ d_2 &=& \begin{cases}
 ///                    \alpha + ( 1.0 - \alpha ) \exp\left(\frac{-c}{(\mu_1 - \mu_2)^2}\right) \, ,
 ///                                & \text{if}\ \frac{\mu_1 - \mu_2}{\mu_1 + \mu_2} > \alpha \; \text{(high anisotropy)}
 ///                 \\ \alpha \, , & \text{otherwise}
 ///               \end{cases}
-/// \f}
+/// \end{eqnarray*}
 ///
-/// \f$\alpha\f$ is a magic number set to 0.01, and \f$c\f$ is set to the median of all \f$\mu_2^2\f$
+/// $\alpha$ is a magic number set to 0.01, and $c$ is set to the median of all $\mu_2^2$
 /// values across the image (as proposed by Lucas van Vliet).
 ///
-/// \literature
-/// <li>J. Weickert, "Anisotropic diffusion in image processing", Teubner (Stuttgart), pages 95 and 127, 1998.
-/// \endliterature
+/// !!! literature
+///     - J. Weickert, "Anisotropic diffusion in image processing", Teubner (Stuttgart), pages 95 and 127, 1998.
 DIP_EXPORT void CoherenceEnhancingDiffusion(
       Image const& in,
       Image& out,
@@ -533,11 +531,11 @@ inline Image CoherenceEnhancingDiffusion(
 /// Each tensor column in the scale image corresponds to a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
-/// ```txt
-///     | R_kx R_ky |
-///     | G_kx G_ky |
-///     | B_kx B_ky |
-/// ```
+/// $$ \begin{pmatrix}
+///     R_{kx} & R_{ky} \\
+///     G_{kx} & G_{ky} \\
+///     B_{kx} & B_{ky}
+/// \end{pmatrix} $$
 ///
 /// The kernel is first scaled and then rotated before it is applied.
 /// The scale parameter image is automatically expanded if the image or the tensor are too small.
@@ -557,18 +555,17 @@ inline Image CoherenceEnhancingDiffusion(
 /// # Example:
 ///
 /// ```cpp
-///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
-///     dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
-///     dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation" } );
-///     dip::Image out = dip::AdaptiveGauss( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
+/// dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
+/// dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
+/// dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation" } );
+/// dip::Image out = dip::AdaptiveGauss( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
 /// ```
 ///
-/// \literature
-/// <li>T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///     convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
-/// \endliterature
-///
 /// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
+///
+/// !!! literature
+///     - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
+///       convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
 DIP_EXPORT void AdaptiveGauss(
       Image const& in,
       ImageConstRefArray const& params,
@@ -599,6 +596,7 @@ inline Image AdaptiveGauss(
 ///
 /// The parameter images control the adaptivity.
 /// The current implementation only supports 2D images:
+///
 /// - `params[0]` is the angle of the orientation
 /// - `params[1]` is the curvature
 /// - `params[2]` (optional) is a tensor image with the local kernel scale
@@ -608,11 +606,11 @@ inline Image AdaptiveGauss(
 /// Each tensor column in the scale image corresponds to a convolution kernel dimension.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
-/// ```txt
-///     | R_kx R_ky |
-///     | G_kx G_ky |
-///     | B_kx B_ky |
-/// ```
+/// $$ \begin{pmatrix}
+///     R_{kx} & R_{ky} \\
+///     G_{kx} & G_{ky} \\
+///     B_{kx} & B_{ky}
+/// \end{pmatrix} $$
 ///
 /// The kernel is first scaled and then rotated before it is applied.
 /// The scale parameter image is automatically expanded if the image or the tensor are too small.
@@ -630,18 +628,17 @@ inline Image AdaptiveGauss(
 /// # Example:
 ///
 /// ```cpp
-///     dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
-///     dip::Image st = dip::StructureTensor( in, {}, {1}, {3} );  // Defined in "diplib/analysis.h"
-///     dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation", "curvature" } );
-///     dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
+/// dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
+/// dip::Image st = dip::StructureTensor( in, {}, {1}, {3} );  // Defined in "diplib/analysis.h"
+/// dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation", "curvature" } );
+/// dip::Image out = dip::AdaptiveBanana( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
 /// ```
 ///
-/// \literature
-/// <li>T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
-///     convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
-/// \endliterature
-///
 /// \see dip::AdaptiveGauss, dip::StructureTensorAnalysis2D
+///
+/// !!! literature
+///     - T.Q. Pham, L.J. van Vliet and K. Schutte, "Robust fusion of irregularly sampled data using adaptive normalized
+///       convolution", EURASIP Journal on Applied Signal Processing, article ID 83268, 2006.
 DIP_EXPORT void AdaptiveBanana(
       Image const& in,
       ImageConstRefArray const& params,
@@ -677,7 +674,7 @@ inline Image AdaptiveBanana(
 /// what similar intensities are. `truncation` applies to the spatial dimension only, and determines, together
 /// with `spatialSigma`, the size of the neighborhood and thus its computational cost.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// If `in` is not scalar, each tensor element will be filtered independently. For color images, this leads to
 /// false colors at edges.
@@ -687,10 +684,9 @@ inline Image AdaptiveBanana(
 /// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
 /// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
-/// \literature
-/// <li>C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images", Proceedings of the 1998 IEEE
-///     International Conference on Computer Vision, Bombay, India.
-/// \endliterature
+/// !!! literature
+///     - C. Tomasi and R. Manduchi, "Bilateral filtering for gray and color images", Proceedings of the 1998 IEEE
+///       International Conference on Computer Vision, Bombay, India.
 DIP_EXPORT void FullBilateralFilter(
       Image const& in,
       Image const& estimate,
@@ -726,7 +722,7 @@ inline Image FullBilateralFilter(
 /// but without subsampling. This requires a significant amount of memory, and is efficient only for larger
 /// spatial sigmas.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// `in` must be scalar and real-valued.
 ///
@@ -735,10 +731,9 @@ inline Image FullBilateralFilter(
 /// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
 /// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
-/// \literature
-/// <li>F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images",
-///     ACM Transactions on Graphics 21(3), 2002.
-/// \endliterature
+/// !!! literature
+///     - F. Durand and J. Dorsey, "Fast bilateral filtering for the display of high-dynamic-range images",
+///       ACM Transactions on Graphics 21(3), 2002.
 DIP_EXPORT void QuantizedBilateralFilter(
       Image const& in,
       Image const& estimate,
@@ -775,7 +770,7 @@ inline Image QuantizedBilateralFilter(
 /// This version of the filter applies a 1D bilateral filter along each of the image dimensions, approximating
 /// the result of the bilateral filter with a much reduced computational cost.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// If `in` is not scalar, each tensor element will be filtered independently. For color images, this leads to
 /// false colors at edges.
@@ -785,10 +780,9 @@ inline Image QuantizedBilateralFilter(
 /// to the value of the pixel at the origin of the kernel in `estimate`. If not forged, `in` is used for `estimate`.
 /// `estimate` must be real-valued and have the same sizes and number of tensor elements as `in`.
 ///
-/// \literature
-/// <li>T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing", IEEE International
-///     Conference on Multimedia and Expo, 2005.
-/// \endliterature
+/// !!! literature
+///     - T.Q. Pham and L.J. van Vliet, "Separable bilateral filter for fast video processing", IEEE International
+///       Conference on Multimedia and Expo, 2005.
 DIP_EXPORT void SeparableBilateralFilter(
       Image const& in,
       Image const& estimate,
@@ -816,9 +810,10 @@ inline Image SeparableBilateralFilter(
 /// \brief Bilateral filter, convenience function that allows selecting an implementation
 ///
 /// The `method` can be set to one of the following:
-/// - `"full"`: the brute-force implementation, using the full kernel, calls `dip::FullBilateralFilter`.
-/// - `"xysep"` (default): xy-separable approximation, calls `dip::SeparableBilateralFilter`.
-/// - `"pwlinear"`: piecewise linear approximation (quantized), calls `dip::QuantizedBilateralFilter`.
+///
+/// - `"full"`: the brute-force implementation, using the full kernel, calls \ref dip::FullBilateralFilter.
+/// - `"xysep"` (default): xy-separable approximation, calls \ref dip::SeparableBilateralFilter.
+/// - `"pwlinear"`: piecewise linear approximation (quantized), calls \ref dip::QuantizedBilateralFilter.
 ///   The bins are automatically computed.
 ///
 /// See the linked functions for details on the other parameters.
@@ -850,7 +845,7 @@ inline Image BilateralFilter(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

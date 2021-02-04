@@ -26,14 +26,13 @@
 
 /// \file
 /// \brief Representing and working with an image as a graph
-/// \see infrastructure
+/// See \ref infrastructure.
 
 
 namespace dip {
 
 
 /// \addtogroup infrastructure
-/// \{
 
 
 /// \brief A non-directed, edge-weighted graph.
@@ -48,9 +47,12 @@ namespace dip {
 /// is the vertex index.
 class DIP_NO_EXPORT Graph {
    public:
-      using VertexIndex = dip::uint;   ///< Type for indices to vertices
-      using EdgeIndex = dip::uint;     ///< Type for indices to edges
-      using EdgeList = std::vector< EdgeIndex >;   ///< Type for list of edge indices
+      /// Type for indices to vertices
+      using VertexIndex = dip::uint;
+      /// Type for indices to edges
+      using EdgeIndex = dip::uint;
+      /// Type for list of edge indices
+      using EdgeList = std::vector< EdgeIndex >;
 
       /// \brief A vertex in the graph
       struct Vertex {
@@ -293,7 +295,7 @@ class DIP_NO_EXPORT RangeMinimumQuery;
 class DIP_NO_EXPORT LowestCommonAncestorSolver {
    public:
       /// \brief The constructor takes a `graph`, which must not have any cycles in it (it must be a tree). The
-      /// easiest way to turn an arbitrary graph into a tree is to compute the MST (see `dip::Graph::MinimumSpanningForest`).
+      /// easiest way to turn an arbitrary graph into a tree is to compute the MST (see \ref dip::Graph::MinimumSpanningForest).
       DIP_EXPORT LowestCommonAncestorSolver( Graph const& graph );
 
       // Prevent copying, that might go wrong because we use a shared pointer, `rmq_` might be shared...
@@ -316,7 +318,7 @@ class DIP_NO_EXPORT LowestCommonAncestorSolver {
       std::shared_ptr< RangeMinimumQuery > rmq_; // Hidden implementation to avoid all that cruft in these headers...
 };
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

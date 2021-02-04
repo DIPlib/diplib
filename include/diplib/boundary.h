@@ -26,17 +26,16 @@
 
 /// \file
 /// \brief Functionality implementing boundary conditions.
-/// \see infrastructure
+/// See \ref infrastructure.
 
 
 namespace dip {
 
 
-/// \defgroup boundary Boundary
+/// \group boundary Boundary
 /// \ingroup infrastructure
 /// \brief Handling image boundary extension for filtering
-/// \{
-
+/// \addtogroup
 
 /// \brief Enumerates various ways of extending image data beyond its boundary.
 ///
@@ -46,21 +45,21 @@ namespace dip {
 /// Most functions will take a string instead of a `dip::BoundaryCondition` constant.
 /// The following table links boundary condition constants and their string representations.
 ///
-/// `BoundaryCondition` constant | String                 | Definition
-/// -------------------------- | ------------------------ | ----------
-/// `SYMMETRIC_MIRROR`         | "mirror"                 | The data are mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
-/// `ASYMMETRIC_MIRROR`        | "asym mirror"            | The data are mirrored and inverted.
-/// `PERIODIC`                 | "periodic"               | The data are repeated periodically, with the value at -1 equal to the value of the last pixel.
-/// `ASYMMETRIC_PERIODIC`      | "asym periodic"          | The data are repeated periodically and inverted.
-/// `ADD_ZEROS`                | "add zeros"              | The boundary is filled with zeros.
-/// `ADD_MAX_VALUE`            | "add max"                | The boundary is filled with the max value for the data type.
-/// `ADD_MIN_VALUE`            | "add min"                | The boundary is filled with the min value for the data type.
-/// `ZERO_ORDER_EXTRAPOLATE`   | "zero order"             | The value at the border is repeated indefinitely.
-/// `FIRST_ORDER_EXTRAPOLATE`  | "first order"            | A linear function is defined based on the value closest to the border, the function reaches zero at the end of the extended boundary.
-/// `SECOND_ORDER_EXTRAPOLATE` | "second order"           | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
-/// `THIRD_ORDER_EXTRAPOLATE`  | "third order"            | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
-/// `DEFAULT`                  | "default" or ""          | The default value, currently equal to `SYMMETRIC_MIRROR`.
-/// `ALREADY_EXPANDED`         | "already expanded"       | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
+/// `BoundaryCondition` constant | String              | Definition
+/// ---------------------------- | ------------------- | ----------
+/// `SYMMETRIC_MIRROR`           | "mirror"            | The data are mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
+/// `ASYMMETRIC_MIRROR`          | "asym mirror"       | The data are mirrored and inverted.
+/// `PERIODIC`                   | "periodic"          | The data are repeated periodically, with the value at -1 equal to the value of the last pixel.
+/// `ASYMMETRIC_PERIODIC`        | "asym periodic"     | The data are repeated periodically and inverted.
+/// `ADD_ZEROS`                  | "add zeros"         | The boundary is filled with zeros.
+/// `ADD_MAX_VALUE`              | "add max"           | The boundary is filled with the max value for the data type.
+/// `ADD_MIN_VALUE`              | "add min"           | The boundary is filled with the min value for the data type.
+/// `ZERO_ORDER_EXTRAPOLATE`     | "zero order"        | The value at the border is repeated indefinitely.
+/// `FIRST_ORDER_EXTRAPOLATE`    | "first order"       | A linear function is defined based on the value closest to the border, the function reaches zero at the end of the extended boundary.
+/// `SECOND_ORDER_EXTRAPOLATE`   | "second order"      | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
+/// `THIRD_ORDER_EXTRAPOLATE`    | "third order"       | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
+/// `DEFAULT`                    | "default" or ""     | The default value, currently equal to `SYMMETRIC_MIRROR`.
+/// `ALREADY_EXPANDED`           | "already expanded"  | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
 enum class DIP_NO_EXPORT BoundaryCondition {
       SYMMETRIC_MIRROR,
       ASYMMETRIC_MIRROR,
@@ -77,7 +76,8 @@ enum class DIP_NO_EXPORT BoundaryCondition {
       ALREADY_EXPANDED
 };
 
-using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
+/// An array to hold boundary conditions.
+using BoundaryConditionArray = DimensionArray< BoundaryCondition >;
 
 
 /// \brief Convert a string to a boundary condition.
@@ -127,7 +127,7 @@ inline void BoundaryArrayUseParameter( BoundaryConditionArray& bc, dip::uint nDi
 /// into the output pixel.
 ///
 /// First, second and third order interpolations are not implemented, because their functionality
-/// is impossible to reproduce in this simple function. Use `dip::ExtendImage` to get the functionality
+/// is impossible to reproduce in this simple function. Use \ref dip::ExtendImage to get the functionality
 /// of these boundary conditions.
 DIP_EXPORT Image::Pixel ReadPixelWithBoundaryCondition(
       Image const& img,
@@ -138,25 +138,22 @@ DIP_EXPORT Image::Pixel ReadPixelWithBoundaryCondition(
 
 namespace Option {
 
+/// \brief Defines options to the \ref dip::ExtendImage function.
+///
+/// Implicitly casts to \ref dip::Option::ExtendImageFlags. Combine constants together with the `+` operator.
+enum class DIP_NO_EXPORT ExtendImage {
+      Masked,       ///< The output image is a window on the boundary-extended image of the same size as the input.
+      ExpandTensor  ///< The output image has normal tensor storage.
+};
 /// \class dip::Option::ExtendImageFlags
-/// \brief Determines which properties to compare.
-///
-/// Valid values are:
-///
-/// `%ExtendImageFlags` constant   | Definition
-/// ------------------------------ | ----------
-/// `ExtendImage::Masked`          | The output image is a window on the boundary-extended image of the same size as the input.
-/// `ExtendImage::ExpandTensor`    | The output image has normal tensor storage.
-///
-/// Note that you can add these constants together: `dip::Option::ExtendImage::Masked + dip::Option::ExtendImage::ExpandTensor`.
-enum class DIP_NO_EXPORT ExtendImage { Masked, ExpandTensor };
+/// \brief Combines any number of \ref dip::Option::ExtendImage constants together.
 DIP_DECLARE_OPTIONS( ExtendImage, ExtendImageFlags )
 
 } // namespace Option
 
 /// \brief Extends the image `in` by `borderSizes` along each dimension.
 ///
-/// This function is identical to the `%dip::ExtendImage` below, except it uses boundary condition constants and option
+/// This function is identical to the `dip::ExtendImage` below, except it uses boundary condition constants and option
 /// constants instead of strings. This version is meant to be used by low-level library functions.
 DIP_EXPORT void ExtendImage(
       Image const& in,
@@ -179,7 +176,7 @@ DIP_EXPORT void ExtendImage(
 /// to access pixels outside of its domain.
 ///
 /// If `options` contains `"expand tensor"`, the output image will have normal tensor storage
-/// (`dip::Tensor::HasNormalOrder` is true). This affects only those input images that have a transposed, symmetric
+/// (\ref dip::Tensor::HasNormalOrder is true). This affects only those input images that have a transposed, symmetric
 /// or triangular matrix as tensor shape.
 inline void ExtendImage(
       Image const& in,
@@ -213,7 +210,7 @@ inline Image ExtendImage(
 
 /// \brief Fills the pixels outside a region in the image using a boundary condition.
 ///
-/// This function is identical to the `%dip::ExtendRegion` below, except it uses boundary condition constants
+/// This function is identical to the `dip::ExtendRegion` below, except it uses boundary condition constants
 /// instead of strings. This version is meant to be used by low-level library functions.
 DIP_EXPORT void ExtendRegion(
       Image& image,
@@ -272,7 +269,7 @@ inline void ExtendRegion(
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

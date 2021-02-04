@@ -26,7 +26,7 @@
 
 /// \file
 /// \brief Mathematical morphology operators and filters.
-/// \see morphology
+/// See \ref morphology.
 
 
 namespace dip {
@@ -36,11 +36,10 @@ namespace dip {
 class DIP_NO_EXPORT Kernel;
 
 
-/// \defgroup morphology Morphological filtering
+/// \group morphology Morphological filtering
 /// \ingroup filtering
 /// \brief Morphological filters for smoothing, sharpening, detection and more.
-/// \{
-
+/// \addtogroup
 
 /// \brief Represents the shape and size of a structuring element.
 ///
@@ -48,39 +47,39 @@ class DIP_NO_EXPORT Kernel;
 /// There are two ways to define a structuring element: the user can specify the shape name and the size
 /// of a structuring element, and the user can pass an image containing the structuring element.
 ///
-/// Objects of type `dip::Image`, `dip::FloatArray` and `dip::String` implicitly convert to
-/// a `%dip::StructuringElement`, so it should be convenient to use these various representations in your
+/// Objects of type \ref dip::Image, \ref dip::FloatArray and \ref dip::String implicitly convert to
+/// a \ref dip::StructuringElement, so it should be convenient to use these various representations in your
 /// code.
 ///
 /// To define a structuring element by shape and size, pass a string defining the shape, and a
 /// floating-point array with the size along each dimension.
 /// These are the valid shape strings, and the corresponding meaning of the size array:
 ///
-/// -  `"rectangular"`, `"elliptic"`, and `"diamond"`: these are unit circles in different metrics. The
-///    size array corresponds to the diameter in that metric. `"elliptic"` is the default shape,
-///    because it is isotropic, but it also is the slowest to compute. Both `"elliptic"` and `"diamond"`
-///    structuring elements always are symmetric. That is, their origin is centered on a pixel.
-///    The pixels included in the shape are those at most half of the diameter away from the origin.
-///    For the `"rectangular"` structuring element, a box with integer sizes is always generated,
-///    but the box can be even in size also, meaning that the origin is in between pixels.
-///    Any size array element that is smaller or equal to 1 causes that dimension to not be processed.
+/// - `"rectangular"`, `"elliptic"`, and `"diamond"`: these are unit circles in different metrics. The
+///   size array corresponds to the diameter in that metric. `"elliptic"` is the default shape,
+///   because it is isotropic, but it also is the slowest to compute. Both `"elliptic"` and `"diamond"`
+///   structuring elements always are symmetric. That is, their origin is centered on a pixel.
+///   The pixels included in the shape are those at most half of the diameter away from the origin.
+///   For the `"rectangular"` structuring element, a box with integer sizes is always generated,
+///   but the box can be even in size also, meaning that the origin is in between pixels.
+///   Any size array element that is smaller or equal to 1 causes that dimension to not be processed.
 ///
-/// -  `"octagonal"`: an approximation to the ellipse in 2D only.
+/// - `"octagonal"`: an approximation to the ellipse in 2D only.
 ///
-/// -  `"parabolic"`: the parabolic structuring element is the morphological equivalent to the Gaussian
-///    kernel in linear filtering. It is separable and perfectly isotropic. The size array corresponds
-///    to the scaling of the parabola (i.e. the \f$a\f$ in \f$a^{-2} x^2\f$). A value equal
-///    or smaller to 0 causes that dimension to not be processed. The boundary condition is ignored
-///    for operators with this structuring element, and the output image is always a floating-point type.
+/// - `"parabolic"`: the parabolic structuring element is the morphological equivalent to the Gaussian
+///   kernel in linear filtering. It is separable and perfectly isotropic. The size array corresponds
+///   to the scaling of the parabola (i.e. the $a$ in $a^{-2} x^2$). A value equal
+///   or smaller to 0 causes that dimension to not be processed. The boundary condition is ignored
+///   for operators with this structuring element, and the output image is always a floating-point type.
 ///
-/// -  `"line"`, `"fast line"`, `"periodic line"`, `"discrete line"`, `"interpolated line"`:
-///    these are straight lines, using different implementations.
-///    The size array corresponds to the size of the bounding box of the line, with signs indicating
-///    the direction. Thus, if the size array is `{2,2}`, the line goes right and down two pixels,
-///    meaning that the line is formed by two pixels at an angle of 45 degrees down. If the size array
-///    is `{-2,2}`, then the line is again two pixels, but at an angle of 135 degrees. (Note that
-///    in images, angles increase clockwise from the x-axis, as the y-axis is inverted). For a description
-///    of the meaning of these various line implementations, see \ref line_morphology.
+/// - `"line"`, `"fast line"`, `"periodic line"`, `"discrete line"`, `"interpolated line"`:
+///   these are straight lines, using different implementations.
+///   The size array corresponds to the size of the bounding box of the line, with signs indicating
+///   the direction. Thus, if the size array is `{2,2}`, the line goes right and down two pixels,
+///   meaning that the line is formed by two pixels at an angle of 45 degrees down. If the size array
+///   is `{-2,2}`, then the line is again two pixels, but at an angle of 135 degrees. (Note that
+///   in images, angles increase clockwise from the x-axis, as the y-axis is inverted). For a description
+///   of the meaning of these various line implementations, see \ref line_morphology.
 ///
 /// To define a structuring element through an image, provide either a binary or grey-value image.
 /// If the image is binary, the set pixels form the structuring element. If the image is a grey-value
@@ -90,14 +89,14 @@ class DIP_NO_EXPORT Kernel;
 /// those pixels are excluded).
 ///
 /// Note that the image is directly used as neighborhood (i.e. no mirroring is applied).
-/// That is, `dip::Dilation` and `dip::Erosion` will use the same neighborhood. Their composition only
+/// That is, \ref dip::Dilation and \ref dip::Erosion will use the same neighborhood. Their composition only
 /// leads to an opening or a closing if the structuring element is symmetric. For non-symmetric structuring
 /// element images, you need to mirror it in one of the two function calls:
 ///
 /// ```cpp
-///     dip::Image se = ...;
-///     dip::Image out = dip::Erosion( in, se );
-///     out = dip::Dilation( out, se.Mirror() );
+/// dip::Image se = ...;
+/// dip::Image out = dip::Erosion( in, se );
+/// out = dip::Dilation( out, se.Mirror() );
 /// ```
 ///
 /// (Do note that, in the code above, `se` itself is modified! use `se.QuickCopy().Mirror()` to prevent
@@ -111,9 +110,9 @@ class DIP_NO_EXPORT Kernel;
 /// \section line_morphology Line morphology
 ///
 /// There are various different ways of applying dilations, erosions, openings and closings with line
-/// structuring elements. The `dip::StructuringElement` class accepts five different strings each
+/// structuring elements. The \ref dip::StructuringElement class accepts five different strings each
 /// providing a different definition of the line structuring element. Further, there is also the
-/// `dip::PathOpening` function, which provides path openings and closings. Here we describe the five
+/// \ref dip::PathOpening function, which provides path openings and closings. Here we describe the five
 /// different line structuring elements implemented in *DIPlib*.
 ///
 /// - `"line"`: This is an efficient implementation that yields the same results as the traditional line
@@ -164,26 +163,27 @@ class DIP_NO_EXPORT Kernel;
 /// lines (times were equal with around 50px length), or they can be much slower for even the shortest of lines.
 /// Predicting which implementation of the line will be faster for a given situation is not trivial.
 ///
-/// \literature
-/// <li>P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
-///     at arbitrary angles", IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
-/// <li>C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
-///     measurements", IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
-/// \endliterature
+/// !!! literature
+///     - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
+///       at arbitrary angles", IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+///     - C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
+///       measurements", IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
 class DIP_NO_EXPORT StructuringElement {
    public:
+
+      /// \brief Possible shapes of a structuring element
       enum class ShapeCode {
-            RECTANGULAR,
-            ELLIPTIC,
-            DIAMOND,
-            OCTAGONAL,
-            LINE,
-            FAST_LINE,
-            PERIODIC_LINE,
-            DISCRETE_LINE,
-            INTERPOLATED_LINE,
-            PARABOLIC,
-            CUSTOM
+            RECTANGULAR,       ///< Corresponding to string `"rectangular"`.
+            ELLIPTIC,          ///< Corresponding to string `"elliptic"`.
+            DIAMOND,           ///< Corresponding to string `"diamond"`.
+            OCTAGONAL,         ///< Corresponding to string `"octagonal"`.
+            LINE,              ///< Corresponding to string `"line"`.
+            FAST_LINE,         ///< Corresponding to string `"fast line"`.
+            PERIODIC_LINE,     ///< Corresponding to string `"periodic line"`.
+            DISCRETE_LINE,     ///< Corresponding to string `"discrete line"`.
+            INTERPOLATED_LINE, ///< Corresponding to string `"interpolated line"`.
+            PARABOLIC,         ///< Corresponding to string `"parabolic"`.
+            CUSTOM             ///< Defined through an image.
       };
 
       /// \brief The default structuring element is a disk with a diameter of 7 pixels.
@@ -197,7 +197,7 @@ class DIP_NO_EXPORT StructuringElement {
          SetShape( shape );
       }
 
-      /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
+      /// \brief A \ref dip::FloatArray implicitly converts to a structuring element, it is interpreted as the
       /// parameter of the SE for all dimensions. A second argument specifies the shape.
       StructuringElement( FloatArray params, String const& shape = S::ELLIPTIC ) : params_( std::move( params )) {
          SetShape( shape );
@@ -327,7 +327,7 @@ DIP_EXPORT void BasicMorphology(
 ///
 /// `se` defines the structuring element.
 ///
-/// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default value, and most meaningful one, is `"add min"`, but any value can be used.
 /// For the rectangular, fast line and periodic line structuring elements, no boundary condition
 /// causes the filter to not read outside the image bounds. This is equivalent to `"add min"`.
@@ -355,7 +355,7 @@ inline Image Dilation(
 ///
 /// `se` defines the structuring element.
 ///
-/// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
 /// For the rectangular, fast line and periodic line structuring elements, no boundary condition
 /// causes the filter to not read outside the image bounds. This is equivalent to `"add max"`.
@@ -383,7 +383,7 @@ inline Image Erosion(
 ///
 /// `se` defines the structuring element.
 ///
-/// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// Meaningful values for the closing are `"add max"` and `"add min"`, but any value can
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
@@ -413,7 +413,7 @@ inline Image Closing(
 ///
 /// `se` defines the structuring element.
 ///
-/// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// Meaningful values for the opening are `"add max"` and `"add min"`, but any value can
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
@@ -452,6 +452,7 @@ inline Image Opening(
 /// operation is applied.
 ///
 /// `edgeType` can be one of:
+///
 /// - `"texture"`: response is limited to edges in texture (i.e. scales smaller than the structuring element).
 /// - `"object"`: response is limited to object edges (i.e. scales larger than the structuring element).
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
@@ -463,7 +464,7 @@ inline Image Opening(
 /// with the default values.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void Tophat(
       Image const& in,
@@ -491,12 +492,13 @@ inline Image Tophat(
 /// These can be chosen through the `edgeType` parameter.
 ///
 /// `edgeType` can be one of:
+///
 /// - `"texture"`: response is limited to edges in texture (i.e. scales smaller than the structuring element).
 /// - `"object"`: response is limited to object edges (i.e. scales larger than the structuring element).
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void MorphologicalThreshold(
       Image const& in,
@@ -522,12 +524,13 @@ inline Image MorphologicalThreshold(
 /// two complementary morphological operators and the original image.
 ///
 /// The flags `edgeType` defines which operation is applied:
+///
 /// - `"texture"`: response is limited to edges in texture (i.e. scales smaller than the structuring element).
 /// - `"object"`: response is limited to object edges (i.e. scales larger than the structuring element).
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void MorphologicalGist(
       Image const& in,
@@ -553,12 +556,13 @@ inline Image MorphologicalGist(
 /// operations. These can be chosen through the `edgeType` parameter.
 ///
 /// `edgeType` can be one of:
+///
 /// - `"texture"`: response is limited to edges in texture (i.e. scales smaller than the structuring element).
 /// - `"object"`: response is limited to object edges (i.e. scales larger than the structuring element).
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void MorphologicalRange(
       Image const& in,
@@ -582,7 +586,7 @@ inline Image MorphologicalRange(
 ///
 /// The morphological gradient magnitude is defined as `Dilation( in ) - Erosion( in )`.
 ///
-/// This function is implemented by a call to `dip::MorphologicalRange` with `edgeType` set to `"both"`.
+/// This function is implemented by a call to \ref dip::MorphologicalRange with `edgeType` set to `"both"`.
 inline void MorphologicalGradientMagnitude(
       Image const& in,
       Image& out,
@@ -607,15 +611,16 @@ inline Image MorphologicalGradientMagnitude(
 /// operations. These can be chosen through the `edgeType` parameter.
 ///
 /// `edgeType` can be one of:
+///
 /// - `"texture"`: response is limited to edges in texture (i.e. scales smaller than the structuring element).
 /// - `"object"`: response is limited to object edges (i.e. scales larger than the structuring element).
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
-/// If `sign` is `"unsigned"`, `%Lee` computes the absolute edge strength. `sign` can also be `"signed"`
+/// If `sign` is `"unsigned"`, `Lee` computes the absolute edge strength. `sign` can also be `"signed"`
 /// to compute the signed edge strength.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void Lee(
       Image const& in,
@@ -643,12 +648,13 @@ inline Image Lee(
 /// operations. These can be chosen through the `polarity` parameter.
 ///
 /// `polarity` can be one of:
+///
 /// - `"open-close"`: applies the opening first, then the closing.
 /// - `"close-open"`: applies the closing first, then the opening.
 /// - `"average"`: computes the average of the result of the first two modes.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void MorphologicalSmoothing(
       Image const& in,
@@ -676,9 +682,9 @@ inline Image MorphologicalSmoothing(
 /// the diameter of the structuring element is `2 * lowerSize + 1`.
 ///
 /// `filterShape` can be either `"rectangular"`, `"elliptic"`, and `"diamond"`, as described in
-/// `dip::StructuringElement`.
+/// \ref dip::StructuringElement.
 ///
-/// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 DIP_EXPORT void MultiScaleMorphologicalGradient(
@@ -706,11 +712,11 @@ inline Image MultiScaleMorphologicalGradient(
 /// This function computes:
 ///
 /// ```cpp
-///     out = ( Dilation( in ) + Erosion( in ) ) / 2 - in;
+/// out = ( Dilation( in ) + Erosion( in ) ) / 2 - in;
 /// ```
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
+/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
 /// of these parameters.
 DIP_EXPORT void MorphologicalLaplace(
       Image const& in,
@@ -746,10 +752,10 @@ inline Image MorphologicalLaplace(
 /// that is less sensitive to noise, and a small non-zero rank with decreasing order leads to an
 /// approximation of the erosion.
 ///
-/// See also `dip::PercentileFilter`, which does the same thing but uses a percentile instead of
+/// See also \ref dip::PercentileFilter, which does the same thing but uses a percentile instead of
 /// a rank as input argument.
 ///
-/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundary` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default value is the most meaningful one, but any value can be used. By default it is
 /// `"add max"` if `rank` is lower than half of the pixels in the SE, or `"add min"` otherwise.
 ///
@@ -782,21 +788,19 @@ inline Image RankFilter(
 /// to `n - rank` is applied instead of a dilation.
 ///
 /// This function uses the definition of Soille:
-/// \f[
-///    \phi_{B,\text{rank}} = \bigwedge_i \{ \phi_{B_i} | B_i \subseteq B, \text{card}(B_i) = n-\text{rank} \},
-/// \f]
-/// which is identical to
-/// \f[
-///    \phi_{B,\text{rank}} = I \vee \epsilon_{\check{B}} \xi_{B,n-\text{rank}}
-/// \f]
 ///
-/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// $$ \phi_{B,\text{rank}} = \bigwedge_i \{ \phi_{B_i} | B_i \subseteq B, \text{card}(B_i) = n-\text{rank} \} \; , $$
+///
+/// which is identical to
+///
+/// $$ \phi_{B,\text{rank}} = I \vee \epsilon_{\check{B}} \xi_{B,n-\text{rank}} \; . $$
+///
+/// `boundary` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default empty array causes the function to use `"add min"` with the rank filter,
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
-/// \literature
-/// <li>P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
-/// \endliterature
+/// !!! literature
+///     - P. Soille, "Morphological Image Analysis", 2^nd^ Edition, section 4.4.3. Springer, 2002.
 DIP_EXPORT void RankMinClosing(
       Image const& in,
       Image& out,
@@ -822,21 +826,19 @@ inline Image RankMinClosing(
 /// erosion.
 ///
 /// This function uses the definition of Soille (ref!):
-/// \f[
-///    \gamma_{B,\text{rank}} = \bigvee_i \{ \gamma_{B_i} | B_i \subseteq B, \text{card}(B_i) = n-\text{rank} \},
-/// \f]
-/// which is identical to
-/// \f[
-///    \gamma_{B,\text{rank}} = I \wedge \delta_{\check{B}} \xi_{B,\text{rank}+1}
-/// \f]
 ///
-/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// $$ \gamma_{B,\text{rank}} = \bigvee_i \{ \gamma_{B_i} | B_i \subseteq B, \text{card}(B_i) = n-\text{rank} \} \; , $$
+///
+/// which is identical to
+///
+/// $$ \gamma_{B,\text{rank}} = I \wedge \delta_{\check{B}} \xi_{B,\text{rank}+1} \; . $$
+///
+/// `boundary` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default empty array causes the function to use `"add min"` with the dilation,
 /// and `"add max"` with the rank filter, equivalent to ignoring what's outside the image.
 ///
-/// \literature
-/// <li>P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, section 4.4.3. Springer, 2002.
-/// \endliterature
+/// !!! literature
+///     - P. Soille, "Morphological Image Analysis", 2^nd^ Edition, section 4.4.3. Springer, 2002.
 DIP_EXPORT void RankMaxOpening(
       Image const& in,
       Image& out,
@@ -855,18 +857,15 @@ inline Image RankMaxOpening(
    return out;
 }
 
-/// \}
-
 
 //
 // Priority-queue--based algorithms
 //
 
 
-/// \addtogroup segmentation
-/// \{
-
 /// \brief Computes the watershed of `in` within `mask`, with on-line merging of regions.
+///
+/// \ingroup segmentation
 ///
 /// The watershed is a segmentation algorithm that divides the image according to its grey-value
 /// ridges.
@@ -876,14 +875,17 @@ inline Image RankMaxOpening(
 /// information on the connectivity parameter.
 ///
 /// `flags` determines how the output is computed. There are three options:
+///
 /// - `"labels"` or `"binary"`: returns either the labels used during processing, with the watershed
 ///   lines as background (value 0), or a binary image where the watershed lines are set and the
 ///   regions are not set. `"binary"` is the default.
+///
 /// - `"low first"` or `"high first"`: determines the sort order of pixels. The default of `"low first"`
 ///   yields the normal watershed, where local minima are origin of the basins, and the watershed
 ///   lines run along the high ridges in the image. `"high first"` simply inverts the definition,
 ///   such that local maxima are at the centers of the basins, and the watershed lines run along
 ///   the low valleys.
+///
 /// - `"fast"` or `"correct"`: determines which algorithm is used:
 ///   - `"fast"` (the default) is an algorithm that takes a few shortcuts, but usually manages to produce good results
 ///     any way. One shortcut leads to all border pixels being marked as watershed lines. It is possible
@@ -893,8 +895,8 @@ inline Image RankMaxOpening(
 ///     the plateaus, instead being shifted to one side. Adding a little bit of noise to the image, and
 ///     setting `maxDepth` to the range of the noise, usually improves the results in these cases
 ///     a little bit.
-///   - `"correct"` is an algorithm that first finds the local minima through `dip::Minima` (or maxima if
-///     `"high first"` is set), and then applies `dip::SeededWatershed`. This always produces correct results,
+///   - `"correct"` is an algorithm that first finds the local minima through \ref dip::Minima (or maxima if
+///     `"high first"` is set), and then applies \ref dip::SeededWatershed. This always produces correct results,
 ///     but is significantly slower.
 ///
 /// The on-line region merging works as follows: When two regions first meet, a decision is
@@ -911,7 +913,7 @@ inline Image RankMaxOpening(
 /// That is, two regions without a grey-value difference between them (they are on the same plateau) will
 /// always be merged. This is necessary to prevent unexpected results (i.e. a plateau being split into
 /// multiple regions). For the `"correct"` algorithm, any negative value of `maxDepth` will disable the
-/// merging. But note that, due to the way that the region seeds are computed (`dip::Minima`), setting
+/// merging. But note that, due to the way that the region seeds are computed (\ref dip::Minima), setting
 /// `maxDepth` to 0 would lead to the exact same result.
 ///
 /// Any pixel that is infinity will be part of the watershed lines, as is any pixel not within
@@ -942,6 +944,8 @@ inline Image Watershed(
 
 /// \brief Computes the watershed of `in` within `mask`, starting at `seeds`, with on-line merging of regions.
 ///
+/// \ingroup segmentation
+///
 /// `seeds` is a binary or labeled image (if binary, it is labeled using `connectivity`). These labels are
 /// iteratively expanded in the watershed order (i.e. pixels that have a low value in `in` go first) until
 /// they meet. Pixels where two regions meet are marked as the watershed lines. `seeds` is commonly used
@@ -955,8 +959,9 @@ inline Image Watershed(
 /// vertex-connected watershed lines (i.e. thinnest possible result). See \ref connectivity for information
 /// on the connectivity parameter.
 ///
-/// The region merging and the `flags` parameter work as described in `dip::Watershed`, with the following
+/// The region merging and the `flags` parameter work as described in \ref dip::Watershed, with the following
 /// additions:
+///
 /// - If `maxDepth` is negative, regions will never be merged, even if they have no grey-value difference
 ///   between them.
 /// - The `flags` values `"fast"` or `"correct"` are not allowed.
@@ -997,6 +1002,8 @@ inline Image SeededWatershed(
 
 /// \brief Computes the compact watershed of `in` within `mask`, starting at `seeds`.
 ///
+/// \ingroup segmentation
+///
 /// `seeds` is a binary or labeled image (if binary, it is labeled using `connectivity`). These labels are
 /// iteratively expanded in the watershed order (i.e. pixels that have a low value in `in` go first), modified
 /// with a compactness term, until they meet. Pixels where two regions meet are marked as the watershed lines.
@@ -1010,14 +1017,13 @@ inline Image SeededWatershed(
 /// vertex-connected watershed lines (i.e. thinnest possible result). See \ref connectivity for information
 /// on the connectivity parameter.
 ///
-/// The `flags` parameter work as described in `dip::SeededWatershed`, except that `"uphill only"` is not supported.
+/// The `flags` parameter work as described in \ref dip::SeededWatershed, except that `"uphill only"` is not supported.
 ///
 /// \see dip::SeededWatershed, dip::Watershed, dip::GrowRegions, dip::GrowRegionsWeighted
 ///
-/// \literature
-/// <li>P. Neubert and P. Protzel, "Compact Watershed and Preemptive SLIC: On improving trade-offs of superpixel segmentation algorithms",
-///     22<sup>nd</sup> International Conference on Pattern Recognition, Stockholm, 2014, pp. 996-1001.
-/// \endliterature
+/// !!! literature
+///     - P. Neubert and P. Protzel, "Compact Watershed and Preemptive SLIC: On improving trade-offs of superpixel segmentation algorithms",
+///       22^nd^ International Conference on Pattern Recognition, Stockholm, 2014, pp. 996-1001.
 DIP_EXPORT void CompactWatershed(
       Image const& in,
       Image const& seeds,
@@ -1042,11 +1048,13 @@ inline Image CompactWatershed(
 
 /// \brief Computes the stochastic watershed of `in`.
 ///
+/// \ingroup segmentation
+///
 /// The stochastic watershed is computed by applying a watershed with randomly placed seeds `nIterations` times,
 /// and adding the results. The output is an image where each pixel's value is the likelihood that it belongs to
 /// an edge in the image, the values are in the range [0,`nIterations`]. The input image `in` should contain high
 /// grey values at the edges of the regions to be segmented. Thresholding `out` at an appropriate value will yield
-/// the relevant edges in the image. Alternatively, apply `dip::Watershed` to the result, with `maxDepth` set to
+/// the relevant edges in the image. Alternatively, apply \ref dip::Watershed to the result, with `maxDepth` set to
 /// the appropriate threshold value.
 ///
 /// The number of seeds used is given by `nSeeds`. Actually seeds are chosen with a density of
@@ -1057,7 +1065,7 @@ inline Image CompactWatershed(
 ///
 /// If `seeds` is `"exact"`, or if `nIterations` is 0, then the exact probabilities are computed
 /// (Malmberg and Luengo, 2014). The output contains probabilities, in the range [0,1]. Note that this algorithm
-/// requires O(n<sup>2</sup>) space, and is not suitable for very large images.
+/// requires O(n^2^) space, and is not suitable for very large images.
 ///
 /// The stochastic watershed expects the image to contain roughly equally-sized regions. `nSeeds` should be
 /// approximately equal to the number of expected regions. If there is a strong difference in region sizes, larger
@@ -1071,19 +1079,18 @@ inline Image CompactWatershed(
 /// is returned (Selig et al., 2015).
 ///
 /// `in` must be real-valued and scalar. `out` will be of a suitable unsigned integer type (depending on the number
-/// of iterations, but typically `dip::DT_UINT8`), or of type `dip::DT_SFLOAT` if the exact stochastic watershed
+/// of iterations, but typically \ref dip::DT_UINT8), or of type \ref dip::DT_SFLOAT if the exact stochastic watershed
 /// is computed.
 ///
-/// \literature
-/// <li>J. Angulo and D. Jeulin, "Stochastic watershed segmentation", Proceedings of the 8th International Symposium on
-///     Mathematical Morphology, Instituto Nacional de Pesquisas Espaciais (INPE), São José dos Campos, pp. 265–276, 2007.
-/// <li>K.B. Bernander, K. Gustavsson, B. Selig, I.-M. Sintorn, and C.L. Luengo Hendriks, "Improving the stochastic watershed",
-///     Pattern Recognition Letters 34:993-1000, 2013.
-/// <li>F. Malmberg and C.L. Luengo Hendriks, "An efficient algorithm for exact evaluation of stochastic watersheds",
-///     Pattern Recognition Letters 47:80-84, 2014.
-/// <li>B. Selig, F, Malmberg and C.L. Luengo Hendriks, "Fast evaluation of the robust stochastic watershed",
-///     Proceedings of ISMM 2015, LNCS 9082:705-716, 2015.
-/// \endliterature
+/// !!! literature
+///     - J. Angulo and D. Jeulin, "Stochastic watershed segmentation", Proceedings of the 8th International Symposium on
+///       Mathematical Morphology, Instituto Nacional de Pesquisas Espaciais (INPE), São José dos Campos, pp. 265–276, 2007.
+///     - K.B. Bernander, K. Gustavsson, B. Selig, I.-M. Sintorn, and C.L. Luengo Hendriks, "Improving the stochastic watershed",
+///       Pattern Recognition Letters 34:993-1000, 2013.
+///     - F. Malmberg and C.L. Luengo Hendriks, "An efficient algorithm for exact evaluation of stochastic watersheds",
+///       Pattern Recognition Letters 47:80-84, 2014.
+///     - B. Selig, F, Malmberg and C.L. Luengo Hendriks, "Fast evaluation of the robust stochastic watershed",
+///       Proceedings of ISMM 2015, LNCS 9082:705-716, 2015.
 DIP_EXPORT void StochasticWatershed(
       Image const& in,
       Image& out,
@@ -1106,17 +1113,19 @@ inline Image StochasticWatershed(
 
 /// \brief Marks significant local minima.
 ///
-/// This algorithm works exactly like `dip::Watershed` with the `"fast"` flag set. All pixels with a value
+/// \ingroup segmentation
+///
+/// This algorithm works exactly like \ref dip::Watershed with the `"fast"` flag set. All pixels with a value
 /// equal to the lowest value within each watershed basin form a local minimum. Note that they can form
 /// disconnected regions, use the `"labels"` flag to recognize such disconnected regions as a single local
-/// minimum. See `dip::Watershed` for a description of all the parameters.
+/// minimum. See \ref dip::Watershed for a description of all the parameters.
 ///
 /// `output` can be `"binary"` or `"labels"`, and determines whether the algorithm outputs a binary image or
 /// a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// \see dip::WatershedMaxima, dip::Minima, dip::Maxima.
+/// \see dip::WatershedMaxima, dip::Minima, dip::Maxima
 DIP_EXPORT void WatershedMinima(
       Image const& in,
       Image const& mask,
@@ -1141,17 +1150,19 @@ inline Image WatershedMinima(
 
 /// \brief Marks significant local maxima.
 ///
-/// This algorithm works exactly like `dip::Watershed` with the `"fast"` flag set. All pixels with a value
+/// \ingroup segmentation
+///
+/// This algorithm works exactly like \ref dip::Watershed with the `"fast"` flag set. All pixels with a value
 /// equal to the highest value within each watershed basin form a local maximum. Note that they can form
 /// disconnected regions, use the `"labels"` flag to recognize such disconnected regions as a single local
-/// maximum. See `dip::Watershed` for a description of all the parameters.
+/// maximum. See \ref dip::Watershed for a description of all the parameters.
 ///
 /// `output` can be `"binary"` or `"labels"`, and determines whether the algorithm outputs a binary image or
 /// a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// \see dip::WatershedMinima, dip::Maxima, dip::Minima.
+/// \see dip::WatershedMinima, dip::Maxima, dip::Minima
 DIP_EXPORT void WatershedMaxima(
       Image const& in,
       Image const& mask,
@@ -1176,13 +1187,15 @@ inline Image WatershedMaxima(
 
 /// \brief Marks local minima.
 ///
+/// \ingroup segmentation
+///
 /// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
 /// surrounded by pixels with a higher value. If `output` is `"binary"`, the result is a binary image where these
 /// pixels and plateaus are set. If `output` is `"labels"`, the result is a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// \see dip::Maxima, dip::WatershedMinima, dip::WatershedMaxima.
+/// \see dip::Maxima, dip::WatershedMinima, dip::WatershedMaxima
 DIP_EXPORT void Minima(
       Image const& in,
       Image& out,
@@ -1201,13 +1214,15 @@ inline Image Minima(
 
 /// \brief Marks local maxima.
 ///
+/// \ingroup segmentation
+///
 /// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
 /// surrounded by pixels with a lower value. If `output` is `"binary"`, the result is a binary image where these
 /// pixels and plateaus are set. If `output` is `"labels"`, the result is a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// \see dip::Minima, dip::WatershedMaxima, dip::WatershedMinima.
+/// \see dip::Minima, dip::WatershedMaxima, dip::WatershedMinima
 DIP_EXPORT void Maxima(
       Image const& in,
       Image& out,
@@ -1224,11 +1239,6 @@ inline Image Maxima(
    return out;
 }
 
-/// \}
-
-
-/// \addtogroup morphology
-/// \{
 
 /// \brief Grey-value skeleton (2D only).
 ///
@@ -1242,17 +1252,20 @@ inline Image Maxima(
 ///
 /// The `endPixelCondition` parameter determines what is considered an "end pixel" in the skeleton, and thus affects
 /// how many branches are generated. It is one of the following strings:
-///  - `"natural"`: "natural" end pixel condition of this algorithm.
-///  - `"one neighbor"`: Keep endpoint if it has one neighbor.
-///  - `"two neighbors"`: Keep endpoint if it has two neighbors.
-///  - `"three neighbors"`: Keep endpoint if it has three neighbors.
-/// To generate skeletons without end pixels (the equivalent of `"loose ends away"` in `dip::EuclideanSkeleton`),
-/// use `dip::Watershed` instead.
+///
+/// - `"natural"`: "natural" end pixel condition of this algorithm.
+/// - `"one neighbor"`: Keep endpoint if it has one neighbor.
+/// - `"two neighbors"`: Keep endpoint if it has two neighbors.
+/// - `"three neighbors"`: Keep endpoint if it has three neighbors.
+///
+/// To generate skeletons without end pixels (the equivalent of `"loose ends away"` in \ref dip::EuclideanSkeleton),
+/// use \ref dip::Watershed instead.
 ///
 /// `in` must be a real-valued, scalar image. `out` will have the same type.
 ///
-/// \attention Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
-/// If this is an issue, consider adding one pixel on each side of your image.
+/// !!! attention
+///     Pixels in a 1-pixel border around the edge are not processed, and set to the non-skeleton value.
+///     If this is an issue, consider adding one pixel on each side of your image.
 DIP_EXPORT void UpperSkeleton2D(
       Image const& in,
       Image const& mask,
@@ -1276,21 +1289,20 @@ inline Image UpperSkeleton2D(
 /// the two operations to apply (`"dilation"` or `"erosion"`).
 ///
 /// `out` will have the data type of `in`, and `marker` will be cast to that same type (with clamping to the target
-/// range, see `dip::Convert`).
+/// range, see \ref dip::Convert).
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// For binary images, `dip::BinaryPropagation` is always faster. That function additionally allows limiting
+/// For binary images, \ref dip::BinaryPropagation is always faster. That function additionally allows limiting
 /// the number of reconstruction steps, and supports alternating connectivity, which yields a more isotropic result
 /// when limiting the number of reconstruction steps.
 ///
-/// This functions is used by `dip::LimitedMorphologicalReconstruction`, `dip::HMinima`, `dip::HMaxima`,
-/// `dip::Leveling`, `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`
+/// This functions is used by \ref dip::LimitedMorphologicalReconstruction, \ref dip::HMinima, \ref dip::HMaxima,
+/// \ref dip::Leveling, \ref dip::OpeningByReconstruction, \ref dip::ClosingByReconstruction
 ///
-/// \literature
-/// <li>K. Robinson and P.F. Whelan, "Efficient morphological reconstruction: a downhill filter", Pattern Recognition
-///     Letters 25:1759-1767, 2004.
-/// \endliterature
+/// !!! literature
+///     - K. Robinson and P.F. Whelan, "Efficient morphological reconstruction: a downhill filter", Pattern Recognition
+///       Letters 25:1759-1767, 2004.
 DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask
@@ -1311,11 +1323,11 @@ inline Image MorphologicalReconstruction(
 
 /// \brief Reconstruction by dilation or erosion, but with a limited reach.
 ///
-/// Performs the same function as `dip::MorphologicalReconstruction`, but limiting the
+/// Performs the same function as \ref dip::MorphologicalReconstruction, but limiting the
 /// reach of the operation to `maxDistance` pixels. This is an Euclidean distance, and
 /// determines the zone of influence of each value in `marker`.
 ///
-/// See `dip::MorphologicalReconstruction` for the meaning of the rest of the parameters,
+/// See \ref dip::MorphologicalReconstruction for the meaning of the rest of the parameters,
 /// and more information about the algorithm.
 DIP_EXPORT void LimitedMorphologicalReconstruction(
       Image const& marker,
@@ -1342,7 +1354,7 @@ inline Image LimitedMorphologicalReconstruction(
 /// The H-Minima filtered image has all local minima with a depth less than `h` removed:
 ///
 /// ```cpp
-///     HMinima = dip::MorphologicalReconstruction( in + h, in, connectivity, "erosion" );
+/// HMinima = dip::MorphologicalReconstruction( in + h, in, connectivity, "erosion" );
 /// ```
 ///
 /// \see dip::MorphologicalReconstruction, dip::Minima, dip::HMaxima
@@ -1370,10 +1382,10 @@ inline Image HMinima(
 /// The H-Maxima filtered image has all local maxima with a height less than `h` removed:
 ///
 /// ```cpp
-///     HMaxima = dip::MorphologicalReconstruction( in - h, in, connectivity, "dilation" );
+/// HMaxima = dip::MorphologicalReconstruction( in - h, in, connectivity, "dilation" );
 /// ```
 ///
-/// \see dip::MorphologicalReconstruction, dip::Maxima, dip::Hminima
+/// \see dip::MorphologicalReconstruction, dip::Maxima, dip::HMinima
 inline void HMaxima(
       Image const& in,
       Image& out,
@@ -1395,24 +1407,23 @@ inline Image HMaxima(
 
 /// \brief The leveling of `in` imposed by `marker`.
 ///
-/// The leveling introduces flat zones in the image, in such a way that, if \f$g_p > g_q\f$, then \f$f_p \geq g_p\f$
-/// and \f$g_q \geq f_q\f$, with \f$g\f$ the leveling of \f$f\f$, and \f$p, q\f$ any two locations within the image.
-/// That is, for any edge remaining in \f$g\f$, there exists an edge of equal or larger magnitude in \f$f\f$.
+/// The leveling introduces flat zones in the image, in such a way that, if $g_p > g_q$, then $f_p \geq g_p$
+/// and $g_q \geq f_q$, with $g$ the leveling of $f$, and $p$, $q$ any two locations within the image.
+/// That is, for any edge remaining in $g$, there exists an edge of equal or larger magnitude in $f$.
 ///
-/// The leveling can be obtained by initializing \f$g\f$ to the `marker` image and iteratively applying
+/// The leveling can be obtained by initializing $g$ to the `marker` image and iteratively applying
 ///
-/// \f[ g = (f \wedge \delta g) \vee \epsilon g \f]
+/// $$ g = (f \wedge \delta g) \vee \epsilon g $$
 ///
-/// until idempotence (\f$g\f$ doesn't change any further). However, here it is implemented more efficiently
-/// using `dip::MorphologicalReconstruction`.
+/// until idempotence ($g$ doesn't change any further). However, here it is implemented more efficiently
+/// using \ref dip::MorphologicalReconstruction.
 ///
 /// The `marker` image can be a smoothed version of `in`, then the leveling yields a similar simplification as
 /// the smoothing, but preserving sharp edges.
 ///
-/// \literature
-/// <li>F. Meyer, "The levelings", Mathematical Morphology and its Applications to %Image and Signal Processing
-///     (proceedings of ISSM'98), pp. 199-206, 1998.
-/// \endliterature
+/// !!! literature
+///     - F. Meyer, "The levelings", Mathematical Morphology and its Applications to Image and Signal Processing
+///       (proceedings of ISSM'98), pp. 199-206, 1998.
 inline void Leveling(
       Image const& in,
       Image const& marker,
@@ -1453,17 +1464,16 @@ inline Image Leveling(
 /// `polarity` can be `"opening"` (the default) or `"closing"`, to compute the area opening or area closing, respectively.
 ///
 /// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
-/// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`). For binary images, this function calls
-/// `dip::BinaryAreaOpening` or `dip::BinaryAreaClosing`.
-///
-/// \literature
-/// <li>L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
-///     Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
-/// <li>A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
-///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
-/// \endliterature
+/// the algorithm for our fast watershed (`"fast"` mode to \ref dip::Watershed). For binary images, this function calls
+/// \ref dip::BinaryAreaOpening or \ref dip::BinaryAreaClosing.
 ///
 /// \see dip::AreaClosing, dip::VolumeOpening, dip::VolumeClosing, dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
+///
+/// !!! literature
+///     - L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
+///       Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
+///     - A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
+///       IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
 DIP_EXPORT void AreaOpening(
       Image const& in,
       Image const& mask,
@@ -1485,7 +1495,7 @@ inline Image AreaOpening(
    return out;
 }
 
-/// \brief Computes the area closing, calling `dip::AreaOpening` with `polarity="closing"`.
+/// \brief Computes the area closing, calling \ref dip::AreaOpening with `polarity="closing"`.
 inline void AreaClosing(
       Image const& in,
       Image const& mask,
@@ -1527,16 +1537,15 @@ inline Image AreaClosing(
 /// `polarity` can be `"opening"` (the default) or `"closing"`, to compute the area opening or area closing, respectively.
 ///
 /// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
-/// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`).
-///
-/// \literature
-/// <li>L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
-///     Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
-/// <li>A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
-///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
-/// \endliterature
+/// the algorithm for our fast watershed (`"fast"` mode to \ref dip::Watershed).
 ///
 /// \see dip::VolumeClosing, dip::AreaOpening, dip::AreaClosing, dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
+///
+/// !!! literature
+///     - L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
+///       Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
+///     - A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
+///       IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
 DIP_EXPORT void VolumeOpening(
       Image const& in,
       Image const& mask,
@@ -1558,7 +1567,7 @@ inline Image VolumeOpening(
    return out;
 }
 
-/// \brief Computes the area closing, calling `dip::VolumeOpening` with `polarity="closing"`.
+/// \brief Computes the area closing, calling \ref dip::VolumeOpening with `polarity="closing"`.
 inline void VolumeClosing(
       Image const& in,
       Image const& mask,
@@ -1581,10 +1590,10 @@ inline Image VolumeClosing(
 
 /// \brief Applies a path opening or closing in all possible directions
 ///
-/// `length` is the length of the path. All `filterParam` arguments to `dip::DirectedPathOpening` that yield a
+/// `length` is the length of the path. All `filterParam` arguments to \ref dip::DirectedPathOpening that yield a
 /// length of `length` pixels and represent unique directions are generated, and the directed path opening or closing
 /// is computed for each of them. The supremum (when `polarity` is `"opening"`) or infimum (when it is `"closing"`) is
-/// computed over all results. See `dip::DirectedPathOpening` for a description of the algorithm and the parameters.
+/// computed over all results. See \ref dip::DirectedPathOpening for a description of the algorithm and the parameters.
 DIP_EXPORT void PathOpening(
       Image const& in,
       Image const& mask,
@@ -1612,7 +1621,7 @@ inline Image PathOpening(
 /// steps in one of three directions (in 2D): the main direction, or 45 degrees to the left or right. That is,
 /// if the main direction is [1,0] (to the right), then [1,-1] and [1,1] (diagonal up or down) are also possible
 /// steps. This leads to a number of different paths that is exponential in its lengths. However, the opening over
-/// all these paths can be computed in \f$O(n \log(n))\f$ time, with \f$n\f$ the path length.
+/// all these paths can be computed in $O(n \log(n))$ time, with $n$ the path length.
 ///
 /// The direction description above can be generalized to any number of dimensions by realizing that the main direction
 /// can be specified by any of the neighbors of a central pixel, and then the other allowed steps are the neighbor
@@ -1639,18 +1648,20 @@ inline Image PathOpening(
 /// applying the path opening, then taking the infimum of the result and the input (Merveille, 2018). For a path
 /// closing, the erosion and the supremum are used instead.
 ///
-/// \par Definition of `filterSize`
-/// `length = max(abs(filterSize))` is the number of pixels in the line.
-/// The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using
-/// `direction = round(filterSize/length)`. For example, if `filterSize=[7,0]`, then `length` is 7, and
-/// `direction` is `[1,0]` (to the right), with `[1,1]` and `[1,-1]` as alternate directions.
+/// !!! m-default "Definition of `filterSize`"
+///     `length = max(abs(filterSize))` is the number of pixels in the line.
 ///
-/// \literature
-/// <li>H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
-/// <li>H. Talbot and B. Appleton, "Efficient complete and incomplete path openings and closings", %Image and Vision Computing 25:416-425, 2007.
-/// <li>C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
-/// <li>O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
-/// \endliterature
+///     The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using
+///     `direction = round(filterSize/length)`.
+///
+///     For example, if `filterSize=[7,0]`, then `length` is 7, and
+///     `direction` is `[1,0]` (to the right), with `[1,1]` and `[1,-1]` as alternate directions.
+///
+/// !!! literature
+///     - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
+///     - H. Talbot and B. Appleton, "Efficient complete and incomplete path openings and closings", Image and Vision Computing 25:416-425, 2007.
+///     - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
+///     - O. Merveille, H. Talbot, L. Najman and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
 DIP_EXPORT void DirectedPathOpening(
       Image const& in,
       Image const& mask,
@@ -1675,7 +1686,7 @@ inline Image DirectedPathOpening(
 ///
 /// Applies a structural erosion followed by a reconstruction by dilation.
 ///
-/// See `dip::Erosion` and `dip::MorphologicalReconstruction` for a description of the parameters.
+/// See \ref dip::Erosion and \ref dip::MorphologicalReconstruction for a description of the parameters.
 inline void OpeningByReconstruction(
       Image const& in,
       Image& out,
@@ -1705,7 +1716,7 @@ inline Image OpeningByReconstruction(
 ///
 /// Applies a structural dilation followed by a reconstruction by erosion.
 ///
-/// See `dip::Dilation` and `dip::MorphologicalReconstruction` for a description of the parameters.
+/// See \ref dip::Dilation and \ref dip::MorphologicalReconstruction for a description of the parameters.
 inline void ClosingByReconstruction(
       Image const& in,
       Image& out,
@@ -1736,24 +1747,25 @@ inline Image ClosingByReconstruction(
 /// Applies alternating sequential filters to `in`, using structuring element sizes given by the range `sizes`.
 /// Alternating sequential filters are two morphological filters opening and closing, applied in sequence, from
 /// a small size to a larger size. This provides an effective smoothing that is less biased than applying an
-/// opening and closing of a single size (as in `dip::MorphologicalSmoothing`).
+/// opening and closing of a single size (as in \ref dip::MorphologicalSmoothing).
 /// `polarity` can be `"open-close"` or `"close-open"`, and determines which of the operations is applied first.
 ///
 /// For example, if `sizes` is `{3,7,2}` and `polarity` is `"open-close"`, the following operations are applied:
 ///
 /// ```cpp
-///     dip::Opening( in,  out, { 3, shape } );
-///     dip::Closing( out, out, { 3, shape } );
-///     dip::Opening( out, out, { 5, shape } );
-///     dip::Closing( out, out, { 5, shape } );
-///     dip::Opening( out, out, { 7, shape } );
-///     dip::Closing( out, out, { 7, shape } );
+/// dip::Opening( in,  out, { 3, shape } );
+/// dip::Closing( out, out, { 3, shape } );
+/// dip::Opening( out, out, { 5, shape } );
+/// dip::Closing( out, out, { 5, shape } );
+/// dip::Opening( out, out, { 7, shape } );
+/// dip::Closing( out, out, { 7, shape } );
 /// ```
 ///
 /// `mode` is one of:
-///  - `"structural"`: uses structural openings and closings (see `dip::Opening`).
-///  - `"reconstruction"`: uses openings and closings by reconstruction (see `dip::OpeningByReconstruction`).
-///  - `"area"`: uses area openings and closings (see `dip::AreaOpening`) -- `shape` is ignored.
+///
+/// - `"structural"`: uses structural openings and closings (see \ref dip::Opening).
+/// - `"reconstruction"`: uses openings and closings by reconstruction (see \ref dip::OpeningByReconstruction).
+/// - `"area"`: uses area openings and closings (see \ref dip::AreaOpening) -- `shape` is ignored.
 DIP_EXPORT void AlternatingSequentialFilter(
       Image const& in,
       Image& out,
@@ -1786,17 +1798,17 @@ inline Image AlternatingSequentialFilter(
 /// the difference of the erosion with `hit` and the dilation with `miss`, with any negative values clipped to 0.
 ///
 /// If `mode` is `"constrained"`, a more restrictive definition is applied (conditions evaluated pixel-wise):
-///  - If `in == erosion(in,hit) && dilation(in,miss) < in`: `out = in - dilation(in,miss)`.
-///  - If `in == dilation(in,miss) && erosion(in,hit) > in`: `out = erosion(in,hit) - in`.
-///  - Otherwise: `out = 0`.
+///
+/// - If `in == erosion(in,hit) && dilation(in,miss) < in`: `out = in - dilation(in,miss)`.
+/// - If `in == dilation(in,miss) && erosion(in,hit) > in`: `out = erosion(in,hit) - in`.
+/// - Otherwise: `out = 0`.
 ///
 /// Note that the two SEs must be disjoint. If one pixel is set in both SEs, the output will be all zeros.
 ///
-/// See also `dip::SupGenerating` for a function specific to binary images.
+/// See also \ref dip::SupGenerating for a function specific to binary images.
 ///
-/// \literature
-/// <li>P. Soille, "Morphological Image Analysis", 2<sup>nd</sup> Edition, sections 5.1.1 and 5.1.2. Springer, 2002.
-/// \endliterature
+/// !!! literature
+///     - P. Soille, "Morphological Image Analysis", 2^nd^ Edition, sections 5.1.1 and 5.1.2. Springer, 2002.
 DIP_EXPORT void HitAndMiss(
       Image const& in,
       Image& out,
@@ -1822,7 +1834,7 @@ inline Image HitAndMiss(
 ///
 /// The `hit` SE is `se == 1`, the `miss` SE is `se == 0`. "Don't care" values are any other value.
 ///
-/// See the description for the other `dip::HitAndMiss` function for a description of the other parameters.
+/// See the description for the other \ref dip::HitAndMiss function for a description of the other parameters.
 inline void HitAndMiss(
       Image const& in,
       Image& out,
@@ -1844,7 +1856,7 @@ inline Image HitAndMiss(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

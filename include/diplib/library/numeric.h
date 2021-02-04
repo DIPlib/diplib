@@ -36,20 +36,17 @@
 
 
 /// \file
-/// \brief Numeric algorithms and constants unrelated to images. This file is always included through `diplib.h`.
-/// \see numeric
+/// \brief Numeric algorithms and constants unrelated to images. This file is always included through \ref "diplib.h".
+/// See \ref numeric.
 
 
 namespace dip {
 
 
-/// \defgroup numeric Numeric algorithms and constants
+/// \group numeric Numeric algorithms and constants
 /// \ingroup infrastructure
 /// \brief Functions and constants to be used in numeric computation, unrelated to images.
-///
-/// These functions and constants are made available when including `diplib.h`.
-/// \{
-
+/// \addtogroup
 
 /// \brief The constant &pi;.
 constexpr dfloat pi = 3.14159265358979323846264338327950288;
@@ -136,7 +133,7 @@ constexpr inline dip::sint modulo( dip::sint value, dip::sint period ) {
    return ( value < 0 ) ? ( period - ( -value % period )) : ( value % period );
 }
 
-/// \brief Fast floor operation, without checks, returning a `dip::sint`.
+/// \brief Fast floor operation, without checks, returning a \ref dip::sint.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
 template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 constexpr dip::sint floor_cast( T v ) {
@@ -144,7 +141,7 @@ constexpr dip::sint floor_cast( T v ) {
    return w - ( v < static_cast< T >( w ));
 }
 
-/// \brief Fast ceil operation, without checks, returning a `dip::sint`.
+/// \brief Fast ceil operation, without checks, returning a \ref dip::sint.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
 template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 constexpr dip::sint ceil_cast( T v ) {
@@ -152,14 +149,14 @@ constexpr dip::sint ceil_cast( T v ) {
    return w + ( v > static_cast< T >( w ));
 }
 
-/// \brief Fast round operation, without checks, returning a `dip::sint`.
+/// \brief Fast round operation, without checks, returning a \ref dip::sint.
 // Adapted from: https://stackoverflow.com/a/30308919/7328782
 template< typename T, typename = std::enable_if_t< std::is_floating_point< T >::value >>
 dip::sint round_cast( T v ) {
    return floor_cast( v + 0.5 );
 }
 
-/// \brief Consistent rounding, without checks, returning a `dip::sint`.
+/// \brief Consistent rounding, without checks, returning a \ref dip::sint.
 ///
 /// This rounding is consistent in that half-way cases are rounded in the same direction for positive and negative
 /// values. The `inverse` template parameter indicates the direction for these cases. By default, it matches
@@ -323,7 +320,7 @@ DIP_EXPORT void SymmetricEigenDecomposition3(
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
 /// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
-/// largest eigenvalue by magnitude. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
+/// largest eigenvalue by magnitude. The full decomposition as in \ref dip::SymmetricEigenDecomposition is computed,
 /// but only one eigenvector is written to the output.
 void LargestEigenvector(
       dip::uint n,
@@ -336,7 +333,7 @@ void LargestEigenvector(
 /// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
 /// `vector` is a pointer to space for `n` values, and will receive the eigenvector corresponding to the
-/// smallest eigenvalue by magnitude. The full decomposition as in `dip::SymmetricEigenDecomposition` is computed,
+/// smallest eigenvalue by magnitude. The full decomposition as in \ref dip::SymmetricEigenDecomposition is computed,
 /// but only one eigenvector is written to the output.
 void SmallestEigenvector(
       dip::uint n,
@@ -346,17 +343,18 @@ void SmallestEigenvector(
 
 /// \brief Finds the eigenvalues and eigenvectors of a symmetric, real-valued matrix, where only the unique values are given.
 ///
-/// Calls `dip::SymmetricEigenDecomposition` after copying over the input values to a temporary buffer.
+/// Calls \ref dip::SymmetricEigenDecomposition after copying over the input values to a temporary buffer.
 ///
 /// `input` is a pointer to `n*(n+1)/2` values, stored in the same order as symmetric tensors are stored in an image
 /// (see dip::Tensor::Shape). That is, fist are the main diagonal elements, then the elements above the diagonal,
 /// column-wise. This translates to:
-///  - 2D: xx, yy, xy
-///  - 3D: xx, yy, zz, xy, xz, yz
-///  - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
-///  - etc.
 ///
-/// See `dip::SymmetricEigenDecomposition` for information on `lambdas` and `vectors`.
+/// - 2D: xx, yy, xy
+/// - 3D: xx, yy, zz, xy, xz, yz
+/// - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
+/// - etc.
+///
+/// See \ref dip::SymmetricEigenDecomposition for information on `lambdas` and `vectors`.
 inline void SymmetricEigenDecompositionPacked(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
@@ -501,7 +499,7 @@ inline T TraceDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
 /// singular vectors will be written to then.
 /// If either of them is `nullptr`, neither is computed, and only `output` is filled.
 ///
-/// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
+/// `SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
 DIP_EXPORT void SingularValueDecomposition(
       dip::uint m,
@@ -523,7 +521,7 @@ DIP_EXPORT void SingularValueDecomposition(
 /// singular vectors will be written to then.
 /// If either of them is `nullptr`, neither is computed, and only `output` is filled.
 ///
-/// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
+/// `SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
 DIP_EXPORT void SingularValueDecomposition(
       dip::uint m,
@@ -592,7 +590,7 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcompl
 
 /// \brief Solves a system of real-valued equations, using the Jacobi SVD decomposition.
 ///
-/// Solves \f$A x = b\f$, where `A` is an `m`x`n` matrix (stored in column-major order),
+/// Solves $A x = b$, where `A` is an `m`x`n` matrix (stored in column-major order),
 /// and `b` is a vector with `m` values.
 /// The unknown `x` will have `n` values, and will be written to `output`.
 DIP_EXPORT void Solve(
@@ -609,11 +607,10 @@ DIP_EXPORT void Solve(
 /// constructor builds the thin plate spline function, and the `Evaluate` method evaluates this function
 /// at a given point.
 ///
-/// \literature
-/// <li>J. Elonen, "Thin Plate Spline editor - an example program in C++", https://elonen.iki.fi/code/tpsdemo/index.html
-///     (last retrieved June 25, 2019). The page explains the math behind 2D thin plate splines, we did not use
-///     the source code linked from that page.
-/// \endliterature
+/// !!! literature
+///     - J. Elonen, "Thin Plate Spline editor - an example program in C++", <https://elonen.iki.fi/code/tpsdemo/index.html>
+///       (last retrieved June 25, 2019). The page explains the math behind 2D thin plate splines, we did not use
+///       the source code linked from that page.
 class DIP_NO_EXPORT ThinPlateSpline {
    public:
       /// \brief Creates a function that maps `coordinate` to `value`.
@@ -656,7 +653,7 @@ class DIP_NO_EXPORT ThinPlateSpline {
 
 namespace Option {
 
-/// \brief Select if the operation is periodic or not
+/// \brief Select if the operation is periodic or not. Used in \ref dip::GaussianMixtureModel.
 enum class DIP_NO_EXPORT Periodicity {
       NOT_PERIODIC,  ///< The operation is not periodic
       PERIODIC       ///< The operation is periodic, left and right ends of the data are contiguous
@@ -664,7 +661,7 @@ enum class DIP_NO_EXPORT Periodicity {
 
 } // namespace Option
 
-/// \brief Parameters defining a 1D Gaussian. Returned by `dip::GaussianMixtureModel`.
+/// \brief Parameters defining a 1D Gaussian. Returned by \ref dip::GaussianMixtureModel.
 struct GaussianParameters {
    dfloat position;  ///< The location of the origin, in pixels
    dfloat amplitude; ///< The amplitude (value at the origin)
@@ -696,7 +693,7 @@ DIP_EXPORT std::vector< GaussianParameters > GaussianMixtureModel(
       Option::Periodicity periodicity = Option::Periodicity::NOT_PERIODIC
 );
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

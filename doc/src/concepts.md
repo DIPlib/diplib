@@ -1,28 +1,27 @@
-# Assorted concepts used in DIPlib 3 {#concepts}
+\comment DIPlib 3.0
 
-[//]: # (DIPlib 3.0)
+\comment (c)2016-2020, Cris Luengo.
+\comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
-[//]: # ([c]2016-2018, Cris Luengo.)
-[//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
 
-[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
-[//]: # (you may not use this file except in compliance with the License.)
-[//]: # (You may obtain a copy of the License at)
-[//]: # ()
-[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
-[//]: # ()
-[//]: # (Unless required by applicable law or agreed to in writing, software)
-[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
-[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
-[//]: # (See the License for the specific language governing permissions and)
-[//]: # (limitations under the License.)
+
+\page concepts Assorted concepts used in *DIPlib 3*
 
 This page describes assorted concepts used in *DIPlib 3*.
 
-\tableofcontents
 
-
-[//]: # (--------------------------------------------------------------)
+\comment --------------------------------------------------------------
 
 \section connectivity Connectivity
 
@@ -38,7 +37,7 @@ of 2 leads to 8 nearest neighbors (the edge and vertex neighbors).
 We use negative values for connectivity in some algorithms, in e.g. the binary dilation.
 These indicate alternating connectivities, which leads to more isotropic shapes than
 using the same connectivity for all iterations. These alternating connectivities are
-available only if the function takes a `dip::sint` as connectivity parameter.
+available only if the function takes a \ref dip::sint as connectivity parameter.
 
 In terms of the classical connectivity denominations we have, in 2D:
 
@@ -64,7 +63,7 @@ Some functions will interpret a connectivity of 0 to mean the maximum connectivi
 value that changes depending on the image dimensionality.
 
 
-[//]: # (--------------------------------------------------------------)
+\comment --------------------------------------------------------------
 
 \section aliasing Handling input and output images that alias each other
 
@@ -76,18 +75,18 @@ images when the function ends. With the current design of shared pointers
 to the data, this is no longer necessary. Say a function is called with
 
 ```cpp
-    dip::Image A;
-    dip::Filter( A, A, params );
+dip::Image A;
+dip::Filter( A, A, params );
 ```
 
 Then the function `dip::Filter()` does this:
 
 ```cpp
-    void dip::Filter( const dip::Image &in_c, dip::Image &out, ... ) {
-       Image in = in_c.QuickCopy();
-       out.Strip();
-       // do more processing ...
-    }
+void dip::Filter( const dip::Image &in_c, dip::Image &out, ... ) {
+   Image in = in_c.QuickCopy();
+   out.Strip();
+   // do more processing ...
+}
 ```
 
 What happens here is that the new image `in` is a copy of the input image, `A`,
@@ -103,41 +102,41 @@ always test for aliasing of image data, and strip/forge the output image if
 necessary:
 
 ```cpp
-    void dip::Filter( const dip::Image &in_c, dip::Image &out, ... ) {
-       Image in = in_c.QuickCopy();
-       if( in.Aliases( out )) {
-          out.Strip();       // Force out to not point at data we still need
-       }
-       out.ReForge( ... );   // create new data segment for output
-       // do more processing ...
-    }
+void dip::Filter( const dip::Image &in_c, dip::Image &out, ... ) {
+   Image in = in_c.QuickCopy();
+   if( in.Aliases( out )) {
+      out.Strip();       // Force out to not point at data we still need
+   }
+   out.ReForge( ... );   // create new data segment for output
+   // do more processing ...
+}
 ```
 
-Note that the `dip::Framework` functions take care of this.
+Note that the \ref dip::Framework functions take care of this.
 
 
-[//]: # (--------------------------------------------------------------)
+\comment --------------------------------------------------------------
 
 \section coordinates_origin Coordinate system origin
 
-Some functions, such as `dip::FourierTransform`, `dip::Rotation` and
-`dip::AffineTransform`, use a coordinate system where the origin is a pixel
+Some functions, such as \ref dip::FourierTransform, \ref dip::Rotation and
+\ref dip::AffineTransform, use a coordinate system where the origin is a pixel
 in the middle of the image. The indices of this pixel are given by
 `index[ ii ] = img.Size( ii ) / 2`. This pixel is exactly in the middle of the
 image for odd-sized images, and to the right of the exact middle for
 even-sized images.
 
-The function `dip::FillCoordinates` and related functions can be used to
+The function \ref dip::FillCoordinates and related functions can be used to
 obtain the coordinates for each pixel. These all have a `mode` parameter
 that determines which coordinate system to use. The value `"right"` (the
-default) places the origin in the same location as `dip::FourierTransform`,
-`dip::Rotation`, etc.
+default) places the origin in the same location as \ref dip::FourierTransform,
+\ref dip::Rotation, etc.
 
-The function `dip::Image::GetCenter` (using the default value for its input
+The function \ref dip::Image::GetCenter (using the default value for its input
 argument) returns the coordinates of the central pixel as a floating-point array.
 
 
-[//]: # (--------------------------------------------------------------)
+\comment --------------------------------------------------------------
 
 \section normal_strides Normal strides
 

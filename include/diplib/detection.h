@@ -26,31 +26,30 @@
 
 /// \file
 /// \brief Functions for feature detection.
-/// \see detection
+/// See \ref detection.
 
 
 namespace dip {
 
 
-/// \defgroup detection Detection
-/// \brief %Feature detection algorithms.
+/// \group detection Detection
+/// \brief Feature detection algorithms.
 ///
-/// For edge detection see:
-/// - `dip::GradientMagnitude`
-/// - `dip::MorphologicalGradientMagnitude`
-/// - `dip::MultiScaleMorphologicalGradient`
-/// - `dip::Canny`
-/// - `dip::MonogenicSignalAnalysis`
+/// !!! see "For edge detection see"
+///     - \ref dip::GradientMagnitude
+///     - \ref dip::MorphologicalGradientMagnitude
+///     - \ref dip::MultiScaleMorphologicalGradient
+///     - \ref dip::Canny
+///     - \ref dip::MonogenicSignalAnalysis
 ///
-/// For dot detection see:
-///  - `dip::Laplace`
-///  - `dip::Tophat`
+/// !!! see "For dot detection see"
+///     - \ref dip::Laplace
+///     - \ref dip::Tophat
 
-
-/// \defgroup detection_circles Circle detectors
+/// \group detection_circles Circle detectors
 /// \ingroup detection
 /// \brief Circle detection algorithms
-/// \{
+/// \addtogroup
 
 /// \brief Hough transform for circles in 2D binary images.
 ///
@@ -78,7 +77,7 @@ inline Image HoughTransformCircleCenters(
 
 /// \brief Find local maxima in Hough parameter space.
 ///
-/// Finds the local maxima (using `dip::WatershedMaxima`) in the given Hough parameter space.
+/// Finds the local maxima (using \ref dip::WatershedMaxima) in the given Hough parameter space.
 /// Maxima `distance` pixels away from a higher maximum are filtered out.
 /// Maxima lower than `fraction` times the highest maximum are ignored. `fraction` should be lower than 1.
 DIP_EXPORT CoordinateArray FindHoughMaxima(
@@ -104,7 +103,7 @@ DIP_EXPORT Distribution PointDistanceDistribution(
 /// \brief Find circles in 2D binary images.
 ///
 /// Finds circles in 2D binary images using the 2-1 Hough transform. First, circle centers are computed
-/// using `HoughTransformCircleCenters`, and then a radius is calculated for each center. Note that
+/// using \ref dip::HoughTransformCircleCenters, and then a radius is calculated for each center. Note that
 /// only a single radius is returned per center coordinates.
 ///
 /// `gv` is a vector image of the same sizes as `in`, with the gradient vector for each pixel of `in`.
@@ -128,6 +127,8 @@ struct RadonCircleParameters{
    FloatArray origin;   ///< Coordinates of the origin of the hypersphere
    dfloat radius;       ///< Radius of the hypersphere
 };
+/// \brief An array of \ref dip::RadonCircleParameters, storing parameters for all hyperspheres
+/// detected by \ref dip::RadonTransformCircles.
 using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 
 /// \brief Detects hyperspheres (circles, spheres) using the generalized Radon transform.
@@ -144,10 +145,11 @@ using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 /// reducing the size of the parameter space.
 ///
 /// `threshold` is used to distinguish relevant peaks in the parameter space: Peaks must be at least `threshold`
-/// above the surrounding valley to be counted. `dip::WatershedMaxima` is used to find peaks, `threshold` sets
+/// above the surrounding valley to be counted. \ref dip::WatershedMaxima is used to find peaks, `threshold` sets
 /// the `maxDepth` parameter there.
 ///
 /// The Radon transform parameter space can be computed in three different ways, determined by the value for `mode`:
+///
 /// - `"full"`: `out` is the full parameter space, an image of the size of `in` with an additional dimension for the
 ///   *r* axis. This is the default.
 /// - `"projection"`: `out` is of the size of `in`, with two tensor components (channels). `out[ 0 ]` is the max
@@ -156,6 +158,7 @@ using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 ///   *r* at the time, and looks for local maxima along the *r* axis by fitting a parabola to the the 3 samples.
 ///
 /// The parameter `options` can contain the following values:
+///
 /// - `"normalize"`: Normalizes the integral over the template for each *r*, so that larger circles don't have a
 ///   larger maximum. This prevents a bias towards larger circles.
 /// - `"correct"`: If normalized, the size of the template is corrected to reduce bias in the radius estimate.
@@ -163,21 +166,20 @@ using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 ///   look for rings, not disks.
 /// - `"filled"`: Fills the positive ring with negative values. This forces the algorithm to look for rings without
 ///   anything in them.
-/// - `"no maxima detection"`: The `RadonCircleParametersArray` output is an empty array.
+/// - `"no maxima detection"`: The \ref dip::RadonCircleParametersArray output is an empty array.
 /// - `"no parameter space"`: The `out` image is not used.
 ///
 /// By default, `options` contains `"normalize"` and `"correct"`.
 ///
-/// `in` must be scalar and non-complex, and have at least one dimension. `out` will be of type `dip::DT_SFLOAT`.
+/// `in` must be scalar and non-complex, and have at least one dimension. `out` will be of type \ref dip::DT_SFLOAT.
 ///
-/// \literature
-/// <li>C.L. Luengo Hendriks, M. van Ginkel, P.W. Verbeek and L.J. van Vliet,
-///     "The generalized Radon transform: sampling, accuracy and memory considerations",
-///     Pattern Recognition 38(12):2494–2505, 2005.
-/// <li>C.L. Luengo Hendriks, M. van Ginkel and L.J. van Vliet,
-///     "Underestimation of the radius in the Radon transform for circles and spheres",
-///     Technical Report PH-2003-02, Pattern Recognition Group, Delft University of Technology, The Netherlands, 2003.
-/// \endliterature
+/// !!! literature
+///     - C.L. Luengo Hendriks, M. van Ginkel, P.W. Verbeek and L.J. van Vliet,
+///       "The generalized Radon transform: sampling, accuracy and memory considerations",
+///       Pattern Recognition 38(12):2494–2505, 2005.
+///     - C.L. Luengo Hendriks, M. van Ginkel and L.J. van Vliet,
+///       "Underestimation of the radius in the Radon transform for circles and spheres",
+///       Technical Report PH-2003-02, Pattern Recognition Group, Delft University of Technology, The Netherlands, 2003.
 // TODO: If `mode` is `"full"`, then the parameter space is computed chunks to save memory.
 DIP_EXPORT RadonCircleParametersArray RadonTransformCircles(
       Image const& in,
@@ -204,23 +206,25 @@ inline Image RadonTransformCircles(
 }
 
 
-/// \}
+/// \endgroup
 
-/// \defgroup detection_corners Corner detectors
+/// \group detection_corners Corner detectors
 /// \ingroup detection
 /// \brief Corner detection algorithms
-/// \{
+/// \addtogroup
 
 /// \brief Harris corner detector
 ///
 /// The Harris corner detector is defined as
-/// \f[ \text{Det}(M) - \kappa \text{Tr}(M)^2 \; ,\f]
-/// where \f$M\f$ is the structure tensor, and \f$\kappa\f$ is a constant typically set to 0.04, in this function
-/// controlled by parameter `kappa`. Harris and Stephens noted in their paper that corners are locations in the image
-/// where both eigenvalues of \f$M\f$ are large. But they considered eigenvalue computation too expensive, and therefore
-/// proposed this cheaper alternative. `dip::ShiTomasiCornerDetector` returns the smallest eigenvalue of \f$M\f$.
 ///
-/// The structure tensor \f$M\f$ is computed using `dip::StructureTensor`, with `gradientSigmas` equal to 1.0 and
+/// $$ \text{Det}(M) - \kappa \text{Tr}(M)^2 \; , $$
+///
+/// where $M$ is the structure tensor, and $\kappa$ is a constant typically set to 0.04, in this function
+/// controlled by parameter `kappa`. Harris and Stephens noted in their paper that corners are locations in the image
+/// where both eigenvalues of $M$ are large. But they considered eigenvalue computation too expensive, and therefore
+/// proposed this cheaper alternative. \ref dip::ShiTomasiCornerDetector returns the smallest eigenvalue of $M$.
+///
+/// The structure tensor $M$ is computed using \ref dip::StructureTensor, with `gradientSigmas` equal to 1.0 and
 /// `tensorSigmas` set through this function's `sigmas` parameter.
 ///
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
@@ -228,14 +232,13 @@ inline Image RadonTransformCircles(
 /// This function is equivalent to:
 ///
 /// ```cpp
-///     dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
-///     Image out = dip::Determinant( M ) - k * dip::Square( dip::Trace( M ));
-///     dip::ClipLow( out, out, 0 );
+/// dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
+/// Image out = dip::Determinant( M ) - k * dip::Square( dip::Trace( M ));
+/// dip::ClipLow( out, out, 0 );
 /// ```
 ///
-/// \literature
-/// <li>C. Harris and M. Stephens, "A combined corner and edge detector", Proceedings of the 4<sup>th</sup> Alvey Vision Conference, pp. 147–151, 1988.
-/// \endliterature
+/// !!! literature
+///     - C. Harris and M. Stephens, "A combined corner and edge detector", Proceedings of the 4^th^ Alvey Vision Conference, pp. 147–151, 1988.
 DIP_EXPORT void HarrisCornerDetector(
       Image const& in,
       Image& out,
@@ -257,11 +260,13 @@ inline Image HarrisCornerDetector(
 /// \brief Shi-Tomasi corner detector
 ///
 /// The Shi-Tomasi corner detector is defined as
-/// \f[ \text{min}(\lambda_1, \lambda_2) \; ,\f]
-/// where the \f$\lambda\f$ are the eigenvalues of \f$M\f$, the structure tensor. Corners are locations in the image
-/// where both eigenvalues of \f$M\f$ are large.
 ///
-/// The structure tensor \f$M\f$ is computed using `dip::StructureTensor`, with `gradientSigmas` equal to 1.0 and
+/// $$ \text{min}(\lambda_1, \lambda_2) \; , $$
+///
+/// where the $\lambda$ are the eigenvalues of $M$, the structure tensor. Corners are locations in the image
+/// where both eigenvalues of $M$ are large.
+///
+/// The structure tensor $M$ is computed using \ref dip::StructureTensor, with `gradientSigmas` equal to 1.0 and
 /// `tensorSigmas` set through this function's `sigmas` parameter.
 ///
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
@@ -269,13 +274,12 @@ inline Image HarrisCornerDetector(
 /// This function is equivalent to:
 ///
 /// ```cpp
-///     dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
-///     out = dip::SmallestEigenvalue( M );
+/// dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
+/// out = dip::SmallestEigenvalue( M );
 /// ```
 ///
-/// \literature
-/// <li>J. Shi and C. Tomasi, "Good features to track", 9<sup>th</sup> IEEE Conference on Computer Vision and Pattern Recognition, pp. 593–600, 1994.
-/// \endliterature
+/// !!! literature
+///     - J. Shi and C. Tomasi, "Good features to track", 9^th^ IEEE Conference on Computer Vision and Pattern Recognition, pp. 593–600, 1994.
 DIP_EXPORT void ShiTomasiCornerDetector(
       Image const& in,
       Image& out,
@@ -295,8 +299,10 @@ inline Image ShiTomasiCornerDetector(
 /// \brief Noble's corner detector
 ///
 /// Noble defined a corner detector as
-/// \f[ \text{Det}(M) / \text{Tr}(M) \; ,\f]
-/// This is similar to the Harris corner detector (see `dip::Harris`), except it has no parameter to tune. The ratio
+///
+/// $$ \text{Det}(M) / \text{Tr}(M) \; , $$
+///
+/// This is similar to the Harris corner detector (see \ref dip::HarrisCornerDetector), except it has no parameter to tune. The ratio
 /// of the determinant to the trace is equivalent to the harmonic mean of the eigenvalues.
 ///
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
@@ -304,13 +310,12 @@ inline Image ShiTomasiCornerDetector(
 /// This function is equivalent to:
 ///
 /// ```cpp
-///     dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
-///     Image out = dip::SafeDivide( dip::Determinant( M ), dip::Trace( M ));
+/// dip::Image M = StructureTensor( in, {}, { 1.0 }, sigmas, S::BEST, boundaryCondition );
+/// Image out = dip::SafeDivide( dip::Determinant( M ), dip::Trace( M ));
 /// ```
 ///
-/// \literature
-/// <li>J.A. Noble, "Finding corners", Proceedings of the Alvey Vision Conference, pp. 37.1-37.8, 1987.
-/// \endliterature
+/// !!! literature
+///     - J.A. Noble, "Finding corners", Proceedings of the Alvey Vision Conference, pp. 37.1-37.8, 1987.
 DIP_EXPORT void NobleCornerDetector(
       Image const& in,
       Image& out,
@@ -330,21 +335,22 @@ inline Image NobleCornerDetector(
 /// \brief Wang-Brady corner detector
 ///
 /// Wang and Brady (1995) define a corner operator as
-/// \f[ \begin{cases}
+///
+/// $$ \begin{cases}
 ///       \Gamma = \left( \frac{\delta^2 F}{\delta \bf{t}^2} \right)^2 - s|\nabla F|^2 = \text{maximum}
 ///   \\  \frac{\delta^2 F}{\delta \bf{n}^2} = 0
 ///   \\  |\nabla F|^2 > T_1 , \Gamma > T_2
-/// \end{cases} \f]
+/// \end{cases} $$
 ///
-/// Here, \f$\Gamma\f$ is composed of the square of the second derivative of the image \f$F\f$ in the contour direction
-/// (\f$\bf{t}\f$ is the unit vector perpendicular to the gradient), and the square norm of the gradient. The first
-/// term is a measure for curvature, the second term is a measure for edgeness. \f$s\f$ is a threshold (in this
+/// Here, $\Gamma$ is composed of the square of the second derivative of the image $F$ in the contour direction
+/// ($\bf{t}$ is the unit vector perpendicular to the gradient), and the square norm of the gradient. The first
+/// term is a measure for curvature, the second term is a measure for edgeness. $s$ is a threshold (in this
 /// function defined through `threshold`) that determines how much larger the curvature must be compared to the
 /// edgeness. Typical values are in the range 0.0 to 0.5, the default is 0.1.
 ///
 /// The second equation indicates that the second derivative in the gradient direction must be zero (the zero crossing
 /// of the second derivative indicates the exact sub-pixel location of the edge). The third equation indicates two
-/// thresholds that must be satisfied. This function computes only \f$\Gamma\f$, the thresholding must be applied
+/// thresholds that must be satisfied. This function computes only $\Gamma$, the thresholding must be applied
 /// separately.
 ///
 /// This function generalizes the corner measure above to any number of dimensions. `in` must be scalar and real-valued.
@@ -352,13 +358,13 @@ inline Image NobleCornerDetector(
 /// Gradients are computed using Gaussian derivatives, with the `sigmas` parameter. This function is equivalent to:
 ///
 /// ```cpp
-///     Image out = dip::Square( dip::LaplaceMinusDgg( in, sigmas )) - threshold * dip::SquareNorm( dip::Gradient( in, sigmas ));
-///     dip::ClipLow( out, out, 0 );
+/// Image out = dip::Square( dip::LaplaceMinusDgg( in, sigmas ))
+///           - threshold * dip::SquareNorm( dip::Gradient( in, sigmas ));
+/// dip::ClipLow( out, out, 0 );
 /// ```
 ///
-/// \literature
-/// <li>H. Wang and M. Brady, "Real-time corner detection algorithm for motion estimation", %Image and Vision Computing 13(9):695–703, 1995.
-/// \endliterature
+/// !!! literature
+///     - H. Wang and M. Brady, "Real-time corner detection algorithm for motion estimation", Image and Vision Computing 13(9):695–703, 1995.
 DIP_EXPORT void WangBradyCornerDetector(
       Image const& in,
       Image& out,
@@ -377,22 +383,22 @@ inline Image WangBradyCornerDetector(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
-/// \defgroup detection_lines Line detectors
+/// \group detection_lines Line detectors
 /// \ingroup detection
 /// \brief Line detection algorithms
 ///
-/// See `dip::MonogenicSignalAnalysis` for yet another way to detect lines.
-/// \{
+/// See \ref dip::MonogenicSignalAnalysis for yet another way to detect lines.
+/// \addtogroup
 
 /// \brief Frangi vessel detector, single scale (Hessian based)
 ///
 /// Frangi's vesselness measure is based on the eigenvalues of the Hessian matrix. The core concept is that
 /// one eigenvalue must be significantly smaller than the others for a local region to resemble a line.
 ///
-/// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see `dip::Hessian`),
+/// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see \ref dip::Hessian),
 /// and determine the scale. To detect wider vessels, increase `sigmas`.
 ///
 /// `parameters` are the two (*&beta;* and *c* in 2D) or three (*&alpha;*, *&beta;* and *c* in 3D) thresholds used
@@ -410,17 +416,16 @@ inline Image WangBradyCornerDetector(
 /// scaling the input image with the square of the sigma:
 ///
 /// ```cpp
-///     std::vector<double> scales = { 1, 2, 4, 8 };
-///     dip::Image out = dip::FrangiVesselness( in * ( scales[ 0 ] * scales[ 0 ] ), { scales[ 0 ] } );
-///     for( size_t ii = 1; ii < scales.size(); ++ii ) {
-///        dip::Supremum( out,  dip::FrangiVesselness( in * ( scales[ ii ] * scales[ ii ] ), { scales[ ii ] } ), out );
-///     }
+/// std::vector<double> scales = { 1, 2, 4, 8 };
+/// dip::Image out = dip::FrangiVesselness( in * ( scales[ 0 ] * scales[ 0 ] ), { scales[ 0 ] } );
+/// for( size_t ii = 1; ii < scales.size(); ++ii ) {
+///    dip::Supremum( out,  dip::FrangiVesselness( in * ( scales[ ii ] * scales[ ii ] ), { scales[ ii ] } ), out );
+/// }
 /// ```
 ///
-/// \literature
-/// <li>A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
-///     in: Medical %Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
-/// \endliterature
+/// !!! literature
+///     - A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
+///       in: Medical Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
 DIP_EXPORT void FrangiVesselness(
       Image const& in,
       Image& out,
@@ -451,10 +456,9 @@ inline Image FrangiVesselness(
 /// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and 2D.
 ///
-/// \literature
-/// <li>S. Chaudhuri, S. Chatterjee, N. Katz, M. Nelson, and M. Goldbaum, "Detection of Blood Vessels in Retinal Images
-///     Using Two-Dimensional Matched Filters", IEEE Transactions on Medical Imaging 8(3):263-269, 1989
-/// \endliterature
+/// !!! literature
+///     - S. Chaudhuri, S. Chatterjee, N. Katz, M. Nelson, and M. Goldbaum, "Detection of Blood Vessels in Retinal Images
+///       Using Two-Dimensional Matched Filters", IEEE Transactions on Medical Imaging 8(3):263-269, 1989
 DIP_EXPORT void MatchedFiltersLineDetector2D(
       Image const& in,
       Image& out,
@@ -478,19 +482,18 @@ inline Image MatchedFiltersLineDetector2D(
 /// \brief Danielsson's Hessian-based line detector
 ///
 /// This is a different approach to detecting lines based on the Hessian matrix (2nd order derivatives) compared
-/// to Frangi's vesselness measure (`dip::FrangiVesselness`). It is perfectly isotropic, but has some response
+/// to Frangi's vesselness measure (\ref dip::FrangiVesselness). It is perfectly isotropic, but has some response
 /// also to edges, especially in 2D.
 ///
-/// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see `dip::Hessian`),
+/// `sigmas` are used for the computation of the Hessian (which uses Gaussian gradients, see \ref dip::Hessian),
 /// and determine the scale. To detect wider lines, increase `sigmas`.
 ///
 /// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
 ///
-/// \literature
-/// <li>P.E. Danielson, Q. Lin and Q.Z. Ye, "Efficient detection of second degree variations in 2D and 3D images",
-///     Journal of Visual Communication and %Image Representation 12, 255–305, 2001.
-/// \endliterature
+/// !!! literature
+///     - P.E. Danielson, Q. Lin and Q.Z. Ye, "Efficient detection of second degree variations in 2D and 3D images",
+///       Journal of Visual Communication and Image Representation 12, 255–305, 2001.
 DIP_EXPORT void DanielssonLineDetector(
       Image const& in,
       Image& out,
@@ -512,8 +515,8 @@ inline Image DanielssonLineDetector(
 /// \brief Line detector based on robust path openings
 ///
 /// RORPO stands for Ranking the Orientation Responses of Path Operators. It filters `in` with 4 (2D)
-/// or 7 (3D) different directions of path openings, ranks the results point-wise, and compares appropriate
-/// ranks to determine if a pixel belongs to a line or not.
+/// or 7 (3D) different directions of path openings (see \ref dip::DirectedPathOpening), ranks the results
+/// point-wise, and compares appropriate ranks to determine if a pixel belongs to a line or not.
 ///
 /// `length` is the length of the path operator. Longer paths make for a more selective filter that requires
 /// lines to be straighter.
@@ -521,10 +524,9 @@ inline Image DanielssonLineDetector(
 /// `polarity` indicates whether to look for light lines on a dark background (`"white"`) or dark lines on a light
 /// background (`"black"`). `in` must be scalar, real-valued, and either 2D or 3D.
 ///
-/// \literature
-/// <li>O. Merveille, H. Talbot, L. Najman, and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation
-///     Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
-/// \endliterature
+/// !!! literature
+///     - O. Merveille, H. Talbot, L. Najman, and N. Passat, "Curvilinear Structure Analysis by Ranking the Orientation
+///       Responses of Path Operators", IEEE Transactions on Pattern Analysis and Machine Intelligence 40(2):304-317, 2018.
 DIP_EXPORT void RORPOLineDetector(
       Image const& in,
       Image& out,
@@ -541,7 +543,7 @@ inline Image RORPOLineDetector(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

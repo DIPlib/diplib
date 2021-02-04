@@ -23,15 +23,17 @@
 #include "diplib/viewer/viewer.h"
 
 /// \file
-/// \brief Declares `dip::viewer::ImageViewer`.
+/// \brief Declares \ref dip::viewer::ImageViewer.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 class DIPVIEWER_CLASS_EXPORT ImageView : public View
 {
   protected:
     class ViewPort *viewport_;
-    dip::Image image_;     ///< 2D RGB image
+    dip::Image image_;           ///< 2D RGB image
     unsigned int texture_;       ///< OpenGL texture identifier.
 
   public:
@@ -71,13 +73,12 @@ class DIPVIEWER_CLASS_EXPORT ImageViewPort : public ViewPort
     ImageView *view() { return view_; }
 };
 
-/// \addtogroup viewer
-/// \{
 
 /// Non-interactive 2D RGB image viewer.
 class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
 {
   public:
+    /// \brief A pointer to an `ImageViewer`.
     typedef std::shared_ptr<ImageViewer> Ptr;
     
   protected:
@@ -87,9 +88,9 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     std::string name_;
   
   public:
-    /// \brief Construct a new ImageViewer.
+    /// \brief Construct a new `ImageViewer`.
     ///
-    /// As the constructor is protected, this is the only way to create an ImageViewer.
+    /// As the constructor is protected, this is the only way to create an `ImageViewer`.
     /// Note that the ImageViewer only supports 8-bit 2D RGB images.
     ///
     /// If either `width` or `height` is 0, it is computed from the other value so as to
@@ -100,7 +101,7 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     /// Example usage:
     ///
     /// ```cpp
-    ///     manager.createWindow( dip::viewer::ImageViewer::Create( image ));
+    /// manager.createWindow( dip::viewer::ImageViewer::Create( image ));
     /// ```
     static Ptr Create(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0)
     {
@@ -159,7 +160,7 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     DIPVIEWER_EXPORT void draw() override;
 };
 
-/// \}
+/// \endgroup
 
 }} // namespace dip::viewer
 

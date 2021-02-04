@@ -27,12 +27,11 @@
 #include <map>
 
 /// \file
-/// \brief Declares the GLUT interface of \ref viewer.
+/// \brief Declares the GLUT interface of \ref dipviewer.
 
 namespace dip { namespace viewer {
 
-/// \addtogroup viewer
-/// \{
+/// \addtogroup dipviewer
 
 /// Simple GLUT window manager.
 class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager
@@ -124,7 +123,7 @@ class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager
     }
 };
 
-/// \}
+/// \endgroup
 
 }} // namespace dip::viewer
 

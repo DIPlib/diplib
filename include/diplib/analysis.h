@@ -27,16 +27,15 @@
 
 /// \file
 /// \brief Functions for assorted analysis functions.
-/// \see analysis
+/// See \ref analysis.
 
 
 namespace dip {
 
 
-/// \defgroup analysis Analysis
+/// \group analysis Analysis
 /// \brief Assorted analysis tools.
-/// \{
-
+/// \addtogroup
 
 /// \brief Finds the coordinates for all non-zero pixels in the scalar image `in`, optionally constrained to the pixels selected by `mask`.
 ///
@@ -52,13 +51,13 @@ namespace dip {
 DIP_EXPORT CoordinateArray Find( Image const& in, Image const& mask = {} );
 
 
-/// \brief Contains the result of the function `dip::SubpixelLocation`.
+/// \brief Contains the result of the function \ref dip::SubpixelLocation.
 struct SubpixelLocationResult {
    FloatArray coordinates; ///< Coordinates of local extremum
    dfloat value;           ///< Interpolated value at local extremum
 };
 
-/// \brief Contains the result of the functions `dip::SubpixelMaxima` and `dip::SubpixelMinima`.
+/// \brief Contains the result of the functions \ref dip::SubpixelMaxima and \ref dip::SubpixelMinima.
 using SubpixelLocationArray = std::vector< SubpixelLocationResult >;
 
 /// \brief Gets coordinates of a local extremum with sub-pixel precision
@@ -71,17 +70,18 @@ using SubpixelLocationArray = std::vector< SubpixelLocationResult >;
 /// extremum. The `value` member will contain the interpolated grey value at the location of the extremum.
 ///
 /// `method` determines which method is used. These are the allowed values:
-///  - `"linear"`: Computes the center of gravity of 3 pixels around the extremum, in each dimension independently.
-///    The value at the extremum is that of the pixel at `position`.
-///  - `"parabolic"`: Fits a parabola to a 3-pixel-wide block around the extremum (for up to 3D only).
-///  - `"parabolic separable"`: Fits a parabola in each dimension independently. The value at the extremum
-///    is the maximum/minimum of the values obtained in each of the 1D processes, and thus not equivalent
-///    to the grey value obtained by true interpolation.
-///  - `"gaussian"`: Fits a Gaussian to a 3-pixel-wide block around the extremum (for up to 3D only).
-///  - `"gaussian separable"`: Fits a Gaussian in each dimension independently. The value at the extremum
-///    is the maximum/minimum of the values obtained in each of the 1D processes, and thus not equivalent
-///    to the grey value obtained by true interpolation.
-///  - `"integer"`: Doesn't look for sub-pixel locations, returning the integer coordinates of the extremum.
+///
+/// - `"linear"`: Computes the center of gravity of 3 pixels around the extremum, in each dimension independently.
+///   The value at the extremum is that of the pixel at `position`.
+/// - `"parabolic"`: Fits a parabola to a 3-pixel-wide block around the extremum (for up to 3D only).
+/// - `"parabolic separable"`: Fits a parabola in each dimension independently. The value at the extremum
+///   is the maximum/minimum of the values obtained in each of the 1D processes, and thus not equivalent
+///   to the grey value obtained by true interpolation.
+/// - `"gaussian"`: Fits a Gaussian to a 3-pixel-wide block around the extremum (for up to 3D only).
+/// - `"gaussian separable"`: Fits a Gaussian in each dimension independently. The value at the extremum
+///   is the maximum/minimum of the values obtained in each of the 1D processes, and thus not equivalent
+///   to the grey value obtained by true interpolation.
+/// - `"integer"`: Doesn't look for sub-pixel locations, returning the integer coordinates of the extremum.
 ///
 /// The image `in` must be scalar and real-valued.
 DIP_EXPORT SubpixelLocationResult SubpixelLocation(
@@ -94,13 +94,13 @@ DIP_EXPORT SubpixelLocationResult SubpixelLocation(
 /// \brief Gets coordinates of local maxima with sub-pixel precision
 ///
 /// Detects local maxima in the image, and returns their coordinates, with sub-pixel precision.
-/// Only pixels where `mask` is on will be examined. Local maxima are detected using `dip::Maxima`,
-/// then their position is determined more precisely using `dip::SubpixelLocation`.
+/// Only pixels where `mask` is on will be examined. Local maxima are detected using \ref dip::Maxima,
+/// then their position is determined more precisely using \ref dip::SubpixelLocation.
 ///
 /// A local maximum can not touch the edge of the image. That is, its integer location must be one
 /// pixel away from the edge.
 ///
-/// See `dip::SubpixelLocation` for the definition of the `method` parameter.
+/// See \ref dip::SubpixelLocation for the definition of the `method` parameter.
 DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
       Image const& in,
       Image const& mask = {},
@@ -110,13 +110,13 @@ DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
 /// \brief Gets coordinates of local minima with sub-pixel precision
 ///
 /// Detects local minima in the image, and returns their coordinates, with sub-pixel precision.
-/// Only pixels where `mask` is on will be examined. Local minima are detected using `dip::Minima`,
-/// then their position is determined more precisely using `dip::SubpixelLocation`.
+/// Only pixels where `mask` is on will be examined. Local minima are detected using \ref dip::Minima,
+/// then their position is determined more precisely using \ref dip::SubpixelLocation.
 ///
 /// A local minimum can not touch the edge of the image. That is, its integer location must be one
 /// pixel away from the edge.
 ///
-/// See `dip::SubpixelLocation` for the definition of the `method` parameter.
+/// See \ref dip::SubpixelLocation for the definition of the `method` parameter.
 DIP_EXPORT SubpixelLocationArray SubpixelMinima(
       Image const& in,
       Image const& mask = {},
@@ -129,7 +129,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 /// moving `start` to this location, until convergence. The location that the process converges to is a local
 /// maximum. Convergence is assumed when the magnitude of the shift is smaller than `epsilon`.
 ///
-/// To speed up the computation within this function, the output of `dip::MeanShiftVector` is used. This filter
+/// To speed up the computation within this function, the output of \ref dip::MeanShiftVector is used. This filter
 /// pre-computes the center of gravity of all neighborhoods in the image. Specify the neighborhood sizes in that
 /// function.
 DIP_EXPORT FloatArray MeanShift(
@@ -140,7 +140,7 @@ DIP_EXPORT FloatArray MeanShift(
 
 /// \brief Finds the coordinates of local a maximum close to each point in `startArray`.
 ///
-/// Repeatedly calls the `dip::MeanShift` function described above, for each point in `startArray`. Duplicate maxima
+/// Repeatedly calls the \ref dip::MeanShift function described above, for each point in `startArray`. Duplicate maxima
 /// are not removed, such that `out[ii]` is the local maximum arrived to from `startArray[ii]`.
 inline FloatCoordinateArray MeanShift(
       Image const& meanShiftVectorResult,
@@ -170,9 +170,10 @@ inline FloatCoordinateArray MeanShift(
 /// `maxIter` sets how many iterations are run. There is currently no other stopping criterion.
 ///
 /// `flags` can contain the following values:
-///   - `"periodic"` specifies that the image is periodic along `dimension`.
-///   - `"pixel size"` scales the parameters written to the output image with the pixel size along `dimension`.
-///     By default these parameters are in pixels.
+///
+/// - `"periodic"` specifies that the image is periodic along `dimension`.
+/// - `"pixel size"` scales the parameters written to the output image with the pixel size along `dimension`.
+///   By default these parameters are in pixels.
 DIP_EXPORT void GaussianMixtureModel(
       Image const& in,
       Image& out,
@@ -205,18 +206,15 @@ inline Image GaussianMixtureModel(
 /// method is instead related to the "phase correlation" as proposed by Kuglin and Hines (1975).
 ///
 /// When `normalize` is `"normalize"`, the computation performed in the Fourier Domain is (as per Luengo & van Vliet, 2000)
-///
 /// ```cpp
-///     out = ( in1 * dip::Conjugate(in2) ) / dip::SquareModulus(in1);
+/// out = ( in1 * dip::Conjugate(in2) ) / dip::SquareModulus(in1);
 /// ```
-///
 /// When `normalize` is set to `"phase"`, the computation is (as per Kuglin & Hines, 1975)
-///
 /// ```cpp
-///     out = ( in1 * dip::Conjugate(in2) ) / ( dip::Modulus(in1) * dip::Modulus(in2) );
+/// out = ( in1 * dip::Conjugate(in2) ) / ( dip::Modulus(in1) * dip::Modulus(in2) );
 /// ```
+/// (See \ref dip::Conjugate, \ref dip::SquareModulus and \ref dip::Modulus.)
 ///
-/// (See `dip::Conjugate`, `dip::SquareModulus` and `dip::Modulus`.)
 /// These two approaches are identical if the only difference between `in1` and `in2` is a shift, except that
 /// `"normalize"` is computationally cheaper than `"phase"`. If the images are otherwise not identical, then
 /// the `"phase"` method might be the better choice. If there exist strong differences, the non-normalized
@@ -224,7 +222,7 @@ inline Image GaussianMixtureModel(
 ///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image. Thus, for `in1==in2`, only this pixel will be set.
-/// See `dip::FindShift` with the `"CC"`, `"NCC"` or `"PC"`  methods for localizing this peak.
+/// See \ref dip::FindShift with the `"CC"`, `"NCC"` or `"PC"`  methods for localizing this peak.
 ///
 /// If `in1` or `in2` is already Fourier transformed, set `in1Representation` or `in2Representation`
 /// to `"frequency"`. Similarly, if `outRepresentation` is `"frequency"`, the output will not be
@@ -235,12 +233,11 @@ inline Image GaussianMixtureModel(
 /// conjugate-symmetric (i.e. be Fourier transforms of real-valued images).
 /// `out` will be real-valued if `outRepresentation` is `"spatial"`.
 ///
-/// \literature
-/// <li>C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
-///     Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
-/// <li>C.L. Luengo Hendriks and L.J. van Vliet, "Improving resolution to reduce aliasing in an undersampled image sequence",
-///     in: Proceedings of SPIE 3965:214–222, 2000.
-/// \endliterature
+/// !!! literature
+///     - C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
+///       Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
+///     - C.L. Luengo Hendriks and L.J. van Vliet, "Improving resolution to reduce aliasing in an undersampled image sequence",
+///       in: Proceedings of SPIE 3965:214–222, 2000.
 DIP_EXPORT void CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
@@ -265,7 +262,7 @@ inline Image CrossCorrelationFT(
 
 /// \brief Computes the auto-correlation function.
 ///
-/// Equivalent to calling `dip::CrossCorrelationFT` with the same image as the two inputs, and the
+/// Equivalent to calling \ref dip::CrossCorrelationFT with the same image as the two inputs, and the
 /// `normalize` flag set to `"don't normalize"` (normalization would yield a very boring output indeed).
 ///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
@@ -298,7 +295,7 @@ inline Image  AutoCorrelationFT(
 ///
 /// The numbers found represent the shift of `in2` with respect to `in1`, or equivalently, the position of the
 /// top-left pixel of `in2` in the coordinate system of `in1`. Shifting `in1` by the returned shift aligns the
-/// two images. See `dip::Shift`.
+/// two images. See \ref dip::Shift.
 ///
 /// There are various methods that can be used to determine the shift, see below.
 /// For the methods that require that the shift be small, first the integer pixel is calculated using cross
@@ -310,60 +307,60 @@ inline Image  AutoCorrelationFT(
 ///
 /// Valid strings for `method` are:
 ///
-///  - `"integer only"`: The cross-correlation method simply computes the cross-correlation, using
-///    `dip::CrossCorrelationFT`, and then finds the position of the pixel with the largest value.
-///    This method works for any number of dimensions. `parameter` is ignored.
+/// - `"integer only"`: The cross-correlation method simply computes the cross-correlation, using
+///   \ref dip::CrossCorrelationFT, and then finds the position of the pixel with the largest value.
+///   This method works for any number of dimensions. `parameter` is ignored.
 ///
-///  - `"CC"`: The cross-correlation method computes the cross-correlation, using `dip::CrossCorrelationFT`,
-///    and then uses `dip::SubpixelLocation` to find the location of the largest peak with sub-pixel precision.
-///    This method works for any number of dimensions. `parameter` is ignored.
+/// - `"CC"`: The cross-correlation method computes the cross-correlation, using \ref dip::CrossCorrelationFT,
+///   and then uses \ref dip::SubpixelLocation to find the location of the largest peak with sub-pixel precision.
+///   This method works for any number of dimensions. `parameter` is ignored.
 ///
-///  - `"NCC"`: As `"CC"`, but using the normalized cross-correlation, which makes the peak much sharper
-///    (Luengo Hendriks, 1998). This method works for any number of dimensions. `parameter` is ignored.
-///    See the notes in `dip::CrossCorrelationFT` regarding the normalization of the cross-correlation using the
-///    `"normalize"` flag, which is not as what is commonly referred to as "normalized cross-correlation".
+/// - `"NCC"`: As `"CC"`, but using the normalized cross-correlation, which makes the peak much sharper
+///   (Luengo Hendriks, 1998). This method works for any number of dimensions. `parameter` is ignored.
+///   See the notes in \ref dip::CrossCorrelationFT regarding the normalization of the cross-correlation using the
+///   `"normalize"` flag, which is not as what is commonly referred to as "normalized cross-correlation".
 ///
-///  - `"PC"`: As `"CC"`, but using phase correlation. This method works for any number of dimensions.
-///    `parameter` is ignored. See the notes in `dip::CrossCorrelationFT` regarding the normalization of the
-///    cross-correlation using the `"phase"` flag.
+/// - `"PC"`: As `"CC"`, but using phase correlation. This method works for any number of dimensions.
+///   `parameter` is ignored. See the notes in \ref dip::CrossCorrelationFT regarding the normalization of the
+///   cross-correlation using the `"phase"` flag.
 ///
-///  - `"CPF"`: The CPF method (see Luengo Hendriks (1998), where it is called FFTS) uses the phase of the
-///    cross-correlation (as calculated by `dip::CrossCorrelationFT`) to estimate the shift. `parameter` sets
-///    the largest frequency used in this estimation. The maximum value that makes sense is `sqrt(0.5)`.
-///    Any larger value will give the same result. Choose smaller values to ignore the higher frequencies, which
-///    have a smaller SNR and are more affected by aliasing. If `parameter` is <= 0, the optimal found for images
-///    sub-sampled by a factor four will be used (parameter = 0.2).
-///    This method only supports 2-D images.
+/// - `"CPF"`: The CPF method (see Luengo Hendriks (1998), where it is called FFTS) uses the phase of the
+///   cross-correlation (as calculated by \ref dip::CrossCorrelationFT) to estimate the shift. `parameter` sets
+///   the largest frequency used in this estimation. The maximum value that makes sense is `sqrt(0.5)`.
+///   Any larger value will give the same result. Choose smaller values to ignore the higher frequencies, which
+///   have a smaller SNR and are more affected by aliasing. If `parameter` is <= 0, the optimal found for images
+///   sub-sampled by a factor four will be used (parameter = 0.2).
+///   This method only supports 2-D images.
 ///
-///  - `"MTS"`: The MTS method (see Luengo Hendriks (1998), where it is called GRS) uses a first order Taylor
-///    approximation of the equation `in1(t) = in2(t-s)` at scale `parameter`. If `parameter` is <= 0, a scale
-///    of 1 will be used. This means that the images will be smoothed with a Gaussian kernel of 1. This method is
-///    more accurate than CPF.
-///    This method supports images with a dimensionality between 1 and 3.
+/// - `"MTS"`: The MTS method (see Luengo Hendriks (1998), where it is called GRS) uses a first order Taylor
+///   approximation of the equation `in1(t) = in2(t-s)` at scale `parameter`. If `parameter` is <= 0, a scale
+///   of 1 will be used. This means that the images will be smoothed with a Gaussian kernel of 1. This method is
+///   more accurate than CPF.
+///   This method supports images with a dimensionality between 1 and 3.
 ///
-///  - `"ITER"`: The ITER method is an iterative version of the MTS method. It is known that a single estimation
-///    with MTS has a bias due to truncation of the Taylor expansion series (Pham et al., 2005). The bias can be
-///    expressed as a polynomial of the subpixel displacements. As a result, if the MTS method is applied iteratively,
-///    and the shift is refined after each iteration, the bias eventually becomes negligible. By using just 3
-///    iterations, and noticing that `log(bias_increment)` is a linear sequence, it is possible to correct for the
-///    bias up to O(10<sup>6</sup>).<br>
-///    Set `parameter` to 0 for normal behavior. `parameter` in the range (0,0.1] specifies the desired accuracy.
-///    A negative `parameter` causes `round(-parameter)` iterations to be run.
-///    This method supports images with a dimensionality between 1 and 3.
+/// - `"ITER"`: The ITER method is an iterative version of the MTS method. It is known that a single estimation
+///   with MTS has a bias due to truncation of the Taylor expansion series (Pham et al., 2005). The bias can be
+///   expressed as a polynomial of the subpixel displacements. As a result, if the MTS method is applied iteratively,
+///   and the shift is refined after each iteration, the bias eventually becomes negligible. By using just 3
+///   iterations, and noticing that `log(bias_increment)` is a linear sequence, it is possible to correct for the
+///   bias up to O(10^6^).
 ///
-///  - `"PROJ"`: The PROJ method computes the shift in each dimension separately, applying the ITER method on the
-///    projection of the image onto each axis. It is fast and fairly accurate for high SNR. Should not be used for
-///    low SNR. `parameter` is passed unchanged to the ITER method. This method supports images with any number of
-///    dimensions.
+///   Set `parameter` to 0 for normal behavior. `parameter` in the range (0,0.1] specifies the desired accuracy.
+///   A negative `parameter` causes `round(-parameter)` iterations to be run.
+///   This method supports images with a dimensionality between 1 and 3.
+///
+/// - `"PROJ"`: The PROJ method computes the shift in each dimension separately, applying the ITER method on the
+///   projection of the image onto each axis. It is fast and fairly accurate for high SNR. Should not be used for
+///   low SNR. `parameter` is passed unchanged to the ITER method. This method supports images with any number of
+///   dimensions.
 ///
 /// `in1` and `in2` must be scalar images with the same dimensionality and sizes.
 ///
-/// \literature
-/// <li>C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
-///     Delft University of Technology, The Netherlands, 1998.
-/// <li>T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
-///     Registration Estimators", in: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
-/// \endliterature
+/// !!! literature
+///     - C.L. Luengo Hendriks, "Improved Resolution in Infrared Imaging Using Randomly Shifted Images", M.Sc. Thesis,
+///       Delft University of Technology, The Netherlands, 1998.
+///     - T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
+///       Registration Estimators", in: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
 DIP_EXPORT FloatArray FindShift(
       Image const& in1,
       Image const& in2,
@@ -376,7 +373,7 @@ DIP_EXPORT FloatArray FindShift(
 /// \brief Finds the scaling, translation and rotation between two 2D images using the Fourier Mellin transform
 ///
 /// The output array represents a 2x3 affine transform matrix (in column-major order) that can be used as input
-/// to `dip::AffineTransform` to transform `in2` to match `in1`. `out` is the `in2` image transformed in this way.
+/// to \ref dip::AffineTransform to transform `in2` to match `in1`. `out` is the `in2` image transformed in this way.
 ///
 /// The two images must be real-valued, scalar and two-dimensional, and have the same sizes.
 ///
@@ -385,17 +382,17 @@ DIP_EXPORT FloatArray FindShift(
 /// ignored, nearest neighbor interpolation will be used.
 ///
 /// `correlationMethod` determines the normalization applied in the cross correlation. It can be
-/// `"don't normalize"`, `"normalize"` or `"phase"`. See `dip::CrossCorrelationFT` for an explanation of
+/// `"don't normalize"`, `"normalize"` or `"phase"`. See \ref dip::CrossCorrelationFT for an explanation of
 /// these flags.
 ///
 /// Example:
 ///
 /// ```cpp
-///     dip::Image in1, in2, out;
-///     // assign to in1 and in2 two similar images
-///     auto T = FourierMellinMatch2D( in1, in2, out );
-///     // out is a transformed version of in2, as per
-///     dip::AffineTransform( in2, out, T );
+/// dip::Image in1, in2, out;
+/// // assign to in1 and in2 two similar images
+/// auto T = FourierMellinMatch2D( in1, in2, out );
+/// // out is a transformed version of in2, as per
+/// dip::AffineTransform( in2, out, T );
 /// ```
 DIP_EXPORT FloatArray FourierMellinMatch2D(
       Image const& in1,
@@ -429,26 +426,25 @@ inline Image FourierMellinMatch2D(
 /// of dimensions in `in`. Out is computed by:
 ///
 /// ```cpp
-///     dip::Image g = dip::Gradient( in, gradientSigmas );
-///     dip::Image out = dip::Gauss( g * dip::Transpose( g ), tensorSigmas );
+/// dip::Image g = dip::Gradient( in, gradientSigmas );
+/// dip::Image out = dip::Gauss( g * dip::Transpose( g ), tensorSigmas );
 /// ```
 ///
 /// If `mask` is given (not a raw image), then it is interpreted as confidence weights for the input pixels. It
 /// should have values between 0 and 1 (or be binary). Normalized differential convolution is used to compute the
 /// gradients. This method applies Gaussian gradients taking missing and uncertain values into account. See
-/// `dip::NormalizedDifferentialConvolution`.
+/// \ref dip::NormalizedDifferentialConvolution.
 ///
-/// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
+/// See \ref dip::Gauss for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
 ///
-/// The functions `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D` can be used with the output
+/// The functions \ref dip::StructureTensorAnalysis2D and \ref dip::StructureTensorAnalysis3D can be used with the output
 /// of this function to obtain useful image parameters.
 ///
-/// \literature
-/// <li>B. Jahne, "Practical Handbook on Image Processing for Scientific Applications", chapter 13, CRC Press, 1997.
-/// <li>L.J. van Vliet and P.W. Verbeek, "Estimators for Orientation and Anisotropy in Digitized Images",
-///     in: Proceedings First Annual Conference of the Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
-/// <li>C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Link&ouml;ping University, Sweden, 1994.
-/// \endliterature
+/// !!! literature
+///     - B. Jahne, "Practical Handbook on Image Processing for Scientific Applications", chapter 13, CRC Press, 1997.
+///     - L.J. van Vliet and P.W. Verbeek, "Estimators for Orientation and Anisotropy in Digitized Images",
+///       in: Proceedings First Annual Conference of the Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
+///     - C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Link&ouml;ping University, Sweden, 1994.
 DIP_EXPORT void StructureTensor(
       Image const& in,
       Image const& mask,
@@ -475,14 +471,14 @@ inline Image StructureTensor(
 
 /// \brief Computes useful image parameters from the 2D structure tensor.
 ///
-/// `in` must be a 2D, symmetric 2x2 tensor image obtained from `dip::StructureTensor`. This function takes a pointer
+/// `in` must be a 2D, symmetric 2x2 tensor image obtained from \ref dip::StructureTensor. This function takes a pointer
 /// to output images, instead of taking them by reference. Set pointers to `nullptr` if you do not want the given
 /// output computed. Use this function as follows:
 ///
 /// ```cpp
-///     dip::Image st = dip::StructureTensor( img );
-///     dip::Image energy, orientation;
-///     dip::StructureTensorAnalysis2D( st, nullptr, nullptr, &orientation, &energy );
+/// dip::Image st = dip::StructureTensor( img );
+/// dip::Image energy, orientation;
+/// dip::StructureTensorAnalysis2D( st, nullptr, nullptr, &orientation, &energy );
 /// ```
 ///
 /// (note how the last two parameters were not given, they default to `nullptr`). The code above computes both the
@@ -493,7 +489,7 @@ inline Image StructureTensor(
 ///
 /// The output images are defined as follows:
 ///
-/// %Image        | Description
+/// Image         | Description
 /// --------------|------------
 /// `l1`          | The largest eigenvalue.
 /// `l2`          | The smallest eigenvalue.
@@ -509,9 +505,10 @@ inline Image StructureTensor(
 /// Note that `l1` and `l2` will both reference data within the same data segment, and therefore will likely not
 /// have normal strides.
 ///
-/// For a 3D structure tensor analysis, see the function `dip::StructureTensorAnalysis3D`.
-/// A different interface to this function is available in `dip::StructureTensorAnalysis`.
-/// Note that eigenvalues and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
+/// For a 3D structure tensor analysis, see the function \ref dip::StructureTensorAnalysis3D.
+/// A different interface to this function is available in \ref dip::StructureTensorAnalysis.
+/// Note that eigenvalues and eigenvectors can also be computed using \ref dip::Eigenvalues
+/// and \ref dip::EigenDecomposition.
 DIP_EXPORT void StructureTensorAnalysis2D(
       Image const& in,
       Image* l1 = nullptr,
@@ -525,14 +522,14 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 
 /// \brief Computes useful image parameters from the 3D structure tensor.
 ///
-/// `in` must be a 3D, symmetric 3x3 tensor image obtained from `dip::StructureTensor`. This function takes a pointer
+/// `in` must be a 3D, symmetric 3x3 tensor image obtained from \ref dip::StructureTensor. This function takes a pointer
 /// to output images, instead of taking them by reference. Set pointers to `nullptr` if you do not want the given
 /// output computed. Use this function as follows:
 ///
 /// ```cpp
-///     dip::Image st = dip::StructureTensor( img );
-///     dip::Image energy;
-///     dip::StructureTensorAnalysis3D( st, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &energy );
+/// dip::Image st = dip::StructureTensor( img );
+/// dip::Image energy;
+/// dip::StructureTensorAnalysis3D( st, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &energy );
 /// ```
 ///
 /// (note how the last two parameters were not given, they default to `nullptr`). The code above computes the
@@ -543,7 +540,7 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 ///
 /// The output images are defined as follows:
 ///
-/// %Image        | Description
+/// Image         | Description
 /// --------------|------------
 /// `l1`          | The largest eigenvalue.
 /// `phi1`        | First component of the orientation of the eigenvector for `l1`.
@@ -558,9 +555,10 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 /// `cylindrical` | Measure for local anisotropy: `( l2 - l3 ) / ( l2 + l3 )`.
 /// `planar`      | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
 ///
-/// For a 2D structure tensor analysis, see the function `dip::StructureTensorAnalysis2D`.
-/// A different interface to this function is available in `dip::StructureTensorAnalysis`.
-/// Note that eigenvalues and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
+/// For a 2D structure tensor analysis, see the function \ref dip::StructureTensorAnalysis2D.
+/// A different interface to this function is available in \ref dip::StructureTensorAnalysis.
+/// Note that eigenvalues and eigenvectors can also be computed using \ref dip::Eigenvalues
+/// and \ref dip::EigenDecomposition.
 DIP_EXPORT void StructureTensorAnalysis3D(
       Image const& in,
       Image* l1 = nullptr,
@@ -577,20 +575,21 @@ DIP_EXPORT void StructureTensorAnalysis3D(
       Image* planar = nullptr
 );
 
-/// \brief Interface to `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D`.
+/// \brief Interface to \ref dip::StructureTensorAnalysis2D and \ref dip::StructureTensorAnalysis3D.
 ///
-/// `in` is as in `dip::StructureTensorAnalysis2D` or `dip::StructureTensorAnalysis3D`. That is, either a 2D
-/// symmetric 2x2 tensor image or a 3D symmetric 3x3 tensor image, real-valued, as obtained from `dip::StructureTensor`.
+/// `in` is as in \ref dip::StructureTensorAnalysis2D or \ref dip::StructureTensorAnalysis3D. That is, either a 2D
+/// symmetric 2x2 tensor image or a 3D symmetric 3x3 tensor image, real-valued, as obtained from \ref dip::StructureTensor.
 /// `out` is an array with references to output images. It should have exactly as many elements as `outputs`.
 ///
 /// `outputs` is an array with one or more of the following strings, indicating which outputs are needed:
-///  - For 2D inputs: `"l1"`, `"l2"`, `"orientation"`, `"energy"`, `"anisotropy1"`, `"anisotropy2"`, `"curvature"`.
-///  - For 3D inputs: `"l1"`, `"phi1"`, `"theta1"`, `"l2"`, `"phi2"`, `"theta2"`, `"l3"`, `"phi3"`, `"theta3"`,
-///    `"energy"`, `"cylindrical"`, `"planar"`.
+///
+/// - For 2D inputs: `"l1"`, `"l2"`, `"orientation"`, `"energy"`, `"anisotropy1"`, `"anisotropy2"`, `"curvature"`.
+/// - For 3D inputs: `"l1"`, `"phi1"`, `"theta1"`, `"l2"`, `"phi2"`, `"theta2"`, `"l3"`, `"phi3"`, `"theta3"`,
+///   `"energy"`, `"cylindrical"`, `"planar"`.
 ///
 /// The order of the strings in `outputs` indicates the order they will be written to the `out` array.
 ///
-/// See the functions `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D` for more information
+/// See the functions \ref dip::StructureTensorAnalysis2D and \ref dip::StructureTensorAnalysis3D for more information
 /// on these outputs.
 DIP_EXPORT void StructureTensorAnalysis(
       Image const& in,
@@ -623,15 +622,15 @@ inline ImageArray StructureTensorAnalysis(
 /// `scales` defaults to a series of 10 values geometrically spaced by `sqrt(2)`, and starting at 1.0. Units are
 /// pixels.
 ///
-/// `feature` can be any of the strings allowed by `dip::StructureTensorAnalysis`, but `"energy"`, `"anisotropy1"`,
+/// `feature` can be any of the strings allowed by \ref dip::StructureTensorAnalysis, but `"energy"`, `"anisotropy1"`,
 /// and `"anisotropy2"` (in 2D), and `"energy"`, `"cylindrical"`, and `"planar"` (in 2D) make the most sense.
 ///
-/// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
+/// See \ref dip::Gauss for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
 ///
 /// `in` must be scalar and real-valued, and either 2D or 3D. `mask` must be of the same size, and limits the
 /// region over which the structure tensor feature is averaged.
 ///
-/// See `dip::StructureTensor` for more information about the structure tensor.
+/// See \ref dip::StructureTensor for more information about the structure tensor.
 DIP_EXPORT Distribution StructureAnalysis(
       Image const& in,
       Image const& mask,
@@ -653,7 +652,7 @@ DIP_EXPORT Distribution StructureAnalysis(
 ///
 /// This function splits the frequency spectrum of the image into `wavelengths.size()` components. The radial
 /// component of a log-Gabor filter bank will be used. These radial frequency filters are defined by
-/// `wavelengths` (in pixels) and `bandwidth`. See `dip::LogGaborFilterBank` for details.
+/// `wavelengths` (in pixels) and `bandwidth`. See \ref dip::LogGaborFilterBank for details.
 ///
 /// The filters are always applied in the frequency domain. If `outRepresentation` is `"spatial"`, the inverse
 /// Fourier transform will be applied to bring the result back to the spatial domain. Otherwise, it should be
@@ -666,9 +665,8 @@ DIP_EXPORT Distribution StructureAnalysis(
 /// Out will be a tensor image with `wavelengths.size()` tensor columns and *n*+1 tensor rows. The data type will be
 /// single-precision float for spatial-domain output, or single-precision complex for frequency-domain output.
 ///
-/// \literature
-/// <li>M. Felsberg and G. Sommer, "The Monogenic Signal", IEEE Transactions on Signal Processing 49(12):3136-3144, 2001.
-/// \endliterature
+/// !!! literature
+///     - M. Felsberg and G. Sommer, "The Monogenic Signal", IEEE Transactions on Signal Processing 49(12):3136-3144, 2001.
 DIP_EXPORT void MonogenicSignal(
       Image const& in,
       Image& out,
@@ -691,14 +689,14 @@ inline Image MonogenicSignal(
 
 /// \brief Computes useful image parameters from the monogenic signal.
 ///
-/// `in` is a tensor image produced by `dip::MonogenicSignal`, for which `in.TensorRows() == in.Dimensionality() + 1`,
+/// `in` is a tensor image produced by \ref dip::MonogenicSignal, for which `in.TensorRows() == in.Dimensionality() + 1`,
 /// and `in.TensorColumns() > 1`. In the case of a single column (a single wavelength was given), the congruency output
 /// is not possible. `in` is real-valued (single-precision float) and in the spatial domain.
 /// `out` is an array with references to output images. It should have exactly as many elements as `outputs`.
 ///
 /// `outputs` is an array with one or more of the following strings, indicating which outputs are needed:
 ///
-/// %Image          | Description
+/// Image           | Description
 /// ----------------|------------
 /// `"congruency"`  | **Phase congruency**, a measure of line/edge significance
 /// `"orientation"` | Line/edge orientation (in the range [-&pi;/2, &pi;/2]), 2D only
@@ -738,11 +736,10 @@ inline Image MonogenicSignal(
 /// can be requested without requesting the two main parameters, but might require some of the input arguments
 /// discussed above to be set.
 ///
-/// \literature
-/// <li>P. Kovesi, "Image features from phase information", Videre: Journal of Computer Vision Research 1(3), 1999.
-/// <li>M. Felsberg and G. Sommer, "A New Extension of Linear Signal Processing for Estimating Local Properties and
-///     Detecting Features", DAGM Symposium, 2000.
-/// \endliterature
+/// !!! literature
+///     - P. Kovesi, "Image features from phase information", Videre: Journal of Computer Vision Research 1(3), 1999.
+///     - M. Felsberg and G. Sommer, "A New Extension of Linear Signal Processing for Estimating Local Properties and
+///       Detecting Features", DAGM Symposium, 2000.
 DIP_EXPORT void MonogenicSignalAnalysis(
       Image const& in,
       ImageRefArray& out,
@@ -772,7 +769,7 @@ inline ImageArray MonogenicSignalAnalysis(
 
 /// \brief Creates an orientation space for a 2D image
 ///
-/// `out` is a 3D image, where the 3<sup>rd</sup> dimension represents orientation. Structures (lines and edges) in
+/// `out` is a 3D image, where the 3^rd^ dimension represents orientation. Structures (lines and edges) in
 /// the image are separated into different orientation planes. This transformation separates, for example, intersecting
 /// rings (such as the logo of the Olympic Games) into non-touching objects. This is accomplished using an orientation-selective
 /// quadrature filter. Because it's a quadrature filter, the output is complex-valued, with the real component responding
@@ -784,14 +781,14 @@ inline ImageArray MonogenicSignalAnalysis(
 /// makes the filter more specific to a frequency range (the scale selected by `radCenter`).
 ///
 /// By default, the orientation space is sampled at `order * 2 + 1` different orientations (this is the number
-/// of filters applied, and the number of samples along the 3<sup>rd</sup> dimension). `orientation`, when positive,
+/// of filters applied, and the number of samples along the 3^rd^ dimension). `orientation`, when positive,
 /// determines the number of orientation used. This parameter can be used to oversample the orientation space.
 ///
-/// \literature
-/// <li>M. van Ginkel, P.W. Verbeek and L.J. van Vliet, "Improved Orientation Selectivity for Orientation Estimation",
-///     Proceedings 10th Scandinavian Conference on %Image Analysis, pp 533-537, Pattern Recognition Society of Finland, 1997.
-/// <li>M. van Ginkel, "Image Analysis using Orientation Space based on Steerable Filters", PhD Thesis, Delft University of Technology, The Netherlands, 2002.
-/// \endliterature
+/// !!! literature
+///     - M. van Ginkel, P.W. Verbeek and L.J. van Vliet, "Improved Orientation Selectivity for Orientation Estimation",
+///       Proceedings 10th Scandinavian Conference on Image Analysis, pp 533-537, Pattern Recognition Society of Finland, 1997.
+///     - M. van Ginkel, "Image Analysis using Orientation Space based on Steerable Filters", PhD Thesis,
+///       Delft University of Technology, The Netherlands, 2002.
 DIP_EXPORT void OrientationSpace(
       Image const& in,
       Image& out,
@@ -832,6 +829,7 @@ inline Image OrientationSpace(
 /// it is faster for a given number of probes because it uses sequential memory access.
 ///
 /// `options` can contain one or more of the following strings:
+///
 /// - `"covariance"`: Compute covariance instead of correlation.
 /// - `"normalize volume"`: Normalizes the distribution using the volume fraction
 /// - `"normalize volume^2"`: Normalizes the distribution using the square of the volume fraction
@@ -873,7 +871,7 @@ DIP_EXPORT Distribution PairCorrelation(
 /// The function assumes, but does not check, that these values are with the [0,1] range, and add up to
 /// 1 or less.
 ///
-/// All other parameters are as in `dip::PairCorrelation`.
+/// All other parameters are as in \ref dip::PairCorrelation.
 DIP_EXPORT Distribution ProbabilisticPairCorrelation(
       Image const& phases,
       Image const& mask,
@@ -906,13 +904,12 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
 /// the actual number of pairs is approximate. In general, the grid method needs a lot more probes to be precise,
 /// but it is faster for a given number of probes because it uses sequential memory access.
 ///
-/// The output `dip::Distribution` has *x* samples given in physical units. However, if `in` does not
+/// The output \ref dip::Distribution has *x* samples given in physical units. However, if `in` does not
 /// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
 /// are in pixels.
 ///
-/// \literature
-/// <li>G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
-/// \endliterature
+/// !!! literature
+///     - G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
 DIP_EXPORT Distribution Semivariogram(
       Image const& in,
       Image const& mask,
@@ -967,7 +964,7 @@ DIP_EXPORT Distribution ChordLength(
 /// These distances will take the pixels sizes of `region` into account. If `region` does not
 /// have pixels sizes, those of `object` will be used instead.
 ///
-/// The output `dip::Distribution` has *x* value increments given by the pixel size. That is,
+/// The output \ref dip::Distribution has *x* value increments given by the pixel size. That is,
 /// the distribution has one sample per pixel. `length` is the length of the distribution, and
 /// thus limits the distances taken into account.
 DIP_EXPORT Distribution DistanceDistribution(
@@ -986,7 +983,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 /// scale 0 is 0, and for scale infinity is 1.
 ///
 /// The derivative of the cumulative distribution is a volume-weighted and grey-value--weighted distribution of
-/// object sizes. See `dip::Distribution::Differentiate`.
+/// object sizes. See \ref dip::Distribution::Differentiate.
 ///
 /// Grey-value--weighted means that objects with a larger grey-value contrast will be weighted more heavily.
 /// Ensuring a uniform grey-value contrast to prevent this characteristic from affecting the estimated size
@@ -999,30 +996,33 @@ DIP_EXPORT Distribution DistanceDistribution(
 /// This function implements various granulometries, to be specified through the parameters `type`, `polarity`
 /// and `options`. The following `type` values specify the shapes of the structuring element (SE), which determines
 /// the measurement type:
-///  - `"isotropic"`: An isotropic SE leads to a size distribution dictated by the width of objects.
-///  - `"length"`: A line SE leads to a size distribution dictated by the length of objects. We use (constrained)
-///    path openings or closings (see Luengo, 2010).
+///
+/// - `"isotropic"`: An isotropic SE leads to a size distribution dictated by the width of objects.
+/// - `"length"`: A line SE leads to a size distribution dictated by the length of objects. We use (constrained)
+///   path openings or closings (see Luengo, 2010).
 ///
 /// The `polarity` flag determines whether it is white objects on a black background (`"opening"`) or black objects
 /// on a white background (`"closing"`) that are being analyzed.
 ///
 /// The `options` parameter can contain a set of flags that modify how the operations are applied. The allowed flags
 /// differ depending on the `type` flag.
-///  - For `"isotropic"` granulometries:
-///      - `"reconstruction"`: uses openings or closings by reconstruction instead of structural openings or closings.
-///        This leads to objects not being broken up in the same way. Objects need to be clearly separated spatially
-///        for this to work.
-///      - `"shifted"`: uses sub-pixel shifted isotropic structuring elements. This allows a finer sampling of the
-///        scale axis (see Luengo et al., 2007). Ignored for images with more than 3 dimensions.
-///      - `"interpolate"`: interpolates by a factor up to 8x for smaller scales, attempting to avoid SE diameters
-///        smaller than 8. This improves precision of the result for small scales (see Luengo et al., 2007).
-///      - `"subsample"`: subsamples for larger scales, such that the largest SE diameter is 64. This speeds up
-///        computation, at the expense of precision.
-///  - For `"length"` granulometries:
-///      - `"unconstrained"`: by default, we use constrained path openings or closings, which improves the precision
-///        of the measurement, but is a little bit more expensive (see Luengo, 2010). This option causes the use
-///        of normal path openings or closings.
-///      - `"robust"`: applies path openings or closings in such a way that they are less sensitive to noise.
+///
+/// - For `"isotropic"` granulometries:
+///     - `"reconstruction"`: uses openings or closings by reconstruction instead of structural openings or closings.
+///       This leads to objects not being broken up in the same way. Objects need to be clearly separated spatially
+///       for this to work.
+///     - `"shifted"`: uses sub-pixel shifted isotropic structuring elements. This allows a finer sampling of the
+///       scale axis (see Luengo et al., 2007). Ignored for images with more than 3 dimensions.
+///     - `"interpolate"`: interpolates by a factor up to 8x for smaller scales, attempting to avoid SE diameters
+///       smaller than 8. This improves precision of the result for small scales (see Luengo et al., 2007).
+///     - `"subsample"`: subsamples for larger scales, such that the largest SE diameter is 64. This speeds up
+///       computation, at the expense of precision.
+///
+/// - For `"length"` granulometries:
+///     - `"unconstrained"`: by default, we use constrained path openings or closings, which improves the precision
+///       of the measurement, but is a little bit more expensive (see Luengo, 2010). This option causes the use
+///       of normal path openings or closings.
+///     - `"robust"`: applies path openings or closings in such a way that they are less sensitive to noise.
 ///
 /// `scales` defaults to a series of 12 values geometrically spaced by `sqrt(2)`, and starting at `sqrt(2)`. `scales`
 /// are in pixels, the image's pixel size is not taken into account.
@@ -1030,12 +1030,11 @@ DIP_EXPORT Distribution DistanceDistribution(
 /// `in` must be scalar and real-valued. `mask` must have the same sizes, and limits the region
 /// in which objects are measured.
 ///
-/// \literature
-/// <li>C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
-///     Pattern Recognition Letters 28(7):865-872, 2007.
-/// <li>C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
-///     IEEE Transactions on %Image Processing 19(6):1587–1595, 2010.
-/// \endliterature
+/// !!! literature
+///     - C.L. Luengo Hendriks, G.M.P. van Kempen and L.J. van Vliet, "Improving the accuracy of isotropic granulometries",
+///       Pattern Recognition Letters 28(7):865-872, 2007.
+///     - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
+///       IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
 DIP_EXPORT Distribution Granulometry(
       Image const& in,
       Image const& mask,
@@ -1066,7 +1065,7 @@ DIP_EXPORT dfloat FractalDimension(
 );
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

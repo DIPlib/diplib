@@ -23,9 +23,11 @@
 #include "diplib/viewer/viewer.h"
 
 /// \file
-/// \brief Declares `dip::viewer::TensorViewPort`.
+/// \brief Declares \ref dip::viewer::TensorViewPort.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 /// \brief Allows the user to control which tensor elements are visualized.
 class DIPVIEWER_CLASS_EXPORT TensorViewPort : public ViewPort
@@ -37,6 +39,8 @@ class DIPVIEWER_CLASS_EXPORT TensorViewPort : public ViewPort
     DIPVIEWER_EXPORT void render();
     DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods);
 };
+
+/// \endgroup
 
 }} // namespace dip::viewer
 

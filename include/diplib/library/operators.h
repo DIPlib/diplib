@@ -32,9 +32,9 @@
 
 
 /// \file
-/// \brief Declares the overloaded arithmetic, logical and comparison operators for `dip::Image`.
-/// This file is always included through `diplib.h`.
-/// \see math_arithmetic, math_comparison
+/// \brief Declares the overloaded arithmetic, logical and comparison operators for \ref dip::Image.
+/// This file is always included through \ref "diplib.h".
+/// See \ref math_arithmetic, \ref math_comparison.
 
 namespace dip {
 
@@ -84,7 +84,6 @@ template< typename T1, typename T2 > inline Image name( Image const& in, T1&& lh
 
 
 /// \addtogroup math_arithmetic
-/// \{
 
 
 //
@@ -121,11 +120,11 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 
 /// \brief Multiplies two images, pixel-wise, with singleton expansion, and using saturated arithmetic.
 ///
-/// %Tensor dimensions
+/// Tensor dimensions
 /// of the two images must have identical inner dimensions, and the output at
 /// each pixel will be the matrix multiplication of the two input pixels.
 ///
-/// To obtain a sample-wise multiplication, Use `dip::MultiplySampleWise` instead.
+/// To obtain a sample-wise multiplication, Use \ref dip::MultiplySampleWise instead.
 ///
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
@@ -156,7 +155,7 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
 /// 'rhs' will be complex-conjugated before the multiplication. This requires that it is complex
-/// and that `dt` is a complex type. Otherwise, `dip::MultiplySampleWise` will be called instead.
+/// and that `dt` is a complex type. Otherwise, \ref dip::MultiplySampleWise will be called instead.
 ///
 /// Either `lhs` or `rhs` can be a scalar value of any of the supported pixel types, as long as at
 /// least one input is an image.
@@ -182,7 +181,7 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( Divide )
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// For binary images, this function calls `dip::Divide`.
+/// For binary images, this function calls \ref dip::Divide.
 ///
 /// Either `lhs` or `rhs` can be a scalar value of any of the supported pixel types, as long as at
 /// least one input is an image.
@@ -274,7 +273,7 @@ DIP_DEFINE_DYADIC_OVERLOADS( Xor )
 ///
 /// Out will have the type of `in`.
 ///
-/// For binary images, this function calls `dip::Invert`.
+/// For binary images, this function calls \ref dip::Invert.
 ///
 /// \see operator~(Image const&), Invert
 DIP_EXPORT void Not( Image const& in, Image& out );
@@ -285,65 +284,65 @@ inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 // Arithmetic operator overloads
 //
 
-/// \brief Arithmetic operator, calls `dip::Add`.
+/// \brief Arithmetic operator, calls \ref dip::Add.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator+( T1 const& lhs, T2 const& rhs ) {
    return Add( lhs, rhs );
 }
 
-/// \brief Arithmetic operator, calls `dip::Subtract`.
+/// \brief Arithmetic operator, calls \ref dip::Subtract.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator-( T1 const& lhs, T2 const& rhs ) {
    return Subtract( lhs, rhs );
 }
 
-/// \brief Arithmetic operator, calls `dip::Multiply`.
+/// \brief Arithmetic operator, calls \ref dip::Multiply.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator*( T1 const& lhs, T2 const& rhs ) {
    return Multiply( lhs, rhs );
 }
 
-/// \brief Arithmetic operator, calls `dip::Divide`.
+/// \brief Arithmetic operator, calls \ref dip::Divide.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator/( T1 const& lhs, T2 const& rhs ) {
    return Divide( lhs, rhs );
 }
 
-/// \brief Arithmetic operator, calls `dip::Modulo`.
+/// \brief Arithmetic operator, calls \ref dip::Modulo.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
 inline Image operator%( T1 const& lhs, T2 const& rhs ) {
    return Modulo( lhs, rhs );
 }
 
-/// \brief Bit-wise and logical operator, calls `dip::And`.
+/// \brief Bit-wise and logical operator, calls \ref dip::And.
 template< typename T >
 inline Image operator&( Image const& lhs, T const& rhs ) {
    return And( lhs, rhs );
 }
 
-/// \brief Bit-wise and logical operator, calls `dip::Or`.
+/// \brief Bit-wise and logical operator, calls \ref dip::Or.
 template< typename T >
 inline Image operator|( Image const& lhs, T const& rhs ) {
    return Or( lhs, rhs );
 }
 
-/// \brief Bit-wise and logical operator, calls `dip::Xor`.
+/// \brief Bit-wise and logical operator, calls \ref dip::Xor.
 template< typename T >
 inline Image operator^( Image const& lhs, T const& rhs ) {
    return Xor( lhs, rhs );
 }
 
-/// \brief Unary operator, calls `dip::Invert`.
+/// \brief Unary operator, calls \ref dip::Invert.
 inline Image operator-( Image const& in ) {
    return Invert( in );
 }
 
-/// \brief Bit-wise and logical unary operator, calls `dip::Not`.
+/// \brief Bit-wise and logical unary operator, calls \ref dip::Not.
 inline Image operator~( Image const& in ) {
    return Not( in );
 }
 
-/// \brief Logical unary operator. The input is converted to a binary image, then calls `dip::Invert`.
+/// \brief Logical unary operator. The input is converted to a binary image, then calls \ref dip::Invert.
 inline Image operator!( Image const& in ) {
    if( in.DataType().IsBinary() ) {
       return Invert( in );
@@ -360,7 +359,7 @@ inline Image operator!( Image const& in ) {
 
 /// \brief Compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs + rhs`. See `dip::Add`.
+/// Equivalent, but usually faster, than `lhs = lhs + rhs`. See \ref dip::Add.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -373,7 +372,7 @@ inline Image& operator+=( Image& lhs, T const& rhs ) {
 
 /// \brief Compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs - rhs`. See `dip::Subtract`.
+/// Equivalent, but usually faster, than `lhs = lhs - rhs`. See \ref dip::Subtract.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -386,7 +385,7 @@ inline Image& operator-=( Image& lhs, T const& rhs ) {
 
 /// \brief Compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs * rhs`. See `dip::Multiply`.
+/// Equivalent, but usually faster, than `lhs = lhs * rhs`. See \ref dip::Multiply.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -399,7 +398,7 @@ inline Image& operator*=( Image& lhs, T const& rhs ) {
 
 /// \brief Compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs / rhs`. See `dip::Divide`.
+/// Equivalent, but usually faster, than `lhs = lhs / rhs`. See \ref dip::Divide.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -412,7 +411,7 @@ inline Image& operator/=( Image& lhs, T const& rhs ) {
 
 /// \brief Compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs % rhs`. See `dip::Modulo`.
+/// Equivalent, but usually faster, than `lhs = lhs % rhs`. See \ref dip::Modulo.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -425,7 +424,7 @@ inline Image& operator%=( Image& lhs, T const& rhs ) {
 
 /// \brief Bit-wise compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs & rhs`. See `dip::And`.
+/// Equivalent, but usually faster, than `lhs = lhs & rhs`. See \ref dip::And.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -438,7 +437,7 @@ inline Image& operator&=( Image& lhs, T const& rhs ) {
 
 /// \brief Bit-wise compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs | rhs`. See `dip::Or`.
+/// Equivalent, but usually faster, than `lhs = lhs | rhs`. See \ref dip::Or.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -451,7 +450,7 @@ inline Image& operator|=( Image& lhs, T const& rhs ) {
 
 /// \brief Bit-wise compound assignment operator.
 ///
-/// Equivalent, but usually faster, than `lhs = lhs ^ rhs`. See `dip::Xor`.
+/// Equivalent, but usually faster, than `lhs = lhs ^ rhs`. See \ref dip::Xor.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -526,11 +525,10 @@ inline Image::View& operator^=( Image::View& lhs, T const& rhs ) {
 }
 
 
-/// \}
+/// \endgroup
 
 
 /// \addtogroup math_comparison
-/// \{
 
 
 //
@@ -590,7 +588,7 @@ DIP_DEFINE_DYADIC_OVERLOADS( NotLesser )
 /// Computes
 ///
 /// ```cpp
-///     out = ( in >= lhs ) && ( in <= rhs );
+/// out = ( in >= lhs ) && ( in <= rhs );
 /// ```
 ///
 /// Out will be binary. `in` must be an image, but `lhs` and `rhs` can also be a pixel or a sample
@@ -602,7 +600,7 @@ DIP_DEFINE_TRIADIC_OVERLOADS( InRange )
 /// Computes
 ///
 /// ```cpp
-///     out = ( in < lhs ) || ( in > rhs );
+/// out = ( in < lhs ) || ( in > rhs );
 /// ```
 ///
 /// Out will be binary. `in` must be an image, but `lhs` and `rhs` can also be a pixel or a sample
@@ -614,44 +612,44 @@ DIP_DEFINE_TRIADIC_OVERLOADS( OutOfRange )
 // Comparison operator overloads
 //
 
-/// \brief Comparison operator, calls `dip::Equal`.
+/// \brief Comparison operator, calls \ref dip::Equal.
 template< typename T >
 inline Image operator==( Image const& lhs, T const& rhs ) {
    return Equal( lhs, rhs );
 }
 
-/// \brief Comparison operator, calls `dip::NotEqual`.
+/// \brief Comparison operator, calls \ref dip::NotEqual.
 template< typename T >
 inline Image operator!=( Image const& lhs, T const& rhs ) {
    return NotEqual( lhs, rhs );
 }
 
-/// \brief Comparison operator, calls `dip::Lesser`.
+/// \brief Comparison operator, calls \ref dip::Lesser.
 template< typename T >
 inline Image operator<( Image const& lhs, T const& rhs ) {
    return Lesser( lhs, rhs );
 }
 
-/// \brief Comparison operator, calls `dip::Greater`.
+/// \brief Comparison operator, calls \ref dip::Greater.
 template< typename T >
 inline Image operator>( Image const& lhs, T const& rhs ) {
    return Greater( lhs, rhs );
 }
 
-/// \brief Comparison operator, calls `dip::NotGreater`.
+/// \brief Comparison operator, calls \ref dip::NotGreater.
 template< typename T >
 inline Image operator<=( Image const& lhs, T const& rhs ) {
    return NotGreater( lhs, rhs );
 }
 
-/// \brief Comparison operator, calls `dip::NotLesser`.
+/// \brief Comparison operator, calls \ref dip::NotLesser.
 template< typename T >
 inline Image operator>=( Image const& lhs, T const& rhs ) {
    return NotLesser( lhs, rhs );
 }
 
 
-/// \}
+/// \endgroup
 
 
 #undef DIP_DEFINE_ARITHMETIC_OVERLOADS

@@ -30,12 +30,11 @@ struct GLFWwindow;
 #include <set>
 
 /// \file
-/// \brief Declares the GLFW interface of \ref viewer.
+/// \brief Declares the GLFW interface of \ref dipviewer.
 
 namespace dip { namespace viewer {
 
-/// \addtogroup viewer
-/// \{
+/// \addtogroup dipviewer
 
 /// Simple GLFW window manager.
 class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
@@ -177,7 +176,7 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
     }
 };
 
-/// \}
+/// \endgroup
 
 }} // namespace dip::viewer
 

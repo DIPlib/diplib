@@ -29,7 +29,7 @@
 
 /// \file
 /// \brief Functionality for quantification of objects.
-/// \see measurement
+/// See \ref measurement.
 
 
 namespace dip {
@@ -40,30 +40,28 @@ struct DIP_NO_EXPORT ChainCode;
 struct DIP_NO_EXPORT Polygon;
 class DIP_NO_EXPORT ConvexHull;
 
-/// \defgroup measurement Measurement
+/// \group measurement Measurement
 /// \brief The measurement infrastructure and functionality.
 ///
-/// The `dip::MeasurementTool` class provides the main interface to the
+/// The \ref dip::MeasurementTool class provides the main interface to the
 /// functionality in this module. Quantification results are encapsulated in
-/// an object of the `dip::Measurement` class.
-/// \{
-
+/// an object of the \ref dip::Measurement class.
+/// \addtogroup
 
 /// \brief Contains classes that implement the measurement features.
-/// \ingroup measurement
 namespace Feature {
 
 /// \brief The types of measurement features
 enum class DIP_NO_EXPORT Type {
-      LINE_BASED, ///< The feature is derived from `dip::Feature::LineBased`
-      IMAGE_BASED, ///< The feature is derived from `dip::Feature::ImageBased`
-      CHAINCODE_BASED, ///< The feature is derived from `dip::Feature::ChainCodeBased`
-      POLYGON_BASED, ///< The feature is derived from `dip::Feature::PolygonBased`
-      CONVEXHULL_BASED, ///< The feature is derived from `dip::Feature::ConvexHullBased`
-      COMPOSITE ///< The feature is derived from `dip::Feature::Composite`
+      LINE_BASED,       ///< The feature is derived from \ref dip::Feature::LineBased
+      IMAGE_BASED,      ///< The feature is derived from \ref dip::Feature::ImageBased
+      CHAINCODE_BASED,  ///< The feature is derived from \ref dip::Feature::ChainCodeBased
+      POLYGON_BASED,    ///< The feature is derived from \ref dip::Feature::PolygonBased
+      CONVEXHULL_BASED, ///< The feature is derived from \ref dip::Feature::ConvexHullBased
+      COMPOSITE         ///< The feature is derived from \ref dip::Feature::Composite
 };
 
-/// \brief %Information about a measurement feature
+/// \brief Information about a measurement feature
 struct DIP_NO_EXPORT Information {
    String name;               ///< The name of the feature, used to identify it
    String description;        ///< A description of the feature, to be shown to the user
@@ -73,18 +71,18 @@ struct DIP_NO_EXPORT Information {
    Information() : name( "" ), description( "" ), needsGreyValue( false ) {}
 };
 
-/// \brief %Information about the known measurement features
+/// \brief Information about the known measurement features
 /// \relates Information
 using InformationArray = std::vector< Information >;
 
-/// \brief %Information about a measurement value, one of the components of a feature
+/// \brief Information about a measurement value, one of the components of a feature
 struct DIP_NO_EXPORT ValueInformation {
    String name; ///< A short string that identifies the value
    Units units; ///< The units for the value
 };
 
-/// \brief %Information about the values of a measurement feature, or all values of all measurement features
-/// in a `dip::Measurement` object.
+/// \brief Information about the values of a measurement feature, or all values of all measurement features
+/// in a \ref dip::Measurement object.
 /// \relates ValueInformation
 using ValueInformationArray = std::vector< ValueInformation >;
 
@@ -99,23 +97,21 @@ using ValueInformationArray = std::vector< ValueInformation >;
 /// \brief Maps object IDs to object indices
 using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 
-/// \brief Contains measurement results, as obtained through `dip::MeasurementTool::Measure`.
+/// \brief Contains measurement results, as obtained through \ref dip::MeasurementTool::Measure.
 ///
-/// \ingroup measurement
-///
-/// A newly constructed `%Measurement` will accept calls to `AddFeature`, and
+/// A newly constructed `Measurement` will accept calls to `AddFeature`, and
 /// `AddObjectIDs`. Once the object is set up with all objects and features needed, a call
 /// to `Forge` creates the data segment necessary to hold all those measurements. Once
-/// forged, it is no longer possible to add features or objects. As with a `dip::Image`,
+/// forged, it is no longer possible to add features or objects. As with a \ref dip::Image,
 /// the method `IsForged` can be used to test if the object has been forged.
 ///
-/// A forged `%Measurement` can be read from in various ways, and a writable pointer to the
-/// data can be obtained. As with the `dip::Image` class, data pointers are always writable,
+/// A forged `Measurement` can be read from in various ways, and a writable pointer to the
+/// data can be obtained. As with the \ref dip::Image class, data pointers are always writable,
 /// even if the object is const-qualified. This simplifies the code, at the expense of opening
 /// the door to undesirable modifications to data. *DIPlib* will never modify the data of a
-/// const `%Measurement`.
+/// const `Measurement`.
 ///
-/// The columns of the `%Measurement` table are the feature values. Since each feature can have multiple
+/// The columns of the `Measurement` table are the feature values. Since each feature can have multiple
 /// values, features represent column groups. The rows of the table are the objects.
 ///
 /// Indexing with a feature name produces a reference to a column group. Indexing with an object ID
@@ -126,8 +122,8 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 /// object ID 412:
 ///
 /// ```cpp
-///     dip::dfloat width = measurement[ "Feret" ][ 412 ][ 1 ];
-///     dip::dfloat width = measurement[ 412 ][ "Feret" ][ 1 ];
+/// dip::dfloat width = measurement[ "Feret" ][ 412 ][ 1 ];
+/// dip::dfloat width = measurement[ 412 ][ "Feret" ][ 1 ];
 /// ```
 ///
 /// These three types of references are represented as iterators. Thus, it is also possible to iterate over
@@ -135,37 +131,39 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 /// and iterate over the values within a cell group:
 ///
 /// ```cpp
-///     auto colIt = measurement[ "Feret" ];
-///     auto feretIt = colIt.FirstObject(); // iterator points at Feret value for first object
-///     dip::dfloat sum = 0.0;
-///     while( feretIt ) {
-///        sum += feretIt[ 1 ]; // read width for current object
-///        ++feretIt; // iterator points at Feret value for next object
-///     }
-///     dip::dfloat meanWidth = sum / measurement.NumberOfObjects();
+/// auto colIt = measurement[ "Feret" ];
+/// auto feretIt = colIt.FirstObject(); // iterator points at Feret value for first object
+/// dip::dfloat sum = 0.0;
+/// while( feretIt ) {
+///    sum += feretIt[ 1 ]; // read width for current object
+///    ++feretIt; // iterator points at Feret value for next object
+/// }
+/// dip::dfloat meanWidth = sum / measurement.NumberOfObjects();
 /// ```
 ///
 /// ```cpp
-///     auto it = measurement[ "Feret" ][ 412 ];
-///     std::cout << "Feret values for object ID = 412:";
-///     for( auto f : it ) {
-///        std::cout << " " << f;
-///     }
-///     std::cout << '\n';
+/// auto it = measurement[ "Feret" ][ 412 ];
+/// std::cout << "Feret values for object ID = 412:";
+/// for( auto f : it ) {
+///    std::cout << " " << f;
+/// }
+/// std::cout << '\n';
 /// ```
 ///
-/// A `%Measurement` with zero object IDs will never be forged, it is possible to call `%Forge` on it, but
+/// A `Measurement` with zero object IDs will never be forged, it is possible to call `Forge` on it, but
 /// nothing will happen. For such an object, it is possible to index with a feature name, and iterate over
-/// the features (column groups). However, each of the columns will be empty, such that `%FirstObject`
-/// returns an invalid iterator (evaluates to `false`). This means that, given a `%Measurement` obtained
+/// the features (column groups). However, each of the columns will be empty, such that `FirstObject`
+/// returns an invalid iterator (evaluates to `false`). This means that, given a `Measurement` obtained
 /// from an empty image, one can iterate as usual over features and over objects, without needing to write
 /// a special test for the case of an image without objects.
 class DIP_NO_EXPORT Measurement {
    public:
-      using ValueType = dfloat;           ///< The type of the measurement data
-      using ValueIterator = ValueType*;   ///< A pointer to measurement data, which we can treat as an iterator
+      /// The type of the measurement data
+      using ValueType = dfloat;
+      /// A pointer to measurement data, which we can treat as an iterator
+      using ValueIterator = ValueType*;
 
-      /// \brief Structure containing information about the features stored in a `dip::Measurement` object
+      /// \brief Structure containing information about the features stored in a \ref dip::Measurement object
       struct DIP_NO_EXPORT FeatureInformation {
          String name;            ///< Name of the feature
          dip::uint startColumn;  ///< Column for first value of feature
@@ -174,11 +172,11 @@ class DIP_NO_EXPORT Measurement {
                : name( std::move( name )), startColumn( startColumn ), numberValues( numberValues ) {}
       };
 
-      /// \brief An iterator to visit all features (column groups) in the `dip::Measurement` table. Can also
+      /// \brief An iterator to visit all features (column groups) in the \ref dip::Measurement table. Can also
       /// be seen as a view over a specific feature.
       ///
       /// The iterator can be indexed with an object ID to access the table cell that contains the feature's
-      /// values for that object. It is also possible to iterate over all objects. See `dip::Measurement` for
+      /// values for that object. It is also possible to iterate over all objects. See \ref dip::Measurement for
       /// examples of using this class.
       ///
       /// The `Subset` method selects a subset of the values of the current feature. This does not invalidate
@@ -188,15 +186,15 @@ class DIP_NO_EXPORT Measurement {
       /// value of a feature as if that feature had produced only one value. For example:
       ///
       /// ```cpp
-      ///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
-      ///     auto featureValues = msr[ "Feret" ];
-      ///     featureValues.Subset( 1 ); // Select the "FeretMin" column only
+      /// dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
+      /// auto featureValues = msr[ "Feret" ];
+      /// featureValues.Subset( 1 ); // Select the "FeretMin" column only
       /// ```
       class DIP_NO_EXPORT IteratorFeature {
          public:
             friend class Measurement;
 
-            /// \brief An iterator to visit all objects (rows) within a feature (column group) of the `dip::Measurement` table.
+            /// \brief An iterator to visit all objects (rows) within a feature (column group) of the \ref dip::Measurement table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
             class DIP_NO_EXPORT Iterator {
@@ -207,13 +205,13 @@ class DIP_NO_EXPORT Measurement {
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Dereference to access the first value
                   ValueType& operator*() const { return *begin(); }
-                  /// \brief %Iterator to the first value
+                  /// \brief Iterator to the first value
                   ValueIterator begin() const {
                      return measurement_->Data() +
                             static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride() +
                             static_cast< dip::sint >( startColumn_ );
                   }
-                  /// \brief %Iterator one past the last value
+                  /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
                   ValueType* data() const { return begin(); }
@@ -247,9 +245,9 @@ class DIP_NO_EXPORT Measurement {
                   dip::uint numberValues_;
             };
 
-            /// \brief %Iterator to the first object for this feature
+            /// \brief Iterator to the first object for this feature
             Iterator FirstObject() const { return Iterator( *this, 0 ); }
-            /// \brief %Iterator to the given object for this feature
+            /// \brief Iterator to the given object for this feature
             Iterator operator[]( dip::uint objectID ) const { return Iterator( *this, ObjectIndex( objectID )); }
             /// \brief Pre-increment, to access the next feature
             IteratorFeature& operator++() {
@@ -320,17 +318,17 @@ class DIP_NO_EXPORT Measurement {
             dip::uint numberValues_; // A local copy of measurement_->features_[ featureIndex_ ].numberValues, so that it can be tweaked.
       };
 
-      /// \brief An iterator to visit all objects (rows) in the `dip::Measurement` table. Can also be seen as a
+      /// \brief An iterator to visit all objects (rows) in the \ref dip::Measurement table. Can also be seen as a
       /// view over a specific object.
       ///
       /// The iterator can be indexed with an feature name to access the table cell group that contains the object's
-      /// values for that feature. It is also possible to iterate over all features. See `dip::Measurement` for
+      /// values for that feature. It is also possible to iterate over all features. See \ref dip::Measurement for
       /// examples of using this class.
       class DIP_NO_EXPORT IteratorObject {
          public:
             friend class Measurement;
 
-            /// \brief An iterator to visit all features (columns) within an object (row) of the `dip::Measurement` table.
+            /// \brief An iterator to visit all features (columns) within an object (row) of the \ref dip::Measurement table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
             class DIP_NO_EXPORT Iterator {
@@ -341,13 +339,13 @@ class DIP_NO_EXPORT Measurement {
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Dereference to access the first value
                   ValueType& operator*() const { return *begin(); }
-                  /// \brief %Iterator to the first value
+                  /// \brief Iterator to the first value
                   ValueIterator begin() const {
                      return measurement_->Data() +
                             static_cast< dip::sint >( objectIndex_ ) * measurement_->Stride() +
                             static_cast< dip::sint >( Feature().startColumn );
                   }
-                  /// \brief %Iterator one past the last value
+                  /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
                   ValueType* data() const { return begin(); }
@@ -378,9 +376,9 @@ class DIP_NO_EXPORT Measurement {
                   dip::uint featureIndex_;
             };
 
-            /// \brief %Iterator to the first feature for this object
+            /// \brief Iterator to the first feature for this object
             Iterator FirstFeature() const { return Iterator( *this, 0 ); }
-            /// \brief %Iterator to the given feature for this object
+            /// \brief Iterator to the given feature for this object
             Iterator operator[]( String const& name ) const { return Iterator( *this, FeatureIndex( name )); }
             /// \brief Pre-increment, to access the next object
             IteratorObject& operator++() { ++objectIndex_; return *this; }
@@ -495,10 +493,9 @@ class DIP_NO_EXPORT Measurement {
       /// \brief Creates and iterator (view) to a subset of feature values
       ///
       /// Example:
-      ///
       /// ```cpp
-      ///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
-      ///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
+      /// dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
+      /// auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
       /// ```
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
          DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
@@ -528,7 +525,7 @@ class DIP_NO_EXPORT Measurement {
          return featureIndices_.count( name ) != 0;
       }
 
-      /// \brief Finds the index into the `dip::Measurement::Feature` array for the given feature.
+      /// \brief Finds the index into the \ref Features array for the given feature.
       dip::uint FeatureIndex( String const& name ) const {
          auto it = featureIndices_.find( name );
          DIP_THROW_IF( it == featureIndices_.end(), "Feature not present: " + name );
@@ -545,7 +542,7 @@ class DIP_NO_EXPORT Measurement {
          return features_.size();
       }
 
-      /// \brief Finds the index into the `dip::Measurement::Values` array for the first value of the given feature.
+      /// \brief Finds the index into the \ref Values array for the first value of the given feature.
       dip::uint ValueIndex( String const& name ) const {
          return features_[ FeatureIndex( name ) ].startColumn;
       }
@@ -604,7 +601,7 @@ class DIP_NO_EXPORT Measurement {
          return objects_.size();
       }
 
-      /// \brief The `+` operator merges two `dip::Measurement` objects.
+      /// \brief The `+` operator merges two \ref dip::Measurement objects.
       ///
       /// The resulting object has, as feature set, the union of the two input feature sets, and as object IDs,
       /// the union of the two object ID lists. That is, the output might have more columns or more rows
@@ -617,18 +614,18 @@ class DIP_NO_EXPORT Measurement {
       /// they are added together:
       ///
       /// ```cpp
-      ///     dip::Image label1 = ... // one image with objects 1-10
-      ///     dip::Image label2 = ... // one image with objects 11-20
-      ///     auto set1 = measurementTool.Measure( label1, {}, {'Size','Center'} );
-      ///     auto set2 = measurementTool.Measure( label2, {}, {'Size','Center'} );
-      ///     auto set3 = measurementTool.Measure( label1, {}, {'Feret','Radius'} );
-      ///     auto set4 = measurementTool.Measure( label2, {}, {'Feret','Radius'} );
-      ///     auto sum1 = set1 + set2; // Size and Center features for objects 1-20
-      ///     auto sum2 = set1 + set3; // Size, Center, Feret and Radius features for objects 1-10
-      ///     auto sumA = (set1 + set2) + (set3 + set4); // All features for all objects
-      ///     auto sumB = (set1 + set3) + (set2 + set4); // Idem
-      ///     auto sumC = set1 + set2 + set3 + set4;     // Idem
-      ///     auto sumD = set1 + set4 + set3 + set2;     // Idem
+      /// dip::Image label1 = ... // one image with objects 1-10
+      /// dip::Image label2 = ... // one image with objects 11-20
+      /// auto set1 = measurementTool.Measure( label1, {}, {'Size','Center'} );
+      /// auto set2 = measurementTool.Measure( label2, {}, {'Size','Center'} );
+      /// auto set3 = measurementTool.Measure( label1, {}, {'Feret','Radius'} );
+      /// auto set4 = measurementTool.Measure( label2, {}, {'Feret','Radius'} );
+      /// auto sum1 = set1 + set2; // Size and Center features for objects 1-20
+      /// auto sum2 = set1 + set3; // Size, Center, Feret and Radius features for objects 1-10
+      /// auto sumA = (set1 + set2) + (set3 + set4); // All features for all objects
+      /// auto sumB = (set1 + set3) + (set2 + set4); // Idem
+      /// auto sumC = set1 + set2 + set3 + set4;     // Idem
+      /// auto sumD = set1 + set4 + set3 + set2;     // Idem
       /// ```
       DIP_EXPORT friend Measurement operator+( Measurement const& lhs, Measurement const& rhs );
 
@@ -672,7 +669,7 @@ class DIP_NO_EXPORT Measurement {
 //
 
 
-/// \brief You can output a `dip::Measurement` to `std::cout` or any other stream to produce a human-readable
+/// \brief You can output a \ref dip::Measurement to `std::cout` or any other stream to produce a human-readable
 /// representation of the tabular data in it.
 /// \relates dip::Measurement
 DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& measurement );
@@ -693,17 +690,17 @@ class DIP_CLASS_EXPORT Base {
 
       Base( Information information, Type const type ) : information( std::move( information )), type( type ) {};
 
-      /// \brief A feature can have configurable parameters. Such a feature can define a `%Configure` method
-      /// that the user can access through `dip::MeasurementTool::Configure`.
+      /// \brief A feature can have configurable parameters. Such a feature can define a `Configure` method
+      /// that the user can access through \ref dip::MeasurementTool::Configure.
       virtual void Configure( String const& /*parameter*/, dfloat /*value*/ ) {
          DIP_THROW( "Feature not configurable" );
       };
 
-      /// \brief All measurement features define an `%Initialize` method that prepares the feature class
+      /// \brief All measurement features define an `Initialize` method that prepares the feature class
       /// to perform measurements on the image. It also gives information on the feature as applied to that image.
       ///
       /// This function should check image properties and throw an exception if the measurement
-      /// cannot be made. The `dip::MeasurementTool` will not catch this exception, please provide a
+      /// cannot be made. The \ref dip::MeasurementTool will not catch this exception, please provide a
       /// meaningful error message for the user. `label` will always be a scalar, unsigned integer image, and
       /// `grey` will always be of a real type. But `grey` can be a tensor image, so do check for that. For
       /// chain-code--based and convex-hull--based measurements, the images will always have exactly two
@@ -711,7 +708,7 @@ class DIP_CLASS_EXPORT Base {
       /// image dimensionality if there are other constraints. `grey` will always have the same dimensionality
       /// and sizes as `label` if the measurement requires a grey-value image; it will be a raw image otherwise.
       ///
-      /// %Information returned includes the number of output values it will generate per object, what
+      /// Information returned includes the number of output values it will generate per object, what
       /// their name and units will be, and how many intermediate values it will need to store (for
       /// line-based functions only).
       ///
@@ -719,10 +716,11 @@ class DIP_CLASS_EXPORT Base {
       /// class, so that it is available when performing measurements. For example, it can store the
       /// pixel size to inform the measurement.
       ///
-      /// \attention This function is not expected to perform any major amount of work.
+      /// !!! attention
+      ///     This function is not expected to perform any major amount of work.
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) = 0;
 
-      /// \brief All measurement features define a `%Cleanup` method that is called after finishing the measurement
+      /// \brief All measurement features define a `Cleanup` method that is called after finishing the measurement
       /// process for one image.
       virtual void Cleanup() {};
 
@@ -738,20 +736,24 @@ class DIP_CLASS_EXPORT LineBased : public Base {
       /// This function is not called in parallel, and hence does not need to be thread-safe.
       ///
       /// The two line iterators can always be incremented exactly the same number of times.
-      /// `coordinates[ dimension ]` should be incremented at the same time, if coordinate
-      /// information is required by the algorithm. `label` is non-zero where there is an
-      /// object pixel. Look up the `label` value in `objectIndices` to obtain the index for
+      /// `label` is non-zero where there is an object pixel.
+      /// Look up the `label` value in `objectIndices` to obtain the index for
       /// the object. Object indices are always between 0 and number of objects - 1. The
-      /// `dip::Feature::Base::Initialize` function should allocate an array with `nObjects`
-      /// elements, where measurements are accumulated. The `dip::Feature::LineBased::Finish`
+      /// \ref dip::Feature::Base::Initialize function should allocate an array with `nObjects`
+      /// elements, where measurements are accumulated. The \ref dip::Feature::LineBased::Finish
       /// function is called after the whole image has been scanned, and should provide the
       /// final measurement result for one object given its index (not object ID).
+      ///
+      /// `coordinates` contains the coordinates of the first pixel on the line, and is passed by copy,
+      /// so it can be modified. `dimension` indicates along which dimension to run. Increment
+      /// `coordinates[ dimension ]` at the same time as the line iterators if coordinate information
+      /// is required by the algorithm.
       virtual void ScanLine(
-            LineIterator< LabelType > label, ///< Pointer to the line in the labeled image (always scalar)
-            LineIterator< dfloat > grey, ///< Pointer to the line in the grey-value image (if given, invalid otherwise)
-            UnsignedArray coordinates, ///< Coordinates of the first pixel on the line (by copy, so it can be modified)
-            dip::uint dimension, ///< Along which dimension the line runs
-            ObjectIdToIndexMap const& objectIndices ///< A map from objectID (label) to index
+            LineIterator< LabelType > label,
+            LineIterator< dfloat > grey,
+            UnsignedArray coordinates,
+            dip::uint dimension,
+            ObjectIdToIndexMap const& objectIndices
       ) = 0;
 
       /// \brief Called once for each object, to finalize the measurement
@@ -800,16 +802,17 @@ class DIP_CLASS_EXPORT Composite : public Base {
       explicit Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {};
 
       /// \brief Lists the features that the measurement depends on. These features will be computed and made
-      /// available to the `Measure` method. This function is always called after `dip::Feature::Base::Initialize`.
+      /// available to the `Measure` method. This function is always called after \ref dip::Feature::Base::Initialize.
       ///
-      /// \attention Dependency chains are currently not supported. Dependencies listed here should not be
-      /// other `%Type::COMPOSITE` features. This would require processing the composite features in the
-      /// right order for all dependencies to be present when needed.
+      /// !!! attention
+      ///     Dependency chains are currently not supported. Dependencies listed here should not be
+      ///     other `Type::COMPOSITE` features. This would require processing the composite features in the
+      ///     right order for all dependencies to be present when needed.
       // TODO: Compute composite features in the right order according to a dependency tree.
       virtual StringArray Dependencies() = 0;
 
       /// \brief Called once for each object, the input `dependencies` object contains the measurements
-      /// for the object from all the features in the `dip::Composite::Dependencies` list.
+      /// for the object from all the features in the \ref Dependencies() list.
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) = 0;
 };
 
@@ -823,71 +826,68 @@ class DIP_CLASS_EXPORT Composite : public Base {
 
 /// \brief Performs measurements on images.
 ///
-/// \ingroup measurement
-///
-/// The %MeasurementTool class knows about defined measurement features, and can apply them to an
-/// image through its `dip::MeasurementTool::Measure` method.
+/// The MeasurementTool class knows about defined measurement features, and can apply them to an
+/// image through its \ref dip::MeasurementTool::Measure method.
 ///
 /// ```cpp
-///     dip::MeasurementTool tool;
-///     dip::Image img = ...
-///     dip::Image label = Label( Threshold( img ), 2 );
-///     dip::Measurement msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
-///     std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << '\n';
+/// dip::MeasurementTool tool;
+/// dip::Image img = ...
+/// dip::Image label = Label( Threshold( img ), 2 );
+/// dip::Measurement msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
+/// std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << '\n';
 /// ```
 ///
 /// By default, the features in the following table are defined:
 ///
-/// <table>
-/// <tr><th> %Measurement name <th> Description <th> Limitations
-/// <tr><td colspan="3"> **Size features**
-/// <tr><td> `"Size"`                    <td> Number of object pixels <td>
-/// <tr><td> `"CartesianBox"`            <td> Cartesian box size of the object in all dimensions <td>
-/// <tr><td> `"Minimum"`                 <td> Minimum coordinates of the object <td>
-/// <tr><td> `"Maximum"`                 <td> Maximum coordinates of the object <td>
-/// <tr><td> `"Perimeter"`               <td> Length of the object perimeter <td> 2D (CC)
-/// <tr><td> `"SurfaceArea"`             <td> Surface area of object <td> 3D
-/// <tr><td> `"Feret"`                   <td> Maximum and minimum object diameters <td> 2D (CC)
-/// <tr><td> `"SolidArea"`               <td> Area of object with any holes filled <td> 2D (CC)
-/// <tr><td> `"ConvexArea"`              <td> Area of the convex hull <td> 2D (CC)
-/// <tr><td> `"ConvexPerimeter"`         <td> Perimeter of the convex hull <td> 2D (CC)
-/// <tr><td colspan="3"> **Shape features**
-/// <tr><td> `"AspectRatioFeret"`        <td> Feret-based aspect ratio <td> 2D (CC)
-/// <tr><td> `"Radius"`                  <td> Statistics on radius of object <td> 2D (CC)
-/// <tr><td> `"P2A"`                     <td> Perimeter to area ratio of the object <td> 2D (CC) & 3D
-/// <tr><td> `"Roundness"`               <td> Roundness of the object <td> 2D (CC)
-/// <tr><td> `"Circularity"`             <td> Circularity of the object <td> 2D (CC)
-/// <tr><td> `"PodczeckShapes"`          <td> Podczeck shape descriptors <td> 2D (CC)
-/// <tr><td> `"Solidity"`                <td> Area fraction of convex hull covered by object <td> 2D (CC)
-/// <tr><td> `"Convexity"`               <td> Ratio of perimeter of convex hull to perimeter of object <td> 2D (CC)
-/// <tr><td> `"EllipseVariance"`         <td> Distance to best fit ellipse <td> 2D (CC)
-/// <tr><td> `"Eccentricity"`            <td> Aspect ratio of best fit ellipse <td> 2D (CC)
-/// <tr><td> `"BendingEnergy"`           <td> Bending energy of object perimeter <td> 2D (CC)
-/// <tr><td colspan="3"> **Intensity features**
-/// <tr><td> `"Mass"`                    <td> Mass of object (sum of object intensity) <td> %Tensor grey
-/// <tr><td> `"Mean"`                    <td> Mean object intensity <td> %Tensor grey
-/// <tr><td> `"StandardDeviation"`       <td> Standard deviation of object intensity <td> %Tensor grey
-/// <tr><td> `"Statistics"`              <td> Mean, standard deviation, skewness and excess kurtosis of object intensity <td> Scalar grey
-/// <tr><td> `"DirectionalStatistics"`   <td> Directional mean and standard deviation of object intensity <td> Scalar grey
-/// <tr><td> `"MaxVal"`                  <td> Maximum object intensity <td> %Tensor grey
-/// <tr><td> `"MinVal"`                  <td> Minimum object intensity <td> %Tensor grey
-/// <tr><td> `"MaxPos"`                  <td> Position of pixel with maximum intensity <td> Scalar grey
-/// <tr><td> `"MinPos"`                  <td> Position of pixel with minimum intensity <td> Scalar grey
-/// <tr><td colspan="3"> **Moments of binary object**
-/// <tr><td> `"Center"`                  <td> Coordinates of the geometric mean of the object <td>
-/// <tr><td> `"Mu"`                      <td> Elements of the inertia tensor <td>
-/// <tr><td> `"Inertia"`                 <td> Moments of inertia of the binary object <td>
-/// <tr><td> `"MajorAxes"`               <td> Principal axes of the binary object <td>
-/// <tr><td> `"DimensionsCube"`          <td> Extent along the principal axes of a cube <td> 2D & 3D
-/// <tr><td> `"DimensionsEllipsoid"`     <td> Extent along the principal axes of an ellipsoid <td> 2D & 3D
-/// <tr><td colspan="3"> **Moments of grey-value object**
-/// <tr><td> `"Gravity"`                 <td> Coordinates of the center of mass of the object <td> Scalar grey
-/// <tr><td> `"GreyMu"`                  <td> Elements of the grey-weighted inertia tensor <td> Scalar grey
-/// <tr><td> `"GreyInertia"`             <td> Grey-weighted moments of inertia of the object <td> Scalar grey
-/// <tr><td> `"GreyMajorAxes"`           <td> Grey-weighted principal axes of the object <td> Scalar grey
-/// <tr><td> `"GreyDimensionsCube"`      <td> Extent along the principal axes of a cube (grey-weighted) <td> 2D & 3D, scalar grey
-/// <tr><td> `"GreyDimensionsEllipsoid"` <td> Extent along the principal axes of an ellipsoid (grey-weighted) <td> 2D & 3D, scalar grey
-/// </table>
+/// Measurement name            | Description       | Limitations
+/// --------------------------- | ----------------- | -----------
+///                             | **Size features**{ .m-text .m-success } |
+/// `"Size"`                    | Number of object pixels |
+/// `"CartesianBox"`            | Cartesian box size of the object in all dimensions |
+/// `"Minimum"`                 | Minimum coordinates of the object |
+/// `"Maximum"`                 | Maximum coordinates of the object |
+/// `"Perimeter"`               | Length of the object perimeter | 2D (CC)
+/// `"SurfaceArea"`             | Surface area of object | 3D
+/// `"Feret"`                   | Maximum and minimum object diameters | 2D (CC)
+/// `"SolidArea"`               | Area of object with any holes filled | 2D (CC)
+/// `"ConvexArea"`              | Area of the convex hull | 2D (CC)
+/// `"ConvexPerimeter"`         | Perimeter of the convex hull | 2D (CC)
+///                             | **Shape features**{ .m-text .m-success } |
+/// `"AspectRatioFeret"`        | Feret-based aspect ratio | 2D (CC)
+/// `"Radius"`                  | Statistics on radius of object | 2D (CC)
+/// `"P2A"`                     | Perimeter to area ratio of the object | 2D (CC) & 3D
+/// `"Roundness"`               | Roundness of the object | 2D (CC)
+/// `"Circularity"`             | Circularity of the object | 2D (CC)
+/// `"PodczeckShapes"`          | Podczeck shape descriptors | 2D (CC)
+/// `"Solidity"`                | Area fraction of convex hull covered by object | 2D (CC)
+/// `"Convexity"`               | Ratio of perimeter of convex hull to perimeter of object | 2D (CC)
+/// `"EllipseVariance"`         | Distance to best fit ellipse | 2D (CC)
+/// `"Eccentricity"`            | Aspect ratio of best fit ellipse | 2D (CC)
+/// `"BendingEnergy"`           | Bending energy of object perimeter | 2D (CC)
+///                             | **Intensity features**{ .m-text .m-success } |
+///  `"Mass"`                   | Mass of object (sum of object intensity) | Tensor grey
+///  `"Mean"`                   | Mean object intensity | Tensor grey
+///  `"StandardDeviation"`      | Standard deviation of object intensity | Tensor grey
+///  `"Statistics"`             | Mean, standard deviation, skewness and excess kurtosis of object intensity | Scalar grey
+///  `"DirectionalStatistics"`  | Directional mean and standard deviation of object intensity | Scalar grey
+///  `"MaxVal"`                 | Maximum object intensity | Tensor grey
+///  `"MinVal"`                 | Minimum object intensity | Tensor grey
+///  `"MaxPos"`                 | Position of pixel with maximum intensity | Scalar grey
+///  `"MinPos"`                 | Position of pixel with minimum intensity | Scalar grey
+///                             | **Moments of binary object**{ .m-text .m-success } |
+/// `"Center"`                  | Coordinates of the geometric mean of the object |
+/// `"Mu"`                      | Elements of the inertia tensor |
+/// `"Inertia"`                 | Moments of inertia of the binary object |
+/// `"MajorAxes"`               | Principal axes of the binary object |
+/// `"DimensionsCube"`          | Extent along the principal axes of a cube | 2D & 3D
+/// `"DimensionsEllipsoid"`     | Extent along the principal axes of an ellipsoid | 2D & 3D
+///                             | **Moments of grey-value object**{ .m-text .m-success } |
+/// `"Gravity"`                 | Coordinates of the center of mass of the object | Scalar grey
+/// `"GreyMu"`                  | Elements of the grey-weighted inertia tensor | Scalar grey
+/// `"GreyInertia"`             | Grey-weighted moments of inertia of the object | Scalar grey
+/// `"GreyMajorAxes"`           | Grey-weighted principal axes of the object | Scalar grey
+/// `"GreyDimensionsCube"`      | Extent along the principal axes of a cube (grey-weighted) | 2D & 3D, scalar grey
+/// `"GreyDimensionsEllipsoid"` | Extent along the principal axes of an ellipsoid (grey-weighted) | 2D & 3D, scalar grey
 ///
 /// Note that some features are derived from others, and will cause the features they depend on to be included in the
 /// output measurement object.
@@ -898,14 +898,14 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// is measured, the boundaries of holes in the object are ignored.
 ///
 /// Features that include "Scalar grey" in the limitations column require a scalar grey-value image to be passed
-/// into the `dip::MeasurementTool::Measure` method together with the label image. "Tensor grey" indicates that
+/// into the \ref dip::MeasurementTool::Measure method together with the label image. "Tensor grey" indicates that
 /// this grey-value image can be multi-valued (i.e. a tensor image); each tensor element will be reported as a
 /// channel.
 ///
 /// See \ref features for more information on each of these features.
 ///
-/// It is possible for the user to define new measurement features, and register them with the `%MeasurementTool` through the
-/// `dip::MeasurementTool::Register` method. The new feature then becomes available in the `dip::MeasurementTool::Measure`
+/// It is possible for the user to define new measurement features, and register them with the `MeasurementTool` through the
+/// \ref dip::MeasurementTool::Register method. The new feature then becomes available in the \ref dip::MeasurementTool::Measure
 /// method just like any of the default features.
 class DIP_NO_EXPORT MeasurementTool {
       using FeatureBasePointer = std::unique_ptr< Feature::Base >;  // A pointer to a measurement feature of any type
@@ -915,18 +915,18 @@ class DIP_NO_EXPORT MeasurementTool {
       /// \brief Constructor.
       DIP_EXPORT MeasurementTool();
 
-      /// \brief Registers a feature with this `%MeasurementTool`.
+      /// \brief Registers a feature with this `MeasurementTool`.
       ///
       /// Create an instance of the feature class on the heap using `new`. The feature class must be
-      /// derived from one of the five classes derived from `dip::Feature::Base` (thus not directly from `Base`).
-      /// The `%dip::MeasurementTool` object takes ownership of the feature object:
+      /// derived from one of the five classes derived from \ref "dip::Feature::Base" (thus not directly from `Base`).
+      /// The \ref dip::MeasurementTool object takes ownership of the feature object:
       ///
       /// ```cpp
-      ///     class MyFeature : public dip::Feature::ChainCodeBased {
-      ///        // define constructor and override virtual functions
-      ///     }
-      ///     MeasurementTool measurementTool;
-      ///     measurementTool.Register( new MyFeature );
+      /// class MyFeature : public dip::Feature::ChainCodeBased {
+      ///    // define constructor and override virtual functions
+      /// }
+      /// MeasurementTool measurementTool;
+      /// measurementTool.Register( new MyFeature );
       /// ```
       ///
       /// See the source files for existing features for examples (and a starting point) on how to write your
@@ -945,7 +945,7 @@ class DIP_NO_EXPORT MeasurementTool {
          }
       }
 
-      /// \brief Sets a parameter of a feature registered with this `%MeasurementTool`.
+      /// \brief Sets a parameter of a feature registered with this `MeasurementTool`.
       void Configure(
             String const& feature,
             String const& parameter,
@@ -961,19 +961,19 @@ class DIP_NO_EXPORT MeasurementTool {
       /// sizes as `label`. If any selected features require a grey-value image, then it must be provided.
       /// Note that some features can handle multi-valued (tensor) images, and some can not.
       ///
-      /// `features` is an array with feature names. See the `dip::MeasurementTool::Features` method for
+      /// `features` is an array with feature names. See the \ref dip::MeasurementTool::Features method for
       /// information on how to obtain those names. Some features are composite features, they compute
-      /// values based on other features. Thus, it is possible that the output `dip::Measurement` object
+      /// values based on other features. Thus, it is possible that the output \ref dip::Measurement object
       /// contains features not directly requested, but needed to compute another feature.
       ///
       /// `objectIDs` is an array with the IDs of objects to measure, If any of the IDs is not a label
       /// in the `label` image, the resulting measures will be zero or otherwise marked as invalid. If
       /// an empty array is given, all objects in the labeled image are measured. If there are no objects
-      /// to be measured, a non-forged `dip::Measurement` object is returned.
+      /// to be measured, a non-forged \ref dip::Measurement object is returned.
       ///
       /// `connectivity` should match the value used when creating the labeled image `label`.
       ///
-      /// The output `dip::Measurement` structure contains measurements that take the pixel size of
+      /// The output \ref dip::Measurement structure contains measurements that take the pixel size of
       /// the `label` image into account. Those of `grey` are ignored. Some measurements require
       /// isotropic pixel sizes, if `label` is not isotropic, the pixel size is ignored and these
       /// measures will return values in pixels instead.
@@ -1019,11 +1019,11 @@ class DIP_NO_EXPORT MeasurementTool {
 
 /// \brief Paints each object with the selected measurement feature values.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object.
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object.
 /// It is assumed that that measurement object was obtained through measurement of the input `label` image.
 /// To obtain such a view, use the measurement's `[]` indexing with a feature name. Alternatively, use the
-/// `dip::Measurement::FeatureValuesView` method to select an arbitrary subset of feature value columns.
-/// The `dip::Measurement::IteratorFeature::Subset` method can be used for the same purpose.
+/// \ref dip::Measurement::FeatureValuesView method to select an arbitrary subset of feature value columns.
+/// The \ref dip::Measurement::IteratorFeature::Subset method can be used for the same purpose.
 ///
 /// If the selected feature has more than one value, then `out` will be a vector image with as many tensor elements
 /// as values are in the feature.
@@ -1032,10 +1032,10 @@ class DIP_NO_EXPORT MeasurementTool {
 /// flag before calling this function:
 ///
 /// ```cpp
-///     dip::Image out;
-///     out.SetDataType( dip::DT_UINT32 );
-///     out.Protect();
-///     ObjectToMeasurement( label, out, featureValues );
+/// dip::Image out;
+/// out.SetDataType( dip::DT_UINT32 );
+/// out.Protect();
+/// ObjectToMeasurement( label, out, featureValues );
 /// ```
 DIP_EXPORT void ObjectToMeasurement(
       Image const& label,
@@ -1052,7 +1052,7 @@ inline Image ObjectToMeasurement(
 }
 
 
-/// \brief Writes a `dip::Measurement` structure to a CSV file.
+/// \brief Writes a \ref dip::Measurement structure to a CSV file.
 ///
 /// The CSV (comma separated values) file is a generic container for tabular data, and can be
 /// read in just about any graphing and statistics software package.
@@ -1062,24 +1062,26 @@ inline Image ObjectToMeasurement(
 /// names, of which there typically are fewer than columns, are interspersed with empty cells
 /// to line them up with the first column for the feature. For example:
 ///
-/// ```txt
-///    ObjectID, Size,  Center, ,      Feret, ,      ,        ,
-///    ,         ,      dim0,   dim1,  Max,   Min,   PerpMin, MaxAng, MinAng
-///    ,         um^2,  um,     um,    um,    um,    um,      rad,    rad
-///    1,        397.0, 20.06,  12.98, 34.99, 16.43, 34.83,   2.111,  3.588
-///    2,        171.0, 63.13,  4.123, 20.22, 11.00, 20.00,   2.993,  4.712
-///    3,        628.0, 108.4,  12.47, 32.20, 26.00, 28.00,   2.202,  0.000
-///    4,        412.0, 154.5,  9.561, 26.40, 22.00, 23.00,   2.222,  4.712
+/// ```text
+/// ObjectID, Size,  Center, ,      Feret, ,      ,        ,
+/// ,         ,      dim0,   dim1,  Max,   Min,   PerpMin, MaxAng, MinAng
+/// ,         um^2,  um,     um,    um,    um,    um,      rad,    rad
+/// 1,        397.0, 20.06,  12.98, 34.99, 16.43, 34.83,   2.111,  3.588
+/// 2,        171.0, 63.13,  4.123, 20.22, 11.00, 20.00,   2.993,  4.712
+/// 3,        628.0, 108.4,  12.47, 32.20, 26.00, 28.00,   2.202,  0.000
+/// 4,        412.0, 154.5,  9.561, 26.40, 22.00, 23.00,   2.222,  4.712
 /// ```
 ///
-/// \attention The file will not have columns aligned with spaces as shown here, each
-/// comma is always followed by a single space.
+/// !!! attention
+///     The file will not have columns aligned with spaces as shown here, each
+///     comma is always followed by a single space.
 ///
 /// `options` is one or more of the following values:
-///  - `"unicode"`: The units will be written using unicode strings. By default, only ASCII
-///    characters are used.
-///  - `"simple"`: There will only be a single header line, combining the three strings as
-///    follows: "Feature value (units)". For example: "Size (um^2)", "Feret Max (um)", etc.
+///
+/// - `"unicode"`: The units will be written using unicode strings. By default, only ASCII
+///   characters are used.
+/// - `"simple"`: There will only be a single header line, combining the three strings as
+///   follows: `"Feature value (units)"`. For example: `"Size (um^2)"`, `"Feret Max (um)"`, etc.
 DIP_EXPORT void MeasurementWriteCSV(
       Measurement const& measurement,
       String const& filename,
@@ -1089,64 +1091,64 @@ DIP_EXPORT void MeasurementWriteCSV(
 
 /// \brief Returns the smallest feature value in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT Measurement::ValueType Minimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the largest feature value in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT Measurement::ValueType Maximum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the `percentile` feature value in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureValues, dfloat percentile );
 
 /// \brief Returns the median feature value in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 inline dfloat Median( Measurement::IteratorFeature const& featureValues ) {
    return Percentile( featureValues, 50.0 );
 }
 
 /// \brief Returns the mean feature value in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT dfloat Mean( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the maximum and minimum feature values in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the first four central moments of the feature values in the first column of `featureValues`.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// The input `featureValues` is a view over a specific feature in a \ref dip::Measurement object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
-/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
-/// directly using `dip::Measurement::FeatureValuesView`.
+/// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
+/// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues );
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

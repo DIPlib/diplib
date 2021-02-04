@@ -65,22 +65,19 @@ extern "C" {
 #include "diplib/histogram.h"    // Definition of dip::Histogram::Configuration
 
 /// \file
-/// \brief This file should be included in each MEX-file. It defines the `#dml` namespace.
+/// \brief This file should be included in each MEX-file. It defines the \ref dml namespace.
 
 
-/// \brief The `%dml` namespace contains the interface between MATLAB and *DIPlib*.
-///
-/// The functions and classes defined in this namespace are meant to be used in MATLAB MEX-files.
-namespace dml {
-
-/// \defgroup interfaces Interfaces
-/// \brief Interfaces between DIPlib and other libraries/packages
-
-/// \defgroup dip_matlab_interface DIPlib-MATLAB interface
+/// \group dip_matlab_interface *DIPlib*-*MATLAB* interface
 /// \ingroup interfaces
-/// \brief Functions to convert image data, function parameters and other arrays to and from MATLAB.
+/// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
+/// \addtogroup
+
+
+/// \brief The \ref dml namespace contains the interface between *MATLAB* and *DIPlib*.
 ///
-/// \{
+/// The functions and classes defined in this namespace are meant to be used in *MATLAB* MEX-files.
+namespace dml {
 
 
 // These are the names of the properties we get/set in the dip_image class in MATLAB:
@@ -123,7 +120,7 @@ inline bool IsVector( mxArray const* mx ) {
    return ( mxGetNumberOfDimensions( mx ) == 2 ) && (( mxGetM( mx ) <= 1 ) || ( mxGetN( mx ) <= 1 ));
 }
 
-/// \brief Convert an unsigned integer from `mxArray` to `dip::uint` by copy.
+/// \brief Convert an unsigned integer from `mxArray` to \ref dip::uint by copy.
 inline dip::uint GetUnsigned( mxArray const* mx ) {
    if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       double v = *mxGetPr( mx );
@@ -135,7 +132,7 @@ inline dip::uint GetUnsigned( mxArray const* mx ) {
    DIP_THROW( "Unsigned integer value expected" );
 }
 
-/// \brief Convert a signed integer from `mxArray` to `dip::sint` by copy.
+/// \brief Convert a signed integer from `mxArray` to \ref dip::sint by copy.
 inline dip::sint GetInteger( mxArray const* mx ) {
    if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       double v = *mxGetPr( mx );
@@ -147,7 +144,7 @@ inline dip::sint GetInteger( mxArray const* mx ) {
    DIP_THROW( "Integer value expected" );
 }
 
-/// \brief Convert a floating-point number from `mxArray` to `dip::dfloat` by copy.
+/// \brief Convert a floating-point number from `mxArray` to \ref dip::dfloat by copy.
 inline dip::dfloat GetFloat( mxArray const* mx ) {
    if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       return *mxGetPr( mx );
@@ -155,7 +152,7 @@ inline dip::dfloat GetFloat( mxArray const* mx ) {
    DIP_THROW( "Real floating-point value expected" );
 }
 
-/// \brief Convert a complex floating-point number from `mxArray` to `dip::dcomplex` by copy.
+/// \brief Convert a complex floating-point number from `mxArray` to \ref dip::dcomplex by copy.
 inline dip::dcomplex GetComplex( mxArray const* mx ) {
    if( IsScalar( mx ) && mxIsDouble( mx )) {
       double* pr = mxGetPr( mx );
@@ -168,7 +165,7 @@ inline dip::dcomplex GetComplex( mxArray const* mx ) {
    DIP_THROW( "Complex floating-point value expected" );
 }
 
-/// \brief Convert a boolean (logical) array from `mxArray` to `dip::BooleanArray` by copy.
+/// \brief Convert a boolean (logical) array from `mxArray` to \ref dip::BooleanArray by copy.
 inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
    if( IsVector( mx )) {
       if( mxIsLogical( mx )) {
@@ -193,7 +190,7 @@ inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
    DIP_THROW( "Boolean array expected" );
 }
 
-/// \brief Convert an unsigned integer array from `mxArray` to `dip::UnsignedArray` by copy.
+/// \brief Convert an unsigned integer array from `mxArray` to \ref dip::UnsignedArray by copy.
 inline dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
@@ -209,7 +206,7 @@ inline dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
    DIP_THROW( "Unsigned integer array expected" );
 }
 
-/// \brief Convert a signed integer array from `mxArray` to `dip::IntegerArray` by copy.
+/// \brief Convert a signed integer array from `mxArray` to \ref dip::IntegerArray by copy.
 inline dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
@@ -225,7 +222,7 @@ inline dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
    DIP_THROW( "Integer array expected" );
 }
 
-/// \brief Convert a floating-point array from `mxArray` to `dip::FloatArray` by copy.
+/// \brief Convert a floating-point array from `mxArray` to \ref dip::FloatArray by copy.
 inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
@@ -253,8 +250,8 @@ inline std::vector< dip::dfloat > GetStdVectorOfFloats( mxArray const* mx ) {
    DIP_THROW( "Floating-point array expected" );
 }
 
-/// \brief Convert an unsigned integer `mxArray` to a `dip::BooleanArray`, where elements of the input are indices
-/// where the output array is set. The output array has `nDims` elements. In MATLAB, dimensions start with 1.
+/// \brief Convert an unsigned integer `mxArray` to a \ref dip::BooleanArray, where elements of the input are indices
+/// where the output array is set. The output array has `nDims` elements. In *MATLAB*, dimensions start with 1.
 /// If `mx` is empty, all dimensions are to be processed.
 inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
    if( mxIsEmpty( mx )) {
@@ -274,7 +271,7 @@ inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
    return out;
 }
 
-/// \brief Convert a coordinates array from `mxArray` to `dip::CoordinateArray` by copy.
+/// \brief Convert a coordinates array from `mxArray` to \ref dip::CoordinateArray by copy.
 ///
 /// A coordinates array is either a cell array with arrays of unsigned integers (all of them
 /// the same length), or a matrix with a row per coordinate and a column per dimension.
@@ -317,7 +314,7 @@ inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
    DIP_THROW( "Coordinate array expected" );
 }
 
-/// \brief Convert a coordinates array from `mxArray` to `dip::FloatCoordinateArray` by copy.
+/// \brief Convert a coordinates array from `mxArray` to \ref dip::FloatCoordinateArray by copy.
 ///
 /// A coordinates array is either a cell array with arrays of double floats (all of them
 /// the same length), or a matrix with a row per coordinate and a column per dimension.
@@ -358,7 +355,7 @@ inline dip::FloatCoordinateArray GetFloatCoordinateArray( mxArray const* mx ) {
    DIP_THROW( "Coordinate array expected" );
 }
 
-/// \brief Convert a string from `mxArray` to `dip::String` by copy.
+/// \brief Convert a string from `mxArray` to \ref dip::String by copy.
 inline dip::String GetString( mxArray const* mx ) {
    if( mxIsChar( mx ) && IsVector( mx )) {
       dip::String out( mxGetNumberOfElements( mx ), '\0' );
@@ -368,7 +365,7 @@ inline dip::String GetString( mxArray const* mx ) {
    DIP_THROW( "String expected" );
 }
 
-/// \brief Convert a string from `mxArray` to a UTF-8 encoded `dip::String` by copy.
+/// \brief Convert a string from `mxArray` to a UTF-8 encoded \ref dip::String by copy.
 inline dip::String GetStringUnicode( mxArray const* mx ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
    if( mxIsChar( mx ) && IsVector( mx )) {
@@ -386,7 +383,7 @@ inline dip::String GetStringUnicode( mxArray const* mx ) {
 #endif
 }
 
-/// \brief Convert a cell array of strings from `mxArray` to `dip::StringArray` by copy.
+/// \brief Convert a cell array of strings from `mxArray` to \ref dip::StringArray by copy.
 inline dip::StringArray GetStringArray( mxArray const* mx ) {
    try {
       if( mxIsCell( mx ) && IsVector( mx )) {
@@ -406,7 +403,7 @@ inline dip::StringArray GetStringArray( mxArray const* mx ) {
    }
 }
 
-/// \brief Convert a cell array of string from `mxArray` to `dip::StringSet` by copy.
+/// \brief Convert a cell array of string from `mxArray` to \ref dip::StringSet by copy.
 inline dip::StringSet GetStringSet( mxArray const* mx ) {
    try {
       if( mxIsCell( mx ) && IsVector( mx )) {
@@ -448,10 +445,10 @@ inline bool GetBoolean( mxArray const* mx ) {
    DIP_THROW( "Boolean value expected" );
 }
 
-/// \brief Convert an integer array from `mxArray` to `dip::Range` by copy.
+/// \brief Convert an integer array from `mxArray` to \ref dip::Range by copy.
 ///
 /// A range is an integer array with zero to three elements, ordered the same way as in the
-/// constructors for `dip::Range`.
+/// constructors for \ref dip::Range.
 inline dip::Range GetRange( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
@@ -481,7 +478,7 @@ inline dip::Range GetRange( mxArray const* mx ) {
    DIP_THROW( "Range expected" );
 }
 
-/// \brief Convert a cell array of integer array from `mxArray` to `dip::RangeArray` by copy.
+/// \brief Convert a cell array of integer array from `mxArray` to \ref dip::RangeArray by copy.
 inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
    if( mxIsCell( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
@@ -501,7 +498,7 @@ inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
    }
 }
 
-/// \brief Convert a numeric array from `mxArray` to `dip::Image::Pixel` by copy.
+/// \brief Convert a numeric array from `mxArray` to \ref dip::Image::Pixel by copy.
 inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
    DIP_THROW_IF( !mxIsDouble( mx ) || !IsVector( mx ), "Pixel value expected" );
    dip::uint n = mxGetNumberOfElements( mx );
@@ -523,7 +520,7 @@ inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
    }
 }
 
-/// \brief Reads a histogram Configuration struct from a cell `mxArray` with key-value pairs.
+/// \brief Reads a histogram \ref dip::Histogram::Configuration "`Configuration`" struct from a cell `mxArray` with key-value pairs.
 inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* mx ) {
    dip::Histogram::Configuration out;
    out.lowerIsPercentile = true;
@@ -606,22 +603,22 @@ inline mxArray* GetArray( bool in ) {
    return mxCreateLogicalScalar( in );
 }
 
-/// \brief Convert an unsigned integer from `dip::uint` to `mxArray` by copy.
+/// \brief Convert an unsigned integer from \ref dip::uint to `mxArray` by copy.
 inline mxArray* GetArray( dip::uint in ) {
    return mxCreateDoubleScalar( static_cast< double >( in ));
 }
 
-/// \brief Convert a signed integer from `dip::sint` to `mxArray` by copy.
+/// \brief Convert a signed integer from \ref dip::sint to `mxArray` by copy.
 inline mxArray* GetArray( dip::sint in ) {
    return mxCreateDoubleScalar( static_cast< double >( in ));
 }
 
-/// \brief Convert a floating-point number from `dip::dfloat` to `mxArray` by copy.
+/// \brief Convert a floating-point number from \ref dip::dfloat to `mxArray` by copy.
 inline mxArray* GetArray( dip::dfloat in ) {
    return mxCreateDoubleScalar( in );
 }
 
-/// \brief Convert a complex floating-point number from `dip::dcomplex` to `mxArray` by copy.
+/// \brief Convert a complex floating-point number from \ref dip::dcomplex to `mxArray` by copy.
 inline mxArray* GetArray( dip::dcomplex in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, 1, mxCOMPLEX );
    *( mxGetPr( mx )) = in.real();
@@ -629,8 +626,8 @@ inline mxArray* GetArray( dip::dcomplex in ) {
    return mx;
 }
 
-/// \brief Convert a numeric array from `dip::DimensionalArray< T >` to `mxArray` by copy. Works for
-/// `dip::UnsignedArray`, `dip::IntegerArray` and `dip::FloatArray`.
+/// \brief Convert a numeric array from \ref dip::DimensionArray to `mxArray` by copy. Works for
+/// \ref dip::UnsignedArray, \ref dip::IntegerArray and \ref dip::FloatArray.
 template< typename T, typename = std::enable_if_t< std::is_arithmetic< T >::value >>
 inline mxArray* GetArray( dip::DimensionArray< T > const& in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
@@ -641,7 +638,7 @@ inline mxArray* GetArray( dip::DimensionArray< T > const& in ) {
    return mx;
 }
 
-/// \brief Convert a coordinates array from `mxArray` to `dip::CoordinateArray` by copy.
+/// \brief Convert a coordinates array from `mxArray` to \ref dip::CoordinateArray by copy.
 ///
 /// The output `mxArray` is a matrix with a row per coordinate and a column per dimension.
 inline mxArray* GetArray( dip::CoordinateArray const& in ) {
@@ -662,12 +659,12 @@ inline mxArray* GetArray( dip::CoordinateArray const& in ) {
    return mx;
 }
 
-/// \brief Convert a string from `dip::String` to `mxArray` by copy.
+/// \brief Convert a string from \ref dip::String to `mxArray` by copy.
 inline mxArray* GetArray( dip::String const& in ) {
    return mxCreateString( in.c_str() );
 }
 
-/// \brief Convert a string array from `dip::StringArray` to `mxArray` by copy.
+/// \brief Convert a string array from \ref dip::StringArray to `mxArray` by copy.
 inline mxArray* GetArray( dip::StringArray const& in ) {
    mxArray* mx = mxCreateCellMatrix( 1, in.size() );
    for( dip::uint ii = 0; ii < in.size(); ++ii ) {
@@ -676,7 +673,7 @@ inline mxArray* GetArray( dip::StringArray const& in ) {
    return mx;
 }
 
-/// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
+/// \brief Convert a UTF-8 encoded string from \ref dip::String to `mxArray` by copy.
 inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
    auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_type >, char16_type >{}.from_bytes( in );
@@ -689,7 +686,7 @@ inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #endif
 }
 
-/// \brief Convert a sample from `dip::Image::Sample` to `mxArray` by copy.
+/// \brief Convert a sample from \ref dip::Image::Sample to `mxArray` by copy.
 inline mxArray* GetArray( dip::Image::Sample const& in ) {
    if( in.DataType().IsBinary() ) { // logical array
       return GetArray( dip::detail::CastSample< bool >( in.DataType(), in.Origin() ));
@@ -700,7 +697,7 @@ inline mxArray* GetArray( dip::Image::Sample const& in ) {
    }
 }
 
-/// \brief Convert a set of samples from `dip::Image::Pixel` to `mxArray` by copy.
+/// \brief Convert a set of samples from \ref dip::Image::Pixel to `mxArray` by copy.
 inline mxArray* GetArray( dip::Image::Pixel const& in ) {
    mxArray* out;
    if( in.DataType().IsBinary() ) { // logical array
@@ -721,7 +718,7 @@ inline mxArray* GetArray( dip::Image::Pixel const& in ) {
    return out;
 }
 
-/// \brief Convert a pixel size object `dip::PixelSize` to `mxArray` by copy.
+/// \brief Convert a pixel size object \ref dip::PixelSize to `mxArray` by copy.
 inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
    mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
    for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
@@ -731,7 +728,7 @@ inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
    return pxsz;
 }
 
-/// \brief Convert a `dip::FileInformation` structure to `mxArray` by copy.
+/// \brief Convert a \ref dip::FileInformation structure to `mxArray` by copy.
 inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
    constexpr int nFields = 10;
    char const* fieldNames[ nFields ] = {
@@ -760,7 +757,7 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
    return out;
 }
 
-/// \brief Convert a `dip::Distribution` object to `mxArray` by copy.
+/// \brief Convert a \ref dip::Distribution object to `mxArray` by copy.
 inline mxArray* GetArray( dip::Distribution const& in ) {
    dip::uint n = in.Size();
    dip::uint m = in.ValuesPerSample();
@@ -834,14 +831,14 @@ inline void MaybeCastScalar( dip::Image& img ) {
 
 } // namespace detail
 
-/// \brief `dml::GetImage` can optionally create a shared copy of the input `mxArray`, which extends its lifetime.
+/// \brief \ref dml::GetImage can optionally create a shared copy of the input `mxArray`, which extends its lifetime.
 /// This is useful if the MEX-file needs to keep a reference to the object.
 enum class GetImageMode {
-      REFERENCE,     ///< Reference the `mxArray` in the `dip::Image` object.
+      REFERENCE,     ///< Reference the `mxArray` in the \ref dip::Image object.
       SHARED_COPY    ///< Make a shared copy of the `mxArray` and take ownership of the copy.
 };
 
-/// \brief `dml::GetImage` can optionally turn an input numeric array to a tensor image. If the numeric array
+/// \brief \ref dml::GetImage can optionally turn an input numeric array to a tensor image. If the numeric array
 /// is a short vector (up to 5 elements) it will be seen as a 0D tensor image.
 enum class ArrayConversionMode {
       STANDARD,        ///< All `mxArray`s are scalar images.
@@ -850,18 +847,18 @@ enum class ArrayConversionMode {
 
 /// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
 ///
-/// This function "converts" an `mxArray` with image data to a dip::Image object.
-/// The dip::Image object will point to the data in the `mxArray`, unless
+/// This function "converts" an `mxArray` with image data to a \ref dip::Image object.
+/// The `dip::Image` object will point to the data in the `mxArray`, unless
 /// the array contains complex numbers. Complex data needs to be copied because
-/// MATLAB represents it internally as two separate data blocks. In that
-/// case, the dip::Image object will own its own data block.
+/// *MATLAB* represents it internally as two separate data blocks. In that
+/// case, the `dip::Image` object will own its own data block.
 ///
 /// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
 /// modifier for the output argument. This should prevent accidentally modifying
 /// an input array, which is supposed to be illegal in `mexFunction()`:
 ///
 /// ```cpp
-///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
+/// dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
 /// ```
 ///
 /// An empty `mxArray` produces a non-forged image.
@@ -1082,7 +1079,7 @@ inline dip::Image GetImage(
    }
 }
 
-/// \brief Convert a cell array of images from `mxArray` to `dip::ImageArray`, using `dml::GetImage` for each
+/// \brief Convert a cell array of images from `mxArray` to \ref dip::ImageArray, using \ref dml::GetImage for each
 /// element of the cell array.
 inline dip::ImageArray GetImageArray( mxArray const* mx ) {
    if( mxIsCell( mx ) && IsVector( mx )) {
@@ -1363,44 +1360,44 @@ inline bool MatchSizes(
 
 } // namespace detail
 
-/// \brief This class is the dip::ExternalInterface for the MATLAB interface.
+/// \brief This class is the \ref dip::ExternalInterface for the *MATLAB* interface.
 ///
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
 ///
 /// ```cpp
-///     dml::MatlabInterface mi;
-///     dip::Image img_out0 = mi.NewImage();
-///     dip::Image img_out1 = mi.NewImage();
+/// dml::MatlabInterface mi;
+/// dip::Image img_out0 = mi.NewImage();
+/// dip::Image img_out1 = mi.NewImage();
 /// ```
 ///
 /// This configures the images `img_out0` and `img_out1` such that, when they are
 /// forged later on, an `mxArray` structure will be created to hold the pixel data.
-/// `mxArray` is MATLAB's representation of arrays.
-/// To return those images back to MATLAB, use `dml::GetArray(dip::Image const&, bool)`, which returns
+/// `mxArray` is *MATLAB*'s representation of arrays.
+/// To return those images back to *MATLAB*, use \ref dml::GetArray(dip::Image const&, bool), which returns
 /// the `mxArray` created when the image was forged:
 ///
 /// ```cpp
-///     plhs[ 0 ] = dm::GetArray( img_out0 );
-///     plhs[ 1 ] = dm::GetArray( img_out1 );
+/// plhs[ 0 ] = dm::GetArray( img_out0 );
+/// plhs[ 1 ] = dm::GetArray( img_out1 );
 /// ```
 ///
-/// If you don't use `%dml::GetArray`, the `mxArray` that contains
-/// the pixel data will be destroyed when the dip::Image object goes out
+/// If you don't use `dml::GetArray`, the `mxArray` that contains
+/// the pixel data will be destroyed when the \ref dip::Image object goes out
 /// of scope.
 ///
-/// Note that the `%dml::MatlabInterface` object needs to persist for the duration
+/// Note that the `dml::MatlabInterface` object needs to persist for the duration
 /// of the lifetime of the images returned by the `NewImage` method, since these
 /// images hold a pointer to it.
 ///
 /// Remember to not assign a result into the images created with `NewImage`,
-/// as the pixel data will be copied in the assignment into a MATLAB array.
+/// as the pixel data will be copied in the assignment into a *MATLAB* array.
 /// Instead, use the *DIPlib* functions that take output images as function
 /// arguments:
 ///
 /// ```cpp
-///     img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
-///     dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
+/// img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
+/// dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
 /// ```
 ///
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
@@ -1425,9 +1422,9 @@ class MatlabInterface : public dip::ExternalInterface {
          }
       };
 
-      /// This function overrides dip::ExternalInterface::AllocateData().
+      /// This function overrides \ref dip::ExternalInterface::AllocateData.
       /// It is called when an image with this `ExternalInterface` is forged.
-      /// It allocates a MATLAB `mxArray` and returns a `dip::DataSegment`
+      /// It allocates a *MATLAB* `mxArray` and returns a \ref dip::DataSegment
       /// containing a pointer to the  `mxArray` data pointer, with a custom
       /// deleter functor. It also adjusts strides to match the `mxArray` storage.
       ///
@@ -1450,10 +1447,10 @@ class MatlabInterface : public dip::ExternalInterface {
          return std::static_pointer_cast< void >( tmp );
       }
 
-      /// \brief Constructs a dip::Image object with the external interface set so that,
-      /// when forged, a MATLAB `mxArray` will be allocated to hold the samples.
+      /// \brief Constructs a \ref dip::Image object with the external interface set so that,
+      /// when forged, a *MATLAB* `mxArray` will be allocated to hold the samples.
       ///
-      /// Use `dml::GetArray(dip::Image const&, bool)` to obtain the `mxArray` and assign
+      /// Use \ref dml::GetArray(dip::Image const&, bool) to obtain the `mxArray` and assign
       /// it as a `lhs` argument to your MEX-file.
       dip::Image NewImage() {
          dip::Image out;
@@ -1462,7 +1459,7 @@ class MatlabInterface : public dip::ExternalInterface {
       }
 };
 
-/// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
+/// \brief Find the `mxArray` that holds the data for the \ref dip::Image `img`.
 // The *UNDOCUMENTED* `doNotSetToTrue` flag tells this function that the data shared pointer in the image
 // is an `mxArray`. This is true only if `img` was created by `dml::GetImage`. You should not need this
 // functionality, it is used in `dipimage/private/imagedisplay.cpp`.
@@ -1532,8 +1529,8 @@ inline mxArray* GetArrayAsArray( dip::Image const& img, bool doNotSetToTrue = fa
    return mat;
 }
 
-/// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
-/// and create a MATLAB dip_image object around it.
+/// \brief Find the `mxArray` that holds the data for the \ref dip::Image `img`,
+/// and create a *MATLAB* `dip_image` object around it.
 // See `dml::GetArrayAsArray` above for the meaning of `doNotSetToTrue`.
 inline mxArray* GetArray( dip::Image const& img, bool doNotSetToTrue = false ) {
    mxArray* mat;
@@ -1641,7 +1638,7 @@ inline K GetKernel( int nrhs, const mxArray* prhs[], int& index, dip::uint nDims
 /// stream buffer is replaced.
 ///
 /// Create an object of this class at the beginning of any MEX-file that uses `std::cout` to
-/// print information to the MATLAB terminal. *DIPlib* defines several classes with a stream
+/// print information to the *MATLAB* terminal. *DIPlib* defines several classes with a stream
 /// insertion operator that would be cumbersome to use with a `std::stringstream` and `mexPrintf`.
 /// This class simplifies their use.
 class streambuf : public std::streambuf {
@@ -1694,9 +1691,9 @@ dip::String GetValueFromArray< dip::String >( mxArray const* array ) {
 
 } // namespace detail
 
-/// \brief Get the value of a property, equivalent to calling `dipgetpref` in MATLAB.
+/// \brief Get the value of a property, equivalent to calling `dipgetpref` in *MATLAB*.
 ///
-/// The template parameter `T` should be set to either `bool`, `dip::dfloat` or `dip::String`
+/// The template parameter `T` should be set to either `bool`, \ref dip::dfloat or \ref dip::String
 /// depending on the value selected. An exception will be thrown if the type of the
 /// value returned by `dipgetpref` doesn't match the template parameter. Note that
 /// both 'integer' and 'float' parameter values are stored as a `double`. Parameters
@@ -1709,7 +1706,7 @@ T GetPreference( dip::String const& preference ) {
    return detail::GetValueFromArray< T >( out );
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dml
 

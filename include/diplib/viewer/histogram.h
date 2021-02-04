@@ -26,9 +26,11 @@
 #include "diplib/viewer/image.h"
 
 /// \file
-/// \brief Declares `dip::viewer::HistogramViewPort`.
+/// \brief Declares \ref dip::viewer::HistogramViewPort.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 /// \brief Controls grey-value mapping range and shows color mapping.
 class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort
@@ -54,6 +56,8 @@ class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort
   protected:
     DIPVIEWER_EXPORT void screenToView(int x, int y, double *ix, double *iy) override;
 };
+
+/// \endgroup
 
 }} // namespace dip::viewer
 

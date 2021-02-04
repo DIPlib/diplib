@@ -30,33 +30,32 @@
 
 /// \file
 /// \brief Random number generators
-/// \see random
+/// See \ref random.
 
 
 namespace dip {
 
 
-/// \defgroup random Random
+/// \group random Random
 /// \ingroup infrastructure
 /// \brief Pseudo-random generator and probability distributions.
-/// \{
-
+/// \addtogroup
 
 /// \brief A pseudo-random number generator with excellent statistical properties, and it's also fast.
 ///
 /// The `operator()` method returns the next random integer in the sequence.
 ///
-/// The default `%Random` is initialized using `std::random_device`, but it is also possible to
-/// use a `dip::uint` seed value when creating the generator to be able to replicate the same pseudo-random
-/// sequence. In multi-threaded code, algorithms can use `dip::Random::Split` to split off separate
+/// The default `Random` is initialized using `std::random_device`, but it is also possible to
+/// use a \ref dip::uint seed value when creating the generator to be able to replicate the same pseudo-random
+/// sequence. In multi-threaded code, algorithms can use \ref dip::Random::Split to split off separate
 /// streams. This causes those algorithms to not replicate the same sequence when run with a different number
 /// of threads. Thus, even if seeded with the same value, the same algorithm can yield different results
 /// when run on a different computer with a different number of cores. To guarantee exact replicability,
 /// run your code single-threaded.
 ///
-/// `%Random` has a 128-bit internal state, and produces 64-bit output with a period of 2<sup>128</sup>.
+/// `Random` has a 128-bit internal state, and produces 64-bit output with a period of 2^128^.
 /// On architectures where 128-bit integers are not natively supported, this changes to have a 64-bit internal state,
-/// and produce 32-bit output with a period of 2<sup>64</sup>. This lesser PRNG still has very good statistical
+/// and produce 32-bit output with a period of 2^64^. This lesser PRNG still has very good statistical
 /// properties. Defining the CMake variable `DIP_ALWAYS_128_PRNG` (preprocessor macro `DIP_CONFIG_ALWAYS_128_PRNG`)
 /// causes the better 128-bit PRNG engine to be used, using emulated 128-bit arithmetic.
 /// Note that, if *DIPlib* is compiled with this flag, code that links to it must also be
@@ -65,7 +64,7 @@ namespace dip {
 /// Satisfies the requirements for [*UniformRandomBitGenerator*](https://en.cppreference.com/w/cpp/named_req/UniformRandomBitGenerator),
 /// and hence can be used in all algorithms of the standard library that require such an object.
 ///
-/// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
+/// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator
 class DIP_NO_EXPORT Random {
 #if defined(__SIZEOF_INT128__) || defined(DIP_CONFIG_ALWAYS_128_PRNG)
       using Engine = pcg64;
@@ -74,9 +73,13 @@ class DIP_NO_EXPORT Random {
 #endif
 
    public:
-      using result_type = Engine::result_type; ///< The type of the integer returned by the generator.
-      using state_type = Engine::state_type;   ///< The type of the internal state of the generator.
+      /// The type of the integer returned by the generator.
+      using result_type = Engine::result_type;
+      /// The type of the internal state of the generator.
+      using state_type = Engine::state_type;
+      /// The minimum possible value returned by the generator.
       static constexpr result_type min() { return Engine::min(); }
+      /// The maximum possible value returned by the generator.
       static constexpr result_type max() { return Engine::max(); }
 
       /// The default random generator is initialized using `std::random_device`.
@@ -139,10 +142,10 @@ class DIP_NO_EXPORT Random {
 /// parameters, the lower and upper bound of the distribution. The values are taken from
 /// the half-open interval [`lowerBound`, `upperBound`).
 ///
-/// The constructor takes and stores a reference to a `dip::Random` object, which is used
+/// The constructor takes and stores a reference to a \ref dip::Random object, which is used
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
-/// \see dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
+/// \see dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator
 class DIP_NO_EXPORT UniformRandomGenerator {
       using Distribution = std::uniform_real_distribution< dfloat >;
    public:
@@ -165,10 +168,10 @@ class DIP_NO_EXPORT UniformRandomGenerator {
 /// The `operator()` method returns the next random value in the sequence. It takes two
 /// parameters, the mean and standard deviation of the distribution.
 ///
-/// The constructor takes and stores a reference to a `dip::Random` object, which is used
+/// The constructor takes and stores a reference to a \ref dip::Random object, which is used
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
-/// \see dip::UniformRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
+/// \see dip::UniformRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator
 class DIP_NO_EXPORT GaussianRandomGenerator {
       using Distribution = std::normal_distribution< dfloat >;
    public:
@@ -191,10 +194,10 @@ class DIP_NO_EXPORT GaussianRandomGenerator {
 /// The `operator()` method returns the next random value in the sequence. It takes one
 /// parameter, the mean of the distribution.
 ///
-/// The constructor takes and stores a reference to a `dip::Random` object, which is used
+/// The constructor takes and stores a reference to a \ref dip::Random object, which is used
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
-/// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::BinaryRandomGenerator.
+/// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::BinaryRandomGenerator
 class DIP_NO_EXPORT PoissonRandomGenerator {
       using Distribution = std::poisson_distribution< dip::uint >;
    public:
@@ -217,10 +220,10 @@ class DIP_NO_EXPORT PoissonRandomGenerator {
 /// The `operator()` method returns the next random value in the sequence. It takes one
 /// parameter, the probability of drawing `true`.
 ///
-/// The constructor takes and stores a reference to a `dip::Random` object, which is used
+/// The constructor takes and stores a reference to a \ref dip::Random object, which is used
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
-/// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator.
+/// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator
 class DIP_NO_EXPORT BinaryRandomGenerator {
    public:
 
@@ -242,7 +245,7 @@ class DIP_NO_EXPORT BinaryRandomGenerator {
 };
 
 
-/// \}
+/// \endgroup
 
 
 } // namespace dip

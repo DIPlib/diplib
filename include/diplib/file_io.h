@@ -26,15 +26,15 @@
 
 /// \file
 /// \brief Functions for reading and writing images from/to files.
-/// \see file_io
+/// See \ref file_io.
 
 
 namespace dip {
 
 
-/// \defgroup file_io File I/O
+/// \group file_io File I/O
 /// \brief Reading images from files and writing them to files.
-/// \{
+/// \addtogroup
 
 /// \brief A data structure with information about an image file.
 struct FileInformation {
@@ -55,7 +55,7 @@ struct FileInformation {
 /// \brief Read the image in the ICS file `filename` and puts it in `out`.
 ///
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
-/// and data type also supported by DIPlib, and therefore is used as the default image file format.
+/// and data type also supported by *DIPlib*, and therefore is used as the default image file format.
 ///
 /// The function tries to open `filename` as given first, and if that fails, it appends ".ics" to the
 /// name and tries again.
@@ -70,7 +70,7 @@ struct FileInformation {
 /// interface set it might also be impossible to dictate what the strides will look like. In these cases,
 /// the flag is ignored.
 ///
-/// Information about the file and all metadata are returned in the `FileInformation` output argument.
+/// Information about the file and all metadata are returned in the \ref dip::FileInformation output argument.
 // TODO: read sensor information also into the history strings
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
@@ -96,7 +96,7 @@ inline Image ImageReadICS(
 /// The parameters `origin` and `sizes` define a ROI to read in.
 /// The ROI is clipped to the image size, so it is safe to specify a ROI that is too large.
 /// `spacing` can be used to read in a subset of the pixels of the chosen ROI.
-/// These three parameters are handled as in `dip::DefineROI`:
+/// These three parameters are handled as in \ref dip::DefineROI:
 /// If `origin`, `sizes` or `spacing` have only one value, that value is repeated for each dimension.
 /// For empty arrays, `origin` defaults to all zeros (i.e. the top left pixel),
 /// `sizes` to *image_size* - `origin` (i.e. up to the bottom right pixel),
@@ -126,7 +126,7 @@ inline Image ImageReadICS(
 }
 
 /// \brief Reads image information and metadata from the ICS file `filename`, without reading the actual
-/// pixel data. See `dip::ImageReadICS` for more details.
+/// pixel data. See \ref dip::ImageReadICS for more details.
 DIP_EXPORT FileInformation ImageReadICSInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is an ICS file.
@@ -135,8 +135,8 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 /// \brief Writes `image` as an ICS file.
 ///
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
-/// and data type also supported by DIPlib, and therefore is used as the default image file format.
-/// Any DIPlib image can be stored as an ICS file, and read back in to yield the exact same data,
+/// and data type also supported by *DIPlib*, and therefore is used as the default image file format.
+/// Any *DIPlib* image can be stored as an ICS file, and read back in to yield the exact same data,
 /// with the only limitation that the ICS writer (*libics*) currently throws an exception if the image
 /// has more than 10 dimensions. *libics* can be recompiled to handle higher-dimensional images if
 /// necessary.
@@ -146,18 +146,19 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 /// The ".ics" extension will be added to `filename` if it's not there. Overwrites any other file with the same name.
 ///
 /// `history` is a set of strings that are written as history lines, and will be recovered by the
-/// `dip::ImageReadICSInfo` function.
+/// \ref dip::ImageReadICSInfo function.
 ///
 /// Set `significantBits` only if the number of significant bits is different from the full range of the data
 /// type of `image` (use 0 otherwise). For example, it can be used to specify that a camera has produced
-/// 10-bit output, even though the image is of type `dip::DT_UINT16`.
+/// 10-bit output, even though the image is of type \ref dip::DT_UINT16.
 ///
 /// `options` specifies how the ICS file is written, and can contain one or several of these strings:
-///  - `"v1"` or `"v2"`: ICS v1 writes two files: one with extension '.ics', and one with extension '.ids'.
-///    The ICS file contains only the header, the IDS file contains only the pixel data. ICS v2 combines
-///    these two pieces into a single '.ics' file. `"v2"` is the default.
-///  - '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
-///  - `"fast"`: Writes data in the order in which they are in memory, which is faster.
+///
+/// - `"v1"` or `"v2"`: ICS v1 writes two files: one with extension '.ics', and one with extension '.ids'.
+///   The ICS file contains only the header, the IDS file contains only the pixel data. ICS v2 combines
+///   these two pieces into a single '.ics' file. `"v2"` is the default.
+/// - '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
+/// - `"fast"`: Writes data in the order in which they are in memory, which is faster.
 ///
 /// Note that the `"fast"` option yields a file with permuted dimensions. The software reading the file must be
 /// aware of the possibility of permuted dimensions, and check the "order" tag in the file. If the image has
@@ -202,13 +203,14 @@ DIP_EXPORT void ImageWriteICS(
 ///
 /// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
 /// more common ones. These are the most obvious limitations:
-///  - Only 1, 4, 8, 16 and 32 bits per pixel integer grey values are read, as well as 32-bit and 64-bit
-///    floating point.
-///  - Only 4 and 8 bits per pixel color-mapped images are read.
-///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
-///  - Some non-standard compression schemes are not recognized (most notably JPEG2000).
-/// TODO: How do we return the color map if we choose useColorMap = "ignore"?
-///       We should probably create a separate function for this.
+///
+/// - Only 1, 4, 8, 16 and 32 bits per pixel integer grey values are read, as well as 32-bit and 64-bit
+///   floating point.
+/// - Only 4 and 8 bits per pixel color-mapped images are read.
+/// - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
+/// - Some non-standard compression schemes are not recognized (most notably JPEG2000).
+// TODO: How do we return the color map if we choose Option::TIFFColorMap::IGNORE?
+//       We should probably create a separate function for this.
 DIP_EXPORT FileInformation ImageReadTIFF(
       Image& out,
       String const& filename,
@@ -235,7 +237,7 @@ inline Image ImageReadTIFF(
 /// The parameters `origin` and `sizes` define a ROI to read in.
 /// The ROI is clipped to the image size, so it is safe to specify a ROI that is too large.
 /// `spacing` can be used to read in a subset of the pixels of the chosen ROI.
-/// These three parameters are handled as in `dip::DefineROI`:
+/// These three parameters are handled as in \ref dip::DefineROI:
 /// If `origin`, `sizes` or `spacing` have only one value, that value is repeated for each dimension.
 /// For empty arrays, `origin` defaults to all zeros (i.e. the top left pixel),
 /// `sizes` to *image_size* - `origin` (i.e. up to the bottom right pixel),
@@ -311,21 +313,22 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// The samples of `image` are written directly to the TIFF file, no matter what their data type is. Complex data
 /// are not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
 /// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format. If the image
-/// needs to be read by other software, it is recommended to convert the image to `dip::DT_UINT8` before saving as
+/// needs to be read by other software, it is recommended to convert the image to \ref dip::DT_UINT8 before saving as
 /// TIFF.
 ///
 /// If `filename` does not have an extension, ".tif" will be added. Overwrites any other file with the same name.
 ///
 /// `compression` determines the compression method used when writing the pixel data. It can be one of the
 /// following strings:
-///  - `"none"`: no compression.
-///  - `"deflate"` or `""`: uses gzip compression. This is the better compression, but is not universally recognized.
-///  - `"LZW"`: uses LZW compression, yielding (typically) only slightly larger files than `"deflate"`. Recognized by
-///    most TIFF readers.
-///  - `"PackBits"`: uses run-length encoding, the simplest of the compression methods, and required to be recognized
-///    by compliant TIFF readers. Even small amounts of noise can cause this method to yield larger files than `"none"`.
-///  - `"JPEG"`: uses **lossy** JPEG compression. `jpegLevel` determines the amount of compression applied. `jpegLevel`
-///    is an integer between 1 and 100, with increasing numbers yielding larger files and fewer compression artifacts.
+///
+/// - `"none"`: no compression.
+/// - `"deflate"` or `""`: uses gzip compression. This is the better compression, but is not universally recognized.
+/// - `"LZW"`: uses LZW compression, yielding (typically) only slightly larger files than `"deflate"`. Recognized by
+///   most TIFF readers.
+/// - `"PackBits"`: uses run-length encoding, the simplest of the compression methods, and required to be recognized
+///   by compliant TIFF readers. Even small amounts of noise can cause this method to yield larger files than `"none"`.
+/// - `"JPEG"`: uses **lossy** JPEG compression. `jpegLevel` determines the amount of compression applied. `jpegLevel`
+///   is an integer between 1 and 100, with increasing numbers yielding larger files and fewer compression artifacts.
 DIP_EXPORT void ImageWriteTIFF(
       Image const& image,
       String const& filename,
@@ -366,7 +369,7 @@ DIP_EXPORT bool ImageIsJPEG( String const& filename );
 /// `image` must be 2D, and either scalar or with three tensor elements.
 /// If the image has three tensor elements, it will be saved as an sRGB image, even if the color space
 /// is not sRGB (no color space conversion is done, the data is simply tagged as sRGB).
-/// If the image is not `dip::DT_UINT8`, it will be converted to it (complex numbers are cast to real values
+/// If the image is not \ref dip::DT_UINT8, it will be converted to it (complex numbers are cast to real values
 /// by taking their magnitude, and real numbers are rounded and clamped to the output range), no scaling will
 /// be applied.
 ///
@@ -429,7 +432,7 @@ inline String FileAddExtension(
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

@@ -31,9 +31,11 @@
 #include "diplib/viewer/manager.h"
 
 /// \file
-/// \brief Declares the core infrastructure for DIPviewer.
+/// \brief Declares the core infrastructure for \ref viewer.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 /// \brief Specifies a range of values between a lower and upper limit
 typedef std::pair<dip::dfloat, dip::dfloat> FloatRange;
@@ -41,7 +43,7 @@ typedef std::pair<dip::dfloat, dip::dfloat> FloatRange;
 /// \brief Specifies an array of ranges (typically one per tensor element)
 typedef std::vector<FloatRange> FloatRangeArray;
 
-/// \brief Model that determines the `SliceViewer`'s behavior
+/// \brief Model that determines the \ref SliceViewer's behavior
 struct DIPVIEWER_NO_EXPORT ViewingOptions
 {
   /// \brief Complex-to-real mapping options
@@ -82,7 +84,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   dip::IntegerArray split_;            ///< Split point between projections (pixels).
 
   // Display
-  dip::FloatArray zoom_;               ///< Zoom factor per dimension (from physical dimensions + user).
+  dip::FloatArray zoom_;               ///< \brief Zoom factor per dimension (from physical dimensions + user).
                                        ///< Also determines relative viewport sizes.
   dip::FloatArray origin_;             ///< Display origin for moving the image around.
   
@@ -313,7 +315,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   }  
 };
 
-/// \brief Displays a view of the `ViewingOptions` model
+/// \brief Displays a view of the \ref ViewingOptions model
 class DIPVIEWER_CLASS_EXPORT View
 {
   protected:
@@ -336,7 +338,7 @@ class DIPVIEWER_CLASS_EXPORT View
     class ViewPort *viewport() { return viewport_; }
 };
 
-/// \brief Handles interaction in a certain display area to control the `ViewingOptions` model
+/// \brief Handles interaction in a certain display area to control the \ref ViewingOptions model
 class DIPVIEWER_CLASS_EXPORT ViewPort
 {
   protected:
@@ -391,7 +393,7 @@ class DIPVIEWER_CLASS_EXPORT ViewPort
     int height() { return height_; }
 };
 
-/// \brief A Window for viewing a `dip::Image`
+/// \brief A Window for viewing a \ref dip::Image
 class DIPVIEWER_CLASS_EXPORT Viewer : public Window
 {
   public:
@@ -411,38 +413,38 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window
     /// Example usage:
     ///
     /// ```cpp
-    ///     {
-    ///        dip::viewer::Viewer::Guard(*viewer);
-    ///        viewer->options().mapping_range_.first = 0;
-    ///     }
+    /// {
+    ///    dip::viewer::Viewer::Guard(*viewer);
+    ///    viewer->options().mapping_range_.first = 0;
+    /// }
     /// ```
     virtual ViewingOptions &options() = 0;
     
-    /// \brief Returns the `dip::Image` being visualized, converted to real valued.
+    /// \brief Returns the \ref dip::Image being visualized, converted to real valued.
     ///
     /// Only call this under lock.
     ///
     /// Example usage:
     ///
     /// ```cpp
-    ///     {
-    ///        dip::viewer::Viewer::Guard(*viewer);
-    ///        dip::Image image = viewer->image();
-    ///     }
+    /// {
+    ///    dip::viewer::Viewer::Guard(*viewer);
+    ///    dip::Image image = viewer->image();
+    /// }
     /// ```
     virtual const dip::Image &image() = 0;
     
-    /// \brief Returns the `dip::Image` being visualized.
+    /// \brief Returns the \ref dip::Image being visualized.
     ///
     /// Only call this under lock.
     ///
     /// Example usage:
     ///
     /// ```cpp
-    ///     {
-    ///        dip::viewer::Viewer::Guard(*viewer);
-    ///        dip::Image image = viewer->original();
-    ///     }
+    /// {
+    ///    dip::viewer::Viewer::Guard(*viewer);
+    ///    dip::Image image = viewer->original();
+    /// }
     /// ```
     virtual const dip::Image &original() = 0;
 
@@ -453,17 +455,17 @@ class DIPVIEWER_CLASS_EXPORT Viewer : public Window
     /// Example usage:
     ///
     /// ```cpp
-    ///     {
-    ///        dip::viewer::Viewer::Guard(*viewer);
-    ///        viewer->setImage(image);
-    ///     }
+    /// {
+    ///    dip::viewer::Viewer::Guard(*viewer);
+    ///    viewer->setImage(image);
+    /// }
     /// ```
     virtual void setImage(const dip::Image &image) = 0;
     
     /// \brief Returns the `Viewer`'s name
     virtual const std::string &name() { return name_; }
 
-    /// \brief Set window title, in addition to the Viewer's name
+    /// \brief Set window title, in addition to the `Viewer`'s name
     virtual void setWindowTitle(const char *name) { title((name_ + name).c_str()); }
     
     /// \brief Lock the viewer. Necessary before making programmatic changes.
@@ -493,7 +495,7 @@ inline dip::dfloat rangeMap(T val, const ViewingOptions &options)
     return rangeMap(val, options.mapping_range_.first, 1./(options.mapping_range_.second-options.mapping_range_.first), options.mapping_);
 }
 
-/// \brief String conversion for `dip::DimensionArray`
+/// \brief String conversion for \ref dip::DimensionArray
 template<typename T>
 std::string to_string(dip::DimensionArray<T> array)
 {
@@ -509,8 +511,10 @@ std::string to_string(dip::DimensionArray<T> array)
   return oss.str();
 }
 
-/// \brief Applies the colormap defined by the `ViewingOptions`
+/// \brief Applies the colormap defined by the \ref ViewingOptions
 void DIPVIEWER_NO_EXPORT ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &options);
+
+/// \endgroup
 
 }} // namespace dip::viewer
 

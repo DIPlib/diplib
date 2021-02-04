@@ -29,15 +29,15 @@
 
 /// \file
 /// \brief Histograms and related functionality.
-/// \see histograms
+/// See \ref histograms.
 
 
 namespace dip {
 
 
-/// \defgroup histograms Histograms
+/// \group histograms Histograms
 /// \brief Histograms and related functionality.
-/// \{
+/// \addtogroup
 
 namespace detail {
 inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::uint nBins ) {
@@ -49,7 +49,7 @@ inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::
 
 /// \brief Computes and holds histograms.
 ///
-/// A histogram is computed by the constructor. There is no default-constructed `%Histogram`.
+/// A histogram is computed by the constructor. There is no default-constructed `Histogram`.
 ///
 /// A histogram can have multiple dimensions. In general, a scalar image will yield a classical
 /// one-dimensional histogram, and a tensor image will yield a multi-dimensional histogram, with
@@ -60,10 +60,10 @@ inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::
 /// for a given dimension, default to dimension 0, so can be called without arguments.
 class DIP_NO_EXPORT Histogram {
    public:
-      /// \brief Type of histogram bins. See `dip::DT_COUNT`.
+      /// \brief Type of histogram bins. See \ref dip::DT_COUNT.
       using CountType = uint64;
 
-      /// \brief %Configuration information for how the histogram is computed.
+      /// \brief Configuration information for how the histogram is computed.
       ///
       /// Note that if `mode == Mode::COMPUTE_BINS`, `binSize` will be adjusted so that a whole number of bins
       /// fits between the bounds. If `binSize` was set to zero or a negative value, and the input image is of
@@ -78,25 +78,27 @@ class DIP_NO_EXPORT Histogram {
       /// where `10` indicates 10 bins, `10.0` indicates the upper bound, and `1.0` indicates the bin size:
       ///
       /// ```cpp
-      ///     dip::Histogram::Configuration conf1( 0.0, 10.0, 1.0 );
-      ///     dip::Histogram::Configuration conf1( 0.0, 10.0, 10 );
-      ///     dip::Histogram::Configuration conf2( 0.0, 10, 1.0 );
+      /// dip::Histogram::Configuration conf1( 0.0, 10.0, 1.0 );
+      /// dip::Histogram::Configuration conf1( 0.0, 10.0, 10 );
+      /// dip::Histogram::Configuration conf2( 0.0, 10, 1.0 );
       /// ```
       ///
-      /// An additional constructor takes a `dip::DataType`, and selects appropriate values for an image of the
+      /// An additional constructor takes a \ref dip::DataType, and selects appropriate values for an image of the
       /// given data type:
-      ///  - For 8-bit images, the histogram has 256 bins, one for each possible input value.
-      ///  - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
-      ///    in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
-      ///    handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
-      ///    of the 16-bit words, and will handle other integer data correctly as well.
-      ///  - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
-      ///    image to the highest.
+      ///
+      /// - For 8-bit images, the histogram has 256 bins, one for each possible input value.
+      /// - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
+      ///   in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
+      ///   handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
+      ///   of the 16-bit words, and will handle other integer data correctly as well.
+      /// - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
+      ///   image to the highest.
       struct Configuration {
          dfloat lowerBound = 0.0;      ///< Lower bound for this dimension, corresponds to the lower bound of the first bin.
          dfloat upperBound = 256.0;    ///< Upper bound for this dimension, corresponds to the upper bound of the last bin.
          dip::uint nBins = 256;        ///< Number of bins for this dimension.
          dfloat binSize = 1.0;         ///< Size of each bin for this dimension.
+         /// Which of the four values to compute based on the other three
          enum class Mode {
                COMPUTE_BINSIZE,
                COMPUTE_BINS,
@@ -176,6 +178,8 @@ class DIP_NO_EXPORT Histogram {
          // required.
          DIP_EXPORT void Complete( Measurement::IteratorFeature const& featureValues );
       };
+
+      /// \brief An array of \ref Configuration objects, one per histogram dimension.
       using ConfigurationArray = DimensionArray< Configuration >;
 
       /// \brief The constructor takes an image, an optional mask, and configuration options for each histogram
@@ -183,7 +187,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// `configuration` should have as many elements as tensor elements in `input`. If `configuration` has only
       /// one element, it will be used for all histogram dimensions. If it is an empty array, appropriate configuration
-      /// values for `input` are chosen based on its data type (see `dip::Histogram::Configuration`).
+      /// values for `input` are chosen based on its data type (see \ref dip::Histogram::Configuration).
       explicit Histogram( Image const& input, Image const& mask = {}, ConfigurationArray configuration = {} ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -250,7 +254,7 @@ class DIP_NO_EXPORT Histogram {
          DIP_END_STACK_TRACE
       }
 
-      /// \brief The constructor takes an `%IteratorFeature` of a `dip::Measurement` object, and configuration
+      /// \brief The constructor takes an `IteratorFeature` of a \ref dip::Measurement object, and configuration
       /// options for each histogram dimension.
       ///
       /// `configuration` should have as many elements as values in `featureValues`. If `configuration` has only
@@ -294,7 +298,7 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Create a 1D histogram around existing data. No ownership is transferred.
       ///
       /// `data` is a raw pointer to the data that will be encapsulated by the output histogram. Data must
-      /// be contiguous and of type `dip::Histogram::CountType`. `configuration` determines how many
+      /// be contiguous and of type \ref dip::Histogram::CountType. `configuration` determines how many
       /// bins are pointed to by `data`.
       ///
       /// Even though the data pointer is declared `const` here, it is possible to obtain a non-const
@@ -316,15 +320,15 @@ class DIP_NO_EXPORT Histogram {
       /// When making a copy of a histogram, the data segment is shared:
       ///
       /// ```cpp
-      ///     Histogram second = first;
-      ///     second.Smooth(); // modifies `first` also!
+      /// Histogram second = first;
+      /// second.Smooth(); // modifies `first` also!
       /// ```
       ///
       /// In contrast, this function returns a deep copy of `this`, with its own data segment:
       ///
       /// ```cpp
-      ///     Histogram second = first.Copy();
-      ///     second.Smooth(); // OK
+      /// Histogram second = first.Copy();
+      /// second.Smooth(); // OK
       /// ```
       Histogram Copy() const {
          Histogram out( *this );
@@ -343,12 +347,12 @@ class DIP_NO_EXPORT Histogram {
       /// dimension indicates if an edge bin is found or no bin is found (yielding a 0 output) if the pixel
       /// is not represented in the histogram.
       ///
-      /// `output` is a scalar image with data type `dip::Histogram::CountType`, containing the histogram
+      /// `output` is a scalar image with data type \ref dip::Histogram::CountType, containing the histogram
       /// bin values.
       ///
       /// This function is particularly interesting when applied to a histogram resulting from clustering
-      /// algorithms such as `dip::KMeansClustering(dip::Histogram const&, dip::uint)` or
-      /// `dip::MinimumVariancePartitioning(dip::Histogram const&, dip::uint)`.
+      /// algorithms such as \ref dip::KMeansClustering( dip::Histogram const&, dip::uint ) or
+      /// \ref dip::MinimumVariancePartitioning( dip::Histogram const&, dip::uint ).
       DIP_EXPORT void ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues = { false } );
       Image ReverseLookup( Image const& input, BooleanArray const& excludeOutOfBoundValues = { false } ) {
          Image out;
@@ -497,7 +501,7 @@ class DIP_NO_EXPORT Histogram {
          return *static_cast< CountType* >( data_.Pointer( bin )); // Does all the checking
       }
 
-      /// \brief Get the image that holds the bin counts. The image is always scalar and of type `dip::DT_COUNT`.
+      /// \brief Get the image that holds the bin counts. The image is always scalar and of type \ref dip::DT_COUNT.
       Image const& GetImage() const {
          return data_;
       }
@@ -526,7 +530,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// For a multi-dimensional histogram, the cumulative histogram has `bin(i,j,k)` equal to the sum of all bins
       /// with indices equal or smaller to `i`, `j` and `k`: `bin(1..i,1..j,1..k)`. It is computed through the
-      /// `dip::CumulativeSum` function.
+      /// \ref dip::CumulativeSum function.
       DIP_EXPORT Histogram& Cumulative();
 
       /// \brief Returns the marginal histogram for dimension `dim`.
@@ -539,7 +543,7 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Smooths the histogram, using Gaussian smoothing with parameters `sigma`.
       ///
       /// Set a single sigma value, or one value per histogram dimension. The value is in bins, yielding a Gaussian
-      /// kernel of size `2 * std::ceil( 3 * sigma ) + 1` bins. See `dip::GaussFIR` for information on the smoothing
+      /// kernel of size `2 * std::ceil( 3 * sigma ) + 1` bins. See \ref dip::GaussFIR for information on the smoothing
       /// operation applied. `sigma` defaults to 1.
       ///
       /// The histogram is extended by `std::ceil( 3 * sigma )` below and above the original bounds.
@@ -568,7 +572,8 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void HistogramFromDataPointer( CountType const* data, Configuration const& configuration );
 };
 
-/// \brief Data type of histogram bins. See `dip::Histogram::CountType`.
+/// \brief Data type of histogram bins. See \ref dip::Histogram::CountType.
+/// \ingroup pixeltypes
 /// \relates dip::Histogram
 constexpr DataType DT_COUNT{ Histogram::CountType{} };
 
@@ -600,21 +605,21 @@ inline Histogram operator-( Histogram lhs, Histogram const& rhs ) {
 // Creating modified histograms
 //
 
-/// \brief Computes a cumulative histogram from `in`. See `dip::Histogram::Cumulative`.
+/// \brief Computes a cumulative histogram from `in`. See \ref dip::Histogram::Cumulative.
 inline Histogram CumulativeHistogram( Histogram const& in ) {
    Histogram out = in.Copy();
    out.Cumulative();
    return out;
 }
 
-/// \brief Returns a smoothed version of the histogram `in`. See `dip::Histogram::Smooth`.
+/// \brief Returns a smoothed version of the histogram `in`. See \ref dip::Histogram::Smooth.
 inline Histogram Smooth( Histogram const& in, FloatArray const& sigma ) {
    Histogram out = in.Copy();
    out.Smooth( sigma );
    return out;
 }
 
-/// \brief Returns a smoothed version of the histogram `in`. See `dip::Histogram::Smooth`.
+/// \brief Returns a smoothed version of the histogram `in`. See \ref dip::Histogram::Smooth.
 inline Histogram Smooth( Histogram const& in, dfloat sigma = 1 ) {
    return Smooth( in, FloatArray{ sigma } );
 }
@@ -636,8 +641,8 @@ DIP_EXPORT FloatArray Mean( Histogram const& in );
 /// computing the statistic on data rounded to the bin centers.
 ///
 /// The returned array contains the elements of the symmetric covariance matrix in the same order as tensor
-/// elements are stored in a symmetric tensor image (see `dip::Tensor::Shape`). That is, there are \f$\frac{1}{2}n(n+1)\f$
-/// elements (with \f$n\f$ the histogram dimensionality), with the diagonal matrix elements stored first, and the
+/// elements are stored in a symmetric tensor image (see \ref dip::Tensor::Shape). That is, there are $\frac{1}{2}n(n+1)$
+/// elements (with $n$ the histogram dimensionality), with the diagonal matrix elements stored first, and the
 /// off-diagonal elements after. For a 2D histogram, the three elements are *xx*, *yy*, and *xy*.
 DIP_EXPORT FloatArray Covariance( Histogram const& in );
 
@@ -706,9 +711,8 @@ DIP_EXPORT dfloat Entropy( Histogram const& in );
 /// Isodata algorithm, but is much more efficient. The implementation here generalizes to multiple thresholds
 /// because k-means clustering allows any number of thresholds.
 ///
-/// \literature
-/// <li>T.W. Ridler, and S. Calvard, "Picture Thresholding Using an Iterative Selection Method", IEEE Transactions on Systems, Man, and Cybernetics 8(8):630-632, 1978.
-/// \endliterature
+/// !!! literature
+///     - T.W. Ridler, and S. Calvard, "Picture Thresholding Using an Iterative Selection Method", IEEE Transactions on Systems, Man, and Cybernetics 8(8):630-632, 1978.
 DIP_EXPORT FloatArray IsodataThreshold(
       Histogram const& in,
       dip::uint nThresholds = 1
@@ -720,9 +724,8 @@ DIP_EXPORT FloatArray IsodataThreshold(
 /// is equivalent to minimizing the inter-class variances. That is, the two parts of the histogram generated when
 /// splitting at the threshold value are as compact as possible.
 ///
-/// \literature
-/// <li>N. Otsu, "A threshold selection method from gray-level histograms", IEEE Transactions on Systems, Man, and Cybernetics 9(1):62-66, 1979.
-/// \endliterature
+/// !!! literature
+///     - N. Otsu, "A threshold selection method from gray-level histograms", IEEE Transactions on Systems, Man, and Cybernetics 9(1):62-66, 1979.
 DIP_EXPORT dfloat OtsuThreshold(
       Histogram const& in
 );
@@ -735,9 +738,8 @@ DIP_EXPORT dfloat OtsuThreshold(
 /// for the two regions of the histogram obtained by dividing it at a given threshold value. The threshold with the
 /// lowest error measure is returned.
 ///
-/// \literature
-/// <li>J. Kittler, and J. Illingworth, "Minimum error thresholding", Pattern Recognition 19(1):41-47, 1986.
-/// \endliterature
+/// !!! literature
+///     - J. Kittler, and J. Illingworth, "Minimum error thresholding", Pattern Recognition 19(1):41-47, 1986.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Histogram const& in
 );
@@ -765,10 +767,9 @@ DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
 /// where the background forms the large peak, and the foreground contributes a small amount to the histogram and is
 /// spread out. For example, small fluorescent dots typically yield such a distribution, as does any thin line drawing.
 ///
-/// \literature
-/// <li>G.W. Zack, W.E. Rogers, and S.A. Latt, "Automatic measurement of sister chromatid exchange frequency", Journal of Histochemistry and Cytochemistry 25(7):741-753, 1977.
-/// <li>P.L. Rosin, "Unimodal thresholding", Pattern Recognition 34(11):2083-2096, 2001.
-/// \endliterature
+/// !!! literature
+///     - G.W. Zack, W.E. Rogers, and S.A. Latt, "Automatic measurement of sister chromatid exchange frequency", Journal of Histochemistry and Cytochemistry 25(7):741-753, 1977.
+///     - P.L. Rosin, "Unimodal thresholding", Pattern Recognition 34(11):2083-2096, 2001.
 DIP_EXPORT dfloat TriangleThreshold(
       Histogram const& in
 );
@@ -797,7 +798,7 @@ DIP_EXPORT dfloat BackgroundThreshold(
 /// K-means clustering partitions the histogram into compact, similarly-weighted segments. The algorithm
 /// uses a random initialization, so multiple runs might yield different results.
 ///
-/// For 1D histograms, `dip::IsodataThreshold(Histogram const&, dip::uint)` is more efficient, and deterministic.
+/// For 1D histograms, \ref dip::IsodataThreshold( Histogram const&, dip::uint ) is more efficient, and deterministic.
 DIP_EXPORT Histogram KMeansClustering(
       Histogram const& in,
       dip::uint nClusters = 2
@@ -809,7 +810,7 @@ DIP_EXPORT Histogram KMeansClustering(
 /// Minimum variance partitioning builds a k-d tree of the histogram, where, for each node, the marginal histogram
 /// with the largest variance is split using Otsu thresholding.
 ///
-/// For two clusters in a 1D histogram, use `dip::OtsuThreshold(Histogram const&)`.
+/// For two clusters in a 1D histogram, use \ref dip::OtsuThreshold( Histogram const& ).
 DIP_EXPORT Histogram MinimumVariancePartitioning(
       Histogram const& in,
       dip::uint nClusters = 2
@@ -823,8 +824,8 @@ DIP_EXPORT Histogram MinimumVariancePartitioning(
 /// \brief Computes a lookup table that, when applied to an image with the histogram `in`, yields an image with a
 /// flat histogram (or rather a histogram that is as flat as possible).
 ///
-/// The lookup table will be of type `dip::DT_DFLOAT`, meaning that applying it to an image will yield an image
-/// of that type. Convert the lookup table to a different type using `dip::LookupTable::Convert`.
+/// The lookup table will be of type \ref dip::DT_DFLOAT, meaning that applying it to an image will yield an image
+/// of that type. Convert the lookup table to a different type using \ref dip::LookupTable::Convert.
 ///
 /// The lookup table will produce an output in the range [0,255].
 ///
@@ -836,8 +837,8 @@ DIP_EXPORT LookupTable EqualizationLookupTable(
 /// \brief Computes a lookup table that, when applied to an image with the histogram `in`, yields an image with a
 /// histogram as similar as possible to `example`.
 ///
-/// The lookup table will be of type `dip::DT_DFLOAT`, meaning that applying it to an image will yield an image
-/// of that type. Convert the lookup table to a different type using `dip::LookupTable::Convert`.
+/// The lookup table will be of type \ref dip::DT_DFLOAT, meaning that applying it to an image will yield an image
+/// of that type. Convert the lookup table to a different type using \ref dip::LookupTable::Convert.
 ///
 /// The lookup table will produce an output in the range [`example.LowerBound()`,`example.UpperBound()`].
 ///
@@ -866,7 +867,7 @@ class DIP_NO_EXPORT Distribution;
 /// If `background` is `"include"`, the label ID 0 will be included in the result if present in the image.
 /// Otherwise, `background` is `"exclude"`, and the label ID 0 will be ignored.
 ///
-/// The output `dip::Distribution` has bin centers as the *x* values, and one *y* value
+/// The output \ref dip::Distribution has bin centers as the *x* values, and one *y* value
 /// per object and per tensor component. These are accessed as
 /// `distribution[bin].Y(objectID, tensor)`, where `objectID` is the pixel values in `label`,
 /// but subtract one if `background` is `"exclude"`.
@@ -882,7 +883,7 @@ DIP_EXPORT Distribution PerObjectHistogram(
 );
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

@@ -28,7 +28,7 @@
 
 /// \file
 /// \brief Declares image statistics functions, including projections.
-/// \see math
+/// See \ref math.
 
 
 namespace dip {
@@ -38,12 +38,12 @@ namespace dip {
 // Basic image queries
 //
 
-/// \defgroup math_statistics Statistics
+/// \group math_statistics Statistics
 /// \ingroup math
-/// \brief %Image sample statistics.
+/// \brief Image sample statistics.
 ///
 /// See also \ref math_projection.
-/// \{
+/// \addtogroup
 
 #define DIP_DEFINE_VIEW_FUNCTION( name, ret_type ) \
 inline ret_type name( Image::View const& in ) { \
@@ -114,11 +114,11 @@ DIP_DEFINE_VIEW_FUNCTION( SampleStatistics, StatisticsAccumulator )
 /// To compute the covariance or correlation between two channels in a multi-channel image (a tensor image):
 ///
 /// ```cpp
-///     Covariance( in[ 0 ], in[ 1 ], mask );
+/// Covariance( in[ 0 ], in[ 1 ], mask );
 /// ```
 DIP_EXPORT CovarianceAccumulator Covariance( Image const& in1, Image const& in2, Image const& mask = {} );
 
-/// \brief Computes the Pearson correlation coefficient. See `dip::Covariance`.
+/// \brief Computes the Pearson correlation coefficient. See \ref dip::Covariance.
 inline dfloat PearsonCorrelation( Image const& in1, Image const& in2, Image const& mask = {} ) {
    return Covariance( in1, in2, mask ).Correlation();
 }
@@ -132,7 +132,7 @@ inline dfloat PearsonCorrelation( Image const& in1, Image const& in2, Image cons
 /// To compute the Spearman rank correlation coefficient between two channels in a multi-channel image (a tensor image):
 ///
 /// ```cpp
-///     SpearmanRankCorrelation( in[ 0 ], in[ 1 ], mask );
+/// SpearmanRankCorrelation( in[ 0 ], in[ 1 ], mask );
 /// ```
 DIP_EXPORT dfloat SpearmanRankCorrelation( Image const& in1, Image const& in2, Image const& mask = {} );
 
@@ -150,17 +150,17 @@ DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 
 #undef DIP_DEFINE_VIEW_FUNCTION
 
-/// \}
+/// \endgroup
 
 
 //
 // The following functions project along one or more (or all) dimensions
 //
 
-/// \defgroup math_projection Projection operators
+/// \group math_projection Projection operators
 /// \ingroup math
 /// \brief Operators that project the image data onto fewer spatial dimensions, computing image statistics.
-/// \{
+/// \addtogroup
 
 #define DIP_DEFINE_PROJECTION_FUNCTIONS( name ) \
 inline Image name( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) { \
@@ -188,7 +188,7 @@ inline Image name( Image::View const& in, String const& mode = default_mode ) { 
 /// image:
 ///
 /// ```cpp
-///     dip::Mean( img ).As< double >();
+/// dip::Mean( img ).As< double >();
 /// ```
 ///
 /// If `mode` is `"directional"`, the data in `in` are assumed to be angles, and directional statistics are used.
@@ -209,7 +209,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Mean, "" )
 /// image:
 ///
 /// ```cpp
-///     dip::Sum( img ).As< double >();
+/// dip::Sum( img ).As< double >();
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
@@ -226,7 +226,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Sum )
 /// image:
 ///
 /// ```cpp
-///     dip::GeometricMean( img ).As< double >();
+/// dip::GeometricMean( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the geometric mean is computed for each element independently.
@@ -245,7 +245,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( GeometricMean )
 /// image:
 ///
 /// ```cpp
-///     dip::Product( img ).As< double >();
+/// dip::Product( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the product is computed for each element independently.
@@ -264,7 +264,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Product )
 /// image:
 ///
 /// ```cpp
-///     dip::MeanAbs( img ).As< double >();
+/// dip::MeanAbs( img ).As< double >();
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
@@ -273,7 +273,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Product )
 DIP_EXPORT void MeanAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 DIP_DEFINE_PROJECTION_FUNCTIONS( MeanAbs )
 
-/// \brief Calculates the mean of the modulus of the pixel values. Alias to `dip::MeanAbs`.
+/// \brief Calculates the mean of the modulus of the pixel values. Alias to \ref dip::MeanAbs.
 inline void MeanModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    MeanAbs( in, mask, out, process );
 }
@@ -287,7 +287,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MeanModulus )
 /// image:
 ///
 /// ```cpp
-///     dip::SumAbs( img ).As< double >();
+/// dip::SumAbs( img ).As< double >();
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
@@ -296,7 +296,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MeanModulus )
 DIP_EXPORT void SumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 DIP_DEFINE_PROJECTION_FUNCTIONS( SumAbs )
 
-/// \brief Calculates the sum of the modulus of the pixel values. Alias to `dip::SumAbs`.
+/// \brief Calculates the sum of the modulus of the pixel values. Alias to \ref dip::SumAbs.
 inline void SumModulus( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    SumAbs( in, mask, out, process );
 }
@@ -310,7 +310,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( SumModulus )
 /// image:
 ///
 /// ```cpp
-///     dip::MeanSquare( img ).As< double >();
+/// dip::MeanSquare( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -329,7 +329,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MeanSquare )
 /// image:
 ///
 /// ```cpp
-///     dip::SumSquare( img ).As< double >();
+/// dip::SumSquare( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -348,11 +348,11 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( SumSquare )
 /// pixels in the image:
 ///
 /// ```cpp
-///     dip::MeanSquareModulus( img ).As< double >();
+/// dip::MeanSquareModulus( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. If `img` is complex, `out` is of the
-/// corresponding floating-point type. For other input data types, this function is identical to `dip::MeanSquare`.
+/// corresponding floating-point type. For other input data types, this function is identical to \ref dip::MeanSquare.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
@@ -368,11 +368,11 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MeanSquareModulus )
 /// pixels in the image:
 ///
 /// ```cpp
-///     dip::SumSquareModulus( img ).As< double >();
+/// dip::SumSquareModulus( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. If `img` is complex, `out` is of the
-/// corresponding floating-point type. For other input data types, this function is identical to `dip::SumSquare`.
+/// corresponding floating-point type. For other input data types, this function is identical to \ref dip::SumSquare.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
@@ -388,13 +388,13 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( SumSquareModulus )
 /// image:
 ///
 /// ```cpp
-///     dip::Variance( img ).As< double >();
+/// dip::Variance( img ).As< double >();
 /// ```
 ///
 /// If `mode` is `"fast"`, a simplistic method to compute variance is used; this method can result in catastrophic
 /// cancellation if the variance is very small with respect to the mean. If `mode` is `"stable"`, a stable algorithm
-/// is used that avoids catastrophic cancellation, but is slower (see `dip::VarianceAccumulator` and
-/// `dip::FastVarianceAccumulator`). For 8 and 16-bit integer images, the fast algorithm is always used.
+/// is used that avoids catastrophic cancellation, but is slower (see \ref dip::VarianceAccumulator and
+/// \ref dip::FastVarianceAccumulator). For 8 and 16-bit integer images, the fast algorithm is always used.
 ///
 /// If `mode` is `"directional"`, the data in `in` are assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
@@ -416,13 +416,13 @@ DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( Variance, S::FAST )
 /// image:
 ///
 /// ```cpp
-///     dip::StandardDeviation( img ).As< double >();
+/// dip::StandardDeviation( img ).As< double >();
 /// ```
 ///
 /// If `mode` is `"fast"`, a simplistic method to compute standard deviation is used; this method can result in
 /// catastrophic cancellation if the variance is very small with respect to the mean. If `mode` is `"stable"`, a
-/// stable algorithm is used that avoids catastrophic cancellation, but is slower (see `dip::VarianceAccumulator`
-/// and `dip::FastVarianceAccumulator`). For 8 and 16-bit integer images, the fast algorithm is always used.
+/// stable algorithm is used that avoids catastrophic cancellation, but is slower (see \ref dip::VarianceAccumulator
+/// and \ref dip::FastVarianceAccumulator). For 8 and 16-bit integer images, the fast algorithm is always used.
 ///
 /// If `mode` is `"directional"`, the data in `in` are assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
@@ -444,14 +444,14 @@ DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( StandardDeviation, S::FAST )
 /// image:
 ///
 /// ```cpp
-///     dip::Maximum( img ).As< double >();
+/// dip::Maximum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// To compute the sample-wise maximum over two or more images, use `dip::Supremum`.
+/// To compute the sample-wise maximum over two or more images, use \ref dip::Supremum.
 ///
 /// An alias is defined such that `dip::Maximum( img.At( mask ))` is the same as `dip::Maximum( img, mask )`.
 ///
@@ -467,14 +467,14 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Maximum )
 /// image:
 ///
 /// ```cpp
-///     dip::Minimum( img ).As< double >();
+/// dip::Minimum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// To compute the sample-wise minimum over two or more images, use `dip::Infimum`.
+/// To compute the sample-wise minimum over two or more images, use \ref dip::Infimum.
 ///
 /// An alias is defined such that `dip::Minimum( img.At( mask ))` is the same as `dip::Minimum( img, mask )`.
 ///
@@ -490,7 +490,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Minimum )
 /// image:
 ///
 /// ```cpp
-///     dip::Maximum( img ).As< double >();
+/// dip::Maximum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -509,7 +509,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MaximumAbs )
 /// image:
 ///
 /// ```cpp
-///     dip::Minimum( img ).As< double >();
+/// dip::Minimum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -524,11 +524,11 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MinimumAbs )
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
 /// the `percentile` percentile of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
-/// and equals the percentile projection along the processing dimensions. To get the 30<sup>th</sup> percentile of all pixels in the
+/// and equals the percentile projection along the processing dimensions. To get the 30^th^ percentile of all pixels in the
 /// image:
 ///
 /// ```cpp
-///     dip::Percentile( img, {}, 30.0 ).As< double >();
+/// dip::Percentile( img, {}, 30.0 ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -561,12 +561,12 @@ inline Image Percentile( Image::View const& in, dfloat percentile = 50 ) {
 /// \brief Calculates the median of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
-/// the median (50<sup>th</sup> percentile) of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
-/// and equals the median projection along the processing dimensions. To get the median of all pixels in the
-/// image:
+/// the median (50^th^ percentile) of the pixel values. Otherwise, the output has as many dimensions as elements
+/// in `process` that are `false`, and equals the median projection along the processing dimensions. To get the
+/// median of all pixels in the image:
 ///
 /// ```cpp
-///     dip::Median( img ).As< double >();
+/// dip::Median( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -587,7 +587,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Median )
 /// For normally distributed data, the standard deviation equals `1.4826 * MAD`. It is computed as if by
 ///
 /// ```cpp
-///     dip::Median( dip::Abs( img - dip::Median( img )));
+/// dip::Median( dip::Abs( img - dip::Median( img )));
 /// ```
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
@@ -596,7 +596,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Median )
 /// image:
 ///
 /// ```cpp
-///     dip::MedianAbsoluteDeviation( img ).As< double >();
+/// dip::MedianAbsoluteDeviation( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -617,7 +617,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MedianAbsoluteDeviation )
 /// non-zero:
 ///
 /// ```cpp
-///     dip::All( img ).As< bool >();
+/// dip::All( img ).As< bool >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -634,7 +634,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( All )
 /// non-zero:
 ///
 /// ```cpp
-///     dip::Any( img ).As< bool >();
+/// dip::Any( img ).As< bool >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -703,8 +703,8 @@ inline Image PositionMinimum( Image const& in, Image const& mask = {}, dip::uint
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
-/// A call to this function with `percentile` set to 0.0 redirects to `dip::PositionMinimum` and
-/// a value of 100.0 redirects to `dip::PositionMaximum`.
+/// A call to this function with `percentile` set to 0.0 redirects to \ref dip::PositionMinimum and
+/// a value of 100.0 redirects to \ref dip::PositionMaximum.
 ///
 /// \see dip::PositionMedian, dip::PositionMinimum, dip::PositionMaximum, dip::Percentile
 DIP_EXPORT void PositionPercentile( Image const& in, Image const& mask, Image& out, dfloat percentile = 50, dip::uint dim = 0, String const& mode = S::FIRST );
@@ -727,7 +727,7 @@ inline Image PositionPercentile( Image const& in, Image const& mask = {}, dfloat
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
-/// This function redirects to `dip::PositionPercentile` with `percentile` set to 50.0.
+/// This function redirects to \ref dip::PositionPercentile with `percentile` set to 50.0.
 ///
 /// \see dip::PositionPercentile, dip::Median
 inline void PositionMedian( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST ) {
@@ -753,7 +753,7 @@ inline Image PositionMedian( Image const& in, Image const& mask = {}, dip::uint 
 ///
 /// The output data type is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
 ///
-/// \see dip::RadialMean, dip::GetCenter, dip::Sum
+/// \see dip::RadialMean, dip::Image::GetCenter, dip::Sum
 DIP_EXPORT void RadialSum(
       Image const& in,
       Image const& mask,
@@ -788,7 +788,7 @@ inline Image RadialSum(
 ///
 /// The output data type is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
 ///
-/// \see dip::RadialSum, dip::GetCenter, dip::Mean
+/// \see dip::RadialSum, dip::Image::GetCenter, dip::Mean
 DIP_EXPORT void RadialMean(
       Image const& in,
       Image const& mask,
@@ -823,7 +823,7 @@ inline Image RadialMean(
 ///
 /// The output data type is equal to the input data type.
 ///
-/// \see dip::RadialMaximum, dip::GetCenter, dip::Minimum
+/// \see dip::RadialMaximum, dip::Image::GetCenter, dip::Minimum
 DIP_EXPORT void RadialMinimum(
       Image const& in,
       Image const& mask,
@@ -858,7 +858,7 @@ inline Image RadialMinimum(
 ///
 /// The output data type is equal to the input data type.
 ///
-/// \see dip::RadialMinimum, dip::GetCenter, dip::Maximum
+/// \see dip::RadialMinimum, dip::Image::GetCenter, dip::Maximum
 DIP_EXPORT void RadialMaximum(
       Image const& in,
       Image const& mask,
@@ -879,17 +879,17 @@ inline Image RadialMaximum(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
 //
 // Error measures
 //
 
-/// \defgroup math_error Error measures
+/// \group math_error Error measures
 /// \ingroup math
 /// \brief Quantifying the difference between images.
-/// \{
+/// \addtogroup
 
 /// \brief Calculates the mean error difference between corresponding sample values of `in` and `reference`.
 ///
@@ -897,7 +897,7 @@ inline Image RadialMaximum(
 /// these pixels in `mask` to zero.
 ///
 /// Singleton expansion is applied if the image sizes don't match.
-/// Complex input is not allowed, use `dip::MeanAbsoluteError` instead.
+/// Complex input is not allowed, use \ref dip::MeanAbsoluteError instead.
 DIP_EXPORT dfloat MeanError( Image const& in, Image const& reference, Image const& mask = {} );
 
 /// \brief Calculates the mean square error difference between corresponding sample values of `in` and `reference`.
@@ -938,9 +938,9 @@ DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in, Image const& reference,
 
 /// \brief Calculates the I-divergence between corresponding sample values of `in` and `reference`.
 ///
-/// The I-Divergence is defined as \f$I(x,y) = x \ln(x/y) - (x - y)\f$ and is divided by the number of pixels.
-/// It is the -log of a Poisson distribution \f$p(x,y) = e^{-y} / x! - y^x\f$ with the stirling approximation for
-/// \f$\ln x!\f$. For \f$x=0\f$, the stirling approximation would fail, \f$y\f$ is returned.
+/// The I-Divergence is defined as $I(x,y) = x \ln(x/y) - (x - y)$ and is divided by the number of pixels.
+/// It is the -log of a Poisson distribution $p(x,y) = e^{-y} / x! - y^x$ with the stirling approximation for
+/// $\ln x!$. For $x=0$, the stirling approximation would fail, $y$ is returned.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
@@ -948,16 +948,15 @@ DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in, Image const& reference,
 /// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed.
 ///
-/// \literature
-/// <li>I. Csiszar, "Why Least Squares and Maximum Entropy? An axiomatic approach to inference for linear inverse problems",
-///     The Annals of Statistics 19:2032-2066, 1991.
-/// \endliterature
+/// !!! literature
+///     - I. Csiszar, "Why Least Squares and Maximum Entropy? An axiomatic approach to inference for linear inverse problems",
+///       The Annals of Statistics 19:2032-2066, 1991.
 DIP_EXPORT dfloat IDivergence( Image const& in, Image const& reference, Image const& mask = {} );
 
 /// \brief Calculates the sum of the product of corresponding sample values of `in` and `reference`.
 ///
 /// The sum of the product of `in` and `reference` corresponds to the value of the cross-correlation function at zero
-/// displacement (see `dip::CrossCorrelation`) and is a measure of correlation between the two images.
+/// displacement (see \ref dip::CrossCorrelationFT) and is a measure of correlation between the two images.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
@@ -996,10 +995,9 @@ DIP_EXPORT dfloat PSNR( Image const& in, Image const& reference, Image const& ma
 ///
 /// The two input images must be real-valued. Singleton expansion is applied if the image sizes don't match.
 ///
-/// \literature
-/// <li>Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
-///     structural similarity", IEEE Transactions on %Image Processing 13(4):600-612, 2004.
-/// \endliterature
+/// !!! literature
+///     - Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
+///       structural similarity", IEEE Transactions on Image Processing 13(4):600-612, 2004.
 DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& mask = {}, dfloat sigma = 1.5, dfloat K1 = 0.01, dfloat K2 = 0.03 );
 
 /// \brief Calculates the mutual information, in bits, using a histogram with `nBins`-by-`nBins` bins.
@@ -1012,7 +1010,7 @@ DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& ma
 /// \see dip::MutualInformation(Histogram const&)
 DIP_EXPORT dfloat MutualInformation( Image const& in, Image const& reference, Image const& mask = {}, dip::uint nBins = 256 );
 
-/// \brief Holds return values for the function `dip::SpatialOverlap`.
+/// \brief Holds return values for the function \ref dip::SpatialOverlap.
 struct SpatialOverlapMetrics {
    dfloat truePositives;   ///< Number of true positives
    dfloat trueNegatives;   ///< Number of true negatives
@@ -1033,23 +1031,23 @@ struct SpatialOverlapMetrics {
 /// will be meaningless. Both images must be scalar and of the same sizes.
 ///
 /// If only one measure is of interest, it will be more efficient to use one of the specialized functions:
-/// `dip::DiceCoefficient`, `dip::JaccardIndex`, `dip::Specificity`, `dip::Sensitivity`, `dip::Accuracy`,
-/// or `dip::Precision`.
+/// \ref dip::DiceCoefficient, \ref dip::JaccardIndex, \ref dip::Specificity, \ref dip::Sensitivity, \ref dip::Accuracy,
+/// or \ref dip::Precision.
 DIP_EXPORT SpatialOverlapMetrics SpatialOverlap( Image const& in, Image const& reference );
 
 /// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the Dice coefficient.
 ///
 /// The Dice coefficient (also known as Sørensen–Dice coefficient) is defined as twice the area of the intersection
-/// of `in` and `reference` divided by the sum of their areas:
+/// of `in` and `reference` divided by the sum of their areas,
 ///
-/// \f[ \text{Dice} = \frac{2 |A \cap B|}{|A|+|B|} = \frac{2\text{TP}}{2\text{TP}+\text{FP}+\text{FN}} \f]
+/// $$ \text{Dice} = \frac{2 |A \cap B|}{|A|+|B|} = \frac{2\text{TP}}{2\text{TP}+\text{FP}+\text{FN}} \; . $$
 ///
 /// The Dice coefficient is equivalent to the harmonic mean between precision and sensitivity or recall (i.e. the
-/// F<sub>1</sub> score):
+/// F~1~ score):
 ///
 /// ```cpp
-///     dfloat dice = dip::DiceCoefficient( a, b );
-///     dfloat alsoDice = 2.0 / ( 1.0 / dip::Precision( a, b ) + 1.0 / dip::Sensitivity( a, b ));
+/// dfloat dice = dip::DiceCoefficient( a, b );
+/// dfloat alsoDice = 2.0 / ( 1.0 / dip::Precision( a, b ) + 1.0 / dip::Sensitivity( a, b ));
 /// ```
 ///
 /// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
@@ -1060,9 +1058,9 @@ DIP_EXPORT dfloat DiceCoefficient( Image const& in, Image const& reference );
 
 /// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the Jaccard index.
 ///
-/// The Jaccard index is defined as the area of the intersection of `in` and `reference` divided by their union:
+/// The Jaccard index is defined as the area of the intersection of `in` and `reference` divided by their union,
 ///
-/// \f[ \text{Jaccard} = \frac{|A \cap B|}{|A \cup B|} = \frac{\text{TP}}{\text{TP}+\text{FP}+\text{FN}} \f]
+/// $$ \text{Jaccard} = \frac{|A \cap B|}{|A \cup B|} = \frac{\text{TP}}{\text{TP}+\text{FP}+\text{FN}} \; . $$
 ///
 /// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
 ///
@@ -1073,9 +1071,9 @@ DIP_EXPORT dfloat JaccardIndex( Image const& in, Image const& reference );
 /// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the specificity of the segmentation.
 ///
 /// Specificity is also referred to as True Negative Rate, and is computed as the ratio of true negatives to the
-/// total amount of negatives in the `reference` image:
+/// total amount of negatives in the `reference` image,
 ///
-/// \f[ \text{specificity} = \frac{|\neg A \cap \neg B|}{|\neg B|} = \frac{\text{TN}}{\text{TN}+\text{FP}} \f]
+/// $$ \text{specificity} = \frac{|\neg A \cap \neg B|}{|\neg B|} = \frac{\text{TN}}{\text{TN}+\text{FP}} \; . $$
 ///
 /// The two input images must have the same sizes, be scalar, and either binary or real-valued. Real-valued inputs
 /// will be considered as fuzzy segmentations, and expected to be in the range [0,1].
@@ -1084,9 +1082,9 @@ DIP_EXPORT dfloat Specificity( Image const& in, Image const& reference );
 /// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the sensitivity of the segmentation.
 ///
 /// Sensitivity, also referred to as recall or True Positive Rate, is computed as the ratio of the true positives
-/// to the total amount of positives in the `reference` image:
+/// to the total amount of positives in the `reference` image,
 ///
-/// \f[ \text{sensitivity} = \frac{|A \cap B|}{|B|} = \frac{\text{TP}}{\text{TP}+\text{FN}} \f]
+/// $$ \text{sensitivity} = \frac{|A \cap B|}{|B|} = \frac{\text{TP}}{\text{TP}+\text{FN}} \; . $$
 ///
 /// Note that precision and sensitivity are each others mirror, that is, precision yields the same result as
 /// sensitivity with switched input images.
@@ -1097,9 +1095,9 @@ DIP_EXPORT dfloat Sensitivity( Image const& in, Image const& reference );
 
 /// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the accuracy of the segmentation.
 ///
-/// Accuracy is defined as the ratio of correctly classified pixels to the total number of pixels:
+/// Accuracy is defined as the ratio of correctly classified pixels to the total number of pixels,
 ///
-/// \f[ \text{accuracy} = \frac{|A \cap B| + |\neg A \cap \neg B|}{|A| + |\neg A|} = \frac{\text{TP}+\text{TN}}{\text{TP}+\text{FP}+\text{TN}+\text{FN}} \f]
+/// $$ \text{accuracy} = \frac{|A \cap B| + |\neg A \cap \neg B|}{|A| + |\neg A|} = \frac{\text{TP}+\text{TN}}{\text{TP}+\text{FP}+\text{TN}+\text{FN}} \; . $$
 ///
 /// Note that this measure is symmetric, that is, it yields the same result if one switches the two images.
 ///
@@ -1110,9 +1108,9 @@ DIP_EXPORT dfloat Accuracy( Image const& in, Image const& reference );
 /// \brief Compares a segmentation result `in` to the ground truth `reference`, determining the precision of the segmentation.
 ///
 /// Precision, or Positive Predictive Value, is defined as the ratio of the true positives to the total amount of
-/// positives in the `in` image:
+/// positives in the `in` image,
 ///
-/// \f[ \text{precision} = \frac{|A \cap B|}{|A|} = \frac{\text{TP}}{\text{TP}+\text{FP}} \f]
+/// $$ \text{precision} = \frac{|A \cap B|}{|A|} = \frac{\text{TP}}{\text{TP}+\text{FP}} \; . $$
 ///
 /// Note that precision and sensitivity are each others mirror, that is, precision yields the same result as
 /// sensitivity with switched input images.
@@ -1143,10 +1141,9 @@ DIP_EXPORT dfloat HausdorffDistance( Image const& in, Image const& reference );
 ///
 /// The two input images must have the same sizes, be scalar, and binary.
 ///
-/// \literature
-/// <li>M.P. Dubuisson and A.K. Jain, "A modified Hausdoff distance for object matching",
-///     Proc. 12<sup>th</sup> Intl. Conf. on Pattern Recognition, Jerusalem, Israel, pp. 566-568, 1994.
-/// \endliterature
+/// !!! literature
+///     - M.P. Dubuisson and A.K. Jain, "A modified Hausdoff distance for object matching",
+///       Proc. 12^th^ Intl. Conf. on Pattern Recognition, Jerusalem, Israel, pp. 566-568, 1994.
 DIP_EXPORT dfloat ModifiedHausdorffDistance( Image const& in, Image const& reference );
 
 /// \brief Computes the sum of minimal distances (SMD) between two binary images.
@@ -1158,9 +1155,8 @@ DIP_EXPORT dfloat ModifiedHausdorffDistance( Image const& in, Image const& refer
 ///
 /// The two input images must have the same sizes, be scalar, and binary.
 ///
-/// \literature
-/// <li>T. Eiter and H. Mannila, "Distance measures for point sets and their computation", Acta Informatica 34(2):109–133, 1997.
-/// \endliterature
+/// !!! literature
+///     - T. Eiter and H. Mannila, "Distance measures for point sets and their computation", Acta Informatica 34(2):109–133, 1997.
 DIP_EXPORT dfloat SumOfMinimalDistances( Image const& in, Image const& reference );
 
 /// \brief Computes the complement weighted sum of minimal distances (CWSMD) between two binary images.
@@ -1173,10 +1169,9 @@ DIP_EXPORT dfloat SumOfMinimalDistances( Image const& in, Image const& reference
 ///
 /// The two input images must have the same sizes, be scalar, and binary.
 ///
-/// \literature
-/// <li>V. Ćurić, J. Lindblad, N. Sladoje, H. Sarve, and G. Borgefors, "A new set distance and its application to shape registration",
-///     Pattern Analysis and Applications 17:141-152, 2014.
-/// \endliterature
+/// !!! literature
+///     - V. Ćurić, J. Lindblad, N. Sladoje, H. Sarve, and G. Borgefors, "A new set distance and its application to shape registration",
+///       Pattern Analysis and Applications 17:141-152, 2014.
 DIP_EXPORT dfloat ComplementWeightedSumOfMinimalDistances( Image const& in, Image const& reference );
 
 /// \brief Calculates the entropy, in bits, using a histogram with `nBins` bins.
@@ -1203,12 +1198,11 @@ inline dfloat Entropy( Image::View const& in, dip::uint nBins = 256 ) {
 ///
 /// If `mask` is not given, creates a mask that avoids edge regions.
 ///
-/// \literature
-/// <li>J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and %Image Understanding 64(2):300-302, 1996.
-/// \endliterature
+/// !!! literature
+///     - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and Image Understanding 64(2):300-302, 1996.
 DIP_EXPORT dfloat EstimateNoiseVariance( Image const& in, Image const& mask = {} );
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

@@ -26,17 +26,16 @@
 
 /// \file
 /// \brief Functions for binary image processing.
-/// \see binary
+/// See \ref binary.
 
 
 namespace dip {
 
 
-/// \defgroup binary Binary image filters
+/// \group binary Binary image filters
 /// \ingroup filtering
 /// \brief Processing binary images, including binary mathematical morphology.
-/// \{
-
+/// \addtogroup
 
 /// \brief Binary morphological dilation operation.
 ///
@@ -47,10 +46,10 @@ namespace dip {
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 ///
-/// For dilations with arbitrary structuring elements, see `dip::Dilation`.
+/// For dilations with arbitrary structuring elements, see \ref dip::Dilation.
 ///
 /// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, `dip::Dilation` is always the faster choice.
+/// For this case, \ref dip::Dilation is always the faster choice.
 DIP_EXPORT void BinaryDilation(
       Image const& in,
       Image& out,
@@ -78,10 +77,10 @@ inline Image BinaryDilation(
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// 
-/// For erosions with arbitrary structuring elements, see `dip::Erosion`.
+/// For erosions with arbitrary structuring elements, see \ref dip::Erosion.
 ///
 /// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, `dip::Erosion` is always the faster choice.
+/// For this case, \ref dip::Erosion is always the faster choice.
 DIP_EXPORT void BinaryErosion(
       Image const& in,
       Image& out,
@@ -112,10 +111,10 @@ inline Image BinaryErosion(
 /// `"background"` for the dilation, `"object"` for the erosion; this avoids the border
 /// effect you can get in the corners of the image in some cases.
 ///
-/// For closings with arbitrary structuring elements, see `dip::Closing`.
+/// For closings with arbitrary structuring elements, see \ref dip::Closing.
 ///
 /// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, `dip::Closing` is always the faster choice.
+/// For this case, \ref dip::Closing is always the faster choice.
 DIP_EXPORT void BinaryClosing(
       Image const& in,
       Image& out,
@@ -146,10 +145,10 @@ inline Image BinaryClosing(
 /// `"object"` for the erosion, `"background"` for the dilation; this avoids the border
 /// effect you can get in the corners of the image in some cases.
 ///
-/// For openings with arbitrary structuring elements, see `dip::Opening`.
+/// For openings with arbitrary structuring elements, see \ref dip::Opening.
 ///
 /// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, `dip::Opening` is always the faster choice.
+/// For this case, \ref dip::Opening is always the faster choice.
 DIP_EXPORT void BinaryOpening(
       Image const& in,
       Image& out,
@@ -182,7 +181,7 @@ inline Image BinaryOpening(
 ///
 /// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed.
 ///
-/// The function `dip::MorphologicalReconstruction` provides similar functionality for other data types.
+/// The function \ref dip::MorphologicalReconstruction provides similar functionality for other data types.
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,
@@ -206,7 +205,7 @@ inline Image BinaryPropagation(
 /// \brief Remove edge objects from binary image.
 ///
 /// Removes those binary objects from `in` that are connected to the edges of the image.
-/// This function calls `dip::BinaryPropagation` with no seed image and `edgeCondition` set to
+/// This function calls \ref dip::BinaryPropagation with no seed image and `edgeCondition` set to
 /// `"object"`. The result of the propagation is xor-ed with the input image.
 ///
 /// The `connectivity` parameter defines the metric, that is, the shape of
@@ -240,7 +239,7 @@ inline Image EdgeObjectsRemove(
 /// \brief Fill holes in binary image.
 ///
 /// Removes holes in binary objects in `in` that are not connected to the edges of the image.
-/// This function calls `dip::BinaryPropagation` using the inverted `in`, with no seed image, and
+/// This function calls \ref dip::BinaryPropagation using the inverted `in`, with no seed image, and
 /// `edgeCondition` set to `"object"`. This finds the background connected to the edge, which is
 /// the only background to be preserved.
 ///
@@ -279,7 +278,7 @@ inline Image FillHoles(
 /// are applied. If `iterations` is 0, the algorithm iterates until idempotency.
 ///
 /// `endPixelCondition` determines if background branches are kept. The string `"keep"` is equivalent to the
-/// `"natural"` end pixel condition in `dip::EuclideanSkeleton`, and `"lose"` causes branches to not be kept
+/// `"natural"` end pixel condition in \ref dip::EuclideanSkeleton, and `"lose"` causes branches to not be kept
 /// (meaning that only single background pixels and loops in background are kept).
 ///
 /// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
@@ -310,14 +309,14 @@ inline Image ConditionalThickening2D(
 /// A thinning is an erosion that preserves topology. If no `mask` is given (i.e. the image is raw),
 /// it will produce a skeleton of the object (given sufficient iterations).
 /// If a `mask` is given, the erosion will not propagate outside of the set pixels in `mask`.
-/// Note that `dip::EuclideanSkeleton` produces a better skeleton.
+/// Note that \ref dip::EuclideanSkeleton produces a better skeleton.
 ///
 /// The erosion always uses the unit 4-connected neighborhood. That is, it iteratively propagates using
 /// a connectivity of 1. The topology preserved is that of the 8-connected foreground. `iterations` iterations
 /// are applied. If `iterations` is 0, the algorithm iterates until idempotency.
 ///
 /// `endPixelCondition` determines if background branches are kept. The string `"keep"` is equivalent to the
-/// `"natural"` end pixel condition in `dip::EuclideanSkeleton`, and `"lose"` causes branches to not be kept
+/// `"natural"` end pixel condition in \ref dip::EuclideanSkeleton, and `"lose"` causes branches to not be kept
 /// (meaning that only single background pixels and loops in background are kept).
 ///
 /// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
@@ -354,7 +353,7 @@ inline Image ConditionalThinning2D(
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 ///
-/// The operation is implemented through `dip::Label`.
+/// The operation is implemented through \ref dip::Label.
 ///
 /// \see dip::AreaOpening, dip::AreaClosing
 DIP_EXPORT void BinaryAreaOpening(
@@ -375,7 +374,7 @@ inline Image BinaryAreaOpening(
    return out;
 }
 
-/// \brief Computes the area closing of a binary image, by calling `dip::BinaryAreaOpening` on the inverse
+/// \brief Computes the area closing of a binary image, by calling \ref dip::BinaryAreaOpening on the inverse
 /// of the input image.
 inline void BinaryAreaClosing(
       Image const& in,
@@ -426,24 +425,26 @@ inline Image BinaryAreaClosing(
 ///
 /// The `endPixelCondition` parameter determines what is considered an "end pixel" in the skeleton, and thus affects
 /// how many branches are generated. It is one of the following strings:
-///  - `"loose ends away"`: Loose ends are eaten away (nothing is considered an end point).
-///  - `"natural"`: "natural" end pixel condition of this algorithm.
-///  - `"one neighbor"`: Keep endpoint if it has one neighbor.
-///  - `"two neighbors"`: Keep endpoint if it has two neighbors.
-///  - `"three neighbors"`: Keep endpoint if it has three neighbors.
+///
+/// - `"loose ends away"`: Loose ends are eaten away (nothing is considered an end point).
+/// - `"natural"`: "natural" end pixel condition of this algorithm.
+/// - `"one neighbor"`: Keep endpoint if it has one neighbor.
+/// - `"two neighbors"`: Keep endpoint if it has two neighbors.
+/// - `"three neighbors"`: Keep endpoint if it has three neighbors.
 ///
 /// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
 /// or as background (`"background"`).
 ///
-/// \warning Pixels in a 2-pixel border around the edge are not processed. If this is an issue, consider adding 2 pixels
-/// on each side of your image.
+/// !!! warning
+///     Pixels in a 2-pixel border around the edge are not processed. If this is an issue, consider adding 2 pixels
+///     on each side of your image.
 ///
-/// \bug Results in 3D are not always correct: `"loose ends away"`, `"one neighbor"` and `"three neighbors"` produce the
-/// same results, and sometimes planes in the skeleton are not thinned to a single pixel thickness.
+/// !!! bug
+///     Results in 3D are not always correct: `"loose ends away"`, `"one neighbor"` and `"three neighbors"` produce the
+///     same results, and sometimes planes in the skeleton are not thinned to a single pixel thickness.
 ///
-/// \literature
-/// <li>B.J.H. Verwer, "Improved metrics in image processing applied to the Hilditch skeleton", 9<sup>th</sup> ICPR, 1988.
-/// \endliterature
+/// !!! literature
+///     - B.J.H. Verwer, "Improved metrics in image processing applied to the Hilditch skeleton", 9^th^ ICPR, 1988.
 DIP_EXPORT void EuclideanSkeleton(
       Image const& in,
       Image& out,
@@ -469,8 +470,10 @@ inline Image EuclideanSkeleton(
 ///
 /// `edgeCondition` determines the value of pixels outside the image domain, and can be `"object"` or `"background"`.
 ///
-/// This function is typically used on the output of `dip::EuclideanSkeleton` to distinguish different types
-/// of pixels. See also `dip::GetSinglePixels`, `dip::GetEndPixels`, `dip::GetLinkPixels`, and `dip::GetBranchPixels`.
+/// This function is typically used on the output of \ref dip::EuclideanSkeleton to distinguish different types
+/// of pixels.
+///
+/// \see dip::GetSinglePixels, dip::GetEndPixels, dip::GetLinkPixels, dip::GetBranchPixels
 DIP_EXPORT void CountNeighbors(
       Image const& in,
       Image& out,
@@ -497,12 +500,10 @@ inline Image CountNeighbors(
 /// of pixels.
 ///
 /// Note that this is equivalent to (but more efficient than):
-///
 /// ```cpp
-///     dip::uint neighborhoodSize = dip::NeighborList( { "connected", connectivity }, in.Dimensionality() ).Size();
-///     out = dip::CountNeighbors( in, connectivity, "all", edgeCondition ) > neighborhoodSize / 2;
+/// dip::uint neighborhoodSize = dip::NeighborList( { "connected", connectivity }, in.Dimensionality() ).Size();
+/// out = dip::CountNeighbors( in, connectivity, "all", edgeCondition ) > neighborhoodSize / 2;
 /// ```
-///
 /// with `neighborhoodSize` the number of pixels in the neighborhood given by `connectivity`.
 ///
 /// `edgeCondition` determines the value of pixels outside the image domain, and can be `"object"` or `"background"`.
@@ -524,7 +525,7 @@ inline Image MajorityVote(
    return out;
 }
 
-/// \brief Returns the isolated pixels in the binary image `in`. That is, the set pixels with zero neighbors. See `dip::CountNeighbors`.
+/// \brief Returns the isolated pixels in the binary image `in`. That is, the set pixels with zero neighbors. See \ref dip::CountNeighbors.
 inline void GetSinglePixels(
       Image const& in,
       Image& out,
@@ -544,7 +545,7 @@ inline Image GetSinglePixels(
    return out;
 }
 
-/// \brief Returns the end pixels in the skeleton image `in`. That is, the set pixels with one neighbor. See `dip::CountNeighbors`.
+/// \brief Returns the end pixels in the skeleton image `in`. That is, the set pixels with one neighbor. See \ref dip::CountNeighbors.
 inline void GetEndPixels(
       Image const& in,
       Image& out,
@@ -564,7 +565,7 @@ inline Image GetEndPixels(
    return out;
 }
 
-/// \brief Returns the link pixels in the skeleton image `in`. That is, the set pixels with two neighbors. See `dip::CountNeighbors`.
+/// \brief Returns the link pixels in the skeleton image `in`. That is, the set pixels with two neighbors. See \ref dip::CountNeighbors.
 inline void GetLinkPixels(
       Image const& in,
       Image& out,
@@ -584,7 +585,7 @@ inline Image GetLinkPixels(
    return out;
 }
 
-/// \brief Returns the branch pixels in the skeleton image `in`. That is, the set pixels with more than two neighbors. See `dip::CountNeighbors`.
+/// \brief Returns the branch pixels in the skeleton image `in`. That is, the set pixels with more than two neighbors. See \ref dip::CountNeighbors.
 inline void GetBranchPixels(
       Image const& in,
       Image& out,
@@ -613,6 +614,9 @@ inline Image GetBranchPixels(
 // be devised. But they are general and allow for complicated binary filters to be built.
 
 class DIP_NO_EXPORT Interval;
+
+/// \brief An array of intervals.
+/// \relates dip::Interval
 using IntervalArray = std::vector< Interval >;
 
 /// \brief Represents the shape of an interval for inf-generating and sup-generating operators.
@@ -624,8 +628,8 @@ using IntervalArray = std::vector< Interval >;
 ///
 /// There are two constructors: one accepting two binary structuring elements, and one accepting a single
 /// kernel containing `1` for foreground, `0` for background, and any other value for "don't care".
-/// The constructors only take their input in the form of images, not as a `dip::StructuringElement`
-/// or `dip::Kernel`. The generic shapes that are easier to generate using those classes are not often
+/// The constructors only take their input in the form of images, not as a \ref dip::StructuringElement
+/// or \ref dip::Kernel. The generic shapes that are easier to generate using those classes are not often
 /// useful in intervals.
 class DIP_NO_EXPORT Interval {
    public:
@@ -635,7 +639,7 @@ class DIP_NO_EXPORT Interval {
       ///
       /// The image must be odd in size, the origin is in the middle pixel.
       ///
-      /// Such an image converts implicitly to an `%Interval`.
+      /// Such an image converts implicitly to an `Interval`.
       DIP_EXPORT Interval( dip::Image image );
 
       /// \brief An interval can be constructed with two binary images, one for the foreground mask
@@ -648,10 +652,10 @@ class DIP_NO_EXPORT Interval {
       DIP_EXPORT Interval( dip::Image hit, dip::Image miss );
 
       /// \brief Inverts the interval, swapping foreground and background pixels. Caution using this function, as
-      /// the `%Interval` can potentially share data with other intervals.
+      /// the `Interval` can potentially share data with other intervals.
       DIP_EXPORT void Invert();
 
-      /// \brief Returns the interval image, an dip::DT_SFLOAT image with values 0, 1 and NaN (for don't care).
+      /// \brief Returns the interval image, a \ref dip::DT_SFLOAT image with values 0, 1 and NaN (for don't care).
       // NOTE! This function is the reason we refer to `dip::Image` in this class
       dip::Image const& Image() const {
          return image_;
@@ -680,10 +684,11 @@ class DIP_NO_EXPORT Interval {
       /// adding "don't care" pixels.
       ///
       /// `rotationDirection` affects the order of the intervals in the output vector:
-      ///  - `"interleaved clockwise"` sorts the angles as follows: 0, 180, 45, 225, 90, 270, 135, 315.
-      ///  - `"interleaved counter-clockwise"` is the same, but goes around the other way.
-      ///  - `"clockwise"` sorts the angles as follows: 0, 45, 90, 135, 180, 225, 270, 315.
-      ///  - `"counter-clockwise"` is the same, but goes around the other way.
+      ///
+      /// - `"interleaved clockwise"` sorts the angles as follows: 0, 180, 45, 225, 90, 270, 135, 315.
+      /// - `"interleaved counter-clockwise"` is the same, but goes around the other way.
+      /// - `"clockwise"` sorts the angles as follows: 0, 45, 90, 135, 180, 225, 270, 315.
+      /// - `"counter-clockwise"` is the same, but goes around the other way.
       DIP_EXPORT IntervalArray GenerateRotatedVersions(
             dip::uint rotationAngle = 45,
             String rotationDirection = S::INTERLEAVED_CLOCKWISE
@@ -708,14 +713,12 @@ DIP_EXPORT void Invert( IntervalArray& array );
 /// also allows "don't care" pixels, which will be ignored in the matching.
 ///
 /// This operator is equal to the infimum of an erosion and an anti-erosion:
-///
 /// ```cpp
-///     out = dip::Infimum( dip::Erosion( in, hit ), dip::Erosion( ~in, miss ));
+/// out = dip::Infimum( dip::Erosion( in, hit ), dip::Erosion( ~in, miss ));
 /// ```
-///
 /// where `hit` and `miss` are the two binary structuring elements in `interval`.
 ///
-/// This function is specifically for binary images. Use `dip::HitAndMiss` for a more general operator.
+/// This function is specifically for binary images. Use \ref dip::HitAndMiss for a more general operator.
 DIP_EXPORT void SupGenerating(
       Image const& in,
       Image& out,
@@ -735,11 +738,9 @@ inline Image SupGenerating(
 /// \brief Inf-generating operator, the dual of the hit-miss operator.
 ///
 /// This operator is equal to the supremum of a dilation and an anti-dilation:
-///
 /// ```cpp
-///     out = dip::Supremum( dip::Dilation( in, hit ), dip::Dilation( ~in, miss ));
+/// out = dip::Supremum( dip::Dilation( in, hit ), dip::Dilation( ~in, miss ));
 /// ```
-///
 /// where `hit` and `miss` are the two binary structuring elements in `interval`.
 ///
 /// This function is specifically for binary images.
@@ -784,7 +785,7 @@ inline Image UnionSupGenerating(
 /// \brief Union of Sup-generating operators.
 ///
 /// Applies the sup-generating operator with all the rotated versions of `interval`, and takes the union
-/// of the results. See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle`
+/// of the results. See \ref dip::Interval::GenerateRotatedVersions for the definition of `rotationAngle`
 /// and `rotationDirection`.
 ///
 /// This function is specifically for 2D binary images.
@@ -838,7 +839,7 @@ inline Image IntersectionInfGenerating(
 /// \brief Intersection of Inf-generating operators.
 ///
 /// Applies the inf-generating operator with all the rotated versions of `interval`, and takes the intersection
-/// of the results. See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle`
+/// of the results. See \ref dip::Interval::GenerateRotatedVersions for the definition of `rotationAngle`
 /// and `rotationDirection`.
 ///
 /// This function is specifically for 2D binary images.
@@ -876,8 +877,8 @@ inline Image IntersectionInfGenerating2D(
 /// times. If `iterations` is 0, the operation is repeated until convergence.
 ///
 /// A thickening with the right set of intervals leads to a background skeleton, also called skiz.
-/// See `dip::HomotopicThickeningInterval2D`.
-/// The intervals returned by `dip::HomotopicInverseEndPixelInterval2D` prune the skiz to single
+/// See \ref dip::HomotopicThickeningInterval2D.
+/// The intervals returned by \ref dip::HomotopicInverseEndPixelInterval2D prune the skiz to single
 /// points and circles.
 ///
 /// This function is specifically for binary images.
@@ -904,8 +905,8 @@ inline Image Thickening(
 /// \brief Applies the thickening operator, optionally constrained by a mask, to an image.
 ///
 /// The operation is applied with with all the rotated versions of `interval`, and repeated `iterations`
-/// times. See `dip::Thickening` for a description of the operation.
-/// See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle` and `rotationDirection`.
+/// times. See \ref dip::Thickening for a description of the operation.
+/// See \ref dip::Interval::GenerateRotatedVersions for the definition of `rotationAngle` and `rotationDirection`.
 ///
 /// This function is specifically for 2D binary images.
 inline void Thickening2D(
@@ -945,8 +946,8 @@ inline Image Thickening2D(
 /// The operation is applied with each of the intervals in `intervals`, and repeated `iterations`
 /// times. If `iterations` is 0, the operation is repeated until convergence.
 ///
-/// A thinning with the right set of intervals leads to a skeleton. See `dip::HomotopicThinningInterval2D`.
-/// The intervals returned by `dip::HomotopicEndPixelInterval2D` prune the skeleton to single points and
+/// A thinning with the right set of intervals leads to a skeleton. See \ref dip::HomotopicThinningInterval2D.
+/// The intervals returned by \ref dip::HomotopicEndPixelInterval2D prune the skeleton to single points and
 /// circles.
 ///
 /// This function is specifically for binary images.
@@ -973,8 +974,8 @@ inline Image Thinning(
 /// \brief Applies the thinning operator, optionally constrained by a mask, to an image.
 ///
 /// The operation is applied with with all the rotated versions of `interval`, and repeated `iterations`
-/// times. See `dip::Thinning` for a description of the operation.
-/// See `dip::Interval::GenerateRotatedVersions` for the definition of `rotationAngle` and `rotationDirection`.
+/// times. See \ref dip::Thinning for a description of the operation.
+/// See \ref dip::Interval::GenerateRotatedVersions for the definition of `rotationAngle` and `rotationDirection`.
 ///
 /// This function is specifically for 2D binary images.
 inline void Thinning2D(
@@ -1008,19 +1009,19 @@ inline Image Thinning2D(
 
 /// \brief Returns a 2D interval array for homotopic thinning.
 ///
-/// Use with `dip::Thinning` to shrink objects without changing the Euler number.
-/// Note that `dip::ConditionalThinning2D` is more efficient, though the two functions do not produce exactly
-/// the same output. To create a skeleton, use `dip::EuclideanSkeleton`.
+/// Use with \ref dip::Thinning to shrink objects without changing the Euler number.
+/// Note that \ref dip::ConditionalThinning2D is more efficient, though the two functions do not produce exactly
+/// the same output. To create a skeleton, use \ref dip::EuclideanSkeleton.
 ///
 /// `connectivity` can be 1 to produce 4-connected skeletons, or 2 for 8-connected skeletons.
 DIP_EXPORT IntervalArray HomotopicThinningInterval2D( dip::uint connectivity = 2 );
 
 /// \brief Returns a 2D interval array for homotopic thickening.
 ///
-/// Use with `dip::Thickening` to grow objects without merging them.
+/// Use with \ref dip::Thickening to grow objects without merging them.
 /// This produces a background skeleton (also known as skiz).
-/// Note that `dip::ConditionalThickening2D` is more efficient, though the two options do not produce exactly
-/// the same output. To create a background skeleton, use `dip::EuclideanSkeleton` on the inverted image.
+/// Note that \ref dip::ConditionalThickening2D is more efficient, though the two options do not produce exactly
+/// the same output. To create a background skeleton, use \ref dip::EuclideanSkeleton on the inverted image.
 ///
 /// `connectivity` can be 1 to produce 4-connected skeletons, or 2 for 8-connected skeletons.
 inline IntervalArray HomotopicThickeningInterval2D( dip::uint connectivity = 2 ) {
@@ -1033,7 +1034,7 @@ inline IntervalArray HomotopicThickeningInterval2D( dip::uint connectivity = 2 )
 
 /// \brief Returns an interval array for detecting end pixels. Includes isolated pixels.
 ///
-/// Use with `dip::UnionSupGenerating` to detect skeleton end pixels. Note that `dip::GetEndPixels`
+/// Use with \ref dip::UnionSupGenerating to detect skeleton end pixels. Note that \ref dip::GetEndPixels
 /// is more efficient.
 ///
 /// `connectivity` can be 1 to work with 4-connected skeletons, or 2 for 8-connected skeletons.
@@ -1041,14 +1042,14 @@ DIP_EXPORT IntervalArray EndPixelInterval2D( dip::uint connectivity = 2 );
 
 /// \brief Returns an interval array for detecting end pixels. Excludes isolated pixels
 ///
-/// Use with `dip::Thinning` to prune end points from the skeleton.
+/// Use with \ref dip::Thinning to prune end points from the skeleton.
 ///
 /// `connectivity` can be 1 to prune 4-connected skeletons, or 2 for 8-connected skeletons.
 DIP_EXPORT IntervalArray HomotopicEndPixelInterval2D( dip::uint connectivity = 2 );
 
 /// \brief Returns an interval array for detecting end background pixels. Excludes isolated pixels.
 ///
-/// Use with `dip::Thickening` to prune end points from the background skeleton.
+/// Use with \ref dip::Thickening to prune end points from the background skeleton.
 ///
 /// `connectivity` can be 1 to prune 4-connected skeletons, or 2 for 8-connected skeletons.
 inline IntervalArray HomotopicInverseEndPixelInterval2D( dip::uint connectivity = 2 ) {
@@ -1059,30 +1060,30 @@ inline IntervalArray HomotopicInverseEndPixelInterval2D( dip::uint connectivity 
    DIP_END_STACK_TRACE
 }
 
-/// \brief Returns an interval for detecting single pixels. Use with `dip::SupGenerating` to detect isolated
-/// pixels. Note that `dip::GetSinglePixels` is more efficient.
+/// \brief Returns an interval for detecting single pixels. Use with \ref dip::SupGenerating to detect isolated
+/// pixels. Note that \ref dip::GetSinglePixels is more efficient.
 DIP_EXPORT Interval SinglePixelInterval( dip::uint nDims = 2 );
 
 /// \brief Returns a 2D interval array for detecting branch pixels.
 ///
-/// Use with `dip::UnionSupGenerating` to detect skeleton branch pixels. Note that `dip::GetBranchPixels`
+/// Use with \ref dip::UnionSupGenerating to detect skeleton branch pixels. Note that \ref dip::GetBranchPixels
 /// is more efficient.
 DIP_EXPORT IntervalArray BranchPixelInterval2D();
 
 /// \brief Returns a 2D interval for detecting boundary pixels.
 ///
-/// Use with `dip::UnionSupGenerating2D` to detect object boundary pixels. Set `rotationAngle` to 45 to detect pixels
+/// Use with \ref dip::UnionSupGenerating2D to detect object boundary pixels. Set `rotationAngle` to 45 to detect pixels
 /// 8-connected to the background, and to 90 to detect pixels 4-connected to the background. Note that the
 /// difference between the input image and the eroded image accomplishes the same thing.
 DIP_EXPORT Interval BoundaryPixelInterval2D();
 
 /// \brief Returns a 2D interval array to thicken to a convex hull.
 ///
-/// Use with `dip::Thickening` to grow concave sections of objects until the objects are all convex.
+/// Use with \ref dip::Thickening to grow concave sections of objects until the objects are all convex.
 /// This leads to octagonal shapes.
 DIP_EXPORT IntervalArray ConvexHullInterval2D();
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

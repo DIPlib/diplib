@@ -20,8 +20,10 @@
 #ifndef DIP_VIEWER_EXPORT_H
 #define DIP_VIEWER_EXPORT_H
 
+/// \addtogroup dipviewer
+
 /// \file
-/// \brief Declares the `DIPVIEWER_EXPORT` and `DIPVIEWER_NO_EXPORT` macros.
+/// \brief Declares the \ref DIPVIEWER_EXPORT and \ref DIPVIEWER_NO_EXPORT macros.
 
 /// \def DIPVIEWER_EXPORT
 /// \brief Indicates that the function or class is exported from the shared library.
@@ -31,7 +33,7 @@
 
 /// \def DIPVIEWER_CLASS_EXPORT
 /// \brief Specifically for classes in a inheritance hierarchy and that must be passed across the
-/// executable/shared library interface. See `DIP_CLASS_EXPORT` for more details.
+/// executable/shared library interface. See \ref DIP_CLASS_EXPORT for more details.
 
 #ifdef DIP_CONFIG_DIPVIEWER_IS_STATIC
 #   define DIPVIEWER_EXPORT
@@ -52,5 +54,7 @@
 #      define DIPVIEWER_CLASS_EXPORT DIPVIEWER_EXPORT
 #   endif
 #endif
+
+/// \endgroup
 
 #endif // DIP_VIEWER_EXPORT_H

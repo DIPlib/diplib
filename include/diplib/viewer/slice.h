@@ -34,16 +34,18 @@
 #include "diplib/viewer/link.h"
 
 /// \file
-/// \brief Declares `dip::viewer::SliceViewer`.
+/// \brief Declares \ref dip::viewer::SliceViewer.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 class DIPVIEWER_CLASS_EXPORT SliceView : public View
 {
   protected:
     dip::Image projected_,       ///< Projected (2D) image.
                colored_;         ///< Colored (RGB) image.
-    dip::ColorSpaceManager csm_; ///< For LookupTable::ColorSpace
+    dip::ColorSpaceManager csm_; ///< For \ref ViewingOptions::LookupTable::ColorSpace
 
     dip::uint dimx_, dimy_;      ///< Indices in options.dims_.             
     unsigned int texture_;       ///< OpenGL texture identifier.
@@ -85,13 +87,12 @@ class DIPVIEWER_CLASS_EXPORT SliceViewPort : public ViewPort
     DIPVIEWER_EXPORT void screenToView(int x, int y, double *ix, double *iy) override;
 };
 
-/// \addtogroup viewer
-/// \{
 
 /// \brief Interactive nD tensor image viewer.
 class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
 {
   public:
+    /// \brief A pointer to a `SliceViewer`.
     typedef std::shared_ptr<SliceViewer> Ptr;
     
   protected:
@@ -112,14 +113,14 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     int refresh_seq_;
   
   public:
-    /// \brief Construct a new SliceViewer.
+    /// \brief Construct a new `SliceViewer`.
     ///
-    /// As the constructor is protected, this is the only way to create a SliceViewer.
+    /// As the constructor is protected, this is the only way to create a `SliceViewer`.
     ///
     /// Example usage:
     ///
     /// ```cpp
-    ///     manager.createWindow( dip::viewer::SliceViewer::Create( image ));
+    /// manager.createWindow( dip::viewer::SliceViewer::Create( image ));
     /// ```
     static Ptr Create(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0)
     {
@@ -176,7 +177,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     DIPVIEWER_EXPORT void calculateTextures();
 };
 
-/// \}
+/// \endgroup
 
 }} // namespace dip::viewer
 

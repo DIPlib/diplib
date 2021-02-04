@@ -24,35 +24,34 @@
 #include "diplib/viewer/export.h"
 
 /// \file
-/// \brief Declares the high-level interface to \ref viewer.
+/// \brief Declares the high-level interface to \ref dipviewer.
 
 namespace dip {
 
-/// \brief Contains all functionality for \ref viewer.
+/// \addtogroup dipviewer
+
+/// \brief Contains all functionality for \ref dipviewer.
 namespace viewer {
 
 class SliceViewer;
 class ImageViewer;
 
-/// \addtogroup viewer
-/// \{
-
 /// \brief Show an image in the slice viewer.
 ///
-/// A new interactive `dip::viewer::SliceViewer` window is created for the image. `title` sets the window title.
+/// A new interactive \ref dip::viewer::SliceViewer window is created for the image. `title` sets the window title.
 /// If both `width` and `height` are larger than zero, they specify the size of the window created.
 ///
-/// Call `dip::viewer::Draw` or `dip::viewer::Spin` to enable user interaction.
+/// Call \ref dip::viewer::Draw or \ref dip::viewer::Spin to enable user interaction.
 ///
-/// Calling `%dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
-/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
-/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
-/// at an appropriate time after calling `%dip::viewer::Show` or `dip::viewer::ShowSimple`.
+/// Calling `dip::viewer::Show` or \ref dip::viewer::ShowSimple creates an internal \ref dip::viewer::Manager object,
+/// which needs to be freed before exiting the application to prevent memory leaks. \ref dip::viewer::Spin and
+/// \ref dip::viewer::CloseAll will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling `dip::viewer::Show` or \ref dip::viewer::ShowSimple.
 DIPVIEWER_EXPORT std::shared_ptr<SliceViewer> Show( Image const& image, String const& title = "", dip::uint width = 0, dip::uint height = 0 );
 
-/// \brief Show a 2D grey-value or RGB image, of type `dip::DT_UINT8`.
+/// \brief Show a 2D grey-value or RGB image, of type \ref dip::DT_UINT8.
 ///
-/// A new non-interactive `dip::viewer::ImageViewer` window is created for the image. `title` sets the window title.
+/// A new non-interactive \ref dip::viewer::ImageViewer window is created for the image. `title` sets the window title.
 /// `width` and `height` specify the size of the window created.
 ///
 /// If either `width` or `height` is 0, it is computed from the other value so as to preserve the image's aspect ratio.
@@ -62,10 +61,10 @@ DIPVIEWER_EXPORT std::shared_ptr<SliceViewer> Show( Image const& image, String c
 /// A scalar (grey-value) image will be replicated across three channels to form an RGB image (meaning that data
 /// will be copied).
 ///
-/// Calling `dip::viewer::Show` or `%dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
-/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
-/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
-/// at an appropriate time after calling `dip::viewer::Show` or `%dip::viewer::ShowSimple`.
+/// Calling \ref dip::viewer::Show or `dip::viewer::ShowSimple` creates an internal \ref dip::viewer::Manager object,
+/// which needs to be freed before exiting the application to prevent memory leaks. \ref dip::viewer::Spin and
+/// \ref dip::viewer::CloseAll will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling \ref dip::viewer::Show or `dip::viewer::ShowSimple`.
 DIPVIEWER_EXPORT std::shared_ptr<ImageViewer> ShowSimple( Image const& image, String const& title = "", dip::uint width = 0, dip::uint height = 0 );
 
 /// \brief Wait until all windows are closed.
@@ -73,10 +72,10 @@ DIPVIEWER_EXPORT std::shared_ptr<ImageViewer> ShowSimple( Image const& image, St
 /// This function allows user interaction in all slice viewer windows created. Returns when all windows are closed.
 /// It also frees the internal window manager object.
 ///
-/// Calling `dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
-/// which needs to be freed before exiting the application to prevent memory leaks. `%dip::viewer::Spin` and
-/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
-/// at an appropriate time after calling `dip::viewer::Show` or `dip::viewer::ShowSimple`.
+/// Calling \ref dip::viewer::Show or \ref dip::viewer::ShowSimple creates an internal \ref dip::viewer::Manager object,
+/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
+/// \ref dip::viewer::CloseAll will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling \ref dip::viewer::Show or \ref dip::viewer::ShowSimple.
 DIPVIEWER_EXPORT void Spin();
 
 /// \brief Process user event queue.
@@ -84,21 +83,21 @@ DIPVIEWER_EXPORT void Spin();
 /// This function allows user interaction in all slice viewer windows created. Returns immediately, and needs to be
 /// called repeatedly for continuous interaction.
 ///
-/// \attention `dip::viewer::Spin` or `dip::viewer::CloseAll` must still be called before exiting, to prevent
-/// memory leaks.
+/// !!! attention
+///     \ref dip::viewer::Spin or \ref dip::viewer::CloseAll must still be called before exiting, to prevent memory leaks.
 DIPVIEWER_EXPORT void Draw();
 
 /// \brief Close all open windows.
 ///
 /// Closes all open windows and frees the internal window manager object.
 ///
-/// Calling `dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
-/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
-/// `%dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
-/// at an appropriate time after calling `dip::viewer::Show` or `dip::viewer::ShowSimple`.
+/// Calling \ref dip::viewer::Show or \ref dip::viewer::ShowSimple creates an internal \ref dip::viewer::Manager object,
+/// which needs to be freed before exiting the application to prevent memory leaks. \ref dip::viewer::Spin and
+/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling \ref dip::viewer::Show or \ref dip::viewer::ShowSimple.
 DIPVIEWER_EXPORT void CloseAll();
 
-/// \}
+/// \endgroup
 
 }} // namespace dip::viewer
 

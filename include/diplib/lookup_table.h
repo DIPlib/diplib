@@ -26,14 +26,13 @@
 
 /// \file
 /// \brief Lookup tables and related functionality.
-/// \see mapping
+/// See \ref mapping.
 
 
 namespace dip {
 
 
 /// \addtogroup mapping
-/// \{
 
 
 /// \brief Encapsulates the concept of the look-up table (LUT).
@@ -56,14 +55,14 @@ namespace dip {
 ///
 /// The output image will have the data type of the LUT.
 ///
-/// \par Out-of-bounds handling
-/// When an input value is outside the bounds provided by the index, it is clamped to the index range.
-/// This behavior can be modified using the `SetOutOfBoundsValue` method (uses the given value or values for all
-/// pixels that are out of bounds), or  the `KeepInputValueOnOutOfBounds` method (which sets the output
-/// value to the original input value). The `ClampOutOfBoundsValues` method returns behavior to the
-/// default.
+/// !!! m-default "Out-of-bounds handling"
+///     When an input value is outside the bounds provided by the index, it is clamped to the index range.
+///     This behavior can be modified using the `SetOutOfBoundsValue` method (uses the given value or values for all
+///     pixels that are out of bounds), or  the `KeepInputValueOnOutOfBounds` method (which sets the output
+///     value to the original input value). The `ClampOutOfBoundsValues` method returns behavior to the
+///     default.
 ///
-/// Note that for binary images, the function `dip::Select(dip::Image,dip::Image,dip::Image,dip::Image)`
+/// Note that for binary images, the function \ref dip::Select( Image const&, Image const&, Image const&, Image& )
 /// is available for a similar result.
 class DIP_NO_EXPORT LookupTable{
    public:
@@ -160,10 +159,11 @@ class DIP_NO_EXPORT LookupTable{
 
       /// \brief Apply the LUT to a scalar, real-valued image.
       ///
-      /// See the description for `dip::LookupTable` for how this function works. `interpolation` can be one of:
-      ///  - `"linear"`: the default, uses linear interpolation.
-      ///  - `"nearest"`: uses nearest neighbor interpolation (i.e. rounds the input value to the nearest index).
-      ///  - `"zero order"`: uses zero order hold interpolation (i.e. uses the `floor` of the input value).
+      /// See the description for \ref dip::LookupTable for how this function works. `interpolation` can be one of:
+      ///
+      /// - `"linear"`: the default, uses linear interpolation.
+      /// - `"nearest"`: uses nearest neighbor interpolation (i.e. rounds the input value to the nearest index).
+      /// - `"zero order"`: uses zero order hold interpolation (i.e. uses the `floor` of the input value).
       void Apply( Image const& in, Image& out, String const& interpolation ) const {
          InterpolationMode mode;
          DIP_STACK_TRACE_THIS( mode = DecodeInterpolationMode( interpolation ));
@@ -216,7 +216,7 @@ class DIP_NO_EXPORT LookupTable{
 };
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

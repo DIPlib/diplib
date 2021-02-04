@@ -32,18 +32,24 @@
 
 /// \file
 /// \brief Functions to help test and debug your code.
-/// \see testing
+/// See \ref testing.
 
 
 namespace dip {
 
 namespace Option {
-/// \brief How to compare images in `dip::testing::CompareImages`.
+
+/// \group testing Testing and debugging
+/// \brief Tools for testing and debugging.
+/// \addtogroup
+
+/// \brief How to compare images in \ref dip::testing::CompareImages.
 enum class DIP_NO_EXPORT CompareImagesMode {
       APPROX,  ///< Compare the sample values (and image sizes), to match within `epsilon`
       EXACT,   ///< Compare only the sample values (and image sizes)
       FULL     ///< Compare for identical sample values as well as tensor shape, color space, and pixel size
 };
+
 }
 
 /// \brief Tools for testing and debugging.
@@ -88,10 +94,6 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 
 } // namespace detail
 
-/// \defgroup testing Testing and debugging
-/// \brief Tools for testing and debugging.
-/// \{
-
 /// \brief Outputs pixel values of a small image to `stdout`.
 ///
 /// If the image is a tensor image, shows only the first tensor component.
@@ -128,16 +130,16 @@ void PrintPixelValues( Image const& img ) {
 /// If the result is `false`, it prints a message to `stdout` that starts with
 /// `[dip::testing::CompareImages]` and gives the reason that the test failed.
 ///
-/// If `mode` is `dip::Option::CompareImagesMode::APPROX`, the sample values must all be within
+/// If `mode` is \ref dip::Option::CompareImagesMode::APPROX, the sample values must all be within
 /// `epsilon`, which defaults to 1e-6. For this mode of operation there is an overloaded function
-/// that takes `epsilon` as the 3<sup>rd</sup> argument (i.e. you can skip the `mode` parameter):
+/// that takes `epsilon` as the 3^rd^ argument (i.e. you can skip the `mode` parameter):
 ///
 /// ```cpp
-///     dip::CompareImages( img1, img2 );       // samples must be identical
-///     dip::CompareImages( img1, img2, 1e-3 ); // samples must be within 1e-3 of each other
+/// dip::CompareImages( img1, img2 );       // samples must be identical
+/// dip::CompareImages( img1, img2, 1e-3 ); // samples must be within 1e-3 of each other
 /// ```
 ///
-/// If `mode` is `dip::Option::CompareImagesMode::FULL`, the sample values must match exactly, and
+/// If `mode` is \ref dip::Option::CompareImagesMode::FULL, the sample values must match exactly, and
 /// non-data properties (tensor shape, color space and pixel size) must also match exactly.
 ///
 /// This function does not compare strides.
@@ -208,23 +210,23 @@ inline bool CompareImages(
 /// records the time it was last called. `Reset` resets the timer, as if it had just been created.
 ///
 /// ```cpp
-///     dip::Timer timer;
-///     // do some computation
-///     timer.Stop();
-///     std::cout << "Computation 1: Wall time = " << timer.GetWall() << " s. CPU time = " << timer.GetCpu() << " s.\n";
-///     timer.Reset();
-///     // do some other computation
-///     timer.Stop();
-///     std::cout << "Computation 2: Wall time = " << timer.GetWall() << " s. CPU time = " << timer.GetCpu() << " s.\n";
+/// dip::Timer timer;
+/// // do some computation
+/// timer.Stop();
+/// std::cout << "Computation 1: Wall time = " << timer.GetWall() << " s. CPU time = " << timer.GetCpu() << " s.\n";
+/// timer.Reset();
+/// // do some other computation
+/// timer.Stop();
+/// std::cout << "Computation 2: Wall time = " << timer.GetWall() << " s. CPU time = " << timer.GetCpu() << " s.\n";
 /// ```
 ///
 /// Note that it is also possible to directly put the timer object to the output stream:
 ///
 /// ```cpp
-///     dip::Timer timer;
-///     // do some computation
-///     timer.Stop();
-///     std::cout << "Computation 1: " << timer << '\n';
+/// dip::Timer timer;
+/// // do some computation
+/// timer.Stop();
+/// std::cout << "Computation 1: " << timer << '\n';
 /// ```
 ///
 /// The stream output reports both the wall time and the CPU time, and uses meaningful units (minutes, seconds,
@@ -320,7 +322,7 @@ inline std::ostream& operator<<(
    return os;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace testing
 

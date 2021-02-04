@@ -25,26 +25,27 @@
 #include "diplib/javaio/export.h"
 
 /// \file
-/// \brief Declares the functionality in namespace `dip::javaio`.
+/// \brief Declares the functionality for \ref dipjavaio.
 
 namespace dip {
 
-/// \brief Contains all functionality for \ref javaio.
-namespace javaio {
-
-/// \defgroup javaio DIPjavaio
-/// \ingroup file_io interfaces
+/// \group dipjavaio *DIPjavaio*
+/// \ingroup file_io
 /// \brief An interface to Java file I/O functionality
-/// \{
+/// \addtogroup
+
+/// \brief Contains all functionality for \ref dipjavaio.
+namespace javaio {
 
 constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
 
 /// \brief Reads the image in a file `filename` recognized by a Java `interface` and puts it in `out`.
 ///
 /// `interface` can be one of:
+///
 /// - `"org/diplib/BioFormatsInterface"`: The openmicroscopy.org Bio-Formats package (default).
 ///
-/// Information about the file and all metadata are returned in the `FileInformation` output argument.
+/// Information about the file and all metadata are returned in the \ref dip::FileInformation output argument.
 DIPJAVAIO_EXPORT FileInformation ImageReadJavaIO(
       Image& out,
       String const& filename,
@@ -59,7 +60,7 @@ inline Image ImageReadJavaIO(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace javaio
 

@@ -1,21 +1,22 @@
-# Style guide for contributors {#styleguide}
+\comment DIPlib 3.0
 
-[//]: # (DIPlib 3.0)
+\comment (c)2016-2020, Cris Luengo.
+\comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
-[//]: # ([c]2016-2017, Cris Luengo.)
-[//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
 
-[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
-[//]: # (you may not use this file except in compliance with the License.)
-[//]: # (You may obtain a copy of the License at)
-[//]: # ()
-[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
-[//]: # ()
-[//]: # (Unless required by applicable law or agreed to in writing, software)
-[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
-[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
-[//]: # (See the License for the specific language governing permissions and)
-[//]: # (limitations under the License.)
+
+\page styleguide Style guide for contributors
 
 When contributing to *DIPlib*, please follow the style and layout of other files.
 Specifically:
@@ -55,12 +56,12 @@ Specifically:
   use underscores except for in a few special cases. Private class member variables
   end in an underscore. Constants are in all uppercase letters, with underscores to
   separate words if necessary. Internal names (the ones that are not meant to be used
-  directly by library users), if public, do not have Doxygen documentation and clearly
+  directly by library users), if public, do not have documentation and clearly
   warn the user by their name (such as `dip::Image::ShiftOriginUnsafe`), or are declared
   in the `dip::detail` namespace; private internal names (declared static or inside
   an unnamed namespace) do not have any specific requirements.
 
-- Setter member functions start with `Set`. But getter member functions do not start
+- Setter member functions start with `Set`. But getter member functions do *not* start
   with `Get`. Query functions that return a boolean start with `Is`. Member functions
   that do something have a name that resembles a verb: `Forge`, `Convert`, `PermuteDimensions`.
 
@@ -93,60 +94,49 @@ Specifically:
 
 \section style_functions Function signatures
 
-<ul>
-<li>
-Option parameters to high-level functions (those that should be available in interfaces
-to other languages such as *MATLAB*) should be strings or string arrays, which are easier
-to translate to scripted languages.
-</li>
-<li>
-Option parameters to low-level functions (those that are meant to be called only from
-C++ code) should be defined as `enum class`, these are simpler and more efficient than
-strings. Use the `DIP_DECLARE_OPTIONS` macro to turn the enumerator into a flag set.
-Declare these option types within the `dip::Option::` namespace or another sub-namespace
-if more appropriate.
-</li>
-<li>
-Don't use `bool` as a function parameter, prefer meaningful strings in high-level functions
-(e.g. "black"/"white"), and `enum class` with two options defined in `dip::Option::`
-namespace for low-level functions. Only private functions can deviate from this.
-</li>
-<li>
-Multiple return values are preferably combined in a `struct`, rather than a `std::tuple`
-or similar, as a `struct` has named members and is easier to use. Output should rarely
-be put into the function's argument list, with the exception of images
-(see \ref design_function_signatures).
-</li>
-<li>
-For every function that produces an output image, there should be two signatures,
-the main one with the `out` image as an input argument, and a second one, defined
-as `inline` in the header file, as follows:
+- Option parameters to high-level functions (those that should be available in interfaces
+  to other languages such as *MATLAB*) should be strings or string arrays, which are easier
+  to translate to scripted languages.
 
-```cpp
-   inline Image Function( Image const& in, ... ) {
-      Image out;
-      Function( in, out, ... );
-      return out;
-   }
-```
-</li>
-<li>
-Add default values to as many input parameters as possible in the high-level functions.
-Sort the parameters such that the more important ones (the ones that the user is most likely
-to want to set) appear first. Image input parameters always appear first, with input image
-as first parameter, and output image as last image parameter:
+- Option parameters to low-level functions (those that are meant to be called only from
+  C++ code) should be defined as `enum class`, these are simpler and more efficient than
+  strings. Use the `DIP_DECLARE_OPTIONS` macro to turn the enumerator into a flag set.
+  Declare these option types within the `dip::Option::` namespace or another sub-namespace
+  if more appropriate.
 
-```cpp
-   void Function(
-      Image const& in,
-      Image const& kernel,
-      Image& out,
-      dfloat size = 1,
-      BooleanArray process = {}
-   );
-```
-</li>
-</ul>
+- Don't use `bool` as a function parameter, prefer meaningful strings in high-level functions
+  (e.g. "black"/"white"), and `enum class` with two options defined in `dip::Option::`
+  namespace for low-level functions. Only private functions can deviate from this.
+
+- Multiple return values are preferably combined in a `struct`, rather than a `std::tuple`
+  or similar, as a `struct` has named members and is easier to use. Output should rarely
+  be put into the function's argument list, with the exception of images
+  (see \ref design_function_signatures).
+
+- For every function that produces an output image, there should be two signatures,
+  the main one with the `out` image as an input argument, and a second one, defined
+  as `inline` in the header file, as follows:
+
+        :::cpp
+        inline Image Function( Image const& in, ... ) {
+           Image out;
+           Function( in, out, ... );
+           return out;
+        }
+
+- Add default values to as many input parameters as possible in the high-level functions.
+  Sort the parameters such that the more important ones (the ones that the user is most likely
+  to want to set) appear first. Image input parameters always appear first, with input image
+  as first parameter, and output image as last image parameter:
+
+        :::cpp
+        void Function(
+           Image const& in,
+           Image const& kernel,
+           Image& out,
+           dfloat size = 1,
+           BooleanArray process = {}
+        );
 
 \section style_headers Header files
 
@@ -173,16 +163,18 @@ as first parameter, and output image as last image parameter:
 
 \section documentation Documentation
 
-- Always include a `\brief`, and keep it brief. Add additional paragraphs if needed.
+- The first line of a documentation block is the brief string. You can add a `\brief`
+  command to extend the brief string to a whole paragraph, but please keep it brief.
+  Add additional paragraphs of documentation if needed.
 
 - Add `\see` to link to functions in other modules, or in the same module but "far away".
   Linking to the next or previous function is not very important, but do so if it makes
   sense and there is a `\see` section anyway. Note that the documentation lists the functions
   in the same order as that they appear in the header files.
 
-- Use `\par` for a named info box. It will be rendered with a gray background.
+- Use `!!! par "name"` for a named info box. It will be rendered with a gray background.
 
-- Use `\attention` and `\warning` for two levels of attention-grabbing info boxes. These are
-  rendered with lighter and darker 2nd color background (highly contrasting!).
+- Use `!!! attention` and `!!! warning` for two levels of attention-grabbing info boxes.
+  These are rendered with lighter and darker 2nd color background (highly contrasting!).
 
-- Don't use `\note` or `\remark`.
+- Don't use `!!! note` or `!!! remark`.

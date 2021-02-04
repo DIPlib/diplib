@@ -31,14 +31,13 @@
 
 /// \file
 /// \brief Declares an interface to a DFT function.
-/// \see transform
+/// See \ref transform.
 
 
 namespace dip {
 
 
 /// \addtogroup transform
-/// \{
 
 
 /// \brief An object that encapsulates the Discrete Fourier Transform (DFT).
@@ -46,15 +45,15 @@ namespace dip {
 /// Usage:
 ///
 /// ```cpp
-///     DFT dft( size, inverse );               // creates the object with all the data ready to start running DFTs.
-///     std::vector< std::complex< T >> buf( opts.BufferSize() ); // creates a buffer
-///     dft.Apply( in, out, buf.data() );                         // computes a DFT, repeat as necessary
-///     dft.Initialize( size2, inverse );                         // changes the options for the new size / direction
-///     buf.resize( opts.BufferSize() );                          // resizes the buffer
-///     dft.Apply( in, out, buf.data() );                         // computes a different DFT, repeat as necessary
+/// DFT dft( size, inverse );               // creates the object with all the data ready to start running DFTs.
+/// std::vector< std::complex< T >> buf( opts.BufferSize() ); // creates a buffer
+/// dft.Apply( in, out, buf.data() );                         // computes a DFT, repeat as necessary
+/// dft.Initialize( size2, inverse );                         // changes the options for the new size / direction
+/// buf.resize( opts.BufferSize() );                          // resizes the buffer
+/// dft.Apply( in, out, buf.data() );                         // computes a different DFT, repeat as necessary
 /// ```
 ///
-/// Note that this code uses `int` for sizes, rather than `dip::uint`. `maximumDFTSize` is the largest length
+/// Note that this code uses `int` for sizes, rather than \ref dip::uint. `maximumDFTSize` is the largest length
 /// of the transform.
 ///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
@@ -65,20 +64,20 @@ template< typename T >
 class DFT {
    public:
 
-      /// \brief A default-initialized `%DFT` object is useless. Call `Initialize` to make it useful.
+      /// \brief A default-initialized `DFT` object is useless. Call `Initialize` to make it useful.
       DFT() = default;
 
-      /// \brief Construct a `%DFT` object by specifying the size and direction of the transform.
+      /// \brief Construct a `DFT` object by specifying the size and direction of the transform.
       /// Note that this is not a trivial operation.
       DFT( size_t size, bool inverse ) {
          Initialize( size, inverse );
       }
 
-      /// \brief Re-configure a `%DFT` object to the given transform size and direction.
+      /// \brief Re-configure a `DFT` object to the given transform size and direction.
       /// Note that this is not a trivial operation.
       DIP_EXPORT void Initialize( size_t size, bool inverse );
 
-      /// \brief Apply the transform that the `%DFT` object is configured for.
+      /// \brief Apply the transform that the `DFT` object is configured for.
       ///
       /// `source` and `destination` are pointers to contiguous buffers with `TransformSize` elements.
       /// This is the value of the `size` parameter of the constructor or `Initialize`. `buffer` is a pointer
@@ -118,7 +117,7 @@ class DFT {
 ///
 /// Returns 0 if `size0` is too large for our DFT implementation.
 ///
-/// Prefer to use `dip::OptimalFourierTransformSize` in your applications, it will throw an error if
+/// Prefer to use \ref dip::OptimalFourierTransformSize in your applications, it will throw an error if
 /// the transform size is too large.
 DIP_EXPORT size_t GetOptimalDFTSize( size_t size0 );
 
@@ -126,7 +125,7 @@ DIP_EXPORT size_t GetOptimalDFTSize( size_t size0 );
 constexpr size_t maximumDFTSize = static_cast< size_t >( std::numeric_limits< int >::max() );
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

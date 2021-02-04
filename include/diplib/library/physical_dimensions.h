@@ -35,43 +35,42 @@
 
 /// \file
 /// \brief Support for units, physical quantities and pixel sizes.
-/// This file is always included through `diplib.h`.
-/// \see infrastructure
+/// This file is always included through \ref "diplib.h".
+/// See \ref physical_dimensions.
 
 
 namespace dip {
 
-/// \defgroup physical_dimensions Physical dimensions
+/// \group physical_dimensions Physical dimensions
 /// \ingroup infrastructure
 /// \brief Support for units, physical quantities and pixel sizes.
-/// \{
-
+/// \addtogroup
 
 /// \brief Encapsulates the concepts of physical units, using SI units.
 ///
 /// It is possible
 /// to multiply or divide units, and raise to arbitrary integer powers with the
 /// class method Power. To associate a magnitude to the units, see the class
-/// `dip::PhysicalQuantity`.
+/// \ref dip::PhysicalQuantity.
 ///
-/// Note that radian (`BaseUnits::ANGLE`), though dimensionless, is treated
+/// Note that radian (\ref BaseUnits::ANGLE), though dimensionless, is treated
 /// as a specific unit here. Also, mass is measured in grams, rather than kilograms,
 /// because it simplifies writing prefixes (we presume the Kg won't be used much
 /// in *DIPlib*...).
 ///
-/// Prefixes are recorded with the `BaseUnits::THOUSANDS` value. It indicates how
-/// often to multiply by 10^3. Thus, a value of 1 here corresponds to the 'k'
-/// prefix, 3 with 'G', and -2 with 'u' (==micro). Note that for 'mm^2', the
-/// value for length is 2, and that for thousands is -2. if thousands were -1,
-/// the units would have to be formatted as '10^-3.m^2'. `dip::Units::AdjustThousands`
+/// Prefixes are recorded with the \ref BaseUnits::THOUSANDS value. It indicates how
+/// often to multiply by 10^3^. Thus, a value of 1 here corresponds to the 'k'
+/// prefix, 3 with 'G', and -2 with '&mu;'. Note that for 'mm^2', the
+/// value for length is 2, and that for thousands is -2. If thousands were -1,
+/// the units would have to be formatted as '10^-3^ m^2^'. \ref dip::Units::AdjustThousands
 /// adjusts this power so that it can always be formatted with an SI prefix,
-/// returning a magnitude that can be handled elsewhere (the `dip::PhysicalQuantity`
+/// returning a magnitude that can be handled elsewhere (the \ref dip::PhysicalQuantity
 /// class uses this feature).
 ///
-/// The `BaseUnits::PIXEL` value is for non-physical quantities, which typically
+/// The \ref BaseUnits::PIXEL value is for non-physical quantities, which typically
 /// represent a magnitude with unknown or arbitrary units. For example,
-/// `dip::MeasurementTool` uses it when an image has no pixel size.
-/// `IsPhysical` tests whether there are pixel units present or not.
+/// \ref dip::MeasurementTool uses it when an image has no pixel size.
+/// \ref IsPhysical tests whether there are pixel units present or not.
 class DIP_NO_EXPORT Units {
       // Note: this class encapsulates units defined at run time, not at
       // compile time as in most C++ unit libraries:
@@ -100,16 +99,16 @@ class DIP_NO_EXPORT Units {
       // We sometimes skip the 0 index into the array, meaning to skip the thousands element. Don't move it from 0!
       static_assert( thousandsIndex == 0, "dip::Units::BaseUnits::THOUSANDS is not 0!" );
 
-      /// A default-constructed `%Units` is dimensionless.
+      /// A default-constructed `Units` is dimensionless.
       constexpr Units() = default;
 
-      /// Construct a `%Units` for a specific unit.
+      /// Construct a `Units` for a specific unit.
       constexpr explicit Units( BaseUnits bu, dip::sint8 power = 1 ) {
          power_[ static_cast< dip::uint >( bu ) ] = power;
       }
 
-      /// \brief Construct a `%Units` from a string representation of units. The string representation should be as
-      /// produced by `dip::Units::String`.
+      /// \brief Construct a `Units` from a string representation of units. The string representation should be as
+      /// produced by \ref dip::Units::String, except that 'u' and '&mu;' are synonyms.
       DIP_EXPORT explicit Units( dip::String const& string );
 
       /// Elevates `this` to the power `p`.
@@ -164,7 +163,7 @@ class DIP_NO_EXPORT Units {
          return !( *this == rhs );
       }
 
-      /// \brief Compares two units objects. This differs from the `==` operator in that `km` and `um` test equal.
+      /// \brief Compares two units objects. This differs from the `==` operator in that `km` and `&mu;m` test equal.
       /// That is, the SI prefix is ignored.
       constexpr bool HasSameDimensions( Units const& other ) const {
          for( dip::uint ii = 1; ii < nUnits_; ++ii ) { // Not testing the first element
@@ -185,7 +184,7 @@ class DIP_NO_EXPORT Units {
          return true;
       }
 
-      /// \brief Test to see if the units are physical. %Units that involve pixels are not physical, and neither are dimensionless units.
+      /// \brief Test to see if the units are physical. Units that involve pixels are not physical, and neither are dimensionless units.
       constexpr bool IsPhysical() const {
          return ( power_[ static_cast< dip::uint >( BaseUnits::PIXEL ) ] == 0 ) && !IsDimensionless();
       }
@@ -209,7 +208,7 @@ class DIP_NO_EXPORT Units {
          return thousands;
       }
 
-      /// \brief Returns the power associated with `BaseUnits::THOUSANDS`, corresponding to a given SI prefix.
+      /// \brief Returns the power associated with \ref BaseUnits::THOUSANDS, corresponding to a given SI prefix.
       constexpr dip::sint Thousands() const {
          return power_[ thousandsIndex ];
       }
@@ -218,18 +217,18 @@ class DIP_NO_EXPORT Units {
       ///
       /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
       ///
-      /// Calling the `dip::Units` constructor on the output of this function yields `this`.
+      /// Calling the \ref dip::Units::Units( dip::String const& ) constructor on the output of this function yields `this`.
       dip::String String() const {
          return StringRepresentation( false );
       }
 
       /// \brief Cast physical units to a string representation, using Unicode characters (UTF-8 encoded).
       ///
-      /// If Unicode support was disabled during compilation, this function does the same as `dip::Units::String`.
+      /// If Unicode support was disabled during compilation, this function does the same as \ref dip::Units::String.
       ///
       /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
       ///
-      /// Calling the `dip::Units` constructor on the output of this function yields `this`.
+      /// Calling the \ref dip::Units::Units( dip::String const& ) constructor on the output of this function yields `this`.
       dip::String StringUnicode() const {
          return StringRepresentation( true );
       }
@@ -247,7 +246,7 @@ class DIP_NO_EXPORT Units {
       // Specific useful powers
       /// Dimensionless nano magnitude (n)
       constexpr static Units Nano() { return Units( BaseUnits::THOUSANDS, -3 ); }
-      /// Dimensionless micro magnitude (u)
+      /// Dimensionless micro magnitude (&mu;)
       constexpr static Units Micro() { return Units( BaseUnits::THOUSANDS, -2 ); }
       /// Dimensionless milli magnitude (m)
       constexpr static Units Milli() { return Units( BaseUnits::THOUSANDS, -1 ); }
@@ -261,43 +260,43 @@ class DIP_NO_EXPORT Units {
       // Specific useful units
       /// Meter units (m)
       constexpr static Units Meter() { return Units( BaseUnits::LENGTH ); }
-      /// Square meter units (m^2)
+      /// Square meter units (m^2^)
       constexpr static Units SquareMeter() { return Units( BaseUnits::LENGTH, 2 ); }
-      /// Cubic meter units (m^3)
+      /// Cubic meter units (m^3^)
       constexpr static Units CubicMeter() { return Units( BaseUnits::LENGTH, 3 ); }
       /// Nanometer units (nm)
       constexpr static Units Nanometer() { return Nano() * Meter(); }
-      /// Micrometer units (um)
+      /// Micrometer units (&mu;m)
       constexpr static Units Micrometer() { return Micro() * Meter(); }
       /// Millimeter units (mm)
       constexpr static Units Millimeter() { return Milli() * Meter(); }
       /// Kilometer units (km)
       constexpr static Units Kilometer() { return Kilo() * Meter(); }
-      /// Square micrometer units (um^2)
+      /// Square micrometer units (&mu;m^2^)
       constexpr static Units SquareMicrometer() { return Micrometer().Power( 2 ); }
-      /// Square millimeter units (mm^2)
+      /// Square millimeter units (mm^2^)
       constexpr static Units SquareMillimeter() { return Millimeter().Power( 2 ); }
-      /// Cubic millimeter units (mm^3)
+      /// Cubic millimeter units (mm^3^)
       constexpr static Units CubicMillimeter() { return Millimeter().Power( 3 ); }
       /// Second units (s)
       constexpr static Units Second() { return Units( BaseUnits::TIME ); }
       /// Millisecond units (ms)
       constexpr static Units Millisecond() { return Milli() * Second(); }
-      /// Hertz units (s^-1)
+      /// Hertz units (s^-1^)
       constexpr static Units Hertz() { return Units( BaseUnits::TIME, -1 ); }
-      /// Kilohertz units (ms^-1)
+      /// Kilohertz units (ms^-1^)
       constexpr static Units Kilohertz() { return Kilo() * Hertz(); }
-      /// Megahertz units (us^-1)
+      /// Megahertz units (&mu;s^-1^)
       constexpr static Units Megahertz() { return Mega() * Hertz(); }
-      /// Gigahertz units (ns^-1)
+      /// Gigahertz units (ns^-1^)
       constexpr static Units Gigahertz() { return Giga() * Hertz(); }
       /// Radian units (rad)
       constexpr static Units Radian() { return Units( BaseUnits::ANGLE ); }
       /// Pixel units (px)
       constexpr static Units Pixel() { return Units( BaseUnits::PIXEL ); }
-      /// Square pixel units (px^2)
+      /// Square pixel units (px^2^)
       constexpr static Units SquarePixel() { return Units( BaseUnits::PIXEL, 2 ); }
-      /// Cubic pixel units (px^3)
+      /// Cubic pixel units (px^3^)
       constexpr static Units CubicPixel() { return Units( BaseUnits::PIXEL, 3 ); }
 
    private:
@@ -329,7 +328,7 @@ class DIP_NO_EXPORT Units {
       DIP_EXPORT dip::String StringRepresentation( bool unicode ) const;
 };
 
-/// \brief Insert physical quantity to an output stream as a string of base units. See `dip::Units::String`.
+/// \brief Insert physical quantity to an output stream as a string of base units. See \ref dip::Units::String.
 /// \relates dip::Units
 inline std::ostream& operator<<( std::ostream& os, Units const& units ) {
    os << units.StringUnicode();
@@ -344,16 +343,16 @@ inline void swap( Units& v1, Units& v2 ) {
 /// \brief Encapsulates a quantity with physical units.
 ///
 /// Multiplying a double by a
-/// `dip::Units` object yields a `%PhysicalQuantity` object. Numbers and units implicitly
-/// convert to a `%PhysicalQuantity`. It is possible to multiply and divide any physical
+/// \ref dip::Units object yields a `PhysicalQuantity` object. Numbers and units implicitly
+/// convert to a `PhysicalQuantity`. It is possible to multiply and divide any physical
 /// quantities, but adding and subtracting is only possible if the units match.
 ///
 /// ```cpp
-///     dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
+/// dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
 /// ```
 struct DIP_NO_EXPORT PhysicalQuantity {
 
-   /// A default-constructed `%PhysicalQuantity` has magnitude 0 and is unitless.
+   /// A default-constructed `PhysicalQuantity` has magnitude 0 and is unitless.
    constexpr PhysicalQuantity() = default;
 
    /// Create an arbitrary physical quantity.
@@ -661,8 +660,8 @@ constexpr inline PhysicalQuantity operator*( Units const& units, dip::dfloat mag
 /// Thus, it is important to know how many elements are set in the array to know
 /// how any modifications will affect it.
 ///
-/// However, `dip::PixelSize::SwapDimensions`, `dip::PixelSize::InsertDimension` and
-/// `dip::PixelSize::EraseDimension` will expand the array
+/// However, \ref dip::PixelSize::SwapDimensions, \ref dip::PixelSize::InsertDimension and
+/// \ref dip::PixelSize::EraseDimension will expand the array
 /// by one element before modifying the last element in the array. This prevents the
 /// implicit elements after the defined ones to be modified. For example, inserting
 /// dimension *N+K* first expands the array to size *N+K+2* by setting all the new
@@ -674,10 +673,10 @@ constexpr inline PhysicalQuantity operator*( Units const& units, dip::dfloat mag
 /// as a quantity in pixels (px). Pixels are not considered physical units, and are consistently
 /// used to represent relative pixel sizes (i.e. sizes in unknown or arbitrary units).
 /// Thus, a pixel size of 1 px x 2 px indicates a specific aspect ratio, but does not
-/// represent an actual physical size. Use `dip::PhysicalQuantity::IsPhysical` to test
+/// represent an actual physical size. Use \ref dip::PhysicalQuantity::IsPhysical to test
 /// for the pixel size being a physical quantity.
 /// Angles, measured in radian, are not considered dimensionless here (though radian actually
-/// are dimensionless units, see `dip::Units`).
+/// are dimensionless units, see \ref dip::Units).
 class DIP_NO_EXPORT PixelSize {
 
    public:
@@ -945,13 +944,13 @@ class DIP_NO_EXPORT PixelSize {
          return out;
       }
 
-      /// Compares two pixel sizes, magnitudes are compared with a 1e-6 relative tolerance
+      /// Compares two pixel sizes, magnitudes are compared with a 10^-6^ relative tolerance
       bool operator==( PixelSize const& rhs ) const {
          dip::uint d = std::max( size_.size(), rhs.size_.size() );
          return ApproximatelyEquals( rhs, d, 0.0 );
       }
 
-      /// Compares two pixel sizes, magnitudes are compared with a 1e-6 relative tolerance
+      /// Compares two pixel sizes, magnitudes are compared with a 10^-6^ relative tolerance
       bool operator!=( PixelSize const& rhs ) const {
          return !( *this == rhs );
       }
@@ -1033,7 +1032,7 @@ inline void swap( PixelSize& v1, PixelSize& v2 ) {
    v1.swap( v2 );
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

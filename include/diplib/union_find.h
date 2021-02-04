@@ -26,14 +26,13 @@
 
 /// \file
 /// \brief A data structure for the union-find algorithm.
-/// \see infrastructure
+/// See \ref infrastructure.
 
 
 namespace dip {
 
 
 /// \addtogroup infrastructure
-/// \{
 
 
 /// \brief An STL-like data structure for the union-find algorithm.
@@ -48,8 +47,9 @@ namespace dip {
 /// To stream-line the second pass, we provide here a `Relabel` method that assigns a unique, consecutive
 /// label to each of the correspondence sets.
 ///
-/// \warning After this function has been called, the union-find data
-/// structure is destroyed, and the only valid method that can still be called is `Label`.
+/// !!! warning
+///     After this function has been called, the union-find data
+///     structure is destroyed, and the only valid method that can still be called is `Label`.
 ///
 /// Each tree element has a value associated to it. This must be a type that is copy-constructible and
 /// default-initializable. Ideally, it's small. The value associated to any tree element that is not a root is
@@ -57,10 +57,11 @@ namespace dip {
 /// tree when two trees are merged. It should have the following signature:
 ///
 /// ```cpp
-///     ValueType_ unionFunction( ValueType_ const& value1, ValueType_ const& value2 );
+/// ValueType_ unionFunction( ValueType_ const& value1, ValueType_ const& value2 );
 /// ```
 ///
-/// \attention To create a union-find data structure that does not hold any data for each tree, see `dip::SimpleUnionFind`.
+/// !!! attention
+///     To create a union-find data structure that does not hold any data for each tree, see \ref dip::SimpleUnionFind.
 ///
 /// The `IndexType_` template parameter should be an integer, and probably unsigned.
 ///
@@ -68,8 +69,10 @@ namespace dip {
 template< typename IndexType_, typename ValueType_, typename UnionFunction_ >
 class UnionFind {
    public:
-      using IndexType = IndexType_; ///< The type of the index (or label) that identifies each tree element
-      using ValueType = ValueType_; ///< The type of the additional data stored for each tree element
+      /// The type of the index (or label) that identifies each tree element
+      using IndexType = IndexType_;
+      /// The type of the additional data stored for each tree element
+      using ValueType = ValueType_;
 
       /// \brief Default constructor, creates an empty structure
       explicit UnionFind( UnionFunction_ const& unionFunction )
@@ -131,7 +134,8 @@ class UnionFind {
       ///
       /// Returns the number of unique labels.
       ///
-      /// \warning This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
+      /// !!! warning
+      ///     This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
       dip::uint Relabel() {
          std::vector< IndexType > newLabels( list.size(), 0 );
          std::vector< ValueType > newValues( list.size() );
@@ -162,7 +166,8 @@ class UnionFind {
       ///
       /// Returns the number of unique labels.
       ///
-      /// \warning This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
+      /// !!! warning
+      ///     This function destroys the tree structure. After this call, you can only use `Label` and `LabelValue`.
       template< typename Constraint >
       dip::uint Relabel( Constraint constraint ) {
          std::vector< IndexType > newLabels( list.size(), 0 );
@@ -215,7 +220,7 @@ namespace detail {
    inline DummyUnionFindData DummyUnionFindFunc( DummyUnionFindData const&, detail::DummyUnionFindData const& ) { return {}; }
 }
 
-/// \brief A simplified version of `dip::UnionFind` that doesn't store any information about the regions, only equivalences.
+/// \brief A simplified version of \ref dip::UnionFind that doesn't store any information about the regions, only equivalences.
 template< typename IndexType_ >
 class SimpleUnionFind : public UnionFind< IndexType_, detail::DummyUnionFindData, decltype( detail::DummyUnionFindFunc ) > {
       // This class is implemented by overloading the UnionFind class, with the ValueType parameter UnionFunction set to
@@ -237,7 +242,7 @@ class SimpleUnionFind : public UnionFind< IndexType_, detail::DummyUnionFindData
 };
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

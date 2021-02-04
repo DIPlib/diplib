@@ -27,14 +27,13 @@
 
 /// \file
 /// \brief Defines image iterators that are independent of image data type.
-/// \see iterators
+/// See \ref iterators.
 
 
 namespace dip {
 
 
 /// \addtogroup iterators
-/// \{
 
 
 /// \brief An iterator to iterate over pixels along a straight line.
@@ -52,13 +51,19 @@ namespace dip {
 /// \see LineIterator, SampleIterator
 class DIP_NO_EXPORT BresenhamLineIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = dip::sint;          ///< The type of an offset
-      using reference = value_type const&;   ///< The type of a reference to an offset
-      using pointer = value_type const*;     ///< The type of a pointer an offset
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The type of an offset
+      using value_type = dip::sint;
+      /// The type of a reference to an offset
+      using reference = value_type const&;
+      /// The type of a pointer an offset
+      using pointer = value_type const*;
 
-      constexpr static dfloat epsilon = 1e-5;         ///< Tolerance used to avoid errors caused by rounding.
-      constexpr static dfloat delta = 1.0 - epsilon;  ///< A distance of almost one pixel.
+      /// Tolerance used to avoid errors caused by rounding.
+      constexpr static dfloat epsilon = 1e-5;
+      /// A distance of almost one pixel.
+      constexpr static dfloat delta = 1.0 - epsilon;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       BresenhamLineIterator() = default;
@@ -199,43 +204,47 @@ inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) {
 }
 
 
-/// \brief A data-type--agnostic version of `dip::ImageIterator`. Use this iterator only to write code that
+/// \brief A data-type--agnostic version of \ref dip::ImageIterator. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///
-/// This iterator works similarly to `dip::ImageIterator`. The `Pointer` method returns a `void` pointer to
+/// This iterator works similarly to \ref dip::ImageIterator. The `Pointer` method returns a `void` pointer to
 /// the first sample in the pixel. This is the more efficient way of using the iterator.
 ///
-/// Dereferencing the iterator returns a `dip::Image::Pixel` object (actually a `dip::Image::CastPixel`),
-/// and the `[]` operator return a `dip::Image::Sample` object (actually a `dip::Image::CastSample`).
+/// Dereferencing the iterator returns a \ref dip::Image::Pixel object (actually a \ref dip::Image::CastPixel),
+/// and the `[]` operator return a \ref dip::Image::Sample object (actually a \ref dip::Image::CastSample).
 /// These objects reference the pixel or sample, assigning to them changes the
 /// pixel's values in the image. They are convenient in use, but not very efficient. The optional template
-/// argument to `%GenericImageIterator` sets the template argument to the `dip::Image::CastPixel` object
+/// argument to `GenericImageIterator` sets the template argument to the `dip::Image::CastPixel` object
 /// that is actually returned by dereferencing the iterator. Choose a type in which you wish to work, but
 /// know that this choice will not affect the results of reading from and assigning to the dereferenced
 /// iterator. The only difference is the type to which the dereferenced iterator can implicitly be cast to.
 ///
-/// Example usage from `dip::CopyTo`:
+/// Example usage from \ref dip::CopyTo:
 ///
 /// ```cpp
-///     auto arrIt = offsets.begin();
-///     GenericImageIterator<> srcIt( src );
-///     do {
-///        Image::Pixel d( dest.Pointer( *arrIt ), dest.DataType(), dest.Tensor(), dest.TensorStride() );
-///        d = *srcIt;
-///     } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator,
-///                                  // as arrIt should be compared with the end iterator.
+/// auto arrIt = offsets.begin();
+/// GenericImageIterator<> srcIt( src );
+/// do {
+///    Image::Pixel d( dest.Pointer( *arrIt ), dest.DataType(), dest.Tensor(), dest.TensorStride() );
+///    d = *srcIt;
+/// } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator,
+///                              // as arrIt should be compared with the end iterator.
 /// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see \ref using_iterators, ImageIterator, GenericJointImageIterator
+/// \see using_iterators, ImageIterator, GenericJointImageIterator
 template< typename T = dfloat >
 class DIP_NO_EXPORT GenericImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = Image::CastPixel< T >; ///< The type of the pixel, obtained when dereferencing the iterator
-      using reference = value_type; ///< The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
-      using pointer = value_type*;  ///< The type of a pointer to a pixel
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The type of the pixel, obtained when dereferencing the iterator
+      using value_type = Image::CastPixel< T >;
+      /// The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
+      using reference = value_type;
+      /// The type of a pointer to a pixel
+      using pointer = value_type*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), sizeOf_( 0 ), atEnd_( true ) {}
@@ -432,7 +441,7 @@ class DIP_NO_EXPORT GenericImageIterator {
       /// \brief Optimizes the order in which the iterator visits the image pixels.
       ///
       /// The iterator internally reorders and flips image dimensions to change the linear index to match
-      /// the storage order (see `dip::Image::StandardizeStrides`).
+      /// the storage order (see \ref dip::Image::StandardizeStrides).
       /// If the image's strides were not normal, this will significantly increase the speed of reading or
       /// writing to the image. Expanded singleton dimensions are eliminated, meaning that each pixel is
       /// always only accessed once. Additionally, singleton dimensions are ignored.
@@ -502,8 +511,6 @@ inline void swap( GenericImageIterator< T >& v1, GenericImageIterator< S >& v2 )
    v1.swap( v2 );
 }
 
-/// \cond
-
 inline GenericImageIterator< dip::dfloat > Image::begin() {
    return GenericImageIterator< dip::dfloat >( *this );
 }
@@ -512,54 +519,56 @@ inline GenericImageIterator< dip::dfloat > Image::end() {
    return GenericImageIterator< dip::dfloat >();
 }
 
-/// \endcond
 
-
-/// \brief A data-type--agnostic version of `dip::JointImageIterator`. Use this iterator only to write code that
+/// \brief A data-type--agnostic version of \ref dip::JointImageIterator. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///
-/// This iterator works similarly to `dip::JointImageIterator`. The `Pointer<N>` method returns a `void`
+/// This iterator works similarly to \ref dip::JointImageIterator. The `Pointer<N>` method returns a `void`
 /// pointer to the first sample in the pixel for image `N`. This is the more efficient way of using the
 /// iterator.
 ///
-/// The `Sample<N>` method returns a `dip::Image::Sample` object. This object references the sample, so that
+/// The `Sample<N>` method returns a \ref dip::Image::Sample object. This object references the sample, so that
 /// assigning to it changes the samples's value in the image. It is convenient in use, but not very efficient.
-/// The optional template argument to `%GenericJointImageIterator` sets the template argument to the
-/// `dip::Image::CastSample` object that is actually returned by the method. Choose a type in which you wish
+/// The optional template argument to `GenericJointImageIterator` sets the template argument to the
+/// \ref dip::Image::CastSample object that is actually returned by the method. Choose a type in which you wish
 /// to work, but know that this choice will not affect the results of reading from and assigning to the
 /// samples. The only difference is the type to which the output can implicitly be cast to.
 ///
-/// Example usage slightly modified from `dip::Image::Copy`:
+/// Example usage slightly modified from \ref dip::Image::Copy:
 ///
 /// ```cpp
-///     dip::uint processingDim = Framework::OptimalProcessingDim( src );
-///     auto it = dip::GenericJointImageIterator< 2 >( { src, dest }, processingDim );
-///     do {
-///        detail::CopyBuffer(
-///              it.InPointer(),
-///              src.DataType(),
-///              src.Stride( processingDim ),
-///              src.TensorStride(),
-///              it.OutPointer(),
-///              dest.DataType(),
-///              dest.Stride( processingDim ),
-///              dest.TensorStride(),
-///              dest.Size( processingDim ),
-///              dest.TensorElements()
-///        );
-///     } while( ++it );
+/// dip::uint processingDim = Framework::OptimalProcessingDim( src );
+/// auto it = dip::GenericJointImageIterator< 2 >( { src, dest }, processingDim );
+/// do {
+///    detail::CopyBuffer(
+///          it.InPointer(),
+///          src.DataType(),
+///          src.Stride( processingDim ),
+///          src.TensorStride(),
+///          it.OutPointer(),
+///          dest.DataType(),
+///          dest.Stride( processingDim ),
+///          dest.TensorStride(),
+///          dest.Size( processingDim ),
+///          dest.TensorElements()
+///    );
+/// } while( ++it );
 /// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see \ref using_iterators, JointImageIterator, GenericImageIterator
+/// \see using_iterators, JointImageIterator, GenericImageIterator
 template< dip::uint N, typename T = dfloat >
 class DIP_NO_EXPORT GenericJointImageIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = Image::CastPixel< T >; ///< The type of the pixel, obtained when dereferencing the iterator
-      using reference = value_type;       ///< The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
-      using pointer = value_type*;        ///< The type of a pointer to a pixel
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The type of the pixel, obtained when dereferencing the iterator
+      using value_type = Image::CastPixel< T >;
+      /// The type of a reference to a pixel (note dip::Image::CastPixel references a value in the image)
+      using reference = value_type;
+      /// The type of a pointer to a pixel
+      using pointer = value_type*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericJointImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), atEnd_( true ) {
@@ -824,7 +833,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// \brief Optimizes the order in which the iterator visits the image pixels.
       ///
       /// The iterator internally reorders and flips image dimensions to change the linear index to match
-      /// the storage order of the first image (see `dip::Image::StandardizeStrides`), or image `n`
+      /// the storage order of the first image (see \ref dip::Image::StandardizeStrides), or image `n`
       /// if a parameter is given.
       /// If the image's strides were not normal, this will significantly increase the speed of reading or
       /// writing to the image. Expanded singleton dimensions are eliminated only if the dimension is expanded
@@ -966,23 +975,23 @@ inline void swap( GenericJointImageIterator< N, T >& v1, GenericJointImageIterat
 /// still be a valid iterator that can be manipulated. Do not dereference such an iterator!
 ///
 /// ```cpp
-///     dip::ImageSliceIterator it( img, 2 );
-///     do {
-///        // do something with the image *it here.
-///     } while( ++it );
+/// dip::ImageSliceIterator it( img, 2 );
+/// do {
+///    // do something with the image *it here.
+/// } while( ++it );
 /// ```
 ///
-/// The function `dip::ImageSliceEndIterator` creates an iterator that points at a slice one past
+/// The function \ref dip::ImageSliceEndIterator creates an iterator that points at a slice one past
 /// the last, and so is a end iterator. Because it is not possible to decrement below 0, a loop that
-/// iterates in reverse order must test the `dip::ImageSliceIterator::Coordinate()` for equality to
+/// iterates in reverse order must test the \ref dip::ImageSliceIterator::Coordinate() for equality to
 /// zero:
 ///
 /// ```cpp
-///     dip::ImageSliceEndIterator it( img, 2 );
-///     do {
-///        --it;
-///        // do something with the image *it here.
-///     } while( it.Coordinate() != 0 );
+/// dip::ImageSliceEndIterator it( img, 2 );
+/// do {
+///    --it;
+///    // do something with the image *it here.
+/// } while( it.Coordinate() != 0 );
 /// ```
 ///
 /// Note that when the original image is stripped or reforged, the iterator is still valid and
@@ -992,14 +1001,19 @@ inline void swap( GenericJointImageIterator< N, T >& v1, GenericJointImageIterat
 /// Additionally, it behaves like a RandomAccessIterator except for the indexing operator `[]`,
 /// which would be less efficient in use and therefore it's better to not offer it.
 ///
-/// \see \ref using_iterators, ImageTensorIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
+/// \see using_iterators, ImageTensorIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
 class DIP_NO_EXPORT ImageSliceIterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = Image;           ///< The type obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
-      using reference = Image&;           ///< The type of a reference to `value_type`
-      using pointer = Image*;             ///< The type of a pointer to `value_type`
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The type obtained when dereferencing the iterator
+      using value_type = Image;
+      /// The type of distances between iterators
+      using difference_type = dip::sint;
+      /// The type of a reference to `value_type`
+      using reference = Image&;
+      /// The type of a pointer to `value_type`
+      using pointer = Image*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced or used in any way
       ImageSliceIterator() = default;
@@ -1186,7 +1200,7 @@ inline void swap( ImageSliceIterator& v1, ImageSliceIterator& v2 ) {
    v1.swap( v2 );
 }
 
-/// Constructs an end iterator corresponding to a `dip::ImageSliceIterator`
+/// Constructs an end iterator corresponding to a \ref dip::ImageSliceIterator
 /// \relates dip::ImageSliceIterator
 inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint procDim ) {
    ImageSliceIterator out { image, procDim }; // Tests for `procDim` to be OK
@@ -1198,23 +1212,23 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
 /// \brief An iterator for element-by-element processing of a tensor image. Use it to process a tensor
 /// image as a series of scalar images.
 ///
-/// This iterator is implemented as a `dip::ImageSliceIterator`, see that iterator's documentation for further
+/// This iterator is implemented as a \ref dip::ImageSliceIterator, see that iterator's documentation for further
 /// information. When the iterator is dereferenced it yields a scalar image of the same size as the input image.
 /// Each of the tensor elements is visited in the order in which it is stored. For the case of symmetric and
-/// triangular tensors, this means that fewer tensor elements will be visited. See `dip::Tensor` for information
+/// triangular tensors, this means that fewer tensor elements will be visited. See \ref dip::Tensor for information
 /// on storage order.
 ///
 /// ```cpp
-///     auto it = dip::ImageTensorIterator( img );
-///     do {
-///        // do something with the image *it here.
-///     } while( ++it );
+/// auto it = dip::ImageTensorIterator( img );
+/// do {
+///    // do something with the image *it here.
+/// } while( ++it );
 /// ```
 ///
 /// Note that when the original image is stripped or reforged, the iterator is still valid and
 /// holds on to the original data segment.
 ///
-/// \see \ref using_iterators, ImageSliceIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
+/// \see using_iterators, ImageSliceIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
 inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
    Image tmp = image;
    dip::uint dim = tmp.Dimensionality();
@@ -1223,7 +1237,7 @@ inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

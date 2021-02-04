@@ -25,18 +25,17 @@
 
 
 /// \file
-/// \brief A dimensionality-independent way of iterating over neighbor pixels
-/// \see infrastructure
+/// \brief A dimensionality-independent way of iterating over neighbor pixels.
+/// See \ref infrastructure.
 
 
 namespace dip {
 
 
 /// \addtogroup infrastructure
-/// \{
 
 
-/// \brief Represents a metric to be used to create a `dip::NeighborList`
+/// \brief Represents a metric to be used to create a \ref dip::NeighborList
 ///
 /// A metric describes the distance between a pixel and its neighbors. It also describes implicitly the
 /// size of a neighborhood, as the minimum neighborhood size required to propagate distances in the given
@@ -45,13 +44,15 @@ namespace dip {
 /// \see dip::NeighborList
 class DIP_NO_EXPORT Metric {
    public:
+
+      /// \brief The type of metric
       enum class TypeCode {
-            CONNECTED,
-            CHAMFER,
-            IMAGE
+            CONNECTED, ///< A connectivity metric, where the neighbors are all at the same distance.
+            CHAMFER,   ///< A chamfer metric, where different neighbors have different distances.
+            IMAGE      ///< Metric defined through an image.
       };
 
-      /// \brief The default metric is the city distance (\f$L^1\f$ metric).
+      /// \brief The default metric is the city distance (L^1^ metric).
       Metric( TypeCode type = TypeCode::CONNECTED, dip::uint param = 1 ) : type_( type ), param_( param ) {}
 
       /// \brief A string implicitly converts to a metric.
@@ -59,18 +60,18 @@ class DIP_NO_EXPORT Metric {
       /// Valid metrics are:
       ///
       /// - `"connected"`: here, `param` is the connectivity, see \ref connectivity for information
-      /// on the connectivity parameter. A value of 1 corresponds to the city-block metric; a value of
-      /// 0 indicates a connectivity equal to the image dimensionality, and corresponds
-      /// to the chess-board metric.
+      ///   on the connectivity parameter. A value of 1 corresponds to the city-block metric; a value of
+      ///   0 indicates a connectivity equal to the image dimensionality, and corresponds
+      ///   to the chess-board metric.
       ///
       /// - `"chamfer"`: a chamfer metric. `param` indicates the neighborhood size: A value of 1
-      /// gives a full 3x3 neighborhood (in 2D, or 3x3x3 in 3D, etc). A value of 2 gives the 5x5
-      /// chamfer neighborhood (i.e. the 3x3 neighborhood plus the pixels that are night's move
-      /// away from the origin).
+      ///   gives a full 3x3 neighborhood (in 2D, or 3x3x3 in 3D, etc). A value of 2 gives the 5x5
+      ///   chamfer neighborhood (i.e. the 3x3 neighborhood plus the pixels that are night's move
+      ///   away from the origin).
       ///
-      /// - `"city"`: \f$L^1\f$ metric, equivalent to `"connected"` with `param=1`.
+      /// - `"city"`: L^1^ metric, equivalent to `"connected"` with `param=1`.
       ///
-      /// - `"chess"`: \f$L^\infty\f$ metric, equivalent to `"connected"` with `param` = dimensionality.
+      /// - `"chess"`: L^&infin;^ metric, equivalent to `"connected"` with `param` = dimensionality.
       ///
       /// - `"4-connected"` is equivalent to `"connected"` with `param=1`.
       ///
@@ -89,12 +90,11 @@ class DIP_NO_EXPORT Metric {
       /// The `pixelSize` parameter, if given, causes the neighbor's distances to be scaled by the
       /// pixel size. The units must be identical in all dimensions, and only the magnitude is used.
       ///
-      /// \literature
-      /// <li>B.J.H. Verwer, "Local distances for distance transformations in two and three dimensions", Pattern Recognition
-      ///     Letters 12(11):671-682, 1991.
-      /// <li>B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
-      ///     of Technology, The Netherlands, 1991.
-      /// \endliterature
+      /// !!! literature
+      ///     - B.J.H. Verwer, "Local distances for distance transformations in two and three dimensions", Pattern Recognition
+      ///       Letters 12(11):671-682, 1991.
+      ///     - B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
+      ///       of Technology, The Netherlands, 1991.
       Metric( String const& type, dip::uint param = 1, dip::PixelSize const& pixelSize = {} ) {
          if( type == S::CHAMFER ) {
             DIP_THROW_IF( param < 1, E::INVALID_PARAMETER );
@@ -133,23 +133,23 @@ class DIP_NO_EXPORT Metric {
       ///
       /// For example, this 3 by 3 image:
       ///
-      /// ```txt
-      ///    +---+---+---+
-      ///    | 0 | 2 | 0 |
-      ///    +---+---+---+
-      ///    | 1 | 0 | 1 |
-      ///    +---+---+---+
-      ///    | 0 | 2 | 0 |
-      ///    +---+---+---+
+      /// ```text
+      /// +---+---+---+
+      /// | 0 | 2 | 0 |
+      /// +---+---+---+
+      /// | 1 | 0 | 1 |
+      /// +---+---+---+
+      /// | 0 | 2 | 0 |
+      /// +---+---+---+
       /// ```
       ///
       /// is equivalent to
       ///
       /// ```cpp
-      ///     dip::Metric( "city", 0, dip::PixelSize{ 1, 2 } )
+      /// dip::Metric( "city", 0, dip::PixelSize{ 1, 2 } )
       /// ```
       ///
-      /// If the image has a pixel size set, it is ignored. The `SetPixelSize` method has no effect on a `%Metric`
+      /// If the image has a pixel size set, it is ignored. The `SetPixelSize` method has no effect on a `Metric`
       /// defined in this way.
       Metric( dip::Image const& image ) : type_( TypeCode::IMAGE ), image_( image.QuickCopy() ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
@@ -172,8 +172,8 @@ class DIP_NO_EXPORT Metric {
       /// \brief Returns true if the pixel size array is set (a non-empty array).
       bool HasPixelSize() const { return !pixelSize_.empty(); }
 
-      /// \brief Sets the pixel size associated to the `%Metric`. Will overwrite an earlier defined pixel size.
-      /// Note that when the `%Metric` is defined by an image, the pixel size is ignored.
+      /// \brief Sets the pixel size associated to the `Metric`. Will overwrite an earlier defined pixel size.
+      /// Note that when the `Metric` is defined by an image, the pixel size is ignored.
       void SetPixelSize( dip::PixelSize const& pixelSize ) {
          if( pixelSize.IsDefined() ) {
             pixelSize_.resize( pixelSize.Size() );
@@ -220,12 +220,15 @@ class DIP_NO_EXPORT NeighborList {
 
    public:
 
-      /// \brief Iterates over the neighbors in the `%NeighborList`.
+      /// \brief Iterates over the neighbors in the `NeighborList`.
       class Iterator {
          public:
-            using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-            using value_type = dfloat;             ///< The type that the iterator points at
-            using reference = value_type const&;   ///< The type you get when you dereference
+            /// Iterator category
+            using iterator_category = std::forward_iterator_tag;
+            /// The type that the iterator points at
+            using value_type = dfloat;
+            /// The type you get when you dereference
+            using reference = value_type const&;
             /// Default constructible, yields an invalid iterator.
             Iterator() = default;
             /// Swap
@@ -270,7 +273,7 @@ class DIP_NO_EXPORT NeighborList {
             Iterator( NeighborListIterator const& it ) : it_( it ) {}
       };
 
-      /// \brief Creates a `%NeighborList` given the image dimensionality and a `dip::Metric`.
+      /// \brief Creates a `NeighborList` given the image dimensionality and a \ref dip::Metric.
       NeighborList( Metric const& metric, dip::uint dimensionality ) {
          if( metric.Type() == Metric::TypeCode::IMAGE ) {
             ConstructImage( dimensionality, metric.Image() );
@@ -317,11 +320,11 @@ class DIP_NO_EXPORT NeighborList {
       /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
       DIP_EXPORT BooleanArray FindForward( dip::uint procDim = 0 ) const;
 
-      /// \brief Returns a new `%NeighborList` object containing only those neighbors that would be processed earlier
+      /// \brief Returns a new `NeighborList` object containing only those neighbors that would be processed earlier
       /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
       DIP_EXPORT NeighborList SelectBackward( dip::uint procDim = 0 ) const;
 
-      /// \brief Returns a new `%NeighborList` object containing only those neighbors that would be processed later
+      /// \brief Returns a new `NeighborList` object containing only those neighbors that would be processed later
       /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
       DIP_EXPORT NeighborList SelectForward( dip::uint procDim = 0 ) const;
 
@@ -374,7 +377,7 @@ inline void swap( NeighborList::Iterator& v1, NeighborList::Iterator& v2 ) {
    v1.swap( v2 );
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

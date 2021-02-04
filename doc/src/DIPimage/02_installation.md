@@ -1,23 +1,22 @@
-# Installing DIPimage {#sec_dum_installing}
+\comment DIPlib 3.0
 
-[//]: # (DIPlib 3.0)
+\comment (c)2017-2020, Cris Luengo.
+\comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
-[//]: # ([c]2017-2019, Cris Luengo.)
-[//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
 
-[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
-[//]: # (you may not use this file except in compliance with the License.)
-[//]: # (You may obtain a copy of the License at)
-[//]: # ()
-[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
-[//]: # ()
-[//]: # (Unless required by applicable law or agreed to in writing, software)
-[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
-[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
-[//]: # (See the License for the specific language governing permissions and)
-[//]: # (limitations under the License.)
 
-\m_footernavigation
+\page sec_dum_installing Installing *DIPimage*
 
 This toolbox requires *MATLAB* R2008a (version 7.6) or later, though some functionality
 might require newer versions. The official distributions are compiled with much more
@@ -32,8 +31,6 @@ On all platforms, it is possible to have multiple versions of *DIPimage* install
 (this is not true for versions of *DIPimage* before 3.0).
 But you can only add one of them to your *MATLAB* path.
 
-\tableofcontents
-
 \section sec_dum_installing_windows Windows installation
 
 \subsection sec_dum_installing_windows_bindist Installation from binary distribution
@@ -42,8 +39,8 @@ To install *DIPimage*, simply run the installation program and follow the
 directions in it. The tool will tell you to start *MATLAB* and type the
 command
 
-```m
-    run('C:\Program Files\dip\dipstart.m')
+```matlab
+run('C:\Program Files\dip\dipstart.m')
 ```
 
 where `C:\Program Files\dip\` is the directory to which you installed
@@ -65,9 +62,9 @@ dependencies. You can also
 
 Once all the binaries are compiled, start *MATLAB* and type:
 
-```m
-    addpath('C:\dip\share\DIPimage')
-    setenv('PATH',['C:\dip\bin',';',getenv('PATH')]);
+```matlab
+addpath('C:\dip\share\DIPimage')
+setenv('PATH',['C:\dip\bin',';',getenv('PATH')]);
 ```
 
 assuming that `C:\dip\` was the root directory where the binaries were installed
@@ -77,8 +74,8 @@ to.
 
 \subsection sec_dum_installing_linux_bindist Installation from binary distribution
 
-\par Not yet available
-This will probably be a tar ball.
+!!! par "Not yet available"
+    This will probably be a tar ball.
 
 \subsection sec_dum_installing_linux_source Installation from source
 
@@ -91,30 +88,30 @@ The root directory of the git repository has a
 that gives some directions on compiling. In principle this should suffice:
 
 ```bash
-    mkdir target
-    cd target
-    cmake /path/to/git/repository/root
-    make -j install
+mkdir target
+cd target
+cmake /path/to/git/repository/root
+make -j install
 ```
 
 If you wish to install *DIPimage* in your home directory instead of `/usr`,
 the CMake command could be:
 ```bash
-    cmake /path/to/git/repository/root -DCMAKE_INSTALL_PREFIX=/home/uname
+cmake /path/to/git/repository/root -DCMAKE_INSTALL_PREFIX=/home/uname
 ```
 
 Note that you need to have *MATLAB* installed on the build machine to build *DIPimage*.
 
 Once all the binaries are compiled, start *MATLAB* and type:
 
-```m
-    addpath('/usr/share/DIPimage')
+```matlab
+addpath('/usr/share/DIPimage')
 ```
 
 or:
 
-```m
-    addpath('/home/uname/share/DIPimage')
+```matlab
+addpath('/home/uname/share/DIPimage')
 ```
 
 You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
@@ -123,8 +120,8 @@ You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 
 \subsection sec_dum_installing_macos_bindist Installation from binary distribution
 
-\par Not yet available
-This might be a bundle, or a drag-drop disk image. A different option could be a Homebrew formula.
+!!! par "Not yet available"
+    This might be a bundle, or a drag-drop disk image. A different option could be a Homebrew formula.
 
 \subsection sec_dum_installing_macos_source Installation from source
 

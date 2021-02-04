@@ -32,77 +32,85 @@
 
 
 /// \file
-/// \brief This file defines the `dip_opencv` namespace, functionality to interface *OpenCV 2* (or later) and *DIPlib*.
+/// \brief This file defines the \ref dip_opencv namespace, functionality to interface *OpenCV 2* (or later) and *DIPlib*.
 
 
-/// \brief The `%dip_opencv` namespace contains the interface between *OpenCV 2* (or later) and *DIPlib*.
-namespace dip_opencv {
-
-
-/// \defgroup dip_opencv_interface DIPlib-OpenCV interface
+/// \group dip_opencv_interface *DIPlib*-*OpenCV* interface
 /// \ingroup interfaces
 /// \brief Functions to convert images to and from *OpenCV*.
 ///
-/// The `dip_opencv` namespace defines the functions needed to convert between *OpenCV* `cv::Mat` objects and *DIPlib*
-/// `dip::Image` objects.
+/// The \ref dip_opencv namespace defines the functions needed to convert between *OpenCV* `cv::Mat` objects and *DIPlib*
+/// \ref dip::Image objects.
 ///
-/// We define a class `dip_opencv::ExternalInterface` so that output images from *DIPlib* can yield an *OpenCV* image.
-/// The function `dip_opencv::MatToDip` encapsulates (maps) an *OpenCV* image in a *DIPlib* image;
-/// `dip_opencv::DipToMat` does the opposite, mapping a *DIPlib* image as an *OpenCV* image.
+/// We define a class \ref dip_opencv::ExternalInterface so that output images from *DIPlib* can yield an *OpenCV* image.
+/// The function \ref dip_opencv::MatToDip encapsulates (maps) an *OpenCV* image in a *DIPlib* image;
+/// \ref dip_opencv::DipToMat does the opposite, mapping a *DIPlib* image as an *OpenCV* image.
 ///
-/// **Note:** *OpenCV* is more limited in how the pixel data is stored, and consequently not all *DIPlib* images can
+/// \section dip_opencv_limitations Limitations
+///
+/// *OpenCV* is more limited in how the pixel data is stored, and consequently not all *DIPlib* images can
 /// be mapped as an *OpenCV* image. These are the limitations:
-///  - The maximum number of channels in *OpenCV* is `CV_CN_MAX` (equal to 512 in my copy). *DIPlib* tensor elements are
-///    mapped to channels, but the tensor shape is lost. The tensor stride must be 1.
-///  - *OpenCV* recognizes the following types (depths): 8-bit and 16-bit signed and unsigned ints, 32-bit signed ints,
-///    and 32-bit and 64-bit floats. Thus, `dip::DT_UINT32` cannot be mapped. We choose to map it to 32-bit signed
-///    ints, with the potential problem that the upper half of the unsigned range is mapped to negative values
-///    (all modern systems use two's complement). `dip::DT_BIN` is mapped to an 8-bit unsigned integer, see the note
-///    below. 64-bit integer images cannot be mapped and throw an exception.
-///  - Complex pixel values are mapped to `CV_32FC2` or `CV_64FC2` -- a 2-channel float `cv::Mat` array. Consequently,
-///    complex-valued tensor images cannot be mapped.
-///  - `cv::Mat` objects can store arrays of any dimensionality larger than 2, but *OpenCV* functionality
-///    is mostly limited to 2D images. Therefore, we only map 2D `dip::Image` objects in a `cv::Mat` array.
-///    0D or 1D images will have singleton dimensions appended to force them to be 2D.
-///  - In *OpenCV*, the image rows must be contiguous (i.e. the x-stride must be equal to the number of tensor
-///    elements), and the y-stride must be positive. This matches *DIPlib*'s default, but if the `dip::Image` object
-///    has strides that don't match *OpenCV*'s requirement (e.g. after extracting a non-contiguous subset of pixels,
-///    or calling `dip::Image::Mirror` or `dip::Image::Rotation90`), an exception will be thrown. Use
-///    `dip::Image::ForceNormalStrides` to copy the image into a suitable order for mapping. Alternatively, use
-///    `dip_opencv::CopyDipToMat`.
 ///
-/// **Note:** *OpenCV* does not know a binary image type, and uses an 8-bit unsigned integer with values 0 and 255
-/// where a binary image is intended. This clashes with *DIPlib*'s binary type, which is of the same size but is
-/// expected to contain only 0 and 1 values. The functions `dip_opencv::FixBinaryImageForDip` and
-/// `dip_opencv::FixBinaryImageForOpenCv` fix up binary images for processing in either library.
-/// \{
+/// - The maximum number of channels in *OpenCV* is `CV_CN_MAX` (equal to 512 in my copy). *DIPlib* tensor elements are
+///   mapped to channels, but the tensor shape is lost. The tensor stride must be 1.
+///
+/// - *OpenCV* recognizes the following types (depths): 8-bit and 16-bit signed and unsigned ints, 32-bit signed ints,
+///   and 32-bit and 64-bit floats. Thus, \ref dip::DT_UINT32 cannot be mapped. We choose to map it to 32-bit signed
+///   ints, with the potential problem that the upper half of the unsigned range is mapped to negative values
+///   (all modern systems use two's complement). \ref dip::DT_BIN is mapped to an 8-bit unsigned integer, see the note
+///   below. 64-bit integer images cannot be mapped and throw an exception.
+///
+/// - Complex pixel values are mapped to `CV_32FC2` or `CV_64FC2` -- a 2-channel float `cv::Mat` array. Consequently,
+///   complex-valued tensor images cannot be mapped.
+///
+/// - `cv::Mat` objects can store arrays of any dimensionality larger than 2, but *OpenCV* functionality
+///   is mostly limited to 2D images. Therefore, we only map 2D \ref dip::Image objects in a `cv::Mat` array.
+///   0D or 1D images will have singleton dimensions appended to force them to be 2D.
+///
+/// - In *OpenCV*, the image rows must be contiguous (i.e. the x-stride must be equal to the number of tensor
+///   elements), and the y-stride must be positive. This matches *DIPlib*'s default, but if the \ref dip::Image object
+///   has strides that don't match *OpenCV*'s requirement (e.g. after extracting a non-contiguous subset of pixels,
+///   or calling \ref dip::Image::Mirror or \ref dip::Image::Rotation90), an exception will be thrown. Use
+///   \ref dip::Image::ForceNormalStrides to copy the image into a suitable order for mapping. Alternatively, use
+///   \ref dip_opencv::CopyDipToMat.
+///
+/// !!! attention
+///     *OpenCV* does not know a binary image type, and uses an 8-bit unsigned integer with values 0 and 255
+///     where a binary image is intended. This clashes with *DIPlib*'s binary type, which is of the same size but is
+///     expected to contain only 0 and 1 values. The functions \ref dip_opencv::FixBinaryImageForDip and
+///     \ref dip_opencv::FixBinaryImageForOpenCv fix up binary images for processing in either library.
+/// \addtogroup
+
+
+/// \brief The `dip_opencv` namespace contains the interface between *OpenCV 2* (or later) and *DIPlib*.
+namespace dip_opencv {
 
 
 /// \brief Creates a *DIPlib* image around an *OpenCV* `cv::Mat`, without taking ownership of the data.
 ///
-/// This function maps a `cv::Mat` object to a `dip::Image` object.
+/// This function maps a `cv::Mat` object to a \ref dip::Image object.
 /// The `dip::Image` object will point to the data in the `cv::Mat`, which must continue existing until the
-/// `dip::Image` is deleted or `Strip`ped. The output `dip::Image` is protected to prevent accidental reforging,
-/// unprotect it using `dip::Image::Protect`.
+/// `dip::Image` is deleted or stripped. The output `dip::Image` is protected to prevent accidental reforging,
+/// unprotect it using \ref dip::Image::Protect.
 ///
-/// An empty `cv::Mat` produces a non-forged `dip::Image`.
+/// An empty `cv::Mat` produces a non-forged \ref dip::Image.
 ///
 /// If the *OpenCV* image `mat` has depth `CV_32S` (32-bit signed integer), and `forceUnsigned` is `true`, then
-/// the output `dip::Image` will be of type `dip::DT_UINT32`, instead of `dip::DT_SINT32`.
+/// the output \ref dip::Image will be of type \ref dip::DT_UINT32, instead of \ref dip::DT_SINT32.
 ///
 /// For a "binary" *OpenCV* image (these are images of type `CV_8U` with pixel values of 0 and 255), the mapped
-/// *DIPlib* image is of type `dip::DT_UINT8`, because this function cannot know if the input `mat` was used as
+/// *DIPlib* image is of type \ref dip::DT_UINT8, because this function cannot know if the input `mat` was used as
 /// an 8-bit unsigned integer image or as a binary image. The simplest way to obtain a binary *DIPlib* image is
 /// to threshold the output of `MatToDip`. However, this leads to an image that doesn't share the data segment
 /// with the original `mat`:
 /// ```cpp
-///     cv::Mat bin_mat = cv::threshold(...);                 // This is a "binary" OpenCV image
-///     dip::Image bin_dip = dip_opencv::MatToDip( bin_mat ); // This is a dip::DT_UINT8 DIPlib image, not dip::DT_BIN
-///     bin_dip = bin_dip > 0;
+/// cv::Mat bin_mat = cv::threshold(...);                 // This is a "binary" OpenCV image
+/// dip::Image bin_dip = dip_opencv::MatToDip( bin_mat ); // This is a dip::DT_UINT8 DIPlib image, not dip::DT_BIN
+/// bin_dip = bin_dip > 0;
 /// ```
-/// There currently is no simple solution to creating a `dip::DT_BIN` image that encapsulates the data from a
-/// `cv::Mat` image. However, one can encapsulate the data of a binary `dip::Image` in a `cv::Mat`, see the example
-/// in `dip_opencv::FixBinaryImageForOpenCv`.
+/// There currently is no simple solution to creating a \ref dip::DT_BIN image that encapsulates the data from a
+/// `cv::Mat` image. However, one can encapsulate the data of a binary \ref dip::Image in a `cv::Mat`, see the example
+/// in \ref dip_opencv::FixBinaryImageForOpenCv.
 inline dip::Image MatToDip( cv::Mat const& mat, bool forceUnsigned = false ) {
    if( mat.empty() ) {
       return {};
@@ -260,14 +268,14 @@ inline size_t GetOpenMatStep(
 
 /// \brief Creates an *OpenCV* `cv::Mat` object around a *DIPlib* image, without taking ownership of the data.
 ///
-/// This function maps a `dip::Image` object to a `cv::Mat` object.
+/// This function maps a \ref dip::Image object to a `cv::Mat` object.
 /// The `cv::Mat` object will point to the data in the `dip::Image`, which must continue existing until the
 /// `cv::Mat` is deleted.
 ///
-/// A non-forged `dip::Image` produces an empty `cv::Mat`.
+/// A non-forged \ref dip::Image produces an empty `cv::Mat`.
 ///
 /// There are many limitations to the images that can be mapped by a `cv::Mat`, see the description in the
-/// documentation to the module: \ref dip_opencv_interface. You can also use `dip_opencv::CopyDipToMat` instead.
+/// documentation to the module: \ref dip_opencv_interface. You can also use \ref dip_opencv::CopyDipToMat instead.
 inline cv::Mat DipToMat( dip::Image const& img ) {
    if( !img.IsForged() ) {
       return {};
@@ -286,7 +294,7 @@ inline cv::Mat DipToMat( dip::Image const& img ) {
 
 /// \brief Creates an *OpenCV* `cv::Mat` object from a *DIPlib* image by copy.
 ///
-/// A non-forged `dip::Image` produces an empty `cv::Mat`.
+/// A non-forged \ref dip::Image produces an empty `cv::Mat`.
 ///
 /// If the image has more than two dimensions, or is a complex-valued tensor image, no copy can be made;
 /// an exception will be thrown.
@@ -310,14 +318,14 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 }
 
 
-/// \brief This class is the `dip::ExternalInterface` for the *OpenCV* interface.
+/// \brief This class is the \ref dip::ExternalInterface for the *OpenCV* interface.
 ///
 /// Use the following code when declaring images to be used as the output to a *DIPlib* function:
 ///
 /// ```cpp
-///     dip_opencv::ExternalInterface cvei;
-///     dip::Image img_out0 = cvei.NewImage();
-///     dip::Image img_out1 = cvei.NewImage();
+/// dip_opencv::ExternalInterface cvei;
+/// dip::Image img_out0 = cvei.NewImage();
+/// dip::Image img_out1 = cvei.NewImage();
 /// ```
 ///
 /// This configures the images `img_out0` and `img_out1` such that, when they are forged later on, an `cv::Mat`
@@ -325,33 +333,33 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 ///
 /// However, there are many limitations to the images that can be mapped by a `cv::Mat`, see the description in the
 /// documentation to the module: \ref dip_opencv_interface. For these images, the allocator will fail, prompting
-/// *DIPlib* to use its own, default allocator instead. The resulting `dip::Image` object cannot be converted back
+/// *DIPlib* to use its own, default allocator instead. The resulting \ref dip::Image object cannot be converted back
 /// to an *OpenCV* object, though it might be possible to convert parts of it (for example each 2D plane separately).
 ///
-/// The `%ExternalInterface` object owns the `cv::Mat` objects. You need to keep it around as long as you use the
-/// image objects returned by its `NewImage` method, otherwise the data segments will be freed and the `dip::Image`
+/// The \ref dip::ExternalInterface object owns the `cv::Mat` objects. You need to keep it around as long as you use the
+/// image objects returned by its \ref NewImage method, otherwise the data segments will be freed and the \ref dip::Image
 /// objects will point to non-existing data segments.
 ///
-/// To retrieve the `cv::Mat` object inside such a `dip::Image`, use the `dip_opencv::ExternalInterface::GetMat`
+/// To retrieve the `cv::Mat` object inside such a \ref dip::Image, use the \ref GetMat
 /// method:
 ///
 /// ```cpp
-///     cv::Mat img0 = cvei.GetMat( img_out0 );
-///     cv::Mat img1 = cvei.GetMat( img_out1 );
+/// cv::Mat img0 = cvei.GetMat( img_out0 );
+/// cv::Mat img1 = cvei.GetMat( img_out1 );
 /// ```
 ///
-/// If you don't use the `GetMat` method, the `cv::Mat` that contains the pixel data will be destroyed when the
-/// `dip::Image` object goes out of scope. The `GetMat` method returns a `cv::Mat` object that owns the data segment
+/// If you don't use the \ref GetMat method, the `cv::Mat` that contains the pixel data will be destroyed when the
+/// \ref dip::Image object goes out of scope. The `GetMat` method returns a `cv::Mat` object that owns the data segment
 /// used by the `dip::Image` object. In this case, the `dip::Image` object is still valid, and shares the data segment
 /// with the extracted `cv::Mat`. If the `cv::Mat` is destroyed, the data segment will be freed and the `dip::Image`
 /// object will point to a non-existing data segment.
 ///
-/// Remember to not assign a result into the images created with `NewImage`, as the pixel data will be copied in the
+/// Remember to not assign a result into the images created with \ref NewImage, as the pixel data will be copied in the
 /// assignment. Instead, use the *DIPlib* functions that take output images as function arguments:
 ///
 /// ```cpp
-///     img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
-///     dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
+/// img_out0 = in1 + in2;           // Bad! Incurs an unnecessary copy
+/// dip::Add( in1, in2, img_out0 ); // Correct, the operation writes directly in the output data segment
 /// ```
 ///
 /// In the first case, `in1 + in2` is computed into a temporary image, whose pixels are then copied into the
@@ -403,13 +411,13 @@ class ExternalInterface : public dip::ExternalInterface {
          return dip::DataSegment{ origin, StripHandler( *this ) };
       }
 
-      /// \brief Returns the *OpenCV* `cv::Mat` that holds the data for the `dip::Image` `img`.
+      /// \brief Returns the *OpenCV* `cv::Mat` that holds the data for the \ref dip::Image `img`.
       ///
       /// The *OpenCV* `cv::Mat` returned is the one allocated to hold the pixel data in the input
-      /// `img`. If `img` is a view of another image, or has been manipulated through `dip::Image::Mirror` or
-      /// `dip::Image::Rotation90`, the pixel data will be copied into a new `cv::Mat` object.
+      /// `img`. If `img` is a view of another image, or has been manipulated through \ref dip::Image::Mirror or
+      /// \ref dip::Image::Rotation90, the pixel data will be copied into a new `cv::Mat` object.
       ///
-      /// If the `dip::Image` object does not point to data in a `cv::Mat` object, the pixel data will be copied
+      /// If the \ref dip::Image object does not point to data in a `cv::Mat` object, the pixel data will be copied
       /// into a new `cv::Mat` object.
       cv::Mat GetMat( dip::Image const& img ) {
          DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
@@ -445,7 +453,7 @@ class ExternalInterface : public dip::ExternalInterface {
          return mat;
       }
 
-      /// \brief Constructs a `dip::Image` object with the external interface set so that,
+      /// \brief Constructs a \ref dip::Image object with the external interface set so that,
       /// when forged, a *OpenCV* `cv::Mat` will be allocated to hold the samples.
       dip::Image NewImage() {
          dip::Image out;
@@ -457,7 +465,7 @@ class ExternalInterface : public dip::ExternalInterface {
 
 /// \brief Fixes the binary image `img` to match expectations of *DIPlib* (i.e. only the bottom bit is used).
 ///
-/// The input image is expected to be binary. See `dip_opencv::FixBinaryImageForOpenCv` for a use case.
+/// The input image is expected to be binary. See \ref dip_opencv::FixBinaryImageForOpenCv for a use case.
 inline void FixBinaryImageForDip( dip::Image& img ) {
    dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
    do {
@@ -472,13 +480,13 @@ inline void FixBinaryImageForDip( dip::Image& img ) {
 /// The input image is expected to be binary. The data segment for the image is modified such that it is no
 /// longer useful for use in *DIPlib*, but becomes useful for use in *OpenCV*.
 /// ```cpp
-///     dip::Image bin_dip = dip::Threshold(...);          // This is a DIPlib binary image
-///     cv::Mat bin_mat = dip_opencv::DipToMat( bin_dip ); // This is an OpenCV CV_8U image with values 0 and 1
-///     // use bin_dip with DIPlib functions here...
-///     dip_opencv::FixBinaryImageForOpenCv( bin_dip );    // Now both bin_dip and bin_mat have values 0 and 255
-///     // use bin_mat with OpenCV functions here...
-///     dip_opencv::FixBinaryImageForDip( bin_dip );       // Now both bin_dip and bin_mat have values 0 and 1
-///     // use bin_dip with DIPlib functions here...
+/// dip::Image bin_dip = dip::Threshold(...);          // This is a DIPlib binary image
+/// cv::Mat bin_mat = dip_opencv::DipToMat( bin_dip ); // This is an OpenCV CV_8U image with values 0 and 1
+/// // use bin_dip with DIPlib functions here...
+/// dip_opencv::FixBinaryImageForOpenCv( bin_dip );    // Now both bin_dip and bin_mat have values 0 and 255
+/// // use bin_mat with OpenCV functions here...
+/// dip_opencv::FixBinaryImageForDip( bin_dip );       // Now both bin_dip and bin_mat have values 0 and 1
+/// // use bin_dip with DIPlib functions here...
 /// ```
 inline void FixBinaryImageForOpenCv( dip::Image& img ) {
    dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
@@ -490,7 +498,7 @@ inline void FixBinaryImageForOpenCv( dip::Image& img ) {
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip_opencv
 

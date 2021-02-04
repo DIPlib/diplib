@@ -28,7 +28,10 @@
 #define DIP_EXPORT_H
 
 /// \file
-/// \brief Declares the `DIP_EXPORT` and `DIP_NO_EXPORT` macros.
+/// \brief Declares the \ref DIP_EXPORT and \ref DIP_NO_EXPORT macros.
+/// This file is always included through \ref "diplib.h".
+
+/// \addtogroup infrastructure
 
 /// \def DIP_EXPORT
 /// \brief Indicates that the function or class is exported from the shared/dynamic-load library.
@@ -49,7 +52,7 @@
 ///
 /// However, on Windows, trying to export a class derived from a class in the standard library (such
 /// as `std::exception`), or trying to export a class that contains members of a non-exported class
-/// (such as a `dip::String`, a.k.a. `std::string`), causes compiler warnings. It seems that currently
+/// (such as a \ref dip::String, a.k.a. `std::string`), causes compiler warnings. It seems that currently
 /// it is considered best practice to not export such classes. The Windows run-time linker always
 /// maps local classes to those in the shared library, even when they are not exported.
 
@@ -74,5 +77,7 @@
 #      define DIP_CLASS_EXPORT DIP_EXPORT
 #   endif
 #endif
+
+/// \endgroup
 
 #endif // DIP_EXPORT_H

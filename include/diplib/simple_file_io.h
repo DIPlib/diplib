@@ -30,25 +30,25 @@
 
 /// \file
 /// \brief Functions for reading and writing images from/to files.
-/// \see file_io
+/// See \ref file_io.
 
 
 namespace dip {
 
 
 /// \addtogroup file_io
-/// \{
 
 /// \brief Reads the image in a file `filename`, and puts it in `out`.
 ///
 /// `format` can be one of:
-/// - `"ics"`: The file is an ICS file, use `dip::ImageReadICS`.
-/// - `"tiff"`: The file is a TIFF file, use `dip::ImageReadTIFF`. Reads only the first image plane.
-/// - `"jpeg"`: The file is a JPEG file, use `dip::ImageReadJPEG`.
-/// - `"bioformats"`: Use `dip::javaio::ImageReadJavaIO` to read the file with the *Bio-Formats* library.
+///
+/// - `"ics"`: The file is an ICS file, use \ref dip::ImageReadICS.
+/// - `"tiff"`: The file is a TIFF file, use \ref dip::ImageReadTIFF. Reads only the first image plane.
+/// - `"jpeg"`: The file is a JPEG file, use \ref dip::ImageReadJPEG.
+/// - `"bioformats"`: Use \ref dip::javaio::ImageReadJavaIO to read the file with the *Bio-Formats* library.
 /// - `""`: Select the format by looking at the file name extension or the file's first few bytes. This is the default.
 ///
-/// Information about the file and all metadata are returned in the `FileInformation` output argument.
+/// Information about the file and all metadata are returned in the \ref dip::FileInformation output argument.
 ///
 /// If *DIPjavaio* is not linked against, the `"bioformats"` format will not exist. Note that when linking
 /// against the *DIPjavaio* library, `DIP_CONFIG_HAS_DIPJAVAIO` should be defined (but might need to be defined manually
@@ -108,16 +108,16 @@ inline Image ImageRead(
 /// \brief Writes `image` to file.
 ///
 /// `format` can be one of:
-/// - `"ics"` or `"icsv2"`: Create an ICS version 2 file, use `dip::ImageWriteICS`.
-/// - `"icsv1"`: Create an ICS version 1 file, use `dip::ImageWriteICS`.
-/// - `"tiff"`: Create a TIFF file, use `dip::ImageWriteTIFF`.
-/// - `"jpeg"`: Create a JPEG file, use `dip::ImageWriteJPEG`.
-/// - `""`: Select the format by looking at the file name extension.
-///         If no extension is present, it defaults to ICS version 2.
-///         This is the default.
 ///
-/// The ICS format can store any image, with all its information, such that reading the file using `dip::ImageRead`
-/// or `dip::ImageReadICS` yields an image that is identical (except the strides might be different).
+/// - `"ics"` or `"icsv2"`: Create an ICS version 2 file, use \ref dip::ImageWriteICS.
+/// - `"icsv1"`: Create an ICS version 1 file, use \ref dip::ImageWriteICS.
+/// - `"tiff"`: Create a TIFF file, use \ref dip::ImageWriteTIFF.
+/// - `"jpeg"`: Create a JPEG file, use \ref dip::ImageWriteJPEG.
+/// - `""`: Select the format by looking at the file name extension. If no extension is
+///   present, it defaults to ICS version 2. This is the default.
+///
+/// The ICS format can store any image, with all its information, such that reading the file using \ref dip::ImageRead
+/// or \ref dip::ImageReadICS yields an image that is identical (except the strides might be different).
 ///
 /// The TIFF format can store 2D images, as well as 3D images as a series of 2D slides (not yet implemented).
 /// A limited set of color spaces are recognized, other color images are stored without color space information.
@@ -129,9 +129,10 @@ inline Image ImageRead(
 ///
 /// `compression` determines the compression method used when writing the pixel data. It can be one of the
 /// following strings:
-///  - `"none"`: no compression.
-///  - `""`: gzip compression (default). TIFF files with gzip compression are not universally recognized.
-///  - `"LZW"`, `"PackBits"`, `"JPEG"`: compression formats supported only by the TIFF format.
+///
+/// - `"none"`: no compression.
+/// - `""`: gzip compression (default). TIFF files with gzip compression are not universally recognized.
+/// - `"LZW"`, `"PackBits"`, `"JPEG"`: compression formats supported only by the TIFF format.
 ///
 /// For the JPEG format, `compression` is ignored.
 ///
@@ -180,7 +181,7 @@ inline void ImageWrite(
    }
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

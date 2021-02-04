@@ -27,26 +27,25 @@
 /// \file
 /// \brief Support for chain-code and polygon object representation and quantification. Everything declared in
 /// this file is explicitly 2D.
-/// \see measurement
+/// See \ref measurement.
 
 
 namespace dip {
 
 
 /// \addtogroup measurement
-/// \{
 
 
-/// \brief Contains the various %Feret diameters as returned by `dip::ConvexHull::Feret` and `dip::ChainCode::Feret`.
+/// \brief Contains the various Feret diameters as returned by \ref dip::ConvexHull::Feret and \ref dip::ChainCode::Feret.
 struct DIP_NO_EXPORT FeretValues {
-   dfloat maxDiameter = 0.0;        ///< The maximum %Feret diameter
-   dfloat minDiameter = 0.0;        ///< The minimum %Feret diameter
-   dfloat maxPerpendicular = 0.0;   ///< The %Feret diameter perpendicular to `minDiameter`
+   dfloat maxDiameter = 0.0;        ///< The maximum Feret diameter
+   dfloat minDiameter = 0.0;        ///< The minimum Feret diameter
+   dfloat maxPerpendicular = 0.0;   ///< The Feret diameter perpendicular to `minDiameter`
    dfloat maxAngle = 0.0;           ///< The angle at which `maxDiameter` was measured
    dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
 };
 
-/// \brief Holds the various output values of the `dip::RadiusStatistics` and `dip::ConvexHull::RadiusStatistics` function.
+/// \brief Holds the various output values of the \ref dip::Polygon::RadiusStatistics function.
 class DIP_NO_EXPORT RadiusValues {
    public:
       /// Returns the mean radius
@@ -65,7 +64,7 @@ class DIP_NO_EXPORT RadiusValues {
          return vacc.Mean() == 0.0 ? 0.0 : vacc.StandardDeviation() / vacc.Mean();
       }
 
-      /// Multiple `%RadiusValues` objects can be added together.
+      /// Multiple `RadiusValues` objects can be added together.
       RadiusValues& operator+=( RadiusValues const& other ) {
          vacc += other.vacc;
          macc += other.macc;
@@ -313,7 +312,9 @@ inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
 template< typename T >
 struct DIP_NO_EXPORT BoundingBox {
-   using VertexType = Vertex< T >;  ///< The bounding box is defined in terms of two vertices
+   /// The bounding box is defined in terms of two vertices
+   using VertexType = Vertex< T >;
+
    VertexType topLeft;     ///< Top-left corner of the box
    VertexType bottomRight; ///< Bottom-right corner of the box
 
@@ -392,7 +393,7 @@ inline FloatArray BoundingBox< dfloat >::Size() const {
 
 /// \brief A 2D covariance matrix for computation with 2D vertices.
 ///
-/// The matrix is real, symmetric, positive semidefinite. See `dip::Polygon::CovarianceMatrix`
+/// The matrix is real, symmetric, positive semidefinite. See \ref dip::Polygon::CovarianceMatrix
 /// for how to create a covariance matrix.
 ///
 /// The elements stored are `xx`, `xy` and `yy`, with `xx` the top-left element, and `xy` both
@@ -501,8 +502,9 @@ class DIP_NO_EXPORT ConvexHull; // Forward declaration
 
 /// \brief A polygon with floating-point vertices.
 struct DIP_NO_EXPORT Polygon {
-
+   /// Type used to store the vertices
    using Vertices = std::vector< VertexFloat >;
+
    Vertices vertices;  ///< The vertices
 
    /// \brief Returns the bounding box of the polygon
@@ -526,7 +528,7 @@ struct DIP_NO_EXPORT Polygon {
    }
 
    /// \brief Computes the length of the polygon (i.e. perimeter). If the polygon represents a pixelated object,
-   /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
+   /// this function will overestimate the object's perimeter. Use \ref dip::ChainCode::Length instead.
    DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
@@ -543,10 +545,9 @@ struct DIP_NO_EXPORT Polygon {
    /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.
    ///
-   /// \literature
-   /// <li>M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
-   ///     in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
-   /// \endliterature
+   /// !!! literature
+   ///     - M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
+   ///       in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
    dfloat EllipseVariance() const {
        // Covariance matrix of polygon vertices
        VertexFloat g = Centroid();
@@ -561,10 +562,10 @@ struct DIP_NO_EXPORT Polygon {
    /// \brief Computes the fractal dimension of a polygon.
    ///
    /// Fractal dimension is defined as the slope of the polygon length as a function of scale, in a log-log plot.
-   /// Scale is obtained by smoothing the polygon using `dip::Polygon::Smooth`. Therefore, it is important that
-   /// the polygon be densely sampled, use `dip::Polygon::Augment` if necessary.
+   /// Scale is obtained by smoothing the polygon using \ref dip::Polygon::Smooth. Therefore, it is important that
+   /// the polygon be densely sampled, use \ref dip::Polygon::Augment if necessary.
    ///
-   /// `length` is the length of the polygon (see `dip::Polygon::Length`). It determines the range of scales used
+   /// `length` is the length of the polygon (see \ref dip::Polygon::Length). It determines the range of scales used
    /// to compute the fractal dimension, so a rough estimate is sufficient. If zero is given as length (the default
    /// value), then it is computed.
    DIP_EXPORT dfloat FractalDimension( dfloat length = 0 ) const;
@@ -576,16 +577,15 @@ struct DIP_NO_EXPORT Polygon {
    /// the two edges, and dividing by half the length of the two edges (this is the portion
    /// of the boundary associated to the edge).
    ///
-   /// Note that this approximation is poor when the points are far apart. `dip::Polygon::Augment` should
+   /// Note that this approximation is poor when the points are far apart. \ref dip::Polygon::Augment should
    /// be used to obtain a densely sampled polygon. It is also beneficial to sufficiently smooth the
-   /// polygon so it better approximates a smooth curve around the object being measured, see `dip::Polygon::Smooth`.
+   /// polygon so it better approximates a smooth curve around the object being measured, see \ref dip::Polygon::Smooth.
    ///
-   /// \literature
-   /// <li>I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
-   ///     Information and Control 25(4):357-370, 1974.
-   /// <li>J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
-   ///     Acta Cytologica 21(5):455-464, 1977.
-   /// \endliterature
+   /// !!! literature
+   ///     - I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
+   ///       Information and Control 25(4):357-370, 1974.
+   ///     - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
+   ///       Acta Cytologica 21(5):455-464, 1977.
    DIP_EXPORT dfloat BendingEnergy() const;
 
    /// \brief Simplifies the polygon using the Douglas-Peucker algorithm.
@@ -603,7 +603,7 @@ struct DIP_NO_EXPORT Polygon {
    /// Uses a Gaussian filter with parameter `sigma`, which is not interpreted as a physical distance between
    /// vertices, but as a distance in number of vertices. That is, the neighboring vertex is at a distance of 1,
    /// the next one over at a distance of 2, etc. Therefore, it is important that vertices are approximately equally
-   /// spaced. `dip::Polygon::Augment` modifies any polygon to satisfy that requirement.
+   /// spaced. \ref dip::Polygon::Augment modifies any polygon to satisfy that requirement.
    ///
    /// A polygon derived from the chain code of an object without high curvature, when smoothed with a `sigma` of 2,
    /// will fairly well approximate the original smooth boundary. For objects with higher curvature (including very
@@ -614,7 +614,7 @@ struct DIP_NO_EXPORT Polygon {
    DIP_EXPORT dip::ConvexHull ConvexHull() const;
 };
 
-/// \brief A convex hull is a convex polygon. It can be constructed from a `dip::Polygon`, and a const reference
+/// \brief A convex hull is a convex polygon. It can be constructed from a \ref dip::Polygon, and a const reference
 /// to the underlying `dip::Polygon` object can be obtained. It is guaranteed clockwise.
 class DIP_NO_EXPORT ConvexHull {
    public:
@@ -640,7 +640,7 @@ class DIP_NO_EXPORT ConvexHull {
          return polygon_.Length();
       }
 
-      /// Returns the %Feret diameters of the convex hull
+      /// Returns the Feret diameters of the convex hull
       ///
       /// The Feret diameters of the convex hull correspond to the Feret diameters of the original polygon.
       /// Feret diameters are the lengths of the projections. This function determines the longest and the shortest
@@ -649,25 +649,19 @@ class DIP_NO_EXPORT ConvexHull {
       /// These values are obtained by enumerating anti-podal pairs using the "rotating calipers" algorithm by
       /// Preparata and Shamos (1985).
       ///
-      /// \literature
-      /// <li>F.P. Preparata and M.I. Shamos, "Computational Geometry: an Introduction", Springer-Verlag, 1985.
-      /// \endliterature
+      /// !!! literature
+      ///     - F.P. Preparata and M.I. Shamos, "Computational Geometry: an Introduction", Springer-Verlag, 1985.
       DIP_EXPORT FeretValues Feret() const;
 
    private:
       dip::Polygon polygon_;
 };
 
-/// \}
-
 // This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
 // class, which in turn needs to know about the dip::Polygon class.
 inline dip::ConvexHull Polygon::ConvexHull() const {
    return dip::ConvexHull( *this );
 }
-
-/// \addtogroup measurement
-/// \{
 
 
 //
@@ -680,7 +674,7 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 /// This class supports 4-connected and 8-connected chain codes, see the `Code` definition for a description of the
 /// chain codes.
 ///
-/// A default-initialized `%ChainCode` represents no object (`Empty` returns true). Set the `start` value to
+/// A default-initialized `ChainCode` represents no object (`Empty` returns true). Set the `start` value to
 /// represent a 1-pixel object. Larger objects have at least two values in the chain code. A chain code with a
 /// single value is illegal.
 struct DIP_NO_EXPORT ChainCode {
@@ -700,14 +694,14 @@ struct DIP_NO_EXPORT ChainCode {
 
    /// \brief Provides data that are helpful when processing chain codes.
    ///
-   /// The table is prepared using the `dip::ChainCode::PrepareCodeTable` method. The method takes a stride array,
+   /// The table is prepared using the \ref dip::ChainCode::PrepareCodeTable method. The method takes a stride array,
    /// which is expected to have exactly two elements (as chain codes only work with 2D images). The returned
    /// table contains a value `pos[code]` that says how the coordinates change when moving in the direction of the
    /// `code`, and a value `offset[code]` that says how to modify the image data pointer to reach the new pixel.
    ///
    /// `pos[code]` is identical to `code.Delta8()` or `code.Delta4()` (depending on connectivity).
    ///
-   /// No checking is done when indexing. If the `%CodeTable` is derived from a 4-connected chain code, only the
+   /// No checking is done when indexing. If the `CodeTable` is derived from a 4-connected chain code, only the
    /// first four table elements can be used. Otherwise, eight table elements exist and are valid.
    struct DIP_NO_EXPORT CodeTable {
          VertexInteger const* pos; ///< Array with position offsets for each chain code.
@@ -724,7 +718,7 @@ struct DIP_NO_EXPORT ChainCode {
          }
    };
 
-   /// \brief Encodes a single chain code, as used by `dip::ChainCode`.
+   /// \brief Encodes a single chain code, as used by \ref dip::ChainCode.
    ///
    /// Chain codes are between 0 and 3 for connectivity = 1, and between 0 and 7 for connectivity = 2.
    /// 0 means to the right in both cases. The border flag marks pixels at the border of the image.
@@ -799,31 +793,29 @@ struct DIP_NO_EXPORT ChainCode {
    /// an object that is only partially inside the image, the portion of the object's perimeter that
    /// is inside of the image is measured, the edge created by cutting the object is not.
    ///
-   /// \literature
-   /// <li>A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
-   ///     of straight lines of finite length", Computer Graphics and %Image Processing 20(4):347-364, 1982.
-   /// \endliterature
+   /// !!! literature
+   ///     - A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
+   ///       of straight lines of finite length", Computer Graphics and Image Processing 20(4):347-364, 1982.
    DIP_EXPORT dfloat Length() const;
 
-   /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
-   /// It is better to use `dip::ConvexHull::Feret`.
+   /// \brief Returns the Feret diameters, using an angular step size in radian of `angleStep`.
+   /// It is better to use \ref dip::ConvexHull::Feret.
    DIP_EXPORT FeretValues Feret( dfloat angleStep = 5.0 / 180.0 * pi ) const;
 
    /// Computes the bending energy.
    ///
    /// Computes the bending energy directly from the chain code. The algorithm is rather imprecise. It is better
-   /// to use `dip::Polygon::BendingEnergy`.
+   /// to use \ref dip::Polygon::BendingEnergy.
    ///
-   /// \literature
-   /// <li>I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
-   ///     Information and Control 25(4):357-370, 1974.
-   /// <li>J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
-   ///     Acta Cytologica 21(5):455-464, 1977.
-   /// \endliterature
+   /// !!! literature
+   ///     - I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I",
+   ///       Information and Control 25(4):357-370, 1974.
+   ///     - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II",
+   ///       Acta Cytologica 21(5):455-464, 1977.
    DIP_EXPORT dfloat BendingEnergy() const;
 
    /// \brief Computes the area of the solid object described by the chain code. Uses the result of
-   /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
+   /// \ref dip::ChainCode::Polygon, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    dfloat Area() const {
       // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
@@ -834,7 +826,7 @@ struct DIP_NO_EXPORT ChainCode {
    }
 
    /// \brief Computes the centroid of the solid object described by the chain code. Uses the result of
-   /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
+   /// \ref dip::ChainCode::Polygon, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    VertexFloat Centroid() const {
       // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
@@ -855,16 +847,16 @@ struct DIP_NO_EXPORT ChainCode {
    /// pixel smaller than the solid binary object it represents.
    ///
    /// This idea comes from Steve Eddins:
-   /// http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/
+   /// <http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/>
    DIP_EXPORT dip::Polygon Polygon() const;
 
-   /// Returns the convex hull of the object, see `dip::ChainCode::Polygon`.
+   /// Returns the convex hull of the object, see \ref dip::ChainCode::Polygon.
    dip::ConvexHull ConvexHull() const {
       return Polygon().ConvexHull();
    }
 
    /// \brief Paints the pixels traced by the chain code in a binary image. The image has the size of the
-   /// `dip::ChainCode::BoundingBox`.
+   /// \ref dip::ChainCode::BoundingBox.
    DIP_EXPORT void Image( dip::Image& out ) const;
    dip::Image Image() const {
       dip::Image out;
@@ -888,11 +880,13 @@ using ChainCodeArray = std::vector< ChainCode >;
 /// only part of it is found. The chain code traces the outer perimeter of the object, holes are ignored.
 ///
 /// `objectIDs` is a list with object IDs present in the labeled image. If an empty array is given, all objects in
-/// the image are used.
+/// the image are used. For the meaning of `connectivity`, see \ref connectivity.
+///
+/// `labels` is a labeled image, and must be scalar and of an unsigned integer type.
 ChainCodeArray DIP_EXPORT GetImageChainCodes(
-      Image const& labels,                   ///< Labeled image, unsigned integer type
-      UnsignedArray const& objectIDs = {},   ///< A list of object IDs to get chain codes for
-      dip::uint connectivity = 2             ///< Connectivity, see \ref connectivity
+      Image const& labels,
+      UnsignedArray const& objectIDs = {},
+      dip::uint connectivity = 2
 );
 
 /// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labeled image.
@@ -902,13 +896,17 @@ ChainCodeArray DIP_EXPORT GetImageChainCodes(
 ///
 /// `startCoord` is the 2D coordinates of a boundary pixel. If it points to a zero-valued pixel or a pixel not on
 /// the boundary of an object, an exception will be thrown.
+///
+/// For the meaning of `connectivity`, see \ref connectivity.
+///
+/// `labels` is a labeled or binary image, and must be scalar and of a binary or unsigned integer type.
 ChainCode DIP_EXPORT GetSingleChainCode(
-      Image const& labels,             ///< Labeled or binary image (unsigned integer type or binary type)
-      UnsignedArray const& startCoord, ///< The starting coordinates for the chain code; must point to a non-zero pixel in `labels`
-      dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
+      Image const& labels,
+      UnsignedArray const& startCoord,
+      dip::uint connectivity = 2
 );
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

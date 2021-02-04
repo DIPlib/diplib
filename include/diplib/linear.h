@@ -27,39 +27,36 @@
 
 /// \file
 /// \brief Functions that implement linear filters.
-/// \see linear
+/// See \ref linear.
 
 
 namespace dip {
 
 
-/// \defgroup linear Linear filters
+/// \group linear Linear filters
 /// \ingroup filtering
 /// \brief Linear smoothing, sharpening and derivative filters.
-/// \{
+/// \addtogroup
 
 /// \brief Describes a 1D filter
 ///
 /// The weights are in `filter`. If `isComplex`, then the values in `filter` are interpreted as real/imaginary
 /// pairs. In this case, `filter` must have an even length, with each two consecutive elements representing a
-/// single filter weight. The `filter.data()` pointer can thus be cast to `dcomplex`.
+/// single filter weight. The `filter.data()` pointer can thus be cast to \ref dip::dcomplex.
 ///
-/// The origin is placed either at the index given by `origin`, if it's non-negative, or at index
-/// `filter.size() / 2` if `origin` is negative. This location is either the middle pixel if the filter
-/// is odd in length, or the pixel to the right of the center if it is even in length:
+/// The origin is placed either at the index given by `origin` if it's non-negative, or at index
+/// `filter.size() / 2` if `origin` is negative. Note that `filter.size() / 2` is either the middle pixel
+/// if the filter is odd in length, or the pixel to the right of the center if it is even in length:
 ///
-///     filter size is odd :      filter data :  x x x x x        origin = -1
-///                                                  ^
-///                                                  0
+/// size of `filter` | `origin` | origin location
+/// ---------------- |:--------:|:---------------:
+/// any              |    `1`   | `x 0 x x x x`
+/// any              |    `5`   | `x x x x x 0`
+/// any odd value    |   `-1`   | `x x 0 x x  `
+/// any even value   |   `-1`   | `x x x 0 x x`
 ///
-///     filter size is even :     filter data :  x x x x x x      origin = -1
-///                                                    ^
-///                                                    0
-///     origin specified :        filter data :  x x x x x x      origin = 1
-///                                                ^
-///                                                0
-///
-/// Note that `origin` must be an index to one of the samples in the `filter` array
+/// Note that, if positive, `origin` must be an index to one of the samples in the `filter` array:
+/// `origin < filter.size()`.
 ///
 /// `symmetry` indicates the filter shape: `"general"` (or an empty string) indicates no symmetry.
 /// `"even"` indicates even symmetry, `"odd"` indicates odd symmetry, and `"conj"` indicates complex conjugate
@@ -68,51 +65,57 @@ namespace dip {
 /// `"d-even"`, `"d-odd"` and `"d-conj"` are similar, but duplicate the rightmost element, yielding
 /// an even-sized filter. The origin for the symmetric filters is handled identically to the general filter case.
 ///
-///     filter array:                a  b  c              array has N elements
+/// The following table summarizes the result of using various `symmetry` values. The `filter` array in all
+/// cases has *n* elements represented in this example as [*a*,*b*,*c*].
 ///
-///     symmetry = "general":        a  b  c              filter size = N
-///     symmetry = "even":           a  b  c  b  a        filter size = N + N - 1
-///     symmetry = "odd":            a  b  c -b -a        filter size = N + N - 1
-///     symmetry = "conj":           a  b  c  b* a*        filter size = N + N - 1
-///     symmetry = "d-even":         a  b  c  c  b  a     filter size = N + N
-///     symmetry = "d-odd":          a  b  c -c -b -a     filter size = N + N
-///     symmetry = "d-conj":         a  b  c  c* b* a*    filter size = N + N
+/// `symmetry`  | resulting array                    | resulting array length
+/// ----------- | ---------------------------------- | -----------------------
+/// `"general"` | [*a*,*b*,*c*]                      | *n*
+/// `"even"`    | [*a*,*b*,*c*,*b*,*a*]              | 2*n* - 1
+/// `"odd"`     | [*a*,*b*,*c*,-*b*,-*a*]            | 2*n* - 1
+/// `"conj"`    | [*a*,*b*,*c*,*b*^\*^,*a*^\*^]        | 2*n* - 1
+/// `"d-even"`  | [*a*,*b*,*c*,*c*,*b*,*a*]          | 2*n*
+/// `"d-odd"`   | [*a*,*b*,*c*,-*c*,-*b*,-*a*]       | 2*n*
+/// `"d-conj"`  | [*a*,*b*,*c*,*c*^\*^,*b*^\*^,*a*^\*^] | 2*n*
 ///
 /// The convolution is applied to each tensor component separately, which is always the correct behavior for linear
 /// filters.
 struct DIP_NO_EXPORT OneDimensionalFilter {
-   std::vector< dfloat > filter; ///< Filter weights
-   dip::sint origin = -1;        ///< Origin of the filter if non-negative
-   String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"d-even"` or `"d-odd"`
-   bool isComplex = false;       ///< If true, use `complexFilter`, otherwise use `filter`
+   std::vector< dfloat > filter; ///< Filter weights.
+   dip::sint origin = -1;        ///< Origin of the filter if non-negative.
+   String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"conj"`, `"d-even"`, `"d-odd"` or `"d-conj"`.
+   bool isComplex = false;       ///< If true, `filter` contains complex data.
 };
 
 /// \brief An array of 1D filters
 using OneDimensionalFilterArray = std::vector< OneDimensionalFilter >;
 
 /// \brief Separates a linear filter (convolution kernel) into a set of 1D filters that can be applied using
-/// `dip::SeparableConvolution`.
+/// \ref dip::SeparableConvolution.
 ///
-/// If `filter` does not represent a separable kernel, the output `dip::OneDimensionalFilterArray` object is
+/// If `filter` does not represent a separable kernel, the output \ref dip::OneDimensionalFilterArray object is
 /// empty (it's `empty` method returns true, and it's `size` method return 0).
 DIP_EXPORT OneDimensionalFilterArray SeparateFilter( Image const& filter );
 
 /// \brief Applies a convolution with a filter kernel (PSF) that is separable.
 ///
-/// `filter` is an array with exactly one element for each dimension of `in`. Alternatively, it can have a single
-/// element, which will be used unchanged for each dimension. For the dimensions that are not processed (`process` is
-/// `false` for those dimensions), the `filter` array can have nonsensical data or a zero-length filter weights array.
+/// `filter` is an array with exactly one \ref dip::OneDimensionalFilter element for each dimension of `in`.
+/// Alternatively, it can have a single element, which will be used unchanged for each dimension.
+/// For the dimensions that are not processed (`process` is `false` for those dimensions),
+/// the `filter` array can have nonsensical data or a zero-length filter weights array.
 /// Any `filter` array that is zero size or the equivalent of `{1}` will not be applied either.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
+///
+/// `process` indices which dimensions to process, and can be `{}` to indicate all dimensions are to be processed.
 ///
 /// \see dip::SeparateFilter, dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
 DIP_EXPORT void SeparableConvolution(
-      Image const& in,                    ///< Input image
-      Image& out,                         ///< Output image
-      OneDimensionalFilterArray const& filterArray, ///< The filter
-      StringArray const& boundaryCondition = {}, ///< The boundary condition
-      BooleanArray process = {}           ///< Which dimensions to process, can be `{}` to indicate all dimensions are to be processed
+      Image const& in,
+      Image& out,
+      OneDimensionalFilterArray const& filterArray,
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {}
 );
 inline Image SeparableConvolution(
       Image const& in,
@@ -167,13 +170,13 @@ inline Image ConvolveFT(
 ///
 /// Note that this is a really expensive way to compute the convolution for any `filter` that has more than a
 /// small amount of non-zero values. It is always advantageous to try to separate your filter into a set of 1D
-/// filters (see `dip::SeparateFilter` and `dip::SeparableConvolution`). If this is not possible, use
-/// `dip::ConvolveFT` with larger filters to compute the convolution in the Fourier domain.
+/// filters (see \ref dip::SeparateFilter and \ref dip::SeparableConvolution). If this is not possible, use
+/// \ref dip::ConvolveFT with larger filters to compute the convolution in the Fourier domain.
 ///
-/// Also, if all non-zero filter weights have the same value, `dip::Uniform` implements a more efficient
-/// algorithm. If `filter` is a binary image, `dip::Uniform` is called.
+/// Also, if all non-zero filter weights have the same value, \ref dip::Uniform implements a more efficient
+/// algorithm. If `filter` is a binary image, \ref dip::Uniform is called.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// \see dip::ConvolveFT, dip::SeparableConvolution, dip::SeparateFilter, dip::Uniform
 DIP_EXPORT void GeneralConvolution(
@@ -195,9 +198,9 @@ inline Image GeneralConvolution(
 /// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
 ///
 /// The size and shape of the kernel is given by `kernel`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+/// shape with corresponding sizes, or through a binary image. See \ref dip::Kernel.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// \see dip::ConvolveFT, dip::SeparableConvolution, dip::GeneralConvolution
 DIP_EXPORT void Uniform(
@@ -221,11 +224,11 @@ inline Image Uniform(
 /// Convolves the image with a 1D Gaussian kernel along each dimension. For each dimension,
 /// provide a value in `sigmas` and `derivativeOrder`. The zeroth-order derivative is a plain
 /// smoothing, no derivative is computed. Derivatives with order up to 3 can be computed with
-/// this function. For higher-order derivatives, use `dip::GaussFT`.
+/// this function. For higher-order derivatives, use \ref dip::GaussFT.
 ///
 /// The value of sigma determines the smoothing effect. For values smaller than about 0.8, the
-/// result is an increasingly poor approximation to the Gaussian filter. Use `dip::GaussFT` for
-/// very small sigmas. Conversely, for very large sigmas it is more efficient to use `dip::GaussIIR`,
+/// result is an increasingly poor approximation to the Gaussian filter. Use \ref dip::GaussFT for
+/// very small sigmas. Conversely, for very large sigmas it is more efficient to use \ref dip::GaussIIR,
 /// which runs in a constant time with respect to the sigma. Dimensions where sigma is 0 or
 /// negative are not processed, even if the derivative order is non-zero.
 ///
@@ -235,7 +238,7 @@ inline Image Uniform(
 /// computation slightly by decreasing this parameter, but it is not recommended. For derivatives,
 /// the value of `truncation` is increased by `0.5 * derivativeOrder`.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// \see dip::Gauss, dip::GaussIIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void GaussFIR(
@@ -296,14 +299,14 @@ inline Image GaussFT(
 /// Convolves the image with an IIR 1D Gaussian kernel along each dimension. For each dimension,
 /// provide a value in `sigmas` and `derivativeOrder`. The zeroth-order derivative is a plain
 /// smoothing, no derivative is computed. Derivatives with order up to 4 can be computed with this
-/// function. For higher-order derivatives, use `dip::GaussFT`.
+/// function. For higher-order derivatives, use \ref dip::GaussFT.
 ///
 /// The value of sigma determines the smoothing effect. For smaller values, the result is an
 /// increasingly poor approximation to the Gaussian filter. This function is efficient only for
 /// very large sigmas. Dimensions where sigma is 0 or negative are not processed, even if the
 /// derivative order is non-zero.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// The `filterOrder` and `designMethod` determine how the filter is implemented. By default,
 /// `designMethod` is "discrete time fit". This is the method described in van Vliet et al. (1998).
@@ -314,12 +317,11 @@ inline Image GaussFT(
 ///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
 ///
-/// \literature
-/// <li>I.T. Young and L.J. van Vliet, "Recursive implementation of the Gaussian filter", Signal Processing,
-///     44(2):139-151, 1995.
-/// <li>L.J. van Vliet, I.T. Young and P.W. Verbeek, "Recursive Gaussian Derivative Filters",
-///     in: Proc. 14<sup>th</sup> Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
-/// \endliterature
+/// !!! literature
+///     - I.T. Young and L.J. van Vliet, "Recursive implementation of the Gaussian filter", Signal Processing,
+///       44(2):139-151, 1995.
+///     - L.J. van Vliet, I.T. Young and P.W. Verbeek, "Recursive Gaussian Derivative Filters",
+///       in: Proc. 14^th^ Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
 DIP_EXPORT void GaussIIR(
       Image const& in,
       Image& out,
@@ -352,16 +354,17 @@ inline Image GaussIIR(
 /// smoothed. Only the "FT" method can compute the derivative along a dimension where sigma is zero or negative.
 ///
 /// How the convolution is computed depends on the value of `method`:
-/// - `"FIR"`: Finite impulse response implementation, see `dip::GaussFIR`.
-/// - `"IIR"`: Infinite impulse response implementation, see `dip::GaussIIR`.
-/// - `"FT"`: Fourier domain implementation, see `dip::GaussFT`.
+///
+/// - `"FIR"`: Finite impulse response implementation, see \ref dip::GaussFIR.
+/// - `"IIR"`: Infinite impulse response implementation, see \ref dip::GaussIIR.
+/// - `"FT"`: Fourier domain implementation, see \ref dip::GaussFT.
 /// - `"best"`: Picks the best method, according to the values of `sigmas` and `derivativeOrder`:
 ///     - if any `derivativeOrder` is larger than 3, use the FT method,
 ///     - else if any `sigmas` is smaller than 0.8, use the FT method,
 ///     - else if any `sigmas` is larger than 10, use the IIR method,
 ///     - else use the FIR method.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// \see dip::GaussFIR, dip::GaussFT, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void Gauss(
@@ -397,7 +400,7 @@ inline Image Gauss(
 /// non-central difference `[1,-1]`). Thus, computing the first derivative twice does not yield the same result
 /// as computing the second derivative directly.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// Set `process` to false for those dimensions that should not be filtered.
 ///
@@ -428,9 +431,9 @@ inline Image FiniteDifference(
 /// dimension `dimension`, the central difference is computed, and along all other dimensions, the triangular
 /// smoothing filter `[1,2,1]/4` is applied.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
-/// This function calls `dip::FiniteDifference`.
+/// This function calls \ref dip::FiniteDifference.
 inline void SobelGradient(
       Image const& in,
       Image& out,
@@ -454,7 +457,7 @@ inline Image SobelGradient(
 
 /// \brief Computes derivatives
 ///
-/// This function provides an interface to the various derivative filters in DIPlib.
+/// This function provides an interface to the various derivative filters in *DIPlib*.
 ///
 /// For each dimension, provide a value in `sigmas` and `derivativeOrder`. The value of sigma determines
 /// the smoothing effect. The zeroth-order derivative is a plain smoothing, no derivative is computed.
@@ -463,20 +466,23 @@ inline Image SobelGradient(
 /// the derivative is to be computed.
 ///
 /// `method` indicates which derivative filter is used:
-/// - `"best"`: A Gaussian derivative, see `dip::Gauss`.
-/// - `"gaussfir"`: The FIR implementation of the Gaussian derivative, see `dip::GaussFIR`.
-/// - `"gaussiir"`: The IIR implementation of the Gaussian derivative, see `dip::GaussIIR`.
-/// - `"gaussft"`: The FT implementation of the Gaussian derivative, see `dip::GaussFT`.
-/// - `"finitediff"`: A finite difference derivative, see `dip::FiniteDifference`.
+///
+/// - `"best"`: A Gaussian derivative, see \ref dip::Gauss.
+/// - `"gaussfir"`: The FIR implementation of the Gaussian derivative, see \ref dip::GaussFIR.
+/// - `"gaussiir"`: The IIR implementation of the Gaussian derivative, see \ref dip::GaussIIR.
+/// - `"gaussft"`: The FT implementation of the Gaussian derivative, see \ref dip::GaussFT.
+/// - `"finitediff"`: A finite difference derivative, see \ref dip::FiniteDifference.
 ///
 /// A finite difference derivative is an approximation to the derivative operator on the discrete grid.
 /// In contrast, convolving an image with the derivative of a Gaussian provides the exact derivative of
 /// the image convolved with a Gaussian:
-/// \f[ \frac{\partial G}{\partial x}\otimes f = \frac{\partial}{\partial x}(G \otimes f) \f]
+///
+/// $$ \frac{\partial G}{\partial x} \ast f = \frac{\partial}{\partial x}(G \ast f) $$
+///
 /// Thus (considering the regularization provided by the Gaussian smoothing is beneficial) it is always
 /// better to use Gaussian derivatives than finite difference derivatives.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 DIP_EXPORT void Derivative(
       Image const& in,
       Image& out,
@@ -499,7 +505,7 @@ inline Image Derivative(
    return out;
 }
 
-/// \brief Computes the first derivative along x, see `dip::Derivative`.
+/// \brief Computes the first derivative along x, see \ref dip::Derivative.
 inline void Dx(
       Image const& in,
       Image& out,
@@ -519,7 +525,7 @@ inline Image Dx(
    return out;
 }
 
-/// \brief Computes the first derivative along y, see `dip::Derivative`.
+/// \brief Computes the first derivative along y, see \ref dip::Derivative.
 inline void Dy(
       Image const& in,
       Image& out,
@@ -539,7 +545,7 @@ inline Image Dy(
    return out;
 }
 
-/// \brief Computes the first derivative along z, see `dip::Derivative`.
+/// \brief Computes the first derivative along z, see \ref dip::Derivative.
 inline void Dz(
       Image const& in,
       Image& out,
@@ -559,7 +565,7 @@ inline Image Dz(
    return out;
 }
 
-/// \brief Computes the second derivative along x, see `dip::Derivative`.
+/// \brief Computes the second derivative along x, see \ref dip::Derivative.
 inline void Dxx(
       Image const& in,
       Image& out,
@@ -579,7 +585,7 @@ inline Image Dxx(
    return out;
 }
 
-/// \brief Computes the second derivative along y, see `dip::Derivative`.
+/// \brief Computes the second derivative along y, see \ref dip::Derivative.
 inline void Dyy(
       Image const& in,
       Image& out,
@@ -599,7 +605,7 @@ inline Image Dyy(
    return out;
 }
 
-/// \brief Computes the second derivative along z, see `dip::Derivative`.
+/// \brief Computes the second derivative along z, see \ref dip::Derivative.
 inline void Dzz(
       Image const& in,
       Image& out,
@@ -619,7 +625,7 @@ inline Image Dzz(
    return out;
 }
 
-/// \brief Computes the first derivative along x and y, see `dip::Derivative`.
+/// \brief Computes the first derivative along x and y, see \ref dip::Derivative.
 inline void Dxy(
       Image const& in,
       Image& out,
@@ -640,7 +646,7 @@ inline Image Dxy(
    return out;
 }
 
-/// \brief Computes the first derivative along x and z, see `dip::Derivative`.
+/// \brief Computes the first derivative along x and z, see \ref dip::Derivative.
 inline void Dxz(
       Image const& in,
       Image& out,
@@ -661,7 +667,7 @@ inline Image Dxz(
    return out;
 }
 
-/// \brief Computes the first derivative along y and y, see `dip::Derivative`.
+/// \brief Computes the first derivative along y and y, see \ref dip::Derivative.
 inline void Dyz(
       Image const& in,
       Image& out,
@@ -695,9 +701,9 @@ inline Image Dyz(
 /// derivative along the *x* axis.
 ///
 /// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
-/// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
+/// approximations to the gradient. See \ref dip::Derivative for more information on the other parameters.
 ///
-/// \see dip::Derivative, dip::Hessian, dip::GradientMagnitude, dip::GradientDirection2D
+/// \see dip::Derivative, dip::Hessian, dip::GradientMagnitude, dip::GradientDirection
 DIP_EXPORT void Gradient(
       Image const& in,
       Image& out,
@@ -722,7 +728,7 @@ inline Image Gradient(
 
 /// \brief Computes the gradient magnitude of the image, equivalent to `dip::Norm( dip::Gradient( in ))`.
 ///
-/// For non-scalar images, applies the operation to each image channel. See `dip::Gradient` for information on the parameters.
+/// For non-scalar images, applies the operation to each image channel. See \ref dip::Gradient for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Norm, dip::Derivative, dip::GradientDirection
 DIP_EXPORT void GradientMagnitude(
@@ -751,9 +757,9 @@ inline Image GradientMagnitude(
 ///
 /// The input image must be scalar. For a 2D gradient, the output is scalar also, containing the angle of the
 /// gradient to the x-axis. For a 3D gradient, the output has two tensor components, containing the azimuth and
-/// inclination. See `dip::Angle` for an explanation.
+/// inclination. See \ref dip::Angle for an explanation.
 ///
-/// See `dip::Gradient` for information on the parameters.
+/// See \ref dip::Gradient for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Angle, dip::Derivative, dip::GradientMagnitude
 DIP_EXPORT void GradientDirection(
@@ -780,21 +786,21 @@ inline Image GradientDirection(
 
 /// \brief Computes the curl (rotation) of the 2D or 3D vector field `in`.
 ///
-/// Curl is defined as by \f$ \mathrm{curl}\,\mathbf{f} = \nabla \times \mathbf{f} \f$, for a 3-vector
-/// \f$\mathbf{f}=(f_x, f_y, f_z)\f$ (the vector image `in`), resulting in a 3-vector with components:
+/// Curl is defined as by $\mathrm{curl}\,\mathbf{f} = \nabla \times \mathbf{f}$, for a 3-vector
+/// $\mathbf{f}=(f_x, f_y, f_z)$ (the vector image `in`), resulting in a 3-vector with components:
 ///
-/// \f{eqnarray*}{
+/// \begin{eqnarray*}
 ///      (\mathrm{curl}\,\mathbf{f})_x &=& \frac{\partial}{\partial y} f_z - \frac{\partial}{\partial z} f_y \, ,
 ///   \\ (\mathrm{curl}\,\mathbf{f})_y &=& \frac{\partial}{\partial z} f_x - \frac{\partial}{\partial x} f_z \, ,
 ///   \\ (\mathrm{curl}\,\mathbf{f})_z &=& \frac{\partial}{\partial x} f_y - \frac{\partial}{\partial y} f_x \, .
-/// \f}
+/// \end{eqnarray*}
 ///
-/// For the 2D case, \f$f_z\f$ is assumed to be zero, and only the z-component of the curl is computed, yielding
+/// For the 2D case, $f_z$ is assumed to be zero, and only the z-component of the curl is computed, yielding
 /// a scalar output.
 ///
 /// `in` is expected to be a 2D or 3D image with a 2-vector or a 3-vector tensor representation, respectively.
 /// However, the image can have more dimensions if they are excluded from processing through `process`.
-/// See `dip::Gradient` for information on the parameters.
+/// See \ref dip::Gradient for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Divergence
 DIP_EXPORT void Curl(
@@ -823,17 +829,15 @@ inline Image Curl(
 ///
 /// Divergence is defined as
 ///
-/// \f[
-///   \mathrm{div}\,\mathbf{f} = \nabla \cdot \mathbf{f} =
-///   \frac{\partial}{\partial x}f_x + \frac{\partial}{\partial y}f_y + \frac{\partial}{\partial z}f_z \; ,
-/// \f]
+/// $$ \mathrm{div}\,\mathbf{f} = \nabla \cdot \mathbf{f} =
+///    \frac{\partial}{\partial x}f_x + \frac{\partial}{\partial y}f_y + \frac{\partial}{\partial z}f_z \; , $$
 ///
-/// with \f$\mathbf{f}=(f_x, f_y, f_z)\f$ the vector image `in`. This concept naturally extends to any number
+/// with $\mathbf{f}=(f_x, f_y, f_z)$ the vector image `in`. This concept naturally extends to any number
 /// of dimensions.
 ///
 /// `in` is expected to have as many dimensions as tensor components. However, the image
 /// can have more dimensions if they are excluded from processing through `process`.
-/// See `dip::Gradient` for information on the parameters.
+/// See \ref dip::Gradient for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Curl
 DIP_EXPORT void Divergence(
@@ -861,14 +865,12 @@ inline Image Divergence(
 /// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input
 /// was *N*-dimensional.
 ///
-/// The Hessian of input image \f$f\f$ is given by \f$ \mathbf{H} = \nabla \nabla^T f \f$, with tensor components
+/// The Hessian of input image $f$ is given by $\mathbf{H} = \nabla \nabla^T f$, with tensor components
 ///
-/// \f[
-///   \mathbf{H}_{i,j} = \frac{\partial^2}{\partial u_i \partial u_j} f \; .
-/// \f]
+/// $$ \mathbf{H}_{i,j} = \frac{\partial^2}{\partial u_i \partial u_j} f \; . $$
 ///
 /// Each tensor component corresponds to one of the second-order derivatives.
-/// Note that \f$H\f$ is a symmetric matrix (order of differentiation does not matter). Duplicate entries
+/// Note that $H$ is a symmetric matrix (order of differentiation does not matter). Duplicate entries
 /// are not stored in the symmetric tensor image.
 ///
 /// Image dimensions for which `process` is false do not participate in the set of dimensions that form the
@@ -876,7 +878,7 @@ inline Image Divergence(
 /// Hessian matrix.
 ///
 /// By default this function uses Gaussian derivatives in the computation. Set `method = "finitediff"` for
-/// finite difference approximations to the gradient. See `dip::Derivative` for more information on the other
+/// finite difference approximations to the gradient. See \ref dip::Derivative for more information on the other
 /// parameters.
 ///
 /// The input image must be scalar.
@@ -906,26 +908,24 @@ inline Image Hessian(
 
 /// \brief Computes the Laplacian of the image, equivalent to `dip::Trace( dip::Hessian( in ))`, but more efficient.
 ///
-/// The Laplacian of input image \f$f\f$ is written as \f$ \nabla\cdot\nabla f = \nabla^2 f = \Delta f \f$, and given
+/// The Laplacian of input image $f$ is written as $\nabla\cdot\nabla f = \nabla^2 f = \Delta f$, and given
 /// by
 ///
-/// \f[
-///   \Delta f = \sum_i \frac{\partial^2}{\partial u_i^2} f \; .
-/// \f]
+/// $$ \Delta f = \sum_i \frac{\partial^2}{\partial u_i^2} f \; . $$
 ///
-/// See `dip::Gradient` for information on the parameters.
+/// See \ref dip::Gradient for information on the parameters.
 ///
 /// If `method` is "finitediff", it does not add second order derivatives, but instead computes a convolution
-/// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with \f$d\f$ the number
+/// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is $3^d - 1$ (with $d$ the number
 /// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kernel:
 ///
-/// ```txt
-///    | -1  -1  -1 |
-///    | -1   8  -1 |
-///    | -1  -1  -1 |
-/// ```
+/// $$ \begin{bmatrix}
+///    -1 & -1 & -1 \\
+///    -1 &  8 & -1 \\
+///    -1 & -1 & -1
+/// \end{bmatrix} $$
 ///
-/// \see dip::Derivative, dip::Gradient, dip::Hessian, dip::Trace.
+/// \see dip::Derivative, dip::Gradient, dip::Hessian, dip::Trace
 DIP_EXPORT void Laplace(
       Image const& in,
       Image& out,
@@ -953,21 +953,18 @@ inline Image Laplace(
 /// The second derivative in the gradient direction is computed by Raleigh quotient of the
 /// Hessian matrix and the gradient vector:
 ///
-/// \f[
-///   f_{gg} = \frac{ \nabla^T \! f \; \nabla \nabla^T \! f \; \nabla f } { \nabla^T \! f \; \nabla f } \; .
-/// \f]
+/// $$ f_{gg} = \frac{ \nabla^T \! f \; \nabla \nabla^T \! f \; \nabla f } { \nabla^T \! f \; \nabla f } \; . $$
 ///
 /// This function is equivalent to:
-///
 /// ```cpp
-///     Image g = dip::Gradient( in, ... );
-///     Image H = dip::Hessian( in, ... );
-///     Image Dgg = dip::Transpose( g ) * H * g;
-///     Dgg /= dip::Transpose( g ) * g;
+/// Image g = dip::Gradient( in, ... );
+/// Image H = dip::Hessian( in, ... );
+/// Image Dgg = dip::Transpose( g ) * H * g;
+/// Dgg /= dip::Transpose( g ) * g;
 /// ```
 ///
-/// See `dip::Derivative` for how derivatives are computed, and the meaning of the parameters. See `dip::Gradient`
-/// or `dip::Hessian` for the meaning of the `process` parameter
+/// See \ref dip::Derivative for how derivatives are computed, and the meaning of the parameters. See \ref dip::Gradient
+/// or \ref dip::Hessian for the meaning of the `process` parameter
 ///
 /// \see dip::Dxx, dip::Dyy, dip::Dzz
 DIP_EXPORT void Dgg(
@@ -1000,14 +997,13 @@ inline Image Dgg(
 /// Laplace and Dgg operators. However, the localization is improved by an order of magnitude with respect to
 /// the individual operators.
 ///
-/// See `dip::Laplace` and `dip::Dgg` for more information.
+/// See \ref dip::Laplace and \ref dip::Dgg for more information.
 ///
-/// \literature
-/// <li>L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", PhD Thesis, Delft University
-///     of Technology, 1993.
-/// <li>P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images",
-///     IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
-/// \endliterature
+/// !!! literature
+///     - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", PhD Thesis, Delft University
+///       of Technology, 1993.
+///     - P.W. Verbeek and L.J. van Vliet, "On the location error of curved edges in low-pass filtered 2-D and 3-D images",
+///       IEEE Transactions on Pattern Analysis and Machine Intelligence 16(7):726-733, 1994.
 DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
@@ -1037,7 +1033,7 @@ inline Image LaplacePlusDgg(
 /// For two-dimensional images, this is equivalent to the second order derivative in the direction perpendicular
 /// to the gradient direction.
 ///
-/// See `dip::Laplace` and `dip::Dgg` for more information.
+/// See \ref dip::Laplace and \ref dip::Dgg for more information.
 DIP_EXPORT void LaplaceMinusDgg(
       Image const& in,
       Image& out,
@@ -1063,12 +1059,11 @@ inline Image LaplaceMinusDgg(
 /// \brief Sharpens `in` by subtracting the Laplacian of the image.
 ///
 /// The actual operation applied is:
-///
 /// ```cpp
-///     out = in - dip::Laplace( in ) * weight;
+/// out = in - dip::Laplace( in ) * weight;
 /// ```
 ///
-/// See `dip::Laplace` and `dip::Gradient` for information on the parameters.
+/// See \ref dip::Laplace and \ref dip::Gradient for information on the parameters.
 ///
 /// \see dip::Laplace, dip::UnsharpMask
 DIP_EXPORT void Sharpen(
@@ -1096,12 +1091,11 @@ inline Image Sharpen(
 /// \brief Sharpens `in` by subtracting the smoothed image.
 ///
 /// The actual operation applied is:
-///
 /// ```cpp
-///     out = in * ( 1+weight ) - dip::Gauss( in ) * weight;
+/// out = in * ( 1+weight ) - dip::Gauss( in ) * weight;
 /// ```
 ///
-/// See `dip::Gauss` and `dip::Gradient` for information on the parameters.
+/// See \ref dip::Gauss and \ref dip::Gradient for information on the parameters.
 ///
 /// \see dip::Gauss, dip::Sharpen
 DIP_EXPORT void UnsharpMask(
@@ -1138,15 +1132,15 @@ inline Image UnsharpMask(
 ///
 /// The output is complex-valued. Typically, the magnitude is the interesting part of the result.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// Set `process` to false for those dimensions that should not be filtered. This is equivalent to setting
 /// `sigmas` to 0 for those dimensions.
 ///
-/// This function is relatively slow compared to `dip::GaborIIR`, even for small sigmas. Prefer to use the IIR
+/// This function is relatively slow compared to \ref dip::GaborIIR, even for small sigmas. Prefer to use the IIR
 /// implementation.
 ///
-/// \see dip::Gabor2D, dip::GaborIIR.
+/// \see dip::Gabor2D, dip::GaborIIR
 DIP_EXPORT void GaborFIR(
       Image const& in,
       Image& out,
@@ -1180,19 +1174,18 @@ inline Image GaborFIR(
 ///
 /// The output is complex-valued. Typically, the magnitude is the interesting part of the result.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
 /// Set `process` to false for those dimensions that should not be filtered. This is equivalent to setting
 /// `sigmas` to 0 for those dimensions.
 ///
 /// The `order` parameter is not yet implemented. It is ignored and assumed 0 for each dimension.
 ///
-/// \literature
-/// <li>I.T. Young, L.J. van Vliet and M. van Ginkel, "Recursive Gabor filtering",
-///     IEEE Transactions on Signal Processing 50(11):2798-2805, 2002.
-/// \endliterature
+/// \see dip::Gabor2D, dip::GaborFIR
 ///
-/// \see dip::Gabor2D, dip::GaborFIR.
+/// !!! literature
+///     - I.T. Young, L.J. van Vliet and M. van Ginkel, "Recursive Gabor filtering",
+///       IEEE Transactions on Signal Processing 50(11):2798-2805, 2002.
 DIP_EXPORT void GaborIIR(
       Image const& in,
       Image& out,
@@ -1219,7 +1212,7 @@ inline Image GaborIIR(
 
 /// \brief 2D Gabor filter with direction parameter
 ///
-/// Convolves the 2D image with a Gabor kernel. This is a convenience wrapper around `dip::GaborIIR`.
+/// Convolves the 2D image with a Gabor kernel. This is a convenience wrapper around \ref dip::GaborIIR.
 /// The value of sigma determines the amount of local averaging, and can be different for each dimension.
 /// For smaller values, the result is more precise spatially, but less selective of frequencies.
 ///
@@ -1228,9 +1221,9 @@ inline Image GaborIIR(
 ///
 /// The output is complex-valued. Typically, the magnitude is the interesting part of the result.
 ///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
-/// To use cartesian frequency coordinates, see `dip::GaborIIR`.
+/// To use cartesian frequency coordinates, see \ref dip::GaborIIR.
 inline void Gabor2D(
       Image const& in,
       Image& out,
@@ -1274,7 +1267,7 @@ inline Image Gabor2D(
 /// `wavelengths.size()` and `nOrientations` must be at least 1.
 /// If `nOrientations` is 1, no orientation filtering is applied, the filters become purely real. These filters
 /// can be defined for images of any dimensionality. For more than one orientation, the filters are complex-valued
-/// in the spatial domain, and can only be created for 2D images. See `dip::MonogenicSignal` for a generalization
+/// in the spatial domain, and can only be created for 2D images. See \ref dip::MonogenicSignal for a generalization
 /// to arbitrary dimensionality.
 ///
 /// If `in` is not forged, its sizes will be used to generate the filters, which will be returned. Thus, this is
@@ -1289,11 +1282,10 @@ inline Image Gabor2D(
 /// The data type will be either single-precision float or single-precision complex, depending on the selected
 /// parameters.
 ///
-/// \literature
-/// <li>D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells",
-///     Journal of the Optical Society of America A 4(12):2379-2394, 1987.
-/// <li>P. Kovesi, ["What Are Log-Gabor Filters and Why Are They Good?"](https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html) (retrieved July 25, 2018).
-/// \endliterature
+/// !!! literature
+///     - D.J. Field, "Relations between the statistics of natural images and the response properties of cortical cells",
+///       Journal of the Optical Society of America A 4(12):2379-2394, 1987.
+///     - P. Kovesi, ["What Are Log-Gabor Filters and Why Are They Good?"](https://www.peterkovesi.com/matlabfns/PhaseCongruency/Docs/convexpl.html) (retrieved July 25, 2018).
 DIP_EXPORT void LogGaborFilterBank(
       Image const& in,
       Image& out,
@@ -1326,14 +1318,13 @@ inline Image LogGaborFilterBank(
 ///
 /// The normalized convolution is then `Convolution( in * mask ) / Convolution( mask )`.
 ///
-/// This function applies convolutions with a Gaussian kernel, using `dip::Gauss`. See that function for the meaning
+/// This function applies convolutions with a Gaussian kernel, using \ref dip::Gauss. See that function for the meaning
 /// of the parameters. `boundaryCondition` defaults to `"add zeros"`, the normalized convolution then takes pixels
 /// outside of the image domain as missing values.
 ///
-/// \literature
-/// <li>H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
-///     Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
-/// \endliterature
+/// !!! literature
+///     - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
+///       Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
 DIP_EXPORT void NormalizedConvolution(
       Image const& in,
       Image const& mask,
@@ -1366,23 +1357,20 @@ inline Image NormalizedConvolution(
 /// The normalized differential convolution is defined here as the derivative of the normalized convolution with a
 /// Gaussian kernel:
 ///
-/// \f[
-///   \frac{\partial}{\partial x} \frac{(f \, m) \ast g}{m \ast g}
-///         = \frac{(f \, m) \ast \frac{\partial}{\partial x} g}{m \ast g}
-///         - \frac{(f \, m) \ast g}{m \ast g} \frac{m \ast \frac{\partial}{\partial x} g}{m \ast g} \; .
-/// \f]
+/// $$ \frac{\partial}{\partial x} \frac{(f \, m) \ast g}{m \ast g}
+///    = \frac{(f \, m) \ast \frac{\partial}{\partial x} g}{m \ast g}
+///    - \frac{(f \, m) \ast g}{m \ast g} \frac{m \ast \frac{\partial}{\partial x} g}{m \ast g} \; . $$
 ///
-/// \f$\ast\f$ is the convolution operator, \f$f\f$ is `in`, \f$m\f$ is `mask`, and \f$g\f$ is the Gaussian kernel
+/// $\ast$ is the convolution operator, $f$ is `in`, $m$ is `mask`, and $g$ is the Gaussian kernel
 ///
 /// The derivative is computed along `dimension`.
 ///
-/// This function uses `dip::Gauss`. See that function for the meaning of the parameters. `boundaryCondition` defaults
+/// This function uses \ref dip::Gauss. See that function for the meaning of the parameters. `boundaryCondition` defaults
 /// to `"add zeros"`, the normalized convolution then takes pixels outside of the image domain as missing values.
 ///
-/// \literature
-/// <li>H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
-///     Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
-/// \endliterature
+/// !!! literature
+///     - H. Knutsson and C. F. Westin, "Normalized and differential convolution", Proceedings of IEEE Conference on
+///       Computer Vision and Pattern Recognition, New York, NY, 1993, pp. 515-523.
 DIP_EXPORT void NormalizedDifferentialConvolution(
       Image const& in,
       Image const& mask,
@@ -1414,30 +1402,30 @@ inline Image NormalizedDifferentialConvolution(
 /// mass. Repeatedly following the vector will lead to a local maximum of the image `in`. `in` must be scalar
 /// and real-valued.
 ///
-/// The mean shift at a given location \f$x\f$ is then given by
-/// \f[ s = \frac{ \sum_i{(x-x_i) w(x-x_i) f(x_i)} }{ \sum_i{w(x-x_i) f(x_i)} }
-///       = \frac{ \left ( -x w \right) * f }{ w * f } \;,
-/// \f]
-/// where \f$f\f$ is the image, \f$w\f$ is a windowing function, and \f$*\f$ indicates convolution.
+/// The mean shift at a given location $x$ is then given by
+///
+/// $$ s = \frac{ \sum_i{(x-x_i) w(x-x_i) f(x_i)} }{ \sum_i{w(x-x_i) f(x_i)} }
+///       = \frac{ \left ( -x w \right) \ast f }{ w \ast f } \; , $$
+///
+/// where $f$ is the image, $w$ is a windowing function, and $\ast$ indicates convolution.
 ///
 /// We use a Gaussian window with sizes given by `sigmas`. A Gaussian window causes slower convergence than a
 /// uniform window, but yields a smooth trajectory and more precise results (according to Comaniciu
-/// and Meer, 2002). It also allows us to rewrite the above (with \f$g_\sigma\f$ the Gaussian window with
-/// parameter \f$\sigma\f$) as
-/// \f[ s = \frac{ \left ( -x g_\sigma \right) * f }{ g_\sigma * f }
-///       = \frac{ \left ( \sigma^2 \nabla g_\sigma \right) * f }{ g_\sigma * f } \;.
-/// \f]
+/// and Meer, 2002). It also allows us to rewrite the above (with $g_\sigma$ the Gaussian window with
+/// parameter $\sigma$) as
+///
+/// $$ s = \frac{ \left ( -x g_\sigma \right) \ast f }{ g_\sigma \ast f }
+///       = \frac{ \left ( \sigma^2 \nabla g_\sigma \right) \ast f }{ g_\sigma \ast f } \; . $$
 ///
 /// Thus, we can write this filter as `dip::Gradient(in, sigmas) / dip::Gauss(in, sigmas) * sigmas * sigmas`.
-/// See `dip::Derivative` for more information on the parameters. Do not use `method = "finitediff"`,
+/// See \ref dip::Derivative for more information on the parameters. Do not use `method = "finitediff"`,
 /// as it will lead to nonsensical results.
 ///
 /// \see dip::MeanShift, dip::Gradient, dip::Gauss
 ///
-/// \literature
-/// <li>D. Comaniciu and P. Meer, "Mean Shift: A Robust Approach Toward Feature Space Analysis",
-///     IEEE Transactions on Pattern Analysis and Machine Intelligence 24(5):603-619, 2002.
-/// \endliterature
+/// !!! literature
+///     - D. Comaniciu and P. Meer, "Mean Shift: A Robust Approach Toward Feature Space Analysis",
+///       IEEE Transactions on Pattern Analysis and Machine Intelligence 24(5):603-619, 2002.
 DIP_EXPORT void MeanShiftVector(
       Image const& in,
       Image& out,
@@ -1459,7 +1447,7 @@ inline Image MeanShiftVector(
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

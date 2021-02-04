@@ -32,15 +32,14 @@
 
 
 /// \file
-/// \brief Defines support classes for the `dip::Image` class. This file is always included through `diplib.h`.
-/// \see infrastructure
+/// \brief Defines support classes for the \ref dip::Image class. This file is always included through \ref "diplib.h".
+/// See \ref imagetype.
 
 
-/// \brief The `dip` namespace contains all the library functionality.
 namespace dip {
 
-/// \addtogroup infrastructure
-/// \{
+
+/// \addtogroup imagetype
 
 
 //
@@ -54,11 +53,11 @@ namespace dip {
 /// in an image. Through this reference, individual samples in an image can be changed. For example:
 ///
 /// ```cpp
-///     dip::Image img( { 256, 256 } );
-///     img.At( 10, 20 )[ 0 ] = 3;
+/// dip::Image img( { 256, 256 } );
+/// img.At( 10, 20 )[ 0 ] = 3;
 /// ```
 ///
-/// In the code above, `img.At( 10, 20 )[ 0 ]` returns a `%Sample` object. Assigning to this object
+/// In the code above, `img.At( 10, 20 )[ 0 ]` returns a `Sample` object. Assigning to this object
 /// changes the sample in `img` that is referenced.
 ///
 /// See \ref indexing for more information.
@@ -82,23 +81,23 @@ class Image::Sample {
       // dip::GenericJointImageIterator.
       constexpr Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
 
-      /// Construct a new `%Sample` by giving the data type. Initialized to 0.
+      /// Construct a new `Sample` by giving the data type. Initialized to 0.
       explicit Sample( dip::DataType dataType = DT_SFLOAT ) : dataType_( dataType ) {
          buffer_ = { 0.0, 0.0 };
          // The buffer filled with zeros yields a zero value no matter as what data type we interpret it.
       }
 
-      /// A numeric value implicitly converts to a `%Sample`.
+      /// A numeric value implicitly converts to a `Sample`.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       constexpr Sample( T value ) {
          dataType_ = dip::DataType( value );
          *static_cast< T* >( origin_ ) = value;
       }
 
-      /// A `dip::Image::Pixel`, when cast to a `%Sample`, references the first value in the pixel.
+      /// A \ref dip::Image::Pixel, when cast to a `Sample`, references the first value in the pixel.
       Sample( Pixel const& pixel );
 
-      /// A `dip::Image`, when cast to a `%Sample`, references the first sample in the first pixel in the image.
+      /// A \ref dip::Image, when cast to a `Sample`, references the first sample in the first pixel in the image.
       explicit Sample( Image const& image ) : origin_( image.Origin() ), dataType_( image.DataType() ) {}
 
       /// Swaps `*this` and `other`.
@@ -132,22 +131,22 @@ class Image::Sample {
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); }
 
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator bool() const { return As< bin >(); }
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator dip::uint() const { return As< dip::uint >(); }
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator dip::sint() const { return As< dip::sint >(); }
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator sfloat() const { return As< sfloat >(); }
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator dfloat() const { return As< dfloat >(); }
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator scomplex() const { return As< scomplex >(); }
-      /// A `%Sample` can be cast to basic numerical types.
+      /// A `Sample` can be cast to basic numerical types.
       constexpr explicit operator dcomplex() const { return As< dcomplex >(); }
 
-      /// Assigning to a `%Sample` copies the value over to the sample referenced.
+      /// Assigning to a `Sample` copies the value over to the sample referenced.
       constexpr Sample& operator=( Sample const& sample ) {
          detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
          return *this;
@@ -228,7 +227,7 @@ class Image::Sample {
 inline void swap( Image::Sample& v1, Image::Sample& v2 ) { v1.swap( v2 ); }
 
 
-/// \brief You can output a `dip::Image::Sample` to `std::cout` or any other stream.
+/// \brief You can output a \ref dip::Image::Sample to `std::cout` or any other stream.
 /// It is printed like any numeric value of the same type.
 /// \relates dip::Image::Sample
 inline std::ostream& operator<<(
@@ -267,11 +266,11 @@ inline std::ostream& operator<<(
 /// in an image. Through this reference, individual pixels in an image can be changed. For example:
 ///
 /// ```cpp
-///     dip::Image img( { 256, 256 }, 3 );
-///     img.At( 10, 20 ) = { 4, 5, 6 };
+/// dip::Image img( { 256, 256 }, 3 );
+/// img.At( 10, 20 ) = { 4, 5, 6 };
 /// ```
 ///
-/// In the code above, `img.At( 10, 20 )` returns a `%Pixel` object. Assigning to this object
+/// In the code above, `img.At( 10, 20 )` returns a `Pixel` object. Assigning to this object
 /// changes the pixel in `img` that is referenced.
 ///
 /// See \ref indexing for more information.
@@ -294,24 +293,24 @@ class Image::Pixel {
       Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
             origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
 
-      /// Construct a new `%Pixel` by giving data type and number of tensor elements. Initialized to 0.
+      /// Construct a new `Pixel` by giving data type and number of tensor elements. Initialized to 0.
       explicit Pixel( dip::DataType dataType = DT_SFLOAT, dip::uint tensorElements = 1 ) :
             dataType_( dataType ), tensor_( tensorElements ) {
          SetInternalData();
          std::fill( buffer_.begin(), buffer_.end(), 0 );
       }
 
-      /// \brief A `%Pixel` can be constructed from a single sample, yielding a scalar pixel with the same
+      /// \brief A `Pixel` can be constructed from a single sample, yielding a scalar pixel with the same
       /// data type as the sample.
       Pixel( Sample const& sample ) : dataType_( sample.DataType() ) { // tensor_ is scalar by default
          SetInternalData();
          std::memcpy( buffer_.data(), sample.Origin(), dataType_.SizeOf() );
       }
 
-      /// \brief A `%Pixel` can be constructed from a `dip::FloatArray`. The pixel will be a column vector.
+      /// \brief A `Pixel` can be constructed from a \ref dip::FloatArray. The pixel will be a column vector.
       DIP_EXPORT explicit Pixel( FloatArray const& values, dip::DataType dt = DT_SFLOAT );
 
-      /// \brief A `%Pixel` can be constructed from an initializer list, yielding a pixel with the same data
+      /// \brief A `Pixel` can be constructed from an initializer list, yielding a pixel with the same data
       /// type and number of tensor elements as the initializer list. The pixel will be a column vector.
       template< typename T, typename std::enable_if_t< IsNumericType< T >::value, int > = 0 >
       Pixel( std::initializer_list< T > values ) {
@@ -327,7 +326,7 @@ class Image::Pixel {
          }
       }
 
-      /// A `dip::Image`, when cast to a `%Pixel`, references the first pixel in the image.
+      /// A \ref dip::Image, when cast to a `Pixel`, references the first pixel in the image.
       explicit Pixel( Image const& image ) :
             origin_( image.Origin() ),
             dataType_( image.DataType() ),
@@ -369,26 +368,26 @@ class Image::Pixel {
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       T As() const { return detail::CastSample< T >( dataType_, origin_ ); }
 
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator bool() const { return As< bin >(); }
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator dip::uint() const { return As< dip::uint >(); }
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator dip::sint() const { return As< dip::sint >(); }
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator sfloat() const { return As< sfloat >(); }
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator dfloat() const { return As< dfloat >(); }
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator scomplex() const { return As< scomplex >(); }
-      /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+      /// A `Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
       explicit operator dcomplex() const { return As< dcomplex >(); }
 
       /// \brief Returns a FloatArray containing the sample values of the pixel.
       /// For a complex-valued pixel, the modulus (absolute value) is returned.
       DIP_EXPORT operator FloatArray() const;
 
-      /// Assigning a number or sample to a `%Pixel` copies the value over each of the samples in the pixel.
+      /// Assigning a number or sample to a `Pixel` copies the value over each of the samples in the pixel.
       Pixel& operator=( Sample const& sample ) {
          dip::uint N = tensor_.Elements();
          dip::uint sz = dataType_.SizeOf();
@@ -401,7 +400,7 @@ class Image::Pixel {
          }
          return *this;
       }
-      /// Assigning to a `%Pixel` copies the values over to the pixel referenced.
+      /// Assigning to a `Pixel` copies the values over to the pixel referenced.
       Pixel& operator=( Pixel const& pixel ) {
          dip::uint N = tensor_.Elements();
          DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
@@ -477,7 +476,7 @@ class Image::Pixel {
          return *this;
       }
 
-      /// Indexing into a `%Pixel` retrieves a reference to the specific sample.
+      /// Indexing into a `Pixel` retrieves a reference to the specific sample.
       Sample operator[]( dip::uint index ) const {
          DIP_ASSERT( index < tensor_.Elements() );
          dip::uint sz = dataType_.SizeOf();
@@ -485,7 +484,7 @@ class Image::Pixel {
                static_cast< uint8* >( origin_ ) + static_cast< dip::sint >( sz * index ) * tensorStride_,
                dataType_ );
       }
-      /// Indexing into a `%Pixel` retrieves a reference to the specific sample, `indices` must have one or two elements.
+      /// Indexing into a `Pixel` retrieves a reference to the specific sample, `indices` must have one or two elements.
       Sample operator[]( UnsignedArray const& indices ) const {
          DIP_START_STACK_TRACE
             dip::uint index = tensor_.Index( indices );
@@ -554,13 +553,17 @@ class Image::Pixel {
       /// \brief An iterator to iterate over the samples in the pixel. Mutable forward iterator.
       ///
       /// Note that this iterator has no useful public constructors, and needs to be constructed through
-      /// `dip::Image::Pixel::begin` and `dip::Image::Pixel::end`.
+      /// \ref dip::Image::Pixel::begin and \ref dip::Image::Pixel::end.
       class Iterator {
          public:
-            using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-            using value_type = Sample;          ///< The data type of a sample, obtained when dereferencing the iterator
-            using reference = value_type&;      ///< The type of a reference to a sample
-            using pointer = value_type*;        ///< The type of a pointer to a sample
+            /// Iterator category
+            using iterator_category = std::forward_iterator_tag;
+            /// The data type of a sample, obtained when dereferencing the iterator
+            using value_type = Sample;
+            /// The type of a reference to a sample
+            using reference = value_type&;
+            /// The type of a pointer to a sample
+            using pointer = value_type*;
 
             /// Default initializable, results in invalid iterator
             Iterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ), position_( 0 ) {}
@@ -780,8 +783,6 @@ DIP_EXPORT bool operator>=( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
 bool operator>=( Image::Pixel const& lhs, T const& rhs ) { return operator>=( lhs, Image::Pixel{ rhs } ); }
 
-/// \cond
-
 template< typename T >
 Image::Pixel& Image::Pixel::operator+=( T const& rhs ) { return *this = operator+( *this, rhs ); }
 template< typename T >
@@ -812,9 +813,7 @@ Image::Sample& Image::Sample::operator^=( T const& rhs ) { return *this = operat
 // This dip::Image::Sample constructor depends on the definition of dip::Image::Pixel
 inline Image::Sample::Sample( Image::Pixel const& pixel ) : origin_( pixel.Origin() ), dataType_( pixel.DataType() ) {}
 
-/// \endcond
-
-/// \brief You can output a `dip::Image::Pixel` to `std::cout` or any other stream.
+/// \brief You can output a \ref dip::Image::Pixel to `std::cout` or any other stream.
 /// It is printed as a sequence of values, prepended with "Pixel with values:".
 /// \relates dip::Image::Pixel
 inline std::ostream& operator<<(
@@ -838,7 +837,7 @@ inline std::ostream& operator<<(
 // dip::Image::CastSample and dip::Image::CastPixel
 //
 
-/// \brief Derived from `dip::Image::Sample`, works identically except it implicitly converts to type `T`.
+/// \brief Derived from \ref dip::Image::Sample, works identically except it implicitly converts to type `T`.
 /// \relates dip::Image::Sample
 template< class T >
 class Image::CastSample : public Image::Sample {
@@ -851,7 +850,7 @@ class Image::CastSample : public Image::Sample {
       bool operator==( T value ) const { return As< T >() == value; }
 };
 
-/// \brief Derived from `dip::Image::Pixel`, works identically except it implicitly converts to type `T`.
+/// \brief Derived from \ref dip::Image::Pixel, works identically except it implicitly converts to type `T`.
 /// \relates dip::Image::Pixel
 template< class T >
 class Image::CastPixel : public Image::Pixel {
@@ -880,22 +879,22 @@ class Image::CastPixel : public Image::Pixel {
 /// values to a subset of pixels. For example:
 ///
 /// ```cpp
-///     dip::Image img = ...;
-///     dip::Image mask = img < 0;
-///     img.At( mask ) = -img.At( mask );
+/// dip::Image img = ...;
+/// dip::Image mask = img < 0;
+/// img.At( mask ) = -img.At( mask );
 /// ```
 ///
-/// In the code above, `img.At( mask )` returns a `%View` object. Manipulating this object yields a new image
-/// with modified values. This image is then assigned into another `%View` object, changing the values of the
+/// In the code above, `img.At( mask )` returns a `View` object. Manipulating this object yields a new image
+/// with modified values. This image is then assigned into another `View` object, changing the values of the
 /// image `img`.
 ///
-/// A `%dip::Image::View` behaves just like a `dip::Image`, except for the assignment operator. It can be indexed
-/// using the `%At` method in most of the same ways as a `dip::Image`, yielding a new `%View` or a `dip::Image::Pixel`.
+/// A `dip::Image::View` behaves just like a \ref dip::Image, except for the assignment operator. It can be indexed
+/// using the `At` method in most of the same ways as a `dip::Image`, yielding a new `View` or a \ref dip::Image::Pixel.
 /// It implicitly casts to a `dip::Image`, so it can be used as an input image to all functions. However, it cannot
-/// be used as an output image in function calls. Also, methods to `dip::Image` cannot be called on a `%View`, cast
+/// be used as an output image in function calls. Also, methods to `dip::Image` cannot be called on a `View`, cast
 /// the object to `dip::Image` first!
 ///
-/// Note that when an irregular view (i.e. generated by a coordinate array or a mask image) is cast to a `dip::Image`,
+/// Note that when an irregular view (i.e. generated by a coordinate array or a mask image) is cast to a \ref dip::Image,
 /// a 1D image is generated which does not share data with the original image. That is, the sample values are copied
 /// to the new image. When the view is regular (i.e. generated by a range per dimension), then the view is cast to
 /// an image that shares the data with the original image, and no data is copied.
@@ -920,25 +919,25 @@ class Image::View {
          return *this;
       }
 
-      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view. See `dip::Image::View::Copy(View const&)`.
+      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view. See \ref dip::Image::View::Copy(View const&).
       View& operator=( View const& source ) {
          Copy( source );
          return *this;
       }
 
-      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view. See `dip::Image::View::Copy(Image const&)`.
+      /// \brief Assigning an image `source` to a view causes the pixels from `source` to be copied to the view. See \ref dip::Image::View::Copy(Image const&).
       View& operator=( Image const& source ) {
          Copy( source );
          return *this;
       }
 
-      /// \brief Assigning a pixel to a view causes all pixels in the view to be set to the same value. See `dip::Image::View::Fill(Pixel const&)`.
+      /// \brief Assigning a pixel to a view causes all pixels in the view to be set to the same value. See \ref dip::Image::View::Fill(Pixel const&).
       View& operator=( Pixel const& pixel ) {
          Fill( pixel );
          return *this;
       }
 
-      /// \brief Assigning a sample to a view causes all samples in the view to be set to the same value. See `dip::Image::View::Fill(Sample const&)`.
+      /// \brief Assigning a sample to a view causes all samples in the view to be set to the same value. See \ref dip::Image::View::Fill(Sample const&).
       View& operator=( Sample const& sample ) {
          Fill( sample );
          return *this;
@@ -1131,13 +1130,17 @@ class Image::View {
 };
 
 
-/// \brief View iterator, similar in functionality to `dip::GenericImageIterator`.
+/// \brief View iterator, similar in functionality to \ref dip::GenericImageIterator.
 class Image::View::Iterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = Image::Pixel;     ///< The data type obtained when dereferencing the iterator
-      using reference = value_type;        ///< The type of a reference to a pixel
-      using pointer = value_type*;         ///< The type of a pointer to a pixel
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The data type obtained when dereferencing the iterator
+      using value_type = Image::Pixel;
+      /// The type of a reference to a pixel
+      using reference = value_type;
+      /// The type of a pointer to a pixel
+      using pointer = value_type*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       Iterator();
@@ -1217,7 +1220,7 @@ class Image::View::Iterator {
       // TODO: maybe we can have a different version of the iterator that takes a reference (or pointer).
 };
 
-/// \}
+/// \endgroup
 
 
 //

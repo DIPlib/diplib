@@ -23,9 +23,11 @@
 #include "diplib/viewer/viewer.h"
 
 /// \file
-/// \brief Declares `dip::viewer::ControlViewPort`.
+/// \brief Declares \ref dip::viewer::ControlViewPort.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 /// \brief Allows the user to control how the image is displayed.
 class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort
@@ -46,6 +48,8 @@ class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort
     DIPVIEWER_EXPORT void render() override;
     DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
 };
+
+/// \endgroup
 
 }} // namespace dip::viewer
 

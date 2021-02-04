@@ -32,15 +32,14 @@
 
 
 /// \file
-/// \brief The `dip::SampleIterator` class. This file is always included through `diplib.h`.
-/// \see iterators
+/// \brief The \ref dip::SampleIterator class. This file is always included through \ref "diplib.h".
+/// See \ref iterators.
 
 
 namespace dip {
 
 
 /// \addtogroup iterators
-/// \{
 
 
 /// \brief An iterator to iterate over samples in a tensor, or pixels on an image line.
@@ -63,11 +62,16 @@ namespace dip {
 template< typename T >
 class DIP_NO_EXPORT SampleIterator {
    public:
-      using iterator_category = std::random_access_iterator_tag; ///< %Iterator category
-      using value_type = T;               ///< The data type of the sample, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of difference between iterators
-      using reference = T&;               ///< The type of a reference to a sample
-      using pointer = T*;                 ///< The type of a pointer to a sample
+      /// Iterator category
+      using iterator_category = std::random_access_iterator_tag;
+      /// The data type of the sample, obtained when dereferencing the iterator
+      using value_type = T;
+      /// The type of difference between iterators
+      using difference_type = dip::sint;
+      /// The type of a reference to a sample
+      using reference = T&;
+      /// The type of a pointer to a sample
+      using pointer = T*;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       SampleIterator() noexcept : stride_( 1 ), ptr_( nullptr ) {}
@@ -174,14 +178,14 @@ inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) {
 /// \brief A const iterator to iterate over samples in a tensor, or pixels on an image line.
 /// \relates dip::SampleIterator
 ///
-/// This iterator is identical to `dip::SampleIterator`, but with a const value type.
+/// This iterator is identical to \ref dip::SampleIterator, but with a const value type.
 ///
 /// Satisfies all the requirements for a non-mutable [RandomAccessIterator](http://en.cppreference.com/w/cpp/iterator).
 template< typename T >
 using ConstSampleIterator = SampleIterator< T const >;
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

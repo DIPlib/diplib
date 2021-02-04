@@ -31,17 +31,16 @@
 
 /// \file
 /// \brief Classes for on-line computation of data statistics.
-/// \see numeric
+/// See \ref numeric.
 
 
 namespace dip {
 
 
 /// \addtogroup numeric
-/// \{
 
 
-/// \brief `%StatisticsAccumulator` computes population statistics by accumulating the first four central moments.
+/// \brief `StatisticsAccumulator` computes population statistics by accumulating the first four central moments.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
 /// the population statistics based on the samples seen up to that point. Formula used to compute population
@@ -53,15 +52,14 @@ namespace dip {
 ///
 /// \see VarianceAccumulator, FastVarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// \literature
-/// <li>Code modified from [John D. Cook](http://www.johndcook.com/blog/skewness_kurtosis/)
-///     ([Wikipedia](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) has the same code).
-/// <li>T. B. Terriberry, ["Computing higher-order moments online"](http://people.xiph.org/~tterribe/notes/homs.html), 2008.
-/// <li>Philippe P. Pébay, "Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
-///     Technical Report [SAND2008-6212](http://infoserve.sandia.gov/sand_doc/2008/086212.pdf), Sandia National Laboratories, September 2008.
-/// <li>Wikipedia: ["Skewness", section "Sample skewness"](https://en.wikipedia.org/wiki/Skewness#Sample_skewness).
-/// <li>Wikipedia: ["Kurtosis", section "Estimators of population kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis).
-/// \endliterature
+/// !!! literature
+///     - Code modified from [John D. Cook](http://www.johndcook.com/blog/skewness_kurtosis/)
+///       ([Wikipedia](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) has the same code).
+///     - T. B. Terriberry, ["Computing higher-order moments online"](http://people.xiph.org/~tterribe/notes/homs.html), 2008.
+///     - Philippe P. Pébay, "Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
+///       Technical Report [SAND2008-6212](http://infoserve.sandia.gov/sand_doc/2008/086212.pdf), Sandia National Laboratories, September 2008.
+///     - Wikipedia: ["Skewness", section "Sample skewness"](https://en.wikipedia.org/wiki/Skewness#Sample_skewness).
+///     - Wikipedia: ["Kurtosis", section "Estimators of population kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis).
 class DIP_NO_EXPORT StatisticsAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -161,14 +159,14 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 }
 
 
-/// \brief `%VarianceAccumulator` computes mean and standard deviation by accumulating the first two
+/// \brief `VarianceAccumulator` computes mean and standard deviation by accumulating the first two
 /// central moments.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
 /// the population statistics based on the samples seen up to that point. Formula used to compute population
 /// statistics are corrected, though the standard deviation is not an unbiased estimator. The accumulator
 /// uses a stable algorithm to prevent catastrophic cancellation. If catastrophic cancellation is unlikely
-/// or not important, use the faster `%dip::FastVarianceAccumulator`.
+/// or not important, use the faster \ref dip::FastVarianceAccumulator.
 ///
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
@@ -179,9 +177,8 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 ///
 /// \see StatisticsAccumulator, FastVarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// \literature
-/// <li>Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3<sup>rd</sup> Ed., 1998.
-/// \endliterature
+/// !!! literature
+///     - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3^rd^ Ed., 1998.
 class DIP_NO_EXPORT VarianceAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -253,14 +250,14 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 }
 
 
-/// \brief `%FastVarianceAccumulator` computes mean and standard deviation by accumulating the sum of sample
+/// \brief `FastVarianceAccumulator` computes mean and standard deviation by accumulating the sum of sample
 /// values and the sum of the square of sample values.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
 /// the population statistics based on the samples seen up to that point. Formula used to compute population
 /// statistics are corrected, though the standard deviation is not an unbiased estimator. The accumulator
 /// uses a simple algorithm that could result in catastrophic cancellation if the variance is very small with
-/// respect to the mean; use `%dip::VarianceAccumulator` to prevent it.
+/// respect to the mean; use \ref dip::VarianceAccumulator to prevent it.
 ///
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
@@ -335,7 +332,7 @@ inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVaria
 }
 
 
-/// \brief `%CovarianceAccumulator` computes covariance and correlation of pairs of samples by accumulating the
+/// \brief `CovarianceAccumulator` computes covariance and correlation of pairs of samples by accumulating the
 /// first two central moments and cross-moments.
 ///
 /// Samples are added one pair at the time, using the `Push` method. Other members are used to retrieve the results.
@@ -343,28 +340,22 @@ inline FastVarianceAccumulator operator+( FastVarianceAccumulator lhs, FastVaria
 ///
 /// The covariance matrix is formed by
 ///
-/// ```txt
-///    | cov.VarianceX()   cov.Covariance() |
-///    | cov.Covariance()  cov.VarianceY()  |
+/// ```text
+/// | cov.VarianceX()   cov.Covariance() |
+/// | cov.Covariance()  cov.VarianceY()  |
 /// ```
 ///
-/// The `Regression` method returns the parameters to the least squares fit of the equation:
-///
-/// ```txt
-///    y = intercept + slope * x
-/// ```
-///
-/// where `x` is the first sample in each pair, and `y` is the second (this is linear regression). The `Slope` method
-/// computes only the slope component.
+/// The `Regression` method returns the parameters to the least squares fit of the equation $y = a + bx$,
+/// where $x$ is the first sample in each pair and $y$ is the second (this is linear regression), $a$ is the
+/// intercept and $b$ is the slope. The `Slope` method computes only the slope component.
 ///
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
 /// \see StatisticsAccumulator, VarianceAccumulator, FastVarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// \literature
-/// <li>Wikipedia: ["Algorithms for calculating variance", section "Covariance"](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance).
-/// \endliterature
+/// !!! literature
+///     - Wikipedia: ["Algorithms for calculating variance", section "Covariance"](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance).
 class DIP_NO_EXPORT CovarianceAccumulator {
       // TODO: rewrite this for arbitrary number of variables
    public:
@@ -477,7 +468,7 @@ class DIP_NO_EXPORT CovarianceAccumulator {
 };
 
 
-/// \brief `%DirectionalStatisticsAccumulator` computes directional mean and standard deviation by accumulating
+/// \brief `DirectionalStatisticsAccumulator` computes directional mean and standard deviation by accumulating
 /// a unit vector with the input value as angle.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
@@ -540,7 +531,7 @@ inline DirectionalStatisticsAccumulator operator+( DirectionalStatisticsAccumula
 }
 
 
-/// \brief `%MinMaxAccumulator` computes minimum and maximum values of a sequence of values.
+/// \brief `MinMaxAccumulator` computes minimum and maximum values of a sequence of values.
 ///
 /// Samples are added one by one or two by two, using the `Push` method. Other members are used to retrieve the results.
 ///
@@ -603,7 +594,7 @@ inline MinMaxAccumulator operator+( MinMaxAccumulator lhs, MinMaxAccumulator con
 }
 
 
-/// \brief `%MomentAccumulator` accumulates the zeroth order moment, the first order normalized moments, and the
+/// \brief `MomentAccumulator` accumulates the zeroth order moment, the first order normalized moments, and the
 /// second order central normalized moments, in `N` dimensions.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve the moments.
@@ -675,34 +666,35 @@ class DIP_NO_EXPORT MomentAccumulator {
       /// The moments are stored in the same order as symmetric tensors are stored in an image
       /// (see dip::Tensor::Shape). That is, fist are the main diagonal elements, then the elements
       /// above the diagonal, column-wise. This translates to:
-      ///  - 2D: xx, yy, xy
-      ///  - 3D: xx, yy, zz, xy, xz, yz
-      ///  - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
-      ///  - etc.
+      ///
+      /// - 2D: xx, yy, xy
+      /// - 3D: xx, yy, zz, xy, xz, yz
+      /// - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
+      /// - etc.
       ///
       /// The second order moment tensor is defined as:
       ///
-      /// \f[ I = \Sigma_k m_k ((\vec{r_k} \cdot \vec{r_k}) E - \vec{r_k} \otimes \vec{r_k}) \f]
+      /// $$ I = \Sigma_k m_k ((\vec{r_k} \cdot \vec{r_k}) E - \vec{r_k} \otimes \vec{r_k}) $$
       ///
-      /// where \f$E\f$ is the identity matrix ( \f$ E = \Sigma_i \vec{e_i} \otimes \vec{e_i} \f$ ), \f$m_k\f$
-      /// is the weight of point \f$k\f$ , and \f$\vec{r_k}\f$ is its position. In 2D, this leads to:
+      /// where $E$ is the identity matrix ( $E = \Sigma_i \vec{e_i} \otimes \vec{e_i}$ ), $m_k$
+      /// is the weight of point $k$ , and $\vec{r_k}$ is its position. In 2D, this leads to:
       ///
-      /// \f{eqnarray*}{
+      /// \begin{eqnarray*}
       ///       I_{xx} & = & \mathbin{\phantom{-}}\Sigma_k m_k y^2
       ///    \\ I_{yy} & = & \mathbin{\phantom{-}}\Sigma_k m_k x^2
       ///    \\ I_{xy} & = &                   -  \Sigma_k m_k x y
-      /// \f}
+      /// \end{eqnarray*}
       ///
       /// In 3D, it leads to:
       ///
-      /// \f{eqnarray*}{
+      /// \begin{eqnarray*}
       ///       I_{xx} & = & \mathbin{\phantom{-}}\Sigma_k m_k y^2 + \Sigma_k m_k z^2
       ///    \\ I_{yy} & = & \mathbin{\phantom{-}}\Sigma_k m_k x^2 + \Sigma_k m_k z^2
       ///    \\ I_{zz} & = & \mathbin{\phantom{-}}\Sigma_k m_k x^2 + \Sigma_k m_k y^2
       ///    \\ I_{xy} & = &                   -  \Sigma_k m_k x y
       ///    \\ I_{xz} & = &                   -  \Sigma_k m_k x z
       ///    \\ I_{yz} & = &                   -  \Sigma_k m_k y z
-      /// \f}
+      /// \end{eqnarray*}
       ///
       /// The equations above represent the second order moments, we compute instead the central moments, and
       /// normalize them by the sum of weights.
@@ -754,7 +746,7 @@ inline MomentAccumulator operator+( MomentAccumulator lhs, MomentAccumulator con
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

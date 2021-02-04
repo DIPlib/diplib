@@ -26,7 +26,7 @@
 
 /// \file
 /// \brief A class that describes a filtering kernel
-/// \see infrastructure
+/// See \ref infrastructure.
 
 
 namespace dip {
@@ -37,27 +37,23 @@ class DIP_NO_EXPORT PixelTable;
 
 
 /// \addtogroup infrastructure
-/// \{
 
 /// \brief Represents the shape and size of a filtering kernel.
 ///
 /// Some image filters allow the specification of arbitrary kernels: the user can specify the shape
 /// name and the size of a pre-defined kernel, or the user can pass an image containing the kernel.
 ///
-/// Objects of type `dip::Image`, `dip::FloatArray` and `dip::String` implicitly convert to
-/// a `%dip::Kernel`, so it should be convenient to use these various representations in your
+/// Objects of type \ref dip::Image, \ref dip::FloatArray and \ref dip::String implicitly convert to
+/// a `dip::Kernel`, so it should be convenient to use these various representations in your
 /// code.
 ///
 /// To define a kernel by shape and size, pass a string defining the shape, and a floating-point
 /// array with the size along each dimension.
 /// These are the valid shape strings:
 ///
-/// - `"elliptic"`: The unit circle in Euclidean (\f$L^2\f$) metric.
-///
-/// - `"rectangular"`: A box, the unit circle in \f$L^1\f$ metric.
-///
-/// - `"diamond"`: A box rotated 45 degrees, the unit circle in \f$L^\infty\f$ metric (max-norm).
-///
+/// - `"elliptic"`: The unit circle in Euclidean (L^2^) metric.
+/// - `"rectangular"`: A box, the unit circle in L^1^ metric.
+/// - `"diamond"`: A box rotated 45 degrees, the unit circle in L^&infin;^ metric (max-norm).
 /// - `"line"`: A one-pixel thick straight line.
 ///
 /// In the first three of these cases, the `size` array indicates the diameter of the circle. The value can
@@ -83,13 +79,15 @@ class DIP_NO_EXPORT PixelTable;
 /// See dip::StructuringElement, dip::NeighborList, dip::PixelTable
 class DIP_NO_EXPORT Kernel {
    public:
+
+      /// \brief Possible shapes of a kernel
       enum class ShapeCode {
-            RECTANGULAR,
-            ELLIPTIC,
-            DIAMOND,
-            LINE,
-            LEFT_LINE, // This one is the same as LINE, but the origin is placed at the leftmost end of the line
-            CUSTOM
+            RECTANGULAR,  ///< A rectangular kernel, the user will use the string `"rectangular"`.
+            ELLIPTIC,     ///< An elliptical (or circular) kernel, corresponding to the string `"elliptic"`.
+            DIAMOND,      ///< A diamond-shaped kernel, corresponding to the string `"diamond"`.
+            LINE,         ///< A thin straight line, corresponding to the string `"line"`.
+            LEFT_LINE,    ///< The same as \ref LINE, but the origin is placed at the leftmost end of the line.
+            CUSTOM        ///< The kernel shape and weights are given by an image.
       };
 
       /// \brief The default kernel is a disk with a diameter of 7 pixels.
@@ -103,7 +101,7 @@ class DIP_NO_EXPORT Kernel {
          SetShape( shape );
       }
 
-      /// \brief A `dip::FloatArray` implicitly converts to a kernel, it is interpreted as the
+      /// \brief A \ref dip::FloatArray implicitly converts to a kernel, it is interpreted as the
       /// parameter for each dimension. A second argument specifies the shape.
       Kernel( FloatArray params, String const& shape = S::ELLIPTIC ) : params_( std::move( params )) {
          SetShape( shape );
@@ -131,7 +129,7 @@ class DIP_NO_EXPORT Kernel {
       /// will ignore the shift for some kernel shapes.
       ///
       /// The shift if not cumulative, any previous shift is ignored. Any mirroring is applied after the
-      /// shift, whether `Mirror` is called before or after calling `%Shift`.
+      /// shift, whether `Mirror` is called before or after calling `Shift`.
       ///
       /// Big shifts can be very expensive, it is recommended to use this feature only for shifting by one pixel
       /// to adjust the location of even-sized kernels.
@@ -150,7 +148,7 @@ class DIP_NO_EXPORT Kernel {
       /// \brief True if kernel is mirrored
       bool IsMirrored() const { return mirror_; }
 
-      /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel, given the dimensionality
+      /// \brief Creates a \ref dip::PixelTable structure representing the shape of the kernel, given the dimensionality
       /// `nDim`. Pixel table runs will be along dimension `procDim`.
       DIP_EXPORT dip::PixelTable PixelTable( dip::uint nDims, dip::uint procDim ) const;
 
@@ -244,7 +242,7 @@ class DIP_NO_EXPORT Kernel {
       }
 
       /// \brief Returns the number of pixels in the kernel, given the image dimensionality `nDims`.
-      /// This requires the creation of a `dip::PixelTable` for the kernel, so is not a trivial function.
+      /// This requires the creation of a \ref dip::PixelTable for the kernel, so is not a trivial function.
       DIP_EXPORT dip::uint NumberOfPixels( dip::uint nDims ) const;
 
    private:
@@ -269,7 +267,7 @@ class DIP_NO_EXPORT Kernel {
       }
 };
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

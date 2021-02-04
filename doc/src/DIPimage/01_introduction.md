@@ -1,27 +1,24 @@
-# Introduction {#sec_dum_introduction}
+\comment DIPlib 3.0
 
-[//]: # (DIPlib 3.0)
+\comment (c)2017-2020, Cris Luengo.
+\comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
-[//]: # ([c]2017-2019, Cris Luengo.)
-[//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
 
-[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
-[//]: # (you may not use this file except in compliance with the License.)
-[//]: # (You may obtain a copy of the License at)
-[//]: # ()
-[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
-[//]: # ()
-[//]: # (Unless required by applicable law or agreed to in writing, software)
-[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
-[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
-[//]: # (See the License for the specific language governing permissions and)
-[//]: # (limitations under the License.)
 
-\m_footernavigation
+\page sec_dum_introduction Introduction
 
-\tableofcontents
-
-\section sec_dum_introduction_the_dipimage_toolbox The DIPimage toolbox
+\section sec_dum_introduction_the_dipimage_toolbox The *DIPimage* toolbox
 
 *MATLAB* is a software package designed for (among other things) data
 processing. It contains a huge amount of numerical algorithms, and very
@@ -43,7 +40,7 @@ though we always prioritize precision over speed. This means that, even though
 this toolbox contains many very efficient algorithms, there might be other
 (non-MATLAB) alternatives to think of if speed is your number one priority.
 
-\section sec_dum_introduction_the_diplib_library The DIPlib library
+\section sec_dum_introduction_the_diplib_library The *DIPlib* library
 
 *DIPlib* is a quantitative image analysis library written in C++. It
 contains a large number of functions for processing and analyzing
@@ -60,7 +57,7 @@ functions will list the *DIPlib* function that is called.
 to learn more details about the algorithm and the meaning of the parameters.
 
 More information on *DIPlib* can be found at
-<https://diplib.org/diplib-docs/> and <http://diplib.org/>.
+<https://diplib.org/diplib-docs/> and <https://diplib.org/>.
 
 \section sec_dum_introduction_image_analysis Image Analysis
 
@@ -80,13 +77,11 @@ The following conventions are used throughout this manual:
 
 - Function names/syntax: in `typewriter` font
 
-- Keys: in **bold**
+- Keys: like **this**{ .m-label .m-warning }
 
 - Mathematical expressions: in *italic*
 
 - Menu names, menu items, and controls: "inside quotes"
-
-- Description of incomplete features: in *italic*
 
 \section sec_dum_introduction_acknowledgments Acknowledgments
 

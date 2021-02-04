@@ -25,9 +25,11 @@
 #include "diplib/viewer/viewer.h"
 
 /// \file
-/// \brief Declares `dip::viewer::LinkViewPort`.
+/// \brief Declares \ref dip::viewer::LinkViewPort.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup dipviewer
 
 /// \brief Handles viewer linking.
 class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort
@@ -62,6 +64,8 @@ class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort
     /// \brief Remove linked viewer
     DIPVIEWER_EXPORT void unlink(LinkViewPort *link);
 };
+
+/// \endgroup
 
 }} // namespace dip::viewer
 

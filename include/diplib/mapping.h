@@ -25,16 +25,15 @@
 
 /// \file
 /// \brief Image grey-value mapping functions.
-/// \see mapping
+/// See \ref mapping.
 
 
 namespace dip {
 
 
-/// \defgroup mapping Grey-value mapping
+/// \group mapping Grey-value mapping
 /// \brief Operators that map image grey values.
-/// \{
-
+/// \addtogroup
 
 /// \brief Clips the sample values in `in` to a specified range.
 ///
@@ -43,11 +42,12 @@ namespace dip {
 /// use "thresholding" for the process that yields a binary image.
 ///
 /// The output range is given by `low` and `high`. `mode` can be one of the following strings:
-///  - `"both"`: any value lower than `low` is set to `low`, and any value higher than `high` is set to `high`.
-///  - `"low"`: only the lower bound is enforced, yields same result as setting `high` to infinity.
-///  - `"high"`: only the upper bound is enforced, yields same result as setting `low` to infinity.
-///  - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
-///    output range is given by [`low-high/2`,`low+high/2`].
+///
+/// - `"both"`: any value lower than `low` is set to `low`, and any value higher than `high` is set to `high`.
+/// - `"low"`: only the lower bound is enforced, yields same result as setting `high` to infinity.
+/// - `"high"`: only the upper bound is enforced, yields same result as setting `low` to infinity.
+/// - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
+///   output range is given by [`low-high/2`,`low+high/2`].
 ///
 /// `in` must be real-valued.
 DIP_EXPORT void Clip(
@@ -111,18 +111,18 @@ inline Image ClipHigh(
 /// of the aliasing that is introduced by binarization (van Vliet, 1993).
 ///
 /// The range to map is given by `low` and `high`. `mode` can be one of the following strings:
-///  - `"both"`: any value lower than `low` is set to `low`, and any value higher than `high` is set to `high`.
-///  - `"low"`: only the lower bound is enforced, but the value of `high` still affects the mapping.
-///  - `"high"`: only the upper bound is enforced, but the value of `low` still affects the mapping.
-///  - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
-///    input range is given by [`low-high/2`, `low+high/2`]. Note that this is the default mode.
+///
+/// - `"both"`: any value lower than `low` is set to `low`, and any value higher than `high` is set to `high`.
+/// - `"low"`: only the lower bound is enforced, but the value of `high` still affects the mapping.
+/// - `"high"`: only the upper bound is enforced, but the value of `low` still affects the mapping.
+/// - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
+///   input range is given by [`low-high/2`, `low+high/2`]. Note that this is the default mode.
 ///
 /// `in` must be real-valued.
 ///
-/// \literature
-/// <li>L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis, Delft University
-///     of Technology, The Netherlands, 1993.
-/// \endliterature
+/// !!! literature
+///     - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis, Delft University
+///       of Technology, The Netherlands, 1993.
 DIP_EXPORT void ErfClip(
       Image const& in,
       Image& out,
@@ -167,13 +167,14 @@ inline Image Zero(
 /// The mapping function is defined as follows: sample values higher or equal to `upperBound` are mapped
 /// to the `outMax` value, and sample values lower or equal to `lowerBound` are mapped to the `outMin` value.
 /// `method` determines how pixel values are mapped in between these limits. Valid strings for `mode` are:
-///  - `"linear"`: linear mapping.
-///  - `"signed linear"`: linear mapping with zero at fixed value in the middle of the output range.
-///  - `"logarithmic"`: logarithmic mapping.
-///  - `"signed logarithmic"`: logarithmic mapping with zero at fixed location in the output range.
-///  - `"erf"`: error function mapping.
-///  - `"decade"`: decade contrast stretch (uses `parameter1`).
-///  - `"sigmoid"`: sigmoid function contrast stretch (uses `parameter1` and `parameter2`).
+///
+/// - `"linear"`: linear mapping.
+/// - `"signed linear"`: linear mapping with zero at fixed value in the middle of the output range.
+/// - `"logarithmic"`: logarithmic mapping.
+/// - `"signed logarithmic"`: logarithmic mapping with zero at fixed location in the output range.
+/// - `"erf"`: error function mapping.
+/// - `"decade"`: decade contrast stretch (uses `parameter1`).
+/// - `"sigmoid"`: sigmoid function contrast stretch (uses `parameter1` and `parameter2`).
 ///
 /// `in` must be real-valued. `out` will be of an arithmetic type (single or double float), unless it is protected,
 /// in which case its data type is preserved (see \ref protect).
@@ -182,9 +183,9 @@ inline Image Zero(
 /// samples, not independently for each channel):
 ///
 /// ```cpp
-///     dfloat inMin = dip::Percentile( in, {}, lowerBound ).As< dfloat >();
-///     dfloat inMax = dip::Percentile( in, {}, upperBound ).As< dfloat >();
-///     in = dip::Clip( in, inMin, inMax );
+/// dfloat inMin = dip::Percentile( in, {}, lowerBound ).As< dfloat >();
+/// dfloat inMax = dip::Percentile( in, {}, upperBound ).As< dfloat >();
+/// in = dip::Clip( in, inMin, inMax );
 /// ```
 ///
 /// Next, `"linear"` computes `(( outMax - outMin ) / ( inMax - inMin )) * ( in - inMin ) + outMin`.
@@ -195,34 +196,34 @@ inline Image Zero(
 /// `"logarithmic"` computes:
 ///
 /// ```cpp
-///     dfloat offset = inMin - 1;
-///     out = ( outMax - outMin ) * Log( in - offset ) / std::log( inMax - offset ) + outMin;
+/// dfloat offset = inMin - 1;
+/// out = ( outMax - outMin ) * Log( in - offset ) / std::log( inMax - offset ) + outMin;
 /// ```
 ///
 /// whereas `"signed logarithmic"` computes a similar mapping, but first sets
 /// `inMax = std::max( std::abs(inMax), std::abs(inMin) )`, and `inMin = -inMax`, and then takes the logarithm
 /// of `in+1` for positive `in` or `inMax+in+1` for negative `in`.
 ///
-/// `"erf"` applies a mapping identical to that of the `dip::ErfClip` function with the lower range bound set to
+/// `"erf"` applies a mapping identical to that of the \ref dip::ErfClip function with the lower range bound set to
 /// `inMin` and the upper one set to `inMax`, and then scales the output to the requested range. Note that in this
 /// case, the input is not hard-clipped to the range, but soft-clipped through the error function.
 ///
 /// `"decade"` applies the following mapping to each sample:
 ///
 /// ```cpp
-///     dfloat decade = std::log10(( inMax - inMin ) / ( in - inMin + EPSILON ));
-///     if( decade < parameter1 )
-///        out = ( outMax - outMin ) * ( 1 + std::floor(decade) - decade ) + outMin;
-///     else
-///        out = 0;
+/// dfloat decade = std::log10(( inMax - inMin ) / ( in - inMin + EPSILON ));
+/// if( decade < parameter1 )
+///    out = ( outMax - outMin ) * ( 1 + std::floor(decade) - decade ) + outMin;
+/// else
+///    out = 0;
 /// ```
 ///
 /// `"sigmoid"` applies the following mapping to each sample:
 ///
 /// ```cpp
-///     dfloat min = sigmoid( parameter1 * inMin + parameter2 );
-///     dfloat max = sigmoid( parameter1 * inMax + parameter2 );
-///     out = ( outMax - outMin ) / ( max - min ) * ( sigmoid( parameter1 * in + parameter2 ) - min ) + outMin;
+/// dfloat min = sigmoid( parameter1 * inMin + parameter2 );
+/// dfloat max = sigmoid( parameter1 * inMax + parameter2 );
+/// out = ( outMax - outMin ) / ( max - min ) * ( sigmoid( parameter1 * in + parameter2 ) - min ) + outMin;
 /// ```
 ///
 /// Here, the `sigmoid` function is `sigmoid(x) = x / ( 1 + std::abs(x) )`. `parameter1` represents the slope and
@@ -255,7 +256,7 @@ inline Image ContrastStretch(
 
 /// \brief Modifies the image such that its histogram is as flat as possible.
 ///
-/// This function applies a mapping (`dip::LookupTable`) designed by `dip::EqualizationLookupTable`, yielding
+/// This function applies a mapping (\ref dip::LookupTable) designed by \ref dip::EqualizationLookupTable, yielding
 /// an output in the range [0,nBins-1].
 ///
 /// `in` must be real-valued and scalar.
@@ -279,12 +280,12 @@ class DIP_NO_EXPORT Histogram; // forward declaration: include <diplib/histogram
 
 /// \brief Modifies the image such that its histogram is as similar as possible to `example`.
 ///
-/// This function applies a mapping (`dip::LookupTable`) designed by `dip::MatchingLookupTable`, yielding an
+/// This function applies a mapping (\ref dip::LookupTable) designed by \ref dip::MatchingLookupTable, yielding an
 /// output in the range [`example.LowerBound()`,`example.UpperBound()`].
 ///
 /// `in` must be real-valued and scalar. `example` must be a 1D histogram.
-/// The data type of `out` is always `dip::DT_SFLOAT`. If `example` is the histogram of a `dip::DT_UINT8` image,
-/// it is possible to cast `out` to `dip::DT_UINT8`.
+/// The data type of `out` is always \ref dip::DT_SFLOAT. If `example` is the histogram of a \ref dip::DT_UINT8 image,
+/// it is possible to cast `out` to \ref dip::DT_UINT8.
 DIP_EXPORT void HistogramMatching(
       Image const& in,
       Image& out,
@@ -299,7 +300,7 @@ inline Image HistogramMatching(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
 } // namespace dip

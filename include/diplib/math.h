@@ -26,10 +26,10 @@
 
 /// \file
 /// \brief Declares image math functions, except basic arithmetic and comparison.
-/// \see diplib/library/operators.h, math
+/// See \ref "diplib/library/operators.h", \ref math.
 
 
-/// \defgroup math Math and statistics
+/// \group math Math and statistics
 /// \brief The image math and statistics functions and operators.
 
 
@@ -57,7 +57,6 @@ namespace dip {
    inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
 
 /// \addtogroup math_arithmetic
-/// \{
 
 /// \brief Computes the nearest integer to each sample (rounds).
 /// Only defined for floating-point types, the output is the same type.
@@ -79,7 +78,7 @@ DIP_MONADIC_OPERATOR_FLOAT( Truncate )
 /// Only defined for floating-point types, the output is the same type.
 DIP_MONADIC_OPERATOR_FLOAT( Fraction )
 
-/// \brief Computes the reciprocal of each sample: out = in == 0 ? 0 : 1/in.
+/// \brief Computes the reciprocal of each sample: `out = in == 0 ? 0 : 1/in`.
 DIP_MONADIC_OPERATOR_FLEX( Reciprocal )
 
 /// \brief Computes the square of each sample.
@@ -106,10 +105,9 @@ DIP_MONADIC_OPERATOR_FLOAT( Log2 )
 /// \brief Computes the base 10 logarithm of each sample.
 DIP_MONADIC_OPERATOR_FLOAT( Log10 )
 
-/// \}
+/// \endgroup
 
 /// \addtogroup math_trigonometric
-/// \{
 
 /// \brief Computes the sine of each sample.
 DIP_MONADIC_OPERATOR_FLEX( Sin )
@@ -168,10 +166,9 @@ DIP_MONADIC_OPERATOR_FLOAT( Erfc )
 /// \brief Computes the sinc function of each sample. $\mathrm{sinc}(x) = \sin(x)/x$.
 DIP_MONADIC_OPERATOR_FLOAT( Sinc )
 
-/// \}
+/// \endgroup
 
 /// \addtogroup math_comparison
-/// \{
 
 /// \brief True for each pixel that is NaN.
 DIP_MONADIC_OPERATOR_BIN( IsNotANumber )
@@ -182,7 +179,7 @@ DIP_MONADIC_OPERATOR_BIN( IsInfinite )
 /// \brief True for each pixel that is not NaN nor infinity.
 DIP_MONADIC_OPERATOR_BIN( IsFinite )
 
-/// \}
+/// \endgroup
 
 #undef DIP_MONADIC_OPERATOR_FLEX
 #undef DIP_MONADIC_OPERATOR_FLOAT
@@ -191,10 +188,10 @@ DIP_MONADIC_OPERATOR_BIN( IsFinite )
 
 
 
-/// \defgroup math_arithmetic Arithmetic operators
+/// \group math_arithmetic Arithmetic operators
 /// \ingroup math
 /// \brief Monadic and dyadic image arithmetic operators.
-/// \{
+/// \addtogroup
 
 /// \brief Computes the absolute value of each sample.
 DIP_EXPORT void Abs( Image const& in, Image& out );
@@ -204,7 +201,7 @@ inline Image Abs( Image const& in ) {
    return out;
 }
 
-/// \brief Computes the modulus (absolute value) of each sample. `%dip::Modulus` is an alias for `dip::Abs`.
+/// \brief Computes the modulus (absolute value) of each sample. `dip::Modulus` is an alias for \ref dip::Abs.
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
 inline Image Modulus( Image const& in ) { return Abs( in ); }
 
@@ -225,11 +222,11 @@ inline Image Phase( Image const& in ) {
 }
 
 inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
-/// \brief Returns the real component of a complex image. Returns `dip::Image::Real` if the input is complex.
+/// \brief Returns the real component of a complex image. Returns \ref dip::Image::Real if the input is complex.
 inline void Real( Image const& in, Image& out ) { out = Real( in ); }
 
 inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Imaginary() ) : in; }
-/// \brief Returns the imaginary component of a complex image. Returns `dip::Image::Imaginary` if the input is complex
+/// \brief Returns the imaginary component of a complex image. Returns \ref dip::Image::Imaginary if the input is complex
 inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 
 /// \brief Computes the complex conjugate of each sample.
@@ -241,7 +238,7 @@ inline Image Conjugate( Image const& in ) {
 }
 
 /// \brief Computes the sign of each sample. Only defined for signed real data types (signed integers
-/// and floating-point types). Output is of type `dip::DT_SINT8`, containing values -1, 0 and 1.
+/// and floating-point types). Output is of type \ref dip::DT_SINT8, containing values -1, 0 and 1.
 DIP_EXPORT void Sign( Image const& in, Image& out );
 inline Image Sign( Image const& in ) {
    Image out;
@@ -250,7 +247,7 @@ inline Image Sign( Image const& in ) {
 }
 
 /// \brief Computes the integer closest to the value of each sample.
-/// Only defined for floating-point types, the output is of type `dip::DT_SINT32`.
+/// Only defined for floating-point types, the output is of type \ref dip::DT_SINT32.
 DIP_EXPORT void NearestInt( Image const& in, Image& out );
 inline Image NearestInt( Image const& in ) {
    Image out;
@@ -317,9 +314,8 @@ inline Image SignedInfimum( Image const& a, Image const& b ) {
 /// \brief Computes the linear combination of the two images, sample-wise.
 ///
 /// The actual operation applied is:
-///
 /// ```cpp
-///     out = a * aWeight + b * bWeight;
+/// out = a * aWeight + b * bWeight;
 /// ```
 ///
 /// With defaults weights of 0.5, the function computes the average of two images.
@@ -344,9 +340,8 @@ inline Image LinearCombination(
 /// \brief Computes the linear combination of the two complex images, sample-wise, yielding a complex output,
 ///
 /// The actual operation applied is:
-///
 /// ```cpp
-///     out = a * aWeight + b * bWeight;
+/// out = a * aWeight + b * bWeight;
 /// ```
 ///
 /// The images `a` and `b` do not necessarily need to be complex, but the computation will be performed with
@@ -370,22 +365,22 @@ inline Image LinearCombination(
 }
 
 
-/// \}
+/// \endgroup
 
 
 //
 // Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
 //
 
-/// \defgroup math_trigonometric Trigonometric operators
+/// \group math_trigonometric Trigonometric operators
 /// \ingroup math
 /// \brief Monadic and dyadic image trigonometric operators and other complex functions.
-/// \{
+/// \addtogroup
 
 /// \brief Computes the four-quadrant arc tangent of `y/x`.
 ///
 /// The operation can be understood as the angle of the vector formed by the two input images.
-/// The result is always in the range \f$[-\pi,\pi]\f$. The inputs must be a real type.
+/// The result is always in the range $[-\pi,\pi]$. The inputs must be a real type.
 DIP_EXPORT void Atan2( Image const& y, Image const& x, Image& out );
 inline Image Atan2( Image const& y, Image const& x ) {
    Image out;
@@ -404,17 +399,17 @@ inline Image Hypot( Image const& a, Image const& b ) {
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
 //
 // Tensor operators
 //
 
-/// \defgroup math_tensor Tensor operators
+/// \group math_tensor Tensor operators
 /// \ingroup math
 /// \brief Operators specific to tensor images.
-/// \{
+/// \addtogroup
 
 /// \brief Transposes the tensor image, the data are not copied.
 inline Image Transpose( Image const& in ) {
@@ -474,8 +469,8 @@ inline Image SquareNorm( Image const& in ) {
 /// `in` must be a 2-vector or a 3-vector. For a 2-vector, `out` is a scalar image representing
 /// *phi*, the angle from the x-axis. For a 3-vector, `out` has 2 tensor components, corresponding
 /// to *phi* and *theta*. *phi*, as in the 2D case, is the angle from the x-axis within the x-y plane
-/// (azimuth). *theta* is the angle from the z-axis (inclination). See `dip::CartesianToPolar` for
-/// more details. This function yields the same output as `dip::CartesianToPolar`, but without
+/// (azimuth). *theta* is the angle from the z-axis (inclination). See \ref dip::CartesianToPolar for
+/// more details. This function yields the same output as \ref dip::CartesianToPolar, but without
 /// the first tensor component.
 ///
 /// \see dip::Norm, dip::Orientation, dip::PolarToCartesian, dip::CartesianToPolar
@@ -490,7 +485,7 @@ inline Image Angle( Image const& in ) {
 ///
 /// Orientation is defined as the angle mapped to the half-circle or half-sphere with positive x-coordinate.
 /// That is, in 2D it is an angle in the range (-&pi;/2, &pi;/2), and in 3D the *phi* component is mapped to
-/// that same range. See `dip::Angle` for more information.
+/// that same range. See \ref dip::Angle for more information.
 ///
 /// \see dip::Norm, dip::Angle
 DIP_EXPORT void Orientation( Image const& in, Image& out );
@@ -508,18 +503,15 @@ inline Image Orientation( Image const& in ) {
 /// within the x-y plane (azimuth). *theta* is the angle from the z-axis (inclination).
 ///
 /// That is, in 2D:
-///
 /// ```cpp
-///     in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] );
-///     in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] );
+/// in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] );
+/// in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] );
 /// ```
-///
 /// and in 3D:
-///
 /// ```cpp
-///     in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] ) * Sin( out[ 2 ] );
-///     in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] ) * Sin( out[ 2 ] );
-///     in[ 2 ] == out[ 0 ] * Cos( out[ 2 ] );
+/// in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] ) * Sin( out[ 2 ] );
+/// in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] ) * Sin( out[ 2 ] );
+/// in[ 2 ] == out[ 0 ] * Cos( out[ 2 ] );
 /// ```
 ///
 /// \see dip::PolarToCartesian, dip::Norm, dip::Angle
@@ -533,7 +525,7 @@ inline Image CartesianToPolar( Image const& in ) {
 /// \brief Converts the vector at each pixel in image `in` from polar (or spherical) coordinates to
 /// Cartesian coordinates.
 ///
-/// `in` must be a 2-vector or a 3-vector. See `dip::CartesianToPolar` for a description of the polar
+/// `in` must be a 2-vector or a 3-vector. See \ref dip::CartesianToPolar for a description of the polar
 /// coordinates used.
 ///
 /// \see dip::CartesianToPolar, dip::Norm, dip::Angle
@@ -583,7 +575,7 @@ inline Image Eigenvalues( Image const& in ) {
 
 /// \brief Finds the largest eigenvalue of the square matrix at each pixel in image `in`.
 ///
-/// Computes the eigenvalues in the same way as `dip::Eigenvalues`, but
+/// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
 /// outputs only the eigenvector with the largest magnitude.
 DIP_EXPORT void LargestEigenvalue( Image const& in, Image& out );
 inline Image LargestEigenvalue( Image const& in ) {
@@ -594,7 +586,7 @@ inline Image LargestEigenvalue( Image const& in ) {
 
 /// \brief Finds the smallest eigenvalue of the square matrix at each pixel in image `in`.
 ///
-/// Computes the eigenvalues in the same way as `dip::Eigenvalues`, but
+/// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
 /// outputs only the eigenvector with the smallest magnitude.
 DIP_EXPORT void SmallestEigenvalue( Image const& in, Image& out );
 inline Image SmallestEigenvalue( Image const& in ) {
@@ -618,7 +610,7 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 
 /// \brief Finds the largest eigenvector of the symmetric matrix at each pixel in image `in`.
 ///
-/// Computes the eigen decomposition in the same way as `dip::EigenDecomposition`, but
+/// Computes the eigen decomposition in the same way as \ref dip::EigenDecomposition, but
 /// outputs only the eigenvector that corresponds to the eigenvalue with largest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
@@ -631,7 +623,7 @@ inline Image LargestEigenvector( Image const& in ) {
 
 /// \brief Finds the smallest eigenvector of the symmetric matrix at each pixel in image `in`.
 ///
-/// Computes the eigen decomposition in the same way as `dip::EigenDecomposition`, but
+/// Computes the eigen decomposition in the same way as \ref dip::EigenDecomposition, but
 /// outputs only the eigenvector that corresponds to the eigenvalue with smallest magnitude.
 ///
 /// `in` must be symmetric and real-valued.
@@ -674,7 +666,7 @@ inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e-7 ) {
 /// For an input image `in` with a tensor size of NxP, and with M the smaller of N and P, `out` is a
 /// vector image with M elements, corresponding to the singular values, sorted in decreasing order.
 ///
-/// Use `dip::SingularValueDecomposition` if you need the full decomposition.
+/// Use \ref dip::SingularValueDecomposition if you need the full decomposition.
 ///
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
@@ -689,10 +681,10 @@ inline Image SingularValues( Image const& in ) {
 ///
 /// For an input image `A` with a tensor size of NxP, and with M the smaller of N and P, `S` is a
 /// square diagonal MxM matrix, `U` is a NxM matrix, and V is a PxM matrix. These matrices satisfy
-/// the relation \f$A = USV^*\f$.
+/// the relation $A = USV^*$.
 ///
 /// The (diagonal) elements of `S` are the singular values, sorted in decreasing order.
-/// You can use `dip::SingularValues` if you are not interested in computing `U` and `V`.
+/// You can use \ref dip::SingularValues if you are not interested in computing `U` and `V`.
 ///
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
@@ -702,7 +694,7 @@ DIP_EXPORT void SingularValueDecomposition( Image const& A, Image& U, Image& S, 
 ///
 /// `out` will have the same sizes as `in`, and with a tensor representation of a diagonal matrix
 /// with a size concordant to that of the tensor representation of `in`. For example, for an N-vector
-/// image, the resulting output matrix image will be NxN. `out` will be of type `dip::DT_SFLOAT`.
+/// image, the resulting output matrix image will be NxN. `out` will be of type \ref dip::DT_SFLOAT.
 inline void Identity( Image const& in, Image& out ) {
    dip::uint telems = std::max( in.TensorColumns(), in.TensorRows() );
    out.ReForge( in.Sizes(), telems, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
@@ -805,34 +797,32 @@ DIP_EXPORT void SortTensorElements( Image& out );
 DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 
 
-/// \}
+/// \endgroup
 
 
 //
 // Functions that combine two source images
 //
 
-/// \defgroup math_comparison Comparison operators
+/// \group math_comparison Comparison operators
 /// \ingroup math
 /// \brief Monadic and dyadic image comparison operators.
-/// \{
+/// \addtogroup
 
 /// \brief Compares `in1` to `in2` according to `selector`, and writes `in3` or `in4` to `out` depending on the result.
 ///
 /// In short, this is the operation that is applied sample by sample:
-///
 /// ```cpp
-///     in1 <selector> in2 ? in3 : in4
+/// in1 <selector> in2 ? in3 : in4
 /// ```
 ///
 /// The string `selector` can be one of: "==", "!=", ">", "<", ">=", "<="
 ///
 /// An alternative (slower) implementation would be:
-///
 /// ```cpp
-///     dip::Image mask = in1 <selector> in2;
-///     out = in4.Copy();
-///     out.At( mask ) = in3.At( mask );
+/// dip::Image mask = in1 <selector> in2;
+/// out = in4.Copy();
+/// out.At( mask ) = in3.At( mask );
 /// ```
 ///
 /// Note that all input images are singleton-expanded to match in size, so the function can e.g. be used with scalar
@@ -843,15 +833,13 @@ DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 /// ```
 ///
 /// The above is an (less efficient) implementation of
-///
 /// ```cpp
-///     dip::Image result = in1 == in2;
+/// dip::Image result = in1 == in2;
 /// ```
 ///
 /// The output image has the same type as `in3` and `in4`. If these types are different, the output type is given by
-///
 /// ```cpp
-///     dip::DataType::SuggestDyadicOperation( in3.DataType(), in4.DataType() );
+/// dip::DataType::SuggestDyadicOperation( in3.DataType(), in4.DataType() );
 /// ```
 DIP_EXPORT void Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, Image& out, String const& selector );
 inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, String const& selector ) {
@@ -863,34 +851,29 @@ inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image
 /// \brief Writes either `in1` or `in2` to `out` depending on the value of `mask`.
 ///
 /// In short, this is the operation that is applied sample by sample:
-///
 /// ```cpp
-///     mask ? in1 : in2
+/// mask ? in1 : in2
 /// ```
 ///
 /// An alternative (slower) implementation would be:
-///
 /// ```cpp
-///     out = in2.Copy();
-///     out.At( mask ) = in1.At( mask );
+/// out = in2.Copy();
+/// out.At( mask ) = in1.At( mask );
 /// ```
 ///
 /// When `out` is the same image as `in1`, the operation becomes similar to (but faster than):
-///
 /// ```cpp
-///     in1.At( !mask ) = in2.At( !mask );
+/// in1.At( !mask ) = in2.At( !mask );
 /// ```
 ///
 /// Conversely, when `out` is the same image as `in2`, the operation becomes similar to (but faster than):
-///
 /// ```cpp
-///     in2.At( mask) = in1.At( mask );
+/// in2.At( mask) = in1.At( mask );
 /// ```
 ///
 /// The output image has the same type as `in1` and `in2`. If these types are different, the output type is given by
-///
 /// ```cpp
-///     dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
+/// dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
 /// ```
 DIP_EXPORT void Select( Image const& in1, Image const& in2, Image const& mask, Image& out );
 inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
@@ -899,7 +882,7 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    return out;
 }
 
-/// \}
+/// \endgroup
 
 
 } // namespace dip

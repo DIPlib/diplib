@@ -32,15 +32,14 @@
 
 
 /// \file
-/// \brief The dip::Tensor class. This file is always included through `diplib.h`.
-/// \see infrastructure
+/// \brief The \ref dip::Tensor class. This file is always included through \ref "diplib.h".
+/// See \ref imagetype.
 
 
 namespace dip {
 
 
-/// \addtogroup infrastructure
-/// \{
+/// \addtogroup imagetype
 
 
 //
@@ -49,7 +48,7 @@ namespace dip {
 
 /// \brief Describes the shape of a tensor, but doesn't actually contain tensor data.
 ///
-/// Used internally by the `dip::Image` objects.
+/// Used internally by the \ref dip::Image objects.
 /// It is default-constructible, movable and copiable.
 class DIP_NO_EXPORT Tensor {
 
@@ -85,7 +84,7 @@ class DIP_NO_EXPORT Tensor {
       /// because this makes it easy to extract the diagonal without having
       /// to copy data (it's just a window over the full tensor). Because it
       /// is a little awkward finding the right elements given this ordering,
-      /// the function `dip::Tensor::LookUpTable` prepares a table that can be used to access
+      /// the function \ref dip::Tensor::LookUpTable prepares a table that can be used to access
       /// any tensor element given the row and column number. This function
       /// should help make more generic functions that can access tensor elements
       /// without paying attention to the tensor's Shape value.
@@ -94,17 +93,17 @@ class DIP_NO_EXPORT Tensor {
       /// following code:
       ///
       /// ```cpp
-      ///     dip::uint index = 0;
-      ///     for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
-      ///        // value at index * tensorStride is tensor element ( ii, ii ).
-      ///        ++index;
-      ///     }
-      ///     for( dip::uint jj = 1; jj < nDims; ++jj ) { // Elements above diagonal stored column-wise
-      ///        for( dip::uint ii = 0; ii < jj; ++ii ) {
-      ///           // value at index * tensorStride is tensor element ( ii, jj ).
-      ///           ++index;
-      ///        }
-      ///     }
+      /// dip::uint index = 0;
+      /// for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
+      ///    // value at index * tensorStride is tensor element ( ii, ii ).
+      ///    ++index;
+      /// }
+      /// for( dip::uint jj = 1; jj < nDims; ++jj ) { // Elements above diagonal stored column-wise
+      ///    for( dip::uint ii = 0; ii < jj; ++ii ) {
+      ///       // value at index * tensorStride is tensor element ( ii, jj ).
+      ///       ++index;
+      ///    }
+      /// }
       /// ```
       enum class Shape {
             COL_VECTOR = 0,   ///< a vector (stores n elements), default vector shape
@@ -129,15 +128,15 @@ class DIP_NO_EXPORT Tensor {
          constexpr static char const* LOWTRIANG_MATRIX = "lower triangular matrix";
       };
 
-      /// Creates a `Shape::COL_VECTOR` with one element (scalar).
+      /// Creates a \ref Shape::COL_VECTOR with one element (scalar).
       Tensor() {
          SetScalar();
       }
-      /// Creates a `Shape::COL_VECTOR`.
+      /// Creates a \ref Shape::COL_VECTOR.
       explicit Tensor( dip::uint n ) {
          SetVector( n );
       }
-      /// Creates a `Shape::COL_MAJOR_MATRIX`.
+      /// Creates a \ref Shape::COL_MAJOR_MATRIX.
       Tensor( dip::uint rows, dip::uint cols ) {
          SetMatrix( rows, cols );
       }
@@ -286,18 +285,18 @@ class DIP_NO_EXPORT Tensor {
                break;
          }
       }
-      /// Sets the tensor shape, results in a `Shape::COL_VECTOR` with one element (scalar).
+      /// Sets the tensor shape, results in a \ref Shape::COL_VECTOR with one element (scalar).
       void SetScalar() {
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_ = 1;
       }
-      /// Sets the tensor shape, results in a Shape::COL_VECTOR.
+      /// Sets the tensor shape, results in a \ref Shape::COL_VECTOR.
       void SetVector( dip::uint n ) {
          DIP_THROW_IF(( n == 0 ) || ( n > maxint ), "Sizes must be non-zero and no larger than " + std::to_string( maxint ));
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_ = n;
       }
-      /// Sets the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
+      /// Sets the tensor shape, results in a \ref Shape::COL_MAJOR_MATRIX.
       void SetMatrix( dip::uint rows, dip::uint cols ) {
          DIP_THROW_IF( rows == 0, "Number of rows must be non-zero" );
          DIP_THROW_IF( cols == 0, "Number of columns must be non-zero" );
@@ -306,7 +305,7 @@ class DIP_NO_EXPORT Tensor {
          rows_ = rows;
          CorrectShape();
       }
-      /// Sets the tensor size, always results in a `Shape::COL_VECTOR` or `Shape::COL_MAJOR_MATRIX`.
+      /// Sets the tensor size, always results in a \ref Shape::COL_VECTOR or \ref Shape::COL_MAJOR_MATRIX.
       void SetSizes( UnsignedArray const& sizes ) {
          switch( sizes.size() ) {
             case 0:
@@ -323,7 +322,7 @@ class DIP_NO_EXPORT Tensor {
          }
       }
 
-      /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_MAJOR_MATRIX`.
+      /// Changes the tensor shape without changing the number of elements, results in a \ref Shape::COL_MAJOR_MATRIX.
       void ChangeShape( dip::uint rows ) {
          if(( shape_ != Shape::COL_MAJOR_MATRIX ) || ( rows_ != rows )) {
             DIP_THROW_IF( elements_ % rows, "Cannot reshape tensor to requested size" );
@@ -332,7 +331,7 @@ class DIP_NO_EXPORT Tensor {
             CorrectShape();
          }
       }
-      /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_VECTOR`.
+      /// Changes the tensor shape without changing the number of elements, results in a \ref Shape::COL_VECTOR.
       void ChangeShape() {
          shape_ = Shape::COL_VECTOR;
          rows_ = elements_;
@@ -460,7 +459,7 @@ class DIP_NO_EXPORT Tensor {
       /// Tensor element `(m,n)` can be found by adding `Tensor::Index({m,m}) * tstride`
       /// to the pixel's pointer. Throws if the indices do not point to a stored tensor
       /// element (for example, in a diagonal matrix, only the diagonal elements are
-      /// stored; trying to access an off-diagonal element through `%Index` causes an
+      /// stored; trying to access an off-diagonal element through `Index` causes an
       /// exception to be thrown).
       ///
       /// \see dip::Tensor::LookUpTable
@@ -695,7 +694,7 @@ inline std::ostream& operator<<(
    return os;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

@@ -23,11 +23,13 @@
 #include "diplib/viewer/viewer.h"
 
 /// \file
-/// \brief Declares `dip::viewer::StatusViewPort`.
+/// \brief Declares \ref dip::viewer::StatusViewPort.
 
 namespace dip { namespace viewer {
 
-/// \brief Displays the Viewer's status.
+/// \addtogroup dipviewer
+
+/// \brief Displays the \ref Viewer's status.
 class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort
 {
   protected:
@@ -39,6 +41,8 @@ class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort
     
     DIPVIEWER_EXPORT void render() override;
 };
+
+/// \endgroup
 
 }} // namespace dip::viewer
 

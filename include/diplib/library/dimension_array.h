@@ -40,20 +40,19 @@
 
 
 /// \file
-/// \brief The `dip::DimensionArray` template class. This file is always included through `diplib.h`.
-/// \see infrastructure
+/// \brief The \ref dip::DimensionArray template class. This file is always included through \ref "diplib.h".
+/// See \ref supporttypes.
 
 
 namespace dip {
 
 
-/// \addtogroup infrastructure
-/// \{
+/// \addtogroup supporttypes
 
 
 /// \brief A dynamic array type optimized for few elements.
 ///
-/// `%dip::DimensionArray` is similar to `std::vector` but optimized for one particular
+/// `dip::DimensionArray` is similar to `std::vector` but optimized for one particular
 /// use within the *DIPlib* library: hold one element per image dimension. Most images have
 /// only two or three dimensions, and for internal processing we might add the
 /// tensor dimension to the mix, yielding up to four dimensions for most
@@ -92,12 +91,18 @@ class DIP_NO_EXPORT DimensionArray {
 
    public:
       // Types for consistency with STL containers
-      using value_type = T;               ///< Type of values stored in container
-      using iterator = T*;                ///< Type of container's iterator
-      using const_iterator = T const*;    ///< Type of container's const iterator
-      using reverse_iterator = std::reverse_iterator< iterator >;             ///< Type of container's reverse iterator
-      using const_reverse_iterator = std::reverse_iterator< const_iterator >; ///< Type of container's const reverse iterator
-      using size_type = std::size_t;      ///< Type of index into container
+      /// Type of values stored in container
+      using value_type = T;
+      /// Type of container's iterator
+      using iterator = T*;
+      /// Type of container's const iterator
+      using const_iterator = T const*;
+      /// Type of container's reverse iterator
+      using reverse_iterator = std::reverse_iterator< iterator >;
+      /// Type of container's const reverse iterator
+      using const_reverse_iterator = std::reverse_iterator< const_iterator >;
+      /// Type of index into container
+      using size_type = std::size_t;
 
       /// The default-initialized array has zero size.
       DimensionArray() {}; // Using `=default` causes weird sequence of "constructor required before non-static data member for ‘dip::Histogram::Configuration::lowerBound’ has been parsed" in GCC
@@ -418,7 +423,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// Postcondition:
       ///
       /// ```cpp
-      ///     out[ ii ] = (*this)[ order[ ii ] ];
+      /// out[ ii ] = (*this)[ order[ ii ] ];
       /// ```
       DimensionArray permute( DimensionArray< size_type > const& order ) const {
          DimensionArray out( order.size() );
@@ -433,7 +438,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// Postcondition:
       ///
       /// ```cpp
-      ///     out[ order[ ii ]] = (*this)[ ii ];
+      /// out[ order[ ii ]] = (*this)[ ii ];
       /// ```
       ///
       /// Elements not indexed by `order` will be default-initialized.
@@ -620,8 +625,6 @@ class DIP_NO_EXPORT DimensionArray {
 // Compound assignment operator specializations
 //
 
-/// \cond
-
 // The general case: cast rhs to type of lhs
 template< typename T >
 template< typename S >
@@ -662,8 +665,6 @@ inline DimensionArray< std::size_t >& DimensionArray< std::size_t >::operator-=(
    }
    return *this;
 }
-
-/// \endcond
 
 
 //
@@ -937,7 +938,7 @@ inline double Distance( DimensionArray< T > const& v1, DimensionArray< T > const
    return std::sqrt( SquareDistance( v1, v2 ));
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

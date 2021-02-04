@@ -26,16 +26,15 @@
 
 /// \file
 /// \brief Microscopy-related functionality.
-/// \see microscopy
+/// See \ref microscopy.
 
 
 namespace dip {
 
 
-/// \defgroup microscopy Microscopy
+/// \group microscopy Microscopy
 /// \brief Assorted tools useful in microscopy, some presumably also in astronomy and other applications.
-/// \{
-
+/// \addtogroup
 
 /// \brief Applies a logarithmic mapping to a transmittance image to obtain an absorbance image
 ///
@@ -46,11 +45,11 @@ namespace dip {
 /// absorbance. Thus, estimating absorbance yields an estimate of the relative dye concentration at each image
 /// pixel.
 ///
-/// This function applies the mapping \f$A\f$ to the intensities \f$I\f$ in image `in`.
+/// This function applies the mapping $A$ to the intensities $I$ in image `in`.
 ///
-/// \f[ A = -log_{10}(I/I_0) \;, \f]
+/// $$ A = -log_{10}(I/I_0) \; , $$
 ///
-/// with \f$I_0\f$ the intensity of the illumination (`background`), and \f$A\f$ the absorbance written to `out`).
+/// with $I_0$ the intensity of the illumination (`background`), and $A$ the absorbance written to `out`).
 ///
 /// `background` can be a single value or one value per tensor element (channel) in `in`. `out` will have the same
 /// number of tensor elements. It should be estimated from a background region in the image, or from a
@@ -75,7 +74,7 @@ inline Image BeerLambertMapping(
 
 /// \brief Applies an exponential mapping to an absorbance image to obtain a transmittance image
 ///
-/// Applies the inverse mapping of `dip::BeerLambertMapping`, simulating the image obtained under a brightfield
+/// Applies the inverse mapping of \ref dip::BeerLambertMapping, simulating the image obtained under a brightfield
 /// microscope given the stain densities in the image `in`. `background` is the illumination intensity, values of
 /// 0 in the input will be mapped to the value of `background`, whereas larger input values will be mapped to darker
 /// values. Input values should be relatively small, such that `background * dip::Exp10(-input)` can be represented
@@ -83,7 +82,7 @@ inline Image BeerLambertMapping(
 /// allowed.
 ///
 /// `in` must be real-valued, negative values will be clipped to 0. `out` will be a floating-point type, unless
-/// it was protected before calling this function (see `dip::Image::Protect`).
+/// it was protected before calling this function (see \ref dip::Image::Protect).
 DIP_EXPORT void InverseBeerLambertMapping(
       Image const& in,
       Image& out,
@@ -100,10 +99,10 @@ inline Image InverseBeerLambertMapping(
 
 /// \brief Unmixes stains in a brightfield absorbance image or a fluorescence emission image.
 ///
-/// # Brightfield
+/// \section unmixstains_brightfield Brightfield
 ///
 /// A color image, obtained from a brightfield microscope, and converted to an absorbance image by
-/// `dip::BeerLambertMapping`, can be separated into individual stains as long as there are no more
+/// \ref dip::BeerLambertMapping, can be separated into individual stains as long as there are no more
 /// stains than channels. For an RGB image, up to three stains can be separated. For a multi-spectral
 /// image, this number is larger.
 ///
@@ -116,25 +115,25 @@ inline Image InverseBeerLambertMapping(
 ///
 /// The absorption of the dyes in each channel combine linearly with the density of each of the dyes,
 ///
-/// \f[ A_R = S_{R,1} d_1 + S_{R,2} d_2 + S_{R,3} d_3 + ... \f]
+/// $$ A_R = S_{R,1} d_1 + S_{R,2} d_2 + S_{R,3} d_3 + ... $$
 ///
-/// with \f$S_{R,n}\f$ the absorbance of dye \f$n\f$ in the red channel, \f$d_n\f$ the density (concentration) of
-/// dye \f$n\f$, and \f$A_R\f$ the total absorbance in the red channel. In matrix notation this leads to
+/// with $S_{R,n}$ the absorbance of dye $n$ in the red channel, $d_n$ the density (concentration) of
+/// dye $n$, and $A_R$ the total absorbance in the red channel. In matrix notation this leads to
 ///
-/// \f[ A = \mathbf{S} d \;. \f]
+/// $$ A = \mathbf{S} d \; . $$
 ///
-/// Here, \f$A\f$ is a pixel in the multi-channel absorbance image (`in`), \f$\mathbf{S}\f$ is a matrix that
-/// combines absorbance for each dye and each channel, and \f$d\f$ is a vector with the density for each
-/// dye (a pixel in `out`). To find \f$d\f$, this linear set of equations needs to be solved. This process
-/// is described by Ruifrok (2001). This function computes a Moore-Penrose pseudo-inverse of \f$\mathbf{S}\f$,
+/// Here, $A$ is a pixel in the multi-channel absorbance image (`in`), $\mathbf{S}$ is a matrix that
+/// combines absorbance for each dye and each channel, and $d$ is a vector with the density for each
+/// dye (a pixel in `out`). To find $d$, this linear set of equations needs to be solved. This process
+/// is described by Ruifrok (2001). This function computes a Moore-Penrose pseudo-inverse of $\mathbf{S}$,
 /// and applies a per-pixel matrix multiplication with `in` to obtain `out`.
 ///
-/// `stains` is a `std::vector` that contains each of the columns of matrix \f$\mathbf{S}\f$. That is, each element
-/// of `stains` is the values of one column of \f$\mathbf{S}\f$, which we refer to as a *stain vector*. These
-/// stain vectors are represented by a `dip::Image::Pixel` with the same number of tensor elements as `in`.
+/// `stains` is a `std::vector` that contains each of the columns of matrix $\mathbf{S}$. That is, each element
+/// of `stains` is the values of one column of $\mathbf{S}$, which we refer to as a *stain vector*. These
+/// stain vectors are represented by a \ref dip::Image::Pixel with the same number of tensor elements as `in`.
 /// `stains` cannot have more elements than channels (tensor elements) are in `in`.
 /// `out` will contain one channel for each stain. For example, assuming an RGB image with 3 channels, `stains` can
-/// have one, two or three elements, each element being a `dip::Image::Pixel` with exactly 3 elements (corresponding
+/// have one, two or three elements, each element being a \ref dip::Image::Pixel with exactly 3 elements (corresponding
 /// to the 3 RGB channels).
 ///
 /// Best results are obtained when each element of `stains` is normalized (i.e. the norm of each stain vector is 1);
@@ -144,17 +143,17 @@ inline Image InverseBeerLambertMapping(
 /// Example:
 ///
 /// ```cpp
-///     dip::Image img = dip::ImageReadTIFF( "brightfield.tif" );
-///     img = dip::BeerLambertMapping( img, { 255 } );
-///     img = dip::UnmixStains( img, {{ 0.644, 0.717, 0.267 }, { 0.268, 0.570, 0.776 }} );
-///     dip::Image nuclei = img[ 0 ];
-///     dip::Image dab = img[ 1 ];
+/// dip::Image img = dip::ImageReadTIFF( "brightfield.tif" );
+/// img = dip::BeerLambertMapping( img, { 255 } );
+/// img = dip::UnmixStains( img, {{ 0.644, 0.717, 0.267 }, { 0.268, 0.570, 0.776 }} );
+/// dip::Image nuclei = img[ 0 ];
+/// dip::Image dab = img[ 1 ];
 /// ```
 ///
-/// # Fluorescence
+/// \section unmixstains_fluorescence Fluorescence
 ///
 /// The explanation above translates to fluorescence imaging, replacing 'absorbance' with 'emission'. In the case
-/// of fluorescence, `dip::BeerLambertMapping` should not be used.
+/// of fluorescence, \ref dip::BeerLambertMapping should not be used.
 /// Typically, fluorescence imaging systems are set up such that each channel collects light only from a single dye,
 /// but in practice it is not always possible to use dyes with perfectly separated emission spectra. Therefore, there
 /// will be cross-talk, i.e. light from one dye is partially recorded in a channel set up for a different dye.
@@ -167,7 +166,7 @@ inline Image InverseBeerLambertMapping(
 /// emission strength for each dye in each channel again leads to the data to be written in `stains` to estimate
 /// dye densities using this function.
 ///
-/// # Standard brightfield stain vectors
+/// \section unmixstains_standard_vectors Standard brightfield stain vectors
 ///
 /// Stain name        | RGB absorbance triplet
 /// ----------------- | ----------------------
@@ -189,11 +188,11 @@ inline Image InverseBeerLambertMapping(
 /// PAS               | 0.175, 0.972, 0.155
 /// Ponceau-Fuchsin   | 0.107, 0.368, 0.923
 ///
-/// \literature
-/// <li>A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution",
-///     Analytical and Quantitative Cytology and Histology 23(4):291-299, 2001.
-/// <li>Stain color triplets taken from CellProfiler, [`unmixcolors.py`](https://github.com/CellProfiler/CellProfiler/blob/master/cellprofiler/modules/unmixcolors.py) module.
-/// \endliterature
+/// !!! literature
+///     - A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution",
+///       Analytical and Quantitative Cytology and Histology 23(4):291-299, 2001.
+///     - Stain color triplets taken from CellProfiler,
+///       [`unmixcolors.py`](https://github.com/CellProfiler/CellProfiler/blob/master/cellprofiler/modules/unmixcolors.py) module.
 DIP_EXPORT void UnmixStains(
       Image const& in,
       Image& out,
@@ -211,24 +210,24 @@ inline Image UnmixStains(
 /// \brief Composes a color image given stain densities and stain absorbance values (brightfield) or stain emission
 /// values (fluorescence)
 ///
-/// This function does the opposite of what `dip::UnmixStains` does: it applies the per-pixel
-/// matrix multiplication \f$A = \mathbf{S} d\f$ to obtain \f$A\f$ (`out`) from  \f$d\f$ (`in`) and
-/// \f$\mathbf{S}\f$ (composed from the values in `stains`).
+/// This function does the opposite of what \ref dip::UnmixStains does: it applies the per-pixel
+/// matrix multiplication $A = \mathbf{S} d$ to obtain $A$ (`out`) from  $d$ (`in`) and
+/// $\mathbf{S}$ (composed from the values in `stains`).
 ///
 /// `stains` is a vector with these absorbance/emission values, and should have the same number of
 /// elements as channels (tensor elements) in the image `in`. Each element of the vector should have the
 /// same number of channels, and these dictate the number of channels in the output image `out`. If `out`
-/// has three channels, it will be tagged as an RGB image. Call `dip::InverseBeerLambertMapping` with `out`
+/// has three channels, it will be tagged as an RGB image. Call \ref dip::InverseBeerLambertMapping with `out`
 /// to create an image as seen through a brightfield microscope:
 ///
 /// Example:
 ///
 /// ```cpp
-///     dip::Image img( { 1024, 1024 }, 2 );
-///     dip::DrawBandlimitedBall( img, 300, { 400, 500 }, { 1.0, 0.0 } );
-///     dip::DrawBandlimitedBall( img, 200, { 500, 600 }, { 0.0, 1.0 } );
-///     img = dip::MixStains( img, {{ 0.644, 0.717, 0.267 }, { 0.268, 0.570, 0.776 }} );
-///     img = dip::InverseBeerLambertMapping( img, { 255 } );
+/// dip::Image img( { 1024, 1024 }, 2 );
+/// dip::DrawBandlimitedBall( img, 300, { 400, 500 }, { 1.0, 0.0 } );
+/// dip::DrawBandlimitedBall( img, 200, { 500, 600 }, { 0.0, 1.0 } );
+/// img = dip::MixStains( img, {{ 0.644, 0.717, 0.267 }, { 0.268, 0.570, 0.776 }} );
+/// img = dip::InverseBeerLambertMapping( img, { 255 } );
 /// ```
 ///
 /// If there are more stains than channels, this process is irreversible (that is, it will not be possible
@@ -252,8 +251,10 @@ inline Image MixStains(
 ///
 /// The Manders Overlap Coefficient is defined similarly to the Pearson Correlation Coefficient, but without
 /// subtracting the means from each of the variables,
-/// \f[ r = \frac{\sum{C_1(p) C_2(p)}}{\sqrt{\sum{C_1(p)^2}\sum{C_2(p)^2}}} \;, \f]
-/// with \f$C_1\f$ and \f$C_2\f$ the two channels.
+///
+/// $$ r = \frac{\sum{C_1(p) C_2(p)}}{\sqrt{\sum{C_1(p)^2}\sum{C_2(p)^2}}} \; , $$
+///
+/// with $C_1$ and $C_2$ the two channels.
 /// Thus, it returns a value proportional to the fraction of pixels where both channels have a large value.
 /// Do note the arguments against this method by Adler and Parmryd (2010).
 ///
@@ -266,17 +267,16 @@ inline Image MixStains(
 /// To compute the Manders Overlap Coefficient between two channels in a multi-channel image (a tensor image):
 ///
 /// ```cpp
-///     MandersOverlapCoefficient( in[ 0 ], in[ 1 ], mask );
+/// MandersOverlapCoefficient( in[ 0 ], in[ 1 ], mask );
 /// ```
 ///
 /// \see dip::PearsonCorrelation, dip::SpearmanRankCorrelation, dip::IntensityCorrelationQuotient, dip::MandersColocalizationCoefficients, dip::CostesColocalizationCoefficients
 ///
-/// \literature
-/// <li>E.M.M. Manders, F.J. Verbeek, and J.A. Aten, "Measurement of co-localization of objects in dual-color confocal images",
-///     Journal of Microscopy 169(3):375-382, 1993.
-/// <li>J. Adler, and I. Parmryd, "Quantifying colocalization by correlation: the Pearson correlation coefficient is superior
-///     to the Mander's overlap coefficient", Cytometry A 77(8):733-42, 2010.
-/// \endliterature
+/// !!! literature
+///     - E.M.M. Manders, F.J. Verbeek, and J.A. Aten, "Measurement of co-localization of objects in dual-color confocal images",
+///       Journal of Microscopy 169(3):375-382, 1993.
+///     - J. Adler, and I. Parmryd, "Quantifying colocalization by correlation: the Pearson correlation coefficient is superior
+///       to the Mander's overlap coefficient", Cytometry A 77(8):733-42, 2010.
 DIP_EXPORT dfloat MandersOverlapCoefficient(
       Image const& channel1,
       Image const& channel2,
@@ -286,31 +286,30 @@ DIP_EXPORT dfloat MandersOverlapCoefficient(
 /// \brief Computes Li's Intensity Correlation Quotient.
 ///
 /// Li's Intensity Correlation Quotient is proportional to the fraction of pixels where the two channels vary in a
-/// dependent manner. For each pixel, \f$ c = (C_1 - \overline{C_1})(C_2 - \overline{C_2}) \f$ is computed. Then the ICQ is
-/// \f$ \frac{|c>0|}{|c|} - 0.5 \f$, with \f$ |\cdot| \f$ the count operator.
+/// dependent manner. For each pixel, $c = (C_1 - \overline{C_1})(C_2 - \overline{C_2})$ is computed. Then the ICQ is
+/// $\frac{|c>0|}{|c|} - 0.5$, with $|\cdot|$ the count operator.
 ///
 /// The images must be scalar and real-valued. If `mask` is not forged, all input pixels are considered.
 ///
 /// To compute Li's Intensity Correlation Quotient between two channels in a multi-channel image (a tensor image):
 ///
 /// ```cpp
-///     IntensityCorrelationQuotient( in[ 0 ], in[ 1 ], mask );
+/// IntensityCorrelationQuotient( in[ 0 ], in[ 1 ], mask );
 /// ```
 ///
 /// \see dip::PearsonCorrelation, dip::SpearmanRankCorrelation, dip::MandersOverlapCoefficient
 ///
-/// \literature
-/// <li>Q. Li, A. Lau, T.J. Morris, L. Guo, C.B. Fordyce, and E.F. Stanley, "A Syntaxin 1, G&alpha;<sup>o</sup>, and N-Type
-///     Calcium Channel Complex at a Presynaptic Nerve Terminal: Analysis by Quantitative Immunocolocalization",
-///     Journal of Neuroscience 24(16):4070-4081, 2004.
-/// \endliterature
+/// !!! literature
+///     - Q. Li, A. Lau, T.J. Morris, L. Guo, C.B. Fordyce, and E.F. Stanley, "A Syntaxin 1, G&alpha;^o^, and N-Type
+///       Calcium Channel Complex at a Presynaptic Nerve Terminal: Analysis by Quantitative Immunocolocalization",
+///       Journal of Neuroscience 24(16):4070-4081, 2004.
 DIP_EXPORT dfloat IntensityCorrelationQuotient(
       Image const& channel1,
       Image const& channel2,
       Image const& mask = {}
 );
 
-/// \brief Holds Colocalization Coefficients as described by Manders, see `dip::MandersColocalizationCoefficients`.
+/// \brief Holds Colocalization Coefficients as described by Manders, see \ref dip::MandersColocalizationCoefficients.
 struct ColocalizationCoefficients {
    dfloat M1; ///< Proportional to the fraction of fluorescence in channel 1 that colocalizes.
    dfloat M2; ///< Proportional to the fraction of fluorescence in channel 2 that colocalizes.
@@ -319,13 +318,14 @@ struct ColocalizationCoefficients {
 /// \brief Computes Manders' Colocalization Coefficients.
 ///
 /// Manders' Colocalization Coefficients separate out the contributions in Manders Overlap Coefficient of the two
-/// channels \f$C_1\f$ and \f$C_2\f$, defining two coefficients as the fraction of staining in one channel that
+/// channels $C_1$ and $C_2$, defining two coefficients as the fraction of staining in one channel that
 /// appears where the other channel has some staining,
-/// \f[ M_1 = \frac{\sum_{p|C_2(p) > 0}{C_1(p)}}{\sum_p{C_1(p)}} \;, \qquad
-///     M_2 = \frac{\sum_{p|C_1(p) > 0}{C_2(p)}}{\sum_p{C_2(p)}} \;. \f]
 ///
-/// Note that if the two input images are binary, this is eqivalent to computing the precision and sensitivity using
-/// `dip::Precision` and `dip::Sensitivity`.
+/// $$ M_1 = \frac{\sum_{p|C_2(p) > 0}{C_1(p)}}{\sum_p{C_1(p)}} \; , \qquad
+///    M_2 = \frac{\sum_{p|C_1(p) > 0}{C_2(p)}}{\sum_p{C_2(p)}} \; . $$
+///
+/// Note that if the two input images are binary, this is equivalent to computing the precision and sensitivity using
+/// \ref dip::Precision and \ref dip::Sensitivity.
 ///
 /// Here, instead of thresholding at 0, we apply `threshold1` for `channel1`, and `threshold2` for `channel2`. These
 /// thresholds default to 0 to match the method proposed by Manders.
@@ -337,15 +337,14 @@ struct ColocalizationCoefficients {
 /// To compute Manders' Colocalization Coefficients between two channels in a multi-channel image (a tensor image):
 ///
 /// ```cpp
-///     MandersColocalizationCoefficients( in[ 0 ], in[ 1 ], mask );
+/// MandersColocalizationCoefficients( in[ 0 ], in[ 1 ], mask );
 /// ```
 ///
 /// \see dip::MandersOverlapCoefficient, dip::CostesColocalizationCoefficients
 ///
-/// \literature
-/// <li>E.M.M. Manders, F.J. Verbeek, and J.A. Aten, "Measurement of co-localization of objects in dual-color confocal images",
-///     Journal of Microscopy 169(3):375-382, 1993.
-/// \endliterature
+/// !!! literature
+///     - E.M.M. Manders, F.J. Verbeek, and J.A. Aten, "Measurement of co-localization of objects in dual-color confocal images",
+///       Journal of Microscopy 169(3):375-382, 1993.
 DIP_EXPORT ColocalizationCoefficients MandersColocalizationCoefficients(
       Image const& channel1,
       Image const& channel2,
@@ -360,12 +359,14 @@ DIP_EXPORT ColocalizationCoefficients MandersColocalizationCoefficients(
 /// for each channel under which the correlation is zero. This threshold cuts out the background signal. Staining
 /// is colocalized at those pixels where both channels are above their respective threshold.
 /// The two coefficients are defined as the fraction of total staining that is colocalized,
-/// \f[ M_j = \frac{\sum_{p \in T}{C_j(p)}}{\sum_p{C_j(p)}} \;, j \in \{1,2\} \;, \qquad
-///     T = C_1 > t_1 \wedge C_2 > t_2 \f]
-/// with \f$C_j\f$ the two input channels.
-/// \f$t_j\f$ are the thresholds for each channel, with \f$t_2 = a t_1 + b\f$, and
-/// \f$a\f$ and \f$b\f$ the slope and intercept of the regression line of the two-dimensional histogram. The thresholds
-/// are successively lowered until the pixels that are not in \f$T\f$ exhibit no correlation between the two channels.
+///
+/// $$ M_j = \frac{\sum_{p \in T}{C_j(p)}}{\sum_p{C_j(p)}} \;, j \in \{1,2\} \; , \qquad
+///    T = C_1 > t_1 \wedge C_2 > t_2 $$
+///
+/// with $C_j$ the two input channels.
+/// $t_j$ are the thresholds for each channel, with $t_2 = a t_1 + b$, and
+/// $a$ and $b$ the slope and intercept of the regression line of the two-dimensional histogram. The thresholds
+/// are successively lowered until the pixels that are not in $T$ exhibit no correlation between the two channels.
 ///
 /// The images must be scalar and real-valued. Any negative values in the input images will cause wrong output,
 /// make sure to clamp the input to 0 before calling this function.
@@ -374,16 +375,15 @@ DIP_EXPORT ColocalizationCoefficients MandersColocalizationCoefficients(
 /// To compute Costes' Colocalization Coefficients between two channels in a multi-channel image (a tensor image):
 ///
 /// ```cpp
-///     CostesColocalizationCoefficients( in[ 0 ], in[ 1 ], mask );
+/// CostesColocalizationCoefficients( in[ 0 ], in[ 1 ], mask );
 /// ```
 ///
 /// \see dip::MandersColocalizationCoefficients
 ///
-/// \literature
-/// <li>S.V. Costes, D. Daelemans, E.H. Cho, Z. Dobbin, G. Pavlakis, and S. Lockett,
-///     "Automatic and Quantitative Measurement of Protein-Protein Colocalization in Live Cells",
-///     Biophysical Journal 86:3993-4003, 2004.
-/// \endliterature
+/// !!! literature
+///     - S.V. Costes, D. Daelemans, E.H. Cho, Z. Dobbin, G. Pavlakis, and S. Lockett,
+///       "Automatic and Quantitative Measurement of Protein-Protein Colocalization in Live Cells",
+///       Biophysical Journal 86:3993-4003, 2004.
 DIP_EXPORT ColocalizationCoefficients CostesColocalizationCoefficients(
       Image const& channel1,
       Image const& channel2,
@@ -418,11 +418,10 @@ DIP_EXPORT ColocalizationCoefficients CostesColocalizationCoefficients(
 ///
 /// \see dip::PearsonCorrelation, dip::SpearmanRankCorrelation, dip::IntensityCorrelationQuotient, dip::MandersColocalizationCoefficients, dip::CostesColocalizationCoefficients
 ///
-/// \literature
-/// <li>S.V. Costes, D. Daelemans, E.H. Cho, Z. Dobbin, G. Pavlakis, and S. Lockett,
-///     "Automatic and Quantitative Measurement of Protein-Protein Colocalization in Live Cells",
-///     Biophysical Journal 86:3993-4003, 2004.
-/// \endliterature
+/// !!! literature
+///     - S.V. Costes, D. Daelemans, E.H. Cho, Z. Dobbin, G. Pavlakis, and S. Lockett,
+///       "Automatic and Quantitative Measurement of Protein-Protein Colocalization in Live Cells",
+///       Biophysical Journal 86:3993-4003, 2004.
 DIP_EXPORT dfloat CostesSignificanceTest(
       Image const& channel1,
       Image const& channel2,
@@ -448,12 +447,11 @@ DIP_EXPORT dfloat CostesSignificanceTest(
 ///
 /// `amplitude` is the value of the OTF at the origin, and thus equivalent to the integral over the PSF.
 ///
-/// `out` will be scalar and of type `DT_SFLOAT`. It should have 1 or 2 dimensions, its sizes will be preserved.
+/// `out` will be scalar and of type \ref dip::DT_SFLOAT. It should have 1 or 2 dimensions, its sizes will be preserved.
 /// If `out` has no sizes, a 256x256 image will be generated.
 ///
-/// \literature
-/// <li>K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
-/// \endliterature
+/// !!! literature
+///     - K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
 DIP_EXPORT void IncoherentOTF(
       Image& out,
       dfloat defocus = 0,
@@ -481,13 +479,12 @@ inline Image IncoherentOTF(
 ///
 /// `amplitude` is the integral over the PSF.
 ///
-/// `out` will be scalar and of type `DT_SFLOAT`. It should have 1 or 2 dimensions, its sizes will be preserved.
+/// `out` will be scalar and of type \ref dip::DT_SFLOAT. It should have 1 or 2 dimensions, its sizes will be preserved.
 /// For 1D images, the PSF returned is a single line through the middle of a 2D PSF.
 /// If `out` has no sizes, a square image of size `ceil(19*oversampling)` will be generated.
 ///
-/// \literature
-/// <li>K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
-/// \endliterature
+/// !!! literature
+///     - K.R. Castleman, "Digital image processing", Second Edition, Prentice Hall, Englewood Cliffs, 1996.
 DIP_EXPORT void IncoherentPSF(
       Image& out,
       dfloat oversampling = 1,
@@ -505,27 +502,31 @@ inline Image IncoherentPSF(
 
 /// \brief Wiener Deconvolution using estimates of signal and noise power
 ///
-/// If \f$G\f$ is the Fourier transform of `in`, \f$H\f$ is the Fourier transform of `psf`,
-/// and \f$F\f$ is the Fourier transform of `out`, then this function estimates the \f$F\f$ that optimally
-/// (in the least squares sense) satisfies \f$G = FH\f$ (that is, `in` is the result of the convolution of
+/// If $G$ is the Fourier transform of `in`, $H$ is the Fourier transform of `psf`,
+/// and $F$ is the Fourier transform of `out`, then this function estimates the $F$ that optimally
+/// (in the least squares sense) satisfies $G = FH$ (that is, `in` is the result of the convolution of
 /// `out` with `psf`).
 ///
 /// Finding `out` requires knowledge of the power spectrum of the signal and the noise. The Wiener deconvolution
 /// filter is defined in the frequency domain as
-/// \f[ H_\text{inv} = \frac{H^* S}{ H^* H S + N } \;, \f]
-/// where \f$S\f$ is `signalPower`, and \f$N\f$ is `noisePower`. These functions are typically not known, but:
 ///
-///  - `signalPower` can be estimated as the Fourier transform of the autocorrelation of `in`. If a raw image
-///    is passed for this argument (`%dip::Image{}`), then it will be computed as such.
+/// $$ H_\text{inv} = \frac{H^* S}{ H^* H S + N } \; , $$
 ///
-///  - `noisePower` can be estimated as a flat function. A 0D image can be given here, it will be expanded to
-///    the size of the other images. `noisePower` should not be zero anywhere, as that might lead to division
-///    by zero and consequently meaningless results.
+/// where $S$ is `signalPower`, and $N$ is `noisePower`. These functions are typically not known, but:
 ///
-/// The other syntax for `%dip::WienerDeconvolution` takes an estimate of the noise-to-signal
-/// ratio instead of the signal and noise power spectra. Note that \f$H_\text{inv}\f$ can be rewritten as
-/// \f[ H_\text{inv} = \frac{H^*}{ H^* H  + \frac{N}{S} } = \frac{H^*}{ H^* H  + K } \;, \f]
-/// where \f$K\f$ is the noise-to-signal ratio.
+/// - `signalPower` can be estimated as the Fourier transform of the autocorrelation of `in`. If a raw image
+///   is passed for this argument (`dip::Image{}`), then it will be computed as such.
+///
+/// - `noisePower` can be estimated as a flat function. A 0D image can be given here, it will be expanded to
+///   the size of the other images. `noisePower` should not be zero anywhere, as that might lead to division
+///   by zero and consequently meaningless results.
+///
+/// The other syntax for \ref dip::WienerDeconvolution takes an estimate of the noise-to-signal
+/// ratio instead of the signal and noise power spectra. Note that $H_\text{inv}$ can be rewritten as
+///
+/// $$ H_\text{inv} = \frac{H^*}{ H^* H  + \frac{N}{S} } = \frac{H^*}{ H^* H  + K } \; , $$
+///
+/// where $K$ is the noise-to-signal ratio.
 ///
 /// `psf` is given in the spatial domain, and will be zero-padded to the size of `in` and Fourier transformed.
 /// The PSF (point spread function) should sum to one in order to preserve the mean image intensity.
@@ -557,8 +558,8 @@ inline Image WienerDeconvolution(
 /// \brief Wiener Deconvolution using an estimate of noise-to-signal ratio
 ///
 /// See the description of the function with the same name above. The difference here is that a single number,
-/// `regularization`, is given instead of the signal and noise power spectra. We then set \f$K\f$ (the
-/// noise-to-signal ratio) to `regularization * dip::Maximum(P)`, with `P` equal to \f$H^* H\f$.
+/// `regularization`, is given instead of the signal and noise power spectra. We then set $K$ (the
+/// noise-to-signal ratio) to `regularization * dip::Maximum(P)`, with `P` equal to $H^* H$.
 DIP_EXPORT void WienerDeconvolution(
       Image const& in,
       Image const& psf,
@@ -597,10 +598,9 @@ inline Image WienerDeconvolution(
 /// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
 /// unchanged.
 ///
-/// \literature
-/// <li>K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-///     "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
-/// \endliterature
+/// !!! literature
+///     - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+///       "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
 DIP_EXPORT void ExponentialFitCorrection(
       Image const& in,
       Image const& mask,
@@ -643,10 +643,9 @@ inline Image ExponentialFitCorrection(
 /// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
 /// unchanged.
 ///
-/// \literature
-/// <li>K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-///     "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
-/// \endliterature
+/// !!! literature
+///     - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+///       "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
 DIP_EXPORT void AttenuationCorrection(
       Image const& in,
       Image& out,
@@ -677,7 +676,8 @@ inline Image AttenuationCorrection(
 ///
 /// Simulates an attenuation based on the model of a CSLM, using a ray tracing method.
 ///
-/// \warning This function is extremely slow, and its running time grows exponentially with the number of slices.
+/// !!! warning
+///     This function is extremely slow, and its running time grows exponentially with the number of slices.
 ///
 /// The system is characterized by parameters `NA` (numerical aperture) and `refIndex` (refractive index of the
 /// medium), as well as the pixel size information in `in` (the x and y pixel size must be the same, the z size
@@ -690,10 +690,9 @@ inline Image AttenuationCorrection(
 /// `in` must be a 3D, scalar and real-valued image. For images with fewer than 3 dimensions, the input is returned
 /// unchanged.
 ///
-/// \literature
-/// <li>K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
-///     "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
-/// \endliterature
+/// !!! literature
+///     - K.C. Strasters, H.T.M. van der Voort, J.M. Geusebroek, and A.W.M. Smeulders,
+///       "Fast attenuation correction in fluorescence confocal imaging: a recursive approach", BioImaging 2(2):78-92, 1994.
 DIP_EXPORT void SimulatedAttenuation(
       Image const& in,
       Image& out,
@@ -718,7 +717,7 @@ inline Image SimulatedAttenuation(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

@@ -25,7 +25,7 @@
 
 /// \file
 /// \brief Distributions and related functionality.
-/// \see analysis
+/// See \ref analysis.
 
 
 namespace dip {
@@ -33,16 +33,15 @@ namespace dip {
 class DIP_NO_EXPORT Histogram;
 
 /// \addtogroup analysis
-/// \{
 
 
 /// \brief Holds probability density functions and other types of distribution
 ///
 /// This is a container class to hold results of certain type of analysis that compute
 /// a property as a function of scale or intensity. Even though a histogram could fit
-/// within this description, the `dip::Histogram` class is specifically meant to
+/// within this description, the \ref dip::Histogram class is specifically meant to
 /// hold histograms, and purposefully kept separate from this class. A `dip::Histogram`
-/// with a 1D histogram can be cast to a `%dip::Distribution`.
+/// with a 1D histogram can be cast to a `dip::Distribution`.
 ///
 /// Distributions represent a function *y* of *x*, where *x* is not necessarily uniformly
 /// spaced. Both *x* and *y* are stored as double-precision floating point values.
@@ -54,35 +53,34 @@ class DIP_NO_EXPORT Histogram;
 /// The `Sort` method applies a stable sort to restore the order.
 class DIP_NO_EXPORT Distribution {
    public:
-      using ValueType = dfloat;                    ///< Data type of values stored in container
-      using Container = std::vector< ValueType >;  ///< %Container used internally to store the data
+      /// Data type of values stored in container
+      using ValueType = dfloat;
+      /// Container used internally to store the data
+      using Container = std::vector< ValueType >;
 
       /// \brief One sample of a distribution.
       ///
-      /// A sample implicitly converts to `dip::dfloat`, evaluating to the value of *y* for
+      /// A sample implicitly converts to \ref dip::dfloat, evaluating to the value of *y* for
       /// the sample. For multi-valued samples, evaluates to the first *y* value.
       ///
-      /// Given a `%Sample` `s`, `s.X()` accesses the *x*-value of the sample, `s.Y()` accesses
+      /// Given a `Sample` `s`, `s.X()` accesses the *x*-value of the sample, `s.Y()` accesses
       /// the (first) *y*-value, `s.Y(ii)` accesses the `(ii+1)`-th *y* value, and `s.Y(ii,jj)` accesses
       /// the element at (`ii`,`jj`). `s.Y(ii,jj)` is equivalent to `s.Y(ii+jj*nRows)`, where `nRows`
       /// is the number of rows in the matrix. None of these accessors test for out-of-bounds accesses.
       ///
-      /// \warning
-      /// \parblock
-      /// Note that `%Sample` references the `dip::Distribution` it is created from, which must therefore
-      /// exist while the sample is used. Copying a `%Sample` does not create new storage, the copy will
-      /// reference the same data. Therefore, things like the following will not work:
+      /// !!! warning
+      ///     Note that `Sample` references the \ref dip::Distribution it is created from, which must therefore
+      ///     exist while the sample is used. Copying a `Sample` does not create new storage, the copy will
+      ///     reference the same data. Therefore, things like the following will not work:
       ///
-      /// ```cpp
-      ///    Distribution d = ...;
-      ///    auto tmp = d[ 2 ];
-      ///    d[ 2 ] = d[ 3 ];    // `tmp` changes along with `d[ 2 ]`, since they reference the same data
-      ///    d[ 3 ] = tmp;
-      /// ```
+      ///         :::cpp
+      ///         Distribution d = ...;
+      ///         auto tmp = d[ 2 ];
+      ///         d[ 2 ] = d[ 3 ];    // `tmp` changes along with `d[ 2 ]`, since they reference the same data
+      ///         d[ 3 ] = tmp;
       ///
-      /// Instead, use `swap`. Do note that some algorithms in the C++ Standard Library expect the above
-      /// to work.
-      /// \endparblock
+      ///     Instead, use `swap`. Do note that some algorithms in the C++ Standard Library expect the above
+      ///     to work.
       class DIP_NO_EXPORT Sample {
             friend class Distribution;
             friend class Iterator;
@@ -159,11 +157,16 @@ class DIP_NO_EXPORT Distribution {
             friend class Distribution;
 
          public:
-            using iterator_category = std::random_access_iterator_tag; ///< %Iterator category
-            using value_type = Sample;           ///< The data type obtained when dereferencing the iterator
-            using difference_type = dip::sint;   ///< The type of difference between iterators
-            using reference = Sample&;           ///< The type of a reference to a sample
-            using pointer = Sample*;             ///< The type of a pointer to a sample
+            /// Iterator category
+            using iterator_category = std::random_access_iterator_tag;
+            /// The data type obtained when dereferencing the iterator
+            using value_type = Sample;
+            /// The type of difference between iterators
+            using difference_type = dip::sint;
+            /// The type of a reference to a sample
+            using reference = Sample&;
+            /// The type of a pointer to a sample
+            using pointer = Sample*;
 
             /// Not default constructable
             Iterator() = delete; // TODO: random access iterator requires default initialization
@@ -291,7 +294,7 @@ class DIP_NO_EXPORT Distribution {
             data_[ ii * 2 + 1 ] = y[ ii ];
          }
       }
-      /// A 1D `dip::Histogram` can be cast to a `%dip::Distribution`
+      /// A 1D \ref dip::Histogram can be cast to a `dip::Distribution`
       DIP_EXPORT explicit Distribution( Histogram const& histogram );
 
       /// Checks whether the distribution is empty (size is 0)
@@ -494,7 +497,7 @@ inline std::ostream& operator<<(
 }
 
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

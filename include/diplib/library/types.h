@@ -41,15 +41,17 @@
 
 
 /// \file
-/// \brief Defines the basic types used throughout the library. This file is always included through `diplib.h`.
-/// \see infrastructure
+/// \brief Defines the basic types used throughout the library. This file is always included through \ref "diplib.h".
+/// See \ref supporttypes, \ref pixeltypes.
 
 
 namespace dip {
 
 
-/// \addtogroup infrastructure
-/// \{
+/// \group supporttypes Support types
+/// \ingroup infrastructure
+/// \brief Types used for image samples (pixels), and related support functionality
+/// \addtogroup
 
 
 //
@@ -64,8 +66,10 @@ namespace dip {
 //       always false. I started with the uint because the standard library
 //       uses it for sizes of arrays, and sizeof() is unsigned also. Maybe
 //       better to cast these to sint?
-using sint = std::ptrdiff_t;  ///< An integer type to be used for strides and similar measures.
-using uint = std::size_t;  ///< An integer type to be used for sizes and the like.
+/// An integer type to be used for strides and similar measures.
+using sint = std::ptrdiff_t;
+/// An integer type to be used for sizes and the like.
+using uint = std::size_t;
 // ptrdiff_t and size_t are signed and unsigned integers of the same length as
 // pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
 // NOTE: We don't allow any integer to be larger than the max value of ptrdiff_t.
@@ -74,31 +78,44 @@ using uint = std::size_t;  ///< An integer type to be used for sizes and the lik
 constexpr dip::uint maxint = static_cast< dip::uint >( std::numeric_limits< dip::sint >::max() );
 
 
-/// \}
+/// \endgroup
 
 
-/// \addtogroup types
-/// \{
+/// \addtogroup pixeltypes
 
 
 //
 // Types for pixel values
 //
+/// Type for samples in a binary image. Can store 0 or 1. Occupies 1 byte.
 class DIP_NO_EXPORT bin;
-using uint8 = std::uint8_t;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
-using uint16 = std::uint16_t;    ///< Type for samples in a 16-bit unsigned integer image
-using uint32 = std::uint32_t;    ///< Type for samples in a 32-bit unsigned integer image
-using uint64 = std::uint64_t;    ///< Type for samples in a 64-bit unsigned integer image
-using sint8 = std::int8_t;       ///< Type for samples in an 8-bit signed integer image
-using sint16 = std::int16_t;     ///< Type for samples in a 16-bit signed integer image
-using sint32 = std::int32_t;     ///< Type for samples in a 32-bit signed integer image
-using sint64 = std::int64_t;     ///< Type for samples in a 64-bit signed integer image
-using sfloat = float;            ///< Type for samples in a 32-bit floating point (single-precision) image
-using dfloat = double;           ///< Type for samples in a 64-bit floating point (double-precision) image
-using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
-using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
+/// Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
+using uint8 = std::uint8_t;
+/// Type for samples in a 16-bit unsigned integer image
+using uint16 = std::uint16_t;
+/// Type for samples in a 32-bit unsigned integer image
+using uint32 = std::uint32_t;
+/// Type for samples in a 64-bit unsigned integer image
+using uint64 = std::uint64_t;
+/// Type for samples in an 8-bit signed integer image
+using sint8 = std::int8_t;
+/// Type for samples in a 16-bit signed integer image
+using sint16 = std::int16_t;
+/// Type for samples in a 32-bit signed integer image
+using sint32 = std::int32_t;
+/// Type for samples in a 64-bit signed integer image
+using sint64 = std::int64_t;
+/// Type for samples in a 32-bit floating point (single-precision) image
+using sfloat = float;
+/// Type for samples in a 64-bit floating point (double-precision) image
+using dfloat = double;
+/// Type for samples in a 64-bit complex-valued (single-precision) image
+using scomplex = std::complex< sfloat >;
+/// Type for samples in a 128-bit complex-valued (double-precision) image
+using dcomplex = std::complex< dfloat >;
 
-using LabelType = uint32;        ///< Type currently used for all labeled images, see `dip::DT_LABEL`.
+/// Type currently used for all labeled images, see \ref dip::DT_LABEL.
+using LabelType = uint32;
 
 namespace detail {
 
@@ -136,27 +153,27 @@ template<> struct IsIndexingType< dip::sint > { static constexpr bool value = tr
 /// One example usage is as follows:
 ///
 /// ```cpp
-///     template< typename T, typename = std::enable_if_t< dip::IsSampleType< T >::value >>
-///     void MyFunction( T value ) { ... }
+/// template< typename T, typename = std::enable_if_t< dip::IsSampleType< T >::value >>
+/// void MyFunction( T value ) { ... }
 /// ```
 ///
 /// When defining different versions of the templated function for `IsSampleType< T >` and `!IsSampleType< T >`,
 /// you'll need to use the following form:
 ///
 /// ```cpp
-///     template< typename T, typename std::enable_if_t< dip::IsSampleType< T >::value, int > = 0 >
-///     void MyFunction( T value ) { ... }
-///     template< typename T, typename std::enable_if_t< !dip::IsSampleType< T >::value, int > = 0 >
-///     void MyFunction( T value ) { ... }
+/// template< typename T, typename std::enable_if_t< dip::IsSampleType< T >::value, int > = 0 >
+/// void MyFunction( T value ) { ... }
+/// template< typename T, typename std::enable_if_t< !dip::IsSampleType< T >::value, int > = 0 >
+/// void MyFunction( T value ) { ... }
 /// ```
 template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are numeric types, similar to
-/// `std::is_arithmetic` but also true for complex types. See `dip::IsSampleType` for usage details.
+/// `std::is_arithmetic` but also true for complex types. See \ref dip::IsSampleType for usage details.
 template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are indexing types, true for
-/// signed and unsigned integers. See `dip::IsSampleType` for usage details.
+/// signed and unsigned integers. See \ref dip::IsSampleType for usage details.
 template< typename T > struct IsIndexingType : public detail::IsIndexingType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief A templated function to check for positive infinity, which works also for integer types (always returning false)
@@ -179,7 +196,7 @@ bool PixelIsMinusInfinity( TPI value ) {
    return value == -std::numeric_limits< TPI >::infinity();
 }
 
-/// \brief Type for samples in a binary image. Can store 0 or 1. Occupies 1 byte.
+// dip::bin is documented above by its first declaration.
 class DIP_NO_EXPORT bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
    // implementation-defined size). We define this class for binary data so
@@ -277,7 +294,7 @@ template<> struct FloatTypeCalculator< sint64 > { using type = dfloat; };
 template<> struct FloatTypeCalculator< dfloat > { using type = dfloat; };
 template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
-/// \brief The type to use in calculations when a floating-point type is needed. Matches `dip::DataType::SuggestFloat`.
+/// \brief The type to use in calculations when a floating-point type is needed. Matches \ref dip::DataType::SuggestFloat.
 template< typename T > using FloatType = typename detail::FloatTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
@@ -285,7 +302,7 @@ template< typename T > struct DoubleTypeCalculator { using type = dfloat; };
 template<> struct DoubleTypeCalculator< scomplex > { using type = dcomplex; };
 template<> struct DoubleTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
-/// \brief The double precision floating point type (real or complex) to use when computing large sums of any input type. Matches `dip::DataType::SuggestDouble`.
+/// \brief The double precision floating point type (real or complex) to use when computing large sums of any input type. Matches \ref dip::DataType::SuggestDouble.
 template< typename T > using DoubleType = typename detail::DoubleTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
@@ -297,7 +314,7 @@ template<> struct ComplexTypeCalculator< sint64 > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dfloat > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
-/// \brief The type to use in calculations when a complex type is needed. Matches `dip::DataType::SuggestComplex`.
+/// \brief The type to use in calculations when a complex type is needed. Matches \ref dip::DataType::SuggestComplex.
 template< typename T > using ComplexType = typename detail::ComplexTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
@@ -305,14 +322,14 @@ template< typename T > struct FlexTypeCalculator { using type = FloatType< T >; 
 template<> struct FlexTypeCalculator< scomplex > { using type = scomplex; };
 template<> struct FlexTypeCalculator< dcomplex > { using type = dcomplex; };
 } // namespace detail
-/// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlex`.
+/// \brief The type to use in calculations. Matches \ref dip::DataType::SuggestFlex.
 template< typename T > using FlexType = typename detail::FlexTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
 template< typename T > struct FlexBinTypeCalculator { using type = FlexType< T >; };
 template<> struct FlexBinTypeCalculator< bin > { using type = bin; };
 } // namespace detail
-/// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlexBin`.
+/// \brief The type to use in calculations. Matches \ref dip::DataType::SuggestFlexBin.
 template< typename T > using FlexBinType = typename detail::FlexBinTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
@@ -324,7 +341,7 @@ template<> struct AbsTypeCalculator< sint64 > { using type = uint64; };
 template<> struct AbsTypeCalculator< scomplex > { using type = sfloat; };
 template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
-/// \brief The type to use for the output of abs operations. Matches `dip::DataType::SuggestAbs`.
+/// \brief The type to use for the output of abs operations. Matches \ref dip::DataType::SuggestAbs.
 template< typename T > using AbsType = typename detail::AbsTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
 namespace detail {
@@ -333,27 +350,32 @@ template<> struct RealTypeCalculator< bin > { using type = uint8; };
 template<> struct RealTypeCalculator< scomplex > { using type = sfloat; };
 template<> struct RealTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
-/// \brief The type to use in calculations when a real-valued type is needed. Matches `dip::DataType::SuggestReal`.
+/// \brief The type to use in calculations when a real-valued type is needed. Matches \ref dip::DataType::SuggestReal.
 template< typename T > using RealType = typename detail::RealTypeCalculator< std::remove_cv_t< std::remove_reference_t< T >>>::type;
 
-/// \}
+/// \endgroup
 
 
-/// \addtogroup infrastructure
-/// \{
+/// \addtogroup supporttypes
 
 
 //
 // Array types
 //
 
-using IntegerArray = DimensionArray< dip::sint >;   ///< An array to hold strides, filter sizes, etc.
-using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimensions, dimension lists, etc.
-using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.
-using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
+/// An array to hold strides, filter sizes, etc.
+using IntegerArray = DimensionArray< dip::sint >;
+/// An array to hold dimensions, dimension lists, etc.
+using UnsignedArray = DimensionArray< dip::uint >;
+/// An array to hold filter parameters.
+using FloatArray = DimensionArray< dip::dfloat >;
+/// An array used as a dimension selector.
+using BooleanArray = DimensionArray< bool >;
 
-using CoordinateArray = std::vector< UnsignedArray >; ///< An array of pixel coordinates.
-using FloatCoordinateArray = std::vector< FloatArray >; ///< An array of subpixel coordinates.
+/// An array of pixel coordinates.
+using CoordinateArray = std::vector< UnsignedArray >;
+/// An array of subpixel coordinates.
+using FloatCoordinateArray = std::vector< FloatArray >;
 
 
 /// \brief Check the length of an array, and extend it if necessary and possible.
@@ -378,9 +400,12 @@ inline void ArrayUseParameter( DimensionArray< T >& array, dip::uint nDims, T de
 // Strings, used for parameters and other things
 //
 
-using String = std::string;                 ///< A string, used to specify an option
-using StringArray = std::vector< String >;  ///< An array of strings, used to specify an option per dimension
-using StringSet = std::set< String >;       ///< A collection of strings, used to specify multiple independent options
+/// A string, used to specify an option
+using String = std::string;
+/// An array of strings, used to specify an option per dimension
+using StringArray = std::vector< String >;
+/// A collection of strings, used to specify multiple independent options
+using StringSet = std::set< String >;
 
 /// \brief Translates a string input parameter that is meant as a boolean value.
 inline bool BooleanFromString( String const& input, String const& trueString, String const& falseString ) {
@@ -438,44 +463,44 @@ inline void ToUpperCase( String& string ) {
 /// \brief Used in indexing to indicate a regular subset of pixels along one
 /// image dimension.
 ///
-/// `%dip::Range{ start, stop }` generates a range of pixels where
+/// `dip::Range{ start, stop }` generates a range of pixels where
 /// `start` and `stop` are the first and last indices in the range. That is,
-/// `stop` is included in the range. `%dip::Range{ start }` generates a range
-/// for a single pixel. For example, `%dip::Range{ 0 }` is the first pixel,
-/// and is equivalent to `%dip::Range{ 0, 0 }`. `%dip::Range{ 0, N-1 }` is
+/// `stop` is included in the range. `dip::Range{ start }` generates a range
+/// for a single pixel. For example, `dip::Range{ 0 }` is the first pixel,
+/// and is equivalent to `dip::Range{ 0, 0 }`. `dip::Range{ 0, N-1 }` is
 /// a range of the first N pixels.
 ///
-/// `%dip::Range{ start, stop, step }` generates a range of pixels where
+/// `dip::Range{ start, stop, step }` generates a range of pixels where
 /// `step` is the number of pixels between
 /// subsequent indices. The pixels indexed are the ones generated by the
 /// following loop:
 ///
 /// ```cpp
-///     offset = start;
-///     do {
-///        // use this offset
-///        offset += step;
-///     } while( offset <= stop );
+/// offset = start;
+/// do {
+///    // use this offset
+///    offset += step;
+/// } while( offset <= stop );
 /// ```
 ///
 /// That is, it is possible that the range does not include `stop`, if the
 /// `step` would make the range step over `stop`.
 ///
 /// Negative `start` and `stop` values indicate offset from the end (-1 is the
-/// last pixel, -2 the second to last, etc.): `%dip::Range{ 5, -6 }` indicates
-/// a range that skips the first and last five pixels. `%dip::Range{ -1, -1, 1 }`
-/// (or simply `%dip::Range{ -1 }` indicates the last pixel only.
+/// last pixel, -2 the second to last, etc.): `dip::Range{ 5, -6 }` indicates
+/// a range that skips the first and last five pixels. `dip::Range{ -1, -1, 1 }`
+/// (or simply `dip::Range{ -1 }` indicates the last pixel only.
 ///
-/// `%dip::Range{ 0, -1 }` is equivalent to `%dip::Range{}`, and indicates all
+/// `dip::Range{ 0, -1 }` is equivalent to `dip::Range{}`, and indicates all
 /// pixels.
 ///
-/// The `dip::Range::Fix` method converts the negative `start` and `stop` values
+/// The \ref dip::Range::Fix method converts the negative `start` and `stop` values
 /// to actual offsets:
 ///
 /// ```cpp
-///     dip::Range r{ 5, -6 };
-///     r.fix( 50 );
-///     // now r.stop == 50 - 6
+/// dip::Range r{ 5, -6 };
+/// r.fix( 50 );
+/// // now r.stop == 50 - 6
 /// ```
 ///
 /// If `stop` comes before `start`, then the range generates pixel indices in
@@ -547,10 +572,14 @@ struct DIP_NO_EXPORT Range {
    /// An iterator for the range
    class Iterator {
       public:
-         using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-         using value_type = dip::uint;          ///< Type of value iterator references
-         using reference = dip::sint const&;    ///< Type of reference to value
-         using pointer = dip::sint const*;      ///< Type of pointer to value
+         /// Iterator category
+         using iterator_category = std::forward_iterator_tag;
+         /// Type of value iterator references
+         using value_type = dip::uint;
+         /// Type of reference to value
+         using reference = dip::sint const&;
+         /// Type of pointer to value
+         using pointer = dip::sint const*;
 
          /// Default constructor
          Iterator() = default;
@@ -660,13 +689,14 @@ constexpr Options< T > operator+( T a, Options< T > b ) noexcept {
    return b + a;
 }
 
+/// \macro DIP_DECLARE_OPTIONS(EnumType,OptionsType)
 /// \brief Declare a type used to pass enumerated options to a function or class.
 ///
 /// This macro is used as follows:
 ///
 /// ```cpp
-///     enum class MyOption { clean, fresh, shine };
-///     DIP_DECLARE_OPTIONS( MyOption, MyOptions )
+/// enum class MyOption { clean, fresh, shine };
+/// DIP_DECLARE_OPTIONS( MyOption, MyOptions )
 /// ```
 ///
 /// `MyOptions` will be a type that combines one or more values from MyOption.
@@ -675,10 +705,10 @@ constexpr Options< T > operator+( T a, Options< T > b ) noexcept {
 /// which returns a `bool`:
 ///
 /// ```cpp
-///     MyOptions opts {};                            // No options are set
-///     opts = MyOption::fresh;                       // Set only one option
-///     opts = MyOption::clean + MyOption::shine;     // Set only these two options
-///     if( opts.Contains( MyOption::clean )) {...}   // Test to see if `MyOption::clean` is set
+/// MyOptions opts {};                            // No options are set
+/// opts = MyOption::fresh;                       // Set only one option
+/// opts = MyOption::clean + MyOption::shine;     // Set only these two options
+/// if( opts.Contains( MyOption::clean )) {...}   // Test to see if `MyOption::clean` is set
 /// ```
 ///
 /// The `Contains` method returns true only of all flags specified in the input are set.
@@ -703,6 +733,7 @@ constexpr Options< T > operator+( T a, Options< T > b ) noexcept {
 
 /// \brief Enumerated options are defined in the namespace `dip::Option`, unless they
 /// are specific to some other sub-namespace.
+/// \ingroup infrastructure
 namespace Option {
 
 /// \brief Some functions that check for a condition optionally throw an exception
@@ -712,87 +743,85 @@ enum class DIP_NO_EXPORT ThrowException {
    DO_THROW    ///< Throw an exception if the condition is not met.
 };
 
-/// \brief The function `dip::Image::CheckIsMask` takes this option to control how sizes are compared.
+/// \brief The function \ref dip::Image::CheckIsMask takes this option to control how sizes are compared.
 enum class DIP_NO_EXPORT AllowSingletonExpansion {
    DONT_ALLOW, ///< Do not allow singleton expansion.
    DO_ALLOW    ///< Allow singleton expansion.
 };
 
-/// \brief The function `dip::Image::ReForge` takes this option to control how to handle protected images.
+/// \brief The function \ref dip::Image::ReForge takes this option to control how to handle protected images.
 enum class DIP_NO_EXPORT AcceptDataTypeChange {
    DONT_ALLOW, ///< Do not allow data type change, the output image is always of the requested type.
    DO_ALLOW    ///< Allow data type change, if the output image is protected, it will be used as is.
 };
 
-/// \brief The function `dip::Image::Crop` takes this option to control which pixels are taken.
+/// \brief The function \ref dip::Image::Crop takes this option to control which pixels are taken.
 enum class DIP_NO_EXPORT CropLocation {
    CENTER,        ///< The pixel at the origin of the input image is also at the origin in the output image.
-   MIRROR_CENTER, ///< Same as `%CENTER`, but for even-sized images, the origin is presumed to be left of center, rather than right of center.
+   MIRROR_CENTER, ///< Same as `CENTER`, but for even-sized images, the origin is presumed to be left of center, rather than right of center.
    TOP_LEFT,      ///< The corner of the image at coordinates {0,0,0...} is kept in the corner.
-   BOTTOM_RIGHT,  ///< The corner of the image opposite that of `%TOP_LEFT` is kept in the corner.
+   BOTTOM_RIGHT,  ///< The corner of the image opposite that of `TOP_LEFT` is kept in the corner.
 };
 
-/// \class dip::Option::CmpPropFlags
 /// \brief Determines which properties to compare.
 ///
-/// Valid values are:
-///
-/// `%CmpPropFlags` constant   | Definition
-/// -------------------------- | ----------
-/// `CmpProp::DataType`        | Compares data type
-/// `CmpProp::Dimensionality`  | Compares number of dimensions
-/// `CmpProp::Sizes`           | Compares image size
-/// `CmpProp::Strides`         | Compares image strides
-/// `CmpProp::TensorShape`     | Compares tensor size and shape
-/// `CmpProp::TensorElements`  | Compares number of tensor elements
-/// `CmpProp::TensorStride`    | Compares tensor stride
-/// `CmpProp::ColorSpace`      | Compares color space
-/// `CmpProp::PixelSize`       | Compares pixel size
-/// `CmpProp::AllSizes`        | `CmpProp::Sizes` + `CmpProp::TensorElements`
-/// `CmpProp::Samples`         | `CmpProp::DataType` + `CmpProp::Sizes` + `CmpProp::TensorElements`
-/// `CmpProp::Shape`           | `CmpProp::DataType` + `CmpProp::Sizes` + `CmpProp::TensorShape`
-/// `CmpProp::Full`            | `CmpProp::Shape` + `CmpProp::Strides` + `CmpProp::TensorStride`
-/// `CmpProp::All`             | `CmpProp::Shape` + `CmpProp::ColorSpace` + `CmpProp::PixelSize`
-///
-/// Note that you can add these constants together, for example `dip::Option::CmpProp::Sizes + dip::Option::CmpProp::Strides`.
+/// Implicitly casts to \ref dip::Option::CmpPropFlags. Combine constants together with the `+` operator.
 enum class DIP_NO_EXPORT CmpPropEnumerator {
-      DataType,
-      Dimensionality,
-      Sizes,
-      Strides,
-      TensorShape,
-      TensorElements,
-      TensorStride,
-      ColorSpace,
-      PixelSize
+      DataType,       ///< Compares data type
+      Dimensionality, ///< Compares number of dimensions
+      Sizes,          ///< Compares image size
+      Strides,        ///< Compares image strides
+      TensorShape,    ///< Compares tensor size and shape
+      TensorElements, ///< Compares number of tensor elements
+      TensorStride,   ///< Compares tensor stride
+      ColorSpace,     ///< Compares color space
+      PixelSize       ///< Compares pixel size
 };
+/// \class dip::Option::CmpPropFlags
+/// \brief Determines which properties to compare. Combines multiple \ref dip::Option::CmpPropEnumerator values,
+/// predefined values are in \ref CmpProp.
 DIP_DECLARE_OPTIONS( CmpPropEnumerator, CmpPropFlags )
+/// \brief Namespace to emulate an enumerator, contains values
 namespace CmpProp {
+/// \brief \ref CmpPropEnumerator::DataType.
 constexpr CmpPropFlags DataType = CmpPropEnumerator::DataType;
+/// \brief \ref CmpPropEnumerator::Dimensionality.
 constexpr CmpPropFlags Dimensionality = CmpPropEnumerator::Dimensionality;
+/// \brief \ref CmpPropEnumerator::Sizes.
 constexpr CmpPropFlags Sizes = CmpPropEnumerator::Sizes;
+/// \brief \ref CmpPropEnumerator::Strides.
 constexpr CmpPropFlags Strides = CmpPropEnumerator::Strides;
+/// \brief \ref CmpPropEnumerator::TensorShape.
 constexpr CmpPropFlags TensorShape = CmpPropEnumerator::TensorShape;
+/// \brief \ref CmpPropEnumerator::TensorElements.
 constexpr CmpPropFlags TensorElements = CmpPropEnumerator::TensorElements;
+/// \brief \ref CmpPropEnumerator::TensorStride.
 constexpr CmpPropFlags TensorStride = CmpPropEnumerator::TensorStride;
+/// \brief \ref CmpPropEnumerator::ColorSpace.
 constexpr CmpPropFlags ColorSpace = CmpPropEnumerator::ColorSpace;
+/// \brief \ref CmpPropEnumerator::PixelSize.
 constexpr CmpPropFlags PixelSize = CmpPropEnumerator::PixelSize;
+/// \brief \ref Sizes + \ref TensorElements.
 constexpr CmpPropFlags AllSizes = Sizes + TensorElements;
+/// \brief \ref DataType + \ref Sizes + \ref TensorElements.
 constexpr CmpPropFlags Samples = DataType + Sizes + TensorElements;
+/// \brief \ref DataType + \ref Sizes + \ref TensorShape.
 constexpr CmpPropFlags Shape = DataType + Sizes + TensorShape;
+/// \brief \ref Shape + \ref Strides + \ref TensorStride.
 constexpr CmpPropFlags Full = Shape + Strides + TensorStride;
+/// \brief \ref Shape + \ref ColorSpace + \ref PixelSize.
 constexpr CmpPropFlags All = Shape + ColorSpace + PixelSize;
 }
 
 } // namespace Option
 
-/// \brief Represents the result of a 2D regression analysis: `y = intercept + x * slope`.
+/// \brief Represents the result of a 2D regression analysis: $y = a + bx$.
 struct RegressionParameters {
-   dfloat intercept = 0.0; ///< intercept
-   dfloat slope = 0.0;     ///< slope
+   dfloat intercept = 0.0; ///< intercept, $a$.
+   dfloat slope = 0.0;     ///< slope, $b$.
 };
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

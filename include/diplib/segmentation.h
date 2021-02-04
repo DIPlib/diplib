@@ -26,15 +26,15 @@
 
 /// \file
 /// \brief Functions for segmentation and binarization.
-/// \see segmentation
+/// See \ref segmentation.
 
 
 namespace dip {
 
 
-/// \defgroup segmentation Segmentation
+/// \group segmentation Segmentation
 /// \brief Segmentation and binarization algorithms.
-/// \{
+/// \addtogroup
 
 
 /// \brief Applies k-means clustering to an image, yielding `nClusters` labeled regions.
@@ -50,7 +50,7 @@ namespace dip {
 /// suck in local minima. Repeating the clustering several times and picking the best result
 /// (e.g. determined by times each cluster center is found) can be necessary.
 ///
-/// The returned `dip::CoordinateArray` contains the cluster centers.
+/// The returned \ref dip::CoordinateArray contains the cluster centers.
 /// Element `i` in this array corresponds to label `i+1`.
 DIP_EXPORT CoordinateArray KMeansClustering(
       Image const& in,
@@ -80,7 +80,7 @@ inline Image KMeansClustering(
 ///
 /// `in` must be scalar and real-valued.
 ///
-/// The returned `dip::CoordinateArray` contains the centers of gravity for each cluster.
+/// The returned \ref dip::CoordinateArray contains the centers of gravity for each cluster.
 /// Element `i` in this array corresponds to label `i+1`.
 DIP_EXPORT CoordinateArray MinimumVariancePartitioning(
       Image const& in,
@@ -107,7 +107,7 @@ inline Image MinimumVariancePartitioning(
 ///
 /// The output array contains the thresholds used.
 ///
-/// See <tt>\ref dip::IsodataThreshold(Histogram const&, dip::uint) "dip::IsodataThreshold"</tt>
+/// See \ref dip::IsodataThreshold(Histogram const&, dip::uint) "`dip::IsodataThreshold`"
 /// for more information on the algorithm used.
 DIP_EXPORT FloatArray IsodataThreshold(
       Image const& in,
@@ -132,7 +132,7 @@ inline Image IsodataThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See <tt>\ref dip::OtsuThreshold(Histogram const&) "dip::OtsuThreshold"</tt>
+/// See \ref dip::OtsuThreshold(Histogram const&) "`dip::OtsuThreshold`"
 /// for more information on the algorithm used.
 DIP_EXPORT dfloat OtsuThreshold(
       Image const& in,
@@ -155,7 +155,7 @@ inline Image OtsuThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See <tt>\ref dip::MinimumErrorThreshold(Histogram const&) "dip::MinimumErrorThreshold"</tt>
+/// See \ref dip::MinimumErrorThreshold(Histogram const&) "`dip::MinimumErrorThreshold`"
 /// for more information on the algorithm used.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& in,
@@ -181,7 +181,7 @@ inline Image MinimumErrorThreshold(
 ///
 /// The output array contains the thresholds used.
 ///
-/// See <tt>\ref dip::GaussianMixtureModelThreshold(Histogram const&, dip::uint) "dip::GaussianMixtureModelThreshold"</tt>
+/// See \ref dip::GaussianMixtureModelThreshold(Histogram const&, dip::uint) "`dip::GaussianMixtureModelThreshold`"
 /// for more information on the algorithm used.
 DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
       Image const& in,
@@ -207,7 +207,7 @@ inline Image GaussianMixtureModelThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See <tt>\ref dip::TriangleThreshold(Histogram const&) "dip::TriangleThreshold"</tt>
+/// See \ref dip::TriangleThreshold(Histogram const&) "`dip::TriangleThreshold`"
 /// for more information on the algorithm used.
 DIP_EXPORT dfloat TriangleThreshold(
       Image const& in,
@@ -230,7 +230,7 @@ inline Image TriangleThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See <tt>\ref dip::BackgroundThreshold(Histogram const&, dfloat) "dip::BackgroundThreshold"</tt>
+/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat) "`dip::BackgroundThreshold`"
 /// for more information on the algorithm used.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
@@ -272,7 +272,7 @@ inline Image VolumeThreshold(
 
 /// \brief Thresholds an image at the `threshold` value.
 ///
-/// If `output` is `"binary"` (the default), `%FixedThreshold` will produce a binary image. Otherwise an
+/// If `output` is `"binary"` (the default), `FixedThreshold` will produce a binary image. Otherwise an
 /// image of the same type as the input image is produced, with the pixels set to either
 /// `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is applied:
 /// `out = ( in >= threshold ) ? foreground : background`.
@@ -282,7 +282,7 @@ inline Image VolumeThreshold(
 /// Note that, for the "binary" output case, it might be easier to write:
 ///
 /// ```cpp
-///     out = in >= threshold;
+/// out = in >= threshold;
 /// ```
 ///
 /// \see dip::NotGreater, dip::NotLesser, dip::Select
@@ -308,7 +308,7 @@ inline Image FixedThreshold(
 
 /// \brief Thresholds an image at two values, equivalent to `lowerBound <= in && in <= upperBound`.
 ///
-/// If `output` is `"binary"` (the default), `%RangeThreshold` will produce a binary image. If `foreground == 0.0`,
+/// If `output` is `"binary"` (the default), `RangeThreshold` will produce a binary image. If `foreground == 0.0`,
 /// foreground will be set to `false` and background to `true`, otherwise the foreground will be `true` (this is the
 /// default).
 ///
@@ -317,7 +317,7 @@ inline Image FixedThreshold(
 /// applied:
 ///
 /// ```cpp
-///     out = ( lowerBound <= in && in <= upperBound ) ? foreground : background
+/// out = ( lowerBound <= in && in <= upperBound ) ? foreground : background
 /// ```
 ///
 /// `in` must be real-valued, each tensor element is thresholded independently.
@@ -371,7 +371,7 @@ inline Image HysteresisThreshold(
 
 /// \brief Thresholds an image at multiple values, yielding a labeled image.
 ///
-/// `out` will be a `dip::DT_UINT8`, `dip::DT_UINT16`, `dip::DT_UINT32` or `dip::DT_UINT64` image, depending on the length
+/// `out` will be a \ref dip::DT_UINT8, \ref dip::DT_UINT16, \ref dip::DT_UINT32 or \ref dip::DT_UINT64 image, depending on the length
 /// of `thresholds`. All pixels below `thresholds[ 0 ]` with be assigned the label 0, all pixels greater or
 /// equal to `thresholds[ 0 ]` and smaller than `thresholds[ 1 ]` will be assigned label 1, etc. Results might
 /// not be as expected if thresholds are not sorted.
@@ -397,21 +397,23 @@ inline Image MultipleThresholds(
 /// threshold value. `in` must be scalar and real-valued. `mask` can optionally select the pixels used to determine
 /// the threshold value. The threshold is applied to the image as a whole, you can combine it with the mask afterwards:
 /// ```cpp
-///     dip::Image bin = dip::Threshold( image, mask, "otsu" );
-///     bin &= mask;
+/// dip::Image bin = dip::Threshold( image, mask, "otsu" );
+/// bin &= mask;
 /// ```
 ///
 /// `method` can be one of:
-///  - "isodata": see <tt>\ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint) "dip::IsodataThreshold"</tt>.
-///  - "otsu": see <tt>\ref dip::OtsuThreshold(Image const&, Image const&, Image&) "dip::OtsuThreshold"</tt>. This is the default method
-///  - "minerror": see <tt>\ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&) "dip::MinimumErrorThreshold"</tt>.
-///  - "gmm": see <tt>\ref dip::GaussianMixtureModelThreshold(Image const&, Image const&, Image&, dip::uint) "dip::GaussianMixtureModelThreshold"</tt>.
-///  - "triangle": see <tt>\ref dip::TriangleThreshold(Image const&, Image const&, Image&) "dip::TriangleThreshold"</tt>.
-///  - "background": see <tt>\ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat) "dip::BackgroundThreshold"</tt>.
-///  - "volume": see <tt>\ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat) "dip::VolumeThreshold"</tt>.
-///  - "fixed": see <tt>\ref dip::FixedThreshold(Image const&, Image&, dfloat, dfloat, dfloat, String const&) "dip::FixedThreshold"</tt>. The default parameter value is 128.
 ///
-/// If `parameter` is `dip::infinity`, the default parameter value for the method will be used.
+/// - "isodata": see \ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint) "`dip::IsodataThreshold`".
+/// - "otsu": see \ref dip::OtsuThreshold(Image const&, Image const&, Image&) "`dip::OtsuThreshold`". This is the default method
+/// - "minerror": see \ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&) "`dip::MinimumErrorThreshold`".
+/// - "gmm": see \ref dip::GaussianMixtureModelThreshold(Image const&, Image const&, Image&, dip::uint) "`dip::GaussianMixtureModelThreshold`".
+/// - "triangle": see \ref dip::TriangleThreshold(Image const&, Image const&, Image&) "`dip::TriangleThreshold`".
+/// - "background": see \ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat) "`dip::BackgroundThreshold`".
+/// - "volume": see \ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat) "`dip::VolumeThreshold`".
+/// - "fixed": see \ref dip::FixedThreshold(Image const&, Image&, dfloat, dfloat, dfloat, String const&) "`dip::FixedThreshold`".
+///   The default parameter value is 128.
+///
+/// If `parameter` is \ref dip::infinity, the default parameter value for the method will be used.
 inline dfloat Threshold(
       Image const& in,
       Image const& mask,
@@ -500,10 +502,9 @@ struct PerObjectEllipsoidFitParameters {
 /// `in` must be scalar, real-valued, and be 2D (TODO: port the 3D version of this function also).
 /// `out` will be binary and of the same sizes as `in`.
 ///
-/// \literature
-/// <li>P. Ranefall, S.K. Sadanandan, C. Wahlby, "Fast Adaptive Local Thresholding Based on Ellipse Fit",
-///    International Symposium on Biomedical Imaging (ISBI'16), Prague, Czech Republic, 2016.
-/// \endliterature
+/// !!! literature
+///     - P. Ranefall, S.K. Sadanandan, C. Wahlby, "Fast Adaptive Local Thresholding Based on Ellipse Fit",
+///       International Symposium on Biomedical Imaging (ISBI'16), Prague, Czech Republic, 2016.
 DIP_EXPORT void PerObjectEllipsoidFit(
       Image const& in,
       Image& out,
@@ -524,15 +525,15 @@ inline Image PerObjectEllipsoidFit(
 /// \brief Detect edges in the grey-value image by finding salient ridges in the gradient magnitude
 ///
 /// The Canny edge detector finds the ridges in the gradient magnitude of `in`, which correspond to the
-/// edges in the image. The gradient magnitude (see `dip::GradientMagnitude`) is computed using
+/// edges in the image. The gradient magnitude (see \ref dip::GradientMagnitude) is computed using
 /// Gaussian derivatives, with a sigma of `sigma`. The found ridges are pruned to remove the less
-/// salient edges (see `dip::NonMaximumSuppression`). Next, a threshold `t1` is computed such that
+/// salient edges (see \ref dip::NonMaximumSuppression). Next, a threshold `t1` is computed such that
 /// the `1 - upper` fraction of pixels with the highest gradient magnitude are kept. A second threshold,
 /// `t2 = t1 * lower`, is selected that determines the minimal gradient magnitude expected for an edge.
 /// All edge pixels equal or larger to `t2`, and are in the same connected region as at least one pixel that
-/// is equal or larger to `t1`, are selected as the output of this function (see `dip::HysteresisThreshold`).
+/// is equal or larger to `t1`, are selected as the output of this function (see \ref dip::HysteresisThreshold).
 /// Finally, a homotopic thinning is applied to reduce the detections to single-pixel--thick lines
-/// (see `dip::EuclideanSkeleton`).
+/// (see \ref dip::EuclideanSkeleton).
 ///
 /// The `1 - upper` fraction is computed over all pixels in the image by default. If the image has relatively
 /// few edges, this can lead to `t1` being equal to 0. If this happens, the hysteresis threshold would select
@@ -548,12 +549,11 @@ inline Image PerObjectEllipsoidFit(
 ///
 /// The Canny edge detector was originally described, and typically implemented, for 2D images only.
 /// Here we provide an obvious extension to arbitrary dimensions. The final homotopic thinning is
-/// only applied in 2D and 3D, since `dip::EuclideanSkeleton` is not defined for other dimensionalities.
+/// only applied in 2D and 3D, since \ref dip::EuclideanSkeleton is not defined for other dimensionalities.
 ///
-/// \literature
-/// <li>J. Canny, "A Computational Approach to Edge Detection", IEEE Transactions on Pattern Analysis
-///     and Machine Intelligence, 8(6):679-697, 1986.
-/// \endliterature
+/// !!! literature
+///     - J. Canny, "A Computational Approach to Edge Detection", IEEE Transactions on Pattern Analysis
+///       and Machine Intelligence, 8(6):679-697, 1986.
 DIP_EXPORT void Canny(
       Image const& in,
       Image& out,
@@ -587,9 +587,11 @@ inline Image Canny(
 /// compact watershed superpixel segmentation (Neubert and Protzel, 2014).
 ///
 /// `flags` can contain the following flags:
+///
 /// - `"rectangular"` (default) or `"hexagonal"`: controls the basic shape of the superpixels (the shape they tend
-///   towards as `compactness` increases). For 3D images, `"hexagonal"` implies an FCC grid (see `dip::FillRandomGrid`).
+///   towards as `compactness` increases). For 3D images, `"hexagonal"` implies an FCC grid (see \ref dip::FillRandomGrid).
 ///   For images with more than 3 dimensions, `"rectangular"` will always be used.
+///
 /// - `"no gaps"`  indicates that the superpixels must cover the whole image. By default a 1-pixel gap is left in
 ///   between superpixels.
 ///
@@ -600,10 +602,9 @@ inline Image Canny(
 ///
 /// \see dip::FillRandomGrid, dip::CompactWatershed
 ///
-/// \literature
-/// <li>P. Neubert and P. Protzel, "Compact Watershed and Preemptive SLIC: On improving trade-offs of superpixel segmentation algorithms",
-///     22<sup>nd</sup> International Conference on Pattern Recognition, Stockholm, 2014, pp. 996-1001.
-/// \endliterature
+/// !!! literature
+///     - P. Neubert and P. Protzel, "Compact Watershed and Preemptive SLIC: On improving trade-offs of superpixel segmentation algorithms",
+///       22^nd^ International Conference on Pattern Recognition, Stockholm, 2014, pp. 996-1001.
 DIP_EXPORT void Superpixels(
       Image const& in,
       Image& out,
@@ -624,7 +625,7 @@ inline Image Superpixels(
    return out;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

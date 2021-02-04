@@ -34,8 +34,8 @@
 
 
 /// \file
-/// \brief Defines `dip::clamp_cast`. This file is always included through `diplib.h`.
-/// \see sample_operators
+/// \brief Defines \ref dip::clamp_cast. This file is always included through \ref "diplib.h".
+/// See \ref pixeltypes.
 
 
 namespace std {
@@ -63,32 +63,6 @@ struct numeric_limits< dip::bin > {
 namespace dip {
 
 
-/// \defgroup sample_operators Saturated arithmetic and casts
-/// \ingroup infrastructure
-/// \brief These operators operate on single sample values, implementing saturated arithmetic and type casting.
-///
-/// `%dip::clamp_cast` is an operator that returns the input value cast to a different
-/// type, clamped to the range of values representable by that output type. This
-/// is also often referred to as saturated cast. Most *DIPlib* functions take care of properly
-/// clamping values when casting pixel values. This typically is more intuitive and useful
-/// when processing images than the default C/C++ overflow behavior, which corresponds to
-/// modular arithmetic for integer values.
-///
-/// When casting from complex to non-complex, the absolute value of the complex number is taken.
-/// When casting from a floating-point number to an integer, the decimals are truncated, as typically
-/// done in C++.
-///
-/// `%dip::clamp_cast` is defined as a series of overloaded template functions with specializations.
-/// The input argument type is used in overload resolution, the output type is the template
-/// parameter, and should be specified between angled brackets after the function name,
-/// much like the standard `static_cast` and similar:
-///
-/// ```cpp
-///     uint8 u = dip::clamp_cast< dip::uint8 >( -54.6 );
-/// ```
-///
-/// `%dip::clamp_cast` is made available when including `diplib.h`.
-/// \{
 // TODO: Do we want to round the float values instead?
 
 namespace detail {
@@ -219,14 +193,8 @@ constexpr inline const ValueType clamp_upper( ValueType value, LimitType ) {
 
 } // namespace detail
 
-#ifdef DIP_CONFIG_FAKE_DOCUMENTATION // This should never be defined when compiling!!!
-
 /// \brief Casts a value of any pixel type to any other pixel type, clamping it to the destination range.
-template< typename TargetType, typename SourceType >
-constexpr inline const TargetType clamp_cast( SourceType v ) {}
-
-#endif
-
+/// \ingroup pixeltypes
 // Cast non-complex value to float
 template< typename TargetType, typename SourceType,
           typename std::enable_if_t< detail::is_floating_point< TargetType >::value, int > = 0 >
@@ -282,8 +250,6 @@ template< typename TargetType, typename SourceType,
 constexpr inline TargetType clamp_cast( std::complex< SourceType > v ) {
    return { static_cast< typename TargetType::value_type >( v.real() ), static_cast< typename TargetType::value_type >( v.imag() ) };
 }
-
-/// \}
 
 namespace detail {
 template< typename T >

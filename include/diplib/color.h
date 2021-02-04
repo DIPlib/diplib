@@ -30,19 +30,20 @@
 
 /// \file
 /// \brief Color space conversions
-/// \see infrastructure
+/// See \ref colorspaces.
 
 
 namespace dip {
 
 
-/// \addtogroup infrastructure
-/// \{
+/// \group colorspaces Color spaces
+/// Management and conversion between color spaces
+/// \addtogroup
 
 /// \brief Base class for conversion between two color spaces.
 ///
 /// Classes that convert between color spaces must derive from this and overload all the pure virtual functions.
-/// See `dip::ColorSpaceManager` for how to use these converters.
+/// See \ref dip::ColorSpaceManager for how to use these converters.
 class DIP_CLASS_EXPORT ColorSpaceConverter {
    public:
       /// \brief Returns the source color space name.
@@ -79,19 +80,19 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// and from your new color space to any existing color space:
 ///
 /// ```cpp
-///     dip::ColorSpaceManager csm;
-///     dip::Image img = ...
-///     csm.Set( img, "RGB" );                      // img is RGB
-///     img = csm.Convert( img, "Lab" );            // img will be converted to Lab
+/// dip::ColorSpaceManager csm;
+/// dip::Image img = ...
+/// csm.Set( img, "RGB" );                      // img is RGB
+/// img = csm.Convert( img, "Lab" );            // img will be converted to Lab
 ///
-///     csm.Define( "Frank", 4 );                   // A new color space with 4 channels
-///     csm.DefineAlias( "f", "Frank" );            // "f" is an alias for "Frank"
-///     csm.Register( new frank2xyz );              // an object that converts from Frank to XYZ
-///     csm.Register( new yxy2frank );              // an object that converts from Yxy to Frank
-///     img = csm.Convert( img, "f" );              // img will be converted from Lab to Frank
+/// csm.Define( "Frank", 4 );                   // A new color space with 4 channels
+/// csm.DefineAlias( "f", "Frank" );            // "f" is an alias for "Frank"
+/// csm.Register( new frank2xyz );              // an object that converts from Frank to XYZ
+/// csm.Register( new yxy2frank );              // an object that converts from Yxy to Frank
+/// img = csm.Convert( img, "f" );              // img will be converted from Lab to Frank
 /// ```
 ///
-/// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from `dip::ColorSpaceConverter`.
+/// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from \ref dip::ColorSpaceConverter.
 ///
 /// The color spaces known by default are given in the table below. Color space names are case-sensitive,
 /// but aliases are registered for all these names using all-lowercase.
@@ -103,7 +104,7 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"sRGB"` |            | Industry-standard non-linear RGB, gamma-corrected linear RGB (average gamma is approximately 2.2, with a linear segment near 0). Values in the range is [0,255].
 /// `"CMY"`  |            | Cyan-Magenta-Yellow. Subtractive colors, defined simply as 255-RGB. Values in the range is [0,255].
 /// `"CMYK"` |            | Cyan-Magenta-Yellow-blacK. Subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
-/// `"HSI"`  |            | Hue-Saturation-Intensity. \f$L^1\f$ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra (2003).
+/// `"HSI"`  |            | Hue-Saturation-Intensity. L^1^ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra (2003).
 /// `"ICH"`  |            | Intensity-Chroma-Hue. Rotation of the RGB cube, where I is along the black-white diagonal of the cube, and the CH-plane is perpendicular. I is in the range [0,255], H is an angle in degrees.
 /// `"ISH"`  |            | Intensity-Saturation-Hue. Based in ICH, where S is the C channel normalized so that the maximum saturation for each H is 1. For each H, the largest value of C is attained for a different value of I.
 /// `"HCV"`  |            | Hue-Chroma-Value. V is the max of R, G and B, and C is the difference between largest and smallest RGB intensities. C and V are in range [0,255], H is an angle in degrees.
@@ -115,10 +116,10 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
 /// `"wavelength"` |      | Can only be converted from, not to. Yields an approximate color representation for the given wavelength in nanometers, in the range 380 through 780 nanometers. For values outside the range, produces black. The conversion to XYZ is according to CIE rec. 709, but most of these colors lie outside of the RGB gamut. The conversion to RGB produces colors within the gamut, computed according to Young (2012).
 ///
-/// \literature
-/// <li>A. Hanbury and J. Serra, "Colour image analysis in 3D-polar coordinates", Joint Pattern Recognition Symposium, 2003.
-/// <li>A.T. Young, "Rendering Spectra", 2012. https://aty.sdsu.edu/explain/optics/rendering.html (retrieved August 1, 2020).
-/// \endliterature
+/// !!! literature
+///     - C. Poynton, "Color FAQ", 1997. <https://poynton.ca/PDFs/ColorFAQ.pdf> (last retrieved February 3, 2021).
+///     - A. Hanbury and J. Serra, "Colour image analysis in 3D-polar coordinates", Joint Pattern Recognition Symposium, 2003.
+///     - A.T. Young, "Rendering Spectra", 2012. <https://aty.sdsu.edu/explain/optics/rendering.html> (last retrieved August 1, 2020).
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
 class DIP_NO_EXPORT ColorSpaceManager {
       using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >; // TODO: MSVC does not like us using a unique_ptr here, which is really what we want to do.
@@ -141,7 +142,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       }
 
       /// \brief Registers a function object to translate from one color space to another. The
-      /// `%dip::ColorSpaceManager` object takes ownership of the converter.
+      /// `dip::ColorSpaceManager` object takes ownership of the converter.
       void Register( ColorSpaceConverter* converter ) {
          auto smartpointer = ColorSpaceConverterPointer( converter );
          dip::uint source = Index( converter->InputColorSpace() );
@@ -162,7 +163,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
          return names_.count( colorSpaceName ) != 0;
       }
 
-      /// \brief Gets a pointer to a color space converter object registered with this `%ColorSpaceManager`.
+      /// \brief Gets a pointer to a color space converter object registered with this `ColorSpaceManager`.
       /// Use this to access the object to modify it, for example configure a parameter.
       ColorSpaceConverter* GetColorSpaceConverter(
             String const& inputColorSpaceName,
@@ -209,12 +210,12 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// an 8-bit unsigned integer, you can use the "protect" flag on the output image:
       ///
       /// ```cpp
-      ///     dip::Image in = ...; // read in a color image
-      ///     dip::Image out;
-      ///     out.SetDataType( dip::DT::UINT8 );
-      ///     out.Protect();
-      ///     dip::ColorSpaceManager csm;
-      ///     cms.Convert( in, out, "HSV" );
+      /// dip::Image in = ...; // read in a color image
+      /// dip::Image out;
+      /// out.SetDataType( dip::DT::UINT8 );
+      /// out.Protect();
+      /// dip::ColorSpaceManager csm;
+      /// cms.Convert( in, out, "HSV" );
       /// ```
       ///
       /// In this case, all computations are still performed as double-precision floating-point computations,
@@ -230,7 +231,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
 
       /// \brief The white point, as an XYZ triplet.
       ///
-      /// The default white point is the Standard Illuminant D65. Configure the `dip::ColorSpaceManager`
+      /// The default white point is the Standard Illuminant D65. Configure the \ref dip::ColorSpaceManager
       /// object through its `SetWhitePoint` method.
       using XYZ = std::array< dfloat, 3 >;
 
@@ -256,7 +257,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       ///
       /// This will configure each of the converter functions that use the white point information
       /// (grey &harr; RGB &harr; XYZ &harr; Lab/Luv). The default white point is the Standard Illuminant D65
-      /// (`dip::ColorSpaceManager::IlluminantD65`).
+      /// (\ref dip::ColorSpaceManager::IlluminantD65).
       ///
       /// The white point is given as an XYZ triplet or (x,y) chromacity coordinates.
       DIP_EXPORT void SetWhitePoint( XYZ whitePoint );
@@ -303,7 +304,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       DIP_NO_EXPORT std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const;
 };
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

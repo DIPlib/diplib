@@ -1,23 +1,22 @@
-# Figure Windows {#sec_dum_figurewindows}
+\comment DIPlib 3.0
 
-[//]: # (DIPlib 3.0)
+\comment (c)2017-2020, Cris Luengo.
+\comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
-[//]: # ([c]2017-2020, Cris Luengo.)
-[//]: # (Based on original DIPimage usre manual: [c]1999-2014, Delft University of Technology.)
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
 
-[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
-[//]: # (you may not use this file except in compliance with the License.)
-[//]: # (You may obtain a copy of the License at)
-[//]: # ()
-[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
-[//]: # ()
-[//]: # (Unless required by applicable law or agreed to in writing, software)
-[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
-[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
-[//]: # (See the License for the specific language governing permissions and)
-[//]: # (limitations under the License.)
 
-\m_footernavigation
+\page sec_dum_figurewindows Figure Windows
 
 The display is a very important part of any image-processing package.
 `dip_image` objects containing scalar or color images with 1 to 4
@@ -30,7 +29,7 @@ with them, and their placing on the desktop.
 The figure windows described in this chapter are those created by the `dipshow`
 function. This function is also used by default to automatically display
 images when a when a *MATLAB* command does not end with a semicolon.
-See the <tt>'DisplayToFigure'</tt> option in \ref sec_dum_customizing_dippref.
+See the `'DisplayToFigure'` option in \ref sec_dum_customizing_dippref.
 
 The alternative way to display images is with the `viewslice` function.
 The figure windows created use the *DIPviewer* tool, which has better
@@ -39,11 +38,9 @@ but is not integrated equally well into *MATLAB*.
 See \ref viewer_ui "the DIPviewer documentation"
 for more information on these figure windows.
 
-The <tt>'DisplayFunction'</tt> option (see \ref sec_dum_customizing_dippref)
+The `'DisplayFunction'` option (see \ref sec_dum_customizing_dippref)
 controls which of these two commands is used to automatically display
 images.
-
-\tableofcontents
 
 \section sec_dum_figurewindows_menus The figure window menus
 
@@ -184,29 +181,33 @@ step through the slices of a 3D/4D image, zoom in and out, and pan the
 image. These functions are independent of the chosen mode for the mouse
 under the "Actions" menu.
 
-The keys **N** and **P** step to the next and previous slice,
-respectively, of a 3D image. Additionally, you can type the number of a
-slice and press **Enter** to go to it. Note that slice numbers start
-with 0. In case of a 4D image, **N** and **P** step through the first
-hidden dimension (Z), whereas **F** and **B** step through the second
-hidden dimension (T).
+The keys **N**{ .m-label .m-warning } and **P**{ .m-label .m-warning }
+step to the next and previous slice, respectively, of a 3D image.
+Additionally, you can type the number of a slice and press
+**Enter**{ .m-label .m-warning } to go to it. Note that slice numbers start
+with 0. In case of a 4D image, **N**{ .m-label .m-warning } and
+**P**{ .m-label .m-warning } step through the first hidden dimension (Z),
+whereas **F**{ .m-label .m-warning } and **B**{ .m-label .m-warning }
+step through the second hidden dimension (T).
 
-The keys **I** and **O** are used to zoom in and out, respectively. The
-zoom factor is 2. When zoomed in, use the arrow keys to pan the
-image and get to the area of interest. Alternatively you can use
-the following keys instead: **W** for up, **S** for down,
-**A** for left, and **D** for right.
+The keys **I**{ .m-label .m-warning } and **O**{ .m-label .m-warning }
+are used to zoom in and out, respectively. The zoom factor is 2.
+When zoomed in, use the arrow keys to pan the image and get to the area of
+interest. Alternatively you can use the following keys instead:
+**W**{ .m-label .m-warning } for up, **S**{ .m-label .m-warning } for down,
+**A**{ .m-label .m-warning } for left, and **D**{ .m-label .m-warning }
+for right.
 
-The **Esc** key disables the keyboard. This is useful under Windows,
-where displaying an image causes its window to gain keyboard focus. You
-would have to click on the command window to continue typing a new
-command. Instead, press **Esc**, which disables the keyboard for the
-window and causes your keystrokes to be send to the command window. To
-enable the keyboard again, use the menu item "Enable keyboard" under the
-"Actions" menu. With the command
+The **Esc**{ .m-label .m-warning } key disables the keyboard. This is useful
+under operating systems where displaying an image causes its window to gain
+keyboard focus. You would have to click on the command window to continue
+typing a new command. Instead, press **Esc**{ .m-label .m-warning },
+which disables the keyboard for the window and causes your keystrokes to be
+send to the command window. To enable the keyboard again, use the menu item
+"Enable keyboard" under the "Actions" menu. With the command
 
-```m
-    dipsetpref('EnableKeyboard','off')
+```matlab
+dipsetpref('EnableKeyboard','off')
 ```
 
 you disable the keyboard by default, and will have to use the above
@@ -227,10 +228,10 @@ a variable does not change the contents of a figure window. By not
 adding the semicolon at the end of commands, it is possible to
 automatically update the figure windows (see \ref sec_dum_dip_image_displaying).
 
-A special name <tt>'other'</tt> is defined in `dipfig`, that is a substitute
+A special name `'other'` is defined in `dipfig`, that is a substitute
 for all variables not explicitly linked to a figure window. It allows
 the user to have a window for all possible images he can create.
-<tt>'other'</tt> can be linked to a series of windows, which then will be used
+`'other'` can be linked to a series of windows, which then will be used
 sequentially.
 
 Closing a window does not destroy the links that were made for it. Since
@@ -244,36 +245,36 @@ window are considered aliases for a figure window handle.
 \section sec_dum_figurewindows_position Setting the position of figure windows
 
 The position of a figure window can be changed by manipulating its
-<tt>'Position'</tt> property, which is defined by an array with four values:
+`'Position'` property, which is defined by an array with four values:
 `left`, `bottom`, `width` and `height`.
 
-```m
-    set(handle,'Position',[left,bottom,width,heigth]);
+```matlab
+set(handle,'Position',[left,bottom,width,heigth]);
 ```
 
 The coordinates for figure windows start at the bottom-left corner of
 the screen, and are in screen pixels by default. This can be changed to
 `centimeters`, `inches` and other units:
 
-```m
-    set(handle,'Units','points');
+```matlab
+set(handle,'Units','points');
 ```
 
 See [*MATLAB* Function Reference](https://www.mathworks.com/help/releases/R2017a/matlab/ref/figure-properties.html)
 for more information on figure window properties. You can see a local
 copy of this page by typing from within MATLAB
 
-```m
-    web(fullfile(docroot,'matlab/ref/figure-properties.html'))
+```matlab
+web(fullfile(docroot,'matlab/ref/figure-properties.html'))
 ```
 
 The `dipfig` function has an additional optional parameter, which can be
 used to set the position of a figure window at the same time that it is
 created. This parameter comes at the end of the parameter list, and is
-the same array used for the <tt>'Position'</tt> property:
+the same array used for the `'Position'` property:
 
-```m
-    dipfig('a',[400,600,256,256]);
+```matlab
+dipfig('a',[400,600,256,256]);
 ```
 
 The `width` and `height` values are those of the image that will fit in
@@ -282,10 +283,10 @@ values are always in screen pixels.
 
 If an image is larger or smaller than the size of the window, the window
 will be resized so that the image fits exactly. That is, unless the
-<tt>'TrueSize'</tt> option is turned off (see \ref sec_dum_customizing_dippref),
+`'TrueSize'` option is turned off (see \ref sec_dum_customizing_dippref),
 in which case the window will not be
 resized, and the image will be stretched to fit. To have your windows
-fixed on the desktop, disable the <tt>'TrueSize'</tt> option.
+fixed on the desktop, disable the `'TrueSize'` option.
 
 As with all other settings, the position of the figure windows cannot be
 saved from one session to the next. Add the appropriate commands to your

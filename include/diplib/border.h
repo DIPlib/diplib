@@ -26,28 +26,31 @@
 #include "diplib/iterators.h"
 
 
-// Note that these function templates, being in an undocumented file and an
-// undocumented namespace, don't appear in the public documentation.
+// These functions have documentation, do feel free to use them. But they don't appear in the public
+// documentation, as they are not considered useful to the normal user. They are part of the implementation
+// of some DIPlib functionality: dip::ApplyBinaryBorderMask(), dip::ClearBinaryBorderMask(), dip::SetBorders(),
+// and dip::ResetBorders(). They're also used by dip::GrowRegions().
+
 
 namespace dip {
 
 namespace detail {
 
-/// \brief Generic template to process the border/edges of an image.
-///
-/// All pixels within `borderWidth` of the image edge are processed through custom functions. These custom
-/// functions can read and write from the input pixel.
-///
-/// `borderPixelFunction` and `nonBorderPixelFunction` are two functions with the following signature:
-///
-/// ```cpp
-///     void Function( TPI* ptr, dip::sint tensorStride );
-/// ```
-///
-/// The first one is applied to border pixels (if `ProcessBorder` is true), and the second one to non-border
-/// pixels (if `ProcessNonBorder` is true). If either of the boolean template parameters is false, the corresponding
-/// function is not called, and thus can be an empty function (for example the lambda `[](auto*,dip::sint){}`).
-/// It is recommended that the called functions are lambdas, to allow stronger optimizations.
+// \brief Generic template to process the border/edges of an image.
+//
+// All pixels within `borderWidth` of the image edge are processed through custom functions. These custom
+// functions can read and write from the input pixel.
+//
+// `borderPixelFunction` and `nonBorderPixelFunction` are two functions with the following signature:
+//
+// ```cpp
+// void Function( TPI* ptr, dip::sint tensorStride );
+// ```
+//
+// The first one is applied to border pixels (if `ProcessBorder` is true), and the second one to non-border
+// pixels (if `ProcessNonBorder` is true). If either of the boolean template parameters is false, the corresponding
+// function is not called, and thus can be an empty function (for example the lambda `[](auto*,dip::sint){}`).
+// It is recommended that the called functions are lambdas, to allow stronger optimizations.
 template< typename TPI, bool ProcessBorder, bool ProcessNonBorder, typename BorderFunc, typename InnerFunc >
 void ProcessBorders(
       Image& out,
@@ -142,7 +145,7 @@ void ProcessBorders(
    } while( ++it );
 }
 
-/// \brief Convenience interface to `dip::ProcessBorders` when only border pixels must be processed.
+// \brief Convenience interface to `dip::ProcessBorders` when only border pixels must be processed.
 template< typename TPI, typename BorderFunc >
 void ProcessBorders(
       Image& out,

@@ -26,14 +26,13 @@
 
 /// \file
 /// \brief A pixel table represents the support of a filter of arbitrary shape and number of dimensions.
-/// \see infrastructure
+/// See \ref infrastructure.
 
 
 namespace dip {
 
 
 /// \addtogroup infrastructure
-/// \{
 
 
 class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lower down.
@@ -41,15 +40,15 @@ class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lo
 /// \brief Represents an arbitrarily-shaped neighborhood (filter support)
 /// in an arbitrary number of dimensions.
 ///
-/// A `%PixelTableOffsets` object is created from a `dip::PixelTable` through
-/// its `dip::PixelTable::Prepare` method. The object is identical to its parent, but
+/// A `PixelTableOffsets` object is created from a \ref dip::PixelTable through
+/// its \ref dip::PixelTable::Prepare method. The object is identical to its parent, but
 /// instead of coordinates it contains offsets. It is ready to be applied to a specific
 /// image. It can only be used on other images that have the exact same strides as the
 /// image it was prepared for.
 ///
 /// Offsets cannot be used to test for the neighbor to be within the image domain, so this
 /// object is meant to be used with images in which the boundary has been extended through
-/// `dip::ExtendImage`, or where the pixels being processed are away from the image edges.
+/// \ref dip::ExtendImage, or where the pixels being processed are away from the image edges.
 ///
 /// Its iterator dereferences to an offset rather than coordinates.
 /// But note that the iterator is not as efficient as a manual double-loop over runs and
@@ -59,19 +58,19 @@ class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lo
 /// accumulates.
 ///
 /// ```cpp
-///     PixelTableOffsets pt = ...;
+/// PixelTableOffsets pt = ...;
 ///
-///     for( auto offset: pt ) { ... }          // easiest, least efficient
+/// for( auto offset: pt ) { ... }          // easiest, least efficient
 ///
-///     for( auto const& run : pt.Runs() ) {
-///        dip::sint offset = run.offset;
-///        for( dip::uint ii = 0; ii < run.length; ++ii, offset += pt.Stride() ) {
-///           ...
-///        }
-///     }                                       // more efficient
+/// for( auto const& run : pt.Runs() ) {
+///    dip::sint offset = run.offset;
+///    for( dip::uint ii = 0; ii < run.length; ++ii, offset += pt.Stride() ) {
+///       ...
+///    }
+/// }                                       // more efficient
 ///
-///     auto offsets = pt.Offsets();
-///     for( auto offset: offsets ) { ... }     // most efficient (when iterating many times)
+/// auto offsets = pt.Offsets();
+/// for( auto offset: offsets ) { ... }     // most efficient (when iterating many times)
 /// ```
 ///
 /// \see dip::PixelTable, dip::Framework::Full, dip::ImageIterator
@@ -89,7 +88,7 @@ class DIP_NO_EXPORT PixelTableOffsets {
       /// A default-constructed pixel table is kinda useless
       PixelTableOffsets() = default;
 
-      /// A pixel table with offsets is constructed from a `dip::PixelTable` and a `dip::Image`.
+      /// A pixel table with offsets is constructed from a \ref dip::PixelTable and a \ref dip::Image.
       DIP_EXPORT PixelTableOffsets( PixelTable const& pt, Image const& image );
 
       /// Returns the vector of runs
@@ -141,9 +140,9 @@ class DIP_NO_EXPORT PixelTableOffsets {
 /// \brief Represents an arbitrarily-shaped neighborhood (filter support)
 /// in an arbitrary number of dimensions.
 ///
-/// The `%PixelTable` is an array of pixel runs, where each run is encoded by start coordinates
+/// The `PixelTable` is an array of pixel runs, where each run is encoded by start coordinates
 /// and a length (number of pixels). The runs all go along the same dimension, given by
-/// `dip::PixelTable::ProcessingDimension`.
+/// \ref dip::PixelTable::ProcessingDimension.
 ///
 /// It is simple to create a pixel table for unit circles (spheres) in different norms, and for
 /// straight lines. And any other shape can be created through a binary image.
@@ -154,14 +153,14 @@ class DIP_NO_EXPORT PixelTableOffsets {
 ///
 /// Two ways can be used to walk through the pixel table:
 ///
-/// 1.  `dip::PixelTable::Runs` returns a `std::vector` with all the runs, which are encoded
+/// 1.  \ref dip::PixelTable::Runs returns a `std::vector` with all the runs, which are encoded
 ///     by the coordinates of the first pixel and a run length. Visiting each run is an efficient
-///     way to process the whole neighborhood. For example, the filter `dip::Uniform`, which
+///     way to process the whole neighborhood. For example, the filter \ref dip::Uniform, which
 ///     computes the average over all pixels within the neighborhood, only needs to subtract
 ///     the pixels on the start of each run, shift the neighborhood by one pixel, then add
 ///     the pixels on the end of each run. See the example in the section \ref iterate_neighborhood.
 ///
-/// 2.  `dip::PixelTable::begin` returns an iterator to the first pixel in the table,
+/// 2.  \ref dip::PixelTable::begin returns an iterator to the first pixel in the table,
 ///     incrementing the iterator successively visits each of the pixels in the run. Dereferencing
 ///     this iterator yields the offset to a neighbor pixel. This makes for a simple way to
 ///     visit every single pixel within the neighborhood.
@@ -170,20 +169,20 @@ class DIP_NO_EXPORT PixelTableOffsets {
 /// only by retrieving the array containing all weights. This array is meant to be used
 /// by taking its `begin` iterator, and using that iterator in conjunction with the pixel
 /// table's iterator. Taken together, they provide both the location and the weight of each
-/// pixel in the neighborhood. For example, modified from from the function `dip::GeneralConvolution`:
+/// pixel in the neighborhood. For example, modified from from the function \ref dip::GeneralConvolution:
 ///
 /// ```cpp
-///     sfloat* in = ...  // pointer to the current pixel in the input image
-///     sfloat* out = ... // pointer to the current pixel in the output image
-///     sfloat sum = 0;
-///     auto ito = pixelTable.begin(); // pixelTable is our neighborhood
-///     auto itw = pixelTable.Weights().begin();
-///     while( !ito.IsAtEnd() ) {
-///        sum += in[ *ito ] * static_cast< sfloat >( *itw );
-///        ++ito;
-///        ++itw;
-///     }
-///     *out = sum;
+/// sfloat* in = ...  // pointer to the current pixel in the input image
+/// sfloat* out = ... // pointer to the current pixel in the output image
+/// sfloat sum = 0;
+/// auto ito = pixelTable.begin(); // pixelTable is our neighborhood
+/// auto itw = pixelTable.Weights().begin();
+/// while( !ito.IsAtEnd() ) {
+///    sum += in[ *ito ] * static_cast< sfloat >( *itw );
+///    ++ito;
+///    ++itw;
+/// }
+/// *out = sum;
 /// ```
 ///
 /// \see dip::PixelTableOffsets, dip::Kernel, dip::NeighborList, dip::StructuringElement,
@@ -206,7 +205,7 @@ class DIP_NO_EXPORT PixelTable {
       /// \brief Construct a pixel table for default filter shapes.
       ///
       /// The known default `shape`s are `"rectangular"`, `"elliptic"`, and `"diamond"`,
-      /// which correspond to a unit circle in the \f$L^\infty\f$, \f$L^2\f$ and \f$L^1\f$ norms; and
+      /// which correspond to a unit circle in the L^&infin;^, L^2^ and L^1^ norms; and
       /// `"line"`, which is a single-pixel thick line.
       ///
       /// The `size` array determines the size and dimensionality. For unit circles, it gives the diameter of the
@@ -220,7 +219,7 @@ class DIP_NO_EXPORT PixelTable {
       /// simply round the sizes array to an odd integer:
       ///
       /// ```cpp
-      ///     size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1
+      /// size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1
       /// ```
       ///
       /// For the line, the `size` array gives the size of the bounding box (rounded to the nearest integer), as
@@ -336,7 +335,7 @@ class DIP_NO_EXPORT PixelTable {
       }
 
       /// \brief Add weights to each pixel in the neighborhood, taken from an image. The image must be of the same
-      /// sizes as the `%PixelTable`'s bounding box (i.e. the image used to construct the pixel table), and of a
+      /// sizes as the `PixelTable`'s bounding box (i.e. the image used to construct the pixel table), and of a
       /// real type (i.e. integer or float).
       // TODO: Do we need to support complex weights? Tensor weights?
       DIP_EXPORT void AddWeights( Image const& image );
@@ -367,9 +366,12 @@ class DIP_NO_EXPORT PixelTable {
 /// Satisfies the requirements for ForwardIterator.
 class DIP_NO_EXPORT PixelTable::iterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = IntegerArray;       ///< The value obtained by dereferencing are coordinates
-      using reference = IntegerArray const&; ///< The type of a reference
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The value obtained by dereferencing are coordinates
+      using value_type = IntegerArray;
+      /// The type of a reference
+      using reference = IntegerArray const&;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() = default;
@@ -455,8 +457,6 @@ inline void swap( PixelTable::iterator& v1, PixelTable::iterator& v2 ) {
    v1.swap( v2 );
 }
 
-/// \cond
-
 inline PixelTable::iterator PixelTable::begin() const {
    return iterator( *this );
 }
@@ -465,8 +465,6 @@ inline PixelTable::iterator PixelTable::end() const {
    return iterator::end( *this );
 }
 
-/// \endcond
-
 
 /// \brief An iterator that visits each of the neighborhood's pixels in turn.
 ///
@@ -474,9 +472,12 @@ inline PixelTable::iterator PixelTable::end() const {
 /// Satisfies the requirements for ForwardIterator.
 class DIP_NO_EXPORT PixelTableOffsets::iterator {
    public:
-      using iterator_category = std::forward_iterator_tag; ///< %Iterator category
-      using value_type = dip::sint;       ///< The value obtained by dereferencing is an offset
-      using reference = dip::sint;        ///< The type of a reference, but we don't return by reference, it's just as easy to copy
+      /// Iterator category
+      using iterator_category = std::forward_iterator_tag;
+      /// The value obtained by dereferencing is an offset
+      using value_type = dip::sint;
+      /// The type of a reference, but we don't return by reference, it's just as easy to copy
+      using reference = dip::sint;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() = default;
@@ -582,7 +583,7 @@ inline std::vector< dip::sint > PixelTableOffsets::Offsets() const {
 
 /// \endcond
 
-/// \}
+/// \endgroup
 
 } // namespace dip
 

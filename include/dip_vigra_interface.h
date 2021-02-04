@@ -31,37 +31,39 @@
 
 
 /// \file
-/// \brief This file defines the `dip_vigra` namespace, functionality to interface *Vigra* and *DIPlib*.
+/// \brief This file defines the \ref dip_vigra namespace, functionality to interface *Vigra* and *DIPlib*.
 
 
-/// \brief The `%dip_vigra` namespace contains the interface between *Vigra* and *DIPlib*.
-namespace dip_vigra {
-
-/// \defgroup dip_vigra_interface DIPlib-Vigra interface
+/// \group dip_vigra_interface *DIPlib*-*Vigra* interface
 /// \ingroup interfaces
 /// \brief Functions to convert images to and from *Vigra*.
 ///
-/// The `dip_vigra` namespace defines the functions needed to convert between *Vigra* `vigra::MultiArray` and
-/// `vigra::MultiArrayView` objects and *DIPlib* `dip::Image` objects.
+/// The \ref dip_vigra namespace defines the functions needed to convert between *Vigra* `vigra::MultiArray` and
+/// `vigra::MultiArrayView` objects and *DIPlib* \ref dip::Image objects.
 ///
-/// The function `dip_vigra::VigraToDip` encapsulates (maps) a *Vigra* image in a *DIPlib* image;
-/// `dip_vigra::DipToVigra` does the opposite, mapping a *DIPlib* image as a *Vigra* image.
+/// The function \ref dip_vigra::VigraToDip encapsulates (maps) a *Vigra* image in a *DIPlib* image;
+/// \ref dip_vigra::DipToVigra does the opposite, mapping a *DIPlib* image as a *Vigra* image.
 ///
 /// *Vigra* supports anything as pixel type, but in order for the code written here to be manageable, these types
 /// must be limited. Pixel types are therefore limited to the numeric types supported by *DIPlib* as well as vectors
 /// of arbitrary length of these numeric types. *DIPlib* tensor images are mapped to *Vigra* vector images, but
-/// the tensor shape is lost. Note that the tensor stride must always be 1. Use `dip::Image::ForceNormalStrides` to
-/// fix the tensor stride for mapping. Alternatively, use `dip_vigra::CopyDipToVigra`.
+/// the tensor shape is lost. Note that the tensor stride must always be 1. Use \ref dip::Image::ForceNormalStrides to
+/// fix the tensor stride for mapping. Alternatively, use \ref dip_vigra::CopyDipToVigra.
 ///
 /// *Vigra* seems to prefer to use the 8-bit unsigned integer type for binary images. These are always converted to
-/// `dip::DT_UINT8` images, as the code here cannot distinguish between binary and non-binary images. Use `dip::Convert`
-/// to cast the resulting image to binary.
+/// \ref dip::DT_UINT8 images, as the code here cannot distinguish between binary and non-binary images.
+/// Use \ref dip::Convert to cast the resulting image to binary.
 ///
 /// Because *Vigra* defines image properties through template parameters (data type and dimensionality), it is
 /// not possible to write a non-templated function that creates a `vigra::MultiArray` object. Consequently, a
-/// `dip::ExternalInterface` would be very limited in usefulness, so we don't define one. The *DIPlib-Vigra*
+/// \ref dip::ExternalInterface would be very limited in usefulness, so we don't define one. The *DIPlib-Vigra*
 /// interface is therefore less easy to use than, for example, the \ref dip_opencv_interface.
-/// \{
+/// \addtogroup
+
+
+/// \brief The `dip_vigra` namespace contains the interface between *Vigra* and *DIPlib*.
+namespace dip_vigra {
+
 
 namespace detail {
 
@@ -84,12 +86,12 @@ inline TemplateParams GetTemplateParams( vigra::TinyVector< PixelType, tensorEle
 
 /// \brief Creates a *DIPlib* image around a *Vigra* `vigra::MultiArrayView`, without taking ownership of the data.
 ///
-/// This function maps a `vigra::MultiArrayView` object to a `dip::Image` object.
+/// This function maps a `vigra::MultiArrayView` object to a \ref dip::Image object.
 /// The `dip::Image` object will point to the data in the `vigra::MultiArrayView`, which must continue existing until
-/// the `dip::Image` is deleted or `Strip`ped. The output `dip::Image` is protected to prevent accidental reforging,
-/// unprotect it using `dip::Image::Protect`.
+/// the `dip::Image` is deleted or stripped. The output `dip::Image` is protected to prevent accidental reforging,
+/// unprotect it using \ref dip::Image::Protect.
 ///
-/// An invalid `vigra::MultiArrayView` produces a non-forged `dip::Image`.
+/// An invalid `vigra::MultiArrayView` produces a non-forged \ref dip::Image.
 template< unsigned int Dimensionality, class PixelType, class StrideTag >
 inline dip::Image VigraToDip( vigra::MultiArrayView< Dimensionality, PixelType, StrideTag > const& input ) {
    if( !input.hasData() ) {
@@ -111,11 +113,11 @@ inline dip::Image VigraToDip( vigra::MultiArrayView< Dimensionality, PixelType, 
 
 /// \brief Creates a *Vigra* `vigra::MultiArrayView` object around a *DIPlib* image, without taking ownership of the data.
 ///
-/// This function maps a `dip::Image` object to a `vigra::MultiArrayView` object.
+/// This function maps a \ref dip::Image object to a `vigra::MultiArrayView` object.
 /// The `vigra::MultiArrayView` object will point to the data in the `dip::Image`, which must continue existing until the
 /// `vigra::MultiArrayView` is deleted.
 ///
-/// A non-forged `dip::Image` produces an invalid `vigra::MultiArrayView`.
+/// A non-forged \ref dip::Image produces an invalid `vigra::MultiArrayView`.
 template< unsigned int Dimensionality, class PixelType >
 inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag > DipToVigra( dip::Image const& img ) {
    if( !img.IsForged() ) {
@@ -138,9 +140,9 @@ inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag 
 
 /// \brief Creates a *Vigra* `vigra::MultiArrayView` object from a *DIPlib* image by copy.
 ///
-/// A non-forged `dip::Image` produces an invalid `vigra::MultiArrayView`.
+/// A non-forged \ref dip::Image produces an invalid `vigra::MultiArrayView`.
 ///
-/// Use this function if the `dip::Image` cannot be mapped with `dip_vigra::DipToVigra`, for example
+/// Use this function if the \ref dip::Image cannot be mapped with \ref dip_vigra::DipToVigra, for example
 /// if the data type doesn't match (or you don't know in advance what data type the *DIPlib* image
 /// will have) or if the tensor stride is not 1.
 template< unsigned int Dimensionality, class PixelType >
@@ -162,7 +164,7 @@ inline vigra::MultiArray< Dimensionality, PixelType > CopyDipToVigra( dip::Image
    return output;
 }
 
-/// \}
+/// \endgroup
 
 } // namespace dip_vigra
 
