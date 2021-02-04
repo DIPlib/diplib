@@ -48,9 +48,11 @@ h2 {
   margin-top: 2rem;
   margin-bottom: 1rem;
   font-size: 1.5em;
+  color: var(--cs-primary-base)
 }
 h3 {
   margin-top: 1rem;
+  color: var(--cs-primary-darker)
 }
 h3, h4 {
   font-size: 1.17em;
@@ -59,7 +61,7 @@ h3, h4, h5, h6, p {
   margin-bottom: 0.5rem;
 }
 h5, h6 {
-  font-size: 1em;
+  font-size: 1rem;
 }
 h4, h5 {
   font-style: italic;
@@ -69,9 +71,6 @@ p, ul, ol, dl {
 }
 ul, ol {
   padding-left: 2rem;
-}
-ul ol, ul ul, ol ol, ol ul {
-  margin-bottom: 0;
 }
 main p {
   text-indent: var(--paragraph-indent);
@@ -418,8 +417,11 @@ table.m-table th, table.m-table td {
   vertical-align: top;
   border-style: solid;
   border-width: 0;
-  border-color: var(--link-active-color);
-  padding: 0.1rem 0.3rem;
+  border-color: var(--line-color);
+  padding: 0.1rem 0.6rem;
+}
+.m-spaced table.m-table td { /* We can put a table inside a div with class="m-spaced" to make more space between rows */
+  padding-bottom: 0.5rem;
 }
 table.m-first-tight td:first-child {
   width: 1%;
@@ -935,7 +937,7 @@ figure.m-figure figcaption a, .m-code-figure figcaption a, .m-console-figure fig
 }
 
 /* Code block (uses Pygments CSS classes) */
-pre.m-code span.hll {
+pre.m-code span.hll, div.m-code > span.hll {
   margin-left: -1.0rem;
   margin-right: -1.0rem;
   padding-left: 1.0rem;
@@ -1170,12 +1172,16 @@ div.m-button.m-dim a:hover, div.m-button.m-dim a:focus, div.m-button.m-dim a:act
 }
 
 /* Colored note, table coloring */
-.m-note.m-default { background-color: var(--default-filled-background-color); }
 .m-note.m-default,
 table.m-table tr.m-default td, table.m-table td.m-default,
 table.m-table tr.m-default th, table.m-table th.m-default {
-  /* No background for default table to keep the row hover */
+  background-color: var(--default-filled-background-color);
   color: var(--default-filled-color);
+}
+.m-note.m-default a,
+table.m-table tr.m-default td a, table.m-table td.m-default a,
+table.m-table tr.m-default th a, table.m-table th.m-default a {
+  color: var(--default-filled-link-color);
 }
 .m-note.m-default a:hover,
 table.m-table tr.m-default td a:hover, table.m-table td.m-default a:hover,
@@ -1194,11 +1200,6 @@ table.m-table td.m-default pre, table.m-table td.m-default code,
 table.m-table th.m-default pre, table.m-table th.m-default code {
   background-color: var(--default-filled-code-background-color);
   color: var(--default-filled-code-color);
-}
-.m-note.m-primary a,
-table.m-table tr.m-primary td a, table.m-table td.m-primary a,
-table.m-table tr.m-primary th a, table.m-table th.m-primary a {
-  color: var(--primary-filled-link-color);
 }
 .m-note.m-primary,
 table.m-table tr.m-primary td, table.m-table td.m-primary,
@@ -1672,7 +1673,7 @@ div.m-plot svg .m-bar.m-dim,
 p, ul, ol, dl, blockquote, pre, .m-code-figure, .m-console-figure, hr, .m-note,
 .m-frame, .m-block, div.m-button, div.m-scroll, table.m-table, div.m-image,
 img.m-image, svg.m-image, figure.m-figure, .m-imagegrid, div.m-math,
-div.m-graph, div.m-plot {
+div.m-graph, div.m-plot, div.m-code {
   margin-bottom: 1rem;
 }
 p:last-child, p.m-nopadb, ul:last-child, ul.m-nopadb,
@@ -1692,7 +1693,8 @@ figure.m-figure:last-child, figure.m-figure.m-nopadb,
 .m-imagegrid:last-child, .m-imagegrid.m-nopadb,
 div.m-math:last-child, div.m-math.m-nopadb,
 div.m-graph:last-child, div.m-graph.m-nopadb,
-div.m-plot:last-child, div.m-plot.m-nopadb {
+div.m-plot:last-child, div.m-plot.m-nopadb,
+div.m-code:last-child, div.m-plot.m-nopadb {
   margin-bottom: 0;
 }
 
@@ -1705,7 +1707,8 @@ li > .m-note:last-child, li > .m-frame:last-child, li > .m-block:last-child,
 li > div.m-button:last-child, li > div.m-scroll:last-child, li > table.m-table:last-child,
 li > img.m-image:last-child, li > svg.m-image:last-child, li > div.m-image:last-child,
 li > figure.m-figure:last-child, li > div.m-math:last-child,
-li > div.m-graph:last-child, li > div.m-plot:last-child {
+li > div.m-graph:last-child, li > div.m-plot:last-child,
+li > div.m-code:last-child {
   margin-bottom: 1rem;
 }
 li:last-child > p:last-child, li:last-child > p.m-nopadb,
@@ -1725,11 +1728,7 @@ li:last-child > div.m-image:last-child, li:last-child > div.m-image.m-nopadb,
 li:last-child > figure.m-figure:last-child, li:last-child > figure.m-figure.m-nopadb,
 li:last-child > div.m-math:last-child, li:last-child > div.m-math.m-nopadb,
 li:last-child > div.m-graph:last-child, li:last-child > div.m-graph.m-nopadb,
-li:last-child > div.m-plot:last-child, li:last-child > div.m-plot.m-nopadb {
+li:last-child > div.m-plot:last-child, li:last-child > div.m-plot.m-nopadb,
+li:last-child > div.m-code:last-child, li:last-child > div.m-code.m-nopadb {
   margin-bottom: 0;
-}
-
-/* Lists can be declared as being spaced out */
-ul.m-spaced-list > li, ol.m-spaced-list > li {
-  margin-bottom: 1rem;
 }

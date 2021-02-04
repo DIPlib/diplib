@@ -1,0 +1,52 @@
+# dox++ configuration file for DIPlib
+
+[clang]
+compiler flags = -std=c++14
+include directories = @PROJECT_SOURCE_DIR@/include/
+                      /Applications/MATLAB_R2017a.app/extern/include/ /usr/local/include/opencv4/ /usr/local/include/
+
+[log]
+level = info
+
+[input]
+root directory = @PROJECT_SOURCE_DIR@/include/
+header files = @PROJECT_SOURCE_DIR@/include/*.h @PROJECT_SOURCE_DIR@/include/diplib/library/*.h
+               @PROJECT_SOURCE_DIR@/include/diplib/*.h @PROJECT_SOURCE_DIR@/include/diplib/viewer/*.h
+markdown files = @CMAKE_CURRENT_LIST_DIR@/src/*.md @CMAKE_CURRENT_LIST_DIR@/src/*/*.md
+tab size = 3
+
+[json]
+filename = diplib_docs.json
+use typewriter font = yes
+formatting = readable
+
+[project]
+name = DIPlib
+brief = a library for quantitative image analysis
+url = https://diplib.org
+logo = 
+
+[html]
+output directory = @CMAKE_INSTALL_PREFIX@/@DOCUMENTATION_OUTPUT@/html
+document private virtual members = yes
+document private non-virtual members = yes
+document protected members = yes
+document undocumented members = no
+modify include statement = def modify_include_statement(id): return 'file--diplib-h' if id.startswith('file--diplib--library--') else id
+theme color = #22272e
+favicon = @CMAKE_CURRENT_LIST_DIR@/DIP_logo_32.png
+stylesheets = @CMAKE_CURRENT_LIST_DIR@/css/m-dip+documentation.compiled.css
+fine print = [default]
+navigation bar 1 = [('', '#pages', []),('', '#modules', [])]
+navigation bar 2 = [('', '#classes', []),('', '#files', [])]
+file index expand levels = 1
+class index expand levels = 1
+class index expand inner = no
+
+[search]
+enable = yes
+download binary = no
+base url = https://diplib.org/diplib-docs/
+external url = https://google.com/search?q=site:diplib.org+{query}
+add snake case suffixes = yes
+add camel case suffixes = yes

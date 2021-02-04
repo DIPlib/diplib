@@ -64,3 +64,6 @@
 .m-code .vi { color: #1616e6 } /* Name.Variable.Instance */
 .m-code .vm { color: #1616e6 } /* Name.Variable.Magic */
 .m-code .il { color: #1616e6 } /* Literal.Number.Integer.Long */
+.m-code .go { color: #666666 } /* Generic.Output */
+.m-code .gp { color: #999999; font-weight: bold } /* Generic.Prompt */
+.m-code .w { color: #999999 } /* Text.Whitespace */

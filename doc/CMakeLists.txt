@@ -1,22 +1,38 @@
 # DIPlib documentation
-set(DOXYGEN_SKIP_DOT ON)
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-   configure_file("${CMAKE_CURRENT_LIST_DIR}/Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
-   configure_file("${CMAKE_CURRENT_LIST_DIR}/Doxyfile-mcss.in" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss" @ONLY)
-   add_custom_target(
-         apidoc_old
-         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
-         COMMAND "${DOXYGEN_EXECUTABLE}" Doxyfile
-         COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names and other things..."
-         COMMAND "${CMAKE_CURRENT_LIST_DIR}/tools/fix_doc_includes.sh" "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}/html"
-         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-   )
+find_program(
+      DOXPP_PARSE_EXECUTABLE
+      NAMES dox++parse
+      PATHS
+         /Users/cris/src/dox++/
+      DOC "dox++ documentation generation tool, parser (https://crisluengo.github.io/doxpp/)"
+)
+mark_as_advanced(DOXPP_PARSE_EXECUTABLE)
+
+find_program(
+      DOXPP_HTML_EXECUTABLE
+      NAMES dox++html
+      PATHS
+         /Users/cris/src/dox++/
+      DOC "dox++ documentation generation tool, HTML generator (https://crisluengo.github.io/doxpp/)"
+)
+mark_as_advanced(DOXPP_HTML_EXECUTABLE)
+
+if(DOXPP_PARSE_EXECUTABLE AND DOXPP_HTML_EXECUTABLE)
+   message(STATUS "Found dox++parse: ${DOXPP_PARSE_EXECUTABLE}")
+   message(STATUS "Found dox++html: ${DOXPP_HTML_EXECUTABLE}")
+   set(DOXPP_FOUND on)
+else()
+   set(DOXPP_FOUND off)
+endif()
+set(DOXPP_FOUND ${DOXPP_FOUND} PARENT_SCOPE)
+
+if(DOXPP_FOUND)
+   configure_file("${CMAKE_CURRENT_LIST_DIR}/dox++config.in" "${CMAKE_CURRENT_BINARY_DIR}/dox++config" @ONLY)
    add_custom_target(
          apidoc
          COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
-         COMMAND "./doxygen.py" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss"
-         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/m.css/documentation"
+         COMMAND "${DOXPP_PARSE_EXECUTABLE}"
+         COMMAND "${DOXPP_HTML_EXECUTABLE}"
+         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
    )
-endif(DOXYGEN_FOUND)
-set(DOXYGEN_FOUND ${DOXYGEN_FOUND} PARENT_SCOPE)
+endif()

@@ -88,7 +88,6 @@ include(tools/update_deps_file.cmake)
 ### DIPlib library
 
 add_subdirectory(src)
-add_subdirectory(doc)
 
 
 ### DIPjavaio
@@ -179,6 +178,10 @@ if(DIP_BUILD_DIPIMAGE)
    add_subdirectory(dipimage)
 endif()
 
+
+### Documentation
+
+add_subdirectory(doc)
 
 ### Examples
 
@@ -279,10 +282,10 @@ if (WIN32)
 endif()
 message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
 
-if(DOXYGEN_FOUND)
+if(DOXPP_FOUND)
    message(" * Documentation installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}")
 else()
-   message(" * Doxygen documentation not configured")
+   message(" * dox++ program not configured, no documentation can be generated")
 endif()
 
 
@@ -394,10 +397,10 @@ if(DIP_BUILD_DIPIMAGE)
    matlab_get_release_name_from_version(${Matlab_VERSION_STRING} Matlab_RELEASE_NAME)
    message(" * DIPimage toolbox compiled for MATLAB ${Matlab_RELEASE_NAME}")
    message(" * DIPimage toolbox installed to: ${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}")
-   if(DOXYGEN_FOUND)
+   if(DOXPP_FOUND)
       message(" * DIPimage User Manual installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}/html/dipimage_user_manual.html")
    else()
-      message(" * DIPimage User Manual cannot be created (Doxygen documentation not configured)")
+      message(" * DIPimage User Manual cannot be created (dox++ program not configured)")
    endif()
 else()
    message(" * DIPimage toolbox not configured")
@@ -410,7 +413,7 @@ if(CMAKE_GENERATOR MATCHES "Unix Makefiles")
    else()
       message("Next, type 'make; make install'")
    endif()
-   if(DOXYGEN_FOUND)
+   if(DOXPP_FOUND)
       message("Type 'make apidoc' to build the documentation")
    endif()
 endif()

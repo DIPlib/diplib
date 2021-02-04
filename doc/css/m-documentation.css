@@ -124,7 +124,7 @@ ul.m-doc li.m-doc-expansible > a:first-child:before { content: '⊕'; }
 ul.m-doc li.m-doc-collapsible > a:first-child:before { content: '⊖'; }
 
 h1 .m-doc-template, h1 .m-doc-include {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: normal;
 }
 /* If there's no template, the include is shown after in a slightly more packed
@@ -195,6 +195,7 @@ article section.m-doc-details > div > h3:first-child {
   position: relative; /* so it's above the border */
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
+  color: var(--color);
   background-color: var(--code-header-background-color);
   border-radius: var(--border-radius);
 }
@@ -235,7 +236,7 @@ article section.m-doc-details:target > div {
   padding-left: 0.75rem;
 }
 .m-container-inflatable section.m-doc-details:target > div::before,
-.m-container-inflatable section-dox-details:target section > div.m::before {
+.m-container-inflatable section.m-doc-details:target section > div.m::before {
   border-left-width: 0.25rem;
   border-left-color: var(--article-heading-color);
 }
@@ -334,14 +335,12 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   white-space: nowrap;
   overflow: hidden;
 }
-/*
 .m-doc-search ul#search-results li a > div:not(.m-doc-search-alias) {
-  / * This is here in order to cut the text off at the left side. Besides this
+  /* This is here in order to cut the text off at the left side. Besides this
      there's special patching needed for punctuation characters, see search.js
-     for details. * /
+     for details. */
   direction: rtl;
 }
-*/
 .m-doc-search ul#search-results li a .m-label {
   float: right;
   line-height: 1rem;

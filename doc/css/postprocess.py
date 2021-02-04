@@ -62,7 +62,7 @@ def postprocess(files, process_imports, out_file):
             # Import statement: add the file to additionally processed files
             # unless it's disabled
             match = import_rx.match(line)
-            if match:
+            if match and '://' not in match.group('file'):
                 if process_imports:
                     imported_files += [match.group('file')]
                 continue

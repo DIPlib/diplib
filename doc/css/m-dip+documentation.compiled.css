@@ -23,6 +23,7 @@
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
     DEALINGS IN THE SOFTWARE.
 */
+@import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700,700i%7CSource+Code+Pro:400,400i,600');
 .m-smaller-font{
   font-size: 75%;
 }
@@ -364,9 +365,11 @@ h2 {
   margin-top: 2rem;
   margin-bottom: 1rem;
   font-size: 1.5em;
+  color: #ff7400
 }
 h3 {
   margin-top: 1rem;
+  color: #bf7130
 }
 h3, h4 {
   font-size: 1.17em;
@@ -375,7 +378,7 @@ h3, h4, h5, h6, p {
   margin-bottom: 0.5rem;
 }
 h5, h6 {
-  font-size: 1em;
+  font-size: 1rem;
 }
 h4, h5 {
   font-style: italic;
@@ -385,9 +388,6 @@ p, ul, ol, dl {
 }
 ul, ol {
   padding-left: 2rem;
-}
-ul ol, ul ul, ol ol, ol ul {
-  margin-bottom: 0;
 }
 main p {
   text-indent: 0;
@@ -435,7 +435,7 @@ a.m-flat {
   text-decoration: none;
 }
 a:hover, a:focus, a:active {
-  color: #bf7130;
+  color: #00b3b3;
 }
 a img { border: 0; }
 svg a { cursor: pointer; }
@@ -704,8 +704,11 @@ table.m-table th, table.m-table td {
   vertical-align: top;
   border-style: solid;
   border-width: 0;
-  border-color: #bf7130;
-  padding: 0.1rem 0.3rem;
+  border-color: #ff7400;
+  padding: 0.1rem 0.6rem;
+}
+.m-spaced table.m-table td {
+  padding-bottom: 0.5rem;
 }
 table.m-first-tight td:first-child {
   width: 1%;
@@ -1184,7 +1187,7 @@ figure.m-figure figcaption a, .m-code-figure figcaption a, .m-console-figure fig
     margin-right: -10%;
   }
 }
-pre.m-code span.hll {
+pre.m-code span.hll, div.m-code > span.hll {
   margin-left: -1.0rem;
   margin-right: -1.0rem;
   padding-left: 1.0rem;
@@ -1223,7 +1226,7 @@ div.m-button a svg.m-math { fill: #ffffff; }
 div.m-button.m-flat a svg.m-math { fill: #000000; }
 div.m-button.m-flat a:hover svg.m-math, div.m-button.m-default a:focus svg.m-math,
 div.m-button.m-default a:active svg.m-math {
-  fill: #bf7130;
+  fill: #00b3b3;
 }
 .m-graph { font-size: 13px; }
 div.m-plot svg, div.m-graph svg {
@@ -1362,7 +1365,7 @@ div.m-button a, .m-label {
 }
 div.m-button.m-flat a { color: #000000; }
 div.m-button.m-flat a:hover, div.m-button.m-default a:focus, div.m-button.m-default a:active {
-  color: #bf7130;
+  color: #00b3b3;
 }
 div.m-button.m-default a, .m-label:not(.m-flat).m-default { background-color: #000000; }
 div.m-button.m-primary a, .m-label:not(.m-flat).m-primary { background-color: #ff7400; }
@@ -1392,11 +1395,16 @@ div.m-button.m-info a:hover, div.m-button.m-info a:focus, div.m-button.m-info a:
 div.m-button.m-dim a:hover, div.m-button.m-dim a:focus, div.m-button.m-dim a:active {
   background-color: #c0c0c0;
 }
-.m-note.m-default { background-color: #ffe3cc; }
 .m-note.m-default,
 table.m-table tr.m-default td, table.m-table td.m-default,
 table.m-table tr.m-default th, table.m-table th.m-default {
+  background-color: #ffe3cc;
   color: #000000;
+}
+.m-note.m-default a,
+table.m-table tr.m-default td a, table.m-table td.m-default a,
+table.m-table tr.m-default th a, table.m-table th.m-default a {
+  color: #bf7130;
 }
 .m-note.m-default a:hover,
 table.m-table tr.m-default td a:hover, table.m-table td.m-default a:hover,
@@ -1415,11 +1423,6 @@ table.m-table td.m-default pre, table.m-table td.m-default code,
 table.m-table th.m-default pre, table.m-table th.m-default code {
   background-color: #ffe3cc;
   color: #a64b00;
-}
-.m-note.m-primary a,
-table.m-table tr.m-primary td a, table.m-table td.m-primary a,
-table.m-table tr.m-primary th a, table.m-table th.m-primary a {
-  color: #ffe3cc;
 }
 .m-note.m-primary,
 table.m-table tr.m-primary td, table.m-table td.m-primary,
@@ -1867,7 +1870,7 @@ div.m-plot svg .m-bar.m-dim,
 p, ul, ol, dl, blockquote, pre, .m-code-figure, .m-console-figure, hr, .m-note,
 .m-frame, .m-block, div.m-button, div.m-scroll, table.m-table, div.m-image,
 img.m-image, svg.m-image, figure.m-figure, .m-imagegrid, div.m-math,
-div.m-graph, div.m-plot {
+div.m-graph, div.m-plot, div.m-code {
   margin-bottom: 1rem;
 }
 p:last-child, p.m-nopadb, ul:last-child, ul.m-nopadb,
@@ -1887,7 +1890,8 @@ figure.m-figure:last-child, figure.m-figure.m-nopadb,
 .m-imagegrid:last-child, .m-imagegrid.m-nopadb,
 div.m-math:last-child, div.m-math.m-nopadb,
 div.m-graph:last-child, div.m-graph.m-nopadb,
-div.m-plot:last-child, div.m-plot.m-nopadb {
+div.m-plot:last-child, div.m-plot.m-nopadb,
+div.m-code:last-child, div.m-plot.m-nopadb {
   margin-bottom: 0;
 }
 li > p:last-child, li > blockquote:last-child, li > pre:last-child,
@@ -1896,7 +1900,8 @@ li > .m-note:last-child, li > .m-frame:last-child, li > .m-block:last-child,
 li > div.m-button:last-child, li > div.m-scroll:last-child, li > table.m-table:last-child,
 li > img.m-image:last-child, li > svg.m-image:last-child, li > div.m-image:last-child,
 li > figure.m-figure:last-child, li > div.m-math:last-child,
-li > div.m-graph:last-child, li > div.m-plot:last-child {
+li > div.m-graph:last-child, li > div.m-plot:last-child,
+li > div.m-code:last-child {
   margin-bottom: 1rem;
 }
 li:last-child > p:last-child, li:last-child > p.m-nopadb,
@@ -1916,11 +1921,9 @@ li:last-child > div.m-image:last-child, li:last-child > div.m-image.m-nopadb,
 li:last-child > figure.m-figure:last-child, li:last-child > figure.m-figure.m-nopadb,
 li:last-child > div.m-math:last-child, li:last-child > div.m-math.m-nopadb,
 li:last-child > div.m-graph:last-child, li:last-child > div.m-graph.m-nopadb,
-li:last-child > div.m-plot:last-child, li:last-child > div.m-plot.m-nopadb {
+li:last-child > div.m-plot:last-child, li:last-child > div.m-plot.m-nopadb,
+li:last-child > div.m-code:last-child, li:last-child > div.m-code.m-nopadb {
   margin-bottom: 0;
-}
-ul.m-spaced-list > li, ol.m-spaced-list > li {
-  margin-bottom: 1rem;
 }
 
 body > header > nav {
@@ -2040,7 +2043,7 @@ body > header > nav #m-navbar-collapse li a:hover,
 body > header > nav #m-navbar-collapse li a:focus,
 body > header > nav #m-navbar-collapse li a:active {
   border-color: #59d9d9;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: #ffffff;
 }
 body > header > nav.m-navbar-landing #m-navbar-collapse li a:hover,
 body > header > nav.m-navbar-cover #m-navbar-collapse li a:hover,
@@ -2048,7 +2051,7 @@ body > header > nav.m-navbar-landing #m-navbar-collapse li a:focus,
 body > header > nav.m-navbar-cover #m-navbar-collapse li a:focus,
 body > header > nav.m-navbar-landing #m-navbar-collapse li a:active,
 body > header > nav.m-navbar-cover #m-navbar-collapse li a:active {
-  background-color: var(--header-link-active-background-color-semi);
+  background-color: rgba(255, 255, 255, 0.5);
 }
 body > header > nav #m-navbar-hide {
   display: none;
@@ -2171,20 +2174,10 @@ article > header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
-article h1 a, article > header h1, article > header h1 a,
-article section > h2, article section > h2 a,
-article section > h3, article section > h3 a,
-article section > h4, article section > h4 a,
-article section > h5, article section > h5 a,
-article section > h6, article section > h6 a {
+article h1 a, article > header h1, article > header h1 a {
   color: #ff7400;
 }
-article h1 a:hover, article > header h1 a:hover, article > header h1 a:focus, article > header h1 a:active,
-article section > h2 a:hover, article section > h2 a:focus, article section > h2 a:active,
-article section > h3 a:hover, article section > h3 a:focus, article section > h3 a:active,
-article section > h4 a:hover, article section > h4 a:focus, article section > h4 a:active,
-article section > h5 a:hover, article section > h5 a:focus, article section > h5 a:active,
-article section > h6 a:hover, article section > h6 a:focus, article section > h6 a:active {
+article h1 a:hover, article > header h1 a:hover, article > header h1 a:focus, article > header h1 a:active {
   color: #bf7130;
 }
 article > header .m-date {
@@ -2698,6 +2691,9 @@ article:last-child, article section:last-child { margin-bottom: 0; }
 .m-code .vi { color: #1616e6 }
 .m-code .vm { color: #1616e6 }
 .m-code .il { color: #1616e6 }
+.m-code .go { color: #666666 }
+.m-code .gp { color: #999999; font-weight: bold }
+.m-code .w { color: #999999 }
 
 a.m-doc, a.m-doc-self, a.m-doc-external,
 ul.m-doc li.m-doc-expansible > a:first-child, ul.m-doc li.m-doc-collapsible > a:first-child,
@@ -2732,7 +2728,7 @@ ul.m-doc li.m-doc-expansible > a:first-child:active::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:hover::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:focus::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:active::before {
-  color: #a64b00;
+  color: #1d7373;
 }
 h3 a.m-doc-external {
   font-weight: normal;
@@ -2796,7 +2792,7 @@ ul.m-doc li.m-doc-expansible > a:first-child:before, ul.m-doc li.m-doc-collapsib
 ul.m-doc li.m-doc-expansible > a:first-child:before { content: '⊕'; }
 ul.m-doc li.m-doc-collapsible > a:first-child:before { content: '⊖'; }
 h1 .m-doc-template, h1 .m-doc-include {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: normal;
 }
 h1 .m-doc-include:last-child {
@@ -2862,6 +2858,7 @@ article section.m-doc-details > div > h3:first-child {
   position: relative;
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
+  color: #000000;
   background-color: #ffa866;
   border-radius: 0.2rem;
 }
@@ -2900,7 +2897,7 @@ article section.m-doc-details:target > div {
   padding-left: 0.75rem;
 }
 .m-container-inflatable section.m-doc-details:target > div::before,
-.m-container-inflatable section-dox-details:target section > div.m::before {
+.m-container-inflatable section.m-doc-details:target section > div.m::before {
   border-left-width: 0.25rem;
   border-left-color: #ff7400;
 }
@@ -2986,6 +2983,9 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
 .m-doc-search ul#search-results li a > div {
   white-space: nowrap;
   overflow: hidden;
+}
+.m-doc-search ul#search-results li a > div:not(.m-doc-search-alias) {
+  direction: rtl;
 }
 .m-doc-search ul#search-results li a .m-label {
   float: right;

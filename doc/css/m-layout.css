@@ -266,7 +266,7 @@ body > main {
   padding-bottom: 1rem;
 }
 
-/* Page heading (not in <header>), breadcrumb naviation on pages */
+/* Page heading (not in <header>), breadcrumb navigation on pages */
 article h1 {
   font-size: 1.75rem;
 }
@@ -286,20 +286,10 @@ article > header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
-article h1 a, article > header h1, article > header h1 a,
-article section > h2, article section > h2 a,
-article section > h3, article section > h3 a,
-article section > h4, article section > h4 a,
-article section > h5, article section > h5 a,
-article section > h6, article section > h6 a {
+article h1 a, article > header h1, article > header h1 a {
   color: var(--article-heading-color);
 }
-article h1 a:hover, article > header h1 a:hover, article > header h1 a:focus, article > header h1 a:active,
-article section > h2 a:hover, article section > h2 a:focus, article section > h2 a:active,
-article section > h3 a:hover, article section > h3 a:focus, article section > h3 a:active,
-article section > h4 a:hover, article section > h4 a:focus, article section > h4 a:active,
-article section > h5 a:hover, article section > h5 a:focus, article section > h5 a:active,
-article section > h6 a:hover, article section > h6 a:focus, article section > h6 a:active {
+article h1 a:hover, article > header h1 a:hover, article > header h1 a:focus, article > header h1 a:active {
   color: var(--article-heading-active-color);
 }
 article > header .m-date {

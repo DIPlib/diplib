@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8"/>
+   <title>DIPlib documentation guide</title>
+   <link rel="stylesheet" href="css/m-dip+documentation.compiled.css"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+<main>
+   <article>
+      <div class="m-container m-container-inflatable">
+         <div class="m-row">
+            <div class="m-col-l-10 m-push-l-1">
+               <h1>DIPlib documentation guide</h1>
+               <p>This document gives some guidance as to how elements are rendered
+               in the DIPlib documentation. See the dox++ documentation for basics,
+               differences are shown here.</p>
+
+               <h2>Boxes</h2>
+               <p>There are too many box colors. These first four should be sufficient for us.</p>
+               <aside class="m-note m-default">
+                  <h4>Literature</h4>
+                  <p>The "literature" box is the same as "see also" and other boxes.
+                  It does not grab a whole lot of attention. This should be our "standard" aside box.</p>
+               </aside>
+               <aside class="m-note m-info">
+                  <h4>Attention</h4>
+                  <p>This one is a bit more visible than the normal box above. Use it for things that
+                  need more attention.</p>
+               </aside>
+               <aside class="m-note m-warning">
+                  <h4>Warning</h4>
+                  <p>This one is highly contrasting. Use it for things that are really important to be
+                  aware of.</p>
+               </aside>
+               <aside class="m-note m-danger">
+                  <h4>Bug</h4>
+                  <p>This one is even more contrasting. Use it to discuss bugs.</p>
+               </aside>
+               <p>This next set of boxes we shouldn't use in the DIPlib documentation. It'll look more like
+               a circus than a serious document.</p>
+               <aside class="m-note m-frame">
+                  <h4>"par"</h4>
+                  <p>The plain "par" is rendered as an obvious frame, less subtle than in
+                     the stock CSS.</p>
+               </aside>
+               <aside class="m-note m-primary">
+                  <h4>Note</h4>
+                  <p>The "note" box is more attention-grabbing than the "attention" box.
+                     Let's not use this box in the DIPlib documentation.</p>
+               </aside>
+               <aside class="m-note m-success">
+                  <h4>Precondition</h4>
+                  <p>I'm not sure we need to use this one too. I'd like to keep the number
+                  of colors to a minimum. This color happens elsewhere in the docs, but
+                  not as background color. This is a bit too strong.</p>
+               </aside>
+               <aside class="m-note m-dim">
+                  <h4>"aside"</h4>
+                  <p>This is quite nice, maybe nicer than the plain "par"?</p>
+               </aside>
+
+               <h2>Tables</h2>
+               <p>To modify the properties of a table, we need to use HTML, we cannot use the <tt>{}</tt> syntax.</p>
+<pre>
+&lt;div markdown="1" class="m-smaller-font m-spaced m-block m-flat"&gt;
+   (insert Markdown table here)
+&lt;/div&gt;</pre>
+               <p>For example here we created a DIV with classes "m-smaller-font" and "m-spaced", so that the font used
+               in the table is smaller, and the rows are spaced apart a bit more. However, this causes the table
+               to be the last child of its container (the new DIV), and therefore will not have a bottom margin.
+               The table will but up against the next element. So we add also "m-block", which will have a bottom
+               margin. To make the block not visible (it would normally add a frame), we add also class "m-flat".
+               A flat block has a transparent frame, it looks just like it's not there!</p>
+
+            </div>
+         </div>
+      </div>
+   </article>
+</main>
+</body>
+</html>
