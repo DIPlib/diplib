@@ -619,7 +619,8 @@ struct DIP_NO_EXPORT Range {
       return Iterator( start, Step() );
    }
 
-   /// Get an iterator to the end of the range (must be fixed first!).
+   /// \brief Get an iterator to the end of the range (must be fixed first!). This iterator points one past
+   /// the `stop` value, as is usual for the end iterator.
    Iterator end() const {
       return Iterator( start + static_cast< dip::sint >( Size() ) * Step(), Step() );
    }

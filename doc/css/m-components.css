@@ -970,14 +970,14 @@ pre.m-code span.hll, div.m-code > span.hll {
 
 /* Math block, math figure, inline math, math inside buttons because I am
    crazy */
-div.m-math {
-  overflow-x: auto;
-  overflow-y: hidden; /* Chrome 62 displays a vertical scrollbar otherwise */
-}
 div.m-math svg {
   margin-left: auto;
   margin-right: auto;
   display: block;
+  overflow: visible;
+}
+.m-math svg {
+  overflow: visible;
 }
 div.m-button a svg.m-math { fill: var(--button-background-color); }
 div.m-button.m-flat a svg.m-math { fill: var(--color); }

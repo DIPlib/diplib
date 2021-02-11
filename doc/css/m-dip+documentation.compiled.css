@@ -1213,14 +1213,14 @@ pre.m-code span.hll, div.m-code > span.hll {
   margin-right: 0.1rem;
   border-radius: 0.1rem;
 }
-div.m-math {
-  overflow-x: auto;
-  overflow-y: hidden;
-}
 div.m-math svg {
   margin-left: auto;
   margin-right: auto;
   display: block;
+  overflow: visible;
+}
+.m-math svg {
+  overflow: visible;
 }
 div.m-button a svg.m-math { fill: #ffffff; }
 div.m-button.m-flat a svg.m-math { fill: #000000; }
