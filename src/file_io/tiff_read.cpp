@@ -1115,7 +1115,7 @@ void ImageReadTIFFSeries(
    // Read in first image
    Image tmp;
    dip::uint ii = 0;
-   DIP_STACK_TRACE_THIS( ImageReadTIFF( tmp, filenames[ ii ] )); // TODO: Read in first image plane or all image planes?
+   DIP_STACK_TRACE_THIS( ImageReadTIFF( tmp, filenames[ ii ], Range{ 0 }, {}, {}, useColorMap )); // TODO: Read in first image plane or all image planes?
 
    // Prepare the output image
    UnsignedArray sizes = tmp.Sizes();
@@ -1138,7 +1138,7 @@ void ImageReadTIFFSeries(
 
    // Read in the rest of the images, and write them into the output
    while( ++ii, ++it ) {
-      DIP_STACK_TRACE_THIS( ImageReadTIFF( tmp, filenames[ ii ] ));
+      DIP_STACK_TRACE_THIS( ImageReadTIFF( tmp, filenames[ ii ], Range{ 0 }, {}, {}, useColorMap ));
       try {
          it->Copy( tmp );
       } catch( Error const& ) {
