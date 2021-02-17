@@ -532,9 +532,9 @@ inline Image CoherenceEnhancingDiffusion(
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
 /// $$ \begin{pmatrix}
-///     R_{kx} & R_{ky} \\
-///     G_{kx} & G_{ky} \\
-///     B_{kx} & B_{ky}
+///     R_{kx} & R_{ky}
+///  \\ G_{kx} & G_{ky}
+///  \\ B_{kx} & B_{ky}
 /// \end{pmatrix} $$
 ///
 /// The kernel is first scaled and then rotated before it is applied.
@@ -607,9 +607,9 @@ inline Image AdaptiveGauss(
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
 /// $$ \begin{pmatrix}
-///     R_{kx} & R_{ky} \\
-///     G_{kx} & G_{ky} \\
-///     B_{kx} & B_{ky}
+///     R_{kx} & R_{ky}
+///  \\ G_{kx} & G_{ky}
+///  \\ B_{kx} & B_{ky}
 /// \end{pmatrix} $$
 ///
 /// The kernel is first scaled and then rotated before it is applied.

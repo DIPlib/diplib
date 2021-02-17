@@ -920,9 +920,9 @@ inline Image Hessian(
 /// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kernel:
 ///
 /// $$ \begin{bmatrix}
-///    -1 & -1 & -1 \\
-///    -1 &  8 & -1 \\
-///    -1 & -1 & -1
+///      -1 & -1 & -1
+///   \\ -1 &  8 & -1
+///   \\ -1 & -1 & -1
 /// \end{bmatrix} $$
 ///
 /// \see dip::Derivative, dip::Gradient, dip::Hessian, dip::Trace

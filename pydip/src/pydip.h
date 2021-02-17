@@ -267,7 +267,7 @@ class type_caster< dip::Image::Pixel > {
                //std::cout << "   Input is bool\n";
                value.swap( dip::Image::Pixel( dip::DT_BIN, n ));
                auto it = value.begin();
-               for( auto& in : src ) {
+               for( auto in : src ) {
                   *it = in.cast< bool >();
                   ++it;
                }
@@ -275,7 +275,7 @@ class type_caster< dip::Image::Pixel > {
                //std::cout << "   Input is int\n";
                value.swap( dip::Image::Pixel( dip::DT_SINT64, n ));
                auto it = value.begin();
-               for( auto& in : src ) {
+               for( auto in : src ) {
                   *it = in.cast< dip::sint64 >();
                   ++it;
                }
@@ -283,7 +283,7 @@ class type_caster< dip::Image::Pixel > {
                //std::cout << "   Input is float\n";
                value.swap( dip::Image::Pixel( dip::DT_DFLOAT, n ));
                auto it = value.begin();
-               for( auto& in : src ) {
+               for( auto in : src ) {
                   *it = in.cast< dip::dfloat >();
                   ++it;
                }
@@ -291,7 +291,7 @@ class type_caster< dip::Image::Pixel > {
                //std::cout << "   Input is complex\n";
                value.swap( dip::Image::Pixel( dip::DT_DCOMPLEX, n ));
                auto it = value.begin();
-               for( auto& in : src ) {
+               for( auto in : src ) {
                   *it = in.cast< dip::dcomplex >();
                   ++it;
                }
