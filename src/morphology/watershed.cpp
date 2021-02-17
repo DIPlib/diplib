@@ -684,9 +684,9 @@ void SeededWatershed(
       if( c_seeds.DataType().IsBinary() ) {
          numlabs = Label( c_seeds, out, connectivity );
       } else {
-         Convert( c_seeds, out, DT_LABEL );
-         auto m = MaximumAndMinimum( out, mask );
+         auto m = MaximumAndMinimum( c_seeds, mask );
          numlabs = static_cast< dip::uint >( m.Maximum() );
+         Convert( c_seeds, out, DT_LABEL );
       }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
@@ -945,9 +945,9 @@ void CompactWatershed(
       if( c_seeds.DataType().IsBinary() ) {
          numlabs = Label( c_seeds, out, connectivity );
       } else {
-         Convert( c_seeds, out, DT_LABEL );
-         auto m = MaximumAndMinimum( out, mask );
+         auto m = MaximumAndMinimum( c_seeds, mask );
          numlabs = static_cast< dip::uint >( m.Maximum() );
+         Convert( c_seeds, out, DT_LABEL );
       }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
