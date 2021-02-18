@@ -23,13 +23,13 @@ This is currently a thin wrapper that exposes the C++ functionality with little 
 
 - ***DIPviewer***, an interactive image display utility. It is usable from C++, Python and MATLAB programs.
 Within *DIPimage* this is an optional alternative to the default MATLAB-native interactive display utility.
-Read [the *DIPviewer* documentation](https://diplib.org/diplib-docs/group__viewer.html).
+Read [the *DIPviewer* documentation](https://diplib.org/diplib-docs/viewer.html).
 
 - ***DIPjavaio***, an interface to
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
 hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
 way of interfacing with *Bio-Formats*.
-Read [the *DIPjavaio* documentation](https://diplib.org/diplib-docs/group__javaio.html)
+Read [the *DIPjavaio* documentation](https://diplib.org/diplib-docs/dipjavaio.html)
 
 See [the *DIPlib* website](https://diplib.org/) for more information.
 
