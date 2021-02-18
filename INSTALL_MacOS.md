@@ -47,10 +47,7 @@ brew install glfw
 ```
 
 To compile the documentation yourself (note that the compiled documentation can be found
-online), you need *Doxygen*:
-```bash
-brew install doxygen
-```
+online), you need *dox++* (TODO: write down how to build the docs).
 
 Finally, MacOS comes with *Python 2*. We recommend *Python 3*:
 ```bash
@@ -126,12 +123,6 @@ two options specify that you want to use the *GCC* compilers instead.
 (**Note**: at the time of this writing, `gcc-8` was the executable installed by
 the `gcc` package. This will change over time, as new versions of GCC are adopted
 by HomeBrew. Adjust as necessary.)
-
-You can also do
-```bash
-make apidoc
-```
-if you want to compile the *DIPlib* documentation.
 
 ## Enabling Bio-Formats
 

@@ -31,7 +31,7 @@
 #include "diplib/viewer/manager.h"
 
 /// \file
-/// \brief Declares the core infrastructure for \ref viewer.
+/// \brief Declares the core infrastructure for \ref dipviewer.
 
 namespace dip { namespace viewer {
 

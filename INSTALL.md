@@ -66,10 +66,9 @@ The following `make` targets are part of the `all` target:
     dipview       # builds the standalone DIP image viewer
     dipviewjava   # builds the java-enabled standalone DIP image viewer
 
-The `apidoc` target requires that *Doxygen* be installed, the target will not be available
-if it is not. The `dum` target requires that *Pandoc* be installed, the target will not be
-available if it is not; this target will fail to build if additional tools are not installed
-(see below under "Dependencies").
+The `apidoc` target requires that *dox++* is available, the target will not be available
+if it is not; this target will fail to build if additional tools are not installed
+(TODO: write down how to build the docs).
 
 Important `cmake` command-line arguments controlling the build of *DIPlib*:
 
@@ -150,6 +149,3 @@ enable *DIPimage* to read many microscopy image file formats (type `help readim`
 after installing *DIPimage*, to learn more).
 
 *PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
-
-To build the *DIPlib* documentation (HTML), as well as the *DIPimage* and *PyDIP* User Manuals,
-[*Doxygen*](http://www.doxygen.org) is needed.

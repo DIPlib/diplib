@@ -15,7 +15,7 @@
 \comment limitations under the License.
 
 
-\group viewer *DIPviewer*
+\group dipviewer *DIPviewer*
 \ingroup display
 \brief Interactive image display.
 

@@ -6,7 +6,7 @@ include directories = @PROJECT_SOURCE_DIR@/include/
                       /Applications/MATLAB_R2017a.app/extern/include/ /usr/local/include/opencv4/ /usr/local/include/
 
 [log]
-level = info
+level = warning
 
 [input]
 root directory = @PROJECT_SOURCE_DIR@/include/

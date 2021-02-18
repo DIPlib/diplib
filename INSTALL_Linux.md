@@ -31,10 +31,7 @@ sudo apt install freeglut3-dev
 ```
 
 To compile the documentation yourself (note that the compiled documentation can be found
-online), you need *Doxygen*:
-```bash
-sudo apt install doxygen
-```
+online), you need *dox++* (TODO: write down how to build the docs).
 
 Finally, even if the `python3` program is already installed, you might need to
 install the *Python 3* header files and static library:
@@ -81,12 +78,6 @@ We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
 to your computer. Note that the resulting binaries will likely be slower on another
 computer, and possibly not work at all.
-
-You can also do
-```bash
-make apidoc
-```
-if you want to compile the *DIPlib* documentation.
 
 ## Enabling Bio-Formats
 

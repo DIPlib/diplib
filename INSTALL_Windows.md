@@ -31,13 +31,11 @@ You can obtain the latest *CMake* here: https://cmake.org/download/.
 
 Again, download and install as directed.
 
-## *Doxygen*
+## *dox++*
 
 To compile the documentation yourself (which shouldn't be necessary, but some IDEs
-might require), you need *Doxygen*, which you can download here:
-http://www.doxygen.nl/download.html#srcbin.
-
-Again, download and install as directed.
+might require), you need *dox++*.
+(TODO: write down how to build the docs).
 
 ## Cloning the repository
 

@@ -86,7 +86,7 @@ img.Show('log')  # uses logarithmic mapping
 
 Type `help(dip.Show)` in Python to learn about many more options.
 
-If \ref viewer "*DIPviewer*" is installed, its functionality will be in the `diplib.viewer`
+If \ref dipviewer is installed, its functionality will be in the `diplib.viewer`
 namespace. Use `dip.viewer.Show(img)`. Depending on the backend used, it
 will be necessary to do `dip.viewer.Spin()` to interact with the created
 window. `Spin()` interrupts the interactive session until all *DIPviewer*

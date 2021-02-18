@@ -23,7 +23,7 @@ This is currently a thin wrapper that exposes the C++ functionality with little 
 
 - ***DIPviewer***, an interactive image display utility. It is usable from C++, Python and MATLAB programs.
 Within *DIPimage* this is an optional alternative to the default MATLAB-native interactive display utility.
-Read [the *DIPviewer* documentation](https://diplib.org/diplib-docs/viewer.html).
+Read [the *DIPviewer* documentation](https://diplib.org/diplib-docs/dipviewer.html).
 
 - ***DIPjavaio***, an interface to
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
@@ -200,11 +200,9 @@ limitations under the License.
   see [`dipimage/private/bf*.m`](dipimage/private/bfGetReader.m)  
   (the full *Bio-Formats* library needs to be installed for these to be useful)
 
-- *m.css* (for generating the documentation)  
+- Modified CSS files from *dox++*, which originally came from *m.css*  
   Copyright 2017, 2018, 2019 Vladimír Vondruš  
-  The MIT License (MIT)  
-  see [`doc/m.css/COPYING`](doc/m.css/COPYING)  
-  (note that changes were made to customize it for the DIPlib project)
+  The MIT License (MIT)
 
 Note that all of these have permissive open-source licenses similar in spirit
 to the Apache License, except for *OME Bio-Formats*.
