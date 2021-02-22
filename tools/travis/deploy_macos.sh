@@ -26,11 +26,11 @@ make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.8
-#export PYTHON=/usr/local/opt/python@3.8/bin/python3
-#export PYTHON_VERSION=3.8
-#cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
-#make -j $BUILD_THREADS bdist_wheel
-#python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
+export PYTHON=/usr/local/opt/python@3.8/bin/python3
+export PYTHON_VERSION=3.8
+cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
+make -j $BUILD_THREADS bdist_wheel
+python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.9
 export PYTHON=/usr/local/opt/python@3.9/bin/python3
