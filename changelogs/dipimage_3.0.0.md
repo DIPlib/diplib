@@ -1,4 +1,4 @@
-# Changes DIPimage 3.0.beta
+# Changes DIPimage 3.0.0
 
 Here we list the changes to *DIPimage* as compared to version 2.9. *DIPimage* is built on *DIPlib*,
 which was completely rewritten for this release. Consequently, there are many changes to *DIPimage*

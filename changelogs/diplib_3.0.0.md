@@ -1,4 +1,4 @@
-# Changes DIPlib 3.0.beta
+# Changes DIPlib 3.0.0
 
 *DIPlib 3* is a complete rewrite in C++ of the *DIPlib 2* infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
@@ -389,7 +389,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - New morphological functions: `dip::RankFilter`, `dip::RankMinClosing`, `dip::RankMaxOpening`,
   `dip::LimitedMorphologicalReconstruction`, `dip::HMaxima`, `dip::HMinima`, `dip::Leveling`, `dip::AreaClosing`,
   `dip::OpeningByReconstruction`, `dip::ClosingByReconstruction`, `dip::AlternatingSequentialFilter`,
-  `dip::HitAndMiss`.
+  `dip::HitAndMiss`, `dip::VolumeOpening`, `dip::VolumeClosing`.
 
 - New nonlinear filtering functions: `dip::MoveToLocalMinimum`,
   `dip::PeronaMalikDiffusion`, `dip::GaussianAnisotropicDiffusion`,

@@ -9,9 +9,9 @@ project(DIPlib)
 # The version number and latest copyright year. Update these values here, they're used all throughout the project.
 set(PROJECT_VERSION_MAJOR "3")
 set(PROJECT_VERSION_MINOR "0")
-set(PROJECT_VERSION_PATCH "b9")
+set(PROJECT_VERSION_PATCH "0")
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-set(DIP_COPYRIGHT_YEAR "2020")
+set(DIP_COPYRIGHT_YEAR "2021")
 
 # Debug or Release?
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
