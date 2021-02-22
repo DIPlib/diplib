@@ -1,11 +1,13 @@
-# Run this on MacOS with Xcode from the diplib diretory
+# Run this on MacOS with Xcode from the diplib directory
 # set $PYPI_TOKEN to the PyPI token for the diplib project
 
 # Setup
 export BUILD_THREADS=2
 export DELOCATE=`pwd`/tools/travis/delocate
 
-python3 -m pip install python@3.7 python@3.8
+brew install python@3.7
+brew install python@3.8
+brew install python@3.9
 
 mkdir build
 cd build
@@ -22,11 +24,11 @@ make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.8
-export PYTHON=/usr/local/opt/python@3.8/bin/python3
-export PYTHON_VERSION=3.8
-cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
-make -j $BUILD_THREADS bdist_wheel
-python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
+#export PYTHON=/usr/local/opt/python@3.8/bin/python3
+#export PYTHON_VERSION=3.8
+#cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
+#make -j $BUILD_THREADS bdist_wheel
+#python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.9
 export PYTHON=/usr/local/opt/python@3.9/bin/python3
