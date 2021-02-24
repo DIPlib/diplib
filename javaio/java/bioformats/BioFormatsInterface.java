@@ -88,15 +88,15 @@ public class BioFormatsInterface {
       image.SetTensorStride( tstride );
 
       switch ( reader.getPixelType() ) {
-         case FormatTools.INT8:   image.SetDataType( "INT8" );
+         case FormatTools.INT8:   image.SetDataType( "SINT8" );
                                   break;
          case FormatTools.UINT8:  image.SetDataType( "UINT8" );
                                   break;
-         case FormatTools.INT16:  image.SetDataType( "INT16" );
+         case FormatTools.INT16:  image.SetDataType( "SINT16" );
                                   break;
          case FormatTools.UINT16: image.SetDataType( "UINT16" );
                                   break;
-         case FormatTools.INT32:  image.SetDataType( "INT32" );
+         case FormatTools.INT32:  image.SetDataType( "SINT32" );
                                   break;
          case FormatTools.UINT32: image.SetDataType( "UINT32" );
                                   break;
