@@ -127,7 +127,8 @@ by HomeBrew. Adjust as necessary.)
 ## Enabling Bio-Formats
 
 First, make sure you have the Java 8 SDK (JDK 8) installed, you can obtain it from the
-[Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html). Next, download
+[Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html) for commercial
+purposes, or from [jdk.java.net](https://jdk.java.net) for an open-source build. Next, download
 `bioformats_package.jar` from the [Bio-Formats website](https://www.openmicroscopy.org/bio-formats/).
 You need to add the location of this file to the `cmake` command line using the `-DBIOFORMATS_JAR=<path>`
 flag.
@@ -138,7 +139,7 @@ Check the *CMake* output to see which JNI was found. It should match the version
 These two should be listed together, but the JNI output is only produced on first run. Delete the
 `CMakeCache.txt` file to run `cmake` fresh and see all its output.
 
-Sometimes the version of JNI found is not the one in the JDK. For example, on my Mac it finds the JNI
+Sometimes the version of JNI found is not the one in the JDK. For example, on my Mac it might find the JNI
 that belongs to Java 6. In this case, add `-DJAVA_HOME=<path>` to the `cmake` command line:
 ```bash
 cmake .. -DBIOFORMATS_JAR=$HOME/java/bioformats_package.jar -DJAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/

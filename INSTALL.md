@@ -112,6 +112,8 @@ Controlling the build of *PyDIP*:
 
     -DDIP_BUILD_PYDIP=Off              # don't build the PyDIP Python module
     -DPYBIND11_PYTHON_VERSION=3.6      # compile PyDIP against Python 3.6
+    -DPYTHON_EXECUTABLE=<path>         # in case the Python binary is not on the path
+                                       # and Pybind11 can't find it.
     -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On  # include libraries in PyDIP wheel (turn on for
                                        # binary distribution, keep off for personal builds)
 
@@ -138,14 +140,14 @@ numbers, but it has a copyleft license.
 *DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
 as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
 
-*DIPjavaio* requires that the Java 8 SDK (JDK 8) be installed. This module is intended as a
+*DIPjavaio* requires that the Java 8 SDK (JDK 8) or later be installed. This module is intended as a
 bridge to [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), which you will need
 to download separately. *Bio-Formats* has a copyleft license.
 
 *DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
-for compilation and execution (of course).
+for compilation and (of course) execution.
 Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) to
 enable *DIPimage* to read many microscopy image file formats (type `help readim` in *MATLAB*,
 after installing *DIPimage*, to learn more).
 
-*PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
+*PyDIP* requires that [*Python 3*](https://www.python.org) be installed.
