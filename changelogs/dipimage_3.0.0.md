@@ -1,4 +1,7 @@
-# Changes DIPimage 3.0.0
+---
+layout: post
+title: "Changes DIPimage 3.0.0"
+---
 
 Here we list the changes to *DIPimage* as compared to version 2.9. *DIPimage* is built on *DIPlib*,
 which was completely rewritten for this release. Consequently, there are many changes to *DIPimage*
@@ -112,7 +115,7 @@ porting your old code that used *DIPimage* to the new version.
       applied. The `'GammaGrey'` setting is also no longer applied.
 
     - A new function `viewslice` can be used to display any image (including tensor images and
-      higher-dimensional images) in [*DIPviewer*](https://diplib.org/diplib-docs/group__viewer.html#viewer_ui).
+      higher-dimensional images) in [*DIPviewer*](https://diplib.org/diplib-docs/dipviewer.html#viewer_ui).
       This is an alternative way to examine images, but none of the tools to programmatically
       interact with images displayed through `dipshow` will work with this viewer.
 

@@ -1,4 +1,7 @@
-# Changes DIPlib 3.0.0
+---
+layout: post
+title: "Changes DIPlib 3.0.0"
+---
 
 *DIPlib 3* is a complete rewrite in C++ of the *DIPlib 2* infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
@@ -355,10 +358,10 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 
 ## New functionality
 
-- New external library *DIPviewer* adds interactive image display, see [its documentation](https://diplib.org/diplib-docs/group__viewer.html).
+- New external library *DIPviewer* adds interactive image display, see [its documentation](https://diplib.org/diplib-docs/dipviewer.html).
 
 - New external library *DIPjavaio* adds the option to use *Bio-Formats* to read hundreds of image file formats,
-  see [its documentation](https://diplib.org/diplib-docs/group__javaio.html).
+  see [its documentation](https://diplib.org/diplib-docs/dipjavaio.html).
 
 - New analysis functions: `dip::AutoCorrelationFT`, `dip::MeanShift`, `dip::FourierMellinMatch2D`, `dip::MonogenicSignal`,
   `dip::MonogenicSignalAnalysis`, `dip::Semivariogram`, `dip::Granulometry`, `dip::FractalDimension`.
@@ -462,4 +465,4 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 - New transform functions: `dip::OptimalFourierTransformSize`, `dip::RieszTransform`, `dip::StationaryWaveletTransform`.
 
 - There is also a lot of new functionality in the library infrastructure, which we cannot all list here.
-  See [the library infrastructure documentation](https://diplib.org/diplib-docs/group__infrastructure.html).
+  See [the library infrastructure documentation](https://diplib.org/diplib-docs/infrastructure.html).
