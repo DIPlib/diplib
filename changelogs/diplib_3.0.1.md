@@ -7,6 +7,8 @@ title: "Changes DIPlib 3.0.1"
 
 ### New functionality
 
+- Added `dip::MarginalPercentile()` histogram-based statistics function.
+
 ### Changed functionality
 
 ### Bug fixes

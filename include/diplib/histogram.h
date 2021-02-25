@@ -646,17 +646,25 @@ DIP_EXPORT FloatArray Mean( Histogram const& in );
 /// off-diagonal elements after. For a 2D histogram, the three elements are *xx*, *yy*, and *xy*.
 DIP_EXPORT FloatArray Covariance( Histogram const& in );
 
-/// \brief Computes the marginal median value of the data represented by the histogram. The marginal median
-/// is a median computed independently on each dimension, and thus is not one of the input values.
+/// \brief Computes the marginal percentile value of the data represented by the histogram. The marginal percentile
+/// is a percentile computed independently on each dimension, and thus is not one of the input values.
 ///
-/// In the 1D histogram case (for scalar images) this function computes the approximate median (i.e. the
-/// bin containing the median value). The distinction between marginal median and median is only relevant
-/// for multivariate data (histograms from tensor images). In short, here we compute 1D medians on each
+/// In the 1D histogram case (for scalar images) this function computes the approximate percentile (i.e. the
+/// bin containing the percentile value). The distinction between marginal percentile and percentile is only relevant
+/// for multivariate data (histograms from tensor images). In short, here we compute 1D percentile on each
 /// of the 1D projections of the histogram.
+///
+/// The `percentile` must be a value between 0 (minimum) and 100 (maximum).
 ///
 /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
 /// computing the statistic on data rounded to the bin centers.
-DIP_EXPORT FloatArray MarginalMedian( Histogram const& in );
+DIP_EXPORT FloatArray MarginalPercentile( Histogram const& in, dfloat percentile = 50 );
+
+/// \brief Computes the marginal median value of the data represented by the histogram. The median is the 50th
+/// percentile, see `dip::MarginalPercentile` for details.
+inline FloatArray MarginalMedian( Histogram const& in ) {
+   return MarginalPercentile( in, 50 );
+}
 
 /// \brief Returns the mode, the bin with the largest count.
 ///

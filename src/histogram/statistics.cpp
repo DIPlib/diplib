@@ -104,9 +104,9 @@ RegressionParameters Regression( Histogram const& in ) {
    return out;
 }
 
-FloatArray MarginalMedian( Histogram const& in ) {
+FloatArray MarginalPercentile( Histogram const& in, dfloat percentile ) {
    dip::uint nDims = in.Dimensionality();
-   FloatArray median( nDims );
+   FloatArray output( nDims );
    Histogram cum = CumulativeHistogram( in ); // we look along the last line in each direction
    Image const& cumImg = cum.GetImage();
    Histogram::CountType* pcum = static_cast< Histogram::CountType* >( cumImg.Origin() );
@@ -120,13 +120,13 @@ FloatArray MarginalMedian( Histogram const& in ) {
       }
       dip::sint stride = cumImg.Stride( ii );
       dip::sint jj = 0;
-      while( static_cast< dfloat >( *pcum ) / n < 0.5 ) {
+      while( static_cast< dfloat >( *pcum ) / n < percentile / 100 ) {
          ++jj;
          pcum += stride;
       }
-      median[ ii ] = in.BinCenter( static_cast< dip::uint >( jj ), ii );
+      output[ ii ] = in.BinCenter( static_cast< dip::uint >( jj ), ii );
    }
-   return median;
+   return output;
 }
 
 FloatArray Mode( Histogram const& in ) {

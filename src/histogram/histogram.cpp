@@ -633,6 +633,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
    DOCTEST_CHECK( std::abs( dip::Mean( gaussH )[ 0 ] - meanval ) < 1.0 ); // less than 0.05% error.
    DOCTEST_CHECK( std::abs( dip::MarginalMedian( gaussH )[ 0 ] - meanval ) <= binSize );
+   DOCTEST_CHECK( std::abs( dip::MarginalPercentile( gaussH, 25 )[ 0 ] - ( meanval - 0.675 * sigma )) <= binSize );
    DOCTEST_CHECK( std::abs( dip::Mode( gaussH )[ 0 ] - meanval ) <= 3.0 * binSize );
    DOCTEST_CHECK( std::abs( dip::Covariance( gaussH )[ 0 ] - sigma * sigma ) < 500.0 ); // less than 0.2% error.
 
