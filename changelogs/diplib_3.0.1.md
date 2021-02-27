@@ -13,6 +13,8 @@ title: "Changes DIPlib 3.0.1"
 
 ### Bug fixes
 
+- `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together
+  (distances smaller than a pixel).
 
 ## Changes to DIPimage
 

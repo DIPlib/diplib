@@ -212,22 +212,19 @@ struct PolygonEdge {
    dfloat x;         // initialized to value of x corresponding to yMin
    dfloat slope;     // increment x by this value for each unit increment of y
    PolygonEdge( VertexFloat pt1, VertexFloat pt2, bool horizontalScanLines ) {
-      if( horizontalScanLines ) {
-         if( pt1.y > pt2.y ) {
-            std::swap( pt1, pt2 );
-         }
-         slope = ( pt1.x - pt2.x ) / ( pt1.y - pt2.y );
-         yMin = round_cast( pt1.y );
-         yMax = round_cast( pt2.y );
-         x = pt1.x;
-      } else {
-         if( pt1.x > pt2.x ) {
-            std::swap( pt1, pt2 );
-         }
-         slope = ( pt1.y - pt2.y ) / ( pt1.x - pt2.x );
-         yMin = round_cast( pt1.x );
-         yMax = round_cast( pt2.x );
-         x = pt1.y;
+      if( !horizontalScanLines ) {
+         std::swap( pt1.x, pt1.y );
+         std::swap( pt2.x, pt2.y );
+      }
+      if( pt1.y > pt2.y ) {
+         std::swap( pt1, pt2 );
+      }
+      slope = ( pt1.x - pt2.x ) / ( pt1.y - pt2.y );
+      x = pt1.x;
+      yMin = round_cast( pt1.y );
+      yMax = round_cast( pt2.y );
+      if (yMin == yMax) {
+         slope = dip::infinity;
       }
    }
    bool operator<( PolygonEdge const& other) const {
@@ -243,11 +240,7 @@ struct ActiveEdge {
    dip::sint yMax;
    dfloat x;         // initialized to value of x corresponding to yMin
    dfloat slope;     // increment x by this value for each unit increment of y
-   ActiveEdge( PolygonEdge const& edge ) {
-      yMax = edge.yMax;
-      x = edge.x;
-      slope = edge.slope;
-   }
+   ActiveEdge( PolygonEdge const& edge ) : yMax( edge.yMax ), x( edge.x ), slope( edge.slope ) {}
    ActiveEdge& operator++() {
       x += slope;
       return *this;
