@@ -47,7 +47,7 @@ brew install glfw
 ```
 
 To compile the documentation yourself (note that the compiled documentation can be found
-online), you need *dox++* (TODO: write down how to build the docs).
+online), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
 
 Finally, MacOS comes with *Python 2*. We recommend *Python 3*:
 ```bash

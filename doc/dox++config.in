@@ -18,7 +18,7 @@ tab size = 3
 [json]
 filename = diplib_docs.json
 use typewriter font = yes
-formatting = readable
+formatting = compact
 
 [project]
 name = DIPlib

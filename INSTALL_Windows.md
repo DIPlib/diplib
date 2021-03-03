@@ -34,8 +34,7 @@ Again, download and install as directed.
 ## *dox++*
 
 To compile the documentation yourself (which shouldn't be necessary, but some IDEs
-might require), you need *dox++*.
-(TODO: write down how to build the docs).
+might require), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
 
 ## Cloning the repository
 

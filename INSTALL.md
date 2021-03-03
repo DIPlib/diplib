@@ -67,8 +67,8 @@ The following `make` targets are part of the `all` target:
     dipviewjava   # builds the java-enabled standalone DIP image viewer
 
 The `apidoc` target requires that *dox++* is available, the target will not be available
-if it is not; this target will fail to build if additional tools are not installed
-(TODO: write down how to build the docs).
+if it is not; this target will fail to build if additional tools are not installed.
+See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
 
 Important `cmake` command-line arguments controlling the build of *DIPlib*:
 

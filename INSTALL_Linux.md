@@ -31,7 +31,7 @@ sudo apt install freeglut3-dev
 ```
 
 To compile the documentation yourself (note that the compiled documentation can be found
-online), you need *dox++* (TODO: write down how to build the docs).
+online), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
 
 Finally, even if the `python3` program is already installed, you might need to
 install the *Python 3* header files and static library:
