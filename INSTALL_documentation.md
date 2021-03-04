@@ -17,7 +17,8 @@ and on macOS with
 ```bash
 brew install python3 python3-pip
 ```
-We have built the documentation with Python 3.6, it is unknown if older versions will work.
+We have built the documentation with Python 3.6 and 3.9, it is unknown if versions older
+than 3.6 will work.
 
 Once Python is installed, install the required packages:
 ```bash
@@ -90,12 +91,16 @@ package manager to install the missing package and try building again:
 tlmgr install <package name>
 ```
 
+Other errors are not fatal. Some errors even are irrelevant because they relate to non-documented
+members. If Clang produces an error while parsing a header file, the contents of that header file will
+not make it into the documentation.
+
 ## Building the official documentation
 
 The official documentation at [`diplib.org/diplib-docs/`](https://diplib.org/diplib-docs/) is uploaded
-to [this GitHub repository](https://github.com/DIPlib/diplib-docs). The `/usr/local/share/doc/DIPlib/html`
-output directory of the *dox++* tool is the *git* repository. Simply push a new build to update
-the website.
+to [the `diplib-docs` GitHub repository](https://github.com/DIPlib/diplib-docs).
+The `/usr/local/share/doc/DIPlib/html` output directory of the *dox++* tool is the *git* repository.
+Simply push a new build to update the website.
 
 It is important that the official documentation is complete. This means that all modules and extras
 must be included. For these to be included, their headers must be parseable by Clang. This again
