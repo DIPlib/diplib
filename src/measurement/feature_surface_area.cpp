@@ -67,7 +67,7 @@ constexpr std::array< dfloat, 10 > sa = {{
 template< typename TPI >
 static void SurfaceAreaInternal(
       Image const& label,
-      std::map< dip::uint, dip::uint > const& objectIndex,
+      std::unordered_map< dip::uint, dip::uint > const& objectIndex,
       std::vector< dfloat >& surfaceArea,
       std::array< dip::sint, 6 > const& nn
 ) {
@@ -187,7 +187,8 @@ std::vector< dfloat > SurfaceArea(
    std::vector< dfloat > surfaceArea( objectIDs.size() );
 
    // Create lookup table for objectIDs
-   std::map< dip::uint, dip::uint > objectIndex;
+   std::unordered_map< dip::uint, dip::uint > objectIndex;
+   objectIndex.reserve(objectIDs.size());
    for( dip::uint ii = 0; ii < objectIDs.size(); ++ii ) {
       objectIndex.emplace( objectIDs[ ii ], ii );
    }
