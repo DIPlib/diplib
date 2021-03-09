@@ -443,16 +443,23 @@ class DIP_NO_EXPORT Measurement {
       void AddObjectID( dip::uint objectID ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
-         AddObjectID_( objectID );
+
+         dip::uint index = objects_.size();
+         // TODO: Using `push_back` is not efficient because `objects_` is a `dip::UnsignedArray`. This function is often called within a loop!
+         objects_.push_back( objectID );
+         objectIndices_.emplace( objectID, index );
       }
 
       /// \brief Adds object IDs to a non-forged `Measurement` object.
       void AddObjectIDs( UnsignedArray const& objectIDs ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
+         dip::uint index = objects_.size();
+         objectIndices_.reserve(objectIndices_.size() + objectIDs.size());
          for( auto const& objectID : objectIDs ) {
             DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
-            AddObjectID_( objectID );
+            objectIndices_.emplace( objectID, index++ );
          }
+         objects_.append( objectIDs );
       }
 
       /// \brief Forges the table, allocating space to hold measurement values.
@@ -645,12 +652,6 @@ class DIP_NO_EXPORT Measurement {
          dip::uint index = features_.size();
          features_.emplace_back( name, startIndex, n );
          featureIndices_.emplace( name, index );
-      }
-      void AddObjectID_( dip::uint objectID ) {
-         dip::uint index = objects_.size();
-         // TODO: Using `push_back` is not efficient because `objects_` is a `dip::UnsignedArray`. This function is often called within a loop!
-         objects_.push_back( objectID );
-         objectIndices_.emplace( objectID, index );
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
