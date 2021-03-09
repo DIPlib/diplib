@@ -225,14 +225,14 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
    std::vector< dip::uint > rhsRowIndex( lhs.objects_.size(), NOT_THERE );
    for( dip::uint ii = 0; ii < lhs.objects_.size(); ++ii ) { // auto& o : lhs.objects_
       auto o = lhs.objects_[ ii ];
-      out.AddObjectID_( o );
+      out.AddObjectID( o );
       lhsRowIndex[ ii ] = ii;
    }
    for( dip::uint ii = 0; ii < rhs.objects_.size(); ++ii ) { // auto& o : rhs.objects_
       auto o = rhs.objects_[ ii ];
       auto it = out.objectIndices_.find( o );
       if( it == out.objectIndices_.end() ) {
-         out.AddObjectID_( o );
+         out.AddObjectID( o );
          lhsRowIndex.push_back( NOT_THERE );
          rhsRowIndex.push_back( ii );
       } else {
