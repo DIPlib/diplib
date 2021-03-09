@@ -21,7 +21,7 @@
 #ifndef DIP_MEASUREMENT_H
 #define DIP_MEASUREMENT_H
 
-#include <map>
+#include <unordered_map>
 
 #include "diplib.h"
 #include "diplib/accumulators.h"
@@ -95,7 +95,7 @@ using ValueInformationArray = std::vector< ValueInformation >;
 
 
 /// \brief Maps object IDs to object indices
-using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
+using ObjectIdToIndexMap = std::unordered_map< dip::uint, dip::uint >;
 
 /// \brief Contains measurement results, as obtained through \ref dip::MeasurementTool::Measure.
 ///
@@ -657,7 +657,7 @@ class DIP_NO_EXPORT Measurement {
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
       std::vector< FeatureInformation > features_;    // the column groups of the table (maps column group indices to feature names and contains other info also)
       Feature::ValueInformationArray values_;         // the columns of the table
-      std::map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
+      std::unordered_map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
       std::vector< ValueType > mutable data_;         // this is mutable so that a const object doesn't have const data -- the only reason for this is to avoid making const versions of the iterators, which seems pointless
       // `data` has a row for each objectID, and a column for each feature value. The rows are stored contiguous.
       // `data[ features[ ii ].offset + jj * numberValues ]` gives the first value for feature `ii` for object with
@@ -999,7 +999,7 @@ class DIP_NO_EXPORT MeasurementTool {
    private:
 
       std::vector< FeatureBasePointer > features_;
-      std::map< String, dip::uint > featureIndices_;
+      std::unordered_map< String, dip::uint > featureIndices_;
 
       bool Exists( String const& name ) const {
          return featureIndices_.count( name ) != 0;
