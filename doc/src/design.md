@@ -1,6 +1,6 @@
 \comment DIPlib 3.0
 
-\comment (c)2014-2020, Cris Luengo.
+\comment (c)2014-2021, Cris Luengo.
 \comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -104,7 +104,8 @@ properties, not pixel data (with the exception of \ref dip::Image::Copy and
 \ref dip::Image::Fill). Filters and other algorithms that manipulate image data are
 always functions or function objects.
 
-We use function objects sparingly in *DIPlib*. *ITK*, for example, has taken
+We use function objects sparingly in *DIPlib*.
+[*ITK*](https://itk.org), for example, has taken
 the object-oriented approach to an extreme, where each algorithm is encapsulated
 in an object, and parameters to the algorithm are set through object methods.
 This leads to very verbose code that is not readable. For example, compare the
@@ -117,7 +118,8 @@ gauss.SetInput( image );
 gauss.SetSigma( FloatArray{ 5, 1 } );
 gauss.Execute();
 outim = gauss.GetOutput();
-
+```
+```cpp
 outim = dip::Gauss( image, FloatArray{ 5, 1 } );
 ```
 
@@ -130,9 +132,10 @@ outim = dip::Gauss( image, FloatArray{ 5, 1 } );
 dispatch internally to the appropriate sub-function. These sub-functions are
 generated at compile time through templates
 
-The alternative, seen in most C++ image analysis libraries (*ITK*, *Vigra*,
-*CImg*, etc.), is to define the image class, as well as most functions, as
-templates. The user declares an image having a specific data type (and dimensionality),
+The alternative, seen in most C++ image analysis libraries ([*ITK*](https://itk.org),
+[*Vigra*](http://ukoethe.github.io/vigra/), [*CImg*](https://cimg.eu), etc.),
+is to define the image class, as well as most functions, as templates.
+The user declares an image having a specific data type (and dimensionality),
 and the compiler then creates an image class with that data type for the pixels, as well
 as instances of all functions called with this image as input. This takes time.
 Compiling even a trivial program that uses *CImg* takes a minute, rather than a
@@ -146,7 +149,7 @@ However, the largest disadvantage with templated functions happens when creating
 an (even slightly) general image analysis program: you need to write code that
 allows the user of your program to select the image data type, and write code
 that does all the right dispatching depending on the data type (see, for example,
-the *SimpleITK* interface to *ITK*). Alternatively,
+the [*SimpleITK*](https://simpleitk.org) interface to *ITK*). Alternatively,
 you have to restrict the data type to one choice. A library is meant to take
 away work from the programmer using the library, so it is logical that *DIPlib*
 should allow all data types and do the dispatching as necessary. After all,
@@ -299,8 +302,10 @@ for us to choose the approach we chose.
 
 \section design_multithreading Multithreading
 
-We use *OpenMP* for multithreading, mostly because it seems (to me) easier to use
-than Intel's *Threading Building Blocks* (*TBB*). *TBB* does not require special
+We use [*OpenMP*](https://www.openmp.org) for multithreading, mostly because it seems
+(to me) easier to use than
+[Intel's *Threading Building Blocks*](https://www.threadingbuildingblocks.org/docs/help/index.htm)
+(*TBB*). *TBB* does not require special
 compiler support, but all modern compilers support *OpenMP* (except that XCode's CLang
 on MacOS doesn't come with the *OpenMP* library, which needs to be installed separately).
 The GNU Compiler Collection has very good support for *OpenMP*, and is available on
@@ -332,3 +337,48 @@ and double or worse the time spent on the filtering. *DIPlib 2* did not have
 any such logic, always started threads within the frameworks, and consequently
 behaved poorly with very small images. This system is intended to overcome that
 problem.
+
+
+\comment --------------------------------------------------------------
+
+\section design_ranges Ranges for indexing
+
+There two common ways to define ranges for indexing, either the end index is included or not. For example,
+in MATLAB the end index is included, in Python it is excluded. Some languages such as Ruby and Scala allow
+the user to choose between the two. *DIPlib* uses \ref dip::Range to represent a range for indexing. These
+ranges include the end index.
+
+On Stack Overflow one sees quite a few errors and cases of confusion in Python because the end index is not included
+in the range. Similar errors in MATLAB are highly uncommon. I think that this is because in English (and many,
+if not all, other languages too) when one counts from a to b, the b is included in the count. This is a strong
+argument in favor of including the end index: it is less confusing to the novice programmer.
+
+There are [no strong](https://stackoverflow.com/q/11364533/7328782) [arguments](https://stackoverflow.com/q/4504662/7328782)
+as to why it should be excluded. The argument typically offered is that `array[a:b]` in Python has `b - a` elements,
+rather than `b - a + 1` as would be the case if the end index were included, and this is prettier and thus better.
+Also, `array[a:b] + array[b:c] == array[a:c]`; in MATLAB one would have to write `array(a:b-1)`
+and `array(b:c)` to split `array[a:c]` (again an argument of aesthetics). The only technical argument is that, by
+excluding the upper bound, it is possible to index zero elements, `array[1:1]`; however, in MATLAB this is also
+possible, `array(1:0)`.
+
+Nonetheless, MATLAB’s end index being included is paired with indexing starting at 1, such that the range `1:n` has
+`n` elements, just like Python’s `range(0, n)`. Somehow it is pretty to have the end index of the range indicate how
+many elements the range has, if one starts counting at the first legal index.
+
+In *DIPlib* indexing starts at 0, so the logical solution would be for `dip::Range( a, b )` to exclude `b`, following
+Python’s logic, which also starts indexing at 0. But this leads to certain difficulties when using negative indices
+to count from the end.
+
+For example, in Python, `array[a:]` is all elements from `a` to the end of the array, whereas `array[a,-1]` is all
+elements from `a` to the second to last element. In C++ we cannot copy that syntax, we cannot write `dip::Range( a, )`.
+So if the end index is not included in the array, then there is no way to express a range that includes the last index.
+The same is true for reverse ranges that end in the first array element. There is no number before 0 that can be
+used to indicate "one element before the first one", since -1 means the last element of the array.
+
+This particular issue, together with the desire to have intuitive ranges, lead to the decision to include the end
+index in the range, at the risk of doing things differently.
+
+In C++ it is common to write loops as `for( ii = 0; ii < n; ++ii )`, and the end iterator always points to one past
+the end of the range. But the `dip::Range` start and stop values are not meant to be used directly in loops,
+they are meant for the user to communicate ranges to library functions. `dip::Range` has `begin()` and `end()`
+functions for use in loops. Therefore, this aspect should not cause confusion.
