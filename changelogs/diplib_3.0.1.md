@@ -11,6 +11,13 @@ title: "Changes DIPlib 3.0.1"
 
 ### Changed functionality
 
+- `dip::Measurement::ObjectIdToIndexMap()` is much faster by changing `dip::ObjectIdToIndexMap`
+  from a `std::map` to a `std::unordered_map`. This makes `dip::MeasurementTool::Measure()` is significantly
+  faster.
+
+- Added `dip::Measurement::SetObjectIDs()`, improved speed of `dip::Measurement::AddObjectIDs()` and
+  `dip::Measurement::operator+()`.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together

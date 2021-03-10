@@ -190,9 +190,9 @@ Measurement MeasurementTool::Measure(
 
    // Fill out the object IDs
    if( objectIDs.empty() ) {
-      measurement.AddObjectIDs( GetObjectLabels( label, Image{}, S::EXCLUDE ));
+      measurement.SetObjectIDs( GetObjectLabels( label, Image{}, S::EXCLUDE ));
    } else {
-      measurement.AddObjectIDs( objectIDs );
+      measurement.SetObjectIDs( objectIDs );
    }
 
    // Parse the features array and prepare measurements

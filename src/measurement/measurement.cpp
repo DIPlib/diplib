@@ -118,7 +118,7 @@ void MeasurementWriteCSV(
 ) {
    bool simple = false;
    bool unicode = false;
-   for( auto& option : options ) {
+   for( auto const& option : options ) {
       if( option == "simple" ) {
          simple = true;
       } else if( option == "unicode" ) {
@@ -133,7 +133,7 @@ void MeasurementWriteCSV(
       // Write out the header: feature value (units)
       file << "ObjectID";
       auto values = msr.Values().begin();
-      for( auto& feature : msr.Features() ) {
+      for( auto const& feature : msr.Features() ) {
          for( dip::uint ii = 0; ii < feature.numberValues; ++ii ) {
             file << ", " << feature.name;
             if( !values->name.empty() ) {
@@ -150,7 +150,7 @@ void MeasurementWriteCSV(
    } else {
       // Write out the header: feature names
       file << "ObjectID";
-      for( auto& feature : msr.Features() ) {
+      for( auto const& feature : msr.Features() ) {
          file << ", " << feature.name;
          for( dip::uint ii = 1; ii < feature.numberValues; ++ii ) {
             file << ", "; // Empty columns for feature values past the first one
@@ -158,12 +158,12 @@ void MeasurementWriteCSV(
       }
       file << '\n';
       // Write out the header: value names
-      for( auto& value : msr.Values() ) {
+      for( auto const& value : msr.Values() ) {
          file << ", " << value.name;
       }
       file << '\n';
       // Write out the header: value units
-      for( auto& value : msr.Values() ) {
+      for( auto const& value : msr.Values() ) {
          file << ", " << ( unicode ? value.units.StringUnicode() : value.units.String() );
       }
       file << '\n';
@@ -192,14 +192,14 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
    std::vector< dip::uint > lhsColumnIndex( lhs.NumberOfValues(), NOT_THERE );
    std::vector< dip::uint > rhsColumnIndex( lhs.NumberOfValues(), NOT_THERE ); // Yes, `lhs`, this is not a typo!
    dip::uint index = 0;
-   for( auto& f : lhs.features_ ) {
+   for( auto const& f : lhs.features_ ) {
       auto b = lhs.values_.begin() + static_cast< dip::sint >( f.startColumn );
       out.AddFeature_( f.name, b, b + static_cast< dip::sint >( f.numberValues ));
       for( dip::uint ii = 0; ii < out.features_.back().numberValues; ++ii ) {
          lhsColumnIndex[ index++ ] = out.features_.back().startColumn + ii;
       }
    }
-   for( auto& f : rhs.features_ ) {
+   for( auto const& f : rhs.features_ ) {
       auto it = out.featureIndices_.find( f.name );
       if( it == out.featureIndices_.end() ) {
          // Add the feature
@@ -222,22 +222,31 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
    //   std::cout << "ii = " << ii << ", lhsColumnIndex[ii] = " << lhsColumnIndex[ii] << ", rhsColumnIndex[ii] = " << rhsColumnIndex[ii] << '\n';
    //}
    std::vector< dip::uint > lhsRowIndex( lhs.objects_.size(), NOT_THERE );
-   std::vector< dip::uint > rhsRowIndex( lhs.objects_.size(), NOT_THERE );
-   for( dip::uint ii = 0; ii < lhs.objects_.size(); ++ii ) { // auto& o : lhs.objects_
-      auto o = lhs.objects_[ ii ];
-      out.AddObjectID( o );
-      lhsRowIndex[ ii ] = ii;
-   }
-   for( dip::uint ii = 0; ii < rhs.objects_.size(); ++ii ) { // auto& o : rhs.objects_
-      auto o = rhs.objects_[ ii ];
-      auto it = out.objectIndices_.find( o );
-      if( it == out.objectIndices_.end() ) {
-         out.AddObjectID( o );
-         lhsRowIndex.push_back( NOT_THERE );
-         rhsRowIndex.push_back( ii );
-      } else {
-         rhsRowIndex[ it->second ] = ii;
+   std::vector< dip::uint > rhsRowIndex( lhs.objects_.size(), NOT_THERE ); // Yes, `lhs`, this is not a typo!
+   {
+      UnsignedArray objectIDs( lhs.objects_.size() + rhs.objects_.size(), NOT_THERE );
+      dip::uint jj = 0;
+      for( dip::uint ii = 0; ii < lhs.objects_.size(); ++ii ) { // auto& o : lhs.objects_
+         auto o = lhs.objects_[ ii ];
+         out.objectIndices_.emplace( o, jj );
+         objectIDs[ jj++ ] = o;
+         lhsRowIndex[ ii ] = ii;
       }
+      for( dip::uint ii = 0; ii < rhs.objects_.size(); ++ii ) { // auto& o : rhs.objects_
+         auto o = rhs.objects_[ ii ];
+         auto it = out.objectIndices_.find( o );
+         if( it == out.objectIndices_.end()) {
+            out.objectIndices_.emplace( o, jj );
+            objectIDs[ jj++ ] = o;
+            lhsRowIndex.push_back( NOT_THERE );
+            rhsRowIndex.push_back( ii );
+         } else {
+            rhsRowIndex[ it->second ] = ii;
+         }
+      }
+      DIP_ASSERT( jj <= objectIDs.size() );
+      objectIDs.resize( jj );
+      out.SetObjectIDs( std::move( objectIDs ));
    }
    //for( dip::uint ii = 0; ii < lhsRowIndex.size(); ++ii  ) {
    //   std::cout << "ii = " << ii << ", lhsRowIndex[ii] = " << lhsRowIndex[ii] << ", rhsRowIndex[ii] = " << rhsRowIndex[ii] << '\n';
@@ -317,17 +326,17 @@ Measurement::ValueType Maximum( Measurement::IteratorFeature const& featureValue
 }
 
 Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureValues, dfloat percentile ) {
-   if( percentile == 0.0 ) {
-      return Minimum( featureValues );
-   }
-   if( percentile == 100.0 ) {
-      return Maximum( featureValues );
-   }
    dip::uint N = featureValues.NumberOfObjects();
    if( N == 0 ) {
       return 0.0;
    }
-   dip::sint rank = floor_cast( static_cast< dfloat >( N ) * percentile / 100.0 ); // rank < N, because percentile_ < 100
+   dip::sint rank = floor_cast( static_cast< dfloat >( N ) * percentile / 100.0 );
+   if( rank <= 0 ) {
+      return Minimum( featureValues );
+   }
+   if( rank >= static_cast< dip::sint >( N ) - 1 ) {
+      return Maximum( featureValues );
+   }
    std::vector< Measurement::ValueType > buffer( N );
    auto begin = buffer.begin();
    auto leftIt = begin;
@@ -423,7 +432,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
       values[ 2 ].units = dip::Units::Meter();
       msr2.AddFeature( "Feature3", values );
 
-      dip::UnsignedArray ids(10);
+      dip::UnsignedArray ids( 10 );
       for( dip::uint ii = 0; ii < 10; ++ii ) {
          ids[ ii ] = ii + 10;
       }
@@ -431,7 +440,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
       for( dip::uint ii = 0; ii < 10; ++ii ) {
          ids[ ii ] = ii + 15;
       }
-      msr2.AddObjectIDs( ids );
+      msr2.SetObjectIDs( ids );
    }
 
    // Check

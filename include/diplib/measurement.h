@@ -99,11 +99,11 @@ using ObjectIdToIndexMap = std::unordered_map< dip::uint, dip::uint >;
 
 /// \brief Contains measurement results, as obtained through \ref dip::MeasurementTool::Measure.
 ///
-/// A newly constructed `Measurement` will accept calls to `AddFeature`, and
-/// `AddObjectIDs`. Once the object is set up with all objects and features needed, a call
-/// to `Forge` creates the data segment necessary to hold all those measurements. Once
+/// A newly constructed `Measurement` is raw, and will accept calls to \ref AddFeature, \ref SetObjectIDs,
+/// \ref AddObjectID and \ref AddObjectIDs. Once the object is set up with all objects and features needed,
+/// a call to `Forge` creates the data segment necessary to hold all those measurements. Once
 /// forged, it is no longer possible to add features or objects. As with a \ref dip::Image,
-/// the method `IsForged` can be used to test if the object has been forged.
+/// the method \ref IsForged can be used to test if the object has been forged.
 ///
 /// A forged `Measurement` can be read from in various ways, and a writable pointer to the
 /// data can be obtained. As with the \ref dip::Image class, data pointers are always writable,
@@ -152,7 +152,7 @@ using ObjectIdToIndexMap = std::unordered_map< dip::uint, dip::uint >;
 ///
 /// A `Measurement` with zero object IDs will never be forged, it is possible to call `Forge` on it, but
 /// nothing will happen. For such an object, it is possible to index with a feature name, and iterate over
-/// the features (column groups). However, each of the columns will be empty, such that `FirstObject`
+/// the features (column groups). However, each of the columns will be empty, such that \ref FirstObject
 /// returns an invalid iterator (evaluates to `false`). This means that, given a `Measurement` obtained
 /// from an empty image, one can iterate as usual over features and over objects, without needing to write
 /// a special test for the case of an image without objects.
@@ -420,7 +420,7 @@ class DIP_NO_EXPORT Measurement {
             dip::uint objectIndex_;
       };
 
-      /// \brief Adds a feature to a non-forged `Measurement` object.
+      /// \brief Adds a feature to a raw `Measurement` object.
       void AddFeature( String const& name, Feature::ValueInformationArray const& values ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( name.empty(), "No feature name given" );
@@ -429,7 +429,7 @@ class DIP_NO_EXPORT Measurement {
          AddFeature_( name, values.cbegin(), values.cend() );
       }
 
-      /// \brief Adds a feature to a non-forged `Measurement` object if it is not already there.
+      /// \brief Adds a feature to a raw `Measurement` object if it is not already there.
       void EnsureFeature( String const& name, Feature::ValueInformationArray const& values ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( name.empty(), "No feature name given" );
@@ -439,22 +439,34 @@ class DIP_NO_EXPORT Measurement {
          }
       }
 
-      /// \brief Adds object IDs to a non-forged `Measurement` object.
+      /// \brief Replaces existing objectID array with a new one. The `Measurement` object must be raw.
+      void SetObjectIDs( UnsignedArray objectIDs ) {
+         DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
+         dip::uint index = 0;
+         objectIndices_.clear();
+         objectIndices_.reserve( objectIDs.size() );
+         for( auto const& objectID : objectIDs ) {
+            DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
+            objectIndices_.emplace( objectID, index++ );
+         }
+         objects_.swap( objectIDs );
+      }
+
+      /// \brief Adds an object ID to a raw `Measurement` object.
+      /// It is not efficient to use this function in a loop.
       void AddObjectID( dip::uint objectID ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
-
          dip::uint index = objects_.size();
-         // TODO: Using `push_back` is not efficient because `objects_` is a `dip::UnsignedArray`. This function is often called within a loop!
-         objects_.push_back( objectID );
          objectIndices_.emplace( objectID, index );
+         objects_.push_back( objectID );
       }
 
-      /// \brief Adds object IDs to a non-forged `Measurement` object.
+      /// \brief Adds object IDs to a raw `Measurement` object.
       void AddObjectIDs( UnsignedArray const& objectIDs ) {
          DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          dip::uint index = objects_.size();
-         objectIndices_.reserve(objectIndices_.size() + objectIDs.size());
+         objectIndices_.reserve( objectIndices_.size() + objectIDs.size() );
          for( auto const& objectID : objectIDs ) {
             DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
             objectIndices_.emplace( objectID, index++ );
@@ -970,7 +982,7 @@ class DIP_NO_EXPORT MeasurementTool {
       /// `objectIDs` is an array with the IDs of objects to measure, If any of the IDs is not a label
       /// in the `label` image, the resulting measures will be zero or otherwise marked as invalid. If
       /// an empty array is given, all objects in the labeled image are measured. If there are no objects
-      /// to be measured, a non-forged \ref dip::Measurement object is returned.
+      /// to be measured, a raw \ref dip::Measurement object is returned.
       ///
       /// `connectivity` should match the value used when creating the labeled image `label`.
       ///
