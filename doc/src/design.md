@@ -356,14 +356,14 @@ argument in favor of including the end index: it is less confusing to the novice
 There are [no strong](https://stackoverflow.com/q/11364533/7328782) [arguments](https://stackoverflow.com/q/4504662/7328782)
 as to why it should be excluded. The argument typically offered is that `array[a:b]` in Python has `b - a` elements,
 rather than `b - a + 1` as would be the case if the end index were included, and this is prettier and thus better.
-Also, `array[a:b] + array[b:c] == array[a:c]`; in MATLAB one would have to write `array(a:b-1)`
-and `array(b:c)` to split `array[a:c]` (again an argument of aesthetics). The only technical argument is that, by
-excluding the upper bound, it is possible to index zero elements, `array[1:1]`; however, in MATLAB this is also
-possible, `array(1:0)`.
+Also, `array[a:b] + array[b:c] == array[a:c]`, whereas in MATLAB one would have to write `array(a:b-1)`
+and `array(b:c)` to split `array[a:c]`; this is again an argument of aesthetics. The only technical argument is that,
+by excluding the upper bound, it is possible to index zero elements, `array[1:1]`; however, in MATLAB this is also
+possible, `array(1:0)`, so this argument is again not meaningful.
 
 Nonetheless, MATLAB’s end index being included is paired with indexing starting at 1, such that the range `1:n` has
-`n` elements, just like Python’s `range(0, n)`. Somehow it is pretty to have the end index of the range indicate how
-many elements the range has, if one starts counting at the first legal index.
+`n` elements, just like Python’s `range(0, n)`. There are very few examples where indexing starts at 0 but includes
+the end index.
 
 In *DIPlib* indexing starts at 0, so the logical solution would be for `dip::Range( a, b )` to exclude `b`, following
 Python’s logic, which also starts indexing at 0. But this leads to certain difficulties when using negative indices
@@ -375,8 +375,14 @@ So if the end index is not included in the array, then there is no way to expres
 The same is true for reverse ranges that end in the first array element. There is no number before 0 that can be
 used to indicate "one element before the first one", since -1 means the last element of the array.
 
-This particular issue, together with the desire to have intuitive ranges, lead to the decision to include the end
-index in the range, at the risk of doing things differently.
+This particular issue lead to the decision to include the end index in the range, at the risk of doing things
+differently. There are two positive side-effects to this decision:
+
+- Ranges that include the end index are more intuitive, as mentioned above.
+
+- It is not possible to create an empty range. `dip::Range( 4, 4 )` is one element, and `dip::Range( 4, 3 )` is two
+  elements, in reverse. By not allowing empty ranges, we can be sure that indexing an image using a range will produce
+  a valid view.
 
 In C++ it is common to write loops as `for( ii = 0; ii < n; ++ii )`, and the end iterator always points to one past
 the end of the range. But the `dip::Range` start and stop values are not meant to be used directly in loops,
