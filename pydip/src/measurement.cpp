@@ -21,7 +21,11 @@
 #include "diplib/measurement.h"
 #include "diplib/chain_code.h"
 
-dip::MeasurementTool measurementTool;
+dip::MeasurementTool &measurementTool()
+{
+    static dip::MeasurementTool tool;
+    return tool;
+}
 
 namespace {
 
@@ -236,10 +240,10 @@ void init_measurement( py::module& m ) {
 
    // dip::MeasurementTool
    mm.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::UnsignedArray const& objectIDs, dip::uint connectivity ) {
-              return measurementTool.Measure( label, grey, features, objectIDs, connectivity );
+              return measurementTool().Measure( label, grey, features, objectIDs, connectivity );
            }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Size" }, "objectIDs"_a = dip::StringArray{}, "connectivity"_a = 0 );
    mm.def( "Features", []() {
-              auto features = measurementTool.Features();
+              auto features = measurementTool().Features();
               std::vector< std::tuple< dip::String, dip::String >> out;
               for( auto const& f : features ) {
                  dip::String description = f.description;
