@@ -117,7 +117,7 @@ to properly set the `LD_LIBRARY_PATH` environment variable.
 
 <del>First of all, note that you need a special license of *DIPimage* and
 *DIPlib* to be able to distribute a program that uses this toolbox and
-associated libraries. Please read [our web page](https://diplib.org/)
+associated libraries. Please read [our web page](https://diplib.org)
 for information on how to obtain such a license.</del>
 
 The CTF file created by `mcc` needs either the exact same version of

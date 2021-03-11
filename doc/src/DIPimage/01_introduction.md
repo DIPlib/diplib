@@ -56,8 +56,8 @@ functions will list the *DIPlib* function that is called.
 \ref index "The on-line *DIPlib* reference" for the function can then be read
 to learn more details about the algorithm and the meaning of the parameters.
 
-More information on *DIPlib* can be found at
-<https://diplib.org/diplib-docs/> and <https://diplib.org/>.
+More information on *DIPlib* can be found at [diplib.org](https://diplib.org)
+and [its documentation](index.html).
 
 \section sec_dum_introduction_image_analysis Image Analysis
 

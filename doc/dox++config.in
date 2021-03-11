@@ -23,8 +23,10 @@ formatting = compact
 [project]
 name = DIPlib
 brief = a library for quantitative image analysis
+version = version @PROJECT_VERSION@
 url = https://diplib.org
-logo = 
+download = https://github.com/DIPlib/diplib/releases/tag/@PROJECT_VERSION@
+logo = @CMAKE_CURRENT_LIST_DIR@/DIP_logo.svg
 
 [html]
 output directory = @CMAKE_INSTALL_PREFIX@/@DOCUMENTATION_OUTPUT@/html
@@ -33,7 +35,7 @@ document private non-virtual members = yes
 document protected members = yes
 document undocumented members = no
 modify include statement = def modify_include_statement(id): return 'file--diplib-h' if id.startswith('file--diplib--library--') else id
-theme color = #22272e
+theme color = #ffffff
 favicon = @CMAKE_CURRENT_LIST_DIR@/DIP_logo_32.png
 stylesheets = @CMAKE_CURRENT_LIST_DIR@/css/m-dip+documentation.compiled.css
 fine print = [default]

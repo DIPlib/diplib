@@ -1968,7 +1968,6 @@ body > header > nav a {
   text-decoration: none;
   text-transform: lowercase;
   display: inline-block;
-  vertical-align: middle;
   line-height: 2.75rem;
   color: #000000;
 }
@@ -1998,7 +1997,7 @@ body > header > nav #m-navbar-brand .m-breadcrumb {
   color: #888888;
 }
 body > header > nav a#m-navbar-show:before, body > header > nav a#m-navbar-hide:before {
-  content:'\2630';
+  content: '\2630';
 }
 body > header > nav #m-navbar-collapse {
   padding-bottom: 1rem;
@@ -2071,7 +2070,7 @@ body > header > nav:target #m-navbar-hide {
     display: none;
   }
   body > header > nav #m-navbar-collapse li a {
-    line-height: 2.75rem;
+    line-height: 2.5rem;
   }
   body > header > nav a, body > header > nav #m-navbar-collapse li a {
     margin-left: 0;
