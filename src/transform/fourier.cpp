@@ -885,11 +885,11 @@ void FourierTransform(
 }
 
 
-dip::uint OptimalFourierTransformSize( dip::uint size ) {
+dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which ) {
    // OpenCV's optimal size can be factorized into small primes: 2, 3, and 5.
    // FFTW performs best with sizes that can be factorized into 2, 3, 5, and 7.
    // For FFTW, we'll stick with the OpenCV implementation.
-   size = GetOptimalDFTSize( size );
+   DIP_STACK_TRACE_THIS( size = GetOptimalDFTSize( size, BooleanFromString( which, "larger", "smaller" )));
    DIP_THROW_IF( size == 0, E::SIZE_EXCEEDS_LIMIT );
    return size;
 }
@@ -901,6 +901,21 @@ dip::uint OptimalFourierTransformSize( dip::uint size ) {
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/random.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the OptimalFourierTransformSize function") {
+   DOCTEST_CHECK_THROWS( dip::OptimalFourierTransformSize( 0 ));
+   DOCTEST_CHECK_THROWS( dip::OptimalFourierTransformSize( 2125764001 ));
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 1 ) == 1 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2 ) == 2 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2125764000 ) == 2125764000 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 1, "smaller" ) == 1 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2, "smaller" ) == 2 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 2125764000, "smaller" ) == 2125764000 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 500 ) == 500 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 490 ) == 500 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 500, "smaller" ) == 500 );
+   DOCTEST_CHECK( dip::OptimalFourierTransformSize( 510, "smaller" ) == 500 );
+}
 
 #ifndef M_PIl
 #define M_PIl 3.1415926535897932384626433832795029L

@@ -107,9 +107,18 @@ inline Image FourierTransform(
    return out;
 }
 
-/// \brief Returns the next higher multiple of {2, 3, 5}. The largest value that can be returned is 2125764000
+/// \brief Returns the next larger (or smaller) multiple of {2, 3, 5}, an image of this size is more
+/// efficient for FFT computations.
+///
+/// The largest value that can be returned is 2125764000
 /// (smaller than 2^31^-1, the largest possible value of an `int` on most platforms).
-DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
+///
+/// By default, `which` is `"larger"`, in which case it returns the next larger value. Set it
+/// to `"smaller"` to obtain the next smaller value instead.
+///
+/// Pad an image with zeros to the next larger size or crop the image to the next smaller size to
+/// improve FFT performance.
+DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which = "larger" );
 
 
 /// \brief Computes the Riesz transform of a scalar image.

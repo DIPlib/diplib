@@ -69,13 +69,13 @@ class DFT {
 
       /// \brief Construct a `DFT` object by specifying the size and direction of the transform.
       /// Note that this is not a trivial operation.
-      DFT( size_t size, bool inverse ) {
+      DFT( std::size_t size, bool inverse ) {
          Initialize( size, inverse );
       }
 
       /// \brief Re-configure a `DFT` object to the given transform size and direction.
       /// Note that this is not a trivial operation.
-      DIP_EXPORT void Initialize( size_t size, bool inverse );
+      DIP_EXPORT void Initialize( std::size_t size, bool inverse );
 
       /// \brief Apply the transform that the `DFT` object is configured for.
       ///
@@ -99,10 +99,10 @@ class DFT {
       bool IsInverse() const { return inverse_; }
 
       /// \brief Returns the size that the transform is configured for.
-      size_t TransformSize() const { return static_cast< size_t >( nfft_ ); }
+      std::size_t TransformSize() const { return static_cast< std::size_t >( nfft_ ); }
 
       /// \brief Returns the size of the buffer expected by `Apply`.
-      size_t BufferSize() const { return static_cast< size_t >( sz_ ); }
+      std::size_t BufferSize() const { return static_cast< std::size_t >( sz_ ); }
 
    private:
       int nfft_ = 0;
@@ -115,14 +115,16 @@ class DFT {
 
 /// \brief Returns a size equal or larger to `size0` that is efficient for our DFT implementation.
 ///
+/// Set `larger` to false to return a size equal or smaller instead.
+///
 /// Returns 0 if `size0` is too large for our DFT implementation.
 ///
 /// Prefer to use \ref dip::OptimalFourierTransformSize in your applications, it will throw an error if
 /// the transform size is too large.
-DIP_EXPORT size_t GetOptimalDFTSize( size_t size0 );
+DIP_EXPORT std::size_t GetOptimalDFTSize( std::size_t size0, bool larger = true );
 
 /// \brief The largest size supported by the DFT (both the internal code and FFTW use `int` for sizes).
-constexpr size_t maximumDFTSize = static_cast< size_t >( std::numeric_limits< int >::max() );
+constexpr std::size_t maximumDFTSize = static_cast< std::size_t >( std::numeric_limits< int >::max() );
 
 
 /// \endgroup

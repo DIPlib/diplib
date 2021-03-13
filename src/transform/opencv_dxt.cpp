@@ -837,20 +837,52 @@ constexpr unsigned int optimalDFTSizeTab[] = {
       2097152000, 2099520000, 2109375000, 2123366400, 2125764000
 };
 
+/*
+The table above can be reproduced with the following MATLAB code:
+
+list = int64([]);
+maxint = 2^31 - 1;
+max5 = floor(log(maxint)/log(5));
+for n5 = 0:max5
+   v5 = 5^n5;
+   max3 = floor(log(maxint/v5)/log(3));
+   for n3 = 0:max3
+      v3 = v5 * 3^n3;
+      max2 = floor(log(maxint/v3)/log(2));
+      for n2 = 0:max2
+         v2 = v3 * 2^n2;
+         list(end+1) = round(v2);
+      end
+   end
+end
+list = sort(list);
+*/
+
 } // namespace
 
-std::size_t GetOptimalDFTSize( std::size_t size0 ) {
+std::size_t GetOptimalDFTSize( std::size_t size0, bool larger ) {
    std::size_t a = 0;
    std::size_t b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
-   if( size0 > optimalDFTSizeTab[ b ] ) {
+   if(( size0 > optimalDFTSizeTab[ b ] ) || ( size0 == 0 )) {
       return 0; // 0 indicates an error condition -- of course we don't do DFT on an empty array!
    }
-   while( a < b ) {
-      std::size_t c = ( a + b ) >> 1u;
-      if( size0 <= optimalDFTSizeTab[ c ] ) {
-         b = c;
-      } else {
-         a = c + 1;
+   if( larger ) {
+      while( a < b ) {
+         std::size_t c = ( a + b ) / 2;
+         if( size0 <= optimalDFTSizeTab[ c ] ) {
+            b = c;
+         } else {
+            a = c + 1;
+         }
+      }
+   } else {
+      while( a < b ) {
+         std::size_t c = ( a + b + 1 ) / 2;
+         if( size0 >= optimalDFTSizeTab[ c ] ) {
+            a = c;
+         } else {
+            b = c - 1;
+         }
       }
    }
    return optimalDFTSizeTab[ b ];

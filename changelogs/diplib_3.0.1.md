@@ -20,6 +20,9 @@ title: "Changes DIPlib 3.0.1"
 
 - Added `dip::SplitRegions()`.
 
+- `dip::OptimalFourierTransformSize` has a new option to return a smaller or equal size, rather than
+  a larger or equal size, so we can crop an image for efficient FFT instead of padding.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together
