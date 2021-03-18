@@ -243,6 +243,29 @@ inline Image GrowRegionsWeighted(
    return out;
 }
 
+/// \brief Ensures a gap between regions with unequal labels.
+///
+/// In the output image, no two regions will be connected according to `connectivity`. `out` is of the same
+/// type as `label`, which must be an unsigned integer type.
+///
+/// This function works by finding pixels that have a neighbor with a different label, and setting these pixels to
+/// zero (the background label). Regions will shrink where they touch other regions, and they always shrink on the
+/// right and bottom side (assuming normal strides). That is, pixels at these boundary that are removed are the ones
+/// with a higher linear index (see \ref pointers) after normalizing strides (see \ref normal_strides).
+DIP_EXPORT void SplitRegions(
+      Image const& label,
+      Image& out,
+      dip::uint connectivity = 0
+);
+inline Image SplitRegions(
+      Image const& label,
+      dip::uint connectivity = 0
+) {
+   Image out;
+   SplitRegions( label, out, connectivity );
+   return out;
+}
+
 
 /// \brief Construct a graph for the given labeled image.
 ///

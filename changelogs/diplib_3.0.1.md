@@ -18,6 +18,8 @@ title: "Changes DIPlib 3.0.1"
 - Added `dip::Measurement::SetObjectIDs()`, improved speed of `dip::Measurement::AddObjectIDs()` and
   `dip::Measurement::operator+()`.
 
+- Added `dip::SplitRegions()`.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together

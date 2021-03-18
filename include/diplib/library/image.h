@@ -2351,7 +2351,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see dip::Image::HasNormalStrides, dip::Image::ForceContiguousData
+      /// \see dip::Image::HasNormalStrides, dip::Image::ForceContiguousData, dip::Image::StandardizeStrides
       void ForceNormalStrides() {
          if( !HasNormalStrides() ) {
             CopyDataToNewDataSegment();

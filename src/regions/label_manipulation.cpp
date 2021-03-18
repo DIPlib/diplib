@@ -26,6 +26,7 @@
 #include "diplib/measurement.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
+#include "diplib/iterators.h"
 
 namespace dip {
 
@@ -196,6 +197,115 @@ void SmallObjectsRemove(
    } else {
       DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
+}
+
+namespace {
+
+template< typename TPI >
+void ZeroPixelIfHasDifferentNeighbor_WithBoundaryCheck(
+      TPI* ptr,
+      NeighborList const& neighbors,
+      IntegerArray const& offsets,
+      UnsignedArray const& coords,
+      UnsignedArray const& sizes
+) {
+   if( *ptr ) {
+      // Examine all neighbors to see if any has a different label
+      auto nit = neighbors.begin();
+      for( auto o : offsets ) {
+         if( nit.IsInImage( coords, sizes )) {
+            TPI n = ptr[ o ];
+            if( n > *ptr ) {
+               *ptr = 0;
+               break;
+            }
+         }
+         ++nit;
+      }
+   }
+}
+
+template< typename TPI >
+void ZeroPixelIfHasDifferentNeighbor(
+      TPI* ptr,
+      IntegerArray const& offsets
+) {
+   if( *ptr ) {
+      // Examine all neighbors to see if any has a different label
+      for( auto o : offsets ) {
+         TPI n = ptr[ o ];
+         if( n > *ptr ) {
+            *ptr = 0;
+            break;
+         }
+      }
+   }
+}
+
+template< typename TPI >
+void SplitRegions(
+   Image& img,
+   NeighborList const& neighbors,
+   IntegerArray const& offsets
+) {
+   dip::uint procDim = Framework::OptimalProcessingDim( img );
+   // Iterate over image lines
+   ImageIterator< TPI > it( img, procDim );
+   do {
+      auto coords = it.Coordinates();
+      auto lit = it.GetLineIterator();
+      if( it.IsOnEdge()) {
+         // We test all the pixels along the line
+         do {
+            ZeroPixelIfHasDifferentNeighbor_WithBoundaryCheck( lit.Pointer(), neighbors, offsets, coords, img.Sizes() );
+            ++coords[ procDim ];
+         } while( ++lit );
+      } else {
+         // We test the first pixel along the line
+         ZeroPixelIfHasDifferentNeighbor_WithBoundaryCheck( lit.Pointer(), neighbors, offsets, coords, img.Sizes() );
+         ++lit;
+         // The bulk of the pixels we don't need to worry about testing
+         for( dip::uint ii = 1; ii < lit.Length() - 1; ++ii, ++lit ) {
+            ZeroPixelIfHasDifferentNeighbor( lit.Pointer(), offsets );
+         }
+         // The last pixel we test again
+         coords[ procDim ] = lit.Coordinate();
+         ZeroPixelIfHasDifferentNeighbor_WithBoundaryCheck( lit.Pointer(), neighbors, offsets, coords, img.Sizes() );
+      }
+   } while( ++it );
+}
+
+} // namespace
+
+void SplitRegions(
+      Image const& label,
+      Image& out,
+      dip::uint connectivity
+) {
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+
+   // We work in-place in the output image. Copy input data there.
+   if( &out != &label ) {
+      out.Copy( label );
+      DIP_THROW_IF( !out.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+   }
+
+   // Create a copy with optimally sorted strides and no singleton dimensions
+   Image img = out.QuickCopy();
+   img.StandardizeStrides();
+   dip::uint nDims = img.Dimensionality();
+   NeighborList neighbors(Metric( Metric::TypeCode::CONNECTED, connectivity ), nDims);
+   std::cout << "Neighbors:\n";
+   for( auto it = neighbors.begin(); it != neighbors.end(); ++it ) {
+      std::cout << it.Coordinates() << '\n';
+   }
+   IntegerArray offsets = neighbors.ComputeOffsets( img.Strides() );
+
+   // Process
+   DIP_OVL_CALL_UINT( SplitRegions, ( img, neighbors, offsets ), img.DataType() );
+
 }
 
 } // namespace dip
