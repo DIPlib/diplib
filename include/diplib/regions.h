@@ -246,12 +246,14 @@ inline Image GrowRegionsWeighted(
 /// \brief Ensures a gap between regions with unequal labels.
 ///
 /// In the output image, no two regions will be connected according to `connectivity`. `out` is of the same
-/// type as `label`, which must be an unsigned integer type.
+/// type as `label`, which must be an unsigned integer type, and scalar.
 ///
-/// This function works by finding pixels that have a neighbor with a different label, and setting these pixels to
-/// zero (the background label). Regions will shrink where they touch other regions, and they always shrink on the
-/// right and bottom side (assuming normal strides). That is, pixels at these boundary that are removed are the ones
-/// with a higher linear index (see \ref pointers) after normalizing strides (see \ref normal_strides).
+/// To create a one-pixel gap between regions, regions must shrink, and they must shrink unequally. If all regions
+/// were to shrink equally, we would create a two-pixel gap. This function chooses to be biased towards larger-valued
+/// labels: where two objects touch, the lower-valued region shrinks.
+///
+/// This function works by finding pixels that have a neighbor with a larger value, and setting these pixels to
+/// zero (the background label).
 DIP_EXPORT void SplitRegions(
       Image const& label,
       Image& out,

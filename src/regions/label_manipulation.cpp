@@ -199,6 +199,7 @@ void SmallObjectsRemove(
    }
 }
 
+
 namespace {
 
 template< typename TPI >
@@ -297,10 +298,6 @@ void SplitRegions(
    img.StandardizeStrides();
    dip::uint nDims = img.Dimensionality();
    NeighborList neighbors(Metric( Metric::TypeCode::CONNECTED, connectivity ), nDims);
-   std::cout << "Neighbors:\n";
-   for( auto it = neighbors.begin(); it != neighbors.end(); ++it ) {
-      std::cout << it.Coordinates() << '\n';
-   }
    IntegerArray offsets = neighbors.ComputeOffsets( img.Strides() );
 
    // Process
