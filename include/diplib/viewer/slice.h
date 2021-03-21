@@ -122,7 +122,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     /// ```cpp
     /// manager.createWindow( dip::viewer::SliceViewer::Create( image ));
     /// ```
-    static Ptr Create(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0)
+    static Ptr Create(const dip::Image &image, std::string name="SliceViewer", dip::uint width=0, dip::uint height=0)
     {
       return Ptr(new SliceViewer(image, name, width, height));
     }
@@ -135,13 +135,13 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
         thread_.join();
       }
       
-      for (size_t ii=0; ii < viewports_.size(); ++ii)
+      for (dip::uint ii=0; ii < viewports_.size(); ++ii)
         delete viewports_[ii];
     }
     
     std::shared_ptr<SliceViewer> clone()
     {
-      Ptr sv = Create(original_, name_, (size_t)width(), (size_t)height());
+      Ptr sv = Create(original_, name_, (dip::uint)width(), (dip::uint)height());
       
       Guard this_guard(*this);
       Guard other_guard(*sv);
@@ -163,7 +163,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
     /// \brief Link this viewer to another, compatible one.
     DIPVIEWER_EXPORT void link(SliceViewer &other);
   protected:
-    DIPVIEWER_EXPORT explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
+    DIPVIEWER_EXPORT explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", dip::uint width=0, dip::uint height=0);
 
     DIPVIEWER_EXPORT void create() override;
     DIPVIEWER_EXPORT void reshape(int width, int height) override;

@@ -63,7 +63,7 @@ class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
     DIPVIEWER_EXPORT ~GLFWManager() override;
   
     DIPVIEWER_EXPORT void createWindow(WindowPtr window) override;
-    size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
+    dip::uint activeWindows() override { Guard guard(mutex_); return windows_.size(); }
     DIPVIEWER_EXPORT void destroyWindows() override;
     DIPVIEWER_EXPORT void processEvents() override;
     

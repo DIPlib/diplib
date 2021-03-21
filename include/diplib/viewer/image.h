@@ -103,7 +103,7 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     /// ```cpp
     /// manager.createWindow( dip::viewer::ImageViewer::Create( image ));
     /// ```
-    static Ptr Create(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0)
+    static Ptr Create(const dip::Image &image, std::string name="ImageViewer", dip::uint width=0, dip::uint height=0)
     {
       return Ptr(new ImageViewer(image, name, width, height));
     }
@@ -120,7 +120,8 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
     void setImage(const dip::Image &image) override { viewport_->view()->set(image); refresh(); }
 
   protected:
-    explicit ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
+    explicit ImageViewer(const dip::Image &image, std::string name="ImageViewer", dip::uint width=0, dip::uint height=0)
+      : Viewer(name), options_(image)
     {
       DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );
       DIP_THROW_IF( image.DataType() != DT_UINT8, E::DATA_TYPE_NOT_SUPPORTED );
@@ -140,11 +141,11 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
       }
       if (!width)
       {
-        width = (size_t)((double)height * (double)image.Size(0)/(double)image.Size(1));
+        width = (dip::uint)((double)height * (double)image.Size(0)/(double)image.Size(1));
       }
       else if (!height)
       {
-        height = (size_t)((double)width * (double)image.Size(1)/(double)image.Size(0));
+        height = (dip::uint)((double)width * (double)image.Size(1)/(double)image.Size(0));
       }
 
       requestSize(width, height);

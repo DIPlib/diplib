@@ -387,7 +387,7 @@ class DIP_NO_EXPORT CovarianceAccumulator {
          if( n_ == 0 ) {
             *this = other; // copy over the data
          } else if( other.n_ > 0 ) {
-            size_t intN = n_ + other.n_;
+            dip::uint intN = n_ + other.n_;
             dfloat N = static_cast< dfloat >( intN );
             dfloat dx = other.meanx_ - meanx_;
             dfloat dy = other.meany_ - meany_;
@@ -403,7 +403,7 @@ class DIP_NO_EXPORT CovarianceAccumulator {
       }
 
       /// Number of samples
-      size_t Number() const {
+      dip::uint Number() const {
          return n_;
       }
       /// Unbiased estimator of population mean for first variable

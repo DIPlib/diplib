@@ -39,12 +39,12 @@ void HistogramViewPort::render()
   dip::Image values { dip::UnsignedArray{ 3, (dip::uint)height }, viewer()->image().TensorElements(), dip::DT_DFLOAT };
   values = 0.;
   dip::dfloat* it = static_cast< dip::dfloat* >( values.Origin() );
-  for (size_t ii=0; ii < size_t(height); ++ii)
+  for (dip::uint ii=0; ii < dip::uint(height); ++ii)
   {
     double val = o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height;
     
-    for (size_t jj=0; jj < 3; ++jj)
-      for (size_t kk=0; kk < viewer()->image().TensorElements(); ++kk, ++it)
+    for (dip::uint jj=0; jj < 3; ++jj)
+      for (dip::uint kk=0; kk < viewer()->image().TensorElements(); ++kk, ++it)
         *it = val;
   }
   
@@ -54,7 +54,7 @@ void HistogramViewPort::render()
     // Make sure channels do not bleed into each other
     dip::Image cbsingle = cb;
     cb = 0;
-    for (size_t jj=0; jj < 3; ++jj)
+    for (dip::uint jj=0; jj < 3; ++jj)
     {
       auto osingle = o;
       osingle.color_elements_[(jj+1)%3] = -1;
@@ -107,7 +107,7 @@ void HistogramViewPort::render()
       glEnable(GL_BLEND);
       glBlendFunc(GL_ONE, GL_ONE);
     
-      for (size_t ii=0; ii < 3; ++ii)
+      for (dip::uint ii=0; ii < 3; ++ii)
         if (o.color_elements_[ii] != -1)
         {
           // Histogram
@@ -121,7 +121,7 @@ void HistogramViewPort::render()
           glBegin(GL_TRIANGLE_STRIP);
           
           ImageIterator<dip::uint32> it(histogram_[o.color_elements_[ii]]);
-          for (size_t jj=0; jj < histogram_.Size(0); ++jj, ++it)
+          for (dip::uint jj=0; jj < histogram_.Size(0); ++jj, ++it)
           {
             glVertex2f(0., (GLfloat)jj/(GLfloat)histogram_.Size(0));
             glVertex2f((GLfloat)*it/maxhist, (GLfloat)jj/(GLfloat)histogram_.Size(0));
@@ -143,7 +143,7 @@ void HistogramViewPort::render()
       glBegin(GL_TRIANGLE_STRIP);
       
       ImageIterator<dip::uint32> it(histogram_[(dip::sint)o.element_]);
-      for (size_t ii=0; ii < histogram_.Size(0); ++ii, ++it)
+      for (dip::uint ii=0; ii < histogram_.Size(0); ++ii, ++it)
       {
         glVertex2f(0., (GLfloat)ii/(GLfloat)histogram_.Size(0));
         glVertex2f((GLfloat)*it/maxhist, (GLfloat)ii/(GLfloat)histogram_.Size(0));

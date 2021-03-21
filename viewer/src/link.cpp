@@ -83,7 +83,7 @@ void LinkViewPort::click(int button, int state, int /*x*/, int /*y*/, int /*mods
       else if (link_source_)
       {
         // Check compatibility
-        for (size_t ii=0; ii < std::min(viewer()->image().Dimensionality(), link_source_->viewer()->image().Dimensionality()); ++ii)
+        for (dip::uint ii=0; ii < std::min(viewer()->image().Dimensionality(), link_source_->viewer()->image().Dimensionality()); ++ii)
           if (viewer()->image().Size(ii) != link_source_->viewer()->image().Size(ii))
           {
             viewer()->options().status_ = "Link source image size mismatch on dimension";
@@ -130,7 +130,7 @@ void LinkViewPort::update(const ViewingOptions &options)
 {
   auto old_options = viewer()->options();
 
-  for (size_t ii=0; ii<std::min(viewer()->options().operating_point_.size(), options.operating_point_.size()); ++ii)
+  for (dip::uint ii=0; ii<std::min(viewer()->options().operating_point_.size(), options.operating_point_.size()); ++ii)
   {
     viewer()->options().operating_point_[ii] = options.operating_point_[ii];
     viewer()->options().zoom_[ii] = options.zoom_[ii];

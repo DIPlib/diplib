@@ -117,7 +117,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_diplib_Image_PixelSize( JNIEnv *env, job
    
    PixelSize ps = image->PixelSize();
    PhysicalQuantityArray arr( image->Dimensionality() );
-   for (size_t ii=0; ii != arr.size(); ++ii) {
+   for (dip::uint ii=0; ii != arr.size(); ++ii) {
       arr[ ii ] = ps[ ii ];
    }
    

@@ -31,7 +31,7 @@ void ControlViewPort::render()
   glMatrixMode(GL_MODELVIEW);
   
   glColor3f(1., 1., 1.);
-  for (size_t ii=0; ii < lists_.size(); ++ii)
+  for (dip::uint ii=0; ii < lists_.size(); ++ii)
   {
     int selected = -1;
     switch (ii)
@@ -51,7 +51,7 @@ void ControlViewPort::render()
     }
     
     auto list = lists_[ii];
-    for (size_t jj=0; jj < list.size(); ++jj)
+    for (dip::uint jj=0; jj < list.size(); ++jj)
     {
       // Don't allow selecting colorspace lut when image is not in color
       GLfloat intensity = 1.0;

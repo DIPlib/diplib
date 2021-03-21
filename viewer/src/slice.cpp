@@ -48,7 +48,7 @@ void SliceView::project()
     // Extraction
     RangeArray range(image.Dimensionality());
     
-    for (size_t ii=0; ii < range.size(); ++ii)
+    for (dip::uint ii=0; ii < range.size(); ++ii)
       if ((int)ii != dx && (int)ii != dy)
         range[ii] = Range((dip::sint)o.operating_point_[ii]);
         
@@ -128,7 +128,7 @@ void SliceView::map()
     {
       if (o.lut_ == ViewingOptions::LookupTable::RGB)
       {
-        for (size_t kk=0; kk < 3; ++kk)
+        for (dip::uint kk=0; kk < 3; ++kk)
           if (o.color_elements_[kk] != -1)
           {
             dip::uint8 color = (dip::uint8)rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
@@ -142,7 +142,7 @@ void SliceView::map()
         dip::uint8 color = (dip::uint8)rangeMap(it[o.element_], o);
         dip::uint height = 99-color*100U/256;
         for (dip::uint jj=height; jj < 100; ++jj)
-          for (size_t kk=0; kk < 3; ++kk)
+          for (dip::uint kk=0; kk < 3; ++kk)
             col[jj*ystride+kk] = 255;
       }
     }
@@ -572,7 +572,8 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy] + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width, size_t height) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), drag_viewport_(NULL), refresh_seq_(0)
+SliceViewer::SliceViewer(const dip::Image &image, std::string name, dip::uint width, dip::uint height)
+  : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), drag_viewport_(NULL), refresh_seq_(0)
 {
   if (width && height)
     requestSize(width, height);
@@ -649,12 +650,12 @@ void SliceViewer::draw()
   
   if (updated_)
   {
-    for (size_t ii=0; ii < viewports_.size(); ++ii)
+    for (dip::uint ii=0; ii < viewports_.size(); ++ii)
       viewports_[ii]->rebuild();
     updated_ = false;
   }
   
-  for (size_t ii=0; ii < viewports_.size(); ++ii)
+  for (dip::uint ii=0; ii < viewports_.size(); ++ii)
     viewports_[ii]->render();
   swap();
 }
@@ -723,7 +724,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       // ^1: 1:1 zoom
       zoom = image_.AspectRatio();
       
-      for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+      for (dip::uint ii=0; ii < image_.Dimensionality(); ++ii)
       {
         options_.origin_[ii] = 0;
         if (zoom[ii] == 0)
@@ -738,13 +739,13 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
     if (k == 'F')
     {
       // ^F: fit window
-      for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+      for (dip::uint ii=0; ii < image_.Dimensionality(); ++ii)
       {
         options_.origin_[ii] = 0;
         zoom[ii] = std::numeric_limits<dip::dfloat>::max();
       }
       
-      for (size_t ii=0; ii < 4; ++ii)
+      for (dip::uint ii=0; ii < 4; ++ii)
       {
         int sz;
         switch (ii)
@@ -760,7 +761,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
           zoom[(dip::uint)dims[ii]] = std::min(zoom[(dip::uint)dims[ii]], (dip::dfloat)sz/(dip::dfloat)image_.Size((dip::uint)dims[ii]));
       }
       
-      for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+      for (dip::uint ii=0; ii < image_.Dimensionality(); ++ii)
         if (zoom[ii] == std::numeric_limits<dip::dfloat>::max())
           zoom[ii] = 1.;
           
@@ -838,7 +839,7 @@ void SliceViewer::motion(int x, int y)
 
 ViewPort *SliceViewer::viewport(int x, int y)
 {
-  for (size_t ii=0; ii < viewports_.size(); ++ii)
+  for (dip::uint ii=0; ii < viewports_.size(); ++ii)
   {
     ViewPort *v = viewports_[ii];
   
@@ -907,7 +908,7 @@ void SliceViewer::calculateTextures()
                           -std::numeric_limits<dip::dfloat>::infinity()};
       FloatRangeArray tensor_range(image.TensorElements());
       
-      for (size_t ii=0; ii != image.TensorElements(); ++ii)
+      for (dip::uint ii=0; ii != image.TensorElements(); ++ii)
       {
         dip::MinMaxAccumulator acc = MaximumAndMinimum( image[ii] );
         tensor_range[ii] = {acc.Minimum(), acc.Maximum()};
@@ -936,11 +937,11 @@ void SliceViewer::calculateTextures()
       options_.origin_.resize(image.Dimensionality(), 0.);
       options_.offset_ = dip::PhysicalQuantityArray(image.Dimensionality());
 
-      for (size_t ii=0; ii != 4; ++ii)
+      for (dip::uint ii=0; ii != 4; ++ii)
         if (options_.dims_[ii] >= (dip::sint)image.Dimensionality())
           options_.dims_[ii] = -1;
       
-      for (size_t ii=0; ii != image.Dimensionality(); ++ii)
+      for (dip::uint ii=0; ii != image.Dimensionality(); ++ii)
       {
         if (options_.operating_point_[ii] >= image.Size(ii))
           options_.operating_point_[ii] = image.Size(ii)-1;
@@ -966,7 +967,7 @@ void SliceViewer::calculateTextures()
       if (options_.element_ >= image.TensorElements())
         options_.element_ = 0;
         
-      for (size_t ii=0; ii != 3; ++ii)
+      for (dip::uint ii=0; ii != 3; ++ii)
         if (options_.color_elements_[ii] >= (dip::sint)image.TensorElements())
           options_.color_elements_[ii] = -1;
           

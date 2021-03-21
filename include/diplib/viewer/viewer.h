@@ -142,7 +142,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     
     // Display
     zoom_ = image.AspectRatio();
-    for (size_t ii=0; ii < image.Dimensionality(); ++ii)
+    for (dip::uint ii=0; ii < image.Dimensionality(); ++ii)
     {
       operating_point_[ii] = (dip::uint) image.Size(ii)/2;
       if (zoom_[ii] == 0 || !std::isfinite(zoom_[ii]))
@@ -153,7 +153,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     split_ = {100, 100};
     
     offset_ = dip::PhysicalQuantityArray(image.Dimensionality());
-    for (size_t ii=0; ii < image.Dimensionality(); ++ii)
+    for (dip::uint ii=0; ii < image.Dimensionality(); ++ii)
       offset_[ii] = 0 * image.PixelSize(ii);
   }
   
@@ -200,7 +200,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     // Change of operating point in non-visualized dimension
     if (projection_ == Projection::None)
     {
-      for (size_t ii=0; ii < operating_point_.size(); ++ii)
+      for (dip::uint ii=0; ii < operating_point_.size(); ++ii)
         if ((int)ii != dims_[dimx] && (int)ii != dims_[dimy])
           if (operating_point_[ii] != options.operating_point_[ii])
             return true;
@@ -209,7 +209,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     // Change of ROI in non-visualized dimension
     if (projection_ != Projection::None)
     {
-      for (size_t ii=0; ii < roi_origin_.size(); ++ii)
+      for (dip::uint ii=0; ii < roi_origin_.size(); ++ii)
         if ((int)ii != dims_[dimx] && (int)ii != dims_[dimy])
           if (roi_origin_[ii] != options.roi_origin_[ii] || 
               roi_sizes_[ii] != options.roi_sizes_[ii])
@@ -227,7 +227,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
       FloatRange range = { std::numeric_limits<dip::dfloat>::infinity(),
                           -std::numeric_limits<dip::dfloat>::infinity()};
                           
-      for (size_t ii=0; ii != color_elements_.size(); ++ii)
+      for (dip::uint ii=0; ii != color_elements_.size(); ++ii)
         if (color_elements_[ii] >= 0 && color_elements_[ii] < (dip::sint)tensor_range_.size())
           range = {std::min(range.first, tensor_range_[(dip::uint)color_elements_[ii]].first),
                    std::max(range.second, tensor_range_[(dip::uint)color_elements_[ii]].second)};
@@ -302,7 +302,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   {
     os << "Visualized dimensions: " << opt.dims_[0] << ", "
        << opt.dims_[1] << ", " << opt.dims_[2] << ", " << opt.dims_[3] << "\n";
-    for (size_t ii=0; ii < opt.origin_.size(); ++ii)
+    for (dip::uint ii=0; ii < opt.origin_.size(); ++ii)
     {
       os << "Dimension " << ii << ":\n";
       os << "  Point : " << opt.operating_point_[ii] << "\n";
@@ -501,7 +501,7 @@ std::string to_string(dip::DimensionArray<T> array)
 {
   std::ostringstream oss;
   oss << "[";
-  for (size_t ii=0; ii < array.size(); ++ii)
+  for (dip::uint ii=0; ii < array.size(); ++ii)
   {
     oss << array[ii];
     if (ii < array.size()-1)

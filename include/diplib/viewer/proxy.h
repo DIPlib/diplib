@@ -121,7 +121,7 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
         cb(window.get());
     }
     
-    virtual size_t activeWindows()
+    virtual dip::uint activeWindows()
     {
       std::lock_guard<std::mutex> guard(mutex_);
       return windows_.size();

@@ -73,7 +73,7 @@ class DIPVIEWER_EXPORT Window
     /// \brief Draw a string onto the window.
     ///
     /// Must be called from a callback.
-    size_t drawString(const char *string);
+    dip::uint drawString(const char *string);
     
     /// \brief Returns the window's width.
     int width() { return width_; }
@@ -106,7 +106,7 @@ protected:
     /// \brief Suggests a window's size.
     ///
     /// Note that this function must be called before the \ref create callback is called.
-    void requestSize(size_t width, size_t height)
+    void requestSize(dip::uint width, dip::uint height)
     {
       if (!manager_)
       {
@@ -180,7 +180,7 @@ class DIPVIEWER_EXPORT Manager
     virtual void createWindow(WindowPtr window) = 0;
     
     /// \brief Returns the number of managed windows.
-    virtual size_t activeWindows() = 0;
+    virtual dip::uint activeWindows() = 0;
     
     /// \brief Destroys all windows.
     virtual void destroyWindows() = 0;

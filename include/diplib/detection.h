@@ -416,9 +416,9 @@ inline Image WangBradyCornerDetector(
 /// scaling the input image with the square of the sigma:
 ///
 /// ```cpp
-/// std::vector<double> scales = { 1, 2, 4, 8 };
+/// std::vector< double > scales = { 1, 2, 4, 8 };
 /// dip::Image out = dip::FrangiVesselness( in * ( scales[ 0 ] * scales[ 0 ] ), { scales[ 0 ] } );
-/// for( size_t ii = 1; ii < scales.size(); ++ii ) {
+/// for( std::size_t ii = 1; ii < scales.size(); ++ii ) {
 ///    dip::Supremum( out,  dip::FrangiVesselness( in * ( scales[ ii ] * scales[ ii ] ), { scales[ ii ] } ), out );
 /// }
 /// ```

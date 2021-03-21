@@ -199,7 +199,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
 
    DOCTEST_SUBCASE("sorting II") {
       dip::DimensionArray< int > b{ 0, 2, 4, 1, 3, 5 };
-      dip::DimensionArray< size_t > i = b.sorted_indices();
+      dip::DimensionArray< std::size_t > i = b.sorted_indices();
       DOCTEST_CHECK( b.size() == i.size() );
       DOCTEST_CHECK( i[ 0 ] == 0 );
       DOCTEST_CHECK( i[ 1 ] == 3 );

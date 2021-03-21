@@ -35,7 +35,7 @@ namespace dip { namespace viewer {
 namespace {
 
 std::unique_ptr< ViewerManager > manager_ = nullptr;
-size_t count_ = 0;
+dip::uint count_ = 0;
 
 String getWindowTitle( String const& title ) {
    if( !title.empty()) {

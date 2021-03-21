@@ -241,7 +241,7 @@ inline cv::Size GetOpenMatSizes(
    return matSizes;
 }
 
-inline size_t GetOpenMatStep(
+inline std::size_t GetOpenMatStep(
       dip::IntegerArray const& strides,
       dip::DataType dt,
       dip::uint nTensor
@@ -249,7 +249,7 @@ inline size_t GetOpenMatStep(
    // Get OpenCV sizes and strides
    dip::uint nDims = strides.size();
    DIP_THROW_IF( nDims > 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
-   size_t matStep = nTensor;
+   std::size_t matStep = nTensor;
    if( nDims > 0 ) {
       DIP_THROW_IF( strides[ 0 ] != static_cast< dip::sint >( nTensor ), "Cannot map an image with non-contiguous rows" );
    }
@@ -285,7 +285,7 @@ inline cv::Mat DipToMat( dip::Image const& img ) {
    DIP_STACK_TRACE_THIS( type = detail::GetOpenMatType( img.DataType(), img.TensorElements() ));
    cv::Size matSizes;
    DIP_STACK_TRACE_THIS( matSizes = detail::GetOpenMatSizes( img.Sizes() ));
-   size_t matSteps;
+   std::size_t matSteps;
    DIP_STACK_TRACE_THIS( matSteps = detail::GetOpenMatStep( img.Strides(), img.DataType(), img.TensorElements() ));
    cv::Mat mat( matSizes, type, img.Origin(), matSteps );
    return mat;

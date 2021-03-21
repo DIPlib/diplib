@@ -53,7 +53,7 @@ String GetLibraryPath()
 	             "GetModuleHandleEx failed" );
 
    // Remove last path component (filename)
-   size_t ii; 
+   dip::uint ii;
    for ( ii = strlen(buf); ii > 0 && buf[ ii ] != '\\'; --ii );
    buf[ ii ] = '\0';
 

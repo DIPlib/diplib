@@ -37,8 +37,8 @@ void TensorViewPort::render()
   auto p = image.At<dip::sfloat>(o.operating_point_);
   std::vector<dip::sint> lut = t.LookUpTable();
   
-  for (size_t jj=0; jj < t.Rows(); ++jj)
-    for (size_t ii=0; ii < t.Columns(); ++ii)
+  for (dip::uint jj=0; jj < t.Rows(); ++jj)
+    for (dip::uint ii=0; ii < t.Columns(); ++ii)
     {
       dip::sint idx = lut[jj*t.Columns()+ii];
       if (idx != -1)

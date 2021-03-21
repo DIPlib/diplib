@@ -36,9 +36,9 @@ void Window::swap()
   manager()->swapBuffers(this);
 }
 
-size_t Window::drawString(const char *string)
+dip::uint Window::drawString(const char *string)
 {
-  size_t movex = 0;
+  dip::uint movex = 0;
 
   for (; *string; ++string, movex += 8)
     bitmapCharacter(*string);

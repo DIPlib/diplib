@@ -52,8 +52,8 @@ void StatusViewPort::render()
   
   glColor3f(1., 1., 1.);
   glRasterPos2i(1, 12);
-  
-  size_t rx = 1;
+
+  dip::uint rx = 1;
   
   if (o.status_ != "")
   {
@@ -112,14 +112,14 @@ void StatusViewPort::render()
       }
       else
       {
-        if ((size_t)ii == o.element_)
+        if ((dip::uint)ii == o.element_)
           glColor3f(1., 1., 1.);
         else
           glColor3f(.5, .5, .5);
       }
       
       glRasterPos2i((GLint)rx, 12);
-      auto value = pixel[(size_t)ii];
+      auto value = pixel[(dip::uint)ii];
       if (value.DataType().IsUnsigned()) {
          rx += viewer()->drawString(std::to_string(value.As<dip::uint>()).c_str());
       } else if (value.DataType().IsSInt()) {

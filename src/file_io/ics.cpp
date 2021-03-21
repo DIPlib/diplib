@@ -306,10 +306,10 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    // get layout of image data
    Ics_DataType dt;
    int ndims_;
-   size_t icsSizes[ICS_MAXDIM];
+   std::size_t icsSizes[ICS_MAXDIM];
    CALL_ICS( IcsGetLayout( icsFile, &dt, &ndims_, icsSizes ), "Couldn't read ICS file" );
    dip::uint nDims = static_cast< dip::uint >( ndims_ );
-   size_t significantBits;
+   std::size_t significantBits;
    CALL_ICS( IcsGetSignificantBits( icsFile, &significantBits ), "Couldn't read ICS file" );
    data.fileInformation.significantBits = significantBits;
    // convert ICS data type to DIP data type

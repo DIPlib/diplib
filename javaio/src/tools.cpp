@@ -45,9 +45,9 @@ StringArray StringArrayFromJava( JNIEnv *env, jobjectArray jarr ) {
       return StringArray();
    }
 
-   StringArray arr( (size_t) env->GetArrayLength( jarr ) );
+   StringArray arr( (dip::uint) env->GetArrayLength( jarr ) );
    
-   for ( size_t ii=0; ii != arr.size(); ++ii ) {
+   for ( dip::uint ii=0; ii != arr.size(); ++ii ) {
       arr[ ii ] = StringFromJava( env, (jstring) env->GetObjectArrayElement( jarr, (jsize) ii ) );
    }
    
@@ -58,7 +58,7 @@ jobjectArray StringArrayToJava( JNIEnv *env, StringArray const &arr ) {
    jclass cls = env->FindClass( "java/lang/String" );
    jobjectArray jarr = env->NewObjectArray( (jsize) arr.size(), cls, StringToJava( env, "" ) );
 
-   for ( size_t ii=0; ii != arr.size(); ++ii ) {
+   for ( dip::uint ii=0; ii != arr.size(); ++ii ) {
       env->SetObjectArrayElement( jarr, (jsize) ii, StringToJava( env, arr[ ii ] ) );
    }
    
@@ -70,7 +70,7 @@ IntegerArray IntegerArrayFromJava( JNIEnv *env, jlongArray jarr ) {
       return IntegerArray();
    }
 
-   IntegerArray arr( (size_t) env->GetArrayLength( jarr ) );
+   IntegerArray arr( (dip::uint) env->GetArrayLength( jarr ) );
 
    env->GetLongArrayRegion( jarr, 0, (jsize) arr.size(), (jlong*) arr.data() );
 
@@ -91,7 +91,7 @@ UnsignedArray UnsignedArrayFromJava( JNIEnv *env, jlongArray jarr ) {
       return UnsignedArray();
    }
 
-   UnsignedArray arr( (size_t) env->GetArrayLength( jarr ) );
+   UnsignedArray arr( (dip::uint) env->GetArrayLength( jarr ) );
 
    env->GetLongArrayRegion( jarr, 0, (jsize) arr.size(), (jlong*) arr.data() );
 

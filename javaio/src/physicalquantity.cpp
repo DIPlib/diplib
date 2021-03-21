@@ -59,9 +59,9 @@ PhysicalQuantityArray PhysicalQuantityArrayFromJava( JNIEnv *env, jobjectArray j
       return PhysicalQuantityArray();
    }
    
-   PhysicalQuantityArray arr( (size_t) env->GetArrayLength( jarr ) );
+   PhysicalQuantityArray arr( (dip::uint) env->GetArrayLength( jarr ) );
    
-   for ( size_t ii=0; ii != arr.size(); ++ii ) {
+   for ( dip::uint ii=0; ii != arr.size(); ++ii ) {
       arr[ ii ] = PhysicalQuantityFromJava( env, env->GetObjectArrayElement( jarr, (jsize) ii ) );
    }
 
@@ -72,7 +72,7 @@ jobjectArray PhysicalQuantityArrayToJava( JNIEnv *env, PhysicalQuantityArray con
    jclass cls = env->FindClass( "org/diplib/PhysicalQuantity" );
    jobjectArray jarr = env->NewObjectArray( (jsize) arr.size(), cls, PhysicalQuantityToJava( env, PhysicalQuantity() ) );
 
-   for ( size_t ii=0; ii != arr.size(); ++ii ) {
+   for ( dip::uint ii=0; ii != arr.size(); ++ii ) {
       env->SetObjectArrayElement( jarr, (jsize) ii, PhysicalQuantityToJava( env, arr[ ii ] ) );
    }
    
