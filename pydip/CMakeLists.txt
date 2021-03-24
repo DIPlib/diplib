@@ -90,7 +90,7 @@ file(GENERATE
 file(GENERATE
    OUTPUT "$<TARGET_FILE_DIR:PyDIP_bin>/cmake_pip_install.cmake"
    CONTENT "file(STRINGS $<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt PYDIP_WHEEL_NAME)
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade \${PYDIP_WHEEL_NAME})"
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade --force-reinstall \${PYDIP_WHEEL_NAME})"
 )
 
 add_custom_target(staging
