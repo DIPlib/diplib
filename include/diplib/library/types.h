@@ -625,6 +625,16 @@ struct DIP_NO_EXPORT Range {
    }
 };
 
+/// \brief Display a range as "{start, stop, step}".
+/// \relates dip::Range
+inline std::ostream& operator<<(
+      std::ostream& os,
+      Range const& range
+) {
+   os << '{' << range.start << ", " << range.stop << ", " << range.step << '}';
+   return os;
+}
+
 /// \brief An array of ranges
 /// \relates dip::Range
 using RangeArray = DimensionArray< Range >;
