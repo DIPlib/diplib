@@ -1,0 +1,26 @@
+Here we describe the organization of the repository, which is getting
+increasingly complex and large.
+
+changelogs/     This is where the change logs are stored.
+
+dependencies/   External code needed for building the DIPlib project,
+                but not necessary to compile code that uses DIPlib.
+
+dipimage/       Sources for DIPimage, the MATLAB toolbox.
+
+doc/            Additional DIPlib documentation in the form of Markdown files,
+                and other files needed by the documentation build system.
+
+examples/       Example source code in C++ and Python.
+
+include/        All the C++ public header files.
+
+javaio/         The DIPjavaio module (BioFormats interface) C++ and Java source code.
+
+pydip/          The PyDIP (Python bindings) C++ and Python source code.
+
+src/            The DIPlib C++ source code.
+
+tools/          Assorted scripts needed for building the DIPlib project.
+
+viewer/         The DIPviewer module C++ source code
