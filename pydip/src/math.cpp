@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ void init_math( py::module& m ) {
 
    m.def( "SquareModulus", py::overload_cast< dip::Image const& >( &dip::SquareModulus ), "in"_a );
    m.def( "Phase", py::overload_cast< dip::Image const& >( &dip::Phase ), "in"_a );
+   m.def( "FlushToZero", py::overload_cast< dip::Image const& >( &dip::FlushToZero ), "in"_a );
    m.def( "Round", py::overload_cast< dip::Image const& >( &dip::Round ), "in"_a );
    m.def( "Ceil", py::overload_cast< dip::Image const& >( &dip::Ceil ), "in"_a );
    m.def( "Floor", py::overload_cast< dip::Image const& >( &dip::Floor ), "in"_a );

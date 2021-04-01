@@ -72,7 +72,7 @@
 
 % DIPimage 3.0
 %
-% (c)2017-2020, Cris Luengo.
+% (c)2017-2021, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -2113,6 +2113,13 @@ classdef dip_image
       function im = phase(im)
          %PHASE   Phase angle of complex values, alias to DIP_IMAGE/ANGLE.
          im = dip_operators('mc',im);
+      end
+
+      function im = ftz(im)
+         %FTZ   Flushes denormal sample values to zero.
+         if isfloat(im)
+            im = dip_operators('mq',im);
+         end
       end
 
       function im = round(im)

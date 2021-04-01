@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements all monadic and diadic operators
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -204,6 +204,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
                      dip::dfloat tolerance = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 1e-7;
                      dip::PseudoInverse( lhs, out, tolerance );
                      break; }
+                  case 'q': // ftz
+                     dip::FlushToZero( lhs, out );
+                     break;
                   case 'A': // cos
                      dip::Cos( lhs, out );
                      break;

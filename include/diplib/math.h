@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for image math functions.
  *
- * (c)2014-2020, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,151 +40,146 @@ namespace dip {
 // Arithmetic, trigonometric and similar monadic operators
 //
 
-#define DIP_MONADIC_OPERATOR_FLEX( functionName_ ) \
+#define DIP_MONADIC_OPERATOR( functionName_ ) \
    DIP_EXPORT void functionName_( Image const& in, Image& out ); \
    inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
 
-#define DIP_MONADIC_OPERATOR_FLOAT( functionName_ ) \
-   DIP_EXPORT void functionName_( Image const& in, Image& out ); \
-   inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
-
-#define DIP_MONADIC_OPERATOR_FLOAT_WITH_PARAM( functionName_, paramType_, paramName_ ) \
+#define DIP_MONADIC_OPERATOR_WITH_PARAM( functionName_, paramType_, paramName_ ) \
    DIP_EXPORT void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
    inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
 
-#define DIP_MONADIC_OPERATOR_BIN( functionName_ ) \
-   DIP_EXPORT void functionName_( Image const& in, Image& out ); \
-   inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
-
 /// \addtogroup math_arithmetic
+
+/// \brief Flushes [denormal](https://en.wikipedia.org/wiki/Denormal_number) sample values to zero.
+/// Denormal floating-point values can slow down computation.
+/// Only defined for floating-point types, the output is the same type.
+DIP_MONADIC_OPERATOR( FlushToZero )
 
 /// \brief Computes the nearest integer to each sample (rounds).
 /// Only defined for floating-point types, the output is the same type.
-DIP_MONADIC_OPERATOR_FLOAT( Round )
+DIP_MONADIC_OPERATOR( Round )
 
 /// \brief Computes the smallest integer larger or equal to each sample (rounds up).
 /// Only defined for floating-point types, the output is the same type.
-DIP_MONADIC_OPERATOR_FLOAT( Ceil )
+DIP_MONADIC_OPERATOR( Ceil )
 
 /// \brief Computes the largest integer smaller or equal to each sample (rounds down).
 /// Only defined for floating-point types, the output is the same type.
-DIP_MONADIC_OPERATOR_FLOAT( Floor )
+DIP_MONADIC_OPERATOR( Floor )
 
 /// \brief Computes the truncated value of each sample (rounds towards zero).
 /// Only defined for floating-point types, the output is the same type.
-DIP_MONADIC_OPERATOR_FLOAT( Truncate )
+DIP_MONADIC_OPERATOR( Truncate )
 
 /// \brief Computes the fractional value of each sample (`out = in - dip::Truncate(in)`).
 /// Only defined for floating-point types, the output is the same type.
-DIP_MONADIC_OPERATOR_FLOAT( Fraction )
+DIP_MONADIC_OPERATOR( Fraction )
 
 /// \brief Computes the reciprocal of each sample: `out = in == 0 ? 0 : 1/in`.
-DIP_MONADIC_OPERATOR_FLEX( Reciprocal )
+DIP_MONADIC_OPERATOR( Reciprocal )
 
 /// \brief Computes the square of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Square )
+DIP_MONADIC_OPERATOR( Square )
 
 /// \brief Computes the square root of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Sqrt )
+DIP_MONADIC_OPERATOR( Sqrt )
 
 /// \brief Computes the base e exponent (natural exponential) of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Exp )
+DIP_MONADIC_OPERATOR( Exp )
 
 /// \brief Computes the base 2 exponent of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Exp2 )
+DIP_MONADIC_OPERATOR( Exp2 )
 
 /// \brief Computes the base 10 exponent of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Exp10 )
+DIP_MONADIC_OPERATOR( Exp10 )
 
 /// \brief Computes the natural logarithm (base e logarithm) of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Ln )
+DIP_MONADIC_OPERATOR( Ln )
 
 /// \brief Computes the base 2 logarithm of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Log2 )
+DIP_MONADIC_OPERATOR( Log2 )
 
 /// \brief Computes the base 10 logarithm of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Log10 )
+DIP_MONADIC_OPERATOR( Log10 )
 
 /// \endgroup
 
 /// \addtogroup math_trigonometric
 
 /// \brief Computes the sine of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Sin )
+DIP_MONADIC_OPERATOR( Sin )
 
 /// \brief Computes the cosine of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Cos )
+DIP_MONADIC_OPERATOR( Cos )
 
 /// \brief Computes the tangent of each sample.
-DIP_MONADIC_OPERATOR_FLEX( Tan )
+DIP_MONADIC_OPERATOR( Tan )
 
 /// \brief Computes the arc sine of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Asin )
+DIP_MONADIC_OPERATOR( Asin )
 
 /// \brief Computes the arc cosine of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Acos )
+DIP_MONADIC_OPERATOR( Acos )
 
 /// \brief Computes the arc tangent of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Atan )
+DIP_MONADIC_OPERATOR( Atan )
 
 /// \brief Computes the hyperbolic sine of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Sinh )
+DIP_MONADIC_OPERATOR( Sinh )
 
 /// \brief Computes the hyperbolic cosine of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Cosh )
+DIP_MONADIC_OPERATOR( Cosh )
 
 /// \brief Computes the hyperbolic tangent of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Tanh )
+DIP_MONADIC_OPERATOR( Tanh )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 0.
-DIP_MONADIC_OPERATOR_FLOAT( BesselJ0 )
+DIP_MONADIC_OPERATOR( BesselJ0 )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 1.
-DIP_MONADIC_OPERATOR_FLOAT( BesselJ1 )
+DIP_MONADIC_OPERATOR( BesselJ1 )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order `alpha`.
-DIP_MONADIC_OPERATOR_FLOAT_WITH_PARAM( BesselJN, dip::uint, alpha )
+DIP_MONADIC_OPERATOR_WITH_PARAM( BesselJN, dip::uint, alpha )
 
 /// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 0.
-DIP_MONADIC_OPERATOR_FLOAT( BesselY0 )
+DIP_MONADIC_OPERATOR( BesselY0 )
 
 /// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 1.
-DIP_MONADIC_OPERATOR_FLOAT( BesselY1 )
+DIP_MONADIC_OPERATOR( BesselY1 )
 
 /// \brief Computes the Bessel functions of the second kind of each sample, of order `alpha`.
-DIP_MONADIC_OPERATOR_FLOAT_WITH_PARAM( BesselYN, dip::uint, alpha )
+DIP_MONADIC_OPERATOR_WITH_PARAM( BesselYN, dip::uint, alpha )
 
 /// \brief Computes the natural logarithm of the gamma function of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( LnGamma )
+DIP_MONADIC_OPERATOR( LnGamma )
 
 /// \brief Computes the error function of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Erf )
+DIP_MONADIC_OPERATOR( Erf )
 
 /// \brief Computes the complementary error function of each sample.
-DIP_MONADIC_OPERATOR_FLOAT( Erfc )
+DIP_MONADIC_OPERATOR( Erfc )
 
 /// \brief Computes the sinc function of each sample. $\mathrm{sinc}(x) = \sin(x)/x$.
-DIP_MONADIC_OPERATOR_FLOAT( Sinc )
+DIP_MONADIC_OPERATOR( Sinc )
 
 /// \endgroup
 
 /// \addtogroup math_comparison
 
 /// \brief True for each pixel that is NaN.
-DIP_MONADIC_OPERATOR_BIN( IsNotANumber )
+DIP_MONADIC_OPERATOR( IsNotANumber )
 
 /// \brief True for each pixel that is positive or negative infinity.
-DIP_MONADIC_OPERATOR_BIN( IsInfinite )
+DIP_MONADIC_OPERATOR( IsInfinite )
 
 /// \brief True for each pixel that is not NaN nor infinity.
-DIP_MONADIC_OPERATOR_BIN( IsFinite )
+DIP_MONADIC_OPERATOR( IsFinite )
 
 /// \endgroup
 
-#undef DIP_MONADIC_OPERATOR_FLEX
-#undef DIP_MONADIC_OPERATOR_FLOAT
-#undef DIP_MONADIC_OPERATOR_FLOAT_WITH_PARAM
-#undef DIP_MONADIC_OPERATOR_BIN
+#undef DIP_MONADIC_OPERATOR
+#undef DIP_MONADIC_OPERATOR_WITH_PARAM
 
 
 

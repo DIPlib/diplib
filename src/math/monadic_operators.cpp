@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains implements arithmetic, trigonometric and similar monadic operators.
  *
- * (c)2017-2020, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,12 @@ namespace {
 namespace dipm {
 
 template< typename T >
+T FlushToZero( T v ) { return !std::isnormal( v ) && std::isfinite( v ) ? T( 0 ) : v; }
+
+template< typename T >
+std::complex< T > FlushToZero( std::complex< T > v ) { return { FlushToZero( v.real()), FlushToZero( v.imag()) }; }
+
+template< typename T >
 T Fraction( T v ) { return v - std::trunc( v ); }
 
 template< typename T >
@@ -40,15 +46,18 @@ T Reciprocal( T v ) { return v == T( 0 ) ? T( 0 ) : T( 1 ) / v; }
 template< typename T >
 bool IsNaN( T v ) { return std::isnan( v ); }
 template< typename T >
-bool IsNaN( std::complex< T > v ) { return std::isnan( v.real()) || std::isnan( v.imag()); }
+bool IsNaN( std::complex< T > v ) { return std::isnan( v.real() ) || std::isnan( v.imag() ); }
 
 template< typename T >
 bool IsInf( T v ) { return std::isinf( v ); }
 template< typename T >
-bool IsInf( std::complex< T > v ) { return std::isinf( v.real()) || std::isinf( v.imag()); }
+bool IsInf( std::complex< T > v ) { return std::isinf( v.real() ) || std::isinf( v.imag() ); }
 
 template< typename T >
-bool IsFinite( T v ) { return !dipm::IsNaN( v ) && !dipm::IsInf( v ); }
+bool IsFinite( T v ) { return std::isfinite( v ); }
+
+template< typename T >
+bool IsFinite( std::complex< T > v ) { return std::isfinite( v.real() ) || std::isfinite( v.imag() ); }
 
 } // namespace dipm
 
@@ -128,6 +137,7 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
       } \
    }
 
+DIP_MONADIC_OPERATOR_FLEX( FlushToZero, []( auto its ) { return dipm::FlushToZero( *its[ 0 ] ); }, DataType::Class_Flex, 1 )
 DIP_MONADIC_OPERATOR_FLOAT( Round, []( auto its ) { return std::round( *its[ 0 ] ); }, DataType::Class_Float, 1 )
 DIP_MONADIC_OPERATOR_FLOAT( Ceil, []( auto its ) { return std::ceil( *its[ 0 ] ); }, DataType::Class_Float, 1 )
 DIP_MONADIC_OPERATOR_FLOAT( Floor, []( auto its ) { return std::floor( *its[ 0 ] ); }, DataType::Class_Float, 1 )
