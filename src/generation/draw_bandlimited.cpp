@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for image drawing functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,13 @@ namespace dip {
 
 namespace {
 
+dfloat ComputeMarginGauss( dfloat sigma, dfloat truncation, DataType dt ) {
+   truncation = std::min( truncation, dt.IsA( DataType::Class_DFloat + DataType::Class_DComplex )
+                                      ? maximum_gauss_truncation< dfloat >()
+                                      : maximum_gauss_truncation< sfloat >() );
+   return sigma * truncation;
+}
+
 template< typename TPI >
 class DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
    public:
@@ -38,7 +45,7 @@ class DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
          blob1d_.resize( nDims );
          origin_.resize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            dfloat halfSize = truncation * sigmas[ ii ];
+            dfloat halfSize = ComputeMarginGauss( sigmas[ ii ], truncation, DataType( TPI{} ));
             dip::sint leftSide = ceil_cast( origin[ ii ] - halfSize ); // first pixel in box
             dip::sint rightSide = floor_cast( origin[ ii ] + halfSize ); // last pixel in box
             dfloat offset = origin[ ii ] - static_cast< dfloat >( leftSide ); // offset of origin w.r.t. first pixel in box
@@ -118,9 +125,9 @@ void DrawBandlimitedPoint(
    FloatArray sizes = sigmas;
    for( auto& s: sizes ) {
       DIP_THROW_IF( s <= 0.0, E::INVALID_PARAMETER );
-      s *= truncation * 2.0;
+      s = ComputeMarginGauss( s, truncation, out.DataType() ) * 2;
    }
-   dip::Image tmp = out;
+   dip::Image tmp = out.QuickCopy();
    if( !NarrowImageView( tmp, sizes, origin )) {
       return;
    }
@@ -239,7 +246,7 @@ void DrawBandlimitedLine(
    DIP_THROW_IF( end.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
-   dfloat margin = sigma * truncation;
+   dfloat margin = ComputeMarginGauss( sigma, truncation, out.DataType() );
    FloatArray sizes( nDims );
    FloatArray origin( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -248,7 +255,7 @@ void DrawBandlimitedLine(
    }
    start -= origin;
    end -= origin;
-   Image tmp = out;
+   Image tmp = out.QuickCopy();
    if( !NarrowImageView( tmp, sizes, origin )) {
       return;
    }
@@ -452,9 +459,9 @@ void DrawBandlimitedBall(
    DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
    DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
-   dfloat margin = sigma * truncation;
+   dfloat margin = ComputeMarginGauss( sigma, truncation, out.DataType() );
    FloatArray roiSizes( nDims, diameter + 2 * margin );
-   dip::Image tmp = out;
+   dip::Image tmp = out.QuickCopy();
    if( !NarrowImageView( tmp, roiSizes, origin )) {
       return;
    }
@@ -672,12 +679,12 @@ void DrawBandlimitedBox(
    DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
    DIP_THROW_IF( sigma <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( truncation <= 0.0, E::INVALID_PARAMETER );
-   dfloat margin = sigma * truncation;
+   dfloat margin = ComputeMarginGauss( sigma, truncation, out.DataType() );
    FloatArray roiSizes = sizes;
    for( auto& s: roiSizes ) {
       s += 2 * margin; // compute half size
    }
-   dip::Image tmp = out;
+   dip::Image tmp = out.QuickCopy();
    if( !NarrowImageView( tmp, roiSizes, origin )) {
       return;
    }
@@ -699,7 +706,7 @@ template< typename TPI >
 class GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
    public:
       GaussianEdgeClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
-            scale_( 1.0 / ( sigma * std::sqrt( 2.0 ))), margin_( sigma * truncation ) {
+            scale_( 1.0 / ( sigma * std::sqrt( 2.0 ))), margin_( ComputeMarginGauss( sigma, truncation, DataType( TPI{} ))) {
          CopyPixelToVector( value, value_, value.TensorElements() );
          for( auto& v: value_ ) {
             v *= FloatType< TPI >( 0.5 );
@@ -765,7 +772,7 @@ template< typename TPI >
 class GaussianLineClipLineFilter : public Framework::ScanLineFilter {
    public:
       GaussianLineClipLineFilter( Image::Pixel const& value, dfloat sigma, dfloat truncation ) :
-            scale_( -0.5 / ( sigma * sigma )), margin_( sigma * truncation ) {
+            scale_( -0.5 / ( sigma * sigma )), margin_( ComputeMarginGauss( sigma, truncation, DataType( TPI{} ))) {
          CopyPixelToVector( value, value_, value.TensorElements() );
          FloatType< TPI > norm = static_cast< FloatType< TPI >>( 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ));
          for( auto& v: value_ ) {

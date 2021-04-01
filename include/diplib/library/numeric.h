@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains numeric algorithms unrelated to images.
  *
- * (c)2015-2017, Cris Luengo.
+ * (c)2015-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,6 +58,17 @@ constexpr dfloat nan = std::numeric_limits< dfloat >::quiet_NaN();
 /// \brief Infinity.
 constexpr dfloat infinity = std::numeric_limits< dfloat >::infinity();
 
+/// \brief Maximum meaningful truncation value for a Gaussian. Larger truncation values will lead to differences
+/// of more than one machine epsilon between the middle and the ends of the Gaussian. `T` must be a floating-point type.
+template< typename T >
+constexpr dfloat maximum_gauss_truncation() {
+   // Largest x/s for which `exp(-0.5 x^2 / s^2) >= eps`:
+   //                            -0.5 x^2 / s^2  >=    ln(eps)
+   //                                  -(x/s)^2  >=  2 ln(eps)
+   //                                   (x/s)^2  <= -2 ln(eps)
+   //                                    x/s     <= sqrt(-2 ln(eps))
+   return std::sqrt( -2.0 * std::log( static_cast< dfloat >( std::numeric_limits< T >::epsilon() )));
+}
 
 /// \brief Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.

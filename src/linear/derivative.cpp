@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the Gaussian filter.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,36 +27,34 @@ namespace dip {
 
 namespace {
 
-void GaussDispatch(
-      Image const& in,
-      Image& out,
+constexpr char const* FIR = "fir";
+constexpr char const* IIR = "iir";
+constexpr char const* FT = "ft";
+constexpr char const* GAUSS = "gauss";
+
+String BestGaussMethod(
       FloatArray const& sigmas,
-      UnsignedArray const& derivativeOrder,
-      StringArray const& boundaryCondition,
-      dfloat truncation
+      UnsignedArray const& derivativeOrder
 ) {
    // If any( sigmas < 0.8 ) || any( derivativeOrder > 3 )  ==>  FT
    // Else if any( sigmas > 10 )  ==>  IIR
    // Else ==>  FIR
-   for( dip::uint ii = 0; ii < derivativeOrder.size(); ++ii ) { // We can't fold this loop in with the next one, the two arrays might be of different size
-      if( derivativeOrder[ ii ] > 3 ) {
-         GaussFT( in, out, sigmas, derivativeOrder, truncation ); // ignores boundaryCondition
-         return;
+   for( auto order : derivativeOrder ) {
+      if( order > 3 ) {
+         return FT;
       }
    }
-   for( dip::uint ii = 0; ii < sigmas.size(); ++ii ) {
-      if(( sigmas[ ii ] < 0.8 ) && ( sigmas[ ii ] > 0.0 )) {
-         GaussFT( in, out, sigmas, derivativeOrder, truncation ); // ignores boundaryCondition
-         return;
+   for( auto sigma : sigmas ) {
+      if(( sigma < 0.8 ) && ( sigma > 0.0 )) {
+         return FT;
       }
    }
-   for( dip::uint ii = 0; ii < sigmas.size(); ++ii ) {
-      if( sigmas[ ii ] > 10 ) {
-         GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation );
-         return;
+   for( auto sigma : sigmas ) {
+      if( sigma > 10 ) {
+         return IIR;
       }
    }
-   GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
+   return FIR;
 }
 
 } // namespace
@@ -70,16 +68,17 @@ void Gauss(
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   if( method.substr( 0, 5 ) == "gauss" ) {
+   if( method.substr( 0, 5 ) == GAUSS ) {
       method = method.substr( 5, String::npos );
    }
    if( method == S::BEST ) {
-      DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
-   } else if( ( method == "FIR" ) || ( method == "fir" ) ) {
+      method = BestGaussMethod( sigmas, derivativeOrder );
+   }
+   if(( method == "FIR" ) || ( method == FIR )) {
       DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
-   } else if( ( method == "FT" ) || ( method == "ft" ) ) {
+   } else if(( method == "FT" ) || ( method == FT )) {
       DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
-   } else if( ( method == "IIR" ) || ( method == "iir" ) ) {
+   } else if(( method == "IIR" ) || ( method == IIR )) {
       DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
       DIP_THROW( "Unknown Gauss filter method" );
@@ -109,17 +108,13 @@ void Derivative(
          }
       }
       DIP_STACK_TRACE_THIS( FiniteDifference( in, out, derivativeOrder, S::SMOOTH, boundaryCondition, process ));
-   } else if( ( method == S::BEST ) || ( method == "gauss" ) ) {
-      DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
-   } else if( ( method == "gaussFIR" ) || ( method == "gaussfir" ) ) {
-      DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
-   } else if( ( method == "gaussFT" ) || ( method == "gaussft" ) ) {
-      DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
-   } else if( ( method == "gaussIIR" ) || ( method == "gaussiir" ) ) {
-      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
-   } else {
-      DIP_THROW( "Unknown derivative method" );
+      return;
    }
+   if(( method == S::BEST ) || ( method.substr( 0, 5 ) == GAUSS )) {
+      DIP_STACK_TRACE_THIS( Gauss( in, out, sigmas, derivativeOrder, method == GAUSS ? S::BEST : method, boundaryCondition, truncation ));
+      return;
+   }
+   DIP_THROW( "Unknown derivative method" );
 }
 
 namespace {
@@ -193,7 +188,7 @@ void GradientMagnitude(
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in;
-   if( in.Aliases( out ) ) {
+   if( in.Aliases( out )) {
       out.Strip();
    }
    UnsignedArray order( in.Dimensionality(), 0 );
@@ -314,7 +309,7 @@ void Divergence(
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
-   if( in.Aliases( out ) ) {
+   if( in.Aliases( out )) {
       out.Strip();
    }
    UnsignedArray order( in.Dimensionality(), 0 );
@@ -408,7 +403,7 @@ void Laplace (
       DIP_STACK_TRACE_THIS( GeneralConvolution( c_in, kernel, out, boundaryCondition ));
    } else {
       Image in = c_in;
-      if( in.Aliases( out ) ) {
+      if( in.Aliases( out )) {
          out.Strip();
       }
       UnsignedArray order( in.Dimensionality(), 0 );

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for Bessel, gamma and error functions.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -410,6 +410,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
    DOCTEST_CHECK( dip::saturated_inv( dip::sint64( 5 )) == dip::sint64( -5 ));
 
    DOCTEST_CHECK( dip::saturated_inv( 5.0 ) == -5.0 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::maximum_gauss_truncation function") {
+   double truncation = dip::maximum_gauss_truncation< dip::dfloat >() * 0.999999; // avoid fp rounding errors
+   double sigma = 10.0;
+   double x = truncation * sigma;
+   double result = std::exp( -0.5 * ( x * x ) / ( sigma * sigma ));
+   DOCTEST_CHECK( result >= std::numeric_limits< dip::dfloat >::epsilon() );
+   x += 0.1 * sigma;
+   double result2 = std::exp( -0.5 * ( x * x ) / ( sigma * sigma ));
+   DOCTEST_CHECK( result2 < std::numeric_limits< dip::dfloat >::epsilon() );
+
+   truncation = dip::maximum_gauss_truncation< dip::sfloat >() * 0.999999; // avoid fp rounding errors
+   x = truncation * sigma;
+   result = std::exp( -0.5 * ( x * x ) / ( sigma * sigma ));
+   DOCTEST_CHECK( result >= std::numeric_limits< dip::sfloat >::epsilon() );
+   x += 0.1 * sigma;
+   result2 = std::exp( -0.5 * ( x * x ) / ( sigma * sigma ));
+   DOCTEST_CHECK( result2 < std::numeric_limits< dip::sfloat >::epsilon() );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::gcd function") {

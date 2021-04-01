@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for functions that generate image data
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -412,10 +412,12 @@ inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" 
 
 
 // Create 1D Gaussian, used in linear/gauss.cpp (where it is defined) and in nonlinear/bilateral.cpp
+// Length will be given by truncation and sigma, but limited to meaningful values.
 DIP_EXPORT std::vector< dfloat > MakeGaussian(
       dfloat sigma,
       dip::uint derivativeOrder = 0,
-      dfloat truncation = 3.0
+      dfloat truncation = 3.0,
+      DataType dt = DT_DFLOAT  // if not DT_DFLOAT, assumed to be DT_SFLOAT
 );
 
 /// \brief Creates a Gaussian kernel.
@@ -428,6 +430,7 @@ DIP_EXPORT std::vector< dfloat > MakeGaussian(
 /// If `derivativeOrder` is 0, the size of the kernel is given by `2 * std::ceil( truncation * sigma ) + 1`.
 /// The default value for `truncation` is 3, which assures a good approximation of the Gaussian kernel without
 /// unnecessary expense. For derivatives, the value of `truncation` is increased by `0.5 * derivativeOrder`.
+/// Truncation is limited to avoid unusefully small values.
 ///
 /// By setting `exponents` to a positive value for each dimension, the created kernel will be multiplied by
 /// the coordinates to the power of `exponents`.
@@ -439,15 +442,14 @@ DIP_EXPORT void CreateGauss(
       dfloat truncation = 3.0,
       UnsignedArray exponents = { 0 }
 );
-/// \brief Overload for the function above, which takes image sizes instead of an image.
 inline Image CreateGauss(
       FloatArray const& sigmas,
-      UnsignedArray const& order = { 0 },
+      UnsignedArray const& derivativeOrder = { 0 },
       dfloat truncation = 3.0,
       UnsignedArray const& exponents = { 0 }
 ) {
    Image out;
-   CreateGauss( out, sigmas, order, truncation, exponents );
+   CreateGauss( out, sigmas, derivativeOrder, truncation, exponents );
    return out;
 }
 
@@ -461,7 +463,7 @@ inline Image CreateGauss(
 ///
 /// The size of the kernel is given by `2 * std::ceil( truncation * sigma ) + 1`.
 /// The default value for `truncation` is 3, which assures a good approximation of the kernel without
-/// unnecessary expense.
+/// unnecessary expense. Truncation is limited to avoid unusefully small values.
 // Defined in src/linear/gabor.cpp
 DIP_EXPORT void CreateGabor(
       Image& out,

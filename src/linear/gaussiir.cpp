@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the IIR Gaussian filter.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * This function originally written by Lucas van Vliet.
  *
@@ -241,201 +241,205 @@ GaussIIRParams FillGaussIIRParams(
       DesignMethod method,
       dfloat truncation
 ) {
+   if( truncation <= 0.0 ) {
+      truncation = 3;
+   }
+   truncation = std::min( truncation, maximum_gauss_truncation< sfloat >());
    GaussIIRParams params;
-      params.border = std::max< dip::uint >( 5, static_cast< dip::uint >( sigma * truncation + 0.5 ));
-      params.sigma = sigma;
+   params.border = std::max< dip::uint >( 5, static_cast< dip::uint >( sigma * truncation + 0.5 ));
+   params.sigma = sigma;
 
-      params.a1.fill( 0.0 );
-      params.a2.fill( 0.0 );
-      params.b1.fill( 0.0 );
-      params.b2.fill( 0.0 );
+   params.a1.fill( 0.0 );
+   params.a2.fill( 0.0 );
+   params.b1.fill( 0.0 );
+   params.b2.fill( 0.0 );
 
-      // Fetch the desired poles, depending on the filter order and derivative order
-      dip::uint nn = filterOrder;
-      ComplexArray pp;
+   // Fetch the desired poles, depending on the filter order and derivative order
+   dip::uint nn = filterOrder;
+   ComplexArray pp;
    FillPoleCoefficients( nn, pp, order, method ); // modifies `method`!
-      nn = static_cast< dip::uint >( pp[ 0 ].real() );
+   nn = static_cast< dip::uint >( pp[ 0 ].real());
 
-      // Compute the correct value for q based on the poles in the z-domain
-      dfloat q;
-      if( method == DesignMethod::FORWARD_BACKWARD ) {
-         if( sigma > 0 ) {
-            dfloat q0term = -sigma * sigma;
-            dfloat q1term = 0.0;
-            dfloat q2term = 0.0;
-            for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 ) ); mm += 2 ) {
-               dfloat re = pp[ mm ].real();
-               dfloat im = pp[ mm ].imag();
-               dfloat t1 = 4 * ( -1 + 3 * re - 3 * re * re - im * im + re * ( re * re + im * im ) );
-               dfloat t2 = 4 * ( 1 - 2 * re + re * re - im * im );
-               dfloat d =  1 - 2 * re + re * re + im * im;
-               d *= d;
-               q1term += t1 / d;
-               q2term += t2 / d;
-            }
-            if( nn & 1 ) {
-               dfloat d = pp[ nn ].real() - 1.0;
-               q1term += 2.0 / d;
-               q2term += 2.0 / ( d * d );
-            }
-            dfloat t = std::sqrt( q1term * q1term - 4.0 * q2term * q0term );
-            dfloat q1 = ( -q1term + t ) / ( 2 * q2term );
-            dfloat q2 = ( -q1term - t ) / ( 2 * q2term );
-            if( q1 > q2 ) {
-               q = q1;
-            } else {
-               q = q2;
-            }
-         } else {
-            q = -sigma;
+   // Compute the correct value for q based on the poles in the z-domain
+   dfloat q;
+   if( method == DesignMethod::FORWARD_BACKWARD ) {
+      if( sigma > 0 ) {
+         dfloat q0term = -sigma * sigma;
+         dfloat q1term = 0.0;
+         dfloat q2term = 0.0;
+         for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 )); mm += 2 ) {
+            dfloat re = pp[ mm ].real();
+            dfloat im = pp[ mm ].imag();
+            dfloat t1 = 4 * ( -1 + 3 * re - 3 * re * re - im * im + re * ( re * re + im * im ));
+            dfloat t2 = 4 * ( 1 - 2 * re + re * re - im * im );
+            dfloat d = 1 - 2 * re + re * re + im * im;
+            d *= d;
+            q1term += t1 / d;
+            q2term += t2 / d;
          }
-      } else if( method == DesignMethod::DISCRETE_TIME_FIT ) {
-         q = std::fabs( sigma ) / 2.0;
-         dfloat q0 = q;
-         dfloat qs = q2sigma( nn, pp, q );
-         while( std::fabs( std::fabs( sigma ) - qs ) > 0.000001 ) {
-            q += q0 - qs / 2.0;
-            qs = q2sigma( nn, pp, q );
+         if( nn & 1 ) {
+            dfloat d = pp[ nn ].real() - 1.0;
+            q1term += 2.0 / d;
+            q2term += 2.0 / ( d * d );
+         }
+         dfloat t = std::sqrt( q1term * q1term - 4.0 * q2term * q0term );
+         dfloat q1 = ( -q1term + t ) / ( 2 * q2term );
+         dfloat q2 = ( -q1term - t ) / ( 2 * q2term );
+         if( q1 > q2 ) {
+            q = q1;
+         } else {
+            q = q2;
          }
       } else {
-         q = std::fabs( sigma );
+         q = -sigma;
       }
+   } else if( method == DesignMethod::DISCRETE_TIME_FIT ) {
+      q = std::fabs( sigma ) / 2.0;
+      dfloat q0 = q;
+      dfloat qs = q2sigma( nn, pp, q );
+      while( std::fabs( std::fabs( sigma ) - qs ) > 0.000001 ) {
+         q += q0 - qs / 2.0;
+         qs = q2sigma( nn, pp, q );
+      }
+   } else {
+      q = std::fabs( sigma );
+   }
 
-      // Scale the poles
-      if( method == DesignMethod::FORWARD_BACKWARD ) {
-         for( dip::uint mm = 1; mm <= nn; ++mm ) {
-            pp[ mm ] = { 1.0 + ( pp[ mm ].real() - 1.0 ) / q, pp[ mm ].imag() / q };
-         }
-      } else if( method == DesignMethod::DISCRETE_TIME_FIT ) {
-         for( dip::uint mm = 1; mm <= nn; ++mm ) {
-            dfloat modulus = std::sqrt( pp[ mm ].real() * pp[ mm ].real() + pp[ mm ].imag() * pp[ mm ].imag() );
-            dfloat phase = std::atan( pp[ mm ].imag() / pp[ mm ].real() );
-            modulus = std::exp( std::log( modulus ) / q );
-            phase = phase / q;
-            pp[ mm ] = { modulus * std::cos( phase ), modulus * std::sin( phase ) };
-         }
+   // Scale the poles
+   if( method == DesignMethod::FORWARD_BACKWARD ) {
+      for( dip::uint mm = 1; mm <= nn; ++mm ) {
+         pp[ mm ] = { 1.0 + ( pp[ mm ].real() - 1.0 ) / q, pp[ mm ].imag() / q };
       }
-      // Compute the new variance
-      dfloat var = 0.0;
-      for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 ) ); mm += 2 ) {
-         dfloat re = pp[ mm ].real();
-         dfloat im = pp[ mm ].imag();
-         dfloat d = 1 - 2 * re + re * re + im * im;
-         d *= d;
-         var += ( 4 * ( re + ( re - 2 ) * ( re * re + im * im ) ) ) / d;
+   } else if( method == DesignMethod::DISCRETE_TIME_FIT ) {
+      for( dip::uint mm = 1; mm <= nn; ++mm ) {
+         dfloat modulus = std::sqrt( pp[ mm ].real() * pp[ mm ].real() + pp[ mm ].imag() * pp[ mm ].imag() );
+         dfloat phase = std::atan( pp[ mm ].imag() / pp[ mm ].real() );
+         modulus = std::exp( std::log( modulus ) / q );
+         phase = phase / q;
+         pp[ mm ] = { modulus * std::cos( phase ), modulus * std::sin( phase ) };
       }
-      if( nn & 1 ) {
-         dfloat re = pp[ nn ].real();
-         //dfloat im = pp[ nn ].imag();
-         var += ( 2 * re ) / (( re - 1 ) * ( re - 1 ));
-      }
+   }
+   // Compute the new variance
+   dfloat var = 0.0;
+   for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 )); mm += 2 ) {
+      dfloat re = pp[ mm ].real();
+      dfloat im = pp[ mm ].imag();
+      dfloat d = 1 - 2 * re + re * re + im * im;
+      d *= d;
+      var += ( 4 * ( re + ( re - 2 ) * ( re * re + im * im ))) / d;
+   }
+   if( nn & 1 ) {
+      dfloat re = pp[ nn ].real();
+      //dfloat im = pp[ nn ].imag();
+      var += ( 2 * re ) / (( re - 1 ) * ( re - 1 ));
+   }
 
-      // Compute the actual filter coefficients
-      ComplexArray bb;
-      for( dip::uint mm = 0; mm <= nn; ++mm ) {
-         FilterCoefficients( mm, nn, pp, mm, nn, {}, bb );
+   // Compute the actual filter coefficients
+   ComplexArray bb;
+   for( dip::uint mm = 0; mm <= nn; ++mm ) {
+      FilterCoefficients( mm, nn, pp, mm, nn, {}, bb );
+   }
+   for( dip::uint mm = 0; mm <= nn; ++mm ) {
+      bb[ nn - mm ] *= std::pow( -1.0, nn - mm ) / bb[ 0 ].real();
+      params.b1[ nn - mm ] = params.b2[ nn - mm ] = bb[ nn - mm ].real();
+   }
+
+   // Normalization
+   params.cc = 0.0;
+   for( dip::uint mm = 0; mm <= nn; ++mm ) {
+      params.cc += params.b1[ mm ];
+   }
+   params.cc = ( params.cc * params.cc );
+
+   params.iir_order_den[ 0 ] = nn;
+   params.iir_order_den[ 1 ] = 1;
+   params.iir_order_den[ 2 ] = nn;
+
+   params.iir_order_den[ 3 ] = nn;
+   params.iir_order_den[ 4 ] = 1;
+   params.iir_order_den[ 5 ] = nn;
+
+
+   // Non-recursive forward/backward scan
+   switch( order ) {
+      case 0:
+         params.a1[ 0 ] = 1.0;
+         params.a2[ 0 ] = 1.0;
+         break;
+      case 1:
+         params.a1[ 0 ] = 0.5;
+         params.a1[ 2 ] = -0.5;
+         params.a2[ 1 ] = 1.0;
+         break;
+      case 2:
+         params.a1[ 0 ] = 1.0;
+         params.a1[ 1 ] = -1.0;
+         params.a2[ 1 ] = 1.0;
+         params.a2[ 0 ] = -1.0;
+         break;
+      case 3:
+         params.a1[ 0 ] = 1.0;
+         params.a1[ 1 ] = -2.0;
+         params.a1[ 2 ] = 1.0;
+         params.a2[ 2 ] = 0.5;
+         params.a2[ 0 ] = -0.5;
+         break;
+      case 4:
+         params.a1[ 0 ] = 1.0;
+         params.a1[ 1 ] = -2.0;
+         params.a1[ 2 ] = 1.0;
+         params.a2[ 2 ] = 1.0;
+         params.a2[ 1 ] = -2.0;
+         params.a2[ 0 ] = 1.0;
+         break;
+      default:
+         DIP_THROW( E::NOT_IMPLEMENTED );
+         break;
+   }
+
+   params.iir_order_num.fill( MAX_IIR_ORDER + 1 );
+   for( dip::uint jj = 0; jj < MAX_IIR_ORDER; ++jj ) {
+      if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 1 ] > MAX_IIR_ORDER )) {
+         params.iir_order_num[ 1 ] = jj;
       }
-      for( dip::uint mm = 0; mm <= nn; ++mm ) {
-         bb[ nn - mm ] *= std::pow( -1.0, nn - mm ) / bb[ 0 ].real();
-         params.b1[ nn - mm ] = params.b2[ nn - mm ] = bb[ nn - mm ].real();
+      if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 4 ] > MAX_IIR_ORDER )) {
+         params.iir_order_num[ 4 ] = jj;
       }
+   }
 
-      // Normalization
-      params.cc = 0.0;
-      for( dip::uint mm = 0; mm <= nn; ++mm ) {
-         params.cc += params.b1[ mm ];
+   for( dip::uint jj = MAX_IIR_ORDER; jj > 0; ) {
+      --jj;
+      if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 2 ] > MAX_IIR_ORDER )) {
+         params.iir_order_num[ 2 ] = jj;
       }
-      params.cc = ( params.cc * params.cc );
-
-      params.iir_order_den[ 0 ] = nn;
-      params.iir_order_den[ 1 ] = 1;
-      params.iir_order_den[ 2 ] = nn;
-
-      params.iir_order_den[ 3 ] = nn;
-      params.iir_order_den[ 4 ] = 1;
-      params.iir_order_den[ 5 ] = nn;
-
-
-      // Non-recursive forward/backward scan
-      switch( order ) {
-         case 0:
-            params.a1[ 0 ] = 1.0;
-            params.a2[ 0 ] = 1.0;
-            break;
-         case 1:
-            params.a1[ 0 ] = 0.5;
-            params.a1[ 2 ] = -0.5;
-            params.a2[ 1 ] = 1.0;
-            break;
-         case 2:
-            params.a1[ 0 ] = 1.0;
-            params.a1[ 1 ] = -1.0;
-            params.a2[ 1 ] = 1.0;
-            params.a2[ 0 ] = -1.0;
-            break;
-         case 3:
-            params.a1[ 0 ] = 1.0;
-            params.a1[ 1 ] = -2.0;
-            params.a1[ 2 ] = 1.0;
-            params.a2[ 2 ] = 0.5;
-            params.a2[ 0 ] = -0.5;
-            break;
-         case 4:
-            params.a1[ 0 ] = 1.0;
-            params.a1[ 1 ] = -2.0;
-            params.a1[ 2 ] = 1.0;
-            params.a2[ 2 ] = 1.0;
-            params.a2[ 1 ] = -2.0;
-            params.a2[ 0 ] = 1.0;
-            break;
-         default:
-            DIP_THROW( E::NOT_IMPLEMENTED );
-            break;
+      if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 5 ] > MAX_IIR_ORDER )) {
+         params.iir_order_num[ 5 ] = jj;
       }
-
-      params.iir_order_num.fill( MAX_IIR_ORDER + 1 );
-      for( dip::uint jj = 0; jj < MAX_IIR_ORDER; ++jj ) {
-         if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 1 ] > MAX_IIR_ORDER )) {
-            params.iir_order_num[ 1 ] = jj;
-         }
-         if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 4 ] > MAX_IIR_ORDER )) {
-            params.iir_order_num[ 4 ] = jj;
-         }
-      }
-
-      for( dip::uint jj = MAX_IIR_ORDER; jj > 0; ) {
-         --jj;
-         if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 2 ] > MAX_IIR_ORDER )) {
-            params.iir_order_num[ 2 ] = jj;
-         }
-         if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 5 ] > MAX_IIR_ORDER )) {
-            params.iir_order_num[ 5 ] = jj;
-         }
-      }
-      params.iir_order_num[ 0 ] = params.iir_order_num[ 2 ];
-      params.iir_order_num[ 3 ] = params.iir_order_num[ 5 ];
+   }
+   params.iir_order_num[ 0 ] = params.iir_order_num[ 2 ];
+   params.iir_order_num[ 3 ] = params.iir_order_num[ 5 ];
 
 /*
-      for (jj = 0; jj < 6; ++jj)
-         printf("%1d %1d\n",
-            params.iir_order_den[jj], params.iir_order_num[jj]);
+   for (jj = 0; jj < 6; ++jj)
+      printf("%1d %1d\n",
+         params.iir_order_den[jj], params.iir_order_num[jj]);
 
-      for (jj = params.iir_order_num[1];
-           jj <= params.iir_order_num[2]; ++jj)
-      {
-         printf("params.a1[%1d] = %8.5f \n", jj, params.a1[jj]);
-      }
-      for (jj = params.iir_order_num[4];
-           jj <= params.iir_order_num[5]; ++jj)
-      {
-         printf("params.a2[%1d] = %8.5f \n", jj, params.a2[jj]);
-      }
-      for (jj = 0; jj <= params.iir_order_den[2]; ++jj)
-      {
-         printf("params.b1[%1d] = %8.5f \tparams.b2[%1d] = %8.5f\n",
-             jj, params.b1[jj], jj, params.b2[jj]);
-      }
-      printf("c[%1d]  = %g \n", 0, cc[0]);
+   for (jj = params.iir_order_num[1];
+        jj <= params.iir_order_num[2]; ++jj)
+   {
+      printf("params.a1[%1d] = %8.5f \n", jj, params.a1[jj]);
+   }
+   for (jj = params.iir_order_num[4];
+        jj <= params.iir_order_num[5]; ++jj)
+   {
+      printf("params.a2[%1d] = %8.5f \n", jj, params.a2[jj]);
+   }
+   for (jj = 0; jj <= params.iir_order_den[2]; ++jj)
+   {
+      printf("params.b1[%1d] = %8.5f \tparams.b2[%1d] = %8.5f\n",
+          jj, params.b1[jj], jj, params.b2[jj]);
+   }
+   printf("c[%1d]  = %g \n", 0, cc[0]);
 */
 
    return params;
@@ -734,9 +738,6 @@ void GaussIIR(
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
    DIP_END_STACK_TRACE
-   if( truncation <= 0.0 ) {
-      truncation = 3;
-   }
    if( filterOrder.empty() ) {
       filterOrder.resize( nDims, 3 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {

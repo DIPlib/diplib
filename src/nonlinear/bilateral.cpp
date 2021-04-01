@@ -58,6 +58,7 @@ Image PrepareEstimate(
 
 // Create simple half Gauss without normalization.
 // The first element holds the value 1.0, the last elements holds the value std::numeric_limits<FloatType>::min();
+// This function is always called with a value for truncation that avoids denormal or zero values.
 template< typename FloatType >
 void CreateUnnormalizedHalfGauss(
       Image& out,
@@ -68,7 +69,8 @@ void CreateUnnormalizedHalfGauss(
    out.ReForge( { size }, 1, DataType( static_cast< FloatType >( 0 )), Option::AcceptDataTypeChange::DONT_ALLOW );
    FloatType *val = static_cast< FloatType* >( out.Origin() );
    const FloatType denom = static_cast< FloatType >( -1.0 / ( 2.0 * sigma * sigma ));
-   for( dip::uint i = 0; i < size - 1; ++i ) {
+   *val++ = 1;
+   for( dip::uint i = 1; i < size - 1; ++i ) {
       FloatType r = static_cast< FloatType >( i );
       *val++ = std::exp( r * r * denom );
    }
@@ -386,7 +388,7 @@ void SeparableBilateralFilter(
    UnsignedArray borders;
    gaussians.reserve( in.Dimensionality() );
    for( dip::uint ii = 0; ii < in.Dimensionality(); ++ii ) {
-      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( spatialSigmas[ ii ], 0, truncation ) ) );
+      DIP_STACK_TRACE_THIS( gaussians.emplace_back( MakeGaussian( spatialSigmas[ ii ], 0, truncation, DT_SFLOAT )));
       dip::uint gaussianLength = gaussians.back().size();
       borders.push_back(( gaussianLength - 1 ) / 2 );
    }

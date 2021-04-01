@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the FIR and FT Gaussian filter.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +19,13 @@
  */
 
 #include "diplib.h"
-#include "diplib/linear.h"
-#include "diplib/generation.h"
 #include "diplib/framework.h"
+#include "diplib/generation.h"
+#include "diplib/iterators.h"
+#include "diplib/linear.h"
+#include "diplib/math.h"
 #include "diplib/overload.h"
 #include "diplib/transform.h"
-#include "diplib/iterators.h"
 
 namespace dip {
 
@@ -33,18 +34,26 @@ namespace {
 inline dip::uint HalfGaussianSize(
       dfloat sigma,
       dip::uint derivativeOrder,
-      dfloat truncation
+      dfloat truncation,
+      DataType dt // either DT_SFLOAT or DT_DFLOAT, not tested for
 ) {
-   return clamp_cast< dip::uint >( std::ceil(( truncation + 0.5 * static_cast< dfloat >( derivativeOrder )) * sigma ));
+   if( truncation <= 0 ) {
+      truncation = 3; // The default value
+   }
+   double max_trunc = dt == DT_DFLOAT ? maximum_gauss_truncation< dfloat >() : maximum_gauss_truncation< sfloat >();
+   truncation = std::min( truncation, max_trunc );
+   truncation += 0.5 * static_cast< dfloat >( derivativeOrder );
+   return clamp_cast< dip::uint >( std::ceil( truncation * sigma ));
 }
 
 // Creates a half Gaussian kernel, with the x=0 at the right end (last element) of the output array.
 std::vector< dfloat > MakeHalfGaussian(
       dfloat sigma,
       dip::uint derivativeOrder,
-      dfloat truncation
+      dfloat truncation,
+      DataType dt // either DT_SFLOAT or DT_DFLOAT, not tested for
 ) {
-   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, derivativeOrder, truncation );
+   dip::uint halfFilterSize = 1 + HalfGaussianSize( sigma, derivativeOrder, truncation, dt );
    if( derivativeOrder > 2 && halfFilterSize < 2 ) {
       halfFilterSize = 2;
    }
@@ -142,7 +151,8 @@ std::vector< dfloat > MakeHalfGaussian(
 std::vector< dfloat > MakeGaussian(
       dfloat sigma,
       dip::uint derivativeOrder,
-      dfloat truncation
+      dfloat truncation,
+      DataType dt
 ) {
    // Handle sigma == 0.0
    if( sigma == 0.0 ) {
@@ -150,7 +160,7 @@ std::vector< dfloat > MakeGaussian(
    }
    // Create half Gaussian
    std::vector< dfloat > gaussian;
-   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, derivativeOrder, truncation ));
+   DIP_STACK_TRACE_THIS( gaussian = MakeHalfGaussian( sigma, derivativeOrder, truncation, dt ));
    dip::uint halfFilterSize = gaussian.size() - 1;
    // Complete the Gaussian
    gaussian.resize( halfFilterSize * 2 + 1 );
@@ -172,16 +182,13 @@ void CreateGauss(
    dip::uint nDims = sigmas.size();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( orders, nDims, dip::uint( 0 )));
    DIP_STACK_TRACE_THIS( ArrayUseParameter( exponents, nDims, dip::uint( 0 )));
-   if( truncation <= 0.0 ) {
-      truncation = 3;   // Default truncation
-   }
 
+   // Create 1D gaussian for each dimension
    std::vector< std::vector< dfloat >> gaussians( nDims );
    UnsignedArray outSizes( nDims );
    UnsignedArray centers( nDims );
-   // Create 1D gaussian for each dimension
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      DIP_STACK_TRACE_THIS( gaussians[ ii ] = MakeGaussian( sigmas[ ii ], orders[ ii ], truncation ));
+      DIP_STACK_TRACE_THIS( gaussians[ ii ] = MakeGaussian( sigmas[ ii ], orders[ ii ], truncation, DT_DFLOAT ));
       dip::uint gaussianLength = gaussians[ ii ].size();
       outSizes[ ii ] = gaussianLength;
       centers[ ii ] = ( gaussianLength - 1 ) / 2;
@@ -220,11 +227,9 @@ void GaussFIR(
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
    DIP_END_STACK_TRACE
-   if( truncation <= 0.0 ) {
-      truncation = 3;   // Default truncation
-   }
    OneDimensionalFilterArray filter( nDims );
    BooleanArray process( nDims, true );
+   DataType computeType = in.DataType().IsA( DataType::Class_DFloat + DataType::Class_DComplex ) ? DT_DFLOAT : DT_SFLOAT;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if(( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
          bool found = false;
@@ -248,7 +253,7 @@ void GaussFIR(
                default:
                   DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
             }
-            filter[ ii ].filter = MakeHalfGaussian( sigmas[ ii ], order[ ii ], truncation );
+            filter[ ii ].filter = MakeHalfGaussian( sigmas[ ii ], order[ ii ], truncation, computeType );
             // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
          }
       } else {
@@ -284,7 +289,9 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
                dip::sint origin = static_cast< dip::sint >( sizes[ ii ] ) / 2;
                TPIf b = static_cast< TPIf >( 2.0 * pi * sigmas[ ii ] ) / static_cast< TPIf >( sizes[ ii ] );
                b = -TPIf( 0.5 ) * b * b;
-               dip::uint N = b == 0 ? sizes[ ii ] : HalfGaussianSize( static_cast< dfloat >( sizes[ ii ] ) / ( 2.0 * pi * sigmas[ ii ] ), order[ ii ], truncation );
+               dip::uint N = ( b == 0 )
+                             ? sizes[ ii ]
+                             : HalfGaussianSize( static_cast< dfloat >( sizes[ ii ] ) / ( 2.0 * pi * sigmas[ ii ] ), order[ ii ], truncation, DataType( TPIf{} ));
                dip::sint begin = std::max( dip::sint( 0 ), origin - static_cast< dip::sint >( N ));
                dip::sint end = std::min( static_cast< dip::sint >( sizes[ ii ] ), origin + static_cast< dip::sint >( N ) + 1 );
                if( order[ ii ] > 0 ) {
@@ -363,9 +370,6 @@ void GaussFT(
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
    DIP_END_STACK_TRACE
-   if( truncation <= 0.0 ) {
-      truncation = 3;   // Default truncation
-   }
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( in.Size( ii ) == 1 ) {
          sigmas[ ii ] = 0;

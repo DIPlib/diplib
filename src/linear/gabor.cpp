@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of functions that implement the FIR Gabor filter.
  *
- * (c)2018, Cris Luengo.
+ * (c)2018-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,14 @@ namespace {
 
 inline dip::uint HalfGaborSize(
       dfloat sigma,
-      dfloat truncation
+      dfloat truncation,
+      DataType dt // either DT_SFLOAT or DT_DFLOAT, not tested for
 ) {
+   if( truncation <= 0 ) {
+      truncation = 3; // The default value
+   }
+   double max_trunc = dt == DT_DFLOAT ? maximum_gauss_truncation< dfloat >() : maximum_gauss_truncation< sfloat >();
+   truncation = std::min( truncation, max_trunc );
    return clamp_cast< dip::uint >( std::ceil( truncation * sigma ));
 }
 
@@ -42,9 +48,10 @@ inline dip::uint HalfGaborSize(
 std::vector< dfloat > MakeHalfGabor(
       dfloat sigma,
       dfloat frequency,
-      dfloat truncation
+      dfloat truncation,
+      DataType dt // either DT_SFLOAT or DT_DFLOAT, not tested for
 ) {
-   dip::uint halfFilterSize = 1 + HalfGaborSize( sigma, truncation );
+   dip::uint halfFilterSize = 1 + HalfGaborSize( sigma, truncation, dt );
    std::vector< dfloat > filter( 2 * halfFilterSize );
    auto ptr = reinterpret_cast< dcomplex* >( filter.data() );
    dip::uint r0 = halfFilterSize - 1;
@@ -65,7 +72,8 @@ std::vector< dfloat > MakeHalfGabor(
 std::vector< dfloat > MakeGabor(
       dfloat sigma,
       dfloat frequency,
-      dfloat truncation
+      dfloat truncation,
+      DataType dt
 ) {
    // Handle sigma == 0.0
    if( sigma == 0.0 ) {
@@ -73,7 +81,7 @@ std::vector< dfloat > MakeGabor(
    }
    // Create half Gabor
    std::vector< dfloat > gabor;
-   DIP_STACK_TRACE_THIS( gabor = MakeHalfGabor( sigma, frequency, truncation ));
+   DIP_STACK_TRACE_THIS( gabor = MakeHalfGabor( sigma, frequency, truncation, dt ));
    dip::uint halfFilterSize = gabor.size() / 2 - 1;
    // Complete the Gabor
    gabor.resize( 2 * ( halfFilterSize * 2 + 1 ));
@@ -100,13 +108,14 @@ void CreateGabor(
    if( truncation <= 0.0 ) {
       truncation = 3.0;
    }
+   truncation = std::min( truncation, maximum_gauss_truncation< sfloat >() );
 
    // Create 1D gaussian for each dimension
    std::vector< std::vector< dfloat >> gabors( nDims );
    std::vector< dcomplex const* > ptrs( nDims );
    UnsignedArray outSizes( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      DIP_STACK_TRACE_THIS( gabors[ ii ] = MakeGabor( sigmas[ ii ], frequencies[ ii ], truncation ));
+      DIP_STACK_TRACE_THIS( gabors[ ii ] = MakeGabor( sigmas[ ii ], frequencies[ ii ], truncation, DT_DFLOAT ));
       outSizes[ ii ] = gabors[ ii ].size() / 2;
       ptrs[ ii ] =  reinterpret_cast< dcomplex* >( gabors[ ii ].data() );
    }
@@ -144,6 +153,7 @@ void GaborFIR(
       ArrayUseParameter( process, nDims, true );
    DIP_END_STACK_TRACE
    OneDimensionalFilterArray filter( nDims );
+   DataType computeType = in.DataType().IsA( DataType::Class_DFloat + DataType::Class_DComplex ) ? DT_DFLOAT : DT_SFLOAT;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if(( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
          bool found = false;
@@ -157,7 +167,7 @@ void GaborFIR(
          if( !found ) {
             filter[ ii ].symmetry = S::CONJ;
             filter[ ii ].isComplex = true;
-            filter[ ii ].filter = MakeHalfGabor( sigmas[ ii ], frequencies[ ii ], truncation );
+            filter[ ii ].filter = MakeHalfGabor( sigmas[ ii ], frequencies[ ii ], truncation, computeType );
             // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
          }
       } else {
