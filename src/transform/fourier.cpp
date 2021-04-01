@@ -1040,37 +1040,33 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   auto maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-7 );
-   DOCTEST_CHECK( maxmin.Minimum() > -2e-7 );
+   auto maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-7 );
 
    dip::FourierTransform( output, output, { "inverse" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // Real-to-complex transform (even-sized axis)
    output = input.Copy();
    dip::FourierTransform( output, output );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-7 );
-   DOCTEST_CHECK( maxmin.Minimum() > -2e-7 );
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-7 );
 
    // Complex-to-real inverse transform  (even-sized axis)
    dip::FourierTransform( output, output, { "inverse", "real" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // === 2D image, 2D transform -- repeat with different R2C and C2R dimension ===
    sz = { 64, 105 };
@@ -1090,19 +1086,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-4 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-4 ); // Much larger error because of smaller image
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-4 ); // Much larger error because of smaller image
 
    // Complex-to-real inverse transform (odd-sized axis)
    dip::FourierTransform( output, output, { "inverse", "real" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // === Test "fast" option
    sz = { 97, 107 }; // prime sizes
@@ -1125,19 +1119,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-7 );
-   DOCTEST_CHECK( maxmin.Minimum() > -2e-7 );
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-7 );
 
    dip::FourierTransform( output, output, { "inverse", "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // Real-to-complex transform (fast)
    output = input.Copy();
@@ -1145,20 +1137,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-7 );
-   DOCTEST_CHECK( maxmin.Minimum() > -2e-7 );
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-7 );
 
    // Complex-to-real inverse transform (fast)
    dip::FourierTransform( output, output, { "inverse", "fast", "real" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // === Test "corner" and "symmetric" option (we test these at the same time because they're orthogonal features)
    sz = { 64, 105 };
@@ -1182,37 +1172,33 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output, { "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-6 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
 
    dip::FourierTransform( output, output, { "inverse", "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // Real-to-complex transform (corner)
    output = input.Copy();
    dip::FourierTransform( output, output, { "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-6 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
 
    // Complex-to-real inverse transform (corner)
    dip::FourierTransform( output, output, { "inverse", "real", "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-9 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-9 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-9 );
 
    // === Test "corner" + "fast" option (only forward, the combination is not allowed with inverse transform)
    sz = { 97, 107 }; // prime sizes
@@ -1237,20 +1223,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output, { "corner", "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-7 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-7 );
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-7 );
 
    // Real-to-complex transform (fast + corner)
    output = input.Copy();
    dip::FourierTransform( output, output, { "corner", "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-7 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-7 );
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-7 );
 
    // === 3D image, 1D transform ===
    sz = { 3, 32, 2 };
@@ -1276,37 +1260,33 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output, {}, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-8 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-8 ); // Much larger error because of smaller image
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-8 ); // Much larger error because of smaller image
 
    dip::FourierTransform( output, output, { "inverse" }, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-18 );
-   DOCTEST_CHECK( maxmin.Minimum() > -2e-18 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-18 );
 
    // Real-to-complex transform
    output = input.Copy();
    dip::FourierTransform( output, output, {}, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - expectedOutput );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 1e-8 );
-   DOCTEST_CHECK( maxmin.Minimum() > -1e-8 ); // Much larger error because of smaller image
+   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 1e-8 ); // Much larger error because of smaller image
 
    // Complex-to-real inverse transform
    dip::FourierTransform( output, output, { "inverse", "real" }, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAndMinimum( output - input );
-   //std::cout << "max = " << maxmin.Maximum() << ", min = " << maxmin.Minimum() << '\n';
-   DOCTEST_CHECK( maxmin.Maximum() < 2e-18 );
-   DOCTEST_CHECK( maxmin.Minimum() > -2e-18 );
+   maxmin = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxmin << '\n';
+   DOCTEST_CHECK( maxmin < 2e-18 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
