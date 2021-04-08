@@ -32,6 +32,11 @@ title: "Changes DIPlib 3.0.1"
   `dip::DrawBandlimitedBox()`, `dip::GaussianEdgeClip()` and `dip::GaussianLineClip()` also limit the
   truncation in the same way.
 
+- `dip::NeighborList` allows accessing neighbors by index, through the new member functions `Coordinates`,
+  `Distance` and `IsInImage`.
+
+- `dip::Label` is slightly more efficient for 3D and higher-dimensional images; added tests. 
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together

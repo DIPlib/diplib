@@ -116,6 +116,20 @@ void LabelFirstPass(
    // Select only those neighbors that are processed earlier
    NeighborList neighborList = c_neighborList.SelectBackward( procDim );
    IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_img.Strides() );
+   // Which neighbors are "forward" neighbors (m in description below)? Which neighbor is the "previous" neighbor (p in description below)?
+   BooleanArray neighborIsForward( neighborList.Size(), false );
+   dip::uint previousNeighborIndex = 0;
+   for( dip::uint ii = 0; ii < neighborList.Size(); ++ii ) {
+      IntegerArray cc = neighborList.Coordinates( ii );
+      if( IsPrevious( cc, procDim )) {
+         previousNeighborIndex = ii;
+      } else {
+         ++( cc[ procDim ] );
+         if( !IsConnected( cc, connectivity )) {
+            neighborIsForward[ ii ] = true;
+         }
+      }
+   }
    // Prepare other needed data
    dip::sint stride = c_img.Stride( procDim );
    dip::sint endOffset = stride * static_cast< dip::sint >( length  - 1 );
@@ -133,19 +147,19 @@ void LabelFirstPass(
       //    | | | |  If `p` is set, `x` gets the same label. We need to test only `m` pixels
       //    +-+-+-+  Otherwise, we test all pixels `n` and `m`.
       std::vector< dip::sint > allNeighbors;     // `n` and `m` pixels
+      allNeighbors.reserve( neighborList.Size() );
       std::vector< dip::sint > forwardNeighbors; // `m` pixels only
+      forwardNeighbors.reserve( neighborList.Size() );
+      BooleanArray neighorIsInImage( neighborList.Size(), false );
       UnsignedArray coords = it.Coordinates();
       coords[ procDim ] = 1; // pretend we're in the middle of the line here, so we can properly test for neighbors being inside or outside the image
                              // NOTE! this will not work correctly if the image has less that 3 pixels along `procDim`.
-      auto nl = neighborList.begin();
-      auto no = neighborOffsets.begin();
-      for( ; nl != neighborList.end(); ++no, ++nl ) {
-         if( !IsPrevious( nl.Coordinates(), procDim ) && nl.IsInImage( coords, c_img.Sizes() )) {
-            allNeighbors.push_back( *no );
-            IntegerArray cc = nl.Coordinates();
-            ++( cc[ procDim ] );
-            if( !IsConnected( cc, connectivity )) {
-               forwardNeighbors.push_back( *no );
+      for( dip::uint ii = 0; ii < neighborList.Size(); ++ii ) {
+         if(( ii != previousNeighborIndex ) && neighborList.IsInImage( ii, coords, c_img.Sizes() )) {
+            neighorIsInImage[ ii ] = true;
+            allNeighbors.push_back( neighborOffsets[ ii ] );
+            if( neighborIsForward[ ii ] ) {
+               forwardNeighbors.push_back( neighborOffsets[ ii ] );
             }
          }
       }
@@ -155,13 +169,10 @@ void LabelFirstPass(
 
       // First pixel on line:
       if( *img ) {
-         // TODO: We only need to check allNeighbors, which potentially has fewer elements that neighborList. But we'd need the coordinates along with it.
          coords[ procDim ] = 0;
-         nl = neighborList.begin();
-         no = neighborOffsets.begin();
-         for( ; nl != neighborList.end(); ++no, ++nl ) {
-            if( nl.IsInImage( coords, c_img.Sizes() )) {
-               LabelType lab = img[ *no ];
+         for( dip::uint ii = 0; ii < neighborList.Size(); ++ii ) {
+            if( neighorIsInImage[ ii ] && neighborList.IsInImage( ii, coords, c_img.Sizes() )) {
+               LabelType lab = img[ neighborOffsets[ ii ]];
                if( lab ) {
                   if( lastLabel ) {
                      lastLabel = regions.Union( lastLabel, lab );
@@ -217,13 +228,10 @@ void LabelFirstPass(
 
       // The last pixel:
       if( *img ) {
-         // TODO: if lastLabel, then we only need to check forwardNeighbors, but we'd need coordinates attached to them, which we don't have
          coords[ procDim ] = length - 1;
-         nl = neighborList.begin();
-         no = neighborOffsets.begin();
-         for( ; nl != neighborList.end(); ++no, ++nl ) {
-            if( nl.IsInImage( coords, c_img.Sizes() )) {
-               LabelType lab = img[ *no ];
+         for( dip::uint ii = 0; ii < neighborList.Size(); ++ii ) {
+            if( neighborIsForward[ ii ] && neighorIsInImage[ ii ] && neighborList.IsInImage( ii, coords, c_img.Sizes() )) {
+               LabelType lab = img[ neighborOffsets[ ii ]];
                if( lab ) {
                   if( lastLabel ) {
                      lastLabel = regions.Union( lastLabel, lab );
@@ -317,7 +325,9 @@ dip::uint Label(
                   NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
                   IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_out.Strides());
                   std::vector< dip::sint > otherSideOffsets; // Don't use IntegerArray, we will push_back
+                  otherSideOffsets.reserve( neighborList.Size() );
                   std::vector< IntegerArray > otherSideCoords;
+                  otherSideCoords.reserve( neighborList.Size() );
                   dip::sint acrossImage = c_out.Stride( ii ) * static_cast< dip::sint >( c_out.Size( ii ));
                   auto nl = neighborList.begin();
                   auto no = neighborOffsets.begin();
@@ -332,12 +342,12 @@ dip::uint Label(
                   }
                   ImageIterator< LabelType > it( c_out, ii );
                   do {
-                     for( dip::uint kk = 0; kk < otherSideOffsets.size(); ++kk ) {
+                     for( dip::uint kk = 0; kk < otherSideCoords.size(); ++kk ) {
                         // Is this neighbor in the image?
                         IntegerArray coords = otherSideCoords[ kk ];
                         coords += it.Coordinates();
                         bool use = true;
-                        for( dip::uint dd = 0; dd < nDims; ++dd ) {
+                        for( dip::uint dd = 0; dd < coords.size(); ++dd ) { // coords.size() == nDims, using size() because GCC thinks we might be indexing out of bounds below.
                            // Relying on 2's complement conversion, coords can be a small negative value, which will
                            // convert to a very large unsigned value, and test larger than the image size.
                            if( static_cast< dip::uint >( coords[ dd ] ) >= c_out.Size( dd )) {
@@ -413,3 +423,126 @@ dip::uint Label(
 }
 
 } // namespace dip
+
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/generation.h"
+#include "diplib/statistics.h"
+#include "diplib/binary.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Label") {
+
+   // Two 3D intertwined helices. Generated data points using the following Python:
+   /*
+   import numpy as np
+   import diplib as dip
+
+   h = 2
+   r = 25
+   t = np.arange(-r, r)
+   p = np.stack((h * t, r * np.cos(t), r * np.sin(t)))
+
+   R = np.array(dip.RotationMatrix3D(30/180*np.pi, 45/180*np.pi, 15/180*np.pi)).reshape(3, 3)
+   p = R @ p
+   p = p.round().astype(int).transpose()
+
+   s = 100
+   p = p + np.array([s//2, s//2, s//2])[None,:]
+   assert(np.amax(p) < s)
+   assert(np.amin(p) >= 0)
+
+   q = p + (R @ np.array([6, 0, 0])[:, None]).round().transpose().astype(int)
+   assert(np.amax(q) < s)
+   assert(np.amin(q) >= 0)
+
+   img = dip.Image((s, s, s), 1, 'UINT8')
+   img.Fill(0)
+   dip.DrawLines(img, p.tolist(), 1, "add")
+   dip.DrawLines(img, q.tolist(), 1, "add")
+   */
+   dip::CoordinateArray p{
+         { 41, 98, 23 }, { 21, 93, 35 }, { 7,  74, 31 }, { 13, 56, 16 }, { 35, 56,  4 }, { 52, 72,  8 },
+         { 51, 89, 26 }, { 32, 89, 42 }, { 15, 73, 43 }, { 15, 53, 29 }, { 34, 47, 15 }, { 54, 60, 14 },
+         { 59, 78, 29 }, { 44, 84, 47 }, { 25, 71, 53 }, { 19, 50, 42 }, { 33, 40, 26 }, { 55, 48, 21 },
+         { 66, 66, 32 }, { 56, 77, 51 }, { 35, 69, 61 }, { 24, 49, 55 }, { 34, 34, 39 }, { 55, 36, 29 },
+         { 71, 54, 36 }, { 66, 69, 55 }, { 47, 66, 69 }, { 31, 48, 67 }, { 35, 29, 52 }, { 55, 27, 39 },
+         { 74, 41, 41 }, { 75, 59, 58 }, { 59, 62, 75 }, { 40, 47, 78 }, { 37, 26, 65 }, { 54, 18, 50 },
+         { 76, 29, 47 }, { 83, 47, 61 }, { 70, 56, 79 }, { 50, 45, 87 }, { 42, 25, 79 }, { 54, 12, 62 },
+         { 76, 17, 55 }, { 89, 35, 64 }, { 81, 48, 83 }, { 61, 43, 95 }, { 48, 23, 91 }, { 54, 6,  75 },
+         { 76,  7, 64 }, { 93, 23, 69 }
+   };
+   dip::CoordinateArray q{
+         { 44, 95, 27 }, { 24, 90, 39 }, { 10, 71, 35 }, { 16, 53, 20 }, { 38, 53,  8 }, { 55, 69, 12 },
+         { 54, 86, 30 }, { 35, 86, 46 }, { 18, 70, 47 }, { 18, 50, 33 }, { 37, 44, 19 }, { 57, 57, 18 },
+         { 62, 75, 33 }, { 47, 81, 51 }, { 28, 68, 57 }, { 22, 47, 46 }, { 36, 37, 30 }, { 58, 45, 25 },
+         { 69, 63, 36 }, { 59, 74, 55 }, { 38, 66, 65 }, { 27, 46, 59 }, { 37, 31, 43 }, { 58, 33, 33 },
+         { 74, 51, 40 }, { 69, 66, 59 }, { 50, 63, 73 }, { 34, 45, 71 }, { 38, 26, 56 }, { 58, 24, 43 },
+         { 77, 38, 45 }, { 78, 56, 62 }, { 62, 59, 79 }, { 43, 44, 82 }, { 40, 23, 69 }, { 57, 15, 54 },
+         { 79, 26, 51 }, { 86, 44, 65 }, { 73, 53, 83 }, { 53, 42, 91 }, { 45, 22, 83 }, { 57,  9, 66 },
+         { 79, 14, 59 }, { 92, 32, 68 }, { 84, 45, 87 }, { 64, 40, 99 }, { 51, 20, 95 }, { 57,  3, 79 },
+         { 79,  4, 68 }, { 96, 20, 73 }
+   };
+   dip::uint s = 100;
+   dip::Image img( { s, s, s }, 1, dip::DT_BIN );
+   img.Fill( 0 );
+   dip::DrawLines( img, p, { 1 }, "add" );
+   dip::DrawLines( img, q, { 1 }, "add" );
+   dip::Image lab;
+   dip::uint n = dip::Label( img, lab, 3 );
+   DOCTEST_CHECK( n == 2 );
+   DOCTEST_CHECK( dip::Maximum( lab ).As< dip::LabelType >() == 2 );
+   DOCTEST_CHECK( dip::All(( lab > 0 ) == img ).As< bool >() );
+
+   dip::uint n2 = dip::Label( img, lab, 2 );
+   dip::uint n1 = dip::Label( img, lab, 1 );
+   DOCTEST_CHECK( n1 > n2 ); // I don't know how many labels we'll get, but we do know we'll have more as we reduce the connectivity.
+   DOCTEST_CHECK( n2 > n );
+
+   // Two 2D intertwined spirals. Generated data points using the following Python:
+   /*
+   t = np.arange(0, 3 * 6) / 6 * np.pi
+   h = 5
+   o = 10
+   s = 100
+   p = np.stack(((h * t + o) * np.cos(t), (h * t + o) * np.sin(t))).transpose()
+   p = p + np.array([s/2, s/2])[None,:]
+   p = p.round().astype(int)
+   q = s - p
+
+   img = dip.Image((s, s), 1, 'UINT8')
+   img.Fill(0)
+   dip.DrawLines(img, p.tolist(), 1, "add")
+   dip.DrawLines(img, q.tolist(), 1, "add")
+   */
+   p = dip::CoordinateArray{
+         { 60, 50 }, { 61, 56 }, { 58, 63 }, { 50, 68 }, { 40, 68 }, { 30, 62 },
+         { 24, 50 }, { 25, 36 }, { 35, 23 }, { 50, 16 }, { 68, 19 }, { 84, 31 },
+         { 91, 50 }, { 88, 72 }, { 73, 90 }, { 50, 99 }, { 24, 95 }, {  3, 77 }
+   };
+   q = dip::CoordinateArray{
+         { 40, 50 }, { 39, 44 }, { 42, 37 }, { 50, 32 }, { 60, 32 }, { 70, 38 },
+         { 76, 50 }, { 75, 64 }, { 65, 77 }, { 50, 84 }, { 32, 81 }, { 16, 69 },
+         {  9, 50 }, { 12, 28 }, { 27, 10 }, { 50,  1 }, { 76,  5 }, { 97, 23 }
+   };
+   img = dip::Image( { s, s }, 1, dip::DT_BIN );
+   img.Fill( 0 );
+   dip::DrawLines( img, p, { 1 }, "add" );
+   dip::DrawLines( img, q, { 1 }, "add" );
+   n = dip::Label( img, lab, 2 );
+   DOCTEST_CHECK( n == 2 );
+   DOCTEST_CHECK( dip::Maximum( lab ).As< dip::LabelType >() == 2 );
+   DOCTEST_CHECK( dip::All(( lab > 0 ) == img ).As< bool >() );
+
+   dip::BinaryDilation( img, img, 1, 1 );
+   n = dip::Label( img, lab, 2 );
+   DOCTEST_CHECK( n == 2 );
+   DOCTEST_CHECK( dip::Maximum( lab ).As< dip::LabelType >() == 2 );
+   DOCTEST_CHECK( dip::All(( lab > 0 ) == img ).As< bool >() );
+
+   n = dip::Label( img, lab, 1 );
+   DOCTEST_CHECK( n == 2 );
+   DOCTEST_CHECK( dip::Maximum( lab ).As< dip::LabelType >() == 2 );
+   DOCTEST_CHECK( dip::All(( lab > 0 ) == img ).As< bool >() );
+}
+
+#endif // DIP_CONFIG_ENABLE_DOCTEST

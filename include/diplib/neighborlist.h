@@ -257,15 +257,7 @@ class DIP_NO_EXPORT NeighborList {
             bool operator!=( Iterator const& other ) const { return it_ != other.it_; }
             /// Returns true if the neighbor pointed to is within the image
             bool IsInImage( UnsignedArray const& coords, UnsignedArray const& imsz ) const {
-               for( dip::uint ii = 0; ii < it_->coords.size(); ii++ ) {
-                  // We're assuming it_->coords is very small w.r.t. the image size.
-                  // Unsigned addition of uint + {..,-1,0,1,..}, works just fine: 0+(-1), yields a very large value.
-                  dip::uint pos = coords[ ii ] + static_cast< dip::uint >( it_->coords[ ii ] );
-                  if( pos >= imsz[ ii ] ) {
-                     return false;
-                  }
-               }
-               return true;
+               return NeighborList::IsInImage( coords, it_->coords, imsz );
             }
          private:
             NeighborListIterator it_;
@@ -363,6 +355,22 @@ class DIP_NO_EXPORT NeighborList {
          return Iterator{ neighbors_.end() };
       }
 
+      /// \brief Retrieve neighbor coordinates by index
+      IntegerArray const& Coordinates( dip::uint index ) const {
+         return neighbors_[ index ].coords;
+      }
+
+      /// \brief Retrieve neighbor distance by index
+      dfloat Distance( dip::uint index ) const {
+         return neighbors_[ index ].distance;
+      }
+
+      /// \brief Returns true if the neighbor by index is within the image
+      bool IsInImage( dip::uint index, UnsignedArray const& coords, UnsignedArray const& imsz ) const {
+         auto neighbor_coords = Coordinates( index );
+         return IsInImage( coords, neighbor_coords, imsz );
+      }
+
    private:
       NeighborListData neighbors_;
 
@@ -371,6 +379,18 @@ class DIP_NO_EXPORT NeighborList {
       DIP_EXPORT void ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize );
       DIP_EXPORT void ConstructChamfer( dip::uint dimensionality, dip::uint maxDistance, FloatArray pixelSize );
       DIP_EXPORT void ConstructImage( dip::uint dimensionality, Image const& c_metric );
+
+      static bool IsInImage( UnsignedArray const& coords, IntegerArray neighbor_coords, UnsignedArray const& imsz ) {
+         for( dip::uint ii = 0; ii < neighbor_coords.size(); ii++ ) {
+            // We're assuming coords is very small w.r.t. the image size.
+            // Unsigned addition of uint + {..,-1,0,1,..}, works just fine: 0+(-1), yields a very large value.
+            dip::uint pos = coords[ ii ] + static_cast< dip::uint >( neighbor_coords[ ii ] );
+            if( pos >= imsz[ ii ] ) {
+               return false;
+            }
+         }
+         return true;
+      }
 };
 
 inline void swap( NeighborList::Iterator& v1, NeighborList::Iterator& v2 ) {
