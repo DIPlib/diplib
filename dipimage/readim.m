@@ -177,7 +177,7 @@ elseif ndims(image)==3
       image = image*255;
    end
    image = dip_image(image);
-   image = joinchannels('RGB',image);
+   image = joinchannels('sRGB',image);
 else
    image = dip_image(image);
 end
@@ -262,7 +262,7 @@ newsz(newsz==1) = [];
 image = reshape(image,[sz(1),newsz]);
 image = dip_image(image,sz(1));
 if numtensorel(image)==3
-   image = joinchannels('RGB',image);
+   image = joinchannels('sRGB',image);
 end
 
 % Read image metadata

@@ -53,6 +53,10 @@ title: "Changes DIPlib 3.0.1"
 
 ### Bug fixes
 
+- `readim` and `writeim`, when using MATLAB's functionality, would work in linear RGB space, instead of sRGB
+  like the DIPlib functions do.
+
+- `readics` tried to read the file as a TIFF file instead of an ICS file.
 
 ## Changes to PyDIP
 

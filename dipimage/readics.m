@@ -39,4 +39,4 @@
 
 function varargout = readtiff(varargin)
 varargout = cell(1,max(nargout,1));
-[varargout{:}] = dip_fileio('readtiff',varargin{:});
+[varargout{:}] = dip_fileio('readics',varargin{:});

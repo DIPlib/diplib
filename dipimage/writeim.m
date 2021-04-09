@@ -105,7 +105,7 @@ switch upper(format)
      % For any other format, relay to MATLAB's built-in file writing
      warning('Converting the image to uint8 for writing using MATLAB''s imwrite function')
      if iscolor(image)
-        image = colorspace(image,'rgb');
+        image = colorspace(image,'sRGB');
      end
      if ~isscalar(image)
         image = tensortospatial(image,ndims(image)+1);
