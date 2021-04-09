@@ -61,26 +61,28 @@ class grey2rgb : public ColorSpaceConverter {
 
 // sRGB transformations
 
-constexpr double a = 0.055;
-constexpr double gamma = 2.4;
-constexpr double K_0 = a / ( gamma - 1 );
-constexpr double phi = 12.923210180787853; // == std::pow(( 1 + a ) / gamma, gamma ) * std::pow(( gamma - 1 ) / a, gamma - 1 );
+namespace srgb {
+constexpr dfloat a = 0.055;
+constexpr dfloat gamma = 2.4;
+constexpr dfloat K_0 = a / ( gamma - 1 );
+constexpr dfloat phi = 12.923210180787853; // == std::pow(( 1 + a ) / gamma, gamma ) * std::pow(( gamma - 1 ) / a, gamma - 1 );
+}
 
 // Linear to sRGB
 inline dfloat LinearToS( dfloat in ) {
-   if( in <= K_0 / phi ) {
-      return in * phi;
+   if( in <= srgb::K_0 / srgb::phi ) {
+      return in * srgb::phi;
    } else {
-      return ( 1 + a ) * std::pow( in, 1.0 / gamma ) - a;
+      return ( 1 + srgb::a ) * std::pow( in, 1.0 / srgb::gamma ) - srgb::a;
    }
 }
 
 // sRGB to Linear
 inline dfloat SToLinear( dfloat in ) {
-   if( in <= K_0 ) {
-      return in / phi;
+   if( in <= srgb::K_0 ) {
+      return in / srgb::phi;
    } else {
-      return std::pow(( in + a ) / ( 1 + a ), gamma );
+      return std::pow(( in + srgb::a ) / ( 1 + srgb::a ), srgb::gamma );
    }
 }
 

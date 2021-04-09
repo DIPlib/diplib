@@ -25,9 +25,14 @@ namespace {
 constexpr char const* ICH_name = "ICH";
 constexpr char const* ISH_name = "ISH";
 
-// sqrt(3)/2 = 0.866025403784439
-constexpr std::array< dfloat, 9 > rotationMatrix = {{ 0.333333333333333, 1.0, 0.0, 0.333333333333333, -0.5, 0.866025403784439, 0.333333333333333, -0.5, -0.866025403784439 }};
-constexpr std::array< dfloat, 9 > invRotMatrix = {{ 1.0, 1.0, 1.0, 0.666666666666667, -0.333333333333333, -0.333333333333333, 0.0, 0.577350269189626, -0.577350269189626 }};
+namespace ich {
+constexpr dfloat a = 1.0 / 3.0;
+constexpr dfloat b = 2.0 / 3.0;
+constexpr dfloat c = 0.866025403784439; // sqrt(3)/2
+constexpr dfloat d = 0.577350269189626; // 1/sqrt(3)
+constexpr std::array< dfloat, 9 > rotationMatrix = {{ a, 1.0, 0.0, a, -0.5, c, a, -0.5, -c }};
+constexpr std::array< dfloat, 9 > invRotMatrix = {{ 1.0, 1.0, 1.0, b, -a, -a, 0.0, d, -d }};
+}
 
 class ich2grey : public ColorSpaceConverter {
    public:
@@ -66,9 +71,9 @@ class rgb2ich : public ColorSpaceConverter {
             dfloat G = input[ 1 ];
             dfloat B = input[ 2 ];
             // Rotation
-            dfloat I = rotationMatrix[ 0 ] * R + rotationMatrix[ 3 ] * G + rotationMatrix[ 6 ] * B;
-            dfloat a = rotationMatrix[ 1 ] * R + rotationMatrix[ 4 ] * G + rotationMatrix[ 7 ] * B;
-            dfloat b = rotationMatrix[ 2 ] * R + rotationMatrix[ 5 ] * G + rotationMatrix[ 8 ] * B;
+            dfloat I = ich::rotationMatrix[ 0 ] * R + ich::rotationMatrix[ 3 ] * G + ich::rotationMatrix[ 6 ] * B;
+            dfloat a = ich::rotationMatrix[ 1 ] * R + ich::rotationMatrix[ 4 ] * G + ich::rotationMatrix[ 7 ] * B;
+            dfloat b = ich::rotationMatrix[ 2 ] * R + ich::rotationMatrix[ 5 ] * G + ich::rotationMatrix[ 8 ] * B;
             // Output
             output[ 0 ] = I;
             output[ 1 ] = std::hypot( a, b );
@@ -92,9 +97,9 @@ class ich2rgb : public ColorSpaceConverter {
             dfloat a = C * std::cos( H );
             dfloat b = C * std::sin( H );
             // Rotation, output
-            output[ 0 ] = invRotMatrix[ 0 ] * I + invRotMatrix[ 3 ] * a + invRotMatrix[ 6 ] * b;
-            output[ 1 ] = invRotMatrix[ 1 ] * I + invRotMatrix[ 4 ] * a + invRotMatrix[ 7 ] * b;
-            output[ 2 ] = invRotMatrix[ 2 ] * I + invRotMatrix[ 5 ] * a + invRotMatrix[ 8 ] * b;
+            output[ 0 ] = ich::invRotMatrix[ 0 ] * I + ich::invRotMatrix[ 3 ] * a + ich::invRotMatrix[ 6 ] * b;
+            output[ 1 ] = ich::invRotMatrix[ 1 ] * I + ich::invRotMatrix[ 4 ] * a + ich::invRotMatrix[ 7 ] * b;
+            output[ 2 ] = ich::invRotMatrix[ 2 ] * I + ich::invRotMatrix[ 5 ] * a + ich::invRotMatrix[ 8 ] * b;
          } while( ++input, ++output );
       }
 };

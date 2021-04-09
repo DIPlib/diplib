@@ -42,6 +42,8 @@ title: "Changes DIPlib 3.0.1"
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together
   (distances smaller than a pixel).
 
+- `dip::ColorSpaceManager` didn't register the ICH and ISH color spaces.
+
 
 ## Changes to DIPimage
 
@@ -57,6 +59,7 @@ title: "Changes DIPlib 3.0.1"
   like the DIPlib functions do.
 
 - `readics` tried to read the file as a TIFF file instead of an ICS file.
+
 
 ## Changes to PyDIP
 

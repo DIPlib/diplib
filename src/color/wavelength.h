@@ -30,6 +30,8 @@ namespace {
 // to approximate these functions using a mixture of Gaussians (3 for the X
 // component, 2 each for Y and Z). Which option is more precise? Does it matter?
 
+namespace wl {
+
 constexpr std::array< dfloat, 81 > X = {{
       0.000160, 0.000662, 0.002362, 0.007242, 0.019110, 0.043400, 0.084736, 0.140638, 0.204492, 0.264737,
       0.314679, 0.357719, 0.383734, 0.386726, 0.370702, 0.342957, 0.302273, 0.254085, 0.195618, 0.132349,
@@ -93,6 +95,8 @@ void ConvertWavelengthToXYZ( dfloat wavelength, dfloat& outX, dfloat& outY, dflo
    }
 }
 
+}
+
 constexpr char const* wavelength_name = "wavelength";
 
 class wavelength2xyz : public ColorSpaceConverter {
@@ -101,7 +105,7 @@ class wavelength2xyz : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
          do {
-            ConvertWavelengthToXYZ( input[ 0 ], output[ 0 ], output[ 1 ], output[ 2 ] );
+            wl::ConvertWavelengthToXYZ( input[ 0 ], output[ 0 ], output[ 1 ], output[ 2 ] );
          } while( ++input, ++output );
       }
 };
@@ -121,7 +125,7 @@ class wavelength2rgb : public ColorSpaceConverter {
          do {
             // Look up XYZ value for wavelength
             dfloat X, Y, Z;
-            ConvertWavelengthToXYZ( input[ 0 ], X, Y, Z );
+            wl::ConvertWavelengthToXYZ( input[ 0 ], X, Y, Z );
             // Convert XYZ to RGB, divide by 1.85
             dfloat R = ( X * invMatrix_[ 0 ] + Y * invMatrix_[ 3 ] + Z * invMatrix_[ 6 ] ) / 1.85; // Matrix and multiplication from xyz2rgb, but leaving out the multiplication by 255, instead dividing by 1.85.
             dfloat G = ( X * invMatrix_[ 1 ] + Y * invMatrix_[ 4 ] + Z * invMatrix_[ 7 ] ) / 1.85;

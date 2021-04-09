@@ -59,7 +59,7 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "rgb", RGB_name );
    Register( new grey2rgb );
    Register( new rgb2grey );
-   // nlRGB (or R'G'B')
+   // sRGB
    Define( sRGB_name, 3 );
    DefineAlias( "srgb", sRGB_name );
    Register( new rgb2srgb );
@@ -81,6 +81,20 @@ ColorSpaceManager::ColorSpaceManager() {
    Register( new hsi2grey );
    Register( new rgb2hsi );
    Register( new hsi2rgb );
+   // ICH
+   Define( ICH_name, 3 );
+   DefineAlias( "ich", HSI_name );
+   Register( new grey2ich );
+   Register( new ich2grey );
+   Register( new rgb2ich );
+   Register( new ich2rgb );
+   // ISH
+   Define( ISH_name, 3 );
+   DefineAlias( "ish", HSI_name );
+   Register( new grey2ish );
+   Register( new ish2grey );
+   Register( new ich2ish );
+   Register( new ish2ich );
    // HCV
    Define( HCV_name, 3 );
    DefineAlias( "hcv", HCV_name );
