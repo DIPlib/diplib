@@ -93,11 +93,11 @@ class lab2xyz : public ColorSpaceConverter {
             output[ 2 ] = z * whitePoint_[ 2 ];
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
          whitePoint_ = whitePoint;
       }
    private:
-      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
+      XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class xyz2lab : public ColorSpaceConverter {
@@ -124,11 +124,11 @@ class xyz2lab : public ColorSpaceConverter {
             output[ 2 ] = 200.0 * ( fy - fz );
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
          whitePoint_ = whitePoint;
       }
    private:
-      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
+      XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class luv2grey : public lab2grey {
@@ -169,11 +169,11 @@ class luv2xyz : public ColorSpaceConverter {
             output[ 2 ] = X * ( a - 1.0/3.0 ) - 5 * Y;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
          whitePoint_ = whitePoint;
       }
    private:
-      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
+      XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class xyz2luv : public ColorSpaceConverter {
@@ -198,11 +198,11 @@ class xyz2luv : public ColorSpaceConverter {
             output[ 2 ] = 13.0 * L * ( v - vn );
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
          whitePoint_ = whitePoint;
       }
    private:
-      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
+      XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class lch2grey : public lab2grey {

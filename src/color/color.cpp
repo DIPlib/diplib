@@ -44,11 +44,11 @@ using XYZMatrix = std::array< dfloat, 9 >;
 
 namespace dip {
 
-constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantA;
-constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantD50;
-constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantD55;
-constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantD65;
-constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantE;
+constexpr XYZ ColorSpaceManager::IlluminantA;
+constexpr XYZ ColorSpaceManager::IlluminantD50;
+constexpr XYZ ColorSpaceManager::IlluminantD55;
+constexpr XYZ ColorSpaceManager::IlluminantD65;
+constexpr XYZ ColorSpaceManager::IlluminantE;
 
 ColorSpaceManager::ColorSpaceManager() {
    // grey (or gray)
@@ -57,67 +57,67 @@ ColorSpaceManager::ColorSpaceManager() {
    // RGB
    Define( RGB_name, 3 );
    DefineAlias( "rgb", RGB_name );
-   Register( new grey2rgb );
-   Register( new rgb2grey );
+   Register( std::make_shared< grey2rgb >() );
+   Register( std::make_shared< rgb2grey >() );
    // sRGB
    Define( sRGB_name, 3 );
    DefineAlias( "srgb", sRGB_name );
-   Register( new rgb2srgb );
-   Register( new srgb2rgb );
+   Register( std::make_shared< rgb2srgb >() );
+   Register( std::make_shared< srgb2rgb >() );
    // CMY
    Define( CMY_name, 3 );
    DefineAlias( "cmy", CMY_name );
-   Register( new rgb2cmy );
-   Register( new cmy2rgb );
+   Register( std::make_shared< rgb2cmy >() );
+   Register( std::make_shared< cmy2rgb >() );
    // CMYK
    Define( CMYK_name, 4 );
    DefineAlias( "cmyk", CMYK_name );
-   Register( new cmy2cmyk );
-   Register( new cmyk2cmy );
+   Register( std::make_shared< cmy2cmyk >() );
+   Register( std::make_shared< cmyk2cmy >() );
    // HSI
    Define( HSI_name, 3 );
    DefineAlias( "hsi", HSI_name );
-   Register( new grey2hsi );
-   Register( new hsi2grey );
-   Register( new rgb2hsi );
-   Register( new hsi2rgb );
+   Register( std::make_shared< grey2hsi >() );
+   Register( std::make_shared< hsi2grey >() );
+   Register( std::make_shared< rgb2hsi >() );
+   Register( std::make_shared< hsi2rgb >() );
    // ICH
    Define( ICH_name, 3 );
    DefineAlias( "ich", HSI_name );
-   Register( new grey2ich );
-   Register( new ich2grey );
-   Register( new rgb2ich );
-   Register( new ich2rgb );
+   Register( std::make_shared< grey2ich >() );
+   Register( std::make_shared< ich2grey >() );
+   Register( std::make_shared< rgb2ich >() );
+   Register( std::make_shared< ich2rgb >() );
    // ISH
    Define( ISH_name, 3 );
    DefineAlias( "ish", HSI_name );
-   Register( new grey2ish );
-   Register( new ish2grey );
-   Register( new ich2ish );
-   Register( new ish2ich );
+   Register( std::make_shared< grey2ish >() );
+   Register( std::make_shared< ish2grey >() );
+   Register( std::make_shared< ich2ish >() );
+   Register( std::make_shared< ish2ich >() );
    // HCV
    Define( HCV_name, 3 );
    DefineAlias( "hcv", HCV_name );
-   Register( new rgb2hcv );
-   Register( new hcv2rgb );
+   Register( std::make_shared< rgb2hcv >() );
+   Register( std::make_shared< hcv2rgb >() );
    // HSV
    Define( HSV_name, 3 );
    DefineAlias( "hsv", HSV_name );
-   Register( new hcv2hsv );
-   Register( new hsv2hcv );
+   Register( std::make_shared< hcv2hsv >() );
+   Register( std::make_shared< hsv2hcv >() );
    // XYZ
    Define( XYZ_name, 3 );
    DefineAlias( "xyz", XYZ_name );
-   Register( new grey2xyz );
-   Register( new rgb2xyz );
-   Register( new xyz2grey );
-   Register( new xyz2rgb );
+   Register( std::make_shared< grey2xyz >() );
+   Register( std::make_shared< rgb2xyz >() );
+   Register( std::make_shared< xyz2grey >() );
+   Register( std::make_shared< xyz2rgb >() );
    // Yxy
    Define( Yxy_name, 3 );
    DefineAlias( "yxy", Yxy_name );
-   Register( new xyz2yxy );
-   Register( new yxy2grey );
-   Register( new yxy2xyz );
+   Register( std::make_shared< xyz2yxy >() );
+   Register( std::make_shared< yxy2grey >() );
+   Register( std::make_shared< yxy2xyz >() );
    // Lab (or L*a*b*, CIELAB)
    Define( Lab_name, 3 );
    DefineAlias( "lab", Lab_name );
@@ -125,10 +125,10 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "l*a*b*", Lab_name );
    DefineAlias( "CIELAB", Lab_name );
    DefineAlias( "cielab", Lab_name );
-   Register( new grey2lab );
-   Register( new xyz2lab );
-   Register( new lab2grey );
-   Register( new lab2xyz );
+   Register( std::make_shared< grey2lab >() );
+   Register( std::make_shared< xyz2lab >() );
+   Register( std::make_shared< lab2grey >() );
+   Register( std::make_shared< lab2xyz >() );
    // Luv (or L*u*v*, CIELUV)
    Define( Luv_name, 3 );
    DefineAlias( "luv", Luv_name );
@@ -136,23 +136,23 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "l*u*v*", Luv_name );
    DefineAlias( "CIELUV", Luv_name );
    DefineAlias( "cieluv", Luv_name );
-   Register( new grey2luv );
-   Register( new xyz2luv );
-   Register( new luv2xyz );
-   Register( new luv2grey );
+   Register( std::make_shared< grey2luv >() );
+   Register( std::make_shared< xyz2luv >() );
+   Register( std::make_shared< luv2xyz >() );
+   Register( std::make_shared< luv2grey >() );
    // LCH
    Define( LCH_name, 3 );
    DefineAlias( "lch", LCH_name );
    DefineAlias( "L*C*H*", LCH_name );
    DefineAlias( "l*c*h*", LCH_name );
-   Register( new grey2lch );
-   Register( new lab2lch );
-   Register( new lch2lab );
-   Register( new lch2grey );
+   Register( std::make_shared< grey2lch >() );
+   Register( std::make_shared< lab2lch >() );
+   Register( std::make_shared< lch2lab >() );
+   Register( std::make_shared< lch2grey >() );
    // wavelength
    Define( wavelength_name, 1 );
-   Register( new wavelength2xyz );
-   Register( new wavelength2rgb );
+   Register( std::make_shared< wavelength2xyz >() );
+   Register( std::make_shared< wavelength2rgb >() );
 }
 
 
@@ -357,7 +357,7 @@ namespace {
 constexpr std::array< dfloat, 9 > primaries{{ 0.64, 0.33, 0.03,   0.30, 0.60, 0.10,   0.15, 0.06, 0.79 }};
 
 // Computes the RGB/XYZ transformation matrix based on the primaries
-XYZMatrix ComputeXYZMatrix( ColorSpaceManager::XYZ const& whitePoint ) {
+XYZMatrix ComputeXYZMatrix( XYZ const& whitePoint ) {
    XYZMatrix matrix;
    Inverse( 3, primaries.data(), matrix.data() );
    dfloat a1 = matrix[ 0 ] * whitePoint[ 0 ] + matrix[ 3 ] * whitePoint[ 1 ] + matrix[ 6 ] * whitePoint[ 2 ];
@@ -377,19 +377,18 @@ XYZMatrix ComputeXYZMatrix( ColorSpaceManager::XYZ const& whitePoint ) {
 
 } // namespace
 
-void ColorSpaceManager::SetWhitePoint( XYZ whitePoint ) {
+void ColorSpaceManager::SetWhitePoint( dip::XYZ whitePoint ) {
    whitePoint[ 0 ] /= whitePoint[ 1 ]; // Xn
    whitePoint[ 2 ] /= whitePoint[ 1 ]; // Zn
    whitePoint[ 1 ] = 1.0;              // Yn
    XYZMatrix matrix = ComputeXYZMatrix( whitePoint );
-   dynamic_cast< rgb2grey* >( GetColorSpaceConverter( "RGB",  dip::S::GREY ) )->SetWhitePoint( matrix );
-   dynamic_cast< grey2xyz* >( GetColorSpaceConverter( dip::S::GREY, "XYZ"  ) )->SetWhitePoint( whitePoint );
-   dynamic_cast< rgb2xyz*  >( GetColorSpaceConverter( "RGB",  "XYZ"  ) )->SetWhitePoint( matrix );
-   dynamic_cast< xyz2rgb*  >( GetColorSpaceConverter( "XYZ",  "RGB"  ) )->SetWhitePoint( matrix );
-   dynamic_cast< xyz2lab*  >( GetColorSpaceConverter( "XYZ",  "Lab"  ) )->SetWhitePoint( whitePoint );
-   dynamic_cast< lab2xyz*  >( GetColorSpaceConverter( "Lab",  "XYZ"  ) )->SetWhitePoint( whitePoint );
-   dynamic_cast< xyz2luv*  >( GetColorSpaceConverter( "XYZ",  "Luv"  ) )->SetWhitePoint( whitePoint );
-   dynamic_cast< luv2xyz*  >( GetColorSpaceConverter( "Luv",  "XYZ"  ) )->SetWhitePoint( whitePoint );
+   XYZMatrix inverseMatrix;
+   Inverse( 3, matrix.data(), inverseMatrix.data() );
+   for( auto& cs : colorSpaces_ ) {
+      for ( auto& conv : cs.edges ) {
+         conv.second->SetWhitePoint( whitePoint, matrix, inverseMatrix );
+      }
+   }
 }
 
 } // namespace dip

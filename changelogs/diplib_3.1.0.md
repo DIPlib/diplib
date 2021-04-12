@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Changes DIPlib 3.0.1"
+title: "Changes DIPlib 3.1.0"
 ---
 
 ## Changes to DIPlib
@@ -36,6 +36,12 @@ title: "Changes DIPlib 3.0.1"
   `Distance` and `IsInImage`.
 
 - `dip::Label` is slightly more efficient for 3D and higher-dimensional images; added tests. 
+
+- `dip::ColorSpaceConverter` has a `SetWhitePoint` member function. `dip::ColorSpaceManager::SetWhitePoint`
+  calls the `SetWhitePoint` member function for all registered converters. This allows custom converters
+  to use the white point as well.
+
+- `dip::ColorSpaceManager::XYZ` is deprecated, use `dip::XYZ` instead.
 
 ### Bug fixes
 

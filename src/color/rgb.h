@@ -37,7 +37,7 @@ class rgb2grey : public ColorSpaceConverter {
                           input[ 2 ] * Y_[ 2 ];
          } while( ++input, ++output );
       }
-      void SetWhitePoint( XYZMatrix const& matrix ) {
+      virtual void SetWhitePoint( XYZ const&, XYZMatrix const& matrix, XYZMatrix const& ) override {
          Y_[ 0 ] = matrix[ 1 ];
          Y_[ 1 ] = matrix[ 4 ];
          Y_[ 2 ] = matrix[ 7 ];

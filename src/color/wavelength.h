@@ -149,8 +149,8 @@ class wavelength2rgb : public ColorSpaceConverter {
             output[ 2 ] = B * 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( XYZMatrix const& matrix ) {
-         Inverse( 3, matrix.data(), invMatrix_.data() );
+      virtual void SetWhitePoint( XYZ const&, XYZMatrix const&, XYZMatrix const& inverseMatrix ) override {
+         invMatrix_ = inverseMatrix;
       }
    private:
       XYZMatrix invMatrix_{{ 3.241300, -0.969197, 0.0556395, -1.53754, 1.87588, -0.204012, -0.498662, 0.0415531, 1.05715 }};

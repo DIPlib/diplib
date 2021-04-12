@@ -40,6 +40,16 @@ namespace dip {
 /// Management and conversion between color spaces
 /// \addtogroup
 
+/// \brief An XYZ triplet, used to specify a white point for color spaces.
+using XYZ = std::array< dfloat, 3 >;
+
+/// \brief A color, as (x,y) chromacity coordinates, used to specify a white point for color spaces.
+using xy = std::array< dfloat, 2 >;
+
+/// \brief XYZ matrix (3x3 matrix, column-major order) for conversion between RGB and XYZ. Computed from a \ref XYZ triplet.
+using XYZMatrix = std::array< dfloat, 9 >;
+
+
 /// \brief Base class for conversion between two color spaces.
 ///
 /// Classes that convert between color spaces must derive from this and overload all the pure virtual functions.
@@ -54,6 +64,8 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 
       /// \brief Returns the cost of the conversion. This cost includes computational cost as well as precision loss.
       ///
+      /// Called by \ref dip::ColorSpaceManager::Convert.
+      ///
       /// The cost is used to avoid pathways such as "RGB" &rarr; "grey" &rarr; "Lab" instead of "RGB" &rarr; "XYZ" &rarr; "Yxy" &rarr; "Lab".
       /// Conversion to grey therefore must always have a high cost. It is not necessary to define this method,
       /// the default implementation returns a cost of 1.
@@ -61,9 +73,23 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 
       /// \brief This is the method that performs the conversion for one image line.
       ///
+      /// Called by \ref dip::ColorSpaceManager::Convert.
+      ///
       /// `input` and `output` point to buffers with the number of tensor elements expected for the two color
       /// spaces, as determined by the `InputColorSpace` and `OutputColorSpace` method.
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const = 0;
+
+      /// \brief This method is called to set the white point used by the converter. Does nothing by default.
+      ///
+      /// Called by \ref dip::ColorSpaceManager::SetWhitePoint.
+      ///
+      /// `matrix` and `inverseMatrix` are computed from `whitePoint` by the caller, to avoid multiple converter
+      /// functions doing the same computations.
+      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const& matrix, XYZMatrix const& inverseMatrix ) {
+         ( void )whitePoint;
+         ( void )matrix;
+         ( void )inverseMatrix;
+      }
 
       virtual ~ColorSpaceConverter() = default;
 };
@@ -82,14 +108,14 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// ```cpp
 /// dip::ColorSpaceManager csm;
 /// dip::Image img = ...
-/// csm.Set( img, "RGB" );                      // img is RGB
-/// img = csm.Convert( img, "Lab" );            // img will be converted to Lab
+/// csm.Set( img, "RGB" );                           // img is RGB
+/// img = csm.Convert( img, "Lab" );                 // img will be converted to Lab
 ///
-/// csm.Define( "Frank", 4 );                   // A new color space with 4 channels
-/// csm.DefineAlias( "f", "Frank" );            // "f" is an alias for "Frank"
-/// csm.Register( new frank2xyz );              // an object that converts from Frank to XYZ
-/// csm.Register( new yxy2frank );              // an object that converts from Yxy to Frank
-/// img = csm.Convert( img, "f" );              // img will be converted from Lab to Frank
+/// csm.Define( "Frank", 4 );                        // A new color space with 4 channels
+/// csm.DefineAlias( "f", "Frank" );                 // "f" is an alias for "Frank"
+/// csm.Register( std::make_shared< frank2xyz >() ); // an object that converts from Frank to XYZ
+/// csm.Register( std::make_shared< yxy2frank >() ); // an object that converts from Yxy to Frank
+/// img = csm.Convert( img, "f" );                   // img will be converted from Lab to Frank
 /// ```
 ///
 /// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from \ref dip::ColorSpaceConverter.
@@ -129,10 +155,10 @@ class DIP_NO_EXPORT ColorSpaceManager {
       DIP_EXPORT ColorSpaceManager();
 
       /// \brief Defines a new color space, that requires `nChannels` channels.
-      void Define( String const& colorSpaceName, dip::uint nChannels ) {
+      void Define( String colorSpaceName, dip::uint nChannels ) {
          DIP_THROW_IF( IsDefined( colorSpaceName ), "Color space name already defined" );
-         colorSpaces_.emplace_back( colorSpaceName, nChannels );
-         names_[ colorSpaceName ] = colorSpaces_.size() - 1;
+         names_[ colorSpaceName ] = colorSpaces_.size();
+         colorSpaces_.emplace_back( std::move( colorSpaceName ), nChannels );
       }
 
       /// \brief Defines an alias for a defined color space name.
@@ -143,19 +169,23 @@ class DIP_NO_EXPORT ColorSpaceManager {
 
       /// \brief Registers a function object to translate from one color space to another. The
       /// `dip::ColorSpaceManager` object takes ownership of the converter.
-      void Register( ColorSpaceConverter* converter ) {
-         auto smartpointer = ColorSpaceConverterPointer( converter );
+      void Register( ColorSpaceConverterPointer converter ) {
          dip::uint source = Index( converter->InputColorSpace() );
          dip::uint destination = Index( converter->OutputColorSpace() );
          auto& edges = colorSpaces_[ source ].edges;
          auto it = edges.find( destination );
          if( it == edges.end() ) {
             // emplace
-            edges.emplace( destination, std::move( smartpointer ));
+            edges.emplace( destination, std::move( converter ));
          } else {
             // replace
-            it->second = std::move( smartpointer );
+            it->second = std::move( converter );
          }
+      }
+
+      /// \brief Overload for the previous function, for backwards compatibility.
+      void Register( ColorSpaceConverter* converter ) {
+         Register( ColorSpaceConverterPointer( converter ));
       }
 
       /// \brief Check to see if a color space name is defined.
@@ -229,29 +259,23 @@ class DIP_NO_EXPORT ColorSpaceManager {
          return out;
       }
 
-      /// \brief The white point, as an XYZ triplet.
-      ///
-      /// The default white point is the Standard Illuminant D65. Configure the \ref dip::ColorSpaceManager
-      /// object through its `SetWhitePoint` method.
-      using XYZ = std::array< dfloat, 3 >;
-
-      /// \brief The white point, as (x,y) chromacity coordinates.
-      using xy = std::array< dfloat, 2 >;
+      // for backwards compatibility
+      using XYZ [[deprecated]] = dip::XYZ;
 
       /// \brief The CIE Standard Illuminant A (typical, domestic, tungsten-filament lighting).
-      DIP_EXPORT static constexpr XYZ IlluminantA{{ 1.0985, 1.0000, 0.3558 }};
+      DIP_EXPORT static constexpr dip::XYZ IlluminantA{{ 1.0985, 1.0000, 0.3558 }};
 
       /// \brief The CIE Standard Illuminant D50 (mid-morning or mid-afternoon daylight, color temperature is about 5000 K).
-      DIP_EXPORT static constexpr XYZ IlluminantD50{{ 0.9642, 1.0000, 0.8252 }};
+      DIP_EXPORT static constexpr dip::XYZ IlluminantD50{{ 0.9642, 1.0000, 0.8252 }};
 
       /// \brief The CIE Standard Illuminant D55 (morning or evening daylight, color temperature is about 5500 K).
-      DIP_EXPORT static constexpr XYZ IlluminantD55{{ 0.9568, 1.0000, 0.9215 }};
+      DIP_EXPORT static constexpr dip::XYZ IlluminantD55{{ 0.9568, 1.0000, 0.9215 }};
 
       /// \brief The CIE Standard Illuminant D65 (noon daylight, color temperature is about 6500 K). This is also used in the sRGB standard.
-      DIP_EXPORT static constexpr XYZ IlluminantD65{{ 0.9504, 1.0000, 1.0889 }};
+      DIP_EXPORT static constexpr dip::XYZ IlluminantD65{{ 0.9504, 1.0000, 1.0889 }};
 
       /// \brief The CIE Standard Illuminant E (synthetic, equal energy illuminant).
-      DIP_EXPORT static constexpr XYZ IlluminantE{{ 1.0000, 1.0000, 1.0000 }};
+      DIP_EXPORT static constexpr dip::XYZ IlluminantE{{ 1.0000, 1.0000, 1.0000 }};
 
       /// \brief Configure the conversion functions to use the given white point.
       ///
@@ -260,9 +284,9 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// (\ref dip::ColorSpaceManager::IlluminantD65).
       ///
       /// The white point is given as an XYZ triplet or (x,y) chromacity coordinates.
-      DIP_EXPORT void SetWhitePoint( XYZ whitePoint );
+      DIP_EXPORT void SetWhitePoint( dip::XYZ whitePoint );
       void SetWhitePoint( xy const& whitePoint ) {
-         XYZ triplet;
+         dip::XYZ triplet;
          triplet[ 0 ] = whitePoint[ 0 ];
          triplet[ 1 ] = whitePoint[ 1 ];
          triplet[ 2 ] = 1 - whitePoint[ 0 ] - whitePoint[ 1 ];
@@ -275,8 +299,8 @@ class DIP_NO_EXPORT ColorSpaceManager {
          String name;
          dip::uint nChannels;
          std::map< dip::uint, ColorSpaceConverterPointer > edges;  // The key is the target color space index
-         ColorSpace( String const& name, dip::uint chans ) :
-               name( name ), nChannels( chans ) {}
+         ColorSpace( String name, dip::uint chans ) :
+               name( std::move( name )), nChannels( chans ) {}
       };
 
       std::map< String, dip::uint > names_;

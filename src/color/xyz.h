@@ -53,11 +53,11 @@ class grey2xyz : public ColorSpaceConverter {
             output[ 2 ] = input[ 0 ] * whitePoint_[ 2 ] / 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
          whitePoint_ = whitePoint;
       }
    private:
-      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
+      XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class rgb2xyz : public ColorSpaceConverter {
@@ -71,20 +71,8 @@ class rgb2xyz : public ColorSpaceConverter {
             output[ 2 ] = ( input[ 0 ] * matrix_[ 2 ] + input[ 1 ] * matrix_[ 5 ] + input[ 2 ] * matrix_[ 8 ] ) / 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( XYZMatrix const& matrix ) {
+      virtual void SetWhitePoint( XYZ const&, XYZMatrix const& matrix, XYZMatrix const& ) override {
          matrix_ = matrix;
-         /*
-         std::cout << "matrix = "
-                   << matrix_[0] << ","
-                   << matrix_[1] << ","
-                   << matrix_[2] << ","
-                   << matrix_[3] << ","
-                   << matrix_[4] << ","
-                   << matrix_[5] << ","
-                   << matrix_[6] << ","
-                   << matrix_[7] << ","
-                   << matrix_[8] << std::endl;
-         */
       }
    private:
       XYZMatrix matrix_{{ 0.412348, 0.212617, 0.0193288, 0.357601, 0.715203, 0.119200, 0.180450, 0.0721801, 0.950371 }};
@@ -101,20 +89,8 @@ class xyz2rgb : public ColorSpaceConverter {
             output[ 2 ] = ( input[ 0 ] * invMatrix_[ 2 ] + input[ 1 ] * invMatrix_[ 5 ] + input[ 2 ] * invMatrix_[ 8 ] ) * 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( XYZMatrix const& matrix ) {
-         Inverse( 3, matrix.data(), invMatrix_.data() );
-         /*
-         std::cout << "invMatrix_ = "
-                   << invMatrix_[0] << ","
-                   << invMatrix_[1] << ","
-                   << invMatrix_[2] << ","
-                   << invMatrix_[3] << ","
-                   << invMatrix_[4] << ","
-                   << invMatrix_[5] << ","
-                   << invMatrix_[6] << ","
-                   << invMatrix_[7] << ","
-                   << invMatrix_[8] << std::endl;
-         */
+      virtual void SetWhitePoint( XYZ const&, XYZMatrix const&, XYZMatrix const& inverseMatrix ) override {
+         invMatrix_ = inverseMatrix;
       }
    private:
       XYZMatrix invMatrix_{{ 3.241300, -0.969197, 0.0556395, -1.53754, 1.87588, -0.204012, -0.498662, 0.0415531, 1.05715 }};
