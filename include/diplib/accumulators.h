@@ -486,10 +486,18 @@ class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
          sum_ = { 0.0, 0.0 };
       }
 
-      /// Add a sample to the accumulator
-      void Push( dfloat x ) {
+      /// Decompose a sample, useful to keep a cached lookup table
+      static dcomplex Decompose( dfloat x) {
+         return { std::cos( x ), std::sin( x ) };
+      }
+      /// Add a decomposed sample to the accumulator
+      void Push( dcomplex p ) {
          ++n_;
-         sum_ += dcomplex{ std::cos( x ), std::sin( x ) };
+         sum_ += p;
+      }
+      /// Decompose the sample and add it to the accumulator
+      void Push( dfloat x ) {
+         Push(Decompose(x));
       }
 
       /// Combine two accumulators

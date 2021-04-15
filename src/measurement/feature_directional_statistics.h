@@ -60,7 +60,13 @@ class FeatureDirectionalStatistics : public LineBased {
                   }
                }
                if( data ) {
-                  data->Push( *grey );
+                  const auto x = *grey;
+                  auto &p = lut_[x];
+                  if (p == dcomplex{}) {
+                     p = DirectionalStatisticsAccumulator::Decompose(x);
+                  }
+
+                  data->Push( p );
                }
             }
             ++grey;
@@ -80,6 +86,7 @@ class FeatureDirectionalStatistics : public LineBased {
 
    private:
       std::vector< DirectionalStatisticsAccumulator > data_;
+      std::unordered_map<dfloat, dcomplex> lut_;
 };
 
 
