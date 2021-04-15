@@ -19,7 +19,7 @@
  */
 
 #include <array>
-#include <map>
+#include <unordered_map>
 
 #include "diplib.h"
 #include "diplib/chain_code.h"
@@ -35,7 +35,7 @@ constexpr VertexInteger ChainCode::deltas8[8];
 namespace {
 
 struct ObjectData { dip::uint index; bool done; };
-using ObjectIdList = std::map< dip::uint, ObjectData >; // key is the objectID (label)
+using ObjectIdList = std::unordered_map< dip::uint, ObjectData >; // key is the objectID (label)
 
 template< typename TPI >
 static ChainCode GetOneChainCode(
