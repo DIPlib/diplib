@@ -621,7 +621,7 @@ class DIP_NO_EXPORT MomentAccumulator {
       }
 
       /// \brief Add a sample to the accumulator. `pos` must have `N` dimensions.
-      void Push( FloatArray pos, dfloat weight ) {
+      void Push( FloatArray const& pos, dfloat weight ) {
          dip::uint N = m1_.size();
          DIP_ASSERT( pos.size() == N );
          m0_ += weight;
