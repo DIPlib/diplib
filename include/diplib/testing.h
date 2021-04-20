@@ -303,7 +303,7 @@ inline std::ostream& operator<<(
    if( wall >= 360.0 ) {
       os << "elapsed time = " << wall / 60.0 << " min (wall), " << cpu / 60.0 << " min (CPU)";
    } else {
-      dip::sint magnitude = static_cast< dip::sint >( std::round( std::log10( wall ) / 3 ));
+      dip::sint magnitude = static_cast< dip::sint >( std::floor(( std::log10( wall ) + 1 ) / 3 ));
       switch( magnitude ) {
          default:
             os << "elapsed time = " << wall << " s (wall), " << cpu << " s (CPU)";
