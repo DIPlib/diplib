@@ -23,7 +23,7 @@
 %  flags: a cell array of strings, choose from:
 %     - 'high first': reverse the sorting order.
 %     - 'labels': output a labeled image rather than a binary image.
-%     - 'no gaps': regions are grown until they tough each other, no watershed
+%     - 'no gaps': regions are grown until they touch each other, no watershed
 %       lines are kept. Makes most sense together with 'labels'.
 %
 % DEFAULTS:
