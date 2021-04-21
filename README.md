@@ -138,7 +138,7 @@ limitations under the License.
 
 - *DocTest* (its use can be disabled)  
   Copyright 2016-2019 Viktor Kirilov  
-  The MIT License (MIT)  
+  MIT License  
   see [`dependencies/doctest/LICENSE.txt`](dependencies/doctest/LICENSE.txt)
 
 - The DFT algorithm out of *OpenCV* 3.1  
@@ -150,6 +150,11 @@ limitations under the License.
   Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors  
   Apache 2.0 License, or The MIT License, at your option  
   see [`include/diplib/private/pcg_*.hpp`](include/diplib/private/pcg_random.hpp)
+
+- *robin-map*, a fast hash map and hash set  
+  Copyright 2017 Thibaut Goetghebuer-Planchon  
+  MIT License  
+  see [`include/diplib/private/robin_*.h`](include/diplib/private/robin_map.h)
 
 - A fast 2D labeling algorithm out of *YACCLAB*  
   Copyright 2016-2017 Costantino Grana, Federico Bolelli, Lorenzo Baraldi and Roberto Vezzani  
@@ -194,15 +199,15 @@ limitations under the License.
   3-Clause BSD License  
   see [`pydip/src/loadjvm.py`](pydip/src/loadjvm.py)
 
-- A few *MATLAB* scripts from *OME Bio-Formats*  
+- A few *MATLAB* scripts from *OME Bio-Formats* (used in *DIPimage*)  
   Copyright 2012-2017 Open Microscopy Environment  
   GNU General Public License, Version 2 (**not compatible with the Apache License**)  
   see [`dipimage/private/bf*.m`](dipimage/private/bfGetReader.m)  
   (the full *Bio-Formats* library needs to be installed for these to be useful)
 
-- Modified CSS files from *dox++*, which originally came from *m.css*  
+- Modified CSS files from *dox++*, which originally came from *m.css* (for documentation)  
   Copyright 2017, 2018, 2019 Vladimír Vondruš  
-  The MIT License (MIT)
+  MIT License
 
 Note that all of these have permissive open-source licenses similar in spirit
 to the Apache License, except for *OME Bio-Formats*.

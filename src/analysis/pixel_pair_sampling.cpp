@@ -18,9 +18,8 @@
  * limitations under the License.
  */
 
-#include <unordered_map>
-
 #include "diplib.h"
+#include "diplib/private/robin_map.h"
 #include "diplib/analysis.h"
 #include "diplib/regions.h"
 #include "diplib/generic_iterators.h"
@@ -211,7 +210,7 @@ void NormalizeDistribution(
 
 namespace {
 
-using PhaseLookupTable = std::unordered_map< dip::uint, dip::uint >;
+using PhaseLookupTable = tsl::robin_map< dip::uint, dip::uint >;
 
 class PairCorrelationFunction : public PixelPairFunction {
    public:

@@ -18,10 +18,8 @@
  * limitations under the License.
  */
 
-#include <array>
-#include <unordered_map>
-
 #include "diplib.h"
+#include "diplib/private/robin_map.h"
 #include "diplib/chain_code.h"
 #include "diplib/regions.h"
 #include "diplib/overload.h"
@@ -35,7 +33,7 @@ constexpr VertexInteger ChainCode::deltas8[8];
 namespace {
 
 struct ObjectData { dip::uint index; bool done; };
-using ObjectIdList = std::unordered_map< dip::uint, ObjectData >; // key is the objectID (label)
+using ObjectIdList = tsl::robin_map< dip::uint, ObjectData >; // key is the objectID (label)
 
 template< typename TPI >
 static ChainCode GetOneChainCode(
@@ -120,9 +118,9 @@ static ChainCodeArray GetImageChainCodesInternal(
          if( ( newlabel != 0 ) && ( newlabel != label ) ) {
             // Check whether newlabel is start of not processed object
             auto it = objectIDs.find( newlabel );
-            if( ( it != objectIDs.end() ) && !it->second.done ) {
-               it->second.done = true;
-               index = it->second.index;
+            if( ( it != objectIDs.end() ) && !it.value().done ) {
+               it.value().done = true;
+               index = it.value().index;
                label = newlabel;
                process = true;
             }

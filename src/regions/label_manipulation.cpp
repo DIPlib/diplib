@@ -18,10 +18,9 @@
  * limitations under the License.
  */
 
-#include <set>
-#include <unordered_map>
-
 #include "diplib.h"
+#include "diplib/private/robin_map.h"
+#include "diplib/private/robin_set.h"
 #include "diplib/regions.h"
 #include "diplib/measurement.h"
 #include "diplib/framework.h"
@@ -30,7 +29,7 @@
 
 namespace dip {
 
-using LabelSet = std::set< dip::uint >;
+using LabelSet = tsl::robin_set< dip::uint >;
 
 namespace {
 
@@ -157,7 +156,7 @@ class RelabelLineFilter: public Framework::ScanLineFilter {
          }
       }
    private:
-      std::unordered_map< TPI, TPI > objectIDs_;
+      tsl::robin_map< TPI, TPI > objectIDs_;
       TPI lastLabel_ = 0;
 };
 

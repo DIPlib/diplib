@@ -15,14 +15,22 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::maximum_gauss_truncation()`, returning the maximum truncation that is useful for Gaussian functions.
 
+- `dip::NeighborList` allows accessing neighbors by index, through the new member functions `Coordinates`,
+  `Distance` and `IsInImage`.
+
 ### Changed functionality
 
-- `dip::Measurement::ObjectIdToIndexMap()` is much faster by changing `dip::ObjectIdToIndexMap`
-  from a `std::map` to a `std::unordered_map`. This makes `dip::MeasurementTool::Measure()` is significantly
-  faster.
+- Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and
+  `tsl::robin_set`, which are significantly faster. This affects `dip::Measurement` and functions
+  using it (including `dip::MeasurementTool::Measure()`), `dip::GetImageChainCodes()`, `dip::GetObjectLabels()`,
+  `dip::Relabel()`, `dip::ChordLength()` and `dip::PairCorrelation()`.
 
 - Added `dip::Measurement::SetObjectIDs()`, improved speed of `dip::Measurement::AddObjectIDs()` and
   `dip::Measurement::operator+()`.
+
+- `dip::Label` is slightly more efficient for 3D and higher-dimensional images; added tests.
+
+- Sped up `dip::MomentAccumulator`.
 
 - `dip::OptimalFourierTransformSize()` has a new option to return a smaller or equal size, rather than
   a larger or equal size, so we can crop an image for efficient FFT instead of padding.
@@ -31,11 +39,6 @@ title: "Changes DIPlib 3.1.0"
   unnecessarily large filter kernels. `dip::DrawBandlimitedPoint()`, `dip::DrawBandlimitedBall()`,
   `dip::DrawBandlimitedBox()`, `dip::GaussianEdgeClip()` and `dip::GaussianLineClip()` also limit the
   truncation in the same way.
-
-- `dip::NeighborList` allows accessing neighbors by index, through the new member functions `Coordinates`,
-  `Distance` and `IsInImage`.
-
-- `dip::Label` is slightly more efficient for 3D and higher-dimensional images; added tests. 
 
 - `dip::ColorSpaceConverter` has a `SetWhitePoint` member function. `dip::ColorSpaceManager::SetWhitePoint`
   calls the `SetWhitePoint` member function for all registered converters. This allows custom converters
@@ -49,6 +52,8 @@ title: "Changes DIPlib 3.1.0"
   (distances smaller than a pixel).
 
 - `dip::ColorSpaceManager` didn't register the ICH and ISH color spaces.
+
+
 
 
 ## Changes to DIPimage
@@ -67,15 +72,19 @@ title: "Changes DIPlib 3.1.0"
 - `readics` tried to read the file as a TIFF file instead of an ICS file.
 
 
+
+
 ## Changes to PyDIP
 
 ### New functionality
 
-- Added `dip.FlushToZero()`, a function to remove denormal values from an image.
+- Added `dip.FlushToZero()`, `dip.SplitRegions()`.
 
 ### Changed functionality
 
 ### Bug fixes
+
+
 
 
 ## Changes to DIPviewer
@@ -85,6 +94,8 @@ title: "Changes DIPlib 3.1.0"
 ### Changed functionality
 
 ### Bug fixes
+
+
 
 
 ## Changes to DIPjavaio

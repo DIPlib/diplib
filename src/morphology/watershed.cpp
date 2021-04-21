@@ -21,8 +21,6 @@
 
 #include <functional>
 #include <queue>
-#include <stack>
-#include <map>
 
 #include "diplib.h"
 #include "diplib/morphology.h"
