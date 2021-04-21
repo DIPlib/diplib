@@ -22,7 +22,6 @@
 #ifndef DIP_MATLAB_INTERFACE_H
 #define DIP_MATLAB_INTERFACE_H
 
-#include <map>
 #include <utility>
 #include <streambuf>
 #include <iostream>

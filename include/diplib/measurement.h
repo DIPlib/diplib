@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for measurement-related classes
  *
- * (c)2016-2018, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,8 @@
 #ifndef DIP_MEASUREMENT_H
 #define DIP_MEASUREMENT_H
 
-#include "diplib/private/robin_map.h"
-
 #include "diplib.h"
+#include "diplib/private/robin_map.h"
 #include "diplib/accumulators.h"
 
 
@@ -548,7 +547,7 @@ class DIP_NO_EXPORT Measurement {
       dip::uint FeatureIndex( String const& name ) const {
          auto it = featureIndices_.find( name );
          DIP_THROW_IF( it == featureIndices_.end(), "Feature not present: " + name );
-         return it->second;
+         return it.value();
       }
 
       /// \brief Returns an array of feature names
@@ -602,7 +601,7 @@ class DIP_NO_EXPORT Measurement {
       dip::uint ObjectIndex( dip::uint objectID ) const {
          auto it = objectIndices_.find( objectID );
          DIP_THROW_IF( it == objectIndices_.end(), "Object not present: " + std::to_string( objectID ));
-         return it->second;
+         return it.value();
       }
 
       /// \brief Returns the map that links object IDs to row indices.
@@ -1020,7 +1019,7 @@ class DIP_NO_EXPORT MeasurementTool {
       dip::uint Index( String const& name ) const {
          auto it = featureIndices_.find( name );
          DIP_THROW_IF( it == featureIndices_.end(), "Feature name not known: " + name );
-         return it->second;
+         return it.value();
       }
 };
 

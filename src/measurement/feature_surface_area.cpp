@@ -84,7 +84,7 @@ static void SurfaceAreaInternal(
             auto it = objectIndex.find( static_cast< dip::uint >( ip[ pos ] ));
             if( it != objectIndex.end() ) {
                requested = true;
-               index = it->second;
+               index = it.value();
             }
 
             // For each pixel, evaluate its 4 connected neighborhood
@@ -149,7 +149,7 @@ static void SurfaceAreaInternal(
                   if( it == objectIndex.end() ) {
                      continue;
                   }
-                  index = it->second;
+                  index = it.value();
                   nnt = nnb[ ii ];
                   for( dip::uint jj = ii + 1; jj < 6; ++jj ) {
                      if( nnn[ jj ] == nnn[ ii ] ) {

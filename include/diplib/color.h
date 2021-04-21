@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for color image support.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
@@ -299,11 +299,13 @@ class DIP_NO_EXPORT ColorSpaceManager {
          String name;
          dip::uint nChannels;
          std::map< dip::uint, ColorSpaceConverterPointer > edges;  // The key is the target color space index
+         // Note that we use std::map here because we expect few edges
          ColorSpace( String name, dip::uint chans ) :
                name( std::move( name )), nChannels( chans ) {}
       };
 
       std::map< String, dip::uint > names_;
+      // Note that we use std::map here because we expect a relatively small set of color spaces
       std::vector< ColorSpace > colorSpaces_;
 
       dip::uint Index( String const& name ) const {
@@ -312,7 +314,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
          return it->second;
       }
 
-      // The std::map `names_` translates known color space names to an index into the `colorSpaces_` array.
+      // The map `names_` translates known color space names to an index into the `colorSpaces_` array.
       // This array index is how we refer to color spaces internally. Externally, we always use
       // names. This way, different `ColorSpaceManager` objects can be used interchangeably (as long
       // as they contain the given color space name).

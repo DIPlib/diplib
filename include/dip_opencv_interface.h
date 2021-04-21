@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality for the OpenCV 2 interface.
  *
- * (c)2018-2020, Flagship Biosciences. Written by Cris Luengo.
+ * (c)2018-2021, Flagship Biosciences. Written by Cris Luengo.
  * Based on dip_matlab_interface.h: (c)2015-2017, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,11 +22,11 @@
 #ifndef DIP_OPENCV_INTERFACE_H
 #define DIP_OPENCV_INTERFACE_H
 
-#include <map>
 #include <utility>
 
 #include "diplib.h"
 #include "diplib/iterators.h"
+#include "diplib/private/robin_map.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -368,7 +368,7 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 class ExternalInterface : public dip::ExternalInterface {
    private:
       // This map holds `cv::Mat`s, we can find the right one if we have the data pointer.
-      std::map< void const*, cv::Mat > images_;
+      tsl::robin_map< void const*, cv::Mat > images_;
       // This is the deleter functor we'll associate to the dip::DataSegment.
       class StripHandler {
          private:
@@ -427,7 +427,7 @@ class ExternalInterface : public dip::ExternalInterface {
             // This image was not forged by this interface. Let's copy instead.
             DIP_STACK_TRACE_THIS( return CopyDipToMat( img ));
          }
-         cv::Mat mat{ std::move( it->second ) }; // In OpenCV 2.9 there is no move constructor nor move assignment... The docs to 4.0.0-pre also don't show these
+         cv::Mat mat{ std::move( it.value() ) }; // In OpenCV 2.9 there is no move constructor nor move assignment... The docs to 4.0.0-pre also don't show these
          images_.erase( ptr );
          // Check to make sure `mat` and `img` provide the same view
          dip::uint nDims = img.Dimensionality();

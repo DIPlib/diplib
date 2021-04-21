@@ -211,10 +211,10 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
          }
       } else {
          // Check that they have the same number of values
-         DIP_THROW_IF( out.features_[ it->second ].numberValues != f.numberValues,
+         DIP_THROW_IF( out.features_[ it.value() ].numberValues != f.numberValues,
                        "Number of values for feature " + f.name + " doesn't match" );
          for( dip::uint ii = 0; ii < f.numberValues; ++ii ) {
-            rhsColumnIndex[ it->second + ii ] = f.startColumn + ii;
+            rhsColumnIndex[ it.value() + ii ] = f.startColumn + ii;
          }
       }
    }
@@ -241,7 +241,7 @@ Measurement operator+( Measurement const& lhs, Measurement const& rhs ) {
             lhsRowIndex.push_back( NOT_THERE );
             rhsRowIndex.push_back( ii );
          } else {
-            rhsRowIndex[ it->second ] = ii;
+            rhsRowIndex[ it.value() ] = ii;
          }
       }
       DIP_ASSERT( jj <= objectIDs.size() );

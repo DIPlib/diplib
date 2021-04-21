@@ -60,7 +60,7 @@ class FeatureMaxVal : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second ] );
+                     data = &( data_[ it.value() ] );
                   }
                }
                if( data ) {

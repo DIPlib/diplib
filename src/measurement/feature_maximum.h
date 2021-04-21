@@ -65,7 +65,7 @@ class FeatureMaximum : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second * nD_ ] );
+                     data = &( data_[ it.value() * nD_ ] );
                      for( dip::uint ii = 0; ii < nD_; ++ii ) {
                         data[ ii ] = std::max( data[ ii ], coordinates[ ii ] );
                      }

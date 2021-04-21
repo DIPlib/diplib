@@ -65,7 +65,7 @@ class FeatureCenter : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second * ( nD_ + 1 ) ] );
+                     data = &( data_[ it.value() * ( nD_ + 1 ) ] );
                   }
                }
                if( data ) {

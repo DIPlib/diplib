@@ -70,8 +70,8 @@ class FeatureMinPos : public LineBased {
                      pos = nullptr;
                      data = nullptr;
                   } else {
-                     pos = &( pos_[ it->second * nD_ ] );
-                     data = &( data_[ it->second ] );
+                     pos = &( pos_[ it.value() * nD_ ] );
+                     data = &( data_[ it.value() ] );
                   }
                }
                if( data && ( *data > *grey )) {

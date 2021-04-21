@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functions that create chain codes from object outlines.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

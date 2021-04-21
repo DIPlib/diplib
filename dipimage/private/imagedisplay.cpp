@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `imagedisplay` function
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,12 +76,13 @@
  * This function is based on a MATLAB handle class, which stores an integer handle to a dip::ImageDisplay
  * object, stored in this MEX-file. The MEX-file is locked in memory.
  *
- * The integer handle is mapped to an object through a std::map.
+ * The integer handle is mapped to an object through a hash map.
  *
  */
 
 #include "dip_matlab_interface.h"
 #include "diplib/display.h"
+#include "diplib/private/robin_map.h"
 
 //#define DEBUG_MODE
 
@@ -146,7 +147,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    static dip::ColorSpaceManager colorSpaceManager;
    using Handle = dip::uint;
    using Object = std::shared_ptr< dip::ImageDisplay >;
-   using ObjectMap = std::map< Handle, Object >;
+   using ObjectMap = tsl::robin_map< Handle, Object >;
    static ObjectMap objects;
    static Handle newHandle = 0;
 
@@ -181,7 +182,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          Handle handle = dml::GetUnsigned( mxGetProperty( prhs[ 0 ], 0, "handle" ));
          auto it = objects.find( handle );
          DIP_THROW_IF( it == objects.end(), "Handle not known" );
-         Object& object = it->second;
+         Object& object = it.value();
 
          if( nrhs == 1 ) {
 

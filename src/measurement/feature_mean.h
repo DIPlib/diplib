@@ -60,7 +60,7 @@ class FeatureMean : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second * nTensor_ ] );
+                     data = &( data_[ it.value() * nTensor_ ] );
                   }
                }
                if( data ) {

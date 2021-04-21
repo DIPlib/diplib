@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `measure` function
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -72,7 +72,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          // Find known feature names
          auto infoArray = measurementTool.Features();
          // Put lower-case version of names in a map
-         std::map< dip::String, dip::uint > knownFeatures;
+         tsl::robin_map< dip::String, dip::uint > knownFeatures;
          for( dip::uint ii = 0; ii < infoArray.size(); ++ii ) {
             dip::String name = infoArray[ ii ].name;
             dip::ToLowerCase( name );
@@ -81,23 +81,23 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          // Put in aliases for backwards compatibility
          auto it = knownFeatures.find( "standarddeviation" );
          if( it != knownFeatures.end() ) {
-            knownFeatures.emplace( "stddev", it->second );
+            knownFeatures.emplace( "stddev", it.value() );
          }
          it = knownFeatures.find( "statistics" );
          if( it != knownFeatures.end() ) {
-            knownFeatures.emplace( "skewness", it->second );
-            knownFeatures.emplace( "excesskurtosis", it->second );
+            knownFeatures.emplace( "skewness", it.value() );
+            knownFeatures.emplace( "excesskurtosis", it.value() );
          }
          it = knownFeatures.find( "mass" );
          if( it != knownFeatures.end() ) {
-            knownFeatures.emplace( "sum", it->second );
+            knownFeatures.emplace( "sum", it.value() );
          }
          // Find requested features in map, using case-insensitive search, and copy name with correct case
          for( auto& f : features ) {
             dip::ToLowerCase( f );
             it = knownFeatures.find( f );
             DIP_THROW_IF( it == knownFeatures.end(), "Feature name not recognized" );
-            f = infoArray[ it->second ].name;
+            f = infoArray[ it.value() ].name;
          }
       } else {
          features = { "Size" };

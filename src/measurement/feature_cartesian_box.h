@@ -65,7 +65,7 @@ class FeatureCartesianBox : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second * nD_ ] );
+                     data = &( data_[ it.value() * nD_ ] );
                      for( dip::uint ii = 0; ii < nD_; ii++ ) {
                         data[ ii ].min = std::min( data[ ii ].min, coordinates[ ii ] );
                         data[ ii ].max = std::max( data[ ii ].max, coordinates[ ii ] );

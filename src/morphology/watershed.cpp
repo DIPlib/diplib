@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the various watershed implementations and related functions.
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on Exact stochastic watershed code: (c)2013, Filip Malmberg.
  *

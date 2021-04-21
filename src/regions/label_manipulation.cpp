@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains labeled image manipulation algorithms.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,23 +99,22 @@ UnsignedArray GetObjectLabels(
    // Do the scan
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, Framework::ScanOption::NoMultiThreading ));
 
-   // Count the number of unique labels
-   dip::uint count = 0;
-   for( auto id : objectIDs ) {
-      if( nullIsObject || ( id != 0 )) {
-         ++count;
-      }
+   // Should we ignore the 0 label?
+   if( !nullIsObject ) {
+      objectIDs.erase( 0 );
    }
 
    // Copy the labels to output array
-   UnsignedArray out( count );
-   count = 0;
+   UnsignedArray out( objectIDs.size() );
+   dip::uint count = 0;
    for( auto id : objectIDs ) {
-      if( nullIsObject || ( id != 0 )) {
-         out[ count ] = id;
-         ++count;
-      }
+      out[ count ] = id;
+      ++count;
    }
+
+   // Our set is unordered, we now need to sort the list of objects
+   std::sort( out.begin(), out.end() );
+
    return out;
 }
 
@@ -147,7 +146,7 @@ class RelabelLineFilter: public Framework::ScanLineFilter {
                   outLabel = ++lastLabel_;
                   objectIDs_.emplace( inLabel, outLabel );
                } else {
-                  outLabel = it->second;
+                  outLabel = it.value();
                }
                *out = outLabel;
             }
