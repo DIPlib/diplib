@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2020, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2244,7 +2244,7 @@ class DIP_NO_EXPORT Image {
 
       //
       // Getting/setting pixel values, data copies
-      // Defined in src/library/image_data.cpp
+      // Defined in src/library/image_copy.cpp
       //
 
       /// \name Setting pixel values, copying
@@ -2334,6 +2334,12 @@ class DIP_NO_EXPORT Image {
       ///
       /// \see dip::Image::ReinterpretCast, dip::Image::ReinterpretCastToSignedInteger, dip::Image::ReinterpretCastToUnsignedInteger
       DIP_EXPORT void Convert( dip::DataType dt );
+
+      /// \brief Swaps bytes in each sample, converting from little endian to big endian or vice versa.
+      ///
+      /// This process works for any data type with more than one byte per sample. For 8-bit integer imgaes and binary
+      /// images, nothing is node. The modification will affect all images with shared data. The image must be forged.
+      DIP_EXPORT void SwapBytesInSample();
 
       /// \brief Expands the image's tensor, such that the tensor representation is a column-major matrix.
       ///

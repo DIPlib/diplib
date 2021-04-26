@@ -18,6 +18,8 @@ title: "Changes DIPlib 3.1.0"
 - `dip::NeighborList` allows accessing neighbors by index, through the new member functions `Coordinates`,
   `Distance` and `IsInImage`.
 
+- Added `dip::Image::SwapBytesInSample()` to convert from little endian to big endian representation.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and

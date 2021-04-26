@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2020, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -414,6 +414,7 @@ void init_image( py::module& m ) {
    img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));
    img.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Image::Copy ), "src"_a );
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );
+   img.def( "SwapBytesInSample", &dip::Image::SwapBytesInSample );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
    img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );

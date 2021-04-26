@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -526,6 +526,55 @@ void Image::Convert( dip::DataType dt ) {
 namespace {
 
 template< typename TPI >
+void InternSwapBytesInSample( Image& img ) {
+   ImageIterator< TPI > it( img );
+   it.OptimizeAndFlatten();
+   do {
+      auto* c = reinterpret_cast< dip::uint8* >( it.Pointer() );
+      for( dip::uint ii = 0; ii < sizeof( TPI ) / 2; ++ii ) {
+         std::swap( c[ ii ], c[ sizeof( TPI ) - 1 - ii ] );
+      }
+   } while( ++it );
+}
+
+} // namespace
+
+void Image::SwapBytesInSample() {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   if( DataType().SizeOf() == 1 ) {
+      return; // nothing to do!
+   }
+   Image tmp = this->QuickCopy();
+   if( !tmp.IsScalar() ) {
+      tmp.TensorToSpatial();
+   }
+   if( tmp.DataType().IsComplex() ) {
+      tmp.SplitComplex( 0 );
+   }
+   switch( DataType().SizeOf() ) {
+      case 2:
+         tmp.ReinterpretCast( DT_UINT16 );
+         InternSwapBytesInSample< dip::uint16 >( tmp );
+         break;
+      case 4:
+         tmp.ReinterpretCast( DT_UINT32 );
+         InternSwapBytesInSample< dip::uint32 >( tmp );
+         break;
+      case 8:
+         tmp.ReinterpretCast( DT_UINT64 );
+         InternSwapBytesInSample< dip::uint64 >( tmp );
+         break;
+      default:
+         DIP_THROW( E::NOT_IMPLEMENTED ); // This should never happen
+   }
+   // Not using DIP_OVL_CALL_UINT() here because it would instantiate the template for uint8 also, which we don't need and don't want.
+}
+
+//
+
+namespace {
+
+template< typename TPI >
 static inline void InternFill( Image& dest, TPI value ) {
    DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint sstride;
@@ -588,3 +637,30 @@ void Image::Fill( Image::Sample const& sample ) {
 }
 
 } // namespace dip
+
+
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
+#include "doctest.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::SwapBytesInSample" ) {
+   dip::Image img( { 5, 8 }, 3, dip::DT_SINT16 );
+   img.Fill( 5 );
+   DOCTEST_CHECK( img.At( 3, 5 )[ 1 ].As< dip::sint16 >() == 5 );
+   img.SwapBytesInSample();
+   DOCTEST_CHECK( img.At( 3, 5 )[ 1 ].As< dip::sint16 >() == 5 * 256 );
+   img.SwapBytesInSample();
+   DOCTEST_CHECK( img.At( 3, 5 )[ 1 ].As< dip::sint16 >() == 5 );
+
+   img = dip::Image( { 5, 8 }, 1, dip::DT_SFLOAT );
+   img.Rotation90( 1 );
+   dip::sfloat v1 = 5.6904566e-28f; // hex representation: 12345678
+   dip::sfloat v2 = 1.7378244e+34f; // hex representation: 78563412
+   img.Fill( v1 );
+   DOCTEST_CHECK( img.At( 4, 2 )[ 1 ].As< dip::sfloat >() == v1 );
+   img.SwapBytesInSample();
+   DOCTEST_CHECK( img.At( 4, 2 )[ 1 ].As< dip::sfloat >() == v2 );
+   img.SwapBytesInSample();
+   DOCTEST_CHECK( img.At( 4, 2 )[ 1 ].As< dip::sfloat >() == v1 );
+}
+
+#endif // DIP_CONFIG_ENABLE_DOCTEST
