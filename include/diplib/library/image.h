@@ -1988,7 +1988,7 @@ class DIP_NO_EXPORT Image {
             case DT_UINT64:
                dataType_ = DT_SINT64;
                break;
-         };
+         }
          return *this;
       }
 
@@ -2018,7 +2018,7 @@ class DIP_NO_EXPORT Image {
             case DT_SINT64:
                dataType_ = DT_UINT64;
                break;
-         };
+         }
          return *this;
       }
 

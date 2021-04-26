@@ -246,7 +246,7 @@ struct DIP_NO_EXPORT DataType {
          case DT::DFLOAT:   return DTString::DFLOAT;
          case DT::SCOMPLEX: return DTString::SCOMPLEX;
          case DT::DCOMPLEX: return DTString::DCOMPLEX;
-      };
+      }
       DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
    }
 
@@ -266,7 +266,7 @@ struct DIP_NO_EXPORT DataType {
          case DT::DFLOAT:   return sizeof( dip::dfloat );
          case DT::SCOMPLEX: return sizeof( dip::scomplex );
          case DT::DCOMPLEX: return sizeof( dip::dcomplex );
-      };
+      }
       DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
    }
 
@@ -298,7 +298,7 @@ struct DIP_NO_EXPORT DataType {
          //case DT::SINT64, and floating-point types:
          default:
             return true;
-      };
+      }
    }
 
    /// \brief Returns true if the integer `value` is within the range representable by the data type.
@@ -323,7 +323,7 @@ struct DIP_NO_EXPORT DataType {
          //case DT::UINT64, and floating-point types:
          default:
             return true;
-      };
+      }
    }
 
    /// \brief Returns the real data type corresponding to a complex data type
@@ -335,7 +335,7 @@ struct DIP_NO_EXPORT DataType {
             return DT::DFLOAT;
          default:
             return dt;
-      };
+      }
    }
 
    /// \brief Specifies a collection of data types.
