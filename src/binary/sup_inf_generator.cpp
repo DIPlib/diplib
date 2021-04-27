@@ -274,7 +274,7 @@ void ExpandInputImage(
             sizes[ ii ] += 2 * border[ ii ];
          }
          largerIn.ShiftOriginUnsafe( largerIn.Offset( origin ));
-         largerIn.SetSizesUnsafe( sizes );
+         largerIn.SetSizesUnsafe( std::move( sizes ));
          // Copy
          if( !out.DataType().IsBinary() ) {
             DIP_STACK_TRACE_THIS( out.Strip()); // Make sure we don't get a data type conversion here
@@ -282,7 +282,7 @@ void ExpandInputImage(
          DIP_STACK_TRACE_THIS( out.Copy( largerIn ));
          // Out must be a view on this
          out.ShiftOriginUnsafe( out.Offset( border ));
-         out.SetSizesUnsafe( in.Sizes());
+         out.SetSizesUnsafe( in.Sizes() );
       }
    }
 }

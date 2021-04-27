@@ -170,7 +170,7 @@ void Gradient(
       order[ dims[ ii ]] = 0;
       ++it;
    }
-   out.SetPixelSize( pxsz );
+   out.SetPixelSize( std::move( pxsz ));
 }
 
 void GradientMagnitude(
@@ -287,7 +287,7 @@ void Curl(
          Derivative( in[ 0 ], d, order, sigmas, method, boundaryCondition, truncation );
          *it -= d;
 
-         out.SetPixelSize( pxsz );
+         out.SetPixelSize( std::move( pxsz ));
       DIP_END_STACK_TRACE
    }
 }
@@ -326,7 +326,7 @@ void Divergence(
          Add( out, tmp, out, out.DataType() );
       }
    }
-   out.SetPixelSize( pxsz );
+   out.SetPixelSize( std::move( pxsz ));
 }
 
 void Hessian (
@@ -370,7 +370,7 @@ void Hessian (
          ++it;
       }
    }
-   out.SetPixelSize( pxsz );
+   out.SetPixelSize( std::move( pxsz ));
 }
 
 void Laplace (

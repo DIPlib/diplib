@@ -369,8 +369,8 @@ void ContrastStretch(
       String colorSpace = in.ColorSpace();
       out.ReForge( in.Sizes(), in.TensorElements(), outType, Option::AcceptDataTypeChange::DO_ALLOW );
       out.Fill( outMin );
-      out.SetPixelSize( pixelSize );
-      out.SetColorSpace( colorSpace );
+      out.SetPixelSize( std::move( pixelSize ));
+      out.SetColorSpace( std::move( colorSpace ));
       return;
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;

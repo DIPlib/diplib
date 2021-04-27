@@ -69,7 +69,7 @@ void BinaryPropagation(
    } else {
       out = 0; // No seed data means: initialize all samples with false
    }
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
 
    // Zero iterations means: continue until propagation is done
    if( iterations == 0 ) {

@@ -328,7 +328,7 @@ void ParametricOpening(
    grey.Crop( c_in.Sizes() );
    PixelSize pixelSize = c_in.PixelSize();
    out.Copy( grey );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
 }
 
 } // namespace

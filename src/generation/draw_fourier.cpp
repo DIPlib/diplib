@@ -176,7 +176,7 @@ void FTEllipsoid(
    }
 
    out.Protect( protect );
-   out.SetPixelSize( ps );
+   out.SetPixelSize( std::move( ps ));
 }
 
 void FTBox(

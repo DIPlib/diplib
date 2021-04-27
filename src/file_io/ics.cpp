@@ -484,7 +484,7 @@ FileInformation ImageReadICS(
          out.Strip();
       }
       if( !out.IsForged() ) {
-         out.SetStrides( reqStrides );
+         out.SetStrides( std::move( reqStrides ));
          out.SetTensorStride( reqTensorStride );
       }
    }

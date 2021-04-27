@@ -320,7 +320,7 @@ void init_image( py::module& m ) {
    img.def( "PixelSize", py::overload_cast<>( &dip::Image::PixelSize ));
    img.def( "PixelSize", py::overload_cast<>( &dip::Image::PixelSize, py::const_ ));
    img.def( "PixelSize", py::overload_cast< dip::uint >( &dip::Image::PixelSize, py::const_ ), "dim"_a );
-   img.def( "SetPixelSize", py::overload_cast< dip::PixelSize const& >( &dip::Image::SetPixelSize ), "pixelSize"_a );
+   img.def( "SetPixelSize", py::overload_cast< dip::PixelSize >( &dip::Image::SetPixelSize ), "pixelSize"_a );
    img.def( "SetPixelSize", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::Image::SetPixelSize ), "dim"_a, "sz"_a );
    img.def( "SetPixelSize", []( dip::Image& image, dip::dfloat mag, dip::Units const& units ) { image.SetPixelSize( dip::PhysicalQuantity( mag, units )); }, "magnitude"_a, "units"_a = dip::Units{} );
    img.def( "SetPixelSize", []( dip::Image& image, dip::uint dim, dip::dfloat mag, dip::Units const& units ) { image.SetPixelSize( dim, dip::PhysicalQuantity( mag, units )); }, "dim"_a, "magnitude"_a, "units"_a = dip::Units{} );

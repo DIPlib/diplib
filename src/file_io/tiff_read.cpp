@@ -1128,7 +1128,7 @@ void ImageReadTIFFSeries(
    // And set the pixel sizes too
    auto ps = tmp.PixelSize();
    ps.Set( tmp.Dimensionality(), Units::Pixel() );
-   out.SetPixelSize( ps );
+   out.SetPixelSize( std::move( ps ));
 
    // Iterate over the sub-images through the last dimension
    ImageSliceIterator it( out, out.Dimensionality() - 1 );

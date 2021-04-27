@@ -109,8 +109,8 @@ void ProjectionScan(
       // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
       out.ReshapeTensor( outTensor );
    DIP_END_STACK_TRACE
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
+   out.SetPixelSize( std::move( pixelSize ));
+   out.SetColorSpace( std::move( colorSpace ));
    Image output = out.QuickCopy();
 
    // Do tensor to spatial dimension if necessary

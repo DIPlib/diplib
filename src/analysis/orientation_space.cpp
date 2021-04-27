@@ -90,7 +90,7 @@ void OrientationSpace(
    }
 
    FourierTransform( out, out, { S::INVERSE }, { true, true, false } );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
 }
 
 namespace {

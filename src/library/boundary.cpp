@@ -145,7 +145,7 @@ void ExtendImage(
 
       }
       out.ShiftOriginUnsafe( out.Offset( borderSizes )); // TODO: offset calculation does tests that are not necessary.
-      out.SetSizesUnsafe( sizes );
+      out.SetSizesUnsafe( std::move( sizes ));
    }
 }
 

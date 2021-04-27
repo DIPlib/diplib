@@ -120,9 +120,9 @@ void Separable(
    DIP_START_STACK_TRACE
       c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
       c_out.ReshapeTensor( outTensor );
-      c_out.SetPixelSize( pixelSize );
+      c_out.SetPixelSize( std::move( pixelSize ));
       if( !colorSpace.empty() ) {
-         c_out.SetColorSpace( colorSpace );
+         c_out.SetColorSpace( std::move( colorSpace ));
       }
    DIP_END_STACK_TRACE
 
@@ -196,7 +196,7 @@ void Separable(
    if( useIntermediate ) {
       intermediate.CopyProperties( output );
       intermediate.SetDataType( bufferType );
-      intermediate.SetSizes( intermSizes );
+      intermediate.SetSizes( std::move( intermSizes ));
       intermediate.Forge();
    }
 

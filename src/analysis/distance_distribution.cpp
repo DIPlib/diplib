@@ -50,13 +50,13 @@ Distribution DistanceDistribution(
       pixelSize = object_c.PixelSize();
    }
    if( pixelSize.IsPhysical() ) {
-      region.SetPixelSize( pixelSize );
       dip::uint nDims = std::min( object.Dimensionality(), pixelSize.Size() );
       dfloat psmag = pixelSize[ 0 ].magnitude;
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
          psmag = std::min( psmag, pixelSize[ ii ].magnitude );
       }
       maxDistance *= psmag;
+      region.SetPixelSize( std::move( pixelSize ));
    }
    Image distance = EuclideanDistanceTransform( region, S::OBJECT, S::TIES );
    dip::Histogram::Configuration configuration( 0, maxDistance, static_cast< int >( length - 1 ));

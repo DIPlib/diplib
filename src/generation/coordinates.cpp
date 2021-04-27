@@ -597,7 +597,7 @@ void FillDistanceToPoint(
    }
 
    out.Protect( protect );
-   out.SetPixelSize( ps );
+   out.SetPixelSize( std::move( ps ));
 }
 
 } // namespace dip

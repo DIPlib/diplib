@@ -99,9 +99,9 @@ void Full(
       }
       c_out.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
       c_out.ReshapeTensor( outTensor );
-      c_out.SetPixelSize( pixelSize );
+      c_out.SetPixelSize( std::move( pixelSize ));
       if( !colorSpace.empty() ) {
-         c_out.SetColorSpace( colorSpace );
+         c_out.SetColorSpace( std::move( colorSpace ));
       }
    DIP_END_STACK_TRACE
    Image output = c_out.QuickCopy();
@@ -122,7 +122,7 @@ void Full(
             bufferSizes[ ii ] += 2 * boundary[ ii ];
          }
       }
-      input.SetSizes( bufferSizes );
+      input.SetSizes( std::move( bufferSizes ));
       input.MatchStrideOrder( output );
       input.Forge(); // This forge will honor the strides we've set, the image does not have an external interface.
       input.Protect(); // make sure it's not reforged by `ExtendImage` or `Copy`.

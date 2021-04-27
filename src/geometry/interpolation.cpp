@@ -254,8 +254,8 @@ void Resampling(
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, borders, bc, *lineFilter,
                          Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
+   out.SetPixelSize( std::move( pixelSize ));
+   out.SetColorSpace( std::move( colorSpace ));
 }
 
 namespace {
@@ -484,8 +484,8 @@ dip::UnsignedArray Skew(
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, { border }, boundaryCondition, *lineFilter,
          Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
+   out.SetPixelSize( std::move( pixelSize ));
+   out.SetColorSpace( std::move( colorSpace ));
 
    return outArray;
 }
@@ -625,12 +625,12 @@ void Rotation(
       DIP_ASSERT( origin[ dimension2 ] <= out.Size( dimension2 ) - newSize[ dimension2 ] );
    }
    out.SetOriginUnsafe( out.Pointer( origin ));
-   out.SetSizesUnsafe( cropSize );
+   out.SetSizesUnsafe( std::move( cropSize ));
    // Next, extend as needed
    if( extend1 || extend2 ) {
       Image newOut;
       newOut.CopyProperties( out );
-      newOut.SetSizes( newSize );
+      newOut.SetSizes( std::move( newSize ));
       newOut.Forge();
       DIP_STACK_TRACE_THIS( newOut.At( region ).Copy( out )); // This will throw if sizes don't match -- it means our assumption is wrong!
       ExtendRegion( newOut, region, bc );
@@ -644,9 +644,9 @@ void Rotation(
          pixelSize.Set( dimension1, Units::Pixel() );
          pixelSize.Set( dimension2, Units::Pixel() );
       }
-      out.SetPixelSize( pixelSize );
+      out.SetPixelSize( std::move( pixelSize ));
    }
-   out.SetColorSpace( colorSpace );
+   out.SetColorSpace( std::move( colorSpace ));
 }
 
 

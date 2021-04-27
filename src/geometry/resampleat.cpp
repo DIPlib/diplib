@@ -232,8 +232,8 @@ void ResampleAt(
    }
    UnsignedArray outSize( 1, coordinates.size() );
    out.ReForge( outSize, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( pixelSize );
-   out.SetColorSpace( colorSpace );
+   out.SetPixelSize( std::move( pixelSize ));
+   out.SetColorSpace( std::move( colorSpace ));
 
    // Find interpolator
    InterpolationFunctionPointer function;

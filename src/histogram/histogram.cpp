@@ -351,7 +351,7 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
    }
-   data_.SetSizes( sizes );
+   data_.SetSizes( std::move( sizes ));
    data_.SetDataType( DT_COUNT );
    std::unique_ptr< HistogramBaseLineFilter >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, JointImageHistogramLineFilter, ( data_, configuration, true ), input.DataType() );
@@ -375,7 +375,7 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
    lowerBounds_ = { configuration[ 0 ].lowerBound, configuration[ 1 ].lowerBound };
    binSizes_ = { configuration[ 0 ].binSize, configuration[ 1 ].binSize };
    UnsignedArray sizes{ configuration[ 0 ].nBins, configuration[ 1 ].nBins };
-   data_.SetSizes( sizes );
+   data_.SetSizes( std::move( sizes ));
    data_.SetDataType( DT_COUNT );
    DataType dtype = DataType::SuggestDyadicOperation( input1.DataType(), input2.DataType() );
    std::unique_ptr< HistogramBaseLineFilter >scanLineFilter;
@@ -421,7 +421,7 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
    }
-   data_.SetSizes( sizes );
+   data_.SetSizes( std::move( sizes ));
    data_.SetDataType( DT_COUNT );
    data_.Forge();
    data_.Fill( 0 );

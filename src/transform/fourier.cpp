@@ -876,7 +876,7 @@ void FourierTransform(
       }
    }
    pixelSize.Resize( nDims );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
 
    // Set output color space
    if( in_copy.IsColor() ) {

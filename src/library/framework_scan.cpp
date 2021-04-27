@@ -185,7 +185,7 @@ void Scan(
       if( tensorToSpatial && !outTensor.IsScalar() ) {
          tmp.ReshapeTensor( outTensor );
       }
-      tmp.SetPixelSize( pixelSize );
+      tmp.SetPixelSize( std::move( pixelSize ));
       if( !colspaces.empty() ) {
          tmp.SetColorSpace( colspaces[ colspaces.size() == 1 ? 0 : ii ] );
       }

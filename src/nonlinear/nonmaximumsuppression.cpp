@@ -360,7 +360,7 @@ void NonMaximumSuppression(
    if( nDims == 1 ) {
       PixelSize ps = gradmag.HasPixelSize() ? gradmag.PixelSize() : gradient.PixelSize();
       out.ReForge( gradmag );
-      out.SetPixelSize( ps );
+      out.SetPixelSize( std::move( ps ));
       DIP_OVL_CALL_FLOAT( NonMaximumSuppression1D, ( gradmag, mask, out ), ovlType );
       return;
    }

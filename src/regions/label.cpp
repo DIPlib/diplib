@@ -272,7 +272,7 @@ dip::uint Label(
    Image in = c_in.QuickCopy();
    auto pixelSize = c_in.PixelSize();
    c_out.ReForge( in, DT_LABEL );
-   c_out.SetPixelSize( pixelSize );
+   c_out.SetPixelSize( std::move( pixelSize ));
    Image out = c_out.QuickCopy();
    out.StandardizeStrides(); // Reorder dimensions so the looping is more efficient. Also removes singleton dimensions!
 

@@ -314,7 +314,7 @@ void FastWatershed(
       // binary remains unforged.
    }
    labels.Fill( 0 );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
 
    if( offsets.empty() ) {
       // This can happen if `mask` is empty. We test here because the output image is now forged and initialized to zeros.
@@ -688,7 +688,7 @@ void SeededWatershed(
       }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
    if( mask.IsForged() ) {
       out.At( !mask ) = WATERSHED_LABEL;
    }
@@ -949,7 +949,7 @@ void CompactWatershed(
       }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
    if( mask.IsForged() ) {
       out.At( !mask ) = WATERSHED_LABEL;
    }

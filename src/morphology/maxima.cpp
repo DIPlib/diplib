@@ -239,7 +239,7 @@ void Extrema(
 
    // Prepare label image
    out.ReForge( in, DT_LABEL );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
    out.Fill( 0 );
 
    // Find processing dimension

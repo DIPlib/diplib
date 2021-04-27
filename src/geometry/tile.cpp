@@ -135,8 +135,8 @@ void Tile(
    Image out( c_out ); //
    out.ReForge( outSize, nTElems, dataType );
    out.ReshapeTensor( tensor );
-   out.SetColorSpace( colorSpace );
-   out.SetPixelSize( pixelSize );
+   out.SetColorSpace( std::move( colorSpace ));
+   out.SetPixelSize( std::move( pixelSize ));
    if( nImages < nTiles ) {
       out.Fill( 0 ); // This is not necessary if we have enough input images to tile the whole output image.
    }
@@ -262,7 +262,7 @@ void JoinChannels(
    // where the is one one image to tile has already been taken care of).
    Image out( c_out ); //
    out.ReForge( sizes, nImages, dataType );
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
    // Copy the input images over
    auto it_out = dip::ImageTensorIterator( out );
    auto it_in = in.begin();

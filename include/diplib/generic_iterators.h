@@ -1029,7 +1029,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
          // remove the processing dimension
          UnsignedArray sizes = image_.Sizes();
          sizes[ procDim_ ] = 1;
-         image_.SetSizesUnsafe( sizes );
+         image_.SetSizesUnsafe( std::move( sizes ));
          image_.Squeeze( procDim_ );
          // protect the image to avoid modifications
          image_.Protect();

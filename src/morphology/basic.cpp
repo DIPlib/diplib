@@ -87,7 +87,7 @@ void ExtendImageDoubleBoundary(
       outSizes[ ii ] -= doubleBoundary[ ii ];
       offset += static_cast< dip::sint >( boundary[ ii ] ) * out.Stride( ii );
    }
-   out.SetSizesUnsafe( outSizes );
+   out.SetSizesUnsafe( std::move( outSizes ));
    out.SetOriginUnsafe( out.Pointer( offset ));
    // Later after the first processing step, crop the image to the original size.
 }

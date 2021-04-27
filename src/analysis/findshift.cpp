@@ -348,7 +348,7 @@ FloatArray CorrectIntegerShift(
          origin[ ii ] = shift[ ii ] < 0 ? static_cast< dip::uint >( -shift[ ii ] ) : 0;
       }
       in1.SetOriginUnsafe( in1.Pointer( origin ));
-      in1.SetSizesUnsafe( sizes );
+      in1.SetSizesUnsafe( std::move( sizes ));
    }
    return shift;
 }

@@ -494,15 +494,15 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Set the image sizes. The image must be raw.
-      void SetSizes( UnsignedArray const& d ) {
+      void SetSizes( UnsignedArray d ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          TestSizes( d );
-         sizes_ = d;
+         sizes_ = std::move( d );
       }
 
       // Sets the sizes of the image. Do not use this function unless you know what you're doing.
-      void SetSizesUnsafe( UnsignedArray const& d ) {
-         sizes_ = d;
+      void SetSizesUnsafe( UnsignedArray d ) {
+         sizes_ = std::move( d );
       }
 
       //
@@ -527,14 +527,24 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Set the strides array. The image must be raw.
-      void SetStrides( IntegerArray const& s ) {
+      void SetStrides( IntegerArray s ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
-         strides_ = s;
+         strides_ = std::move( s );
       }
 
       /// \brief Set the tensor stride. The image must be raw.
       void SetTensorStride( dip::sint ts ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
+         tensorStride_ = ts;
+      }
+
+      // Sets the strides array. Do not use this function unless you know what you're doing.
+      void SetStridesUnsafe( IntegerArray s ) {
+         strides_ = std::move( s );
+      }
+
+      // Sets the tensor stride. Do not use this function unless you know what you're doing.
+      void SetTensorStrideUnsafe( dip::sint ts ) {
          tensorStride_ = ts;
       }
 
@@ -756,8 +766,8 @@ class DIP_NO_EXPORT Image {
       /// \brief Sets the image's color space name. This causes the image to be a color image,
       /// but will cause errors to occur (eventually, not immediately) if the number of tensor elements
       /// does not match the expected number of channels for the given color space.
-      void SetColorSpace( String const& cs ) {
-         colorSpace_ = cs;
+      void SetColorSpace( String cs ) {
+         colorSpace_ = std::move( cs );
       }
 
       /// \brief Resets the image's color space information, turning the image into a non-color image.
@@ -811,8 +821,8 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Set the pixels' size in physical units.
-      void SetPixelSize( dip::PixelSize const& ps ) {
-         pixelSize_ = ps;
+      void SetPixelSize( dip::PixelSize ps ) {
+         pixelSize_ = std::move( ps );
       }
 
       /// \brief Set the pixels' size along the given dimension in physical units.

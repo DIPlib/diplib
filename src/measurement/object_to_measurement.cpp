@@ -53,7 +53,7 @@ void ObjectToMeasurement(
    } else {
       auto px = label.PixelSize();
       out.ReForge( label.Sizes(), nElements, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-      out.SetPixelSize( px );
+      out.SetPixelSize( std::move( px ));
       out.Fill( 0 );
    }
 }

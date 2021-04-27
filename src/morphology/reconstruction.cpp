@@ -193,7 +193,7 @@ void MorphologicalReconstruction (
          neighborOffsetsIn, neighborOffsetsOut, neighborOffsetsDone, neighborList,
          minval, dilation ), in.DataType() );
 
-   out.SetPixelSize( pixelSize );
+   out.SetPixelSize( std::move( pixelSize ));
 }
 
 void LimitedMorphologicalReconstruction(

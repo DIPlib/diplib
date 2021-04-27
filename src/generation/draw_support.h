@@ -63,7 +63,7 @@ inline bool NarrowImageView(
       outSizes[ ii ] = static_cast< dip::uint >( end - start + 1 );
    }
    out.SetOriginUnsafe( out.Pointer( outOffset ));
-   out.SetSizesUnsafe( outSizes );
+   out.SetSizesUnsafe( std::move( outSizes ));
    return true;
 }
 

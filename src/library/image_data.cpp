@@ -751,7 +751,7 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Forge" ) {
    dip::Image img;
-   img.SetSizes( dip::UnsignedArray{ 5, 8, 7 } );
+   img.SetSizes( { 5, 8, 7 } );
    img.SetTensorSizes( 3 );
    img.Forge();
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3 * 5, 3 * 5 * 8 } );
@@ -760,7 +760,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Forge" ) {
    // Custom strides: swap tensor dimension and x axis
    img.Strip();
    img.SetTensorStride( 5 );
-   img.SetStrides( dip::IntegerArray{ 1, 5*3, 5*3*8 } );
+   img.SetStrides( { 1, 5*3, 5*3*8 } );
    img.Forge();
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5*3, 5*3*8 } );
    DOCTEST_CHECK( img.TensorStride() == 5 );
@@ -768,7 +768,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Forge" ) {
    // Custom strides that are not compact: yields normal strides
    img.Strip();
    img.SetTensorStride( 5 );
-   img.SetStrides( dip::IntegerArray{ 1, 5*3 + 5, ( 5*3 + 5 ) * 8 } );
+   img.SetStrides( { 1, 5*3 + 5, ( 5*3 + 5 ) * 8 } );
    img.Forge();
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3*5, 3*5*8 } );
    DOCTEST_CHECK( img.TensorStride() == 1 );
@@ -776,7 +776,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Forge" ) {
    // Custom strides: y dimension is flipped
    img.Strip();
    img.SetTensorStride( 5 );
-   img.SetStrides( dip::IntegerArray{ 1, -5*3, 5*3*8 } );
+   img.SetStrides( { 1, -5*3, 5*3*8 } );
    img.Forge();
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, -5*3, 5*3*8 } );
    DOCTEST_CHECK( img.TensorStride() == 5 );

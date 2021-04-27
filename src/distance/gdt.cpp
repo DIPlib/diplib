@@ -326,24 +326,24 @@ void GreyWeightedDistanceTransform(
    DIP_THROW_IF( dims < 2, E::DIMENSIONALITY_NOT_SUPPORTED ); // Fast marching makes no sense with less than 2 dimensions.
 
    // Check grey
-   if( c_grey.IsForged()) {
+   if( c_grey.IsForged() ) {
       DIP_THROW_IF( !c_grey.IsScalar(), E::IMAGE_NOT_SCALAR );
       DIP_THROW_IF( !c_grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
       DIP_THROW_IF( c_bin.Sizes() != c_grey.Sizes(), E::SIZES_DONT_MATCH );
 
       // We can only support non-negative weights --
       dfloat min;
-      DIP_STACK_TRACE_THIS( min = Minimum( c_grey ).As< dfloat >());
+      DIP_STACK_TRACE_THIS( min = Minimum( c_grey ).As< dfloat >() );
       DIP_THROW_IF( min < 0.0, "All input values must be non-negative" );
    }
 
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
-   if( c_mask.IsForged()) {
+   if( c_mask.IsForged() ) {
       mask = c_mask.QuickCopy();
       DIP_START_STACK_TRACE
          mask.CheckIsMask( c_bin.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
-         mask.ExpandSingletonDimensions( c_bin.Sizes());
+         mask.ExpandSingletonDimensions( c_bin.Sizes() );
       DIP_END_STACK_TRACE
    }
 
@@ -399,7 +399,7 @@ void GreyWeightedDistanceTransform(
       c_out.SetDataType( DT_SFLOAT );
       DIP_STACK_TRACE_THIS( c_out.Forge() );
    }
-   c_out.SetPixelSize( pixelSize );
+   c_out.SetPixelSize( std::move( pixelSize ));
 
    // Initialize `out` image
    c_out.Fill( 0 );
@@ -451,10 +451,10 @@ void GreyWeightedDistanceTransform(
    // Create temporary distance image
    Image tmp;
    if( outputDistance ) {
-      tmp.SetStrides( c_out.Strides());
-      tmp.SetSizes( c_out.Sizes());
+      tmp.SetStrides( c_out.Strides() );
+      tmp.SetSizes( c_out.Sizes() );
       tmp.SetDataType( DT_SFLOAT );
-      DIP_STACK_TRACE_THIS( tmp.Forge());
+      DIP_STACK_TRACE_THIS( tmp.Forge() );
       DIP_ASSERT( tmp.Strides() == c_out.Strides() );
       tmp.Fill( 0 );
    }
@@ -486,7 +486,7 @@ void GreyWeightedDistanceTransform(
       for( dip::uint ii = 0; ii < dims; ++ii ) {
          distances[ ii ] = out.PixelSize( ii ).magnitude;
       }
-      DIP_OVL_CALL_REAL( FastMarchingAlgorithm, ( grey, out, flags, neighborhood, offsets, coordComputer, distances ), grey.DataType());
+      DIP_OVL_CALL_REAL( FastMarchingAlgorithm, ( grey, out, flags, neighborhood, offsets, coordComputer, distances ), grey.DataType() );
    } else {
       if( outputDistance ) {
          out.swap( tmp ); // We need to use these in a different order...
