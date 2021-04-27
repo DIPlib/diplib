@@ -207,6 +207,7 @@ void WriteTIFFStrips(
       Image const& image,
       TiffFile& tiff
 ) {
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint tensorElements = image.TensorElements();
    dip::uint imageWidth = image.Size( 0 );
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));

@@ -242,6 +242,7 @@ void ImageWriteJPEG(
       String const& filename,
       dip::uint jpegLevel
 ) {
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    jpegLevel = clamp< dip::uint >( jpegLevel, 1, 100 );
 

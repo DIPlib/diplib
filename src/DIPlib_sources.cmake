@@ -51,6 +51,10 @@ set(DIPlib_sources_bogus
 ../include/diplib/overload.h
 ../include/diplib/pixel_table.h
 ../include/diplib/private/constfor.h
+../include/diplib/private/robin_growth_policy.h
+../include/diplib/private/robin_hash.h
+../include/diplib/private/robin_map.h
+../include/diplib/private/robin_set.h
 ../include/diplib/random.h
 ../include/diplib/regions.h
 ../include/diplib/saturated_arithmetic.h
@@ -106,6 +110,7 @@ file_io/file_io_support.cpp
 file_io/file_io_support.h
 file_io/ics.cpp
 file_io/jpeg.cpp
+file_io/npy.cpp
 file_io/tiff_read.cpp
 file_io/tiff_write.cpp
 generation/coordinates.cpp

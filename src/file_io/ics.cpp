@@ -676,6 +676,7 @@ void ImageWriteICS(
       dip::uint significantBits,
       StringSet const& options
 ) {
+   DIP_THROW_IF( !c_image.IsForged(), E::IMAGE_NOT_FORGED );
    // parse options
    bool oldStyle = false; // true if v1
    bool compress = true;

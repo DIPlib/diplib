@@ -18,7 +18,12 @@ title: "Changes DIPlib 3.1.0"
 - `dip::NeighborList` allows accessing neighbors by index, through the new member functions `Coordinates`,
   `Distance` and `IsInImage`.
 
+- Added `dip::Measurement::SetObjectIDs()`.
+
 - Added `dip::Image::SwapBytesInSample()` to convert from little endian to big endian representation.
+
+- Added `dip::ImageReadNPY()`, `dip::ImageReadNPYInfo()`, `dip::ImageIsNPY()` and `dip::ImageWriteNPY()`, to
+  work with NumPy's NPY files, expanding interoperability with Python.
 
 ### Changed functionality
 
@@ -27,7 +32,7 @@ title: "Changes DIPlib 3.1.0"
   using it (including `dip::MeasurementTool::Measure()`), `dip::GetImageChainCodes()`, `dip::GetObjectLabels()`,
   `dip::Relabel()`, `dip::ChordLength()` and `dip::PairCorrelation()`.
 
-- Added `dip::Measurement::SetObjectIDs()`, improved speed of `dip::Measurement::AddObjectIDs()` and
+- Improved speed of `dip::Measurement::AddObjectIDs()` and
   `dip::Measurement::operator+()`.
 
 - `dip::Label` is slightly more efficient for 3D and higher-dimensional images; added tests.
@@ -70,12 +75,16 @@ title: "Changes DIPlib 3.1.0"
 
 ### Changed functionality
 
+(See also changes to DIPlib.)
+
 ### Bug fixes
 
 - `readim` and `writeim`, when using MATLAB's functionality, would work in linear RGB space, instead of sRGB
   like the DIPlib functions do.
 
 - `readics` tried to read the file as a TIFF file instead of an ICS file.
+
+(See also bugfixes to DIPlib.)
 
 
 
@@ -86,9 +95,15 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip.FlushToZero()`, `dip.SplitRegions()`.
 
+- Added `dip.ImageReadNPY()`, `dip.ImageReadNPYInfo()`, `dip.ImageIsNPY()` and `dip.ImageWriteNPY()`.
+
 ### Changed functionality
 
+(See also changes to DIPlib.)
+
 ### Bug fixes
+
+(See also bugfixes to DIPlib.)
 
 
 

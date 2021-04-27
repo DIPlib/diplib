@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for reading and writing images from/to files
  *
- * (c)2017-2020, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -381,6 +381,54 @@ DIP_EXPORT void ImageWriteJPEG(
       Image const& image,
       String const& filename,
       dip::uint jpegLevel = 80
+);
+
+
+/// \brief Reads a numeric array from the NumPy NPY file `filename` and puts it in `out`.
+///
+/// The function tries to open `filename` as given first, and if that fails, it appends ".npy" to the
+/// name and tries again.
+///
+/// Only NPY files that contain a numeric array are supported, and only version 1.0 NPY files can be read
+/// (note that NumPy only writes later version files for more complex non-numeric arrays).
+///
+/// Following the handling of PyDIP, the Python bindings, we reverse the indexing of the array, such that
+/// the NumPy array's first index is the y axis as the second index is the x axis (this is how 2D arrays are
+/// treated everywhere in Python). We generalize this to arbitrary dimensions by reversing the indices.
+/// A standard C-order NumPy array this way translates to a DIPlib image with \ref normal_strides.
+DIP_EXPORT FileInformation ImageReadNPY(
+      Image& out,
+      String const& filename
+);
+inline Image ImageReadNPY(
+      String const& filename
+) {
+   Image out;
+   ImageReadNPY( out, filename );
+   return out;
+}
+
+/// \brief Reads array information (size and data type) from the NumPy NPY file `filename`, without reading the actual
+/// pixel data.
+DIP_EXPORT FileInformation ImageReadNPYInfo( String const& filename );
+
+/// \brief Returns true if the file `filename` is a NPY file.
+DIP_EXPORT bool ImageIsNPY( String const& filename );
+
+/// \brief Writes `image` as a numeric array to a NumPy NPY file.
+///
+/// `image` must be scalar, use \ref dip::Image::TensorToSpatial to save a tensor image. Any data type is allowed.
+/// Metadata (e.g. pixel sizes) are not stored.
+///
+/// If `filename` does not have an extension, ".npy" will be added. Overwrites any other file with the same name.
+///
+/// Following the handling of PyDIP, the Python bindings, we reverse the indexing of the array, such that
+/// the NumPy array's first index is the y axis as the second index is the x axis (this is how 2D arrays are
+/// treated everywhere in Python). We generalize this to arbitrary dimensions by reversing the indices.
+/// A DIPlib image with \ref normal_strides is thus translated to a NumPy array with standard C-order.
+DIP_EXPORT void ImageWriteNPY(
+      Image const& image,
+      String const& filename
 );
 
 

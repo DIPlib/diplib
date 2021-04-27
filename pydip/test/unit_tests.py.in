@@ -1,7 +1,7 @@
 # PyDIP 3.0, Python bindings for DIPlib 3.0
 # Unit test framework
 #
-# (c)2020, Wouter Caarls
+# (c)2020-2021, Wouter Caarls
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@ import staging.diplib
 sys.modules['diplib'] = staging.diplib
 
 (failure_count, test_count) = doctest.testfile(os.path.join("@CMAKE_CURRENT_LIST_DIR@", "test", "unit_tests.md"), module_relative=False, optionflags=doctest.IGNORE_EXCEPTION_DETAIL)
+
+if failure_count > 0:
+    sys.exit(1)
+
+(failure_count, test_count) = doctest.testfile(os.path.join("@CMAKE_CURRENT_LIST_DIR@", "test", "npy_tests.md"), module_relative=False, optionflags=doctest.IGNORE_EXCEPTION_DETAIL)
 
 if failure_count > 0:
     sys.exit(1)

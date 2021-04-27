@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for a simple file reading and writing interface
  *
- * (c)2019, Cris Luengo.
+ * (c)2019-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +45,7 @@ namespace dip {
 /// - `"ics"`: The file is an ICS file, use \ref dip::ImageReadICS.
 /// - `"tiff"`: The file is a TIFF file, use \ref dip::ImageReadTIFF. Reads only the first image plane.
 /// - `"jpeg"`: The file is a JPEG file, use \ref dip::ImageReadJPEG.
+/// - `"npy"`: The file is a NumPy NPY file, use \ref dip::ImageReadNPY.
 /// - `"bioformats"`: Use \ref dip::javaio::ImageReadJavaIO to read the file with the *Bio-Formats* library.
 /// - `""`: Select the format by looking at the file name extension or the file's first few bytes. This is the default.
 ///
@@ -68,12 +69,16 @@ inline FileInformation ImageRead(
          format = "tiff";
       } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
          format = "jpeg";
+      } else if( StringCompareCaseInsensitive( format, "npy" )) {
+         format = "npy";
       } else if( ImageIsICS( filename )) {
          format = "ics";
       } else if( ImageIsTIFF( filename )) {
          format = "tiff";
       } else if( ImageIsJPEG( filename )) {
          format = "jpeg";
+      } else if( ImageIsNPY( filename )) {
+         format = "npy";
       } else {
          format = "bioformats";
       }
@@ -85,6 +90,8 @@ inline FileInformation ImageRead(
       DIP_STACK_TRACE_THIS( info = ImageReadTIFF( out, filename ));
    } else if( format == "jpeg" ) {
       DIP_STACK_TRACE_THIS( info = ImageReadJPEG( out, filename ));
+   } else if( format == "npy" ) {
+      DIP_STACK_TRACE_THIS( info = ImageReadNPY( out, filename ));
    }
 #ifdef DIP_CONFIG_HAS_DIPJAVAIO
    else if( format == "bioformats" ) {
@@ -113,6 +120,7 @@ inline Image ImageRead(
 /// - `"icsv1"`: Create an ICS version 1 file, use \ref dip::ImageWriteICS.
 /// - `"tiff"`: Create a TIFF file, use \ref dip::ImageWriteTIFF.
 /// - `"jpeg"`: Create a JPEG file, use \ref dip::ImageWriteJPEG.
+/// - `"npy"`: Create a NumPy NPY file, use \ref dip::ImageWriteNPY.
 /// - `""`: Select the format by looking at the file name extension. If no extension is
 ///   present, it defaults to ICS version 2. This is the default.
 ///
@@ -126,6 +134,8 @@ inline Image ImageRead(
 ///
 /// The JPEG format can store 2D images. Tensor images are always tagged as sRGB. Most metadata will be lost.
 /// Image data is converted to 8-bit unsigned integer, without scaling.
+///
+/// The NPY format stores raw pixel data for a scalar image. Tensor images cannot be written. All metadata will be lost.
 ///
 /// `compression` determines the compression method used when writing the pixel data. It can be one of the
 /// following strings:
@@ -152,6 +162,8 @@ inline void ImageWrite(
          format = "tiff";
       } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
          format = "jpeg";
+      } else if( StringCompareCaseInsensitive( format, "npy" )) {
+         format = "npy";
       } else {
          DIP_THROW( "File extension not recognized" );
       }
@@ -176,6 +188,8 @@ inline void ImageWrite(
       DIP_STACK_TRACE_THIS( ImageWriteTIFF( image, filename, compression ));
    } else if( format == "jpeg" ) {
       DIP_STACK_TRACE_THIS( ImageWriteJPEG( image, filename ));
+   } else if( format == "npy" ) {
+      DIP_STACK_TRACE_THIS( ImageWriteNPY( image, filename ));
    } else {
       DIP_THROW_INVALID_FLAG( format );
    }

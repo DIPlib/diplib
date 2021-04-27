@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,38 @@
 #include "diplib/lookup_table.h"
 #include "diplib/mapping.h"
 #include "diplib/chain_code.h"
+
+namespace pybind11 {
+namespace detail {
+
+// Cast dip::FileInformation to Python dict, one way only.
+template<>
+class type_caster< dip::FileInformation > {
+   public:
+      using type = dip::FileInformation;
+      bool load( handle, bool ) { // no conversion from Python to DIPlib
+         return false;
+      }
+      static handle cast( dip::FileInformation const& src, return_value_policy, handle ) {
+         py::dict out;
+         out["name"] = py::cast( src.name );
+         out["fileType"] = py::cast( src.fileType );
+         out["dataType"] = py::cast( src.dataType );
+         out["significantBits"] = py::cast( src.significantBits );
+         out["sizes"] = py::cast( src.sizes );
+         out["tensorElements"] = py::cast( src.tensorElements );
+         out["colorSpace"] = py::cast( src.colorSpace );
+         out["pixelSize"] = py::cast( src.pixelSize );
+         out["origin"] = py::cast( src.origin );
+         out["numberOfImages"] = py::cast( src.numberOfImages );
+         out["history"] = py::cast( src.history );
+         return out.release();
+      }
+   PYBIND11_TYPE_CASTER( type, _( "DataType" ));
+};
+
+}
+}
 
 namespace {
 
@@ -116,18 +148,26 @@ void init_assorted( py::module& m ) {
           "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
    m.def( "ImageReadICS", py::overload_cast< dip::String const&, dip::UnsignedArray const&, dip::UnsignedArray const&, dip::UnsignedArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadICS ),
           "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
+   m.def( "ImageReadICSInfo", &dip::ImageReadICSInfo, "filename"_a );
    m.def( "ImageIsICS", &dip::ImageIsICS, "filename"_a );
    m.def( "ImageWriteICS", &dip::ImageWriteICS, "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
 
    m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadTIFF ),
           "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
    m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const&, dip::String const& >( &dip::ImageReadTIFFSeries ), "filenames"_a, "useColorMap"_a = dip::S::APPLY );
+   m.def( "ImageReadTIFFInfo", &dip::ImageReadTIFFInfo, "filename"_a, "imageNumber"_a = 0 );
    m.def( "ImageIsTIFF", &dip::ImageIsTIFF, "filename"_a );
    m.def( "ImageWriteTIFF", &dip::ImageWriteTIFF, "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
 
    m.def( "ImageReadJPEG", py::overload_cast< dip::String const& >( &dip::ImageReadJPEG ), "filename"_a );
+   m.def( "ImageReadJPEGInfo", &dip::ImageReadJPEGInfo, "filename"_a );
    m.def( "ImageIsJPEG", &dip::ImageIsJPEG, "filename"_a );
    m.def( "ImageWriteJPEG", &dip::ImageWriteJPEG, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
+
+   m.def( "ImageReadNPY", py::overload_cast< dip::String const& >( &dip::ImageReadNPY ), "filename"_a );
+   m.def( "ImageReadNPYInfo", &dip::ImageReadNPYInfo, "filename"_a );
+   m.def( "ImageIsNPY", &dip::ImageIsNPY, "filename"_a );
+   m.def( "ImageWriteNPY", &dip::ImageWriteNPY, "image"_a, "filename"_a );
 
    // diplib/simple_file_io.h
    m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
