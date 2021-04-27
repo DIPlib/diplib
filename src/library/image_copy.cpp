@@ -296,7 +296,9 @@ void Image::Copy( Image const& src ) {
       }
    }
    if( !IsForged() ) {
+      auto* ei = externalInterface_;
       CopyProperties( src );
+      externalInterface_ = ei; // This is only really relevant if `ei` is `nullptr`...
       DIP_STACK_TRACE_THIS( Forge() );
    }
    // A single CopyBuffer call if both images have simple strides and same dimension order

@@ -55,6 +55,10 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::ColorSpaceManager` didn't register the ICH and ISH color spaces.
 
+- `dip::Image::ResetNonDataProperties()` incorrectly set the number of tensor elements to 1.
+
+- `dip::Image::Copy()` would incorrectly copy the external interface if the destination image didn't have one defined.
+
 
 
 
