@@ -658,11 +658,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::SwapBytesInSample" ) {
    dip::sfloat v1 = 5.6904566e-28f; // hex representation: 12345678
    dip::sfloat v2 = 1.7378244e+34f; // hex representation: 78563412
    img.Fill( v1 );
-   DOCTEST_CHECK( img.At( 4, 2 )[ 1 ].As< dip::sfloat >() == v1 );
+   DOCTEST_CHECK( img.At( 4, 2 )[ 0 ].As< dip::sfloat >() == v1 );
    img.SwapBytesInSample();
-   DOCTEST_CHECK( img.At( 4, 2 )[ 1 ].As< dip::sfloat >() == v2 );
+   DOCTEST_CHECK( img.At( 4, 2 )[ 0 ].As< dip::sfloat >() == v2 );
    img.SwapBytesInSample();
-   DOCTEST_CHECK( img.At( 4, 2 )[ 1 ].As< dip::sfloat >() == v1 );
+   DOCTEST_CHECK( img.At( 4, 2 )[ 0 ].As< dip::sfloat >() == v1 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
