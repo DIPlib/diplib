@@ -280,8 +280,7 @@ void ConstrainedPathOpeningInternal(
    PixelQueue queue;
    PixelQueue changed;
 
-   for( dip::uint jj = 0; jj < offsets.size(); ++jj ) {
-      dip::sint offset = offsets[ jj ];
+   for( auto offset : offsets ) {
       if( !( active[ offset ] & PO_ACTIVE )) {
          continue;
       }
