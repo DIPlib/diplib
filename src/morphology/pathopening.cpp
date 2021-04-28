@@ -265,7 +265,7 @@ void ConstrainedPathOpeningInternal(
       Image& im_olup,                     // temp: upstream length, non-straight
       Image& im_sldn,                     // temp: downstream length, straight
       Image& im_oldn,                     // temp: downstream length, non-straight
-      std::vector< dip::sint > offsets,   // array with offsets into images
+      std::vector< dip::sint > const& offsets,   // array with offsets into images
       IntegerArray const& offsetUp,       // offsets to upstream neighbors
       IntegerArray const& offsetDown,     // offsets to upstream neighbors
       dip::uint length                    // param
