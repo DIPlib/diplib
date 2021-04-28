@@ -139,8 +139,8 @@ void ConstrainedPropagateChanges(
    straight_length[ index ] = 0;
    other_length[ index ] = 0;
    // Enqueue the neighbors that are still active
-   for( dip::uint jj = 0; jj < next.size(); ++jj ) {
-      dip::sint ii = index + next[ jj ];
+   for( dip::sint jj : next ) {
+      dip::sint ii = index + jj;
       if( active[ ii ] & PO_ACTIVE ) {
          active[ ii ] |= PO_QUEUED;
          queue.push( ii );
@@ -168,8 +168,8 @@ void ConstrainedPropagateChanges(
       if( len_s < straight_length[ index ] ) {
          straight_length[ index ] = len_s;
          // Enqueue the neighbors that are still active
-         for( dip::uint jj = 0; jj < next.size(); ++jj ) {
-            ii = index + next[ jj ];
+         for( dip::sint jj : next ) {
+            ii = index + jj;
             if(( active[ ii ] & PO_ACTIVE ) && !( active[ ii ] & PO_QUEUED )) {
                active[ ii ] |= PO_QUEUED;
                queue.push( ii );
@@ -210,8 +210,8 @@ void PropagateChanges(
    // This pixel's length is 0
    length[ index ] = 0;
    // Enqueue the neighbors that are still active
-   for( dip::uint jj = 0; jj < next.size(); ++jj ) {
-      dip::sint ii = index + next[ jj ];
+   for( dip::sint jj : next ) {
+      dip::sint ii = index + jj;
       if( active[ ii ] & PO_ACTIVE ) {
          active[ ii ] |= PO_QUEUED; // this is to make sure they're only pushed once
          queue.push( ii );
@@ -237,8 +237,8 @@ void PropagateChanges(
       if( len < length[ index ] ) {
          length[ index ] = len;
          // Enqueue the neighbors that are still active
-         for( dip::uint jj = 0; jj < next.size(); ++jj ) {
-            ii = index + next[ jj ];
+         for( dip::sint jj : next ) {
+            ii = index + jj;
             if(( active[ ii ] & PO_ACTIVE ) && !( active[ ii ] & PO_QUEUED )) {
                active[ ii ] |= PO_QUEUED;
                queue.push( ii );
@@ -280,8 +280,7 @@ void ConstrainedPathOpeningInternal(
    PixelQueue queue;
    PixelQueue changed;
 
-   for( dip::uint jj = 0; jj < offsets.size(); ++jj ) {
-      dip::sint offset = offsets[ jj ];
+   for( auto offset : offsets ) {
       if( !( active[ offset ] & PO_ACTIVE )) {
          continue;
       }
@@ -328,8 +327,7 @@ void PathOpeningInternal(
    PixelQueue queue;
    PixelQueue changed;
 
-   for( dip::uint jj = 0; jj < offsets.size(); ++jj ) {
-      dip::sint offset = offsets[ jj ];
+   for( auto offset : offsets ) {
       if( !( active[ offset ] & PO_ACTIVE )) {
          continue;
       }
@@ -368,7 +366,7 @@ void ParsePathMode(
    opening = BooleanFromString( polarity, S::OPENING, S::CLOSING );
    constrained = false;
    robust = false;
-   for( auto& m : mode ) {
+   for( auto const& m : mode ) {
       if( m == S::CONSTRAINED ) {
          constrained = true;
       } else if( m == S::UNCONSTRAINED ) {
