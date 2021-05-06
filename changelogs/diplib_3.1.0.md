@@ -84,6 +84,10 @@ title: "Changes DIPlib 3.1.0"
 
 - `readics` tried to read the file as a TIFF file instead of an ICS file.
 
+- Code like `img * [1,2,3]` converted the second argument into a 0D column vector image. The same code
+  with e.g. a 3x3 matrix would convert the matrix to a scalar 3x3 image, rather than a 0D matrix image.
+  These now behave more similarly to how they behaved in DIPimage 2.9.
+
 (See also bugfixes to DIPlib.)
 
 

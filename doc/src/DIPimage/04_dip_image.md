@@ -104,6 +104,11 @@ have 256x256 pixels as the default output size, and allow as a parameter
 either the size of an image, or an image whose size is to be copied. For
 example, `a*xx(a)` is an image multiplied by its x-coordinates.
 
+When calling a *DIPimage* function that expects a `dip_image` object as input,
+but using a numeric array as input instead, the array is silently converted
+to a `dip_image` object as if calling `dip_image(argument)`. This behavior is
+slightly different for arithmetic operations, see \ref sec_dum_dip_image_tensors.
+
 \section sec_dum_dip_image_displaying Displaying `dip_image` objects
 
 When a *MATLAB* command does not end with a semicolon, the display method
@@ -338,7 +343,7 @@ The pixels of a tensor image can be indexed like a normal image,
 returning a new tensor image. It can also be indexed using curly
 braces (`{}`) to select one or more tensor elements (channels). Indexing
 into the tensor dimension is identical to indexing into a *MATLAB*
-matrix: the first index goes down, and indices start at 0. For
+matrix: the first index goes down, and indices start at 1. For
 example, `c{1,1}` is a scalar image with the first tensor element of
 each matrix in the image `c`.
 A single index uses linear indexing: `c{1}` also is the first tensor element.
@@ -398,6 +403,17 @@ following table. See \ref sec_dum_dip_image_overloaded.
 | `cross` | `curl`  | `det` | `diag` | `divergence` | `dot`    |
 | `eig`   | `eye`   | `inv` | `norm` | `pinv`       | `rotate` |
 | `svd`   | `trace` | `*`   | `.'`   | `'`          |          |
+
+Arithmetic operations between an image and a small numeric matrix cause this
+matrix to be converted to a 0D tensor image (a single pixel with a matrix
+as value), instead of a small scalar image. This mode is triggered by matrices
+with up to 5-by-5 elements. For example,
+
+```matlab
+a = readim('trui');
+b = gradient(a);                 % yields a 2-vector
+c = b.' * [cosd(30); sind(30)]   % yields a scalar
+```
 
 \section sec_dum_dip_image_color Color images
 

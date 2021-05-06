@@ -838,10 +838,10 @@ enum class GetImageMode {
 };
 
 /// \brief \ref dml::GetImage can optionally turn an input numeric array to a tensor image. If the numeric array
-/// is a short vector (up to 5 elements) it will be seen as a 0D tensor image.
+/// is a short vector (up to 5 elements) or a small matrix (up to 5x5 elements) it will be seen as a 0D tensor image.
 enum class ArrayConversionMode {
-      STANDARD,        ///< All `mxArray`s are scalar images.
-      TENSOR_OPERATOR  ///< Turn the last dimension to a tensor dimension if it is short.
+      STANDARD,        ///< All arrays are scalar images.
+      TENSOR_OPERATOR  ///< Small arrays are 0D tensor images.
 };
 
 /// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
@@ -870,11 +870,12 @@ inline dip::Image GetImage(
    bool needCopy = false;
    bool maybeCast = false;
    bool lastDimToTensor = false;
+   dip::UnsignedArray lastDimTensorSizes; // only used if lastDimToTensor is true.
    dip::Tensor tensor; // scalar by default
-   mxClassID type;
-   mxArray const* mxdata;
-   dip::uint ndims;
-   mwSize const* psizes;
+   mxClassID type = mxUNKNOWN_CLASS; // initialize with value that gives trouble
+   mxArray const* mxdata = nullptr;
+   dip::uint ndims = 0;
+   mwSize const* psizes = nullptr;
    dip::UnsignedArray sizes;
    dip::PixelSize pixelSize;
    dip::String colorSpace;
@@ -938,6 +939,14 @@ inline dip::Image GetImage(
          } else {
             ndims = 1;
          }
+         if( conversion == ArrayConversionMode::TENSOR_OPERATOR ) {
+            if(( psizes[ 0 ] <= 5 ) && ( psizes[ 1 ] <= 5 )) {
+               // If the array is 1D or 2D and small, we'll turn it into a 0D tensor image at the end
+               ndims = 1;
+               lastDimToTensor = true;
+               lastDimTensorSizes = { psizes[ 0 ], psizes[ 1 ] };
+            }
+         }
       }
       sizes.resize( ndims, 1 );
       if( ndims == 1 ) {
@@ -955,11 +964,6 @@ inline dip::Image GetImage(
          // compatible with DIPlib storage
          needCopy = true;
       }
-      if( conversion == ArrayConversionMode::TENSOR_OPERATOR ) {
-         // If the last dimension is short, mark it so that we'll turn it into a tensor dimension at the end.
-         lastDimToTensor = ( sizes.size() == 1 ) && ( sizes.back() <= 5 );
-      }
-      // ELSE: It's never a tensor (`tensor` is scalar by default), and color space nor pixel size are defined
    }
    dip::DataType datatype;
    switch( type ) {
@@ -1015,10 +1019,11 @@ inline dip::Image GetImage(
       swap( sizes[ 0 ], sizes[ 1 ] );
       swap( strides[ 0 ], strides[ 1 ] );
    }
+   dip::Image out;
    if( needCopy ) {
       // Create 2 temporary Image objects for the real and complex component,
       // then copy them over into a new image.
-      dip::Image out( sizes, 1, datatype );
+      out = dip::Image( sizes, 1, datatype );
       dip::DataType dt = datatype.Real();
       void* p_real = mxGetData( mxdata );
       if( p_real ) {
@@ -1037,12 +1042,12 @@ inline dip::Image GetImage(
       if( maybeCast ) {
          detail::MaybeCastScalar( out );
       }
-      //out.SetPixelSize( pixelSize );
-      //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
       if( lastDimToTensor ) {
          out.SpatialToTensor();
+         out.ReshapeTensor( lastDimTensorSizes[ 0 ], lastDimTensorSizes[ 1 ] );
       }
-      return out;
+      //out.SetPixelSize( pixelSize );
+      //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
    } else {
       dip::DataSegment dataSegment;
       if( mode == GetImageMode::SHARED_COPY ) {
@@ -1063,19 +1068,20 @@ inline dip::Image GetImage(
          origin = mxGetData( mxdata );
       }
       // Create Image object
-      dip::Image out( dataSegment, origin, datatype, sizes, strides, tensor, tstride );
+      out = dip::Image( dataSegment, origin, datatype, sizes, strides, tensor, tstride );
       if( maybeCast ) {
          detail::MaybeCastScalar( out );
       }
       if( lastDimToTensor ) {
          out.SpatialToTensor();
+         out.ReshapeTensor( lastDimTensorSizes[ 0 ], lastDimTensorSizes[ 1 ] );
          // In this case, the input was a plain matrix, so we don't have a pixel size or color space.
       } else {
          out.SetPixelSize( pixelSize );
          out.SetColorSpace( colorSpace );
       }
-      return out;
    }
+   return out;
 }
 
 /// \brief Convert a cell array of images from `mxArray` to \ref dip::ImageArray, using \ref dml::GetImage for each
