@@ -24,15 +24,16 @@ namespace dip {
 
 namespace {
 
-dip::uint maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() ); // This responds to the OMP_NUM_THREADS environment variable.
+const dip::uint defaultMaxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() ); // This responds to the OMP_NUM_THREADS environment variable.
+thread_local dip::uint maxNumberOfThreads = defaultMaxNumberOfThreads;
 
 }
 
 void SetNumberOfThreads( dip::uint nThreads ) {
    if( nThreads == 0 ) {
-      maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() );
+      maxNumberOfThreads = defaultMaxNumberOfThreads;
    } else {
-      maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads() ));
+      maxNumberOfThreads = std::min( nThreads, defaultMaxNumberOfThreads );
    }
 }
 

@@ -58,6 +58,9 @@ namespace dip {
 /// If `nThreads` is 0, resets the maximum number of threads to the default value.
 ///
 /// If *DIPlib* was compiled without *OpenMP* support, this function does nothing.
+///
+/// Note that this number is thread-local. Meaning it only applies to the
+/// current thread from which this function is called.
 DIP_EXPORT void SetNumberOfThreads( dip::uint nThreads );
 
 
@@ -67,6 +70,9 @@ DIP_EXPORT void SetNumberOfThreads( dip::uint nThreads );
 /// function was never called.
 ///
 /// If *DIPlib* was compiled without *OpenMP* support, this function always returns 1.
+///
+/// Note that this number is thread-local. Meaning it only applies to the
+/// current thread from which this function is called.
 DIP_EXPORT dip::uint GetNumberOfThreads();
 
 
