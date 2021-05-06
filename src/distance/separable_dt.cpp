@@ -46,7 +46,7 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
          DIP_ASSERT( params.inBuffer.stride == 1 ); // Guaranteed because we use an input buffer
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         const dfloat spacing = spacing_[ params.dimension ];
+         dfloat const spacing = spacing_[ params.dimension ];
          dip::uint padding = params.inBuffer.border;  // inBuffer.border is the size of the border padding.
          bool border = padding == 0;                  // The border padding is either 0 or 1 pixel. If it's zero pixels,
          //                                              then the `border` boolean input argument was true (object).

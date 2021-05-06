@@ -101,7 +101,7 @@ static inline int BitRev( int i, int shift ) {
                     (( unsigned )bitrevTab[ (( i ) >> 24 ) ] )) >> shift ));
 }
 
-constexpr static const std::complex< double > DFTTab[] = {
+constexpr static std::complex< double > const DFTTab[] = {
       { 1.00000000000000000,  -0.00000000000000000 },
       { -1.00000000000000000, -0.00000000000000000 },
       { 0.00000000000000000,  -1.00000000000000000 },
@@ -309,7 +309,7 @@ void DFT< T >::Initialize( std::size_t nfft, bool inverse ) {
 
 template< typename T >
 void DFT< T >::Apply(
-      const std::complex< T >* source,
+      std::complex< T > const* source,
       std::complex< T >* destination,
       std::complex< T >* buffer,
       T scale
@@ -474,7 +474,7 @@ void DFT< T >::Apply(
       dw0 /= factor;
       if( factor == 3 ) {
          // radix-3
-         static const T sin_120 = T( 0.86602540378443864676372317075294 );
+         static T const sin_120 = T( 0.86602540378443864676372317075294 );
          for( int i = 0; i < n0; i += n ) {
             std::complex< T >* v = destination + i;
             std::complex< T > t1 = v[ nx ] + v[ nx * 2 ];
@@ -509,10 +509,10 @@ void DFT< T >::Apply(
          }
       } else if( factor == 5 ) {
          // radix-5
-         static const T fft5_2 = T( 0.559016994374947424102293417182819 );
-         static const T fft5_3 = T( -0.951056516295153572116439333379382 );
-         static const T fft5_4 = T( -1.538841768587626701285145288018455 );
-         static const T fft5_5 = T( 0.363271264002680442947733378740309 );
+         static T const fft5_2 = T( 0.559016994374947424102293417182819 );
+         static T const fft5_3 = T( -0.951056516295153572116439333379382 );
+         static T const fft5_4 = T( -1.538841768587626701285145288018455 );
+         static T const fft5_5 = T( 0.363271264002680442947733378740309 );
          for( int i = 0; i < n0; i += n ) {
             for( int j = 0, dw = 0; j < nx; j++, dw += dw0 ) {
                std::complex< T >* v0 = destination + i + j;
@@ -576,7 +576,7 @@ void DFT< T >::Apply(
                      b[ p - 1 ] = t1;
                   }
                } else {
-                  const std::complex< T >* wave = wave_.data() + dw * factor;
+                  std::complex< T > const* wave = wave_.data() + dw * factor;
                   for( int p = 1, k = nx, d = dw; p <= factor2; p++, k += nx, d += dw ) {
                      std::complex< T > t2 = {
                            v[ k ].real() * wave_[ d ].real() - v[ k ].imag() * wave_[ d ].imag(),
@@ -642,13 +642,13 @@ void DFT< T >::Apply(
 template void DFT< float >::Initialize( std::size_t nfft, bool inverse );
 template void DFT< double >::Initialize( std::size_t nfft, bool inverse );
 template void DFT< float >::Apply(
-      const std::complex< float >* src,
+      std::complex< float > const* src,
       std::complex< float >* dst,
       std::complex< float >* buf,
       float scale
 ) const;
 template void DFT< double >::Apply(
-      const std::complex< double >* src,
+      std::complex< double > const* src,
       std::complex< double >* dst,
       std::complex< double >* buf,
       double scale

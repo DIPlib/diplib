@@ -56,13 +56,13 @@ struct Candidate {
 
    Candidate( UnsignedArray _pos = {}, dfloat _val = 0. ) : pos( std::move( _pos )), val( _val ), valid( true ) {}
 
-   bool operator>( const Candidate& other ) const {
+   bool operator>( Candidate const& other ) const {
       return val > other.val;
    }
 };
 
 /*
-std::ostream& operator<<(std::ostream& os, const Candidate& obj)
+std::ostream& operator<<(std::ostream& os, Candidate const& obj)
 {
    os << "{" << obj.pos << ": " << obj.val << (obj.valid?"":" (invalid)") << "}";
    return os;
@@ -106,8 +106,8 @@ bool clip( IntegerCoords& A, IntegerCoords& B, IntegerCoords Pmax ) {
 }
 
 dfloat norm_square(
-      const UnsignedArray& a,
-      const UnsignedArray& b
+      UnsignedArray const& a,
+      UnsignedArray const& b
 ) {
    dfloat n = 0;
    dip::uint sz = std::min( a.size(), b.size() );

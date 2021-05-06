@@ -29,7 +29,7 @@ namespace dip {
 
 namespace {
 
-static const char* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
+static char const* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
 
 #define WRITE_TIFF_TAG( tiff, tag, value ) do { if( !TIFFSetField( tiff, tag, value )) { DIP_THROW_RUNTIME( TIFF_WRITE_TAG ); }} while(false)
 
@@ -411,7 +411,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
 
 namespace dip {
 
-static const char* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
+static char const* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
 
 void ImageWriteTIFF( Image const&, String const&, String const&, dip::uint ) {
    DIP_THROW( NOT_AVAILABLE );

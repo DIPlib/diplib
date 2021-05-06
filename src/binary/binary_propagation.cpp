@@ -128,7 +128,7 @@ void BinaryPropagation(
    }
 
    // Create a coordinates computer for bounds checking of border pixels
-   const CoordinatesComputer coordsComputer = out.OffsetToCoordinatesComputer();
+   CoordinatesComputer const coordsComputer = out.OffsetToCoordinatesComputer();
 
    // Second and further iterations. Loop stops if the queue is empty
    for( dip::uint ii = 1; ( ii < iterations ) && !edgePixels.empty(); ++ii ) {

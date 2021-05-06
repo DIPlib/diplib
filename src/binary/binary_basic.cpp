@@ -90,7 +90,7 @@ void BinaryDilationErosion(
    }
 
    // Create a coordinates computer for bounds checking of border pixels
-   const CoordinatesComputer coordsComputer = out.OffsetToCoordinatesComputer();
+   CoordinatesComputer const coordsComputer = out.OffsetToCoordinatesComputer();
 
    // Second and further iterations
    for( dip::uint iDilIter = 1; iDilIter < iterations; ++iDilIter ) {

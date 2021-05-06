@@ -49,8 +49,8 @@ void UpperSkeleton2DInternal(
       Image& imgGrey,   // grey-value input image (TPI)
       Image& imgBin,  // skeleton output image (binary)
       std::vector< dip::sint >& offsets, // not sure why the algorithm writes to this list?
-      const uint8* lut,
-      const uint8* lut2
+      uint8 const* lut,
+      uint8 const* lut2
 ) {
    constexpr unsigned short nBuckets = 16; // unsigned short converts to dip::sint and dip::uint without warnings.
    constexpr bool goodMetric = true;       // code would be simpler with this set to false
@@ -381,8 +381,8 @@ void UpperSkeleton2D(
    }
 
    // End pixel condition
-   const uint8 *lut;
-   const uint8 *lut2 = luthil[ 0 ];
+   uint8 const* lut;
+   uint8 const* lut2 = luthil[ 0 ];
    if( s_endPixelCondition == S::NATURAL ) {
       lut = luthil[ 0 ];
    } else if( s_endPixelCondition == S::ONE_NEIGHBOR ) {

@@ -418,7 +418,7 @@ class InputInterpolator {
       bool MapCoords_Mirror( dfloat* coords ) const {
          // Make sure all coordinates are within the image. Mirror at the boundaries.
          for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
-            const dfloat cMax = static_cast< dfloat >( in_.Size( iDim ) - 1 );
+            dfloat const cMax = static_cast< dfloat >( in_.Size( iDim ) - 1 );
             dfloat& c = coords[ iDim ];
             if( c < 0 ) {
                c = -c;

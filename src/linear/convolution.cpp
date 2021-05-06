@@ -149,8 +149,8 @@ struct InternOneDimensionalFilter {
          origin = size - origin - 1;
       }
    }
-   InternOneDimensionalFilter( const InternOneDimensionalFilter& ) = delete;
-   InternOneDimensionalFilter& operator=( const InternOneDimensionalFilter& ) = delete;
+   InternOneDimensionalFilter( InternOneDimensionalFilter const& ) = delete;
+   InternOneDimensionalFilter& operator=( InternOneDimensionalFilter const& ) = delete;
    InternOneDimensionalFilter( InternOneDimensionalFilter&& other ) = default;
    InternOneDimensionalFilter& operator=( InternOneDimensionalFilter&& other ) = default;
 };

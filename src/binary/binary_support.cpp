@@ -70,8 +70,8 @@ bool IsBinaryEdgePixel(
    dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsets.begin();
    for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
       if( !checkBounds || itNeighbor.IsInImage( pixelCoords, in.Sizes() )) {
-         const uint8 pixelByte = *pPixel;
-         const uint8 neighborByte = *( pPixel + *itNeighborOffset ); // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
+         uint8 const pixelByte = *pPixel;
+         uint8 const neighborByte = *( pPixel + *itNeighborOffset ); // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
          bool pixelIsObject = TestAnyBit( pixelByte, dataMask );
          bool neighborIsObject = TestAnyBit( neighborByte, dataMask );
          // If the pixel value is different from the neighbor value, it is an edge pixel
@@ -85,7 +85,7 @@ bool IsBinaryEdgePixel(
 }
 
 void FindBinaryEdgePixels(
-      const Image& in,
+      Image const& in,
       bool findObjectPixels,
       NeighborList const& neighborList,
       IntegerArray const& neighborOffsets,
@@ -95,7 +95,7 @@ void FindBinaryEdgePixels(
       BinaryFifoQueue& edgePixels
 ) {
    // Create a coordinates computer for bounds checking of border pixels
-   const CoordinatesComputer coordsComputer = in.OffsetToCoordinatesComputer();
+   CoordinatesComputer const coordsComputer = in.OffsetToCoordinatesComputer();
 
    // Iterate over all pixels: detect edge pixels and add them to the queue
    ImageIterator< bin > itImage( in );

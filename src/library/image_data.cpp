@@ -846,7 +846,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
          mirror[ ii ] = randF( random ) > 0.7;
       }
       img.Mirror( mirror );
-      const dip::UnsignedArray& dims = img.Sizes();
+      dip::UnsignedArray const& dims = img.Sizes();
       auto o2c = img.OffsetToCoordinatesComputer();
       auto i2c = img.IndexToCoordinatesComputer();
       for( dip::uint repeat2 = 0; repeat2 < 100; ++repeat2 ) {

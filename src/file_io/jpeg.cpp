@@ -297,7 +297,7 @@ void ImageWriteJPEG(
 
 namespace dip {
 
-static const char* NOT_AVAILABLE = "DIPlib was compiled without JPEG support.";
+static char const* NOT_AVAILABLE = "DIPlib was compiled without JPEG support.";
 
 FileInformation ImageReadJPEG( Image&, String const& ) {
    DIP_THROW( NOT_AVAILABLE );

@@ -881,7 +881,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
 
 namespace dip {
 
-static const char* NOT_AVAILABLE = "DIPlib was compiled without ICS support.";
+static char const* NOT_AVAILABLE = "DIPlib was compiled without ICS support.";
 
 FileInformation ImageReadICS( Image&, String const&, RangeArray ) {
    DIP_THROW( NOT_AVAILABLE );

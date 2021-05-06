@@ -127,7 +127,7 @@ void CreateGabor(
    std::cout << "[CreateGabor] out = " << out << '\n';
    ImageIterator< dcomplex > itOut( out );
    do {
-      const UnsignedArray& coords = itOut.Coordinates();
+      UnsignedArray const& coords = itOut.Coordinates();
       // Multiply 1D Kernels
       dcomplex value = 1.0;
       for( dip::uint ii = 0; ii < nDims; ++ii ) {

@@ -213,7 +213,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       }
 
       /// \brief Returns the canonical name for the given color space (i.e. looks up name aliases).
-      const String& CanonicalName( String const& colorSpaceName ) const {
+      String const& CanonicalName( String const& colorSpaceName ) const {
          return colorSpaces_[ Index( colorSpaceName ) ].name;
       }
 

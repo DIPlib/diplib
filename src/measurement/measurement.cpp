@@ -36,11 +36,11 @@ std::ostream& operator<<(
       return os;
    }
    // Figure out column widths
-   const std::string sep{ " | " };
+   std::string const sep{ " | " };
    constexpr int separatorWidth = 3;
    constexpr int minimumColumnWidth = 10; // we format numbers with at least this many spaces: '-' + 4 digits of precision + '.' + 'e+NN'
    dip::uint maxID = msr.Objects().empty() ? 0 : *std::max_element( msr.Objects().begin(), msr.Objects().end() );
-   const int firstColumnWidth = maxID > 0 ? static_cast< int >( std::floor( std::log10( maxID ))) + 1 : 1;
+   int const firstColumnWidth = maxID > 0 ? static_cast< int >( std::floor( std::log10( maxID ))) + 1 : 1;
    auto const& values = msr.Values();
    std::vector< int > valueWidths( values.size(), 0 );
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {

@@ -127,7 +127,7 @@ constexpr uint8 maskBitmask = 2;
 constexpr uint8 enqueuedBitmask = 4;
 
 Uint8FifoQueue EnqueueEdges2D(
-      const Image& in,
+      Image const& in,
       bool findObjectPixels,
       uint8 dataBitmask,
       uint8 maskBitmask

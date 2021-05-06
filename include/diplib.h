@@ -89,7 +89,7 @@ struct DIP_NO_EXPORT LibraryInformation {
 };
 
 /// \brief Constant that holds information about the *DIPlib* binary.
-DIP_EXPORT extern const LibraryInformation libraryInformation;
+DIP_EXPORT extern LibraryInformation const libraryInformation;
 
 /// \endgroup
 

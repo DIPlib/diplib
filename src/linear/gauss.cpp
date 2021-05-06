@@ -198,7 +198,7 @@ void CreateGauss(
    out.ReForge( outSizes, 1, DT_DFLOAT );
    ImageIterator< dfloat > itOut( out );
    do {
-      const UnsignedArray& coords = itOut.Coordinates();
+      UnsignedArray const& coords = itOut.Coordinates();
       // Multiply Gaussians
       dfloat value = 1.0;
       for( dip::uint ii = 0; ii < nDims; ++ii ) {

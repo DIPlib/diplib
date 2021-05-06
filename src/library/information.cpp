@@ -22,7 +22,7 @@
 
 namespace dip {
 
-DIP_EXPORT const LibraryInformation libraryInformation{
+DIP_EXPORT LibraryInformation const libraryInformation{
       "DIPlib",
       "a quantitative image analysis library",
       "(c)2014-" DIP_COPYRIGHT_YEAR ", Cris Luengo and contributors\n(c)1995-2014, Delft University of Technology",

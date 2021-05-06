@@ -77,7 +77,7 @@ DIP_NO_EXPORT bool IsBinaryEdgePixel(
 // If findObjectPixels is false, background pixels are collected that have at least one neighboring object pixel.
 // If treatOutsideImageAsObject is true, the area outside the image borders is treated as object; otherwise it is treated as background
 DIP_NO_EXPORT void FindBinaryEdgePixels(
-      const Image& in,
+      Image const& in,
       bool findObjectPixels,
       NeighborList const& neighborList,
       IntegerArray const& neighborOffsets,

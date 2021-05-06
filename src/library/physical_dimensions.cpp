@@ -433,7 +433,7 @@ void WritePrefixUnicode( dip::String& out, dip::sint n ) {
 }
 
 // Appends a unit with a positive power to the string `out`.
-bool WritePositivePower( dip::String& out, const char* s, dip::sint p, bool prefix, bool unicode ) {
+bool WritePositivePower( dip::String& out, char const* s, dip::sint p, bool prefix, bool unicode ) {
    if( p > 0 ) {
       if( prefix ) {
          out += unicode ? CDotUnicode() : CDot();
@@ -448,7 +448,7 @@ bool WritePositivePower( dip::String& out, const char* s, dip::sint p, bool pref
 }
 
 // Appends a unit with a negative power to the string `out`.
-bool WriteNegativePower( dip::String& out, const char* s, dip::sint p, bool prefix, bool unicode ) {
+bool WriteNegativePower( dip::String& out, char const* s, dip::sint p, bool prefix, bool unicode ) {
    if( p < 0 ) {
       if( prefix ) {
          out += '/';

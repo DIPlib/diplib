@@ -1188,7 +1188,7 @@ bool ImageIsTIFF(
 
 namespace dip {
 
-static const char* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
+static char const* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
 
 FileInformation ImageReadTIFF(
    Image&,

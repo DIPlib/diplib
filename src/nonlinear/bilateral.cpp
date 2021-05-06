@@ -68,7 +68,7 @@ void CreateUnnormalizedHalfGauss(
    dip::uint size = clamp_cast< dip::uint >( std::ceil( truncation * sigma )) + 1; // One extra element is added for the (near) zero value
    out.ReForge( { size }, 1, DataType( static_cast< FloatType >( 0 )), Option::AcceptDataTypeChange::DONT_ALLOW );
    FloatType *val = static_cast< FloatType* >( out.Origin() );
-   const FloatType denom = static_cast< FloatType >( -1.0 / ( 2.0 * sigma * sigma ));
+   FloatType const denom = static_cast< FloatType >( -1.0 / ( 2.0 * sigma * sigma ));
    *val++ = 1;
    for( dip::uint i = 1; i < size - 1; ++i ) {
       FloatType r = static_cast< FloatType >( i );
@@ -84,8 +84,8 @@ dfloat CreateTonalGauss(
       dfloat tonalSigma,
       DataType dataType
 ) {
-   const dfloat gaussLUTSigma = 51.1;
-   const dfloat gaussLUTTonalTrunc = 10.0; // We'll have 51.1 * 10.0 + 1 = 512 bins in the LUT
+   dfloat const gaussLUTSigma = 51.1;
+   dfloat const gaussLUTTonalTrunc = 10.0; // We'll have 51.1 * 10.0 + 1 = 512 bins in the LUT
 
    if( dataType == DT_SFLOAT ) {
       CreateUnnormalizedHalfGauss< sfloat >( tonalGauss, gaussLUTSigma, gaussLUTTonalTrunc );
