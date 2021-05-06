@@ -3,7 +3,7 @@ layout: post
 title: "Changes DIPlib 3.1.0"
 ---
 
-## Changes to DIPlib
+## Changes to *DIPlib*
 
 ### New functionality
 
@@ -53,6 +53,9 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::ColorSpaceManager::XYZ` is deprecated, use `dip::XYZ` instead.
 
+- `dip::SetNumberOfThreads()` and `dip::GetNumberOfThreads()` set a thread-local value now. Each
+  thread should set its own limit for how many threads *DIPlib* can use.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together
@@ -67,7 +70,7 @@ title: "Changes DIPlib 3.1.0"
 
 
 
-## Changes to DIPimage
+## Changes to *DIPimage*
 
 ### New functionality
 
@@ -75,25 +78,25 @@ title: "Changes DIPlib 3.1.0"
 
 ### Changed functionality
 
-(See also changes to DIPlib.)
+(See also changes to *DIPlib*.)
 
 ### Bug fixes
 
-- `readim` and `writeim`, when using MATLAB's functionality, would work in linear RGB space, instead of sRGB
-  like the DIPlib functions do.
+- `readim` and `writeim`, when using *MATLAB*'s functionality, would work in linear RGB space, instead of sRGB
+  like the *DIPlib* functions do.
 
 - `readics` tried to read the file as a TIFF file instead of an ICS file.
 
 - Code like `img * [1,2,3]` converted the second argument into a 0D column vector image. The same code
   with e.g. a 3x3 matrix would convert the matrix to a scalar 3x3 image, rather than a 0D matrix image.
-  These now behave more similarly to how they behaved in DIPimage 2.9.
+  These now behave more similarly to how they behaved in *DIPimage* 2.9.
 
-(See also bugfixes to DIPlib.)
-
-
+(See also bugfixes to *DIPlib*.)
 
 
-## Changes to PyDIP
+
+
+## Changes to *PyDIP*
 
 ### New functionality
 
@@ -103,16 +106,16 @@ title: "Changes DIPlib 3.1.0"
 
 ### Changed functionality
 
-(See also changes to DIPlib.)
+(See also changes to *DIPlib*.)
 
 ### Bug fixes
 
-(See also bugfixes to DIPlib.)
+(See also bugfixes to *DIPlib*.)
 
 
 
 
-## Changes to DIPviewer
+## Changes to *DIPviewer*
 
 ### New functionality
 
@@ -123,7 +126,7 @@ title: "Changes DIPlib 3.1.0"
 
 
 
-## Changes to DIPjavaio
+## Changes to *DIPjavaio*
 
 ### New functionality
 

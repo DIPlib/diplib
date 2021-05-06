@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that support multithreading.
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,15 +24,18 @@ namespace dip {
 
 namespace {
 
-dip::uint maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() ); // This responds to the OMP_NUM_THREADS environment variable.
+// omp_get_max_threads() responds to the OMP_NUM_THREADS environment variable.
+dip::uint const defaultMaxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() );
+
+thread_local dip::uint maxNumberOfThreads = defaultMaxNumberOfThreads;
 
 }
 
 void SetNumberOfThreads( dip::uint nThreads ) {
    if( nThreads == 0 ) {
-      maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() );
+      maxNumberOfThreads = defaultMaxNumberOfThreads;
    } else {
-      maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads() ));
+      maxNumberOfThreads = std::min( nThreads, defaultMaxNumberOfThreads );
    }
 }
 
