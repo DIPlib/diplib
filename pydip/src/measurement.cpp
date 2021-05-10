@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@
 #include "diplib/measurement.h"
 #include "diplib/chain_code.h"
 
-dip::MeasurementTool &measurementTool()
-{
-    static dip::MeasurementTool tool;
-    return tool;
-}
-
 namespace {
+
+dip::MeasurementTool& measurementTool() {
+   static dip::MeasurementTool tool;
+   return tool;
+}
 
 template< typename MeasurementValues >
 py::handle MeasurementValuesToList( MeasurementValues values ) {
