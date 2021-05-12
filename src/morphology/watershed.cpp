@@ -1125,6 +1125,7 @@ void ExactStochasticWatershed(
 void StochasticWatershed(
       Image const& c_in,
       Image& out,
+      Random& random,
       dip::uint nSeeds,
       dip::uint nIterations,
       dfloat noise,
@@ -1135,7 +1136,6 @@ void StochasticWatershed(
    DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( c_in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( nSeeds == 0, E::INVALID_PARAMETER );
-   Random random;
    dfloat density = static_cast< dfloat >( nSeeds ) / static_cast< dfloat >( c_in.NumberOfPixels() );
    if(( seeds == S::EXACT ) || ( nIterations == 0 )) {
       if( noise > 0 ) {

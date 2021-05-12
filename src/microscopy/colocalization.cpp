@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for colocalization functions.
  *
- * (c)2019, Cris Luengo.
+ * (c)2019-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,7 @@ dfloat CostesSignificanceTest(
       Image const& channel1,
       Image const& channel2,
       Image const& c_mask,
+      Random& random,
       UnsignedArray blockSizes,
       dip::uint repetitions
 ) {
@@ -258,7 +259,6 @@ dfloat CostesSignificanceTest(
    }
 
    // Shuffle one array, and compute correlation between pairs of blocks
-   Random rng;
    dip::Image block1 = channel1.QuickCopy();
    block1.SetSizesUnsafe( blockSizes );
    dip::Image block2 = channel2.QuickCopy();
@@ -266,7 +266,7 @@ dfloat CostesSignificanceTest(
    VarianceAccumulator var;
    //dip::uint smallerCount = 0;
    for( dip::uint ii = 0; ii < repetitions; ++ii ) {
-      std::shuffle( origins2.begin(), origins2.end(), rng );
+      std::shuffle( origins2.begin(), origins2.end(), random );
       CovarianceAccumulator cov;
       for( dip::uint jj = 0; jj < nBlocks; ++jj ) {
          block1.SetOriginUnsafe( origins1[ jj ] );

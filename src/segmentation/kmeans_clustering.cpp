@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions of clustering segmentation algorithms
  *
- * (c)2018, Cris Luengo.
+ * (c)2018-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -188,6 +188,7 @@ void LabelClusters(
 CoordinateArray KMeansClustering(
       Image const& in,
       Image& out,
+      Random& random,
       dip::uint nClusters
 ) {
    // Check the image
@@ -202,7 +203,6 @@ CoordinateArray KMeansClustering(
    ClusterArray clusters( nClusters, Cluster( nDims ));
 
    // Randomly initialise the clusters
-   Random random;
    UniformRandomGenerator generator( random );
    for( auto& cluster : clusters ) {
       for( dip::uint jj = 0; jj < nDims; ++jj ) {

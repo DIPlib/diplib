@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for assorted analysis functions
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@
 
 #include "diplib.h"
 #include "distribution.h"
+#include "random.h"
 
 
 /// \file
@@ -858,11 +859,24 @@ inline Image OrientationSpace(
 DIP_EXPORT Distribution PairCorrelation(
       Image const& object,
       Image const& mask,
+      Random& random,
       dip::uint probes = 1000000,
       dip::uint length = 100,
       String const& sampling = S::RANDOM,
       StringSet const& options = {}
 );
+/// \brief like above, using a default-initialized \ref dip::Random object.
+inline Distribution PairCorrelation(
+      Image const& object,
+      Image const& mask,
+      dip::uint probes = 1000000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM,
+      StringSet const& options = {}
+) {
+   Random random;
+   return PairCorrelation( object, mask, random, probes, length, sampling, options );
+}
 
 /// \brief Estimates the probabilistic pair correlation function of the different phases in `phases`.
 ///
@@ -875,11 +889,24 @@ DIP_EXPORT Distribution PairCorrelation(
 DIP_EXPORT Distribution ProbabilisticPairCorrelation(
       Image const& phases,
       Image const& mask,
+      Random& random,
       dip::uint probes = 1000000,
       dip::uint length = 100,
       String const& sampling = S::RANDOM,
       StringSet const& options = {}
 );
+/// \brief like above, using a default-initialized \ref dip::Random object.
+inline Distribution ProbabilisticPairCorrelation(
+      Image const& object,
+      Image const& mask,
+      dip::uint probes = 1000000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM,
+      StringSet const& options = {}
+) {
+   Random random;
+   return ProbabilisticPairCorrelation( object, mask, random, probes, length, sampling, options );
+}
 
 /// \brief Estimates the expected value of half the square difference between field values at a distance `d`.
 ///
@@ -913,11 +940,22 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
 DIP_EXPORT Distribution Semivariogram(
       Image const& in,
       Image const& mask,
+      Random& random,
       dip::uint probes = 1000000,
       dip::uint length = 100,
       String const& sampling = S::RANDOM
 );
-
+/// \brief like above, using a default-initialized \ref dip::Random object.
+inline Distribution Semivariogram(
+      Image const& object,
+      Image const& mask,
+      dip::uint probes = 1000000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM
+) {
+   Random random;
+   return Semivariogram( object, mask, random, probes, length, sampling );
+}
 
 /// \brief Estimates the chord length distribution of the different phases in `object`.
 ///
@@ -947,10 +985,22 @@ DIP_EXPORT Distribution Semivariogram(
 DIP_EXPORT Distribution ChordLength(
       Image const& object,
       Image const& mask,
+      Random& random,
       dip::uint probes = 100000,
       dip::uint length = 100,
       String const& sampling = S::RANDOM
 );
+/// \brief like above, using a default-initialized \ref dip::Random object.
+inline Distribution ChordLength(
+      Image const& object,
+      Image const& mask,
+      dip::uint probes = 100000,
+      dip::uint length = 100,
+      String const& sampling = S::RANDOM
+) {
+   Random random;
+   return ChordLength( object, mask, random, probes, length, sampling );
+}
 
 
 /// \brief Computes the distribution of distances to the background of `region` for the different phases in `object`.

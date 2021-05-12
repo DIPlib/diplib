@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for segmentation functions
  *
- * (c)2017-2020, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@
 #define DIP_SEGMENTATION_H
 
 #include "diplib.h"
+#include "diplib/random.h"
 
 
 /// \file
@@ -55,8 +56,27 @@ namespace dip {
 DIP_EXPORT CoordinateArray KMeansClustering(
       Image const& in,
       Image& out,
+      Random& random,
       dip::uint nClusters = 2
 );
+inline Image KMeansClustering(
+      Image const& in,
+      Random& random,
+      dip::uint nClusters = 2
+) {
+   Image out;
+   KMeansClustering( in, out, random, nClusters );
+   return out;
+}
+/// \brief Like above, using a default-initialized \ref dip::Random object.
+inline CoordinateArray KMeansClustering(
+      Image const& in,
+      Image& out,
+      dip::uint nClusters = 2
+) {
+   Random random;
+   return KMeansClustering( in, out, random, nClusters );
+}
 inline Image KMeansClustering(
       Image const& in,
       dip::uint nClusters = 2
@@ -608,16 +628,41 @@ inline Image Canny(
 DIP_EXPORT void Superpixels(
       Image const& in,
       Image& out,
+      Random& random,
       dfloat density = 0.005,
       dfloat compactness = 1.0,
-      String const& method = "CW",
+      String const& method = S::CW,
       StringSet const& flags = {}
 );
 inline Image Superpixels(
       Image const& in,
+      Random& random,
       dfloat density = 0.005,
       dfloat compactness = 1.0,
-      String const& method = "CW",
+      String const& method = S::CW,
+      StringSet const& flags = {}
+) {
+   Image out;
+   Superpixels( in, out, random, density, compactness, method, flags );
+   return out;
+}
+/// \brief Like above, using a default-initialized \ref dip::Random object.
+inline void Superpixels(
+      Image const& in,
+      Image& out,
+      dfloat density = 0.005,
+      dfloat compactness = 1.0,
+      String const& method = S::CW,
+      StringSet const& flags = {}
+) {
+   Random random;
+   Superpixels( in, out, random, density, compactness, method, flags );
+}
+inline Image Superpixels(
+      Image const& in,
+      dfloat density = 0.005,
+      dfloat compactness = 1.0,
+      String const& method = S::CW,
       StringSet const& flags = {}
 ) {
    Image out;

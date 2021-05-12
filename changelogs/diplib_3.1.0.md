@@ -56,6 +56,12 @@ title: "Changes DIPlib 3.1.0"
 - `dip::SetNumberOfThreads()` and `dip::GetNumberOfThreads()` set a thread-local value now. Each
   thread should set its own limit for how many threads *DIPlib* can use.
 
+- All functions that used randomness internally but didn't have a `dip::Random` input parameter now do
+  have such a parameter. Overloaded functions with the old signature create a default-initialized
+  `dip::Random` object and call the function with the new signature. This affects the following functions:
+  `dip::ChordLength`, `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`,
+  `dip::CostesSignificanceTest`, `dip::StochasticWatershed`, `dip::KMeansClustering`, and `dip::Superpixels`.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together
@@ -105,6 +111,10 @@ title: "Changes DIPlib 3.1.0"
 - Added `dip.ImageReadNPY()`, `dip.ImageReadNPYInfo()`, `dip.ImageIsNPY()` and `dip.ImageWriteNPY()`.
 
 ### Changed functionality
+
+- `dip.ChordLength`, `dip.PairCorrelation`, `dip.ProbabilisticPairCorrelation`, `dip.Semivariogram`,
+  `dip.CostesSignificanceTest`, `dip.StochasticWatershed`, `dip.KMeansClustering`, and `dip.Superpixels`
+  now use the global random number generator instead of creating a default-initialized one.
 
 (See also changes to *DIPlib*.)
 

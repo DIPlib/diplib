@@ -79,12 +79,12 @@ class PixelPairFunction {
 void RandomPixelPairSampler(
       Image const& object, // unsigned integer type
       Image const& mask,   // might or might not be forged
+      Random& random,
       PixelPairFunction* pixelPairFunction,
       dip::uint nProbes,
       dip::uint maxLength
 ) {
    bool hasMask = mask.IsForged();
-   Random random( 0 );
    UniformRandomGenerator uniformRandomGenerator( random );
    dip::uint nDims = object.Dimensionality();
    UnsignedArray const& sizes = object.Sizes();
@@ -338,6 +338,7 @@ void NormalizePairCorrelationDistribution(
 Distribution PairCorrelation(
       Image const& c_object,
       Image const& mask,
+      Random& random,
       dip::uint probes,
       dip::uint length,
       String const& sampling,
@@ -359,8 +360,8 @@ Distribution PairCorrelation(
    }
 
    // Parse options
-   bool random;
-   DIP_STACK_TRACE_THIS( random = BooleanFromString( sampling, S::RANDOM, S::GRID ));
+   bool useRandom;
+   DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
    bool covariance;
    PairCorrelationNormalization normalization;
    DIP_STACK_TRACE_THIS( std::tie( covariance, normalization ) = ParsePairCorrelationOptions( options ));
@@ -373,8 +374,8 @@ Distribution PairCorrelation(
 
    // Fill output
    PairCorrelationFunction pixelPairFunction( object, distribution, counts, phaseLookupTable, covariance );
-   if( random ) {
-      RandomPixelPairSampler( object, mask, &pixelPairFunction, probes, length );
+   if( useRandom ) {
+      RandomPixelPairSampler( object, mask, random, &pixelPairFunction, probes, length );
    } else {
       GridPixelPairSampler( object, mask, &pixelPairFunction, probes, length );
    }
@@ -452,6 +453,7 @@ class ProbabilisticPairCorrelationFunction : public PixelPairFunction {
 Distribution ProbabilisticPairCorrelation(
       Image const& phases,
       Image const& mask,
+      Random& random,
       dip::uint probes,
       dip::uint length,
       String const& sampling,
@@ -462,8 +464,8 @@ Distribution ProbabilisticPairCorrelation(
    DIP_THROW_IF( phases.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Parse options
-   bool random;
-   DIP_STACK_TRACE_THIS( random = BooleanFromString( sampling, S::RANDOM, S::GRID ));
+   bool useRandom;
+   DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
    bool covariance;
    PairCorrelationNormalization normalization;
    DIP_STACK_TRACE_THIS( std::tie( covariance, normalization ) = ParsePairCorrelationOptions( options ));
@@ -476,8 +478,8 @@ Distribution ProbabilisticPairCorrelation(
 
    // Fill output
    ProbabilisticPairCorrelationFunction pixelPairFunction( phases, distribution, counts, covariance );
-   if( random ) {
-      RandomPixelPairSampler( phases, mask, &pixelPairFunction, probes, length );
+   if( useRandom ) {
+      RandomPixelPairSampler( phases, mask, random, &pixelPairFunction, probes, length );
    } else {
       GridPixelPairSampler( phases, mask, &pixelPairFunction, probes, length );
    }
@@ -537,6 +539,7 @@ class SemivariogramFunction : public PixelPairFunction {
 Distribution Semivariogram(
       Image const& in,
       Image const& mask,
+      Random& random,
       dip::uint probes,
       dip::uint length,
       String const& sampling
@@ -547,8 +550,8 @@ Distribution Semivariogram(
    DIP_THROW_IF( in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Parse options
-   bool random;
-   DIP_STACK_TRACE_THIS( random = BooleanFromString( sampling, S::RANDOM, S::GRID ));
+   bool useRandom;
+   DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
 
    // Create output
    Distribution distribution( length + 1, 1 );
@@ -557,8 +560,8 @@ Distribution Semivariogram(
 
    // Fill output
    SemivariogramFunction pixelPairFunction( in, distribution, counts );
-   if( random ) {
-      RandomPixelPairSampler( in, mask, &pixelPairFunction, probes, length );
+   if( useRandom ) {
+      RandomPixelPairSampler( in, mask, random, &pixelPairFunction, probes, length );
    } else {
       GridPixelPairSampler( in, mask, &pixelPairFunction, probes, length );
    }

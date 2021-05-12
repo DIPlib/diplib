@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for mathematical morphology functions
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@
 #define DIP_MORPHOLOGY_H
 
 #include "diplib.h"
+#include "diplib/random.h"
 
 
 /// \file
@@ -1094,11 +1095,36 @@ inline Image CompactWatershed(
 DIP_EXPORT void StochasticWatershed(
       Image const& in,
       Image& out,
+      Random& random,
       dip::uint nSeeds = 100,
       dip::uint nIterations = 50,
       dfloat noise = 0,
       String const& seeds = S::HEXAGONAL
 );
+inline Image StochasticWatershed(
+      Image const& in,
+      Random& random,
+      dip::uint nSeeds = 100,
+      dip::uint nIterations = 50,
+      dfloat noise = 0,
+      String const& seeds = S::HEXAGONAL
+) {
+   Image out;
+   StochasticWatershed( in, out, random, nSeeds, nIterations, noise, seeds );
+   return out;
+}
+/// \brief Like above, using a default-initialized \ref dip::Random object.
+inline void StochasticWatershed(
+      Image const& in,
+      Image& out,
+      dip::uint nSeeds = 100,
+      dip::uint nIterations = 50,
+      dfloat noise = 0,
+      String const& seeds = S::HEXAGONAL
+) {
+   Random random;
+   StochasticWatershed( in, out, random, nSeeds, nIterations, noise, seeds );
+}
 inline Image StochasticWatershed(
       Image const& in,
       dip::uint nSeeds = 100,

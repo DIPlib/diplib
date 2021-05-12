@@ -58,6 +58,7 @@ void UpdateDistribution(
 void RandomPixelPairSampler(
       Image const& object,
       Image const& mask,
+      Random& random,
       Distribution& distribution,
       std::vector< dip::uint >& counts,
       PhaseLookupTable const& phaseLookupTable,
@@ -66,7 +67,6 @@ void RandomPixelPairSampler(
    UIntPixelValueReaderFunction GetUIntPixelValue;
    DIP_OVL_ASSIGN_UINT( GetUIntPixelValue, UIntPixelValueReader, object.DataType() );
    bool hasMask = mask.IsForged();
-   Random random( 0 );
    UniformRandomGenerator uniformRandomGenerator( random );
    GaussianRandomGenerator normalRandomGenerator( random );
    dip::uint nDims = object.Dimensionality();
@@ -247,6 +247,7 @@ void GridPixelPairSampler(
 Distribution ChordLength(
       Image const& c_object,
       Image const& mask,
+      Random& random,
       dip::uint probes,
       dip::uint length,
       String const& sampling
@@ -267,8 +268,8 @@ Distribution ChordLength(
    }
 
    // Parse options
-   bool random;
-   DIP_STACK_TRACE_THIS( random = BooleanFromString( sampling, S::RANDOM, S::GRID ));
+   bool useRandom;
+   DIP_STACK_TRACE_THIS( useRandom = BooleanFromString( sampling, S::RANDOM, S::GRID ));
 
    // Create output
    dip::uint nPhases = phases.size();
@@ -277,8 +278,8 @@ Distribution ChordLength(
    std::vector< dip::uint >counts( nPhases, 0 );
 
    // Fill output
-   if( random ) {
-      RandomPixelPairSampler( object, mask, distribution, counts, phaseLookupTable, probes );
+   if( useRandom ) {
+      RandomPixelPairSampler( object, mask, random, distribution, counts, phaseLookupTable, probes );
    } else {
       GridPixelPairSampler( object, mask, distribution, counts, phaseLookupTable, probes );
    }

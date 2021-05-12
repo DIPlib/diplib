@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for microscopy-related functionality
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@
 #define DIP_MICROSCOPY_H
 
 #include "diplib.h"
+#include "diplib/random.h"
 
 
 /// \file
@@ -425,11 +426,22 @@ DIP_EXPORT ColocalizationCoefficients CostesColocalizationCoefficients(
 DIP_EXPORT dfloat CostesSignificanceTest(
       Image const& channel1,
       Image const& channel2,
-      Image const& mask = {},
+      Image const& mask,
+      Random& random,
       UnsignedArray blockSizes = { 3 },
       dip::uint repetitions = 200
 );
-
+/// \brief Like above, using a default-initialized \ref dip::Random object.
+inline dfloat CostesSignificanceTest(
+      Image const& channel1,
+      Image const& channel2,
+      Image const& mask = {},
+      UnsignedArray blockSizes = { 3 },
+      dip::uint repetitions = 200
+) {
+   Random random;
+   return CostesSignificanceTest( channel1, channel2, mask, random, std::move( blockSizes ), repetitions );
+}
 
 /// \brief Generates an incoherent OTF (optical transfer function)
 ///

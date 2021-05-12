@@ -204,7 +204,7 @@ void superpixels( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::dfloat density = nrhs > 1 ? dml::GetFloat( prhs[ 1 ] ) : 0.005;
    dip::dfloat compactness = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 1.0;
-   dip::String method = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : "CW";
+   dip::String method = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : dip::S::CW;
    dip::StringSet flags = nrhs > 4 ? dml::GetStringSet( prhs[ 4 ] ) : dip::StringSet{};
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();

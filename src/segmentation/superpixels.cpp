@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition of the dip::Superpixels function.
  *
- * (c)2019, Cris Luengo.
+ * (c)2019-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ namespace dip {
 void Superpixels(
       Image const& in,
       Image& out,
+      Random& random,
       dfloat density,
       dfloat compactness,
       String const& method,
@@ -64,12 +65,11 @@ void Superpixels(
       DIP_STACK_TRACE_THIS( Norm( gradmag, gradmag ));
    }
    // Place seeds
-   Random random;
    Image seeds;
    DIP_STACK_TRACE_THIS( CreateRandomGrid( seeds, in.Sizes(), random, density, shape, S::TRANSLATION ));
    MoveToLocalMinimum( seeds, gradmag, seeds );
    // Do the thing
-   if( method == "CW" ) {
+   if( method == S::CW ) {
       StringSet cwFlags;
       cwFlags.emplace( S::LABELS );
       if( noGaps ) {

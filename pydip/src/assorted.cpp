@@ -68,11 +68,6 @@ dip::ColorSpaceManager& colorSpaceManager() {
    return manager;
 }
 
-dip::Random& randomNumberGenerator() {
-   static dip::Random generator;
-   return generator;
-}
-
 dip::Image ImageDisplay(
       dip::Image const& input,
       dip::FloatArray const& range,
@@ -243,7 +238,7 @@ void init_assorted( py::module& m ) {
                params.signalNoiseRatio = signalNoiseRatio;
                params.gaussianNoise = gaussianNoise;
                params.poissonNoise = poissonNoise;
-               return dip::TestObject( sizes, params, randomNumberGenerator() );
+               return dip::TestObject( sizes, params, RandomNumberGenerator() );
           }, "sizes"_a,
              "objectShape"_a = dip::S::ELLIPSOID,
              "objectSizes"_a = dip::FloatArray{ 10 },
@@ -258,13 +253,13 @@ void init_assorted( py::module& m ) {
              "signalNoiseRatio"_a = 0.0,
              "gaussianNoise"_a = 1.0,
              "poissonNoise"_a = 1.0 );
-   m.def( "FillPoissonPointProcess", []( dip::Image& out, dip::dfloat density ){ dip::FillPoissonPointProcess( out, randomNumberGenerator(), density ); },
+   m.def( "FillPoissonPointProcess", []( dip::Image& out, dip::dfloat density ){ dip::FillPoissonPointProcess( out, RandomNumberGenerator(), density ); },
           "in"_a, "density"_a = 0.01 );
-   m.def( "CreatePoissonPointProcess", []( dip::UnsignedArray const& sizes, dip::dfloat density ){ return dip::CreatePoissonPointProcess( sizes, randomNumberGenerator(), density ); },
+   m.def( "CreatePoissonPointProcess", []( dip::UnsignedArray const& sizes, dip::dfloat density ){ return dip::CreatePoissonPointProcess( sizes, RandomNumberGenerator(), density ); },
           "sizes"_a, "density"_a = 0.01 );
-   m.def( "FillRandomGrid", []( dip::Image& out, dip::dfloat density, dip::String const& type, dip::String const& mode ){ dip::FillRandomGrid( out, randomNumberGenerator(), density, type, mode ); },
+   m.def( "FillRandomGrid", []( dip::Image& out, dip::dfloat density, dip::String const& type, dip::String const& mode ){ dip::FillRandomGrid( out, RandomNumberGenerator(), density, type, mode ); },
           "in"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION );
-   m.def( "CreateRandomGrid", []( dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ){ return dip::CreateRandomGrid( sizes, randomNumberGenerator(), density, type, mode ); },
+   m.def( "CreateRandomGrid", []( dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ){ return dip::CreateRandomGrid( sizes, RandomNumberGenerator(), density, type, mode ); },
           "sizes"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION );
 
    m.def( "FillRamp", &dip::FillRamp, "out"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
@@ -294,23 +289,23 @@ void init_assorted( py::module& m ) {
    m.def( "CityBlockDistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::FloatArray const& >( &dip::CityBlockDistanceToPoint ),
          "sizes"_a, "point"_a, "scaling"_a = dip::FloatArray{} );
 
-   m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ){ return dip::UniformNoise( in, randomNumberGenerator(), lowerBound, upperBound ); },
+   m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ){ return dip::UniformNoise( in, RandomNumberGenerator(), lowerBound, upperBound ); },
           "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 1.0 );
-   m.def( "GaussianNoise", []( dip::Image const& in, dip::dfloat variance ){ return dip::GaussianNoise( in, randomNumberGenerator(), variance ); },
+   m.def( "GaussianNoise", []( dip::Image const& in, dip::dfloat variance ){ return dip::GaussianNoise( in, RandomNumberGenerator(), variance ); },
           "in"_a, "variance"_a = 1.0 );
-   m.def( "PoissonNoise", []( dip::Image const& in, dip::dfloat conversion ){ return dip::PoissonNoise( in, randomNumberGenerator(), conversion ); },
+   m.def( "PoissonNoise", []( dip::Image const& in, dip::dfloat conversion ){ return dip::PoissonNoise( in, RandomNumberGenerator(), conversion ); },
           "in"_a, "conversion"_a = 1.0 );
-   m.def( "BinaryNoise", []( dip::Image const& in, dip::dfloat p10, dip::dfloat p01 ){ return dip::BinaryNoise( in, randomNumberGenerator(), p10, p01 ); },
+   m.def( "BinaryNoise", []( dip::Image const& in, dip::dfloat p10, dip::dfloat p01 ){ return dip::BinaryNoise( in, RandomNumberGenerator(), p10, p01 ); },
           "in"_a, "p10"_a = 0.05, "p01"_a = 0.05 );
-   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ){ return dip::SaltPepperNoise( in, randomNumberGenerator(), p0, p1, white ); },
+   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ){ return dip::SaltPepperNoise( in, RandomNumberGenerator(), p0, p1, white ); },
           "in"_a, "p0"_a = 0.05, "p1"_a = 0.05, "white"_a = 1.0 );
-   m.def( "FillColoredNoise", []( dip::Image& out, dip::dfloat variance, dip::dfloat color ){ dip::FillColoredNoise( out, randomNumberGenerator(), variance, color ); },
+   m.def( "FillColoredNoise", []( dip::Image& out, dip::dfloat variance, dip::dfloat color ){ dip::FillColoredNoise( out, RandomNumberGenerator(), variance, color ); },
           "out"_a, "variance"_a = 1.0, "color"_a = -2.0 );
-   m.def( "ColoredNoise", []( dip::Image const& in, dip::dfloat variance, dip::dfloat color  ){ return dip::ColoredNoise( in, randomNumberGenerator(), variance, color ); },
+   m.def( "ColoredNoise", []( dip::Image const& in, dip::dfloat variance, dip::dfloat color  ){ return dip::ColoredNoise( in, RandomNumberGenerator(), variance, color ); },
           "in"_a, "variance"_a = 1.0, "color"_a = -2.0 );
 
-   m.def( "ReseedRng", [](){ randomNumberGenerator().Seed(); }, "Randomly reseed the random number generator used by the noise, grid and object generation functions.");
-   m.def( "ReseedRng", []( dip::uint seed ){ randomNumberGenerator().Seed( seed ); }, "Reseed the random number generator used by the noise, grid and object generation functions.");
+   m.def( "ReseedRng", [](){ RandomNumberGenerator().Seed(); }, "Randomly reseed the random number generator used by the noise, grid and object generation functions.");
+   m.def( "ReseedRng", []( dip::uint seed ){ RandomNumberGenerator().Seed( seed ); }, "Reseed the random number generator used by the noise, grid and object generation functions.");
 
    // diplib/geometry.h
    m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray const& >( &dip::Wrap ), "in"_a, "wrap"_a );

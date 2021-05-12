@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2020, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #define DIP_PYDIP_H
 
 #include "diplib.h"
+#include "diplib/random.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/complex.h>
@@ -63,6 +64,8 @@ void init_morphology( py::module& m );
 void init_analysis( py::module& m );
 void init_measurement( py::module& m );
 void init_assorted( py::module& m );
+
+dip::Random& RandomNumberGenerator();
 
 namespace pybind11 {
 

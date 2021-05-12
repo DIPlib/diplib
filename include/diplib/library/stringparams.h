@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for string constants.
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,6 +65,7 @@ constexpr char const* ROTATION = "rotation";
 constexpr char const* EXACT = "exact";
 constexpr char const* GREY = "grey";
 constexpr char const* APPLY = "apply";
+constexpr char const* CW = "CW";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

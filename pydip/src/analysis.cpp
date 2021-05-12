@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,13 +103,21 @@ void init_analysis( py::module& m ) {
           "in"_a, "outputs"_a, "noiseThreshold"_a = 0.2, "frequencySpreadThreshold"_a = 0.5, "sigmoidParameter"_a = 10, "deviationGain"_a = 1.5, "polarity"_a = dip::S::BOTH );
    m.def( "OrientationSpace", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::uint >( &dip::OrientationSpace ),
           "in"_a, "order"_a = 8, "radCenter"_a = 0.1, "radSigma"_a = 0.8, "orientations"_a = 0 );
-   m.def( "PairCorrelation", &dip::PairCorrelation,
+   m.def( "PairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ){
+             return dip::PairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
+          },
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
-   m.def( "ProbabilisticPairCorrelation", &dip::ProbabilisticPairCorrelation,
+   m.def( "ProbabilisticPairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ) {
+             return dip::ProbabilisticPairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
+          },
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
-   m.def( "Semivariogram", &dip::Semivariogram,
+   m.def( "Semivariogram", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling ){
+             return dip::Semivariogram( object, mask, probes, length, sampling );
+          },
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM );
-   m.def( "ChordLength", &dip::ChordLength,
+   m.def( "ChordLength", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling ){
+             return dip::ChordLength( object, mask, probes, length, sampling );
+          },
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM );
    m.def( "DistanceDistribution", &dip::DistanceDistribution,
           "object"_a, "region"_a, "length"_a = 100 );
@@ -195,9 +203,10 @@ void init_analysis( py::module& m ) {
              auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
              return py::make_tuple( out.M1, out.M2 ).release();
           }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
-   m.def( "CostesSignificanceTest", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::UnsignedArray, dip::uint >( &dip::CostesSignificanceTest ),
+   m.def( "CostesSignificanceTest", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::UnsignedArray blockSizes, dip::uint repetitions ) {
+             return dip::CostesSignificanceTest( channel1, channel2, mask, RandomNumberGenerator(), blockSizes, repetitions );
+          },
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200 );
-
    m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
           "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = "Stokseth" );
    m.def( "IncoherentPSF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
@@ -226,7 +235,9 @@ void init_analysis( py::module& m ) {
           "label"_a, "connectivity"_a = 0 );
 
    // diplib/segmentation.h
-   m.def( "KMeansClustering", py::overload_cast< dip::Image const&, dip::uint >( &dip::KMeansClustering ),
+   m.def( "KMeansClustering", []( dip::Image const& in, dip::uint nClusters ) {
+             return KMeansClustering( in, RandomNumberGenerator(), nClusters );
+          },
           "in"_a, "nClusters"_a = 2 );
    m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Image const&, dip::uint >( &dip::MinimumVariancePartitioning ),
           "in"_a, "nClusters"_a = 2 );
@@ -258,13 +269,15 @@ void init_analysis( py::module& m ) {
              return py::make_tuple( out, threshold ).release();
           }, "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
    m.def( "PerObjectEllipsoidFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> sizeBounds, dip::dfloat minEllipsoidFit,
-                                     std::pair<dip::dfloat, dip::dfloat> aspectRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
+                                       std::pair<dip::dfloat, dip::dfloat> aspectRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
              return dip::PerObjectEllipsoidFit( in, { sizeBounds.first, sizeBounds.second, minEllipsoidFit, aspectRatioBounds.first,
                                                       aspectRatioBounds.second, thresholdBounds.first, thresholdBounds.second } );
           }, "in"_a, "sizeBounds"_a = std::pair< dip::uint, dip::uint >{ 6, 30000 }, "minEllipsoidFit"_a = 0.88,
           "aspectRatioBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 1.0, 10.0 }, "thresholdBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 0.0, 255.0 } );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL );
-   m.def( "Superpixels", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringSet const& >( &dip::Superpixels ),
-          "in"_a, "density"_a = 0.005, "compactness"_a = 1.0, "method"_a = "CW", "flags"_a = dip::StringSet{} );
+   m.def( "Superpixels", []( dip::Image const& in, dip::dfloat density, dip::dfloat compactness, dip::String const& method, dip::StringSet const& flags ) {
+             return dip::Superpixels( in, RandomNumberGenerator(), density, compactness, method, flags );
+          },
+          "in"_a, "density"_a = 0.005, "compactness"_a = 1.0, "method"_a = dip::S::CW, "flags"_a = dip::StringSet{} );
 }
