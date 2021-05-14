@@ -184,7 +184,7 @@ class DIP_EXPORT ScanLineFilter {
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
       virtual void SetNumberOfThreads( dip::uint  threads ) { ( void )threads; }
-      /// \brief The derived class can define this function for helping to determine whether whether to compute
+      /// \brief The derived class can define this function for helping to determine whether to compute
       /// in parallel or not. It must return the number of clock cycles per input pixel. The default is valid for
       /// an arithmetic-like operation.
       virtual dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint nOutput, dip::uint nTensorElements ) {

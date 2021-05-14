@@ -4,6 +4,10 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 0) # Allow running these in the build directo
 add_executable(image_arithmetic cpp/image_arithmetic.cpp)
 target_link_libraries(image_arithmetic DIP)
 
+# An example program that demonstrates doing statistics across a series of images
+add_executable(image_series_statistics cpp/image_series_statistics.cpp)
+target_link_libraries(image_series_statistics DIP)
+
 # An example program that demonstrates how to register a new measurement feature in dip::MeasurementTool
 add_executable(register_measurement_feature cpp/register_measurement_feature.cpp)
 target_link_libraries(register_measurement_feature DIP)
