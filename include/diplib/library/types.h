@@ -36,6 +36,7 @@
 #include <set>
 #include <cctype>
 #include <climits>
+#include <limits>
 
 #include "diplib/library/dimension_array.h"
 
