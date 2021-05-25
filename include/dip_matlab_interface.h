@@ -354,8 +354,23 @@ inline dip::FloatCoordinateArray GetFloatCoordinateArray( mxArray const* mx ) {
    DIP_THROW( "Coordinate array expected" );
 }
 
+/// \brief If `mx` is a "string" class object, return a char vector or a cell array of char vectors.
+inline mxArray const* HandleNewStyleString( mxArray const* mx ) {
+   if( mxIsClass( mx, "string" )) {
+      mxArray* string = const_cast< mxArray* >( mx );
+      mxArray* cellstr = nullptr;
+      mexCallMATLAB(1, &cellstr, 1, &string, "cellstr");
+      if( mxGetNumberOfElements( cellstr ) == 1 ) {
+         return mxGetCell( cellstr, 0 );
+      }
+      return cellstr;
+   }
+   return mx;
+}
+
 /// \brief Convert a string from `mxArray` to \ref dip::String by copy.
 inline dip::String GetString( mxArray const* mx ) {
+   mx = HandleNewStyleString( mx );
    if( mxIsChar( mx ) && IsVector( mx )) {
       dip::String out( mxGetNumberOfElements( mx ), '\0' );
       mxGetString( mx, &( out[ 0 ] ), out.size() + 1 ); // Why is out.data() a const* ???
@@ -367,6 +382,7 @@ inline dip::String GetString( mxArray const* mx ) {
 /// \brief Convert a string from `mxArray` to a UTF-8 encoded \ref dip::String by copy.
 inline dip::String GetStringUnicode( mxArray const* mx ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
+   mx = HandleNewStyleString( mx );
    if( mxIsChar( mx ) && IsVector( mx )) {
       // We need to copy the UTF16 string in the mxArray because it is not null-terminated, as wstring_convert expects.
       char16_type const* data = reinterpret_cast< char16_type* >( mxGetChars( mx ));
@@ -384,6 +400,7 @@ inline dip::String GetStringUnicode( mxArray const* mx ) {
 
 /// \brief Convert a cell array of strings from `mxArray` to \ref dip::StringArray by copy.
 inline dip::StringArray GetStringArray( mxArray const* mx ) {
+   mx = HandleNewStyleString( mx );
    try {
       if( mxIsCell( mx ) && IsVector( mx )) {
          dip::uint n = mxGetNumberOfElements( mx );
@@ -404,6 +421,7 @@ inline dip::StringArray GetStringArray( mxArray const* mx ) {
 
 /// \brief Convert a cell array of string from `mxArray` to \ref dip::StringSet by copy.
 inline dip::StringSet GetStringSet( mxArray const* mx ) {
+   mx = HandleNewStyleString( mx );
    try {
       if( mxIsCell( mx ) && IsVector( mx )) {
          dip::uint n = mxGetNumberOfElements( mx );

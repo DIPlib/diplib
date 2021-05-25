@@ -84,6 +84,10 @@ title: "Changes DIPlib 3.1.0"
 
 ### Changed functionality
 
+- Most functions now also accept a string array instead of char vector or a cell array of char vectors
+  (that is, `"foo"` is now interpreted the same as `'foo'`, and `["foo","bar"]` is now interpreted the
+  same as `{'foo','bar'}`).
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
