@@ -116,6 +116,9 @@ option to `cmake`. This will enable additional optimizations that are specific
 to your computer. Note that the resulting binaries will likely be slower on another
 computer, and possibly not work at all.
 
+If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work
+correctly.
+
 Finally, if you installed the `gcc` package because you want to use *OpenMP*,
 add `-DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8` to the `cmake` command
 line. By default, `cmake` will find the compiler that came with `XCode`. These

@@ -94,14 +94,17 @@ directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second.
 
 - If `DIP_BUILD_DIPVIEWER_JAVA` is not on the list but `DIP_BUILD_DIPVIEWER` is, you
 don't have MATLAB installed, you are building 32-bit binaries or the Java SDK could not
-be found. This is only necessary if you want to use the `viewslice` command from DIPimage.
+be found. This is only necessary if you want to use the `viewslice` command from *DIPimage*.
 
 - If `BIOFORMATS_JAR` is not on the list, the Java SDK could not be found. If it is,
 point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
-you want to import image formats that are not directly supported by DIPlib.
+you want to import image formats that are not directly supported by *DIPlib*.
 
 - If using a version of MSVC older than the 2019 edition, set both `DIP_ENABLE_UNICODE`
 and `DIP_ENABLE_DOCTEST` to `Off`. You will get compilation errors if you don't do this.
+
+- If you set `DIP_SHARED_LIBRARY` to `Off`, *DIPimage* and *PyDIP* will likely not work
+correctly.
 
 Finally, click on "Generate" to create a *Visual Studio* solution file.
 

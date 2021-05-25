@@ -74,7 +74,7 @@ Important `cmake` command-line arguments controlling the build of *DIPlib*:
 
     -DCMAKE_INSTALL_PREFIX=$HOME/dip   # choose an instal location for DIPlib, DIPimage and the docs
     -DCMAKE_BUILD_TYPE=Debug           # by default it is release
-    -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library
+    -DDIP_SHARED_LIBRARY=Off           # build a static DIPlib library (not compatible with DIPimage)
     -DCMAKE_C_COMPILER=gcc-6           # specify a C compiler (for libics, LibTIFF, libjpeg and zlib)
     -DCMAKE_CXX_COMPILER=g++-6         # specify a C++ compiler (for everything else)
     -DCMAKE_CXX_FLAGS="-march=native"  # specify additional C++ compiler flags

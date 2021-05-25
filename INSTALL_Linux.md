@@ -66,7 +66,7 @@ This will install to `/usr/local`. If you prefer to install elsewhere, change th
 cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip
 ```
 This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documentation
-under the `dip` directory in your home directory
+under the `dip` directory in your home directory.
 
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building
 and installing, run
@@ -78,6 +78,9 @@ We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific
 to your computer. Note that the resulting binaries will likely be slower on another
 computer, and possibly not work at all.
+
+If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work
+correctly.
 
 ## Enabling Bio-Formats
 

@@ -1,6 +1,6 @@
 \comment DIPlib 3.0
 
-\comment (c)2017-2020, Cris Luengo.
+\comment (c)2017-2021, Cris Luengo.
 \comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -38,7 +38,6 @@ But you can only add one of them to your *MATLAB* path.
 To install *DIPimage*, simply run the installation program and follow the
 directions in it. The tool will tell you to start *MATLAB* and type the
 command
-
 ```matlab
 run('C:\Program Files\dip\dipstart.m')
 ```
@@ -61,7 +60,6 @@ dependencies. You can also
 [read the instructions online](https://github.com/DIPlib/diplib/blob/master/README_Windows.md).
 
 Once all the binaries are compiled, start *MATLAB* and type:
-
 ```matlab
 addpath('C:\dip\share\DIPimage')
 setenv('PATH',['C:\dip\bin',';',getenv('PATH')]);
@@ -86,7 +84,6 @@ compiler (GCC and Clang are available on all platforms), and CMake.
 The root directory of the git repository has a
 [README.md](https://github.com/DIPlib/diplib/blob/master/README.md) file
 that gives some directions on compiling. In principle this should suffice:
-
 ```bash
 mkdir target
 cd target
@@ -103,16 +100,14 @@ cmake /path/to/git/repository/root -DCMAKE_INSTALL_PREFIX=/home/uname
 Note that you need to have *MATLAB* installed on the build machine to build *DIPimage*.
 
 Once all the binaries are compiled, start *MATLAB* and type:
-
 ```matlab
-addpath('/usr/share/DIPimage')
+addpath('/usr/local/share/DIPimage')
 ```
-
 or:
-
 ```matlab
 addpath('/home/uname/share/DIPimage')
 ```
+depending on where *DIPimage* was installed to.
 
 You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 
