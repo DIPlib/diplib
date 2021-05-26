@@ -30,6 +30,9 @@
 #if __GNUC__ >= 9
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
+#if __GNUC__ == 11
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #endif
 
 #include <Eigen/QR>
