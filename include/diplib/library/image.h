@@ -1072,6 +1072,9 @@ class DIP_NO_EXPORT Image {
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
       ///
+      /// Note that this function returns false if the two images offer the same view of
+      /// the same data segment.
+      ///
       /// \see dip::Image::SharesData, dip::Image::Aliases, dip::Image::IsIdenticalView
       bool IsOverlappingView( Image const& other ) const {
          // Aliases checks for both images to be forged.

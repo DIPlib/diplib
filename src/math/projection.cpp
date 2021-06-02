@@ -102,7 +102,7 @@ void ProjectionScan(
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
-      if( out.IsOverlappingView( input ) || out.IsOverlappingView( mask )) {
+      if( out.Aliases( input ) || out.Aliases( mask )) {
          out.Strip();
       }
       out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
