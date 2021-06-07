@@ -180,6 +180,8 @@ void init_assorted( py::module& m ) {
    m.def( "CreateDelta", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::CreateDelta ), "sizes"_a, "origin"_a = "" );
 
    m.def( "SetBorder", &dip::SetBorder, "out"_a, "value"_a = dip::Image::Pixel{ 0 }, "sizes"_a = dip::UnsignedArray{ 1 } );
+   m.def( "ApplyWindow", py::overload_cast< dip::Image const&, dip::String const&, dip::dfloat >( &dip::ApplyWindow ),
+          "in"_a, "type"_a = "Hamming", "parameter"_a = 0.5 );
    m.def( "DrawLine", &dip::DrawLine, "out"_a, "start"_a, "end"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
    m.def( "DrawLines", &dip::DrawLines, "out"_a, "points"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
    m.def( "DrawPolygon2D", &dip::DrawPolygon2D, "out"_a, "polygon"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED);

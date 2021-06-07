@@ -110,9 +110,12 @@ title: "Changes DIPlib 3.1.0"
 
 ### New functionality
 
-- Added `dip.FlushToZero()`, `dip.SplitRegions()`.
+- Added `dip.FlushToZero()`, `dip.SplitRegions()`, `dip.ApplyWindow()`.
 
 - Added `dip.ImageReadNPY()`, `dip.ImageReadNPYInfo()`, `dip.ImageIsNPY()` and `dip.ImageWriteNPY()`.
+
+- Added `dip.FourierMellinMatch2Dparams()`, identical to `dip.FourierMellinMatch2D()` but it also returns the
+  transform parameters (which `dip.FourierMellinMatch2D()` should have done from the beginning).
 
 ### Changed functionality
 

@@ -89,6 +89,12 @@ void init_analysis( py::module& m ) {
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = dip::UnsignedArray{ std::numeric_limits< dip::uint >::max() } );
    m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::FourierMellinMatch2D ),
           "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE );
+   m.def( "FourierMellinMatch2Dparams", []( dip::Image const& in1, dip::Image const& in2, dip::String const& interpolationMethod, dip::String const& correlationMethod){
+             dip::Image out;
+             auto params = FourierMellinMatch2D(in1, in2, out, interpolationMethod, correlationMethod);
+             return py::make_tuple( out, params ).release();
+          },
+          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE );
 
    m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
           "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
