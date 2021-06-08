@@ -73,7 +73,8 @@ FloatArray FourierMellinMatch2D(
    } else {
       DIP_THROW_INVALID_FLAG( correlationMethod );
    }
-   FloatArray shift = FindShift( fmIn1, fmIn2, findShiftMethod );
+   FloatArray shift;
+   DIP_STACK_TRACE_THIS( shift = FindShift( fmIn1, fmIn2, findShiftMethod ));
    //std::cout << "shift = " << shift << '\n';
    fmIn1.Strip();
    fmIn2.Strip();
@@ -102,13 +103,15 @@ FloatArray FourierMellinMatch2D(
    Image cross;
    DIP_STACK_TRACE_THIS( CrossCorrelationFT( fIn1, in2a, cross, S::FREQUENCY, S::SPATIAL, S::SPATIAL, correlationMethod ));
    DIP_ASSERT( cross.DataType().IsReal());
-   SubpixelLocationResult locA = SubpixelLocation( cross, MaximumPixel( cross, {} ));
+   SubpixelLocationResult locA;
+   DIP_STACK_TRACE_THIS( locA = SubpixelLocation( cross, MaximumPixel( cross, {} )));
    locA.coordinates -= cross.GetCenter();
    //std::cout << "A: coordinates = " << locA.coordinates << ", value = " << locA.value << '\n';
 
    DIP_STACK_TRACE_THIS( CrossCorrelationFT( fIn1, in2b, cross, S::FREQUENCY, S::SPATIAL, S::SPATIAL, correlationMethod ));
    DIP_ASSERT( cross.DataType().IsReal());
-   SubpixelLocationResult locB = SubpixelLocation( cross, MaximumPixel( cross, {} ));
+   SubpixelLocationResult locB;
+   DIP_STACK_TRACE_THIS( locB = SubpixelLocation( cross, MaximumPixel( cross, {} )));
    locB.coordinates -= cross.GetCenter();
    //std::cout << "B: coordinates = " << locB.coordinates << ", value = " << locB.value << '\n';
    fIn1.Strip();
@@ -119,13 +122,13 @@ FloatArray FourierMellinMatch2D(
       in2b.Strip();
       matrix[ 4 ] = locA.coordinates[ 0 ];
       matrix[ 5 ] = locA.coordinates[ 1 ];
-      Shift( in2a, out, locA.coordinates, interpolationMethod, { S::ADD_ZEROS } );
+      DIP_STACK_TRACE_THIS( Shift( in2a, out, locA.coordinates, interpolationMethod, { S::ADD_ZEROS } ));
    } else {
       // Pick in2b
       in2a.Strip();
       matrix[ 4 ] = locB.coordinates[ 0 ];
       matrix[ 5 ] = locB.coordinates[ 1 ];
-      Shift( in2b, out, locB.coordinates, interpolationMethod, { S::ADD_ZEROS } );
+      DIP_STACK_TRACE_THIS( Shift( in2b, out, locB.coordinates, interpolationMethod, { S::ADD_ZEROS } ));
       matrix[ 0 ] = -matrix[ 0 ]; // our rotation is theta + pi, which leads to all matrix elements being inverted
       matrix[ 1 ] = -matrix[ 1 ];
       matrix[ 2 ] = -matrix[ 2 ];

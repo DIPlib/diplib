@@ -149,15 +149,21 @@ class MaxPixelLineFilter : public MaxMinPixelLineFilter {
                }
             }
          }
-         if( first_ ) {
-            if( value > value_[ params.thread ] ) {
-               value_[ params.thread ] = value;
-               coord_[ params.thread ] = coord;
-            }
+         if( coord_[ params.thread ].empty() ) {
+            // Ensure we always have something in `coord_`, even if the whole image is NaN.
+            value_[ params.thread ] = value;
+            coord_[ params.thread ] = coord;
          } else {
-            if( value >= value_[ params.thread ] ) {
-               value_[ params.thread ] = value;
-               coord_[ params.thread ] = coord;
+            if( first_ ) {
+               if( value > value_[ params.thread ] ) {
+                  value_[ params.thread ] = value;
+                  coord_[ params.thread ] = coord;
+               }
+            } else {
+               if( value >= value_[ params.thread ] ) {
+                  value_[ params.thread ] = value;
+                  coord_[ params.thread ] = coord;
+               }
             }
          }
       }
@@ -238,15 +244,21 @@ class MinPixelLineFilter : public MaxMinPixelLineFilter {
                }
             }
          }
-         if( first_ ) {
-            if( value < value_[ params.thread ] ) {
-               value_[ params.thread ] = value;
-               coord_[ params.thread ] = coord;
-            }
+         if( coord_[ params.thread ].empty() ) {
+            // Ensure we always have something in `coord_`, even if the whole image is NaN.
+            value_[ params.thread ] = value;
+            coord_[ params.thread ] = coord;
          } else {
-            if( value <= value_[ params.thread ] ) {
-               value_[ params.thread ] = value;
-               coord_[ params.thread ] = coord;
+            if( first_ ) {
+               if( value < value_[ params.thread ] ) {
+                  value_[ params.thread ] = value;
+                  coord_[ params.thread ] = coord;
+               }
+            } else {
+               if( value <= value_[ params.thread ] ) {
+                  value_[ params.thread ] = value;
+                  coord_[ params.thread ] = coord;
+               }
             }
          }
       }

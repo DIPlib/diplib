@@ -73,6 +73,7 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::Image::Copy()` would incorrectly copy the external interface if the destination image didn't have one defined.
 
+- `dip::MaximumPixel()` and `dip::MinimumPixel()` produced an empty output array when the input was all NaN.
 
 
 
