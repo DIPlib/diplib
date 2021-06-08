@@ -312,7 +312,7 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 ///
 /// The samples of `image` are written directly to the TIFF file, no matter what their data type is. Complex data
 /// are not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
-/// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format. If the image
+/// is not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format. If the image
 /// needs to be read by other software, it is recommended to convert the image to \ref dip::DT_UINT8 before saving as
 /// TIFF.
 ///
