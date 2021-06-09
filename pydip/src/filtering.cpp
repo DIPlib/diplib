@@ -70,15 +70,15 @@ void init_filtering( py::module& m ) {
           "in"_a, "dimension"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Derivative", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Derivative ),
           "in"_a, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
-   m.def( "Dx", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dx( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dy", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dy( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dxx", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dxx( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dyy", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dyy( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dzz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dzz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dxy", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dxy( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dxz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dxz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
-   m.def( "Dyz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dyz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dx", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dx ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dy", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dy ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dz", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dz ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dxx", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dxx ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dyy", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dyy ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dzz", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dzz ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dxy", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dxy ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dxz", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dxz ), "in"_a, "sigma"_a = 1.0 );
+   m.def( "Dyz", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::Dyz ), "in"_a, "sigma"_a = 1.0 );
    m.def( "Gradient", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Gradient ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
    m.def( "GradientMagnitude", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::GradientMagnitude ),

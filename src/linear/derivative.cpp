@@ -193,7 +193,7 @@ void GradientMagnitude(
    }
    UnsignedArray order( in.Dimensionality(), 0 );
    order[ dims[ 0 ]] = 1;
-   Derivative( in, out, order, sigmas, method, boundaryCondition, truncation );
+   DIP_STACK_TRACE_THIS( Derivative( in, out, order, sigmas, method, boundaryCondition, truncation ));
    if( nDims > 1 ) {
       MultiplySampleWise( out, out, out, out.DataType() );
       Image tmp;
