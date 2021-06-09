@@ -1054,7 +1054,7 @@ DIP_EXPORT void ObjectToMeasurement(
       Image& out,
       Measurement::IteratorFeature const& featureValues
 );
-inline Image ObjectToMeasurement(
+DIP_NODISCARD inline Image ObjectToMeasurement(
       Image const& label,
       Measurement::IteratorFeature const& featureValues
 ) {

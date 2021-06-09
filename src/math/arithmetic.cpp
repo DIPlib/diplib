@@ -501,7 +501,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
    // Case 1: general case:
    dip::Image matrix2x3( { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 } );
    matrix2x3.ReshapeTensor( 2, 3 );
-   DOCTEST_CHECK_THROWS( matrix2x3 * matrix2x3 );
+   dip::Image tmp;
+   DOCTEST_CHECK_THROWS( tmp = matrix2x3 * matrix2x3 );
    dip::Image matrix3x2( { 0.5, 1.0, 2.0, 5.0, 10.0, 20.0 } );
    matrix3x2.ReshapeTensor( 3, 2 );
    dip::Image out = matrix2x3 * matrix3x2;

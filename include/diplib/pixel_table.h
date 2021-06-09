@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the pixel table functionality.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -316,7 +316,7 @@ class DIP_NO_EXPORT PixelTable {
 
       /// \brief Creates a binary image representing the neighborhood, or a `dfloat` one if
       /// there are weights associated.
-      Image AsImage() const {
+      DIP_NODISCARD Image AsImage() const {
          Image out;
          AsImage( out );
          return out;

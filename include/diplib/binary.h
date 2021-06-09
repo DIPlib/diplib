@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for binary image processing
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ DIP_EXPORT void BinaryDilation(
       dip::uint iterations = 3,
       String const& edgeCondition = S::BACKGROUND
 );
-inline Image BinaryDilation(
+DIP_NODISCARD inline Image BinaryDilation(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
@@ -88,7 +88,7 @@ DIP_EXPORT void BinaryErosion(
       dip::uint iterations = 3,
       String const& edgeCondition = S::OBJECT
 );
-inline Image BinaryErosion(
+DIP_NODISCARD inline Image BinaryErosion(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
@@ -122,7 +122,7 @@ DIP_EXPORT void BinaryClosing(
       dip::uint iterations = 3,
       String const& edgeCondition = S::SPECIAL
 );
-inline Image BinaryClosing(
+DIP_NODISCARD inline Image BinaryClosing(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
@@ -156,7 +156,7 @@ DIP_EXPORT void BinaryOpening(
       dip::uint iterations = 3,
       String const& edgeCondition = S::SPECIAL
 );
-inline Image BinaryOpening(
+DIP_NODISCARD inline Image BinaryOpening(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
@@ -190,7 +190,7 @@ DIP_EXPORT void BinaryPropagation(
       dip::uint iterations = 0,
       String const& edgeCondition = S::BACKGROUND
 );
-inline Image BinaryPropagation(
+DIP_NODISCARD inline Image BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,
       dip::sint connectivity = 1,
@@ -227,7 +227,7 @@ inline void EdgeObjectsRemove(
       out ^= in;
    DIP_END_STACK_TRACE
 }
-inline Image EdgeObjectsRemove(
+DIP_NODISCARD inline Image EdgeObjectsRemove(
       Image const& in,
       dip::uint connectivity = 1
 ) {
@@ -258,7 +258,7 @@ inline void FillHoles(
       Invert( out, out );
    DIP_END_STACK_TRACE
 }
-inline Image FillHoles(
+DIP_NODISCARD inline Image FillHoles(
       Image const& in,
       dip::uint connectivity = 1
 ) {
@@ -292,7 +292,7 @@ DIP_EXPORT void ConditionalThickening2D(
       String const& endPixelCondition = S::LOSE,
       String const& edgeCondition = S::BACKGROUND
 );
-inline Image ConditionalThickening2D(
+DIP_NODISCARD inline Image ConditionalThickening2D(
       Image const& in,
       Image const& mask,
       dip::uint iterations = 0,
@@ -330,7 +330,7 @@ DIP_EXPORT void ConditionalThinning2D(
       String const& endPixelCondition = S::LOSE,
       String const& edgeCondition = S::BACKGROUND
 );
-inline Image ConditionalThinning2D(
+DIP_NODISCARD inline Image ConditionalThinning2D(
       Image const& in,
       Image const& mask,
       dip::uint iterations = 0,
@@ -363,7 +363,7 @@ DIP_EXPORT void BinaryAreaOpening(
       dip::uint connectivity = 0,
       String const& edgeCondition = S::BACKGROUND
 );
-inline Image BinaryAreaOpening(
+DIP_NODISCARD inline Image BinaryAreaOpening(
       Image const& in,
       dip::uint filterSize,
       dip::uint connectivity = 0,
@@ -390,7 +390,7 @@ inline void BinaryAreaClosing(
       Not( out, out );
    DIP_END_STACK_TRACE
 }
-inline Image BinaryAreaClosing(
+DIP_NODISCARD inline Image BinaryAreaClosing(
         Image const& in,
         dip::uint filterSize,
         dip::uint connectivity = 0,
@@ -451,7 +451,7 @@ DIP_EXPORT void EuclideanSkeleton(
       String const& endPixelCondition = S::NATURAL,
       String const& edgeCondition = S::BACKGROUND
 );
-inline Image EuclideanSkeleton(
+DIP_NODISCARD inline Image EuclideanSkeleton(
       Image const& in,
       String const& endPixelCondition = S::NATURAL,
       String const& edgeCondition = S::BACKGROUND
@@ -481,7 +481,7 @@ DIP_EXPORT void CountNeighbors(
       dip::String const& mode = S::FOREGROUND,
       dip::String const& edgeCondition = S::BACKGROUND
 );
-inline Image CountNeighbors(
+DIP_NODISCARD inline Image CountNeighbors(
       Image const& in,
       dip::uint connectivity = 0,
       dip::String const& mode = S::FOREGROUND,
@@ -515,7 +515,7 @@ DIP_EXPORT void MajorityVote(
       dip::uint connectivity = 0,
       dip::String const& edgeCondition = S::BACKGROUND
 );
-inline Image MajorityVote(
+DIP_NODISCARD inline Image MajorityVote(
       Image const& in,
       dip::uint connectivity = 0,
       dip::String const& edgeCondition = S::BACKGROUND
@@ -535,7 +535,7 @@ inline void GetSinglePixels(
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 1, out );
 }
-inline Image GetSinglePixels(
+DIP_NODISCARD inline Image GetSinglePixels(
       Image const& in,
       dip::uint connectivity = 0,
       dip::String const& edgeCondition = S::BACKGROUND
@@ -555,7 +555,7 @@ inline void GetEndPixels(
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 2, out );
 }
-inline Image GetEndPixels(
+DIP_NODISCARD inline Image GetEndPixels(
       Image const& in,
       dip::uint connectivity = 0,
       dip::String const& edgeCondition = S::BACKGROUND
@@ -575,7 +575,7 @@ inline void GetLinkPixels(
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 3, out );
 }
-inline Image GetLinkPixels(
+DIP_NODISCARD inline Image GetLinkPixels(
       Image const& in,
       dip::uint connectivity = 0,
       dip::String const& edgeCondition = S::BACKGROUND
@@ -595,7 +595,7 @@ inline void GetBranchPixels(
    Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Greater( nn, 3, out );
 }
-inline Image GetBranchPixels(
+DIP_NODISCARD inline Image GetBranchPixels(
       Image const& in,
       dip::uint connectivity = 0,
       dip::String const& edgeCondition = S::BACKGROUND
@@ -662,12 +662,12 @@ class DIP_NO_EXPORT Interval {
       }
 
       /// \brief Returns the foreground mask image, a binary image.
-      dip::Image HitImage() const {
+      DIP_NODISCARD dip::Image HitImage() const {
          return image_ == 1;
       }
 
       /// \brief Returns the background mask image, a binary image.
-      dip::Image MissImage() const {
+      DIP_NODISCARD dip::Image MissImage() const {
          return image_ == 0;
       }
 
@@ -689,7 +689,7 @@ class DIP_NO_EXPORT Interval {
       /// - `"interleaved counter-clockwise"` is the same, but goes around the other way.
       /// - `"clockwise"` sorts the angles as follows: 0, 45, 90, 135, 180, 225, 270, 315.
       /// - `"counter-clockwise"` is the same, but goes around the other way.
-      DIP_EXPORT IntervalArray GenerateRotatedVersions(
+      DIP_NODISCARD DIP_EXPORT IntervalArray GenerateRotatedVersions(
             dip::uint rotationAngle = 45,
             String rotationDirection = S::INTERLEAVED_CLOCKWISE
       ) const;
@@ -725,7 +725,7 @@ DIP_EXPORT void SupGenerating(
       Interval const& interval,
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image SupGenerating(
+DIP_NODISCARD inline Image SupGenerating(
       Image const& in,
       Interval const& interval,
       String const& boundaryCondition = S::ADD_ZEROS
@@ -750,7 +750,7 @@ DIP_EXPORT void InfGenerating(
       Interval const& interval,
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image InfGenerating(
+DIP_NODISCARD inline Image InfGenerating(
       Image const& in,
       Interval const& interval,
       String const& boundaryCondition = S::ADD_ZEROS
@@ -772,7 +772,7 @@ DIP_EXPORT void UnionSupGenerating(
       IntervalArray const& intervals,
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image UnionSupGenerating(
+DIP_NODISCARD inline Image UnionSupGenerating(
       Image const& in,
       IntervalArray const& intervals,
       String const& boundaryCondition = S::ADD_ZEROS
@@ -802,7 +802,7 @@ inline void UnionSupGenerating2D(
       UnionSupGenerating( in, out, intarray, boundaryCondition );
    DIP_END_STACK_TRACE
 }
-inline Image UnionSupGenerating2D(
+DIP_NODISCARD inline Image UnionSupGenerating2D(
       Image const& in,
       Interval const& interval,
       dip::uint rotationAngle = 45,
@@ -826,7 +826,7 @@ DIP_EXPORT void IntersectionInfGenerating(
       IntervalArray const& intervals,
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image IntersectionInfGenerating(
+DIP_NODISCARD inline Image IntersectionInfGenerating(
       Image const& in,
       IntervalArray const& intervals,
       String const& boundaryCondition = S::ADD_ZEROS
@@ -856,7 +856,7 @@ inline void IntersectionInfGenerating2D(
       IntersectionInfGenerating( in, out, intarray, boundaryCondition );
    DIP_END_STACK_TRACE
 }
-inline Image IntersectionInfGenerating2D(
+DIP_NODISCARD inline Image IntersectionInfGenerating2D(
       Image const& in,
       Interval const& interval,
       dip::uint rotationAngle = 45,
@@ -890,7 +890,7 @@ DIP_EXPORT void Thickening(
       dip::uint iterations = 0,
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image Thickening(
+DIP_NODISCARD inline Image Thickening(
       Image const& in,
       Image const& mask,
       IntervalArray const& intervals,
@@ -924,7 +924,7 @@ inline void Thickening2D(
       Thickening( in, mask, out, intarray, iterations, boundaryCondition );
    DIP_END_STACK_TRACE
 }
-inline Image Thickening2D(
+DIP_NODISCARD inline Image Thickening2D(
       Image const& in,
       Image const& mask,
       Interval const& interval,
@@ -959,7 +959,7 @@ DIP_EXPORT void Thinning(
       dip::uint iterations = 0,
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image Thinning(
+DIP_NODISCARD inline Image Thinning(
       Image const& in,
       Image const& mask,
       IntervalArray const& intervals,
@@ -993,7 +993,7 @@ inline void Thinning2D(
       Thinning( in, mask, out, intarray, iterations, boundaryCondition );
    DIP_END_STACK_TRACE
 }
-inline Image Thinning2D(
+DIP_NODISCARD inline Image Thinning2D(
       Image const& in,
       Image const& mask,
       Interval const& interval,

@@ -49,7 +49,7 @@ namespace dip {
 /// all non-zero pixels.
 ///
 /// \see dip::Count
-DIP_EXPORT CoordinateArray Find( Image const& in, Image const& mask = {} );
+DIP_NODISCARD DIP_EXPORT CoordinateArray Find( Image const& in, Image const& mask = {} );
 
 
 /// \brief Contains the result of the function \ref dip::SubpixelLocation.
@@ -85,7 +85,7 @@ using SubpixelLocationArray = std::vector< SubpixelLocationResult >;
 /// - `"integer"`: Doesn't look for sub-pixel locations, returning the integer coordinates of the extremum.
 ///
 /// The image `in` must be scalar and real-valued.
-DIP_EXPORT SubpixelLocationResult SubpixelLocation(
+DIP_NODISCARD DIP_EXPORT SubpixelLocationResult SubpixelLocation(
       Image const& in,
       UnsignedArray const& position,
       String const& polarity = S::MAXIMUM,
@@ -102,7 +102,7 @@ DIP_EXPORT SubpixelLocationResult SubpixelLocation(
 /// pixel away from the edge.
 ///
 /// See \ref dip::SubpixelLocation for the definition of the `method` parameter.
-DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
+DIP_NODISCARD DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
       Image const& in,
       Image const& mask = {},
       String const& method = S::PARABOLIC_SEPARABLE
@@ -118,7 +118,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
 /// pixel away from the edge.
 ///
 /// See \ref dip::SubpixelLocation for the definition of the `method` parameter.
-DIP_EXPORT SubpixelLocationArray SubpixelMinima(
+DIP_NODISCARD DIP_EXPORT SubpixelLocationArray SubpixelMinima(
       Image const& in,
       Image const& mask = {},
       String const& method = S::PARABOLIC_SEPARABLE
@@ -143,7 +143,7 @@ DIP_EXPORT FloatArray MeanShift(
 ///
 /// Repeatedly calls the \ref dip::MeanShift function described above, for each point in `startArray`. Duplicate maxima
 /// are not removed, such that `out[ii]` is the local maximum arrived to from `startArray[ii]`.
-inline FloatCoordinateArray MeanShift(
+DIP_NODISCARD inline FloatCoordinateArray MeanShift(
       Image const& meanShiftVectorResult,
       FloatCoordinateArray const& startArray,
       dfloat epsilon = 1e-3
@@ -183,7 +183,7 @@ DIP_EXPORT void GaussianMixtureModel(
       dip::uint maxIter = 20,
       StringSet const& flags = {}
 );
-inline Image GaussianMixtureModel(
+DIP_NODISCARD inline Image GaussianMixtureModel(
       Image const& in,
       dip::uint dimension = 2,
       dip::uint numberOfGaussians = 2,
@@ -248,7 +248,7 @@ DIP_EXPORT void CrossCorrelationFT(
       String const& outRepresentation = S::SPATIAL,
       String const& normalize = S::NORMALIZE
 );
-inline Image CrossCorrelationFT(
+DIP_NODISCARD inline Image CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
       String const& in1Representation = S::SPATIAL,
@@ -282,7 +282,7 @@ DIP_EXPORT void AutoCorrelationFT(
       String const& inRepresentation = S::SPATIAL,
       String const& outRepresentation = S::SPATIAL
 );
-inline Image  AutoCorrelationFT(
+DIP_NODISCARD inline Image  AutoCorrelationFT(
       Image const& in,
       String const& inRepresentation = S::SPATIAL,
       String const& outRepresentation = S::SPATIAL
@@ -362,7 +362,7 @@ inline Image  AutoCorrelationFT(
 ///       Delft University of Technology, The Netherlands, 1998.
 ///     - T.Q. Pham, M. Bezuijen, L.J. van Vliet, K. Schutte and C.L. Luengo Hendriks, "Performance of Optimal
 ///       Registration Estimators", in: Visual Information Processing XIV, Proceedings of SPIE 5817, 2005.
-DIP_EXPORT FloatArray FindShift(
+DIP_NODISCARD DIP_EXPORT FloatArray FindShift(
       Image const& in1,
       Image const& in2,
       String const& method = S::MTS,
@@ -402,7 +402,7 @@ DIP_EXPORT FloatArray FourierMellinMatch2D(
       String const& interpolationMethod = S::LINEAR,
       String const& correlationMethod = S::PHASE
 );
-inline Image FourierMellinMatch2D(
+DIP_NODISCARD inline Image FourierMellinMatch2D(
       Image const& in1,
       Image const& in2,
       String const& interpolationMethod = S::LINEAR,
@@ -456,7 +456,7 @@ DIP_EXPORT void StructureTensor(
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
-inline Image StructureTensor(
+DIP_NODISCARD inline Image StructureTensor(
       Image const& in,
       Image const& mask = {},
       FloatArray const& gradientSigmas = { 1.0 },
@@ -597,7 +597,7 @@ DIP_EXPORT void StructureTensorAnalysis(
       ImageRefArray& out,
       StringArray const& outputs
 );
-inline ImageArray StructureTensorAnalysis(
+DIP_NODISCARD inline ImageArray StructureTensorAnalysis(
       Image const& in,
       StringArray const& outputs
 ) {
@@ -632,7 +632,7 @@ inline ImageArray StructureTensorAnalysis(
 /// region over which the structure tensor feature is averaged.
 ///
 /// See \ref dip::StructureTensor for more information about the structure tensor.
-DIP_EXPORT Distribution StructureAnalysis(
+DIP_NODISCARD DIP_EXPORT Distribution StructureAnalysis(
       Image const& in,
       Image const& mask,
       std::vector< dfloat > const& scales = {},
@@ -676,7 +676,7 @@ DIP_EXPORT void MonogenicSignal(
       String const& inRepresentation = S::SPATIAL,
       String const& outRepresentation = S::SPATIAL
 );
-inline Image MonogenicSignal(
+DIP_NODISCARD inline Image MonogenicSignal(
       Image const& in,
       FloatArray const& wavelengths = { 3.0, 24.0 },
       dfloat bandwidth = 0.41, // ~3 octaves
@@ -751,7 +751,7 @@ DIP_EXPORT void MonogenicSignalAnalysis(
       dfloat deviationGain = 1.5,
       String const& polarity = S::BOTH
 );
-inline ImageArray MonogenicSignalAnalysis(
+DIP_NODISCARD inline ImageArray MonogenicSignalAnalysis(
       Image const& in,
       StringArray const& outputs,
       dfloat noiseThreshold = 0.2,
@@ -798,7 +798,7 @@ DIP_EXPORT void OrientationSpace(
       dfloat radSigma = 0.8,
       dip::uint orientations = 0
 );
-inline Image OrientationSpace(
+DIP_NODISCARD inline Image OrientationSpace(
       Image const& in,
       dip::uint order = 8,
       dfloat radCenter = 0.1,
@@ -866,7 +866,7 @@ DIP_EXPORT Distribution PairCorrelation(
       StringSet const& options = {}
 );
 /// \brief like above, using a default-initialized \ref dip::Random object.
-inline Distribution PairCorrelation(
+DIP_NODISCARD inline Distribution PairCorrelation(
       Image const& object,
       Image const& mask,
       dip::uint probes = 1000000,
@@ -896,7 +896,7 @@ DIP_EXPORT Distribution ProbabilisticPairCorrelation(
       StringSet const& options = {}
 );
 /// \brief like above, using a default-initialized \ref dip::Random object.
-inline Distribution ProbabilisticPairCorrelation(
+DIP_NODISCARD inline Distribution ProbabilisticPairCorrelation(
       Image const& object,
       Image const& mask,
       dip::uint probes = 1000000,
@@ -937,7 +937,7 @@ inline Distribution ProbabilisticPairCorrelation(
 ///
 /// !!! literature
 ///     - G. Matheron, "Principles of geostatistics", Economic Geology 58(8):1246, 1963.
-DIP_EXPORT Distribution Semivariogram(
+DIP_NODISCARD DIP_EXPORT Distribution Semivariogram(
       Image const& in,
       Image const& mask,
       Random& random,
@@ -946,7 +946,7 @@ DIP_EXPORT Distribution Semivariogram(
       String const& sampling = S::RANDOM
 );
 /// \brief like above, using a default-initialized \ref dip::Random object.
-inline Distribution Semivariogram(
+DIP_NODISCARD inline Distribution Semivariogram(
       Image const& object,
       Image const& mask,
       dip::uint probes = 1000000,
@@ -982,7 +982,7 @@ inline Distribution Semivariogram(
 /// corresponding length in physical units is given by `distribution[len].X()`. If `object` does not
 /// have a pixel size, its pixel sizes are not isotropic, or have no physical units, then the distances given
 /// are in pixels. `len` runs from 0 to `length` (inclusive).
-DIP_EXPORT Distribution ChordLength(
+DIP_NODISCARD DIP_EXPORT Distribution ChordLength(
       Image const& object,
       Image const& mask,
       Random& random,
@@ -991,7 +991,7 @@ DIP_EXPORT Distribution ChordLength(
       String const& sampling = S::RANDOM
 );
 /// \brief like above, using a default-initialized \ref dip::Random object.
-inline Distribution ChordLength(
+DIP_NODISCARD inline Distribution ChordLength(
       Image const& object,
       Image const& mask,
       dip::uint probes = 100000,
@@ -1017,7 +1017,7 @@ inline Distribution ChordLength(
 /// The output \ref dip::Distribution has *x* value increments given by the pixel size. That is,
 /// the distribution has one sample per pixel. `length` is the length of the distribution, and
 /// thus limits the distances taken into account.
-DIP_EXPORT Distribution DistanceDistribution(
+DIP_NODISCARD DIP_EXPORT Distribution DistanceDistribution(
       Image const& object,
       Image const& region,
       dip::uint length = 100
@@ -1085,7 +1085,7 @@ DIP_EXPORT Distribution DistanceDistribution(
 ///       Pattern Recognition Letters 28(7):865-872, 2007.
 ///     - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings",
 ///       IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
-DIP_EXPORT Distribution Granulometry(
+DIP_NODISCARD DIP_EXPORT Distribution Granulometry(
       Image const& in,
       Image const& mask,
       std::vector< dfloat > const& scales = {},
@@ -1109,7 +1109,7 @@ DIP_EXPORT Distribution Granulometry(
 /// smaller and more scales are generated.
 ///
 /// The image `in` must be scalar and binary, and typically is applied to an edge map of objects.
-DIP_EXPORT dfloat FractalDimension(
+DIP_NODISCARD DIP_EXPORT dfloat FractalDimension(
       Image const& in,
       dfloat eta = 0.5
 );

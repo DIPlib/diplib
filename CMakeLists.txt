@@ -41,7 +41,7 @@ set(DIP_DESTINATIONS
 # Compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    # Compiler flags for Clang C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic -Wno-c++17-extensions")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
    set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

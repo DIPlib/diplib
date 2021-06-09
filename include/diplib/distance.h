@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for distance transforms
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -105,7 +105,7 @@ DIP_EXPORT void EuclideanDistanceTransform(
       String const& border = S::BACKGROUND,
       String const& method = S::SEPARABLE
 );
-inline Image EuclideanDistanceTransform(
+DIP_NODISCARD inline Image EuclideanDistanceTransform(
       Image const& in,
       String const& border = S::BACKGROUND,
       String const& method = S::SEPARABLE
@@ -130,7 +130,7 @@ DIP_EXPORT void VectorDistanceTransform(
       String const& border = S::BACKGROUND,
       String const& method = S::FAST
 );
-inline Image VectorDistanceTransform(
+DIP_NODISCARD inline Image VectorDistanceTransform(
       Image const& in,
       String const& border = S::BACKGROUND,
       String const& method = S::FAST
@@ -205,7 +205,7 @@ DIP_EXPORT void GreyWeightedDistanceTransform(
       Metric metric = { S::CHAMFER, 2 },
       String const& mode = S::FASTMARCHING
 );
-inline Image GreyWeightedDistanceTransform(
+DIP_NODISCARD inline Image GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
       Image const& mask = {},
@@ -241,7 +241,7 @@ inline void GeodesicDistanceTransform(
 ) {
    GreyWeightedDistanceTransform( {}, marker, condition, out, {}, S::FASTMARCHING );
 }
-inline Image GeodesicDistanceTransform(
+DIP_NODISCARD inline Image GeodesicDistanceTransform(
       Image const& marker,
       Image const& condition
 ) {

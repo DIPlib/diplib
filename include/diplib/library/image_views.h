@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for support classes for the Image class.
  *
- * (c)2014-2019, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -962,7 +962,7 @@ class Image::View {
       DIP_EXPORT void Copy( Image const& source );
 
       /// \brief Creates a copy of the view as a new image. The output will not share data with the view.
-      DIP_EXPORT Image Copy() const;
+      DIP_NODISCARD DIP_EXPORT Image Copy() const;
 
       /// \brief Sets all pixels in the view to the value `pixel`.
       ///

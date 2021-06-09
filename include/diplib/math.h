@@ -42,11 +42,11 @@ namespace dip {
 
 #define DIP_MONADIC_OPERATOR( functionName_ ) \
    DIP_EXPORT void functionName_( Image const& in, Image& out ); \
-   inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
+   DIP_NODISCARD inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
 
 #define DIP_MONADIC_OPERATOR_WITH_PARAM( functionName_, paramType_, paramName_ ) \
    DIP_EXPORT void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
-   inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
+   DIP_NODISCARD inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
 
 /// \addtogroup math_arithmetic
 
@@ -190,7 +190,7 @@ DIP_MONADIC_OPERATOR( IsFinite )
 
 /// \brief Computes the absolute value of each sample.
 DIP_EXPORT void Abs( Image const& in, Image& out );
-inline Image Abs( Image const& in ) {
+DIP_NODISCARD inline Image Abs( Image const& in ) {
    Image out;
    Abs( in, out );
    return out;
@@ -198,11 +198,11 @@ inline Image Abs( Image const& in ) {
 
 /// \brief Computes the modulus (absolute value) of each sample. `dip::Modulus` is an alias for \ref dip::Abs.
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
-inline Image Modulus( Image const& in ) { return Abs( in ); }
+DIP_NODISCARD inline Image Modulus( Image const& in ) { return Abs( in ); }
 
 /// \brief Computes the square of the modulus of each sample.
 DIP_EXPORT void SquareModulus( Image const& in, Image& out );
-inline Image SquareModulus( Image const& in ) {
+DIP_NODISCARD inline Image SquareModulus( Image const& in ) {
    Image out;
    SquareModulus( in, out );
    return out;
@@ -210,23 +210,23 @@ inline Image SquareModulus( Image const& in ) {
 
 /// \brief Computes the phase (angle on complex plane, through `std::arg`) of each sample.
 DIP_EXPORT void Phase( Image const& in, Image& out );
-inline Image Phase( Image const& in ) {
+DIP_NODISCARD inline Image Phase( Image const& in ) {
    Image out;
    Phase( in, out );
    return out;
 }
 
-inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
+DIP_NODISCARD inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
 /// \brief Returns the real component of a complex image. Returns \ref dip::Image::Real if the input is complex.
 inline void Real( Image const& in, Image& out ) { out = Real( in ); }
 
-inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Imaginary() ) : in; }
+DIP_NODISCARD inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Imaginary() ) : in; }
 /// \brief Returns the imaginary component of a complex image. Returns \ref dip::Image::Imaginary if the input is complex
 inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 
 /// \brief Computes the complex conjugate of each sample.
 DIP_EXPORT void Conjugate( Image const& in, Image& out );
-inline Image Conjugate( Image const& in ) {
+DIP_NODISCARD inline Image Conjugate( Image const& in ) {
    Image out;
    Conjugate( in, out );
    return out;
@@ -235,7 +235,7 @@ inline Image Conjugate( Image const& in ) {
 /// \brief Computes the sign of each sample. Only defined for signed real data types (signed integers
 /// and floating-point types). Output is of type \ref dip::DT_SINT8, containing values -1, 0 and 1.
 DIP_EXPORT void Sign( Image const& in, Image& out );
-inline Image Sign( Image const& in ) {
+DIP_NODISCARD inline Image Sign( Image const& in ) {
    Image out;
    Sign( in, out );
    return out;
@@ -244,7 +244,7 @@ inline Image Sign( Image const& in ) {
 /// \brief Computes the integer closest to the value of each sample.
 /// Only defined for floating-point types, the output is of type \ref dip::DT_SINT32.
 DIP_EXPORT void NearestInt( Image const& in, Image& out );
-inline Image NearestInt( Image const& in ) {
+DIP_NODISCARD inline Image NearestInt( Image const& in ) {
    Image out;
    NearestInt( in, out );
    return out;
@@ -253,7 +253,7 @@ inline Image NearestInt( Image const& in ) {
 /// \brief Computes the sample-wise supremum (maximum) over all the input images. For binary images, this is the same
 /// as the union.
 DIP_EXPORT void Supremum( ImageConstRefArray const& in, Image& out );
-inline Image Supremum( ImageConstRefArray const& in ) {
+DIP_NODISCARD inline Image Supremum( ImageConstRefArray const& in ) {
    Image out;
    Supremum( in, out );
    return out;
@@ -268,7 +268,7 @@ inline void Supremum( Image const& a, Image const& b, Image& out ) {
       Supremum( { a, b }, out );
    }
 }
-inline Image Supremum( Image const& a, Image const& b ) {
+DIP_NODISCARD inline Image Supremum( Image const& a, Image const& b ) {
    Image out;
    Supremum( a, b, out );
    return out;
@@ -277,7 +277,7 @@ inline Image Supremum( Image const& a, Image const& b ) {
 /// \brief Computes the sample-wise infimum (minimum) over all the input images. For binary images, this is the same
 /// as the intersection.
 DIP_EXPORT void Infimum( ImageConstRefArray const& in, Image& out );
-inline Image Infimum( ImageConstRefArray const& in ) {
+DIP_NODISCARD inline Image Infimum( ImageConstRefArray const& in ) {
    Image out;
    Infimum( in, out );
    return out;
@@ -292,7 +292,7 @@ inline void Infimum( Image const& a, Image const& b, Image& out ) {
       Infimum( { a, b }, out );
    }
 }
-inline Image Infimum( Image const& a, Image const& b ) {
+DIP_NODISCARD inline Image Infimum( Image const& a, Image const& b ) {
    Image out;
    Infimum( a, b, out );
    return out;
@@ -300,7 +300,7 @@ inline Image Infimum( Image const& a, Image const& b ) {
 
 /// \brief Computes the sample-wise signed infimum (minimum) of the two input images: returns `-b` where `b < a`, a otherwise.
 DIP_EXPORT void SignedInfimum( Image const& a, Image const& b, Image& out );
-inline Image SignedInfimum( Image const& a, Image const& b ) {
+DIP_NODISCARD inline Image SignedInfimum( Image const& a, Image const& b ) {
    Image out;
    SignedInfimum( a, b, out );
    return out;
@@ -321,7 +321,7 @@ DIP_EXPORT void LinearCombination(
       dfloat aWeight = 0.5,
       dfloat bWeight = 0.5
 );
-inline Image LinearCombination(
+DIP_NODISCARD inline Image LinearCombination(
       Image const& a,
       Image const& b,
       dfloat aWeight = 0.5,
@@ -348,7 +348,7 @@ DIP_EXPORT void LinearCombination(
       dcomplex aWeight,
       dcomplex bWeight
 );
-inline Image LinearCombination(
+DIP_NODISCARD inline Image LinearCombination(
       Image const& a,
       Image const& b,
       dcomplex aWeight,
@@ -377,7 +377,7 @@ inline Image LinearCombination(
 /// The operation can be understood as the angle of the vector formed by the two input images.
 /// The result is always in the range $[-\pi,\pi]$. The inputs must be a real type.
 DIP_EXPORT void Atan2( Image const& y, Image const& x, Image& out );
-inline Image Atan2( Image const& y, Image const& x ) {
+DIP_NODISCARD inline Image Atan2( Image const& y, Image const& x ) {
    Image out;
    Atan2( y, x, out );
    return out;
@@ -388,7 +388,7 @@ inline Image Atan2( Image const& y, Image const& x ) {
 /// The computation is performed carefully, so there is no undue overflow or underflow at intermediate
 /// stages of the computation. The inputs must be a real type.
 DIP_EXPORT void Hypot( Image const& a, Image const& b, Image& out );
-inline Image Hypot( Image const& a, Image const& b ) {
+DIP_NODISCARD inline Image Hypot( Image const& a, Image const& b ) {
    Image out;
    Hypot( a, b, out );
    return out;
@@ -407,7 +407,7 @@ inline Image Hypot( Image const& a, Image const& b ) {
 /// \addtogroup
 
 /// \brief Transposes the tensor image, the data are not copied.
-inline Image Transpose( Image const& in ) {
+DIP_NODISCARD inline Image Transpose( Image const& in ) {
    Image out = in;
    out.Transpose();
    return out;
@@ -418,13 +418,13 @@ inline void ConjugateTranspose( Image const& in, Image& out ) {
    Conjugate( in, out );
    out.Transpose();
 }
-inline Image ConjugateTranspose( Image const& in ) {
+DIP_NODISCARD inline Image ConjugateTranspose( Image const& in ) {
    return Conjugate( in ).Transpose();
 }
 
 /// \brief Computes the dot product (inner product) of two vector images.
 DIP_EXPORT void DotProduct( Image const& lhs, Image const& rhs, Image& out );
-inline Image DotProduct( Image const& lhs, Image const& rhs ) {
+DIP_NODISCARD inline Image DotProduct( Image const& lhs, Image const& rhs ) {
    Image out;
    DotProduct( lhs, rhs, out );
    return out;
@@ -437,7 +437,7 @@ inline Image DotProduct( Image const& lhs, Image const& rhs ) {
 /// of the cross product of the 3D vectors obtained by adding a 0 z-component to the inputs.
 /// That is, it is the area of the parallelogram formed by the two 2D vectors.
 DIP_EXPORT void CrossProduct( Image const& lhs, Image const& rhs, Image& out );
-inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
+DIP_NODISCARD inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
    Image out;
    CrossProduct( lhs, rhs, out );
    return out;
@@ -445,7 +445,7 @@ inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
 
 /// \brief Computes the norm of the vector at each pixel in image `in`.
 DIP_EXPORT void Norm( Image const& in, Image& out );
-inline Image Norm( Image const& in ) {
+DIP_NODISCARD inline Image Norm( Image const& in ) {
    Image out;
    Norm( in, out );
    return out;
@@ -453,7 +453,7 @@ inline Image Norm( Image const& in ) {
 
 /// \brief Computes the square of the norm of the vector at each pixel in image `in`.
 DIP_EXPORT void SquareNorm( Image const& in, Image& out );
-inline Image SquareNorm( Image const& in ) {
+DIP_NODISCARD inline Image SquareNorm( Image const& in ) {
    Image out;
    SquareNorm( in, out );
    return out;
@@ -470,7 +470,7 @@ inline Image SquareNorm( Image const& in ) {
 ///
 /// \see dip::Norm, dip::Orientation, dip::PolarToCartesian, dip::CartesianToPolar
 DIP_EXPORT void Angle( Image const& in, Image& out );
-inline Image Angle( Image const& in ) {
+DIP_NODISCARD inline Image Angle( Image const& in ) {
    Image out;
    Angle( in, out );
    return out;
@@ -484,7 +484,7 @@ inline Image Angle( Image const& in ) {
 ///
 /// \see dip::Norm, dip::Angle
 DIP_EXPORT void Orientation( Image const& in, Image& out );
-inline Image Orientation( Image const& in ) {
+DIP_NODISCARD inline Image Orientation( Image const& in ) {
    Image out;
    Orientation( in, out );
    return out;
@@ -511,7 +511,7 @@ inline Image Orientation( Image const& in ) {
 ///
 /// \see dip::PolarToCartesian, dip::Norm, dip::Angle
 DIP_EXPORT void CartesianToPolar( Image const& in, Image& out );
-inline Image CartesianToPolar( Image const& in ) {
+DIP_NODISCARD inline Image CartesianToPolar( Image const& in ) {
    Image out;
    CartesianToPolar( in, out );
    return out;
@@ -525,7 +525,7 @@ inline Image CartesianToPolar( Image const& in ) {
 ///
 /// \see dip::CartesianToPolar, dip::Norm, dip::Angle
 DIP_EXPORT void PolarToCartesian( Image const& in, Image& out );
-inline Image PolarToCartesian( Image const& in ) {
+DIP_NODISCARD inline Image PolarToCartesian( Image const& in ) {
    Image out;
    PolarToCartesian( in, out );
    return out;
@@ -533,7 +533,7 @@ inline Image PolarToCartesian( Image const& in ) {
 
 /// \brief Computes the determinant of the square matrix at each pixel in image `in`.
 DIP_EXPORT void Determinant( Image const& in, Image& out );
-inline Image Determinant( Image const& in ) {
+DIP_NODISCARD inline Image Determinant( Image const& in ) {
    Image out;
    Determinant( in, out );
    return out;
@@ -541,7 +541,7 @@ inline Image Determinant( Image const& in ) {
 
 /// \brief Computes the trace of the square matrix at each pixel in image `in`.
 DIP_EXPORT void Trace( Image const& in, Image& out );
-inline Image Trace( Image const& in ) {
+DIP_NODISCARD inline Image Trace( Image const& in ) {
    Image out;
    Trace( in, out );
    return out;
@@ -550,7 +550,7 @@ inline Image Trace( Image const& in ) {
 /// \brief Computes the rank of the square matrix at each pixel in image `in`.
 /// The output is DT_UINT8, under the assumption that we won't have tensor images with a rank higher than 255.
 DIP_EXPORT void Rank( Image const& in, Image& out );
-inline Image Rank( Image const& in ) {
+DIP_NODISCARD inline Image Rank( Image const& in ) {
    Image out;
    Rank( in, out );
    return out;
@@ -562,7 +562,7 @@ inline Image Rank( Image const& in ) {
 /// real-valued, then `out` is real-valued, otherwise, `out` is complex-valued.
 /// The eigenvalues are sorted by magnitude, in descending order.
 DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
-inline Image Eigenvalues( Image const& in ) {
+DIP_NODISCARD inline Image Eigenvalues( Image const& in ) {
    Image out;
    Eigenvalues( in, out );
    return out;
@@ -573,7 +573,7 @@ inline Image Eigenvalues( Image const& in ) {
 /// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
 /// outputs only the eigenvector with the largest magnitude.
 DIP_EXPORT void LargestEigenvalue( Image const& in, Image& out );
-inline Image LargestEigenvalue( Image const& in ) {
+DIP_NODISCARD inline Image LargestEigenvalue( Image const& in ) {
    Image out;
    LargestEigenvalue( in, out );
    return out;
@@ -584,7 +584,7 @@ inline Image LargestEigenvalue( Image const& in ) {
 /// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
 /// outputs only the eigenvector with the smallest magnitude.
 DIP_EXPORT void SmallestEigenvalue( Image const& in, Image& out );
-inline Image SmallestEigenvalue( Image const& in ) {
+DIP_NODISCARD inline Image SmallestEigenvalue( Image const& in ) {
    Image out;
    SmallestEigenvalue( in, out );
    return out;
@@ -610,7 +610,7 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 ///
 /// `in` must be symmetric and real-valued.
 DIP_EXPORT void LargestEigenvector( Image const& in, Image& out );
-inline Image LargestEigenvector( Image const& in ) {
+DIP_NODISCARD inline Image LargestEigenvector( Image const& in ) {
    Image out;
    LargestEigenvector( in, out );
    return out;
@@ -623,7 +623,7 @@ inline Image LargestEigenvector( Image const& in ) {
 ///
 /// `in` must be symmetric and real-valued.
 DIP_EXPORT void SmallestEigenvector( Image const& in, Image& out );
-inline Image SmallestEigenvector( Image const& in ) {
+DIP_NODISCARD inline Image SmallestEigenvector( Image const& in ) {
    Image out;
    SmallestEigenvector( in, out );
    return out;
@@ -633,7 +633,7 @@ inline Image SmallestEigenvector( Image const& in ) {
 ///
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( Image const& in, Image& out );
-inline Image Inverse( Image const& in ) {
+DIP_NODISCARD inline Image Inverse( Image const& in ) {
    Image out;
    Inverse( in, out );
    return out;
@@ -644,7 +644,7 @@ inline Image Inverse( Image const& in ) {
 /// Computes the Moore-Penrose pseudo-inverse using `tolerance`. Singular values smaller than
 /// `tolerance * max(rows,cols) * p`, with `p` the largest singular value, will be set to zero in the inverse.
 DIP_EXPORT void PseudoInverse( Image const& in, Image& out, dfloat tolerance = 1e-7 );
-inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e-7 ) {
+DIP_NODISCARD inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e-7 ) {
    Image out;
    PseudoInverse( in, out, tolerance );
    return out;
@@ -666,7 +666,7 @@ inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e-7 ) {
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
 DIP_EXPORT void SingularValues( Image const& in, Image& out );
-inline Image SingularValues( Image const& in ) {
+DIP_NODISCARD inline Image SingularValues( Image const& in ) {
    Image out;
    SingularValues( in, out );
    return out;
@@ -696,7 +696,7 @@ inline void Identity( Image const& in, Image& out ) {
    out.Fill( 1.0 );
    out.ReshapeTensorAsDiagonal();
 }
-inline Image Identity( Image const& in ) {
+DIP_NODISCARD inline Image Identity( Image const& in ) {
    Image out;
    Identity( in, out );
    return out;
@@ -705,7 +705,7 @@ inline Image Identity( Image const& in ) {
 
 /// \brief Adds all tensor elements, producing a scalar image.
 DIP_EXPORT void SumTensorElements( Image const& in, Image& out );
-inline Image SumTensorElements( Image const& in ) {
+DIP_NODISCARD inline Image SumTensorElements( Image const& in ) {
    Image out;
    SumTensorElements( in, out );
    return out;
@@ -713,7 +713,7 @@ inline Image SumTensorElements( Image const& in ) {
 
 /// \brief Multiplies all tensor elements, producing a scalar image.
 DIP_EXPORT void ProductTensorElements( Image const& in, Image& out );
-inline Image ProductTensorElements( Image const& in ) {
+DIP_NODISCARD inline Image ProductTensorElements( Image const& in ) {
    Image out;
    ProductTensorElements( in, out );
    return out;
@@ -721,7 +721,7 @@ inline Image ProductTensorElements( Image const& in ) {
 
 /// \brief Determines if all tensor elements are non-zero, producing a binary scalar image.
 DIP_EXPORT void AllTensorElements( Image const& in, Image& out );
-inline Image AllTensorElements( Image const& in ) {
+DIP_NODISCARD inline Image AllTensorElements( Image const& in ) {
    Image out;
    AllTensorElements( in, out );
    return out;
@@ -729,7 +729,7 @@ inline Image AllTensorElements( Image const& in ) {
 
 /// \brief Determines if any tensor element is non-zero, producing a binary scalar image.
 DIP_EXPORT void AnyTensorElement( Image const& in, Image& out );
-inline Image AnyTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image AnyTensorElement( Image const& in ) {
    Image out;
    AnyTensorElement( in, out );
    return out;
@@ -737,7 +737,7 @@ inline Image AnyTensorElement( Image const& in ) {
 
 /// \brief Takes the maximum tensor element at each pixel, producing a scalar image.
 DIP_EXPORT void MaximumTensorElement( Image const& in, Image& out );
-inline Image MaximumTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image MaximumTensorElement( Image const& in ) {
    Image out;
    MaximumTensorElement( in, out );
    return out;
@@ -745,7 +745,7 @@ inline Image MaximumTensorElement( Image const& in ) {
 
 /// \brief Takes the maximum absolute tensor element at each pixel, producing a scalar image. For float and complex images only.
 DIP_EXPORT void MaximumAbsTensorElement( Image const& in, Image& out );
-inline Image MaximumAbsTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image MaximumAbsTensorElement( Image const& in ) {
    Image out;
    MaximumAbsTensorElement( in, out );
    return out;
@@ -753,7 +753,7 @@ inline Image MaximumAbsTensorElement( Image const& in ) {
 
 /// \brief Takes the minimum tensor element at each pixel, producing a scalar image.
 DIP_EXPORT void MinimumTensorElement( Image const& in, Image& out );
-inline Image MinimumTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image MinimumTensorElement( Image const& in ) {
    Image out;
    MinimumTensorElement( in, out );
    return out;
@@ -761,7 +761,7 @@ inline Image MinimumTensorElement( Image const& in ) {
 
 /// \brief Takes the minimum absolute tensor element at each pixel, producing a scalar image. For float and complex images only.
 DIP_EXPORT void MinimumAbsTensorElement( Image const& in, Image& out );
-inline Image MinimumAbsTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image MinimumAbsTensorElement( Image const& in ) {
    Image out;
    MinimumAbsTensorElement( in, out );
    return out;
@@ -769,7 +769,7 @@ inline Image MinimumAbsTensorElement( Image const& in ) {
 
 /// \brief Computes the mean tensor element value at each pixel, producing a scalar image.
 DIP_EXPORT void MeanTensorElement( Image const& in, Image& out );
-inline Image MeanTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image MeanTensorElement( Image const& in ) {
    Image out;
    MeanTensorElement( in, out );
    return out;
@@ -777,7 +777,7 @@ inline Image MeanTensorElement( Image const& in ) {
 
 /// \brief Computes the geometric mean tensor element value at each pixel, producing a scalar image.
 DIP_EXPORT void GeometricMeanTensorElement( Image const& in, Image& out );
-inline Image GeometricMeanTensorElement( Image const& in ) {
+DIP_NODISCARD inline Image GeometricMeanTensorElement( Image const& in ) {
    Image out;
    GeometricMeanTensorElement( in, out );
    return out;
@@ -837,7 +837,7 @@ DIP_EXPORT void SortTensorElementsByMagnitude( Image& out );
 /// dip::DataType::SuggestDyadicOperation( in3.DataType(), in4.DataType() );
 /// ```
 DIP_EXPORT void Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, Image& out, String const& selector );
-inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, String const& selector ) {
+DIP_NODISCARD inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, String const& selector ) {
    Image out;
    Select( in1, in2, in3, in4, out, selector );
    return out;
@@ -871,7 +871,7 @@ inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image
 /// dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
 /// ```
 DIP_EXPORT void Select( Image const& in1, Image const& in2, Image const& mask, Image& out );
-inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
+DIP_NODISCARD inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    Image out;
    Select( in1, in2, mask, out );
    return out;

@@ -103,7 +103,7 @@ inline FileInformation ImageRead(
    }
    return info;
 }
-inline Image ImageRead(
+DIP_NODISCARD inline Image ImageRead(
       String const& filename,
       String const& format = ""
 ) {

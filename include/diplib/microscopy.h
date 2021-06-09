@@ -64,7 +64,7 @@ DIP_EXPORT void BeerLambertMapping(
       Image& out,
       Image::Pixel const& background
 );
-inline Image BeerLambertMapping(
+DIP_NODISCARD inline Image BeerLambertMapping(
       Image const& in,
       Image::Pixel const& background
 ) {
@@ -89,7 +89,7 @@ DIP_EXPORT void InverseBeerLambertMapping(
       Image& out,
       Image::Pixel const& background = { 255 }
 );
-inline Image InverseBeerLambertMapping(
+DIP_NODISCARD inline Image InverseBeerLambertMapping(
       Image const& in,
       Image::Pixel const& background = { 255 }
 ) {
@@ -199,7 +199,7 @@ DIP_EXPORT void UnmixStains(
       Image& out,
       std::vector< Image::Pixel > const& stains
 );
-inline Image UnmixStains(
+DIP_NODISCARD inline Image UnmixStains(
       Image const& in,
       std::vector< Image::Pixel > const& stains
 ) {
@@ -238,7 +238,7 @@ DIP_EXPORT void MixStains(
       Image& out,
       std::vector< Image::Pixel > const& stains
 );
-inline Image MixStains(
+DIP_NODISCARD inline Image MixStains(
       Image const& in,
       std::vector< Image::Pixel > const& stains
 ) {
@@ -471,7 +471,7 @@ DIP_EXPORT void IncoherentOTF(
       dfloat amplitude = 1,
       String const& method = "Stokseth"
 );
-inline Image IncoherentOTF(
+DIP_NODISCARD inline Image IncoherentOTF(
       dfloat defocus = 0,
       dfloat oversampling = 1,
       dfloat amplitude = 1,
@@ -502,7 +502,7 @@ DIP_EXPORT void IncoherentPSF(
       dfloat oversampling = 1,
       dfloat amplitude = 1
 );
-inline Image IncoherentPSF(
+DIP_NODISCARD inline Image IncoherentPSF(
       dfloat oversampling = 1,
       dfloat amplitude = 1
 ) {
@@ -555,7 +555,7 @@ DIP_EXPORT void WienerDeconvolution(
       Image& out,
       StringSet const& options = {}
 );
-inline Image WienerDeconvolution(
+DIP_NODISCARD inline Image WienerDeconvolution(
       Image const& in,
       Image const& psf,
       Image const& signalPower,
@@ -579,7 +579,7 @@ DIP_EXPORT void WienerDeconvolution(
       dfloat regularization = 1e-4,
       StringSet const& options = {}
 );
-inline Image WienerDeconvolution(
+DIP_NODISCARD inline Image WienerDeconvolution(
       Image const& in,
       Image const& psf,
       dfloat regularization = 1e-4,
@@ -622,7 +622,7 @@ DIP_EXPORT void ExponentialFitCorrection(
       dfloat hysteresis = 1.0,
       String const& weighting = "none"
 );
-inline Image ExponentialFitCorrection(
+DIP_NODISCARD inline Image ExponentialFitCorrection(
       Image const& in,
       Image const& mask,
       dfloat percentile = -1.0,
@@ -669,7 +669,7 @@ DIP_EXPORT void AttenuationCorrection(
       dfloat refIndex = 1.518,   // ideal immersion oil
       String const& method = "DET"
 );
-inline Image AttenuationCorrection(
+DIP_NODISCARD inline Image AttenuationCorrection(
       Image const& in,
       dfloat fAttenuation = 0.01,
       dfloat bAttenuation = 0.01,
@@ -715,7 +715,7 @@ DIP_EXPORT void SimulatedAttenuation(
       dip::uint oversample = 1,
       dfloat rayStep = 1
 );
-inline Image SimulatedAttenuation(
+DIP_NODISCARD inline Image SimulatedAttenuation(
       Image const& in,
       dfloat fAttenuation = 0.01,
       dfloat bAttenuation = 0.01,

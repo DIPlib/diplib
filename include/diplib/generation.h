@@ -73,7 +73,7 @@ DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, Unsign
 /// In all these cases, the window is applied to each dimension independently, meaning that the multi-dimensional
 /// window is the outer product of the 1D windows.
 DIP_EXPORT void ApplyWindow( Image const& in, Image& out, String const& type = "Hamming", dfloat parameter = 0.5 );
-inline Image ApplyWindow( Image const& in, String const& type = "Hamming", dfloat parameter = 0.5 ) {
+DIP_NODISCARD inline Image ApplyWindow( Image const& in, String const& type = "Hamming", dfloat parameter = 0.5 ) {
    Image out;
    ApplyWindow( in, out, type, parameter );
    return out;
@@ -328,7 +328,7 @@ DIP_EXPORT void GaussianEdgeClip(
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
 );
-inline Image GaussianEdgeClip(
+DIP_NODISCARD inline Image GaussianEdgeClip(
       Image const& in,
       Image::Pixel const& value = { 1 },
       dfloat sigma = 1.0,
@@ -369,7 +369,7 @@ DIP_EXPORT void GaussianLineClip(
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
 );
-inline Image GaussianLineClip(
+DIP_NODISCARD inline Image GaussianLineClip(
       Image const& in,
       Image::Pixel const& value = { 1 },
       dfloat sigma = 1.0,
@@ -404,7 +404,7 @@ inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& o
    DIP_STACK_TRACE_THIS( FillDelta( out, origin ));
 }
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
+DIP_NODISCARD inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
    Image out;
    CreateDelta( out, sizes, origin );
    return out;
@@ -442,7 +442,7 @@ DIP_EXPORT void CreateGauss(
       dfloat truncation = 3.0,
       UnsignedArray exponents = { 0 }
 );
-inline Image CreateGauss(
+DIP_NODISCARD inline Image CreateGauss(
       FloatArray const& sigmas,
       UnsignedArray const& derivativeOrder = { 0 },
       dfloat truncation = 3.0,
@@ -471,7 +471,7 @@ DIP_EXPORT void CreateGabor(
       FloatArray const& frequencies,
       dfloat truncation = 3.0
 );
-inline Image CreateGabor(
+DIP_NODISCARD inline Image CreateGabor(
       FloatArray const& sigmas,
       FloatArray const& frequencies,
       dfloat truncation = 3.0
@@ -499,7 +499,7 @@ DIP_EXPORT void FTEllipsoid(
       dfloat amplitude = 1
 );
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image FTEllipsoid(
+DIP_NODISCARD inline Image FTEllipsoid(
       UnsignedArray const& sizes,
       FloatArray const& radius = { 1 },
       dfloat amplitude = 1
@@ -521,7 +521,7 @@ DIP_EXPORT void FTBox(
       dfloat amplitude = 1
 );
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image FTBox(
+DIP_NODISCARD inline Image FTBox(
       UnsignedArray const& sizes,
       FloatArray const& length = { 1 },
       dfloat amplitude = 1
@@ -543,7 +543,7 @@ DIP_EXPORT void FTCross(
       dfloat amplitude = 1
 );
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image FTCross(
+DIP_NODISCARD inline Image FTCross(
       UnsignedArray const& sizes,
       FloatArray const& length = { 1 },
       dfloat amplitude = 1
@@ -566,7 +566,7 @@ DIP_EXPORT void FTGaussian(
       dfloat truncation = 3
 );
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image FTGaussian(
+DIP_NODISCARD inline Image FTGaussian(
       UnsignedArray const& sizes,
       FloatArray const& sigma,
       dfloat amplitude = 1,
@@ -662,7 +662,7 @@ DIP_EXPORT void TestObject(
       Random& random
 );
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image TestObject(
+DIP_NODISCARD inline Image TestObject(
       UnsignedArray const& sizes,
       TestObjectParams const& params,
       Random& random
@@ -680,7 +680,7 @@ inline void TestObject(
    TestObject( out, params, random );
 }
 /// \brief Overload for the function above, which takes image sizes instead of an image.
-inline Image TestObject(
+DIP_NODISCARD inline Image TestObject(
       UnsignedArray const& sizes = { 256, 256 },
       TestObjectParams const& params = {}
 ) {
@@ -709,7 +709,7 @@ inline void CreatePoissonPointProcess(
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_BIN, Option::AcceptDataTypeChange::DONT_ALLOW ));
    DIP_STACK_TRACE_THIS( FillPoissonPointProcess( out, random, density ));
 }
-inline Image CreatePoissonPointProcess(
+DIP_NODISCARD inline Image CreatePoissonPointProcess(
       UnsignedArray const& sizes,
       Random& random,
       dfloat density = 0.01
@@ -762,7 +762,7 @@ inline void CreateRandomGrid(
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_BIN, Option::AcceptDataTypeChange::DONT_ALLOW ));
    DIP_STACK_TRACE_THIS( FillRandomGrid( out, random, density, type, mode ));
 }
-inline Image CreateRandomGrid(
+DIP_NODISCARD inline Image CreateRandomGrid(
       UnsignedArray const& sizes,
       Random& random,
       dfloat density = 0.01,
@@ -814,7 +814,7 @@ inline void CreateRamp(
    DIP_STACK_TRACE_THIS( FillRamp( out, dimension, mode ));
    out.ExpandSingletonDimensions( sizes );
 }
-inline Image CreateRamp(
+DIP_NODISCARD inline Image CreateRamp(
       UnsignedArray const& sizes,
       dip::uint dimension,
       StringSet const& mode = {}
@@ -846,7 +846,7 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
 inline void CreateXCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 0, mode ));
 }
-inline Image CreateXCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreateXCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreateXCoordinate( out, sizes, mode );
    return out;
@@ -874,7 +874,7 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
 inline void CreateYCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 1, mode ));
 }
-inline Image CreateYCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreateYCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreateYCoordinate( out, sizes, mode );
    return out;
@@ -902,7 +902,7 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
 inline void CreateZCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    DIP_STACK_TRACE_THIS( CreateRamp( out, sizes, 2, mode ));
 }
-inline Image CreateZCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreateZCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreateZCoordinate( out, sizes, mode );
    return out;
@@ -927,7 +927,7 @@ inline void CreateRadiusCoordinate( Image& out, UnsignedArray const& sizes, Stri
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillRadiusCoordinate( out, mode ));
 }
-inline Image CreateRadiusCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreateRadiusCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreateRadiusCoordinate( out, sizes, mode );
    return out;
@@ -952,7 +952,7 @@ inline void CreateRadiusSquareCoordinate( Image& out, UnsignedArray const& sizes
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillRadiusSquareCoordinate( out, mode ));
 }
-inline Image CreateRadiusSquareCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreateRadiusSquareCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreateRadiusSquareCoordinate( out, sizes, mode );
    return out;
@@ -977,7 +977,7 @@ inline void CreatePhiCoordinate( Image& out, UnsignedArray const& sizes, StringS
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillPhiCoordinate( out, mode ));
 }
-inline Image CreatePhiCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreatePhiCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreatePhiCoordinate( out, sizes, mode );
    return out;
@@ -1001,7 +1001,7 @@ inline void CreateThetaCoordinate( Image& out, UnsignedArray const& sizes, Strin
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillThetaCoordinate( out, mode ));
 }
-inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
+DIP_NODISCARD inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
    CreateThetaCoordinate( out, sizes, mode );
    return out;
@@ -1067,7 +1067,7 @@ inline void CreateCoordinates(
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, sizes.size(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillCoordinates( out, mode, system ));
 }
-inline Image CreateCoordinates(
+DIP_NODISCARD inline Image CreateCoordinates(
       UnsignedArray const& sizes,
       StringSet const& mode = {},
       String const& system = S::CARTESIAN
@@ -1112,7 +1112,7 @@ inline void DistanceToPoint(
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
    DIP_STACK_TRACE_THIS( FillDistanceToPoint( out, point, distance, scaling ));
 }
-inline Image DistanceToPoint(
+DIP_NODISCARD inline Image DistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
       String const& distance = S::EUCLIDEAN,
@@ -1136,7 +1136,7 @@ inline void EuclideanDistanceToPoint(
 ) {
    DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::EUCLIDEAN, scaling ));
 }
-inline Image EuclideanDistanceToPoint(
+DIP_NODISCARD inline Image EuclideanDistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
       FloatArray const& scaling = {}
@@ -1159,7 +1159,7 @@ inline void CityBlockDistanceToPoint(
 ) {
    DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::CITY, scaling ));
 }
-inline Image CityBlockDistanceToPoint(
+DIP_NODISCARD inline Image CityBlockDistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
       FloatArray const& scaling = {}
@@ -1197,7 +1197,7 @@ DIP_EXPORT void UniformNoise(
       dfloat lowerBound = 0.0,
       dfloat upperBound = 1.0
 );
-inline Image UniformNoise(
+DIP_NODISCARD inline Image UniformNoise(
       Image const& in,
       Random& random,
       dfloat lowerBound = 0.0,
@@ -1222,7 +1222,7 @@ inline Image UniformNoise(
 ///
 /// \see dip::GaussianRandomGenerator
 DIP_EXPORT void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0 );
-inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1.0 ) {
+DIP_NODISCARD inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1.0 ) {
    Image out;
    GaussianNoise( in, out, random, variance );
    return out;
@@ -1246,7 +1246,7 @@ inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1
 ///
 /// \see dip::PoissonRandomGenerator
 DIP_EXPORT void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversion = 1.0 );
-inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 1.0 ) {
+DIP_NODISCARD inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 1.0 ) {
    Image out;
    PoissonNoise( in, out, random, conversion );
    return out;
@@ -1309,7 +1309,7 @@ DIP_EXPORT void BinaryNoise(
       dfloat p10 = 0.05,
       dfloat p01 = 0.05
 );
-inline Image BinaryNoise(
+DIP_NODISCARD inline Image BinaryNoise(
       Image const& in,
       Random& random,
       dfloat p10 = 0.05,
@@ -1346,7 +1346,7 @@ DIP_EXPORT void SaltPepperNoise(
       dfloat p1 = 0.05,
       dfloat white = 1.0
 );
-inline Image SaltPepperNoise(
+DIP_NODISCARD inline Image SaltPepperNoise(
       Image const& in,
       Random& random,
       dfloat p0 = 0.05,
@@ -1407,7 +1407,7 @@ inline void ColoredNoise(
    DIP_STACK_TRACE_THIS( FillColoredNoise( out, random, variance, color ));
    DIP_STACK_TRACE_THIS( out += in );
 }
-inline Image ColoredNoise(
+DIP_NODISCARD inline Image ColoredNoise(
       Image const& in,
       Random& random,
       dfloat variance = 1.0,

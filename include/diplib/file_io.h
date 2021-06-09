@@ -79,7 +79,7 @@ DIP_EXPORT FileInformation ImageReadICS(
       Range const& channels = {},
       String const& mode = ""
 );
-inline Image ImageReadICS(
+DIP_NODISCARD inline Image ImageReadICS(
       String const& filename,
       RangeArray const& roi = {},
       Range const& channels = {},
@@ -112,7 +112,7 @@ DIP_EXPORT FileInformation ImageReadICS(
       Range const& channels = {},
       String const& mode = ""
 );
-inline Image ImageReadICS(
+DIP_NODISCARD inline Image ImageReadICS(
       String const& filename,
       UnsignedArray const& origin,
       UnsignedArray const& sizes = {},
@@ -219,7 +219,7 @@ DIP_EXPORT FileInformation ImageReadTIFF(
       Range const& channels = {},
       String const& useColorMap = S::APPLY
 );
-inline Image ImageReadTIFF(
+DIP_NODISCARD inline Image ImageReadTIFF(
       String const& filename,
       Range const& imageNumbers = Range{ 0 },
       RangeArray const& roi = {},
@@ -254,7 +254,7 @@ DIP_EXPORT FileInformation ImageReadTIFF(
       Range const& channels = {},
       String const& useColorMap = S::APPLY
 );
-inline Image ImageReadTIFF(
+DIP_NODISCARD inline Image ImageReadTIFF(
       String const& filename,
       Range const& imageNumbers,
       UnsignedArray const& origin,
@@ -280,7 +280,7 @@ DIP_EXPORT void ImageReadTIFFSeries(
       StringArray const& filenames,
       String const& useColorMap = S::APPLY
 );
-inline Image ImageReadTIFFSeries(
+DIP_NODISCARD inline Image ImageReadTIFFSeries(
       StringArray const& filenames,
       String const& useColorMap = S::APPLY
 ) {
@@ -349,7 +349,7 @@ DIP_EXPORT FileInformation ImageReadJPEG(
       Image& out,
       String const& filename
 );
-inline Image ImageReadJPEG(
+DIP_NODISCARD inline Image ImageReadJPEG(
       String const& filename
 ) {
    Image out;
@@ -400,7 +400,7 @@ DIP_EXPORT FileInformation ImageReadNPY(
       Image& out,
       String const& filename
 );
-inline Image ImageReadNPY(
+DIP_NODISCARD inline Image ImageReadNPY(
       String const& filename
 ) {
    Image out;

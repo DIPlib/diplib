@@ -446,7 +446,7 @@ class DIP_NO_EXPORT Image {
             : Image( NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes ), {}, dip::Tensor{ nTensorElements } ) {}
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
-      Image Similar() const {
+      DIP_NODISCARD Image Similar() const {
          Image out;
          out.CopyProperties( *this );
          out.Forge();
@@ -454,7 +454,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a new forged image similar to `this`, but with different data type. The data is not copied, and left uninitialized.
-      Image Similar( dip::DataType dt ) const {
+      DIP_NODISCARD Image Similar( dip::DataType dt ) const {
          Image out;
          out.CopyProperties( *this );
          out.dataType_ = dt;
@@ -2240,7 +2240,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// \ref dip::Image::Copy is similar, but makes a deep copy of the image, such that the output image
       /// has its own data segment.
-      Image QuickCopy() const {
+      DIP_NODISCARD Image QuickCopy() const {
          Image out;
          out.dataType_ = dataType_;
          out.sizes_ = sizes_;
@@ -2273,7 +2273,7 @@ class DIP_NO_EXPORT Image {
       /// \ref dip::Image::Crop does the inverse operation. See also \ref dip::ExtendImage.
       ///
       /// The image must be forged.
-      DIP_EXPORT Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+      DIP_NODISCARD DIP_EXPORT Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
       /// \brief Extends the image by padding with zeros.
       ///
@@ -2286,7 +2286,7 @@ class DIP_NO_EXPORT Image {
       /// `MIRROR_CENTER`         | `"mirror center"`
       /// `TOP_LEFT`              | `"top left"`
       /// `BOTTOM_RIGHT`          | `"bottom right"`
-      inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
+      DIP_NODISCARD inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
          if( cropLocation == S::CENTER ) {
             return Pad( sizes, Option::CropLocation::CENTER );
          } else if( cropLocation == S::MIRROR_CENTER ) {
@@ -2329,7 +2329,7 @@ class DIP_NO_EXPORT Image {
       /// Any external interface is not preserved. Use \ref dip::Copy to control the data allocation for the output image.
       ///
       /// \see dip::Image::QuickCopy
-      Image Copy() const {
+      DIP_NODISCARD Image Copy() const {
          Image out;
          out.Copy( *this );
          return out;
@@ -2572,7 +2572,7 @@ DIP_EXPORT void DefineROI(
       UnsignedArray sizes = {},
       UnsignedArray spacing = {}
 );
-inline Image DefineROI(
+DIP_NODISCARD inline Image DefineROI(
       Image const& src,
       UnsignedArray const& origin,
       UnsignedArray const& sizes,
@@ -2588,7 +2588,7 @@ inline Image DefineROI(
 inline void Copy( Image const& src, Image& dest ) {
    dest.Copy( src );
 }
-inline Image Copy( Image const& src ) {
+DIP_NODISCARD inline Image Copy( Image const& src ) {
    return src.Copy();
 }
 
@@ -2597,7 +2597,7 @@ inline Image Copy( Image const& src ) {
 inline void Copy( Image::View const& src, Image& dest ) {
    dest.Copy( src );
 }
-Image Copy( Image::View const& src ); // Implemented in image_views.h
+DIP_NODISCARD Image Copy( Image::View const& src ); // Implemented in image_views.h
 
 /// \brief Copies samples over from `src` to `dest`, identical to the \ref dip::Image::View::Copy method.
 /// \relates dip::Image
@@ -2648,7 +2648,7 @@ inline void ExpandTensor( Image const& src, Image& dest ) {
       dest.ExpandTensor();
    }
 }
-inline Image ExpandTensor( Image const& src ) {
+DIP_NODISCARD inline Image ExpandTensor( Image const& src ) {
    Image dest = src;
    dest.ExpandTensor();
    return dest;
@@ -2672,7 +2672,7 @@ inline void Convert( Image const& src, Image& dest, dip::DataType dt ) {
       dest.Copy( src );
    }
 }
-inline Image Convert( Image const& src, dip::DataType dt ) {
+DIP_NODISCARD inline Image Convert( Image const& src, dip::DataType dt ) {
    Image dest;
    Convert( src, dest, dt );
    return dest;

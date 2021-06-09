@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for reading images through Java
  *
- * (c)2019, Wouter Caarls.
+ * (c)2019-2021, Wouter Caarls.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ DIPJAVAIO_EXPORT FileInformation ImageReadJavaIO(
       String const& filename,
       String const& interface = bioformatsInterface
 );
-inline Image ImageReadJavaIO(
+DIP_NODISCARD inline Image ImageReadJavaIO(
       String const& filename,
       String const& interface = bioformatsInterface
 ) {

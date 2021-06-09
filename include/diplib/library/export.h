@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file defines the DIP_EXPORT and DIP_NO_EXPORT macros.
+ * This file defines the DIP_EXPORT macros and some other ones.
  *
- * (c)2018, Cris Luengo.
+ * (c)2018-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 #define DIP_EXPORT_H
 
 /// \file
-/// \brief Declares the \ref DIP_EXPORT and \ref DIP_NO_EXPORT macros.
+/// \brief Declares the \ref DIP_EXPORT and \ref DIP_NO_EXPORT macros, and some other similar ones.
 /// This file is always included through \ref "diplib.h".
 
 /// \addtogroup infrastructure
@@ -76,6 +76,32 @@
        // On other platforms, exception classes derived from `std::exception` must be exported
 #      define DIP_CLASS_EXPORT DIP_EXPORT
 #   endif
+#endif
+
+
+// Define macros to optionally use C++17 or later features
+#ifndef __has_cpp_attribute
+#   define __has_cpp_attribute(x) 0
+#endif
+
+/// \macro DIP_NODISCARD
+/// \brief If your compiler supports it, adds `[[nodiscard]]` to a function definition.
+///
+/// `[[nodiscard]]` will produce a compile-time warning if the function return value is discarded.
+/// This should pick up some programming errors, especially in cases where a different overload is
+/// picked by the compiler than expected by the programmer. For example:
+/// ```cpp
+/// dip::Mean( in, {}, out ); // OK, picks main function
+/// out = dip::Mean( in );    // OK, picks alternate overload
+/// dip::Mean( in, out );     // warns, picks alternate overload and output is discarded
+/// ```
+/// The third line will warn because the compiler picks the `dip::Mean( in, mask )` overload that returns the
+/// result image, rather than the intended main function `dip::Mean( in, mask, out )` that puts the result in
+/// the existing `out` image.
+#if __has_cpp_attribute(nodiscard)
+#   define DIP_NODISCARD [[nodiscard]]
+#else
+#   define DIP_NODISCARD
 #endif
 
 /// \endgroup

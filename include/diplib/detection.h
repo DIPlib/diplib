@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for detection functions
  *
- * (c)2018-2019, Cris Luengo.
+ * (c)2018-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,7 +65,7 @@ DIP_EXPORT void HoughTransformCircleCenters(
       Image& out,
       UnsignedArray const& range = {}
 );
-inline Image HoughTransformCircleCenters(
+DIP_NODISCARD inline Image HoughTransformCircleCenters(
       Image const& in,
       Image const& gv,
       UnsignedArray const& range = {}
@@ -190,7 +190,7 @@ DIP_EXPORT RadonCircleParametersArray RadonTransformCircles(
       String const& mode = S::FULL,
       StringSet const& options = { S::NORMALIZE, S::CORRECT }
 );
-inline Image RadonTransformCircles(
+DIP_NODISCARD inline Image RadonTransformCircles(
       Image const& in,
       Range radii = { 10, 30 },
       dfloat sigma = 1.0,
@@ -246,7 +246,7 @@ DIP_EXPORT void HarrisCornerDetector(
       FloatArray const& sigmas = { 2.0 },
       StringArray const& boundaryCondition = {}
 );
-inline Image HarrisCornerDetector(
+DIP_NODISCARD inline Image HarrisCornerDetector(
       Image const& in,
       dfloat kappa = 0.04,
       FloatArray const& sigmas = { 2.0 },
@@ -286,7 +286,7 @@ DIP_EXPORT void ShiTomasiCornerDetector(
       FloatArray const& sigmas = { 2.0 },
       StringArray const& boundaryCondition = {}
 );
-inline Image ShiTomasiCornerDetector(
+DIP_NODISCARD inline Image ShiTomasiCornerDetector(
       Image const& in,
       FloatArray const& sigmas = { 2.0 },
       StringArray const& boundaryCondition = {}
@@ -322,7 +322,7 @@ DIP_EXPORT void NobleCornerDetector(
       FloatArray const& sigmas = { 2.0 },
       StringArray const& boundaryCondition = {}
 );
-inline Image NobleCornerDetector(
+DIP_NODISCARD inline Image NobleCornerDetector(
       Image const& in,
       FloatArray const& sigmas = { 2.0 },
       StringArray const& boundaryCondition = {}
@@ -372,7 +372,7 @@ DIP_EXPORT void WangBradyCornerDetector(
       FloatArray const& sigmas = { 2.0 },
       StringArray const& boundaryCondition = {}
 );
-inline Image WangBradyCornerDetector(
+DIP_NODISCARD inline Image WangBradyCornerDetector(
       Image const& in,
       dfloat threshold = 0.1,
       FloatArray const& sigmas = { 2.0 },
@@ -434,7 +434,7 @@ DIP_EXPORT void FrangiVesselness(
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 );
-inline Image FrangiVesselness(
+DIP_NODISCARD inline Image FrangiVesselness(
       Image const& in,
       FloatArray const& sigmas = { 2.0 },
       FloatArray const& parameters = {}, // for 3D: { 0.5, 0.5, 500 }; for 2D: { 0.5, 15 }
@@ -467,7 +467,7 @@ DIP_EXPORT void MatchedFiltersLineDetector2D(
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 );
-inline Image MatchedFiltersLineDetector2D(
+DIP_NODISCARD inline Image MatchedFiltersLineDetector2D(
       Image const& in,
       dip::dfloat sigma = 2.0,
       dip::dfloat length = 10.0,
@@ -501,7 +501,7 @@ DIP_EXPORT void DanielssonLineDetector(
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 );
-inline Image DanielssonLineDetector(
+DIP_NODISCARD inline Image DanielssonLineDetector(
       Image const& in,
       dip::FloatArray const& sigmas = { 2.0 },
       String const& polarity = S::WHITE,
@@ -533,7 +533,7 @@ DIP_EXPORT void RORPOLineDetector(
       dip::uint length = 15,
       String const& polarity = S::WHITE
 );
-inline Image RORPOLineDetector(
+DIP_NODISCARD inline Image RORPOLineDetector(
       Image const& in,
       dip::uint length = 15,
       String const& polarity = S::WHITE

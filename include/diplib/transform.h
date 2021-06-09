@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the Fourier and other transforms
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,7 +97,7 @@ DIP_EXPORT void FourierTransform(
       StringSet const& options = {},
       BooleanArray process = {}
 );
-inline Image FourierTransform(
+DIP_NODISCARD inline Image FourierTransform(
       Image const& in,
       StringSet const& options = {},
       BooleanArray const& process = {}
@@ -146,7 +146,7 @@ DIP_EXPORT void RieszTransform(
       String const& outRepresentation = S::SPATIAL,
       BooleanArray process = {}
 );
-inline Image RieszTransform(
+DIP_NODISCARD inline Image RieszTransform(
       Image const& in,
       String const& inRepresentation = S::SPATIAL,
       String const& outRepresentation = S::SPATIAL,
@@ -195,7 +195,7 @@ DIP_EXPORT void StationaryWaveletTransform(
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {}
 );
-inline Image StationaryWaveletTransform(
+DIP_NODISCARD inline Image StationaryWaveletTransform(
       Image const& in,
       dip::uint nLevels = 4,
       StringArray const& boundaryCondition = {},

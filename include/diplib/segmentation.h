@@ -59,7 +59,7 @@ DIP_EXPORT CoordinateArray KMeansClustering(
       Random& random,
       dip::uint nClusters = 2
 );
-inline Image KMeansClustering(
+DIP_NODISCARD inline Image KMeansClustering(
       Image const& in,
       Random& random,
       dip::uint nClusters = 2
@@ -77,7 +77,7 @@ inline CoordinateArray KMeansClustering(
    Random random;
    return KMeansClustering( in, out, random, nClusters );
 }
-inline Image KMeansClustering(
+DIP_NODISCARD inline Image KMeansClustering(
       Image const& in,
       dip::uint nClusters = 2
 ) {
@@ -107,7 +107,7 @@ DIP_EXPORT CoordinateArray MinimumVariancePartitioning(
       Image& out,
       dip::uint nClusters = 2
 );
-inline Image MinimumVariancePartitioning(
+DIP_NODISCARD inline Image MinimumVariancePartitioning(
       Image const& in,
       dip::uint nClusters = 2
 ) {
@@ -135,7 +135,7 @@ DIP_EXPORT FloatArray IsodataThreshold(
       Image& out,
       dip::uint nThresholds = 1
 );
-inline Image IsodataThreshold(
+DIP_NODISCARD inline Image IsodataThreshold(
       Image const& in,
       Image const& mask = {},
       dip::uint nThresholds = 1
@@ -159,7 +159,7 @@ DIP_EXPORT dfloat OtsuThreshold(
       Image const& mask,
       Image& out
 );
-inline Image OtsuThreshold(
+DIP_NODISCARD inline Image OtsuThreshold(
       Image const& in,
       Image const& mask = {}
 ) {
@@ -182,7 +182,7 @@ DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& mask,
       Image& out
 );
-inline Image MinimumErrorThreshold(
+DIP_NODISCARD inline Image MinimumErrorThreshold(
       Image const& in,
       Image const& mask = {}
 ) {
@@ -209,7 +209,7 @@ DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
       Image& out,
       dip::uint nThresholds = 1
 );
-inline Image GaussianMixtureModelThreshold(
+DIP_NODISCARD inline Image GaussianMixtureModelThreshold(
       Image const& in,
       Image const& mask = {},
       dip::uint nThresholds = 1
@@ -234,7 +234,7 @@ DIP_EXPORT dfloat TriangleThreshold(
       Image const& mask,
       Image& out
 );
-inline Image TriangleThreshold(
+DIP_NODISCARD inline Image TriangleThreshold(
       Image const& in,
       Image const& mask = {}
 ) {
@@ -258,7 +258,7 @@ DIP_EXPORT dfloat BackgroundThreshold(
       Image& out,
       dfloat distance = 2.0
 );
-inline Image BackgroundThreshold(
+DIP_NODISCARD inline Image BackgroundThreshold(
       Image const& in,
       Image const& mask = {},
       dfloat distance = 2.0
@@ -280,7 +280,7 @@ DIP_EXPORT dfloat VolumeThreshold(
       Image& out,
       dfloat volumeFraction = 0.5
 );
-inline Image VolumeThreshold(
+DIP_NODISCARD inline Image VolumeThreshold(
       Image const& in,
       Image const& mask = {},
       dfloat volumeFraction = 0.5
@@ -314,7 +314,7 @@ DIP_EXPORT void FixedThreshold(
       dfloat background = 0.0,
       String const& output = S::BINARY
 );
-inline Image FixedThreshold(
+DIP_NODISCARD inline Image FixedThreshold(
       Image const& in,
       dfloat threshold,
       dfloat foreground = 1.0,
@@ -352,7 +352,7 @@ DIP_EXPORT void RangeThreshold(
       dfloat foreground = 1.0,
       dfloat background = 0.0
 );
-inline Image RangeThreshold(
+DIP_NODISCARD inline Image RangeThreshold(
       Image const& in,
       dfloat lowerBound,
       dfloat upperBound,
@@ -379,7 +379,7 @@ DIP_EXPORT void HysteresisThreshold(
       dfloat lowThreshold,
       dfloat highThreshold
 );
-inline Image HysteresisThreshold(
+DIP_NODISCARD inline Image HysteresisThreshold(
       Image const& in,
       dfloat lowThreshold,
       dfloat highThreshold
@@ -402,7 +402,7 @@ DIP_EXPORT void MultipleThresholds(
       Image& out,
       FloatArray const& thresholds
 );
-inline Image MultipleThresholds(
+DIP_NODISCARD inline Image MultipleThresholds(
       Image const& in,
       FloatArray const& thresholds
 ) {
@@ -483,7 +483,7 @@ inline dfloat Threshold(
 ) {
    return Threshold( in, {}, out, method, parameter );
 }
-inline Image Threshold(
+DIP_NODISCARD inline Image Threshold(
       Image const& in,
       Image const& mask,
       String const& method = S::OTSU,
@@ -493,7 +493,7 @@ inline Image Threshold(
    Threshold( in, mask, out, method, parameter );
    return out;
 }
-inline Image Threshold(
+DIP_NODISCARD inline Image Threshold(
       Image const& in,
       String const& method = S::OTSU,
       dfloat parameter = infinity
@@ -531,7 +531,7 @@ DIP_EXPORT void PerObjectEllipsoidFit(
       PerObjectEllipsoidFitParameters const& parameters
 
 );
-inline Image PerObjectEllipsoidFit(
+DIP_NODISCARD inline Image PerObjectEllipsoidFit(
       Image const& in,
       PerObjectEllipsoidFitParameters const& parameters
 
@@ -582,7 +582,7 @@ DIP_EXPORT void Canny(
       dfloat upper = 0.9,
       String const& selection = S::ALL
 );
-inline Image Canny(
+DIP_NODISCARD inline Image Canny(
       Image const& in,
       FloatArray const& sigmas = { 1 },
       dfloat lower = 0.5,
@@ -634,7 +634,7 @@ DIP_EXPORT void Superpixels(
       String const& method = S::CW,
       StringSet const& flags = {}
 );
-inline Image Superpixels(
+DIP_NODISCARD inline Image Superpixels(
       Image const& in,
       Random& random,
       dfloat density = 0.005,
@@ -658,7 +658,7 @@ inline void Superpixels(
    Random random;
    Superpixels( in, out, random, density, compactness, method, flags );
 }
-inline Image Superpixels(
+DIP_NODISCARD inline Image Superpixels(
       Image const& in,
       dfloat density = 0.005,
       dfloat compactness = 1.0,

@@ -415,7 +415,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 100, 100, 100 } ));
    // CMYK should have 4 tensor elements, not 3!
    img.SetColorSpace( "CMYK" );
-   DOCTEST_CHECK_THROWS( csm.Convert( img, "RGB" ) );
+   DOCTEST_CHECK_THROWS( csm.Convert( img, img, "RGB" ));
    // Run through a long conversion chain, probably just for Valgrind.
    img = dip::Image( {}, 4 );
    img.Fill( 0 );

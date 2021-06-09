@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for functions that work with labeled images.
  *
- * (c)2016-2019, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -74,7 +74,7 @@ DIP_EXPORT dip::uint Label(
       dip::uint maxSize = 0,
       StringArray boundaryCondition = {}
 );
-inline Image Label(
+DIP_NODISCARD inline Image Label(
       Image const& binary,
       dip::uint connectivity = 0,
       dip::uint minSize = 0,
@@ -95,7 +95,7 @@ DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& mask = {},
       String const& background = S::EXCLUDE
 );
-inline UnsignedArray GetObjectLabels(
+DIP_NODISCARD inline UnsignedArray GetObjectLabels(
       Image::View const& label,
       String const& background = S::EXCLUDE
 ) {
@@ -116,7 +116,7 @@ inline UnsignedArray GetObjectLabels(
 ///
 /// \ref dip::GetObjectLabels returns a list of unique labels in `label`, and can be used to determine *N*.
 DIP_EXPORT void Relabel( Image const& label, Image& out );
-inline Image Relabel( Image const& label ) {
+DIP_NODISCARD inline Image Relabel( Image const& label ) {
    Image out;
    Relabel( label, out );
    return out;
@@ -138,7 +138,7 @@ inline Image Relabel( Image const& label ) {
 /// dip::Relabel( label, label, graph );
 /// ```
 DIP_EXPORT void Relabel( Image const& label, Image& out, Graph const& graph );
-inline Image Relabel( Image const& label, Graph const& graph ) {
+DIP_NODISCARD inline Image Relabel( Image const& label, Graph const& graph ) {
    Image out;
    Relabel( label, out, graph );
    return out;
@@ -165,7 +165,7 @@ DIP_EXPORT void SmallObjectsRemove(
       dip::uint threshold,
       dip::uint connectivity = 0
 );
-inline Image SmallObjectsRemove(
+DIP_NODISCARD inline Image SmallObjectsRemove(
       Image const& in,
       dip::uint threshold,
       dip::uint connectivity = 0
@@ -200,7 +200,7 @@ DIP_EXPORT void GrowRegions(
       dip::sint connectivity = -1,
       dip::uint iterations = 0
 );
-inline Image GrowRegions(
+DIP_NODISCARD inline Image GrowRegions(
       Image const& label,
       Image const& mask = {},
       dip::sint connectivity = -1,
@@ -232,7 +232,7 @@ DIP_EXPORT void GrowRegionsWeighted(
       Image& out,
       Metric const& metric = { S::CHAMFER, 2 }
 );
-inline Image GrowRegionsWeighted(
+DIP_NODISCARD inline Image GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
       Image const& mask = {},
@@ -259,7 +259,7 @@ DIP_EXPORT void SplitRegions(
       Image& out,
       dip::uint connectivity = 0
 );
-inline Image SplitRegions(
+DIP_NODISCARD inline Image SplitRegions(
       Image const& label,
       dip::uint connectivity = 0
 ) {

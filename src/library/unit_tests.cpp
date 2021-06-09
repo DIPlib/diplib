@@ -33,7 +33,7 @@
 
 DOCTEST_TEST_CASE("[DIPlib] checking that exceptions can be caught outside the shared library") {
    dip::Image img( { 1 }, 1 );
-   DOCTEST_CHECK_THROWS_AS( dip::GaussFIR( img, { 1 }, { 0 }, { "illegal BC" } ), dip::ParameterError );
+   DOCTEST_CHECK_THROWS_AS( dip::GaussFIR( img, img, { 1 }, { 0 }, { "illegal BC" } ), dip::ParameterError );
 }
 
 int main( int argc, const char* const* argv ) {

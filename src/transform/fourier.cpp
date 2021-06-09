@@ -47,7 +47,7 @@ constexpr BoundaryCondition IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS;
 
 // FFTW documentation specifies 16-byte alignment required for SIMD implementations:
 // http://www.fftw.org/fftw3_doc/SIMD-alignment-and-fftw_005fmalloc.html#SIMD-alignment-and-fftw_005fmalloc
-constexpr dip::uint FFTW_MAX_ALIGN_REQUIRED = 16;
+// constexpr dip::uint FFTW_MAX_ALIGN_REQUIRED = 16;
 
 // This is the equivalent of dip::DFT, but encapsulating FFTW functionality
 template< typename T >

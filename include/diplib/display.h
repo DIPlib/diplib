@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the ImageDisplay class
  *
- * (c)2017-2020, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -626,7 +626,7 @@ DIP_EXPORT void ApplyColorMap(
       Image& out,
       String const& colorMap = "grey"
 );
-inline Image ApplyColorMap(
+DIP_NODISCARD inline Image ApplyColorMap(
       Image const& in,
       String const& colorMap
 ) {
@@ -651,7 +651,7 @@ DIP_EXPORT void Overlay(
       Image& out,
       Image::Pixel const& color = { 255, 0, 0 }
 );
-inline Image Overlay(
+DIP_NODISCARD inline Image Overlay(
       Image const& in,
       Image const& overlay,
       Image::Pixel const& color = { 255, 0, 0 }
@@ -670,7 +670,7 @@ DIP_EXPORT void MarkLabelEdges(
       Image& out,
       dip::uint factor = 2
 );
-inline Image MarkLabelEdges(
+DIP_NODISCARD inline Image MarkLabelEdges(
       Image const& labels,
       dip::uint factor = 2
 ) {

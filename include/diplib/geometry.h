@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for geometric transformations
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,7 +101,7 @@ DIP_EXPORT void Wrap(
       Image& out,
       IntegerArray wrap
 );
-inline Image Wrap(
+DIP_NODISCARD inline Image Wrap(
       Image const& in,
       IntegerArray const& wrap
 ) {
@@ -127,7 +127,7 @@ inline void Subsampling(
    DefineROI( in, tmp, {}, {}, sample );
    out = tmp;  // will copy if `out` has an external interface.
 }
-inline Image Subsampling(
+DIP_NODISCARD inline Image Subsampling(
       Image const& in,
       UnsignedArray const& sample
 ) {
@@ -176,7 +176,7 @@ DIP_EXPORT void Resampling(
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
 );
-inline Image Resampling(
+DIP_NODISCARD inline Image Resampling(
       Image const& in,
       FloatArray const& zoom,
       FloatArray const& shift = { 0.0 },
@@ -198,7 +198,7 @@ inline void Shift(
 ) {
    Resampling( in, out, { 1.0 }, shift, interpolationMethod, boundaryCondition );
 }
-inline Image Shift(
+DIP_NODISCARD inline Image Shift(
       Image const& in,
       FloatArray const& shift,
       String const& interpolationMethod = S::FOURIER,
@@ -233,7 +233,7 @@ DIP_EXPORT void ShiftFT(
       Image& out,
       FloatArray shift = { 0.0 }
 );
-inline Image ShiftFT(
+DIP_NODISCARD inline Image ShiftFT(
       Image const& in,
       FloatArray const& shift = { 0.0 }
 ) {
@@ -264,7 +264,7 @@ DIP_EXPORT void ResampleAt(
       String const& interpolationMethod = S::LINEAR,
       Image::Pixel const& fill = { 0 }
 );
-inline Image ResampleAt(
+DIP_NODISCARD inline Image ResampleAt(
       Image const& in,
       FloatCoordinateArray const& coordinates,
       String const& interpolationMethod = S::LINEAR,
@@ -320,7 +320,7 @@ DIP_EXPORT void ResampleAt(
       String const &interpolationMethod = S::LINEAR,
       Image::Pixel const& fill = { 0 }
 );
-inline Image ResampleAt(
+DIP_NODISCARD inline Image ResampleAt(
       Image const &in,
       Image const &map,
       String const &interpolationMethod = S::LINEAR,
@@ -391,7 +391,7 @@ inline void Skew(
       Skew( in, out, shearArray, axis, origin, interpolationMethod, bc );
    DIP_END_STACK_TRACE
 }
-inline Image Skew(
+DIP_NODISCARD inline Image Skew(
       Image const& in,
       FloatArray const& shearArray, // value along `axis` is ignored
       dip::uint axis,
@@ -454,7 +454,7 @@ inline void Skew(
    BoundaryConditionArray bca( 1, bc );
    Skew( in, out, shearArray, axis, origin, interpolationMethod, bca );
 }
-inline Image Skew(
+DIP_NODISCARD inline Image Skew(
       Image const& in,
       dfloat shear,
       dip::uint skew,
@@ -499,7 +499,7 @@ DIP_EXPORT void Rotation(
       String const& interpolationMethod = "",
       String const& boundaryCondition = S::ADD_ZEROS
 );
-inline Image Rotation(
+DIP_NODISCARD inline Image Rotation(
       Image const& in,
       dfloat angle,
       dip::uint dimension1,
@@ -526,7 +526,7 @@ inline void Rotation2D(
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    Rotation( in, out, angle, 0, 1, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation2D(
+DIP_NODISCARD inline Image Rotation2D(
       Image const& in,
       dfloat angle,
       String const& interpolationMethod = "",
@@ -569,7 +569,7 @@ inline void Rotation3D(
    }
    Rotation( in, out, angle, dim1, dim2, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation3D(
+DIP_NODISCARD inline Image Rotation3D(
       Image const& in,
       dfloat angle,
       dip::uint axis = 2,
@@ -609,7 +609,7 @@ inline void Rotation3D(
    Rotation( out, out, beta,  2, 0, interpolationMethod, boundaryCondition );
    Rotation( out, out, gamma, 0, 1, interpolationMethod, boundaryCondition );
 }
-inline Image Rotation3D(
+DIP_NODISCARD inline Image Rotation3D(
       Image const& in,
       dfloat alpha,
       dfloat beta,
@@ -641,7 +641,7 @@ inline Image Rotation3D(
 /// dip::Image rotatedCoords = dip::RotationMatrix2D( dip::pi/4 ) * coords;
 /// ```
 DIP_EXPORT void RotationMatrix2D( Image& out, dfloat angle );
-inline Image RotationMatrix2D( dfloat angle ) {
+DIP_NODISCARD inline Image RotationMatrix2D( dfloat angle ) {
    Image out;
    RotationMatrix2D( out, angle );
    return out;
@@ -667,7 +667,7 @@ inline Image RotationMatrix2D( dfloat angle ) {
 /// dip::Image rotatedCoords = dip::RotationMatrix3D( dip::pi/4, 0, dip::pi ) * coords;
 /// ```
 DIP_EXPORT void RotationMatrix3D( Image& out, dfloat alpha, dfloat beta, dfloat gamma );
-inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
+DIP_NODISCARD inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
    Image out;
    RotationMatrix3D( out, alpha, beta, gamma );
    return out;
@@ -692,7 +692,7 @@ inline Image RotationMatrix3D( dfloat alpha, dfloat beta, dfloat gamma ) {
 /// dip::Image rotatedCoords = dip::RotationMatrix3D( { 1.0, 0.0, 0.0 }, dip::pi/4 ) * coords;
 /// ```
 DIP_EXPORT void RotationMatrix3D( Image& out, FloatArray const& vector, dfloat angle );
-inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
+DIP_NODISCARD inline Image RotationMatrix3D( FloatArray const& vector, dfloat angle ) {
    Image out;
    RotationMatrix3D( out, vector, angle );
    return out;
@@ -732,7 +732,7 @@ DIP_EXPORT void AffineTransform(
       FloatArray const& matrix,
       String const& interpolationMethod = S::LINEAR
 );
-inline Image AffineTransform(
+DIP_NODISCARD inline Image AffineTransform(
       Image const& in,
       FloatArray const& matrix,
       String const& interpolationMethod = S::LINEAR
@@ -763,7 +763,7 @@ DIP_EXPORT void WarpControlPoints(
       dfloat lambda = 0,
       String const& interpolationMethod = S::LINEAR
 );
-inline Image WarpControlPoints(
+DIP_NODISCARD inline Image WarpControlPoints(
       Image const& in,
       FloatCoordinateArray const& inCoordinates,
       FloatCoordinateArray const& outCoordinates,
@@ -792,7 +792,7 @@ DIP_EXPORT void LogPolarTransform2D(
       Image& out,
       String const& interpolationMethod = S::LINEAR
 );
-inline Image LogPolarTransform2D(
+DIP_NODISCARD inline Image LogPolarTransform2D(
       Image const& in,
       String const& interpolationMethod = S::LINEAR
 ) {
@@ -831,7 +831,7 @@ DIP_EXPORT void Tile(
       Image& out,
       UnsignedArray tiling = {}
 );
-inline Image Tile(
+DIP_NODISCARD inline Image Tile(
       ImageConstRefArray const& in,
       UnsignedArray const& tiling = {}
 ) {
@@ -850,7 +850,7 @@ DIP_EXPORT void TileTensorElements(
       Image const& in,
       Image& out
 );
-inline Image TileTensorElements(
+DIP_NODISCARD inline Image TileTensorElements(
       Image const& in
 ) {
    Image out;
@@ -875,7 +875,7 @@ inline void Concatenate(
    tiling[ dimension ] = in.size();
    Tile( in, out, tiling );
 }
-inline Image Concatenate(
+DIP_NODISCARD inline Image Concatenate(
       ImageConstRefArray const& in,
       dip::uint dimension = 0
 ) {
@@ -893,7 +893,7 @@ inline void Concatenate(
 ) {
    Concatenate( { in1, in2 }, out, dimension );
 }
-inline Image Concatenate(
+DIP_NODISCARD inline Image Concatenate(
       Image const& in1,
       Image const& in2,
       dip::uint dimension = 0
@@ -914,7 +914,7 @@ DIP_EXPORT void JoinChannels(
       ImageConstRefArray const& in,
       Image& out
 );
-inline Image JoinChannels(
+DIP_NODISCARD inline Image JoinChannels(
       ImageConstRefArray const& in
 ) {
    Image out;

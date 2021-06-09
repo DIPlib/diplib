@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for histograms and related functionality
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -354,7 +354,7 @@ class DIP_NO_EXPORT Histogram {
       /// algorithms such as \ref dip::KMeansClustering( dip::Histogram const&, dip::uint ) or
       /// \ref dip::MinimumVariancePartitioning( dip::Histogram const&, dip::uint ).
       DIP_EXPORT void ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues = { false } );
-      Image ReverseLookup( Image const& input, BooleanArray const& excludeOutOfBoundValues = { false } ) {
+      DIP_NODISCARD Image ReverseLookup( Image const& input, BooleanArray const& excludeOutOfBoundValues = { false } ) {
          Image out;
          ReverseLookup( input, out, excludeOutOfBoundValues );
          return out;

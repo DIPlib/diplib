@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for look-up tables and related functionality
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -169,7 +169,7 @@ class DIP_NO_EXPORT LookupTable{
          DIP_STACK_TRACE_THIS( mode = DecodeInterpolationMode( interpolation ));
          Apply( in, out, mode );
       }
-      Image Apply( Image const& in, String const& interpolation = S::LINEAR ) const {
+      DIP_NODISCARD Image Apply( Image const& in, String const& interpolation = S::LINEAR ) const {
          Image out;
          Apply( in, out, interpolation );
          return out;

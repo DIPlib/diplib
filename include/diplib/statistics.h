@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for image statistics functions.
  *
- * (c)2014-2019, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
  *
@@ -84,7 +84,7 @@ DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, 
 ///
 /// If `mask` is forged, those pixels not selected by the mask are presumed to be 0.
 DIP_EXPORT void CumulativeSum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
-inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
+DIP_NODISCARD inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    CumulativeSum( in, mask, out, process );
    return out;
@@ -163,21 +163,21 @@ DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 /// \addtogroup
 
 #define DIP_DEFINE_PROJECTION_FUNCTIONS( name ) \
-inline Image name( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) { \
+DIP_NODISCARD inline Image name( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) { \
    Image out; name( in, mask, out, process ); return out; } \
 inline void name( Image::View const& in, Image& out ) { \
    if( in.Offsets().empty() ) { name( in.Reference(), in.Mask(), out ); } \
    else { name( Image( in ), {}, out ); }} \
-inline Image name( Image::View const& in ) { \
+DIP_NODISCARD inline Image name( Image::View const& in ) { \
    Image out; name( in, out ); return out; }
 
 #define DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( name, default_mode ) \
-inline Image name( Image const& in, Image const& mask = {}, String const& mode = default_mode, BooleanArray const& process = {} ) { \
+DIP_NODISCARD inline Image name( Image const& in, Image const& mask = {}, String const& mode = default_mode, BooleanArray const& process = {} ) { \
    Image out; name( in, mask, out, mode, process ); return out; } \
 inline void name( Image::View const& in, Image& out, String const& mode = default_mode ) { \
    if( in.Offsets().empty() ) { name( in.Reference(), in.Mask(), out, mode ); } \
    else { name( Image( in ), {}, out, mode ); }} \
-inline Image name( Image::View const& in, String const& mode = default_mode ) { \
+DIP_NODISCARD inline Image name( Image::View const& in, String const& mode = default_mode ) { \
    Image out; name( in, out, mode ); return out; }
 
 /// \brief Calculates the (arithmetic) mean of the pixel values over all those dimensions which are specified by `process`.
@@ -539,7 +539,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( MinimumAbs )
 ///
 /// \see dip::PositionPercentile
 DIP_EXPORT void Percentile( Image const& in, Image const& mask, Image& out, dfloat percentile = 50, BooleanArray const& process = {} );
-inline Image Percentile( Image const& in, Image const& mask = {}, dfloat percentile = 50, BooleanArray const& process = {} ) {
+DIP_NODISCARD inline Image Percentile( Image const& in, Image const& mask = {}, dfloat percentile = 50, BooleanArray const& process = {} ) {
    Image out;
    Percentile( in, mask, out, percentile, process );
    return out;
@@ -551,7 +551,7 @@ inline void Percentile( Image::View const& in, Image& out, dfloat percentile = 5
       Percentile( Image( in ), {}, out, percentile );
    }
 }
-inline Image Percentile( Image::View const& in, dfloat percentile = 50 ) {
+DIP_NODISCARD inline Image Percentile( Image::View const& in, dfloat percentile = 50 ) {
    Image out;
    Percentile( in, out, percentile );
    return out;
@@ -661,7 +661,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Any )
 ///
 /// \see dip::PositionMinimum, dip::MaximumPixel, dip::Maximum
 DIP_EXPORT void PositionMaximum( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST );
-inline Image PositionMaximum( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
+DIP_NODISCARD inline Image PositionMaximum( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
    PositionMaximum( in, mask, out, dim, mode );
    return out;
@@ -682,7 +682,7 @@ inline Image PositionMaximum( Image const& in, Image const& mask = {}, dip::uint
 ///
 /// \see dip::PositionMaximum, dip::MinimumPixel, dip::Minimum
 DIP_EXPORT void PositionMinimum( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST );
-inline Image PositionMinimum( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
+DIP_NODISCARD inline Image PositionMinimum( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
    PositionMinimum( in, mask, out, dim, mode );
    return out;
@@ -708,7 +708,7 @@ inline Image PositionMinimum( Image const& in, Image const& mask = {}, dip::uint
 ///
 /// \see dip::PositionMedian, dip::PositionMinimum, dip::PositionMaximum, dip::Percentile
 DIP_EXPORT void PositionPercentile( Image const& in, Image const& mask, Image& out, dfloat percentile = 50, dip::uint dim = 0, String const& mode = S::FIRST );
-inline Image PositionPercentile( Image const& in, Image const& mask = {}, dfloat percentile = 50, dip::uint dim = 0, String const& mode = S::FIRST ) {
+DIP_NODISCARD inline Image PositionPercentile( Image const& in, Image const& mask = {}, dfloat percentile = 50, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
    PositionPercentile( in, mask, out, percentile, dim, mode );
    return out;
@@ -733,7 +733,7 @@ inline Image PositionPercentile( Image const& in, Image const& mask = {}, dfloat
 inline void PositionMedian( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST ) {
    PositionPercentile( in, mask, out, 50.0, dim, mode );
 }
-inline Image PositionMedian( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
+DIP_NODISCARD inline Image PositionMedian( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
    PositionMedian( in, mask, out, dim, mode );
    return out;

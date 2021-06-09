@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the declaration of the image arithmetic and logical operators.
  *
- * (c)2016-2018, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,28 +59,28 @@ using EnableIfOneIsImageOrView = std::enable_if_t< ( detail::isImage< T1 >::valu
                                                    ( detail::isImage< T2 >::value || detail::isView< T2 >::value ) >;
 
 #define DIP_DEFINE_ARITHMETIC_OVERLOADS( name ) \
-DIP_EXPORT void  name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
-inline     void  name( Image const& lhs, Image const& rhs, Image& out )  { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
-inline     Image name( Image const& lhs, Image const& rhs, DataType dt ) { Image out; name( lhs, rhs, out, dt ); return out; } \
-inline     Image name( Image const& lhs, Image const& rhs )              { Image out; name( lhs, rhs, out ); return out; } \
+DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
+inline     void name( Image const& lhs, Image const& rhs, Image& out ) { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
+DIP_NODISCARD inline Image name( Image const& lhs, Image const& rhs, DataType dt ) { Image out; name( lhs, rhs, out, dt ); return out; } \
+DIP_NODISCARD inline Image name( Image const& lhs, Image const& rhs )              { Image out; name( lhs, rhs, out ); return out; } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out, DataType dt ) { name( lhs, Image{ rhs }, out, dt ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out )              { name( lhs, Image{ rhs }, out ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( T const& lhs, Image const& rhs, Image& out, DataType dt ) { name( Image{ lhs }, rhs, out, dt ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( T const& lhs, Image const& rhs, Image& out )              { name( Image{ lhs }, rhs, out ); } \
-template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs, DataType dt ) { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out, dt ); return out; } \
-template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )              { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
+template< typename T1, typename T2 > DIP_NODISCARD inline Image name( T1&& lhs, T2&& rhs, DataType dt ) { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out, dt ); return out; } \
+template< typename T1, typename T2 > DIP_NODISCARD inline Image name( T1&& lhs, T2&& rhs )              { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 #define DIP_DEFINE_DYADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
-template< typename T1, typename T2 > inline Image name( T1&& lhs, T2&& rhs )  { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
+template< typename T1, typename T2 > DIP_NODISCARD inline Image name( T1&& lhs, T2&& rhs ) { Image out; name( std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 #define DIP_DEFINE_TRIADIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& in, Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, Image const& lhs, T const& rhs, Image& out ) { name( in, lhs, Image{ rhs }, out ); } \
 template< typename T, typename = EnableIfNotImageOrView< T >> inline void  name( Image const& in, T const& lhs, Image const& rhs, Image& out ) { name( in, Image{ lhs }, rhs, out ); } \
 template< typename T1, typename T2, typename = EnableIfNotImageOrView< T1 >, typename = EnableIfNotImageOrView< T2 >> inline void name( Image const& in, T1 const& lhs, T2 const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
-template< typename T1, typename T2 > inline Image name( Image const& in, T1&& lhs, T2&& rhs ) { Image out; name( in, std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
+template< typename T1, typename T2 > DIP_NODISCARD inline Image name( Image const& in, T1&& lhs, T2&& rhs ) { Image out; name( in, std::forward< T1 >( lhs ), std::forward< T2 >( rhs ), out ); return out; }
 
 
 /// \addtogroup math_arithmetic
@@ -201,19 +201,19 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
 /// least one input is an image.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, SafeDivide, Power, operator%(T1 const&, T2 const&)
-DIP_EXPORT void  Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt );
+DIP_EXPORT void Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt );
 // We cannot use DIP_DEFINE_ARITHMETIC_OVERLOADS here because the default data type is computed differently:
-inline     void  Modulo( Image const& lhs, Image const& rhs, Image& out )  { Modulo( lhs, rhs, out, lhs.DataType() ); }
-inline     Image Modulo( Image const& lhs, Image const& rhs, DataType dt ) { Image out; Modulo( lhs, rhs, out, dt ); return out; }
-inline     Image Modulo( Image const& lhs, Image const& rhs )              { Image out; Modulo( lhs, rhs, out ); return out; }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( Image const& lhs, T const& rhs, Image& out )              { Modulo( lhs, Image{ rhs }, out ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( T const& lhs, Image const& rhs, Image& out, DataType dt ) { Modulo( Image{ lhs }, rhs, out, dt ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline void  Modulo( T const& lhs, Image const& rhs, Image& out )              { Modulo( Image{ lhs }, rhs, out ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( Image const& lhs, T const& rhs, DataType dt )      { return Modulo( lhs, Image{ rhs }, dt ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( Image const& lhs, T const& rhs )                   { return Modulo( lhs, Image{ rhs } ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( T const& lhs, Image const& rhs, DataType dt )      { return Modulo( Image{ lhs }, rhs, dt ); }
-template< typename T, typename = EnableIfNotImageOrView< T >> inline Image Modulo( T const& lhs, Image const& rhs )                   { return Modulo( Image{ lhs }, rhs ); }
+inline     void Modulo( Image const& lhs, Image const& rhs, Image& out ) { Modulo( lhs, rhs, out, lhs.DataType() ); }
+DIP_NODISCARD inline Image Modulo( Image const& lhs, Image const& rhs, DataType dt ) { Image out; Modulo( lhs, rhs, out, dt ); return out; }
+DIP_NODISCARD inline Image Modulo( Image const& lhs, Image const& rhs )              { Image out; Modulo( lhs, rhs, out ); return out; }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void Modulo( Image const& lhs, T const& rhs, Image& out )              { Modulo( lhs, Image{ rhs }, out ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void Modulo( T const& lhs, Image const& rhs, Image& out, DataType dt ) { Modulo( Image{ lhs }, rhs, out, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> inline void Modulo( T const& lhs, Image const& rhs, Image& out )              { Modulo( Image{ lhs }, rhs, out ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> DIP_NODISCARD inline Image Modulo( Image const& lhs, T const& rhs, DataType dt ) { return Modulo( lhs, Image{ rhs }, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> DIP_NODISCARD inline Image Modulo( Image const& lhs, T const& rhs )              { return Modulo( lhs, Image{ rhs } ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> DIP_NODISCARD inline Image Modulo( T const& lhs, Image const& rhs, DataType dt ) { return Modulo( Image{ lhs }, rhs, dt ); }
+template< typename T, typename = EnableIfNotImageOrView< T >> DIP_NODISCARD inline Image Modulo( T const& lhs, Image const& rhs )              { return Modulo( Image{ lhs }, rhs ); }
 
 /// \brief Elevates `lhs` to the power of `rhs`, sample-wise, with singleton expansion.
 ///
@@ -233,7 +233,7 @@ DIP_DEFINE_ARITHMETIC_OVERLOADS( Power )
 ///
 /// \see operator-(Image const&), operator!(Image const&), Not
 DIP_EXPORT void Invert( Image const& in, Image& out );
-inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return out; }
+DIP_NODISCARD inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return out; }
 
 
 //
@@ -277,7 +277,7 @@ DIP_DEFINE_DYADIC_OVERLOADS( Xor )
 ///
 /// \see operator~(Image const&), Invert
 DIP_EXPORT void Not( Image const& in, Image& out );
-inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
+DIP_NODISCARD inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 
 
 //
@@ -286,64 +286,64 @@ inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 
 /// \brief Arithmetic operator, calls \ref dip::Add.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
-inline Image operator+( T1 const& lhs, T2 const& rhs ) {
+DIP_NODISCARD inline Image operator+( T1 const& lhs, T2 const& rhs ) {
    return Add( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls \ref dip::Subtract.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
-inline Image operator-( T1 const& lhs, T2 const& rhs ) {
+DIP_NODISCARD inline Image operator-( T1 const& lhs, T2 const& rhs ) {
    return Subtract( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls \ref dip::Multiply.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
-inline Image operator*( T1 const& lhs, T2 const& rhs ) {
+DIP_NODISCARD inline Image operator*( T1 const& lhs, T2 const& rhs ) {
    return Multiply( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls \ref dip::Divide.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
-inline Image operator/( T1 const& lhs, T2 const& rhs ) {
+DIP_NODISCARD inline Image operator/( T1 const& lhs, T2 const& rhs ) {
    return Divide( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls \ref dip::Modulo.
 template< typename T1, typename T2, typename = EnableIfOneIsImageOrView< T1, T2 >>
-inline Image operator%( T1 const& lhs, T2 const& rhs ) {
+DIP_NODISCARD inline Image operator%( T1 const& lhs, T2 const& rhs ) {
    return Modulo( lhs, rhs );
 }
 
 /// \brief Bit-wise and logical operator, calls \ref dip::And.
 template< typename T >
-inline Image operator&( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator&( Image const& lhs, T const& rhs ) {
    return And( lhs, rhs );
 }
 
 /// \brief Bit-wise and logical operator, calls \ref dip::Or.
 template< typename T >
-inline Image operator|( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator|( Image const& lhs, T const& rhs ) {
    return Or( lhs, rhs );
 }
 
 /// \brief Bit-wise and logical operator, calls \ref dip::Xor.
 template< typename T >
-inline Image operator^( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator^( Image const& lhs, T const& rhs ) {
    return Xor( lhs, rhs );
 }
 
 /// \brief Unary operator, calls \ref dip::Invert.
-inline Image operator-( Image const& in ) {
+DIP_NODISCARD inline Image operator-( Image const& in ) {
    return Invert( in );
 }
 
 /// \brief Bit-wise and logical unary operator, calls \ref dip::Not.
-inline Image operator~( Image const& in ) {
+DIP_NODISCARD inline Image operator~( Image const& in ) {
    return Not( in );
 }
 
 /// \brief Logical unary operator. The input is converted to a binary image, then calls \ref dip::Invert.
-inline Image operator!( Image const& in ) {
+DIP_NODISCARD inline Image operator!( Image const& in ) {
    if( in.DataType().IsBinary() ) {
       return Invert( in );
    }
@@ -614,37 +614,37 @@ DIP_DEFINE_TRIADIC_OVERLOADS( OutOfRange )
 
 /// \brief Comparison operator, calls \ref dip::Equal.
 template< typename T >
-inline Image operator==( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator==( Image const& lhs, T const& rhs ) {
    return Equal( lhs, rhs );
 }
 
 /// \brief Comparison operator, calls \ref dip::NotEqual.
 template< typename T >
-inline Image operator!=( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator!=( Image const& lhs, T const& rhs ) {
    return NotEqual( lhs, rhs );
 }
 
 /// \brief Comparison operator, calls \ref dip::Lesser.
 template< typename T >
-inline Image operator<( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator<( Image const& lhs, T const& rhs ) {
    return Lesser( lhs, rhs );
 }
 
 /// \brief Comparison operator, calls \ref dip::Greater.
 template< typename T >
-inline Image operator>( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator>( Image const& lhs, T const& rhs ) {
    return Greater( lhs, rhs );
 }
 
 /// \brief Comparison operator, calls \ref dip::NotGreater.
 template< typename T >
-inline Image operator<=( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator<=( Image const& lhs, T const& rhs ) {
    return NotGreater( lhs, rhs );
 }
 
 /// \brief Comparison operator, calls \ref dip::NotLesser.
 template< typename T >
-inline Image operator>=( Image const& lhs, T const& rhs ) {
+DIP_NODISCARD inline Image operator>=( Image const& lhs, T const& rhs ) {
    return NotLesser( lhs, rhs );
 }
 

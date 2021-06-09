@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for the dip::DimensionArray template class.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,7 +242,7 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       /// Checks whether the array is empty (size is 0).
-      bool empty() const noexcept { return size_ == 0; }
+      DIP_NODISCARD bool empty() const noexcept { return size_ == 0; }
 
       /// Returns the size of the array.
       size_type size() const noexcept { return size_; }
@@ -400,7 +400,7 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       /// Returns an array with indices into the array, sorted from smallest value to largest.
-      DimensionArray< size_type > sorted_indices() const {
+      DIP_NODISCARD DimensionArray< size_type > sorted_indices() const {
          DimensionArray< size_type > out( size_ );
          for( size_type ii = 0; ii < size_; ++ii ) {
             out[ ii ] = ii;
@@ -425,7 +425,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// ```cpp
       /// out[ ii ] = (*this)[ order[ ii ] ];
       /// ```
-      DimensionArray permute( DimensionArray< size_type > const& order ) const {
+      DIP_NODISCARD DimensionArray permute( DimensionArray< size_type > const& order ) const {
          DimensionArray out( order.size() );
          for( size_type ii = 0; ii < order.size(); ++ii ) {
             out[ ii ] = data_[ order[ ii ]];
@@ -442,7 +442,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// ```
       ///
       /// Elements not indexed by `order` will be default-initialized.
-      DimensionArray inverse_permute( DimensionArray< size_type > const& order ) const {
+      DIP_NODISCARD DimensionArray inverse_permute( DimensionArray< size_type > const& order ) const {
          size_type n = 0;
          for( auto o : order ) {
             n = std::max( n, o + 1 );

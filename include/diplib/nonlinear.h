@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for non-linear image filters
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ DIP_EXPORT void PercentileFilter(
       Kernel const& kernel = {},
       StringArray const& boundaryCondition = {}
 );
-inline Image PercentileFilter(
+DIP_NODISCARD inline Image PercentileFilter(
       Image const& in,
       dfloat percentile,
       Kernel const& kernel = {},
@@ -81,7 +81,7 @@ inline void MedianFilter(
 ) {
    PercentileFilter( in, out, 50.0, kernel, boundaryCondition );
 }
-inline Image MedianFilter(
+DIP_NODISCARD inline Image MedianFilter(
       Image const& in,
       Kernel const& kernel = {},
       StringArray const& boundaryCondition = {}
@@ -106,7 +106,7 @@ DIP_EXPORT void VarianceFilter(
       Kernel const& kernel = {},
       StringArray const& boundaryCondition = {}
 );
-inline Image VarianceFilter(
+DIP_NODISCARD inline Image VarianceFilter(
       Image const& in,
       Kernel const& kernel = {},
       StringArray const& boundaryCondition = {}
@@ -169,7 +169,7 @@ DIP_EXPORT void SelectionFilter(
       String const& mode = S::MINIMUM,
       StringArray const& boundaryCondition = {}
 );
-inline Image SelectionFilter(
+DIP_NODISCARD inline Image SelectionFilter(
       Image const& in,
       Image const& control,
       Kernel const& kernel = {},
@@ -225,7 +225,7 @@ DIP_EXPORT void Kuwahara(
       dfloat threshold = 0.0,
       StringArray const& boundaryCondition = {}
 );
-inline Image Kuwahara(
+DIP_NODISCARD inline Image Kuwahara(
       Image const& in,
       Kernel const& kernel = {},
       dfloat threshold = 0.0,
@@ -264,7 +264,7 @@ DIP_EXPORT void NonMaximumSuppression(
       Image& out,
       String const& mode = S::INTERPOLATE
 );
-inline Image NonMaximumSuppression(
+DIP_NODISCARD inline Image NonMaximumSuppression(
       Image const& gradmag,
       Image const& gradient,
       Image const& mask,
@@ -291,7 +291,7 @@ DIP_EXPORT void MoveToLocalMinimum(
       Image const& weights,
       Image& out
 );
-inline Image MoveToLocalMinimum(
+DIP_NODISCARD inline Image MoveToLocalMinimum(
       Image const& bin,
       Image const& weights
 ) {
@@ -332,7 +332,7 @@ DIP_EXPORT void PeronaMalikDiffusion(
       dfloat lambda = 0.25,
       String const& g = "Gauss"
 );
-inline Image PeronaMalikDiffusion(
+DIP_NODISCARD inline Image PeronaMalikDiffusion(
       Image const& in,
       dip::uint iterations = 5,
       dfloat K = 10,
@@ -375,7 +375,7 @@ DIP_EXPORT void GaussianAnisotropicDiffusion(
       dfloat lambda = 0.25,
       String const& g = "Gauss"
 );
-inline Image GaussianAnisotropicDiffusion(
+DIP_NODISCARD inline Image GaussianAnisotropicDiffusion(
       Image const& in,
       dip::uint iterations = 5,
       dfloat K = 10,
@@ -418,7 +418,7 @@ inline void RobustAnisotropicDiffusion(
 ) {
    PeronaMalikDiffusion( in, out, iterations, sigma, lambda, "Tukey" );
 }
-inline Image RobustAnisotropicDiffusion(
+DIP_NODISCARD inline Image RobustAnisotropicDiffusion(
       Image const& in,
       dip::uint iterations = 5,
       dfloat sigma = 10,
@@ -490,7 +490,7 @@ DIP_EXPORT void CoherenceEnhancingDiffusion(
       dip::uint iterations = 5,
       StringSet const& flags = {}
 );
-inline Image CoherenceEnhancingDiffusion(
+DIP_NODISCARD inline Image CoherenceEnhancingDiffusion(
       Image const& in,
       dfloat derivativeSigma = 1,
       dfloat regularizationSigma = 3,
@@ -577,7 +577,7 @@ DIP_EXPORT void AdaptiveGauss(
       String const& interpolationMethod = S::LINEAR,
       String const& boundaryCondition = S::SYMMETRIC_MIRROR
 );
-inline Image AdaptiveGauss(
+DIP_NODISCARD inline Image AdaptiveGauss(
       Image const& in,
       ImageConstRefArray const& params,
       FloatArray const& sigmas = { 5.0, 1.0 },
@@ -650,7 +650,7 @@ DIP_EXPORT void AdaptiveBanana(
       String const& interpolationMethod = S::LINEAR,
       String const& boundaryCondition = S::SYMMETRIC_MIRROR
 );
-inline Image AdaptiveBanana(
+DIP_NODISCARD inline Image AdaptiveBanana(
       Image const& in,
       ImageConstRefArray const& params,
       FloatArray const& sigmas = { 5.0, 1.0 },
@@ -696,7 +696,7 @@ DIP_EXPORT void FullBilateralFilter(
       dfloat truncation = 2.0,
       StringArray const& boundaryCondition = {}
 );
-inline Image FullBilateralFilter(
+DIP_NODISCARD inline Image FullBilateralFilter(
       Image const& in,
       Image const& estimate = {},
       FloatArray const& spatialSigmas = { 2.0 },
@@ -744,7 +744,7 @@ DIP_EXPORT void QuantizedBilateralFilter(
       dfloat truncation = 2.0,
       StringArray const& boundaryCondition = {}
 );
-inline Image QuantizedBilateralFilter(
+DIP_NODISCARD inline Image QuantizedBilateralFilter(
       Image const& in,
       Image const& estimate = {},
       FloatArray const& spatialSigmas = { 2.0 },
@@ -793,7 +793,7 @@ DIP_EXPORT void SeparableBilateralFilter(
       dfloat truncation = 2.0,
       StringArray const& boundaryCondition = {}
 );
-inline Image SeparableBilateralFilter(
+DIP_NODISCARD inline Image SeparableBilateralFilter(
       Image const& in,
       Image const& estimate = {},
       BooleanArray const& process = {},
@@ -831,7 +831,7 @@ DIP_EXPORT void BilateralFilter(
       String const& method = "xysep",
       StringArray const& boundaryCondition = {}
 );
-inline Image BilateralFilter(
+DIP_NODISCARD inline Image BilateralFilter(
       Image const& in,
       Image const& estimate = {},
       FloatArray const& spatialSigmas = { 2.0 },
