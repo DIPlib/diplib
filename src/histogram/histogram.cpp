@@ -593,7 +593,7 @@ Histogram& Histogram::Smooth( FloatArray sigma ) {
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/random.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {

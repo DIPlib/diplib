@@ -426,7 +426,7 @@ FloatArray FindShift(
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/generation.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the FindShift function") {

@@ -26,7 +26,7 @@
 #ifdef DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
 #define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #include "diplib.h"
 #include "diplib/linear.h"
@@ -51,7 +51,7 @@ int main( int argc, const char* const* argv ) {
 #else // !DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #endif // DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 
@@ -61,7 +61,7 @@ int main( int argc, const char* const* argv ) {
 
 #define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
 #define DOCTEST_CONFIG_IMPLEMENT
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #endif // DIP_CONFIG_DOCTEST_IN_SHARED_LIB
 

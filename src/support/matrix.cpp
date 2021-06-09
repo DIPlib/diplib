@@ -406,7 +406,7 @@ void Solve(
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    // Test generic symmetric code with 2x2 matrix

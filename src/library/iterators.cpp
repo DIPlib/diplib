@@ -19,7 +19,7 @@
  */
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/generic_iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {

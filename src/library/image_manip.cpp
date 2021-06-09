@@ -626,7 +626,7 @@ RangeArray Image::CropWindow( UnsignedArray const& sizes, String const& cropLoca
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions") {
    dip::Image src( { 5, 10, 15 }, 3 );

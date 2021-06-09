@@ -160,7 +160,7 @@ void DefineROI(
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    // Note that this also tests parts of dip::Image::View and dip::Image::Pixel functionality, which is

@@ -220,7 +220,7 @@ void ChainCode::Image( dip::Image& out ) const {
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    dip::ChainCode cc;

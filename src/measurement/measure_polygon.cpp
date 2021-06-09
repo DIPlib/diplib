@@ -324,7 +324,7 @@ dfloat Polygon::BendingEnergy() const {
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    dip::ChainCode cc;

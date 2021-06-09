@@ -518,7 +518,7 @@ dip::String Units::StringRepresentation( bool unicode ) const {
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    // Note: further tested at the same time as dip::PhysicalQuantity below

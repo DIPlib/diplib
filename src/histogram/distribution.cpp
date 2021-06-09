@@ -244,7 +244,7 @@ void Distribution::SetSampling(
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/random.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Distribution" ) {

@@ -642,7 +642,7 @@ void Image::Fill( Image::Sample const& sample ) {
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::SwapBytesInSample" ) {
    dip::Image img( { 5, 8 }, 3, dip::DT_SINT16 );

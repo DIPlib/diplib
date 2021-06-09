@@ -71,7 +71,7 @@ void FiniteDifference(
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
 

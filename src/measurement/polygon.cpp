@@ -251,7 +251,7 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing polygon manipulation") {
    dip::Polygon p;
