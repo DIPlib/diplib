@@ -62,24 +62,22 @@ String BestGaussMethod(
 void Gauss(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas,
-      UnsignedArray const& derivativeOrder,
-      String method,
+      FloatArray sigmas,
+      UnsignedArray derivativeOrder,
+      String const& c_method,
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   if( method.substr( 0, 5 ) == GAUSS ) {
-      method = method.substr( 5, String::npos );
-   }
+   String method = ( c_method.substr( 0, 5 ) == GAUSS ) ? c_method.substr( 5, String::npos ) : c_method;
    if( method == S::BEST ) {
       method = BestGaussMethod( sigmas, derivativeOrder );
    }
    if(( method == "FIR" ) || ( method == FIR )) {
-      DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
+      DIP_STACK_TRACE_THIS( GaussFIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, truncation ));
    } else if(( method == "FT" ) || ( method == FT )) {
-      DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
+      DIP_STACK_TRACE_THIS( GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation )); // ignores boundaryCondition
    } else if(( method == "IIR" ) || ( method == IIR )) {
-      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
       DIP_THROW( "Unknown Gauss filter method" );
    }
@@ -88,8 +86,8 @@ void Gauss(
 void Derivative(
       Image const& in,
       Image& out,
-      UnsignedArray const& derivativeOrder,
-      FloatArray const& sigmas,
+      UnsignedArray derivativeOrder,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
       dfloat truncation
@@ -97,21 +95,19 @@ void Derivative(
    if( method == S::FINITEDIFF ) {
       dip::uint nDims = in.Dimensionality();
       BooleanArray process( nDims, true );
-      FloatArray ss = sigmas;
-      DIP_STACK_TRACE_THIS( ArrayUseParameter( ss, nDims, 1.0 ));
-      UnsignedArray dd = derivativeOrder;
-      DIP_STACK_TRACE_THIS( ArrayUseParameter( dd, nDims, dip::uint( 0 )));
+      DIP_STACK_TRACE_THIS( ArrayUseParameter( sigmas, nDims, 1.0 ));
+      DIP_STACK_TRACE_THIS( ArrayUseParameter( derivativeOrder, nDims, dip::uint( 0 )));
       // Set process to false where sigma <= 0
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if((( ss[ ii ] <= 0.0 ) && ( dd[ ii ] == 0 )) || ( in.Size( ii ) == 1 )) {
+         if((( sigmas[ ii ] <= 0.0 ) && ( derivativeOrder[ ii ] == 0 )) || ( in.Size( ii ) == 1 )) {
             process[ ii ] = false;
          }
       }
-      DIP_STACK_TRACE_THIS( FiniteDifference( in, out, derivativeOrder, S::SMOOTH, boundaryCondition, process ));
+      DIP_STACK_TRACE_THIS( FiniteDifference( in, out, std::move( derivativeOrder ), S::SMOOTH, boundaryCondition, std::move( process )));
       return;
    }
    if(( method == S::BEST ) || ( method.substr( 0, 5 ) == GAUSS )) {
-      DIP_STACK_TRACE_THIS( Gauss( in, out, sigmas, derivativeOrder, method == GAUSS ? S::BEST : method, boundaryCondition, truncation ));
+      DIP_STACK_TRACE_THIS( Gauss( in, out, std::move( sigmas ), std::move( derivativeOrder ), method == GAUSS ? S::BEST : method, boundaryCondition, truncation ));
       return;
    }
    DIP_THROW( "Unknown derivative method" );
@@ -147,13 +143,13 @@ void Gradient(
       FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -179,12 +175,12 @@ void GradientMagnitude(
       FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in;
@@ -213,14 +209,14 @@ void GradientMagnitude(
 void GradientDirection(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_START_STACK_TRACE
-      Image tmp = Gradient( in, sigmas, method, boundaryCondition, process, truncation );
+      Image tmp = Gradient( in, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
       Angle( tmp, out );
    DIP_END_STACK_TRACE
 }
@@ -231,14 +227,14 @@ void Curl(
       FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = c_in.TensorElements();
    DIP_THROW_IF( !c_in.IsVector() || ( nDims < 2 ) || ( nDims > 3 ), E::TENSOR_NOT_2_OR_3 );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), method == S::FINITEDIFF ));
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    if( nDims == 2 ) {
       DIP_START_STACK_TRACE
@@ -298,14 +294,14 @@ void Divergence(
       FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = c_in.TensorElements();
    DIP_THROW_IF( !c_in.IsVector(), E::IMAGE_NOT_VECTOR );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), method == S::FINITEDIFF ));
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
@@ -335,13 +331,13 @@ void Hessian (
       FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, method == S::FINITEDIFF ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), method == S::FINITEDIFF ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -379,13 +375,13 @@ void Laplace (
       FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    bool finitediff =  method == S::FINITEDIFF;
    UnsignedArray dims;
-   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process, finitediff ));
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, std::move( process ), finitediff ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    if( finitediff ) {
@@ -426,10 +422,10 @@ enum class DggFamilyVersion { Dgg, LaplacePlusDgg, LaplaceMinusDgg };
 void DggFamily(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation,
       DggFamilyVersion version
 ) {
@@ -437,8 +433,8 @@ void DggFamily(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
 
    Image g, H;
-   DIP_STACK_TRACE_THIS( Gradient( in, g, sigmas, method, boundaryCondition, process, truncation ));
-   DIP_STACK_TRACE_THIS( Hessian( in, H, sigmas, method, boundaryCondition, process, truncation ));
+   DIP_STACK_TRACE_THIS( Gradient( in, g, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation ));
+   DIP_STACK_TRACE_THIS( Hessian( in, H, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation ));
    DIP_ASSERT( g.TensorElements() == H.TensorRows() );
 
    // The easy way to compute this:
@@ -487,37 +483,37 @@ void DggFamily(
 void Dgg(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
-   DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::Dgg ));
+   DIP_STACK_TRACE_THIS( DggFamily( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation, DggFamilyVersion::Dgg ));
 }
 
 void LaplacePlusDgg(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
-   DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::LaplacePlusDgg ));
+   DIP_STACK_TRACE_THIS( DggFamily( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation, DggFamilyVersion::LaplacePlusDgg ));
 }
 
 void LaplaceMinusDgg(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
-      BooleanArray const& process,
+      BooleanArray process,
       dfloat truncation
 ) {
-   DIP_STACK_TRACE_THIS( DggFamily( in, out, sigmas, method, boundaryCondition, process, truncation, DggFamilyVersion::LaplaceMinusDgg ));
+   DIP_STACK_TRACE_THIS( DggFamily( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation, DggFamilyVersion::LaplaceMinusDgg ));
 }
 
 void NormalizedConvolution(

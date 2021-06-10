@@ -28,12 +28,12 @@ void Sharpen(
       Image const& in,
       Image& out,
       dfloat weight,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   Laplace( in, out, sigmas, method, boundaryCondition, {}, truncation );
+   Laplace( in, out, std::move( sigmas ), method, boundaryCondition, {}, truncation );
    LinearCombination( in, out, out, 1.0, -weight );
 }
 
@@ -41,12 +41,12 @@ void UnsharpMask(
       Image const& in,
       Image& out,
       dfloat weight,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       String const& method,
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   Gauss( in, out, sigmas, { 0 }, method, boundaryCondition, truncation );
+   Gauss( in, out, std::move( sigmas ), { 0 }, method, boundaryCondition, truncation );
    LinearCombination( in, out, out, 1.0 + weight, -weight );
 }
 

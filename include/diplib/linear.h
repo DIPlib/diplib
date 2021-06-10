@@ -121,10 +121,10 @@ DIP_NODISCARD inline Image SeparableConvolution(
       Image const& in,
       OneDimensionalFilterArray const& filter,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {}
+      BooleanArray process = {}
 ) {
    Image out;
-   SeparableConvolution( in, out, filter, boundaryCondition, process );
+   SeparableConvolution( in, out, filter, boundaryCondition, std::move( process ));
    return out;
 }
 
@@ -247,17 +247,17 @@ DIP_EXPORT void GaussFIR(
       FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
+      dfloat truncation = 3
 );
 DIP_NODISCARD inline Image GaussFIR(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
-      UnsignedArray const& derivativeOrder = { 0 },
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
+   GaussFIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, truncation );
    return out;
 }
 
@@ -285,12 +285,12 @@ DIP_EXPORT void GaussFT(
 );
 DIP_NODISCARD inline Image GaussFT(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
-      UnsignedArray const& derivativeOrder = { 0 },
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3
 ) {
    Image out;
-   GaussFT( in, out, sigmas, derivativeOrder, truncation );
+   GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation );
    return out;
 }
 
@@ -330,19 +330,19 @@ DIP_EXPORT void GaussIIR(
       StringArray const& boundaryCondition = {},
       UnsignedArray filterOrder = {}, // means compute order depending on derivativeOrder.
       String const& designMethod = S::DISCRETE_TIME_FIT,
-      dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
+      dfloat truncation = 3
 );
 DIP_NODISCARD inline Image GaussIIR(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
-      UnsignedArray const& derivativeOrder = { 0 },
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      UnsignedArray const& filterOrder = {},
+      UnsignedArray filterOrder = {},
       String const& designMethod = S::DISCRETE_TIME_FIT,
       dfloat truncation = 3
 ) {
    Image out;
-   GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, filterOrder, designMethod, truncation );
+   GaussIIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, std::move( filterOrder ), designMethod, truncation );
    return out;
 }
 
@@ -370,22 +370,22 @@ DIP_NODISCARD inline Image GaussIIR(
 DIP_EXPORT void Gauss(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
-      UnsignedArray const& derivativeOrder = { 0 },
-      String method = S::BEST,
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Gauss(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
-      UnsignedArray const& derivativeOrder = { 0 },
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Gauss( in, out, sigmas, derivativeOrder, method, boundaryCondition, truncation );
+   Gauss( in, out, std::move( sigmas ), std::move( derivativeOrder ), method, boundaryCondition, truncation );
    return out;
 }
 
@@ -415,13 +415,13 @@ DIP_EXPORT void FiniteDifference(
 );
 DIP_NODISCARD inline Image FiniteDifference(
       Image const& in,
-      UnsignedArray const& derivativeOrder = { 0 },
+      UnsignedArray derivativeOrder = { 0 },
       String const& smoothFlag = S::SMOOTH,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {}
+      BooleanArray process = {}
 ) {
    Image out;
-   FiniteDifference( in, out, derivativeOrder, smoothFlag, boundaryCondition, process );
+   FiniteDifference( in, out, std::move( derivativeOrder ), smoothFlag, boundaryCondition, std::move( process ));
    return out;
 }
 
@@ -486,34 +486,34 @@ DIP_NODISCARD inline Image SobelGradient(
 DIP_EXPORT void Derivative(
       Image const& in,
       Image& out,
-      UnsignedArray const& derivativeOrder,
-      FloatArray const& sigmas = { 1.0 },
+      UnsignedArray derivativeOrder,
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Derivative(
       Image const& in,
-      UnsignedArray const& derivativeOrder,
-      FloatArray const& sigmas = { 1.0 },
+      UnsignedArray derivativeOrder,
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Derivative( in, out, derivativeOrder, sigmas, method, boundaryCondition, truncation );
+   Derivative( in, out, std::move( derivativeOrder ), std::move( sigmas ), method, boundaryCondition, truncation );
    return out;
 }
 
 #define DIP_DERIVATIVE_OPERATOR( functionName_, dimension_, order_ ) \
-   inline void functionName_( Image const& in, Image& out, FloatArray const& sigmas = { 1.0 } ){ \
-      DIP_THROW_IF( in.Dimensionality() <= dimension_, E::DIMENSIONALITY_NOT_SUPPORTED ); \
+   inline void functionName_( Image const& in, Image& out, FloatArray sigmas = { 1.0 } ){ \
+      DIP_THROW_IF( in.Dimensionality() <= ( dimension_ ), E::DIMENSIONALITY_NOT_SUPPORTED ); \
       UnsignedArray derivativeOrder( in.Dimensionality(), 0 ); \
       derivativeOrder[ dimension_ ] = order_; \
-      DIP_STACK_TRACE_THIS( Derivative( in, out, derivativeOrder, sigmas )); \
+      DIP_STACK_TRACE_THIS( Derivative( in, out, std::move( derivativeOrder ), std::move( sigmas ))); \
    } \
-   DIP_NODISCARD inline Image functionName_( Image const& in, FloatArray const& sigmas = { 1.0 } ) { \
-      Image out; functionName_( in, out, sigmas ); return out; }
+   DIP_NODISCARD inline Image functionName_( Image const& in, FloatArray sigmas = { 1.0 } ) { \
+      Image out; functionName_( in, out, std::move( sigmas )); return out; }
 
 /// \brief Computes the first derivative along x, see \ref dip::Derivative.
 DIP_DERIVATIVE_OPERATOR( Dx, 0, 1 );
@@ -537,14 +537,14 @@ DIP_DERIVATIVE_OPERATOR( Dzz, 2, 2 );
 
 // Same, but for 2nd order cross derivatives. Dimension 2 is always largest of the two!
 #define DIP_DERIVATIVE_OPERATOR( functionName_, dimension1_, dimension2_ ) \
-   inline void functionName_( Image const& in, Image& out, FloatArray const& sigmas = { 1.0 } ){ \
-      DIP_THROW_IF( in.Dimensionality() <= dimension2_ , E::DIMENSIONALITY_NOT_SUPPORTED ); \
+   inline void functionName_( Image const& in, Image& out, FloatArray sigmas = { 1.0 } ){ \
+      DIP_THROW_IF( in.Dimensionality() <= ( dimension2_ ), E::DIMENSIONALITY_NOT_SUPPORTED ); \
       UnsignedArray derivativeOrder( in.Dimensionality(), 0 ); \
       derivativeOrder[ dimension1_ ] = 1; derivativeOrder[ dimension2_ ] = 1; \
-      DIP_STACK_TRACE_THIS( Derivative( in, out, derivativeOrder, sigmas )); \
+      DIP_STACK_TRACE_THIS( Derivative( in, out, std::move( derivativeOrder ), std::move( sigmas ))); \
    } \
-   DIP_NODISCARD inline Image functionName_( Image const& in, FloatArray const& sigmas = { 1.0 } ) { \
-      Image out; functionName_( in, out, sigmas ); return out; }
+   DIP_NODISCARD inline Image functionName_( Image const& in, FloatArray sigmas = { 1.0 } ) { \
+      Image out; functionName_( in, out, std::move( sigmas )); return out; }
 
 /// \brief Computes the first derivative along x and y, see \ref dip::Derivative.
 DIP_DERIVATIVE_OPERATOR( Dxy, 0, 1 );
@@ -579,19 +579,19 @@ DIP_EXPORT void Gradient(
       FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Gradient(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Gradient( in, out, sigmas, method, boundaryCondition, process, truncation );
+   Gradient( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -606,19 +606,19 @@ DIP_EXPORT void GradientMagnitude(
       FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image GradientMagnitude(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GradientMagnitude( in, out, sigmas, method, boundaryCondition, process, truncation );
+   GradientMagnitude( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -634,22 +634,22 @@ DIP_NODISCARD inline Image GradientMagnitude(
 DIP_EXPORT void GradientDirection(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image GradientDirection(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GradientDirection( in, out, sigmas, method, boundaryCondition, process, truncation );
+   GradientDirection( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -678,19 +678,19 @@ DIP_EXPORT void Curl(
       FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Curl(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Curl( in, out, sigmas, method, boundaryCondition, process, truncation );
+   Curl( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -715,19 +715,19 @@ DIP_EXPORT void Divergence(
       FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Divergence(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Divergence( in, out, sigmas, method, boundaryCondition, process, truncation );
+   Divergence( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -759,19 +759,19 @@ DIP_EXPORT void Hessian(
       FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Hessian(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Hessian( in, out, sigmas, method, boundaryCondition, process, truncation );
+   Hessian( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -801,19 +801,19 @@ DIP_EXPORT void Laplace(
       FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Laplace(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Laplace( in, out, sigmas, method, boundaryCondition, process, truncation );
+   Laplace( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -839,22 +839,22 @@ DIP_NODISCARD inline Image Laplace(
 DIP_EXPORT void Dgg(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image Dgg(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Dgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   Dgg( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -876,22 +876,22 @@ DIP_NODISCARD inline Image Dgg(
 DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image LaplacePlusDgg(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   LaplacePlusDgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   LaplacePlusDgg( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -906,22 +906,22 @@ DIP_NODISCARD inline Image LaplacePlusDgg(
 DIP_EXPORT void LaplaceMinusDgg(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 );
 DIP_NODISCARD inline Image LaplaceMinusDgg(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   LaplaceMinusDgg( in, out, sigmas, method, boundaryCondition, process, truncation );
+   LaplaceMinusDgg( in, out, std::move( sigmas ), method, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -939,7 +939,7 @@ DIP_EXPORT void Sharpen(
       Image const& in,
       Image& out,
       dfloat weight = 1.0,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
@@ -947,13 +947,13 @@ DIP_EXPORT void Sharpen(
 DIP_NODISCARD inline Image Sharpen(
       Image const& in,
       dfloat weight = 1.0,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Sharpen( in, out, weight, sigmas, method, boundaryCondition, truncation );
+   Sharpen( in, out, weight, std::move( sigmas ), method, boundaryCondition, truncation );
    return out;
 }
 
@@ -971,7 +971,7 @@ DIP_EXPORT void UnsharpMask(
       Image const& in,
       Image& out,
       dfloat weight = 1.0,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
@@ -979,13 +979,13 @@ DIP_EXPORT void UnsharpMask(
 DIP_NODISCARD inline Image UnsharpMask(
       Image const& in,
       dfloat weight = 1.0,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   UnsharpMask( in, out, weight, sigmas, method, boundaryCondition, truncation );
+   UnsharpMask( in, out, weight, std::move( sigmas ), method, boundaryCondition, truncation );
    return out;
 }
 
@@ -1021,14 +1021,14 @@ DIP_EXPORT void GaborFIR(
 );
 DIP_NODISCARD inline Image GaborFIR(
       Image const& in,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaborFIR( in, out, sigmas, frequencies, boundaryCondition, process, truncation );
+   GaborFIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, std::move( process ), truncation );
    return out;
 }
 
@@ -1067,15 +1067,15 @@ DIP_EXPORT void GaborIIR(
 );
 DIP_NODISCARD inline Image GaborIIR(
       Image const& in,
-      FloatArray const& sigmas,
+      FloatArray sigmas,
       FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
+      BooleanArray process = {},
       IntegerArray const& filterOrder = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, process, filterOrder, truncation );
+   GaborIIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, std::move( process ), filterOrder, truncation );
    return out;
 }
 
@@ -1096,7 +1096,7 @@ DIP_NODISCARD inline Image GaborIIR(
 inline void Gabor2D(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 5.0, 5.0 },
+      FloatArray sigmas = { 5.0, 5.0 },
       dfloat frequency = 0.1,
       dfloat direction = dip::pi,
       StringArray const& boundaryCondition = {},
@@ -1105,18 +1105,18 @@ inline void Gabor2D(
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( frequency >= 0.5, "Frequency must be < 0.5" );
    FloatArray frequencies = { frequency * std::cos( direction ), frequency * std::sin( direction ) };
-   GaborIIR( in, out, sigmas, frequencies, boundaryCondition, {}, {}, truncation );
+   GaborIIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, {}, {}, truncation );
 }
 DIP_NODISCARD inline Image Gabor2D(
       Image const& in,
-      FloatArray const& sigmas = { 5.0, 5.0 },
+      FloatArray sigmas = { 5.0, 5.0 },
       dfloat frequency = 0.1,
       dfloat direction = dip::pi,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Gabor2D( in, out, sigmas, frequency, direction, boundaryCondition, truncation );
+   Gabor2D( in, out, std::move( sigmas ), frequency, direction, boundaryCondition, truncation );
    return out;
 }
 
@@ -1305,13 +1305,13 @@ DIP_EXPORT void MeanShiftVector(
 );
 DIP_NODISCARD inline Image MeanShiftVector(
       Image const& in,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   MeanShiftVector( in, out, sigmas, method, boundaryCondition, truncation );
+   MeanShiftVector( in, out, std::move( sigmas ), method, boundaryCondition, truncation );
    return out;
 }
 

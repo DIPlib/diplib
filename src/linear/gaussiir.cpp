@@ -32,15 +32,15 @@ using ComplexArray = std::array< dcomplex, 10 >;
 constexpr dip::uint MAX_IIR_ORDER = 6;
 
 struct GaussIIRParams {
-   dfloat sigma;
-   dip::uint border;
-   std::array< dip::uint, 6 > iir_order_num;
-   std::array< dip::uint, 6 > iir_order_den;
-   std::array< dfloat, MAX_IIR_ORDER > a1;
-   std::array< dfloat, MAX_IIR_ORDER > a2;
-   std::array< dfloat, MAX_IIR_ORDER > b1;
-   std::array< dfloat, MAX_IIR_ORDER > b2;
-   dfloat cc;
+   dfloat sigma = 0;
+   dip::uint border = 0;
+   std::array< dip::uint, 6 > iir_order_num = { 0 };
+   std::array< dip::uint, 6 > iir_order_den = { 0 };
+   std::array< dfloat, MAX_IIR_ORDER > a1 = { 0 };
+   std::array< dfloat, MAX_IIR_ORDER > a2 = { 0 };
+   std::array< dfloat, MAX_IIR_ORDER > b1 = { 0 };
+   std::array< dfloat, MAX_IIR_ORDER > b2 = { 0 };
+   dfloat cc = 0;
 };
 
 enum class DesignMethod {
@@ -54,7 +54,7 @@ dfloat q2sigma (
       dfloat q
 ) {
    dfloat var = 0.0;
-   for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 ) ); mm += 2 ) {
+   for( dip::uint mm = 1; mm <= ( nn - ( nn & 1u )); mm += 2 ) {
       dfloat modulus = std::sqrt( pp[ mm ].real() * pp[ mm ].real() + pp[ mm ].imag() * pp[ mm ].imag() );
       dfloat phase = std::atan( pp[ mm ].imag() / pp[ mm ].real() );
       modulus = std::exp( std::log( modulus ) / q );
@@ -63,9 +63,9 @@ dfloat q2sigma (
       dfloat im = modulus * std::sin( phase );
       dfloat d = 1 - 2 * re + re * re + im * im;
       d *= d;
-      var += ( 4 * ( re + ( re - 2 ) * ( re * re + im * im ) ) ) / d;
+      var += ( 4 * ( re + ( re - 2 ) * ( re * re + im * im ))) / d;
    }
-   if( nn & 1 ) {
+   if( nn & 1u ) {
       dfloat modulus = std::sqrt( pp[ nn ].real() * pp[ nn ].real() + pp[ nn ].imag() * pp[ nn ].imag() );
       dfloat phase = std::atan( pp[ nn ].imag() / pp[ nn ].real() );
       modulus = std::exp( std::log( modulus ) / q );
@@ -217,7 +217,7 @@ void FilterCoefficients (
       ) {
    // Initialize temporary product to 1.
    // Initialize result to 0.
-   if( ( start == mm ) && ( stop == nn ) ) {
+   if(( start == mm ) && ( stop == nn )) {
       tmp = { 1.0, 0.0 };
       bb[ nn - mm ] = { 0.0, 0.0 };
    }
@@ -229,7 +229,7 @@ void FilterCoefficients (
       for( dip::uint ii = start; ii <= stop; ++ii ) {
          bb[ nn - mm ] = ( tmp * pp[ ii ] ) + bb[ nn - mm ];
       }
-   } else if( ( start == 0 ) && ( mm == 0 ) ) {
+   } else if(( start == 0 ) && ( mm == 0 )) {
       bb[ nn - mm ] = { 1.0, 0.0 };
    }
 }
@@ -244,7 +244,7 @@ GaussIIRParams FillGaussIIRParams(
    if( truncation <= 0.0 ) {
       truncation = 3;
    }
-   truncation = std::min( truncation, maximum_gauss_truncation< sfloat >());
+   truncation = std::min( truncation, maximum_gauss_truncation< sfloat >() );
    GaussIIRParams params;
    params.border = std::max< dip::uint >( 5, static_cast< dip::uint >( sigma * truncation + 0.5 ));
    params.sigma = sigma;
@@ -258,16 +258,16 @@ GaussIIRParams FillGaussIIRParams(
    dip::uint nn = filterOrder;
    ComplexArray pp;
    FillPoleCoefficients( nn, pp, order, method ); // modifies `method`!
-   nn = static_cast< dip::uint >( pp[ 0 ].real());
+   nn = static_cast< dip::uint >( pp[ 0 ].real() );
 
    // Compute the correct value for q based on the poles in the z-domain
-   dfloat q;
+   dfloat q = 0;
    if( method == DesignMethod::FORWARD_BACKWARD ) {
       if( sigma > 0 ) {
          dfloat q0term = -sigma * sigma;
          dfloat q1term = 0.0;
          dfloat q2term = 0.0;
-         for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 )); mm += 2 ) {
+         for( dip::uint mm = 1; mm <= ( nn - ( nn & 1u )); mm += 2 ) {
             dfloat re = pp[ mm ].real();
             dfloat im = pp[ mm ].imag();
             dfloat t1 = 4 * ( -1 + 3 * re - 3 * re * re - im * im + re * ( re * re + im * im ));
@@ -277,7 +277,7 @@ GaussIIRParams FillGaussIIRParams(
             q1term += t1 / d;
             q2term += t2 / d;
          }
-         if( nn & 1 ) {
+         if( nn & 1u ) {
             dfloat d = pp[ nn ].real() - 1.0;
             q1term += 2.0 / d;
             q2term += 2.0 / ( d * d );
@@ -319,20 +319,24 @@ GaussIIRParams FillGaussIIRParams(
          pp[ mm ] = { modulus * std::cos( phase ), modulus * std::sin( phase ) };
       }
    }
+
+/*
    // Compute the new variance
    dfloat var = 0.0;
-   for( dip::uint mm = 1; mm <= ( nn - ( nn & 1 )); mm += 2 ) {
+   for( dip::uint mm = 1; mm <= ( nn - ( nn & 1u )); mm += 2 ) {
       dfloat re = pp[ mm ].real();
       dfloat im = pp[ mm ].imag();
       dfloat d = 1 - 2 * re + re * re + im * im;
       d *= d;
       var += ( 4 * ( re + ( re - 2 ) * ( re * re + im * im ))) / d;
    }
-   if( nn & 1 ) {
+   if( nn & 1u ) {
       dfloat re = pp[ nn ].real();
       //dfloat im = pp[ nn ].imag();
       var += ( 2 * re ) / (( re - 1 ) * ( re - 1 ));
    }
+   printf( "dip_GaussIIR: m=%1d n=%1ld, d=%1ld, sIn=%g, q=%g sOut=%g\n", method, nn, order, sigma, q, sqrt( var ));
+*/
 
    // Compute the actual filter coefficients
    ComplexArray bb;
@@ -420,26 +424,20 @@ GaussIIRParams FillGaussIIRParams(
    params.iir_order_num[ 3 ] = params.iir_order_num[ 5 ];
 
 /*
-   for (jj = 0; jj < 6; ++jj)
-      printf("%1d %1d\n",
-         params.iir_order_den[jj], params.iir_order_num[jj]);
+   for( dip::uint jj = 0; jj < 6; ++jj ) {
+      printf( "%1ld %1ld\n", params.iir_order_den[ jj ], params.iir_order_num[ jj ] );
+   }
 
-   for (jj = params.iir_order_num[1];
-        jj <= params.iir_order_num[2]; ++jj)
-   {
-      printf("params.a1[%1d] = %8.5f \n", jj, params.a1[jj]);
+   for( dip::uint jj = params.iir_order_num[ 1 ]; jj <= params.iir_order_num[ 2 ]; ++jj ) {
+      printf( "params.a1[%1ld] = %8.5f \n", jj, params.a1[ jj ] );
    }
-   for (jj = params.iir_order_num[4];
-        jj <= params.iir_order_num[5]; ++jj)
-   {
-      printf("params.a2[%1d] = %8.5f \n", jj, params.a2[jj]);
+   for( dip::uint jj = params.iir_order_num[ 4 ]; jj <= params.iir_order_num[ 5 ]; ++jj ) {
+      printf( "params.a2[%1ld] = %8.5f \n", jj, params.a2[ jj ] );
    }
-   for (jj = 0; jj <= params.iir_order_den[2]; ++jj)
-   {
-      printf("params.b1[%1d] = %8.5f \tparams.b2[%1d] = %8.5f\n",
-          jj, params.b1[jj], jj, params.b2[jj]);
+   for( dip::uint jj = 0; jj <= params.iir_order_den[ 2 ]; ++jj ) {
+      printf( "params.b1[%1ld] = %8.5f \tparams.b2[%1ld] = %8.5f\n", jj, params.b1[ jj ], jj, params.b2[ jj ] );
    }
-   printf("c[%1d]  = %g \n", 0, cc[0]);
+   printf( "c[%1d]  = %g \n", 0, params.cc );
 */
 
    return params;
@@ -447,7 +445,7 @@ GaussIIRParams FillGaussIIRParams(
 
 class GaussIIRLineFilter : public Framework::SeparableLineFilter {
    public:
-      GaussIIRLineFilter( std::vector< GaussIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
+      explicit GaussIIRLineFilter( std::vector< GaussIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
@@ -482,10 +480,10 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
          dip::uint order2 = std::max( orderAR[ 3 ], orderMA[ 3 ] );
          bool copy_forward = false;
          bool copy_backward = false;
-         if( ( orderMA[ 0 ] == 0 ) && ( a1[ 0 ] == 1.0 ) ) {
+         if(( orderMA[ 0 ] == 0 ) && ( a1[ 0 ] == 1.0 )) {
             copy_forward = true;
          }
-         if( ( orderMA[ 3 ] == 0 ) && ( a2[ 0 ] == 1.0 ) ) {
+         if(( orderMA[ 3 ] == 0 ) && ( a2[ 0 ] == 1.0 )) {
             copy_backward = true;
          }
 

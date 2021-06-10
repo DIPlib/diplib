@@ -449,7 +449,7 @@ void ConvolveFT(
    }
    DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
    if( filterFT.Sizes() < in.Sizes() ) {
-      filterFT = filterFT.Pad( in.Sizes());
+      filterFT = filterFT.Pad( in.Sizes() );
       reuseFilterFT = true;
    }
    if( filterSpatial ) {
