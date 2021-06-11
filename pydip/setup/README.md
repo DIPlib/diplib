@@ -16,7 +16,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-[![Build Status](https://travis-ci.org/DIPlib/diplib.svg?branch=master)](https://travis-ci.org/DIPlib/diplib)
+[![Build Status](https://travis-ci.com/DIPlib/diplib.svg?branch=master)](https://travis-ci.com/DIPlib/diplib)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/DIPlib/diplib.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DIPlib/diplib/context:cpp)
 
 ## Introduction
@@ -25,7 +25,7 @@ The purpose of the *DIPlib* project is to provide a one-stop library and
 development environment for quantitative image analysis, be it applied
 to microscopy, radiology, astronomy, or anything in between.
 
-As oposed to all other image processing/analysis libraries and packages out
+As opposed to all other image processing/analysis libraries and packages out
 there, *DIPlib* focuses on quantification. The first priority is precision,
 all other principles have a lower priority. Our principles are:
 
@@ -83,7 +83,7 @@ These Jupyter notebooks give a short introduction:
 
 ## License
 
-Copyright 2014-2020 Cris Luengo and contributors  
+Copyright 2014-2021 Cris Luengo and contributors  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");
