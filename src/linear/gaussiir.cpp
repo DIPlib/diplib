@@ -34,12 +34,12 @@ constexpr dip::uint MAX_IIR_ORDER = 6;
 struct GaussIIRParams {
    dfloat sigma = 0;
    dip::uint border = 0;
-   std::array< dip::uint, 6 > iir_order_num = { 0 };
-   std::array< dip::uint, 6 > iir_order_den = { 0 };
-   std::array< dfloat, MAX_IIR_ORDER > a1 = { 0 };
-   std::array< dfloat, MAX_IIR_ORDER > a2 = { 0 };
-   std::array< dfloat, MAX_IIR_ORDER > b1 = { 0 };
-   std::array< dfloat, MAX_IIR_ORDER > b2 = { 0 };
+   std::array< dip::uint, 6 > iir_order_num = {{ 0 }};
+   std::array< dip::uint, 6 > iir_order_den = {{ 0 }};
+   std::array< dfloat, MAX_IIR_ORDER > a1 = {{ 0 }};
+   std::array< dfloat, MAX_IIR_ORDER > a2 = {{ 0 }};
+   std::array< dfloat, MAX_IIR_ORDER > b1 = {{ 0 }};
+   std::array< dfloat, MAX_IIR_ORDER > b2 = {{ 0 }};
    dfloat cc = 0;
 };
 

@@ -516,22 +516,22 @@ DIP_NODISCARD inline Image Derivative(
       Image out; functionName_( in, out, std::move( sigmas )); return out; }
 
 /// \brief Computes the first derivative along x, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dx, 0, 1 );
+DIP_DERIVATIVE_OPERATOR( Dx, 0, 1 )
 
 /// \brief Computes the first derivative along y, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dy, 1, 1 );
+DIP_DERIVATIVE_OPERATOR( Dy, 1, 1 )
 
 /// \brief Computes the first derivative along z, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dz, 2, 1 );
+DIP_DERIVATIVE_OPERATOR( Dz, 2, 1 )
 
 /// \brief Computes the second derivative along x, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dxx, 0, 2 );
+DIP_DERIVATIVE_OPERATOR( Dxx, 0, 2 )
 
 /// \brief Computes the second derivative along y, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dyy, 1, 2 );
+DIP_DERIVATIVE_OPERATOR( Dyy, 1, 2 )
 
 /// \brief Computes the second derivative along z, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dzz, 2, 2 );
+DIP_DERIVATIVE_OPERATOR( Dzz, 2, 2 )
 
 #undef DIP_DERIVATIVE_OPERATOR
 
@@ -547,13 +547,13 @@ DIP_DERIVATIVE_OPERATOR( Dzz, 2, 2 );
       Image out; functionName_( in, out, std::move( sigmas )); return out; }
 
 /// \brief Computes the first derivative along x and y, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dxy, 0, 1 );
+DIP_DERIVATIVE_OPERATOR( Dxy, 0, 1 )
 
 /// \brief Computes the first derivative along x and z, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dxz, 0, 2 );
+DIP_DERIVATIVE_OPERATOR( Dxz, 0, 2 )
 
 /// \brief Computes the first derivative along y and y, see \ref dip::Derivative.
-DIP_DERIVATIVE_OPERATOR( Dyz, 1, 2 );
+DIP_DERIVATIVE_OPERATOR( Dyz, 1, 2 )
 
 #undef DIP_DERIVATIVE_OPERATOR
 
