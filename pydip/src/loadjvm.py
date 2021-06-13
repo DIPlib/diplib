@@ -127,9 +127,6 @@ def suggest_jvm_files():
         yield "libjvm.so"
 
 def load_jvm():
-    if is_mac:
-        libc = ctypes.CDLL("/usr/lib/libc.dylib")
-
     for path in suggest_jvm_paths():
         for file in suggest_jvm_files():
             lib = os.path.join(path, file)
@@ -137,7 +134,5 @@ def load_jvm():
             if os.path.exists(lib):
                 if is_win and ctypes.WinDLL(lib) != 0:
                     return lib
-                if is_mac and libc.dlopen_preflight(lib.encode('utf-8')) != 0:
-                    return lib
-                if is_linux and ctypes.CDLL(lib) != 0:
+                if (is_linux or is_mac) and ctypes.CDLL(lib) != 0:
                     return lib
