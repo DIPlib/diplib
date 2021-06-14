@@ -92,7 +92,7 @@ add_subdirectory(src)
 
 ### DIPjavaio
 
-find_package(Java 1.8 COMPONENTS Development)
+find_package(Java 1.7 COMPONENTS Development)
 if(JAVA_FOUND)
    # Set JAVA_HOME so that the JNI found is from the same JDK as the Java package
    get_filename_component(JAVA_HOME "${Java_JAVAC_EXECUTABLE}" DIRECTORY) # strip off /javac
@@ -106,6 +106,8 @@ if(JAVA_FOUND)
          list(APPEND DIP_JAVAIO_INTERFACES "Bio-Formats")
       endif()
    endif()
+   set(CMAKE_JAVA_COMPILE_FLAGS -target 1.7 -source 1.7) # MATLAB R2013b--R2017a use Java SDK 1.7, R2017b-- use SDK 1.8.
+   # TODO: Make target Java version configurable?
 endif()
 
 if(DIP_BUILD_JAVAIO)

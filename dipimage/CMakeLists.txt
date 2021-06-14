@@ -102,7 +102,6 @@ if(DIP_BUILD_DIPVIEWER)
 
       # DIPviewer Java binding
       include(UseJava)
-      set(CMAKE_JAVA_COMPILE_FLAGS -target 1.7 -source 1.7) # MATLAB R2013b--R2017a use Java SDK 1.7, R2017b-- use SDK 1.8.
       add_jar(ViewerJava "${PROJECT_SOURCE_DIR}/viewer/java/Viewer.java"
               INCLUDE_JARS "${Matlab_ROOT_DIR}/java/jarext/svnkit/jna.jar"
                            "${Matlab_ROOT_DIR}/java/jarext/jogl-all.jar"

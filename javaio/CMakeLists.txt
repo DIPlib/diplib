@@ -42,7 +42,6 @@ endif()
 
 configure_file("${CMAKE_CURRENT_LIST_DIR}/Manifest.txt.in" "${CMAKE_CURRENT_BINARY_DIR}/Manifest.txt" @ONLY)
 
-set(CMAKE_JAVA_COMPILE_FLAGS "-target" "1.8" "-source" "1.8")
 add_jar(DIPjavaio_java "${DIP_JAVAIO_JAVA}"
         INCLUDE_JARS "${DIP_JAVAIO_CLASSPATH}"
         OUTPUT_NAME DIPjavaio
