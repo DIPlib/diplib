@@ -170,13 +170,9 @@ math/arithmetic.cpp
 math/bitwise.cpp
 math/comparison.cpp
 math/dyadic_operators.cpp
-math/error.cpp
 math/monadic_operators.cpp
 math/pixel.cpp
-math/projection.cpp
-math/radial.cpp
 math/select.cpp
-math/statistics.cpp
 math/tensor_operators.cpp
 measurement/chain_code.cpp
 measurement/feature_aspect_ratio_feret.h
@@ -265,6 +261,10 @@ segmentation/kmeans_clustering.cpp
 segmentation/minimum_variance_partitioning.cpp
 segmentation/superpixels.cpp
 segmentation/threshold.cpp
+statistics/error.cpp
+statistics/projection.cpp
+statistics/radial.cpp
+statistics/statistics.cpp
 support/accumulators.cpp
 support/gaussian_mixture.cpp
 support/matrix.cpp
