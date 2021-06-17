@@ -143,7 +143,10 @@ UnsignedArray OffsetToCoordinates(
 
 // Removes elements from the stride array that correspond to singleton dimensions (sizes[ii]==1).
 // Modifies the strides array.
-void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray strides ) {
+void RemoveSingletonsFromStrideArray(
+      UnsignedArray const& sizes,
+      IntegerArray& strides
+) {
    dip::uint jj = 0;
    for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
       if( sizes[ ii ] > 1 ) {
@@ -874,14 +877,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::HasSameDimensionOrder") {
    DOCTEST_CHECK_FALSE( imgA.HasSameDimensionOrder( imgB ));
    imgA.SwapDimensions( 0, 1 );
    DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
-   imgB.Mirror( { false, true, false, false } ); // mirroring dimension with lowest stride, so the mirror doesn't affect stride sorting
+   imgB.Mirror( { false, true, false, true } );
    DOCTEST_CHECK_FALSE( imgA.HasSameDimensionOrder( imgB ));
-   imgA.Mirror( { false, true, false, false } );
+   imgA.Mirror( { false, true, false, true } );
    DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
    imgB.ExpandSingletonDimension( 2, 10 );
    DOCTEST_CHECK_FALSE( imgA.HasSameDimensionOrder( imgB ));
    imgA.ExpandSingletonDimension( 2, 10 );
    DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
+   imgA.AddSingleton( 1 );
+   imgB.AddSingleton( 3 );
+   DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB )); // singleton dimensions should be ignored
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::MatchStrideOrder") {

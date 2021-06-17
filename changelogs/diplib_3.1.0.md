@@ -77,6 +77,7 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::MaximumPixel()` and `dip::MinimumPixel()` produced an empty output array when the input was all NaN.
 
+- `dip::Image::HasSameDimensionOrder()` didn't properly ignore singleton dimensions.
 
 
 ## Changes to *DIPimage*
