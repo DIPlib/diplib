@@ -62,6 +62,8 @@ title: "Changes DIPlib 3.1.0"
   `dip::ChordLength`, `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`,
   `dip::CostesSignificanceTest`, `dip::StochasticWatershed`, `dip::KMeansClustering`, and `dip::Superpixels`.
 
+- `dip::Image::Rotation90()` can now be called without any arguments at all.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together

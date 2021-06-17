@@ -1763,7 +1763,8 @@ class DIP_NO_EXPORT Image {
       /// \brief Rotates the image by `n` times 90 degrees, in the plane defined by dimensions
       /// `dimension1` and `dimension2`.
       ///
-      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged, and have at least two dimensions.
+      /// The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// The rotation occurs in the direction of positive angles, as defined in the image coordinate system.
       /// That is, if `dimension1` is 0 (x-axis) and `dimension2` is 1 (y-axis), and considering the y-axis is
@@ -1771,7 +1772,7 @@ class DIP_NO_EXPORT Image {
       /// value for `n` inverts the direction of rotation.
       DIP_EXPORT Image& Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension2 );
 
-      /// \brief Rotates the image by `n` times 90 degrees, in the plane perpendicular to dimension `axis`.
+      /// \brief Rotates the 3D image by `n` times 90 degrees, in the plane perpendicular to dimension `axis`.
       ///
       /// The image must be forged and have three dimensions. The data will never be copied
       /// (i.e. this is a quick and cheap operation).
@@ -1800,7 +1801,9 @@ class DIP_NO_EXPORT Image {
       /// \brief Rotates the image by `n` times 90 degrees, in the x-y plane.
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
-      Image& Rotation90( dip::sint n ) {
+      // This overload exists because we can't give the main function any default parameters -- there would be no way
+      // to distinguish it from the two-parameter overload.
+      Image& Rotation90( dip::sint n = 1 ) {
          return Rotation90( n, 0, 1 );
       }
 
