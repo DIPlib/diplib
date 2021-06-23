@@ -69,14 +69,14 @@ endif()
 set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
 if(DIP_ENABLE_DOCTEST)
    if(DIP_BUILD_BUNDLED_DEPENDENCIES)
-      target_include_directories(DIP PRIVATE "${PROJECT_SOURCE_DIR}/dependencies/doctest")
+      set(DIP_DOCTEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/dependencies/doctest")
       list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/dependencies/doctest")
    else()
       find_package(doctest REQUIRED)
       # upstream doctest wants includes of the form <doctest/doctest.h> but diplib uses just doctest.h
-      target_include_directories(DIP PRIVATE "$<TARGET_PROPERTY:doctest::doctest,INTERFACE_INCLUDE_DIRECTORIES>/doctest")
+      set(DIP_DOCTEST_INCLUDE_DIR "$<TARGET_PROPERTY:doctest::doctest,INTERFACE_INCLUDE_DIRECTORIES>/doctest")
    endif()
-   target_link_libraries(DIP PRIVATE doctest::doctest)
+   target_include_directories(DIP PRIVATE "${DIP_DOCTEST_INCLUDE_DIR}")
    target_compile_definitions(DIP PRIVATE
                               DIP_CONFIG_ENABLE_DOCTEST
                               DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
@@ -117,19 +117,17 @@ target_compile_definitions(DIP PRIVATE
 set(DIP_ENABLE_ZLIB ON CACHE BOOL "Enable zlib compression in ICS and TIFF (deflate)")
 if(DIP_ENABLE_ZLIB)
    if(DIP_BUILD_BUNDLED_DEPENDENCIES)
+      # Note that only libtiff and libics depend on zlib, DIPlib doesn't use it directly.
+      # If we use externally build libtiff and libics, we don't need to look for zlib.
       add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/zlib" "${PROJECT_BINARY_DIR}/zlib" EXCLUDE_FROM_ALL)
-      add_library(ZLIB::ZLIB ALIAS zlibstatic)
-   else()
-      find_package(ZLIB REQUIRED)
    endif()
 endif()
 
-# libjpeg (for use in libtiff)
+# libjpeg (also for use in libtiff)
 set(DIP_ENABLE_JPEG ON CACHE BOOL "Enable JPEG file support and compression in TIFF")
 if(DIP_ENABLE_JPEG)
    if(DIP_BUILD_BUNDLED_DEPENDENCIES)
       add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libjpeg" "${PROJECT_BINARY_DIR}/libjpeg" EXCLUDE_FROM_ALL)
-      add_library(JPEG::JPEG ALIAS jpeg)
    else()
       find_package(JPEG REQUIRED)
    endif()
@@ -143,11 +141,10 @@ if(DIP_ENABLE_ICS)
    if(DIP_BUILD_BUNDLED_DEPENDENCIES)
       set(LIBICS_INCLUDE_CPP Off) # TODO: we should start using the C++ interface
       add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libics" "${PROJECT_BINARY_DIR}/libics" EXCLUDE_FROM_ALL)
-      add_library(ICS::ICS ALIAS libics)
    else()
-      find_package(ICS REQUIRED)
+      find_package(libics REQUIRED)
    endif()
-   target_link_libraries(DIP PRIVATE ICS::ICS)
+   target_link_libraries(DIP PRIVATE libics)
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_ICS)
 endif()
 
@@ -156,11 +153,11 @@ set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 if(DIP_ENABLE_TIFF)
    if(DIP_BUILD_BUNDLED_DEPENDENCIES)
       add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libtiff" "${PROJECT_BINARY_DIR}/libtiff" EXCLUDE_FROM_ALL)
-      add_library(TIFF:TIFF ALIAS tiff)
+      target_link_libraries(DIP PRIVATE tiff)
    else()
       find_package(TIFF REQUIRED)
+      target_link_libraries(DIP PRIVATE TIFF::TIFF)
    endif()
-   target_link_libraries(DIP PRIVATE TIFF::TIFF)
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_TIFF)
 endif()
 
@@ -190,7 +187,8 @@ install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/" DESTINATION include
 # DIPlib unit tests
 if(DIP_ENABLE_DOCTEST)
    add_executable(unit_tests EXCLUDE_FROM_ALL "${CMAKE_CURRENT_LIST_DIR}/library/unit_tests.cpp")
-   target_link_libraries(unit_tests PRIVATE DIP doctest::doctest)
+   target_include_directories(unit_tests PRIVATE ${DIP_DOCTEST_INCLUDE_DIR})
+   target_link_libraries(unit_tests PRIVATE DIP)
    target_compile_definitions(unit_tests PRIVATE
                               DIP_IMPLEMENT_UNIT_TESTS
                               DIP_CONFIG_ENABLE_DOCTEST

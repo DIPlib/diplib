@@ -91,6 +91,9 @@ Important `cmake` command-line arguments controlling the build of *DIPlib*:
     -DDIP_ENABLE_UNICODE=Off           # disable UFT-8 strings within DIPlib
     -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
                                        #    integers are not natively supported
+    -DDIP_BUILD_BUNDLED_DEPENDENCIES=Off # Do not use bundled libraries, instead look for installed
+                                         # versions of libics, LibTIFF, libjpeg, Eigen, doctest and
+                                         # pybind11.
 
 Controlling the build of *DIPviewer*:
 
