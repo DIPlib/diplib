@@ -258,7 +258,7 @@ FloatArray GaussianMixtureModelThreshold(
       data[ ii ] = static_cast< dfloat >( pData[ ii ] );
    }
    std::vector< dfloat > weights( nBins * nGaussians, 1.0 );
-   std::vector< GaussianParameters > params = GaussianMixtureModel( data.data(), weights.data(), {}, nBins, nGaussians );
+   std::vector< GaussianParameters > params = GaussianMixtureModel( data.data(), weights.data(), nBins, nGaussians );
    // Sort Gaussians by position
    std::sort( params.begin(), params.end(), []( GaussianParameters const& a, GaussianParameters const& b ) { return a.position < b.position; } );
    // Find thresholds
