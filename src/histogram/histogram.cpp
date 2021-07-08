@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for histogram-related functionality.
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -523,6 +523,7 @@ class ReverseLookupLineFilter : public Framework::ScanLineFilter {
 
 void Histogram::ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues ) {
    // Check inputs
+   DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = Dimensionality();
@@ -547,10 +548,12 @@ void Histogram::ReverseLookup( Image const& input, Image& output, BooleanArray e
 }
 
 dip::uint Histogram::Count() const {
+   DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    return Sum( data_ ).As< dip::uint >();
 }
 
 Histogram& Histogram::Cumulative() {
+   DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    data_.Protect();
    CumulativeSum( data_, {}, data_ );
    data_.Protect( false );
@@ -558,6 +561,7 @@ Histogram& Histogram::Cumulative() {
 }
 
 Histogram Histogram::GetMarginal( dip::uint dim ) const {
+   DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
    Histogram out = Copy();
    BooleanArray ps( Dimensionality(), true );
@@ -573,6 +577,7 @@ Histogram Histogram::GetMarginal( dip::uint dim ) const {
 }
 
 Histogram& Histogram::Smooth( FloatArray sigma ) {
+   DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    UnsignedArray sizes = data_.Sizes();
    dip::uint nDims = sizes.size();
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sigma, nDims, 1.0 ));

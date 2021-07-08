@@ -40,6 +40,9 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::MorphologicalSharpening()`, based on `dip::Toggle()`.
 
+- It is now possible to construct a default-initialized `dip::Histogram`, which can only be assigned to.
+  The new function `dip::Histogram::IsInitialized()` returns false for such an object.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and

@@ -307,12 +307,20 @@ class DIP_NO_EXPORT Histogram {
          DIP_STACK_TRACE_THIS( HistogramFromDataPointer( data, configuration ));
       }
 
+      /// \brief The default-initialized histogram is empty and can only be assigned to.
+      Histogram() = default;
+
       /// \brief Swaps `this` and `other`.
       void swap( Histogram& other ) {
          using std::swap;
          swap( data_, other.data_ );
          swap( lowerBounds_, other.lowerBounds_ );
          swap( binSizes_, other.binSizes_ );
+      }
+
+      /// \brief Returns false for a default-initialized histogram.
+      bool IsInitialized() const {
+         return data_.IsForged();
       }
 
       /// \brief Deep copy, returns a copy of `this` with its own data segment.
@@ -331,6 +339,7 @@ class DIP_NO_EXPORT Histogram {
       /// second.Smooth(); // OK
       /// ```
       Histogram Copy() const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          Histogram out( *this );
          out.data_ = data_.Copy();
          return out;
@@ -365,6 +374,7 @@ class DIP_NO_EXPORT Histogram {
       /// Adding multiple histograms together can be useful, for example, when accumulating pixel values
       /// from multiple images, or in multiple threads.
       Histogram& operator+=( Histogram const& other ) {
+         DIP_THROW_IF( !IsInitialized() || !other.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF(( data_.Sizes() != other.data_.Sizes() ||
                       ( lowerBounds_ != other.lowerBounds_ ) ||
                       ( binSizes_ != other.binSizes_ )), "Histograms don't match" );
@@ -374,6 +384,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Subtracts a histogram from *this, using saturated subtraction. `other` must have identical properties.
       Histogram& operator-=( Histogram const& other ) {
+         DIP_THROW_IF( !IsInitialized() || !other.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF(( data_.Sizes() != other.data_.Sizes() ||
                       ( lowerBounds_ != other.lowerBounds_ ) ||
                       ( binSizes_ != other.binSizes_ )), "Histograms don't match" );
@@ -382,34 +393,42 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Returns the histogram dimensionality.
-      dip::uint Dimensionality() const { return data_.Dimensionality(); }
+      dip::uint Dimensionality() const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
+         return data_.Dimensionality();
+      }
 
       /// \brief Returns the number of bins along dimension `dim`
       dip::uint Bins( dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return data_.Size( dim );
       }
 
       /// \brief Returns the size of the bins along dimension `dim`
       dfloat BinSize( dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return binSizes_[ dim ];
       }
 
       /// \brief Returns the lower bound of the histogram for dimension `dim`
       dfloat LowerBound( dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return lowerBounds_[ dim ];
       }
 
       /// \brief Returns the upper bound of the histogram for dimension `dim`
       dfloat UpperBound( dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return lowerBounds_[ dim ] + static_cast< dfloat >( data_.Size( dim )) * binSizes_[ dim ];
       }
 
       /// \brief Returns the bin boundaries along dimension `dim` (`Bins(dim)+1` values).
       FloatArray BinBoundaries( dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          FloatArray boundaries( data_.Size( dim ) + 1 );
          dfloat offset = lowerBounds_[ dim ];
@@ -423,6 +442,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the bin centers along dimension `dim`
       FloatArray BinCenters( dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          FloatArray centers( data_.Size( dim ) );
          dfloat scale = binSizes_[ dim ];
@@ -435,18 +455,21 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the bin center for the given `bin` along dimension `dim`
       dfloat BinCenter( dip::uint bin, dip::uint dim = 0 ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( dim >= Dimensionality(), E::INVALID_PARAMETER );
          return lowerBounds_[ dim ] + ( static_cast< dfloat >( bin ) + 0.5 ) * binSizes_[ dim ];
       }
 
       /// \brief Gets the bin for `value` in a 1D histogram
       dip::uint Bin( dfloat value ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
          return FindClampedBin( value, 0 );
       }
 
       /// \brief Gets the bin for {`x_value`, `y_value`} in a 2D histogram
       UnsignedArray Bin( dfloat x_value, dfloat y_value ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != 2, E::ILLEGAL_DIMENSIONALITY );
          return { FindClampedBin( x_value, 0 ),
                   FindClampedBin( y_value, 1 ) };
@@ -454,6 +477,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Gets the bin for {`x_value`, `y_value`, `z_value`} in a 3D histogram
       UnsignedArray Bin( dfloat x_value, dfloat y_value, dfloat z_value ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != 3, E::ILLEGAL_DIMENSIONALITY );
          return { FindClampedBin( x_value, 0 ),
                   FindClampedBin( y_value, 1 ),
@@ -462,6 +486,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Gets the bin for `value` in an nD histogram
       UnsignedArray Bin( FloatArray value ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != value.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          UnsignedArray out( value.size() );
          for( dip::uint ii = 0; ii < value.size(); ++ii ) {
@@ -472,12 +497,14 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Get the value at the given bin in a 1D histogram
       CountType At( dip::uint x ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x >= data_.Size( 0 ), E::INDEX_OUT_OF_RANGE );
          return *static_cast< CountType* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) ));
       }
       /// \brief Get the value at the given bin in a 2D histogram
       CountType At( dip::uint x, dip::uint y ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != 2, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x >= data_.Size( 0 ), E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( y >= data_.Size( 1 ), E::INDEX_OUT_OF_RANGE );
@@ -487,6 +514,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Get the value at the given bin in a 3D histogram
       CountType At( dip::uint x, dip::uint y, dip::uint z ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != 3, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x >= data_.Size( 0 ), E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( y >= data_.Size( 1 ), E::INDEX_OUT_OF_RANGE );
@@ -498,16 +526,19 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Get the value at the given bin
       CountType At( UnsignedArray const& bin ) const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          return *static_cast< CountType* >( data_.Pointer( bin )); // Does all the checking
       }
 
       /// \brief Get the image that holds the bin counts. The image is always scalar and of type \ref dip::DT_COUNT.
       Image const& GetImage() const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          return data_;
       }
 
       /// \brief Returns an iterator to the first bin
       ConstImageIterator< CountType > begin() const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          return ConstImageIterator< CountType >( data_ );
       }
 
@@ -517,7 +548,10 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Returns a pointer to the first bin
-      CountType const* Origin() const { return static_cast< CountType const* >( data_.Origin() ); }
+      CountType const* Origin() const {
+         DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
+         return static_cast< CountType const* >( data_.Origin() );
+      }
 
       /// \brief Returns the total number of elements in the histogram (sum of bins)
       DIP_EXPORT dip::uint Count() const;
@@ -607,6 +641,7 @@ inline Histogram operator-( Histogram lhs, Histogram const& rhs ) {
 
 /// \brief Computes a cumulative histogram from `in`. See \ref dip::Histogram::Cumulative.
 inline Histogram CumulativeHistogram( Histogram const& in ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    Histogram out = in.Copy();
    out.Cumulative();
    return out;
@@ -614,6 +649,7 @@ inline Histogram CumulativeHistogram( Histogram const& in ) {
 
 /// \brief Returns a smoothed version of the histogram `in`. See \ref dip::Histogram::Smooth.
 inline Histogram Smooth( Histogram const& in, FloatArray const& sigma ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    Histogram out = in.Copy();
    out.Smooth( sigma );
    return out;

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for exceptions and support functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,6 +134,7 @@ namespace E {
 // image creation errors
 constexpr char const* IMAGE_NOT_RAW = "Image is not raw";
 constexpr char const* IMAGE_NOT_FORGED = "Image is not forged";
+constexpr char const* HISTOGRAM_NOT_INITIALIZED = "Histogram is not initialized";
 
 // image data type errors
 constexpr char const* DATA_TYPE_NOT_SUPPORTED = "Data type not supported";

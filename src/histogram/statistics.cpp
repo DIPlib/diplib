@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for histogram-related functionality.
  *
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@
 namespace dip {
 
 FloatArray Mean( Histogram const& in ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    dip::uint nDims = in.Dimensionality();
    FloatArray mean( nDims, 0 );
    dfloat weight = 0;
@@ -90,11 +91,13 @@ FloatArray Covariance( Histogram const& in, FloatArray& mean ) {
 } // namespace
 
 FloatArray Covariance( Histogram const& in ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    FloatArray mean = Mean( in );
    return Covariance( in, mean );
 }
 
 RegressionParameters Regression( Histogram const& in ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    FloatArray mean = Mean( in );
    FloatArray cov = Covariance( in, mean );
@@ -105,6 +108,7 @@ RegressionParameters Regression( Histogram const& in ) {
 }
 
 FloatArray MarginalPercentile( Histogram const& in, dfloat percentile ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    dip::uint nDims = in.Dimensionality();
    FloatArray output( nDims );
    Histogram cum = CumulativeHistogram( in ); // we look along the last line in each direction
@@ -130,6 +134,7 @@ FloatArray MarginalPercentile( Histogram const& in, dfloat percentile ) {
 }
 
 FloatArray Mode( Histogram const& in ) {
+   DIP_THROW_IF( !in.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    dip::uint nDims = in.Dimensionality();
    UnsignedArray coord( nDims, 0 );
    Histogram::CountType maxVal = 0;
@@ -149,6 +154,7 @@ FloatArray Mode( Histogram const& in ) {
 }
 
 dfloat MutualInformation( Histogram const& hist ) {
+   DIP_THROW_IF( !hist.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( hist.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    Image const& histImg = hist.GetImage();
@@ -192,6 +198,7 @@ dfloat MutualInformation( Histogram const& hist ) {
 }
 
 dfloat Entropy( Histogram const& hist ) {
+   DIP_THROW_IF( !hist.IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( hist.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& histImg = hist.GetImage();
    dip::uint n = histImg.Size( 0 );
