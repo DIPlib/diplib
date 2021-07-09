@@ -100,8 +100,8 @@ endif(UNIX)
 #endif()
 
 # DIPlib-specific zlib
-if(TARGET zlibstatic)
-   target_link_libraries(libics PRIVATE zlibstatic)
+if(TARGET ZLIB::ZLIB)
+   target_link_libraries(libics PRIVATE ZLIB::ZLIB)
    target_compile_definitions(libics PUBLIC -DICS_ZLIB)
 endif()
 

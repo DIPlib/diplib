@@ -128,7 +128,7 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/statistics.h"
 //#include "diplib/timer.h"
 

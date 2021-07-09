@@ -1361,7 +1361,7 @@ void PositionPercentile(
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing the projection function mechanics") {
    // Testing that the ProjectionScan framework works appropriately.

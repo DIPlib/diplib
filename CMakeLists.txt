@@ -22,6 +22,9 @@ endif()
 set(DIP_SHARED_LIBRARY ON CACHE BOOL "Build a shared library (off for static library)")
 set(BUILD_SHARED_LIBS ${DIP_SHARED_LIBRARY})
 
+# build bundled dependencies or use find_package?
+set(DIP_BUILD_BUNDLED_DEPENDENCIES ON CACHE BOOL "Build the bundled dependencies or use find_package otherwise")
+
 # Installation path
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT share/doc/DIPlib)

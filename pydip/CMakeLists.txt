@@ -1,5 +1,9 @@
 set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION}) # Avoid a warning message
-add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
+if(DIP_BUILD_BUNDLED_DEPENDENCIES)
+   add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
+else()
+   find_package(pybind11 REQUIRED)
+endif()
 
 # Find sources
 file(GLOB DIP_PYTHON_SRC "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/*.h")

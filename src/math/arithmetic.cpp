@@ -493,7 +493,7 @@ void Invert(
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/math.h"
 #include "diplib/testing.h"
 

@@ -19,7 +19,7 @@
  */
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #include "diplib/accumulators.h"
 #include "diplib/random.h"

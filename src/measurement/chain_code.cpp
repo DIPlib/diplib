@@ -200,7 +200,7 @@ dip::Polygon ChainCode::Polygon() const {
 }
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #include "diplib/pixel_table.h"
 #include "diplib/morphology.h"

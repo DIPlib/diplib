@@ -556,7 +556,7 @@ void GeneralConvolution(
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/statistics.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"

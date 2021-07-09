@@ -325,7 +325,7 @@ FloatCoordinateArray FindHoughCircles(
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/linear.h"
 #include "diplib/segmentation.h"
 #include "diplib/math.h"

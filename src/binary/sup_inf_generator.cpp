@@ -620,7 +620,7 @@ IntervalArray ConvexHullInterval2D() {
 }
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing private function RotateBy45Degrees") {

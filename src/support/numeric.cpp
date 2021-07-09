@@ -235,7 +235,7 @@ dfloat BesselYN(
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "diplib/library/clamp_cast.h"
 #include "diplib/saturated_arithmetic.h"
 

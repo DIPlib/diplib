@@ -401,7 +401,7 @@ StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& feat
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
 

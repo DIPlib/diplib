@@ -520,7 +520,7 @@ LowestCommonAncestorSolver::LowestCommonAncestorSolver( Graph const& graph )
 } // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Graph") {
    dip::Image img( { 4, 5 }, 1, dip::DT_UINT8 );
