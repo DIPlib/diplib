@@ -307,6 +307,15 @@ class DIP_NO_EXPORT Histogram {
          DIP_STACK_TRACE_THIS( HistogramFromDataPointer( data, configuration ));
       }
 
+      /// \brief The default-initialized histogram is empty
+      Histogram() = default;
+      // Copy constructor, move constructor/assignment and destructor are all default.
+      Histogram(const Histogram &rhs) = default;
+      Histogram(Histogram &&rhs) = default;
+      Histogram &operator=(const Histogram &rhs) = default;
+      Histogram &operator=(Histogram &&rhs) = default;
+      ~Histogram() = default;
+
       /// \brief Swaps `this` and `other`.
       void swap( Histogram& other ) {
          using std::swap;
