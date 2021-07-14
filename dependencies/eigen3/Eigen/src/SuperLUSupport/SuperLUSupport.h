@@ -297,8 +297,8 @@ SluMatrix asSluMatrix(MatrixType& mat)
 template<typename Scalar, int Flags, typename Index>
 MappedSparseMatrix<Scalar,Flags,Index> map_superlu(SluMatrix& sluMat)
 {
-  eigen_assert((Flags&RowMajor)==RowMajor && sluMat.Stype == SLU_NR
-         || (Flags&ColMajor)==ColMajor && sluMat.Stype == SLU_NC);
+  eigen_assert(((Flags&RowMajor)==RowMajor && sluMat.Stype == SLU_NR)
+         || ((Flags&ColMajor)==ColMajor && sluMat.Stype == SLU_NC));
 
   Index outerSize = (Flags&RowMajor)==RowMajor ? sluMat.ncol : sluMat.nrow;
 
@@ -967,6 +967,7 @@ void SuperILU<MatrixType>::factorize(const MatrixType& a)
   m_factorizationIsOk = true;
 }
 
+#ifndef EIGEN_PARSED_BY_DOXYGEN
 template<typename MatrixType>
 template<typename Rhs,typename Dest>
 void SuperILU<MatrixType>::_solve_impl(const MatrixBase<Rhs> &b, MatrixBase<Dest>& x) const
@@ -1017,6 +1018,8 @@ void SuperILU<MatrixType>::_solve_impl(const MatrixBase<Rhs> &b, MatrixBase<Dest
 
   m_info = info==0 ? Success : NumericalIssue;
 }
+#endif
+
 #endif
 
 } // end namespace Eigen

@@ -24,12 +24,17 @@ template<int Rows, int Cols, int Depth> struct product_type_selector;
 
 template<int Size, int MaxSize> struct product_size_category
 {
-  enum { is_large = MaxSize == Dynamic ||
-                    Size >= EIGEN_CACHEFRIENDLY_PRODUCT_THRESHOLD ||
-                    (Size==Dynamic && MaxSize>=EIGEN_CACHEFRIENDLY_PRODUCT_THRESHOLD),
-         value = is_large  ? Large
-               : Size == 1 ? 1
-                           : Small
+  enum {
+    #ifndef EIGEN_CUDA_ARCH
+    is_large = MaxSize == Dynamic ||
+               Size >= EIGEN_CACHEFRIENDLY_PRODUCT_THRESHOLD ||
+               (Size==Dynamic && MaxSize>=EIGEN_CACHEFRIENDLY_PRODUCT_THRESHOLD),
+    #else
+    is_large = 0,
+    #endif
+    value = is_large  ? Large
+          : Size == 1 ? 1
+                      : Small
   };
 };
 
@@ -224,50 +229,65 @@ template<> struct gemv_dense_selector<OnTheRight,ColMajor,true>
       // on, the other hand it is good for the cache to pack the vector anyways...
       EvalToDestAtCompileTime = (ActualDest::InnerStrideAtCompileTime==1),
       ComplexByReal = (NumTraits<LhsScalar>::IsComplex) && (!NumTraits<RhsScalar>::IsComplex),
-      MightCannotUseDest = (ActualDest::InnerStrideAtCompileTime!=1) || ComplexByReal
+      MightCannotUseDest = (!EvalToDestAtCompileTime) || ComplexByReal
     };
-
-    gemv_static_vector_if<ResScalar,ActualDest::SizeAtCompileTime,ActualDest::MaxSizeAtCompileTime,MightCannotUseDest> static_dest;
-
-    const bool alphaIsCompatible = (!ComplexByReal) || (numext::imag(actualAlpha)==RealScalar(0));
-    const bool evalToDest = EvalToDestAtCompileTime && alphaIsCompatible;
-
-    RhsScalar compatibleAlpha = get_factor<ResScalar,RhsScalar>::run(actualAlpha);
-
-    ei_declare_aligned_stack_constructed_variable(ResScalar,actualDestPtr,dest.size(),
-                                                  evalToDest ? dest.data() : static_dest.data());
-
-    if(!evalToDest)
-    {
-      #ifdef EIGEN_DENSE_STORAGE_CTOR_PLUGIN
-      Index size = dest.size();
-      EIGEN_DENSE_STORAGE_CTOR_PLUGIN
-      #endif
-      if(!alphaIsCompatible)
-      {
-        MappedDest(actualDestPtr, dest.size()).setZero();
-        compatibleAlpha = RhsScalar(1);
-      }
-      else
-        MappedDest(actualDestPtr, dest.size()) = dest;
-    }
 
     typedef const_blas_data_mapper<LhsScalar,Index,ColMajor> LhsMapper;
     typedef const_blas_data_mapper<RhsScalar,Index,RowMajor> RhsMapper;
-    general_matrix_vector_product
-        <Index,LhsScalar,LhsMapper,ColMajor,LhsBlasTraits::NeedToConjugate,RhsScalar,RhsMapper,RhsBlasTraits::NeedToConjugate>::run(
-        actualLhs.rows(), actualLhs.cols(),
-        LhsMapper(actualLhs.data(), actualLhs.outerStride()),
-        RhsMapper(actualRhs.data(), actualRhs.innerStride()),
-        actualDestPtr, 1,
-        compatibleAlpha);
+    RhsScalar compatibleAlpha = get_factor<ResScalar,RhsScalar>::run(actualAlpha);
 
-    if (!evalToDest)
+    if(!MightCannotUseDest)
     {
-      if(!alphaIsCompatible)
-        dest.matrix() += actualAlpha * MappedDest(actualDestPtr, dest.size());
-      else
-        dest = MappedDest(actualDestPtr, dest.size());
+      // shortcut if we are sure to be able to use dest directly,
+      // this ease the compiler to generate cleaner and more optimzized code for most common cases
+      general_matrix_vector_product
+          <Index,LhsScalar,LhsMapper,ColMajor,LhsBlasTraits::NeedToConjugate,RhsScalar,RhsMapper,RhsBlasTraits::NeedToConjugate>::run(
+          actualLhs.rows(), actualLhs.cols(),
+          LhsMapper(actualLhs.data(), actualLhs.outerStride()),
+          RhsMapper(actualRhs.data(), actualRhs.innerStride()),
+          dest.data(), 1,
+          compatibleAlpha);
+    }
+    else
+    {
+      gemv_static_vector_if<ResScalar,ActualDest::SizeAtCompileTime,ActualDest::MaxSizeAtCompileTime,MightCannotUseDest> static_dest;
+
+      const bool alphaIsCompatible = (!ComplexByReal) || (numext::imag(actualAlpha)==RealScalar(0));
+      const bool evalToDest = EvalToDestAtCompileTime && alphaIsCompatible;
+
+      ei_declare_aligned_stack_constructed_variable(ResScalar,actualDestPtr,dest.size(),
+                                                    evalToDest ? dest.data() : static_dest.data());
+
+      if(!evalToDest)
+      {
+        #ifdef EIGEN_DENSE_STORAGE_CTOR_PLUGIN
+        Index size = dest.size();
+        EIGEN_DENSE_STORAGE_CTOR_PLUGIN
+        #endif
+        if(!alphaIsCompatible)
+        {
+          MappedDest(actualDestPtr, dest.size()).setZero();
+          compatibleAlpha = RhsScalar(1);
+        }
+        else
+          MappedDest(actualDestPtr, dest.size()) = dest;
+      }
+
+      general_matrix_vector_product
+          <Index,LhsScalar,LhsMapper,ColMajor,LhsBlasTraits::NeedToConjugate,RhsScalar,RhsMapper,RhsBlasTraits::NeedToConjugate>::run(
+          actualLhs.rows(), actualLhs.cols(),
+          LhsMapper(actualLhs.data(), actualLhs.outerStride()),
+          RhsMapper(actualRhs.data(), actualRhs.innerStride()),
+          actualDestPtr, 1,
+          compatibleAlpha);
+
+      if (!evalToDest)
+      {
+        if(!alphaIsCompatible)
+          dest.matrix() += actualAlpha * MappedDest(actualDestPtr, dest.size());
+        else
+          dest = MappedDest(actualDestPtr, dest.size());
+      }
     }
   }
 };
@@ -364,8 +384,6 @@ template<> struct gemv_dense_selector<OnTheRight,RowMajor,false>
   *
   * \sa lazyProduct(), operator*=(const MatrixBase&), Cwise::operator*()
   */
-#ifndef __CUDACC__
-
 template<typename Derived>
 template<typename OtherDerived>
 inline const Product<Derived, OtherDerived>
@@ -396,8 +414,6 @@ MatrixBase<Derived>::operator*(const MatrixBase<OtherDerived> &other) const
 
   return Product<Derived, OtherDerived>(derived(), other.derived());
 }
-
-#endif // __CUDACC__
 
 /** \returns an expression of the matrix product of \c *this and \a other without implicit evaluation.
   *
