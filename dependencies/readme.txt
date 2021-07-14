@@ -2,7 +2,7 @@ External dependencies needed to build DIPlib et al., and statically linked in.
 
 doctest/    doctest 2.4.0     https://github.com/onqtam/doctest
 
-eigen3/     Eigen 3.1.1       https://eigen.tuxfamily.org
+eigen3/     Eigen 3.3.9       https://eigen.tuxfamily.org
 
 libics/     libics v.1.6.2    https://github.com/svi-opensource/libics
 libjpeg/    libjpeg 9c        https://www.ijg.org

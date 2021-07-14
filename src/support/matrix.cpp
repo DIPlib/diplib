@@ -25,13 +25,6 @@
 // For this file, turn off -Wsign-conversion, Eigen is really bad at this!
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wconversion"
-#if __GNUC__ >= 7 || __clang_major__ >= 12
-#pragma GCC diagnostic ignored "-Wint-in-bool-context"
-#endif
-#if __GNUC__ >= 9
-#pragma GCC diagnostic ignored "-Wdeprecated-copy"
-#endif
 #if __GNUC__ == 11
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif

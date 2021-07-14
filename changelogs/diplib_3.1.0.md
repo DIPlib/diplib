@@ -79,6 +79,10 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::Image::HasSameDimensionOrder()` didn't properly ignore singleton dimensions.
 
+- `dip::GaussianMixtureModelThreshold()` passed wrong parameter values to `dip::GaussianMixtureModel()`.
+
+
+
 
 ## Changes to *DIPimage*
 
