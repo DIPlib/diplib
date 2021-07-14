@@ -34,6 +34,20 @@ inline IndexDest convert_index(const IndexSrc& idx) {
   return IndexDest(idx);
 }
 
+// true if T can be considered as an integral index (i.e., and integral type or enum)
+template<typename T> struct is_valid_index_type
+{
+  enum { value =
+#if EIGEN_HAS_TYPE_TRAITS
+    internal::is_integral<T>::value || std::is_enum<T>::value
+#elif EIGEN_COMP_MSVC
+    internal::is_integral<T>::value || __is_enum(T)
+#else
+    // without C++11, we use is_convertible to Index instead of is_integral in order to treat enums as Index.
+    internal::is_convertible<T,Index>::value && !internal::is_same<T,float>::value && !is_same<T,double>::value
+#endif
+  };
+};
 
 // promote_scalar_arg is an helper used in operation between an expression and a scalar, like:
 //    expression * scalar
@@ -90,6 +104,9 @@ class no_assignment_operator
 {
   private:
     no_assignment_operator& operator=(const no_assignment_operator&);
+  protected:
+    EIGEN_DEFAULT_COPY_CONSTRUCTOR(no_assignment_operator)
+    EIGEN_DEFAULT_EMPTY_CONSTRUCTOR_AND_DESTRUCTOR(no_assignment_operator)
 };
 
 /** \internal return the index type with the largest number of bits */
@@ -532,6 +549,15 @@ template <typename B, typename Functor>                   struct cwise_promote_s
 template <typename Functor>                               struct cwise_promote_storage_type<Sparse,Dense,Functor>                             { typedef Sparse ret; };
 template <typename Functor>                               struct cwise_promote_storage_type<Dense,Sparse,Functor>                             { typedef Sparse ret; };
 
+template <typename LhsKind, typename RhsKind, int LhsOrder, int RhsOrder> struct cwise_promote_storage_order {
+  enum { value = LhsOrder };
+};
+
+template <typename LhsKind, int LhsOrder, int RhsOrder>   struct cwise_promote_storage_order<LhsKind,Sparse,LhsOrder,RhsOrder>                { enum { value = RhsOrder }; };
+template <typename RhsKind, int LhsOrder, int RhsOrder>   struct cwise_promote_storage_order<Sparse,RhsKind,LhsOrder,RhsOrder>                { enum { value = LhsOrder }; };
+template <int Order>                                      struct cwise_promote_storage_order<Sparse,Sparse,Order,Order>                       { enum { value = Order }; };
+
+
 /** \internal Specify the "storage kind" of multiplying an expression of kind A with kind B.
   * The template parameter ProductTag permits to specialize the resulting storage kind wrt to
   * some compile-time properties of the product: GemmProduct, GemvProduct, OuterProduct, InnerProduct.
@@ -629,7 +655,7 @@ struct plain_constant_type
 template<typename ExpressionType>
 struct is_lvalue
 {
-  enum { value = !bool(is_const<ExpressionType>::value) &&
+  enum { value = (!bool(is_const<ExpressionType>::value)) &&
                  bool(traits<ExpressionType>::Flags & LvalueBit) };
 };
 

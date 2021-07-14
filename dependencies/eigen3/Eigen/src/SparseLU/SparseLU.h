@@ -43,8 +43,8 @@ template <typename MatrixLType, typename MatrixUType> struct SparseLUMatrixURetu
   * Simple example with key steps 
   * \code
   * VectorXd x(n), b(n);
-  * SparseMatrix<double, ColMajor> A;
-  * SparseLU<SparseMatrix<scalar, ColMajor>, COLAMDOrdering<Index> >   solver;
+  * SparseMatrix<double> A;
+  * SparseLU<SparseMatrix<double>, COLAMDOrdering<int> >   solver;
   * // fill A and b;
   * // Compute the ordering permutation vector from the structural pattern of A
   * solver.analyzePattern(A); 
@@ -499,8 +499,6 @@ void SparseLU<MatrixType, OrderingType>::factorize(const MatrixType& matrix)
   eigen_assert(m_analysisIsOk && "analyzePattern() should be called first"); 
   eigen_assert((matrix.rows() == matrix.cols()) && "Only for squared matrices");
   
-  typedef typename IndexVector::Scalar StorageIndex; 
-  
   m_isInitialized = true;
   
   
@@ -748,7 +746,7 @@ struct SparseLUMatrixUReturnType : internal::no_assignment_operator
       else
       {
         Map<const Matrix<Scalar,Dynamic,Dynamic, ColMajor>, 0, OuterStride<> > A( &(m_mapL.valuePtr()[luptr]), nsupc, nsupc, OuterStride<>(lda) );
-        Map< Matrix<Scalar,Dynamic,Dynamic, ColMajor>, 0, OuterStride<> > U (&(X(fsupc,0)), nsupc, nrhs, OuterStride<>(n) );
+        Map< Matrix<Scalar,Dynamic,Dest::ColsAtCompileTime, ColMajor>, 0, OuterStride<> > U (&(X(fsupc,0)), nsupc, nrhs, OuterStride<>(n) );
         U = A.template triangularView<Upper>().solve(U);
       }
 

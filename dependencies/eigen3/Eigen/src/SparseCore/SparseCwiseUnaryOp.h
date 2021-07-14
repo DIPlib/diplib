@@ -49,6 +49,7 @@ template<typename UnaryOp, typename ArgType>
 class unary_evaluator<CwiseUnaryOp<UnaryOp,ArgType>, IteratorBased>::InnerIterator
     : public unary_evaluator<CwiseUnaryOp<UnaryOp,ArgType>, IteratorBased>::EvalIterator
 {
+  protected:
     typedef typename XprType::Scalar Scalar;
     typedef typename unary_evaluator<CwiseUnaryOp<UnaryOp,ArgType>, IteratorBased>::EvalIterator Base;
   public:
@@ -99,6 +100,7 @@ template<typename ViewOp, typename ArgType>
 class unary_evaluator<CwiseUnaryView<ViewOp,ArgType>, IteratorBased>::InnerIterator
     : public unary_evaluator<CwiseUnaryView<ViewOp,ArgType>, IteratorBased>::EvalIterator
 {
+  protected:
     typedef typename XprType::Scalar Scalar;
     typedef typename unary_evaluator<CwiseUnaryView<ViewOp,ArgType>, IteratorBased>::EvalIterator Base;
   public:
@@ -123,8 +125,10 @@ template<typename Derived>
 EIGEN_STRONG_INLINE Derived&
 SparseMatrixBase<Derived>::operator*=(const Scalar& other)
 {
+  typedef typename internal::evaluator<Derived>::InnerIterator EvalIterator;
+  internal::evaluator<Derived> thisEval(derived());
   for (Index j=0; j<outerSize(); ++j)
-    for (typename Derived::InnerIterator i(derived(),j); i; ++i)
+    for (EvalIterator i(thisEval,j); i; ++i)
       i.valueRef() *= other;
   return derived();
 }
@@ -133,8 +137,10 @@ template<typename Derived>
 EIGEN_STRONG_INLINE Derived&
 SparseMatrixBase<Derived>::operator/=(const Scalar& other)
 {
+  typedef typename internal::evaluator<Derived>::InnerIterator EvalIterator;
+  internal::evaluator<Derived> thisEval(derived());
   for (Index j=0; j<outerSize(); ++j)
-    for (typename Derived::InnerIterator i(derived(),j); i; ++i)
+    for (EvalIterator i(thisEval,j); i; ++i)
       i.valueRef() /= other;
   return derived();
 }

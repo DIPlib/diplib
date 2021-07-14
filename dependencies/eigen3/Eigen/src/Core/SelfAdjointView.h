@@ -45,7 +45,7 @@ struct traits<SelfAdjointView<MatrixType, UpLo> > : traits<MatrixType>
 };
 }
 
-// FIXME could also be called SelfAdjointWrapper to be consistent with DiagonalWrapper ??
+
 template<typename _MatrixType, unsigned int UpLo> class SelfAdjointView
   : public TriangularBase<SelfAdjointView<_MatrixType, UpLo> >
 {
@@ -60,16 +60,20 @@ template<typename _MatrixType, unsigned int UpLo> class SelfAdjointView
     /** \brief The type of coefficients in this matrix */
     typedef typename internal::traits<SelfAdjointView>::Scalar Scalar; 
     typedef typename MatrixType::StorageIndex StorageIndex;
+    typedef typename internal::remove_all<typename MatrixType::ConjugateReturnType>::type MatrixConjugateReturnType;
 
     enum {
       Mode = internal::traits<SelfAdjointView>::Mode,
-      Flags = internal::traits<SelfAdjointView>::Flags
+      Flags = internal::traits<SelfAdjointView>::Flags,
+      TransposeMode = ((Mode & Upper) ? Lower : 0) | ((Mode & Lower) ? Upper : 0)
     };
     typedef typename MatrixType::PlainObject PlainObject;
 
     EIGEN_DEVICE_FUNC
     explicit inline SelfAdjointView(MatrixType& matrix) : m_matrix(matrix)
-    {}
+    {
+      EIGEN_STATIC_ASSERT(UpLo==Lower || UpLo==Upper,SELFADJOINTVIEW_ACCEPTS_UPPER_AND_LOWER_MODE_ONLY);
+    }
 
     EIGEN_DEVICE_FUNC
     inline Index rows() const { return m_matrix.rows(); }
@@ -187,6 +191,36 @@ template<typename _MatrixType, unsigned int UpLo> class SelfAdjointView
                                    TriangularView<typename MatrixType::AdjointReturnType,TriMode> >::type(tmp2);
     }
 
+    typedef SelfAdjointView<const MatrixConjugateReturnType,UpLo> ConjugateReturnType;
+    /** \sa MatrixBase::conjugate() const */
+    EIGEN_DEVICE_FUNC
+    inline const ConjugateReturnType conjugate() const
+    { return ConjugateReturnType(m_matrix.conjugate()); }
+
+    typedef SelfAdjointView<const typename MatrixType::AdjointReturnType,TransposeMode> AdjointReturnType;
+    /** \sa MatrixBase::adjoint() const */
+    EIGEN_DEVICE_FUNC
+    inline const AdjointReturnType adjoint() const
+    { return AdjointReturnType(m_matrix.adjoint()); }
+
+    typedef SelfAdjointView<typename MatrixType::TransposeReturnType,TransposeMode> TransposeReturnType;
+     /** \sa MatrixBase::transpose() */
+    EIGEN_DEVICE_FUNC
+    inline TransposeReturnType transpose()
+    {
+      EIGEN_STATIC_ASSERT_LVALUE(MatrixType)
+      typename MatrixType::TransposeReturnType tmp(m_matrix);
+      return TransposeReturnType(tmp);
+    }
+
+    typedef SelfAdjointView<const typename MatrixType::ConstTransposeReturnType,TransposeMode> ConstTransposeReturnType;
+    /** \sa MatrixBase::transpose() const */
+    EIGEN_DEVICE_FUNC
+    inline const ConstTransposeReturnType transpose() const
+    {
+      return ConstTransposeReturnType(m_matrix.transpose());
+    }
+
     /** \returns a const expression of the main diagonal of the matrix \c *this
       *
       * This method simply returns the diagonal of the nested expression, thus by-passing the SelfAdjointView decorator.
@@ -287,6 +321,7 @@ public:
 * Implementation of MatrixBase methods
 ***************************************************************************/
 
+/** This is the const version of MatrixBase::selfadjointView() */
 template<typename Derived>
 template<unsigned int UpLo>
 typename MatrixBase<Derived>::template ConstSelfAdjointViewReturnType<UpLo>::Type
@@ -295,6 +330,15 @@ MatrixBase<Derived>::selfadjointView() const
   return typename ConstSelfAdjointViewReturnType<UpLo>::Type(derived());
 }
 
+/** \returns an expression of a symmetric/self-adjoint view extracted from the upper or lower triangular part of the current matrix
+  *
+  * The parameter \a UpLo can be either \c #Upper or \c #Lower
+  *
+  * Example: \include MatrixBase_selfadjointView.cpp
+  * Output: \verbinclude MatrixBase_selfadjointView.out
+  *
+  * \sa class SelfAdjointView
+  */
 template<typename Derived>
 template<unsigned int UpLo>
 typename MatrixBase<Derived>::template SelfAdjointViewReturnType<UpLo>::Type
