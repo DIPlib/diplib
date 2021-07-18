@@ -615,4 +615,43 @@ DOCTEST_TEST_CASE("[DIPlib] inplace arithmetic produces correct values") {
    DOCTEST_CHECK( dip::testing::CompareImages( intim, floatim ));
 }
 
+DOCTEST_TEST_CASE( "[DIPlib] testing inplace arithmetic operators on dip::Image::View" ) {
+   dip::Image im( { 5 }, 3 );
+   im.Fill( 0.7 );
+   im[ 1 ].Fill( 0.2 );
+   dip::Image res = im.Copy();
+
+   // Regular view
+   dip::Image tmp = res[ 0 ];
+   dip::Add( tmp, res[ 1 ], tmp, tmp.DataType() );
+   im[ 0 ] += im[ 1 ]; // operation we're testing
+   DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
+
+   dip::MultiplySampleWise( tmp, res[ 2 ], tmp, tmp.DataType() );
+   im[ 0 ] *= im[ 2 ]; // operation we're testing
+   DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
+
+   // Irregular view
+   res.At( 4 ) += 1;
+   im.At( dip::CoordinateArray{{ 4 }} ) += 1; // operation we're testing
+   DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
+
+   res.At( 3 ) *= 3;
+   res.At( 4 ) *= 3;
+   im.At( dip::CoordinateArray{{ 3 }, { 4 }} ) *= 3; // operation we're testing
+   DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
+
+   // Idem with bitwise operators
+   im = im > 1;
+   res = res > 1;
+   tmp = res[ 0 ];
+   dip::And( tmp, res[ 1 ], tmp );
+   im[ 0 ] &= im[ 1 ]; // operation we're testing
+   DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
+
+   res.At( 4 ) &= 0;
+   im.At( dip::CoordinateArray{{ 4 }} ) &= 0; // operation we're testing
+   DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
+}
+
 #endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -25,6 +25,8 @@ title: "Changes DIPlib 3.1.0"
 - Added `dip::ImageReadNPY()`, `dip::ImageReadNPYInfo()`, `dip::ImageIsNPY()` and `dip::ImageWriteNPY()`, to
   work with NumPy's NPY files, expanding interoperability with Python.
 
+- Compound assignment operators defined for image views (`img[ 0 ] += ...` now works).
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and

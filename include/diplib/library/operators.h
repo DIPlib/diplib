@@ -462,67 +462,49 @@ inline Image& operator^=( Image& lhs, T const& rhs ) {
 }
 
 // Idem for views
+//
+// NOTE that we take the view as a const reference, such that r-values can be used as input.
+//    We then cast the constness away. If we take a non-const reference, we can only use
+//    l-values as input. For example,
+//        Image::View tmp = image[0];
+//        tmp += tmp;                // OK, we can take an l-value as non-const reference
+//        image[0] += tmp;           // error, we cannot take an r-value as non-const reference
+//    The second operation would work only with a const reference.
+//    The operator still does the right thing, because we're referencing data in an image,
+//    we don't care about the view. This is really a trick to get around C++ cleverness.
+#define DIP_DEFINE_INPLACE_VIEW_OPERATOR( op ) \
+template< typename T > \
+inline Image::View& operator op( Image::View const& lhs, T const& rhs ) { \
+   Image tmp = lhs; \
+   tmp op rhs; \
+   if( !tmp.IsShared() ) { const_cast< Image::View& >( lhs ).Copy( tmp ); } \
+   return const_cast< Image::View& >( lhs ); }
 
 /// \brief Compound assignment operator.
-template< typename T >
-inline Image::View& operator+=( Image::View& lhs, T const& rhs ) {
-   Image tmp = lhs;
-   lhs.Copy( Add( tmp, rhs, tmp.DataType() ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( += )
 
 /// \brief Compound assignment operator.
-template< typename T >
-inline Image::View& operator-=( Image::View& lhs, T const& rhs ) {
-   Image tmp = lhs;
-   lhs.Copy( Subtract( tmp, rhs, tmp.DataType() ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( -= )
 
 /// \brief Compound assignment operator.
-template< typename T >
-inline Image::View& operator*=( Image::View& lhs, T const& rhs ) {
-   Image tmp = lhs;
-   lhs.Copy( Multiply( tmp, rhs, tmp.DataType() ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( *= )
 
 /// \brief Compound assignment operator.
-template< typename T >
-inline Image::View& operator/=( Image::View& lhs, T const& rhs ) {
-   Image tmp = lhs;
-   lhs.Copy( Divide( tmp, rhs, tmp.DataType() ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( /= )
 
 /// \brief Compound assignment operator.
-template< typename T >
-inline Image::View& operator%=( Image::View& lhs, T const& rhs ) {
-   Image tmp = lhs;
-   lhs.Copy( Modulo( tmp, rhs, tmp.DataType() ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( %= )
 
 /// \brief Bit-wise compound assignment operator.
-template< typename T >
-inline Image::View& operator&=( Image::View& lhs, T const& rhs ) {
-   lhs.Copy( And( lhs, rhs ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( &= )
 
 /// \brief Bit-wise compound assignment operator.
-template< typename T >
-inline Image::View& operator|=( Image::View& lhs, T const& rhs ) {
-   lhs.Copy( Or( lhs, rhs ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( |= )
 
 /// \brief Bit-wise compound assignment operator.
-template< typename T >
-inline Image::View& operator^=( Image::View& lhs, T const& rhs ) {
-   lhs.Copy( Xor( lhs, rhs ));
-   return lhs;
-}
+DIP_DEFINE_INPLACE_VIEW_OPERATOR( ^= )
+
+#undef DIP_DEFINE_INPLACE_VIEW_OPERATOR
 
 
 /// \endgroup
