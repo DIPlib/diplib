@@ -194,14 +194,14 @@ limitations under the License.
   see [`dependencies/pybind11/LICENSE`](dependencies/pybind11/LICENSE)
 
 - *python-javabridge* (only used in the *Python* bindings)  
-  Copyright (c) 2003-2009 Massachusetts Institute of Technology  
-  Copyright (c) 2009-2013 Broad Institute  
+  Copyright 2003-2009 Massachusetts Institute of Technology  
+  Copyright 2009-2013 Broad Institute  
   3-Clause BSD License  
   see [`pydip/src/loadjvm.py`](pydip/src/loadjvm.py)
 
 - A few *MATLAB* scripts from *OME Bio-Formats* (used in *DIPimage*)  
-  Copyright 2012-2017 Open Microscopy Environment  
-  GNU General Public License, Version 2 (**not compatible with the Apache License**)  
+  Copyright 2012-2021 Open Microscopy Environment  
+  2-Clause BSD License  
   see [`dipimage/private/bf*.m`](dipimage/private/bfGetReader.m)  
   (the full *Bio-Formats* library needs to be installed for these to be useful)
 
@@ -210,13 +210,13 @@ limitations under the License.
   MIT License
 
 Note that all of these have permissive open-source licenses similar in spirit
-to the Apache License, except for *OME Bio-Formats*.
+to the Apache License.
 
 *DIPlib* also optionally links against:
 
 - *FFTW3* (as installed on your system, not used by default)  
-  Copyright (c) 2003, 2007-14 Matteo Frigo  
-  Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology  
+  Copyright 2003, 2007-14 Matteo Frigo  
+  Copyright 2003, 2007-14 Massachusetts Institute of Technology  
   GNU General Public License, Version 2 (**not compatible with the Apache License**)
 
 *DIPviewer* links against the following libraries:
