@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that sample a single location
  *
- * (c)2018-2019, Cris Luengo.
+ * (c)2018-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -348,7 +348,7 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
          FloatArray subpos( dims );
          FloatArray limit( dims );
          for( dip::uint dd = 0; dd < dims; ++dd ) {
-            limit[ dd ] = static_cast< dip::dfloat >( in_.Size( dd )) - 2;
+            limit[ dd ] = static_cast< dip::dfloat >( in_.Size( dd )) - 1;
          }
          TPI* inPtr = static_cast< TPI* >( in_.Origin() );
          dip::dfloat* mapPtr = static_cast< dip::dfloat* >( map.buffer );
@@ -361,6 +361,9 @@ class ResampleAtLineFilter : public Framework::ScanLineFilter
                if( pos >= 0 && pos < limit[ dd ] ) {
                   coords[ dd ] = static_cast< dip::uint >( pos );
                   subpos[ dd ] = pos - static_cast< dip::dfloat >( coords[ dd ] );
+               } else if( pos == limit[ dd ] ) {
+                  coords[ dd ] = static_cast< dip::uint >( pos - 0.01 );
+                  subpos[ dd ] = 1.0;
                } else {
                   valid = false;
                   break;

@@ -1,7 +1,7 @@
 /*
  * DIPimage 3.0
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -339,7 +339,7 @@ void get_subpixel( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::ResampleAt( in, out, coords, mode );
    out.TensorToSpatial( 0 ); // Return to original shape
    plhs[ 0 ] = dml::GetArrayAsArray( out );
-   // the image has 2, 3 or 4 dimensions, we want to get rid of the first two singleton dimension
+   // the image has 2, 3 or 4 dimensions, we want to get rid of the first two singleton dimensions
    mwSize nDims = mxGetNumberOfDimensions( plhs[ 0 ] );
    const mwSize* dims = mxGetDimensions( plhs[ 0 ] );
    DIP_ASSERT( dims[ 0 ] == 1 );

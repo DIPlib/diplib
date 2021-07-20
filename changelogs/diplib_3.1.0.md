@@ -83,6 +83,8 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::GaussianMixtureModelThreshold()` passed wrong parameter values to `dip::GaussianMixtureModel()`.
 
+- `dip::ResampleAt(in, map)` didn't use the pixels at the right or bottom edges of the input image.
+
 
 
 
