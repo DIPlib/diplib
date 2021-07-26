@@ -65,7 +65,7 @@ DIP_DEFINE_VIEW_FUNCTION( Count, dip::uint )
 /// If `positionFlag` is `"first"`, the first maximum is found, in linear index order.
 /// If it is `"last"`, the last one is found.
 ///
-/// \see dip::Maximum, dip::PositionMaximum, dip::MaximumAndMinimum
+/// \see dip::Maximum(Image const&, Image const&, Image&, BooleanArray const&), dip::PositionMaximum, dip::MaximumAndMinimum
 DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = S::FIRST );
 
 /// \brief Returns the coordinates of the minimum pixel in the image.
@@ -74,7 +74,7 @@ DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, 
 /// If `positionFlag` is `"first"`, the first minimum is found, in linear index order.
 /// If it is `"last"`, the last one is found.
 ///
-/// \see dip::Minimum, dip::PositionMinimum, dip::MaximumAndMinimum
+/// \see dip::Minimum(Image const&, Image const&, Image&, BooleanArray const&), dip::PositionMinimum, dip::MaximumAndMinimum
 DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = S::FIRST );
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
@@ -575,7 +575,7 @@ DIP_NODISCARD inline Image Percentile( Image::View const& in, dfloat percentile 
 ///
 /// An alias is defined such that `dip::Median( img.At( mask ))` is the same as `dip::Median( img, mask )`.
 ///
-/// \see dip::PositionMedian
+/// \see dip::PositionMedian, dip::Percentile(Image const&, Image const&, Image&, dfloat, BooleanArray const&)
 inline void Median( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    Percentile( in, mask, out, 50.0, process );
 }
@@ -605,7 +605,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Median )
 ///
 /// An alias is defined such that `dip::MedianAbsoluteDeviation( img.At( mask ))` is the same as `dip::MedianAbsoluteDeviation( img, mask )`.
 ///
-/// \see dip::Median
+/// \see dip::Median(Image const&, Image const&, Image&, BooleanArray const&)
 DIP_EXPORT void MedianAbsoluteDeviation( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 DIP_DEFINE_PROJECTION_FUNCTIONS( MedianAbsoluteDeviation )
 
@@ -659,7 +659,7 @@ DIP_DEFINE_PROJECTION_FUNCTIONS( Any )
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
-/// \see dip::PositionMinimum, dip::MaximumPixel, dip::Maximum
+/// \see dip::PositionMinimum, dip::MaximumPixel, dip::Maximum(Image const&, Image const&, Image&, BooleanArray const&)
 DIP_EXPORT void PositionMaximum( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST );
 DIP_NODISCARD inline Image PositionMaximum( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
@@ -680,7 +680,7 @@ DIP_NODISCARD inline Image PositionMaximum( Image const& in, Image const& mask =
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
-/// \see dip::PositionMaximum, dip::MinimumPixel, dip::Minimum
+/// \see dip::PositionMaximum, dip::MinimumPixel, dip::Minimum(Image const&, Image const&, Image&, BooleanArray const&)
 DIP_EXPORT void PositionMinimum( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST );
 DIP_NODISCARD inline Image PositionMinimum( Image const& in, Image const& mask = {}, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
@@ -706,7 +706,7 @@ DIP_NODISCARD inline Image PositionMinimum( Image const& in, Image const& mask =
 /// A call to this function with `percentile` set to 0.0 redirects to \ref dip::PositionMinimum and
 /// a value of 100.0 redirects to \ref dip::PositionMaximum.
 ///
-/// \see dip::PositionMedian, dip::PositionMinimum, dip::PositionMaximum, dip::Percentile
+/// \see dip::PositionMedian, dip::PositionMinimum, dip::PositionMaximum, dip::Percentile(dip::Image const&, dip::Image const&, dip::Image&, dip::dfloat, dip::BooleanArray const&)
 DIP_EXPORT void PositionPercentile( Image const& in, Image const& mask, Image& out, dfloat percentile = 50, dip::uint dim = 0, String const& mode = S::FIRST );
 DIP_NODISCARD inline Image PositionPercentile( Image const& in, Image const& mask = {}, dfloat percentile = 50, dip::uint dim = 0, String const& mode = S::FIRST ) {
    Image out;
@@ -729,7 +729,7 @@ DIP_NODISCARD inline Image PositionPercentile( Image const& in, Image const& mas
 ///
 /// This function redirects to \ref dip::PositionPercentile with `percentile` set to 50.0.
 ///
-/// \see dip::PositionPercentile, dip::Median
+/// \see dip::PositionPercentile, dip::Median(Image const&, Image const&, Image&, BooleanArray const&)
 inline void PositionMedian( Image const& in, Image const& mask, Image& out, dip::uint dim = 0, String const& mode = S::FIRST ) {
    PositionPercentile( in, mask, out, 50.0, dim, mode );
 }
@@ -741,19 +741,21 @@ DIP_NODISCARD inline Image PositionMedian( Image const& in, Image const& mask = 
 
 /// \brief Computes the radial projection of the sum of the pixel values of `in`.
 /// 
-/// If the radial distance of a pixel to the center of the image is `r`, then the sum of
-/// the intensities of all pixels with \verbatim n * binSize <= r < (n + 1) * binSize \endverbatim is
+/// If the radial distance of a pixel to `center` is `r`, then the sum of
+/// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
 /// stored at position `n` in the radial dimension of `out`. 
 ///
 /// `binSize` sets the size of the bins (pixels) in the radial output dimension.
-/// If `maxRadius` is set to "inner radius", the maximum radius that is projected is equal to
+/// If `maxRadius` is set to `"inner radius"`, the maximum radius that is projected is equal to
 /// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when 
-/// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
+/// `maxRadius` is set to `"outer radius"`, the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
-/// The output data type is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
+/// `center` defaults to `in.GetCenter()`.
 ///
-/// \see dip::RadialMean, dip::Image::GetCenter, dip::Sum
+/// The output data type is \ref DT_DFLOAT for non-complex inputs and \ref DT_DCOMPLEX for complex inputs.
+///
+/// \see dip::RadialMean, dip::Image::GetCenter, dip::Sum(Image const&, Image const&, Image&, BooleanArray const&)
 DIP_EXPORT void RadialSum(
       Image const& in,
       Image const& mask,
@@ -776,17 +778,19 @@ inline Image RadialSum(
 
 /// \brief Computes the radial projection of the mean of the pixel values of `in`.
 /// 
-/// If the radial distance of a pixel to the center of the image is `r`, then the sum of
-/// the intensities of all pixels with \verbatim n * binSize <= r < (n + 1) * binSize \endverbatim is
+/// If the radial distance of a pixel to `center` is `r`, then the mean of
+/// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
 /// stored at position `n` in the radial dimension of `out`. 
 ///
 /// `binSize` sets the size of the bins (pixels) in the radial output dimension.
-/// If `maxRadius` is set to "inner radius", the maximum radius that is projected is equal to
+/// If `maxRadius` is set to `"inner radius"`, the maximum radius that is projected is equal to
 /// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when 
-/// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
+/// `maxRadius` is set to `"outer radius"`, the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
 ///
-/// The output data type is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
+/// `center` defaults to `in.GetCenter()`.
+///
+/// The output data type is \ref DT_DFLOAT for non-complex inputs and \ref DT_DCOMPLEX for complex inputs.
 ///
 /// \see dip::RadialSum, dip::Image::GetCenter, dip::Mean
 DIP_EXPORT void RadialMean(
@@ -811,19 +815,21 @@ inline Image RadialMean(
 
 /// \brief Computes the radial projection of the minimum of the pixel values of `in`.
 /// 
-/// If the radial distance of a pixel to the center of the image is `r`, then the sum of
-/// the intensities of all pixels with \verbatim n * binSize <= r < (n + 1) * binSize \endverbatim is
-/// stored at position `n` in the radial dimension of `out`. 
+/// If the radial distance of a pixel to `center` is `r`, then the minimum of
+/// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
+/// stored at position `n` in the radial dimension of `out`.
 ///
 /// `binSize` sets the size of the bins (pixels) in the radial output dimension.
-/// If `maxRadius` is set to "inner radius", the maximum radius that is projected is equal to
-/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when 
-/// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
+/// If `maxRadius` is set to `"inner radius"`, the maximum radius that is projected is equal to
+/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when
+/// `maxRadius` is set to `"outer radius"`, the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
+///
+/// `center` defaults to `in.GetCenter()`.
 ///
 /// The output data type is equal to the input data type.
 ///
-/// \see dip::RadialMaximum, dip::Image::GetCenter, dip::Minimum
+/// \see dip::RadialMaximum, dip::Image::GetCenter, dip::Minimum(Image const&, Image const&, Image&, BooleanArray const&)
 DIP_EXPORT void RadialMinimum(
       Image const& in,
       Image const& mask,
@@ -846,19 +852,21 @@ inline Image RadialMinimum(
 
 /// \brief Computes the radial projection of the maximum of the pixel values of `in`.
 /// 
-/// If the radial distance of a pixel to the center of the image is `r`, then the sum of
-/// the intensities of all pixels with \verbatim n * binSize <= r < (n + 1) * binSize \endverbatim is
-/// stored at position `n` in the radial dimension of `out`. 
+/// If the radial distance of a pixel to `center` is `r`, then the maximum of
+/// the intensities of all pixels with `n * binSize <= r < (n + 1) * binSize` is
+/// stored at position `n` in the radial dimension of `out`.
 ///
 /// `binSize` sets the size of the bins (pixels) in the radial output dimension.
-/// If `maxRadius` is set to "inner radius", the maximum radius that is projected is equal to
-/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when 
-/// `maxRadius` is set to "outer radius", the maximum radius is set to largest distance from the given
+/// If `maxRadius` is set to `"inner radius"`, the maximum radius that is projected is equal to
+/// the smallest distance from the given `center` to any edge pixel of the image. Otherwise, when
+/// `maxRadius` is set to `"outer radius"`, the maximum radius is set to largest distance from the given
 /// `center` to any edge pixel.
+///
+/// `center` defaults to `in.GetCenter()`.
 ///
 /// The output data type is equal to the input data type.
 ///
-/// \see dip::RadialMinimum, dip::Image::GetCenter, dip::Maximum
+/// \see dip::RadialMinimum, dip::Image::GetCenter, dip::Maximum(Image const&, Image const&, Image&, BooleanArray const&)
 DIP_EXPORT void RadialMaximum(
       Image const& in,
       Image const& mask,

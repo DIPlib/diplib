@@ -127,8 +127,7 @@ DIP_NODISCARD inline Image MinimumVariancePartitioning(
 ///
 /// The output array contains the thresholds used.
 ///
-/// See \ref dip::IsodataThreshold(Histogram const&, dip::uint) "`dip::IsodataThreshold`"
-/// for more information on the algorithm used.
+/// See \ref dip::IsodataThreshold(Histogram const&, dip::uint) for more information on the algorithm used.
 DIP_EXPORT FloatArray IsodataThreshold(
       Image const& in,
       Image const& mask,
@@ -152,8 +151,7 @@ DIP_NODISCARD inline Image IsodataThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::OtsuThreshold(Histogram const&) "`dip::OtsuThreshold`"
-/// for more information on the algorithm used.
+/// See \ref dip::OtsuThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat OtsuThreshold(
       Image const& in,
       Image const& mask,
@@ -175,8 +173,7 @@ DIP_NODISCARD inline Image OtsuThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::MinimumErrorThreshold(Histogram const&) "`dip::MinimumErrorThreshold`"
-/// for more information on the algorithm used.
+/// See \ref dip::MinimumErrorThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& in,
       Image const& mask,
@@ -201,8 +198,7 @@ DIP_NODISCARD inline Image MinimumErrorThreshold(
 ///
 /// The output array contains the thresholds used.
 ///
-/// See \ref dip::GaussianMixtureModelThreshold(Histogram const&, dip::uint) "`dip::GaussianMixtureModelThreshold`"
-/// for more information on the algorithm used.
+/// See \ref dip::GaussianMixtureModelThreshold(Histogram const&, dip::uint) for more information on the algorithm used.
 DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
       Image const& in,
       Image const& mask,
@@ -227,8 +223,7 @@ DIP_NODISCARD inline Image GaussianMixtureModelThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::TriangleThreshold(Histogram const&) "`dip::TriangleThreshold`"
-/// for more information on the algorithm used.
+/// See \ref dip::TriangleThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,
@@ -250,8 +245,7 @@ DIP_NODISCARD inline Image TriangleThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat) "`dip::BackgroundThreshold`"
-/// for more information on the algorithm used.
+/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat) for more information on the algorithm used.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,
@@ -423,14 +417,14 @@ DIP_NODISCARD inline Image MultipleThresholds(
 ///
 /// `method` can be one of:
 ///
-/// - "isodata": see \ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint) "`dip::IsodataThreshold`".
-/// - "otsu": see \ref dip::OtsuThreshold(Image const&, Image const&, Image&) "`dip::OtsuThreshold`". This is the default method
-/// - "minerror": see \ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&) "`dip::MinimumErrorThreshold`".
-/// - "gmm": see \ref dip::GaussianMixtureModelThreshold(Image const&, Image const&, Image&, dip::uint) "`dip::GaussianMixtureModelThreshold`".
-/// - "triangle": see \ref dip::TriangleThreshold(Image const&, Image const&, Image&) "`dip::TriangleThreshold`".
-/// - "background": see \ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat) "`dip::BackgroundThreshold`".
-/// - "volume": see \ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat) "`dip::VolumeThreshold`".
-/// - "fixed": see \ref dip::FixedThreshold(Image const&, Image&, dfloat, dfloat, dfloat, String const&) "`dip::FixedThreshold`".
+/// - `"isodata"`: see \ref dip::IsodataThreshold(Image const&, Image const&, Image&, dip::uint).
+/// - `"otsu"`: see \ref dip::OtsuThreshold(Image const&, Image const&, Image&). This is the default method.
+/// - `"minerror"`: see \ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&)".
+/// - `"gmm"`: see \ref dip::GaussianMixtureModelThreshold(Image const&, Image const&, Image&, dip::uint).
+/// - `"triangle"`: see \ref dip::TriangleThreshold(Image const&, Image const&, Image&).
+/// - `"background"`: see \ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat).
+/// - `"volume"`: see \ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat).
+/// - `"fixed"`: see \ref dip::FixedThreshold(Image const&, Image&, dfloat, dfloat, dfloat, String const&).
 ///   The default parameter value is 128.
 ///
 /// If `parameter` is \ref dip::infinity, the default parameter value for the method will be used.
