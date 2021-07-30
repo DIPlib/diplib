@@ -56,7 +56,7 @@ struct AreaOpenRegion {
 
    void AddPixel( TPI value, dip::uint filterSize ) {
       if( size < filterSize ) {
-         ++size;
+         ++size; // We don't need to track the size any more.
          lowest = value;
       }
    }
@@ -160,7 +160,7 @@ void ParametricOpeningInternal(
          default: {
             // Touching two or more labels
             // Find a small region, if it exists
-            LabelType lab = 0;
+            LabelType lab = neighborLabels.Label( 0 );
             for( auto nlab : neighborLabels ) {
                if( regions.Value( nlab ) < filterSize ) {
                   lab = nlab;

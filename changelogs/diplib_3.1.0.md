@@ -85,6 +85,8 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::ResampleAt(in, map)` didn't use the pixels at the right or bottom edges of the input image.
 
+- Fixed small bug in underlying code for `dip::AreaOpening()`, `dip::AreaClosing()`, `dip::VolumeOpening()` and `dip::VolumeClosing()`.
+
 
 
 
