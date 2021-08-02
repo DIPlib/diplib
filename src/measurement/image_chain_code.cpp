@@ -36,7 +36,7 @@ struct ObjectData { dip::uint index; bool done; };
 using ObjectIdList = tsl::robin_map< dip::uint, ObjectData >; // key is the objectID (label)
 
 template< typename TPI >
-static ChainCode GetOneChainCode(
+ChainCode GetOneChainCode(
       void const* data_ptr,
       VertexInteger coord, // starting coordinates
       VertexInteger const& dims,  // largest coordinates in image
@@ -93,7 +93,7 @@ static ChainCode GetOneChainCode(
 }
 
 template< typename TPI >
-static ChainCodeArray GetImageChainCodesInternal(
+ChainCodeArray GetImageChainCodesInternal(
       Image const& labels,
       ObjectIdList& objectIDs,
       dip::uint nObjects, // potentially different from the number of entries in objectIDs, if there were repeated elements in the original list.

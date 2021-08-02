@@ -303,4 +303,50 @@ void SplitRegions(
 
 }
 
+namespace {
+
+template< typename TPI >
+RangeArray GetLabelBoundingBoxInernal(
+      Image const& label,
+      dip::uint objectID
+) {
+   DIP_ASSERT( label.DataType() == DataType( TPI( 0 )));
+   dip::uint nDims = label.Dimensionality();
+   RangeArray bb;
+   bool needInit = true; // bb needs initialization
+   ImageIterator< TPI > it( label );
+   do {
+      if( *it == objectID ) {
+         if( needInit ) {
+            // The first pixel with this value: initialize the output RangeArray
+            bb.resize( nDims );
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               bb[ ii ] = Range{ static_cast< dip::sint >( it.Coordinates()[ ii ] ) };
+            }
+            needInit = false;
+         } else {
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               bb[ ii ].start = std::min( bb[ ii ].start, static_cast< dip::sint >( it.Coordinates()[ ii ] ));
+               bb[ ii ].stop = std::max( bb[ ii ].stop, static_cast< dip::sint >( it.Coordinates()[ ii ] ));
+            }
+         }
+      }
+   } while( ++it );
+   return bb;
+}
+
+} // namespace
+
+RangeArray GetLabelBoundingBox(
+      Image const& label,
+      dip::uint objectID
+) {
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( label.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   RangeArray bb;
+   DIP_OVL_CALL_ASSIGN_UNSIGNED( bb, GetLabelBoundingBoxInernal, ( label, objectID ), label.DataType() );
+   return bb;
+}
+
 } // namespace dip

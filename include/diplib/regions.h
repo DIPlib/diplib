@@ -268,6 +268,21 @@ DIP_NODISCARD inline Image SplitRegions(
    return out;
 }
 
+/// \brief Returns the bounding box for all pixels with label `objectID` in the labeled or binary image `label`.
+///
+/// `label` must be a labeled image (of type unsigned integer) or binary, and must be scalar and have at least
+/// one dimension.
+///
+/// In the case of a binary image, `objectID` should be 1 or 0, no other values are possible in a binary image.
+///
+/// When no pixels with the value `objectID` exist in the image, the output \ref dip::RangeArray will be an
+/// empty array. Otherwise, it will have as many \ref dip::Range elements as dimensions are in the image.
+///
+/// \see dip::GetLabelBoundingBox2D.
+RangeArray DIP_EXPORT GetLabelBoundingBox(
+      Image const& label,
+      dip::uint objectID
+);
 
 /// \brief Construct a graph for the given labeled image.
 ///

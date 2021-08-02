@@ -239,6 +239,7 @@ void init_analysis( py::module& m ) {
           "label"_a, "grey"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 } );
    m.def( "SplitRegions", py::overload_cast< dip::Image const&, dip::uint >( &dip::SplitRegions ),
           "label"_a, "connectivity"_a = 0 );
+   m.def( "GetLabelBoundingBox", &dip::GetLabelBoundingBox, "label"_a, "objectID"_a );
 
    // diplib/segmentation.h
    m.def( "KMeansClustering", []( dip::Image const& in, dip::uint nClusters ) {

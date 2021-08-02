@@ -27,6 +27,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Compound assignment operators defined for image views (`img[ 0 ] += ...` now works).
 
+- Added `dip::GetLabelBoundingBox()`.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and
@@ -130,6 +132,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip.FourierMellinMatch2Dparams()`, identical to `dip.FourierMellinMatch2D()` but it also returns the
   transform parameters (which `dip.FourierMellinMatch2D()` should have done from the beginning).
+
+- Added `dip.GetLabelBoundingBox()`.
 
 ### Changed functionality
 
