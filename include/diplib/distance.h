@@ -44,7 +44,7 @@ namespace dip {
 /// `in`. `out` is of type \ref dip::DT_SFLOAT, and is zero everywhere where `in` is zero.
 ///
 /// Computed distances use the pixel sizes (ignoring any units). To compute distances in pixels, reset the pixel
-/// size (dip::Image::ResetPixelSize). Note that, when pixels sizes are correctly set, this function handles
+/// size (\ref dip::Image::ResetPixelSize). Note that, when pixels sizes are correctly set, this function handles
 /// anisotropic sampling densities correctly.
 ///
 /// The `border` parameter specifies whether the edge of the image should be treated as objects (`"object"`) or

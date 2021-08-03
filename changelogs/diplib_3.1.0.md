@@ -29,6 +29,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::GetLabelBoundingBox()`.
 
+- Added `dip::IsotropicDilation()` and `dip::IsotropicErosion()` for binary images.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and
@@ -134,6 +136,8 @@ title: "Changes DIPlib 3.1.0"
   transform parameters (which `dip.FourierMellinMatch2D()` should have done from the beginning).
 
 - Added `dip.GetLabelBoundingBox()`.
+
+- Added `dip.IsotropicDilation()` and `dip.IsotropicErosion()` for binary images.
 
 ### Changed functionality
 

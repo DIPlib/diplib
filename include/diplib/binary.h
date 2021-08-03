@@ -267,6 +267,46 @@ DIP_NODISCARD inline Image FillHoles(
    return out;
 }
 
+/// \brief Isotropic dilation of binary image.
+///
+/// Does a threshold of the \ref dip::EuclideanDistanceTransform of the background of `in`.
+/// This is much faster than applying \ref dip::Dilation with a disk structuring element of diameter `2 * distance`.
+///
+/// For other structuring element shapes, or for gray-scale images, use \ref dip::Dilation. See also \ref dip::BinaryDilation.
+DIP_EXPORT void IsotropicDilation(
+      Image const& in,
+      Image& out,
+      dfloat distance
+);
+DIP_NODISCARD inline Image IsotropicDilation(
+      Image const& in,
+      dfloat distance
+) {
+   Image out;
+   IsotropicDilation( in, out, distance );
+   return out;
+}
+
+/// \brief Isotropic erosion of binary image.
+///
+/// Does a threshold of the \ref dip::EuclideanDistanceTransform of `in`.
+/// This is much faster than applying \ref dip::Erosion with a disk structuring element of diameter `2 * distance`.
+///
+/// For other structuring element shapes, or for gray-scale images, use \ref dip::Erosion. See also \ref dip::BinaryErosion.
+DIP_EXPORT void IsotropicErosion(
+      Image const& in,
+      Image& out,
+      dfloat distance
+);
+DIP_NODISCARD inline Image IsotropicErosion(
+      Image const& in,
+      dfloat distance
+) {
+   Image out;
+   IsotropicErosion( in, out, distance );
+   return out;
+}
+
 /// \brief Thickens the image `in` conditioned on the mask (2D only).
 ///
 /// A thickening is a dilation that preserves topology. If no `mask` is given (i.e. the image is raw),

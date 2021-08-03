@@ -188,24 +188,28 @@ void init_morphology( py::module& m ) {
 
    // diplib/binary.h
    m.def( "BinaryDilation", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryDilation ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::BACKGROUND );
+          "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "BinaryErosion", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryErosion ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::OBJECT );
+          "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::OBJECT );
    m.def( "BinaryClosing", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryClosing ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::SPECIAL );
+          "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::SPECIAL );
    m.def( "BinaryOpening", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryOpening ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::SPECIAL );
+          "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::SPECIAL );
    m.def( "BinaryPropagation", py::overload_cast< dip::Image const&, dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryPropagation ),
-         "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
+          "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "EdgeObjectsRemove", py::overload_cast< dip::Image const&, dip::uint >( &dip::EdgeObjectsRemove ),
-         "in"_a, "connectivity"_a = 1 );
+          "in"_a, "connectivity"_a = 1 );
    m.def( "FillHoles", py::overload_cast< dip::Image const&, dip::uint >( &dip::FillHoles ),
-         "in"_a, "connectivity"_a = 1 );
+          "in"_a, "connectivity"_a = 1 );
+   m.def( "IsotropicDilation", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::IsotropicDilation ),
+          "in"_a, "distance"_a );
+   m.def( "IsotropicErosion", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::IsotropicErosion ),
+          "in"_a, "distance"_a );
 
    m.def( "ConditionalThickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThickening2D ),
-         "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
+          "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "ConditionalThinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThinning2D ),
-         "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
+          "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "BinaryAreaOpening", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::BinaryAreaOpening ),
           "in"_a, "filterSize"_a = 50, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );

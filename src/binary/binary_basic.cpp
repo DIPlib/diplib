@@ -22,7 +22,7 @@
 #include "diplib/binary.h"
 #include "diplib/regions.h"
 #include "diplib/neighborlist.h"
-#include "diplib/iterators.h"
+#include "diplib/distance.h"
 #include "binary_support.h"
 
 namespace dip {
@@ -198,12 +198,36 @@ void BinaryClosing(
    }
 }
 
+void IsotropicDilation(
+      Image const& in,
+      Image& out,
+      dfloat distance
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( in.DataType() != DT_BIN, E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_STACK_TRACE_THIS( Lesser( EuclideanDistanceTransform( !( in.QuickCopy() ), "object", "square" ), distance * distance, out ));
+   // Note: QuickCopy() discards the pixel sizes. This allows `distance` to be in pixels rather than a physical distance.
+}
+
+void IsotropicErosion(
+      Image const& in,
+      Image& out,
+      dfloat distance
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( in.DataType() != DT_BIN, E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_STACK_TRACE_THIS( Greater( EuclideanDistanceTransform( in.QuickCopy(), "object", "square" ), distance * distance, out ));
+   // See note above in IsotropicDilation().
+}
+
 void BinaryAreaOpening(
-        Image const& in,
-        Image& out,
-        dip::uint filterSize,
-        dip::uint connectivity,
-        String const& edgeCondition
+      Image const& in,
+      Image& out,
+      dip::uint filterSize,
+      dip::uint connectivity,
+      String const& edgeCondition
 ) {
    DIP_START_STACK_TRACE
       Image edgeObjects;
