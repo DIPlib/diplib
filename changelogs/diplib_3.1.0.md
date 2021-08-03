@@ -91,6 +91,9 @@ title: "Changes DIPlib 3.1.0"
 
 - Fixed small bug in underlying code for `dip::AreaOpening()`, `dip::AreaClosing()`, `dip::VolumeOpening()` and `dip::VolumeClosing()`.
 
+- There was a strange rounding error when creating disk-shaped filter kernels and structuring elements,
+  for some even integer sizes, which caused these kernels to be not symmetric over 90 degree rotations.
+
 
 
 

@@ -932,7 +932,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    // PixelTable morphology
    se = {{ 1, 10 }, "elliptic" };
    dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
-   DOCTEST_CHECK( dip::Count( out ) == 11 ); // rounded!
+   DOCTEST_CHECK( dip::Count( out ) == 9 ); // rounded!
    se = {{ 1, 11 }, "elliptic" };
    dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
@@ -941,7 +941,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Count( out ) == 9 );
    se = {{ 10, 11 }, "elliptic" };
    dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
-   DOCTEST_CHECK( dip::Count( out ) == 89 );
+   DOCTEST_CHECK( dip::Count( out ) == 87 );
    se.Mirror();
    dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
