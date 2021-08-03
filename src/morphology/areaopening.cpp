@@ -122,8 +122,6 @@ void ParametricOpeningInternal(
       ParamType filterSize,
       bool lowFirst
 ) {
-   std::cout << "[ParametricOpeningInternal] filterSize = " << filterSize << '\n';
-
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
 
