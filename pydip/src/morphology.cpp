@@ -142,9 +142,9 @@ void init_morphology( py::module& m ) {
           },
           "in"_a, "nSeeds"_a = 100, "nIterations"_a = 50, "noise"_a = 0, "seeds"_a = dip::S::HEXAGONAL );
    m.def( "Maxima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),
-          "in"_a, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
+          "in"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "Minima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
-          "in"_a, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
+          "in"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "WatershedMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMinima ),
           "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "WatershedMaxima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMaxima ),
@@ -152,33 +152,33 @@ void init_morphology( py::module& m ) {
    m.def( "UpperSkeleton2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::UpperSkeleton2D ),
           "in"_a, "mask"_a = dip::Image{}, "endPixelCondition"_a = dip::S::NATURAL );
    m.def( "MorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::MorphologicalReconstruction ),
-          "marker"_a, "in"_a, "connectivity"_a = 1, "direction"_a = dip::S::DILATION );
+          "marker"_a, "in"_a, "connectivity"_a = 0, "direction"_a = dip::S::DILATION );
    m.def( "LimitedMorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint, dip::String const& >( &dip::LimitedMorphologicalReconstruction ),
-          "marker"_a, "in"_a, "maxDistance"_a = 20, "connectivity"_a = 1, "direction"_a = dip::S::DILATION );
+          "marker"_a, "in"_a, "maxDistance"_a = 20, "connectivity"_a = 0, "direction"_a = dip::S::DILATION );
    m.def( "HMinima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMinima ),
-          "in"_a, "h"_a, "connectivity"_a = 1 );
+          "in"_a, "h"_a, "connectivity"_a = 0 );
    m.def( "HMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMaxima ),
-          "in"_a, "h"_a, "connectivity"_a = 1 );
+          "in"_a, "h"_a, "connectivity"_a = 0 );
    m.def( "ImposeMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::ImposeMinima ),
-          "in"_a, "marker"_a, "connectivity"_a = 1 );
+          "in"_a, "marker"_a, "connectivity"_a = 0 );
    m.def( "Leveling", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Leveling ),
-          "in"_a, "marker"_a, "connectivity"_a = 1 );
+          "in"_a, "marker"_a, "connectivity"_a = 0 );
    m.def( "AreaOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::AreaOpening ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 1, "polarity"_a = dip::S::OPENING );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 0, "polarity"_a = dip::S::OPENING );
    m.def( "AreaClosing", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint >( &dip::AreaClosing ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 1 );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 0 );
    m.def( "VolumeOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint, dip::String const& >( &dip::VolumeOpening ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 1, "polarity"_a = dip::S::OPENING );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 0, "polarity"_a = dip::S::OPENING );
    m.def( "VolumeClosing", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint >( &dip::VolumeClosing ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 1 );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a = 50, "connectivity"_a = 0 );
    m.def( "PathOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::StringSet const& >( &dip::PathOpening ),
           "in"_a, "mask"_a = dip::Image{}, "length"_a = 7, "polarity"_a = dip::S::OPENING, "mode"_a = dip::StringSet{} );
    m.def( "DirectedPathOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntegerArray const&, dip::String const&, dip::StringSet const& >( &dip::DirectedPathOpening ),
           "in"_a, "mask"_a = dip::Image{}, "filterParam"_a = dip::IntegerArray{}, "polarity"_a = dip::S::OPENING, "mode"_a = dip::StringSet{} );
    m.def( "OpeningByReconstruction", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::OpeningByReconstruction ),
-          "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 1, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "ClosingByReconstruction", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::ClosingByReconstruction ),
-          "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 1, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
 
    m.def( "AlternatingSequentialFilter", py::overload_cast< dip::Image const&, dip::Range const&, dip::String const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::AlternatingSequentialFilter ),
           "in"_a, "sizes"_a = dip::Range{ 3, 7, 2 }, "shape"_a = dip::S::ELLIPTIC, "mode"_a = dip::S::STRUCTURAL, "polarity"_a = dip::S::OPENCLOSE, "boundaryCondition"_a = dip::StringArray{} );

@@ -160,6 +160,8 @@ title: "Changes DIPlib 3.1.0"
 
 ### Bug fixes
 
+- Updated default connectivity values in the morphology and binary image processing modules to match the defaults in *DIPlib*.
+
 (See also bugfixes to *DIPlib*.)
 
 
