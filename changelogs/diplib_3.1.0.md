@@ -94,6 +94,8 @@ title: "Changes DIPlib 3.1.0"
 - There was a strange rounding error when creating disk-shaped filter kernels and structuring elements,
   for some even integer sizes, which caused these kernels to be not symmetric over 90 degree rotations.
 
+- Fixed bug in `dip::MeanAbs()` and `dip::SumAbs()` for complex inputs.
+
 
 
 

@@ -417,17 +417,17 @@ namespace {
 
 template< typename TPI, bool ComputeMean_ >
 class ProjectionSumMeanAbs : public ProjectionScanFunction {
-      using TPO = FlexType< TPI >;
+      using TPO = FloatType< TPI >;
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
-         FloatType< TPI > sum = 0;
+         TPO sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             it.OptimizeAndFlatten();
             do {
                if( it.template Sample< 1 >() ) {
-                  sum += std::abs( static_cast< TPO >( it.template Sample< 0 >() ));
+                  sum += static_cast< TPO >( std::abs( it.template Sample< 0 >() ));
                   if ( ComputeMean_ ) {
                      ++n;
                   }
@@ -437,15 +437,14 @@ class ProjectionSumMeanAbs : public ProjectionScanFunction {
             ImageIterator< TPI > it( in );
             it.OptimizeAndFlatten();
             do {
-               sum += std::abs( static_cast< TPO >( *it ));
+               sum += static_cast< TPO >( std::abs( *it ));
             } while( ++it );
             if( ComputeMean_ ) {
                n = in.NumberOfPixels();
             }
          }
          if( ComputeMean_ ) {
-            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( sum / static_cast< FloatType< TPI >>( n ))
-                                                    : ( sum );
+            *static_cast< TPO* >( out ) = ( n > 0 ) ? ( sum / static_cast< TPO >( n )) : ( sum );
          } else {
             *static_cast< TPO* >( out ) = sum;
          }
