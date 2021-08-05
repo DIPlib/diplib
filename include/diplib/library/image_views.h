@@ -127,6 +127,12 @@ class Image::Sample {
 
       void swap( Sample&& other ) { swap( other ); };
 
+      /// \brief Creates a sample with the largest finite value for the given data type. Not implemented for complex types.
+      static Sample Maximum( dip::DataType dt );
+
+      /// \brief Creates a sample with the lowest finite value for the given data type. Not implemented for complex types.
+      static Sample Minimum( dip::DataType dt );
+
       /// Returns the value of the sample as the given numeric type, similar to using `static_cast`.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
       constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); }

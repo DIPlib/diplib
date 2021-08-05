@@ -31,6 +31,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::IsotropicDilation()` and `dip::IsotropicErosion()` for binary images.
 
+- Added `dip::Image::Sample::Maximum()` and `dip::Image::Sample::Minimum()`.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and

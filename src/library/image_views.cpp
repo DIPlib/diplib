@@ -21,8 +21,36 @@
 #include "diplib.h"
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
+#include "diplib/overload.h"
 
 namespace dip {
+
+namespace {
+
+template< typename TPI >
+void SetMaxValue( Image::Sample& out ) {
+   *(static_cast< TPI* >( out.Origin() )) = std::numeric_limits< TPI >::max();
+}
+
+template< typename TPI >
+void SetMinValue( Image::Sample& out ) {
+   *(static_cast< TPI* >( out.Origin() )) = std::numeric_limits< TPI >::lowest();
+}
+
+} // namespace
+
+Image::Sample Image::Sample::Maximum( dip::DataType dt ) {
+   Image::Sample out( dt );
+   DIP_OVL_CALL_NONCOMPLEX( SetMaxValue, ( out ), dt );
+   return out;
+}
+
+Image::Sample Image::Sample::Minimum( dip::DataType dt ) {
+   Image::Sample out( dt );
+   DIP_OVL_CALL_NONCOMPLEX( SetMinValue, ( out ), dt );
+   return out;
+}
+
 
 Image::View::View( Image reference, Range range ) : reference_( std::move( reference )) {
    DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
