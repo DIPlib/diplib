@@ -159,6 +159,8 @@ void init_morphology( py::module& m ) {
           "in"_a, "h"_a, "connectivity"_a = 1 );
    m.def( "HMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMaxima ),
           "in"_a, "h"_a, "connectivity"_a = 1 );
+   m.def( "ImposeMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::ImposeMinima ),
+          "in"_a, "marker"_a, "connectivity"_a = 1 );
    m.def( "Leveling", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Leveling ),
           "in"_a, "marker"_a, "connectivity"_a = 1 );
    m.def( "AreaOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::AreaOpening ),

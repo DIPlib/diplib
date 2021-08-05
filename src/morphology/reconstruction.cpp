@@ -141,7 +141,6 @@ void MorphologicalReconstructionInternal(
       // Mark this pixels done
       done[ offsetDone ] = true;
    }
-
 }
 
 } // namespace
@@ -216,6 +215,36 @@ void LimitedMorphologicalReconstruction(
       Supremum( mask, in, mask );
    }
    DIP_STACK_TRACE_THIS( MorphologicalReconstruction( marker, mask, out, connectivity, direction ));
+}
+
+void ImposeMinima(
+      Image const& in,
+      Image const& marker,
+      Image& out,
+      dip::uint connectivity
+) {
+   DIP_THROW_IF( !in.IsForged() || !marker.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar() || !marker.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !marker.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+   // The 'seed' image is the marker image, with the regions set to the min and the background set to the max
+   Image seed = in.Similar();
+   seed.Fill( Image::Sample::Maximum( seed.DataType() ));
+   DIP_STACK_TRACE_THIS( seed.At( marker ) = Image::Sample::Minimum( seed.DataType() ));
+   // We need to make sure the 'gray' image doesn't have local minima containing multiple minima in 'seed'. So we
+   // add 1 in case of floating point images, and add 1 only to the minimal values for integer images.
+   Image gray = in.Copy();
+   if( gray.DataType().IsFloat() ) {
+      // We can add 1 to 'gray', we're unlikely to overflow (though we're also unlikely to have any pixels at the minimum value, so this might not be necessary at all).
+      gray += 1;
+   } else {
+      // If we add 1 to 'gray', we could overflow. Instead we compute max(gray,min+1).
+      auto floor = Image::Sample::Minimum( seed.DataType() );
+      floor += 1;
+      DIP_STACK_TRACE_THIS( Supremum( gray, Image( floor ), gray ));
+   }
+   Infimum( gray, seed, gray );
+   DIP_STACK_TRACE_THIS( MorphologicalReconstruction( seed, gray, out, connectivity, S::EROSION ));
 }
 
 } // namespace dip

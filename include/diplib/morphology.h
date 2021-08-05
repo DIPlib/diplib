@@ -1431,6 +1431,32 @@ DIP_NODISCARD inline Image HMaxima(
    return out;
 }
 
+/// \brief Impose minima.
+///
+/// Regions in `marker` will be the only local minima in `in`: `dip::Minima( dip::ImposeMinima( a, b )) == b`, for any `a`.
+///
+/// The image `in` will be modified such that the regions marked by `marker` obtain the lowest possible value for the
+/// given data type, and any other local minima in `in` are filled in to become plateaus. Minimum imposition is typically
+/// applied in conjunction with the watershed to reduce the number of regions created. The function \ref dip::SeededWatershed
+/// has a similar result, but obtained in a different way, to applying `dip::Watershed` to the output of `ImposeMinima`.
+///
+/// \see dip::MorphologicalReconstruction, dip::Minima, dip::Watershed, dip::SeededWatershed
+DIP_EXPORT void ImposeMinima(
+      Image const& in,
+      Image const& marker,
+      Image& out,
+      dip::uint connectivity = 0
+);
+DIP_NODISCARD inline Image ImposeMinima(
+      Image const& in,
+      Image const& marker,
+      dip::uint connectivity = 0
+            ) {
+   Image out;
+   ImposeMinima( in, marker, out, connectivity );
+   return out;
+}
+
 /// \brief The leveling of `in` imposed by `marker`.
 ///
 /// The leveling introduces flat zones in the image, in such a way that, if $g_p > g_q$, then $f_p \geq g_p$

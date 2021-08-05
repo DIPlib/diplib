@@ -33,6 +33,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::Image::Sample::Maximum()` and `dip::Image::Sample::Minimum()`.
 
+- Added `dip::ImposeMinima()`.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and
@@ -145,6 +147,8 @@ title: "Changes DIPlib 3.1.0"
 - Added `dip.GetLabelBoundingBox()`.
 
 - Added `dip.IsotropicDilation()` and `dip.IsotropicErosion()` for binary images.
+
+- Added `dip.ImposeMinima()`.
 
 ### Changed functionality
 
