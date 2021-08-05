@@ -93,7 +93,8 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::ResampleAt(in, map)` didn't use the pixels at the right or bottom edges of the input image.
 
-- Fixed small bug in underlying code for `dip::AreaOpening()`, `dip::AreaClosing()`, `dip::VolumeOpening()` and `dip::VolumeClosing()`.
+- Fixed various issues in underlying code for `dip::AreaOpening()`, `dip::AreaClosing()`, `dip::VolumeOpening()` and `dip::VolumeClosing()`.
+  These functions now behave as described in the documentation.
 
 - There was a strange rounding error when creating disk-shaped filter kernels and structuring elements,
   for some even integer sizes, which caused these kernels to be not symmetric over 90 degree rotations.

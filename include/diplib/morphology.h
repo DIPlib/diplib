@@ -1030,9 +1030,9 @@ DIP_EXPORT void CompactWatershed(
       Image const& seeds,
       Image const& mask,
       Image& out,
-      dip::uint connectivity,
-      dfloat compactness,
-      StringSet const& flags
+      dip::uint connectivity = 1,
+      dfloat compactness = 1.0,
+      StringSet const& flags = {}
 );
 DIP_NODISCARD inline Image CompactWatershed(
       Image const& in,
@@ -1576,8 +1576,8 @@ DIP_NODISCARD inline Image AreaClosing(
 ///
 /// Comparing to the area opening, which removes peaks by the area of their support, this function removes peaks by
 /// the volume being removed. The difference of the opening with the input image, in the case of the area opening,
-/// is a series of peaks surrounded by zero-valued pixels, who all have at most `filterSize` pixels.
-/// In the case of the volume opening, these peaks all have an integral of at most `filterSize`.
+/// is a series of peaks, each of which less than `filterSize` pixels, surrounded by zero-valued pixels.
+/// In the case of the volume opening, these peaks all have an integral (sum of pixel values) of less than `filterSize`.
 ///
 /// `in` must be scalar and real-valued. Binary images are not allowed.
 ///

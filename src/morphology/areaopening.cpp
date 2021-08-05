@@ -45,18 +45,21 @@ struct AreaOpenRegion {
    AreaOpenRegion() = default;
    explicit AreaOpenRegion( TPI value ) : size( 1 ), lowest( value ) {}
 
-   AreaOpenRegion& operator+=( AreaOpenRegion const& other ) {
-      size += other.size;
-      return *this;
+   dip::uint Param() const {
+      return size;
    }
 
-   bool operator<( dip::uint param ) {
-      return size < param;
+   void Saturate( dip::uint filterSize ) {
+      size = filterSize;
+   }
+
+   void AddRegionSize( AreaOpenRegion const& other ) {
+      size += other.size - 1; // Any time we use this operator, the current pixel has already been added to both regions
    }
 
    void AddPixel( TPI value, dip::uint filterSize ) {
       if( size < filterSize ) {
-         ++size; // We don't need to track the size any more.
+         ++size;
          lowest = value;
       }
    }
@@ -75,36 +78,47 @@ struct VolumeOpenRegion {
    VolumeOpenRegion() = default;
    explicit VolumeOpenRegion( TPI value ) : size( 1 ), lowest( value ) {}
 
-   VolumeOpenRegion& operator+=( VolumeOpenRegion const& other ) {
-      size += other.size;
-      volume += other.volume;
-      return *this;
+   dfloat Param() const {
+      return volume;
    }
 
-   bool operator<( dfloat param ) {
-      return volume < param;
+   void Saturate( dfloat filterSize ) {
+      volume = filterSize;
+   }
+
+   void AddRegionSize( VolumeOpenRegion const& other ) {
+      size += other.size - 1; // Any time we use this operator, the current pixel has already been added to both regions, so there's no need to update `lowest`.
+      volume += other.volume;
    }
 
    void AddPixel( TPI value, dfloat filterSize ) {
-      if( volume < filterSize ) {
-         volume += static_cast< dfloat >( size ) * std::abs( static_cast< dfloat >( lowest ) - static_cast< dfloat >( value ));
+      if( volume < filterSize ) { // let's compute only if necessary
+         dfloat height = std::abs( static_cast< dfloat >( lowest ) - static_cast< dfloat >( value ));
+         if(( volume + static_cast< dfloat >( size ) * height ) < filterSize ) {
+            // Adding the full height will not make this region larger than the filter size
+            volume += static_cast< dfloat >( size ) * height;
+            lowest = value;
+         } else {
+            // We need to add a smaller height to get the exact filter size.
+            // But actually, the height is a little less than the exact result, so that our volume remains strictly less than `filterSize`.
+            height = ( filterSize - volume ) / static_cast< dfloat >( size ) * ( 1 - 1e-6 );
+            if( lowest > value ) {
+               height = -height; // we want to subtract from `lowest`, rather than add, to move towards `value`.
+            }
+            volume = filterSize; // equal to `volume += static_cast< dfloat >( size ) * height` but without rounding errors.
+            lowest = static_cast< TPI >( lowest + static_cast< TPI >( height )); // casting to integer will always round towards zero, which is just what we want to do here.
+         }
          ++size;
-         lowest = value;
       }
    }
 };
 
 
 template< typename TPI, typename RegionType >
-RegionType AddRegionsLowFist( RegionType region1, RegionType const& region2 ) {
-   region1 += region2;
-   region1.lowest = std::max( region1.lowest, region2.lowest );
-   return region1;
-}
-template< typename TPI, typename RegionType >
-RegionType AddRegionsHighFist( RegionType region1, RegionType const& region2 ) {
-   region1 += region2;
-   region1.lowest = std::min( region1.lowest, region2.lowest );
+RegionType AddRegions( RegionType region1, RegionType const& region2 ) {
+   // When we get here, we've already added the current pixel to both regions, so the `lowest` value should be the same.
+   DIP_ASSERT( region1.lowest == region2.lowest );
+   region1.AddRegionSize( region2 );
    return region1;
 }
 
@@ -125,9 +139,8 @@ void ParametricOpeningInternal(
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
 
-   auto AddRegions = lowFirst ? AddRegionsLowFist< TPI, RegionType >
-                              : AddRegionsHighFist< TPI, RegionType >;
-   ParametricOpenRegionList< decltype( AddRegions ), RegionType > regions( AddRegions );
+   auto addRegionsFnc = AddRegions< TPI, RegionType >;
+   ParametricOpenRegionList< decltype( addRegionsFnc ), RegionType > regions( addRegionsFnc );
    NeighborLabels neighborLabels;
 
    // Process first pixel
@@ -143,53 +156,44 @@ void ParametricOpeningInternal(
       for( auto o : neighborOffsets ) {
          neighborLabels.Push( regions.FindRoot( labels[ offset + o ] ));
       }
-      switch( neighborLabels.Size() ) {
-         case 0:
-            // Not touching a label: new label
-            labels[ offset ] = regions.Create( RegionType( grey[ offset ] ));
-            break;
-         case 1: {
-            // Touching a single label: grow
-            LabelType lab = neighborLabels.Label( 0 );
-            labels[ offset ] = lab;
-            regions.Value( lab ).AddPixel( grey[ offset ], filterSize );
-            break;
-         }
-         default: {
-            // Touching two or more labels
-            // Find a small region, if it exists
-            LabelType lab = neighborLabels.Label( 0 );
-            for( auto nlab : neighborLabels ) {
-               if( regions.Value( nlab ) < filterSize ) {
-                  lab = nlab;
-                  break;
-               }
+      if( neighborLabels.Size() == 0 ) {
+         // Not touching a label: new label
+         labels[ offset ] = regions.Create( RegionType( grey[ offset ] ));
+      } else if( neighborLabels.Size() == 1 ) {
+         // Touching a single label: grow
+         LabelType lab = neighborLabels.Label( 0 );
+         labels[ offset ] = lab;
+         regions.Value( lab ).AddPixel( grey[ offset ], filterSize );
+      } else {
+         // Touching two or more labels
+         // Grow each of the small regions, and find the label of the smallest region
+         LabelType lab = neighborLabels.Label( 0 );
+         ParamType size = regions.Value( lab ).Param();
+         for( auto lab2 : neighborLabels ) {
+            if( regions.Value( lab2 ).Param() < size ) {
+               lab = lab2;
+               size = regions.Value( lab ).Param();
             }
-            // If there was a small region, assign this pixel to it, then combine information from the other regions
-            if( regions.Value( lab ) < filterSize ) {
-               labels[ offset ] = lab;
-               regions.Value( lab ).AddPixel( grey[ offset ], filterSize );
-               // This region is small, let's merge all other small regions into it, and increase the size
-               // with that of the large regions as well.
-               for( LabelType lab2 : neighborLabels ) {
-                  if( lab != lab2 ) {
-                     if( regions.Value( lab2 ) < filterSize ) {
-                        // A small neighboring region should be merged in
-                        regions.Union( lab, lab2 );
-                     } else {
-                        // A large neighboring region should lend its size to the small regions
-                        regions.Value( lab ) += regions.Value( lab2 );
-                     }
+            regions.Value( lab2 ).AddPixel( grey[ offset ], filterSize );
+         }
+         // Assign the pixel to the smallest region
+         labels[ offset ] = lab;
+         if( regions.Value( lab ).Param() < filterSize ) {
+            // If the region is still small, combine information from the other regions
+            for( LabelType lab2 : neighborLabels ) {
+               if( lab != lab2 ) {
+                  if(( regions.Value( lab ).Param() + regions.Value( lab2 ).Param() ) < filterSize ) {
+                     regions.Union( lab, lab2 );
+                  } else {
+                     // If we don't merge, both regions should stop growing
+                     regions.Value( lab ).Saturate( filterSize );
+                     regions.Value( lab2 ).Saturate( filterSize );
                   }
                }
-            } else {
-               // There were no small regions, we just need to assign this pixel to any one region and we're done
-               // (increasing the size of the large regions is futile)
-               labels[ offset ] = lab;
             }
-            break;
          }
       }
+
    }
    JointImageIterator< TPI, LabelType > it( { c_grey, c_labels } );
    it.OptimizeAndFlatten();
