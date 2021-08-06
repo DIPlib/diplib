@@ -804,7 +804,7 @@ DIP_NODISCARD inline Image LogPolarTransform2D(
 
 /// \brief Tiles a set of images to form a single image.
 ///
-/// Input images are arranged according to `tiling`. For example, if `tiling = { 3, 2 }, will generate an
+/// Input images are arranged according to `tiling`. For example, `tiling = { 3, 2 }` will generate an
 /// output where three images are placed horizontally, and two vertically. In this case, up to 6 input images
 /// can be given in `in`. If `in` has fewer images, the corresponding locations in `out` will be zero. If `in`
 /// has 6 images, they will be placed as follows:
