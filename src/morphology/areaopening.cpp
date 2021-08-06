@@ -49,6 +49,10 @@ struct AreaOpenRegion {
       return size;
    }
 
+   bool ShouldMerge( AreaOpenRegion const& other, dip::uint filterSize ) const {
+      return ( size + other.size - 1 ) < filterSize;
+   }
+
    void Saturate( dip::uint filterSize ) {
       size = filterSize;
    }
@@ -80,6 +84,10 @@ struct VolumeOpenRegion {
 
    dfloat Param() const {
       return volume;
+   }
+
+   bool ShouldMerge( VolumeOpenRegion const& other, dfloat filterSize ) const {
+      return ( volume + other.volume ) < filterSize;
    }
 
    void Saturate( dfloat filterSize ) {
@@ -182,7 +190,7 @@ void ParametricOpeningInternal(
             // If the region is still small, combine information from the other regions
             for( LabelType lab2 : neighborLabels ) {
                if( lab != lab2 ) {
-                  if(( regions.Value( lab ).Param() + regions.Value( lab2 ).Param() ) < filterSize ) {
+                  if( regions.Value( lab ).ShouldMerge( regions.Value( lab2 ), filterSize )) {
                      regions.Union( lab, lab2 );
                   } else {
                      // If we don't merge, both regions should stop growing
