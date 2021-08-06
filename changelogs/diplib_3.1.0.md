@@ -42,12 +42,11 @@ title: "Changes DIPlib 3.1.0"
   using it (including `dip::MeasurementTool::Measure()`), `dip::GetImageChainCodes()`, `dip::GetObjectLabels()`,
   `dip::Relabel()`, `dip::ChordLength()` and `dip::PairCorrelation()`.
 
-- Improved speed of `dip::Measurement::AddObjectIDs()` and
-  `dip::Measurement::operator+()`.
-
-- `dip::Label` is slightly more efficient for 3D and higher-dimensional images; added tests.
-
-- Sped up `dip::MomentAccumulator`.
+- The speed of the following functions has been improved:
+    - `dip::Measurement::AddObjectIDs()` and `dip::Measurement::operator+()`.
+    - `dip::Label` (slightly more efficient for 3D and higher-dimensional images).
+    - `dip::MomentAccumulator`.
+    - `dip::MorphologicalReconstruction` and functions that depend on it.
 
 - `dip::OptimalFourierTransformSize()` has a new option to return a smaller or equal size, rather than
   a larger or equal size, so we can crop an image for efficient FFT instead of padding.
@@ -99,7 +98,7 @@ title: "Changes DIPlib 3.1.0"
 - There was a strange rounding error when creating disk-shaped filter kernels and structuring elements,
   for some even integer sizes, which caused these kernels to be not symmetric over 90 degree rotations.
 
-- Fixed bug in `dip::MeanAbs()` and `dip::SumAbs()` for complex inputs.
+- `dip::MeanAbs()` and `dip::SumAbs()` could produce wrong results for complex inputs.
 
 
 

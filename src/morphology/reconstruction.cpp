@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the morphological reconstruction and related functions.
  *
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
-#include "watershed_support.h"
+#include "diplib/border.h"
 
 namespace dip {
 
@@ -68,45 +68,39 @@ void MorphologicalReconstructionInternal(
    TPI minval = *static_cast< TPI const* >( c_minval.Origin() );
 
    // Walk over the entire image & put all the pixels larger than minval on the heap.
-   // Also set done=DIP_FALSE for all pixels and reduce the value of c_out where c_out > c_in.
-   JointImageIterator< TPI, TPI, bin > it( { c_in, c_out, c_done } );
-   if( dilation ) {
-      do {
-         if( it.Out() > it.In() ) {
-            it.Out() = it.In();
-            it.template Sample< 2 >() = true;
-         } else {
-            it.template Sample< 2 >() = false;
-         }
-         if( it.Out() > minval ) {
-            Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 2 >() } ); // offset pushed is that of `done`, so we can test it fast.
-            //std::cout << " - Pushed " << it.Out();
-         }
-      } while( ++it );
-   } else {
-      do {
-         if( it.Out() < it.In() ) {
-            it.Out() = it.In();
-            it.template Sample< 2 >() = true;
-         } else {
-            it.template Sample< 2 >() = false;
-         }
-         if( it.Out() < minval ) {
-            Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 2 >() } ); // offset pushed is that of `done`, so we can test it fast.
-            //std::cout << " - Pushed " << it.Out();
-         }
-      } while( ++it );
-   }
+   // TODO: Many of these heap items are not necessary, we will enqueue the same pixel multiple times until it
+   //       is actually processed. We cannot update items in the queue, we can only drop them when popping and
+   //       seeing that the pixel was already processed. If there was a cheap way to determine here if a pixel
+   //       needs to be enqueued at this point or not, it might help speed up things a bit. We'd need to enqueue
+   //       only pixels that:
+   //         - have a neighbor that has a lower value in `out`, and doesn't have the lower bit of `done` set, and
+   //         - don't have a neighbor with a higher value that will propagate into it.
+   //       Not an easy test!
+   JointImageIterator< bin, TPI  > it( { c_done, c_out } );
+   do {
+      if( it.Out() != minval ) {
+         Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 0 >() } ); // offset pushed is that of `done`, so we can test it fast.
+         //std::cout << " - Pushed " << it.Out();
+      }
+   } while( ++it );
 
    // Start processing pixels
    TPI* in = static_cast< TPI* >( c_in.Origin() );
    TPI* out = static_cast< TPI* >( c_out.Origin() );
-   bin* done = static_cast< bin* >( c_done.Origin() );
+   uint8* done = static_cast< uint8* >( c_done.Origin() ); // It's binary, but we use other bit planes too.
+   // To wit: the bottom bit is set if he pixel value will no longer change (set in caller, updated here)
+   //         the 2nd bit is set if we already propagated out from this pixel
+   //         the 3rd bit is set if this is a border pixel (set in caller)
    auto coordinatesComputer = c_done.OffsetToCoordinatesComputer();
    BooleanArray skipar( nNeigh );
    while( !Q.empty() ) {
       dip::sint offsetDone = Q.top().offset;
       Q.pop();
+      //std::cout << " - Popped: " << done[ offsetDone ];
+      if( done[ offsetDone ] & 2u ) {
+         // 2nd bit is set if we already propagated out from this pixel
+         continue;
+      }
       UnsignedArray coords = coordinatesComputer( offsetDone );
       dip::sint offsetIn = c_in.Offset( coords );
       dip::sint offsetOut = c_out.Offset( coords );
@@ -114,9 +108,9 @@ void MorphologicalReconstructionInternal(
       // Iterate over all neighbors
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
-         if( lit.IsInImage( coords, imsz )) {
+         if( !( done[ offsetDone ] & 4u ) || lit.IsInImage( coords, imsz )) { // test IsInImage only for border pixels
             // Propagate this pixel's value to its unfinished neighbours
-            if( !done[ offsetDone + neighborOffsetsDone[ jj ]] ) {
+            if( !( done[ offsetDone + neighborOffsetsDone[ jj ]] & 1u )) { // if the bottom bit is set, we don't need to propagate
                TPI newval = in[ offsetIn + neighborOffsetsIn[ jj ]];
                if( dilation ) {
                   newval = std::min( newval, out[ offsetOut ] );
@@ -139,7 +133,7 @@ void MorphologicalReconstructionInternal(
          }
       }
       // Mark this pixels done
-      done[ offsetDone ] = true;
+      done[ offsetDone ] = 3; // bottom two bits both set
    }
 }
 
@@ -176,10 +170,12 @@ void MorphologicalReconstruction (
       out.Strip(); // We can work in-place if c_marker and out are the same image, but c_in must be separate from out.
    }
    DIP_STACK_TRACE_THIS( Convert( marker, out, in.DataType() ));
+   DIP_STACK_TRACE_THIS( dilation ? Infimum( in, out, out ) : Supremum( in, out, out ));
    Image minval = dilation ? Minimum( out ) : Maximum( out ); // same data type as `out`
 
    // Intermediate image
-   Image done( out.Sizes(), 1, DT_BIN );
+   Image done = in == out; // Sets the bottom bit of the dip::bin byte
+   detail::ProcessBorders< bin >( done, []( bin* ptr, dip::sint ){ *reinterpret_cast< uint8* >( ptr ) += 4; } ); // Set the 3rd bit to indicate a border pixel
 
    // Create array with offsets to neighbours
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
