@@ -73,6 +73,17 @@ struct AreaOpenRegion {
 For the volume opening, we do the same thing but track the volume of the peak instead of its area.
 */
 
+// Add value and changed, but if TPI is an integer type, round change towards zero first.
+template< typename TPI, typename std::enable_if_t< std::numeric_limits< TPI >::is_integer, int > = 0  >
+TPI AddSigned( TPI value, dfloat change ) {
+   return clamp_cast< TPI >( static_cast< dip::sint >( value ) + static_cast< dip::sint >( std::trunc( change )));
+   // Note we'd get some overflow here if TPI is a dip::uint64 and the value doesn't fit in a dip::sint64. Oh. well.
+}
+template< typename TPI, typename std::enable_if_t< !std::numeric_limits< TPI >::is_integer, int > = 0  >
+TPI AddSigned( TPI value, dfloat change ) {
+   return clamp_cast< TPI >( static_cast< dfloat >( value ) + change );
+}
+
 template< typename TPI >
 struct VolumeOpenRegion {
    dip::uint size = 0;
@@ -114,7 +125,7 @@ struct VolumeOpenRegion {
                height = -height; // we want to subtract from `lowest`, rather than add, to move towards `value`.
             }
             volume = filterSize; // equal to `volume += static_cast< dfloat >( size ) * height` but without rounding errors.
-            lowest = static_cast< TPI >( lowest + static_cast< TPI >( height )); // casting to integer will always round towards zero, which is just what we want to do here.
+            lowest = AddSigned( lowest, height );
          }
          ++size;
       }
@@ -176,18 +187,18 @@ void ParametricOpeningInternal(
          // Touching two or more labels
          // Grow each of the small regions, and find the label of the smallest region
          LabelType lab = neighborLabels.Label( 0 );
-         ParamType size = regions.Value( lab ).Param();
+         ParamType size = std::numeric_limits< ParamType >::max();
          for( auto lab2 : neighborLabels ) {
+            regions.Value( lab2 ).AddPixel( grey[ offset ], filterSize );
             if( regions.Value( lab2 ).Param() < size ) {
                lab = lab2;
                size = regions.Value( lab ).Param();
             }
-            regions.Value( lab2 ).AddPixel( grey[ offset ], filterSize );
          }
          // Assign the pixel to the smallest region
          labels[ offset ] = lab;
+         // If the smallest region is still small, combine information from the other regions
          if( regions.Value( lab ).Param() < filterSize ) {
-            // If the region is still small, combine information from the other regions
             for( LabelType lab2 : neighborLabels ) {
                if( lab != lab2 ) {
                   if( regions.Value( lab ).ShouldMerge( regions.Value( lab2 ), filterSize )) {
