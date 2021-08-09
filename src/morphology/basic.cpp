@@ -128,9 +128,12 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
          if( bruteForce_ ) {
             if( dilation_ ) {
                for( dip::uint ii = 0; ii < length; ++ii ) {
-                  TPI max = std::numeric_limits< TPI >::lowest();
-                  for( auto it = offsets_.begin(); it != offsets_.end(); ++it ) {
+                  auto it = offsets_.begin();
+                  TPI max = in[ *it ];
+                  ++it;
+                  while( it != offsets_.end() ) {
                      max = std::max( max, in[ *it ] );
+                     ++it;
                   }
                   *out = max;
                   out += outStride;
@@ -138,9 +141,12 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                }
             } else {
                for( dip::uint ii = 0; ii < length; ++ii ) {
-                  TPI min = std::numeric_limits< TPI >::max();
-                  for( auto it = offsets_.begin(); it != offsets_.end(); ++it ) {
+                  auto it = offsets_.begin();
+                  TPI min = in[ *it ];
+                  ++it;
+                  while( it != offsets_.end() ) {
                      min = std::min( min, in[ *it ] );
+                     ++it;
                   }
                   *out = min;
                   out += outStride;
