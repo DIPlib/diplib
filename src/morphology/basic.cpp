@@ -331,52 +331,44 @@ void GeneralSEMorphology(
             Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::CLOSING:
-            if( !bc.empty() ) {
-               UnsignedArray boundary = kernel.Boundary( in.Dimensionality() );
-               ExtendImageDoubleBoundary( in, out, boundary, bc );
-               opts += Framework::FullOption::BorderAlreadyExpanded;
-            }
+            ExtendImageDoubleBoundary( in, out, kernel.Boundary( in.Dimensionality() ), BoundaryConditionForDilation( bc ));
+            opts += Framework::FullOption::BorderAlreadyExpanded;
             if( hasWeights ) {
                DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), ovltype );
             } else {
                DIP_OVL_NEW_REAL( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), ovltype );
             }
-            Framework::Full( bc.empty() ? in : out, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter, opts );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, {}, kernel, *lineFilter, opts );
             // Note that the output image has a newly-allocated data segment, we've lost the boundary extension we had.
-            if( !bc.empty() ) {
-               out.Crop( originalImageSize );
-            }
+            // But we still have an `out` that is larger than `in` by one boundary extension.
+            out.Crop( originalImageSize );
             kernel.Mirror();
             if( hasWeights ) {
                DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), ovltype );
             } else {
                DIP_OVL_NEW_REAL( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), ovltype );
             }
-            Framework::Full( out, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter, opts );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, {}, kernel, *lineFilter, opts );
             break;
          case BasicMorphologyOperation::OPENING:
-            if( !bc.empty() ) {
-               UnsignedArray boundary = kernel.Boundary( in.Dimensionality() );
-               ExtendImageDoubleBoundary( in, out, boundary, bc );
-               opts += Framework::FullOption::BorderAlreadyExpanded;
-            }
+            ExtendImageDoubleBoundary( in, out, kernel.Boundary( in.Dimensionality() ), BoundaryConditionForErosion( bc ));
+            opts += Framework::FullOption::BorderAlreadyExpanded;
             if( hasWeights ) {
                DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), ovltype );
             } else {
                DIP_OVL_NEW_REAL( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), ovltype );
             }
-            Framework::Full( bc.empty() ? in : out, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter, opts );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, {}, kernel, *lineFilter, opts );
             // Note that the output image has a newly-allocated data segment, we've lost the boundary extension we had.
-            if( !bc.empty() ) {
-               out.Crop( originalImageSize );
-            }
+            // But we still have an `out` that is larger than `in` by one boundary extension.
+            out.Crop( originalImageSize );
             kernel.Mirror();
             if( hasWeights ) {
                DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), ovltype );
             } else {
                DIP_OVL_NEW_REAL( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), ovltype );
             }
-            Framework::Full( out, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter, opts );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, {}, kernel, *lineFilter, opts );
             break;
       }
    DIP_END_STACK_TRACE
@@ -623,6 +615,7 @@ void LineMorphology(
 }
 
 void TwoStepDiamondMorphology(
+      Image const& in,
       Image& out,
       FloatArray size, // by copy, we'll modify it again
       dip::uint procDim,
@@ -633,9 +626,11 @@ void TwoStepDiamondMorphology(
    // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
    // `size` array must start off with all positive elements.
    dip::uint nDims = size.size();
+   bool first = true;
    while( true ) {
       // This can be the fast line morphology, since lines are always at 0 or 45 degrees.
-      FastLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, Mirror::NO, bc, operation );
+      FastLineMorphology( first ? in : out, out, size, StructuringElement::ShapeCode::FAST_LINE, Mirror::NO, bc, operation );
+      first = false;
       dip::uint dd;
       for( dd = 0; dd < nDims; ++dd ) {
          if(( dd != procDim ) && ( std::abs( size[ dd ] ) > 1.0 )) {
@@ -713,21 +708,17 @@ void DiamondMorphology(
                // Step 1: apply operation with a unit diamond
                GeneralSEMorphology( in, out, unitDiamond, bc, operation );
                // Step 2: apply operation with line SEs
-               TwoStepDiamondMorphology( out, size, procDim, bc, operation );
+               TwoStepDiamondMorphology( out, out, size, procDim, bc, operation );
                break;
             case BasicMorphologyOperation::CLOSING:
-               // TODO: It would be more efficient to apply dilation with lines first, then closing with the unit diamond, then erosion with the lines.
-               // ...but for that we need a version of TwoStepDiamond with separate input and output images.
-               GeneralSEMorphology( in, out, unitDiamond, bc, BasicMorphologyOperation::DILATION );
-               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::DILATION );
-               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::EROSION );
-               GeneralSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::EROSION );
+               TwoStepDiamondMorphology( in, out, size, procDim, bc, BasicMorphologyOperation::DILATION );
+               GeneralSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::CLOSING );
+               TwoStepDiamondMorphology( out, out, size, procDim, bc, BasicMorphologyOperation::EROSION );
                break;
             case BasicMorphologyOperation::OPENING:
-               GeneralSEMorphology( in, out, unitDiamond, bc, BasicMorphologyOperation::EROSION );
-               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::EROSION );
-               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::DILATION );
-               GeneralSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::DILATION );
+               TwoStepDiamondMorphology( in, out, size, procDim, bc, BasicMorphologyOperation::EROSION );
+               GeneralSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::OPENING );
+               TwoStepDiamondMorphology( out, out, size, procDim, bc, BasicMorphologyOperation::DILATION );
                break;
          }
       DIP_END_STACK_TRACE

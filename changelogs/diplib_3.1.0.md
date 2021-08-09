@@ -108,6 +108,9 @@ title: "Changes DIPlib 3.1.0"
 
 - Improved error messages in `dip::ImageRead()`.
 
+- `dip::Closing()` and `dip::Opening()` for elliptic and custom structuring elements now have a better behavior at the
+  image border.
+
 
 
 
