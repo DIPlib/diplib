@@ -1359,23 +1359,31 @@ DIP_NODISCARD inline Image UpperSkeleton2D(
 
 /// \brief Reconstruction by dilation or erosion, also known as inf-reconstruction and sup-reconstruction
 ///
-/// Iteratively dilates (erodes) the image `marker` such that it remains lower (higher) than `in` everywhere, until
-/// stability. This is implemented with an efficient priority-queue--based method. `direction` indicates which of
-/// the two operations to apply (`"dilation"` or `"erosion"`).
+/// This function has the same effect as iteratively dilating (eroding) the image `marker` such that it remains lower
+/// (higher) than `in` everywhere, until stability. However, this is implemented with a much more efficiently.
+/// `direction` indicates which of the two operations to apply (`"dilation"` or `"erosion"`).
 ///
 /// `out` will have the data type of `in`, and `marker` will be cast to that same type (with clamping to the target
 /// range, see \ref dip::Convert).
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// For binary images, \ref dip::BinaryPropagation is always faster. That function additionally allows limiting
-/// the number of reconstruction steps, and supports alternating connectivity, which yields a more isotropic result
-/// when limiting the number of reconstruction steps.
+/// The algorithm implemented is a hybrid between the method proposed by Vincent (a forward raster scan, followed
+/// by a backward raster scan, followed by a LIFO queue propagation method), and that proposed by Robinson and Whelan
+/// (a priority queue method). We implement the forward and backward scan, and follow it by a priority queue propagation.
+/// The priority queue method has the advantage of visiting each pixels exactly once.
+///
+/// For binary images, \ref dip::BinaryPropagation is more flexible. That function additionally allows choosing a
+/// boundary condition, allows limiting the number of reconstruction steps, and supports alternating connectivity,
+/// which yields a more isotropic result when limiting the number of reconstruction steps.
+/// However, this function is faster.
 ///
 /// This functions is used by \ref dip::LimitedMorphologicalReconstruction, \ref dip::HMinima, \ref dip::HMaxima,
 /// \ref dip::Leveling, \ref dip::OpeningByReconstruction, \ref dip::ClosingByReconstruction
 ///
 /// !!! literature
+///     - L. Vincent, "Morphological grayscale reconstruction in image analysis: applications and efficient algorithms",
+///       IEEE Transactions on Image Processing 2(2):176-201, 1993.
 ///     - K. Robinson and P.F. Whelan, "Efficient morphological reconstruction: a downhill filter", Pattern Recognition
 ///       Letters 25:1759-1767, 2004.
 DIP_EXPORT void MorphologicalReconstruction(
@@ -1400,7 +1408,8 @@ DIP_NODISCARD inline Image MorphologicalReconstruction(
 ///
 /// Performs the same function as \ref dip::MorphologicalReconstruction, but limiting the
 /// reach of the operation to `maxDistance` pixels. This is an Euclidean distance, and
-/// determines the zone of influence of each value in `marker`.
+/// determines the zone of influence of each value in `marker`. The limited reach is
+/// accomplished by updating `in`, rather than counting propagation steps.
 ///
 /// See \ref dip::MorphologicalReconstruction for the meaning of the rest of the parameters,
 /// and more information about the algorithm.

@@ -23,11 +23,10 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/math.h"
-#include "diplib/statistics.h"
+#include "diplib/generation.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
-#include "diplib/border.h"
 
 namespace dip {
 
@@ -36,7 +35,7 @@ namespace {
 template< typename TPI >
 struct Qitem {
    TPI value;              // pixel value - used for sorting
-   dip::sint offset;       // offset into `done` image
+   dip::sint offset;       // offset
 };
 template< typename TPI >
 bool QitemComparator_LowFirst( Qitem< TPI > const& a, Qitem< TPI > const& b ) {
@@ -47,94 +46,188 @@ bool QitemComparator_HighFirst ( Qitem< TPI > const& a, Qitem< TPI > const& b ) 
    return a.value < b.value;
 }
 
+// The `flag` binary image is used to store the following flags:
+constexpr uint8 PROCESSED_MASK = 1u;   // indicates that the pixel has been propagated from in the 3rd pass
+constexpr uint8 BORDER_MASK = 2u;      // indicates that the pixel is on the image border
+inline bool isProcessed( uint8 const flag ) {
+   return flag & PROCESSED_MASK;
+}
+inline bool isBorder( uint8 const flag ) {
+   return flag & BORDER_MASK;
+}
+inline void markProcessed( uint8& flag ) {
+   flag |= PROCESSED_MASK;
+}
+
 template< typename TPI >
 void MorphologicalReconstructionInternal(
-      Image const& c_in,
-      Image& c_out,
-      Image& c_done,
-      IntegerArray const& neighborOffsetsIn,
-      IntegerArray const& neighborOffsetsOut,
-      IntegerArray const& neighborOffsetsDone,
+      Image const& in_img,
+      Image& out_img,
+      Image& flag_img,
+      IntegerArray const& neighborOffsets,
       NeighborList const& neighborList,
-      Image const& c_minval,
       bool dilation
 ) {
    auto QitemComparator = dilation ? QitemComparator_HighFirst< TPI > : QitemComparator_LowFirst< TPI >;
    std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, decltype( QitemComparator ) > Q( QitemComparator );
 
    dip::uint nNeigh = neighborList.Size();
-   UnsignedArray const& imsz = c_in.Sizes();
+   UnsignedArray const& imsz = in_img.Sizes();
+   NeighborList backwardNeighbors = neighborList.SelectBackward();
 
-   TPI minval = *static_cast< TPI const* >( c_minval.Origin() );
+   TPI* in = static_cast< TPI* >( in_img.Origin() );
+   TPI* out = static_cast< TPI* >( out_img.Origin() );
+   uint8* flag = static_cast< uint8* >( flag_img.Origin() ); // It's binary, but we use other bit planes too.
 
-   // Walk over the entire image & put all the pixels larger than minval on the heap.
-   // TODO: Many of these heap items are not necessary, we will enqueue the same pixel multiple times until it
-   //       is actually processed. We cannot update items in the queue, we can only drop them when popping and
-   //       seeing that the pixel was already processed. If there was a cheap way to determine here if a pixel
-   //       needs to be enqueued at this point or not, it might help speed up things a bit. We'd need to enqueue
-   //       only pixels that:
-   //         - have a neighbor that has a lower value in `out`, and doesn't have the lower bit of `done` set, and
-   //         - don't have a neighbor with a higher value that will propagate into it.
-   //       Not an easy test!
-   JointImageIterator< bin, TPI  > it( { c_done, c_out } );
-   do {
-      if( it.Out() != minval ) {
-         Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 0 >() } ); // offset pushed is that of `done`, so we can test it fast.
-         //std::cout << " - Pushed " << it.Out();
-      }
-   } while( ++it );
+   // Step 1: Forward raster pass, propagate values forward (to the right and down)
+   {
+      IntegerArray backwardOffsets = backwardNeighbors.ComputeOffsets( out_img.Strides() );
+      ImageIterator< TPI > it( { out_img } );
+      do {
+         dip::sint offset = it.Offset();
+         TPI val = *it;
+         if( isBorder( flag[ offset ] )) {
+            if( dilation ) {
+               for( dip::uint ii = 0; ii < backwardOffsets.size(); ++ii ) {
+                  if( neighborList.IsInImage( ii, it.Coordinates(), imsz )) {
+                     val = std::max( val, it.Pointer()[ backwardOffsets[ ii ] ] );
+                  }
+               }
+               val = std::min( val, in[ offset ] );
+            } else {
+               for( dip::uint ii = 0; ii < backwardOffsets.size(); ++ii ) {
+                  if( neighborList.IsInImage( ii, it.Coordinates(), imsz )) {
+                     val = std::min( val, it.Pointer()[ backwardOffsets[ ii ] ] );
+                  }
+               }
+               val = std::max( val, in[ offset ] );
+            }
+            if( *it != val ) {
+               *it = val;
+            }
+         } else {
+            if( dilation ) {
+               for( auto n : backwardOffsets ) {
+                  val = std::max( val, it.Pointer()[ n ] );
+               }
+               val = std::min( val, in[ offset ] );
+            } else {
+               for( auto n : backwardOffsets ) {
+                  val = std::min( val, it.Pointer()[ n ] );
+               }
+               val = std::max( val, in[ offset ] );
+            }
+            if( *it != val ) {
+               *it = val;
+            }
+         }
+      } while( ++it );
+   }
 
-   // Start processing pixels
-   TPI* in = static_cast< TPI* >( c_in.Origin() );
-   TPI* out = static_cast< TPI* >( c_out.Origin() );
-   uint8* done = static_cast< uint8* >( c_done.Origin() ); // It's binary, but we use other bit planes too.
-   // To wit: the bottom bit is set if he pixel value will no longer change (set in caller, updated here)
-   //         the 2nd bit is set if we already propagated out from this pixel
-   //         the 3rd bit is set if this is a border pixel (set in caller)
-   auto coordinatesComputer = c_done.OffsetToCoordinatesComputer();
+   // Step 2: Backward raster pass, propagate values backward (to the left and up), and enqueue pixels where we could
+   //         propagate from in Step 3
+   {
+      Image out_img_mirrored = out_img.QuickCopy();
+      out_img_mirrored.Mirror(); // a forward raster scan in a mirrored image is a backward raster scan in the original image
+      IntegerArray backwardOffsets = backwardNeighbors.ComputeOffsets( out_img_mirrored.Strides() );
+      ImageIterator< TPI > it( { out_img_mirrored } );
+      do {
+         dip::sint offset = it.Pointer() - out; // The offset in the original image, so we can use it to index into `flag`
+         TPI val = *it;
+         TPI maxNeighborValue = std::numeric_limits< TPI >::lowest();
+         TPI minNeighborValue = std::numeric_limits< TPI >::max();
+         if( isBorder( flag[ offset ] )) {
+            for( dip::uint ii = 0; ii < backwardOffsets.size(); ++ii ) {
+               if( neighborList.IsInImage( ii, it.Coordinates(), imsz )) {
+                  maxNeighborValue = std::max( maxNeighborValue, it.Pointer()[ backwardOffsets[ ii ] ] );
+                  minNeighborValue = std::min( minNeighborValue, it.Pointer()[ backwardOffsets[ ii ] ] );
+               }
+            }
+            if( dilation ) {
+               val = std::max( val, maxNeighborValue );
+               val = std::min( val, in[ offset ] );
+            } else {
+               val = std::min( val, minNeighborValue );
+               val = std::max( val, in[ offset ] );
+            }
+            if( *it != val ) {
+               *it = val;
+               // Enqueue only if pixels in the backward direction might be propagated into (the forward pixels we'll
+               // be propagating into later in this raster scan).
+               if( dilation ? ( minNeighborValue < val ) : ( maxNeighborValue > val )) {
+                  Q.push( Qitem< TPI >{ val, offset } );
+                  // TODO: we are still enqueueing too many elements, we have not checked to see if the neighbor can be incremented
+               }
+            }
+         } else {
+            for( auto o : backwardOffsets ) {
+               maxNeighborValue = std::max( maxNeighborValue, it.Pointer()[ o ] );
+               minNeighborValue = std::min( minNeighborValue, it.Pointer()[ o ] );
+            }
+            if( dilation ) {
+               val = std::max( val, maxNeighborValue );
+               val = std::min( val, in[ offset ] );
+            } else {
+               val = std::min( val, minNeighborValue );
+               val = std::max( val, in[ offset ] );
+            }
+            if( *it != val ) {
+               *it = val;
+               // Enqueue only if pixels in the backward direction might be propagated into (the forward pixels we'll
+               // be propagating into later in this raster scan).
+               if( dilation ? ( minNeighborValue < val ) : ( maxNeighborValue > val )) {
+                  Q.push( Qitem< TPI >{ val, offset } );
+                  // TODO: we are still enqueueing too many elements, we have not checked to see if the neighbor can be incremented
+               }
+            }
+         }
+      } while( ++it );
+   }
+
+   // Step 3: Priority queue pass, propagate values in every direction from the pixels on the queue.
+   auto coordinatesComputer = out_img.OffsetToCoordinatesComputer();
    BooleanArray skipar( nNeigh );
+   //dip::uint nDoubleEnqueue = 0;
    while( !Q.empty() ) {
-      dip::sint offsetDone = Q.top().offset;
+      dip::sint offset = Q.top().offset;
       Q.pop();
-      //std::cout << " - Popped: " << done[ offsetDone ];
-      if( done[ offsetDone ] & 2u ) {
-         // 2nd bit is set if we already propagated out from this pixel
+      if( isProcessed( flag[ offset ] )) {
+         //++nDoubleEnqueue;
+         // Note that Step 3 doesn't cause double enqueues, it is Step 2 which enqueues some items it shouldn't.
          continue;
       }
-      UnsignedArray coords = coordinatesComputer( offsetDone );
-      dip::sint offsetIn = c_in.Offset( coords );
-      dip::sint offsetOut = c_out.Offset( coords );
-      //std::cout << " - Popped " << offsetDone << " (" << out[ offsetOut ] << ")";
+      // Compute coordinates if we're a border pixel
+      UnsignedArray coords;
+      if( isBorder( flag[ offset ] )) {
+         coords = coordinatesComputer( offset );
+      }
       // Iterate over all neighbors
-      auto lit = neighborList.begin();
-      for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
-         if( !( done[ offsetDone ] & 4u ) || lit.IsInImage( coords, imsz )) { // test IsInImage only for border pixels
-            // Propagate this pixel's value to its unfinished neighbours
-            if( !( done[ offsetDone + neighborOffsetsDone[ jj ]] & 1u )) { // if the bottom bit is set, we don't need to propagate
-               TPI newval = in[ offsetIn + neighborOffsetsIn[ jj ]];
-               if( dilation ) {
-                  newval = std::min( newval, out[ offsetOut ] );
-                  if( out[ offsetOut + neighborOffsetsOut[ jj ]] < newval ) {
-                     out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
-                     // Add the updated neighbours to the heap
-                     Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
-                     //std::cout << " - Pushed " << newval;
-                  }
-               } else {
-                  newval = std::max( newval, out[ offsetOut ] );
-                  if( out[ offsetOut + neighborOffsetsOut[ jj ]] > newval ) {
-                     out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
-                     // Add the updated neighbours to the heap
-                     Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
-                     //std::cout << " - Pushed " << newval;
-                  }
+      for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
+         if( !isBorder( flag[ offset ] ) || neighborList.IsInImage( jj, coords, imsz )) { // test IsInImage only for border pixels
+            // Propagate this pixel's value to its unfinished neighbors
+            dip::sint nOffset = offset + neighborOffsets[ jj ];
+            TPI newval = in[ nOffset ];
+            if( dilation ) {
+               newval = std::min( newval, out[ offset ] );
+               if( out[ nOffset ] < newval ) {
+                  out[ nOffset ] = newval;
+                  // Add the updated neighbors to the heap
+                  Q.push( Qitem< TPI >{ newval, nOffset } );
+               }
+            } else {
+               newval = std::max( newval, out[ offset ] );
+               if( out[ nOffset ] > newval ) {
+                  out[ nOffset ] = newval;
+                  // Add the updated neighbors to the heap
+                  Q.push( Qitem< TPI >{ newval, nOffset } );
                }
             }
          }
       }
-      // Mark this pixels done
-      done[ offsetDone ] = 3; // bottom two bits both set
+      // Mark this pixels as processed
+      markProcessed( flag[ offset ] );
    }
+   //std::cout << "nDoubleEnqueue = " << nDoubleEnqueue << '\n';
 }
 
 } // namespace
@@ -166,28 +259,62 @@ void MorphologicalReconstruction (
    PixelSize pixelSize = c_in.HasPixelSize() ? c_in.PixelSize() : c_marker.PixelSize();
 
    // Prepare output image
+   // We need `out`, `in` and `flag` to have the same strides. This might require an extra copy
+   // if we can't do this naturally.
    if( out.Aliases( in )) {
-      out.Strip(); // We can work in-place if c_marker and out are the same image, but c_in must be separate from out.
+      // We can work in-place if c_marker and out are the same image, but c_in must be separate from out.
+      DIP_STACK_TRACE_THIS( out.Strip() );
    }
-   DIP_STACK_TRACE_THIS( Convert( marker, out, in.DataType() ));
+   if( in.HasContiguousData() && ( in.Strides() != out.Strides() )) {
+      // Attempt to use same strides from `in` when reforging `out`.
+      DIP_STACK_TRACE_THIS( out.Strip() );
+      out.SetStrides( in.Strides() );
+   }
+   if( out.IsForged() && !out.HasContiguousData() ) {
+      // If out doesn't have contiguous data, we must reforge it, otherwise we won't be able to allocate another image with the same strides.
+      DIP_STACK_TRACE_THIS( out.Strip() );
+   }
+   out.ReForge( in );
+   // If strides still don't match, we need to make a copy of `in` with strides matching `out`.
+   if( in.Strides() != out.Strides() ) {
+      Image tmp;
+      tmp.SetStrides( out.Strides() );
+      tmp.SetExternalInterface( out.ExternalInterface() ); // If there's an external interface for out, using it should give us the same strides here.
+      tmp.ReForge( in );
+      DIP_THROW_IF( tmp.Strides() != out.Strides(), "Couldn't allocate an intermediate image (copy of in) with the same strides as out" );
+      tmp.Copy( in );
+      in.swap( tmp );
+   }
+
+   // Copy `marker` into `out`
+   DIP_STACK_TRACE_THIS( Convert( marker, out, out.DataType() ));
    DIP_STACK_TRACE_THIS( dilation ? Infimum( in, out, out ) : Supremum( in, out, out ));
-   Image minval = dilation ? Minimum( out ) : Maximum( out ); // same data type as `out`
 
-   // Intermediate image
-   Image done = in == out; // Sets the bottom bit of the dip::bin byte
-   detail::ProcessBorders< bin >( done, []( bin* ptr, dip::sint ){ *reinterpret_cast< uint8* >( ptr ) += 4; } ); // Set the 3rd bit to indicate a border pixel
+   // Prepare intermediate image. This one must also have matching strides
+   Image flag;
+   flag.SetStrides( out.Strides() );
+   flag.SetExternalInterface( out.ExternalInterface() );
+   flag.ReForge( in, DT_UINT8 );
+   DIP_THROW_IF( flag.Strides() != out.Strides(), "Couldn't allocate an intermediate image (flag) with the same strides as out" );
+   flag.Fill( 0 );
+   SetBorder( flag, { BORDER_MASK }, { 1 } );
 
-   // Create array with offsets to neighbours
+   // Reorder dimensions to improve iteration -- this has no effect on this algorithm, except to speed it up.
+   Image fout = out.QuickCopy(); // we don't want to change dimension order of the output image
+   in.StandardizeStrides();
+   fout.StandardizeStrides();
+   flag.StandardizeStrides(); // These three function calls do the same computations internally. It's not easy to rewrite things to avoid this.
+   DIP_ASSERT( in.Strides() == fout.Strides() );
+   DIP_ASSERT( in.Strides() == flag.Strides() );
+
+   // Create array with offsets to neighbors
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
-   IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
-   IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
-   IntegerArray neighborOffsetsDone = neighborList.ComputeOffsets( done.Strides() );
+   IntegerArray neighborOffsets = neighborList.ComputeOffsets( fout.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_NONCOMPLEX( MorphologicalReconstructionInternal, ( in, out, done,
-         neighborOffsetsIn, neighborOffsetsOut, neighborOffsetsDone, neighborList,
-         minval, dilation ), in.DataType() );
-
+   DIP_OVL_CALL_NONCOMPLEX( MorphologicalReconstructionInternal,
+                            ( in, fout, flag, neighborOffsets, neighborList, dilation ),
+                            in.DataType() );
    out.SetPixelSize( std::move( pixelSize ));
 }
 

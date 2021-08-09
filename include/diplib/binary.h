@@ -176,7 +176,8 @@ DIP_NODISCARD inline Image BinaryOpening(
 /// \brief Isotropic dilation of binary image.
 ///
 /// Does a threshold of the \ref dip::EuclideanDistanceTransform of the background of `in`.
-/// This is much faster than applying \ref dip::Dilation with a disk structuring element of diameter `2 * distance`.
+/// This is much faster than applying \ref dip::Dilation with a disk structuring element of diameter `2 * distance`,
+/// for larger sizes.
 ///
 /// For other structuring element shapes, or for gray-scale images, use \ref dip::Dilation. See also \ref dip::BinaryDilation.
 DIP_EXPORT void IsotropicDilation(
@@ -196,7 +197,8 @@ DIP_NODISCARD inline Image IsotropicDilation(
 /// \brief Isotropic erosion of binary image.
 ///
 /// Does a threshold of the \ref dip::EuclideanDistanceTransform of `in`.
-/// This is much faster than applying \ref dip::Erosion with a disk structuring element of diameter `2 * distance`.
+/// This is much faster than applying \ref dip::Erosion with a disk structuring element of diameter `2 * distance`,
+/// for larger sizes.
 ///
 /// For other structuring element shapes, or for gray-scale images, use \ref dip::Erosion. See also \ref dip::BinaryErosion.
 DIP_EXPORT void IsotropicErosion(
@@ -271,7 +273,8 @@ DIP_NODISCARD inline Image IsotropicOpening(
 ///
 /// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed.
 ///
-/// The function \ref dip::MorphologicalReconstruction provides similar functionality for other data types.
+/// The function \ref dip::MorphologicalReconstruction is faster, but does not support many of the options
+/// provided here.
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,
