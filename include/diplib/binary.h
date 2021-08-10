@@ -46,10 +46,12 @@ namespace dip {
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 ///
-/// For dilations with arbitrary structuring elements, see \ref dip::Dilation.
+/// For dilations with arbitrary structuring elements, see \ref dip::Dilation, for dilations with an isotropic (disk)
+/// structuring element, see \ref dip::IsotropicDilation.
 ///
-/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, \ref dip::Dilation is always the faster choice.
+/// !!! warning
+///     This algorithm exists for historical reasons. \ref dip::Dilation with a diamond, square or octagonal
+///     structuring element is always faster.
 DIP_EXPORT void BinaryDilation(
       Image const& in,
       Image& out,
@@ -77,10 +79,12 @@ DIP_NODISCARD inline Image BinaryDilation(
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// 
-/// For erosions with arbitrary structuring elements, see \ref dip::Erosion.
+/// For erosions with arbitrary structuring elements, see \ref dip::Erosion, for erosions with an isotropic (disk)
+/// structuring element, see \ref dip::IsotropicDilation.
 ///
-/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, \ref dip::Erosion is always the faster choice.
+/// !!! warning
+///     This algorithm exists for historical reasons. \ref dip::Erosion with a diamond, square or octagonal
+///     structuring element is always faster.
 DIP_EXPORT void BinaryErosion(
       Image const& in,
       Image& out,
@@ -113,8 +117,9 @@ DIP_NODISCARD inline Image BinaryErosion(
 ///
 /// For closings with arbitrary structuring elements, see \ref dip::Closing.
 ///
-/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, \ref dip::Closing is always the faster choice.
+/// !!! warning
+///     This algorithm exists for historical reasons. \ref dip::Closing with a diamond, square or octagonal
+///     structuring element is always faster.
 DIP_EXPORT void BinaryClosing(
       Image const& in,
       Image& out,
@@ -147,8 +152,9 @@ DIP_NODISCARD inline Image BinaryClosing(
 ///
 /// For openings with arbitrary structuring elements, see \ref dip::Opening.
 ///
-/// When `connectivity` is equal to the image dimensionality, a square structuring element is obtained.
-/// For this case, \ref dip::Opening is always the faster choice.
+/// !!! warning
+///     This algorithm exists for historical reasons. \ref dip::Opening with a diamond, square or octagonal
+///     structuring element is always faster.
 DIP_EXPORT void BinaryOpening(
       Image const& in,
       Image& out,
@@ -164,6 +170,90 @@ DIP_NODISCARD inline Image BinaryOpening(
 ) {
    Image out;
    BinaryOpening( in, out, connectivity, iterations, edgeCondition );
+   return out;
+}
+
+/// \brief Isotropic dilation of binary image.
+///
+/// Does a threshold of the \ref dip::EuclideanDistanceTransform of the background of `in`.
+/// This is much faster than applying \ref dip::Dilation with a disk structuring element of diameter `2 * distance`.
+///
+/// For other structuring element shapes, or for gray-scale images, use \ref dip::Dilation. See also \ref dip::BinaryDilation.
+DIP_EXPORT void IsotropicDilation(
+      Image const& in,
+      Image& out,
+      dfloat distance
+);
+DIP_NODISCARD inline Image IsotropicDilation(
+      Image const& in,
+      dfloat distance
+) {
+   Image out;
+   IsotropicDilation( in, out, distance );
+   return out;
+}
+
+/// \brief Isotropic erosion of binary image.
+///
+/// Does a threshold of the \ref dip::EuclideanDistanceTransform of `in`.
+/// This is much faster than applying \ref dip::Erosion with a disk structuring element of diameter `2 * distance`.
+///
+/// For other structuring element shapes, or for gray-scale images, use \ref dip::Erosion. See also \ref dip::BinaryErosion.
+DIP_EXPORT void IsotropicErosion(
+      Image const& in,
+      Image& out,
+      dfloat distance
+);
+DIP_NODISCARD inline Image IsotropicErosion(
+      Image const& in,
+      dfloat distance
+) {
+   Image out;
+   IsotropicErosion( in, out, distance );
+   return out;
+}
+
+/// \brief Isotropic closing of binary image.
+///
+/// Composition of \ref dip::IsotropicDilation and \ref dip::IsotropicErosion.
+///
+/// For other structuring element shapes, or for gray-scale images, use \ref dip::Closing. See also \ref dip::BinaryClosing.
+inline void IsotropicClosing(
+      Image const& in,
+      Image& out,
+      dfloat distance
+) {
+   IsotropicDilation( in, out, distance );
+   IsotropicErosion( out, out, distance );
+}
+DIP_NODISCARD inline Image IsotropicClosing(
+      Image const& in,
+      dfloat distance
+) {
+   Image out;
+   IsotropicClosing( in, out, distance );
+   return out;
+}
+
+/// \brief Isotropic opening of binary image.
+///
+/// Composition of \ref dip::IsotropicErosion and \ref dip::IsotropicDilation.
+///
+/// For other structuring element shapes, or for gray-scale images, use \ref dip::Opening. See also \ref dip::BinaryOpening.
+inline void IsotropicOpening(
+      Image const& in,
+      Image& out,
+      dfloat distance
+) {
+   IsotropicErosion( in, out, distance );
+   IsotropicDilation( out, out, distance );
+}
+DIP_NODISCARD inline Image IsotropicOpening(
+      Image const& in,
+      dfloat distance
+) {
+   Image out;
+   IsotropicOpening( in, out, distance );
    return out;
 }
 
@@ -264,46 +354,6 @@ DIP_NODISCARD inline Image FillHoles(
 ) {
    Image out;
    FillHoles( in, out, connectivity );
-   return out;
-}
-
-/// \brief Isotropic dilation of binary image.
-///
-/// Does a threshold of the \ref dip::EuclideanDistanceTransform of the background of `in`.
-/// This is much faster than applying \ref dip::Dilation with a disk structuring element of diameter `2 * distance`.
-///
-/// For other structuring element shapes, or for gray-scale images, use \ref dip::Dilation. See also \ref dip::BinaryDilation.
-DIP_EXPORT void IsotropicDilation(
-      Image const& in,
-      Image& out,
-      dfloat distance
-);
-DIP_NODISCARD inline Image IsotropicDilation(
-      Image const& in,
-      dfloat distance
-) {
-   Image out;
-   IsotropicDilation( in, out, distance );
-   return out;
-}
-
-/// \brief Isotropic erosion of binary image.
-///
-/// Does a threshold of the \ref dip::EuclideanDistanceTransform of `in`.
-/// This is much faster than applying \ref dip::Erosion with a disk structuring element of diameter `2 * distance`.
-///
-/// For other structuring element shapes, or for gray-scale images, use \ref dip::Erosion. See also \ref dip::BinaryErosion.
-DIP_EXPORT void IsotropicErosion(
-      Image const& in,
-      Image& out,
-      dfloat distance
-);
-DIP_NODISCARD inline Image IsotropicErosion(
-      Image const& in,
-      dfloat distance
-) {
-   Image out;
-   IsotropicErosion( in, out, distance );
    return out;
 }
 

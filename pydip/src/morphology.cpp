@@ -207,6 +207,10 @@ void init_morphology( py::module& m ) {
           "in"_a, "distance"_a );
    m.def( "IsotropicErosion", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::IsotropicErosion ),
           "in"_a, "distance"_a );
+   m.def( "IsotropicClosing", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::IsotropicClosing ),
+          "in"_a, "distance"_a );
+   m.def( "IsotropicOpening", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::IsotropicOpening ),
+          "in"_a, "distance"_a );
 
    m.def( "ConditionalThickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThickening2D ),
           "in"_a, "mask"_a = dip::Image{}, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );

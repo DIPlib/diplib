@@ -56,16 +56,35 @@ class DIP_NO_EXPORT Kernel;
 /// floating-point array with the size along each dimension.
 /// These are the valid shape strings, and the corresponding meaning of the size array:
 ///
-/// - `"rectangular"`, `"elliptic"`, and `"diamond"`: these are unit circles in different metrics. The
-///   size array corresponds to the diameter in that metric. `"elliptic"` is the default shape,
-///   because it is isotropic, but it also is the slowest to compute. Both `"elliptic"` and `"diamond"`
-///   structuring elements always are symmetric. That is, their origin is centered on a pixel.
-///   The pixels included in the shape are those at most half of the diameter away from the origin.
-///   For the `"rectangular"` structuring element, a box with integer sizes is always generated,
-///   but the box can be even in size also, meaning that the origin is in between pixels.
+/// - `"elliptic"`: the isotropic flat structuring element, and the default shape. The size array gives the
+///   diameter along each dimension. It is always symmetric. That is, the origin is centered on a pixel.
+///   The pixels included in the disk or ellipse are those less than half of the diameter away from the origin.
+///   It is implemented through a relatively efficient algorithm that scales with the diameter, not the number
+///   of pixels covered. Rectangular, elliptic and octagonal structuring elements are much faster, especially
+///   for larger sizes.
+///   Any size array element that is smaller than 2 causes that dimension to not be processed.
+///
+/// - `"rectangular"`: the unit circle in a chessboard metric. The size array gives the diameter (or rather the
+///   side lengths). The rectangle can have even sizes, in which case it is not symmetric around the origin pixel.
+///   This structuring element is implemented with a one-dimensional pass along each image dimension.
+///   This decomposition makes this a highly efficient structuring element, with computation times that are
+///   independent of the size.
 ///   Any size array element that is smaller or equal to 1 causes that dimension to not be processed.
 ///
-/// - `"octagonal"`: an approximation to the ellipse in 2D only.
+/// - `"diamond"`: the unit circles in a city-block metric. The size array gives the diameter (the extent along
+///   each image axis). Like the ellipse, it is always symmetric. That is, the origin is centered on a pixel.
+///   If all sizes are equal, then this structuring element is decomposed into a unit diamond and $2^{n-1}$ diagonal
+///   lines (for an $n$-dimensional diamond). In this case, computation times that are independent of the size, like
+///   for the rectangle. However, for smaller diamonds, the decomposition is different: a unit diamond is applied
+///   repeatedly; this yielding faster computation times. If any size is different from the others, then the same
+///   algorithm as for the elliptic structuring element is used.
+///   Any size array element that is smaller than 2 causes that dimension to not be processed.
+///
+/// - `"octagonal"`: a fast approximation to the ellipse in 2D only. Octagons are decomposed into a rectangle
+///   and a diamond, each one implemented as described above. This makes the octagonal structuring element
+///   more expensive than either the diamond or rectangle, but still computable in constant time independent
+///   of the diameter.
+///   Any size array element that is smaller than 2 causes that dimension to not be processed.
 ///
 /// - `"parabolic"`: the parabolic structuring element is the morphological equivalent to the Gaussian
 ///   kernel in linear filtering. It is separable and perfectly isotropic. The size array corresponds
@@ -326,14 +345,17 @@ DIP_EXPORT void BasicMorphology(
 
 /// \brief Applies the dilation.
 ///
-/// `se` defines the structuring element.
+/// `se` defines the structuring element, see \ref dip::StructuringElement for options and details.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default value, and most meaningful one, is `"add min"`, but any value can be used.
-/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// For the rectangular, diamond, fast line and periodic line structuring elements, no boundary condition
 /// causes the filter to not read outside the image bounds. This is equivalent to `"add min"`.
 ///
-/// \see dip::Erosion, dip::Opening, dip::Closing, dip::RankFilter
+/// `in` must be a scalar image, and not complex-valued. In particular, `in` can be binary; this function
+/// is more efficient than \ref dip::BinaryDilation.
+///
+/// \see dip::Erosion, dip::Opening, dip::Closing, dip::RankFilter, dip::IsotropicDilation
 inline void Dilation(
       Image const& in,
       Image& out,
@@ -354,14 +376,17 @@ DIP_NODISCARD inline Image Dilation(
 
 /// \brief Applies the erosion with a standard structuring element.
 ///
-/// `se` defines the structuring element.
+/// `se` defines the structuring element. See \ref dip::Dilation for details and warnings.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
-/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// For the rectangular, diamond, fast line and periodic line structuring elements, no boundary condition
 /// causes the filter to not read outside the image bounds. This is equivalent to `"add max"`.
 ///
-/// \see dip::Dilation, dip::Opening, dip::Closing, dip::RankFilter
+/// `in` must be a scalar image, and not complex-valued. In particular, `in` can be binary; this function
+/// is more efficient than \ref dip::BinaryErosion.
+///
+/// \see dip::Dilation, dip::Opening, dip::Closing, dip::RankFilter, dip::IsotropicErosion
 inline void Erosion(
       Image const& in,
       Image& out,
@@ -382,16 +407,19 @@ DIP_NODISCARD inline Image Erosion(
 
 /// \brief Applies the closing with a standard structuring element.
 ///
-/// `se` defines the structuring element.
+/// `se` defines the structuring element. See \ref dip::Dilation for details and warnings.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// Meaningful values for the closing are `"add max"` and `"add min"`, but any value can
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
-/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// For the rectangular, diamond, fast line and periodic line structuring elements, no boundary condition
 /// causes the filter to not read outside the image bounds.
 ///
-/// \see dip::Dilation, dip::Erosion, dip::Opening, dip::RankMinClosing
+/// `in` must be a scalar image, and not complex-valued. In particular, `in` can be binary; this function
+/// is more efficient than \ref dip::BinaryClosing.
+///
+/// \see dip::Dilation, dip::Erosion, dip::Opening, dip::RankMinClosing, dip::IsotropicClosing
 inline void Closing(
       Image const& in,
       Image& out,
@@ -412,16 +440,19 @@ DIP_NODISCARD inline Image Closing(
 
 /// \brief Applies the opening with a standard structuring element.
 ///
-/// `se` defines the structuring element.
+/// `se` defines the structuring element. See \ref dip::Dilation for details and warnings.
 ///
 /// `boundaryCondition` determines the boundary conditions. See \ref dip::BoundaryCondition.
 /// Meaningful values for the opening are `"add max"` and `"add min"`, but any value can
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
-/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// For the rectangular, diamond, fast line and periodic line structuring elements, no boundary condition
 /// causes the filter to not read outside the image bounds.
 ///
-/// \see dip::Dilation, dip::Erosion, dip::Closing, dip::RankMaxOpening
+/// `in` must be a scalar image, and not complex-valued. In particular, `in` can be binary; this function
+/// is more efficient than \ref dip::BinaryOpening.
+///
+/// \see dip::Dilation, dip::Erosion, dip::Closing, dip::RankMaxOpening, dip::IsotropicOpening
 inline void Opening(
       Image const& in,
       Image& out,
@@ -465,8 +496,7 @@ DIP_NODISCARD inline Image Opening(
 /// with the default values.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void Tophat(
       Image const& in,
       Image& out,
@@ -499,8 +529,7 @@ DIP_NODISCARD inline Image Tophat(
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void MorphologicalThreshold(
       Image const& in,
       Image& out,
@@ -531,8 +560,7 @@ DIP_NODISCARD inline Image MorphologicalThreshold(
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void MorphologicalGist(
       Image const& in,
       Image& out,
@@ -563,8 +591,7 @@ DIP_NODISCARD inline Image MorphologicalGist(
 /// - `"both"` or `"dynamic"`: all edges produce equal response.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void MorphologicalRange(
       Image const& in,
       Image& out,
@@ -621,8 +648,7 @@ DIP_NODISCARD inline Image MorphologicalGradientMagnitude(
 /// to compute the signed edge strength.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void Lee(
       Image const& in,
       Image& out,
@@ -655,8 +681,7 @@ DIP_NODISCARD inline Image Lee(
 /// - `"average"`: computes the average of the result of the first two modes.
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters..
 DIP_EXPORT void MorphologicalSmoothing(
       Image const& in,
       Image& out,
@@ -717,8 +742,7 @@ DIP_NODISCARD inline Image MultiScaleMorphologicalGradient(
 /// ```
 ///
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
-/// See \ref dip::Dilation, \ref dip::Erosion, \ref dip::Opening and/or \ref dip::Closing for a description
-/// of these parameters.
+/// See \ref dip::Dilation for a description of these parameters.
 DIP_EXPORT void MorphologicalLaplace(
       Image const& in,
       Image& out,
@@ -1855,7 +1879,8 @@ DIP_NODISCARD inline Image AlternatingSequentialFilter(
 /// - If `in == dilation(in,miss) && erosion(in,hit) > in`: `out = erosion(in,hit) - in`.
 /// - Otherwise: `out = 0`.
 ///
-/// Note that the two SEs must be disjoint. If one pixel is set in both SEs, the output will be all zeros.
+/// Note that the two structuring elements must be disjoint. If one pixel is set in both structuring elements,
+/// the output will be all zeros.
 ///
 /// See also \ref dip::SupGenerating for a function specific to binary images.
 ///

@@ -29,7 +29,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::GetLabelBoundingBox()`.
 
-- Added `dip::IsotropicDilation()` and `dip::IsotropicErosion()` for binary images.
+- Added `dip::IsotropicDilation()`, `dip::IsotropicErosion()`, `dip::IsotropicClosing()` and `dip::IsotropicOpening()`
+  for binary images.
 
 - Added `dip::Image::Sample::Maximum()` and `dip::Image::Sample::Minimum()`.
 
@@ -47,6 +48,7 @@ title: "Changes DIPlib 3.1.0"
     - `dip::Label` (slightly more efficient for 3D and higher-dimensional images).
     - `dip::MomentAccumulator`.
     - `dip::MorphologicalReconstruction` and functions that depend on it.
+    - `dip::Dilation` and the other basic morphological operators with a diamond or octagonal structuring element.
 
 - `dip::OptimalFourierTransformSize()` has a new option to return a smaller or equal size, rather than
   a larger or equal size, so we can crop an image for efficient FFT instead of padding.
@@ -152,7 +154,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip.GetLabelBoundingBox()`.
 
-- Added `dip.IsotropicDilation()` and `dip.IsotropicErosion()` for binary images.
+- Added `dip.IsotropicDilation()`, `dip.IsotropicErosion()`, `dip.IsotropicClosing()` and `dip.IsotropicOpening()`
+  for binary images.
 
 - Added `dip.ImposeMinima()`.
 
