@@ -585,7 +585,7 @@ void LineMorphology(
          }
          // If the periodic line with even number of points, then the discrete line has origin at left side, to
          // correct for origin displacement of periodic line
-         Kernel discreteLineKernel( ( steps & 1 ) ? Kernel::ShapeCode::LINE : Kernel::ShapeCode::LEFT_LINE, discreteLineParam );
+         Kernel discreteLineKernel(( steps & 1 ) ? Kernel::ShapeCode::LINE : Kernel::ShapeCode::LEFT_LINE, discreteLineParam );
          if( mirror == Mirror::YES ) {
             discreteLineKernel.Mirror();
          }
@@ -811,6 +811,81 @@ void OctagonalMorphology(
    DIP_END_STACK_TRACE
 }
 
+void EllipticMorphology(
+      Image const& in,
+      Image& out,
+      FloatArray const& ellipseSizes,
+      BoundaryConditionArray const& bc,
+      BasicMorphologyOperation operation
+) {
+   // Small disks look like diamonds or rectangles
+   // In 2D:
+   //   sizes > sqrt(20) = 4.4721 : elliptic
+   //   sizes > 4 : diamond 5x5
+   //   sizes > sqrt(8) = 2.8284 : square 3x3
+   //   sizes > 2 : diamond 3x3
+   //   otherwise : null-op
+   // TODO: In 3D?
+   dfloat diameter = 0;
+   dfloat param = 0;
+   bool isotropic = true;
+   FloatArray sizes = ellipseSizes;
+   dip::uint dim1 = 0;
+   dip::uint dim2 = 0;
+   dip::uint nDims = 0;
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      if( sizes[ ii ] > 2 ) {
+         if( diameter == 0 ) {
+            diameter = sizes[ ii ];
+            sizes[ ii ] = param = diameter <= 4 ? 3.0 : 5.0; // Sets right size for small diamond or square approximation
+            dim1 = ii;
+         } else if( sizes[ ii ] == diameter ) {
+            sizes[ ii ] = param;
+         } else {
+            isotropic = false;
+         }
+         dim2 = ii;
+         ++nDims;
+      } else {
+         sizes[ ii ] = 1;
+      }
+   }
+   if( diameter == 0 ) { // happens if diameter <= 2
+      // Null op
+      out.Copy( in );
+      return;
+   }
+   if( nDims == 1 ) {
+      // In 1D everything is a rectangle
+      sizes[ dim1 ] = std::floor(( ellipseSizes[ dim1 ] - 1e-6 ) / 2 ) * 2 + 1;
+      RectangularMorphology( in, out, sizes, Mirror::NO, bc, operation );
+      return;
+   }
+   if( isotropic && ( nDims == 2 )) {
+      if( diameter <= std::sqrt( 8 )) {
+         // diamond size 3
+         Elemental2DDiamondMorphology( in, out, dim1, dim2, operation, 1 );
+         return;
+      }
+      if( diameter <= 4 ) {
+         // square size 3
+         RectangularMorphology( in, out, sizes, Mirror::NO, bc, operation );
+         return;
+      }
+      if ( diameter <= std::sqrt( 20 )) {
+         // diamond size 5
+         Elemental2DDiamondMorphology( in, out, dim1, dim2, operation, 2 );
+         return;
+      }
+   }
+   // SEs with more than 2 dimensions handled as general SEs
+   // Larger disk SEs handled as general SEs
+   // Non-isotropic elliptic SEs handled as general SEs
+   Kernel kernel{ Kernel::ShapeCode::ELLIPTIC, ellipseSizes };
+   GeneralSEMorphology( in, out, kernel, bc, operation );
+}
+
+
 } // namespace
 
 
@@ -834,6 +909,9 @@ void BasicMorphology(
          case StructuringElement::ShapeCode::RECTANGULAR:
             RectangularMorphology( in, out, se.Params( in.Sizes() ), mirror, bc, operation );
             break;
+         case StructuringElement::ShapeCode::ELLIPTIC:
+            EllipticMorphology( in, out, se.Params( in.Sizes()), bc, operation );
+            break;
          case StructuringElement::ShapeCode::DIAMOND:
             DiamondMorphology( in, out, se.Params( in.Sizes() ), bc, operation );
             break;
@@ -854,7 +932,6 @@ void BasicMorphology(
             ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, operation );
             break;
          //case StructuringElement::ShapeCode::DISCRETE_LINE:
-         //case StructuringElement::ShapeCode::ELLIPTIC:
          //case StructuringElement::ShapeCode::CUSTOM:
          default: {
             Kernel kernel = se.Kernel();
