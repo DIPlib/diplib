@@ -310,9 +310,9 @@ void init_assorted( py::module& m ) {
    m.def( "ReseedRng", []( dip::uint seed ){ RandomNumberGenerator().Seed( seed ); }, "Reseed the random number generator used by the noise, grid and object generation functions.");
 
    // diplib/geometry.h
-   m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray const& >( &dip::Wrap ), "in"_a, "wrap"_a );
+   m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray >( &dip::Wrap ), "in"_a, "wrap"_a );
    m.def( "Subsampling", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Subsampling ), "in"_a, "sample"_a );
-   m.def( "Resampling", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::Resampling ),
+   m.def( "Resampling", py::overload_cast< dip::Image const&, dip::FloatArray, dip::FloatArray, dip::String const&, dip::StringArray const& >( &dip::Resampling ),
           "in"_a, "zoom"_a = dip::FloatArray{ 1.0 }, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Shift", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::Shift ),
           "in"_a, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = dip::S::FOURIER, "boundaryCondition"_a = dip::StringArray{} );
@@ -347,7 +347,7 @@ void init_assorted( py::module& m ) {
    m.def( "LogPolarTransform2D", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LogPolarTransform2D ),
           "in"_a, "interpolationMethod"_a = dip::S::LINEAR );
 
-   m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray const& >( &dip::Tile ),
+   m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray >( &dip::Tile ),
           "in_array"_a, "tiling"_a = dip::UnsignedArray{} );
    m.def( "TileTensorElements", py::overload_cast< dip::Image const& >( &dip::TileTensorElements ),
           "in"_a );

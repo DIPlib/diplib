@@ -103,10 +103,10 @@ DIP_EXPORT void Wrap(
 );
 DIP_NODISCARD inline Image Wrap(
       Image const& in,
-      IntegerArray const& wrap
+      IntegerArray wrap
 ) {
    Image out;
-   Wrap( in, out, wrap );
+   Wrap( in, out, std::move( wrap ));
    return out;
 }
 
@@ -136,6 +136,16 @@ DIP_NODISCARD inline Image Subsampling(
    return out;
 }
 
+
+// Undocumented version of dip::Resampling that takes a BoundaryConditionArray as input, rather than a StringArray.
+DIP_EXPORT void Resampling(
+      Image const& in,
+      Image& out,
+      FloatArray zoom,
+      FloatArray shift,
+      String const& interpolationMethod,
+      BoundaryConditionArray const& bc
+);
 
 /// \brief Resamples an image with the given zoom factor and sub-pixel shift.
 ///
@@ -168,23 +178,27 @@ DIP_NODISCARD inline Image Subsampling(
 ///     The current implementation doesn't handle the `"asym"` boundary conditions properly.
 ///     For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
 ///     of properly using the saturated inversion.
-DIP_EXPORT void Resampling(
+inline void Resampling(
       Image const& in,
       Image& out,
       FloatArray zoom,
       FloatArray shift = { 0.0 },
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
-);
+) {
+   BoundaryConditionArray bc;
+   DIP_STACK_TRACE_THIS( bc = StringArrayToBoundaryConditionArray( boundaryCondition ));
+   Resampling( in, out, std::move( zoom ), std::move( shift ), interpolationMethod, bc );
+}
 DIP_NODISCARD inline Image Resampling(
       Image const& in,
-      FloatArray const& zoom,
-      FloatArray const& shift = { 0.0 },
+      FloatArray zoom,
+      FloatArray shift = { 0.0 },
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   Resampling( in, out, zoom, shift, interpolationMethod, boundaryCondition );
+   Resampling( in, out, std::move( zoom ), std::move( shift ), interpolationMethod, boundaryCondition );
    return out;
 }
 
@@ -235,10 +249,10 @@ DIP_EXPORT void ShiftFT(
 );
 DIP_NODISCARD inline Image ShiftFT(
       Image const& in,
-      FloatArray const& shift = { 0.0 }
+      FloatArray shift = { 0.0 }
 ) {
    Image out;
-   ShiftFT( in, out, shift );
+   ShiftFT( in, out, std::move( shift ));
    return out;
 }
 
@@ -833,10 +847,10 @@ DIP_EXPORT void Tile(
 );
 DIP_NODISCARD inline Image Tile(
       ImageConstRefArray const& in,
-      UnsignedArray const& tiling = {}
+      UnsignedArray tiling = {}
 ) {
    Image out;
-   Tile( in, out, tiling );
+   Tile( in, out, std::move( tiling ));
    return out;
 }
 

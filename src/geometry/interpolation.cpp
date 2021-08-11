@@ -192,10 +192,10 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
 void Resampling(
       Image const& c_in,
       Image& out,
-      FloatArray zoom,
-      FloatArray shift,
+      FloatArray zoom,  // by copy, modified
+      FloatArray shift, // by copy, modified
       String const& interpolationMethod,
-      StringArray const& boundaryCondition
+      BoundaryConditionArray const& bc
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = c_in.Dimensionality();
@@ -213,8 +213,6 @@ void Resampling(
    } else {
       DIP_STACK_TRACE_THIS( method = interpolation::ParseMethod( interpolationMethod ));
    }
-   BoundaryConditionArray bc;
-   DIP_STACK_TRACE_THIS( bc = StringArrayToBoundaryConditionArray( boundaryCondition ));
 
    // Preserve input
    Image in = c_in.QuickCopy();
