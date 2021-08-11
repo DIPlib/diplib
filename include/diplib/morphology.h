@@ -73,17 +73,18 @@ class DIP_NO_EXPORT Kernel;
 ///
 /// - `"diamond"`: the unit circles in a city-block metric. The size array gives the diameter (the extent along
 ///   each image axis). Like the ellipse, it is always symmetric. That is, the origin is centered on a pixel.
-///   If all sizes are equal, then this structuring element is decomposed into a unit diamond and $2^{n-1}$ diagonal
-///   lines (for an $n$-dimensional diamond). In this case, computation times that are independent of the size, like
+///   If all sizes are equal, then this structuring element is decomposed into a unit diamond and 2 diagonal
+///   lines, for a 2D diamond. In this case, computation times that are independent of the size, like
 ///   for the rectangle. However, for smaller diamonds, the decomposition is different: a unit diamond is applied
-///   repeatedly; this yielding faster computation times. If any size is different from the others, then the same
-///   algorithm as for the elliptic structuring element is used.
+///   repeatedly; this yielding faster computation times. If any size is different from the others, or if the
+///   diamond has more than two dimensions, then the same algorithm as for the elliptic structuring element is used.
 ///   Any size array element that is smaller than 2 causes that dimension to not be processed.
 ///
-/// - `"octagonal"`: a fast approximation to the ellipse in 2D only. Octagons are decomposed into a rectangle
+/// - `"octagonal"`: a fast approximation to the ellipse. Octagons (in 2D) are decomposed into a rectangle
 ///   and a diamond, each one implemented as described above. This makes the octagonal structuring element
 ///   more expensive than either the diamond or rectangle, but still computable in constant time independent
-///   of the diameter.
+///   of the diameter. We generalize this structuring element to arbitrary number of dimensions simply by
+///   applying those two smaller structuring elements in succession. In 3D this leads to a rhombicuboctahedron.
 ///   Any size array element that is smaller than 2 causes that dimension to not be processed.
 ///
 /// - `"parabolic"`: the parabolic structuring element is the morphological equivalent to the Gaussian

@@ -48,7 +48,8 @@ title: "Changes DIPlib 3.1.0"
     - `dip::Label` (slightly more efficient for 3D and higher-dimensional images).
     - `dip::MomentAccumulator`.
     - `dip::MorphologicalReconstruction` and functions that depend on it.
-    - `dip::Dilation` and the other basic morphological operators with a diamond or octagonal structuring element.
+    - `dip::Dilation` and the other basic morphological operators with a 2D diamond or octagonal structuring element,
+      or with a small 2D disk.
 
 - `dip::OptimalFourierTransformSize()` has a new option to return a smaller or equal size, rather than
   a larger or equal size, so we can crop an image for efficient FFT instead of padding.
@@ -113,6 +114,9 @@ title: "Changes DIPlib 3.1.0"
 
 - Morphological operations with the `"fast line"` structuring element triggered an assertion for some lines in 3D and
   higher dimensions.
+
+- Morphological operations with the isotropic `"diamond"` structuring element in 3D and higher dimensions was implemented
+  using a set of line structuring elements, but their composition didn't lead to a ball in city-block distance.
 
 
 

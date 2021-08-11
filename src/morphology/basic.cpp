@@ -23,6 +23,7 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/kernel.h"
+#include "diplib/geometry.h"
 #include "diplib/framework.h"
 #include "diplib/pixel_table.h"
 #include "diplib/overload.h"
@@ -554,6 +555,244 @@ void ParabolicMorphology(
    DIP_END_STACK_TRACE
 }
 
+// --- Basic 3x3 diamond-shaped SE ---
+
+template< typename TPI >
+class Elemental2DDiamondMorphologyLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return 5; // number of pixels in SE.
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         auto bufferLength = params.bufferLength;
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         auto inStride = params.inBuffer[ 0 ].stride;
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         auto outStride = params.outBuffer[ 0 ].stride;
+         // Are we processing along a dimension we're also filtering in?
+         dip::uint procDim = 0;
+         if( dim1_ == params.dimension ) {
+            procDim = 1;
+         } else if( dim2_ == params.dimension ) {
+            procDim = 2;
+         }
+         // Determine if the processing line is on an edge of the image or not
+         int edge1 = 0; // -1 = top; 1 = bottom
+         int edge2 = 0; // -1 = top; 1 = bottom
+         if( procDim != 1 ) {
+            if( params.position[ dim1_ ] == 0 ) {
+               edge1 = -1;
+            } else if ( params.position[ dim1_ ] == size1_ - 1 ) {
+               edge1 = 1;
+            }
+         }
+         if( procDim != 2 ) {
+            if( params.position[ dim2_ ] == 0 ) {
+               edge2 = -1;
+            } else if ( params.position[ dim2_ ] == size2_ - 1 ) {
+               edge2 = 1;
+            }
+         }
+         if(( edge1 != 0 ) || ( edge2 != 0 )) {
+            // Tread carefully!
+            // First pixel
+            dip::uint ii = 0;
+            TPI val = in[ 0 ];
+            if(( procDim != 1 ) && ( edge1 != -1 )) {
+               val = dilation_ ? std::max( val, in[ -stride1_ ] ) : std::min( val, in[ -stride1_ ] );
+            }
+            if( edge1 != 1 ) {
+               val = dilation_ ? std::max( val, in[  stride1_ ] ) : std::min( val, in[  stride1_ ] );
+            }
+            if(( procDim != 2 ) && ( edge2 != -1 )) {
+               val = dilation_ ? std::max( val, in[ -stride2_ ] ) : std::min( val, in[ -stride2_ ] );
+            }
+            if( edge2 != 1 ) {
+               val = dilation_ ? std::max( val, in[  stride2_ ] ) : std::min( val, in[  stride2_ ] );
+            }
+            *out = val;
+            in += inStride;
+            out += outStride;
+            // Most pixels
+            for( ii = 1; ii < bufferLength - 1; ++ii ) {
+               val = in[ 0 ];
+               if( edge1 != -1 ) {
+                  val = dilation_ ? std::max( val, in[ -stride1_ ] ) : std::min( val, in[ -stride1_ ] );
+               }
+               if( edge1 != 1 ) {
+                  val = dilation_ ? std::max( val, in[  stride1_ ] ) : std::min( val, in[  stride1_ ] );
+               }
+               if( edge2 != -1 ) {
+                  val = dilation_ ? std::max( val, in[ -stride2_ ] ) : std::min( val, in[ -stride2_ ] );
+               }
+               if( edge2 != 1 ) {
+                  val = dilation_ ? std::max( val, in[  stride2_ ] ) : std::min( val, in[  stride2_ ] );
+               }
+               *out = val;
+               in += inStride;
+               out += outStride;
+            }
+            // Last pixel
+            val = in[ 0 ];
+            if( edge1 != -1 ) {
+               val = dilation_ ? std::max( val, in[ -stride1_ ] ) : std::min( val, in[ -stride1_ ] );
+            }
+            if(( procDim != 1 ) && ( edge1 != 1 )) {
+               val = dilation_ ? std::max( val, in[  stride1_ ] ) : std::min( val, in[  stride1_ ] );
+            }
+            if( edge2 != -1 ) {
+               val = dilation_ ? std::max( val, in[ -stride2_ ] ) : std::min( val, in[ -stride2_ ] );
+            }
+            if(( procDim != 2 ) && ( edge2 != 1 )) {
+               val = dilation_ ? std::max( val, in[  stride2_ ] ) : std::min( val, in[  stride2_ ] );
+            }
+            *out = val;
+         } else {
+            // Otherwise, just plow ahead. Only the first and last pixel can access outside of image domain
+            if( dilation_ ) {
+               // First pixel
+               dip::uint ii = 0;
+               TPI val = in[ 0 ];
+               if( procDim != 1 ) {
+                  val = std::max( val, in[ -stride1_ ] );
+               }
+               val = std::max( val, in[  stride1_ ] );
+               if( procDim != 2 ) {
+                  val = std::max( val, in[ -stride2_ ] );
+               }
+               val = std::max( val, in[  stride2_ ] );
+               *out = val;
+               in += inStride;
+               out += outStride;
+               // Most pixels
+               for( ii = 1; ii < bufferLength - 1; ++ii ) {
+                  val = in[ 0 ];
+                  val = std::max( val, in[ -stride1_ ] );
+                  val = std::max( val, in[  stride1_ ] );
+                  val = std::max( val, in[ -stride2_ ] );
+                  val = std::max( val, in[  stride2_ ] );
+                  *out = val;
+                  in += inStride;
+                  out += outStride;
+               }
+               // Last pixel
+               val = in[ 0 ];
+               val = std::max( val, in[ -stride1_ ] );
+               if( procDim != 1 ) {
+                  val = std::max( val, in[  stride1_ ] );
+               }
+               val = std::max( val, in[ -stride2_ ] );
+               if( procDim != 2 ) {
+                  val = std::max( val, in[  stride2_ ] );
+               }
+               *out = val;
+            } else { // erosion
+               // First pixel
+               dip::uint ii = 0;
+               TPI val = in[ 0 ];
+               if( procDim != 1 ) {
+                  val = std::min( val, in[ -stride1_ ] );
+               }
+               val = std::min( val, in[  stride1_ ] );
+               if( procDim != 2 ) {
+                  val = std::min( val, in[ -stride2_ ] );
+               }
+               val = std::min( val, in[  stride2_ ] );
+               *out = val;
+               in += inStride;
+               out += outStride;
+               // Most pixels
+               for( ii = 1; ii < bufferLength - 1; ++ii ) {
+                  val = in[ 0 ];
+                  val = std::min( val, in[ -stride1_ ] );
+                  val = std::min( val, in[  stride1_ ] );
+                  val = std::min( val, in[ -stride2_ ] );
+                  val = std::min( val, in[  stride2_ ] );
+                  *out = val;
+                  in += inStride;
+                  out += outStride;
+               }
+               // Last pixel
+               val = in[ 0 ];
+               val = std::min( val, in[ -stride1_ ] );
+               if( procDim != 1 ) {
+                  val = std::min( val, in[  stride1_ ] );
+               }
+               val = std::min( val, in[ -stride2_ ] );
+               if( procDim != 2 ) {
+                  val = std::min( val, in[  stride2_ ] );
+               }
+               *out = val;
+            }
+        }
+      }
+      Elemental2DDiamondMorphologyLineFilter(
+            dip::uint dim1, dip::uint dim2, dip::uint size1, dip::uint size2,
+            dip::sint stride1, dip::sint stride2, Polarity polarity
+      ) : dim1_( dim1 ), dim2_( dim2 ), size1_( size1 ), size2_( size2 ),
+          stride1_( stride1 ), stride2_( stride2 ), dilation_( polarity == Polarity::DILATION ) {}
+   private:
+      dip::uint dim1_;
+      dip::uint dim2_;
+      dip::uint size1_; // size of dim1
+      dip::uint size2_; // size of dim2
+      dip::sint stride1_; // stride of dim1
+      dip::sint stride2_; // stride of dim2
+      bool dilation_;
+};
+
+void Elemental2DDiamondMorphology(
+      Image const& c_in,
+      Image& out,
+      dip::uint dim1, // dimension index to work in
+      dip::uint dim2, // other dimension index to work in -- this is a 2D diamond operation
+      Polarity polarity
+) {
+   Image in = c_in.QuickCopy();
+   if( out.Aliases( in )) {
+      DIP_STACK_TRACE_THIS( out.Strip() ); // We cannot work in place, ensure we get a new output image allocated
+   }
+   DataType dt = in.DataType();
+   DIP_START_STACK_TRACE
+      std::unique_ptr< Framework::ScanLineFilter > lineFilter;
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, Elemental2DDiamondMorphologyLineFilter,
+                              ( dim1, dim2, in.Size( dim1 ), in.Size( dim2 ), in.Stride( dim1 ), in.Stride( dim2 ), polarity ),
+                              dt );
+      // We're using the Scan framework, but we're being careful to ensure that no buffers are used, it will
+      // guaranteed pass pointers to the input and output images.
+      Framework::ScanMonadic( in, out, dt, dt, 1, *lineFilter, { Framework::ScanOption::NeedCoordinates } );
+   DIP_END_STACK_TRACE
+
+}
+
+void Elemental2DDiamondMorphology(
+      Image const& in,
+      Image& out,
+      dip::uint dim1, // dimension index to work in
+      dip::uint dim2, // other dimension index to work in -- this is a 2D diamond operation
+      BasicMorphologyOperation operation,
+      dip::uint repetitions // keep this small!
+) {
+   switch( operation ) {
+      //case BasicMorphologyOperation::DILATION:
+      //case BasicMorphologyOperation::EROSION:
+      default:
+         Elemental2DDiamondMorphology( in, out, dim1, dim2, operation == BasicMorphologyOperation::DILATION ? Polarity::DILATION : Polarity::EROSION );
+         for( dip::uint ii = 1; ii < repetitions; ++ii ) {
+            Elemental2DDiamondMorphology( out, out, dim1, dim2, operation == BasicMorphologyOperation::DILATION ? Polarity::DILATION : Polarity::EROSION );
+         }
+         break;
+      case BasicMorphologyOperation::CLOSING:
+         Elemental2DDiamondMorphology( in, out, dim1, dim2, BasicMorphologyOperation::DILATION, repetitions );
+         Elemental2DDiamondMorphology( out, out, dim1, dim2, BasicMorphologyOperation::EROSION, repetitions );
+         break;
+      case BasicMorphologyOperation::OPENING:
+         Elemental2DDiamondMorphology( in, out, dim1, dim2, BasicMorphologyOperation::EROSION, repetitions );
+         Elemental2DDiamondMorphology( out, out, dim1, dim2, BasicMorphologyOperation::DILATION, repetitions );
+         break;
+   }
+}
+
 // --- Composed SEs ---
 
 void LineMorphology(
@@ -620,36 +859,22 @@ void LineMorphology(
    }
 }
 
-void TwoStepDiamondMorphology(
+void TwoStep2DDiamondMorphology(
       Image const& in,
       Image& out,
-      FloatArray size, // by copy, we'll modify it again
+      dfloat lineLength,
       dip::uint procDim,
+      dip::uint dim2,
+      Mirror mirror,
       BoundaryConditionArray const& bc,
       BasicMorphologyOperation operation // should be either DILATION or EROSION.
 ) {
-   // To get all directions, we flip signs on all elements of `size` array except `procDim`.
-   // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
-   // `size` array must start off with all positive elements.
-   dip::uint nDims = size.size();
-   bool first = true;
-   while( true ) {
-      // This can be the fast line morphology, since lines are always at 0 or 45 degrees.
-      FastLineMorphology( first ? in : out, out, size, StructuringElement::ShapeCode::FAST_LINE, Mirror::NO, bc, operation );
-      first = false;
-      dip::uint dd;
-      for( dd = 0; dd < nDims; ++dd ) {
-         if(( dd != procDim ) && ( std::abs( size[ dd ] ) > 1.0 )) {
-            size[ dd ] = -size[ dd ];
-            if( size[ dd ] < 0 ) {
-               break;
-            }
-         }
-      }
-      if( dd == nDims ) {
-         break;
-      }
-   }
+   FloatArray size( in.Dimensionality(), 1.0 );
+   size[ procDim ] = lineLength;
+   size[ dim2 ] = lineLength;
+   FastLineMorphology( in, out, size, StructuringElement::ShapeCode::FAST_LINE, mirror, bc, operation );
+   size[ dim2 ] = -lineLength;
+   FastLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, mirror, bc, operation );
 }
 
 void DiamondMorphology(
@@ -660,75 +885,75 @@ void DiamondMorphology(
       BasicMorphologyOperation operation
 ) {
    dip::uint nDims = in.Dimensionality();
-   dfloat param = 0.0;
+   dfloat param = 0; // will always be an odd integer
    bool isotropic = true;
-   dip::uint procDim = 0;
-   dip::uint nProcDims = 0;
+   dip::uint nProcDims = 0; // number of dimensions with size > 1
+   dip::uint procDim = 0;   // first dimension with size > 1
+   dip::uint dim2 = 0;      // last dimension with size > 1
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1; // an odd size, same as in `dip::PixelTable::PixelTable(S::DIAMOND)`
-      if( size[ ii ] > 1.0 ) {
+      if( size[ ii ] > 1 ) {
          ++nProcDims;
-         if( param == 0.0 ) {
+         if( param == 0 ) {
             param = size[ ii ];
             procDim = ii;
          } else if( size[ ii ] != param ) {
             isotropic = false;
             break;
          }
+         dim2 = ii;
       }
    }
    if( nProcDims <= 1 ) {
       DIP_STACK_TRACE_THIS( RectangularMorphology( in, out, size, Mirror::NO, bc, operation ));
-   } else if( !isotropic || ( param < 7.0 )) {
-      // The threshold on 7 is determined empirically, for a large 2D image.
-      // If we didn't need to rely on intermediate buffers for the short lines, we could have left the threshold at 5,
-      // which is the minimum size that we can decompose.
-      DIP_START_STACK_TRACE
-         Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
-         GeneralSEMorphology( in, out, kernel, bc, operation );
-      DIP_END_STACK_TRACE
-   } else {
-      // We can separate the SE if param is at least 5, and the SE is isotropic (excluding dimensions where it's 1, those dimensions we don't process at all).
-      FloatArray unitSize( nDims, 1.0 );
-      dfloat lineLength = std::round(( param - 3.0 ) / 2.0 + 1.0 ); // rounding just in case there's a rounding error, but in principle this always gives a round number.
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if( size[ ii ] == param ) {
-            unitSize[ ii ] = 3.0;
-            size[ ii ] = lineLength;
-         } else {
-            size[ ii ] = 1.0;
-         }
-      }
-      Kernel unitDiamond{ Kernel::ShapeCode::DIAMOND, unitSize };
-      if( !( static_cast< dip::sint >( lineLength ) & 1 )) {
-         IntegerArray shift( nDims, 0 );
-         shift[ procDim ] = -1;
-         unitDiamond.Shift( shift );
-      }
-      DIP_START_STACK_TRACE
-         switch( operation ) {
-            default:
-            //case BasicMorphologyOperation::DILATION:
-            //case BasicMorphologyOperation::EROSION:
-               // TODO: For fully correct operation, we should do boundary expansion first, then these two operations, then crop.
-               // Step 1: apply operation with a unit diamond
-               GeneralSEMorphology( in, out, unitDiamond, bc, operation );
-               // Step 2: apply operation with line SEs
-               TwoStepDiamondMorphology( out, out, size, procDim, bc, operation );
-               break;
-            case BasicMorphologyOperation::CLOSING:
-               TwoStepDiamondMorphology( in, out, size, procDim, bc, BasicMorphologyOperation::DILATION );
-               GeneralSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::CLOSING );
-               TwoStepDiamondMorphology( out, out, size, procDim, bc, BasicMorphologyOperation::EROSION );
-               break;
-            case BasicMorphologyOperation::OPENING:
-               TwoStepDiamondMorphology( in, out, size, procDim, bc, BasicMorphologyOperation::EROSION );
-               GeneralSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::OPENING );
-               TwoStepDiamondMorphology( out, out, size, procDim, bc, BasicMorphologyOperation::DILATION );
-               break;
-         }
-      DIP_END_STACK_TRACE
+      return;
    }
+   if( !isotropic || ( nProcDims > 2 )) {
+      // We cannot do decomposition if not isotropic, or if too small, or if more than 2D
+      DIP_START_STACK_TRACE
+      Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
+      GeneralSEMorphology( in, out, kernel, bc, operation );
+      DIP_END_STACK_TRACE
+      return;
+   }
+   if( param <= 9 ) { // Optimal threshold here depends on image size, machine architecture, etc.
+      // We can do this with a few iterations of the elemental 2D diamond, which is faster than the other decomposition.
+      dip::uint reps = dip::uint( param ) / 2; // param is always an odd integer
+      Elemental2DDiamondMorphology( in, out, procDim, dim2, operation, reps );
+      return;
+   }
+   // Separate 2D diamond SE: unit diamond + two lines at 45 degrees.
+   dfloat lineLength = std::round(( param - 3.0 ) / 2.0 + 1.0 ); // rounding just in case there's a rounding error, but in principle this always gives a round number.
+   DIP_START_STACK_TRACE
+      switch( operation ) {
+         //case BasicMorphologyOperation::DILATION:
+         //case BasicMorphologyOperation::EROSION:
+         default:
+            // TODO: For fully correct operation, we should do boundary expansion first, then these two operations, then crop.
+            Elemental2DDiamondMorphology( in, out, procDim, dim2, operation, 1 );
+            if( !( static_cast< dip::sint >( lineLength ) & 1u )) {
+               // For even-sized lines, we need an additional one-pixel shift
+               FloatArray shift( in.Dimensionality(), 0 );
+               shift[ procDim ] = -1;
+               BoundaryCondition default_bc = ( operation == BasicMorphologyOperation::DILATION )
+                                              ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
+               Resampling( out, out, { 1.0 }, shift, S::NEAREST, bc.empty() ? BoundaryConditionArray{ default_bc } : bc );
+            }
+            TwoStep2DDiamondMorphology( out, out, lineLength, procDim, dim2, Mirror::NO, bc, operation );
+            break;
+         case BasicMorphologyOperation::CLOSING:
+            // For closings and openings we can ignore the shift, we just need to mirror the lines in the 2nd application.
+            TwoStep2DDiamondMorphology( in, out, lineLength, procDim, dim2, Mirror::NO, bc, BasicMorphologyOperation::DILATION );
+            Elemental2DDiamondMorphology( out, out, procDim, dim2, operation, 1 );
+            TwoStep2DDiamondMorphology( out, out, lineLength, procDim, dim2, Mirror::YES, bc, BasicMorphologyOperation::EROSION );
+            break;
+         case BasicMorphologyOperation::OPENING:
+            TwoStep2DDiamondMorphology( in, out, lineLength, procDim, dim2, Mirror::NO, bc, BasicMorphologyOperation::EROSION );
+            Elemental2DDiamondMorphology( out, out, procDim, dim2, operation, 1 );
+            TwoStep2DDiamondMorphology( out, out, lineLength, procDim, dim2, Mirror::YES, bc, BasicMorphologyOperation::DILATION );
+            break;
+      }
+   DIP_END_STACK_TRACE
 }
 
 void OctagonalMorphology(
@@ -783,6 +1008,7 @@ void OctagonalMorphology(
          //case BasicMorphologyOperation::DILATION:
          //case BasicMorphologyOperation::EROSION:
             // Step 1: apply operation with a diamond
+            // TODO: This can be simpler, we only need the line SEs in DiamondMorphology, not the unit diamond.
             DiamondMorphology( in, out, size, bc, operation );
             if( !skipRect ) {
                // Step 2: apply operation with a rectangle
