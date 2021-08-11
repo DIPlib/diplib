@@ -111,6 +111,9 @@ title: "Changes DIPlib 3.1.0"
 - `dip::Closing()` and `dip::Opening()` for elliptic and custom structuring elements now have a better behavior at the
   image border.
 
+- Morphological operations with the `"fast line"` structuring element triggered an assertion for some lines in 3D and
+  higher dimensions.
+
 
 
 

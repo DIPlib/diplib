@@ -1024,8 +1024,8 @@ void RectangularMorphology(
    UnsignedArray border( nDims, 0 );
    dip::uint nProcess = 0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if(( filterParam[ ii ] > 1.0 ) && ( in.Size( ii ) > 1 )) {
-         sizes[ ii ] = static_cast< dip::uint >( std::round( filterParam[ ii ] ));
+      sizes[ ii ] = static_cast< dip::uint >( std::round( filterParam[ ii ] ));
+      if(( sizes[ ii ] > 1 ) && ( in.Size( ii ) > 1 )) {
          process[ ii ] = true;
          ++nProcess;
          if( !bc.empty() ) {
@@ -1469,7 +1469,7 @@ void FastLineMorphology(
          x = ( static_cast< dfloat >( coords[ ii ] ) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
          end = std::min( end, static_cast< dip::uint >( ceil_cast( x )) - 1 );
       }
-      DIP_ASSERT( start <= end );
+      //DIP_ASSERT( start <= end );
 
       if( start == end ) {
          // Short-cut: the line has a single pixel, let's just copy the pixel from input to output
@@ -1478,7 +1478,9 @@ void FastLineMorphology(
             uint8* dest = outOrigin + offsetsOut[ start ];
             std::memcpy( dest, src, sizeOf );
          }
-      } else {
+      } else if( start <= end ) {
+         // We need this condition because our logic about start points is wrong for 3D lines with 3 non-zero angles
+         // We loop over start points in a rectangular area, but this should be a rhomboid. TODO: Fix the logic!
 
          // Prepare line filter parameters
          dip::uint lineLength = end - start + 1;
