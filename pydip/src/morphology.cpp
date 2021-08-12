@@ -119,6 +119,8 @@ void init_morphology( py::module& m ) {
           "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "sign"_a = dip::S::UNSIGNED, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalSmoothing", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalSmoothing ),
          "in"_a, "se"_a = dip::StructuringElement{}, "mode"_a = dip::S::AVERAGE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "MorphologicalSharpening", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalSharpening ),
+         "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MultiScaleMorphologicalGradient", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const&, dip::StringArray const& >( &dip::MultiScaleMorphologicalGradient ),
          "in"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = dip::S::ELLIPTIC, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalLaplace", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalLaplace ),

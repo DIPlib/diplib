@@ -36,6 +36,10 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip::ImposeMinima()`.
 
+- Added `dip::Toggle()`, another variant to `dip::Select()`.
+
+- Added `dip::MorphologicalSharpening()`, based on `dip::Toggle()`.
+
 ### Changed functionality
 
 - Replaced the use of `std::map` and `std::set` in various functions to `tsl::robin_map` and
@@ -118,6 +122,10 @@ title: "Changes DIPlib 3.1.0"
 - Morphological operations with the isotropic `"diamond"` structuring element in 3D and higher dimensions was implemented
   using a set of line structuring elements, but their composition didn't lead to a ball in city-block distance.
 
+- `dip::MorphologicalThreshold()`, `dip::MorphologicalGist()`, `dip::MorphologicalRange()`, `dip::MorphologicalSmoothing()`,
+  `dip::MultiScaleMorphologicalGradient()` and `dip::MorphologicalLaplace()` all produced wrong output for some combinations
+  of input image data types and option settings.
+
 
 
 
@@ -167,7 +175,7 @@ title: "Changes DIPlib 3.1.0"
 - Added `dip.IsotropicDilation()`, `dip.IsotropicErosion()`, `dip.IsotropicClosing()` and `dip.IsotropicOpening()`
   for binary images.
 
-- Added `dip.ImposeMinima()`.
+- Added `dip.ImposeMinima()`, `dip.Toggle()` and `dip.MorphologicalSharpening()`.
 
 ### Changed functionality
 

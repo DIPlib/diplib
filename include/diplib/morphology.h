@@ -672,8 +672,8 @@ DIP_NODISCARD inline Image Lee(
 
 /// \brief A morphological smoothing filter
 ///
-/// Implements a morphological smoothing based on the sequence of two complementary morphological
-/// operations. These can be chosen through the `polarity` parameter.
+/// Implements a morphological smoothing based on the sequence of an opening and a closing. Their order
+/// can be chosen through the `polarity` parameter.
 ///
 /// `polarity` can be one of:
 ///
@@ -698,6 +698,29 @@ DIP_NODISCARD inline Image MorphologicalSmoothing(
 ) {
    Image out;
    MorphologicalSmoothing( in, out, se, polarity, boundaryCondition );
+   return out;
+}
+
+/// \brief A morphological sharpening filter
+///
+/// Implements a morphological sharpening based on selecting per pixel the result of the dilation or erosion,
+/// whichever is closest to the input image.
+///
+/// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
+/// See \ref dip::Dilation for a description of these parameters..
+DIP_EXPORT void MorphologicalSharpening(
+      Image const& in,
+      Image& out,
+      StructuringElement const& se = {},
+      StringArray const& boundaryCondition = {}
+);
+DIP_NODISCARD inline Image MorphologicalSharpening(
+      Image const& in,
+      StructuringElement const& se = {},
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   MorphologicalSharpening( in, out, se, boundaryCondition );
    return out;
 }
 

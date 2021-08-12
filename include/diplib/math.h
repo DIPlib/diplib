@@ -877,6 +877,27 @@ DIP_NODISCARD inline Image Select( Image const& in1, Image const& in2, Image con
    return out;
 }
 
+/// \brief Writes to `out` whichever of `in1` or `in2` is closest to `in`.
+///
+/// Each pixel in `out` will contain the corresponding value in `in1` or `in2`, whichever is closer to the value of `in`.
+///
+/// An alternative, slower implementation would be:
+/// ```cpp
+/// mask = dip::Abs( in - in1 ) < dip::Abs( in - in2 );
+/// dip::Select( in1, in2, mask, out );
+/// ```
+///
+/// The output image has the same type as `in1` and `in2`. If these types are different, the output type is given by
+/// ```cpp
+/// dataType = dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
+/// ```
+DIP_EXPORT void Toggle( Image const& in, Image const& in1, Image const& in2, Image& out );
+DIP_NODISCARD inline Image Toggle( Image const& in, Image const& in1, Image const& in2 ) {
+   Image out;
+   Toggle( in, in1, in2, out );
+   return out;
+}
+
 /// \endgroup
 
 

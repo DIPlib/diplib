@@ -152,4 +152,6 @@ void init_math( py::module& m ) {
           "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Select ),
           "in1"_a , "in2"_a , "mask"_a );
+   m.def( "Toggle", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Toggle ),
+          "in1"_a , "in2"_a , "in3"_a );
 }

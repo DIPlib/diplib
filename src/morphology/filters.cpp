@@ -45,6 +45,14 @@ Image Separate( Image const& in, Image& out ) {
    return tmp;
 }
 
+// Compute the average of two images, using the type of c_in1, assuming both inputs are of the same type
+void Average( Image const& in1, Image const& in2, Image& out ) {
+   Image tmp = Convert( in1, DataType::SuggestFlex( in1.DataType() ));
+   tmp += in2;
+   tmp /= 2;
+   Convert( in1, out, in1.DataType() );
+}
+
 // "texture", "object", "both", "dynamic"=="both"
 enum class EdgeType {
       TEXTURE,
@@ -131,27 +139,26 @@ void MorphologicalThreshold(
          case EdgeType::BOTH:
             Dilation( in, tmp, se, boundaryCondition );
             Erosion( in, out, se, boundaryCondition );
-            out += tmp;
-            out /= 2;
+            Average( tmp, out, out );
             break;
          default:
          case EdgeType::TEXTURE:
             Closing( in, tmp, se, boundaryCondition );
             Opening( in, out, se, boundaryCondition );
-            out += tmp;
-            out /= 2;
+            Average( tmp, out, out );
             break;
          case EdgeType::OBJECT: {
             Image c_in = Separate( in, out );
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( tmp, out, se, boundaryCondition );
-            Subtract( tmp, out, out, out.DataType() );
+            Subtract( tmp, out, out, DataType::SuggestFlex( c_in.DataType() ));
             Erosion( c_in, tmp, se, boundaryCondition );
             out += tmp;
             Dilation( tmp, tmp, se, boundaryCondition );
             out -= tmp;
             out /= 2;
             out += c_in;
+            Convert( out, out, c_in.DataType() );
             break;
          }
       }
@@ -169,6 +176,7 @@ void MorphologicalGist(
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       Image tmp;
       Image c_in = Separate( in,  out );
+      c_in.Convert( DataType::SuggestFlex( c_in.DataType() ));
       switch( decodedEdgeType ) {
          case EdgeType::BOTH:
             Dilation( c_in, tmp, se, boundaryCondition );
@@ -222,7 +230,9 @@ void MorphologicalRange(
             Subtract( tmp, out, out, out.DataType() );
             break;
          case EdgeType::OBJECT: {
+            DataType dt = in.DataType();
             Image c_in = Separate( in,  out );
+            c_in.Convert( DataType::SuggestFlex( dt ));
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( tmp, out, se, boundaryCondition );
             Subtract( tmp, out, out, out.DataType() );
@@ -230,6 +240,7 @@ void MorphologicalRange(
             out -= tmp;
             Dilation( tmp, tmp, se, boundaryCondition );
             out += tmp;
+            out.Convert( dt );
             break;
          }
       }
@@ -300,11 +311,19 @@ void MorphologicalSmoothing(
       Closing( tmp, tmp, se, boundaryCondition );
       Closing( in, out, se, boundaryCondition );
       Opening( out, out, se, boundaryCondition );
-      out += tmp;
-      out /= 2;
+      Average( in, out, out );
    } else {
       DIP_THROW_INVALID_FLAG( mode );
    }
+}
+
+void MorphologicalSharpening(
+      Image const& in,
+      Image& out,
+      StructuringElement const& se,
+      StringArray const& boundaryCondition
+) {
+   Toggle( in, Dilation( in, se, boundaryCondition ), Erosion( in, se, boundaryCondition ), out );
 }
 
 void MultiScaleMorphologicalGradient(
@@ -319,14 +338,16 @@ void MultiScaleMorphologicalGradient(
    bool first = true;
    Image dila;
    Image eros;
+   Image c_in = Separate( in, out );
    for( dip::uint ii = lowerSize; ii <= upperSize; ++ii ) {
       StructuringElement se1( 2.0 * static_cast< dfloat >( ii ) + 1.0, shape );
       StructuringElement se2( 2.0 * static_cast< dfloat >( ii - 1 ) + 1.0, shape );
-      Dilation( in, dila, se1, boundaryCondition );
-      Erosion( in, eros, se1, boundaryCondition );
+      Dilation( c_in, dila, se1, boundaryCondition );
+      Erosion( c_in, eros, se1, boundaryCondition );
       Subtract( dila, eros, eros, dila.DataType() );
       if( first ) {
          Erosion( eros, out, se2, boundaryCondition );
+         out.Convert( DataType::SuggestFlex( c_in.DataType() ));
          first = false;
       } else {
          Erosion( eros, eros, se2, boundaryCondition );
@@ -334,6 +355,7 @@ void MultiScaleMorphologicalGradient(
       }
    }
    out /= upperSize - lowerSize + 1;
+   out.Convert( c_in.DataType() );
 }
 
 void MorphologicalLaplace(
@@ -343,9 +365,7 @@ void MorphologicalLaplace(
       StringArray const& boundaryCondition
 ) {
    Image c_in = Separate( in,  out );
-   Image tmp = Dilation( c_in, se, boundaryCondition );
-   Erosion( c_in, out, se, boundaryCondition );
-   out += tmp;
+   Add( Erosion( c_in, se, boundaryCondition ), Dilation( c_in, se, boundaryCondition ), out, DataType::SuggestFlex( c_in.DataType() ));
    out /= 2;
    out -= c_in;
 }

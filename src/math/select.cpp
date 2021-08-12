@@ -146,5 +146,50 @@ void Select(
    Framework::Scan( inar, outar, inBufT, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
+namespace {
+
+template< typename TPI >
+class ToggleScanLineFilter : public Framework::ScanLineFilter {
+      using TPS = FlexType< TPI >; // we want to compute the difference in a signed type
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 8; }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 2 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const inStride = params.inBuffer[ 0 ].stride;
+         dip::sint const in1Stride = params.inBuffer[ 1 ].stride;
+         dip::sint const in2Stride = params.inBuffer[ 2 ].stride;
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         dip::uint const bufferLength = params.bufferLength;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            bool mask = std::abs( TPS( *in ) - TPS( *in1 )) < std::abs( TPS( *in ) - TPS( *in2 ));
+            *out = mask ? *in1 : *in2;
+            in += inStride;
+            in1 += in1Stride;
+            in2 += in2Stride;
+            out += outStride;
+         }
+      }
+};
+
+} // namespace
+
+void Toggle(
+      Image const& in,
+      Image const& in1,
+      Image const& in2,
+      Image& out
+) {
+   DIP_THROW_IF( !in.DataType().IsReal() || !in1.DataType().IsReal() || !in2.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DataType dataType = dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > lineFilter;
+   DIP_OVL_NEW_REAL( lineFilter, ToggleScanLineFilter, (), dataType );
+   ImageConstRefArray inar{ in, in1, in2 };
+   ImageRefArray outar{ out };
+   DataTypeArray inBufT{ dataType, dataType, dataType };
+   Framework::Scan( inar, outar, inBufT, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
+}
 
 } // namespace dip
