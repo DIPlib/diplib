@@ -43,6 +43,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    # Compiler flags for Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic -Wno-c++17-extensions")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
+   set(CMAKE_C_FLAGS_SANITIZE "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
    set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    # Compiler flags for GNU C++
@@ -53,7 +54,9 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    # "DIP_EXPORT" in forward class declaration sometimes causes a warning in GCC 6.0 and 7.0.
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage; to see which flags are enabled: gcc -march=native -Q --help=target
+   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
+   set(CMAKE_C_FLAGS_SANITIZE "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
    set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
    # Compiler flags for Intel C++

@@ -102,6 +102,8 @@ title: "Changes DIPlib 3.1.0"
 
 - libics had a typo that caused out-of-bounds read (#81). 
 
+- Fixed error handling in `dip::ImageReadJPEG()` and `dip::ImageWriteJPEG()`, which previously would crash when libjpeg produced an error (#80).
+
 
 
 

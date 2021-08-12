@@ -24,31 +24,40 @@
 #include "diplib/file_io.h"
 
 #include "jpeglib.h"
-#include <setjmp.h>
+#include <csetjmp>
+
+// JPEG error handling stuff - modified from example.c in libjpeg source
+extern "C" {
+   static void my_error_exit( j_common_ptr cinfo );
+   static void my_output_message( j_common_ptr );
+}
+
+struct my_error_mgr {
+   struct jpeg_error_mgr pub; // "public" fields
+   std::jmp_buf setjmp_buffer;     // for return to caller
+};
+using my_error_ptr = struct my_error_mgr*;
+
+static void my_error_exit( j_common_ptr cinfo ) {
+   // cinfo->err really points to a my_error_mgr struct, so coerce pointer
+   my_error_ptr myerr = reinterpret_cast<my_error_ptr>( cinfo->err );
+   // Return control to the setjmp point
+   longjmp( myerr->setjmp_buffer, 1 );
+}
+
+static void my_output_message( j_common_ptr ) {} // Don't do anything with messages!
+
+#define DIP__DECLARE_JPEG_EXIT( message ) \
+std::jmp_buf setjmp_buffer; if( setjmp( setjmp_buffer )) { DIP_THROW_RUNTIME( message ); }
+
 
 namespace dip {
 
 namespace {
 
-// JPEG error handling stuff - modified from example.c in libjpeg source
-struct my_error_mgr {
-   struct jpeg_error_mgr pub;   // "public" fields
-   jmp_buf setjmp_buffer;      // for return to caller
-};
-using my_error_ptr = struct my_error_mgr*;
-
-void my_error_exit( j_common_ptr cinfo ) {
-   // cinfo->err really points to a my_error_mgr struct, so coerce pointer
-   my_error_ptr myerr = reinterpret_cast<my_error_ptr>(cinfo->err);
-   // Return control to the setjmp point
-   longjmp( myerr->setjmp_buffer, 1 );
-}
-
-void my_output_message( j_common_ptr ) {} // Don't do anything with messages!
-
 class JpegInput {
    public:
-      JpegInput( String filename ) : filename_( std::move( filename )) {
+      JpegInput( String filename, std::jmp_buf const& setjmp_buffer ) : filename_( std::move( filename )) {
          infile_ = std::fopen( filename_.c_str(), "rb" );
          if( infile_ == nullptr ) {
             if( !FileHasExtension( filename_ )) {
@@ -66,10 +75,7 @@ class JpegInput {
          cinfo_.err = jpeg_std_error( &jerr_.pub );
          jerr_.pub.error_exit = my_error_exit;
          jerr_.pub.output_message = my_output_message;
-         if( setjmp( jerr_.setjmp_buffer )) {
-            // If we get here, the JPEG code has signaled an error.
-            DIP_THROW_RUNTIME( "Error reading JPEG file." );
-         }
+         std::memcpy( jerr_.setjmp_buffer, setjmp_buffer, sizeof( setjmp_buffer ));
          jpeg_create_decompress( &cinfo_ );
          initialized_ = true;
          jpeg_stdio_src( &cinfo_, infile_ );
@@ -102,7 +108,7 @@ class JpegInput {
 
 class JpegOutput {
    public:
-      explicit JpegOutput( String const& filename ) {
+      explicit JpegOutput( String const& filename, std::jmp_buf const& setjmp_buffer ) {
          // Open the file for writing
          if( FileHasExtension( filename )) {
             outfile_ = std::fopen(filename.c_str(), "wb");
@@ -115,10 +121,7 @@ class JpegOutput {
          cinfo_.err = jpeg_std_error( &jerr_.pub );
          jerr_.pub.error_exit = my_error_exit;
          jerr_.pub.output_message = my_output_message;
-         if( setjmp( jerr_.setjmp_buffer )) {
-            // If we get here, the JPEG code has signaled an error.
-            DIP_THROW_RUNTIME( "Error writing JPEG file." );
-         }
+         std::memcpy( jerr_.setjmp_buffer, setjmp_buffer, sizeof( setjmp_buffer ));
          jpeg_create_compress( &cinfo_ );
          initialized_ = true;
          jpeg_stdio_dest( &cinfo_, outfile_ );
@@ -178,7 +181,8 @@ FileInformation ImageReadJPEG(
       String const& filename
 ) {
    // Open the file
-   JpegInput jpeg( filename );
+   DIP__DECLARE_JPEG_EXIT( "Error reading JPEG file" );
+   JpegInput jpeg( filename, setjmp_buffer );
 
    // Get info
    FileInformation info = GetJPEGInfo( jpeg );
@@ -223,14 +227,16 @@ FileInformation ImageReadJPEG(
 }
 
 FileInformation ImageReadJPEGInfo( String const& filename ) {
-   JpegInput jpeg( filename );
+   DIP__DECLARE_JPEG_EXIT( "Error reading JPEG file" );
+   JpegInput jpeg( filename, setjmp_buffer );
    FileInformation info = GetJPEGInfo( jpeg );
    return info;
 }
 
 bool ImageIsJPEG( String const& filename ) {
    try {
-      JpegInput jpeg( filename );
+      DIP__DECLARE_JPEG_EXIT( "Error reading JPEG file" );
+      JpegInput jpeg( filename, setjmp_buffer );
    } catch( ... ) {
       return false;
    }
@@ -244,10 +250,10 @@ void ImageWriteJPEG(
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   jpegLevel = clamp< dip::uint >( jpegLevel, 1, 100 );
 
    // Open the file
-   JpegOutput jpeg( filename );
+   DIP__DECLARE_JPEG_EXIT( "Error writing JPEG file" );
+   JpegOutput jpeg( filename, setjmp_buffer );
 
    // Set image properties
    int nchan = static_cast< int >( image.TensorElements() );
@@ -256,7 +262,7 @@ void ImageWriteJPEG(
    jpeg.cinfo().input_components = nchan;
    jpeg.cinfo().in_color_space = nchan > 1 ? JCS_RGB : JCS_GRAYSCALE;
    jpeg_set_defaults( jpeg.cinfoptr() );
-   jpeg_set_quality( jpeg.cinfoptr(), static_cast< int >( jpegLevel ), FALSE );
+   jpeg_set_quality( jpeg.cinfoptr(), static_cast< int >( clamp< dip::uint >( jpegLevel, 1, 100 )), FALSE );
    jpeg.cinfo().density_unit = 2; // dots per cm
    jpeg.cinfo().X_density = static_cast< UINT16 >( 0.01 / image.PixelSize( 0 ).RemovePrefix().magnitude ); // let's assume it's meter
    jpeg.cinfo().Y_density = static_cast< UINT16 >( 0.01 / image.PixelSize( 1 ).RemovePrefix().magnitude );
