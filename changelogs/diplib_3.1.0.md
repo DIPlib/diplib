@@ -100,6 +100,8 @@ title: "Changes DIPlib 3.1.0"
 
 - `dip::MeanAbs()` and `dip::SumAbs()` could produce wrong results for complex inputs.
 
+- libics had a typo that caused out-of-bounds read (#81). 
+
 
 
 

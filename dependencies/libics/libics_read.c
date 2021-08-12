@@ -897,7 +897,7 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
             for (sj = 0, si = 0; si < parameters; si++) {
                 if (si == bits) {
                     icsStruct->imel.origin = origin[si];
-                    icsStruct->imel.scale = scale[i];
+                    icsStruct->imel.scale = scale[si];
                     strcpy(icsStruct->imel.unit, unit[si]);
                 } else {
                     icsStruct->dim[sj].size = sizes[si];
