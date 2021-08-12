@@ -39,7 +39,13 @@ int main( int argc, char** argv ) {
    for( ; ii < argc; ++ii ) {
       std::string arg( argv[ ii ] );
       dip::Image img;
-      dip::FileInformation info = dip::ImageRead( img, arg, format );
+      dip::FileInformation info;
+      try {
+         info = dip::ImageRead( img, arg, format );
+      } catch( dip::Error const& err ) {
+         std::cout << err.what() << '\n';
+         return 1;
+      }
       std::cout << info.name << ":\n";
       std::cout << "   - fileType:        " << info.fileType        << '\n';
       std::cout << "   - dataType:        " << info.dataType        << '\n';

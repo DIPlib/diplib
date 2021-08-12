@@ -64,12 +64,16 @@ inline FileInformation ImageRead(
    if( format.empty() ) {
       format = FileGetExtension( filename );
       if( StringCompareCaseInsensitive( format, "ics" ) || StringCompareCaseInsensitive( format, "ids" )) {
+         DIP_THROW_IF( !ImageIsICS( filename ), "File has an ICS extension but is not an ICS file" );
          format = "ics";
       } else if( StringCompareCaseInsensitive( format, "tif" ) || StringCompareCaseInsensitive( format, "tiff" )) {
+         DIP_THROW_IF( !ImageIsTIFF( filename ), "File has a TIFF extension but is not a TIFF file" );
          format = "tiff";
       } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
+         DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but is not a JPEG file" );
          format = "jpeg";
       } else if( StringCompareCaseInsensitive( format, "npy" )) {
+         DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but is not an NPY file" );
          format = "npy";
       } else if( ImageIsICS( filename )) {
          format = "ics";
@@ -80,7 +84,11 @@ inline FileInformation ImageRead(
       } else if( ImageIsNPY( filename )) {
          format = "npy";
       } else {
+#ifdef DIP_CONFIG_HAS_DIPJAVAIO
          format = "bioformats";
+#else
+         DIP_THROW( "File not of a recognized format" );
+#endif
       }
    }
    FileInformation info;
@@ -144,7 +152,7 @@ DIP_NODISCARD inline Image ImageRead(
 /// - `""`: gzip compression (default). TIFF files with gzip compression are not universally recognized.
 /// - `"LZW"`, `"PackBits"`, `"JPEG"`: compression formats supported only by the TIFF format.
 ///
-/// For the JPEG format, `compression` is ignored.
+/// For the JPEG and NPY formats, `compression` is ignored.
 ///
 /// Use the filetype-specific functions directly for more control over how the image is written. See those
 /// functions for more information about the file types and how images are written to them.
