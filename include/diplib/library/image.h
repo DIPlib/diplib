@@ -2314,7 +2314,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// If `this` is not forged, or its sizes or number of tensor elements don't
       /// match those of `src`, then `this` will be forged or reforged to match `src`,
-      /// and then the data from `src` will be copied over.`this` will retain its
+      /// and then the data from `src` will be copied over. `this` will retain its
       /// external interface, if it has one, and not inherit that of `src`.
       /// Strides will be copied only if the data is contiguous, and any external interface
       /// allows those strides.

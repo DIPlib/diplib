@@ -936,17 +936,18 @@ DIP_NODISCARD inline Image RankMaxOpening(
 ///   the low valleys.
 ///
 /// - `"fast"` or `"correct"`: determines which algorithm is used:
-///   - `"fast"` (the default) is an algorithm that takes a few shortcuts, but usually manages to produce good results
-///     any way. One shortcut leads to all border pixels being marked as watershed lines. It is possible
-///     to extend the image by one pixel before processing to circumvent this. The other shortcut means
-///     that plateaus are not handled correctly. A plateau is a region in the image where pixels have
-///     exactly the same value. This is usually seen as watershed lines not running through the middle of
-///     the plateaus, instead being shifted to one side. Adding a little bit of noise to the image, and
-///     setting `maxDepth` to the range of the noise, usually improves the results in these cases
-///     a little bit.
-///   - `"correct"` is an algorithm that first finds the local minima through \ref dip::Minima (or maxima if
-///     `"high first"` is set), and then applies \ref dip::SeededWatershed. This always produces correct results,
-///     but is significantly slower.
+///     - `"fast"` (the default) is an algorithm that takes a few shortcuts, but usually manages to produce good results
+///       any way. One shortcut leads to all border pixels being marked as watershed lines. It is possible
+///       to extend the image by one pixel before processing to circumvent this. The other shortcut means
+///       that plateaus are not handled correctly. A plateau is a region in the image where pixels have
+///       exactly the same value. This is usually seen as watershed lines not running through the middle of
+///       the plateaus, instead being shifted to one side. Adding a little bit of noise to the image, and
+///       setting `maxDepth` to the range of the noise, usually improves the results in these cases
+///       a little bit.
+///
+///     - `"correct"` is an algorithm that first finds the local minima through \ref dip::Minima (or maxima if
+///       `"high first"` is set), and then applies \ref dip::SeededWatershed. This always produces correct results,
+///       but is significantly slower.
 ///
 /// The on-line region merging works as follows: When two regions first meet, a decision is
 /// made on whether to keep the regions separate (and thus put a watershed pixel at that point),

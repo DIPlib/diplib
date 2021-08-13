@@ -224,7 +224,7 @@ DIP_NODISCARD inline Image GrowRegions(
 /// by default. See \ref dip::GreyWeightedDistanceTransform for more information on how the
 /// grey-weighted distance is computed.
 ///
-/// \see dip::GrowRegions, dip::SeededWatershed
+/// \see dip::GrowRegions, dip::GreyWeightedDistanceTransform, dip::SeededWatershed
 DIP_EXPORT void GrowRegionsWeighted(
       Image const& label,
       Image const& grey,
@@ -277,8 +277,6 @@ DIP_NODISCARD inline Image SplitRegions(
 ///
 /// When no pixels with the value `objectID` exist in the image, the output \ref dip::RangeArray will be an
 /// empty array. Otherwise, it will have as many \ref dip::Range elements as dimensions are in the image.
-///
-/// \see dip::GetLabelBoundingBox2D.
 RangeArray DIP_EXPORT GetLabelBoundingBox(
       Image const& label,
       dip::uint objectID
