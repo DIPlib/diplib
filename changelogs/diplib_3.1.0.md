@@ -51,9 +51,10 @@ title: "Changes DIPlib 3.1.0"
     - `dip::Measurement::AddObjectIDs()` and `dip::Measurement::operator+()`.
     - `dip::Label` (slightly more efficient for 3D and higher-dimensional images).
     - `dip::MomentAccumulator`.
-    - `dip::MorphologicalReconstruction` and functions that depend on it.
     - `dip::Dilation` and the other basic morphological operators with a 2D diamond or octagonal structuring element,
       or with a small 2D disk.
+    - `dip::MorphologicalReconstruction` and functions that depend on it.
+    - `dip::SeededWatershed` and `dip::CompactWatershed`, and functions that depend on them.
 
 - `dip::OptimalFourierTransformSize()` has a new option to return a smaller or equal size, rather than
   a larger or equal size, so we can crop an image for efficient FFT instead of padding.

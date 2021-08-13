@@ -34,6 +34,7 @@
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/union_find.h"
+#include "diplib/border.h"
 #include "diplib/graph.h"
 #include "watershed_support.h"
 
@@ -65,7 +66,7 @@ using WatershedRegionList = UnionFind< LabelType, WatershedRegion< TPI >, UnionF
 
 template< typename TPI, typename UnionFunction >
 void AddPixel( WatershedRegionList< TPI, UnionFunction >& list, LabelType index, TPI value, bool lowFirst ) {
-   WatershedRegion< TPI >& region = list.Value( index );
+   auto& region = list.Value( index );
    ++( region.size );
    if( lowFirst ? ( region.lowest > value )
                 : ( region.lowest < value )) {
@@ -74,7 +75,7 @@ void AddPixel( WatershedRegionList< TPI, UnionFunction >& list, LabelType index,
 }
 template< typename TPI, typename UnionFunction >
 void AddPixel( WatershedRegionList< TPI, UnionFunction >& list, LabelType index ) {
-   WatershedRegion< TPI >& region = list.Value( index );
+   auto& region = list.Value( index );
    ++( region.size );
 }
 
@@ -241,6 +242,7 @@ void FastWatershed(
    }
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    if( maxDepth < 0 ) {
+      // We always must allow merging within a plateau
       maxDepth = 0;
    }
    bool binaryOutput = true;
@@ -301,7 +303,7 @@ void FastWatershed(
    Image labels;
    if( binaryOutput ) {
       out.ReForge( in, DT_BIN );
-      DIP_ASSERT( in.Strides() == out.Strides() );
+      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
       binary = out.QuickCopy();
       binary.Fill( false );
       labels.SetStrides( in.Strides() );
@@ -309,7 +311,7 @@ void FastWatershed(
       DIP_ASSERT( in.Strides() == labels.Strides() );
    } else {
       out.ReForge( in, DT_LABEL );
-      DIP_ASSERT( in.Strides() == out.Strides() );
+      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
       labels = out.QuickCopy();
       // binary remains unforged.
    }
@@ -333,8 +335,14 @@ void FastWatershed(
 // --- SEEDED WATERSHED ---
 
 constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
-constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
-constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 2;
+constexpr LabelType IMAGE_BORDER = WATERSHED_LABEL - 1;
+constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 2;
+constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 3;
+
+// Returns true if the value is a label, not a watershed pixel or other marker value
+inline bool IsValidLabel( LabelType label ) {
+   return ( label > 0 ) && ( label <= MAX_LABEL );
+}
 
 // Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL
 inline bool PixelHasForegroundNeighbor(
@@ -349,7 +357,7 @@ inline bool PixelHasForegroundNeighbor(
    for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
       if( !onEdge || it.IsInImage( coords, imsz )) {
          LabelType lab = *( label + neighborsLabels[ jj ] );
-         if(( lab != 0 ) && ( lab <= MAX_LABEL )) {
+         if( IsValidLabel( lab )) {
             return true;
          }
       }
@@ -357,46 +365,24 @@ inline bool PixelHasForegroundNeighbor(
    return false;
 }
 
-// Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL, and is larger in grey value
-template< typename TPI >
-inline bool PixelHasUphillForegroundNeighbor(
+// Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL, and is larger/smaller in grey value
+// COMPARATOR must be std::greater<> (for uphill) or std::less<> (for downhill).
+template< typename COMPARATOR, typename TPI >
+inline bool PixelHasUpOrDownhillForegroundNeighbor(
       LabelType const* label,
       TPI const* grey,
       NeighborList const& neighbors,
-      IntegerArray const& neighborsLabels,
-      IntegerArray const& neighborsGrey,
+      IntegerArray const& neighborsOffsets,
       UnsignedArray const& coords,
       UnsignedArray const& imsz,
       bool onEdge
 ) {
+   COMPARATOR comparator;
    auto it = neighbors.begin();
-   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
+   for( dip::uint jj = 0; jj < neighborsOffsets.size(); ++jj, ++it ) {
       if( !onEdge || it.IsInImage( coords, imsz )) {
-         LabelType lab = *( label + neighborsLabels[ jj ] );
-         if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) > *grey )) {
-            return true;
-         }
-      }
-   }
-   return false;
-}
-// Returns true if a pixel in the neighbor list is foreground and not WATERSHED_LABEL, and is smaller in grey value
-template< typename TPI >
-inline bool PixelHasDownhillForegroundNeighbor(
-      LabelType const* label,
-      TPI const* grey,
-      NeighborList const& neighbors,
-      IntegerArray const& neighborsLabels,
-      IntegerArray const& neighborsGrey,
-      UnsignedArray const& coords,
-      UnsignedArray const& imsz,
-      bool onEdge
-) {
-   auto it = neighbors.begin();
-   for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
-      if( !onEdge || it.IsInImage( coords, imsz )) {
-         LabelType lab = *( label + neighborsLabels[ jj ] );
-         if((( lab != 0 ) && ( lab <= MAX_LABEL )) && ( *( grey + neighborsGrey[ jj ] ) < *grey )) {
+         LabelType lab = *( label + neighborsOffsets[ jj ] );
+         if( IsValidLabel( lab ) && ( comparator( *( grey + neighborsOffsets[ jj ] ), *grey ))) {
             return true;
          }
       }
@@ -409,6 +395,7 @@ struct Qitem {
    TPI value;              // pixel value - used for sorting
    dip::uint insertOrder;  // order of insertion - used for sorting
    dip::sint offset;       // offset into labels image
+   bool isOnEdge;
 };
 template< typename TPI >
 bool QitemComparator_LowFirst( Qitem< TPI > const& a, Qitem< TPI > const& b ) {
@@ -422,17 +409,17 @@ bool QitemComparator_HighFirst ( Qitem< TPI > const& a, Qitem< TPI > const& b ) 
 template< typename TPI, typename QType >
 inline void EnqueueNeighbors(
       TPI* grey, LabelType* labels, BooleanArray const& useNeighbor,
-      dip::sint offsetGrey, dip::sint offsetLabels,
-      IntegerArray const& neighborOffsetsGrey, IntegerArray const& neighborOffsetsLabels,
+      dip::sint offset, IntegerArray const& neighborOffsets,
       QType& Q, dip::uint& order, bool lowFirst, bool uphillOnly
 ) {
    for( dip::uint jj = 0; jj < useNeighbor.size(); ++jj ) {
       if( useNeighbor[ jj ] ) {
-         dip::sint neighOffset = offsetLabels + neighborOffsetsLabels[ jj ];
-         if( labels[ neighOffset ] == 0 ) {
-            TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ]];
-            if( !uphillOnly || ( lowFirst ? grey[ offsetGrey ] < nVal : grey[ offsetGrey ] > nVal )) {
-               Q.push( Qitem< TPI >{ nVal, order++, neighOffset } );
+         dip::sint neighOffset = offset + neighborOffsets[ jj ];
+         LabelType lab = labels[ neighOffset ];
+         if(( lab == 0 ) || ( lab == IMAGE_BORDER )) {
+            TPI nVal = grey[ neighOffset ];
+            if( !uphillOnly || ( lowFirst ? grey[ offset ] < nVal : grey[ offset ] > nVal )) {
+               Q.push( Qitem< TPI >{ nVal, order++, neighOffset, lab == IMAGE_BORDER } );
                labels[ neighOffset ] = PIXEL_ON_STACK;
             }
          }
@@ -444,8 +431,7 @@ template< typename TPI >
 void SeededWatershedInternal(
       Image const& c_grey,
       Image& c_labels,
-      IntegerArray const& neighborOffsetsGrey,
-      IntegerArray const& neighborOffsetsLabels,
+      IntegerArray const& neighborOffsets,
       NeighborList const& neighborList,
       dip::uint numlabs,
       dfloat maxDepth,
@@ -464,7 +450,7 @@ void SeededWatershedInternal(
    auto QitemComparator = lowFirst ? QitemComparator_LowFirst< TPI > : QitemComparator_HighFirst< TPI >;
    std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, decltype( QitemComparator ) > Q( QitemComparator );
 
-   dip::uint nNeigh = neighborOffsetsLabels.size();
+   dip::uint nNeigh = neighborOffsets.size();
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
@@ -472,23 +458,24 @@ void SeededWatershedInternal(
    dip::uint order = 0;
    do {
       LabelType lab = it.template Sample< 1 >();
-      if( lab == 0 ) {
-         bool onEdge = it.IsOnEdge();
+      bool onEdge = lab == IMAGE_BORDER;
+      if(( lab == 0 ) || onEdge ) {
+         // A non-labeled, non-watershed pixel
          if( uphillOnly
              ? ( lowFirst
-                 ? PixelHasDownhillForegroundNeighbor( it.template Pointer< 1 >(), it.template Pointer< 0 >(),
-                                                       neighborList, neighborOffsetsLabels, neighborOffsetsGrey,
-                                                       it.Coordinates(), imsz, onEdge )
-                 : PixelHasUphillForegroundNeighbor( it.template Pointer< 1 >(), it.template Pointer< 0 >(),
-                                                     neighborList, neighborOffsetsLabels, neighborOffsetsGrey,
-                                                     it.Coordinates(), imsz, onEdge ))
-             : PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
-                                           neighborList, neighborOffsetsLabels,
-                                           it.Coordinates(), imsz, onEdge )) {
-            Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order++, it.template Offset< 1 >() } );
+                 ? PixelHasUpOrDownhillForegroundNeighbor< std::less<> >(
+                           it.template Pointer< 1 >(), it.template Pointer< 0 >(),
+                                 neighborList, neighborOffsets, it.Coordinates(), imsz, onEdge )
+                 : PixelHasUpOrDownhillForegroundNeighbor< std::greater<> >(
+                           it.template Pointer< 1 >(), it.template Pointer< 0 >(),
+                                 neighborList, neighborOffsets, it.Coordinates(), imsz, onEdge ))
+             : PixelHasForegroundNeighbor(
+                   it.template Pointer< 1 >(), neighborList, neighborOffsets, it.Coordinates(), imsz, onEdge )) {
+            Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order, it.template Offset< 1 >(), onEdge } );
             it.template Sample< 1 >() = PIXEL_ON_STACK;
          }
       } else if( lab <= numlabs ) {
+         // A labeled pixel
          AddPixel( regions, lab, it.template Sample< 0 >(), lowFirst );
       }
    } while( ++it );
@@ -500,22 +487,25 @@ void SeededWatershedInternal(
    NeighborLabels neighborLabels;
    BooleanArray useNeighbor( nNeigh );
    while( !Q.empty() ) {
-      dip::sint offsetLabels = Q.top().offset;
+      dip::sint offset = Q.top().offset;
+      bool onEdge = Q.top().isOnEdge;
       Q.pop();
-      UnsignedArray coords = coordinatesComputer( offsetLabels );
-      bool onEdge = c_grey.IsOnEdge( coords ); // TODO: label edge pixels (use upper bit?) such that we don't need to do compute this
-      dip::sint offsetGrey = c_grey.Offset( coords );
-      if( lowFirst ? PixelIsInfinity( grey[ offsetGrey ] ) : PixelIsMinusInfinity( grey[ offsetGrey ] )) {
+      //DIP_ASSERT( labels[ offset ] == PIXEL_ON_STACK );
+      if( lowFirst ? PixelIsInfinity( grey[ offset ] ) : PixelIsMinusInfinity( grey[ offset ] )) {
          break; // we're done
+      }
+      UnsignedArray coords;
+      if( onEdge ) {
+         coords = coordinatesComputer( offset );
       }
       neighborLabels.Reset();
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
          useNeighbor[ jj ] = ( !onEdge || lit.IsInImage( coords, imsz )) &&
-                             ( labels[ offsetLabels + neighborOffsetsLabels[ jj ]] != WATERSHED_LABEL );
-         if( useNeighbor[ jj ] ){
-            LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
-            if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
+                             ( labels[ offset + neighborOffsets[ jj ]] != WATERSHED_LABEL );
+         if( useNeighbor[ jj ] ) {
+            LabelType lab = labels[ offset + neighborOffsets[ jj ]];
+            if( IsValidLabel( lab )) {
                neighborLabels.Push( regions.FindRoot( lab ));
             }
          }
@@ -524,23 +514,22 @@ void SeededWatershedInternal(
          case 0:
             // Not touching a label: what?
             //DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbors!" );
-            labels[ offsetLabels ] = 0;
+            labels[ offset ] = 0;
             break;
          case 1: {
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
-            labels[ offsetLabels ] = lab;
-            AddPixel( regions, lab, grey[ offsetGrey ], lowFirst );
+            labels[ offset ] = lab;
+            AddPixel( regions, lab, grey[ offset ], lowFirst );
             // Add all unprocessed neighbors to heap
-            EnqueueNeighbors( grey, labels, useNeighbor, offsetGrey, offsetLabels,
-                              neighborOffsetsGrey, neighborOffsetsLabels, Q, order, lowFirst, uphillOnly );
+            EnqueueNeighbors( grey, labels, useNeighbor, offset, neighborOffsets, Q, order, lowFirst, uphillOnly );
             break;
          }
          default: {
             // Touching two or more labels
             dip::uint realRegionCount = 0;
             for( LabelType lab : neighborLabels ) {
-               if( !WatershedShouldMerge( grey[ offsetGrey ], regions.Value( lab ), maxDepth, maxSize )) {
+               if( !WatershedShouldMerge( grey[ offset ], regions.Value( lab ), maxDepth, maxSize )) {
                   ++realRegionCount;
                }
             }
@@ -548,13 +537,12 @@ void SeededWatershedInternal(
                // At most one is a "real" region: merge all
                LabelType lab = neighborLabels.Label( 0 );
                for( dip::uint jj = 1; jj < neighborLabels.Size(); ++jj ) {
-                  regions.Union( lab, neighborLabels.Label( jj ));
+                  lab = regions.Union( lab, neighborLabels.Label( jj ));
                }
-               labels[ offsetLabels ] = lab;
-               AddPixel( regions, lab, grey[ offsetGrey ], lowFirst );
+               labels[ offset ] = lab;
+               AddPixel( regions, lab, grey[ offset ], lowFirst );
                // Add all unprocessed neighbors to heap
-               EnqueueNeighbors( grey, labels, useNeighbor, offsetGrey, offsetLabels,
-                                 neighborOffsetsGrey, neighborOffsetsLabels, Q, order, lowFirst, uphillOnly );
+               EnqueueNeighbors( grey, labels, useNeighbor, offset, neighborOffsets, Q, order, lowFirst, uphillOnly );
             } else {
                // Else don't merge
                if( noGaps ) {
@@ -564,9 +552,9 @@ void SeededWatershedInternal(
                   LabelType bestLab = 0;
                   for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
                      if( useNeighbor[ jj ] ) {
-                        LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
-                        if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
-                           TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ]];
+                        LabelType lab = labels[ offset + neighborOffsets[ jj ]];
+                        if( IsValidLabel( lab )) {
+                           TPI nVal = grey[ offset + neighborOffsets[ jj ]];
                            if(( bestLab == 0 ) || ( lowFirst ? nVal < bestVal : nVal > bestVal )) {
                               bestVal = nVal;
                               bestLab = lab;
@@ -576,17 +564,16 @@ void SeededWatershedInternal(
                   }
                   if( bestLab == 0 ) {
                      // This should not really happen. Set as watershed label.
-                     labels[ offsetLabels ] = WATERSHED_LABEL;
+                     labels[ offset ] = WATERSHED_LABEL;
                   } else {
-                     labels[ offsetLabels ] = bestLab;
-                     AddPixel( regions, bestLab, grey[ offsetGrey ], lowFirst );
+                     labels[ offset ] = bestLab;
+                     AddPixel( regions, bestLab, grey[ offset ], lowFirst );
                      // Add all unprocessed neighbors to heap
-                     EnqueueNeighbors( grey, labels, useNeighbor, offsetGrey, offsetLabels,
-                                       neighborOffsetsGrey, neighborOffsetsLabels, Q, order, lowFirst, uphillOnly );
+                     EnqueueNeighbors( grey, labels, useNeighbor, offset, neighborOffsets, Q, order, lowFirst, uphillOnly );
                   }
                } else {
                   // Set as watershed label (so it won't be considered again)
-                  labels[ offsetLabels ] = WATERSHED_LABEL;
+                  labels[ offset ] = WATERSHED_LABEL;
                }
             }
             break;
@@ -595,19 +582,15 @@ void SeededWatershedInternal(
    }
 
    if( !binaryOutput ) {
-      // Process label image
-      // if binaryOutput it doesn't matter - we're thresholding this label image anyways
+      // Process label image if we want to use it as such
       ImageIterator< LabelType > lit( c_labels );
       lit.OptimizeAndFlatten();
       do {
-         LabelType lab1 = *lit;
-         if( lab1 == WATERSHED_LABEL ) {
+         LabelType lab = *lit;
+         if( lab == WATERSHED_LABEL ) {
             *lit = 0;
-         } else if(( lab1 > 0 ) && ( lab1 < PIXEL_ON_STACK )) {
-            LabelType lab2 = regions.FindRoot( lab1 );
-            if( lab1 != lab2 ) {
-               *lit = lab2;
-            }
+         } else if( IsValidLabel( lab )) {
+            *lit = regions.FindRoot( lab );
          }
       } while( ++lit );
    }
@@ -666,6 +649,11 @@ void SeededWatershed(
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
 
+   // We need the input image to have contiguous data, so that we can allocate other images with the
+   // same strides. This call will copy data if `in` is an ROI in another image, or for some other
+   // reason has non-contiguous data.
+   in.ForceContiguousData();
+
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
    if( c_mask.IsForged() ) {
@@ -676,37 +664,56 @@ void SeededWatershed(
       DIP_END_STACK_TRACE
    }
 
-   // Prepare output image
+   // Prepare output and labels image
+   Image labels;
+   if( binaryOutput ) {
+      // The output image can be whatever, `labels` is an intermediate image
+      labels.SetStrides( in.Strides() );
+      labels.ReForge( in, DT_LABEL );
+      DIP_ASSERT( in.Strides() == labels.Strides() );
+   } else {
+      // The `labels` image is the output image
+      if( in.Strides() != out.Strides() ) {
+         out.Strip();
+         out.SetStrides( in.Strides() );
+      }
+      out.ReForge( in, DT_LABEL );
+      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
+      labels = out.QuickCopy();
+   }
    dip::uint numlabs;
    DIP_START_STACK_TRACE
       if( c_seeds.DataType().IsBinary() ) {
-         numlabs = Label( c_seeds, out, connectivity );
+         numlabs = Label( c_seeds, labels, connectivity );
       } else {
          auto m = MaximumAndMinimum( c_seeds, mask );
          numlabs = static_cast< dip::uint >( m.Maximum() );
-         Convert( c_seeds, out, DT_LABEL );
+         labels.Copy( c_seeds );
       }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
-   out.SetPixelSize( std::move( pixelSize ));
+   // Set pixels outside the mask region to the watershed label
    if( mask.IsForged() ) {
-      out.At( !mask ) = WATERSHED_LABEL;
+      labels.At( !mask ) = WATERSHED_LABEL;
    }
+   // Flag border pixels without a label so we know it's on the border
+   detail::ProcessBorders< LabelType >( labels, []( LabelType* ptr, dip::sint ){
+      if( *ptr == 0 ) { *ptr = IMAGE_BORDER; }
+   } );
 
    // Create array with offsets to neighbors
-   NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
-   IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
-   IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
+   NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
+   IntegerArray neighborOffsets = neighbors.ComputeOffsets( in.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( SeededWatershedInternal, ( in, out,
-         neighborOffsetsIn, neighborOffsetsOut, neighborList,
+   DIP_OVL_CALL_REAL( SeededWatershedInternal, ( in, labels, neighborOffsets, neighbors,
          numlabs, maxDepth, maxSize, lowFirst, binaryOutput, noGaps, uphillOnly ), in.DataType() );
 
    if( binaryOutput ) {
       // Convert the labels into watershed lines
-      DIP_STACK_TRACE_THIS( Equal( out, WATERSHED_LABEL, out ));
+      DIP_STACK_TRACE_THIS( Equal( labels, WATERSHED_LABEL, out ));
    }
+   out.SetPixelSize( std::move( pixelSize ));
 }
 
 // --- COMPACT SEEDED WATERSHED ---
@@ -719,6 +726,7 @@ struct CQitem {
    dfloat value;           // pixel value + `compactness` * `seedDistance`
    dip::uint seedDistance; // distance to origin
    dip::sint offset;       // offset into labels image
+   bool isOnEdge;
 };
 template< typename TPI >
 bool CQitemComparator_LowFirst( CQitem< TPI > const& a, CQitem< TPI > const& b ) {
@@ -732,16 +740,16 @@ bool CQitemComparator_HighFirst ( CQitem< TPI > const& a, CQitem< TPI > const& b
 template< typename TPI, typename QType >
 inline void EnqueueNeighbors(
       TPI* grey, LabelType* labels, BooleanArray const& useNeighbor,
-      dip::sint offsetGrey, dip::sint offsetLabels,
-      IntegerArray const& neighborOffsetsGrey, IntegerArray const& neighborOffsetsLabels,
+      dip::sint offset, IntegerArray const& neighborOffsets,
       QType& Q, dip::uint distance, dfloat compactness
 ) {
    for( dip::uint jj = 0; jj < useNeighbor.size(); ++jj ) {
       if( useNeighbor[ jj ] ) {
-         dip::sint neighOffset = offsetLabels + neighborOffsetsLabels[ jj ];
-         if( labels[ neighOffset ] == 0 ) {
-            dfloat nVal = static_cast< dfloat >( grey[ offsetGrey + neighborOffsetsGrey[ jj ]] ) + compactness * static_cast< dfloat >( distance );
-            Q.push( CQitem< TPI >{ nVal, distance, neighOffset } );
+         dip::sint neighOffset = offset + neighborOffsets[ jj ];
+         LabelType lab = labels[ neighOffset ];
+         if(( lab == 0 ) || ( lab == IMAGE_BORDER )) {
+            dfloat nVal = static_cast< dfloat >( grey[ neighOffset ] ) + compactness * static_cast< dfloat >( distance );
+            Q.push( CQitem< TPI >{ nVal, distance, neighOffset, lab == IMAGE_BORDER } );
             labels[ neighOffset ] = PIXEL_ON_STACK;
          }
       }
@@ -752,8 +760,7 @@ template< typename TPI >
 void CompactWatershedInternal(
       Image const& c_grey,
       Image& c_labels,
-      IntegerArray const& neighborOffsetsGrey,
-      IntegerArray const& neighborOffsetsLabels,
+      IntegerArray const& neighborOffsets,
       NeighborList const& neighborList,
       dfloat compactness,
       bool lowFirst,
@@ -763,19 +770,20 @@ void CompactWatershedInternal(
    auto CQitemComparator = lowFirst ? CQitemComparator_LowFirst< TPI > : CQitemComparator_HighFirst< TPI >;
    std::priority_queue< CQitem< TPI >, std::vector< CQitem< TPI >>, decltype( CQitemComparator ) > Q( CQitemComparator );
 
-   dip::uint nNeigh = neighborOffsetsLabels.size();
+   dip::uint nNeigh = neighborOffsets.size();
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
    JointImageIterator< TPI, LabelType > it( { c_grey, c_labels } );
    do {
       LabelType lab = it.template Sample< 1 >();
-      if( lab == 0 ) {
-         bool onEdge = it.IsOnEdge();
+      bool onEdge = lab == IMAGE_BORDER;
+      if(( lab == 0 ) || onEdge ) {
+         // A non-labeled, non-watershed pixel
          if( PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
-                                         neighborList, neighborOffsetsLabels,
+                                         neighborList, neighborOffsets,
                                          it.Coordinates(), imsz, onEdge )) {
-            Q.push( CQitem< TPI >{ static_cast< dfloat >( it.template Sample< 0 >() ), 0, it.template Offset< 1 >() } );
+            Q.push( CQitem< TPI >{ static_cast< dfloat >( it.template Sample< 0 >() ), 0, it.template Offset< 1 >(), onEdge } );
             it.template Sample< 1 >() = PIXEL_ON_STACK;
          }
       }
@@ -788,23 +796,26 @@ void CompactWatershedInternal(
    NeighborLabels neighborLabels;
    BooleanArray useNeighbor( nNeigh );
    while( !Q.empty() ) {
-      dip::sint offsetLabels = Q.top().offset;
+      dip::sint offset = Q.top().offset;
+      bool onEdge = Q.top().isOnEdge;
       dip::uint distance = Q.top().seedDistance + 1;
       Q.pop();
-      UnsignedArray coords = coordinatesComputer( offsetLabels );
-      bool onEdge = c_grey.IsOnEdge( coords ); // TODO: label edge pixels (use upper bit?) such that we don't need to do compute this
-      dip::sint offsetGrey = c_grey.Offset( coords );
-      if( lowFirst ? PixelIsInfinity( grey[ offsetGrey ] ) : PixelIsMinusInfinity( grey[ offsetGrey ] )) {
+      //DIP_ASSERT( labels[ offset ] == PIXEL_ON_STACK );
+      if( lowFirst ? PixelIsInfinity( grey[ offset ] ) : PixelIsMinusInfinity( grey[ offset ] )) {
          break; // we're done
+      }
+      UnsignedArray coords;
+      if( onEdge ) {
+         coords = coordinatesComputer( offset );
       }
       neighborLabels.Reset();
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
          useNeighbor[ jj ] = ( !onEdge || lit.IsInImage( coords, imsz )) &&
-                             ( labels[ offsetLabels + neighborOffsetsLabels[ jj ]] != WATERSHED_LABEL );
+                             ( labels[ offset + neighborOffsets[ jj ]] != WATERSHED_LABEL );
          if( useNeighbor[ jj ] ){
-            LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
-            if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
+            LabelType lab = labels[ offset + neighborOffsets[ jj ]];
+            if( IsValidLabel( lab )) {
                neighborLabels.Push( lab );
             }
          }
@@ -813,15 +824,14 @@ void CompactWatershedInternal(
          case 0:
             // Not touching a label: what?
             //DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbors!" );
-            labels[ offsetLabels ] = 0;
+            labels[ offset ] = 0;
             break;
          case 1: {
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
-            labels[ offsetLabels ] = lab;
+            labels[ offset ] = lab;
             // Add all unprocessed neighbors to heap
-            EnqueueNeighbors( grey, labels, useNeighbor, offsetGrey, offsetLabels,
-                              neighborOffsetsGrey, neighborOffsetsLabels, Q, distance, compactness );
+            EnqueueNeighbors( grey, labels, useNeighbor, offset, neighborOffsets, Q, distance, compactness );
             break;
          }
          default: {
@@ -833,9 +843,9 @@ void CompactWatershedInternal(
                LabelType bestLab = 0;
                for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
                   if( useNeighbor[ jj ] ) {
-                     LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
-                     if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
-                        TPI nVal = grey[ offsetGrey + neighborOffsetsGrey[ jj ]];
+                     LabelType lab = labels[ offset + neighborOffsets[ jj ]];
+                     if( IsValidLabel( lab )) {
+                        TPI nVal = grey[ offset + neighborOffsets[ jj ]];
                         if(( bestLab == 0 ) || ( lowFirst ? nVal < bestVal : nVal > bestVal )) {
                            bestVal = nVal;
                            bestLab = lab;
@@ -845,16 +855,15 @@ void CompactWatershedInternal(
                }
                if( bestLab == 0 ) {
                   // This should not really happen. Set as watershed label.
-                  labels[ offsetLabels ] = WATERSHED_LABEL;
+                  labels[ offset ] = WATERSHED_LABEL;
                } else {
-                  labels[ offsetLabels ] = bestLab;
+                  labels[ offset ] = bestLab;
                   // Add all unprocessed neighbors to heap
-                  EnqueueNeighbors( grey, labels, useNeighbor, offsetGrey, offsetLabels,
-                                    neighborOffsetsGrey, neighborOffsetsLabels, Q, distance, compactness );
+                  EnqueueNeighbors( grey, labels, useNeighbor, offset, neighborOffsets, Q, distance, compactness );
                }
             } else {
                // Set as watershed label (so it won't be considered again)
-               labels[ offsetLabels ] = WATERSHED_LABEL;
+               labels[ offset ] = WATERSHED_LABEL;
             }
             break;
          }
@@ -862,8 +871,7 @@ void CompactWatershedInternal(
    }
 
    if( !binaryOutput ) {
-      // Process label image
-      // if binaryOutput it doesn't matter - we're thresholding this label image anyways
+      // Process label image if we want to use it as such
       ImageIterator< LabelType > lit( c_labels );
       lit.OptimizeAndFlatten();
       do {
@@ -927,6 +935,11 @@ void CompactWatershed(
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
 
+   // We need the input image to have contiguous data, so that we can allocate other images with the
+   // same strides. This call will copy data if `in` is an ROI in another image, or for some other
+   // reason has non-contiguous data.
+   in.ForceContiguousData();
+
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
    if( c_mask.IsForged() ) {
@@ -938,36 +951,56 @@ void CompactWatershed(
    }
 
    // Prepare output image
+   // Prepare output and labels image
+   Image labels;
+   if( binaryOutput ) {
+      // The output image can be whatever, `labels` is an intermediate image
+      labels.SetStrides( in.Strides() );
+      labels.ReForge( in, DT_LABEL );
+      DIP_ASSERT( in.Strides() == labels.Strides() );
+   } else {
+      // The `labels` image is the output image
+      if( in.Strides() != out.Strides() ) {
+         out.Strip();
+         out.SetStrides( in.Strides() );
+      }
+      out.ReForge( in, DT_LABEL );
+      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
+      labels = out.QuickCopy();
+   }
    dip::uint numlabs;
    DIP_START_STACK_TRACE
-      if( c_seeds.DataType().IsBinary() ) {
-         numlabs = Label( c_seeds, out, connectivity );
-      } else {
-         auto m = MaximumAndMinimum( c_seeds, mask );
-         numlabs = static_cast< dip::uint >( m.Maximum() );
-         Convert( c_seeds, out, DT_LABEL );
-      }
+   if( c_seeds.DataType().IsBinary() ) {
+      numlabs = Label( c_seeds, labels, connectivity );
+   } else {
+      auto m = MaximumAndMinimum( c_seeds, mask );
+      numlabs = static_cast< dip::uint >( m.Maximum() );
+      labels.Copy( c_seeds );
+   }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
-   out.SetPixelSize( std::move( pixelSize ));
+   // Set pixels outside the mask region to the watershed label
    if( mask.IsForged() ) {
-      out.At( !mask ) = WATERSHED_LABEL;
+      labels.At( !mask ) = WATERSHED_LABEL;
    }
+   // Flag border pixels without a label so we know it's on the border
+   detail::ProcessBorders< LabelType >( labels, []( LabelType* ptr, dip::sint ){
+      if( *ptr == 0 ) { *ptr = IMAGE_BORDER; }
+   } );
 
    // Create array with offsets to neighbors
-   NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
-   IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
-   IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
+   NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
+   IntegerArray neighborOffsets = neighbors.ComputeOffsets( in.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( CompactWatershedInternal, ( in, out,
-         neighborOffsetsIn, neighborOffsetsOut, neighborList,
+   DIP_OVL_CALL_REAL( CompactWatershedInternal, ( in, labels, neighborOffsets, neighbors,
          compactness, lowFirst, binaryOutput, noGaps ), in.DataType() );
 
    if( binaryOutput ) {
       // Convert the labels into watershed lines
-      DIP_STACK_TRACE_THIS( Equal( out, WATERSHED_LABEL, out ));
+      DIP_STACK_TRACE_THIS( Equal( labels, WATERSHED_LABEL, out ));
    }
+   out.SetPixelSize( std::move( pixelSize ));
 }
 
 // --- DISPATCH FUNCTIONS ---
