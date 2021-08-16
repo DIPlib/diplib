@@ -719,6 +719,19 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorCov[ 2 ] == 0.0 ); // variance 3rd element
    DOCTEST_CHECK( tensorCov[ 4 ] == 0.0 ); // covariance 1st & 3rd
    DOCTEST_CHECK( tensorCov[ 5 ] == 0.0 ); // covariance 2nd & 3rd
+
+   std::vector< dip::Histogram > histograms( 3 );
+   DOCTEST_CHECK( !histograms[ 0 ].IsInitialized() );
+   DOCTEST_CHECK_THROWS( histograms[ 0 ].Count() );
+   DOCTEST_CHECK_THROWS( dip::Mean( histograms[ 0 ] ));
+   histograms[ 0 ] = tensorH;
+   histograms[ 1 ] = halfGaussH;
+   DOCTEST_CHECK( histograms[ 0 ].IsInitialized() );
+   DOCTEST_CHECK( histograms[ 0 ].Count() == tensorIm.NumberOfPixels() );
+   DOCTEST_CHECK( histograms[ 0 ].Dimensionality() == 3 );
+   DOCTEST_CHECK( histograms[ 1 ].Count() == Count( mask ) );
+   DOCTEST_CHECK( histograms[ 1 ].Dimensionality() == 1 );
+   DOCTEST_CHECK_THROWS( histograms[ 2 ].Count() );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST
