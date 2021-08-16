@@ -41,13 +41,7 @@ Image& Image::PermuteDimensions( UnsignedArray const& order ) {
    }
    sizes_ = sizes_.permute( order );
    strides_ = strides_.permute( order );
-   if( pixelSize_.IsDefined() ) {
-      dip::PixelSize newpixelsz;
-      for( dip::uint ii = 0; ii < newnd; ++ii ) {
-         newpixelsz.Set( ii, pixelSize_[ order[ ii ]] );
-      }
-      pixelSize_ = newpixelsz;
-   }
+   pixelSize_.Permute( order );
    return *this;
 }
 
