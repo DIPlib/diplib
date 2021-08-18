@@ -1164,7 +1164,7 @@ classdef dip_image
                b = reshape(b,size(b,1),size(b,2),[]);
             end
             a.Data = subsasgn_dip(a.Data,s,b);
-         else
+         elseif isnumeric(b)
             reshaped = false;
             if numel(s.subs{2}) > 1
                I = find(size(b) == numel(s.subs{2}));
@@ -1184,7 +1184,7 @@ classdef dip_image
                   if ndims(b)==2 && numel(s.subs)>2
                      % It's become a 0D tensor image: we'll need to replicate it to allow
                      % assignment of 0D image to multiple locations in 'a'
-                     sz = cellfun('numel',s.subs);
+                     sz = cellfun('prodofsize',s.subs);
                      for ii=3:numel(sz)
                         if isequal(s.subs{ii},':')
                            sz(ii) = size(a,ii);
@@ -1204,6 +1204,8 @@ classdef dip_image
                end
             end
             a.Data = subsasgn_mat(a.Data,s,b);
+         else
+            error('Cannot assign non-numeric data into image')
          end
          if nd == 1 && numel(sz) > 1
             a.Data = reshape(a.Data,orig_sz);
@@ -2823,7 +2825,18 @@ function a = subsasgn_core(a,s,b)
    % so we call SUBSASGN on each of the tensor elements of B.
    telemsA = s.subs{2};
    ntelemsB = size(b,2);
-   if ntelemsB == 1
+   if ntelemsB == numel(telemsA)
+      % Insert b(:,ii,:,:,:,...) into tensor element telemsA(ii)
+      sb = substruct('()',repmat({':'},1,ndims(b)));
+      for ii = 1:numel(telemsA)
+         s.subs{2} = telemsA(ii);
+         sb.subs{2} = ii;
+         b2 = subsref(b,sb);
+         %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b2)), mat2str(size(a)))
+         %disp(s)
+         a = subsasgn(a,s,b2);
+      end
+   elseif ntelemsB == 1
       % Insert b into each tensor element
       for ii = telemsA
          s.subs{2} = ii;
@@ -2832,18 +2845,6 @@ function a = subsasgn_core(a,s,b)
          a = subsasgn(a,s,b);
       end
    else
-      % Insert b(:,ii,:,:,:,...) into tensor element ii
-      if ntelemsB ~= numel(telemsA)
-         error('Subscripted assignment tensor sizes mismatch')
-      end
-      sb = substruct('()',repmat({':'},1,ndims(b)));
-      for ii = telemsA
-         s.subs{2} = ii;
-         sb.subs{2} = ii;
-         b2 = subsref(b,sb);
-         %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b2)), mat2str(size(a)))
-         %disp(s)
-         a = subsasgn(a,s,b2);
-      end
+      error('Subscripted assignment tensor sizes mismatch')
    end
 end

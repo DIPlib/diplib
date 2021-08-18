@@ -158,6 +158,9 @@ title: "Changes DIPlib 3.1.0"
   with e.g. a 3x3 matrix would convert the matrix to a scalar 3x3 image, rather than a 0D matrix image.
   These now behave more similarly to how they behaved in *DIPimage* 2.9.
 
+- Assignments into multiple tensor dimensions like `img{2:3} = [4,5]` or `img{2:3} = gaussf(img{2:3})` produced
+  an error message.
+
 (See also bugfixes to *DIPlib*.)
 
 
