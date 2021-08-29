@@ -950,9 +950,9 @@ inline dip::Image GetImage(
       ndims = mxGetNumberOfDimensions( mxdata );
       psizes = mxGetDimensions( mxdata );
       if( ndims <= 2 ) {
-         if( psizes[ 0 ] == 1 && psizes[ 1 ] == 1 ) {
+         if(( psizes[ 0 ] == 1 ) && ( psizes[ 1 ] == 1 )) {
             ndims = 0;
-         } else if( psizes[ 0 ] > 1 && psizes[ 1 ] > 1 ) {
+         } else if(( psizes[ 0 ] > 1 ) && ( psizes[ 1 ] > 1 )) {
             ndims = 2;
          } else {
             ndims = 1;
@@ -961,7 +961,7 @@ inline dip::Image GetImage(
             if(( psizes[ 0 ] <= 5 ) && ( psizes[ 1 ] <= 5 )) {
                // If the array is 1D or 2D and small, we'll turn it into a 0D tensor image at the end
                ndims = 1;
-               lastDimToTensor = true;
+               lastDimToTensor = true; // This is true also for scalars!
                lastDimTensorSizes = { psizes[ 0 ], psizes[ 1 ] };
             }
          }
@@ -975,7 +975,7 @@ inline dip::Image GetImage(
       }
       // Data Type
       type = mxGetClassID( mxdata );
-      maybeCast = ( ndims == 0 ) && ( type == mxDOUBLE_CLASS ); // If it's a scalar double, we might want to cast it to single instead.
+      maybeCast = lastDimToTensor && ( type == mxDOUBLE_CLASS ); // If it's a scalar double, we might want to cast it to single instead.
       complex = mxIsComplex( mxdata );
       if( complex ) {
          // The complex data in an mxArray is stored as two separate memory blocks, and need to be copied to be
