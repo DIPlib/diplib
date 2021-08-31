@@ -4,23 +4,24 @@
 %  A = CELL2IM(B)
 %  A = CELL2IM(B,COLSPACE)
 %
-%  Converts the cell array B to a dip_image. Each cell of B is considered a tensor
-%  component, and must contain a scalar image (or a matrix) of the same size. A will
-%  have SIZE(B) for tensor sizes, and be a full column-major matrix.
+%  Converts the cell array B to a dip_image. Each cell of B is considered a
+%  tensor component, and must contain a scalar image (or a matrix) of the same
+%  size. A will have SIZE(B) for tensor sizes, and be a full column-major
+%  matrix.
 %
 %  If COLSPACE is given, will assign the given color space.
 %
 % EXAMPLES:
 %  a = readim('flamingo');
 %  b = im2cell(a);
-%  c = cell2im(b,'rgb');   % c is identical to a.
+%  c = cell2im(b,'srgb');  % c is identical to a.
 %
 %  a = cell(2,2);
 %  a{1,1} = readim('erika');
 %  a{1,2} = gaussf(a{1,1});
 %  a{2,1} = a{1,2};
 %  a{2,2} = medif(a{1,1});
-%  b = cell2im(a);   % b is a 2x2 tensor image
+%  b = cell2im(a);         % b is a 2x2 tensor image
 %
 % SEE ALSO:
 %  im2cell, mat2im, joinchannels, dip_image.dip_image

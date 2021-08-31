@@ -145,6 +145,8 @@ title: "Changes DIPlib 3.1.0"
   (that is, `"foo"` is now interpreted the same as `'foo'`, and `["foo","bar"]` is now interpreted the
   same as `{'foo','bar'}`).
 
+- `mat2im` also accepts -1 as second argument, taking the last array dimension as the tensor dimension.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
@@ -160,6 +162,9 @@ title: "Changes DIPlib 3.1.0"
 
 - Assignments into multiple tensor dimensions like `img{2:3} = [4,5]` or `img{2:3} = gaussf(img{2:3})` produced
   an error message.
+
+- `im2mat` again puts the tensor dimension (and color channels) as the last dimension of the output array, as
+  it did in *DIPimage* 2.9.
 
 (See also bugfixes to *DIPlib*.)
 

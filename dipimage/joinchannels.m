@@ -11,7 +11,7 @@
 %
 %   See also dip_image/colorspace
 
-% (c)2017, Cris Luengo.
+% (c)2017-2021, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,47 +29,37 @@
 function out = joinchannels(col,varargin)
 
 if nargin < 2
-   error('I need at least a color space name and an image to work on')
+   error('I need at least a color space name and an image to work on');
 end
 try
    chans = dip_image.numberchannels(col);
 catch
-   error('Color space unknown')
+   error('Color space unknown');
 end
 N = nargin-1;
 if N == 1
    out = dip_image(varargin{1});
-   if ~isscalar(out)
-      if iscolor(out)
-         error('The input image is already a color image')
-      end
-      k = numtensorel(out);
-      if k > chans
-         error(['Too many channels, ',num2str(chans),' channels expected.']);
-      elseif k < chans
-         out = tensortospatial(out);
-         sz = imsize(out);
-         sz(2) = chans-k; % tensor dimension becomes second dimension!
-         out = cat(2,out,newim(sz,datatype(out)));
-         out = spatialtotensor(out);
-      end
-      out = colorspace(out,col);
-   else
-      if islogical(out)
-         out = dip_image(out,'uint8');
-      end
-      dim = ndims(out);
-      k = imsize(out,dim);
-      if k > chans
-         error(['Too many channels, ',num2str(chans),' channels expected.']);
-      elseif k < chans
-         sz = imsize(out);
-         sz(dim) = chans-k;
-         out = cat(dim,out,newim(sz,datatype(out)));
-      end
-      out = spatialtotensor(out,dim);
-      out = colorspace(out,col);
+   if iscolor(out)
+      error('The input image is already a color image');
    end
+   if islogical(out)
+      out = dip_image(out,'uint8');
+   end
+   if isscalar(out)
+      % For scalar inputs, we take the last dimension as the tensor dimension
+      out = spatialtotensor(out,ndims(out)); % note! data copy!
+   end
+   k = numtensorel(out);
+   if k > chans
+      error(['Too many channels, ',num2str(chans),' channels expected.']);
+   elseif k < chans
+      out = tensortospatial(out);
+      sz = imsize(out);
+      sz(2) = chans-k; % tensor dimension becomes second dimension!
+      out = cat(2,out,newim(sz,datatype(out)));
+      out = spatialtotensor(out);
+   end
+   out = colorspace(out,col);
 else
    % Convert binary images to uint8 with values 0 and 255.
    if N > chans

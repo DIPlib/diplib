@@ -2793,7 +2793,7 @@ function a = subsasgn_dip(a,s,b)
    end
 end
 
-% Assigns b into dip_image data segment a. b is a standard matlab matrix
+% Assigns b into dip_image data segment a. b is a standard MATLAB matrix
 function a = subsasgn_mat(a,s,b)
    %fprintf('subsasgn_mat: size(b,1) = %d, size(a,1) = %d\n', size(b,1), size(a,1))
    if isreal(b) % Assigning real values into a
@@ -2816,7 +2816,7 @@ function a = subsasgn_mat(a,s,b)
    end
 end
 
-% Assigns b into dip_image data segment a. b is a standard matlab matrix
+% Assigns b into dip_image data segment a. b is a standard MATLAB matrix
 function a = subsasgn_core(a,s,b)
    %fprintf('subsasgn_core: size(b,2) = %d, size(a,2) = %d\n', size(b,2), size(a,2))
    % Here we assign matrix B into matrix A using S.

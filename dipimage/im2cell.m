@@ -18,13 +18,13 @@
 % EXAMPLES:
 %  a = readim('flamingo');
 %  b = im2cell(a);
-%  c = cell2im(b,'rgb');   % c is identical to a.
+%  c = cell2im(b,'srgb');  % c is identical to a.
 %
 %  a = readim('chromo3d');
 %  a = gradientvector(a);
 %  a = a * a.';
-%  b = im2cell(a);      % b is a 3x3 cell, with b{2,1}==b{1,2}
-%  c = im2cell(a{:});   % c is a 6x1 cell
+%  b = im2cell(a);         % b is a 3x3 cell, with b{2,1}==b{1,2}
+%  c = im2cell(a{:});      % c is a 6x1 cell
 %
 % SEE ALSO:
 %  cell2im, im2mat, dip_image.dip_array

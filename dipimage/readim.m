@@ -183,7 +183,7 @@ else
 end
 
 % Reading .png that set the sBit (e.g. exported by LabView) are not correctly
-% scaled by matlab reader (at least in version 2008b)
+% scaled by MATLAB reader (at least in version 2008b)
 [~,~,ext] = fileparts(filename);
 if strcmp(ext,'.png')
    try

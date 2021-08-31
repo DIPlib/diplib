@@ -3,15 +3,19 @@
 % SYNOPSIS:
 %  out = array2im(in)
 %
-%  The tensor dimension of IN is converted to a new spatial
-%  dimension, which will be last. That is, OUT will have one
-%  more dimension than IN, and be scalar.
+%  The tensor dimension of IN is converted to a new spatial dimension,
+%  which will be last. That is, OUT will have one more dimension than IN,
+%  and be scalar. Data is copied.
 %
 % EXAMPLE:
 %  a = readim
 %  g = gradient(a)
 %  b = array2im(g)
 %  h = im2array(b) % h is identical to g
+%
+% NOTE:
+%  TENSORTOSPATIAL does the same thing, but the new spatial dimension will
+%  be the first, such that data does not need to be copied.
 %
 % SEE ALSO:
 %  im2array, dip_image.tensortospatial, dip_image.spatialtotensor
