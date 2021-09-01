@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains sup and inf generators and related functionality.
  *
- * (c)2018, Cris Luengo.
+ * (c)2018-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,8 @@ Interval::Interval( dip::Image hit, dip::Image miss ) {
    DIP_THROW_IF( !hit.IsScalar() || !miss.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !hit.DataType().IsBinary() || !miss.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( hit.Sizes() != miss.Sizes(), E::SIZES_DONT_MATCH );
-   for( auto& s : hit.Sizes() ) {
-      DIP_THROW_IF( !( s & 1 ), "The interval is not odd in size" );
+   for( auto s : hit.Sizes() ) {
+      DIP_THROW_IF( !( s & 1u ), "The interval is not odd in size" );
    }
    DIP_THROW_IF( !Any( hit ).As< bool >(), "The interval needs at least one foreground pixel" );
    DIP_THROW_IF( dip::Any( dip::Infimum( hit, miss )).As< bool >(), "The hit and miss images are not disjoint" );
@@ -142,7 +142,7 @@ Image RotateBy45Degrees( Image const& input ) {
    return output;
 }
 
-}
+} // namespace
 
 IntervalArray Interval::GenerateRotatedVersions(
       dip::uint rotationAngle,
@@ -211,14 +211,14 @@ IntervalArray Interval::GenerateRotatedVersions(
          // not interleaved: 0, 45, 90, 135, 180, 225, 270, 315.
          // swap 1, 2 & 4:   0, 180, 45, 135, 90, 225, 270, 315.
          // swap 3, 5 & 6:   0, 180, 45, 225, 90, 270, 135, 315.
-         Interval tmp = output[ 1 ];
-         output[ 1 ] = output[ 4 ];
-         output[ 4 ] = output[ 2 ];
-         output[ 2 ] = tmp;
-         tmp = output[ 3 ];
-         output[ 3 ] = output[ 5 ];
-         output[ 5 ] = output[ 6 ];
-         output[ 6 ] = tmp;
+         Interval tmp = std::move( output[ 1 ] );
+         output[ 1 ] = std::move( output[ 4 ] );
+         output[ 4 ] = std::move( output[ 2 ] );
+         output[ 2 ] = std::move( tmp );
+         tmp = std::move( output[ 3 ] );
+         output[ 3 ] = std::move( output[ 5 ] );
+         output[ 5 ] = std::move( output[ 6 ] );
+         output[ 6 ] = std::move( tmp );
       } else if( step == 2 ) {
          // not interleaved: 0, 90, 180, 270.
          // swap 1 & 2:      0, 180, 90, 270.
@@ -287,11 +287,161 @@ void ExpandInputImage(
    }
 }
 
-enum class Mode { SUP, INF };
+enum class PolarityMode {
+   SupGenerating,
+   InfGenerating
+};
 
 class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
    public:
-      SupInfGeneratingLineFilter( Mode mode ) : supGenerating_( mode == Mode::SUP ) {}
+      SupInfGeneratingLineFilter( PolarityMode mode )
+            : supGenerating_( mode != PolarityMode::InfGenerating ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+         return lineLength * nKernelPixels;
+      }
+      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+         // Fill in `offsets_` and `hitmiss_` using `pixelTable`.
+         // The pixel table has been prepared such that pixels with a positive weight are hit, and a negative
+         // weight are miss. "Don't care" pixels are not in the table.
+         offsets_ = pixelTable.Offsets();
+         hitmiss_.resize( offsets_.size() );
+         auto const& weights = pixelTable.Weights();
+         for( dip::uint ii = 0; ii < hitmiss_.size(); ++ii ) {
+            hitmiss_[ ii ] = weights[ ii ] != 0;
+            // hitmiss_ is 1 or 0, for hit and miss respectively.
+         }
+      }
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+         dip::bin* in = static_cast< dip::bin* >( params.inBuffer.buffer );
+         dip::sint inStride = params.inBuffer.stride;
+         dip::bin* out = static_cast< dip::bin* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
+         dip::uint length = params.bufferLength;
+         if( supGenerating_ ) {
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               dip::bin result = true;
+               for( dip::uint jj = 0; jj < offsets_.size(); ++jj ) {
+                  if( in[ offsets_[ jj ]] ^ hitmiss_[ jj ] ) { // Note that this requires our dip::bin image to be correct (i.e. 0 or 1, not other numbers).
+                     result = false;
+                     break;
+                  }
+               }
+               *out = result;
+               out += outStride;
+               in += inStride;
+            }
+         } else {
+            // For inf-generating operator we do the same as above, but we invert the input and invert the output.
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               dip::bin result = false;
+               for( dip::uint jj = 0; jj < offsets_.size(); ++jj ) {
+                  if( !in[ offsets_[ jj ]] ^ hitmiss_[ jj ] ) { // Note that this requires our dip::bin image to be correct (i.e. 0 or 1, not other numbers).
+                     result = true;
+                     break;
+                  }
+               }
+               *out = result;
+               out += outStride;
+               in += inStride;
+            }
+         }
+      }
+   private:
+      bool const supGenerating_;
+      std::vector< dip::sint > offsets_;
+      std::vector< dip::bin > hitmiss_;
+};
+
+void SupInfGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      BoundaryCondition boundaryCondition,
+      PolarityMode mode
+) {
+   DIP_START_STACK_TRACE
+      SupInfGeneratingLineFilter lineFilter( mode );
+      Framework::Full( in, out, DT_BIN, DT_BIN, DT_BIN, 1, { boundaryCondition }, interval.Image(), lineFilter );
+   DIP_END_STACK_TRACE
+}
+
+} // namespace
+
+void SupGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      String const& boundaryCondition
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, interval, StringToBoundaryCondition( boundaryCondition ), PolarityMode::SupGenerating ));
+}
+
+void InfGenerating(
+      Image const& in,
+      Image& out,
+      Interval const& interval,
+      String const& boundaryCondition
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, interval, StringToBoundaryCondition( boundaryCondition ), PolarityMode::InfGenerating ));
+}
+
+void UnionSupGenerating(
+      Image const& c_in,
+      Image& out,
+      IntervalArray const& intervals,
+      String const& boundaryCondition
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   Image in;
+   DIP_STACK_TRACE_THIS( ExpandInputImage( c_in, in, intervals, boundaryCondition ));
+   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, intervals[ 0 ], BoundaryCondition::ALREADY_EXPANDED, PolarityMode::SupGenerating ));
+   Image tmp;
+   for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
+      DIP_STACK_TRACE_THIS( SupInfGenerating( in, tmp, intervals[ ii ], BoundaryCondition::ALREADY_EXPANDED, PolarityMode::SupGenerating ));
+      DIP_STACK_TRACE_THIS( Supremum( out, tmp, out ));
+   }
+}
+
+void IntersectionInfGenerating(
+      Image const& c_in,
+      Image& out,
+      IntervalArray const& intervals,
+      String const& boundaryCondition
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   Image in;
+   DIP_STACK_TRACE_THIS( ExpandInputImage( c_in, in, intervals, boundaryCondition ));
+   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, intervals[ 0 ], BoundaryCondition::ALREADY_EXPANDED, PolarityMode::InfGenerating ));
+   Image tmp;
+   for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
+      DIP_STACK_TRACE_THIS( SupInfGenerating( in, tmp, intervals[ ii ], BoundaryCondition::ALREADY_EXPANDED, PolarityMode::InfGenerating ));
+      DIP_STACK_TRACE_THIS( Infimum( out, tmp, out ));
+   }
+}
+
+namespace {
+
+enum class DirectionMode {
+   Thickening,
+   Thinning
+};
+
+class ThickeningThinningLineFilter : public Framework::FullLineFilter {
+   public:
+      ThickeningThinningLineFilter( DirectionMode mode, Image const& mask, bool& change )
+            : mode_( mode ), changed_( change ), mask_( mask ) {}
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
          return lineLength * nKernelPixels;
       }
@@ -313,122 +463,49 @@ class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
          dip::bin* out = static_cast< dip::bin* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.bufferLength;
-         if( supGenerating_ ) {
-            for( dip::uint ii = 0; ii < length; ++ii ) {
-               dip::bin result = true;
+         dip::bin const* mask = nullptr;
+         dip::sint maskStride = 0;
+         bool changed = false;
+         if( mask_.IsForged() ) {
+            mask = static_cast< dip::bin* >( mask_.Pointer( params.position ));
+            maskStride = mask_.Stride( params.dimension );
+         }
+         for( dip::uint ii = 0; ii < length; ++ii ) {
+            dip::bin result = false;
+            if(( !mask || *mask ) && ( mode_ == DirectionMode::Thickening ? !*in : *in )) {
+               result = true;
                for( dip::uint jj = 0; jj < offsets_.size(); ++jj ) {
                   if( in[ offsets_[ jj ]] ^ hitmiss_[ jj ] ) { // Note that this requires our dip::bin image to be correct (i.e. 0 or 1, not other numbers).
                      result = false;
                      break;
                   }
                }
-               *out = result;
-               out += outStride;
-               in += inStride;
+               changed |= result;
             }
-         } else {
-            // For inf-generating operator we do the same as above, but we invert the input and invert the output
-            for( dip::uint ii = 0; ii < length; ++ii ) {
-               dip::bin result = false;
-               for( dip::uint jj = 0; jj < offsets_.size(); ++jj ) {
-                  if( !in[ offsets_[ jj ]] ^ hitmiss_[ jj ] ) { // Note that this requires our dip::bin image to be correct (i.e. 0 or 1, not other numbers).
-                     result = true;
-                     break;
-                  }
-               }
-               *out = result;
-               out += outStride;
-               in += inStride;
+            if( mode_ == DirectionMode::Thickening ) {
+               // thickening: out = in + result
+               *out = *in || result;
+            } else {
+               // thinning:   out = in - result
+               *out = *in && !result;
+
             }
+            out += outStride;
+            in += inStride;
+            mask += maskStride;
+         }
+         if( changed ) {
+#pragma omp critical( SupInfGeneratingLineFilter )
+            changed_ = true;
          }
       }
    private:
-      bool supGenerating_;
+      DirectionMode const mode_;
+      bool& changed_;            // use critical section to set!
+      Image const& mask_;
       std::vector< dip::sint > offsets_;
       std::vector< dip::bin > hitmiss_;
 };
-
-void SupInfGenerating(
-      Image const& in,
-      Image& out,
-      Interval const& interval,
-      BoundaryCondition boundaryCondition,
-      Mode supGenerating
-) {
-   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_START_STACK_TRACE
-      SupInfGeneratingLineFilter lineFilter( supGenerating );
-      Framework::Full( in, out, DT_BIN, DT_BIN, DT_BIN, 1, { boundaryCondition }, interval.Image(), lineFilter );
-   DIP_END_STACK_TRACE
-}
-
-} // namespace
-
-void SupGenerating(
-      Image const& in,
-      Image& out,
-      Interval const& interval,
-      String const& boundaryCondition
-) {
-   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, interval, StringToBoundaryCondition( boundaryCondition ), Mode::SUP ));
-}
-
-void InfGenerating(
-      Image const& in,
-      Image& out,
-      Interval const& interval,
-      String const& boundaryCondition
-) {
-   DIP_STACK_TRACE_THIS( SupInfGenerating( in, out, interval, StringToBoundaryCondition( boundaryCondition ), Mode::INF ));
-}
-
-void UnionSupGenerating(
-      Image const& c_in,
-      Image& out,
-      IntervalArray const& intervals,
-      String const& boundaryCondition
-) {
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_START_STACK_TRACE
-      Image in;
-      ExpandInputImage( c_in, in, intervals, boundaryCondition );
-      SupGenerating( in, out, intervals[ 0 ], S::ALREADY_EXPANDED );
-      Image tmp;
-      for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-         SupGenerating( in, tmp, intervals[ ii ], S::ALREADY_EXPANDED );
-         Supremum( out, tmp, out );
-      }
-   DIP_END_STACK_TRACE
-}
-
-void IntersectionInfGenerating(
-      Image const& c_in,
-      Image& out,
-      IntervalArray const& intervals,
-      String const& boundaryCondition
-) {
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_START_STACK_TRACE
-      Image in;
-      ExpandInputImage( c_in, in, intervals, boundaryCondition );
-      InfGenerating( in, out, intervals[ 0 ], S::ALREADY_EXPANDED );
-      Image tmp;
-      for( dip::uint ii = 1; ii < intervals.size(); ++ii ) {
-         InfGenerating( in, tmp, intervals[ ii ], S::ALREADY_EXPANDED );
-         Infimum( out, tmp, out );
-      }
-   DIP_END_STACK_TRACE
-}
-
-namespace {
 
 void ThickeningThinning(
       Image const& in,
@@ -437,47 +514,43 @@ void ThickeningThinning(
       IntervalArray const& intervals,
       dip::uint iterations,
       String const& boundaryCondition,
-      bool thickening
+      DirectionMode mode // must be either Thickening or Thinning
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( intervals.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_START_STACK_TRACE
-      ExpandInputImage( in, out, intervals, boundaryCondition );
-      Image tmp;
-      bool untilConvergence = iterations == 0;
-      while( true ) {
-         bool change = false;
-         for( auto const& inter : intervals ) {
-            SupInfGenerating( out, tmp, inter, BoundaryCondition::ALREADY_EXPANDED, Mode::SUP );
-            if( mask.IsForged() ) {
-               tmp &= mask;
-            }
-            if( thickening ) {
-               out += tmp;
-            } else {
-               out -= tmp;
-            }
-            if( !change && untilConvergence && Any( tmp ).As< bool >() ) {
-               change = true;
-            }
+   if( mask.IsForged() ) {
+      DIP_STACK_TRACE_THIS( mask.CheckIsMask( in.Sizes()));
+   }
+   Image tmp1;
+   Image tmp2;
+   DIP_STACK_TRACE_THIS( ExpandInputImage( in, tmp1, intervals, boundaryCondition ));
+   DIP_STACK_TRACE_THIS( ExpandInputImage( in, tmp2, intervals, boundaryCondition ));
+   bool untilConvergence = iterations == 0;
+   bool change = false;
+   ThickeningThinningLineFilter lineFilter( mode, mask, change );
+   while( true ) {
+      change = false;
+      for( auto const& inter : intervals ) {
+         DIP_STACK_TRACE_THIS( Framework::Full( tmp1, tmp2, DT_BIN, DT_BIN, DT_BIN, 1, { BoundaryCondition::ALREADY_EXPANDED }, inter.Image(), lineFilter ));
+         tmp1.swap( tmp2 ); // tmp1 is always the result
+      }
+      if( untilConvergence ) {
+         if( !change ) {
+            break;
          }
-         if( untilConvergence ) {
-            if( !change ) {
-               break;
-            }
-         } else {
-            --iterations;
-            if( iterations == 0 ) {
-               break;
-            }
+      } else {
+         --iterations;
+         if( iterations == 0 ) {
+            break;
          }
       }
-   DIP_END_STACK_TRACE
+   }
+   out.Copy( tmp1 );
 }
 
-}
+} // namespace
 
 void Thickening(
       Image const& in,
@@ -487,7 +560,7 @@ void Thickening(
       dip::uint iterations,
       String const& boundaryCondition
 ) {
-   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, true ));
+   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, DirectionMode::Thickening ));
 }
 
 void Thinning(
@@ -498,7 +571,7 @@ void Thinning(
       dip::uint iterations,
       String const& boundaryCondition
 ) {
-   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, false ));
+   DIP_STACK_TRACE_THIS( ThickeningThinning( in, mask, out, intervals, iterations, boundaryCondition, DirectionMode::Thinning ));
 }
 
 IntervalArray HomotopicThinningInterval2D( dip::uint connectivity ) {
@@ -617,7 +690,7 @@ IntervalArray ConvexHullInterval2D() {
    return Interval( in.Copy() ).GenerateRotatedVersions( 45 );
 }
 
-}
+} // namespace dip
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"

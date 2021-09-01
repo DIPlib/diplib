@@ -796,6 +796,7 @@ class DIP_NO_EXPORT Interval {
 /// \brief Inverts the intervals in the array, swapping foreground and background pixels. Works correctly
 /// if intervals in the array share data. However, this function could also affect other intervals not in
 /// the array, if data is shared.
+/// \relates dip::Interval
 DIP_EXPORT void Invert( IntervalArray& array );
 
 
@@ -853,7 +854,7 @@ DIP_NODISCARD inline Image InfGenerating(
    return out;
 }
 
-/// \brief Union of Sup-generating operators.
+/// \brief Union of sup-generating operators.
 ///
 /// Applies the sup-generating operator with each of the intervals in `intervals`, and takes the union
 /// of the results.
@@ -875,7 +876,7 @@ DIP_NODISCARD inline Image UnionSupGenerating(
    return out;
 }
 
-/// \brief Union of Sup-generating operators.
+/// \brief Union of sup-generating operators.
 ///
 /// Applies the sup-generating operator with all the rotated versions of `interval`, and takes the union
 /// of the results. See \ref dip::Interval::GenerateRotatedVersions for the definition of `rotationAngle`
@@ -907,7 +908,7 @@ DIP_NODISCARD inline Image UnionSupGenerating2D(
    return out;
 }
 
-/// \brief Intersection of Inf-generating operators.
+/// \brief Intersection of inf-generating operators.
 ///
 /// Applies the inf-generating operator with each of the intervals in `intervals`, and takes the intersection
 /// of the results.
@@ -929,7 +930,7 @@ DIP_NODISCARD inline Image IntersectionInfGenerating(
    return out;
 }
 
-/// \brief Intersection of Inf-generating operators.
+/// \brief Intersection of inf-generating operators.
 ///
 /// Applies the inf-generating operator with all the rotated versions of `interval`, and takes the intersection
 /// of the results. See \ref dip::Interval::GenerateRotatedVersions for the definition of `rotationAngle`
@@ -964,7 +965,7 @@ DIP_NODISCARD inline Image IntersectionInfGenerating2D(
 /// \brief Applies the thickening operator, optionally constrained by a mask, to an image.
 ///
 /// Thickening is defined as `in + SupGenerating(in)`. The constrained operation is defined as
-///  `in + (SupGenerating(in) & mask)`.
+/// `in + (SupGenerating(in) & mask)`.
 ///
 /// The operation is applied with each of the intervals in `intervals`, and repeated `iterations`
 /// times. If `iterations` is 0, the operation is repeated until convergence.

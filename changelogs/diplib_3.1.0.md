@@ -52,12 +52,13 @@ title: "Changes DIPlib 3.1.0"
 
 - The speed of the following functions has been improved:
     - `dip::Measurement::AddObjectIDs()` and `dip::Measurement::operator+()`.
-    - `dip::Label` (slightly more efficient for 3D and higher-dimensional images).
+    - `dip::Label()` (slightly more efficient for 3D and higher-dimensional images).
     - `dip::MomentAccumulator`.
-    - `dip::Dilation` and the other basic morphological operators with a 2D diamond or octagonal structuring element,
+    - `dip::Dilation()` and the other basic morphological operators with a 2D diamond or octagonal structuring element,
       or with a small 2D disk.
-    - `dip::MorphologicalReconstruction` and functions that depend on it.
-    - `dip::SeededWatershed` and `dip::CompactWatershed`, and functions that depend on them.
+    - `dip::MorphologicalReconstruction()` and functions that depend on it.
+    - `dip::SeededWatershed()` and `dip::CompactWatershed()`, and functions that depend on them.
+    - `dip::Thickening()` and `dip::Thinning()`.
 
 - `dip::OptimalFourierTransformSize()` has a new option to return a smaller or equal size, rather than
   a larger or equal size, so we can crop an image for efficient FFT instead of padding.
@@ -79,8 +80,8 @@ title: "Changes DIPlib 3.1.0"
 - All functions that used randomness internally but didn't have a `dip::Random` input parameter now do
   have such a parameter. Overloaded functions with the old signature create a default-initialized
   `dip::Random` object and call the function with the new signature. This affects the following functions:
-  `dip::ChordLength`, `dip::PairCorrelation`, `dip::ProbabilisticPairCorrelation`, `dip::Semivariogram`,
-  `dip::CostesSignificanceTest`, `dip::StochasticWatershed`, `dip::KMeansClustering`, and `dip::Superpixels`.
+  `dip::ChordLength()`, `dip::PairCorrelation()`, `dip::ProbabilisticPairCorrelation()`, `dip::Semivariogram()`,
+  `dip::CostesSignificanceTest()`, `dip::StochasticWatershed()`, `dip::KMeansClustering()`, and `dip::Superpixels()`.
 
 - `dip::Image::Rotation90()` can now be called without any arguments at all.
 
