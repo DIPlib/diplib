@@ -302,7 +302,7 @@ void Image::MatchStrideOrder( Image const& src ) {
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   if( tensorStride_ != 1 ) {
+   if (( tensor_.Elements() > 1 ) && ( tensorStride_ != 1 )) {
       return false;
    }
    dip::sint total = static_cast< dip::sint >( tensor_.Elements() );
@@ -395,7 +395,7 @@ bool Image::HasSameDimensionOrder( Image const& other ) const {
 
 //
 bool Image::HasValidStrides() const {
-   // We require that |strides[ii+1]| > |strides[ii]|*(sizes[ii]-1) (after sorting the absolute strides on size)
+   // We require that |strides[ii+1]| > |strides[ii]|*(sizes[ii]-1) and that strides[0] != 0 (after sorting the absolute strides on size)
    if( sizes_.size() != strides_.size() ) {
       return false;
    }
@@ -407,16 +407,15 @@ bool Image::HasValidStrides() const {
       d.push_back( tensor_.Elements() );
    }
    dip::uint n = s.size();
-   if( n < 2 ) {
-      // It's a 0D or 1D image, strides are always OK
-      return true;
-   }
    // Make sure all strides are positive
    for( dip::uint ii = 0; ii < n; ++ii ) {
       s[ ii ] = std::abs( s[ ii ] );
    }
    s.sort( d );
    // Test invariant
+   if( s[ 0 ] == 0 ) {
+       return false;
+   }
    for( dip::uint ii = 0; ii < n - 1; ++ii ) {
       if( s[ ii + 1 ] <= s[ ii ] * ( static_cast< dip::sint >( d[ ii ] ) - 1 )) {
          return false;

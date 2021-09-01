@@ -86,18 +86,20 @@ title: "Changes DIPlib 3.1.0"
 
 ### Bug fixes
 
+- `dip::Image::ResetNonDataProperties()` incorrectly set the number of tensor elements to 1.
+
+- `dip::Image::Copy()` would incorrectly copy the external interface if the destination image didn't have one defined.
+
+- `dip::Image::HasSameDimensionOrder()` didn't properly ignore singleton dimensions.
+
+- It was possible to forge a new image with normal strides for which `dip::Image::HasNormalStrides()` was false.
+
 - `dip::DrawPolygon2D()` produced wrong results for filled polygons when vertices were very close together
   (distances smaller than a pixel).
 
 - `dip::ColorSpaceManager` didn't register the ICH and ISH color spaces.
 
-- `dip::Image::ResetNonDataProperties()` incorrectly set the number of tensor elements to 1.
-
-- `dip::Image::Copy()` would incorrectly copy the external interface if the destination image didn't have one defined.
-
 - `dip::MaximumPixel()` and `dip::MinimumPixel()` produced an empty output array when the input was all NaN.
-
-- `dip::Image::HasSameDimensionOrder()` didn't properly ignore singleton dimensions.
 
 - `dip::GaussianMixtureModelThreshold()` passed wrong parameter values to `dip::GaussianMixtureModel()`.
 
