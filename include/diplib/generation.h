@@ -1234,7 +1234,8 @@ DIP_NODISCARD inline Image GaussianNoise( Image const& in, Random& random, dfloa
 /// for each pixel it does `in = poissonRandomGenerator( in * conversion ) / conversion`.
 /// `conversion` can be used to relate the pixel values with the number of counts. For example, the simulate a
 /// photon-limited image acquired by a CCD camera, the conversion factor specifies the relation between the number
-/// of photons recorded and the pixel value.
+/// of photons recorded and the pixel value. Note that the input pixel values must be positive for the noise
+/// to be generated. Pixels with a value of 0 or less will always result in an output value of 0.
 ///
 /// The output image is of the same type as the input image.
 ///

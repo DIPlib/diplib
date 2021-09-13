@@ -192,7 +192,8 @@ class DIP_NO_EXPORT GaussianRandomGenerator {
 /// \brief Generates random integer values taken from a poisson distribution.
 ///
 /// The `operator()` method returns the next random value in the sequence. It takes one
-/// parameter, the mean of the distribution.
+/// parameter, the mean of the distribution. The mean should be positive for this operation
+/// to make sense, otherwise the function will simply return 0.
 ///
 /// The constructor takes and stores a reference to a \ref dip::Random object, which is used
 /// to produce the randomness. That object needs to exist for as long as this one exists.
@@ -207,7 +208,7 @@ class DIP_NO_EXPORT PoissonRandomGenerator {
 
       /// \brief Get the next random value, using the given parameter.
       dip::uint operator()( dfloat mean ) {
-         return distribution_( generator_, Distribution::param_type( mean ));
+         return mean > 0 ? distribution_( generator_, Distribution::param_type( mean )) : 0;
       }
 
    private:

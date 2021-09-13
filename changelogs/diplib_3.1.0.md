@@ -133,6 +133,9 @@ title: "Changes DIPlib 3.1.0"
   `dip::MultiScaleMorphologicalGradient()` and `dip::MorphologicalLaplace()` all produced wrong output for some combinations
   of input image data types and option settings.
 
+- Avoid the C++ Standard Library generating an assertion error in debug mode when generating a Poisson-distributed random
+  value with a non-positive mean.
+
 
 
 
