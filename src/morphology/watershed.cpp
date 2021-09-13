@@ -587,7 +587,7 @@ void SeededWatershedInternal(
       lit.OptimizeAndFlatten();
       do {
          LabelType lab = *lit;
-         if( lab == WATERSHED_LABEL ) {
+         if( lab > MAX_LABEL ) {
             *lit = 0;
          } else if( IsValidLabel( lab )) {
             *lit = regions.FindRoot( lab );
