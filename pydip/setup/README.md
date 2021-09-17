@@ -2,7 +2,7 @@
 
 [//]: # (DIPlib 3.0)
 
-[//]: # ([c]2020, Cris Luengo.)
+[//]: # ([c]2020-2021, Cris Luengo.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
 [//]: # (you may not use this file except in compliance with the License.)
@@ -65,7 +65,14 @@ To install, simply type
 
     pip install diplib
 
-Windows users might need to install the [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads). To read images through the *Bio-Formats* library, you will need to download it
+Windows users might need to install the
+[Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+
+On Linux you will need *freeglut3* installed to use *DIPviewer*. For Ubunutu, type
+
+    sudo apt install freeglut3
+
+To read images through the *Bio-Formats* library, you will need to download it
 separately:
 
     python -m diplib download_bioformats
