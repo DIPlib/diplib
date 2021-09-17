@@ -28,6 +28,14 @@ else()
    target_compile_definitions(DIPjavaio PUBLIC DIP_CONFIG_DIPJAVAIO_IS_STATIC)
 endif()
 
+# rpath
+set_target_properties(DIPjavaio PROPERTIES INSTALL_RPATH_USE_LINK_PATH True)
+if(APPLE)
+   set_target_properties(DIPjavaio PROPERTIES INSTALL_RPATH "@loader_path")
+else()
+   set_target_properties(DIPjavaio PROPERTIES INSTALL_RPATH "$ORIGIN")
+endif()
+
 install(TARGETS DIPjavaio EXPORT DIPlibTargets ${DIP_DESTINATIONS})
 install(FILES "${PROJECT_SOURCE_DIR}/include/diplib/javaio.h" DESTINATION include/diplib)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/diplib/javaio" DESTINATION include/diplib)
