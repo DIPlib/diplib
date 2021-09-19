@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
 
     steps:
     - uses: actions/checkout@v2
@@ -26,8 +27,8 @@ jobs:
                   sudo apt-get -y install freeglut3-dev python3-dev python3-pip
                   python3 -m pip install setuptools numpy wheel twine==1.15.0
              elif [ "$RUNNER_OS" == "Windows" ]; then
-                  choco install openjdk8
-                  choco install python3
+                  choco install openjdk8 --no-progress --yes
+                  choco install python3 --no-progress --yes
                   python -m pip install wheel setuptools numpy twine==1.15.0 wget
              elif [ "$RUNNER_OS" == "macOS" ]; then
                   brew install libomp glfw
