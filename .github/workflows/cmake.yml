@@ -12,42 +12,46 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        include:
+          - os: windows-latest
+            dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off
+            # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
       fail-fast: false
+      # TODO: Enable the fail-fast mode, at least for pull requests.
+      # TODO: CMake needs the `-A x64` option added on Windows only
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name:  Install
-      run:   |
-             if [ "$RUNNER_OS" == "Linux" ]; then
-                  sudo apt-get -y install freeglut3-dev python3-dev python3-pip
-                  python3 -m pip install setuptools numpy wheel twine==1.15.0
-             elif [ "$RUNNER_OS" == "Windows" ]; then
-                  choco install openjdk8 --no-progress --yes
-                  choco install python3 --no-progress --yes
-                  python -m pip install wheel setuptools numpy twine==1.15.0 wget
-             elif [ "$RUNNER_OS" == "macOS" ]; then
-                  brew install libomp glfw
-                  python3 -m pip install setuptools numpy wheel twine==1.15.0 delocate
-             fi
-      shell: bash
-  
-    - name: Configure
-      # Configure CMake in a 'build' subdirectory.
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
+      - name: Install
+        # Install libraries and Python packages we need
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get -y install freeglut3-dev
+            python3 -m pip install numpy twine==1.15.0
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            choco install openjdk8 --no-progress --yes
+            python -m pip install wheel numpy twine==1.15.0 wget
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install libomp glfw
+            python3 -m pip install numpy twine==1.15.0 delocate
+          fi
+        shell: bash
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
 
-    - name: Test
-      # Execute tests defined by the CMake configuration.  
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target check
+      - name: Build
+        # TODO: on macOS  there are 3 cores, use them all
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 2
 
-    - name: Package
-      # Create the Python distribution wheel
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target bdist_wheel
+      - name: Test
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target check
+
+      - name: Package
+        # Create the Python distribution wheel
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target bdist_wheel
