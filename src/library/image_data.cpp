@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2020, Cris Luengo.
+ * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -407,6 +407,9 @@ bool Image::HasValidStrides() const {
       d.push_back( tensor_.Elements() );
    }
    dip::uint n = s.size();
+   if( n == 0 ) {
+      return true;
+   }
    // Make sure all strides are positive
    for( dip::uint ii = 0; ii < n; ++ii ) {
       s[ ii ] = std::abs( s[ ii ] );
