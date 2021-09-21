@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains some dip::Units methods that create and parse string representations of units.
  *
- * (c)2015-2017, Cris Luengo.
+ * (c)2015-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,33 +27,32 @@ namespace {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
 
 constexpr char const micron[] = u8"\u00B5";
-static_assert( sizeof( micron ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
-
 constexpr char const cdot[] = u8"\u00B7";
-static_assert( sizeof( cdot ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
 
 constexpr char const superN[] = u8"\u207B";
-static_assert( sizeof( superN ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super0[] = u8"\u2070";
-static_assert( sizeof( super0 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super1[] = u8"\u00B9";
-static_assert( sizeof( super1 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super2[] = u8"\u00B2";
-static_assert( sizeof( super2 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super3[] = u8"\u00B3";
-static_assert( sizeof( super3 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super4[] = u8"\u2074";
-static_assert( sizeof( super4 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super5[] = u8"\u2075";
-static_assert( sizeof( super5 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super6[] = u8"\u2076";
-static_assert( sizeof( super6 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super7[] = u8"\u2077";
-static_assert( sizeof( super7 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super8[] = u8"\u2078";
-static_assert( sizeof( super8 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 constexpr char const super9[] = u8"\u2079";
-static_assert( sizeof( super9 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+
+// Note: Advances `ii` if it returns true.
+// Note: N is equal to 3 or 4, and includes the terminating null character, which we ignore below.
+template< dip::uint N >
+bool NextCharIs( dip::String const& string, dip::uint& ii, char const unicodeChar[ N ] ) {
+   for( dip::uint jj = 0; jj < N - 1; ++jj ) {
+      if( string[ ii + jj ] != unicodeChar[ jj ] ) {
+         return false;
+      }
+   }
+   ii += N - 1;
+   return true;
+}
 
 #endif
 
@@ -67,54 +66,52 @@ bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
    power = 0;
    if( string[ ii ] == '^' ) {
       ++ii;
+      bool neg = false;
+      if( string[ ii ] == '-' ) {
+         neg = true;
+         ++ii;
+      }
       dip::uint n = 0;
-      if( string[ ii + n ] == '-' ) { ++n; }
-      while( isdigit( string[ ii + n ] )) { ++n; }
+      while( isdigit( string[ ii + n ] )) {
+         ++n;
+      }
       if( n == 0 ) {
          return false;
       }
       power = std::atoi( &( string[ ii ] ));
+      if( neg ) {
+         power = -power;
+      }
       ii += n;
    }
 #ifdef DIP_CONFIG_ENABLE_UNICODE
    else {
       bool neg = false;
-      if(( string[ ii ] == superN[ 0 ] ) && ( string[ ii + 1 ] == superN[ 1 ] ) && ( string[ ii + 2 ] == superN[ 2 ] )) {
+      if( NextCharIs< sizeof( superN ) >( string, ii, superN )) {
          neg = true;
-         ii += 3;
       }
       int p = 0;
       while( true ) {
-         if(( string[ ii ] == super0[ 0 ] ) && ( string[ ii + 1 ] == super0[ 1 ] ) && ( string[ ii + 2 ] == super0[ 2 ] )) {
+         if( NextCharIs< sizeof( super0 ) >( string, ii, super0 )) {
             p *= 10;
-            ii += 3;
-         } else if(( string[ ii ] == super1[ 0 ] ) && ( string[ ii + 1 ] == super1[ 1 ] )) {
+         } else if( NextCharIs< sizeof( super1 ) >( string, ii, super1 )) {
             p = p * 10 + 1;
-            ii += 2;
-         } else if(( string[ ii ] == super2[ 0 ] ) && ( string[ ii + 1 ] == super2[ 1 ] )) {
+         } else if( NextCharIs< sizeof( super2 ) >( string, ii, super2 )) {
             p = p * 10 + 2;
-            ii += 2;
-         } else if(( string[ ii ] == super3[ 0 ] ) && ( string[ ii + 1 ] == super3[ 1 ] )) {
+         } else if( NextCharIs< sizeof( super3 ) >( string, ii, super3 )) {
             p = p * 10 + 3;
-            ii += 2;
-         } else if(( string[ ii ] == super4[ 0 ] ) && ( string[ ii + 1 ] == super4[ 1 ] ) && ( string[ ii + 2 ] == super4[ 2 ] )) {
+         } else if( NextCharIs< sizeof( super4 ) >( string, ii, super4 )) {
             p = p * 10 + 4;
-            ii += 3;
-         } else if(( string[ ii ] == super5[ 0 ] ) && ( string[ ii + 1 ] == super5[ 1 ] ) && ( string[ ii + 2 ] == super5[ 2 ] )) {
+         } else if( NextCharIs< sizeof( super5 ) >( string, ii, super5 )) {
             p = p * 10 + 5;
-            ii += 3;
-         } else if(( string[ ii ] == super6[ 0 ] ) && ( string[ ii + 1 ] == super6[ 1 ] ) && ( string[ ii + 2 ] == super6[ 2 ] )) {
+         } else if( NextCharIs< sizeof( super6 ) >( string, ii, super6 )) {
             p = p * 10 + 6;
-            ii += 3;
-         } else if(( string[ ii ] == super7[ 0 ] ) && ( string[ ii + 1 ] == super7[ 1 ] ) && ( string[ ii + 2 ] == super7[ 2 ] )) {
+         } else if( NextCharIs< sizeof( super7 ) >( string, ii, super7 )) {
             p = p * 10 + 7;
-            ii += 3;
-         } else if(( string[ ii ] == super8[ 0 ] ) && ( string[ ii + 1 ] == super8[ 1 ] ) && ( string[ ii + 2 ] == super8[ 2 ] )) {
+         } else if( NextCharIs< sizeof( super8 ) >( string, ii, super8 )) {
             p = p * 10 + 8;
-            ii += 3;
-         } else if(( string[ ii ] == super9[ 0 ] ) && ( string[ ii + 1 ] == super9[ 1 ] ) && ( string[ ii + 2 ] == super9[ 2 ] )) {
+         } else if( NextCharIs< sizeof( super9 ) >( string, ii, super9 )) {
             p = p * 10 + 9;
-            ii += 3;
          } else {
             power = neg ? -p : p;
             return !( neg && ( p == 0 ));
@@ -132,20 +129,28 @@ bool ParseComponent( dip::String const& string, dip::uint& ii, Units::BaseUnits&
    // <N> = small integer
    // <n> = small integer, written in UTF-8 superscript numbers
    switch( string[ ii ] ) {
-      case 'm': bu = Units::BaseUnits::LENGTH; break;
-      case 'g': bu = Units::BaseUnits::MASS; break;
-      case 's': bu = Units::BaseUnits::TIME; break;
-      case 'A': bu = Units::BaseUnits::CURRENT; break;
-      case 'K': bu = Units::BaseUnits::TEMPERATURE; break;
-      case 'c': bu = Units::BaseUnits::LUMINOUSINTENSITY;
+      case 'm':
+         bu = Units::BaseUnits::LENGTH; break;
+      case 'g':
+         bu = Units::BaseUnits::MASS; break;
+      case 's':
+         bu = Units::BaseUnits::TIME; break;
+      case 'A':
+         bu = Units::BaseUnits::CURRENT; break;
+      case 'K':
+         bu = Units::BaseUnits::TEMPERATURE; break;
+      case 'c':
          if( string[ ++ii ] != 'd' ) { return false; }
+         bu = Units::BaseUnits::LUMINOUSINTENSITY;
          break;
-      case 'r': bu = Units::BaseUnits::ANGLE;
+      case 'r':
          if(( ii + 2 >= string.size() ) || ( string[ ii + 1 ] != 'a' ) || ( string [ ii + 2 ] != 'd' )) { return false; }
+         bu = Units::BaseUnits::ANGLE;
          ii += 2;
          break;
-      case 'p':  bu = Units::BaseUnits::PIXEL;
+      case 'p':
          if( string[ ++ii ] != 'x' ) { return false; }
+         bu = Units::BaseUnits::PIXEL;
          break;
       default:
          return false;
@@ -208,21 +213,31 @@ Units::Units( dip::String const& string ) {
    }
    int thousands = 0;
    switch( string[ ii ] ) {
-      case 'f': thousands = -5; ++ii; break;
+      case 'f':
+         thousands = -5; ++ii; break;
       case 'p':
-         if( string[ ii + 1 ] != 'x' ) { thousands = -4; ++ii; } break; // could be pico or pixel
+         if( string[ ii + 1 ] != 'x' ) { // make sure it's not pixel
+            thousands = -4; ++ii;
+         }
+         break;
       case 'n':
          thousands = -3; ++ii; break;
       case 'u':
          thousands = -2; ++ii; break;
 #ifdef DIP_CONFIG_ENABLE_UNICODE
       case micron[ 0 ]:
-         if( string[ ii + 1 ] == micron[ 1 ] ) { thousands = -2; ii += 2; } break; // the micron character takes 2 bytes
+         if( string[ ii + 1 ] == micron[ 1 ] ) {
+            thousands = -2; ii += 2;          // the micron character takes 2 bytes
+         }
+         break;
 #endif
       case 'm':
          // If the next character is a letter, then this is "milli" prefix, otherwise it's "meter" units.
          // Windows uses signed characters, so we cast to `unsigned char` first, then to `int` as expected by `isalpha`.
-         if( std::isalpha( static_cast< int >( static_cast< unsigned char >( string[ ii + 1 ] )))) { thousands = -1; ++ii; } break;
+         if( std::isalpha( static_cast< int >( static_cast< unsigned char >( string[ ii + 1 ] )))) {
+            thousands = -1; ++ii;
+         }
+         break;
       case 'k':
          thousands = 1; ++ii; break;
       case 'M':
@@ -270,89 +285,29 @@ void Units::FromString( dip::String const& string ) {
       // Remove trailing s, so that both "meter" and "meters" yields the same thing
       modifiedString.pop_back();
    }
-   if( modifiedString == "meter" ) {
-      *this = Meter();
-      return;
-   }
-   if( modifiedString == "squaremeter" ) {
-      *this = SquareMeter();
-      return;
-   }
-   if( modifiedString == "cubicmeter" ) {
-      *this = CubicMeter();
-      return;
-   }
-   if( modifiedString == "nanometer" ) {
-      *this = Nanometer();
-      return;
-   }
-   if( modifiedString == "micrometer" ) {
-      *this = Micrometer();
-      return;
-   }
-   if( modifiedString == "millimeter" ) {
-      *this = Millimeter();
-      return;
-   }
-   if( modifiedString == "kilometer" ) {
-      *this = Kilometer();
-      return;
-   }
-   if( modifiedString == "squaremicrometer" ) {
-      *this = SquareMicrometer();
-      return;
-   }
-   if( modifiedString == "squaremillimeter" ) {
-      *this = SquareMillimeter();
-      return;
-   }
-   if( modifiedString == "cubicmillimeter" ) {
-      *this = CubicMillimeter();
-      return;
-   }
+   if( modifiedString == "meter" ) { *this = Meter(); return; }
+   if( modifiedString == "squaremeter" ) { *this = SquareMeter(); return; }
+   if( modifiedString == "cubicmeter" ) { *this = CubicMeter(); return; }
+   if( modifiedString == "nanometer" ) { *this = Nanometer(); return; }
+   if( modifiedString == "micrometer" ) { *this = Micrometer(); return; }
+   if( modifiedString == "millimeter" ) { *this = Millimeter(); return; }
+   if( modifiedString == "kilometer" ) { *this = Kilometer(); return; }
+   if( modifiedString == "squaremicrometer" ) { *this = SquareMicrometer(); return; }
+   if( modifiedString == "squaremillimeter" ) { *this = SquareMillimeter(); return; }
+   if( modifiedString == "cubicmillimeter" ) { *this = CubicMillimeter(); return; }
 
-   if( modifiedString == "second" ) {
-      *this = Second();
-      return;
-   }
-   if( modifiedString == "millisecond" ) {
-      *this = Millisecond();
-      return;
-   }
-   if( modifiedString == "hertz" ) {
-      *this = Hertz();
-      return;
-   }
-   if( modifiedString == "kilohertz" ) {
-      *this = Kilohertz();
-      return;
-   }
-   if( modifiedString == "megahertz" ) {
-      *this = Megahertz();
-      return;
-   }
-   if( modifiedString == "gigahertz" ) {
-      *this = Gigahertz();
-      return;
-   }
+   if( modifiedString == "second" ) { *this = Second(); return; }
+   if( modifiedString == "millisecond" ) { *this = Millisecond(); return; }
+   if( modifiedString == "hertz" ) { *this = Hertz(); return; }
+   if( modifiedString == "kilohertz" ) { *this = Kilohertz(); return; }
+   if( modifiedString == "megahertz" ) { *this = Megahertz(); return; }
+   if( modifiedString == "gigahertz" ) { *this = Gigahertz(); return; }
 
-   if( modifiedString == "radian" ) {
-      *this = Radian();
-      return;
-   }
+   if( modifiedString == "radian" ) { *this = Radian(); return; }
 
-   if( modifiedString == "pixel" ) {
-      *this = Pixel();
-      return;
-   }
-   if( modifiedString == "squarepixel" ) {
-      *this = SquarePixel();
-      return;
-   }
-   if( modifiedString == "cubicpixel" ) {
-      *this = CubicPixel();
-      return;
-   }
+   if( modifiedString == "pixel" ) { *this = Pixel(); return; }
+   if( modifiedString == "squarepixel" ) { *this = SquarePixel(); return; }
+   if( modifiedString == "cubicpixel" ) { *this = CubicPixel(); return; }
 
    // Finally, assume it's a string in our own format, and call the constructor
    DIP_STACK_TRACE_THIS( *this = Units( string ));
@@ -648,6 +603,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
       DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).StringUnicode() == u8"m\u207B\u00B9/K/cd\u00B2" );
       DOCTEST_CHECK(( dip::Units( u8"10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" )).StringUnicode() == u8"m\u207B\u00B9/K/cd\u00B2" );
 
+      DOCTEST_CHECK_THROWS( dip::Units( "q" ));                // non-existing units
+      DOCTEST_CHECK_THROWS( dip::Units( u8"m^2-" ));
+      DOCTEST_CHECK_THROWS( dip::Units( u8"m\u00B2\u207B" ));  // m^2-
+      DOCTEST_CHECK_THROWS( dip::Units( u8"m^-" ));
+      DOCTEST_CHECK_THROWS( dip::Units( u8"m\u207B" ));        // m^-
+      DOCTEST_CHECK_THROWS( dip::Units( u8"uum" ));
+      DOCTEST_CHECK_THROWS( dip::Units( u8"\u00B5\u00B5m" ));  // uum
+
 #else
 
       dip::Units f = dip::Units::Meter();
@@ -726,6 +689,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
       DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m^-1/K/cd^2" );
       DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).StringUnicode() == "m^-1/K/cd^2" );
 
+      DOCTEST_CHECK_THROWS( dip::Units( "q" ));
+      DOCTEST_CHECK_THROWS( dip::Units( u8"m^2-" ));
+      DOCTEST_CHECK_THROWS( dip::Units( u8"m^-" ));
+      DOCTEST_CHECK_THROWS( dip::Units( u8"uum" ));
+
 #endif
 
    }
@@ -770,7 +738,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
       DOCTEST_CHECK( a * a == a.Power( 2 ));
       DOCTEST_CHECK(( 1 / ( a * a )) == a.Power( -2 ));
       dip::PhysicalQuantity c( 100, dip::Units::Second() );
-      std::cout << c << '\n'; // TODO: GCC 8.2 makes the next test fail, but not if I add this line here.
+      //std::cout << c << '\n'; // TODO: GCC 8.2 makes the next test fail, but not if I add this line here.
       DOCTEST_CHECK(( 1 / c ) == c.Power( -1 ));
       DOCTEST_CHECK(( b / c ) == b * c.Power( -1 ));
       dip::PhysicalQuantity d = 180 * dip::PhysicalQuantity::Degree();
@@ -779,7 +747,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
    }
    DOCTEST_SUBCASE("Normalization") {
       dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
-      std::cout << f << '\n'; // TODO: GCC 8.1 makes a lot of tests below fail, but not if I add this line here (fixed in GCC 8.2, back in GCC 8.3 !?!?!).
+      //std::cout << f << '\n'; // TODO: GCC 8.1 makes a lot of tests below fail, but not if I add this line here (fixed in GCC 8.2, back in GCC 8.3 !?!?!).
       DOCTEST_CHECK(( f * 0 ).Normalize().magnitude == 0 );
       DOCTEST_CHECK(( f * 1 ).Normalize().magnitude == 1 );
       DOCTEST_CHECK(( f * 0.1 ).Normalize().magnitude == 0.1 );
