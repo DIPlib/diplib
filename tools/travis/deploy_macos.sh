@@ -9,7 +9,7 @@ brew install python@3.7
 brew install python@3.8
 brew install python@3.9
 # The install above might have changed the default version of `python3`, so we need to reinstall packages:
-python3 -m pip install setuptools wheel twine==1.15.0 delocate
+python3 -m pip install setuptools wheel twine delocate
 
 mkdir build
 cd build

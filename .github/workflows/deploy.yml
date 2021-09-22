@@ -1,0 +1,53 @@
+name: deploy
+
+on: workflow_dispatch
+
+jobs:
+  deploy_linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install
+        # Install libraries and Python packages we need
+        run: python3 -m pip install twine
+
+      - name: Deploy
+        run: bash tools/travis/deploy_linux.sh
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      
+  deploy_macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install
+        # Install libraries and Python packages we need
+        run: |
+          brew install libomp glfw
+          python3 -m pip install numpy
+
+      - name: Deploy
+        run: bash tools/travis/deploy_macos.sh
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          
+  deploy_windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install
+        # Install libraries and Python packages we need
+        run: |
+          choco install openjdk8 --no-progress --yes
+          python -m pip install wheel numpy twine wget
+
+      - name: Deploy
+        run: tools/travis/deploy_windows.bat
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

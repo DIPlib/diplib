@@ -208,6 +208,8 @@ title: "Changes DIPlib 3.1.0"
 - Updated default connectivity, end pixel condition, and boundary condition values for some functions in the
   morphology and binary image processing modules to match the defaults in *DIPlib*.
 
+- Updated Linux wheels to correctly package FreeGLUT
+
 (See also bugfixes to *DIPlib*.)
 
 
