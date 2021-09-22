@@ -1,7 +1,10 @@
 REM Run this on Windows 10 with VS C++ build tools installed
 
-dir  C:\hostedtoolcache\windows\Python
-dir  C:\hostedtoolcache\windows\Python\3.7.9\x64
+REM Get Python versions
+
+FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.7.* /B') do (SET PYTHON37=%%g)
+FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.8.* /B') do (SET PYTHON38=%%g)
+FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.9.* /B') do (SET PYTHON39=%%g)
 
 REM Setup
 mkdir build
@@ -23,17 +26,17 @@ REM Basic configuration
 cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On
 
 REM Python 3.7
-cmake .. -A x64 -DPYTHON_EXECUTABLE=python3.7
+cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON37%\x64\python.exe 
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.8
-cmake .. -A x64 -DPYTHON_EXECUTABLE=python3.8
+cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.9
-cmake .. -A x64 -DPYTHON_EXECUTABLE=python3.9
+cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON39%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
