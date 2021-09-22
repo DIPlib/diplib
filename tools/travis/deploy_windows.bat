@@ -1,5 +1,8 @@
 REM Run this on Windows 10 with VS C++ build tools installed
 
+dir  C:\hostedtoolcache\windows\Python
+dir  C:\hostedtoolcache\windows\Python\3.7.9\x64
+
 REM Setup
 mkdir build
 cd build
@@ -20,20 +23,17 @@ REM Basic configuration
 cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On
 
 REM Python 3.7
-del pydip\Release\setup.py.out pydip\Release\setup.py
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:/Python37/python.exe
+cmake .. -A x64 -DPYTHON_EXECUTABLE=python3.7
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.8
-del pydip\Release\setup.py.out pydip\Release\setup.py
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:/Python38/python.exe
+cmake .. -A x64 -DPYTHON_EXECUTABLE=python3.8
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.9
-del pydip\Release\setup.py.out pydip\Release\setup.py
-cmake .. -A x64 -DPYTHON_EXECUTABLE=C:/Python39/python.exe
+cmake .. -A x64 -DPYTHON_EXECUTABLE=python3.9
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
