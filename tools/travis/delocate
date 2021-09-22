@@ -14,9 +14,12 @@ def delocate_wheel(in_wheel,
                    copy_filt_func = filter_system_libs,
                    require_archs = None,
                    check_verbose = False,
+                   executable_path = None,
+                   ignore_missing = False
                   ):
     return delocate.delocating.delocate_wheel(in_wheel, out_wheel, lib_sdir,
-                  lib_filt_func, copy_filt_func, require_archs, check_verbose)
+                  lib_filt_func, copy_filt_func, require_archs, check_verbose,
+                  executable_path, ignore_missing)
 
 delocate.cmd.delocate_wheel.delocate_wheel = delocate_wheel
 
