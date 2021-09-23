@@ -26,16 +26,19 @@ REM Basic configuration
 cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On
 
 REM Python 3.7
+C:\hostedtoolcache\windows\Python\%PYTHON37%\x64\python.exe -m pip install setuptools wheel
 cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON37%\x64\python.exe 
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.8
+C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe -m pip install setuptools wheel
 cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON38%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Python 3.9
+C:\hostedtoolcache\windows\Python\%PYTHON39%\x64\python.exe -m pip install setuptools wheel
 cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON39%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
