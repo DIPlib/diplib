@@ -3,8 +3,28 @@ name: test
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'dependencies/**'
+      - 'include/**'
+      - 'javaio/**'
+      - 'pydip/**'
+      - 'src/**'
+      - 'viewer/**'
+      - 'CMakeLists.txt'
+      - '!**/README*'
+      - '!**/readme*'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'dependencies/**'
+      - 'include/**'
+      - 'javaio/**'
+      - 'pydip/**'
+      - 'src/**'
+      - 'viewer/**'
+      - 'CMakeLists.txt'
+      - '!**/README*'
+      - '!**/readme*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
