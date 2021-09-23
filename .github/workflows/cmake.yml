@@ -1,4 +1,4 @@
-name: CT
+name: test
 
 on:
   push:
@@ -20,9 +20,7 @@ jobs:
           - os: windows-latest
             dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off
             # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
-      fail-fast: false
-      # TODO: Enable the fail-fast mode, at least for pull requests.
-      # TODO: CMake needs the `-A x64` option added on Windows only
+      fail-fast: true
 
     steps:
       - uses: actions/checkout@v2
