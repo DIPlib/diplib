@@ -738,7 +738,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
       DOCTEST_CHECK( a * a == a.Power( 2 ));
       DOCTEST_CHECK(( 1 / ( a * a )) == a.Power( -2 ));
       dip::PhysicalQuantity c( 100, dip::Units::Second() );
-      //std::cout << c << '\n'; // TODO: GCC 8.2 makes the next test fail, but not if I add this line here.
+      std::cout << c << '\n'; // TODO: GCC 8.2 makes the next test fail, but not if I add this line here. GCC 9 still has this issue, GCC 11 doesn't.
       DOCTEST_CHECK(( 1 / c ) == c.Power( -1 ));
       DOCTEST_CHECK(( b / c ) == b * c.Power( -1 ));
       dip::PhysicalQuantity d = 180 * dip::PhysicalQuantity::Degree();
@@ -747,7 +747,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
    }
    DOCTEST_SUBCASE("Normalization") {
       dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
-      //std::cout << f << '\n'; // TODO: GCC 8.1 makes a lot of tests below fail, but not if I add this line here (fixed in GCC 8.2, back in GCC 8.3 !?!?!).
+      std::cout << f << '\n'; // TODO: GCC 8.1 makes a lot of tests below fail, but not if I add this line here. GCC 9 still has this issue, GCC 11 doesn't.
       DOCTEST_CHECK(( f * 0 ).Normalize().magnitude == 0 );
       DOCTEST_CHECK(( f * 1 ).Normalize().magnitude == 1 );
       DOCTEST_CHECK(( f * 0.1 ).Normalize().magnitude == 0.1 );
