@@ -217,22 +217,7 @@ title: "Changes DIPlib 3.1.0"
 
 
 
-## Changes to *DIPviewer*
-
-### New functionality
-
-### Changed functionality
-
-### Bug fixes
-
-
-
-
 ## Changes to *DIPjavaio*
-
-### New functionality
-
-### Changed functionality
 
 ### Bug fixes
 
