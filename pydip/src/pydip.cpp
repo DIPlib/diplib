@@ -24,6 +24,18 @@ static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how 
 
 namespace {
 
+dip::String InfoRepr( dip::LibraryInformation const& info ) {
+   std::ostringstream os;
+   os << "name: " << info.name << '\n';
+   os << "description: " << info.description << '\n';
+   os << "copyright: " << info.copyright << '\n';
+   os << "URL: " << info.URL << '\n';
+   os << "version: " << info.version << '\n';
+   os << "date: " << info.date << '\n';
+   os << "type: " << info.type << '\n';
+   return os.str();
+}
+
 dip::String TensorRepr( dip::Tensor const& tensor ) {
    std::ostringstream os;
    os << "<Tensor (" << tensor << ")>";
@@ -61,6 +73,21 @@ dip::Random& RandomNumberGenerator() {
 
 PYBIND11_MODULE( PyDIP_bin, m ) {
    m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
+
+   // diplib.h
+
+   auto info = py::class_< dip::LibraryInformation >( m, "LibraryInformation", "Holds information about the DIPlib library." );
+   info.def_readonly( "name", &dip::LibraryInformation::name, "The library name" );
+   info.def_readonly( "description", &dip::LibraryInformation::description, "A short description string" );
+   info.def_readonly( "copyright", &dip::LibraryInformation::copyright, "Copyright string for the library" );
+   info.def_readonly( "URL", &dip::LibraryInformation::URL, "Library website, with contact information etc." );
+   info.def_readonly( "version", &dip::LibraryInformation::version, "The library version number" );
+   info.def_readonly( "date", &dip::LibraryInformation::date, "Compilation date" );
+   info.def_readonly( "type", &dip::LibraryInformation::type, "Describes options enabled during compilation" );
+   info.def( "__repr__", &InfoRepr );
+
+   m.attr( "libraryInformation" ) = dip::libraryInformation;
+   m.attr( "__version__" ) = dip::libraryInformation.version;
 
    // diplib/library/tensor.h
 

@@ -195,6 +195,8 @@ title: "Changes DIPlib 3.1.0"
 
 - Added `dip.ImposeMinima()`, `dip.Toggle()` and `dip.MorphologicalSharpening()`.
 
+- Added `dip.libraryInformation` and `dip.__version__`.
+
 ### Changed functionality
 
 - `dip.ChordLength`, `dip.PairCorrelation`, `dip.ProbabilisticPairCorrelation`, `dip.Semivariogram`,

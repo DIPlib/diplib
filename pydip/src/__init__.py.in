@@ -1,6 +1,6 @@
 # PyDIP 3.0, Python bindings for DIPlib 3.0
 #
-# (c)2017-2020, Flagship Biosciences, Inc., written by Cris Luengo.
+# (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ except:
     if os.name == 'nt' and @pydip_wheel_include_libs@ == True:
         print("Could not load PyDIP binary extension. Did you install the Microsoft Visual C++ Redistributable?")
     raise
+
+__version__ = PyDIP_bin.__version__
 
 from .PyDIP_py import *
 Image.Show = Show
@@ -120,3 +122,10 @@ if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
             print("\nload_jvm returned '" + lib + "'")
         else:
             print("\nlibjvm not found")
+
+# Here we display library information
+import sys
+if hasattr(sys,'ps1'):
+    print(libraryInformation.name + " -- " + libraryInformation.description)
+    print("Version " + libraryInformation.version + " (" + libraryInformation.date + ")")
+    print("For more information see " + libraryInformation.URL)
