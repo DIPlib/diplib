@@ -35,6 +35,10 @@ But you can only add one of them to your *MATLAB* path.
 
 \subsection sec_dum_installing_windows_bindist Installation from binary distribution
 
+!!! par "Not the latest release"
+    We don't have a way to consistently produce a *DIPimage* binary distribution with
+    every release, so the binaries available are rather old.
+
 To install *DIPimage*, simply run the installation program and follow the
 directions in it. The tool will tell you to start *MATLAB* and type the
 command
@@ -53,11 +57,11 @@ executed automatically every time *MATLAB* starts.
 \subsection sec_dum_installing_windows_source Installation from source
 
 Clone the git repository (or download a ZIP file) from
-[GitHub](https://github.com/DIPlib/diplib). The file `README_Windows.md`
+[GitHub](https://github.com/DIPlib/diplib). The file `INSTALL_Windows.md`
 in the root of the repository contains step-by-step instructions to
 build *DIPimage*, including how to obtain the necessary tools and
 dependencies. You can also
-[read the instructions online](https://github.com/DIPlib/diplib/blob/master/README_Windows.md).
+[read the instructions online](https://github.com/DIPlib/diplib/blob/master/INSTALL_Windows.md).
 
 Once all the binaries are compiled, start *MATLAB* and type:
 ```matlab
@@ -81,23 +85,29 @@ Clone the git repository (or download a ZIP file) from
 [GitHub](https://github.com/DIPlib/diplib). You will require a C++14
 compiler (GCC and Clang are available on all platforms), and CMake.
 
-The root directory of the git repository has a
-[README.md](https://github.com/DIPlib/diplib/blob/master/README.md) file
-that gives some directions on compiling. In principle this should suffice:
+The root directory of the git repository has an
+[INSTALL_Linux.md](https://github.com/DIPlib/diplib/blob/master/INSTALL_Linux.md) file
+that gives detailed directions on compiling, including how to get the required build tools
+and optional dependencies. In principle it should suffice to open a terminal and type
+the following commands:
 ```bash
-mkdir target
-cd target
-cmake /path/to/git/repository/root
+git clone https://github.com/DIPlib/diplib.git
+mkdir diplib/target
+cd diplib/target
+cmake ..
 make -j install
 ```
 
 If you wish to install *DIPimage* in your home directory instead of `/usr`,
-the CMake command could be:
+the `cmake` command could be:
 ```bash
-cmake /path/to/git/repository/root -DCMAKE_INSTALL_PREFIX=/home/uname
+cmake .. -DCMAKE_INSTALL_PREFIX=$HOME
 ```
 
 Note that you need to have *MATLAB* installed on the build machine to build *DIPimage*.
+If CMake cannot find your *MATLAB* installation, add `-DMatlab_ROOT_DIR=/path/to/matlab`
+to the CMake command line. You can get the *MATLAB* root directory by typing `matlabroot`
+at the *MATLAB* command prompt.
 
 Once all the binaries are compiled, start *MATLAB* and type:
 ```matlab
@@ -116,12 +126,10 @@ You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 \subsection sec_dum_installing_macos_bindist Installation from binary distribution
 
 !!! par "Not yet available"
-    This might be a bundle, or a drag-drop disk image. A different option could be a Homebrew formula.
+    This might be a bundle, a drag-drop disk image, or even a Homebrew formula. We don't know yet!
 
 \subsection sec_dum_installing_macos_source Installation from source
 
-Building from source under MacOS is identical to Linux, see the directions
-in \ref sec_dum_installing_linux_source. The file `README_MacOS.md` in the root of the repository
-contains step-by-step instructions to build *DIPimage*, including how to obtain
-the necessary tools and dependencies. You can also
-[read the instructions online](https://github.com/DIPlib/diplib/blob/master/README_MacOS.md).
+Building from source under macOS is very similar to Linux, see the directions
+in \ref sec_dum_installing_linux_source, but refer to the file
+[INSTALL_MacOS.md](https://github.com/DIPlib/diplib/blob/master/INSTALL_MacOS.md) instead.

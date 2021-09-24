@@ -105,6 +105,10 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip
 This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documentation
 under the `dip` directory in your home directory.
 
+Examine the output of `cmake` to verify all the features you need are enabled, and your
+chosen dependencies were found. The [`INSTALL.md`](INSTALL.md) file summarizes all the
+CMake options to manually specify paths.
+
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building
 and installing, run
 ```bash
@@ -165,8 +169,9 @@ addpath('/Users/<name>/dip/share/DIPimage')
 This will make the toolbox available (replace `/Users/<name>/dip` with the
 actual path you installed to).
 
-To get started using *DIPimage*, read the *DIPimage User Manual*, and look through
-the help, starting at
+To get started using *DIPimage*, read the
+[*DIPimage User Manual*](https://diplib.org/diplib-docs/dipimage_user_manual.html),
+and look through the help, starting at
 ```matlab
 help DIPimage
 ```

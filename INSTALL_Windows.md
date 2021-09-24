@@ -150,8 +150,9 @@ setenv('PATH',['C:\Users\<name>\DIPlib\bin',';',getenv('PATH')]);
 This will make the toolbox available (replace `C:\Users\<name>\DIPlib` with the
 actual path you installed to).
 
-To get started using *DIPimage*, read the *DIPimage User Manual*, and look through
-the help, starting at
+To get started using *DIPimage*, read the
+[*DIPimage User Manual*](https://diplib.org/diplib-docs/dipimage_user_manual.html),
+and look through the help, starting at
 ```matlab
 help DIPimage
 ```
