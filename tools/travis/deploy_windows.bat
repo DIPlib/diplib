@@ -23,7 +23,7 @@ cd ..
 cd ..
 
 REM Basic configuration
-cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On
+cmake .. -A x64 -DBIOFORMATS_JAR=%CD%\bioformats_package.jar -DFREEGLUT_INCLUDE_DIR=%CD%\freeglut-3.0.0\include -DFREEGLUT_LIBRARY=%CD%\freeglut-3.0.0\build\lib\Release\freeglut_static.lib -DFREEGLUT_STATIC=On -DDIP_BUILD_DIPIMAGE=Off -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DDIP_ENABLE_UNICODE=Off
 
 REM Python 3.7
 C:\hostedtoolcache\windows\Python\%PYTHON37%\x64\python.exe -m pip install setuptools wheel
