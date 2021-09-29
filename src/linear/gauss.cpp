@@ -59,9 +59,10 @@ std::vector< dfloat > MakeHalfGaussian(
    }
    std::vector< dfloat > filter( halfFilterSize );
    dip::uint r0 = halfFilterSize - 1;
+   dfloat sigma2 = sigma * sigma;
    switch( derivativeOrder ) {
       case 0: {
-         dfloat factor = -1.0 / ( 2.0 * sigma * sigma );
+         dfloat factor = -0.5 / sigma2;
          dfloat normalization = 0;
          filter[ r0 ] = 1.0;
          for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
@@ -77,7 +78,7 @@ std::vector< dfloat > MakeHalfGaussian(
          break;
       }
       case 1: {
-         dfloat factor = -1.0 / ( 2.0 * sigma * sigma );
+         dfloat factor = -0.5 / sigma2;
          dfloat moment = 0.0;
          filter[ r0 ] = 0.0;
          for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
@@ -93,15 +94,13 @@ std::vector< dfloat > MakeHalfGaussian(
          break;
       }
       case 2: {
-         dfloat sigma2 = sigma * sigma;
-         dfloat sigma4 = sigma2 * sigma2;
-         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma );
+         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma * sigma2 );
          dfloat mean = 0.0;
-         filter[ r0 ] = ( -1.0 / sigma2 ) * norm;
+         filter[ r0 ] = -norm;
          for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
-            dfloat rr2 = rad * rad;
-            dfloat g = (( -1.0 / sigma2 ) + ( rr2 ) / sigma4 ) * norm * std::exp( -( rr2 ) / ( 2.0 * sigma2 ));
+            dfloat sr2 = rad * rad / sigma2;
+            dfloat g = ( sr2 - 1.0 ) * norm * std::exp( -0.5 * sr2 );
             filter[ r0 - rr ] = g;
             mean += g;
          }
@@ -120,18 +119,16 @@ std::vector< dfloat > MakeHalfGaussian(
          break;
       }
       case 3: {
-         dfloat sigma2 = sigma * sigma;
-         dfloat sigma4 = sigma2 * sigma2;
-         dfloat sigma6 = sigma4 * sigma2;
-         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma );
+         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma * sigma2 * sigma2 );
          filter[ r0 ] = 0.0;
          dfloat moment = 0.0;
          for( dip::uint rr = 1; rr < halfFilterSize; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
-            dfloat r2 = rad * rad;
-            dfloat g = norm * std::exp( -r2 / ( 2.0 * sigma2 )) * ( rad * ( 3.0 * sigma2 - r2 ) / sigma6 );
+            dfloat rr2 = rad * rad;
+            dfloat sr2 = rr2 / sigma2;
+            dfloat g = norm * std::exp( -0.5 * sr2 ) * ( rad * ( 3.0 - sr2 ));
             filter[ r0 - rr ] = g;
-            moment += g * r2 * rad;
+            moment += g * rr2 * rad;
          }
          dfloat normalization = 3.0 / moment;
          for( dip::uint rr = 0; rr < halfFilterSize; rr++ ) {
