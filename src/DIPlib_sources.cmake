@@ -118,6 +118,8 @@ generation/draw_bandlimited.cpp
 generation/draw_discrete.cpp
 generation/draw_fourier.cpp
 generation/draw_support.h
+generation/draw_text_builtin.cpp
+generation/draw_text_freetype.cpp
 generation/noise.cpp
 generation/windowing.cpp
 geometry/interpolation.cpp

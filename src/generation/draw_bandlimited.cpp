@@ -699,6 +699,86 @@ void DrawBandlimitedBox(
    // output image.
 }
 
+namespace {
+
+template< typename TPI >
+void ScaleImage( Image& img ) {
+   img /= std::numeric_limits< TPI >::max();
+}
+
+template< typename TPI >
+void ThresholdImage( Image& img ) {
+   img = img > ( std::numeric_limits< TPI >::max() / 2 );
+}
+
+} // namespace
+
+void BlendBandlimitedMask(
+      Image& out,
+      Image const& mask,         // scalar, DT_UINT8, of same dimensionality as `out`
+      IntegerArray const& pos,
+      Image::Pixel const& value  // must have the same number of tensor elements as `out`
+) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF( mask.Dimensionality() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !value.IsScalar() && ( value.TensorElements() != out.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
+   // Find overlap region
+   UnsignedArray outOrigin( nDims, 0 );
+   UnsignedArray maskOrigin( nDims, 0 );
+   UnsignedArray outSize = out.Sizes();
+   UnsignedArray maskSize = mask.Sizes();
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      // Left edge of mask
+      if( pos[ ii ] < 0 ) {
+         maskOrigin[ ii ] = static_cast< dip::uint >( -pos[ ii ] );
+         if( maskOrigin[ ii ] >= maskSize[ ii ] ) {
+            return; // mask is fully outside of image on left side
+         }
+         maskSize[ ii ] -= maskOrigin[ ii ];
+      } else {
+         outOrigin[ ii ] = static_cast< dip::uint >( pos[ ii ] );
+         if( outOrigin[ ii ] >= outSize[ ii ] ) {
+            return; // mask is fully outside of image on right side
+         }
+         outSize[ ii ] -= outOrigin[ ii ];
+      }
+      // Right edge of mask
+      if( maskSize[ ii ] > outSize[ ii ] ) {
+         maskSize[ ii ] = outSize[ ii ];
+      } else {
+         outSize[ ii ] = maskSize[ ii ];
+      }
+   }
+   // Create views for the overlap region
+   Image outWindow = out.QuickCopy();
+   outWindow.ShiftOriginUnsafe( out.Offset( outOrigin ));
+   outWindow.SetSizesUnsafe( outSize );
+   Image maskWindow = mask.QuickCopy();
+   maskWindow.ShiftOriginUnsafe( mask.Offset( maskOrigin ));
+   maskWindow.SetSizesUnsafe( maskSize );
+   // For a binary `out`, `mask` must be binary too.
+   if( outWindow.DataType().IsBinary() && !maskWindow.DataType().IsBinary() ) {
+      if( maskWindow.DataType().IsFloat() ) {
+         maskWindow = maskWindow > 0.5;
+      } else {
+         DIP_OVL_CALL_INTEGER( ThresholdImage, ( maskWindow ), maskWindow.DataType() );
+      }
+   }
+   // Do the blending
+   if( maskWindow.DataType().IsBinary() ) {
+      outWindow.At( maskWindow ) = value;
+   } else {
+      DataType dt = maskWindow.DataType();
+      if( !dt.IsFloat() ) {
+         maskWindow.Convert( DT_SFLOAT );
+         DIP_OVL_CALL_INTEGER( ScaleImage, ( maskWindow ), dt );
+      }
+      outWindow.Copy( outWindow * ( 1 - maskWindow ) + value * maskWindow );
+   }
+}
 
 namespace {
 

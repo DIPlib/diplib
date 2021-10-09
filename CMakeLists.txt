@@ -359,6 +359,12 @@ else()
    message(" * Using built-in FFT")
 endif()
 
+if(DIP_ENABLE_FREETYPE)
+   message(" * Using FreeType")
+else()
+   message(" * Not using FreeType")
+endif()
+
 if(DIP_ENABLE_DOCTEST)
    message(" * Unit test code included")
 else()

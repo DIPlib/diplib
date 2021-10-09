@@ -24,6 +24,10 @@
 #include "diplib.h"
 #include "diplib/random.h"
 
+// Forward declarations taken from the FreeType headers. This avoids making FreeType a dependency of these headers.
+typedef struct FT_LibraryRec_* FT_Library;
+typedef struct FT_FaceRec_* FT_Face;
+
 
 /// \file
 /// \brief Functions for generating image data.
@@ -138,6 +142,7 @@ DIP_EXPORT void DrawPolygon2D(
       Polygon const& polygon,
       Image::Pixel const& value = { 1 },
       String const& mode = S::FILLED
+      // String const& blend = S::ASSIGN
 );
 
 /// \brief Draws a solid ellipsoid in an image.
@@ -155,6 +160,7 @@ DIP_EXPORT void DrawEllipsoid(
       FloatArray const& sizes,
       FloatArray const& origin,
       Image::Pixel const& value = { 1 }
+      // String const& blend = S::ASSIGN
 );
 
 /// \brief Draws a solid diamond in an image.
@@ -172,6 +178,7 @@ DIP_EXPORT void DrawDiamond(
       FloatArray const& sizes,
       FloatArray const& origin,
       Image::Pixel const& value = { 1 }
+      // String const& blend = S::ASSIGN
 );
 
 /// \brief Draws a solid box (rectangle) in an image.
@@ -189,6 +196,7 @@ DIP_EXPORT void DrawBox(
       FloatArray const& sizes,
       FloatArray const& origin,
       Image::Pixel const& value = { 1 }
+      // String const& blend = S::ASSIGN
 );
 
 
@@ -209,6 +217,7 @@ DIP_EXPORT void DrawBandlimitedPoint(
       Image::Pixel const& value = { 1 },
       FloatArray sigmas = { 1.0 },
       dfloat truncation = 3.0
+      // String const& blend = S::ADD
 );
 
 /// \brief Draws an approximately bandlimited line between two points in the image, using Gaussian profiles.
@@ -230,6 +239,7 @@ DIP_EXPORT void DrawBandlimitedLine(
       Image::Pixel const& value = { 1 },
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
+      // String const& blend = S::ADD
 );
 
 /// \brief Draws an approximately bandlimited ball (disk) or an n-sphere (circle) in an image, using Gaussian profiles.
@@ -261,6 +271,7 @@ DIP_EXPORT void DrawBandlimitedBall(
       String const& mode = S::FILLED,
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
+      // String const& blend = S::ADD
 );
 
 /// \brief Draws an approximately bandlimited box (rectangle) in an image, using Gaussian profiles.
@@ -289,6 +300,201 @@ DIP_EXPORT void DrawBandlimitedBox(
       String const& mode = S::FILLED,
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
+      // String const& blend = S::ADD
+);
+
+/// \brief Blends `mask` into `out` at position `pos`, with color `value`.
+///
+/// `out` is a forged image of any data type, dimensionality and number of tensor elements. `mask` is a
+/// scalar image of the same dimensionality. If it is a floating-point image, the values should be in
+/// the range 0-1; if it is an integer image, the values should be between 0 and the maximum for the data type.
+/// `mask` can also be binary, but it cannot be a complex type.
+///
+/// `pos` has one value for each dimension in `out`, and indicates the position of the top-left corner of
+/// `mask` in `out`. That is, `mask` will be translated by this vector. Note that `mask` can fall partially
+/// outside of `out`, it is perfectly fine to specify negative coordinates.
+///
+/// `value` has either one tensor element, or one tensor element for each dimension of `out`. If it is scalar,
+/// then the same value will be used for each tensor element. It indicates the color to be used to blend
+/// `mask` in `out`. Where `mask` is maximal, `out` will be assigned `value`. Where `mask` is zero, `out`
+/// will not be changed. Intermediate values indicate how much of `value` to mix into the existing color.
+/// `value` is cast to the data type of `out` after blending.
+///
+/// If `out` is binary, `mask` will be thresholded at 50%.
+DIP_EXPORT void BlendBandlimitedMask(
+      Image& out,
+      Image const& mask,
+      IntegerArray const& pos,
+      Image::Pixel const& value
+);
+
+/// \brief Class used to draw text using a specified font file (TTF, OTF, etc).
+///
+/// An object of this class must first be given the file name of a font on disk, which can be done either in the
+/// constructor or through \ref SetFont. This font is subsequently used to render text in an image using \ref DrawText.
+/// The text size can be specified by calling \ref SetSize before rendering.
+///
+/// This class supports the most common font file formats (TrueType, Type 1, CID-keyed and OpenType/CFF fonts are
+/// supported). A default font is not provided because there is no standard for where these files are
+/// to be found (on some platforms it's an easier problem than on others). A program that uses `FreeTypeTool` could
+/// be distributed with a font file.
+///
+/// Example usage:
+/// ```cpp
+/// dip::FreeTypeTool freeTypeTool( "/usr/share/fonts/truetype/times.ttf" );
+/// ```
+///
+/// !!! attention "Note on thread-safety"
+///     Setting a font through \ref SetFont is not thread-safe. The FreeType documentation says that the functionality
+///     used in \ref DrawText is thread-safe, though I don't see how this function would work properly if called from
+///     two threads at the same time. I would recommend using a mutex in a multi-threaded environment if the same object
+///     is shared among threads. Ideally, each thread would create their own `FreeTypeTool` object, which is perfectly
+///     safe to do.
+///
+/// `FreeTypeTool` objects cannot be copied, they can only be moved.
+///
+/// !!! warning
+///     This class only works if *DIPlib* was configured to link to the FreeType library. By default this is not the
+///     case, and none of the binary releases produced by the *DIPlib* project enable this functionality. If you want
+///     to use this class, you need to compile *DIPlib* yourself. Otherwise, use \ref dip::DrawText, which uses a
+///     hard-coded font.
+class FreeTypeTool {
+   public:
+      /// \brief A default-constructed object cannot be used until a font is set with \ref SetFont.
+      DIP_EXPORT FreeTypeTool();
+      /// \brief This constructor immediately sets a font, see \ref SetFont for details.
+      explicit FreeTypeTool( String const& font ) : FreeTypeTool() {
+         SetFont( font );
+      }
+
+      // Destructor
+      DIP_EXPORT ~FreeTypeTool();
+
+      // Object can be moved
+      FreeTypeTool( FreeTypeTool&& other ) noexcept {
+         std::swap( library, other.library );
+         std::swap( face, other.face );
+      }
+      FreeTypeTool& operator=( FreeTypeTool&& other ) noexcept {
+         std::swap( library, other.library );
+         std::swap( face, other.face );
+         return *this;
+      }
+
+      // Object cannot be copied
+      FreeTypeTool( FreeTypeTool const& ) = delete;
+      FreeTypeTool& operator=( FreeTypeTool const& ) = delete;
+
+      /// \brief Set the font to be used to render text.
+      ///
+      /// `font` is the full path to a file with a type face description (TrueType, Type 1, CID-keyed and OpenType/CFF
+      /// fonts are supported).
+      ///
+      /// It is fine to switch fonts in between calls to \ref DrawText. When changing the font, the size selected
+      /// through \ref SetSize is not preserved, and needs to be set anew. By default, the size is set to 12 pixels.
+      ///
+      /// This function is not thread-safe.
+      DIP_EXPORT void SetFont( String const& font );
+
+      /// \brief Set the font size to be used to render text.
+      ///
+      /// `size` is the EM square size in pixels (equivalent to the size in points at 72 dpi). It depends on the
+      /// selected font how many pixels a letter actually takes up.
+      DIP_EXPORT void SetSize( dfloat size );
+
+      /// \brief Render text in an existing image.
+      ///
+      /// Draws text in the image `out`, at location `origin`, with a color given by `value`, and rotated according to
+      /// `orientation`.
+      ///
+      /// `text` is any UTF-8 encoded string, even if Unicode support was not enabled when building *DIPlib*. But note
+      /// that any ASCII string is also a properly UTF-8 encoded string. Characters that don't have a glyph in the given
+      /// type face `font` will be rendered with the character known as "missing glyph", typically a box or a space.
+      /// Note that control characters such as the newline and the backspace are not treated specially, and thus they
+      /// will be drawn as a missing glyph. To draw multiple lines of text, call this function for each line in turn.
+      ///
+      /// `origin` is the pixel coordinates of a point on the base line. If `align` is `"left"`, `origin` is a point
+      /// on the left edge of the rendered text; if `align` is `"right"`, it is a point on the right edge; and if it
+      /// is `"center"`, it is the point halfway between the left and right edges.
+      /// `orientation` is in radian, with 0 for horizontal text, and increasing clockwise.
+      ///
+      /// `out` must be a forged 2D image. If `out` is binary, the anti-aliased glyphs will be thresholded.
+      /// `value` must have the same number of tensor elements as `out`. If `value` is scalar, this value will be used
+      /// for all tensor elements.
+      DIP_EXPORT void DrawText(
+            Image& out,
+            String const& text,
+            FloatArray origin,
+            Image::Pixel const& value = { 1 },
+            dfloat orientation = 0,
+            String const& align = S::LEFT
+      );
+
+      /// \brief Data structure returned by \ref DrawText(String const&, dfloat).
+      struct TextInfo {
+         Image image;         ///< The image with the rendered text.
+         IntegerArray left;   ///< Coordinates within `image` of the point on the baseline at the left edge of the text.
+         IntegerArray right;  ///< Coordinates within `image` of the point on the baseline at the right edge of the text.
+      };
+
+      /// \brief Alternate version of the function above that returns a new image tightly cropped around the rendered text.
+      ///
+      /// The output image is a 2D scalar image of type \ref dip::DT_UINT8, with white text on a black background.
+      /// The output data structure additionally contains the two end points of the baseline, on either side of the
+      /// rendered text.
+      ///
+      /// See \ref DrawText(Image&, String const&, FloatArray const&, Image::Pixel const&, dfloat)
+      /// for a description of the `text` and `orientation` arguments.
+      DIP_NODISCARD DIP_EXPORT TextInfo DrawText(
+            String const& text,
+            dfloat orientation = 0
+      );
+
+   private:
+      FT_Library library = nullptr;
+      FT_Face face = nullptr;
+};
+
+/// \brief Draws text with the built-in, fixed-sized glyphs.
+///
+/// Draws text in the image `out`, at location `origin`, with a color given by `value`, and rotated according to
+/// `orientation`.
+///
+/// The font used is composed of glyph images rendered from the Open Sans font, at 14 px.
+/// The lowercase letter 'x' is 9x10 pixels and uppercase letter 'X' is 8x8 pixels. The font uses anti-aliasing,
+/// blending from the color `value` to the existing image colors.
+///
+/// `text` is any ASCII string; even if Unicode support was enabled when building *DIPlib*, the built-in font only
+/// has glyphs for the ASCII characters 32-126. Other characters will be ignored. In particular, control characters
+/// such as the newline and the backspace are ignored, to draw multiple lines of text, call this function for each
+/// line in turn.
+///
+/// `origin` is the pixel coordinates of a point on the base line. If `align` is `"left"`, `origin` is a point
+/// on the left edge of the rendered text; if `align` is `"right"`, it is a point on the right edge; and if it
+/// is `"center"`, it is the point halfway between the left and right edges.
+/// `orientation` is in radian, with 0 for horizontal text, and increasing clockwise.
+///
+/// `out` must be a forged 2D image. If `out` is binary, the anti-aliased glyphs will be thresholded.
+/// `value` must have the same number of tensor elements as `out`. If `value` is scalar, this value will be used
+/// for all tensor elements.
+DIP_EXPORT void DrawText(
+      Image& out,
+      String const& text,
+      FloatArray origin,
+      Image::Pixel const& value = { 1 },
+      dfloat orientation = 0,
+      String const& align = S::LEFT
+);
+
+/// \brief Alternate version of the function above that returns a new image tightly cropped around the rendered text.
+///
+/// The output image is a 2D scalar image of type \ref dip::DT_UINT8, with white text on a black background.
+///
+/// See \ref DrawText(Image&, String const&, FloatArray const&, Image::Pixel const&, dfloat)
+/// for a description of the functionality and arguments.
+DIP_NODISCARD DIP_EXPORT Image DrawText(
+      String const& text,
+      dfloat orientation = 0
 );
 
 /// \endgroup

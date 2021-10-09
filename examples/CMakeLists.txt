@@ -145,3 +145,8 @@ if(DIP_BUILD_DIPVIEWER)
    endif()
 
 endif(DIP_BUILD_DIPVIEWER)
+
+# This is more a utility for the developers than an example...
+# This program generates data in the file src/generation/draw_text_builtin.cpp
+add_executable(generate_embedded_font cpp/generate_embedded_font.cpp)
+target_link_libraries(generate_embedded_font DIP)

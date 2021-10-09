@@ -143,7 +143,7 @@ limitations under the License.
 
 - The DFT algorithm out of *OpenCV* 3.1  
   Copyright 2000 Intel Corporation  
-  Intel License Agreement For Open Source Computer Vision Library  
+  3-Clause BSD License  
   see [`src/transform/opencv_dxt.cpp`](src/transform/opencv_dxt.cpp)
 
 - *PCG Random Number Generation for C++*  
@@ -166,6 +166,11 @@ limitations under the License.
   1-Clause BSD-like License  
   see [`src/display/colormap.cpp`](src/display/colormap.cpp) (about half-way down the file)
 
+- Glyph images obtained by rendering the *Open Sans* font  
+  Unknown copyright, designed by Steve Matteson  
+  Apache 2.0 License  
+  see [`src/generation/draw_text_builtin.cpp`](src/generation/draw_text_builtin.cpp) or [Google Fonts](https://fonts.google.com/specimen/Open+Sans#about)
+ 
 - *libics* (its use can be disabled)  
   Copyright 2015-2017 Scientific Volume Imaging Holding B.V.  
   Copyright 2000-2013 Cris Luengo and others  
@@ -218,6 +223,10 @@ to the Apache License.
   Copyright 2003, 2007-14 Matteo Frigo  
   Copyright 2003, 2007-14 Massachusetts Institute of Technology  
   GNU General Public License, Version 2 (**not compatible with the Apache License**)
+
+- *FreeType 2* (as installed on your system, not used by default)  
+  Copyright 1996-2021 David Turner, Robert Wilhelm, and Werner Lemberg  
+  FreeType License (BSD style)
 
 *DIPviewer* links against the following libraries:
 

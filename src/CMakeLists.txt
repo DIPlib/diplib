@@ -142,6 +142,17 @@ if(DIP_ENABLE_FFTW)
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_FFTW)
 endif()
 
+# Use FreeType
+find_package(Freetype)
+if(FREETYPE_FOUND)
+   set(DIP_ENABLE_FREETYPE OFF CACHE BOOL "Enable linking against FreeType, for better text rendering in images")
+endif()
+if(DIP_ENABLE_FREETYPE)
+   target_include_directories(DIP PRIVATE ${FREETYPE_INCLUDE_DIRS})
+   target_link_libraries(DIP PRIVATE ${FREETYPE_LIBRARIES})
+   target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_FREETYPE)
+endif()
+
 
 # Install
 install(TARGETS DIP EXPORT DIPlibTargets ${DIP_DESTINATIONS})

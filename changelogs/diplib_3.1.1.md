@@ -7,6 +7,13 @@ title: "Changes DIPlib 3.1.1"
 
 ### New functionality
 
+- Added `dip::BlendBandlimitedMask()`.
+
+- Added `dip::FreeTypeTool` to render text into images. It depends on the FreeType library to use any font file
+  for rendering the text. This functionality is opt-in (that is, by default it is not enabled).
+
+- Added `dip::DrawText()` to render text into images using a built-in, fixed-size font.
+
 ### Changed functionality
 
 ### Bug fixes

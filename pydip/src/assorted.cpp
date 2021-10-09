@@ -192,6 +192,19 @@ void init_assorted( py::module& m ) {
    m.def( "DrawBandlimitedLine", &dip::DrawBandlimitedLine, "out"_a, "start"_a, "end"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigma"_a = 1.0, "truncation"_a = 3.0 );
    m.def( "DrawBandlimitedBall", &dip::DrawBandlimitedBall, "out"_a, "diameter"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
    m.def( "DrawBandlimitedBox", &dip::DrawBandlimitedBox, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
+   m.def( "DrawText", []( dip::Image& out, dip::String const& text, dip::FloatArray const& origin, dip::String const& font, dip::dfloat size, dip::Image::Pixel const& value, dip::dfloat orientation, dip::String const& align ) {
+               dip::FreeTypeTool freeTypeTool( font );
+               freeTypeTool.SetSize( size );
+               freeTypeTool.DrawText( out, text, origin, value, orientation, align );
+          }, "out"_a, "text"_a, "origin"_a, "font"_a, "size"_a = 12.0, "value"_a = dip::Image::Pixel{ 1 }, "orientation"_a = 0, "align"_a = dip::S::LEFT );
+   m.def( "DrawText", []( dip::String const& text, dip::String const& font, dip::dfloat size, dip::dfloat orientation ) {
+               dip::FreeTypeTool freeTypeTool( font );
+               freeTypeTool.SetSize( size );
+               return freeTypeTool.DrawText( text, orientation ).image;
+          }, "text"_a, "font"_a, "size"_a = 12.0, "orientation"_a = 0 );
+   m.def( "DrawText", py::overload_cast< dip::Image&, dip::String const&, dip::FloatArray, dip::Image::Pixel const&, dip::dfloat, dip::String const& >( &dip::DrawText ),
+          "out"_a, "text"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "orientation"_a = 0, "align"_a = dip::S::LEFT );
+   m.def( "DrawText", py::overload_cast< dip::String const&, dip::dfloat >( &dip::DrawText ), "text"_a, "orientation"_a = 0 );
    m.def( "GaussianEdgeClip", py::overload_cast< dip::Image const&, dip::Image::Pixel const&, dip::dfloat, dip::dfloat >( &dip::GaussianEdgeClip ),
           "in"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigma"_a = 1.0, "truncation"_a = 3.0 );
    m.def( "GaussianLineClip", py::overload_cast< dip::Image const&, dip::Image::Pixel const&, dip::dfloat, dip::dfloat >( &dip::GaussianLineClip ),

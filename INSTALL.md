@@ -87,7 +87,8 @@ Important `cmake` command-line arguments controlling the build of *DIPlib*:
     -DDIP_ENABLE_TIFF=Off              # disable TIFF file format support
     -DDIP_ENABLE_JPEG=Off              # disable JPEG file format support, also affects TIFF
     -DDIP_ENABLE_ZLIB=Off              # disable zlib compression support in ICS and TIFF
-    -DDIP_ENABLE_FFTW=On               # enable the use of FFTW3
+    -DDIP_ENABLE_FFTW=On               # enable the use of the FFTW3 library
+    -DDIP_ENABLE_FREETYPE=On           # enable the use of the FreeType2 library
     -DDIP_ENABLE_UNICODE=Off           # disable UFT-8 strings within DIPlib
     -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
                                        #    integers are not natively supported
