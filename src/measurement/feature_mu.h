@@ -42,7 +42,7 @@ class FeatureMu : public LineBased {
             }
             scales_[ kk ] = pq1.magnitude * pq1.magnitude;
             out[ kk ].units = pq1.units * pq1.units;
-            out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + "_" + std::to_string( ii );
+            out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + '_' + std::to_string( ii );
             ++kk;
          }
          for( dip::uint ii = 1; ii < nD_; ++ii ) {
@@ -57,7 +57,7 @@ class FeatureMu : public LineBased {
                }
                scales_[ kk ] = pq1.magnitude * pq2.magnitude;
                out[ kk ].units = pq1.units * pq2.units;
-               out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + "_" + std::to_string( jj );
+               out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + '_' + std::to_string( jj );
                ++kk;
             }
          }

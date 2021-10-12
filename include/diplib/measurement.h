@@ -144,7 +144,7 @@ using ObjectIdToIndexMap = tsl::robin_map< dip::uint, dip::uint >;
 /// auto it = measurement[ "Feret" ][ 412 ];
 /// std::cout << "Feret values for object ID = 412:";
 /// for( auto f : it ) {
-///    std::cout << " " << f;
+///    std::cout << ' ' << f;
 /// }
 /// std::cout << '\n';
 /// ```

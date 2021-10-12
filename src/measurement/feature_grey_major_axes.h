@@ -33,7 +33,7 @@ class FeatureGreyMajorAxes : public Composite {
          ValueInformationArray out( nD_ * nD_ );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             for( dip::uint jj = 0; jj < nD_; ++jj ) {
-               out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + "_" + std::to_string( jj );
+               out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + '_' + std::to_string( jj );
             }
          }
          hasIndex_ = false;

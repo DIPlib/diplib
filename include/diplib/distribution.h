@@ -487,7 +487,7 @@ inline std::ostream& operator<<(
 ) {
    for( auto const& sample : distribution ) {
       dip::uint nValues = distribution.ValuesPerSample();
-      os << sample.X() << " " <<  distribution.XUnits() << " -> " << sample.Y( 0 );
+      os << sample.X() << ' ' <<  distribution.XUnits() << " -> " << sample.Y( 0 );
       for( dip::uint jj = 1; jj < nValues; ++jj ) {
          os << ", " << sample.Y( jj );
       }

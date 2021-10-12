@@ -689,7 +689,7 @@ inline std::ostream& operator<<(
    if( tensor.IsScalar() ) {
       os << "scalar, 1 element";
    } else {
-      os << tensor.Rows() << "x" << tensor.Columns() << " " << tensor.TensorShapeAsString() << ", " << tensor.Elements() << " elements";
+      os << tensor.Rows() << 'x' << tensor.Columns() << ' ' << tensor.TensorShapeAsString() << ", " << tensor.Elements() << " elements";
    }
    return os;
 }

@@ -59,25 +59,25 @@ std::ostream& operator<<(
       featureWidths[ ii ] = std::max( featureWidths[ ii ], static_cast< int >( features[ ii ].name.size() ));
    }
    // Write out the header: feature names
-   os << std::setw( firstColumnWidth ) << " " << " | ";
+   os << std::setw( firstColumnWidth ) << ' ' << " | ";
    for( dip::uint ii = 0; ii < features.size(); ++ii ) {
       os << std::setw( featureWidths[ ii ] ) << features[ ii ].name << " | ";
    }
    os << '\n';
    // Write out the header: horizontal line
-   os << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
+   os << std::setfill( '-' ) << std::setw( firstColumnWidth ) << '-' << " | ";
    for( dip::uint ii = 0; ii < features.size(); ++ii ) {
-      os << std::setw( featureWidths[ ii ] ) << "-" << " | ";
+      os << std::setw( featureWidths[ ii ] ) << '-' << " | ";
    }
    os << std::setfill( ' ' ) << '\n';
    // Write out the header: value names
-   os << std::setw( firstColumnWidth ) << " " << " | ";
+   os << std::setw( firstColumnWidth ) << ' ' << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
       os << std::setw( valueWidths[ ii ] ) << values[ ii ].name << " | ";
    }
    os << '\n';
    // Write out the header: value units
-   os << std::setw( firstColumnWidth ) << " " << " | ";
+   os << std::setw( firstColumnWidth ) << ' ' << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
       std::string units = values[ ii ].units.StringUnicode();
       if( !units.empty() ) {
@@ -85,14 +85,14 @@ std::ostream& operator<<(
          dip::uint len = LengthUnicode( units );
          os << String( static_cast< dip::uint >( valueWidths[ ii ] ) - len - 2, ' ' ) << '(' << units << ") | ";
       } else {
-         os << std::setw( valueWidths[ ii ] ) << " " << " | ";
+         os << std::setw( valueWidths[ ii ] ) << ' ' << " | ";
       }
    }
    os << '\n';
    // Write out the header: horizontal line
-   os << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
+   os << std::setfill( '-' ) << std::setw( firstColumnWidth ) << '-' << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      os << std::setw( valueWidths[ ii ] ) << "-" << " | ";
+      os << std::setw( valueWidths[ ii ] ) << '-' << " | ";
    }
    os << std::setfill( ' ' ) << '\n';
    // Write out the object IDs and associated values
@@ -137,11 +137,11 @@ void MeasurementWriteCSV(
          for( dip::uint ii = 0; ii < feature.numberValues; ++ii ) {
             file << ", " << feature.name;
             if( !values->name.empty() ) {
-               file << " " << values->name;
+               file << ' ' << values->name;
             }
             auto units = unicode ? values->units.StringUnicode() : values->units.String();
             if( !units.empty() ) {
-               file << " (" << units << ")";
+               file << " (" << units << ')';
             }
             ++values;
          }

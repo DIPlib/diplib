@@ -620,7 +620,7 @@ constexpr inline PhysicalQuantity operator-( PhysicalQuantity lhs, PhysicalQuant
 /// \brief Insert physical quantity to an output stream.
 /// \relates dip::PhysicalQuantity
 inline std::ostream& operator<<( std::ostream& os, PhysicalQuantity const& pq ) {
-   os << pq.magnitude << " " << pq.units;
+   os << pq.magnitude << ' ' << pq.units;
    return os;
 }
 
@@ -1017,14 +1017,14 @@ class DIP_NO_EXPORT PixelSize {
 /// \brief Writes the pixel sizes array to a stream
 /// \relates dip::PixelSize
 inline std::ostream& operator<<( std::ostream& os, PixelSize const& ps ) {
-   os << "{";
+   os << '{';
    if( ps.IsDefined() ) {
       os << ps[ 0 ];
       for( dip::uint ii = 1; ii < ps.Size(); ++ii ) {
          os << " x " << ps[ ii ];
       }
    }
-   os << "}";
+   os << '}';
    return os;
 }
 

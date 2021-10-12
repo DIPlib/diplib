@@ -82,7 +82,7 @@ class DIP_CLASS_EXPORT Error : public std::exception {
             unsigned int lineNumber
       ) {
          message_ += "\nin function: " + functionName +
-                   " (" + fileName + " at line number " + std::to_string( lineNumber ) + ")";
+                   " (" + fileName + " at line number " + std::to_string( lineNumber ) + ')';
          return *this;
       }
 

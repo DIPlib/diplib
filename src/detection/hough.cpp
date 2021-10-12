@@ -64,7 +64,7 @@ struct Candidate {
 /*
 std::ostream& operator<<(std::ostream& os, Candidate const& obj)
 {
-   os << "{" << obj.pos << ": " << obj.val << (obj.valid?"":" (invalid)") << "}";
+   os << '{' << obj.pos << ": " << obj.val << ( obj.valid ? "" : " (invalid)" ) << '}';
    return os;
 }
 */

@@ -306,7 +306,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     {
       os << "Dimension " << ii << ":\n";
       os << "  Point : " << opt.operating_point_[ii] << "\n";
-      os << "  ROI   : " << opt.roi_origin_[ii] << "+" << opt.roi_sizes_[ii] << "\n";
+      os << "  ROI   : " << opt.roi_origin_[ii] << '+' << opt.roi_sizes_[ii] << "\n";
       os << "  Origin: " << opt.origin_[ii] << "\n";
       os << "  Zoom  : " << opt.zoom_[ii] << "\n";
     }
@@ -500,14 +500,14 @@ template<typename T>
 std::string to_string(dip::DimensionArray<T> array)
 {
   std::ostringstream oss;
-  oss << "[";
+  oss << '[';
   for (dip::uint ii=0; ii < array.size(); ++ii)
   {
     oss << array[ii];
     if (ii < array.size()-1)
       oss << ", ";
   }
-  oss << "]";
+  oss << ']';
   return oss.str();
 }
 

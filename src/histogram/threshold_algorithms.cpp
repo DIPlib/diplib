@@ -219,9 +219,9 @@ dfloat MinimumErrorThreshold(
       v2 /= w2;
       // J(ii) is the measure for error
       J[ ii ] = 1.0 + w1 * std::log( v1 ) + w2 * std::log( v2 ) - 2.0 * ( w1 * std::log( w1 ) + w2 * std::log( w2 ));
-      std::cout << J[ii] << ",";
+      //std::cout << J[ii] << ',';
    }
-   std::cout << '\n';
+   //std::cout << '\n';
    // Now we need to find the minimum in J, but ignore the values at the edges, if they are lowest.
    dip::uint begin = 0;
    dip::uint end = nBins - 2;

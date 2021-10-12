@@ -111,7 +111,7 @@ void PrintPixelValues( Image const& img ) {
       auto lit = it.GetLineIterator();
       std::cout << "[i";
       for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
-         std::cout << "," << std::setw( 2 ) << it.Coordinates()[ ii ];
+         std::cout << ',' << std::setw( 2 ) << it.Coordinates()[ ii ];
       }
       std::cout << "] : ";
       std::cout << std::setw( DIGITS ) << detail::Round( *lit, DIGITS );

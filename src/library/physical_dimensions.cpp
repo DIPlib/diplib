@@ -330,7 +330,7 @@ constexpr char const* CDotUnicode() {
 }
 
 std::string PowerAsString( dip::sint p ) {
-   return "^" + std::to_string( p );
+   return '^' + std::to_string( p );
 }
 
 std::string PowerAsStringUnicode( dip::sint p ) {
@@ -368,19 +368,19 @@ void WritePrefix( dip::String& out, dip::sint n ) {
 void WritePrefixUnicode( dip::String& out, dip::sint n ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
    switch( n ) {
-      case -5: out += "f"; break;
-      case -4: out += "p"; break;
-      case -3: out += "n"; break;
+      case -5: out += 'f'; break;
+      case -4: out += 'p'; break;
+      case -3: out += 'n'; break;
       case -2: out += micron; break; // This is two bytes, so we can't do the trick we do when plain ASCII is enabled.
-      case -1: out += "m"; break;
+      case -1: out += 'm'; break;
       default: // Should not happen!
       case 0: break;
-      case 1: out += "k"; break;
-      case 2: out += "M"; break;
-      case 3: out += "G"; break;
-      case 4: out += "T"; break;
-      case 5: out += "P"; break;
-      case 6: out += "E"; break;
+      case 1: out += 'k'; break;
+      case 2: out += 'M'; break;
+      case 3: out += 'G'; break;
+      case 4: out += 'T'; break;
+      case 5: out += 'P'; break;
+      case 6: out += 'E'; break;
    }
 #else
    WritePrefix( out, n );
