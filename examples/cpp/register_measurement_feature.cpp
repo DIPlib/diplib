@@ -52,6 +52,4 @@ int main() {
 
    msr = measurementTool.Measure( label, {}, { "Test" }, { 1, 2, 100, 18, 4 } );
    std::cout << msr;
-
-   return 0;
 }

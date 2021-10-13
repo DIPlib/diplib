@@ -62,6 +62,4 @@ int main( int argc, char** argv ) {
 
    windows.clear();
    dip::viewer::Spin();
-
-   return 0;
 }

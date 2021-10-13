@@ -100,18 +100,27 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(geometric_transformation PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(geometric_transformation DIP DIPviewer)
 
-   # An example program that uses superpixel segmentation and graph manipulation
+   # An example program that uses superpixel segmentation and graph manipulation, it displays some images
+   # using dip::viewer::Show, and links those displays together
    add_executable(oversegmentation cpp/oversegmentation.cpp)
    target_compile_definitions(oversegmentation PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(oversegmentation DIP DIPviewer)
+
+   # An example program that shows how to use dip::MeasurementTool and work with its output dip::Measurement data
+   add_executable(using_measurement_tool cpp/using_measurement_tool.cpp)
+   target_compile_definitions(using_measurement_tool PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(using_measurement_tool DIP DIPviewer)
 
    add_dependencies(examples
                     viewer
                     display
                     fileviewer
                     select_objects
+                    color_quantization
                     filter_image
                     geometric_transformation
+                    oversegmentation
+                    using_measurement_tool
                     )
 
    ## An example that needs OpenCV, compile only if OpenCV is available
@@ -123,6 +132,10 @@ if(DIP_BUILD_DIPVIEWER)
       add_executable(opencv_with_dip external_interfaces/opencv_with_dip.cpp)
       target_compile_definitions(opencv_with_dip PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
       target_link_libraries(opencv_with_dip DIP DIPviewer ${OpenCV_LIBS})
+
+      add_dependencies(examples
+                       opencv_with_dip
+                       )
 
    endif()
 
@@ -142,11 +155,19 @@ if(DIP_BUILD_DIPVIEWER)
          target_compile_options(vigra_with_dip PRIVATE -Wno-conversion -Wno-sign-conversion -Wno-deprecated-copy -Wno-parentheses)
       endif()
 
+      add_dependencies(examples
+                       vigra_with_dip
+                       )
+
    endif()
 
 endif(DIP_BUILD_DIPVIEWER)
 
+
+### ---
+
 # This is more a utility for the developers than an example...
 # This program generates data in the file src/generation/draw_text_builtin.cpp
+# We don't build this with the other examples
 add_executable(generate_embedded_font cpp/generate_embedded_font.cpp)
 target_link_libraries(generate_embedded_font DIP)

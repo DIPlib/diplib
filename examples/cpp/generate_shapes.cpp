@@ -86,5 +86,4 @@ int main() {
    distance = dip::Supremum( dip::Norm( coords[ dip::Range( 0, 1 ) ] ) - 20, dip::Abs( coords[ 2 ] ) - 10 );
    dip::GaussianEdgeClip( -distance, img3d, { 255 } );
    dip::ImageWriteICS( img3d, "cylinder" );
-
 }

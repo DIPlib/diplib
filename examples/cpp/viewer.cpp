@@ -100,6 +100,4 @@ int main() {
 
    // Clean up
    thread.join();
-
-   return 0;
 }

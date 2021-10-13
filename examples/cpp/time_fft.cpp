@@ -41,8 +41,6 @@ int main() {
       std::cout << "size = " << sz << ", time = " << t * 1e3 << " ms\n";
    }
    std::cout << '\n';
-
-   return 0;
 }
 
 /* On my computer:

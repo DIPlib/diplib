@@ -102,6 +102,4 @@ int main() {
 
    // Compare the two outputs
    std::cout << "Number of pixels difference: " << dip::Count( out != out2 ) << '\n';
-
-   return 0;
 }

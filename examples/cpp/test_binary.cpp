@@ -42,14 +42,14 @@ int main( int argc, char** argv ) {
 
       timer.Reset();
       for( dip::uint ii = 0; ii < reps; ++ii ) {
-         dip::BinaryDilation( image, 2, kk );
+         dip::Image out = dip::BinaryDilation( image, 2, kk );
       }
       timer.Stop();
       double binTime = timer.GetWall();
 
       timer.Reset();
       for( dip::uint ii = 0; ii < reps; ++ii ) {
-         dip::Dilation( image, { double( 2 * kk + 1 ), "rectangular" } );
+         dip::Image out = dip::Dilation( image, { double( 2 * kk + 1 ), "rectangular" } );
       }
       timer.Stop();
       double time = timer.GetWall();
@@ -70,14 +70,14 @@ int main( int argc, char** argv ) {
 
       timer.Reset();
       for( dip::uint ii = 0; ii < reps; ++ii ) {
-         dip::BinaryDilation( image, 1, kk );
+         dip::Image out = dip::BinaryDilation( image, 1, kk );
       }
       timer.Stop();
       double binTime = timer.GetWall();
 
       timer.Reset();
       for( dip::uint ii = 0; ii < reps; ++ii ) {
-         dip::Dilation( image, { double( 2 * kk + 1 ), "diamond" } );
+         dip::Image out = dip::Dilation( image, { double( 2 * kk + 1 ), "diamond" } );
       }
       timer.Stop();
       double time = timer.GetWall();
@@ -96,14 +96,14 @@ int main( int argc, char** argv ) {
 
       timer.Reset();
       for( dip::uint ii = 0; ii < reps; ++ii ) {
-         dip::BinaryDilation( image, -1, kk );
+         dip::Image out = dip::BinaryDilation( image, -1, kk );
       }
       timer.Stop();
       double binTime = timer.GetWall();
 
       timer.Reset();
       for( dip::uint ii = 0; ii < reps; ++ii ) {
-         dip::Dilation( image, { double( 2 * kk + 1 ), "octagonal" } );
+         dip::Image out = dip::Dilation( image, { double( 2 * kk + 1 ), "octagonal" } );
       }
       timer.Stop();
       double time = timer.GetWall();

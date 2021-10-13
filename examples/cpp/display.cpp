@@ -55,6 +55,4 @@ int main() {
       std::cout << "Caught DIPlib exception:\n " << e.what() << std::endl;
       return -1;
    }
-
-   return 0;
 }

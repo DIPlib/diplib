@@ -154,6 +154,4 @@ int main() {
    timer.Stop();
    std::cout << "monadicLineFilter: " << timer << std::endl;
    dip::testing::CompareImages( out, tmp );
-
-   return 0;
 }

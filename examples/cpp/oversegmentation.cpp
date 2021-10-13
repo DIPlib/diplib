@@ -1,14 +1,15 @@
 /*
  * This program shows how to use superpixel segmentation and graph manipulation.
- * It displays the result using dip::viewer::Show.
+ * It displays the result using dip::viewer::Show, and links the displayed windows.
  */
 
 #include "diplib.h"
-#include "dipviewer.h"
 #include "diplib/file_io.h"
 #include "diplib/segmentation.h"
 #include "diplib/regions.h"
 #include "diplib/measurement.h"
+#include "dipviewer.h"
+#include "diplib/viewer/slice.h" // To manipulate the dip::viewer::SliceView objects
 
 int main() {
    // Read image
@@ -35,8 +36,11 @@ int main() {
    output = dip::ObjectToMeasurement( output, msr["Mean"] );
 
    // Display
-   dip::viewer::Show( input, "input" );
-   dip::viewer::Show( superpixels, "superpixels" );
-   dip::viewer::Show( output, "output" );
+   auto win1 = dip::viewer::Show( input, "input" );
+   auto win2 = dip::viewer::Show( superpixels, "superpixels" );
+   auto win3 = dip::viewer::Show( output, "output" );
+   win3->link( *win1 );
+   win3->link( *win2 );
+   win2->options().lut_ = dip::viewer::ViewingOptions::LookupTable::Label;
    dip::viewer::Spin();
 }

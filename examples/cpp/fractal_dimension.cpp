@@ -73,6 +73,4 @@ int main( int argc, char *argv[] ) {
       std::cout << "FD = " << FD << "; " << timer << std::endl;
 
    }
-
-   return 0;
 }
