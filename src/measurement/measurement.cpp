@@ -45,8 +45,8 @@ std::ostream& operator<<(
    std::vector< int > valueWidths( values.size(), 0 );
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
       std::string units = values[ ii ].units.StringUnicode();
-      dip::uint len = LengthUnicode( units );
-      valueWidths[ ii ] = static_cast< int >( std::max( values[ ii ].name.size(), len + 2 )); // + 2 for the brackets we'll add later
+      valueWidths[ ii ] = static_cast< int >( LengthUnicode( units )) + 2; // + 2 for the brackets we'll add later
+      valueWidths[ ii ] = std::max( valueWidths[ ii ], static_cast< int >( values[ ii ].name.size() ));
       valueWidths[ ii ] = std::max( valueWidths[ ii ], minimumColumnWidth );
    }
    auto const& features = msr.Features();
@@ -56,7 +56,12 @@ std::ostream& operator<<(
       for( dip::uint jj = 1; jj < features[ ii ].numberValues; ++jj ) {
          featureWidths[ ii ] += valueWidths[ features[ ii ].startColumn + jj ] + separatorWidth;
       }
-      featureWidths[ ii ] = std::max( featureWidths[ ii ], static_cast< int >( features[ ii ].name.size() ));
+      int minWidth = static_cast< int >( features[ ii ].name.size() );
+      if( featureWidths[ ii ] < minWidth ) {
+         // Increase the width of the first valueWidths[] so that the columns together have the same width as the feature
+         valueWidths[ features[ ii ].startColumn ] += minWidth - featureWidths[ ii ];
+         featureWidths[ ii ] = minWidth;
+      }
    }
    // Write out the header: feature names
    os << std::setw( firstColumnWidth ) << ' ' << " | ";
