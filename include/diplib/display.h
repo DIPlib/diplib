@@ -191,7 +191,7 @@ class DIP_NO_EXPORT ImageDisplay {
 
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
       /// In case of a 1D \ref Output, `y` is ignored.
-      DIP_EXPORT Image::Pixel Pixel( dip::uint x, dip::uint y = 0 ) {
+      Image::Pixel Pixel( dip::uint x, dip::uint y = 0 ) {
          UpdateSlice();
          if( x >= slice_.Size( 0 )) {
             x = slice_.Size( 0 ) - 1;

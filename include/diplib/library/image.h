@@ -1654,7 +1654,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// \see dip::Image::AddSingleton, dip::Image::ExpandDimensionality, dip::Image::PermuteDimensions,
       /// dip::Image::UnexpandSingletonDimensions
-      DIP_EXPORT Image& Squeeze() {
+      Image& Squeeze() {
          UnsignedArray dims;
          Squeeze( dims );
          return *this;

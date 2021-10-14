@@ -61,7 +61,7 @@
 #   define DIP_NO_EXPORT
 #   define DIP_CLASS_EXPORT
 #else
-#   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
+#   ifdef _WIN32
 #      ifdef DIP_CONFIG_DIP_BUILD_SHARED
 #         define DIP_EXPORT __declspec(dllexport)
 #      else // We are using the library

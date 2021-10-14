@@ -43,7 +43,7 @@ namespace dip { namespace viewer {
 /// \addtogroup dipviewer
 
 /// Simple GL window
-class DIPVIEWER_EXPORT Window
+class DIPVIEWER_CLASS_EXPORT Window
 {
   friend class GLUTManager;
   friend class GLFWManager;
@@ -163,7 +163,7 @@ protected:
 typedef std::shared_ptr<Window> WindowPtr;
 
 /// Simple window manager.
-class DIPVIEWER_EXPORT Manager
+class DIPVIEWER_CLASS_EXPORT Manager
 {
   friend class Window;
 

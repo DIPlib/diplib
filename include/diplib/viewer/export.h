@@ -40,14 +40,14 @@
 #   define DIPVIEWER_NO_EXPORT
 #   define DIPVIEWER_CLASS_EXPORT
 #else
-#   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
+#   ifdef _WIN32
 #      ifdef DIP_CONFIG_DIPVIEWER_BUILD_SHARED
 #         define DIPVIEWER_EXPORT __declspec(dllexport)
 #      else // We are using the library
 #         define DIPVIEWER_EXPORT __declspec(dllimport)
 #      endif
 #      define DIPVIEWER_NO_EXPORT
-#      define DIPVIEWER_CLASS_EXPORT DIP_NO_EXPORT
+#      define DIPVIEWER_CLASS_EXPORT DIPVIEWER_NO_EXPORT
 #   else
 #      define DIPVIEWER_EXPORT __attribute__((visibility("default")))
 #      define DIPVIEWER_NO_EXPORT __attribute__((visibility("hidden")))

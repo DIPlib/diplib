@@ -255,7 +255,7 @@ class DIP_NO_EXPORT Graph {
       }
 
       /// \brief Re-computes edge weights as the absolute difference between vertex values.
-      DIP_EXPORT void UpdateEdgeWeights() const {
+      void UpdateEdgeWeights() const {
          for( auto& edge: edges_ ) {
             edge.weight = std::abs( vertices_[ edge.vertices[ 0 ]].value - vertices_[ edge.vertices[ 1 ]].value );
          }

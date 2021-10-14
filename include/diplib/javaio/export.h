@@ -38,14 +38,14 @@
 #   define DIPJAVAIO_NO_EXPORT
 #   define DIPJAVAIO_CLASS_EXPORT
 #else
-#   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
+#   ifdef _WIN32
 #      ifdef DIP_CONFIG_DIPJAVAIO_BUILD_SHARED
 #         define DIPJAVAIO_EXPORT __declspec(dllexport)
 #      else // We are using the library
 #         define DIPJAVAIO_EXPORT __declspec(dllimport)
 #      endif
 #      define DIPJAVAIO_NO_EXPORT
-#      define DIPJAVAIO_CLASS_EXPORT DIP_NO_EXPORT
+#      define DIPJAVAIO_CLASS_EXPORT DIPJAVAIO_NO_EXPORT
 #   else
 #      define DIPJAVAIO_EXPORT __attribute__((visibility("default")))
 #      define DIPJAVAIO_NO_EXPORT __attribute__((visibility("hidden")))

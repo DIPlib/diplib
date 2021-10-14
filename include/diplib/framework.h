@@ -178,7 +178,7 @@ struct DIP_NO_EXPORT ScanLineFilterParameters {
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
 /// perform the computation in parallel. This function should not perform any other tasks, as it is not
 /// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
-class DIP_EXPORT ScanLineFilter {
+class DIP_CLASS_EXPORT ScanLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
@@ -606,7 +606,7 @@ struct DIP_NO_EXPORT SeparableLineFilterParameters {
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
 /// perform the computation in parallel. This function should not perform any other tasks, as it is not
 /// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
-class DIP_EXPORT SeparableLineFilter {
+class DIP_CLASS_EXPORT SeparableLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
@@ -786,7 +786,7 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
 /// perform the computation in parallel. This function should not perform any other tasks, as it is not
 /// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
-class DIP_EXPORT FullLineFilter {
+class DIP_CLASS_EXPORT FullLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
