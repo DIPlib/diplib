@@ -9,12 +9,12 @@ on the compilation options.
 
 ## *Visual Studio*
 
-You can download the free MS Visual Studio Community Edition here:
+You can download the free *MS Visual Studio Community Edition* here:
 https://www.visualstudio.com/vs/community/.
 
 We recommend that you use at least the 2019 edition. In principle you need
 at least the 2015 edition. However, *DIPlib* uses some advanced C++14 constructs
-that will not compile with older versions of MSVC, and it is necessary to turn
+that will not compile with older versions of *MSVC*, and it is necessary to turn
 off some components to compile the project with those.
 
 Download and install as directed. Select the "Desktop C++ applications" option.
@@ -100,7 +100,7 @@ be found. This is only necessary if you want to use the `viewslice` command from
 point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
 you want to import image formats that are not directly supported by *DIPlib*.
 
-- If using a version of MSVC older than the 2019 edition, set both `DIP_ENABLE_UNICODE`
+- If using a version of *MSVC* older than the 2019 edition, set both `DIP_ENABLE_UNICODE`
 and `DIP_ENABLE_DOCTEST` to `Off`. You will get compilation errors if you don't do this.
 
 - If you set `DIP_SHARED_LIBRARY` to `Off`, *DIPimage* and *PyDIP* will likely not work

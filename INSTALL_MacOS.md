@@ -1,6 +1,6 @@
-# Building the *DIPlib* project on MacOS
+# Building the *DIPlib* project on macOS
 
-Compiling *DIPlib* requires a few programs that do not come preinstalled on the Mac.
+Compiling *DIPlib* requires a few programs that do not come preinstalled on macOS.
 Here we offer a simple way to install these programs.
 
 See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
@@ -49,7 +49,7 @@ brew install glfw
 To compile the documentation yourself (note that the compiled documentation can be found
 online), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
 
-Finally, MacOS comes with *Python 2*. We recommend *Python 3*:
+Finally, macOS comes with *Python 2*. We recommend *Python 3*:
 ```bash
 brew install python3
 ```
@@ -128,7 +128,7 @@ add `-DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8` to the `cmake` command
 line. By default, `cmake` will find the compiler that came with `XCode`. These
 two options specify that you want to use the *GCC* compilers instead.
 (**Note**: at the time of this writing, `gcc-8` was the executable installed by
-the `gcc` package. This will change over time, as new versions of GCC are adopted
+the `gcc` package. This will change over time, as new versions of *GCC* are adopted
 by HomeBrew. Adjust as necessary.)
 
 ## Enabling Bio-Formats

@@ -1007,7 +1007,7 @@ function(matlab_add_mex)
   target_include_directories(${${prefix}_NAME} PRIVATE ${Matlab_INCLUDE_DIRS})
 
   if(Matlab_HAS_CPP_API)
-    target_link_libraries(${${prefix}_NAME} ${Matlab_ENGINE_LIBRARY} ${Matlab_DATAARRAY_LIBRARY})
+    target_link_libraries(${${prefix}_NAME} ${Matlab_DATAARRAY_LIBRARY})
   endif()
 
   target_link_libraries(${${prefix}_NAME} ${Matlab_MEX_LIBRARY} ${Matlab_MX_LIBRARY} ${${prefix}_LINK_TO})

@@ -18,12 +18,12 @@ sudo apt install build-essential cmake git
 ```
 This will install all the required tools. Depending on your version of Ubuntu, you'll
 have a compiler that is too old to correctly build *DIPlib*. To see which version
-of GCC you have, type:
+of *GCC* you have, type:
 ```bash
 g++ --version
 ```
 You want to see at least version 5.4, but later versions would be better. If your
-version of GCC is older, you will need to manually install a newer version.
+version of *GCC* is older, you will need to manually install a newer version.
 
 If you want to compile *DIPviewer*, you need to install `freeglut` as well:
 ```bash
@@ -129,6 +129,38 @@ Or start the GUI:
 ```matlab
 dipimage
 ```
+
+If you see error messages such as
+
+> Invalid MEX-file '/Users/\<name>/dip/share/DIPimage/measure.mexa64':
+> \<path>/bin/glnxa64/../../sys/os/glnxa64/libstdc++.so.6: version `GLIBCXX_3.4.26' not found
+> (required by /Users/\<name>/dip/share/DIPimage/../../lib/libDIP.so)
+
+then please read this next section.
+
+### *MATLAB* and the *GCC* libraries
+
+*MATLAB* is built on Linux with a version of *GCC* that is typically various years behind the latest, and it ships
+with copies of the *GCC* libraries so that it can run on older systems that have older versions of those libraries.
+When building a MEX-file with a newer version of *GCC*, the MEX-file will depend on a newer
+version of the *GCC* libraries than what *MATLAB* links against, and will therefore fail to load within *MATLAB*.
+
+In [the documentation](https://www.mathworks.com/support/requirements/supported-compilers.html) they specify which
+compiler versions are compatible with each version of *MATLAB*. This list includes the version of *GCC* used to build
+that version of *MATLAB*, and a few older releases. That is, their solution to this issue is to tell customers to use
+only those specific versions of *GCC* to build MEX-files. If you do want to follow MATLAB’s recommendation, then
+install one of the supported compilers, and add tell CMake about them using the following command:
+```bash
+cmake . -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9
+```
+(replacing `gcc-9` and `g++-9` with the actual names of the compiler installed). Then rebuild the whole project.
+
+However, there's a simpler solution. Given that you have a newer version of *GCC* installed than that used by *MATLAB*,
+and given that the *GCC* libraries are perfectly backwards-compatible, one can simply delete the libraries distributed
+with *MATLAB*, and have it use the ones in your system. In the directory `<matlabroot>/sys/os/glnxa64`, delete
+the file `libstdc++.*`, and possibly also the files `libg2c.*` and `libgcc_s*` (or rather, rename them, so you can put
+them back if things go sour). Note that you need to restart *MATLAB* after making this change. You can discover
+what `<matlabroot>` is by typing `matlabroot` at the *MATLAB* command prompt.
 
 ## Using *PyDIP*
 
