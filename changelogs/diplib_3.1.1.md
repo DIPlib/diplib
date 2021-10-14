@@ -18,6 +18,10 @@ title: "Changes DIPlib 3.1.1"
 
 ### Bug fixes
 
+- When inserting a `dip::Measurement` object into a stream, the table it produced sometimes had feature value columns
+  narrower than the feature name header.
+
+- Fixed bug that prevented compilation with *MinGW*.
 
 
 
@@ -30,6 +34,8 @@ title: "Changes DIPlib 3.1.1"
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
+
+- Fixed build script to allow building with newest version of *MATLAB*.
 
 (See also bugfixes to *DIPlib*.)
 
