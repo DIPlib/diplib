@@ -1885,7 +1885,6 @@ class DIP_NO_EXPORT Image {
       /// defaults to the image dimensionality, meaning that the new dimension will
       /// be the last one. The image must be forged.
       DIP_EXPORT Image& TensorToSpatial( dip::uint dim );
-      /// \overload
       inline Image& TensorToSpatial() {
          return TensorToSpatial( Dimensionality() );
       }
@@ -1893,19 +1892,16 @@ class DIP_NO_EXPORT Image {
       /// \brief Convert spatial dimension to tensor dimensions. The image must be scalar.
       ///
       /// If `rows` or `cols` is zero, its size is computed from the size of the
-      /// image along dimension `dim`. If both are zero, a default column tensor
+      /// image along dimension `dim`. If both are zero (or not given), a default column tensor
       /// is created. `dim` defaults to the last spatial dimension. The image must
       /// be forged.
       DIP_EXPORT Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols );
-      /// \overload
       inline Image& SpatialToTensor( dip::uint rows, dip::uint cols ) {
          return SpatialToTensor( Dimensionality() - 1, rows, cols );
       }
-      /// \overload
       inline Image& SpatialToTensor( dip::uint dim ) {
          return SpatialToTensor( dim, 0, 0 );
       }
-      /// \overload
       inline Image& SpatialToTensor() {
          return SpatialToTensor( Dimensionality() - 1, 0, 0 );
       }
@@ -1919,7 +1915,6 @@ class DIP_NO_EXPORT Image {
       /// image dimensionality, meaning that the new dimension will be the last one.
       /// The image must be forged.
       DIP_EXPORT Image& SplitComplex( dip::uint dim );
-      /// \overload
       inline Image& SplitComplex() {
          return SplitComplex( Dimensionality() );
       }
@@ -1929,7 +1924,6 @@ class DIP_NO_EXPORT Image {
       /// Dimension `dim` must have size 2 and a stride of 1. `dim` defaults to the last
       /// spatial dimension. The image must be forged.
       DIP_EXPORT Image& MergeComplex( dip::uint dim );
-      /// \overload
       inline Image& MergeComplex() {
          return MergeComplex( Dimensionality() - 1 );
       }

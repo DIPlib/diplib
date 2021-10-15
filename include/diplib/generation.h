@@ -443,7 +443,7 @@ class FreeTypeTool {
       /// The output data structure additionally contains the two end points of the baseline, on either side of the
       /// rendered text.
       ///
-      /// See \ref DrawText(Image&, String const&, FloatArray const&, Image::Pixel const&, dfloat)
+      /// See \ref DrawText(Image&, String const&, FloatArray, Image::Pixel const&, dfloat, String const&)
       /// for a description of the `text` and `orientation` arguments.
       DIP_NODISCARD DIP_EXPORT TextInfo DrawText(
             String const& text,
@@ -461,7 +461,7 @@ class FreeTypeTool {
 /// `orientation`.
 ///
 /// The font used is composed of glyph images rendered from the Open Sans font, at 14 px.
-/// The lowercase letter 'x' is 9x10 pixels and uppercase letter 'X' is 8x8 pixels. The font uses anti-aliasing,
+/// The lowercase letter 'x' is 8x8 pixels and uppercase letter 'X' is 9x10 pixels. The font uses anti-aliasing,
 /// blending from the color `value` to the existing image colors.
 ///
 /// `text` is any ASCII string; even if Unicode support was enabled when building *DIPlib*, the built-in font only
@@ -490,7 +490,7 @@ DIP_EXPORT void DrawText(
 ///
 /// The output image is a 2D scalar image of type \ref dip::DT_UINT8, with white text on a black background.
 ///
-/// See \ref DrawText(Image&, String const&, FloatArray const&, Image::Pixel const&, dfloat)
+/// See \ref DrawText(Image&, String const&, FloatArray, Image::Pixel const&, dfloat, String const&)
 /// for a description of the functionality and arguments.
 DIP_NODISCARD DIP_EXPORT Image DrawText(
       String const& text,
