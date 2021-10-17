@@ -49,6 +49,7 @@ jobs:
         # Install libraries and Python packages we need
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
             sudo apt-get -y install freeglut3-dev
             python3 -m pip install numpy twine==1.15.0
           elif [ "$RUNNER_OS" == "Windows" ]; then
