@@ -58,7 +58,7 @@ version of *GLFW*. Extract the ZIP file and note the location.
 
 - TODO: *FFTW3*.
 
-- Download the *BioFormats* library from here: https://www.openmicroscopy.org/bio-formats/downloads.
+- Download the *Bio-Formats* library from here: https://www.openmicroscopy.org/bio-formats/downloads.
 Put it somewhere sensible and note the location. The same location (as well as the
 library installation path) will be used to find it during execution.
 
@@ -83,7 +83,7 @@ directory to your liking here. Note that the default directory requires administ
 privileges (I was not able to install there, even though I have the administrator
 password). Let's say we select `C:\Users\<name>\DIPlib`.
 
-- If `DIP_BUILD_DIPIMAGE` is not on the list, you don't have MATLAB installed, or you are
+- If `DIP_BUILD_DIPIMAGE` is not on the list, you don't have *MATLAB* installed, or you are
 building 32-bit binaries.
 
 - If `DIP_BUILD_DIPVIEWER` is not on the list, you need to specify the locations for
@@ -93,10 +93,10 @@ at the right and navigate to where you extracted the *GLFW* ZIP file. Select the
 directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second.
 
 - If `DIP_BUILD_DIPVIEWER_JAVA` is not on the list but `DIP_BUILD_DIPVIEWER` is, you
-don't have MATLAB installed, you are building 32-bit binaries or the Java SDK could not
+don't have *MATLAB* installed, you are building 32-bit binaries or the *Java SDK* could not
 be found. This is only necessary if you want to use the `viewslice` command from *DIPimage*.
 
-- If `BIOFORMATS_JAR` is not on the list, the Java SDK could not be found. If it is,
+- If `BIOFORMATS_JAR` is not on the list, the *Java SDK* could not be found. If it is,
 point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
 you want to import image formats that are not directly supported by *DIPlib*.
 
@@ -134,9 +134,9 @@ If everything works correctly, you will have:
 - `C:\Users\<name>\DIPlib\include`: The *DIPlib* include files, which you'll need when
 building your own C++ programs using *DIPlib*.
 
-- `C:\Users\<name>\DIPlib\share\DIPimage`: The *DIPimage* toolbox for MATLAB.
+- `C:\Users\<name>\DIPlib\share\DIPimage`: The *DIPimage* toolbox for *MATLAB*.
 
-- In your selected Python package path: `diplib` (the *Python* module).
+- In your selected *Python* package path: `diplib` (the *Python* module).
 
 
 ## Using *DIPimage*

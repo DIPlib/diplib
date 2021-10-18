@@ -53,8 +53,9 @@ that the bug still exists there.
 
 Next, submit a pull request, see below for instructions. Make sure that the pull request clearly
 states the issue that is being addressed, and how it is being addressed. You can reference an issue
-by adding the issue number as follows: `#1`. Add "`Fixes #1`" to the commit message if there
-was an issue in the tracker for the bug (use the actual issue number of course).
+by adding the issue number as follows: `#<number>` (for example, `#1` to reference issue number 1).
+Add "`Fixes #<number>`" to the commit message if there was an issue in the tracker for the bug and
+the issue is fully fixed by your changes. This will close the issue when the pull request is merged.
 
 ### I want to improve code or documentation in the project
 
@@ -78,8 +79,13 @@ reported.
 If you are uncertain that changes you wish to submit will be useful to the project, feel free to
 [create a new issue](https://github.com/DIPlib/diplib/issues/new) on GitHub to ask about it.
 
-If there exists an issue discussing the proposed contribution, reference it as follows: `#1`.
-Add "`Closes #1`" to the commit message (use the actual issue number of course).
+If there exists an issue discussing the proposed contribution, reference it as follows: `#<number>`
+(for example, `#1` to reference issue number 1). Add "`Fixes #<number>`" to the commit message if
+there was an issue in the tracker for the bug and the issue is fully fixed by your changes.
+This will close the issue when the pull request is merged.
+
+Include `[skip ci]` in the commit message if you didn't touch any code, and only made changes to
+documentation comments.
 
 ### I have an algorithm that I would like to include in the project
 
@@ -89,20 +95,21 @@ pull requests for functionality that we feel is out of the scope of the project.
 proposed contribution before putting in the effort needed to adapt your code to *DIPlib*.
 
 We prefer if functionality is provided as C++ code in *DIPlib*, though we will also accept
-MATLAB M-files into *DIPimage*. *PyDIP* is currently a thin wrapper for *DIPlib*, and we have
+*MATLAB* M-files into *DIPimage*. *PyDIP* is currently a thin wrapper for *DIPlib*, and we have
 no infrastructure to include Python code. However, we will gladly discuss such code as well.
 
 Any new functionality must be sufficiently documented.
 
-For any new *DIPlib* function, please include, if possible, a Python wrapper in *PyDIP* and
-a MATLAB function in *DIPimage*. We are aware that not everyone will use both (or either) of
+For any new *DIPlib* function, please include, if possible and appropriate, a Python wrapper in *PyDIP* and
+a *MATLAB* function in *DIPimage*. We are aware that not everyone will use both (or either) of
 these, and we will not reject a contribution just because these are missing.
 
 We expect C++ code to conform to our [style guide](https://diplib.org/diplib-docs/styleguide.html).
 
 See below for how to submit a pull request. Make sure you reference the issue used to discuss
-the contribution as follows: `#1`. Add "`Closes #1`" to the commit message
-(use the actual issue number of course).
+the contribution as follows: `#<number>` (for example, `#1` to reference issue number 1).
+Add "`Closes #<number>`" to the commit message if there was an issue in the tracker discussing
+your contribution. This will close the issue when the pull request is merged.
 
 ### I would like to contribute a tutorial
 
@@ -126,7 +133,11 @@ Commit messages should be descriptive of the changes included in the commit. Eac
 address a specific issue, avoid commits that fix multiple, unrelated issues. If applicable, reference
 issues in the issue tracker using the syntax `#<number>` (for example, `#1` to reference issue number 1).
 If a commit fixes a bug reported in an issue, add "`Fixes #<number>`" to the commit message. If the commit
-closes an issue that is not a bug, add "`Closes #<number>`".
+closes an issue that is not a bug, add "`Closes #<number>`". These two cause the referenced issue to
+be closed when the pull request is merged.
+
+Add `[skip ci]` to the commit message if there are no code changes, and you only made changes to the documentation.
+This will prevent unnecessary use of the build system.
 
 We expect C++ code to conform to our [style guide](https://diplib.org/diplib-docs/styleguide.html).
 

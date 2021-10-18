@@ -1,5 +1,6 @@
 # Building *DIPlib*, *DIPimage* and *PyDIP*
 
+
 ## Linux, MacOS, Cygwin and other Unix-like systems
 
 To build the library you will need a C++14 compliant compiler and *CMake*.
@@ -21,9 +22,10 @@ reduce the number of concurrent jobs if compilation stalls and the system thrash
 See below under "*CMake* configuration" for other `make` targets and *CMake* configuration
 options.
 
-For step-by-step instructions for Linux, see [`INSTALL_Linux.md`](INSTALL_Linux.md).
+For step-by-step instructions for Ubuntu Linux, see [`INSTALL_Linux.md`](INSTALL_Linux.md).
 
 For step-by-step instructions for MacOS, see [`INSTALL_MacOS.md`](INSTALL_MacOS.md).
+
 
 ## Windows
 
@@ -40,6 +42,7 @@ options.
 For step-by-step instructions, see [`INSTALL_Windows.md`](INSTALL_Windows.md).
 
 See below for optional dependencies that you can install to improve your *DIPlib* experience.
+
 
 ## *CMake* configuration
 
@@ -89,7 +92,7 @@ Important `cmake` command-line arguments controlling the build of *DIPlib*:
     -DDIP_ENABLE_ZLIB=Off              # disable zlib compression support in ICS and TIFF
     -DDIP_ENABLE_FFTW=On               # enable the use of the FFTW3 library
     -DDIP_ENABLE_FREETYPE=On           # enable the use of the FreeType2 library
-    -DDIP_ENABLE_UNICODE=Off           # disable UFT-8 strings within DIPlib
+    -DDIP_ENABLE_UNICODE=Off           # disable UTF-8 strings within DIPlib
     -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
                                        #    integers are not natively supported
 
@@ -119,11 +122,12 @@ Controlling the build of *PyDIP*:
                                        # binary distribution, keep off for personal builds)
 
 Some of these options might not be available on your system. For example, if you don't have
-MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
-it to `Off` will yield a warning message when running CMake.
+*MATLAB* installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
+it to `Off` will yield a warning message when running *CMake*.
 
 Note that on some platforms, the Python module requires the *DIPlib* library to build as
 a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
+
 
 ## Dependencies
 
@@ -138,10 +142,15 @@ If you have [*FFTW3*](http://www.fftw.org) installed, you can set the `DIP_ENABL
 *FFTW3* is more efficient, especially for image sizes that do not factor into small
 numbers, but it has a copyleft license.
 
+If you have [*FreeType 2*](https://www.freetype.org) installed, you can set the `DIP_ENABLE_FREETYPE`
+*CMake* variable to have *DIPlib* use *FreeType* for rendering text, the
+[`dip::FreeTypeTool`](https://diplib.org/diplib-docs/dip-FreeTypeTool.html)
+class (introduced in *DIPlib* 3.1.1) cannot be instantiated without it.
+
 *DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
 as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
 
-*DIPjavaio* requires that the Java 8 SDK (JDK 8) or later be installed. This module is intended as a
+*DIPjavaio* requires that the *Java 8 SDK* (*JDK 8*) or later be installed. This module is intended as a
 bridge to [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), which you will need
 to download separately. *Bio-Formats* has a copyleft license.
 
@@ -151,4 +160,30 @@ Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/b
 enable *DIPimage* to read many microscopy image file formats (type `help readim` in *MATLAB*,
 after installing *DIPimage*, to learn more).
 
-*PyDIP* requires that [*Python 3*](https://www.python.org) be installed.
+*PyDIP* requires that [Python 3](https://www.python.org) be installed.
+
+
+## Linking against the library
+
+When using *CMake*, and importing the `DIP` target into your project in the right way, you will just need
+to link against the `DIP` target and everything will be configured correctly. Otherwise, there are several
+macros that you should define when building any program that links against *DIPlib*:
+
+If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag not set, then you need to define the `DIP_CONFIG_DIP_IS_STATIC`
+macro when compiling the code that links against it. Likewise, if the `DIP_ALWAYS_128_PRNG` flag was set,
+then you must define a `DIP_CONFIG_ALWAYS_128_PRNG` macro when compiling your program. Mismatching this flag
+could cause your program to not link, or worse, crash at runtime.
+
+The following flags do not need to be matched, but they should be if you want the inline functions to behave
+the same as the pre-compiled ones:
+- flag: `DIP_ENABLE_STACK_TRACE` -- macro: `DIP_CONFIG_ENABLE_STACK_TRACE`
+- flag: `DIP_ENABLE_ASSERT` -- macro: `DIP_CONFIG_ENABLE_ASSERT`
+
+Also, if your compiler supports `__PRETTY_FUNCTION__`, set the macro `DIP_CONFIG_HAS_PRETTY_FUNCTION` to
+get better stack traces.
+
+For *DIPviewer*, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPVIEWER_IS_STATIC` macro.
+Also define `DIP_CONFIG_HAS_FREEGLUT` or `DIP_CONFIG_HAS_GLFW` depending on which back-end is used.
+
+For *DIPjavaio*, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPJAVAIO_IS_STATIC` macro.
+Also define `DIP_CONFIG_HAS_DIPJAVAIO`.

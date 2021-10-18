@@ -13,79 +13,35 @@ and some of them improved significantly. Many of the improvements to *DIPlib* ar
 over concepts and ideas first implemented in *DIPimage*.
 Read [the *DIPlib* documentation](https://diplib.org/diplib-docs/).
 
-- **[*DIPimage*](https://diplib.org/DIPimage.html)**, a MATLAB toolbox for quantitative
+- **[*DIPimage*](https://diplib.org/DIPimage.html)**, a *MATLAB* toolbox for quantitative
 image analysis. It has been in development at Delft University of Technology in The Netherlands since 1999.
 Read [the *DIPimage* User Manual](https://diplib.org/diplib-docs/dipimage_user_manual.html).
 
-- **[*PyDIP*](https://diplib.org/PyDIP.html)**, Python bindings to *DIPlib*.
+- **[*PyDIP*](https://diplib.org/PyDIP.html)**, *Python* bindings to *DIPlib*.
 This is currently a thin wrapper that exposes the C++ functionality with little change.
 [the *PyDIP* User Manual](https://diplib.org/diplib-docs/pydip_user_manual.html)
 
-- ***DIPviewer***, an interactive image display utility. It is usable from C++, Python and MATLAB programs.
-Within *DIPimage* this is an optional alternative to the default MATLAB-native interactive display utility.
+- ***DIPviewer***, an interactive image display utility. It is usable from C++, *Python* and *MATLAB* programs.
+Within *DIPimage* this is an optional alternative to the default *MATLAB*-native interactive display utility.
 Read [the *DIPviewer* documentation](https://diplib.org/diplib-docs/dipviewer.html).
 
 - ***DIPjavaio***, an interface to
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
-hundreds of image file formats. This module is usable from C++ and Python. *DIPimage* has a different
+hundreds of image file formats. This module is usable from C++ and *Python*. *DIPimage* has a different
 way of interfacing with *Bio-Formats*.
 Read [the *DIPjavaio* documentation](https://diplib.org/diplib-docs/dipjavaio.html)
 
 See [the *DIPlib* website](https://diplib.org/) for more information.
 
-## Building the library
 
-### Linux, MacOS, Cygwin and other Unix-like systems
+## Building and using the project
 
 To build the library you will need a C++14 compliant compiler and *CMake*.
-Use the following commands to build:
-```bash
-mkdir target
-cd target
-cmake /path/to/dip/root/directory
-make -j install
-```
+Please see [`INSTALL.md`](INSTALL.md) for detailed instructions.
 
-For detailed instructions, see [`INSTALL.md`](INSTALL.md).
+When linking against the *DIPlib* library without using CMake, it is important to set a few preprocessor
+macros. Please read at the bottom of [`INSTALL.md`](INSTALL.md) for details.
 
-### Windows
-
-Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft Visual Studio 2019*.
-You'll also need *CMake*.
-
-Using *CMake-gui*, choose where the source directory is and where to build the binaries. Then
-press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
-a *Visual Studio* solution file that you can open in *Visual Studio* and build as usual.
-
-For step-by-step instructions, see [`INSTALL_Windows.md`](INSTALL_Windows.md). See also
-[`INSTALL.md`](INSTALL.md) for additional information and optional dependencies you might want
-to install.
-
-
-## Linking against the library
-
-When using *CMake*, and importing the `DIP` target into your project in the right way, you will just need
-to link against the `DIP` target and everything will be configured correctly. Otherwise, there are several
-macros that you should define when building any program that links against *DIPlib*:
-
-If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag not set, then you need to define the `DIP_CONFIG_DIP_IS_STATIC`
-macro when compiling the code that links against it. Likewise, if the `DIP_ALWAYS_128_PRNG` flag was set,
-then you must define a `DIP_CONFIG_ALWAYS_128_PRNG` macro when compiling your program. Mismatching this flag
-could cause your program to not link, or worse, crash at runtime.
-
-The following flags do not need to be matched, but they should be if you want the inline functions to behave
-the same as the pre-compiled ones:
- - flag: `DIP_ENABLE_STACK_TRACE` -- macro: `DIP_CONFIG_ENABLE_STACK_TRACE`
- - flag: `DIP_ENABLE_ASSERT` -- macro: `DIP_CONFIG_ENABLE_ASSERT`
-
-Also, if your compiler supports `__PRETTY_FUNCTION__`, set the macro `DIP_CONFIG_HAS_PRETTY_FUNCTION` to
-get better stack traces.
-
-For DIPviewer, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPVIEWER_IS_STATIC` macro.
-Also define `DIP_CONFIG_HAS_FREEGLUT` or `DIP_CONFIG_HAS_GLFW` depending on which back-end is used.
-
-For DIPjavaio, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPJAVAIO_IS_STATIC` macro.
-Also define `DIP_CONFIG_HAS_DIPJAVAIO`.
 
 ## Contributing
 

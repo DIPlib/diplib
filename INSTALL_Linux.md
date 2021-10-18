@@ -2,7 +2,7 @@
 
 Compiling *DIPlib* requires a few programs that often are not present on a bare Linux
 installation. It depends on your distribution how you can obtain these. Below we give
-instructions for Ubuntu (TODO: add instructions for other distros).
+instructions for Ubuntu (*TODO: add instructions for other distros*).
 
 See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
 on the compilation options.
@@ -16,7 +16,7 @@ Type the following command in your shell:
 ```bash
 sudo apt install build-essential cmake git
 ```
-This will install all the required tools. Depending on your version of Ubuntu, you'll
+This will install all the required tools. Depending on your version of Ubuntu, you might
 have a compiler that is too old to correctly build *DIPlib*. To see which version
 of *GCC* you have, type:
 ```bash
@@ -86,22 +86,22 @@ computer, and possibly not work at all.
 If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work
 correctly.
 
-## Enabling Bio-Formats
+## Enabling *Bio-Formats*
 
-First, make sure you have the Java 8 SDK (JDK 8) installed, you can obtain it from the
+First, make sure you have the *Java 8 SDK* (*JDK 8*) installed, you can obtain it from the
 [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html) for commercial
 purposes, or from [jdk.java.net](https://jdk.java.net) for an open-source build. Next, download
-`bioformats_package.jar` from the [Bio-Formats website](https://www.openmicroscopy.org/bio-formats/).
+`bioformats_package.jar` from the [*Bio-Formats* website](https://www.openmicroscopy.org/bio-formats/).
 You need to add the location of this file to the `cmake` command line using the `-DBIOFORMATS_JAR=<path>`
 flag.
 
-When running *CMake* with the proper JDK installed, the *DIPjavaio* module becomes available.
+When running *CMake* with the proper *JDK* installed, the *DIPjavaio* module becomes available.
 
-Check the *CMake* output to see which JNI was found. It should match the version of Java found.
-These two should be listed together, but the JNI output is only produced on first run. Delete the
+Check the *CMake* output to see which *JNI* was found. It should match the version of Java found.
+These two should be listed together, but the *JNI* output is only produced on first run. Delete the
 `CMakeCache.txt` file to run `cmake` fresh and see all its output.
 
-If the version of JNI found is not the one in the JDK, or if it is not found at all, add `-DJAVA_HOME=<path>`
+If the version of *JNI* found is not the one in the *JDK*, or if it is not found at all, add `-DJAVA_HOME=<path>`
 to the `cmake` command line:
 ```bash
 cmake .. -DBIOFORMATS_JAR=$HOME/java/bioformats_package.jar -DJAVA_HOME=/opt/jvm/java-8-oracle
@@ -148,7 +148,7 @@ version of the *GCC* libraries than what *MATLAB* links against, and will theref
 In [the documentation](https://www.mathworks.com/support/requirements/supported-compilers.html) they specify which
 compiler versions are compatible with each version of *MATLAB*. This list includes the version of *GCC* used to build
 that version of *MATLAB*, and a few older releases. That is, their solution to this issue is to tell customers to use
-only those specific versions of *GCC* to build MEX-files. If you do want to follow MATLAB’s recommendation, then
+only those specific versions of *GCC* to build MEX-files. If you do want to follow *MATLAB*’s recommendation, then
 install one of the supported compilers, and add tell CMake about them using the following command:
 ```bash
 cmake . -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9

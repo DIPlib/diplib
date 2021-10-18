@@ -1,7 +1,7 @@
 # Building the *DIPlib* documentation
 
 The documentation is built using [*dox++*](https://crisluengo.github.io/doxpp/), which
-requires Python 3 and a set of packages. It also requires a *LaTeX* installation to render
+requires *Python 3* and a set of packages. It also requires a *LaTeX* installation to render
 the equations. Here we show how to install dependencies on Ubuntu Linux and macOS. For
 other Linux distributions the instructions are similar. We have not yet tried building
 the documentation on Windows, if you manage to get that done, please write down some
@@ -9,7 +9,7 @@ instructions in this file.
 
 ## Installing the dependencies
 
-Python 3 can be installed on Ubuntu with
+*Python 3* can be installed on Ubuntu with
 ```bash
 sudo apt install python3
 ```
@@ -17,10 +17,10 @@ and on macOS with
 ```bash
 brew install python3 python3-pip
 ```
-We have built the documentation with Python 3.6 and 3.9, it is unknown if versions older
+We have built the documentation with *Python* 3.6 and 3.9, it is unknown if versions older
 than 3.6 will work.
 
-Once Python is installed, install the required packages:
+Once *Python* is installed, install the required packages:
 ```bash
 pip3 install clang jinja2 markdown markdown-headdown mdx_math_svg Pygments
 ```
