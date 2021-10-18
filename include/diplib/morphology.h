@@ -1758,7 +1758,7 @@ DIP_NODISCARD inline Image PathOpening(
 /// applying the path opening, then taking the infimum of the result and the input (Merveille, 2018). For a path
 /// closing, the erosion and the supremum are used instead.
 ///
-/// !!! m-default "Definition of `filterSize`"
+/// !!! par "Definition of `filterSize`"
 ///     `length = max(abs(filterSize))` is the number of pixels in the line.
 ///
 ///     The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using

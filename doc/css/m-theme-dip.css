@@ -83,7 +83,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --code-background-color: #f7f7f7;
   --code-header-background-color: var(--cs-primary-lighter);
   --code-header-link-color: var(--cs-primary-darkest);
-  --code-header-link-active-color: var(--cs-primary-darker);
+  --code-header-link-active-color: var(--cs-secondary-darkest);
   --code-header-self-color: #ffffff;
   --code-header-self-active-color: var(--cs-primary-lightest);
   --code-note-color: inherit;
@@ -111,7 +111,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --footer-color: var(--cs-primary-lightest);
   --footer-background-color: var(--cs-primary-base);
   --footer-link-color: #ffffff;
-  --footer-link-active-color: var(--cs-primary-lighter);
+  --footer-link-active-color: var(--cs-secondary-lighter);
 
   /* Cover image */
   --cover-image-background-color: #666666;
@@ -134,40 +134,49 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --plot-background-color: var(--cs-primary-lightest);
   --plot-error-color: #000000;
 
-  /* Colored components */
+  /* Colored components -- Many of these use the same colors to avoid the rainbow effect. */
   --default-color: #000000;
   --default-link-active-color: var(--cs-primary-base);
   --default-filled-color: #000000;
   --default-filled-background-color: var(--cs-primary-lightest);
   --default-filled-link-color: var(--cs-primary-darker);
-  --default-filled-link-active-color: var(--cs-primary-darkest);
+  --default-filled-link-active-color: var(--cs-secondary-darker);
   --default-filled-code-color: var(--cs-primary-darkest);
   --default-filled-code-background-color: var(--cs-primary-lightest);
 
-  --primary-color: var(--cs-primary-base);
-  --primary-link-active-color: var(--cs-primary-darker);
-  --primary-filled-color: #ffffff;
-  --primary-filled-background-color: var(--cs-primary-base);
-  --primary-filled-link-color: var(--cs-primary-lightest);
-  --primary-filled-link-active-color: var(--cs-primary-lighter);
-  --primary-filled-code-color: #e6e6e6;
-  --primary-filled-code-background-color: var(--cs-primary-base);
+  --primary-color:  var(--default-color);
+  --primary-link-active-color: var(--default-link-active-color);
+  --primary-filled-color: var(--default-filled-color);
+  --primary-filled-background-color: var(--default-filled-background-color);
+  --primary-filled-link-color: var(--default-filled-link-color);
+  --primary-filled-link-active-color: var(--default-filled-link-active-color);
+  --primary-filled-code-color: var(--default-filled-code-color);
+  --primary-filled-code-background-color: var(--default-filled-code-background-color);
 
-  --success-color: var(--cs-primary-darker);
-  --success-link-active-color: var(--cs-primary-darkest);
-  --success-filled-color: #ffffff;
-  --success-filled-background-color: var(--cs-primary-darker);
-  --success-filled-link-color: var(--cs-primary-lightest);
-  --success-filled-link-active-color: var(--cs-primary-lighter);
-  --success-filled-code-color: #e6e6e6;
-  --success-filled-code-background-color: var(--cs-primary-darker);
+  --success-color:  var(--default-color);
+  --success-link-active-color: var(--default-link-active-color);
+  --success-filled-color: var(--default-filled-color);
+  --success-filled-background-color: var(--default-filled-background-color);
+  --success-filled-link-color: var(--default-filled-link-color);
+  --success-filled-link-active-color: var(--default-filled-link-active-color);
+  --success-filled-code-color: var(--default-filled-code-color);
+  --success-filled-code-background-color: var(--default-filled-code-background-color);
+
+  --info-color: #000000;
+  --info-link-active-color: var(--cs-secondary-base);
+  --info-filled-color: #000000;
+  --info-filled-background-color: var(--cs-secondary-lightest);
+  --info-filled-link-color: var(--cs-secondary-darkest);
+  --info-filled-link-active-color: var(--cs-primary-darkest);
+  --info-filled-code-color: var(--cs-secondary-darkest);
+  --info-filled-code-background-color: var(--cs-secondary-lightest);
 
   --warning-color: var(--cs-secondary-lighter);
   --warning-link-active-color: var(--cs-secondary-darker);
   --warning-filled-color: #000000;
   --warning-filled-background-color: var(--cs-secondary-lighter);
-  --warning-filled-link-color: var(--cs-secondary-darker);
-  --warning-filled-link-active-color: var(--cs-secondary-darkest);
+  --warning-filled-link-color: var(--cs-secondary-darkest);
+  --warning-filled-link-active-color: var(--cs-primary-darkest);
   --warning-filled-code-color: var(--cs-secondary-darkest);
   --warning-filled-code-background-color: var(--cs-secondary-lighter);
 
@@ -176,26 +185,17 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --danger-filled-color: #ffffff;
   --danger-filled-background-color: var(--cs-secondary-darker);
   --danger-filled-link-color: var(--cs-secondary-lightest);
-  --danger-filled-link-active-color: var(--cs-secondary-lighter);
+  --danger-filled-link-active-color: var(--cs-primary-lightest);
   --danger-filled-code-color: #e6e6e6;
   --danger-filled-code-background-color: var(--cs-secondary-darker);
 
-  --info-color: var(--cs-primary-lighter);
-  --info-link-active-color: var(--cs-primary-base);
-  --info-filled-color: #000000;
-  --info-filled-background-color: var(--cs-primary-lighter);
-  --info-filled-link-color: var(--cs-primary-darker);
-  --info-filled-link-active-color: var(--cs-primary-darkest);
-  --info-filled-code-color: var(--cs-primary-darkest);
-  --info-filled-code-background-color: var(--cs-primary-lighter);
-
-  --dim-color: #808080;
+  --dim-color: #000000;
   --dim-link-color: var(--cs-primary-lighter);
   --dim-link-active-color: var(--cs-primary-base);
   --dim-filled-color: #000000;
   --dim-filled-background-color: #e6e6e6;
   --dim-filled-link-color: var(--cs-primary-base);
-  --dim-filled-link-active-color: var(--cs-primary-darker);
+  --dim-filled-link-active-color: var(--cs-secondary-base);
   --dim-button-active-color: #c0c0c0;
   --dim-filled-code-color: var(--cs-primary-darker);
   --dim-filled-code-background-color: #e6e6e6;

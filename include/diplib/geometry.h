@@ -496,14 +496,16 @@ DIP_NODISCARD inline Image Skew(
 /// The rotation is computed by three consecutive calls to \ref dip::Skew. See that function for the meaning of
 /// `interpolationMethod` and `boundaryCondition`.
 ///
-/// !!! attention
+/// !!! note
 ///     The `"periodic"` boundary condition currently produces an output image of the same size as
 ///     the input, where the corners of the image that rotate out of the field of view are cut off and fill the
 ///     sections that were outside of the input field of view. This is due to the way that \ref dip::Skew handles
-///     the `"periodic"` boundary condition. [TODO: This is something that we probably want to fix at some point.]
+///     the `"periodic"` boundary condition.
 ///
 /// !!! warning
 ///     The `"ft"` interpolation method is not (yet?) supported.
+// TODO: The periodic boundary condition produces results that are not intuitive, and should probably be improved
+//       by expanding the image before rotating.
 DIP_EXPORT void Rotation(
       Image const& in,
       Image& out,

@@ -684,7 +684,7 @@ div.m-button a .m-small:last-child {
 .m-label.m-flat {
   border-width: 0.0625rem;
   border-style: solid;
-  border-color: #808080;
+  border-color: #000000;
   padding: 0.0625rem 0.1875rem;
 }
 table.m-table {
@@ -1247,7 +1247,7 @@ div.m-plot svg .m-error {
   stroke: #000000;
   stroke-width: 1.5;
 }
-div.m-plot svg .m-label.m-dim { fill: #808080; }
+div.m-plot svg .m-label.m-dim { fill: #000000; }
 .m-graph g.m-edge path, .m-graph g.m-cluster polygon,
 .m-graph g.m-node.m-flat ellipse,
 .m-graph g.m-node.m-flat polygon {
@@ -1274,19 +1274,19 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-block.m-default h3 a, .m-block.m-default h4 a, .m-block.m-default h5 a, .m-block.m-default h6 a {
   color: #ff7400;
 }
-.m-block.m-primary { border-left-color: #ff7400; }
+.m-block.m-primary { border-left-color: #000000; }
 .m-block.m-primary h3, .m-block.m-primary h4, .m-block.m-primary h5, .m-block.m-primary h6,
 .m-block.m-primary h3 a, .m-block.m-primary h4 a, .m-block.m-primary h5 a, .m-block.m-primary h6 a,
 .m-text.m-primary, .m-label.m-flat.m-primary {
-  color: #ff7400;
-  border-color: #ff7400;
+  color: #000000;
+  border-color: #000000;
 }
-.m-block.m-success { border-left-color: #bf7130; }
+.m-block.m-success { border-left-color: #000000; }
 .m-block.m-success h3, .m-block.m-success h4, .m-block.m-success h5, .m-block.m-success h6,
 .m-block.m-success h3 a, .m-block.m-success h4 a, .m-block.m-success h5 a, .m-block.m-success h6 a,
 .m-text.m-success, .m-label.m-flat.m-success {
-  color: #bf7130;
-  border-color: #bf7130;
+  color: #000000;
+  border-color: #000000;
 }
 .m-block.m-warning { border-left-color: #59d9d9; }
 .m-block.m-warning h3, .m-block.m-warning h4, .m-block.m-warning h5, .m-block.m-warning h6,
@@ -1302,17 +1302,17 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
   color: #1d7373;
   border-color: #1d7373;
 }
-.m-block.m-info { border-left-color: #ffa866; }
+.m-block.m-info { border-left-color: #000000; }
 .m-block.m-info h3, .m-block.m-info h4, .m-block.m-info h5, .m-block.m-info h6,
 .m-block.m-info h3 a, .m-block.m-info h4 a, .m-block.m-info h5 a, .m-block.m-info h6 a,
 .m-text.m-info, .m-label.m-flat.m-info {
-  color: #ffa866;
-  border-color: #ffa866;
+  color: #000000;
+  border-color: #000000;
 }
-.m-block.m-dim { border-left-color: #808080; }
+.m-block.m-dim { border-left-color: #000000; }
 .m-block.m-dim, .m-text.m-dim, .m-label.m-flat.m-dim {
-  color: #808080;
-  border-color: #808080;
+  color: #000000;
+  border-color: #000000;
 }
 .m-block.m-dim a, .m-text.m-dim a { color: #ffa866; }
 .m-block.m-dim a:hover, .m-block.m-dim a:focus, .m-block.m-dim a:active,
@@ -1333,13 +1333,13 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-block.m-primary h4 a:hover, .m-block.m-primary h4 a:focus, .m-block.m-primary h4 a:active,
 .m-block.m-primary h5 a:hover, .m-block.m-primary h5 a:focus, .m-block.m-primary h5 a:active,
 .m-block.m-primary h6 a:hover, .m-block.m-primary h6 a:focus, .m-block.m-primary h6 a:active {
-  color: #bf7130;
+  color: #ff7400;
 }
 .m-block.m-success h3 a:hover, .m-block.m-success h3 a:focus, .m-block.m-success h3 a:active,
 .m-block.m-success h4 a:hover, .m-block.m-success h4 a:focus, .m-block.m-success h4 a:active,
 .m-block.m-success h5 a:hover, .m-block.m-success h5 a:focus, .m-block.m-success h5 a:active,
 .m-block.m-success h6 a:hover, .m-block.m-success h6 a:focus, .m-block.m-success h6 a:active {
-  color: #a64b00;
+  color: #ff7400;
 }
 .m-block.m-warning h3 a:hover, .m-block.m-warning h3 a:focus, .m-block.m-warning h3 a:active,
 .m-block.m-warning h4 a:hover, .m-block.m-warning h4 a:focus, .m-block.m-warning h4 a:active,
@@ -1357,7 +1357,7 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-block.m-info h4 a:hover, .m-block.m-info h4 a:focus, .m-block.m-info h4 a:active,
 .m-block.m-info h5 a:hover, .m-block.m-info h5 a:focus, .m-block.m-info h5 a:active,
 .m-block.m-info h6 a:hover, .m-block.m-info h6 a:focus, .m-block.m-info h6 a:active {
-  color: #ff7400;
+  color: #00b3b3;
 }
 div.m-button a, .m-label {
   color: #ffffff;
@@ -1368,20 +1368,20 @@ div.m-button.m-flat a:hover, div.m-button.m-default a:focus, div.m-button.m-defa
   color: #00b3b3;
 }
 div.m-button.m-default a, .m-label:not(.m-flat).m-default { background-color: #000000; }
-div.m-button.m-primary a, .m-label:not(.m-flat).m-primary { background-color: #ff7400; }
-div.m-button.m-success a, .m-label:not(.m-flat).m-success { background-color: #bf7130; }
+div.m-button.m-primary a, .m-label:not(.m-flat).m-primary { background-color: #000000; }
+div.m-button.m-success a, .m-label:not(.m-flat).m-success { background-color: #000000; }
 div.m-button.m-warning a, .m-label:not(.m-flat).m-warning { background-color: #59d9d9; }
 div.m-button.m-danger a, .m-label:not(.m-flat).m-danger { background-color: #1d7373; }
-div.m-button.m-info a, .m-label:not(.m-flat).m-info { background-color: #ffa866; }
-div.m-button.m-dim a, .m-label:not(.m-flat).m-dim { background-color: #808080; }
+div.m-button.m-info a, .m-label:not(.m-flat).m-info { background-color: #000000; }
+div.m-button.m-dim a, .m-label:not(.m-flat).m-dim { background-color: #000000; }
 div.m-button.m-default a:hover, div.m-button.m-default a:focus, div.m-button.m-default a:active {
   background-color: #ff7400;
 }
 div.m-button.m-primary a:hover, div.m-button.m-primary a:focus, div.m-button.m-primary a:active {
-  background-color: #bf7130;
+  background-color: #ff7400;
 }
 div.m-button.m-success a:hover, div.m-button.m-success a:focus, div.m-button.m-success a:active {
-  background-color: #a64b00;
+  background-color: #ff7400;
 }
 div.m-button.m-warning a:hover, div.m-button.m-warning a:focus, div.m-button.m-warning a:active {
   background-color: #1d7373;
@@ -1390,7 +1390,7 @@ div.m-button.m-danger a:hover, div.m-button.m-danger a:focus, div.m-button.m-dan
   background-color: #006666;
 }
 div.m-button.m-info a:hover, div.m-button.m-info a:focus, div.m-button.m-info a:active {
-  background-color: #ff7400;
+  background-color: #00b3b3;
 }
 div.m-button.m-dim a:hover, div.m-button.m-dim a:focus, div.m-button.m-dim a:active {
   background-color: #c0c0c0;
@@ -1401,22 +1401,6 @@ table.m-table tr.m-default th, table.m-table th.m-default {
   background-color: #ffe3cc;
   color: #000000;
 }
-.m-note.m-default a,
-table.m-table tr.m-default td a, table.m-table td.m-default a,
-table.m-table tr.m-default th a, table.m-table th.m-default a {
-  color: #bf7130;
-}
-.m-note.m-default a:hover,
-table.m-table tr.m-default td a:hover, table.m-table td.m-default a:hover,
-table.m-table tr.m-default th a:hover, table.m-table th.m-default a:hover,
-.m-note.m-default a:focus,
-table.m-table tr.m-default td a:focus, table.m-table td.m-default a:focus,
-table.m-table tr.m-default th a:focus, table.m-table th.m-default a:focus,
-.m-note.m-default a:active,
-table.m-table tr.m-default td a:active, table.m-table td.m-default a:active,
-table.m-table tr.m-default th a:active, table.m-table th.m-default a:active {
-  color: #a64b00;
-}
 .m-note.m-default pre, .m-note.m-default code,
 table.m-table tr.m-default pre, table.m-table tr.m-default code,
 table.m-table td.m-default pre, table.m-table td.m-default code,
@@ -1424,85 +1408,85 @@ table.m-table th.m-default pre, table.m-table th.m-default code {
   background-color: #ffe3cc;
   color: #a64b00;
 }
+.m-note.m-default a, .m-note.m-default a pre, .m-note.m-default a code,
+table.m-table tr.m-default td a, table.m-table td.m-default a,
+table.m-table tr.m-default th a, table.m-table th.m-default a {
+  color: #bf7130;
+}
+.m-note.m-default a:hover, .m-note.m-default a:hover pre, .m-note.m-default a:hover code,
+table.m-table tr.m-default td a:hover, table.m-table td.m-default a:hover,
+table.m-table tr.m-default th a:hover, table.m-table th.m-default a:hover,
+.m-note.m-default a:focus, .m-note.m-default a:focus pre, .m-note.m-default a:focus code,
+table.m-table tr.m-default td a:focus, table.m-table td.m-default a:focus,
+table.m-table tr.m-default th a:focus, table.m-table th.m-default a:focus,
+.m-note.m-default a:active, .m-note.m-default a:active pre, .m-note.m-default a:active code,
+table.m-table tr.m-default td a:active, table.m-table td.m-default a:active,
+table.m-table tr.m-default th a:active, table.m-table th.m-default a:active {
+  color: #1d7373;
+}
 .m-note.m-primary,
 table.m-table tr.m-primary td, table.m-table td.m-primary,
 table.m-table tr.m-primary th, table.m-table th.m-primary {
-  background-color: #ff7400;
-  color: #ffffff;
-}
-.m-note.m-primary a,
-table.m-table tr.m-primary td a, table.m-table td.m-primary a,
-table.m-table tr.m-primary th a, table.m-table th.m-primary a {
-  color: #ffe3cc;
-}
-.m-note.m-primary a:hover,
-table.m-table tr.m-primary td a:hover, table.m-table td.m-primary a:hover,
-table.m-table tr.m-primary th a:hover, table.m-table th.m-primary a:hover,
-.m-note.m-primary a:focus,
-table.m-table tr.m-primary td a:focus, table.m-table td.m-primary a:focus,
-table.m-table tr.m-primary th a:focus, table.m-table th.m-primary a:focus,
-.m-note.m-primary a:active,
-table.m-table tr.m-primary td a:active, table.m-table td.m-primary a:active,
-table.m-table tr.m-primary th a:active, table.m-table th.m-primary a:active {
-  color: #ffa866;
+  background-color: #ffe3cc;
+  color: #000000;
 }
 .m-note.m-primary pre, .m-note.m-primary code,
 table.m-table tr.m-primary pre, table.m-table tr.m-primary code,
 table.m-table td.m-primary pre, table.m-table td.m-primary code,
 table.m-table th.m-primary pre, table.m-table th.m-primary code {
-  background-color: #ff7400;
-  color: #e6e6e6;
+  background-color: #ffe3cc;
+  color: #a64b00;
+}
+.m-note.m-primary a, .m-note.m-primary a pre, .m-note.m-primary a code,
+table.m-table tr.m-primary td a, table.m-table td.m-primary a,
+table.m-table tr.m-primary th a, table.m-table th.m-primary a {
+  color: #bf7130;
+}
+.m-note.m-primary a:hover, .m-note.m-primary a:hover pre, .m-note.m-primary a:hover code,
+table.m-table tr.m-primary td a:hover, table.m-table td.m-primary a:hover,
+table.m-table tr.m-primary th a:hover, table.m-table th.m-primary a:hover,
+.m-note.m-primary a:focus, .m-note.m-primary a:focus pre, .m-note.m-primary a:focus code,
+table.m-table tr.m-primary td a:focus, table.m-table td.m-primary a:focus,
+table.m-table tr.m-primary th a:focus, table.m-table th.m-primary a:focus,
+.m-note.m-primary a:active, .m-note.m-primary a:active pre, .m-note.m-primary a:active code,
+table.m-table tr.m-primary td a:active, table.m-table td.m-primary a:active,
+table.m-table tr.m-primary th a:active, table.m-table th.m-primary a:active {
+  color: #1d7373;
 }
 .m-note.m-success,
 table.m-table tr.m-success td, table.m-table td.m-success,
 table.m-table tr.m-success th, table.m-table th.m-success {
-  background-color: #bf7130;
-  color: #ffffff;
-}
-.m-note.m-success a,
-table.m-table tr.m-success td a, table.m-table td.m-success a,
-table.m-table tr.m-success th a, table.m-table th.m-success a {
-  color: #ffe3cc;
-}
-.m-note.m-success a:hover,
-table.m-table tr.m-success td a:hover, table.m-table td.m-success a:hover,
-table.m-table tr.m-success th a:hover, table.m-table th.m-success a:hover,
-.m-note.m-success a:focus,
-table.m-table tr.m-success td a:focus, table.m-table td.m-success a:focus,
-table.m-table tr.m-success th a:focus, table.m-table th.m-success a:focus,
-.m-note.m-success a:active,
-table.m-table tr.m-success td a:active, table.m-table td.m-success a:active,
-table.m-table tr.m-success th a:active, table.m-table th.m-success a:active {
-  color: #ffa866;
+  background-color: #ffe3cc;
+  color: #000000;
 }
 .m-note.m-success pre, .m-note.m-success code,
 table.m-table tr.m-success pre, table.m-table tr.m-success code,
 table.m-table td.m-success pre, table.m-table td.m-success code,
 table.m-table th.m-success pre, table.m-table th.m-success code {
-  background-color: #bf7130;
-  color: #e6e6e6;
+  background-color: #ffe3cc;
+  color: #a64b00;
+}
+.m-note.m-success a, .m-note.m-success a pre, .m-note.m-success a code,
+table.m-table tr.m-success td a, table.m-table td.m-success a,
+table.m-table tr.m-success th a, table.m-table th.m-success a {
+  color: #bf7130;
+}
+.m-note.m-success a:hover, .m-note.m-success a:hover pre, .m-note.m-success a:hover code,
+table.m-table tr.m-success td a:hover, table.m-table td.m-success a:hover,
+table.m-table tr.m-success th a:hover, table.m-table th.m-success a:hover,
+.m-note.m-success a:focus, .m-note.m-success a:focus pre, .m-note.m-success a:focus code,
+table.m-table tr.m-success td a:focus, table.m-table td.m-success a:focus,
+table.m-table tr.m-success th a:focus, table.m-table th.m-success a:focus,
+.m-note.m-success a:active, .m-note.m-success a:active pre, .m-note.m-success a:active code,
+table.m-table tr.m-success td a:active, table.m-table td.m-success a:active,
+table.m-table tr.m-success th a:active, table.m-table th.m-success a:active {
+  color: #1d7373;
 }
 .m-note.m-warning,
 table.m-table tr.m-warning td, table.m-table td.m-warning,
 table.m-table tr.m-warning th, table.m-table th.m-warning {
   background-color: #59d9d9;
   color: #000000;
-}
-.m-note.m-warning a,
-table.m-table tr.m-warning td a, table.m-table td.m-warning a,
-table.m-table tr.m-warning th a, table.m-table th.m-warning a {
-  color: #1d7373;
-}
-.m-note.m-warning a:hover,
-table.m-table tr.m-warning td a:hover, table.m-table td.m-warning a:hover,
-table.m-table tr.m-warning th a:hover, table.m-table th.m-warning a:hover,
-.m-note.m-warning a:focus,
-table.m-table tr.m-warning td a:focus, table.m-table td.m-warning a:focus,
-table.m-table tr.m-warning th a:focus, table.m-table th.m-warning a:focus,
-.m-note.m-warning a:active,
-table.m-table tr.m-warning td a:active, table.m-table td.m-warning a:active,
-table.m-table tr.m-warning th a:active, table.m-table th.m-warning a:active {
-  color: #006666;
 }
 .m-note.m-warning pre, .m-note.m-warning code,
 table.m-table tr.m-warning pre, table.m-table tr.m-warning code,
@@ -1511,27 +1495,27 @@ table.m-table th.m-warning pre, table.m-table th.m-warning code {
   background-color: #59d9d9;
   color: #006666;
 }
+.m-note.m-warning a, .m-note.m-warning a pre, .m-note.m-warning a code,
+table.m-table tr.m-warning td a, table.m-table td.m-warning a,
+table.m-table tr.m-warning th a, table.m-table th.m-warning a {
+  color: #006666;
+}
+.m-note.m-warning a:hover, .m-note.m-warning a:hover pre, .m-note.m-warning a:hover code,
+table.m-table tr.m-warning td a:hover, table.m-table td.m-warning a:hover,
+table.m-table tr.m-warning th a:hover, table.m-table th.m-warning a:hover,
+.m-note.m-warning a:focus, .m-note.m-warning a:focus pre, .m-note.m-warning a:focus code,
+table.m-table tr.m-warning td a:focus, table.m-table td.m-warning a:focus,
+table.m-table tr.m-warning th a:focus, table.m-table th.m-warning a:focus,
+.m-note.m-warning a:active, .m-note.m-warning a:active pre, .m-note.m-warning a:active code,
+table.m-table tr.m-warning td a:active, table.m-table td.m-warning a:active,
+table.m-table tr.m-warning th a:active, table.m-table th.m-warning a:active {
+  color: #a64b00;
+}
 .m-note.m-danger,
 table.m-table tr.m-danger td, table.m-table td.m-danger,
 table.m-table tr.m-danger th, table.m-table th.m-danger {
   background-color: #1d7373;
   color: #ffffff;
-}
-.m-note.m-danger a,
-table.m-table tr.m-danger td a, table.m-table td.m-danger a,
-table.m-table tr.m-danger th a, table.m-table th.m-danger a {
-  color: #add9d9;
-}
-.m-note.m-danger a:hover,
-table.m-table tr.m-danger td a:hover, table.m-table td.m-danger a:hover,
-table.m-table tr.m-danger th a:hover, table.m-table th.m-danger a:hover,
-.m-note.m-danger a:focus,
-table.m-table tr.m-danger td a:focus, table.m-table td.m-danger a:focus,
-table.m-table tr.m-danger th a:focus, table.m-table th.m-danger a:focus,
-.m-note.m-danger a:active,
-table.m-table tr.m-danger td a:active, table.m-table td.m-danger a:active,
-table.m-table tr.m-danger th a:active, table.m-table th.m-danger a:active {
-  color: #59d9d9;
 }
 .m-note.m-danger pre, .m-note.m-danger code,
 table.m-table tr.m-danger pre, table.m-table tr.m-danger code,
@@ -1540,33 +1524,49 @@ table.m-table th.m-danger pre, table.m-table th.m-danger code {
   background-color: #1d7373;
   color: #e6e6e6;
 }
+.m-note.m-danger a, .m-note.m-danger a pre, .m-note.m-danger a code,
+table.m-table tr.m-danger td a, table.m-table td.m-danger a,
+table.m-table tr.m-danger th a, table.m-table th.m-danger a {
+  color: #add9d9;
+}
+.m-note.m-danger a:hover, .m-note.m-danger a:hover pre, .m-note.m-danger a:hover code,
+table.m-table tr.m-danger td a:hover, table.m-table td.m-danger a:hover,
+table.m-table tr.m-danger th a:hover, table.m-table th.m-danger a:hover,
+.m-note.m-danger a:focus, .m-note.m-danger a:focus pre, .m-note.m-danger a:focus code,
+table.m-table tr.m-danger td a:focus, table.m-table td.m-danger a:focus,
+table.m-table tr.m-danger th a:focus, table.m-table th.m-danger a:focus,
+.m-note.m-danger a:active, .m-note.m-danger a:active pre, .m-note.m-danger a:active code,
+table.m-table tr.m-danger td a:active, table.m-table td.m-danger a:active,
+table.m-table tr.m-danger th a:active, table.m-table th.m-danger a:active {
+  color: #ffe3cc;
+}
 .m-note.m-info,
 table.m-table tr.m-info td, table.m-table td.m-info,
 table.m-table tr.m-info th, table.m-table th.m-info {
-  background-color: #ffa866;
+  background-color: #add9d9;
   color: #000000;
-}
-.m-note.m-info a,
-table.m-table tr.m-info td a, table.m-table td.m-info a,
-table.m-table tr.m-info th a, table.m-table th.m-info a {
-  color: #bf7130;
-}
-.m-note.m-info a:hover,
-table.m-table tr.m-info td a:hover, table.m-table td.m-info a:hover,
-table.m-table tr.m-info th a:hover, table.m-table th.m-info a:hover,
-.m-note.m-info a:focus,
-table.m-table tr.m-info td a:focus, table.m-table td.m-info a:focus,
-table.m-table tr.m-info th a:focus, table.m-table th.m-info a:focus,
-.m-note.m-info a:active,
-table.m-table tr.m-info td a:active, table.m-table td.m-info a:active,
-table.m-table tr.m-info th a:active, table.m-table th.m-info a:active {
-  color: #a64b00;
 }
 .m-note.m-info pre, .m-note.m-info code,
 table.m-table tr.m-info pre, table.m-table tr.m-info code,
 table.m-table td.m-info pre, table.m-table td.m-info code,
 table.m-table th.m-info pre, table.m-table th.m-info code {
-  background-color: #ffa866;
+  background-color: #add9d9;
+  color: #006666;
+}
+.m-note.m-info a, .m-note.m-info a pre, .m-note.m-info a code,
+table.m-table tr.m-info td a, table.m-table td.m-info a,
+table.m-table tr.m-info th a, table.m-table th.m-info a {
+  color: #006666;
+}
+.m-note.m-info a:hover, .m-note.m-info a:hover pre, .m-note.m-info a:hover code,
+table.m-table tr.m-info td a:hover, table.m-table td.m-info a:hover,
+table.m-table tr.m-info th a:hover, table.m-table th.m-info a:hover,
+.m-note.m-info a:focus, .m-note.m-info a:focus pre, .m-note.m-info a:focus code,
+table.m-table tr.m-info td a:focus, table.m-table td.m-info a:focus,
+table.m-table tr.m-info th a:focus, table.m-table th.m-info a:focus,
+.m-note.m-info a:active, .m-note.m-info a:active pre, .m-note.m-info a:active code,
+table.m-table tr.m-info td a:active, table.m-table td.m-info a:active,
+table.m-table tr.m-info th a:active, table.m-table th.m-info a:active {
   color: #a64b00;
 }
 .m-note.m-dim,
@@ -1575,22 +1575,6 @@ table.m-table tr.m-dim th, table.m-table th.m-dim {
   background-color: #e6e6e6;
   color: #000000;
 }
-.m-note.m-dim a,
-table.m-table tr.m-dim td a, table.m-table td.m-dim a,
-table.m-table tr.m-dim th a, table.m-table th.m-dim a {
-  color: #ff7400;
-}
-.m-note.m-dim a:hover,
-table.m-table tr.m-dim td a:hover, table.m-table td.m-dim a:hover,
-table.m-table tr.m-dim th a:hover, table.m-table th.m-dim a:hover,
-.m-note.m-dim a:focus,
-table.m-table tr.m-dim td a:focus, table.m-table td.m-dim a:focus,
-table.m-table tr.m-dim th a:focus, table.m-table th.m-dim a:focus,
-.m-note.m-dim a:active,
-table.m-table tr.m-dim td a:active, table.m-table td.m-dim a:active,
-table.m-table tr.m-dim th a:active, table.m-table th.m-dim a:active {
-  color: #bf7130;
-}
 .m-note.m-dim pre, .m-note.m-dim code,
 table.m-table tr.m-dim pre, table.m-table tr.m-dim code,
 table.m-table td.m-dim pre, table.m-table td.m-dim code,
@@ -1598,20 +1582,36 @@ table.m-table th.m-dim pre, table.m-table th.m-dim code {
   background-color: #e6e6e6;
   color: #bf7130;
 }
+.m-note.m-dim a, .m-note.m-dim a pre, .m-note.m-dim a code,
+table.m-table tr.m-dim td a, table.m-table td.m-dim a,
+table.m-table tr.m-dim th a, table.m-table th.m-dim a {
+  color: #ff7400;
+}
+.m-note.m-dim a:hover, .m-note.m-dim a:hover pre, .m-note.m-dim a:hover code,
+table.m-table tr.m-dim td a:hover, table.m-table td.m-dim a:hover,
+table.m-table tr.m-dim th a:hover, table.m-table th.m-dim a:hover,
+.m-note.m-dim a:focus, .m-note.m-dim a:focus pre, .m-note.m-dim a:focus code,
+table.m-table tr.m-dim td a:focus, table.m-table td.m-dim a:focus,
+table.m-table tr.m-dim th a:focus, table.m-table th.m-dim a:focus,
+.m-note.m-dim a:active, .m-note.m-dim a:active pre, .m-note.m-dim a:active code,
+table.m-table tr.m-dim td a:active, table.m-table td.m-dim a:active,
+table.m-table tr.m-dim th a:active, table.m-table th.m-dim a:active {
+  color: #00b3b3;
+}
 figure.m-figure.m-default:before { border-color: #ffe3cc; }
 figure.m-figure.m-default figcaption { color: #000000; }
-figure.m-figure.m-primary:before { border-color: #ff7400; }
-figure.m-figure.m-primary figcaption { color: #ff7400; }
-figure.m-figure.m-success:before { border-color: #bf7130; }
-figure.m-figure.m-success figcaption { color: #bf7130; }
+figure.m-figure.m-primary:before { border-color: #ffe3cc; }
+figure.m-figure.m-primary figcaption { color: #000000; }
+figure.m-figure.m-success:before { border-color: #ffe3cc; }
+figure.m-figure.m-success figcaption { color: #000000; }
 figure.m-figure.m-warning:before { border-color: #59d9d9; }
 figure.m-figure.m-warning figcaption { color: #59d9d9; }
 figure.m-figure.m-danger:before { border-color: #1d7373; }
 figure.m-figure.m-danger figcaption { color: #1d7373; }
-figure.m-figure.m-info:before { border-color: #ffa866; }
-figure.m-figure.m-info figcaption { color: #ffa866; }
+figure.m-figure.m-info:before { border-color: #add9d9; }
+figure.m-figure.m-info figcaption { color: #000000; }
 figure.m-figure.m-dim:before { border-color: #e6e6e6; }
-figure.m-figure.m-dim { color: #808080; }
+figure.m-figure.m-dim { color: #000000; }
 figure.m-figure.m-dim a { color: #ffa866; }
 figure.m-figure.m-dim a:hover, figure.m-figure.m-dim a:focus, figure.m-figure.m-dim a:active {
   color: #ff7400;
@@ -1655,7 +1655,7 @@ div.m-plot svg .m-bar.m-primary,
 .m-graph.m-primary g.m-edge text,
 .m-graph.m-primary g.m-node.m-flat text,
 .m-graph.m-primary g.m-cluster text {
-  fill: #ff7400;
+  fill: #000000;
 }
 .m-graph.m-primary g.m-edge polygon,
 .m-graph.m-primary g.m-edge path,
@@ -1663,7 +1663,7 @@ div.m-plot svg .m-bar.m-primary,
 .m-graph.m-primary g.m-node polygon,
 .m-graph.m-primary g.m-node polyline,
 .m-graph.m-primary g.m-cluster polygon {
-  stroke: #ff7400;
+  stroke: #000000;
 }
 .m-math.m-success, .m-math g.m-success, .m-math rect.m-success,
 div.m-plot svg .m-bar.m-success,
@@ -1673,7 +1673,7 @@ div.m-plot svg .m-bar.m-success,
 .m-graph.m-success g.m-edge text,
 .m-graph.m-success g.m-node.m-flat text,
 .m-graph.m-success g.m-cluster text {
-  fill: #bf7130;
+  fill: #000000;
 }
 .m-graph.m-success g.m-edge polygon,
 .m-graph.m-success g.m-edge path,
@@ -1681,7 +1681,7 @@ div.m-plot svg .m-bar.m-success,
 .m-graph.m-success g.m-node polygon,
 .m-graph.m-success g.m-node polyline,
 .m-graph.m-success g.m-cluster polygon {
-  stroke: #bf7130;
+  stroke: #000000;
 }
 .m-math.m-warning, .m-math g.m-warning, .m-math rect.m-warning,
 div.m-plot svg .m-bar.m-warning,
@@ -1727,7 +1727,7 @@ div.m-plot svg .m-bar.m-info,
 .m-graph.m-info g.m-edge text,
 .m-graph.m-info g.m-node.m-flat text,
 .m-graph.m-info g.m-cluster text {
-  fill: #ffa866;
+  fill: #000000;
 }
 .m-graph.m-info g.m-edge polygon,
 .m-graph.m-info g.m-edge path,
@@ -1735,7 +1735,7 @@ div.m-plot svg .m-bar.m-info,
 .m-graph.m-info g.m-node polygon,
 .m-graph.m-info g.m-node polyline,
 .m-graph.m-info g.m-cluster polygon {
-  stroke: #ffa866;
+  stroke: #000000;
 }
 .m-math.m-dim, .m-math g.m-dim, .m-math rect.m-dim,
 div.m-plot svg .m-bar.m-dim,
@@ -1745,7 +1745,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph.m-dim g.m-edge text,
 .m-graph.m-dim g.m-node.m-flat text,
 .m-graph.m-dim g.m-cluster text {
-  fill: #808080;
+  fill: #000000;
 }
 .m-graph.m-dim g.m-edge polygon,
 .m-graph.m-dim g.m-edge path,
@@ -1753,7 +1753,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph.m-dim g.m-node polygon,
 .m-graph.m-dim g.m-node polyline,
 .m-graph.m-dim g.m-cluster polygon {
-  stroke: #808080;
+  stroke: #000000;
 }
 .m-graph g.m-edge.m-default polygon,
 .m-graph g.m-node.m-default:not(.m-flat) ellipse,
@@ -1777,7 +1777,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-edge.m-primary text,
 .m-graph g.m-node.m-primary.m-flat text,
 .m-graph g.m-cluster.m-primary text {
-  fill: #ff7400;
+  fill: #000000;
 }
 .m-graph g.m-edge.m-primary polygon,
 .m-graph g.m-edge.m-primary path,
@@ -1785,7 +1785,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-node.m-primary polygon,
 .m-graph g.m-node.m-primary polyline,
 .m-graph g.m-cluster.m-primary polygon {
-  stroke: #ff7400;
+  stroke: #000000;
 }
 .m-graph g.m-edge.m-success polygon,
 .m-graph g.m-node.m-success:not(.m-flat) ellipse,
@@ -1793,7 +1793,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-edge.m-success text,
 .m-graph g.m-node.m-success.m-flat text,
 .m-graph g.m-cluster.m-success text {
-  fill: #bf7130;
+  fill: #000000;
 }
 .m-graph g.m-edge.m-success polygon,
 .m-graph g.m-edge.m-success path,
@@ -1801,7 +1801,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-node.m-success polygon,
 .m-graph g.m-node.m-success polyline,
 .m-graph g.m-cluster.m-success polygon {
-  stroke: #bf7130;
+  stroke: #000000;
 }
 .m-graph g.m-edge.m-warning polygon,
 .m-graph g.m-node.m-warning:not(.m-flat) ellipse,
@@ -1841,7 +1841,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-edge.m-info text,
 .m-graph g.m-node.m-info.m-flat text,
 .m-graph g.m-cluster.m-info text {
-  fill: #ffa866;
+  fill: #000000;
 }
 .m-graph g.m-edge.m-info polygon,
 .m-graph g.m-edge.m-info path,
@@ -1849,7 +1849,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-node.m-info polygon,
 .m-graph g.m-node.m-info polyline,
 .m-graph g.m-cluster.m-info polygon {
-  stroke: #ffa866;
+  stroke: #000000;
 }
 .m-graph g.m-edge.m-dim polygon,
 .m-graph g.m-node.m-dim:not(.m-flat) ellipse,
@@ -1857,7 +1857,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-edge.m-dim text,
 .m-graph g.m-node.m-dim.m-flat text,
 .m-graph g.m-cluster.m-dim text {
-  fill: #808080;
+  fill: #000000;
 }
 .m-graph g.m-edge.m-dim polygon,
 .m-graph g.m-edge.m-dim path,
@@ -1865,7 +1865,7 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-node.m-dim polygon,
 .m-graph g.m-node.m-dim polyline,
 .m-graph g.m-cluster.m-dim polygon {
-  stroke: #808080;
+  stroke: #000000;
 }
 p, ul, ol, dl, blockquote, pre, .m-code-figure, .m-console-figure, hr, .m-note,
 .m-frame, .m-block, div.m-button, div.m-scroll, table.m-table, div.m-image,
@@ -2141,7 +2141,7 @@ body > footer > nav a {
   color: #ffffff;
 }
 body > footer > nav a:hover, body > footer > nav a:focus, body > footer > nav a:active {
-  color: #ffa866;
+  color: #59d9d9;
 }
 body {
   min-height: 100vh;
@@ -2606,10 +2606,10 @@ article:last-child, article section:last-child { margin-bottom: 0; }
   border-color: #ff7400;
 }
 .m-container-inflatable section:target .m-note.m-primary  {
-  border-color: #ff7400;
+  border-color: #000000;
 }
 .m-container-inflatable section:target .m-note.m-success {
-  border-color: #bf7130;
+  border-color: #000000;
 }
 .m-container-inflatable section:target .m-note.m-warning {
   border-color: #59d9d9;
@@ -2618,10 +2618,10 @@ article:last-child, article section:last-child { margin-bottom: 0; }
   border-color: #1d7373;
 }
 .m-container-inflatable section:target .m-note.m-info {
-  border-color: #ffa866;
+  border-color: #000000;
 }
 .m-container-inflatable section:target .m-note.m-dim {
-  border-color: #808080;
+  border-color: #000000;
 }
 
 .m-code .hll { background-color: #cbbdb2 }
@@ -2822,7 +2822,7 @@ h3 .m-doc-template a, h3 .m-doc-include a {
   color: #ff7400;
 }
 h3 .m-doc-template a:hover, h3 .m-doc-include a:hover {
-  color: #bf7130;
+  color: #00b3b3;
 }
 .m-code.m-inverted.m-doc-include > a:link,
 .m-code.m-inverted.m-doc-include > a:visited {
@@ -2867,7 +2867,7 @@ article section.m-doc-details > div > h3:first-child a {
 article section.m-doc-details > div > h3:first-child a:hover,
 article section.m-doc-details > div > h3:first-child a:focus,
 article section.m-doc-details > div > h3:first-child a:active {
-  color: #bf7130;
+  color: #006666;
 }
 article section.m-doc-details > div > h3:first-child a.m-doc-self {
   color: #ffffff;
@@ -2999,7 +2999,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   background-color: #ffe3cc;
 }
 .m-doc-search ul#search-results li#search-current.m-doc-search-copied a {
-  background-color: #bf7130;
+  background-color: #ffe3cc;
 }
 .m-doc-search-typed {
   color: #ff7400;

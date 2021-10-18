@@ -172,9 +172,14 @@ Specifically:
   sense and there is a `\see` section anyway. Note that the documentation lists the functions
   in the same order as that they appear in the header files.
 
-- Use `!!! par "name"` for a named info box. It will be rendered with a gray background.
+- Use `!!! literatue` to add a literature list. Put it at the end of a documentation block.
 
-- Use `!!! attention` and `!!! warning` for two levels of attention-grabbing info boxes.
-  These are rendered with lighter and darker 2nd color background (highly contrasting!).
+- Use `!!! note` or `!!! note "Title` to add an info box that
+  stands out slightly. It is rendered the same as the see also and literature blocks.
 
-- Don't use `!!! note` or `!!! remark`.
+- Use `!!! par "Title"` for an info box that is less attention-grabbing.
+
+- Use `!!! attention`, `!!! warning` and `!!! bug` for info boxes with three levels of attention-grabbiness.
+  These are rendered with a background of different shades of the secondary color (highly contrasting!).
+
+- Don't use `!!! aside`, or any of the other boxes.

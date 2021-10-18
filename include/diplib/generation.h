@@ -344,7 +344,7 @@ DIP_EXPORT void BlendBandlimitedMask(
 /// dip::FreeTypeTool freeTypeTool( "/usr/share/fonts/truetype/times.ttf" );
 /// ```
 ///
-/// !!! attention "Note on thread-safety"
+/// !!! note "Note on thread-safety"
 ///     Setting a font through \ref SetFont is not thread-safe. The FreeType documentation says that the functionality
 ///     used in \ref DrawText is thread-safe, though I don't see how this function would work properly if called from
 ///     two threads at the same time. I would recommend using a mutex in a multi-threaded environment if the same object

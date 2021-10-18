@@ -35,7 +35,7 @@ But you can only add one of them to your *MATLAB* path.
 
 \subsection sec_dum_installing_windows_bindist Installation from binary distribution
 
-!!! par "Not the latest release"
+!!! note "Not the latest release"
     We don't have a way to consistently produce a *DIPimage* binary distribution with
     every release, so the binaries available are rather old.
 
@@ -76,7 +76,7 @@ to.
 
 \subsection sec_dum_installing_linux_bindist Installation from binary distribution
 
-!!! par "Not yet available"
+!!! note "Not yet available"
     This will probably be a tar ball.
 
 \subsection sec_dum_installing_linux_source Installation from source
@@ -125,7 +125,7 @@ You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 
 \subsection sec_dum_installing_macos_bindist Installation from binary distribution
 
-!!! par "Not yet available"
+!!! note "Not yet available"
     This might be a bundle, a drag-drop disk image, or even a Homebrew formula. We don't know yet!
 
 \subsection sec_dum_installing_macos_source Installation from source
