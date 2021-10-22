@@ -22,23 +22,21 @@
 
 #include "diplib.h"
 #include "diplib/segmentation.h"
-#include "diplib/statistics.h"
 #include "diplib/iterators.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include "diplib/random.h"
 
 /* Algorithm:
   - Compute Sum() projections.
   - For each projection, compute mean, variance, optimal partition (Otsu), and variances of the two partitions.
-  - Put each of these in a "partition" object.
+  - Create a "partition" object using the data for the dimension whose partition most reduces the variance.
   - Build a priority queue for partition objects. Priority = decrease of variance if partition is split.
   - Handle partition objects in descending priority:
      - Take the top projection object.
      - Split along the best dimension.
      - Re-compute the associated projections.
      - Add 2 new projection objects to the priority queue.
-  - Each of the partition objects on the queue are leafs of the k-d tree.
+  - Each of the partition objects on the queue are leaves of the k-d tree.
   - Each time we take a partition off the queue, we add a branch node to the k-d tree.
 */
 
@@ -146,7 +144,7 @@ class KDTree {
             // m1(ii), m2(ii) are the corresponding first order moments
             dfloat m1 = 0;
             dfloat m2 = 0;
-            for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
+            for( dip::uint ii = 0; ii < nBins; ++ii ) {
                w2 += static_cast< dfloat >( data[ ii ] );
                m2 += static_cast< dfloat >( data[ ii ] ) * static_cast< dfloat >( ii );
             }
@@ -192,7 +190,7 @@ class KDTree {
             dfloat mm0 = 0;
             dfloat mm1 = 0;
             dfloat mm2 = 0;
-            for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
+            for( dip::uint ii = 0; ii < nBins; ++ii ) {
                dfloat tmp = static_cast< dfloat >( data[ ii ] );
                w0 += tmp;
                if( ii < maxInd ) {
@@ -228,13 +226,13 @@ class KDTree {
       };
 
       struct Node {
-         std::unique_ptr< Partition > partition; // can be deleted for non-leaf nodes, info only useful at the leafs.
+         std::unique_ptr< Partition > partition; // can be deleted for non-leaf nodes, info only useful at the leaves.
          dip::uint dimension = 0;   // along which dimension to threshold
          dip::uint threshold = 0;   // the threshold value, as an index
          dip::uint left = 0;        // index for left child (value <= threshold) -- 0 if leaf node
          dip::uint right = 0;       // index for right child (value > threshold) -- 0 if leaf node
          LabelType label = 0;       // 0 if not leaf node
-         Node( LabelType lab ) : label( lab ) {};
+         explicit Node( LabelType lab ) : label( lab ) {};
       };
       std::vector< Node > nodes;
       LabelType lastLabel = 0; // also equal to nClusters.
@@ -254,12 +252,12 @@ class KDTree {
          node.threshold = node.partition->threshold;
          left.partition = std::move( node.partition );               // move Partition data from node to left child
          right.partition = std::make_unique< Partition >( image );   // right child gets a new Partition object.
-         left.partition->Split( *( right.partition.get() ));         // Splits the partition data
+         left.partition->Split( *right.partition );                  // Splits the partition data
       }
 
       // Tail-recursive helper function for `Lookup`
       std::pair<LabelType, dip::uint> LookupStartingAt( dip::uint node, UnsignedArray const& coords, dip::uint procDim ) const {
-         auto& n = nodes[ node ];
+         auto const& n = nodes[ node ];
          if( n.label != 0 ) {
             return std::make_pair( n.label, n.partition->rightEdges[ procDim ] );
          }
@@ -282,9 +280,7 @@ class KDTree {
             Partition* lhs = nodes[ lhsIndex ].partition.get();
             Partition* rhs = nodes[ rhsIndex ].partition.get();
             dfloat cmp = ( lhs->variance - lhs->splitVariances ) - ( rhs->variance - rhs->splitVariances );
-            return cmp < 0 ? true
-                           : cmp == 0 ? ( lhs->nPixels < rhs->nPixels )
-                                      : false;
+            return cmp == 0 ? ( lhs->nPixels < rhs->nPixels ) : ( cmp < 0 );
          };
          std::priority_queue< dip::uint, std::vector< dip::uint >, decltype( ComparePartitions ) > queue( ComparePartitions );
          queue.push( 0 );
@@ -306,7 +302,7 @@ class KDTree {
       // Return the centroids
       CoordinateArray Centroids() const {
          CoordinateArray out( lastLabel );
-         for( auto& node : nodes ) {
+         for( auto const& node : nodes ) {
             if( node.label > 0 ) {
                DIP_ASSERT( node.label - 1 < lastLabel );
                out[ node.label - 1 ] = node.partition->mean;
