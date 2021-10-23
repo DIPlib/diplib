@@ -65,7 +65,7 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --heading-font-weight: normal;
 
   /* Shapes */
-  --border-radius: 0.2rem;
+  --border-radius: 0.3rem;
 
   /* Basics */
   --background-color: #ffffff;
@@ -97,19 +97,20 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
   --header-border-width: 0.25rem 0 0 0;
   --header-color: #000000;
   --header-breadcrumb-color: var(--muted-color);
-  --header-background-color: #ffffff;
+  --header-background-color: var(--cs-primary-lighter);
   --header-background-color-landing: rgba(255, 255, 255, 0.75);
   --header-background-color-jumbo: rgba(255, 255, 255, 0.25);
   --header-link-color: #000000;
-  --header-link-active-color: var(--cs-secondary-lighter);
-  --header-link-current-color: var(--cs-secondary-base);
-  --header-link-active-background-color: #ffffff;
+  --header-link-active-color: var(--cs-secondary-base);
+  --header-link-active-background-color: var(--cs-primary-lighter);
   --header-link-active-background-color-semi: rgba(255, 255, 255, 0.5);
+  --header-link-current-color: var(--cs-secondary-base);
+  --header-link-current-backgroud-color: var(--cs-primary-lightest);
 
   /* Footer */
   --footer-font-size: 0.85rem;
   --footer-color: var(--cs-primary-lightest);
-  --footer-background-color: var(--cs-primary-base);
+  --footer-background-color: var(--cs-primary-lighter);
   --footer-link-color: #ffffff;
   --footer-link-active-color: var(--cs-secondary-lighter);
 
@@ -118,7 +119,8 @@ Secondary color (blue): 009999  1d7373  006363  33cccc  5ccccc
 
   /* Search (used only by m-documentation.css) */
   --search-overlay-color: var(--header-background-color-landing);
-  --search-background-color: var(--header-background-color);
+  --search-background-color: var(--background-color);
+  --search-border-color: var(--header-background-color);
 
   /* Article */
   --article-header-color: #7a7a7a;

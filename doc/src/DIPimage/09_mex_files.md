@@ -42,7 +42,7 @@ All its functionality is in the \ref dml namespace.
 
 The main trick that it can do is prepare a \ref dip::Image object that, when forged
 by a *DIPlib* function, will have *MATLAB* allocate the memory for the pixels,
-such that no copy needs to be made when this image is returned to MATLAB. For
+such that no copy needs to be made when this image is returned to *MATLAB*. For
 this, create an object of type \ref dml::MatlabInterface. Its \ref dml::MatlabInterface::NewImage
 function creates a raw image that can be forged (or passed as output image to
 any *DIPlib* function). The \ref dml::GetArray(dip::Image const&, bool) function

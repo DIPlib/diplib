@@ -276,8 +276,12 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   bottom: 0;
 }
 .m-doc-search-header {
-  background-color: var(--header-background-color);
-  border-radius: var(--border-radius);
+  background-color: var(--search-border-color);
+  border-color: var(--search-border-color);
+  border-width: 1px 1px 0;
+  border-style: solid;
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
   margin-top: 2.5rem;
   padding: 0.5rem 1rem;
   height: 2rem;
@@ -287,7 +291,11 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
 }
 .m-doc-search-content {
   background-color: var(--search-background-color);
-  border-radius: var(--border-radius);
+  border-color: var(--search-border-color);
+  border-width: 0 1px 1px;
+  border-style: solid;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
   padding: 1rem;
 }
 .m-doc-search input {

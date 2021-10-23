@@ -80,9 +80,9 @@ body > header > nav a#m-navbar-brand, body > header > nav #m-navbar-brand a {
 body > header > nav a#m-navbar-brand img, body > header > nav #m-navbar-brand a img {
   /* unfortunately, with SVGs, unless the size is hardcoded like this, it will
      cause ugly jumps during loading :( */
-  width: 1.75rem;
+  width: 3rem;
   height: 1.75rem;
-  vertical-align: -22.5%;
+  vertical-align: -15%;
   margin-right: 0.5rem;
 }
 body > header > nav #m-navbar-brand a {
@@ -119,6 +119,7 @@ body > header > nav #m-navbar-collapse li a {
 body > header > nav #m-navbar-collapse li a#m-navbar-current {
   color: var(--header-link-current-color);
   border-color: var(--header-link-current-color);
+  background-color: var(--header-link-current-backgroud-color);
 }
 body > header > nav ol {
   list-style-type: none;

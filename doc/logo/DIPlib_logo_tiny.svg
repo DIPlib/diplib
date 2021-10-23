@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="176.64796mm"
+   height="176.64796mm"
+   viewBox="0 0 176.64796 176.64796"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1 (c4e8f9e, 2021-05-24)"
+   sodipodi:docname="DIPlib_logo_tiny.svg"
+   inkscape:export-filename="/Users/cris/newdip/doc/DIPlib_logo_640.png"
+   inkscape:export-xdpi="91.82"
+   inkscape:export-ydpi="91.82"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="1"
+     fit-margin-left="1"
+     fit-margin-bottom="1"
+     fit-margin-right="1"
+     lock-margins="true"
+     inkscape:showpageshadow="false"
+     inkscape:zoom="1.0289025"
+     inkscape:cx="328.01942"
+     inkscape:cy="368.35366"
+     inkscape:window-width="1546"
+     inkscape:window-height="1012"
+     inkscape:window-x="427"
+     inkscape:window-y="44"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       id="linearGradient1324"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#00b3b3;stop-opacity:1;"
+         offset="0"
+         id="stop1322" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-18.576922,-20.906757)">
+    <g
+       id="g1303"
+       transform="translate(0,32.323981)">
+      <circle
+         style="opacity:1;mix-blend-mode:normal;fill:#ff7400;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.279243;stroke-dasharray:0.279243, 0.279243"
+         id="outer_circle"
+         cx="146.72488"
+         cy="76.906761"
+         r="47.5" />
+      <rect
+         style="fill:#00b3b3;fill-opacity:1;stroke:none;stroke-width:2.97627;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
+         id="outer_diamond"
+         width="80.951241"
+         height="80.951241"
+         x="-147.59076"
+         y="-42.123062"
+         ry="5.4225698"
+         transform="rotate(-135)" />
+    </g>
+  </g>
+</svg>
