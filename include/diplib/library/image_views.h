@@ -838,6 +838,16 @@ inline std::ostream& operator<<(
    return os;
 }
 
+// Some dip::Image methods that depend on dip::Image::Pixel
+
+inline Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
+    return Pad( sizes, { 0 }, cropLocation );
+}
+
+inline Image Image::Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
+    return Pad( sizes, { 0 }, cropLocation );
+}
+
 
 //
 // dip::Image::CastSample and dip::Image::CastPixel

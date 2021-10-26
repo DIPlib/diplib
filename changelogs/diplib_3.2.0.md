@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Changes DIPlib 3.1.1"
+title: "Changes DIPlib 3.2.0"
 ---
 
 ## Changes to *DIPlib*
@@ -13,6 +13,8 @@ title: "Changes DIPlib 3.1.1"
   for rendering the text. This functionality is opt-in (that is, by default it is not enabled).
 
 - Added `dip::DrawText()` to render text into images using a built-in, fixed-size font.
+
+- `dip::Image::Pad()` can now pad with an arbitrary pixel value.
 
 ### Changed functionality
 

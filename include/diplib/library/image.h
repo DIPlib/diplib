@@ -2257,7 +2257,7 @@ class DIP_NO_EXPORT Image {
 
       /// \name Setting pixel values, copying
 
-      /// \brief Extends the image by padding with zeros.
+      /// \brief Extends the image by padding with `value`.
       ///
       /// Pads the image to the given size. Where the original image data is located in the output image
       /// is controlled by the `cropLocation` parameter. The default is \ref dip::Option::CropLocation::CENTER,
@@ -2270,9 +2270,13 @@ class DIP_NO_EXPORT Image {
       /// \ref dip::Image::Crop does the inverse operation. See also \ref dip::ExtendImage.
       ///
       /// The image must be forged.
-      DIP_NODISCARD DIP_EXPORT Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+      DIP_NODISCARD DIP_EXPORT Image Pad( UnsignedArray const& sizes, Pixel const& value, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
-      /// \brief Extends the image by padding with zeros.
+      /// \brief Extends the image by padding with zeros, overload for function above with `value` equal to 0.
+      // Note that `Pixel` is not defined here yet, so we cannot put the function body here.
+      DIP_NODISCARD Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+
+      /// \brief Extends the image by padding with `value`.
       ///
       /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
       /// string `cropLocation` is translated to one of the \ref dip::Option::CropLocation values as follows:
@@ -2283,19 +2287,23 @@ class DIP_NO_EXPORT Image {
       /// `MIRROR_CENTER`         | `"mirror center"`
       /// `TOP_LEFT`              | `"top left"`
       /// `BOTTOM_RIGHT`          | `"bottom right"`
-      DIP_NODISCARD inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
+      DIP_NODISCARD inline Image Pad( UnsignedArray const& sizes, Pixel const& value, String const& cropLocation ) const {
          if( cropLocation == S::CENTER ) {
-            return Pad( sizes, Option::CropLocation::CENTER );
+            return Pad( sizes, value, Option::CropLocation::CENTER );
          } else if( cropLocation == S::MIRROR_CENTER ) {
-            return Pad( sizes, Option::CropLocation::MIRROR_CENTER );
+            return Pad( sizes, value, Option::CropLocation::MIRROR_CENTER );
          } else if( cropLocation == S::TOP_LEFT ) {
-            return Pad( sizes, Option::CropLocation::TOP_LEFT );
+            return Pad( sizes, value, Option::CropLocation::TOP_LEFT );
          } else if( cropLocation == S::BOTTOM_RIGHT ) {
-            return Pad( sizes, Option::CropLocation::BOTTOM_RIGHT );
+            return Pad( sizes, value, Option::CropLocation::BOTTOM_RIGHT );
          } else {
             DIP_THROW_INVALID_FLAG( cropLocation );
          }
-      };
+      }
+
+      /// \brief Extends the image by padding with zeros, overload for function above with `value` equal to 0.
+      // Note that `Pixel` is not defined here yet, so we cannot put the function body here.
+      DIP_NODISCARD inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const;
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///

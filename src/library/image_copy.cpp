@@ -257,7 +257,7 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& destOffsets ) {
 
 //
 
-Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
+Image Image::Pad( UnsignedArray const& sizes, Pixel const& value, Option::CropLocation cropLocation ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = sizes_.size();
    DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
@@ -266,7 +266,7 @@ Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation 
    out.CopyProperties( *this );
    out.sizes_ = sizes;
    out.Forge();
-   out.Fill( 0 );
+   DIP_STACK_TRACE_THIS( out.Fill( value ));
    auto tmp = out.Cropped( sizes_, cropLocation ); // this is a view into the new image that corresponds to *this
    tmp.Copy( *this ); // copy the data over, we're done!
    return out;
