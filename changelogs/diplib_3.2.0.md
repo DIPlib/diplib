@@ -25,6 +25,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Fixed bug that prevented compilation with *MinGW*.
 
+- The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules.
+
 
 
 ## Changes to *DIPimage*

@@ -269,7 +269,7 @@ void SquareModulus( Image const& in, Image& out ) {
       DIP_STACK_TRACE_THIS( Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
             Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ));
    } else {
-      MultiplySampleWise( in, in, out );
+      Square( in, out );
    }
 }
 

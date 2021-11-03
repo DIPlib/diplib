@@ -36,70 +36,87 @@
 namespace dip {
 
 
+#define DIP_MONADIC_OPERATOR( functionName_ ) \
+DIP_NODISCARD inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
+
+#define DIP_MONADIC_OPERATOR_WITH_PARAM( functionName_, paramType_ ) \
+DIP_NODISCARD inline Image functionName_( Image const& in, paramType_ param ) { Image out; functionName_( in, out, param ); return out; }
+
+#define DIP_DIADIC_OPERATOR( functionName_ ) \
+DIP_NODISCARD inline Image functionName_( Image const& in1, Image const& in2 ) { Image out; functionName_( in1, in2, out ); return out; }
+
+
 //
 // Arithmetic, trigonometric and similar monadic operators
 //
-
-#define DIP_MONADIC_OPERATOR( functionName_ ) \
-   DIP_EXPORT void functionName_( Image const& in, Image& out ); \
-   DIP_NODISCARD inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
-
-#define DIP_MONADIC_OPERATOR_WITH_PARAM( functionName_, paramType_, paramName_ ) \
-   DIP_EXPORT void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
-   DIP_NODISCARD inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
 
 /// \addtogroup math_arithmetic
 
 /// \brief Flushes [denormal](https://en.wikipedia.org/wiki/Denormal_number) sample values to zero.
 /// Denormal floating-point values can slow down computation.
 /// Only defined for floating-point types, the output is the same type.
+DIP_EXPORT void FlushToZero( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( FlushToZero )
 
 /// \brief Computes the nearest integer to each sample (rounds).
 /// Only defined for floating-point types, the output is the same type.
+DIP_EXPORT void Round( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Round )
 
 /// \brief Computes the smallest integer larger or equal to each sample (rounds up).
 /// Only defined for floating-point types, the output is the same type.
+DIP_EXPORT void Ceil( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Ceil )
 
 /// \brief Computes the largest integer smaller or equal to each sample (rounds down).
 /// Only defined for floating-point types, the output is the same type.
+DIP_EXPORT void Floor( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Floor )
 
 /// \brief Computes the truncated value of each sample (rounds towards zero).
 /// Only defined for floating-point types, the output is the same type.
+DIP_EXPORT void Truncate( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Truncate )
 
 /// \brief Computes the fractional value of each sample (`out = in - dip::Truncate(in)`).
 /// Only defined for floating-point types, the output is the same type.
+DIP_EXPORT void Fraction( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Fraction )
 
 /// \brief Computes the reciprocal of each sample: `out = in == 0 ? 0 : 1/in`.
+DIP_EXPORT void Reciprocal( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Reciprocal )
 
 /// \brief Computes the square of each sample.
+DIP_EXPORT void Square( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Square )
 
 /// \brief Computes the square root of each sample.
+DIP_EXPORT void Sqrt( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Sqrt )
 
 /// \brief Computes the base e exponent (natural exponential) of each sample.
+DIP_EXPORT void Exp( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Exp )
 
 /// \brief Computes the base 2 exponent of each sample.
+DIP_EXPORT void Exp2( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Exp2 )
 
 /// \brief Computes the base 10 exponent of each sample.
+DIP_EXPORT void Exp10( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Exp10 )
 
 /// \brief Computes the natural logarithm (base e logarithm) of each sample.
+DIP_EXPORT void Ln( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Ln )
 
 /// \brief Computes the base 2 logarithm of each sample.
+DIP_EXPORT void Log2( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Log2 )
 
 /// \brief Computes the base 10 logarithm of each sample.
+DIP_EXPORT void Log10( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Log10 )
 
 /// \endgroup
@@ -107,60 +124,79 @@ DIP_MONADIC_OPERATOR( Log10 )
 /// \addtogroup math_trigonometric
 
 /// \brief Computes the sine of each sample.
+DIP_EXPORT void Sin( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Sin )
 
 /// \brief Computes the cosine of each sample.
+DIP_EXPORT void Cos( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Cos )
 
 /// \brief Computes the tangent of each sample.
+DIP_EXPORT void Tan( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Tan )
 
 /// \brief Computes the arc sine of each sample.
+DIP_EXPORT void Asin( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Asin )
 
 /// \brief Computes the arc cosine of each sample.
+DIP_EXPORT void Acos( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Acos )
 
 /// \brief Computes the arc tangent of each sample.
+DIP_EXPORT void Atan( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Atan )
 
 /// \brief Computes the hyperbolic sine of each sample.
+DIP_EXPORT void Sinh( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Sinh )
 
 /// \brief Computes the hyperbolic cosine of each sample.
+DIP_EXPORT void Cosh( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Cosh )
 
 /// \brief Computes the hyperbolic tangent of each sample.
+DIP_EXPORT void Tanh( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Tanh )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 0.
+DIP_EXPORT void BesselJ0( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselJ0 )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 1.
+DIP_EXPORT void BesselJ1( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselJ1 )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order `alpha`.
-DIP_MONADIC_OPERATOR_WITH_PARAM( BesselJN, dip::uint, alpha )
+DIP_EXPORT void BesselJN( Image const& in, Image& out, dip::uint alpha );
+DIP_MONADIC_OPERATOR_WITH_PARAM( BesselJN, dip::uint )
 
 /// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 0.
+DIP_EXPORT void BesselY0( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselY0 )
 
 /// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 1.
+DIP_EXPORT void BesselY1( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselY1 )
 
 /// \brief Computes the Bessel functions of the second kind of each sample, of order `alpha`.
-DIP_MONADIC_OPERATOR_WITH_PARAM( BesselYN, dip::uint, alpha )
+DIP_EXPORT void BesselYN( Image const& in, Image& out, dip::uint alpha );
+DIP_MONADIC_OPERATOR_WITH_PARAM( BesselYN, dip::uint )
 
 /// \brief Computes the natural logarithm of the gamma function of each sample.
+DIP_EXPORT void LnGamma( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( LnGamma )
 
 /// \brief Computes the error function of each sample.
+DIP_EXPORT void Erf( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Erf )
 
 /// \brief Computes the complementary error function of each sample.
+DIP_EXPORT void Erfc( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Erfc )
 
 /// \brief Computes the sinc function of each sample. $\mathrm{sinc}(x) = \sin(x)/x$.
+DIP_EXPORT void Sinc( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Sinc )
 
 /// \endgroup
@@ -168,19 +204,18 @@ DIP_MONADIC_OPERATOR( Sinc )
 /// \addtogroup math_comparison
 
 /// \brief True for each pixel that is NaN.
+DIP_EXPORT void IsNotANumber( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( IsNotANumber )
 
 /// \brief True for each pixel that is positive or negative infinity.
+DIP_EXPORT void IsInfinite( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( IsInfinite )
 
 /// \brief True for each pixel that is not NaN nor infinity.
+DIP_EXPORT void IsFinite( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( IsFinite )
 
 /// \endgroup
-
-#undef DIP_MONADIC_OPERATOR
-#undef DIP_MONADIC_OPERATOR_WITH_PARAM
-
 
 
 /// \group math_arithmetic Arithmetic operators
@@ -190,31 +225,19 @@ DIP_MONADIC_OPERATOR( IsFinite )
 
 /// \brief Computes the absolute value of each sample.
 DIP_EXPORT void Abs( Image const& in, Image& out );
-DIP_NODISCARD inline Image Abs( Image const& in ) {
-   Image out;
-   Abs( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Abs );
 
 /// \brief Computes the modulus (absolute value) of each sample. `dip::Modulus` is an alias for \ref dip::Abs.
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
-DIP_NODISCARD inline Image Modulus( Image const& in ) { return Abs( in ); }
+DIP_MONADIC_OPERATOR( Modulus );
 
 /// \brief Computes the square of the modulus of each sample.
 DIP_EXPORT void SquareModulus( Image const& in, Image& out );
-DIP_NODISCARD inline Image SquareModulus( Image const& in ) {
-   Image out;
-   SquareModulus( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( SquareModulus );
 
 /// \brief Computes the phase (angle on complex plane, through `std::arg`) of each sample.
 DIP_EXPORT void Phase( Image const& in, Image& out );
-DIP_NODISCARD inline Image Phase( Image const& in ) {
-   Image out;
-   Phase( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Phase );
 
 DIP_NODISCARD inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
 /// \brief Returns the real component of a complex image. Returns \ref dip::Image::Real if the input is complex.
@@ -226,29 +249,17 @@ inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 
 /// \brief Computes the complex conjugate of each sample.
 DIP_EXPORT void Conjugate( Image const& in, Image& out );
-DIP_NODISCARD inline Image Conjugate( Image const& in ) {
-   Image out;
-   Conjugate( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Conjugate );
 
 /// \brief Computes the sign of each sample. Only defined for signed real data types (signed integers
 /// and floating-point types). Output is of type \ref dip::DT_SINT8, containing values -1, 0 and 1.
 DIP_EXPORT void Sign( Image const& in, Image& out );
-DIP_NODISCARD inline Image Sign( Image const& in ) {
-   Image out;
-   Sign( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Sign );
 
 /// \brief Computes the integer closest to the value of each sample.
 /// Only defined for floating-point types, the output is of type \ref dip::DT_SINT32.
 DIP_EXPORT void NearestInt( Image const& in, Image& out );
-DIP_NODISCARD inline Image NearestInt( Image const& in ) {
-   Image out;
-   NearestInt( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( NearestInt );
 
 /// \brief Computes the sample-wise supremum (maximum) over all the input images. For binary images, this is the same
 /// as the union.
@@ -268,11 +279,7 @@ inline void Supremum( Image const& a, Image const& b, Image& out ) {
       Supremum( { a, b }, out );
    }
 }
-DIP_NODISCARD inline Image Supremum( Image const& a, Image const& b ) {
-   Image out;
-   Supremum( a, b, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( Supremum );
 
 /// \brief Computes the sample-wise infimum (minimum) over all the input images. For binary images, this is the same
 /// as the intersection.
@@ -292,19 +299,11 @@ inline void Infimum( Image const& a, Image const& b, Image& out ) {
       Infimum( { a, b }, out );
    }
 }
-DIP_NODISCARD inline Image Infimum( Image const& a, Image const& b ) {
-   Image out;
-   Infimum( a, b, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( Infimum );
 
 /// \brief Computes the sample-wise signed infimum (minimum) of the two input images: returns `-b` where `b < a`, a otherwise.
 DIP_EXPORT void SignedInfimum( Image const& a, Image const& b, Image& out );
-DIP_NODISCARD inline Image SignedInfimum( Image const& a, Image const& b ) {
-   Image out;
-   SignedInfimum( a, b, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( SignedInfimum );
 
 /// \brief Computes the linear combination of the two images, sample-wise.
 ///
@@ -377,22 +376,14 @@ DIP_NODISCARD inline Image LinearCombination(
 /// The operation can be understood as the angle of the vector formed by the two input images.
 /// The result is always in the range $[-\pi,\pi]$. The inputs must be a real type.
 DIP_EXPORT void Atan2( Image const& y, Image const& x, Image& out );
-DIP_NODISCARD inline Image Atan2( Image const& y, Image const& x ) {
-   Image out;
-   Atan2( y, x, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( Atan2 );
 
 /// \brief Computes the square root of the sum of the squares of corresponding samples in `a` and `b`.
 ///
 /// The computation is performed carefully, so there is no undue overflow or underflow at intermediate
 /// stages of the computation. The inputs must be a real type.
 DIP_EXPORT void Hypot( Image const& a, Image const& b, Image& out );
-DIP_NODISCARD inline Image Hypot( Image const& a, Image const& b ) {
-   Image out;
-   Hypot( a, b, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( Hypot );
 
 /// \endgroup
 
@@ -424,11 +415,7 @@ DIP_NODISCARD inline Image ConjugateTranspose( Image const& in ) {
 
 /// \brief Computes the dot product (inner product) of two vector images.
 DIP_EXPORT void DotProduct( Image const& lhs, Image const& rhs, Image& out );
-DIP_NODISCARD inline Image DotProduct( Image const& lhs, Image const& rhs ) {
-   Image out;
-   DotProduct( lhs, rhs, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( DotProduct );
 
 /// \brief Computes the cross product (inner product) of two vector images.
 ///
@@ -437,27 +424,15 @@ DIP_NODISCARD inline Image DotProduct( Image const& lhs, Image const& rhs ) {
 /// of the cross product of the 3D vectors obtained by adding a 0 z-component to the inputs.
 /// That is, it is the area of the parallelogram formed by the two 2D vectors.
 DIP_EXPORT void CrossProduct( Image const& lhs, Image const& rhs, Image& out );
-DIP_NODISCARD inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
-   Image out;
-   CrossProduct( lhs, rhs, out );
-   return out;
-}
+DIP_DIADIC_OPERATOR( CrossProduct );
 
 /// \brief Computes the norm of the vector at each pixel in image `in`.
 DIP_EXPORT void Norm( Image const& in, Image& out );
-DIP_NODISCARD inline Image Norm( Image const& in ) {
-   Image out;
-   Norm( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Norm );
 
 /// \brief Computes the square of the norm of the vector at each pixel in image `in`.
 DIP_EXPORT void SquareNorm( Image const& in, Image& out );
-DIP_NODISCARD inline Image SquareNorm( Image const& in ) {
-   Image out;
-   SquareNorm( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( SquareNorm );
 
 /// \brief Computes the angle of the vector at each pixel in image `in`.
 ///
@@ -470,11 +445,7 @@ DIP_NODISCARD inline Image SquareNorm( Image const& in ) {
 ///
 /// \see dip::Norm, dip::Orientation, dip::PolarToCartesian, dip::CartesianToPolar
 DIP_EXPORT void Angle( Image const& in, Image& out );
-DIP_NODISCARD inline Image Angle( Image const& in ) {
-   Image out;
-   Angle( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Angle );
 
 /// \brief Computes the orientation of the vector at each pixel in image `in`.
 ///
@@ -484,11 +455,7 @@ DIP_NODISCARD inline Image Angle( Image const& in ) {
 ///
 /// \see dip::Norm, dip::Angle
 DIP_EXPORT void Orientation( Image const& in, Image& out );
-DIP_NODISCARD inline Image Orientation( Image const& in ) {
-   Image out;
-   Orientation( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Orientation );
 
 /// \brief Converts the vector at each pixel in image `in` from Cartesian coordinates to polar
 /// (or spherical) coordinates.
@@ -511,11 +478,7 @@ DIP_NODISCARD inline Image Orientation( Image const& in ) {
 ///
 /// \see dip::PolarToCartesian, dip::Norm, dip::Angle
 DIP_EXPORT void CartesianToPolar( Image const& in, Image& out );
-DIP_NODISCARD inline Image CartesianToPolar( Image const& in ) {
-   Image out;
-   CartesianToPolar( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( CartesianToPolar );
 
 /// \brief Converts the vector at each pixel in image `in` from polar (or spherical) coordinates to
 /// Cartesian coordinates.
@@ -525,36 +488,20 @@ DIP_NODISCARD inline Image CartesianToPolar( Image const& in ) {
 ///
 /// \see dip::CartesianToPolar, dip::Norm, dip::Angle
 DIP_EXPORT void PolarToCartesian( Image const& in, Image& out );
-DIP_NODISCARD inline Image PolarToCartesian( Image const& in ) {
-   Image out;
-   PolarToCartesian( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( PolarToCartesian );
 
 /// \brief Computes the determinant of the square matrix at each pixel in image `in`.
 DIP_EXPORT void Determinant( Image const& in, Image& out );
-DIP_NODISCARD inline Image Determinant( Image const& in ) {
-   Image out;
-   Determinant( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Determinant );
 
 /// \brief Computes the trace of the square matrix at each pixel in image `in`.
 DIP_EXPORT void Trace( Image const& in, Image& out );
-DIP_NODISCARD inline Image Trace( Image const& in ) {
-   Image out;
-   Trace( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Trace );
 
 /// \brief Computes the rank of the square matrix at each pixel in image `in`.
 /// The output is DT_UINT8, under the assumption that we won't have tensor images with a rank higher than 255.
 DIP_EXPORT void Rank( Image const& in, Image& out );
-DIP_NODISCARD inline Image Rank( Image const& in ) {
-   Image out;
-   Rank( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Rank );
 
 /// \brief Computes the eigenvalues of the square matrix at each pixel in image `in`.
 ///
@@ -562,33 +509,21 @@ DIP_NODISCARD inline Image Rank( Image const& in ) {
 /// real-valued, then `out` is real-valued, otherwise, `out` is complex-valued.
 /// The eigenvalues are sorted by magnitude, in descending order.
 DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
-DIP_NODISCARD inline Image Eigenvalues( Image const& in ) {
-   Image out;
-   Eigenvalues( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Eigenvalues );
 
 /// \brief Finds the largest eigenvalue of the square matrix at each pixel in image `in`.
 ///
 /// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
 /// outputs only the eigenvector with the largest magnitude.
 DIP_EXPORT void LargestEigenvalue( Image const& in, Image& out );
-DIP_NODISCARD inline Image LargestEigenvalue( Image const& in ) {
-   Image out;
-   LargestEigenvalue( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( LargestEigenvalue );
 
 /// \brief Finds the smallest eigenvalue of the square matrix at each pixel in image `in`.
 ///
 /// Computes the eigenvalues in the same way as \ref dip::Eigenvalues, but
 /// outputs only the eigenvector with the smallest magnitude.
 DIP_EXPORT void SmallestEigenvalue( Image const& in, Image& out );
-DIP_NODISCARD inline Image SmallestEigenvalue( Image const& in ) {
-   Image out;
-   SmallestEigenvalue( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( SmallestEigenvalue );
 
 /// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
 ///
@@ -610,11 +545,7 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 ///
 /// `in` must be symmetric and real-valued.
 DIP_EXPORT void LargestEigenvector( Image const& in, Image& out );
-DIP_NODISCARD inline Image LargestEigenvector( Image const& in ) {
-   Image out;
-   LargestEigenvector( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( LargestEigenvector );
 
 /// \brief Finds the smallest eigenvector of the symmetric matrix at each pixel in image `in`.
 ///
@@ -623,21 +554,13 @@ DIP_NODISCARD inline Image LargestEigenvector( Image const& in ) {
 ///
 /// `in` must be symmetric and real-valued.
 DIP_EXPORT void SmallestEigenvector( Image const& in, Image& out );
-DIP_NODISCARD inline Image SmallestEigenvector( Image const& in ) {
-   Image out;
-   SmallestEigenvector( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( SmallestEigenvector );
 
 /// \brief Computes the inverse of the square matrix at each pixel in image `in`.
 ///
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( Image const& in, Image& out );
-DIP_NODISCARD inline Image Inverse( Image const& in ) {
-   Image out;
-   Inverse( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( Inverse );
 
 /// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
 ///
@@ -666,11 +589,7 @@ DIP_NODISCARD inline Image PseudoInverse( Image const& in, dfloat tolerance = 1e
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
 DIP_EXPORT void SingularValues( Image const& in, Image& out );
-DIP_NODISCARD inline Image SingularValues( Image const& in ) {
-   Image out;
-   SingularValues( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( SingularValues );
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
@@ -696,92 +615,47 @@ inline void Identity( Image const& in, Image& out ) {
    out.Fill( 1.0 );
    out.ReshapeTensorAsDiagonal();
 }
-DIP_NODISCARD inline Image Identity( Image const& in ) {
-   Image out;
-   Identity( in, out );
-   return out;
-}
-
+DIP_MONADIC_OPERATOR( Identity );
 
 /// \brief Adds all tensor elements, producing a scalar image.
 DIP_EXPORT void SumTensorElements( Image const& in, Image& out );
-DIP_NODISCARD inline Image SumTensorElements( Image const& in ) {
-   Image out;
-   SumTensorElements( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( SumTensorElements );
 
 /// \brief Multiplies all tensor elements, producing a scalar image.
 DIP_EXPORT void ProductTensorElements( Image const& in, Image& out );
-DIP_NODISCARD inline Image ProductTensorElements( Image const& in ) {
-   Image out;
-   ProductTensorElements( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( ProductTensorElements );
 
 /// \brief Determines if all tensor elements are non-zero, producing a binary scalar image.
 DIP_EXPORT void AllTensorElements( Image const& in, Image& out );
-DIP_NODISCARD inline Image AllTensorElements( Image const& in ) {
-   Image out;
-   AllTensorElements( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( AllTensorElements );
 
 /// \brief Determines if any tensor element is non-zero, producing a binary scalar image.
 DIP_EXPORT void AnyTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image AnyTensorElement( Image const& in ) {
-   Image out;
-   AnyTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( AnyTensorElement );
 
 /// \brief Takes the maximum tensor element at each pixel, producing a scalar image.
 DIP_EXPORT void MaximumTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image MaximumTensorElement( Image const& in ) {
-   Image out;
-   MaximumTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( MaximumTensorElement );
 
 /// \brief Takes the maximum absolute tensor element at each pixel, producing a scalar image. For float and complex images only.
 DIP_EXPORT void MaximumAbsTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image MaximumAbsTensorElement( Image const& in ) {
-   Image out;
-   MaximumAbsTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( MaximumAbsTensorElement );
 
 /// \brief Takes the minimum tensor element at each pixel, producing a scalar image.
 DIP_EXPORT void MinimumTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image MinimumTensorElement( Image const& in ) {
-   Image out;
-   MinimumTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( MinimumTensorElement );
 
 /// \brief Takes the minimum absolute tensor element at each pixel, producing a scalar image. For float and complex images only.
 DIP_EXPORT void MinimumAbsTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image MinimumAbsTensorElement( Image const& in ) {
-   Image out;
-   MinimumAbsTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( MinimumAbsTensorElement );
 
 /// \brief Computes the mean tensor element value at each pixel, producing a scalar image.
 DIP_EXPORT void MeanTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image MeanTensorElement( Image const& in ) {
-   Image out;
-   MeanTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( MeanTensorElement );
 
 /// \brief Computes the geometric mean tensor element value at each pixel, producing a scalar image.
 DIP_EXPORT void GeometricMeanTensorElement( Image const& in, Image& out );
-DIP_NODISCARD inline Image GeometricMeanTensorElement( Image const& in ) {
-   Image out;
-   GeometricMeanTensorElement( in, out );
-   return out;
-}
+DIP_MONADIC_OPERATOR( GeometricMeanTensorElement );
 
 /// \brief Sorts the tensor elements within each pixel from largest to smallest. Works in-place. `out` must be
 /// real-valued.
@@ -900,6 +774,9 @@ DIP_NODISCARD inline Image Toggle( Image const& in, Image const& in1, Image cons
 
 /// \endgroup
 
+#undef DIP_MONADIC_OPERATOR
+#undef DIP_MONADIC_OPERATOR_WITH_PARAM
+#undef DIP_DIADIC_OPERATOR
 
 } // namespace dip
 
