@@ -28,16 +28,25 @@ namespace dip { namespace viewer {
 
 void Window::title(const char *name)
 {
+  if (destroyed())
+    return;
+
   manager()->setWindowTitle(this, name);
 }
 
 void Window::swap()
 {
+  if (destroyed())
+    return;
+
   manager()->swapBuffers(this);
 }
 
 dip::uint Window::drawString(const char *string)
 {
+  if (destroyed())
+    return 0;
+
   dip::uint movex = 0;
 
   for (; *string; ++string, movex += 8)
@@ -48,21 +57,33 @@ dip::uint Window::drawString(const char *string)
 
 void Window::setPosition(int x, int y)
 {
+  if (destroyed())
+    return;
+
   manager()->setWindowPosition(this, x, y);
 }
 
 void Window::setSize(int width, int height)
 {
+  if (destroyed())
+    return;
+
   manager()->setWindowSize(this, width, height);
 }
 
 void Window::refresh()
 {
+  if (destroyed())
+    return;
+
   manager()->refreshWindow(this);
 }
 
 void Window::key(unsigned char k, int /*x*/, int /*y*/, int mods)
 {
+  if (destroyed())
+    return;
+
   if (k == 'W')
   {
     if (mods == KEY_MOD_CONTROL)

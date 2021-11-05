@@ -69,6 +69,7 @@ GLFWManager::~GLFWManager()
 {
   Guard guard(mutex_);
 
+  destroyWindows();
   windows_.clear();
   glfwTerminate();
 

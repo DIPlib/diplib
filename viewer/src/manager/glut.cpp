@@ -166,6 +166,7 @@ void GLUTManager::run()
   
   Guard guard(mutex_);
   
+  destroyWindows();
   windows_.clear();
   
   glutExit();
