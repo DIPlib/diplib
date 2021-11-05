@@ -67,6 +67,8 @@ title: "Changes DIPlib 3.2.0"
 
 ### Bug fixes
 
+- Fixed an issue that could cause a segmentation violation after all the *DIPviewer* windows were closed.
+
 
 
 
