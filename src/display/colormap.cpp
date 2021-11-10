@@ -26,10 +26,13 @@ namespace dip {
 
 namespace {
 
+constexpr dip::uint colorMapLength = 256;
+constexpr dip::uint nRGB = 3;
+
 // Generated in MATLAB using:
 //    g = linspace(0,255,256)';
 //    g = [g,g,g]
-static constexpr std::array< uint8, 256 * 3 > greyColorMap =
+constexpr std::array< uint8, colorMapLength * nRGB > greyColorMap =
       {{
              0, 0, 0,
              1, 1, 1,
@@ -294,7 +297,7 @@ static constexpr std::array< uint8, 256 * 3 > greyColorMap =
 //    g = [g,g,g];
 //    g(1,:) = [0,0,255];
 //    g(256,:) = [255,0,0]
-static constexpr std::array< uint8, 256 * 3 > saturationColorMap =
+constexpr std::array< uint8, colorMapLength * nRGB > saturationColorMap =
       {{
              0, 0, 255,
              1, 1, 1,
@@ -558,7 +561,7 @@ static constexpr std::array< uint8, 256 * 3 > saturationColorMap =
 // Greens are closer together perceptually, so we reduce the number of green entries in this map.
 // Assuming gamma of 1.2: ((1/3)^(1/1.2))=102 ; ((2/3)^(1/1.2))=182 ; ((1/2)^(1/1.2))=143
 // Data same as in /dipimage/private/label_colormap.m
-static constexpr std::array< uint8, 256 * 3 > labelColorMap =
+constexpr std::array< uint8, colorMapLength * nRGB > labelColorMap =
       {{
              0,   0,   0,
 
@@ -867,8 +870,8 @@ static constexpr std::array< uint8, 256 * 3 > labelColorMap =
  * The Software is provided "as is", without warranty of any kind.
  */
 
-// Blue-Magenta-Yellow highly saturated colour map
-static constexpr std::array< uint8, 256 * 3 > linearColorMap =
+// Linear blue - magenta - yellow highly saturated colour map (CET-L08)
+constexpr std::array< uint8, colorMapLength * nRGB > linearColorMap =
       {{
              0, 15, 93,
              1, 15, 94,
@@ -1128,8 +1131,8 @@ static constexpr std::array< uint8, 256 * 3 > linearColorMap =
              245, 249, 78
        }};
 
-// Linear-diverging blue - grey - red
-static constexpr std::array< uint8, 256 * 3 > divergingColorMap =
+// Linear-diverging blue - grey - red (CET-D08)
+constexpr std::array< uint8, colorMapLength * nRGB > divergingColorMap =
       {{
              0, 42, 215,
              0, 43, 214,
@@ -1389,8 +1392,8 @@ static constexpr std::array< uint8, 256 * 3 > divergingColorMap =
              255, 25, 0
        }};
 
-// Cyclic: magenta - yellow - green - blue. Allows four orientations/phase angles to be visualised.  Really good!
-static constexpr std::array< uint8, 256 * 3 > cyclicColorMap =
+// Cyclic magenta - yellow - green - blue (CET-C2)
+constexpr std::array< uint8, colorMapLength * nRGB > cyclicColorMap =
       {{
              239, 85, 242,
              241, 87, 240,
@@ -1652,12 +1655,16 @@ static constexpr std::array< uint8, 256 * 3 > cyclicColorMap =
 
 }
 
+/*
+ * End of colormaps from colorcet.
+ */
+
 void ApplyColorMap(
       Image const& in,
       Image& out,
       String const& colorMap
 ) {
-   uint8 const* values;
+   uint8 const* values = nullptr;
    if(( colorMap == "grey" ) || ( colorMap == "gray" )) {
       values = greyColorMap.data();
    } else if( colorMap == "saturation" ) {
@@ -1671,9 +1678,9 @@ void ApplyColorMap(
    } else if( colorMap == "label" ) {
       values = labelColorMap.data();
    } else {
-          DIP_THROW_INVALID_FLAG( colorMap );
+      DIP_THROW_INVALID_FLAG( colorMap );
    }
-   Image im( values, { 256 }, 3 );
+   Image im( values, { colorMapLength }, nRGB );
    LookupTable lut( im );
    DIP_STACK_TRACE_THIS( lut.Apply( in, out ));
    out.SetColorSpace( "sRGB" );
