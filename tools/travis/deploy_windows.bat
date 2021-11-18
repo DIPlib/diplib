@@ -5,6 +5,7 @@ REM Get Python versions
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.7.* /B') do (SET PYTHON37=%%g)
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.8.* /B') do (SET PYTHON38=%%g)
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.9.* /B') do (SET PYTHON39=%%g)
+FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.10.* /B') do (SET PYTHON310=%%g)
 
 REM Setup
 mkdir build
@@ -43,6 +44,12 @@ cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON39%
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
+REM Python 3.10
+C:\hostedtoolcache\windows\Python\%PYTHON310%\x64\python.exe -m pip install setuptools wheel
+cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON310%\x64\python.exe
+cmake --build . --target bdist_wheel --config Release
+copy pydip\Release\staging\dist\*.whl wheelhouse
+
 REM Upload to pypi.org
 cd wheelhouse
-@python -m twine upload *.whl -u __token__ -p %PYPI_TOKEN%
+REM @python -m twine upload *.whl -u __token__ -p %PYPI_TOKEN%
