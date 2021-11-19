@@ -50,6 +50,8 @@ title: "Changes DIPlib 3.2.0"
 
 ### New functionality
 
+Added Python 3.10 to the list of deployed wheels
+
 ### Changed functionality
 
 (See also changes to *DIPlib*.)
@@ -71,7 +73,7 @@ title: "Changes DIPlib 3.2.0"
 
 - Fixed an issue that could cause a segmentation violation after all the *DIPviewer* windows were closed.
 
-
+- Fixed an issue that prevented Visual Studio from building PyDIPviewer
 
 
 ## Changes to *DIPjavaio*
