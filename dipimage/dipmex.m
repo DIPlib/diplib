@@ -25,7 +25,7 @@
 %  same compiler make and version as was used to compile DIPlib. You will
 %  see linker errors if there is a mismatch.
 
-% (c)2018, Cris Luengo.
+% (c)2018-2021, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,19 +46,33 @@ if nargin<1 || any(~cellfun('isclass',varargin,'char'))
    error('filename expected');
 end
 
-dippath = mfilename('fullpath');
-dippath = fileparts(fileparts(fileparts(dippath)))
+% Find the DIPlib installation directory, which is three directories up from
+% where this M-file lives.
+dippath = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 
 if ispc
-   dipopts = { fullfile(dippath,'lib','DIP.lib'),...
-               ['-I"',fullfile(dippath,'include',''),'"'],...
-               'COMPFLAGS=$COMPFLAGS /std:c++14'}; % MSVC-specific flag
+   % On Windows we pass the name of the DIPlib library file explicitly.
+   dipopts = { fullfile(dippath,'lib','DIP.lib') };
 else
+   % On Linux and macOS we use the -l and -L options to link to the DIPlib library.
    dipopts = { '-lDIP',...
-               ['-L"',fullfile(dippath,'lib'),'"'],...
-               ['-I"',fullfile(dippath,'include'),'"'],...
-               'CXXFLAGS=$CXXFLAGS -std=c++14'}; % Works with GCC and CLang
+               ['-L"',fullfile(dippath,'lib'),'"'] };
 end
-% TODO: add -largeArrayDims for older MATLABs. It is the default option since R2010b or R2011a (release notes are ambiguous)
+
+% The remaining options are the same for all platforms.
+%
+% Note that on Windows (ispc) we need to set either CXXFLAGS or COMPFLAGS,
+% depending on the compiler that `mex` is configured to use. We cannot know
+% what that compiler is. CXXFLAGS is for GCC and Clang, COMPFLAGS is for MSCV.
+%
+% We add the -largeArrayDims option, which is necessary for older versions of
+% MATLAB. It is the default option since R2010b or R2011a (release notes are
+% ambiguous). Since R2018a we have the -R2017b option that we could use instead.
+% This option implies -largeArrayDims, and also affects graphics handles, but
+% we don't care about that here.
+dipopts = [dipopts, { ['-I"',fullfile(dippath,'include',''),'"'],...
+                      'CXXFLAGS=$CXXFLAGS -std=c++14',...
+                      'COMPFLAGS=$COMPFLAGS /std:c++14',...
+                      '-largeArrayDims' }];
 
 mex(varargin{:},dipopts{:});

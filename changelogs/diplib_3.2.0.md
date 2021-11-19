@@ -25,7 +25,9 @@ title: "Changes DIPlib 3.2.0"
 
 - Fixed bug that prevented compilation with *MinGW*.
 
-- The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules.
+- The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules,
+  as well as the macros in the *DIPlib*-*MATLAB* interface.
+
 
 
 
@@ -41,6 +43,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Fixed build script to allow building with newest version of *MATLAB*.
 
+- Updated `dipmex` to work properly with the *MinGW* compiler on Windows, and with older versions of *MATLAB*.
+
 (See also bugfixes to *DIPlib*.)
 
 
@@ -50,7 +54,7 @@ title: "Changes DIPlib 3.2.0"
 
 ### New functionality
 
-Added Python 3.10 to the list of deployed wheels
+- Added Python 3.10 to the list of deployed wheels.
 
 ### Changed functionality
 
@@ -73,7 +77,9 @@ Added Python 3.10 to the list of deployed wheels
 
 - Fixed an issue that could cause a segmentation violation after all the *DIPviewer* windows were closed.
 
-- Fixed an issue that prevented Visual Studio from building PyDIPviewer
+- Fixed an issue that prevented Visual Studio from building *PyDIPviewer*.
+
+
 
 
 ## Changes to *DIPjavaio*
