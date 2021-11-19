@@ -4,4 +4,4 @@
 
 docker run -v `pwd`:/io quay.io/pypa/manylinux2010_x86_64 /bin/bash /io/tools/travis/manylinux2010.sh
 
-#python3 -m twine upload -u __token__ -p $PYPI_TOKEN wheelhouse/*.whl
+python3 -m twine upload -u __token__ -p $PYPI_TOKEN wheelhouse/*.whl

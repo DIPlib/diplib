@@ -60,7 +60,7 @@ class DIPVIEWER_CLASS_EXPORT Window
     virtual ~Window() { }
 
     /// \brief Refresh window contents.
-    void refresh();
+    DIPVIEWER_EXPORT void refresh();
     
     /// \brief Marks the window for destruction.
     void destroy() { destroyed_ = true; }
@@ -82,10 +82,10 @@ class DIPVIEWER_CLASS_EXPORT Window
     int height() { return height_; }
 
     /// \brief Set the window's screen position.
-    void setPosition(int x, int y);
+    DIPVIEWER_EXPORT void setPosition(int x, int y);
 
     /// \brief Set the window's size.
-    void setSize(int width, int height);
+    DIPVIEWER_EXPORT void setSize(int width, int height);
 protected:
     /// \brief Returns the \ref dip::viewer::Manager that manages this window.
     Manager *manager() { return manager_; }

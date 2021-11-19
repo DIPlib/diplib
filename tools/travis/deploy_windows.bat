@@ -52,4 +52,4 @@ copy pydip\Release\staging\dist\*.whl wheelhouse
 
 REM Upload to pypi.org
 cd wheelhouse
-REM @python -m twine upload *.whl -u __token__ -p %PYPI_TOKEN%
+@python -m twine upload *.whl -u __token__ -p %PYPI_TOKEN%

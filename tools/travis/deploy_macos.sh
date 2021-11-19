@@ -48,4 +48,4 @@ make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Upload to pypi.org
-#python3 -m twine upload -u __token__ -p $PYPI_TOKEN wheelhouse/*.whl
+python3 -m twine upload -u __token__ -p $PYPI_TOKEN wheelhouse/*.whl
