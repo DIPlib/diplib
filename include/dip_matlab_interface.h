@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality for the MATLAB interface.
  *
- * (c)2015-2018, Cris Luengo.
+ * (c)2015-2021, Cris Luengo.
  * Based on original DIPlib/MATLAB interface code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,18 +94,43 @@ char const* pxsizeStructFields[ nPxsizeStructFields ] = { "magnitude", "units" }
 static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one byte!" );
 
 
-//
-// Get input arguments: convert mxArray to various dip:: types
-//
-
-
+/// \macro DML_MIN_ARGS
+/// \brief Tests to ensure the MEX-file has been called with sufficient inputs.
+///
+/// `DML_MIN_ARGS(n);` throws an error if `nrhs` is smaller than `n`. Use this in a
+/// `mexFunction` to ensure there are at least `n` input arguments to the MEX-file.
 #define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < ( n ), "Too few input arguments" )
+
+/// \macro DML_MAX_ARGS
+/// \brief Tests to ensure the MEX-file has not been called with too many inputs.
+///
+/// `DML_MAX_ARGS(n);` throws an error if `nrhs` is larger than `n`. Use this in a
+/// `mexFunction` to ensure there are no more than `n` input arguments to the MEX-file.
 #define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > ( n ), "Too many input arguments" )
 
+/// \macro DML_CATCH
+/// \brief Catch exceptions thrown in a MEX-file.
+///
+/// This macro forms the `catch` section to a `try` statement. It will catch exceptions
+/// thrown by *DIPlib* and present them as standard MATLAB error messages. Your MEX-file
+/// function should look like this:
+/// ```cpp
+/// void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+///    try {
+///       // Your code here
+///    } DML_CATCH
+/// }
+/// ```
+/// Note that there should not be a semicolon after this macro.
 #define DML_CATCH catch( dip::ParameterError const& e ) { mexErrMsgIdAndTxt( "DIPlib:ParameterError", e.what() ); } \
                   catch( dip::RunTimeError const& e ) { mexErrMsgIdAndTxt( "DIPlib:RunTimeError", e.what() ); } \
                   catch( dip::AssertionError const& e ) { mexErrMsgIdAndTxt( "DIPlib:AssertionError", e.what() ); } \
                   catch( std::exception const& e ) { mexErrMsgIdAndTxt( "DIPlib:StandardException", e.what() ); }
+
+
+//
+// Get input arguments: convert mxArray to various dip:: types
+//
 
 
 /// \brief True if array is scalar (has single value)
