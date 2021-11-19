@@ -133,7 +133,11 @@ using RadonCircleParametersArray = std::vector< RadonCircleParameters >;
 
 /// \brief Detects hyperspheres (circles, spheres) using the generalized Radon transform.
 ///
-/// This function can obtain highly precise values for the origin and the radius.
+/// This function can obtain highly precise values for the origin and the radius of the circles/spheres, in any
+/// number of dimensions. Note the distinction between a circle and a disk (or a sphere and a ball): this function
+/// works to detect the former, a hollow version of the latter. If presented with an image containing disks or balls,
+/// the results will likely not be useful. Apply \ref dip::GradientMagnitude to the image to convert disks or balls
+/// into circles or spheres.
 ///
 /// `radii` determines the radii for the template, and thus also the size of the parameter space. Note that it is
 /// not possible to find locations of maxima with sub-pixel precision at the boundary of an image, so the first
