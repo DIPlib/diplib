@@ -56,7 +56,8 @@ jobs:
           elif [ "$RUNNER_OS" == "Windows" ]; then
             choco install openjdk8 --no-progress --yes
             python -m pip install wheel numpy twine==1.15.0 wget
-            curl -L https://github.com/glfw/glfw/releases/download/3.3.5/glfw-3.3.5.bin.WIN64.zip | tar -xf -
+            python -m wget https://github.com/glfw/glfw/releases/download/3.3.5/glfw-3.3.5.bin.WIN64.zip
+            python -c "import zipfile; zip = zipfile.ZipFile('glfw-3.3.5.bin.WIN64.zip', 'r'); zip.extractall()"
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install libomp glfw
             python3 -m pip install numpy twine==1.15.0 delocate
