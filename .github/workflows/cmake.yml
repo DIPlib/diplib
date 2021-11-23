@@ -39,7 +39,7 @@ jobs:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         include:
           - os: windows-latest
-            dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off
+            dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR=${{github.workspace}}/glfw-3.3.5.bin.WIN64/include -DGLFW_LIBRARY=${{github.workspace}}/glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib
             # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
       fail-fast: true
 
@@ -56,6 +56,7 @@ jobs:
           elif [ "$RUNNER_OS" == "Windows" ]; then
             choco install openjdk8 --no-progress --yes
             python -m pip install wheel numpy twine==1.15.0 wget
+            curl -L https://github.com/glfw/glfw/releases/download/3.3.5/glfw-3.3.5.bin.WIN64.zip | tar -xf -
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install libomp glfw
             python3 -m pip install numpy twine==1.15.0 delocate
