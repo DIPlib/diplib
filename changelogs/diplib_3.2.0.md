@@ -62,6 +62,8 @@ title: "Changes DIPlib 3.2.0"
 
 ### Bug fixes
 
+- Fixed memory corruption bug when releasing data from a different thread.
+
 (See also bugfixes to *DIPlib*.)
 
 

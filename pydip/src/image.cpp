@@ -127,7 +127,10 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
    Py_XINCREF( pyObject );
    dip::DataSegment dataSegment{ pyObject, []( void* obj ) {
       //std::cout << "   *** Decrementing ref count for pyObject " << obj << '\n';
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
       Py_XDECREF( static_cast< PyObject* >( obj ));
+      PyGILState_Release(gstate);
    }};
    // Create an image with all of this.
    dip::Image out( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
