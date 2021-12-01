@@ -48,7 +48,7 @@ namespace dip {
 /// Note that this creates a spatial partitioning, not a partitioning of image intensities.
 ///
 /// K-means clustering is an iterative process with a random initialization. It is likely to get
-/// suck in local minima. Repeating the clustering several times and picking the best result
+/// stuck in local minima. Repeating the clustering several times and picking the best result
 /// (e.g. determined by times each cluster center is found) can be necessary.
 ///
 /// The returned \ref dip::CoordinateArray contains the cluster centers.
