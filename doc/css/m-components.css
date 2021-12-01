@@ -1707,7 +1707,8 @@ div.m-code:last-child, div.m-plot.m-nopadb {
 /* List items usually have just inline elements and are kept compact. If (sane)
    block elements are inside list items, they have spacing even as last, but
    not if the list item is the last. Also not if m-nopadb is specified. */
-li > p:last-child, li > blockquote:last-child, li > pre:last-child,
+li > p:last-child, li > ul:last-child, li > ol:last-child,
+li > dl:last-child, li > blockquote:last-child, li > pre:last-child,
 li > .m-code-figure:last-child, li > .m-console-figure:last-child,
 li > .m-note:last-child, li > .m-frame:last-child, li > .m-block:last-child,
 li > div.m-button:last-child, li > div.m-scroll:last-child, li > table.m-table:last-child,
@@ -1718,6 +1719,9 @@ li > div.m-code:last-child {
   margin-bottom: 1rem;
 }
 li:last-child > p:last-child, li:last-child > p.m-nopadb,
+li:last-child > ul:last-child, li:last-child > ul.m-nopadb,
+li:last-child > ol:last-child, li:last-child > ol.m-nopadb,
+li:last-child > dl:last-child, li:last-child > dl.m-nopadb,
 li:last-child > blockquote:last-child, li:last-child > blockquote.m-nopadb,
 li:last-child > pre:last-child, li:last-child > pre.m-nopadb,
 li:last-child > .m-code-figure:last-child, li:last-child > .m-code-figure.m-nopadb,
