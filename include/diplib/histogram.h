@@ -224,7 +224,7 @@ class DIP_NO_EXPORT Histogram {
             }
          DIP_END_STACK_TRACE
       }
-      explicit Histogram( Image::View const& input, Configuration configuration ) {
+      Histogram( Image::View const& input, Configuration configuration ) {
          if( input.Offsets().empty() ) {
             // This code works if either the view is regular or has a mask.
             *this = Histogram( input.Reference(), input.Mask(), configuration );
@@ -632,6 +632,41 @@ inline Histogram operator+( Histogram lhs, Histogram const& rhs ) {
 inline Histogram operator-( Histogram lhs, Histogram const& rhs ) {
    lhs -= rhs;
    return lhs;
+}
+
+/// \brief You can output a \ref dip::Histogram to `std::cout` or any other stream. Some
+/// information about the histogram is printed.
+/// \relates dip::Distribution
+inline std::ostream& operator<<(
+      std::ostream& os,
+      Histogram const& histogram
+) {
+   auto print_dim_info = [ & ]( dip::uint ii ) {
+      os << histogram.Bins( ii ) << " bins"
+                           << ", lower bound: " << histogram.LowerBound( ii )
+                           << ", upper bound: " << histogram.UpperBound( ii )
+                           << ", bin size: " << histogram.BinSize( ii );
+   };
+
+   if( histogram.IsInitialized()) {
+      dip::uint nd = histogram.Dimensionality(); // Must be nd >= 1
+      os << nd << "D histogram:";
+      if( nd == 1 ) {
+         os << ' ';
+         print_dim_info( 0 );
+         os << '\n';
+      } else {
+         os << '\n';
+         for( dip::uint ii = 0; ii < nd; ++ii ) {
+            os << "    dimension " << ii << ": ";
+            print_dim_info( ii );
+            os << '\n';
+         }
+      }
+   } else {
+      os << "Uninitialized histogram\n";
+   }
+   return os;
 }
 
 
