@@ -485,7 +485,7 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Gets the bin for `value` in an nD histogram
-      UnsignedArray Bin( FloatArray value ) const {
+      UnsignedArray Bin( FloatArray const& value ) const {
          DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != value.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          UnsignedArray out( value.size() );

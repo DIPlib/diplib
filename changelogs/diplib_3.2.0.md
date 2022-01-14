@@ -22,6 +22,8 @@ title: "Changes DIPlib 3.2.0"
 
 - The output stream operator for `dip::Image` writes the same information in a slightly different way.
 
+- `dip::Histogram::Bin( FloatArray const& value )` now takes the input as a const reference.
+
 ### Bug fixes
 
 - When inserting a `dip::Measurement` object into a stream, the table it produced sometimes had feature value columns
