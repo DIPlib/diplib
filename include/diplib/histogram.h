@@ -622,16 +622,18 @@ inline void swap( Histogram& v1, Histogram& v2 ) {
 
 /// \brief Adds two histograms.
 /// \relates dip::Histogram
-inline Histogram operator+( Histogram lhs, Histogram const& rhs ) {
-   lhs += rhs;
-   return lhs;
+inline Histogram operator+( Histogram const& lhs, Histogram const& rhs ) {
+   Histogram out = lhs.Copy();
+   out += rhs;
+   return out;
 }
 
 /// \brief Subtracts two histograms.
 /// \relates dip::Histogram
-inline Histogram operator-( Histogram lhs, Histogram const& rhs ) {
-   lhs -= rhs;
-   return lhs;
+inline Histogram operator-( Histogram const& lhs, Histogram const& rhs ) {
+   Histogram out = lhs.Copy();
+   out -= rhs;
+   return out;
 }
 
 /// \brief You can output a \ref dip::Histogram to `std::cout` or any other stream. Some

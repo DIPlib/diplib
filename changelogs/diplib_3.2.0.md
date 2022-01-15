@@ -29,6 +29,9 @@ title: "Changes DIPlib 3.2.0"
 - When inserting a `dip::Measurement` object into a stream, the table it produced sometimes had feature value columns
   narrower than the feature name header.
 
+- Fixed addition and subtraction operator for `dip::Histogram` changing the LHS operand: `h3 = h1 + h2` would
+  end up with `h1` equal to `h3`.
+
 - Fixed bug that prevented compilation with *MinGW*.
 
 - The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules,
