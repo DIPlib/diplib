@@ -6,6 +6,7 @@ src/__main__.py
 src/analysis.cpp
 src/assorted.cpp
 src/filtering.cpp
+src/histogram.cpp
 src/image.cpp
 src/loadjvm.py
 src/math.cpp
