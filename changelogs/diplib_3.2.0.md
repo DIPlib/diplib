@@ -37,6 +37,12 @@ title: "Changes DIPlib 3.2.0"
 - The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules,
   as well as the macros in the *DIPlib*-*MATLAB* interface.
 
+- `dip::Distribution::Y` and `dip::Distribution::Ybegin` didn't throw an exception when attempting to access one
+  past the last y value.
+
+- `dip::Distribution` now defaults to no x-units (rather than pixels), making `dip::PerObjectHistogram` correctly
+  not have units for the x-axis, which is intensity, not pixels.
+
 
 
 

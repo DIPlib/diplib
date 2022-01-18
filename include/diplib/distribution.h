@@ -378,12 +378,12 @@ class DIP_NO_EXPORT Distribution {
 
       /// Returns an *y*-value iterator to the beginning
       SampleIterator< dfloat > Ybegin( dip::uint index = 0 ) {
-         DIP_THROW_IF( index > ValuesPerSample(), E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( index >= ValuesPerSample(), E::INDEX_OUT_OF_RANGE );
          return { data_.data() + index + 1, static_cast< dip::sint >( Stride() ) };
       }
       /// Returns an *y*-value iterator to the beginning
       ConstSampleIterator< dfloat > Ybegin( dip::uint index = 0 ) const {
-         DIP_THROW_IF( index > ValuesPerSample(), E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( index >= ValuesPerSample(), E::INDEX_OUT_OF_RANGE );
          return { data_.data() + index + 1, static_cast< dip::sint >( Stride() ) };
       }
       /// Returns an *y*-value iterator to the end
@@ -454,7 +454,8 @@ class DIP_NO_EXPORT Distribution {
 
       /// \brief Fills the values for the *x* axis, starting with `pixelSize[0].magnitude * offset`,
       /// and linear increments of `pixelSize[0].magnitude * scaling`, if the `pixelSize` is isotropic and has
-      /// physical units. The `XUnits` are also set.
+      /// physical units. The `XUnits` are also set to the units of the isotropic `pixelSize`, or otherwise
+      /// to "px".
       DIP_EXPORT void SetSampling(
             PixelSize const& pixelSize = {},
             dfloat offset = 0.0,
@@ -467,7 +468,7 @@ class DIP_NO_EXPORT Distribution {
       dip::uint nRows_;    // Number of rows in the matrix of y values, 1 for scalar distributions
       dip::uint nColumns_; // Number of columns in the matrix of y values, 1 for scalar or vector-valued distributions
       Container data_; // `( 1 + nRows_ * nColumns_ ) * length_` elements
-      Units units_ = Units::Pixel();
+      Units units_ = Units{};
       // data_[ ii * Stride() ] -> x
       // data_[ ii * Stride() + 1 ] -> y[0,0]
       // data_[ ii * Stride() + nRows_ * nColumns_ ] -> y[N,N]
