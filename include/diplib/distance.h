@@ -156,6 +156,11 @@ DIP_NODISCARD inline Image VectorDistanceTransform(
 /// in the output, depending on whether `bin` was set or not. If `mask` is not forged, paths are not constrained.
 /// If `mask` is forged, it must be of the same sizes as `bin` and `grey`, and be binary and scalar.
 ///
+/// Computed distances use the pixel sizes (ignoring any units). To compute distances in pixels, reset the pixel
+/// size (\ref dip::Image::ResetPixelSize). Note that, when pixels sizes are correctly set, this function handles
+/// anisotropic sampling densities correctly. Pixel sizes are taken from `grey`, and if it doesn't have pixel
+/// sizes, they are taken from `bin`. Both images must not have pixel sizes for the algorithm to use pixel units.
+///
 /// This function uses one of two algorithms: the fast marching algorithm (Sethian, 1996), or a simpler propagation
 /// algorithm that uses a chamfer metric (after work by Verwer and Strasters). `metric` is used only in the latter
 /// case. `mode` selects the algorithm used and what output is produced:

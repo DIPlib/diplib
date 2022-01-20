@@ -407,7 +407,7 @@ void GreyWeightedDistanceTransform(
 
    // Remove any singleton dimensions for processing, and prevent negative strides.
    // (We do this for the other images later, we create them all to emulate c_out, not out.)
-   Image out = c_out.QuickCopy();
+   Image out = c_out;
    out.StandardizeStrides();
    dims = out.Dimensionality();
    // Create neighborhood, we need some information from it soon.

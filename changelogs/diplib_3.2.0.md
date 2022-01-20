@@ -45,6 +45,9 @@ title: "Changes DIPlib 3.2.0"
 - `dip::Distribution` now defaults to no x-units (rather than pixels), making `dip::PerObjectHistogram` correctly
   not have units for the x-axis, which is intensity, not pixels.
 
+- `dip::GreyWeightedDistanceTransform` didn't properly use pixel sizes as intended with the default `"fast marching"`
+  method.
+
 
 
 
@@ -119,6 +122,8 @@ title: "Changes DIPlib 3.2.0"
 ### Bug fixes
 
 - Fixed memory corruption bug when releasing data from a different thread.
+
+- Fixed name of last input argument to `dip.GreyWeightedDistanceTransform`, which is now `mode`.
 
 (See also bugfixes to *DIPlib*.)
 
