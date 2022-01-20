@@ -29,11 +29,8 @@ b.Show('labels')
 ###
 
 img = dip.ImageReadTIFF('../erika')
-h, b = dip.Histogram(img)
-
-pp.clf()
-pp.plot(b[0], h)
-pp.show(block=False)
+h = dip.Histogram(img)
+h.Show()
 
 ###
 
@@ -49,9 +46,8 @@ b.Show()
 
 b(1).Show()
 
-b, c = dip.Histogram(a)
-print(len(c))
-print(b.Dimensionality() == len(c))
+b = dip.Histogram(a)
+print(b.Bins())
 
 a = dip.Image((250, 260), 3)
 a.Fill(0)
@@ -122,27 +118,29 @@ r3 = dip.GrowRegions(b)
 r4 = dip.GrowRegions(b, m)
 dip.viewer.Show(r3)
 dip.viewer.Show(r4)
+dip.viewer.Spin()
 
 ###
 
 img1 = dip.ImageReadTIFF('../erika')
 img2 = dip.ImageReadICS('../trui')
 
-h, b = dip.Histogram(img2)
+h = dip.Histogram(img2)
 img3 = dip.HistogramMatching(img1, h)
 img3.Convert('UINT8')
 
-h1, b1 = dip.Histogram(img1, 64)
-h2, b2 = dip.Histogram(img2, 64)
-h3, b3 = dip.Histogram(img3, 64)
+conf = dip.Histogram.Configuration(0, 255, nBins=64)
+h1 = dip.Histogram(img1, configuration=conf)
+h2 = dip.Histogram(img2, configuration=conf)
+h3 = dip.Histogram(img3, configuration=conf)
 
 pp.clf()
 pp.subplot(3, 1, 1)
-pp.bar(b1[0], np.array(h1), align='center')
+pp.bar(h1.BinCenters(), np.array(h1.GetImage()), width=3, align='center')
 pp.subplot(3, 1, 2)
-pp.bar(b2[0], np.array(h2), align='center')
+pp.bar(h2.BinCenters(), np.array(h2.GetImage()), width=3, align='center')
 pp.subplot(3, 1, 3)
-pp.bar(b3[0], np.array(h3), align='center')
+pp.bar(h3.BinCenters(), np.array(h3.GetImage()), width=3, align='center')
 pp.show(block=False)
 
 ###
@@ -223,9 +221,12 @@ bin.Fill(1)
 bin[100,100] = 0
 
 out = dip.GreyWeightedDistanceTransform(weights, bin, mask)
-dip.viewer.Show(dip.Modulo(out, 50))
+out = dip.Modulo(out, 50)
 
 weights.SetPixelSize(dip.PixelSize([dip.PhysicalQuantity(0.8),dip.PhysicalQuantity(1.2)]))
 
 out2 = dip.GreyWeightedDistanceTransform(weights, bin, mask)
-dip.viewer.Show(dip.Modulo(out2, 50))
+out2 = dip.Modulo(out2, 50)
+
+dip.viewer.Show(out)
+dip.viewer.Show(out2)
