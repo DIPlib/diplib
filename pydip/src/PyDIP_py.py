@@ -19,7 +19,7 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-from .PyDIP_bin import ImageDisplay
+from .PyDIP_bin import Image, ImageDisplay
 import importlib.util
 import warnings
 
@@ -140,6 +140,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             reportedPlotLib = True
         return
 
+    if type(img) != Image:
+        img = Image(img)
     if img.IsEmpty() or img.NumberOfPixels() <= 1:
         warnings.warn("Nothing to display", SyntaxWarning)
         return
