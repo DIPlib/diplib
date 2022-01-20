@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for function that compute statistics on measurement features
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -315,7 +315,6 @@ Measurement::ValueType Minimum( Measurement::IteratorFeature const& featureValue
       minVal = std::min( minVal, *it );
    }
    return minVal;
-
 }
 
 Measurement::ValueType Maximum( Measurement::IteratorFeature const& featureValues ) {
@@ -400,6 +399,34 @@ StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& feat
       ++it;
    }
    return acc;
+}
+
+dip::uint ObjectMinimum( Measurement::IteratorFeature const& featureValues ) {
+   DIP_THROW_IF( featureValues.NumberOfObjects() == 0, "No objects in IteratorFeature" );
+   auto it = featureValues.FirstObject();
+   Measurement::ValueType minVal = *it;
+   dip::uint minID = it.ObjectID();
+   while( ++it ) {
+      if( *it < minVal ) {
+         minVal = *it;
+         minID = it.ObjectID();
+      }
+   }
+   return minID;
+}
+
+dip::uint ObjectMaximum( Measurement::IteratorFeature const& featureValues ) {
+   DIP_THROW_IF( featureValues.NumberOfObjects() == 0, "No objects in IteratorFeature" );
+   auto it = featureValues.FirstObject();
+   Measurement::ValueType maxVal = *it;
+   dip::uint maxID = it.ObjectID();
+   while( ++it ) {
+      if( *it > maxVal ) {
+         maxVal = *it;
+         maxID = it.ObjectID();
+      }
+   }
+   return maxID;
 }
 
 } // namespace dip

@@ -18,6 +18,8 @@ title: "Changes DIPlib 3.2.0"
 
 - `dip::Histogram` now has a stream output operator (`<<`), which shows basic information about the histogram.
 
+- Added `dip::ObjectMaximum()` and `dip::ObjectMinimum()` to identify the largest or smallest object.
+
 ### Changed functionality
 
 - The output stream operator for `dip::Image` writes the same information in a slightly different way.
@@ -89,6 +91,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip.HistogramShow()` and `dip.Histogram.Show()` to visualize histograms with proper axis scaling
   and tick labels.
+
+- Added `dip.ObjectMaximum()` and `dip.ObjectMinimum()`.
 
 ### Changed functionality
 

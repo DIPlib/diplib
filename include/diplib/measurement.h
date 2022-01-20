@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for measurement-related classes
  *
- * (c)2016-2021, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1158,6 +1158,20 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature con
 /// \ref dip::Measurement::IteratorFeature::Subset method, or pick a column in the `dip::Measurement` object
 /// directly using \ref dip::Measurement::FeatureValuesView.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Returns the object ID with the smallest feature value in the first column of `featureValues`.
+///
+/// Same as \ref Minimum(Measurement::IteratorFeature const&), but returns the Object ID instead of
+/// the feature value.
+DIP_EXPORT dip::uint ObjectMinimum( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Returns the object ID with the largest feature value in the first column of `featureValues`.
+///
+/// Same as \ref Maximum(Measurement::IteratorFeature const&), but returns the Object ID instead of
+/// the feature value.
+DIP_EXPORT dip::uint ObjectMaximum( Measurement::IteratorFeature const& featureValues );
+
+// TODO: ObjectPercentile, ObjectMedian.
 
 
 /// \endgroup
