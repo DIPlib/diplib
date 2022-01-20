@@ -56,11 +56,11 @@ class type_caster< dip::FileInformation > {
          out["history"] = py::cast( src.history );
          return out.release();
       }
-   PYBIND11_TYPE_CASTER( type, _( "DataType" ));
+   PYBIND11_TYPE_CASTER( type, _( "FileInformation" ));
 };
 
-}
-}
+} // namespace detail
+} // namespace pybind11
 
 namespace {
 

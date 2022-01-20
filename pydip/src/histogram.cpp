@@ -56,13 +56,13 @@ class type_caster< dip::Histogram::Configuration::Mode > {
             case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
                return py::cast( "COMPUTE_UPPER" ).release();
          }
-         return py::cast( "Unrecognized mode!?" ).release();
+         return py::cast( "Unrecognized configuration mode!?" ).release();
       }
-   PYBIND11_TYPE_CASTER( type, _( "DataType" ));
+   PYBIND11_TYPE_CASTER( type, _( "Mode" ));
 };
 
-}
-}
+} // namespace detail
+} // namespace pybind11
 
 
 void init_histogram( py::module& m ) {
@@ -219,8 +219,33 @@ void init_histogram( py::module& m ) {
    }, "input1"_a, "input2"_a, "mask"_a = dip::Image{} );
 
    // diplib/lookup_table.h
-   m.def( "LookupTable", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index, dip::String const& interpolation,
-                             dip::String const& mode, dip::dfloat lowerValue, dip::dfloat upperValue ) {
+   auto lut = py::class_< dip::LookupTable >( m, "LookupTable", "Encapsulates the concept of the look-up table (LUT)." );
+   lut.def( py::init< dip::Image, dip::FloatArray >(), "values"_a, "index"_a = dip::FloatArray{} );
+   lut.def( "__repr__", []( dip::LookupTable const& self ) {
+      std::ostringstream os;
+      os << "<LookupTable, " << self.DataType();
+      if( self.HasIndex() ) {
+         os << ", with index";
+      }
+      os << '>';
+      return os.str();
+   } );
+   lut.def( "HasIndex", &dip::LookupTable::HasIndex );
+   lut.def( "DataType", &dip::LookupTable::DataType );
+   lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ), "value"_a );
+   lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ), "lowerValue"_a, "upperValue"_a );
+   lut.def( "KeepInputValueOnOutOfBounds", &dip::LookupTable::KeepInputValueOnOutOfBounds );
+   lut.def( "ClampOutOfBoundsValues", &dip::LookupTable::ClampOutOfBoundsValues );
+   lut.def( "Apply", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ), "in"_a, "interpolation"_a = dip::S::LINEAR );
+   lut.def( "Apply", py::overload_cast< dip::dfloat, dip::String const& >( &dip::LookupTable::Apply, py::const_ ), "value"_a, "interpolation"_a = dip::S::LINEAR );
+   lut.def( "Convert", &dip::LookupTable::Convert, "dataType"_a );
+
+   // This next function is the old implementation of `dip.LookupTable`, which we keep
+   // here for backwards compatibility. Setting `dip.LookupTable = dip.LookupTable_old` in Python
+   // will allow old programs that use this function to continue working.
+   m.def( "LookupTable_old", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index,
+                                 dip::String const& interpolation, dip::String const& mode,
+                                 dip::dfloat lowerValue, dip::dfloat upperValue ) {
       dip::LookupTable lookupTable( lut, index );
       if( mode == "clamp" ) {
          lookupTable.ClampOutOfBoundsValues(); // is the default...

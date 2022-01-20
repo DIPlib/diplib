@@ -92,6 +92,8 @@ title: "Changes DIPlib 3.2.0"
 - Added `dip.HistogramShow()` and `dip.Histogram.Show()` to visualize histograms with proper axis scaling
   and tick labels.
 
+- Added `dip.LookupTable` as a class, matching *DIPlib*'s `dip::LookupTable`.
+
 - Added `dip.ObjectMaximum()` and `dip.ObjectMinimum()`.
 
 ### Changed functionality
@@ -99,6 +101,10 @@ title: "Changes DIPlib 3.2.0"
 - The function `dip.Histogram()` is now called `dip.Histogram_old()`, to make space for the new `dip.Histogram`
   class. **NOTE! This breaks backwards compatibility.** To keep old code from working, do
   `dip.Histogram = dip.Histogram_old` at the top of the code, after `import diplib as dip`.
+
+- The function `dip.LookupTable()` is now called `dip.LookupTable_old()`, to make space for the new `dip.LookupTable`
+  class. **NOTE! This breaks backwards compatibility.** To keep old code from working, do
+  `dip.LookupTable = dip.LookupTable_old` at the top of the code, after `import diplib as dip`.
 
 - `dip.Show()` has a new parameter `extent`, uses proper warnings rather than just printing messages to
   the console, and no longer uses `dip.ImageDisplay()` for 1D images.
