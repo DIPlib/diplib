@@ -293,7 +293,9 @@ void init_image( py::module& m ) {
    img.def( "__repr__", &ImageRepr );
    img.def( "__str__", []( dip::Image const& self ) { std::ostringstream os; os << self; return os.str(); } );
    img.def( "__len__", []( dip::Image const& self ) { return self.NumberOfPixels(); } );
-   img.def( "IsEmpty", []( dip::Image const& self ) { return !self.IsForged(); } );
+   img.def( "IsForged", &dip::Image::IsForged, "See also `IsEmpty()`." );
+   img.def( "IsEmpty", []( dip::Image const& self ) { return !self.IsForged(); },
+            "Returns `True` if the image is raw. Reverse of `IsForged()`." ); // Honestly, I don't remember why I created this...
    img.def( "Dimensionality", &dip::Image::Dimensionality );
    img.def( "Sizes", &dip::Image::Sizes );
    img.def( "Size", &dip::Image::Size, "dim"_a );
@@ -326,8 +328,16 @@ void init_image( py::module& m ) {
    img.def( "PixelSize", py::overload_cast< dip::uint >( &dip::Image::PixelSize, py::const_ ), "dim"_a );
    img.def( "SetPixelSize", py::overload_cast< dip::PixelSize >( &dip::Image::SetPixelSize ), "pixelSize"_a );
    img.def( "SetPixelSize", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::Image::SetPixelSize ), "dim"_a, "sz"_a );
-   img.def( "SetPixelSize", []( dip::Image& self, dip::dfloat mag, dip::Units const& units ) { self.SetPixelSize( dip::PhysicalQuantity( mag, units )); }, "magnitude"_a, "units"_a = dip::Units{} );
-   img.def( "SetPixelSize", []( dip::Image& self, dip::uint dim, dip::dfloat mag, dip::Units const& units ) { self.SetPixelSize( dim, dip::PhysicalQuantity( mag, units )); }, "dim"_a, "magnitude"_a, "units"_a = dip::Units{} );
+   img.def( "SetPixelSize", []( dip::Image& self, dip::dfloat mag, dip::Units const& units ) {
+               self.SetPixelSize( dip::PhysicalQuantity( mag, units ));
+            }, "magnitude"_a, "units"_a = dip::Units{},
+            "Overload that accepts the two components of a `dip.PhysicalQuantity`, sets\n"
+            "all dimensions to the same value." );
+   img.def( "SetPixelSize", []( dip::Image& self, dip::uint dim, dip::dfloat mag, dip::Units const& units ) {
+               self.SetPixelSize( dim, dip::PhysicalQuantity( mag, units ));
+            }, "dim"_a, "magnitude"_a, "units"_a = dip::Units{},
+            "Overload that accepts the two components of a `dip.PhysicalQuantity`, sets\n"
+            "dimension `dim` only." );
    img.def( "ResetPixelSize", &dip::Image::ResetPixelSize );
    img.def( "HasPixelSize", &dip::Image::HasPixelSize );
    img.def( "IsIsotropic", &dip::Image::IsIsotropic );
@@ -400,12 +410,14 @@ void init_image( py::module& m ) {
    img.def( "At", []( dip::Image const& self, dip::RangeArray ranges ) -> dip::Image { return self.At( std::move( ranges )); }, "ranges"_a );
    img.def( "At", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); }, "mask"_a );
    img.def( "At", []( dip::Image const& self, dip::CoordinateArray const& coordinates ) -> dip::Image { return self.At( coordinates ); }, "coordinates"_a );
-   img.def( "Cropped", []( dip::Image const& self, dip::UnsignedArray const& sizes, dip::String const& cropLocation ) -> dip::Image { return self.Cropped( sizes, cropLocation ); },
+   img.def( "Cropped", []( dip::Image const& self, dip::UnsignedArray const& sizes, dip::String const& cropLocation ) -> dip::Image {
+               return self.Cropped( sizes, cropLocation );
+            },
             "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", []( dip::Image const& self ) -> dip::Image { return self.Real(); } );
    img.def( "Imaginary", []( dip::Image const& self ) -> dip::Image { return self.Imaginary(); } );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
-   // These don't exist, but we need to have a function for operation[] too
+   // These don't exist, but we need to have a function for operator[] too
    img.def( "__call__", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
    img.def( "__call__", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "__call__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
@@ -478,8 +490,8 @@ void init_image( py::module& m ) {
    img.def( "__pow__", []( dip::Image const& a, dip::Image const& b ) { return dip::Power( a, b ); }, py::is_operator() );
    img.def( "__pow__", []( dip::Image const& a, dip::dfloat b ) { return dip::Power( a, b ); }, py::is_operator() );
    img.def( "__pow__", []( dip::dfloat a, dip::Image const& b ) { return dip::Power( dip::Image{ a }, b ); }, py::is_operator() );
-   img.def( "__ipow__", []( dip::Image& a, dip::Image const& b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
-   img.def( "__ipow__", []( dip::Image& a, dip::dfloat b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& a, dip::Image const& b ) { dip::Power( a, b, a ); }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& a, dip::dfloat b ) { dip::Power( a, b, a ); }, py::is_operator() );
    img.def( py::self == py::self );
    img.def( py::self == dip::dfloat() );
    img.def( py::self != py::self );
@@ -511,31 +523,35 @@ void init_image( py::module& m ) {
    //}, py::keep_alive< 0, 1 >() ); // Essential: keep object alive while iterator exists
 
    m.def( "Create0D", []( dip::Image::Pixel const& in ) -> dip::Image {
-      return dip::Image( in );
-   } );
+             return dip::Image( in );
+          },
+          "Function that creates a 0D image from a scalar or tensor value." );
    m.def( "Create0D", []( dip::Image const& in ) -> dip::Image {
-      DIP_THROW_IF( !in.IsForged(), dip::E::IMAGE_NOT_FORGED );
-      DIP_THROW_IF( !in.IsScalar(), dip::E::IMAGE_NOT_SCALAR );
-      dip::UnsignedArray sz = in.Sizes();
-      DIP_THROW_IF( sz.size() > 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
-      bool swapped = false;
-      if( sz.size() == 2 ) {
-         std::swap( sz[ 0 ], sz[ 1 ] ); // This way storage will be column-major
-         swapped = true;
-      } else {
-         sz.resize( 2, 1 ); // add dimensions of size 1
-      }
-      dip::Image out( sz, 1, in.DataType() );
-      if( swapped ) {
-         out.SwapDimensions( 0, 1 ); // Swap dimensions so they match those of `in`
-      }
-      out.Copy( in ); // copy pixel data, don't re-use
-      out.Flatten();
-      out.SpatialToTensor( 0, sz[ 0 ], sz[ 1 ] );
-      return out;
-   } );
+             DIP_THROW_IF( !in.IsForged(), dip::E::IMAGE_NOT_FORGED );
+             DIP_THROW_IF( !in.IsScalar(), dip::E::IMAGE_NOT_SCALAR );
+             dip::UnsignedArray sz = in.Sizes();
+             DIP_THROW_IF( sz.size() > 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
+             bool swapped = false;
+             if( sz.size() == 2 ) {
+                std::swap( sz[ 0 ], sz[ 1 ] ); // This way storage will be column-major
+                swapped = true;
+             } else {
+                sz.resize( 2, 1 ); // add dimensions of size 1
+             }
+             dip::Image out( sz, 1, in.DataType() );
+             if( swapped ) {
+                out.SwapDimensions( 0, 1 ); // Swap dimensions so they match those of `in`
+             }
+             out.Copy( in ); // copy pixel data, don't re-use
+             out.Flatten();
+             out.SpatialToTensor( 0, sz[ 0 ], sz[ 1 ] );
+             return out;
+          },
+          "Overload that takes a scalar image, the pixel values are the values for each\n"
+          "tensor element of the output 0D image." );
 
    m.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Copy ), "src"_a );
    m.def( "ExpandTensor", py::overload_cast< dip::Image const& >( &dip::ExpandTensor ), "src"_a );
    m.def( "Convert", py::overload_cast< dip::Image const&, dip::DataType >( &dip::Convert ), "src"_a, "dt"_a );
+
 }

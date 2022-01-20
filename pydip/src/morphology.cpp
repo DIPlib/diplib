@@ -2,6 +2,7 @@
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +143,8 @@ void init_morphology( py::module& m ) {
    m.def( "StochasticWatershed", []( dip::Image const& in, dip::uint nSeeds, dip::uint nIterations, dip::dfloat noise, dip::String const& seeds ) {
              return StochasticWatershed( in, RandomNumberGenerator(), nSeeds, nIterations, noise, seeds );
           },
-          "in"_a, "nSeeds"_a = 100, "nIterations"_a = 50, "noise"_a = 0, "seeds"_a = dip::S::HEXAGONAL );
+          "in"_a, "nSeeds"_a = 100, "nIterations"_a = 50, "noise"_a = 0, "seeds"_a = dip::S::HEXAGONAL,
+          "Like the C++ function, but using an internal `dip::Random` object." );
    m.def( "Maxima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),
           "in"_a, "connectivity"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "Minima", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
@@ -245,10 +247,10 @@ void init_morphology( py::module& m ) {
    intv.def( py::init< dip::Image const&, dip::Image const& >(), "hit"_a, "miss"_a );
    py::implicitly_convertible< dip::Image, dip::Interval >();
    intv.def( "__repr__", []( dip::Interval const& self ) {
-      std::ostringstream os;
-      os << "<" << self.Sizes() << " Interval>";
-      return os.str();
-   } );
+                std::ostringstream os;
+                os << "<" << self.Sizes() << " Interval>";
+                return os.str();
+             } );
    intv.def( "Image", &dip::Interval::Image, py::return_value_policy::reference_internal );
 
    m.def( "SupGenerating", py::overload_cast< dip::Image const&, dip::Interval const&, dip::String const& >( &dip::SupGenerating ),
@@ -280,4 +282,5 @@ void init_morphology( py::module& m ) {
    m.def( "BranchPixelInterval2D", &dip::BranchPixelInterval2D );
    m.def( "BoundaryPixelInterval2D", &dip::BoundaryPixelInterval2D );
    m.def( "ConvexHullInterval2D", &dip::ConvexHullInterval2D );
+
 }

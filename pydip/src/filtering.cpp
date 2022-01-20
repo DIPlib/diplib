@@ -2,6 +2,7 @@
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,4 +157,5 @@ void init_filtering( py::module& m ) {
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
    m.def( "StationaryWaveletTransform", py::overload_cast< dip::Image const&, dip::uint, dip::StringArray const&, dip::BooleanArray const& >( &dip::StationaryWaveletTransform ),
           "in"_a, "nLevels"_a = 4, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
+
 }

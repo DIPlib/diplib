@@ -96,6 +96,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip.ObjectMaximum()` and `dip.ObjectMinimum()`.
 
+- Added `dip.Image.IsForged()`.
+
 ### Changed functionality
 
 - The function `dip.Histogram()` is now called `dip.Histogram_old()`, to make space for the new `dip.Histogram`
@@ -105,6 +107,9 @@ title: "Changes DIPlib 3.2.0"
 - The function `dip.LookupTable()` is now called `dip.LookupTable_old()`, to make space for the new `dip.LookupTable`
   class. **NOTE! This breaks backwards compatibility.** To keep old code from working, do
   `dip.LookupTable = dip.LookupTable_old` at the top of the code, after `import diplib as dip`.
+
+- `dip.HistogramMatching()` now also accepts a `dip.Histogram` object as the second input argument, matching
+  the *DIPlib* function.
 
 - `dip.Show()` has a new parameter `extent`, uses proper warnings rather than just printing messages to
   the console, and no longer uses `dip.ImageDisplay()` for 1D images.

@@ -219,4 +219,5 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    init_measurement( m );
    init_histogram( m );
    init_assorted( m );
+
 }

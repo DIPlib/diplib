@@ -153,7 +153,8 @@ img[mask] = 0     # sets all pixels in mask to 0
 
 \section pum_testing Testing image validity
 
-Instead of `IsForged()`, use `IsEmpty()` to test if an image is forged.
+You can use either `IsForged()` or `IsEmpty()` to test if an image is forged.
+`IsEmpty()` is the opposite of `IsForged()`, and returns `True` if this image is not forged.
 
 Functions that expect an image interpret `None` as an empty (non-forged) image.
 
