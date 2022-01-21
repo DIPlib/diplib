@@ -68,21 +68,36 @@ For some dependencies static libraries need to be build up front. For this `Visu
 
 ### FFTW static library
 
+For the FFTW library two versions need to be build: single precision `fftw3f.lib` and double precision `fftw3.lib` (for more information: <https://fftw.org/fftw3_doc/Precision.html>)
+
 1. unpack the download source
 1. start CMake and select the directory of the unpacked source which contains `CMakeLists.txt`
   ![CMake paths](cmake_paths.PNG)
-1. press the `Configure` button and confirm the creation of the build directory. In the next window the generator will show the just install `Visual Studio` version which can be confirmed with the `Finish` button.
-1. set and unset the variables in the main window as follows:
+1. press the <kbd>Configure</kbd> button and confirm the creation of the build directory. In the next window the generator will show the just install `Visual Studio` version which can be confirmed with the `Finish` button.
+1. for **double precision** set and unset the variables in the main window as follows:
    - `BUILD_SHARED_LIBS` unset
    - `CMAKE_INSTALL_PREFIX` `c:\diplib\fftw`
    - `ENABLE_AVX` set
    - `ENABLE_AVX2` set
-   - `ENABLE_OPENMP` set
    - `ENABLE_SSE` set
    - `ENABLE_SSE2` set
    - `ENABLE_THREADS` set
    - `WITH_COMBINED_THREADS` set
-1. again press the `Configure` button to update the new values
+1. again press the <kbd>Configure</kbd> button to update the new values
   ![CMake variables](cmake_variables.PNG)
+1. press the <kbd>Generate</kbd> button to generate the build files for Visual Studio
+1. close all running versions of Visual Studio and then press the <kbd>Open Project</kbd> button to start a new version of Visual Studio with the created build files
+1. switch to Visual Studio and set the Solution Configuration to `Release`, see screenshot:
+  ![vs release](vs_release.PNG)
+1. right-click on the `INSTALL` solution in the Solution Explorer and select `Build`, see screenshot:
+  ![vs install](vs_install.PNG)
+  ![vs_build](vs_build.PNG)
+1. return to CMake
+1. for **single precision** only set the following variable:
+   - `ENABLE_FLOAT` set
+1. press the <kbd>Configure</kbd>
+1. press the <kbd>Generate</kbd>
+1. switch to Visual Studio and select the Reload option
+1. right-click on the `INSTALL` solution
 
 *to be continued*
