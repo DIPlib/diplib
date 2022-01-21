@@ -2,6 +2,7 @@
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -325,8 +326,8 @@ void init_image( py::module& m ) {
    img.def( "PixelSize", py::overload_cast< dip::uint >( &dip::Image::PixelSize, py::const_ ), "dim"_a );
    img.def( "SetPixelSize", py::overload_cast< dip::PixelSize >( &dip::Image::SetPixelSize ), "pixelSize"_a );
    img.def( "SetPixelSize", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::Image::SetPixelSize ), "dim"_a, "sz"_a );
-   img.def( "SetPixelSize", []( dip::Image& image, dip::dfloat mag, dip::Units const& units ) { image.SetPixelSize( dip::PhysicalQuantity( mag, units )); }, "magnitude"_a, "units"_a = dip::Units{} );
-   img.def( "SetPixelSize", []( dip::Image& image, dip::uint dim, dip::dfloat mag, dip::Units const& units ) { image.SetPixelSize( dim, dip::PhysicalQuantity( mag, units )); }, "dim"_a, "magnitude"_a, "units"_a = dip::Units{} );
+   img.def( "SetPixelSize", []( dip::Image& self, dip::dfloat mag, dip::Units const& units ) { self.SetPixelSize( dip::PhysicalQuantity( mag, units )); }, "magnitude"_a, "units"_a = dip::Units{} );
+   img.def( "SetPixelSize", []( dip::Image& self, dip::uint dim, dip::dfloat mag, dip::Units const& units ) { self.SetPixelSize( dim, dip::PhysicalQuantity( mag, units )); }, "dim"_a, "magnitude"_a, "units"_a = dip::Units{} );
    img.def( "ResetPixelSize", &dip::Image::ResetPixelSize );
    img.def( "HasPixelSize", &dip::Image::HasPixelSize );
    img.def( "IsIsotropic", &dip::Image::IsIsotropic );
@@ -386,32 +387,32 @@ void init_image( py::module& m ) {
    img.def( "ReinterpretCastToUnsignedInteger", &dip::Image::ReinterpretCastToUnsignedInteger, py::return_value_policy::reference_internal );
    img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop ),  "sizes"_a, "cropLocation"_a = "center", py::return_value_policy::reference_internal );
    // Create a view of another image.
-   img.def( "Diagonal", []( dip::Image const& image ) -> dip::Image { return image.Diagonal(); } );
-   img.def( "TensorRow", []( dip::Image const& image, dip::uint index ) -> dip::Image { return image.TensorRow( index ); }, "index"_a );
-   img.def( "TensorColumn", []( dip::Image const& image, dip::uint index ) -> dip::Image { return image.TensorColumn( index ); }, "index"_a );
-   img.def( "At", []( dip::Image const& image, dip::uint index ) -> dip::Image::Pixel { return image.At( index ); }, "index"_a );
-   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) -> dip::Image::Pixel { return image.At( x_index, y_index ); }, "x_index"_a, "y_index"_a );
-   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) -> dip::Image::Pixel { return image.At( x_index, y_index, z_index ); }, "x_index"_a, "y_index"_a, "z_index"_a );
-   img.def( "At", []( dip::Image const& image, dip::UnsignedArray const& coords ) -> dip::Image::Pixel { return image.At( coords ); }, "coords"_a );
-   img.def( "At", []( dip::Image const& image, dip::Range x_range ) -> dip::Image { return image.At( x_range ); }, "x_range"_a );
-   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range ) -> dip::Image { return image.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
-   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range, dip::Range z_range ) -> dip::Image { return image.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
-   img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) -> dip::Image { return image.At( std::move( ranges )); }, "ranges"_a );
-   img.def( "At", []( dip::Image const& image, dip::Image mask ) -> dip::Image { return image.At( std::move( mask )); }, "mask"_a );
-   img.def( "At", []( dip::Image const& image, dip::CoordinateArray const& coordinates ) -> dip::Image { return image.At( coordinates ); }, "coordinates"_a );
-   img.def( "Cropped", []( dip::Image const& image, dip::UnsignedArray const& sizes, dip::String const& cropLocation ) -> dip::Image { return image.Cropped( sizes, cropLocation ); },
+   img.def( "Diagonal", []( dip::Image const& self ) -> dip::Image { return self.Diagonal(); } );
+   img.def( "TensorRow", []( dip::Image const& self, dip::uint index ) -> dip::Image { return self.TensorRow( index ); }, "index"_a );
+   img.def( "TensorColumn", []( dip::Image const& self, dip::uint index ) -> dip::Image { return self.TensorColumn( index ); }, "index"_a );
+   img.def( "At", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); }, "index"_a );
+   img.def( "At", []( dip::Image const& self, dip::uint x_index, dip::uint y_index ) -> dip::Image::Pixel { return self.At( x_index, y_index ); }, "x_index"_a, "y_index"_a );
+   img.def( "At", []( dip::Image const& self, dip::uint x_index, dip::uint y_index, dip::uint z_index ) -> dip::Image::Pixel { return self.At( x_index, y_index, z_index ); }, "x_index"_a, "y_index"_a, "z_index"_a );
+   img.def( "At", []( dip::Image const& self, dip::UnsignedArray const& coords ) -> dip::Image::Pixel { return self.At( coords ); }, "coords"_a );
+   img.def( "At", []( dip::Image const& self, dip::Range x_range ) -> dip::Image { return self.At( x_range ); }, "x_range"_a );
+   img.def( "At", []( dip::Image const& self, dip::Range x_range, dip::Range y_range ) -> dip::Image { return self.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
+   img.def( "At", []( dip::Image const& self, dip::Range x_range, dip::Range y_range, dip::Range z_range ) -> dip::Image { return self.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
+   img.def( "At", []( dip::Image const& self, dip::RangeArray ranges ) -> dip::Image { return self.At( std::move( ranges )); }, "ranges"_a );
+   img.def( "At", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); }, "mask"_a );
+   img.def( "At", []( dip::Image const& self, dip::CoordinateArray const& coordinates ) -> dip::Image { return self.At( coordinates ); }, "coordinates"_a );
+   img.def( "Cropped", []( dip::Image const& self, dip::UnsignedArray const& sizes, dip::String const& cropLocation ) -> dip::Image { return self.Cropped( sizes, cropLocation ); },
             "sizes"_a, "cropLocation"_a = "center" );
-   img.def( "Real", []( dip::Image const& image ) -> dip::Image { return image.Real(); } );
-   img.def( "Imaginary", []( dip::Image const& image ) -> dip::Image { return image.Imaginary(); } );
+   img.def( "Real", []( dip::Image const& self ) -> dip::Image { return self.Real(); } );
+   img.def( "Imaginary", []( dip::Image const& self ) -> dip::Image { return self.Imaginary(); } );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
    // These don't exist, but we need to have a function for operation[] too
-   img.def( "__call__", []( dip::Image const& image, dip::sint index ) -> dip::Image { return image[ index ]; }, "index"_a );
-   img.def( "__call__", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
-   img.def( "__call__", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
+   img.def( "__call__", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
+   img.def( "__call__", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
+   img.def( "__call__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
    // NOTE: Compatibility with beta PyDIP. Remove?
-   img.def( "TensorElement", []( dip::Image const& image, dip::sint index ) -> dip::Image { return image[ index ]; }, "index"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
+   img.def( "TensorElement", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
+   img.def( "TensorElement", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
+   img.def( "TensorElement", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));
@@ -422,32 +423,32 @@ void init_image( py::module& m ) {
    img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
    // Indexing using a mask image
-   img.def( "__getitem__", []( dip::Image const& image, dip::Image mask ) -> dip::Image { return image.At( std::move( mask )); } );
+   img.def( "__getitem__", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); } );
    // Indexing into single pixel using coordinates
-   img.def( "__getitem__", []( dip::Image const& image, dip::uint index ) -> dip::Image::Pixel { return image.At( index ); } );
-   img.def( "__getitem__", []( dip::Image const& image, dip::UnsignedArray const& coords ) -> dip::Image::Pixel { return image.At( coords ); } );
+   img.def( "__getitem__", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); } );
+   img.def( "__getitem__", []( dip::Image const& self, dip::UnsignedArray const& coords ) -> dip::Image::Pixel { return self.At( coords ); } );
    // Indexing into slice for 1D image
-   img.def( "__getitem__", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image.At( range ); } );
+   img.def( "__getitem__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self.At( range ); } );
    // Indexing into slice for nD image
-   img.def( "__getitem__", []( dip::Image const& image, dip::RangeArray rangeArray ) -> dip::Image { return image.At( std::move( rangeArray )); } );
+   img.def( "__getitem__", []( dip::Image const& self, dip::RangeArray rangeArray ) -> dip::Image { return self.At( std::move( rangeArray )); } );
    // Assignment using a mask image
-   img.def( "__setitem__", []( dip::Image& image, dip::Image mask, dip::Image const& source ) { image.At( std::move( mask )).Copy( source ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::Image mask, dip::Image::Sample const& sample ) { image.At( std::move( mask )).Fill( sample ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::Image mask, dip::Image::Pixel const& pixel ) { image.At( std::move( mask )).Fill( pixel ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image const& source ) { self.At( std::move( mask )).Copy( source ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image::Sample const& sample ) { self.At( std::move( mask )).Fill( sample ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image::Pixel const& pixel ) { self.At( std::move( mask )).Fill( pixel ); } );
    // Assignment into single pixel using linear index
-   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::Image::Sample const& v ) { image.At( index ) = v; } );
-   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::Image::Pixel const& v ) { image.At( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& self, dip::uint index, dip::Image::Sample const& v ) { self.At( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& self, dip::uint index, dip::Image::Pixel const& v ) { self.At( index ) = v; } );
    // Indexing into single pixel using coordinates
-   img.def( "__setitem__", []( dip::Image& image, dip::UnsignedArray const& coords, dip::Image::Sample const& v ) { image.At( coords ) = v; } );
-   img.def( "__setitem__", []( dip::Image& image, dip::UnsignedArray const& coords, dip::Image::Pixel const& v ) { image.At( coords ) = v; } );
+   img.def( "__setitem__", []( dip::Image& self, dip::UnsignedArray const& coords, dip::Image::Sample const& v ) { self.At( coords ) = v; } );
+   img.def( "__setitem__", []( dip::Image& self, dip::UnsignedArray const& coords, dip::Image::Pixel const& v ) { self.At( coords ) = v; } );
    // Assignment into slice for 1D image
-   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image const& source ) { image.At( range ).Copy( source ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image::Sample const& sample ) { image.At( range ).Fill( sample ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image::Pixel const& pixel ) { image.At( range ).Fill( pixel ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image const& source ) { self.At( range ).Copy( source ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image::Sample const& sample ) { self.At( range ).Fill( sample ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image::Pixel const& pixel ) { self.At( range ).Fill( pixel ); } );
    // Assignment into slice for nD image
-   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray rangeArray, dip::Image const& source ) { image.At( std::move( rangeArray )).Copy( source ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray rangeArray, dip::Image::Sample const& sample ) { image.At( std::move( rangeArray )).Fill( sample ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray rangeArray, dip::Image::Pixel const& value ) { image.At( std::move( rangeArray )).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image const& source ) { self.At( std::move( rangeArray )).Copy( source ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image::Sample const& sample ) { self.At( std::move( rangeArray )).Fill( sample ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image::Pixel const& value ) { self.At( std::move( rangeArray )).Fill( value ); } );
    // Operators
    img.def( py::self += py::self );
    img.def( py::self += dip::dfloat() );

@@ -2,6 +2,7 @@
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,6 +268,8 @@ void init_measurement( py::module& m ) {
              return py::make_tuple( acc.Minimum(), acc.Maximum() ).release();
           }, "featureValues"_a );
    m.def( "SampleStatistics", &dip::SampleStatistics, "featureValues"_a );
+   m.def( "ObjectMinimum", &dip::ObjectMinimum, "featureValues"_a );
+   m.def( "ObjectMaximum", &dip::ObjectMaximum, "featureValues"_a );
 
    // dip::Polygon
    auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(), "A polygon representing a 2D object." );

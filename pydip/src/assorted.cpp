@@ -2,6 +2,7 @@
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +25,9 @@
 #include "diplib/simple_file_io.h"
 #include "diplib/generation.h"
 #include "diplib/geometry.h"
-#include "diplib/histogram.h"
-#include "diplib/lookup_table.h"
 #include "diplib/mapping.h"
+
+#include "diplib/histogram.h"
 #include "diplib/chain_code.h"
 
 namespace pybind11 {
@@ -55,11 +56,11 @@ class type_caster< dip::FileInformation > {
          out["history"] = py::cast( src.history );
          return out.release();
       }
-   PYBIND11_TYPE_CASTER( type, _( "DataType" ));
+   PYBIND11_TYPE_CASTER( type, _( "FileInformation" ));
 };
 
-}
-}
+} // namespace detail
+} // namespace pybind11
 
 namespace {
 
@@ -371,46 +372,6 @@ void init_assorted( py::module& m ) {
    m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const& >( &dip::JoinChannels ),
           "in_array"_a );
 
-   // diplib/histogram.h
-   m.def( "Histogram", []( dip::Image const& input, dip::Image const& mask, dip::uint nBins ){
-      dip::Histogram::Configuration config( input.DataType() );
-      config.nBins = nBins;
-      config.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
-      dip::Histogram histogram( input, mask, config );
-      dip::Image im = histogram.GetImage();
-      std::vector< dip::FloatArray > bins( histogram.Dimensionality() );
-      for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
-         bins[ ii ] = histogram.BinCenters( ii );
-      }
-      return py::make_tuple( im, bins ).release();
-   }, "input"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
-   m.def( "Histogram", []( dip::Image const& input1, dip::Image const& input2, dip::Image const& mask ){
-      dip::Histogram histogram( input1, input2, mask );
-      dip::Image im = histogram.GetImage();
-      std::vector< dip::FloatArray > bins( 2 );
-      bins[ 0 ] = histogram.BinCenters( 0 );
-      bins[ 1 ] = histogram.BinCenters( 1 );
-      return py::make_tuple( im, bins ).release();
-   }, "input1"_a, "input2"_a, "mask"_a = dip::Image{} );
-   // TODO: Histogram should be an object, then we can access the `ReverseLookup` method.
-
-   // diplib/lookup_table.h
-   m.def( "LookupTable", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index, dip::String const& interpolation,
-                             dip::String const& mode, dip::dfloat lowerValue, dip::dfloat upperValue ) {
-      dip::LookupTable lookupTable( lut, index );
-      if( mode == "clamp" ) {
-         lookupTable.ClampOutOfBoundsValues(); // is the default...
-      } else if( mode == "values" ) {
-         lookupTable.SetOutOfBoundsValue( lowerValue, upperValue );
-      } else if( mode == "keep" ) {
-         lookupTable.KeepInputValueOnOutOfBounds();
-      } else {
-         DIP_THROW_INVALID_FLAG( mode );
-      }
-      return lookupTable.Apply( in, interpolation );
-   }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = dip::S::LINEAR, "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0
-   );
-
    // diplib/mapping.h
    m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
          "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = dip::S::BOTH );
@@ -424,6 +385,8 @@ void init_assorted( py::module& m ) {
 
    m.def( "HistogramEqualization", py::overload_cast< dip::Image const&, dip::uint >( &dip::HistogramEqualization ),
           "in"_a, "nBins"_a = 256 );
+   m.def( "HistogramMatching", py::overload_cast< dip::Image const&, dip::Histogram const& >( &dip::HistogramMatching ),
+          "in"_a, "example"_a );
    m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ){
       DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
       dip::uint nBins = example.Size( 0 );

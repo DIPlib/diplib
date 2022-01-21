@@ -1,6 +1,7 @@
 # PyDIP 3.0, Python bindings for DIPlib 3.0
 #
 # (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
+# (c)2022, Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +21,7 @@ The portion of the PyDIP module that contains Python code.
 
 from .PyDIP_bin import ImageDisplay
 import importlib.util
+import warnings
 
 hasMatPlotLib = True
 reportedPlotLib = False
@@ -59,7 +61,8 @@ def _label_colormap():
     return None
 
 
-def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap=''):
+def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=(),
+         dim1=0, dim2=1, colormap='', extent=None):
     """Show an image in the current pyplot window
 
     Keyword arguments:
@@ -105,6 +108,11 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     dim1 -- Image dimension to be shown along x-axis of display.
     dim2 -- Image dimension to be shown along y-axis of display.
     colormap -- Name of a color map to use for display.
+    extent -- Tuple of floats, (left, right, top, bottom), indicating the
+        centroids of the top-left and bottom-right pixel centers. The first
+        two values correspond to `dim1`, the last two correspond to `dim2`.
+        If `None`, assumes pixel centers at integer coordinates starting
+        at 0. For a 1D image, this should be just (left, right).
 
     For images with more than 2 dimensions, a slice is extracted for
     display. The direction of the slice is determined using the `dim1` and
@@ -118,33 +126,9 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     projected as described above for higher-dimensional images.
     """
     global reportedPlotLib
-    if hasMatPlotLib:
-        out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
-        if out.Dimensionality() == 1:
-            axes = pp.gca()
-            axes.clear()
-            axes.plot(out)
-            axes.set_ylim((0, 255))
-            axes.set_xlim((0, out.Size(0) - 1))
-        else:
-            if colormap == '':
-                if range == 'base' or range == 'based':
-                    colormap = 'coolwarm'
-                elif range == 'modulo' or range == 'labels':
-                    colormap = 'labels'
-                elif range == 'angle' or range == 'orientation':
-                    colormap = 'hsv'
-                else:
-                    colormap = 'gray'
-            if colormap == 'labels':
-                cmap = _label_colormap()
-            else:
-                cmap = pp.get_cmap(colormap)
-            pp.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none')
-        pp.draw()
-        pp.pause(0.001)
-    elif not reportedPlotLib:
-        print("""
+    if not hasMatPlotLib:
+        if not reportedPlotLib:
+            warnings.warn("""
     PyDIP requires matplotlib for its display functionality. Matplotlib was not found
     on your system. Image display (diplib.Show and diplib.Image.Show) will not do anything.
     You can install matplotlib by typing on your Linux/MacOS command prompt:
@@ -152,5 +136,76 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     or under Windows:
         python3 -m pip install matplotlib
     Alternatively, use diplib.viewer.ShowModal or diplib.viewer.Show/diplib.viewer.Spin
-    """)
-        reportedPlotLib = True
+    """, RuntimeWarning)
+            reportedPlotLib = True
+        return
+
+    if img.IsEmpty() or img.NumberOfPixels() <= 1:
+        warnings.warn("Nothing to display", SyntaxWarning)
+        return
+    sizes = [x for x in img.Sizes() if x > 1]
+    if len(sizes) == 1:
+        data = np.squeeze(np.array(img))
+        length = sizes[0]
+        if np.iscomplexobj(data):
+            if complexMode == 'abs' or complexMode == 'magnitude':
+                data = np.abs(data)
+            elif complexMode == 'phase':
+                data = np.angle(data)
+            elif complexMode == 'real':
+                data = data.real
+            elif complexMode == 'imag':
+                data = data.imag
+        x = np.arange(0.0, length)
+        if extent:
+            if len(extent) == 2:
+                d = (extent[1] - extent[0]) / (length - 1)
+                x *= d
+                x += extent[0]
+            else:
+                warnings.warn("Parameter 'extent' has the wrong number of values, ignoring", SyntaxWarning)
+                extent = None
+        axes = pp.gca()
+        axes.clear()
+        axes.set_aspect('auto')
+        axes.plot(x, data)
+        axes.set_xlim((x[0], x[-1]))
+        axes.set_ylim((np.amin(data), np.amax(data)))
+    else:
+        out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
+        if colormap == '':
+            if range == 'base' or range == 'based':
+                colormap = 'coolwarm'
+            elif range == 'modulo' or range == 'labels':
+                colormap = 'labels'
+            elif range == 'angle' or range == 'orientation':
+                colormap = 'hsv'
+            else:
+                colormap = 'gray'
+        if colormap == 'labels':
+            cmap = _label_colormap()
+        else:
+            cmap = pp.get_cmap(colormap)
+        if extent:
+            if len(extent) == 4:
+                dx = (extent[1] - extent[0]) / (out.Size(0) - 1) / 2
+                dy = (extent[3] - extent[2]) / (out.Size(1) - 1) / 2
+                extent = (extent[0] - dx, extent[1] + dx, extent[3] + dy, extent[2] - dy)
+            else:
+                warnings.warn("Parameter 'extent' has the wrong number of values, ignoring", SyntaxWarning)
+                extent = None
+        axes = pp.gca()
+        axes.clear()
+        axes.imshow(out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation='none', extent=extent)
+        if extent:
+            axes.set_aspect(dx / dy)
+    pp.draw()
+    pp.pause(0.001)
+
+def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap=''):
+    if hist.Dimensionality() == 1:
+        extent = (hist.BinCenter(0), hist.BinCenter(hist.Bins() - 1))
+    else:
+        extent = (hist.BinCenter(0, dim1), hist.BinCenter(hist.Bins() - 1, dim1),
+                  hist.BinCenter(0, dim2), hist.BinCenter(hist.Bins() - 1, dim2))
+    Show(hist.GetImage(), range, complexMode, projectionMode, coordinates, dim1, dim2, colormap, extent)

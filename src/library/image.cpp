@@ -199,6 +199,7 @@ std::ostream& operator<<(
       Image const& img
 ) {
    // Shape and other main properties
+   os << img.Dimensionality() << "D ";
    if( img.IsColor() ) {
       os << "Color image (" << img.Tensor() << ", " << img.ColorSpace() << "):\n";
    } else if( !img.IsScalar() ) {
@@ -207,13 +208,13 @@ std::ostream& operator<<(
       os << "Scalar image:\n";
    }
    // Image size and pixel size
-   os << "    data type " << img.DataType() << '\n';
+   os << "    data type:      " << img.DataType() << '\n';
    if( img.Dimensionality() == 0 ) {
-      os << "    sizes {} (0D)\n";
+      os << "    sizes:          {}\n";
    } else {
-      os << "    sizes " << img.Sizes() << " (" << img.Dimensionality() << "D)\n";
+      os << "    sizes:          " << img.Sizes() << '\n';
       if( img.HasPixelSize() ) {
-         os << "    pixel size " << img.PixelSize( 0 );
+         os << "    pixel size:     " << img.PixelSize( 0 );
          for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
             os << " x " << img.PixelSize( ii );
          }
@@ -221,7 +222,7 @@ std::ostream& operator<<(
       }
    }
    // Data storage
-   os << "    strides " << img.Strides() << ", tensor stride " << img.TensorStride() << '\n';
+   os << "    strides:        " << img.Strides() << ", tensor stride " << img.TensorStride() << '\n';
    if( img.IsForged() ) {
       os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)\n";
       os << "    origin pointer: " << img.Origin() << '\n';

@@ -224,7 +224,7 @@ class DIP_NO_EXPORT Histogram {
             }
          DIP_END_STACK_TRACE
       }
-      explicit Histogram( Image::View const& input, Configuration configuration ) {
+      Histogram( Image::View const& input, Configuration configuration ) {
          if( input.Offsets().empty() ) {
             // This code works if either the view is regular or has a mask.
             *this = Histogram( input.Reference(), input.Mask(), configuration );
@@ -485,7 +485,7 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Gets the bin for `value` in an nD histogram
-      UnsignedArray Bin( FloatArray value ) const {
+      UnsignedArray Bin( FloatArray const& value ) const {
          DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
          DIP_THROW_IF( Dimensionality() != value.size(), E::ARRAY_PARAMETER_WRONG_LENGTH );
          UnsignedArray out( value.size() );
@@ -622,16 +622,53 @@ inline void swap( Histogram& v1, Histogram& v2 ) {
 
 /// \brief Adds two histograms.
 /// \relates dip::Histogram
-inline Histogram operator+( Histogram lhs, Histogram const& rhs ) {
-   lhs += rhs;
-   return lhs;
+inline Histogram operator+( Histogram const& lhs, Histogram const& rhs ) {
+   Histogram out = lhs.Copy();
+   out += rhs;
+   return out;
 }
 
 /// \brief Subtracts two histograms.
 /// \relates dip::Histogram
-inline Histogram operator-( Histogram lhs, Histogram const& rhs ) {
-   lhs -= rhs;
-   return lhs;
+inline Histogram operator-( Histogram const& lhs, Histogram const& rhs ) {
+   Histogram out = lhs.Copy();
+   out -= rhs;
+   return out;
+}
+
+/// \brief You can output a \ref dip::Histogram to `std::cout` or any other stream. Some
+/// information about the histogram is printed.
+/// \relates dip::Distribution
+inline std::ostream& operator<<(
+      std::ostream& os,
+      Histogram const& histogram
+) {
+   auto print_dim_info = [ & ]( dip::uint ii ) {
+      os << histogram.Bins( ii ) << " bins"
+                           << ", lower bound: " << histogram.LowerBound( ii )
+                           << ", upper bound: " << histogram.UpperBound( ii )
+                           << ", bin size: " << histogram.BinSize( ii );
+   };
+
+   if( histogram.IsInitialized()) {
+      dip::uint nd = histogram.Dimensionality(); // Must be nd >= 1
+      os << nd << "D histogram:";
+      if( nd == 1 ) {
+         os << ' ';
+         print_dim_info( 0 );
+         os << '\n';
+      } else {
+         os << '\n';
+         for( dip::uint ii = 0; ii < nd; ++ii ) {
+            os << "    dimension " << ii << ": ";
+            print_dim_info( ii );
+            os << '\n';
+         }
+      }
+   } else {
+      os << "Uninitialized histogram\n";
+   }
+   return os;
 }
 
 

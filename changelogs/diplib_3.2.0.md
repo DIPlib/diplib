@@ -16,17 +16,34 @@ title: "Changes DIPlib 3.2.0"
 
 - `dip::Image::Pad()` can now pad with an arbitrary pixel value.
 
+- `dip::Histogram` now has a stream output operator (`<<`), which shows basic information about the histogram.
+
+- Added `dip::ObjectMaximum()` and `dip::ObjectMinimum()` to identify the largest or smallest object.
+
 ### Changed functionality
+
+- The output stream operator for `dip::Image` writes the same information in a slightly different way.
+
+- `dip::Histogram::Bin( FloatArray const& value )` now takes the input as a const reference.
 
 ### Bug fixes
 
 - When inserting a `dip::Measurement` object into a stream, the table it produced sometimes had feature value columns
   narrower than the feature name header.
 
+- Fixed addition and subtraction operator for `dip::Histogram` changing the LHS operand: `h3 = h1 + h2` would
+  end up with `h1` equal to `h3`.
+
 - Fixed bug that prevented compilation with *MinGW*.
 
 - The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules,
   as well as the macros in the *DIPlib*-*MATLAB* interface.
+
+- `dip::Distribution::Y` and `dip::Distribution::Ybegin` didn't throw an exception when attempting to access one
+  past the last y value.
+
+- `dip::Distribution` now defaults to no x-units (rather than pixels), making `dip::PerObjectHistogram` correctly
+  not have units for the x-axis, which is intensity, not pixels.
 
 
 
@@ -56,7 +73,41 @@ title: "Changes DIPlib 3.2.0"
 
 - Added Python 3.10 to the list of deployed wheels.
 
+- Added `dip.Histogram` as a class, matching *DIPlib*'s `dip::Histogram`. This gives a lot more flexibility
+  when creating the histogram and when working with histograms. Most of the class methods from *DIPlib* have
+  been made accessible from Python, as have all the histogram processing and analysis functions:
+    - `dip.Histogram.Configuration` class.
+    - New `dip.Histogram` class methods: `IsInitialized()`, `Copy()`, `ReverseLookup()`, `Dimensionality()`,
+      `Bins()`, `BinSize()`, `LowerBound()`, `UpperBound()`, `BinBoundaries()`, `BinCenters()`, `BinCenter()`,
+      `Bin()`, `GetImage()`, `Count()`, `Cumulative()`, `GetMarginal()`, `Smooth()`.
+    - `dip.Histogram` addition and subtraction operators, and indexing operators.
+    - New functions `dip.CumulativeHistogram()`, `dip.Smooth()`, `dip.Mean()`, `dip.Covariance()`,
+      `dip.MarginalPercentile()`, `dip.MarginalMedian()`, `dip.Mode()`, `dip.PearsonCorrelation()`,
+      `dip.Regression()`, `dip.MutualInformation()`, `dip.Entropy()`, `dip.IsodataThreshold()`,
+      `dip.OtsuThreshold()`, `dip.MinimumErrorThreshold()`, `dip.GaussianMixtureModelThreshold()`,
+      `dip.TriangleThreshold()`, `dip.BackgroundThreshold()`, `dip.KMeansClustering()`,
+      `dip.MinimumVariancePartitioning()`, `dip.EqualizationLookupTable()`, `dip.MatchingLookupTable()`.
+    - New function `dip.PerObjectHistogram()`.
+
+- Added `dip.HistogramShow()` and `dip.Histogram.Show()` to visualize histograms with proper axis scaling
+  and tick labels.
+
+- Added `dip.LookupTable` as a class, matching *DIPlib*'s `dip::LookupTable`.
+
+- Added `dip.ObjectMaximum()` and `dip.ObjectMinimum()`.
+
 ### Changed functionality
+
+- The function `dip.Histogram()` is now called `dip.Histogram_old()`, to make space for the new `dip.Histogram`
+  class. **NOTE! This breaks backwards compatibility.** To keep old code from working, do
+  `dip.Histogram = dip.Histogram_old` at the top of the code, after `import diplib as dip`.
+
+- The function `dip.LookupTable()` is now called `dip.LookupTable_old()`, to make space for the new `dip.LookupTable`
+  class. **NOTE! This breaks backwards compatibility.** To keep old code from working, do
+  `dip.LookupTable = dip.LookupTable_old` at the top of the code, after `import diplib as dip`.
+
+- `dip.Show()` has a new parameter `extent`, uses proper warnings rather than just printing messages to
+  the console, and no longer uses `dip.ImageDisplay()` for 1D images.
 
 (See also changes to *DIPlib*.)
 
