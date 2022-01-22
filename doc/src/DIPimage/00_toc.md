@@ -1,5 +1,3 @@
-\comment DIPlib 3.0
-
 \comment (c)2017-2020, Cris Luengo.
 \comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 

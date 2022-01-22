@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the "HCV" and "HSV" color spaces
- *
  * (c)2017, Cris Luengo.
  * (c)2016, Flagship Biosciences, Inc.
  *

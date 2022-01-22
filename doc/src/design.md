@@ -1,5 +1,3 @@
-\comment DIPlib 3.0
-
 \comment (c)2014-2021, Cris Luengo.
 \comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 

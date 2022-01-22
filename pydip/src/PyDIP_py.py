@@ -1,5 +1,3 @@
-# PyDIP 3.0, Python bindings for DIPlib 3.0
-#
 # (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
 # (c)2022, Cris Luengo.
 #

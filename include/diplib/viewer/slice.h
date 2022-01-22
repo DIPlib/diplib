@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0 viewer
- * This file contains definitions for the nD image slice viewer.
- *
  * (c)2017, Wouter Caarls
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

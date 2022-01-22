@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the definition the operators that work with tensor images.
- *
  * (c)2017, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains per object ellipse fit algorithm.
- *
  * (c)2019, Cris Luengo.
  * (c)2015, Petter Ranefall.
  *

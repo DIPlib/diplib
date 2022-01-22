@@ -7,10 +7,9 @@ The *DIPlib* project contains:
 
 - **[*DIPlib*](https://diplib.org/diplib-docs/)**, a C++ library for quantitative image analysis.
 It has been in development at Delft University of Technology in The Netherlands since 1995.
-The 3.0 release of *DIPlib* represents a complete rewrite in modern C++ of the library infrastructure,
+The 3.0 release of *DIPlib* represented a complete rewrite in modern C++ of the library infrastructure,
 with most of the image processing and analysis algorithms ported from the previous version,
-and some of them improved significantly. Many of the improvements to *DIPlib* are a result of porting
-over concepts and ideas first implemented in *DIPimage*.
+and some of them improved significantly.
 Read [the *DIPlib* documentation](https://diplib.org/diplib-docs/).
 
 - **[*DIPimage*](https://diplib.org/DIPimage.html)**, a *MATLAB* toolbox for quantitative
@@ -27,8 +26,8 @@ Read [the *DIPviewer* documentation](https://diplib.org/diplib-docs/dipviewer.ht
 
 - ***DIPjavaio***, an interface to
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), a Java-based library that reads
-hundreds of image file formats. This module is usable from C++ and *Python*. *DIPimage* has a different
-way of interfacing with *Bio-Formats*.
+hundreds of image file formats. This module is usable from C++ and *Python* (*DIPimage* interfaces
+to *Bio-Formats* natively).
 Read [the *DIPjavaio* documentation](https://diplib.org/diplib-docs/dipjavaio.html)
 
 See [the *DIPlib* website](https://diplib.org/) for more information.

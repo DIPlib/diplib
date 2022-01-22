@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the declaration for dip::Graph and related functionality
- *
  * (c)2013, Filip Malmberg.
  * (c)2019, Cris Luengo.
  *

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the functions Maxima and Minima.
- *
  * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)2008, Cris Luengo.
  *

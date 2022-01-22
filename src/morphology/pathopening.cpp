@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the various watershed implementations and related functions.
- *
  * (c)2008-2009, 2017-2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

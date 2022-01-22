@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains support for nD iterators that are independent of image data type.
- *
  * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

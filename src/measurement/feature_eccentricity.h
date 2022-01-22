@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the "Eccentricity" measurement feature
- *
  * (c)2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

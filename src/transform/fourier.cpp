@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions of the Fourier Transform function.
- *
  * (c)2017-2020, Cris Luengo, Erik Schuitema
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains declarations for reading images through Java
- *
  * (c)2019-2021, Wouter Caarls.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

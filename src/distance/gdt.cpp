@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for distance transforms
- *
  * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

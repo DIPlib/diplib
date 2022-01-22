@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for structure tensor related functionality
- *
  * (c)2017-2018, Cris Luengo, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

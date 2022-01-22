@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains declarations and definitions for chain-code--based 2D measurements
- *
  * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

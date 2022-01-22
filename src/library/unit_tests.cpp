@@ -1,8 +1,4 @@
 /*
- * DIPlib 3.0
- * This file is not part of the DIPlib library, it is the main() for the
- * unit tests program.
- *
  * (c)2017-2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

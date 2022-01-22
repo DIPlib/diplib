@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0 viewer
- * This file defines the DIPVIEWER_EXPORT and DIPVIEWER_NO_EXPORT macros.
- *
  * (c)2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

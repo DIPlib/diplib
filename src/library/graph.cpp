@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for graph algorithms.
- *
  * (c)2013, Filip Malmberg.
  * (c)2019, Cris Luengo.
  *

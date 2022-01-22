@@ -37,8 +37,6 @@
 %            3      62.988679       6.535849       4.696855
 %           ...
 
-% DIPimage 3.0
-%
 % (c)2017-2019, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)2008, Michael van Ginkel.

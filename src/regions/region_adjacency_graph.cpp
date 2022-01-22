@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains region adjacency graph related algorithms.
- *
  * (c)2019, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

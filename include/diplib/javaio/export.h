@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the DIPJAVAIO_EXPORT and DIPJAVAIO_NO_EXPORT macros.
- *
  * (c)2019, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

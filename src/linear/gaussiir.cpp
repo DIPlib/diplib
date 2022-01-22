@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions of functions that implement the IIR Gaussian filter.
- *
  * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * This function originally written by Lucas van Vliet.

@@ -1,7 +1,4 @@
 /*
- * DIPimage 3.0
- * This MEX-file implements the `viewslice` function
- *
  * (c)2018, Wouter Caarls.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

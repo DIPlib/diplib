@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0 viewer
- * This file contains base definitions for the viewer.
- *
  * (c)2017, Wouter Caarls
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

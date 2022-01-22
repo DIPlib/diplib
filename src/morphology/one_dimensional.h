@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file declares internal functions for 1D morphological operators and their compositions.
- *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

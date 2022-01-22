@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains infrastructure for changing pixels at the image border.
- *
  * (c)2017, Erik Schuitema, Cris Luengo
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

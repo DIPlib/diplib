@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains region growing algorithms.
- *
  * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

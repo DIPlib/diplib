@@ -1,5 +1,4 @@
-/* PyDIP 3.0, Python bindings for DIPlib 3.0 JavaIO
- *
+/*
  * (c)2019-2020, Wouter Caarls
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

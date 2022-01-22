@@ -70,8 +70,6 @@
 %   See also: newim, newcolorim, dip_image.dip_image, dip_image.imsize,
 %   dip_image.tensorsize, dip_image.ndims, dipshow
 
-% DIPimage 3.0
-%
 % (c)2017-2021, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

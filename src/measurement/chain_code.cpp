@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains functions to manipulate chain codes.
- *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
