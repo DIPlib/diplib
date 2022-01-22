@@ -62,7 +62,7 @@ your changes before executing another command through the GUI.
 \section sec_dum_functions_dipshow The `dipshow` function
 
 `dipshow` shows a `dip_image` object in a figure window. It is the function
-that is called when leaving the semicolon off at the end of a MATLAB
+that is called when leaving the semicolon off at the end of a *MATLAB*
 statement that returns a `dip_image` object (see \ref sec_dum_dip_image_displaying).
 An optional second argument indicates the
 display range required, and allows more flexibility than the options in

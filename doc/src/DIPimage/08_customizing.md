@@ -49,11 +49,11 @@ dipsetpref('PutInCommandWindow','off')
 
 \section sec_dum_customizing_adding Adding functions to the GUI
 
-To add a function to the GUI, it must be on the MATLAB path, and you must
+To add a function to the GUI, it must be on the *MATLAB* path, and you must
 make information about it available to the GUI.
 The second requirement is accomplished by writing a function `localdipmenus`.
 The function should be defined by itself in a file called `localdipmenus.m` and
-be somewhere on the MATLAB path. See `help addpath` to learn about the MATLAB
+be somewhere on the *MATLAB* path. See `help addpath` to learn about the *MATLAB*
 path. `localdipmenus` is defined as follows:
 
 ```matlab
@@ -83,7 +83,7 @@ There are two things happening in this function:
    create one from scratch. See the function `dipmenus` for the definition of
    the default `menulist` structure. In the code above, we added a menu
    called "My Menu", which contains a single command, `myfunction`. `myfunction`
-   must be a function on the MATLAB path.
+   must be a function on the *MATLAB* path.
 
 2- A map object is created that contains a single entry for `myfunction`. This
    map will be added to the default map defined in `dipmenus`, which provides

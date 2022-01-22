@@ -426,7 +426,7 @@ DIP_NODISCARD inline Image WangBradyCornerDetector(
 ///
 /// !!! literature
 ///     - A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
-///       in: Medical Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
+///       in: Medical Image Computing and Computer-Assisted Intervention (MICCAI'98), LNCS 1496:130-137, 1998.
 DIP_EXPORT void FrangiVesselness(
       Image const& in,
       Image& out,

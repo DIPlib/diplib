@@ -260,7 +260,7 @@ set(handle,'Units','points');
 
 See [*MATLAB* Function Reference](https://www.mathworks.com/help/releases/R2017a/matlab/ref/figure-properties.html)
 for more information on figure window properties. You can see a local
-copy of this page by typing from within MATLAB
+copy of this page by typing from within *MATLAB*
 
 ```matlab
 web(fullfile(docroot,'matlab/ref/figure-properties.html'))

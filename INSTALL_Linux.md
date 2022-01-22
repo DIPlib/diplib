@@ -148,7 +148,7 @@ version of the *GCC* libraries than what *MATLAB* links against, and will theref
 In [the documentation](https://www.mathworks.com/support/requirements/supported-compilers.html) they specify which
 compiler versions are compatible with each version of *MATLAB*. This list includes the version of *GCC* used to build
 that version of *MATLAB*, and a few older releases. That is, their solution to this issue is to tell customers to use
-only those specific versions of *GCC* to build MEX-files. If you do want to follow *MATLAB*’s recommendation, then
+only those specific versions of *GCC* to build MEX-files. If you do want to follow *MATLAB*'s recommendation, then
 install one of the supported compilers, and add tell CMake about them using the following command:
 ```bash
 cmake . -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9

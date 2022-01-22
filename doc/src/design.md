@@ -342,29 +342,29 @@ problem.
 \section design_ranges Ranges for indexing
 
 There two common ways to define ranges for indexing, either the end index is included or not. For example,
-in MATLAB the end index is included, in Python it is excluded. Some languages such as Ruby and Scala allow
+in *MATLAB* the end index is included, in Python it is excluded. Some languages such as Ruby and Scala allow
 the user to choose between the two. *DIPlib* uses \ref dip::Range to represent a range for indexing. These
 ranges include the end index.
 
 On Stack Overflow one sees quite a few errors and cases of confusion in Python because the end index is not included
-in the range. Similar errors in MATLAB are highly uncommon. I think that this is because in English (and many,
+in the range. Similar errors in *MATLAB* are highly uncommon. I think that this is because in English (and many,
 if not all, other languages too) when one counts from a to b, the b is included in the count. This is a strong
 argument in favor of including the end index: it is less confusing to the novice programmer.
 
 There are [no strong](https://stackoverflow.com/q/11364533/7328782) [arguments](https://stackoverflow.com/q/4504662/7328782)
 as to why it should be excluded. The argument typically offered is that `array[a:b]` in Python has `b - a` elements,
 rather than `b - a + 1` as would be the case if the end index were included, and this is prettier and thus better.
-Also, `array[a:b] + array[b:c] == array[a:c]`, whereas in MATLAB one would have to write `array(a:b-1)`
+Also, `array[a:b] + array[b:c] == array[a:c]`, whereas in *MATLAB* one would have to write `array(a:b-1)`
 and `array(b:c)` to split `array[a:c]`; this is again an argument of aesthetics. The only technical argument is that,
-by excluding the upper bound, it is possible to index zero elements, `array[1:1]`; however, in MATLAB this is also
+by excluding the upper bound, it is possible to index zero elements, `array[1:1]`; however, in *MATLAB* this is also
 possible, `array(1:0)`, so this argument is again not meaningful.
 
-Nonetheless, MATLAB’s end index being included is paired with indexing starting at 1, such that the range `1:n` has
-`n` elements, just like Python’s `range(0, n)`. There are very few examples where indexing starts at 0 but includes
+Nonetheless, *MATLAB*'s end index being included is paired with indexing starting at 1, such that the range `1:n` has
+`n` elements, just like Python's `range(0, n)`. There are very few examples where indexing starts at 0 but includes
 the end index.
 
 In *DIPlib* indexing starts at 0, so the logical solution would be for `dip::Range( a, b )` to exclude `b`, following
-Python’s logic, which also starts indexing at 0. But this leads to certain difficulties when using negative indices
+Python's logic, which also starts indexing at 0. But this leads to certain difficulties when using negative indices
 to count from the end.
 
 For example, in Python, `array[a:]` is all elements from `a` to the end of the array, whereas `array[a,-1]` is all
