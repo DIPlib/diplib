@@ -139,5 +139,8 @@ The private part of the ssh-key is stored in memory at login in the ssh-agent.
    ssh-add.exe "C:\Users\<username>\.ssh\github"
    ```
 1. store the `ssh_add_github.bat` file in the user startup directory: ` %appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
+1. open `Environment Variables`
+1. add User variable `GIT_SSH` with the value `C:\Windows\System32\OpenSSH\ssh.exe`
+1. logout and login again
 
 *to be continued*
