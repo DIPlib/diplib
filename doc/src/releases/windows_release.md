@@ -20,9 +20,9 @@
 
 ## Setting up the file-structure
 
-The following file-structure is used for building the Windows release:
+The following file-structure is used for building the Windows release (not all directories and files are specified):
 
-*Note: round corners indicate directories, sharp corners indicate files* 
+*Note: round corners indicate directories, sharp corners indicate files*
 
 ```mermaid
 graph
@@ -32,8 +32,8 @@ graph
     1 --> 13(images)
     1 --> 14(source)
     1 --> 15(fftw)
-    1 --> 16(freeglut)
-    1 --> 17(...)
+    1 --> 16(...)
+    1 --> 18[bioformats_package.jar]
     11 --> 111(bin)
     11 --> 112(include)
     11 --> 113(lib)
@@ -43,6 +43,8 @@ graph
     14 --> 142(fftw-3.3.10)
     141 --> 1411(build)
     142 --> 1421(build)
+    15 --> 151(include)
+    15 --> 152(lib)
 
 ```
 
@@ -58,15 +60,14 @@ These instructions are written January 2022 and the following environment and pr
 
 Also the following dependencies have been downloaded:
 
-1. FFTW, version 3.3.10 <https://fftw.org/download.html>. Download the source as we will build our own static library
-1. FreeGlut, version 3.2.1 <http://freeglut.sourceforge.net/index.php#download>. Download the source as we will build our own static library
-1. GLFW, version 3.3.6 <https://www.glfw.org/download.html>. Download the 64-bit Windows binaries as they also contain a prebuild static library
-1. Freetype, version 2.11.1 <https://github.com/ubawurinna/freetype-windows-binaries/releases>. Download the `Source code (zip)` as is it also contains a prebuild static library
+1. FFTW, version 3.3.10 <https://fftw.org/download.html>. Download the source as we will build our own static library (see [FFTW static library](#fftw-static-library))
+1. GLFW, version 3.3.6 <https://www.glfw.org/download.html>. Download the 64-bit Windows binaries as they contain a prebuild static library
+1. Freetype, version 2.11.1 <https://github.com/ubawurinna/freetype-windows-binaries/releases>. Download the `Source code (zip)` as is it contains a prebuild static library
 1. Bio-Formats package, version 6.8.1 <https://www.openmicroscopy.org/bio-formats/downloads/>. Download `bioformats_package.jar`
 
-For some dependencies static libraries need to be build up front. For this `Visual Studio` and `CMake` need to be available.
-
 ### FFTW static library
+
+To build the FFTW static libraries `Visual Studio` and `CMake` must be available.
 
 For the FFTW library two versions need to be build: single precision `fftw3f.lib` and double precision `fftw3.lib` (for more information: <https://fftw.org/fftw3_doc/Precision.html>)
 
@@ -99,5 +100,27 @@ For the FFTW library two versions need to be build: single precision `fftw3f.lib
 1. press the <kbd>Generate</kbd>
 1. switch to Visual Studio and select the Reload option
 1. right-click on the `INSTALL` solution
+
+## Building *DIPimage*
+
+The *DIPlib* source used for building *DIPimage* can be retrieved from the GitHub-repository: <https://github.com/DIPlib/diplib>.
+
+The next chapter describes briefly the steps to authenticate from Windows to GitHub with an ssh-keypair.
+
+### Setting up GitHub SSH authentication
+
+1. open `Git Bash`
+1. enter the following command to create an ssh-keypair without passphrase:
+
+   ```bash
+   $ ssh-key -f ~/.ssh/github -N ""
+   ```
+
+3. copy the contents of the public key `~/.ssh/github.pub`
+1. open GitHub website and navigate to `Settings` in the user-menu in the upper-right
+1. select on the left `SSH and GPG keys` and press the <kbd>New SSH key</kbd> button
+1. paste the public key in the `Key` field and press the <kbd>Add SSH key</kbd> button
+
+*here comes: turn on ssh-agent and ssh-add batch file in startup*
 
 *to be continued*
