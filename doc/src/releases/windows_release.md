@@ -53,10 +53,17 @@ graph
 These instructions are written January 2022 and the following environment and programs have been used:
 
 1. Windows 10 Enterprise, version 21H2
-1. Git, version 2.34.1 <https://git-scm.com/download/win>
+1. Git, version 2.34.1 <https://git-scm.com/download/win>. Set global name and e-mail address in `Git Bash`:
+
+   ```bash
+   git config --global user.name "<Full name>"
+   git config --global user.email "<e-mail address>"
+   ```
+
 1. CMake, version 3.22.1 <https://cmake.org/download/#latest>
 1. Microsoft Visual Studio Community 2022 (64-bit), version 17.0.5 <https://visualstudio.microsoft.com/downloads/>. Select the C++ environment during installation
 1. OpenJDK, version 17.0.2 <https://jdk.java.net/17/>. It's sufficient to just unpack the `zip` file
+1. Matlab 2021b, version 9.11.0.1837725 <https://nl.mathworks.com/downloads>
 
 Also the following dependencies have been downloaded:
 
@@ -117,7 +124,7 @@ Pushing to and pulling from GitHub requires authentication. This is done with an
 1. enter the following command to create an ssh-keypair without passphrase:
 
    ```bash
-   $ ssh-key -f ~/.ssh/github -N ""
+   ssh-key -f ~/.ssh/github -N ""
    ```
 
 3. copy the contents of the **public** key `~/.ssh/github.pub`
