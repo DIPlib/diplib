@@ -20,7 +20,7 @@
 
 ## Setting up the file-structure
 
-The following file-structure is used for building the Windows release (not all directories and files are specified):
+The following file-structure is used for building the Windows release (not all dependencies are specified, only FFTW is given as an example):
 
 *Note: round corners indicate directories, sharp corners indicate files, second line is description*
 
@@ -32,8 +32,6 @@ graph
     1 --> 13(images)
     1 --> 14(source)
     1 --> 15(fftw)
-    1 --> 16(...)
-    1 --> 18[bioformats_package.jar]
     11 --> 111(bin)
     11 --> 112(include)
     11 --> 113(lib)
