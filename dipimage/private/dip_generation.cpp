@@ -265,6 +265,75 @@ void drawshape( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void drawtext( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 1 );
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   // First argument: image or text?
+   if( mxIsClass( prhs[ 0 ], "string" ) || mxIsChar( prhs[ 0 ] )) {
+      // drawtext(text, font, size, orientation)
+      // drawtext(text, orientation)
+      dip::String text = dml::GetString( prhs[ 0 ] );
+      // Second argument is text?
+      if( nrhs > 1 && ( mxIsClass( prhs[ 1 ], "string" ) || mxIsChar( prhs[ 1 ] ))) {
+         // drawtext(text, font, size, orientation)
+         DML_MAX_ARGS( 4 );
+         dip::String font = dml::GetString( prhs[ 1 ] );
+         dip::dfloat size = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 12.0;
+         dip::dfloat orientation = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 0.0;
+         dip::FreeTypeTool freeTypeTool( font );
+         freeTypeTool.SetSize( size );
+         out = freeTypeTool.DrawText( text, orientation ).image; // NOTE! Should make a copy
+      } else {
+         // drawtext(text, orientation)
+         DML_MAX_ARGS( 2 );
+         dip::dfloat orientation = nrhs > 1 ? dml::GetFloat( prhs[ 1 ] ) : 0.0;
+         out = dip::DrawText( text, orientation ); // NOTE! Should make a copy
+      }
+   } else {
+      // drawtext(image, text, font, size, origin, value, orientation, align)
+      // drawtext(image, text, origin, value, orientation, align)
+      DML_MIN_ARGS( 2 );
+      out.Copy( dml::GetImage( prhs[ 0 ] ));
+      dip::String text = dml::GetString( prhs[ 1 ] );
+      dip::FloatArray origin{ out.Sizes() };
+      origin[ 0 ] = 0; // Default origin
+      // Third argument is text?
+      if( nrhs > 2 && ( mxIsClass( prhs[ 2 ], "string" ) || mxIsChar( prhs[ 2 ] ))) {
+         // drawtext(image, text, font, size, origin, value, orientation, align)
+         DML_MAX_ARGS( 8 );
+         dip::String font = dml::GetString( prhs[ 2 ] );
+         dip::dfloat size = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 12.0;
+         if( nrhs > 4 ) {
+            origin = dml::GetFloatArray( prhs[ 4 ] );
+         }
+         dip::Image::Pixel color{ 255 };
+         if( nrhs > 5 ) {
+            color.swap( dml::GetPixel( prhs[ 5 ] )); // we cannot assign to a pixel!
+         }
+         dip::dfloat orientation = nrhs > 6 ? dml::GetFloat( prhs[ 6 ] ) : 0.0;
+         dip::String align = nrhs > 7 ? dml::GetString( prhs[ 7 ] ) : dip::S::LEFT;
+         dip::FreeTypeTool freeTypeTool( font );
+         freeTypeTool.SetSize( size );
+         freeTypeTool.DrawText( out, text, origin, color, orientation, align );
+      } else {
+         // drawtext(image, text, origin, value, orientation, align)
+         DML_MAX_ARGS( 6 );
+         dip::Image::Pixel color{ 255 };
+         if( nrhs > 2 ) {
+            origin = dml::GetFloatArray( prhs[ 2 ] );
+         }
+         if( nrhs > 3 ) {
+            color.swap( dml::GetPixel( prhs[ 3 ] )); // we cannot assign to a pixel!
+         }
+         dip::dfloat orientation = nrhs > 4 ? dml::GetFloat( prhs[ 4 ] ) : 0.0;
+         dip::String align = nrhs > 5 ? dml::GetString( prhs[ 5 ] ) : dip::S::LEFT;
+         dip::DrawText( out, text, origin, color, orientation, align );
+      }
+   }
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 std::pair< dip::uint, dip::uint > CheckValueArray( mxArray const* mx, dip::uint N, dip::uint nDims ) {
    DIP_THROW_IF( !mxIsDouble( mx ) || mxIsComplex( mx ), "Floating-point array expected" );
    DIP_THROW_IF( mxGetNumberOfDimensions( mx ) != 2, "Value array of wrong size" );
@@ -634,6 +703,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          drawpolygon( plhs, nrhs, prhs );
       } else if( function == "drawshape" ) {
          drawshape( plhs, nrhs, prhs );
+      } else if( function == "drawtext" ) {
+         drawtext( plhs, nrhs, prhs );
       } else if( function == "gaussianblob" ) {
          gaussianblob( plhs, nrhs, prhs );
       } else if( function == "gaussianedgeclip" ) {

@@ -71,6 +71,8 @@ title: "Changes DIPlib 3.2.0"
 
 - `readim` and `writeim` recognize `'NPY'` as a format. This is the NumPy array format supported natively by *DIPlib*.
 
+- Added `drawtext` function.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

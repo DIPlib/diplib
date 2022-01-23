@@ -83,6 +83,7 @@ divergencevector.m
 drawline.m
 drawpolygon.m
 drawshape.m
+drawtext.m
 dt.m
 dx.m
 dxx.m
