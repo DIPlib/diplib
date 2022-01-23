@@ -240,6 +240,14 @@ Image& Image::UnexpandSingletonDimensions() {
    return *this;
 }
 
+Image& Image::UnexpandSingletonDimension( dip::uint dim ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( dim >= sizes_.size(), E::ILLEGAL_DIMENSION );
+   DIP_THROW_IF( strides_[ dim ] != 0, E::DIMENSION_NOT_EXPANDED );
+   sizes_[ dim ] = 1; // we leave the stride at 0, it's irrelevant.
+   return *this;
+}
+
 bool Image::IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const {
    if( sizes_.size() > newSizes.size() ) {
       return false;
@@ -257,6 +265,13 @@ Image& Image::ExpandSingletonTensor( dip::uint sz ) {
    DIP_THROW_IF( tensor_.Elements() != 1, E::IMAGE_NOT_SCALAR );
    tensor_.SetVector( sz );
    tensorStride_ = 0;
+   return *this;
+}
+
+Image& Image::UnexpandSingletonTensor() {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( tensorStride_ != 0, E::DIMENSION_NOT_EXPANDED );
+   tensor_.SetScalar();
    return *this;
 }
 

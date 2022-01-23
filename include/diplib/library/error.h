@@ -146,6 +146,7 @@ constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not support
 constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't match";
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
 constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
+constexpr char const* DIMENSION_NOT_EXPANDED = "Dimension is not singleton-expanded";
 
 // image tensor sizes error
 constexpr char const* IMAGE_NOT_SCALAR = "Image is not scalar";

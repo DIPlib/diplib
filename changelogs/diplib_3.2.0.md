@@ -20,6 +20,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip::ObjectMaximum()` and `dip::ObjectMinimum()` to identify the largest or smallest object.
 
+- Added `dip::Image::UnexpandSingletonDimension()` and `dip::Image::UnexpandSingletonTensor()`.
+
 ### Changed functionality
 
 - The output stream operator for `dip::Image` writes the same information in a slightly different way.
