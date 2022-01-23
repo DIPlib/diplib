@@ -22,11 +22,11 @@
 
 The following file-structure is used for building the Windows release (not all directories and files are specified):
 
-*Note: round corners indicate directories, sharp corners indicate files*
+*Note: round corners indicate directories, sharp corners indicate files, second line is description*
 
 ```mermaid
 graph
-    root(C:) --> 1(diplib)
+    root(C:) --> 1(diplib<br>root)
     1 --> 11(diplib<br>final build)
     1 --> 12(download)
     1 --> 13(images)
@@ -45,32 +45,44 @@ graph
     142 --> 1421(build)
     15 --> 151(include)
     15 --> 152(lib)
-
 ```
+
+### Explanation
+
+- all software related to the build of the release is stored under `C:\diplib`
+- all downloads are stored in `download`
+- *DIPlib* images are stored in `images`
+- all unpacked software sources are stored in `source`
+- the CMake build directory `build` is created inside the unpacked source
+- the compiled dependencies are stored with their package-name (no version)
+- the *DIPimage* build is stored in `diplib`
 
 ## Prerequisites
 
 These instructions are written January 2022 and the following environment and programs have been used:
-
-1. Windows 10 Enterprise, version 21H2
-1. Git, version 2.34.1 <https://git-scm.com/download/win>. Set global name and e-mail address in `Git Bash`:
+-. Windows 10 Enterprise, version 21H2
+- Git, version 2.34.1 <https://git-scm.com/download/win>. Set global name and e-mail address in `Git Bash`:
 
    ```bash
    git config --global user.name "<Full name>"
    git config --global user.email "<e-mail address>"
    ```
 
-1. CMake, version 3.22.1 <https://cmake.org/download/#latest>
-1. Microsoft Visual Studio Community 2022 (64-bit), version 17.0.5 <https://visualstudio.microsoft.com/downloads/>. Select the C++ environment during installation
-1. OpenJDK, version 17.0.2 <https://jdk.java.net/17/>. It's sufficient to just unpack the `zip` file
-1. Matlab 2021b, version 9.11.0.1837725 <https://nl.mathworks.com/downloads>
+- CMake, version 3.22.1 <https://cmake.org/download/#latest>
+- Microsoft Visual Studio Community 2022 (64-bit), version 17.0.5 <https://visualstudio.microsoft.com/downloads/>. Select the C++ environment during installation
+- OpenJDK, version 17.0.2 <https://jdk.java.net/17/>. It's sufficient to just unpack the `zip` file
+- Matlab 2021b, version 9.11.0.1837725 <https://nl.mathworks.com/downloads>
 
 Also the following dependencies have been downloaded:
 
-1. FFTW, version 3.3.10 <https://fftw.org/download.html>. Download the source as we will build our own static library (see [FFTW static library](#fftw-static-library))
-1. GLFW, version 3.3.6 <https://www.glfw.org/download.html>. Download the 64-bit Windows binaries as they contain a prebuild static library
-1. Freetype, version 2.11.1 <https://github.com/ubawurinna/freetype-windows-binaries/releases>. Download the `Source code (zip)` as is it contains a prebuild static library
-1. Bio-Formats package, version 6.8.1 <https://www.openmicroscopy.org/bio-formats/downloads/>. Download `bioformats_package.jar`
+- FFTW, version 3.3.10 <https://fftw.org/download.html>. Download the source as we will build our own static library (see [FFTW static library](#fftw-static-library))
+- GLFW, version 3.3.6 <https://www.glfw.org/download.html>. Download the 64-bit Windows binaries as they contain a prebuild static library
+- Freetype, version 2.11.1 <https://github.com/ubawurinna/freetype-windows-binaries/releases>. Download the `Source code (zip)` as is it contains a prebuild static library
+- Bio-Formats package, version 6.8.1 <https://www.openmicroscopy.org/bio-formats/downloads/>. Download `bioformats_package.jar`
+
+For testing the *DIPlib* images are used:
+
+- *DIPlib* images <ftp://qiftp.tudelft.nl/software/DIPimage/images.zip>
 
 ### FFTW static library
 
@@ -110,44 +122,6 @@ For the FFTW library two versions need to be build: single precision `fftw3f.lib
 
 ## Building *DIPimage*
 
-The *DIPlib* source used for building *DIPimage* can be retrieved from the GitHub-repository: <https://github.com/DIPlib/diplib>.
-
-The next chapter describes briefly the steps to authenticate from Windows to GitHub with an ssh-keypair.
-
-### Setting up GitHub SSH authentication
-
-Pushing to and pulling from GitHub requires authentication. This is done with an ssh-keypair without a password to speed up the process. First the ssh-keypair is created and shared with GitHub. Secondly Windows is setup to store the private key in memory after each login.
-
-#### Store new ssh-key in GitHub
-
-1. open `Git Bash`
-1. enter the following command to create an ssh-keypair without passphrase:
-
-   ```bash
-   ssh-key -f ~/.ssh/github -N ""
-   ```
-
-3. copy the contents of the **public** key `~/.ssh/github.pub`
-1. open GitHub website and navigate to `Settings` in the user-menu in the upper-right
-1. select on the left `SSH and GPG keys` and press the <kbd>New SSH key</kbd> button
-1. paste the public key in the `Key` field and press the <kbd>Add SSH key</kbd> button
-
-#### Save ssh-key in Windows
-
-The private part of the ssh-key is stored in memory at login in the ssh-agent.
-
-1. open `Services`
-1. right-click on `OpenSSH Authentication Agent` and select `Properties`
-1. set `Startup type` to `Automatic` and click <kbd>Apply</kbd>
-1. click on the <kbd>Start</kbd> button close window with <kbd>OK</kbd>
-1. create `ssh_add_github.bat` with the following content:
-
-   ```bat
-   ssh-add.exe "C:\Users\<username>\.ssh\github"
-   ```
-1. store the `ssh_add_github.bat` file in the user startup directory: ` %appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
-1. open `Environment Variables`
-1. add User variable `GIT_SSH` with the value `C:\Windows\System32\OpenSSH\ssh.exe`
-1. logout and login again
+The *DIPlib* source used for building *DIPimage* is retrieved from the GitHub-repository: <https://github.com/DIPlib/diplib>. [This document](windows_setup_git_ssh.md) describes briefly the steps to authenticate from Windows to GitHub with an ssh-keypair.
 
 *to be continued*
