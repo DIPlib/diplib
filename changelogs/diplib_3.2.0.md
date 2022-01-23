@@ -40,7 +40,7 @@ title: "Changes DIPlib 3.2.0"
 - Fixed addition and subtraction operator for `dip::Histogram` changing the LHS operand: `h3 = h1 + h2` would
   end up with `h1` equal to `h3`.
 
-- Fixed bug that prevented compilation with *MinGW*.
+- Fixed bug that prevented compilation with *MinGW*. See [issue #90](https://github.com/DIPlib/diplib/issues/90).
 
 - The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules,
   as well as the macros in the *DIPlib*-*MATLAB* interface.
@@ -68,6 +68,7 @@ title: "Changes DIPlib 3.2.0"
 ### Bug fixes
 
 - Fixed build script to allow building with newest version of *MATLAB*.
+  See [issue #88](https://github.com/DIPlib/diplib/issues/88).
 
 - Updated `dipmex` to work properly with the *MinGW* compiler on Windows, and with older versions of *MATLAB*.
 
