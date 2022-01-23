@@ -191,7 +191,7 @@ function info = toolboxinformation
 info.name = 'DIPimage Toolbox for Quantitative Image Analysis';
 info.version = 'Version unknown';
 info.copyright = {'(c)2016-, Cris Luengo and contributors','(c)1999-2014, Delft University of Technology'};
-info.URL = 'http://diplib.org';
+info.URL = 'https://diplib.org';
 p = fileparts(mfilename('fullpath'));
 f = fopen(fullfile(p,'Contents.m'),'r');
 if f>0
@@ -591,7 +591,7 @@ switch style
                        'Tag',['label',num2str(index)],...
                        'HorizontalAlignment','left');
       position_text_control(labh,pos,sizes,index)
-      if strncmp(data,'http://',7)
+      if strncmp(data,'https://',8)
          set(labh,'Enable','Inactive',...
                   'ButtonDownFcn',@(~,~)do_website(data),...
                   'ForegroundColor',[0,0,0.8]);
