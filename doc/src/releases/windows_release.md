@@ -18,7 +18,7 @@
 
 *DIPlib* can be used as a C++ library linked to C++ code, via a Matlab interface and via a Python interface. The Python interface is build separately and is made available via PyPi. The Matlab interface (a.k.a. *DIPimage*) is build for macOS and Windows and is made available via GitHub Releases <https://github.com/DIPlib/diplib/releases>. Users are encouraged to build their own release of DIPlib and select which interface should be build for which platform. To aid with the build on Windows this document describes the steps taken for creating the release of the *DIPImage* for Windows.
 
-## Setting up the file-structure
+## Setup file-structure
 
 The following file-structure is used for building the Windows release (not all dependencies are specified, only FFTW is given as an example):
 
@@ -28,21 +28,20 @@ The following file-structure is used for building the Windows release (not all d
 graph
     root(C:) --> 1(diplib<br>root)
     1 --> 11(diplib<br>final build)
-    1 --> 12(download)
-    1 --> 13(images)
-    1 --> 14(source)
-    1 --> 15(fftw)
+    1 --> 12(release)
+    1 --> 13(download)
+    1 --> 14(images)
+    1 --> 15(source)
+    1 --> 16(fftw)
     11 --> 111(bin)
     11 --> 112(include)
     11 --> 113(lib)
     11 --> 114(share)
-    12 --> 121[fftw-3.3.10.tar.gz]
-    14 --> 141(diplib<br>git repo)
-    14 --> 142(fftw-3.3.10)
-    141 --> 1411(build)
-    142 --> 1421(build)
-    15 --> 151(include)
-    15 --> 152(lib)
+    13 --> 131[fftw-3.3.10.tar.gz]
+    15 --> 151(diplib<br>git repo)
+    15 --> 152(fftw-3.3.10)
+    151 --> 1511(build)
+    152 --> 1521(build)
 ```
 
 ### Explanation
@@ -54,6 +53,11 @@ graph
 - the CMake build directory `build` is created inside the unpacked source
 - the compiled dependencies are stored with their package-name (no version)
 - the *DIPimage* build is stored in `diplib`
+- the *DIPimage* releases (the packed `diplib` build directory) are stored in `release`
+
+Typically this would look something like this:
+
+![file structure](file_structure.PNG)
 
 ## Prerequisites
 
@@ -94,7 +98,7 @@ For the FFTW library two versions need to be build: single precision `fftw3f.lib
 1. press the <kbd>Configure</kbd> button and confirm the creation of the build directory. In the next window the generator will show the just install `Visual Studio` version which can be confirmed with the `Finish` button.
 1. for **double precision** set and unset the variables in the main window as follows:
    - `BUILD_SHARED_LIBS` unset
-   - `CMAKE_INSTALL_PREFIX` `c:\diplib\fftw`
+   - `CMAKE_INSTALL_PREFIX` `c:/diplib/fftw`
    - `ENABLE_AVX` set
    - `ENABLE_AVX2` set
    - `ENABLE_SSE` set
@@ -113,13 +117,61 @@ For the FFTW library two versions need to be build: single precision `fftw3f.lib
 1. return to CMake
 1. for **single precision** only set the following variable:
    - `ENABLE_FLOAT` set
-1. press the <kbd>Configure</kbd>
-1. press the <kbd>Generate</kbd>
+1. press the <kbd>Configure</kbd> button
+1. press the <kbd>Generate</kbd> button
 1. switch to Visual Studio and select the Reload option
 1. right-click on the `INSTALL` solution
 
 ## Building *DIPimage*
 
-The *DIPlib* source used for building *DIPimage* is retrieved from the GitHub-repository: <https://github.com/DIPlib/diplib>. [This document](windows_setup_git_ssh.md) describes briefly the steps to authenticate from Windows to GitHub with an ssh-keypair.
+The *DIPlib* source used for building *DIPimage* is retrieved from the GitHub-repository: <https://github.com/DIPlib/diplib>. [This document](windows_setup_git_ssh.md) describes briefly the steps to authenticate from Windows to GitHub with an ssh-keypair. All programs are installed and all dependencies are build and/or stored in the `diplib` root (see [Setup file-structure](#setup-file-structure)).
 
-*to be continued*
+FFTW comes with the GNU General Public License, Version 2 which is not compatible with the *DIPlib* Apache License. Therefore two versions of *DIPimage* are created one with FFTW and one without reverting to the buildin FFT engine in *DIPlib*.
+
+1. start CMake
+1. configure the source directory `C:/diplib/source/diplib` and the build directory `C:/diplib/source/diplib/build`
+1. check the Advanced box
+1. press the <kbd>Configure</kbd> button
+1. for *DIPimage* **with** FFTW set the variables in the main window as follows:
+   - `CMAKE_INSTALL_PREFIX` `C:/diplib/diplib`
+   - `FFTW3_INCLUDE_DIR` `C:/diplib/fftw/include`
+   - `FFTW3_LIBRARY_FFTW3` `C:/diplib/fftw/lib/fftw3.lib`
+   - `FFTW3_LIBRARY_FFTW3F` `C:/diplib/fftw/lib/fftw3f.lib`
+   - `FREETYPE_INCLUDE_DIR_freetype2` `C:/diplib/freetype/include`
+   - `FREETYPE_INCLUDE_DIR_ft2build` `C:/diplib/freetype/include`
+   - `FREETYPE_LIBRARY_RELEASE` `C:/diplib/freetype/release static/vs2015-2022/win64/freetype.lib`
+   - `GLFW_INCLUDE_DIR` `C:/diplib/glfw/include`
+   - `GLFW_LIBRARY` `C:/diplib/glfw/lib-vc2022/glfw3.lib`
+   - `JAVA_HOME` `C:/diplib/jdk` **NOTE: create this variable with the <kbd>+ Add Entry</kbd> button!**
+   - `Matlab_ROOT_DIR` `C:/Program Files/MATLAB/R2021b`
+1. press the <kbd>Generate</kbd> button
+1. continue setting the variables:
+   - `BIOFORMATS_JAR` `C:/diplib/bioformats_package.jar`
+   - `DIP_ENABLE_FFTW` set
+   - `DIP_ENABLE_FREETYPE` set
+1. press the <kbd>Generate</kbd> button
+1. press the <kbd>Open Project</kbd> button
+1. in Visual Studio check if Solution Configuration is set to `Release`
+1. right-click on the `INSTALL` solution and select `Build`
+1. check if the build runs by loading *DIPimage* in Matlab:
+
+   ```matlab
+   addpath('c:/diplib/diplib/share/DIPimage/')
+   setenv('PATH',['C:\diplib\diplib\bin',';',getenv('PATH')]);
+   dipsetpref('ImageFilePath', 'c:/diplib/images')
+   dipimage
+   a = readim('erika.ics','')
+   b = ft(a,{},[])
+   c = ift(b,{},[])
+   viewslice(a)
+   ```
+
+1. close Matlab. This is **important** as to not lock the second build process below!
+1. pack the complete `C:\diplib\diplib` build directory with the *DIPlib* version, the Matlab version and the FFTW set: `diplib_3.1_matlab2021b_fftw.zip`
+1. return to CMake
+1. for *DIPimage* **without** FFTW unset `DIP_ENABLE_FFTW`
+1. press the <kbd>Generate</kbd> button
+1. switch to Visual Studio and select the Reload option
+1. right-click on the `INSTALL` solution and select `Build`
+1. check if the build runs by loading *DIPimage* in Matlab (see above)
+1. pack the build directory: `diplib_3.1_matlab2021b_nofftw.zip`

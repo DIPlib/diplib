@@ -4,7 +4,7 @@ Pushing to and pulling from GitHub requires authentication. This is done with an
 
 ## Store new ssh-key in GitHub
 
-1. open `Git Bash`
+1. start `Git Bash`
 1. enter the following command to create an ssh-keypair without passphrase:
 
    ```bash
@@ -20,7 +20,7 @@ Pushing to and pulling from GitHub requires authentication. This is done with an
 
 The private part of the ssh-key is stored in memory at login in the ssh-agent.
 
-1. open `Services`
+1. start `Services`
 1. right-click on `OpenSSH Authentication Agent` and select `Properties`
 1. set `Startup type` to `Automatic` and click <kbd>Apply</kbd>
 1. click on the <kbd>Start</kbd> button close window with <kbd>OK</kbd>
@@ -31,6 +31,6 @@ The private part of the ssh-key is stored in memory at login in the ssh-agent.
    ```
 
 1. store the `ssh_add_github.bat` file in the user startup directory: `%appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
-1. open `Environment Variables`
+1. start `Environment Variables`
 1. add User variable `GIT_SSH` with the value `C:\Windows\System32\OpenSSH\ssh.exe`
 1. logout and login again
