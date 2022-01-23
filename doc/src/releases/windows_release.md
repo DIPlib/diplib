@@ -74,6 +74,7 @@ These instructions are written January 2022 and the following environment and pr
 - Microsoft Visual Studio Community 2022 (64-bit), version 17.0.5 <https://visualstudio.microsoft.com/downloads/>. Select the C++ environment during installation
 - OpenJDK, version 17.0.2 <https://jdk.java.net/17/>. It's sufficient to just unpack the `zip` file
 - Matlab 2021b, version 9.11.0.1837725 <https://nl.mathworks.com/downloads>
+- 7-Zip, version 21.07 <https://www.7-zip.org/download.html>. Used for unpacking `tar` (and `zip`)
 
 Also the following dependencies have been downloaded:
 
