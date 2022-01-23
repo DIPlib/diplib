@@ -69,6 +69,8 @@ title: "Changes DIPlib 3.2.0"
 - In the DIPimage GUI, "About DIPimage" and "About DIPlib" show the same URL (using HTTPS) as a link.
   The "About DIPlib" page also reports whether *FFTW* is used.
 
+- `readim` and `writeim` recognize `'NPY'` as a format. This is the NumPy array format supported natively by *DIPlib*.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

@@ -65,6 +65,18 @@ void readtiffseries( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void readnpy( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MAX_ARGS( 1 );
+   dip::String const& filename = dml::GetString( prhs[ 0 ] );
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::FileInformation fileInformation = dip::ImageReadNPY( out, filename );
+   plhs[ 0 ] = dml::GetArray( out );
+   if( nlhs > 1 ) {
+      plhs[ 1 ] = dml::GetArray( fileInformation );
+   }
+}
+
 void writeics( int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    DML_MAX_ARGS( 5 );
@@ -86,6 +98,14 @@ void writetiff( int nrhs, const mxArray* prhs[] ) {
    dip::ImageWriteTIFF( image, filename, compression, jpegLevel );
 }
 
+void writenpy( int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 2 );
+   dip::Image image = dml::GetImage( prhs[ 0 ] );
+   dip::String const& filename = dml::GetString( prhs[ 1 ] );
+   dip::ImageWriteNPY( image, filename );
+}
+
 } // namespace
 
 // Gateway function
@@ -103,10 +123,14 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          readtiff( nlhs, plhs, nrhs, prhs );
       } else if( function == "readtiffseries" ) {
          readtiffseries( plhs, nrhs, prhs );
+      } else if( function == "readnpy" ) {
+         readnpy( nlhs, plhs, nrhs, prhs );
       } else if( function == "writeics" ) {
          writeics( nrhs, prhs );
       } else if( function == "writetiff" ) {
          writetiff( nrhs, prhs );
+      } else if( function == "writenpy" ) {
+         writenpy( nrhs, prhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );

@@ -5,7 +5,7 @@
 %
 % PARAMETERS:
 %  filename:    string with name of file, optionally with path and extension.
-%  format:      any one string of: 'ICSv1', ICSv2', 'TIFF', or a string
+%  format:      any one string of: 'ICSv1', ICSv2', 'TIFF', 'NPY', or a string
 %               recognized by IMWRITE.
 %
 % DEFAULTS:
@@ -26,7 +26,7 @@
 % SEE ALSO:
 %  readim, writeics, writetiff, imwrite
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2022, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -101,6 +101,8 @@ switch upper(format)
         end
      end
      dip_fileio('writetiff',image,filename);
+  case 'NPY'
+     dip_fileio('writenpy',image,filename);
   otherwise
      % For any other format, relay to MATLAB's built-in file writing
      warning('Converting the image to uint8 for writing using MATLAB''s imwrite function')

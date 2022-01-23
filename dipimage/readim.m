@@ -5,7 +5,7 @@
 %
 % PARAMETERS:
 %  filename: string with name of file, optionally with path and extension.
-%  format:   string with any of: 'ICS', 'TIFF', a format string recognized by
+%  format:   string with any of: 'ICS', 'TIFF', 'NPY', a format string recognized by
 %            IMREAD, or 'bioformats'.
 %
 % DEFAULTS:
@@ -54,7 +54,7 @@
 % SEE ALSO:
 %  writeim, readics, readtiff, imread, readtimeseries
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2022, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
@@ -91,6 +91,8 @@ if isempty(format)
          format = 'ICS';
       case {'TIF','TIFF'}
          format = 'TIFF';
+      case 'NPY'
+         format = 'NPY';
    end
 end
 
@@ -129,6 +131,8 @@ switch upper(format)
      [image,file_info] = dip_fileio('readics',filename);
   case 'TIFF'
      [image,file_info] = dip_fileio('readtiff',filename);
+  case 'NPY'
+     [image,file_info] = dip_fileio('readnpy',filename);
   case 'BIOFORMATS'
      [image,file_info] = bfread(filename);
   case ''
@@ -139,6 +143,10 @@ switch upper(format)
      end
      try
         [image,file_info] = dip_fileio('readtiff',filename);
+        return
+     end
+     try
+        [image,file_info] = dip_fileio('readnpy',filename);
         return
      end
      try
