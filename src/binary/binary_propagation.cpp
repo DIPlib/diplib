@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains binary propagation.
- *
  * (c)2017, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

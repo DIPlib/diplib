@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains an interface to a DFT function
- *
  * (c)2017, Cris Luengo.
  *
  * Encapsulates code Taken from OpenCV 3.1: (c)2000, Intel Corporation.

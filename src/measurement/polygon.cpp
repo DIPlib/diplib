@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains functions to manipulate polygons.
- *
  * (c)2016-2019, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *

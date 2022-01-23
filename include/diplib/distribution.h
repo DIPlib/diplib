@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains declarations for distributions and related functionality
- *
  * (c)2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

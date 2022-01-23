@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the "Gravity" measurement feature
- *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

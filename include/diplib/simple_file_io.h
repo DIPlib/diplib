@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for a simple file reading and writing interface
- *
  * (c)2019-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

@@ -1,6 +1,4 @@
 /*
- * PyDIP 3.0, Python bindings for DIPlib 3.0
- *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  * (c)2022, Cris Luengo.
  *
@@ -84,27 +82,27 @@ void init_histogram( py::module& m ) {
    conf.def( py::init< dip::dfloat, dip::uint, dip::dfloat >(), "lowerBound"_a, "nBins"_a, "binSize"_a );
    conf.def( py::init< dip::DataType >(), "dataType"_a );
    conf.def( "__repr__", []( dip::Histogram::Configuration const& self ) {
-      std::ostringstream os;
-      switch( self.mode ) {
-         case dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE:
-            os << "<Histogram.Configuration, [" << self.lowerBound << ',' << self.upperBound << "], "
-               << self.nBins << " bins>";
-            break;
-         case dip::Histogram::Configuration::Mode::COMPUTE_BINS:
-            os << "<Histogram.Configuration, [" << self.lowerBound << ',' << self.upperBound << "], bin width "
-               << self.binSize << ">";
-            break;
-         case dip::Histogram::Configuration::Mode::COMPUTE_LOWER:
-            os << "<Histogram.Configuration, [?," << self.upperBound << "], "
-               << self.nBins << " bins of width " << self.binSize << ">";
-            break;
-         case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
-            os << "<Histogram.Configuration, [" << self.lowerBound << ",?], "
-               << self.nBins << " bins of width " << self.binSize << ">";
-            break;
-      }
-      return os.str();
-   } );
+                std::ostringstream os;
+                switch( self.mode ) {
+                   case dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE:
+                      os << "<Histogram.Configuration, [" << self.lowerBound << ',' << self.upperBound << "], "
+                         << self.nBins << " bins>";
+                      break;
+                   case dip::Histogram::Configuration::Mode::COMPUTE_BINS:
+                      os << "<Histogram.Configuration, [" << self.lowerBound << ',' << self.upperBound << "], bin width "
+                         << self.binSize << ">";
+                      break;
+                   case dip::Histogram::Configuration::Mode::COMPUTE_LOWER:
+                      os << "<Histogram.Configuration, [?," << self.upperBound << "], "
+                         << self.nBins << " bins of width " << self.binSize << ">";
+                      break;
+                   case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
+                      os << "<Histogram.Configuration, [" << self.lowerBound << ",?], "
+                         << self.nBins << " bins of width " << self.binSize << ">";
+                      break;
+                }
+                return os.str();
+             } );
 
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
              "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
@@ -115,13 +113,13 @@ void init_histogram( py::module& m ) {
    hist.def( py::init< dip::Histogram::ConfigurationArray >(), "configuration"_a );
    hist.def( py::init< dip::Histogram::Configuration >(), "configuration"_a);
    hist.def( "__repr__", []( dip::Histogram const& self ) {
-      if( self.IsInitialized() ) {
-         std::ostringstream os;
-         os << "<Histogram, " << self.Dimensionality() << "D>";
-         return os.str();
-      }
-      return std::string{ "<Histogram, uninitialized>" };
-   } );
+                if( self.IsInitialized() ) {
+                   std::ostringstream os;
+                   os << "<Histogram, " << self.Dimensionality() << "D>";
+                   return os.str();
+                }
+                return std::string{ "<Histogram, uninitialized>" };
+             } );
    hist.def( "__str__", []( dip::Histogram const& self ) { std::ostringstream os; os << self; return os.str(); } );
    hist.def( "IsInitialized", &dip::Histogram::IsInitialized );
    hist.def( "Copy", &dip::Histogram::Copy );
@@ -187,10 +185,10 @@ void init_histogram( py::module& m ) {
 
    auto regParams = py::class_< dip::RegressionParameters >( m, "RegressionParameters", "Regression parameters." );
    regParams.def( "__repr__", []( dip::RegressionParameters const& s ) {
-      std::ostringstream os;
-      os << "<RegressionParameters: intercept=" << s.intercept << ", slope=" << s.slope << '>';
-      return os.str();
-   } );
+                     std::ostringstream os;
+                     os << "<RegressionParameters: intercept=" << s.intercept << ", slope=" << s.slope << '>';
+                     return os.str();
+                  } );
    regParams.def_readonly( "intercept", &dip::RegressionParameters::intercept );
    regParams.def_readonly( "slope", &dip::RegressionParameters::slope );
 
@@ -198,38 +196,45 @@ void init_histogram( py::module& m ) {
    // here for backwards compatibility. Setting `dip.Histogram = dip.Histogram_old` in Python
    // will allow old programs that use these functions to continue working.
    m.def( "Histogram_old", []( dip::Image const& input, dip::Image const& mask, dip::uint nBins ) {
-      dip::Histogram::Configuration config( input.DataType() );
-      config.nBins = nBins;
-      config.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
-      dip::Histogram histogram( input, mask, config );
-      dip::Image im = histogram.GetImage();
-      std::vector< dip::FloatArray > bins( histogram.Dimensionality() );
-      for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
-         bins[ ii ] = histogram.BinCenters( ii );
-      }
-      return py::make_tuple( im, bins ).release();
-   }, "input"_a, "mask"_a = dip::Image{}, "nBins"_a = 256 );
+             dip::Histogram::Configuration config( input.DataType() );
+             config.nBins = nBins;
+             config.mode = dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE;
+             dip::Histogram histogram( input, mask, config );
+             dip::Image im = histogram.GetImage();
+             std::vector< dip::FloatArray > bins( histogram.Dimensionality() );
+             for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
+                bins[ ii ] = histogram.BinCenters( ii );
+             }
+             return py::make_tuple( im, bins ).release();
+          }, "input"_a, "mask"_a = dip::Image{}, "nBins"_a = 256,
+          "This function exists for backwards compatibility. It takes an image `input`,\n"
+          "and optional `mask`, and computes a histogram with `nBins` bins. The output is\n"
+          "a tuple with an image containing the bins, and a list of lists containing the\n"
+          "bin centers.\n\n"
+          "Use `dip.Histogram = dip.Histogram_old` to allow an older program to run\n"
+          "without modification." );
    m.def( "Histogram_old", []( dip::Image const& input1, dip::Image const& input2, dip::Image const& mask ) {
-      dip::Histogram histogram( input1, input2, mask );
-      dip::Image im = histogram.GetImage();
-      std::vector< dip::FloatArray > bins( 2 );
-      bins[ 0 ] = histogram.BinCenters( 0 );
-      bins[ 1 ] = histogram.BinCenters( 1 );
-      return py::make_tuple( im, bins ).release();
-   }, "input1"_a, "input2"_a, "mask"_a = dip::Image{} );
+             dip::Histogram histogram( input1, input2, mask );
+             dip::Image im = histogram.GetImage();
+             std::vector< dip::FloatArray > bins( 2 );
+             bins[ 0 ] = histogram.BinCenters( 0 );
+             bins[ 1 ] = histogram.BinCenters( 1 );
+             return py::make_tuple( im, bins ).release();
+          }, "input1"_a, "input2"_a, "mask"_a = dip::Image{},
+          "Overload that takes two scalar images and outputs a 2D histogram." );
 
    // diplib/lookup_table.h
    auto lut = py::class_< dip::LookupTable >( m, "LookupTable", "Encapsulates the concept of the look-up table (LUT)." );
    lut.def( py::init< dip::Image, dip::FloatArray >(), "values"_a, "index"_a = dip::FloatArray{} );
    lut.def( "__repr__", []( dip::LookupTable const& self ) {
-      std::ostringstream os;
-      os << "<LookupTable, " << self.DataType();
-      if( self.HasIndex() ) {
-         os << ", with index";
-      }
-      os << '>';
-      return os.str();
-   } );
+               std::ostringstream os;
+               os << "<LookupTable, " << self.DataType();
+               if( self.HasIndex() ) {
+                  os << ", with index";
+               }
+               os << '>';
+               return os.str();
+            } );
    lut.def( "HasIndex", &dip::LookupTable::HasIndex );
    lut.def( "DataType", &dip::LookupTable::DataType );
    lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ), "value"_a );
@@ -246,17 +251,22 @@ void init_histogram( py::module& m ) {
    m.def( "LookupTable_old", []( dip::Image const& in, dip::Image const& lut, dip::FloatArray const& index,
                                  dip::String const& interpolation, dip::String const& mode,
                                  dip::dfloat lowerValue, dip::dfloat upperValue ) {
-      dip::LookupTable lookupTable( lut, index );
-      if( mode == "clamp" ) {
-         lookupTable.ClampOutOfBoundsValues(); // is the default...
-      } else if( mode == "values" ) {
-         lookupTable.SetOutOfBoundsValue( lowerValue, upperValue );
-      } else if( mode == "keep" ) {
-         lookupTable.KeepInputValueOnOutOfBounds();
-      } else {
-         DIP_THROW_INVALID_FLAG( mode );
-      }
-      return lookupTable.Apply( in, interpolation );
-   }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = dip::S::LINEAR, "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0 );
+             dip::LookupTable lookupTable( lut, index );
+             if( mode == "clamp" ) {
+                lookupTable.ClampOutOfBoundsValues(); // is the default...
+             } else if( mode == "values" ) {
+                lookupTable.SetOutOfBoundsValue( lowerValue, upperValue );
+             } else if( mode == "keep" ) {
+                lookupTable.KeepInputValueOnOutOfBounds();
+             } else {
+                DIP_THROW_INVALID_FLAG( mode );
+             }
+             return lookupTable.Apply( in, interpolation );
+          }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = dip::S::LINEAR, "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0,
+          "This function exists for backwards compatibility. It takes an image `lut`, and\n"
+          "optional `index`, that are converted to a `dip::LookupTable` object, parameters\n"
+          "are set, and the lookup table is applied to `in`, returning the result.\n\n"
+          "Use `dip.LookupTable = dip.LookupTable_old` to allow an older program to run\n"
+          "without modification." );
 
 }

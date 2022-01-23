@@ -1,7 +1,4 @@
 /*
- * DIPimage 3.0
- * This MEX-file implements the `numberofthreads` function
- *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

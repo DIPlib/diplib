@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for image tiling functions
- *
  * (c)2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

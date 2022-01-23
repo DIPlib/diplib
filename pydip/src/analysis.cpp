@@ -1,7 +1,6 @@
 /*
- * PyDIP 3.0, Python bindings for DIPlib 3.0
- *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +29,15 @@ void init_analysis( py::module& m ) {
    // diplib/distribution.h
    auto distr = py::class_< dip::Distribution >( m, "Distribution", "" );
    distr.def( "__repr__", []( dip::Distribution const& self ) {
-      std::ostringstream os;
-      os << "<Distribution with " << self.Size() << " samples, and " << self.ValuesPerSample() << " values per sample>";
-      return os.str();
-   } );
+                 std::ostringstream os;
+                 os << "<Distribution with " << self.Size() << " samples, and " << self.ValuesPerSample() << " values per sample>";
+                 return os.str();
+              } );
    distr.def( "__str__", []( dip::Distribution const& self ) { std::ostringstream os; os << self; return os.str(); } );
    distr.def( "__getitem__", []( dip::Distribution const& self, dip::uint index ) {
-                                    auto const& sample = self[ index ];
-                                    return py::make_tuple( sample.X(), sample.Y() ).release();
-                             }, "index"_a );
+                 auto const& sample = self[ index ];
+                 return py::make_tuple( sample.X(), sample.Y() ).release();
+              }, "index"_a );
    distr.def( py::self += py::self );
    distr.def( "Empty", &dip::Distribution::Empty );
    distr.def( "Size", &dip::Distribution::Size );
@@ -88,13 +87,17 @@ void init_analysis( py::module& m ) {
    m.def( "FindShift", &dip::FindShift,
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = dip::UnsignedArray{ std::numeric_limits< dip::uint >::max() } );
    m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::FourierMellinMatch2D ),
-          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE );
+          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE,
+          "Returns only the transformed image, to also obtain the transformation matrix,\n"
+          "see `FourierMellinMatch2Dparams()`." );
    m.def( "FourierMellinMatch2Dparams", []( dip::Image const& in1, dip::Image const& in2, dip::String const& interpolationMethod, dip::String const& correlationMethod){
              dip::Image out;
              auto params = FourierMellinMatch2D(in1, in2, out, interpolationMethod, correlationMethod);
              return py::make_tuple( out, params ).release();
           },
-          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE );
+          "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE,
+          "Returns a tuple, the first element is the transformed image, the second\n"
+          "element is the transformation matrix." );
 
    m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
           "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
@@ -112,18 +115,16 @@ void init_analysis( py::module& m ) {
    m.def( "PairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ){
              return dip::PairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
           },
-          "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
+          "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{},
+          "Like the C++ function, but using an internal `dip::Random` object." );
    m.def( "ProbabilisticPairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ) {
              return dip::ProbabilisticPairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
           },
-          "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{} );
-   m.def( "Semivariogram", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling ){
-             return dip::Semivariogram( object, mask, probes, length, sampling );
-          },
+          "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM, "options"_a = dip::StringSet{},
+          "Like the C++ function, but using an internal `dip::Random` object." );
+   m.def( "Semivariogram", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::Semivariogram ),
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM );
-   m.def( "ChordLength", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling ){
-             return dip::ChordLength( object, mask, probes, length, sampling );
-          },
+   m.def( "ChordLength", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::ChordLength ),
           "object"_a, "mask"_a = dip::Image{}, "probes"_a = 1000000, "length"_a = 100, "sampling"_a = dip::S::RANDOM );
    m.def( "DistanceDistribution", &dip::DistanceDistribution,
           "object"_a, "region"_a, "length"_a = 100 );
@@ -137,10 +138,10 @@ void init_analysis( py::module& m ) {
    rcp.def_readonly( "origin", &dip::RadonCircleParameters::origin );
    rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius );
    rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {
-      std::ostringstream os;
-      os << "<RadonCircleParameters at " << self.origin << " with radius " << self.radius << ">";
-      return os.str();
-   } );
+               std::ostringstream os;
+               os << "<RadonCircleParameters at " << self.origin << " with radius " << self.radius << ">";
+               return os.str();
+            } );
 
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
@@ -153,9 +154,12 @@ void init_analysis( py::module& m ) {
           
    m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
              dip::Image out;
-             dip::RadonCircleParametersArray params = RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
+             dip::RadonCircleParametersArray params = dip::RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
              return py::make_tuple( out, params ).release();
-          }, "in"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT } );
+          }, "in"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT },
+          "Returns a tuple, the first element is the parameter space (the `out` image),\n"
+          "the second element is a list of `dip.RadonCircleParameters` containing the\n"
+          "parameters of the detected circles." );
 
    m.def( "HarrisCornerDetector", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::HarrisCornerDetector ),
           "in"_a, "kappa"_a = 0.04, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
@@ -182,7 +186,7 @@ void init_analysis( py::module& m ) {
    m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
           "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
    m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
-          "grey"_a, "bin"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{}, "outputMode"_a = dip::S::FASTMARCHING );
+          "grey"_a, "bin"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{}, "mode"_a = dip::S::FASTMARCHING );
    m.def( "GeodesicDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::GeodesicDistanceTransform ),
           "marker"_a, "condition"_a );
 
@@ -204,15 +208,20 @@ void init_analysis( py::module& m ) {
    m.def( "MandersColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::dfloat threshold1, dip::dfloat threshold2 ){
              auto out = dip::MandersColocalizationCoefficients( channel1, channel2, mask, threshold1, threshold2 );
              return py::make_tuple( out.M1, out.M2 ).release();
-          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0 );
+          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0,
+          "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
+          "the `M1` and `M2` values." );
    m.def( "CostesColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask ){
              auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
              return py::make_tuple( out.M1, out.M2 ).release();
-          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
+          }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{},
+          "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
+          "the `M1` and `M2` values." );
    m.def( "CostesSignificanceTest", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::UnsignedArray blockSizes, dip::uint repetitions ) {
-             return dip::CostesSignificanceTest( channel1, channel2, mask, RandomNumberGenerator(), blockSizes, repetitions );
+             return dip::CostesSignificanceTest( channel1, channel2, mask, RandomNumberGenerator(), std::move( blockSizes ), repetitions );
           },
-          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200 );
+          "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200,
+          "Like the C++ function, but using an internal `dip::Random` object." );
    m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
           "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = "Stokseth" );
    m.def( "IncoherentPSF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
@@ -245,7 +254,8 @@ void init_analysis( py::module& m ) {
    m.def( "KMeansClustering", []( dip::Image const& in, dip::uint nClusters ) {
              return KMeansClustering( in, RandomNumberGenerator(), nClusters );
           },
-          "in"_a, "nClusters"_a = 2 );
+          "in"_a, "nClusters"_a = 2,
+          "Like the C++ function, but using an internal `dip::Random` object." );
    m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Image const&, dip::uint >( &dip::MinimumVariancePartitioning ),
           "in"_a, "nClusters"_a = 2 );
    m.def( "IsodataThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::IsodataThreshold ),
@@ -274,17 +284,23 @@ void init_analysis( py::module& m ) {
              dip::Image out;
              dip::dfloat threshold = Threshold( in, mask, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
-          }, "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
+          }, "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity,
+          "Returns a tuple, the first element is the thresholded image, the second one\n"
+          "is the threshold value." );
    m.def( "PerObjectEllipsoidFit", []( dip::Image const& in, std::pair<dip::uint, dip::uint> sizeBounds, dip::dfloat minEllipsoidFit,
                                        std::pair<dip::dfloat, dip::dfloat> aspectRatioBounds, std::pair<dip::dfloat, dip::dfloat> thresholdBounds ){
              return dip::PerObjectEllipsoidFit( in, { sizeBounds.first, sizeBounds.second, minEllipsoidFit, aspectRatioBounds.first,
                                                       aspectRatioBounds.second, thresholdBounds.first, thresholdBounds.second } );
           }, "in"_a, "sizeBounds"_a = std::pair< dip::uint, dip::uint >{ 6, 30000 }, "minEllipsoidFit"_a = 0.88,
-          "aspectRatioBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 1.0, 10.0 }, "thresholdBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 0.0, 255.0 } );
+          "aspectRatioBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 1.0, 10.0 }, "thresholdBounds"_a = std::pair< dip::dfloat, dip::dfloat >{ 0.0, 255.0 },
+          "Like the C++ function, but with individual input values rather than a single\n"
+          "`dip::PerObjectEllipsoidFitParameters` object collecting all algorithm parameters." );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Canny ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1 }, "lower"_a = 0.5, "upper"_a = 0.9, "selection"_a = dip::S::ALL );
    m.def( "Superpixels", []( dip::Image const& in, dip::dfloat density, dip::dfloat compactness, dip::String const& method, dip::StringSet const& flags ) {
              return dip::Superpixels( in, RandomNumberGenerator(), density, compactness, method, flags );
           },
-          "in"_a, "density"_a = 0.005, "compactness"_a = 1.0, "method"_a = dip::S::CW, "flags"_a = dip::StringSet{} );
+          "in"_a, "density"_a = 0.005, "compactness"_a = 1.0, "method"_a = dip::S::CW, "flags"_a = dip::StringSet{},
+          "Like the C++ function, but using an internal `dip::Random` object." );
+
 }

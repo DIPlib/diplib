@@ -1,5 +1,3 @@
-\comment DIPlib 3.0
-
 \comment (c)2017-2020, Cris Luengo.
 \comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
@@ -38,7 +36,7 @@ user-friendliness, ease of implementation of new features, and
 compactness of notation in mind. The toolbox contains many efficient algorithms,
 though we always prioritize precision over speed. This means that, even though
 this toolbox contains many very efficient algorithms, there might be other
-(non-MATLAB) alternatives to think of if speed is your number one priority.
+(non-*MATLAB*) alternatives to think of if speed is your number one priority.
 
 \section sec_dum_introduction_the_diplib_library The *DIPlib* library
 

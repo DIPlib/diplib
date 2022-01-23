@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the "HSI" color space
- *
  * (c)2017, Cris Luengo.
  * (c)2016, Flagship Biosciences, Inc.
  *

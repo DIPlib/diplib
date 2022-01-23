@@ -1,6 +1,4 @@
 /*
- * DIPlib 3.0
- *
  * Data originally by Ben Verwer.
  * (c)1995-2014, Delft University of Technology.
  *

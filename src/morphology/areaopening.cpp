@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the area opening and related functions.
- *
  * (c)2008, 2017-2021 Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the DIP_EXPORT macros and some other ones.
- *
  * (c)2018-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

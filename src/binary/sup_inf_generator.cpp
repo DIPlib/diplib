@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains sup and inf generators and related functionality.
- *
  * (c)2018-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

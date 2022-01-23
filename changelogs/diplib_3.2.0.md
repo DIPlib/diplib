@@ -20,11 +20,17 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip::ObjectMaximum()` and `dip::ObjectMinimum()` to identify the largest or smallest object.
 
+- Added `dip::Image::UnexpandSingletonDimension()` and `dip::Image::UnexpandSingletonTensor()`.
+
 ### Changed functionality
 
 - The output stream operator for `dip::Image` writes the same information in a slightly different way.
 
 - `dip::Histogram::Bin( FloatArray const& value )` now takes the input as a const reference.
+
+- The scan framework will preserve expanded singleton dimensions: if one dimension is singleton-expanded across
+  all input images, then the output images will have the same dimension be singleton-expanded.
+  See [issue #96](https://github.com/DIPlib/diplib/issues/96).
 
 ### Bug fixes
 
@@ -34,7 +40,7 @@ title: "Changes DIPlib 3.2.0"
 - Fixed addition and subtraction operator for `dip::Histogram` changing the LHS operand: `h3 = h1 + h2` would
   end up with `h1` equal to `h3`.
 
-- Fixed bug that prevented compilation with *MinGW*.
+- Fixed bug that prevented compilation with *MinGW*. See [issue #90](https://github.com/DIPlib/diplib/issues/90).
 
 - The documentation was missing a lot of functions in the arithmetic, comparison and trigonometric operators modules,
   as well as the macros in the *DIPlib*-*MATLAB* interface.
@@ -44,6 +50,9 @@ title: "Changes DIPlib 3.2.0"
 
 - `dip::Distribution` now defaults to no x-units (rather than pixels), making `dip::PerObjectHistogram` correctly
   not have units for the x-axis, which is intensity, not pixels.
+
+- `dip::GreyWeightedDistanceTransform` didn't properly use pixel sizes as intended with the default `"fast marching"`
+  method.
 
 
 
@@ -59,6 +68,7 @@ title: "Changes DIPlib 3.2.0"
 ### Bug fixes
 
 - Fixed build script to allow building with newest version of *MATLAB*.
+  See [issue #88](https://github.com/DIPlib/diplib/issues/88).
 
 - Updated `dipmex` to work properly with the *MinGW* compiler on Windows, and with older versions of *MATLAB*.
 
@@ -96,6 +106,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip.ObjectMaximum()` and `dip.ObjectMinimum()`.
 
+- Added `dip.Image.IsForged()`.
+
 ### Changed functionality
 
 - The function `dip.Histogram()` is now called `dip.Histogram_old()`, to make space for the new `dip.Histogram`
@@ -106,6 +118,9 @@ title: "Changes DIPlib 3.2.0"
   class. **NOTE! This breaks backwards compatibility.** To keep old code from working, do
   `dip.LookupTable = dip.LookupTable_old` at the top of the code, after `import diplib as dip`.
 
+- `dip.HistogramMatching()` now also accepts a `dip.Histogram` object as the second input argument, matching
+  the *DIPlib* function.
+
 - `dip.Show()` has a new parameter `extent`, uses proper warnings rather than just printing messages to
   the console, and no longer uses `dip.ImageDisplay()` for 1D images.
 
@@ -114,6 +129,8 @@ title: "Changes DIPlib 3.2.0"
 ### Bug fixes
 
 - Fixed memory corruption bug when releasing data from a different thread.
+
+- Fixed name of last input argument to `dip.GreyWeightedDistanceTransform`, which is now `mode`.
 
 (See also bugfixes to *DIPlib*.)
 

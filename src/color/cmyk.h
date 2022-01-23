@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file defines the "CMY" and "CMYK" color spaces
- *
  * (c)2017, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *

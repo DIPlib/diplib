@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the definition for function that compute statistics on measurement features
- *
  * (c)2017-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

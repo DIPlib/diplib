@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains functions to estimate stain densities from a microscope image
- *
  * (c)2018, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

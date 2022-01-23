@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for the granulometry
- *
  * (c)2018, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *

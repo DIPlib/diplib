@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for distance transforms
- *
  * (c)2017-2019, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
@@ -407,7 +404,7 @@ void GreyWeightedDistanceTransform(
 
    // Remove any singleton dimensions for processing, and prevent negative strides.
    // (We do this for the other images later, we create them all to emulate c_out, not out.)
-   Image out = c_out.QuickCopy();
+   Image out = c_out;
    out.StandardizeStrides();
    dims = out.Dimensionality();
    // Create neighborhood, we need some information from it soon.

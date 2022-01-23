@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains code for loop unrolling at compile time with a constexpr loop variable.
- *
  * (c)2018, Erik Schuitema.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

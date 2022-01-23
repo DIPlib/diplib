@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains functions for histogram equalization and similar
- *
  * (c)2018, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *                                  (c)2013, Patrik Malm & Cris Luengo.

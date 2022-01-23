@@ -1,5 +1,3 @@
-\comment DIPlib 3.0
-
 \comment (c)2016-2020, Cris Luengo.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -47,7 +45,7 @@ are the following documentation pages:
 
 Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 
-- *MATLAB*: [*DIPimage*](https://diplib.org/DIPimage.html) is a MATLAB
+- *MATLAB*: [*DIPimage*](https://diplib.org/DIPimage.html) is a *MATLAB*
   toolbox that gives access to most functionality in *DIPlib*, but goes beyond
   that by providing a lot of additional functionality as M-file functions.
 

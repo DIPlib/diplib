@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for NumPy NPY file reading and writing
- *
  * (c)2021, Cris Luengo.
  * Based on cnpy: (c)2011  Carl Rogers (MIT License)
  * Based on libnpy: (c)2017 Leon Merten Lohse (MIT License)
@@ -21,7 +18,7 @@
 
 // See https://numpy.org/devdocs/reference/generated/numpy.lib.format.html for format specs.
 // See https://github.com/rogersce/cnpy for cnpy
-// See https://github.com/llohse/libnpy/ for libnpy
+// See https://github.com/llohse/libnpy for libnpy
 
 #include <regex>
 #include <fstream>

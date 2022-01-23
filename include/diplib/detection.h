@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains declarations for detection functions
- *
  * (c)2018-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
@@ -429,7 +426,7 @@ DIP_NODISCARD inline Image WangBradyCornerDetector(
 ///
 /// !!! literature
 ///     - A.F. Frangi, W.J. Niessen, K.L. Vincken and M.A. Viergever, "Multiscale Vessel Enhancement Filtering",
-///       in: Medical Image Computing and Computer-Assisted Intervention (MICCAI’98), LNCS 1496:130-137, 1998.
+///       in: Medical Image Computing and Computer-Assisted Intervention (MICCAI'98), LNCS 1496:130-137, 1998.
 DIP_EXPORT void FrangiVesselness(
       Image const& in,
       Image& out,

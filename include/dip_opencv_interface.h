@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains functionality for the OpenCV 2 interface.
- *
  * (c)2018-2021, Flagship Biosciences. Written by Cris Luengo.
  * Based on dip_matlab_interface.h: (c)2015-2017, Cris Luengo.
  *

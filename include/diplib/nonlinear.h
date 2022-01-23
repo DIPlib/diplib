@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains declarations for non-linear image filters
- *
  * (c)2017-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
@@ -215,7 +212,7 @@ DIP_NODISCARD inline Image SelectionFilter(
 ///     - M. Kuwahara, K. Hachimura and M. Kinoshita, "Image enhancement and left ventricular contour extraction techniques
 ///       applied to radioisotope angiocardiograms", Automedica 3:107-119, 1980.
 ///     - M. Nagao and T. Matsuyama, "Edge preserving smoothing", Computer Graphics and Image Processing 9:394-407, 1979.
-///     - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
+///     - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR'99 2:535–540, 1999.
 ///     - P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
 ///       The Netherlands, 2002.
 DIP_EXPORT void Kuwahara(

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the definition for the various projection functions.
- *
  * (c)2017-2019, Cris Luengo, Erik Schuitema.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *

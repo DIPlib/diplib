@@ -2,8 +2,6 @@
 
 % This file is here, not in the private/ subdirectory, because it is not legal to define private classes.
 
-% DIPimage 3.0
-%
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

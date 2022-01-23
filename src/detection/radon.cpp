@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions of various Hough Transform functions.
- *
  * (c)2018-2019, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *

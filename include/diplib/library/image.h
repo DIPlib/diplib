@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for the Image class and related functions.
- *
  * (c)2014-2021, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
@@ -1709,7 +1706,8 @@ class DIP_NO_EXPORT Image {
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see dip::Image::ExpandSingletonDimensions, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded,
-      /// dip::Image::UnexpandSingletonDimensions, dip::Image::AddSingleton, dip::Image::ExpandDimensionality
+      /// dip::Image::UnexpandSingletonDimension, dip::Image::UnexpandSingletonDimensions, dip::Image::AddSingleton,
+      /// dip::Image::ExpandDimensionality
       DIP_EXPORT Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
 
       /// \brief Performs singleton expansion.
@@ -1728,24 +1726,40 @@ class DIP_NO_EXPORT Image {
       /// The image is modified so that each singleton-expanded dimension has a size of 1, including the tensor
       /// dimension. That is, the resulting image will no longer be \ref dip::Image::IsSingletonExpanded.
       ///
-      /// \see dip::Image::ExpandSingletonDimension, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded,
-      /// dip::Image::Squeeze
+      /// \see dip::Image::UnexpandSingletonDimension, dip::Image::ExpandSingletonDimension,
+      /// dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded, dip::Image::Squeeze
       DIP_EXPORT Image& UnexpandSingletonDimensions();
+
+      /// \brief Unexpands a singleton-expanded dimension.
+      ///
+      /// The image is modified so that the singleton-expanded dimension `dim` has a size of 1. That is,
+      /// this dimension will no longer be singleton-expanded.
+      /// If `dim` was not singleton-expanded, throws an exception.
+      ///
+      /// \see dip::Image::ExpandSingletonDimension, dip::Image::IsSingletonExpanded
+      DIP_EXPORT Image& UnexpandSingletonDimension( dip::uint dim );
 
       /// \brief Tests if the image can be singleton-expanded to `size`.
       ///
       /// \see dip::Image::ExpandSingletonDimensions, dip::Image::ExpandSingletonTensor, dip::Image::IsSingletonExpanded
       DIP_EXPORT bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
 
-      /// \brief Expand singleton tensor dimension `sz` samples, setting the tensor
-      /// stride to 0.
+      /// \brief Expand singleton tensor dimension `sz` samples, setting the tensor stride to 0.
       ///
       /// If there is more than one tensor element, an exception is thrown.
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see dip::Image::ExpandSingletonDimension, dip::Image::IsSingletonExpanded
+      /// \see dip::Image::ExpandSingletonDimension, dip::Image::UnexpandSingletonTensor, dip::Image::IsSingletonExpanded
       DIP_EXPORT Image& ExpandSingletonTensor( dip::uint sz );
+
+      /// \brief Unexpands the singleton-expanded tensor dimension.
+      ///
+      /// Undoes the effect of \ref dip::Image::ExpandSingletonTensor. If the tensor dimension was not
+      /// singleton-expanded, throws an exception.
+      ///
+      /// \see dip::Image::ExpandSingletonTensor, dip::Image::UnexpandSingletonDimension, dip::Image::IsSingletonExpanded
+      DIP_EXPORT Image& UnexpandSingletonTensor();
 
       /// \brief Mirror the image about a single axes.
       ///

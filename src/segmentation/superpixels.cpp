@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the definition of the dip::Superpixels function.
- *
  * (c)2019-2021, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

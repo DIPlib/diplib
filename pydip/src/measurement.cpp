@@ -1,6 +1,4 @@
 /*
- * PyDIP 3.0, Python bindings for DIPlib 3.0
- *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  * (c)2022, Cris Luengo.
  *
@@ -158,7 +156,10 @@ py::buffer_info PolygonToBuffer( dip::Polygon& polygon ) {
 } // namespace
 
 void init_measurement( py::module& m ) {
-   auto mm = m.def_submodule("MeasurementTool", "A tool to quantify objects in an image.");
+   auto mm = m.def_submodule( "MeasurementTool",
+                              "A tool to quantify objects in an image.\n\n"
+                              "This is a submodule that uses a static `dip::Measurement` object. Functions\n"
+                              "defined in this module correspond to the object member functions in C++." );
 
    // dip::Measurement::FeatureInformation
    auto fInfo = py::class_< dip::Measurement::FeatureInformation >( mm, "FeatureInformation", "Information about one measurement feature." );
@@ -189,7 +190,9 @@ void init_measurement( py::module& m ) {
                 os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
                 return os.str();
              } );
-   feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) { return MeasurementValuesToList( self[ objectID ] ); }, "objectID"_a );
+   feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) {
+                return MeasurementValuesToList( self[ objectID ] );
+             }, "objectID"_a );
    feat.def( "FeatureName", &dip::Measurement::IteratorFeature::FeatureName );
    feat.def( "Values", &dip::Measurement::IteratorFeature::Values );
    feat.def( "NumberOfValues", &dip::Measurement::IteratorFeature::NumberOfValues );
@@ -199,7 +202,9 @@ void init_measurement( py::module& m ) {
 
    // dip::Measurement::IteratorObject
    auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "MeasurementObject", py::buffer_protocol(), "A Measurement table row representing the results for one object." );
-   obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info { return MeasurementObjectToBuffer( self ); } );
+   obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info {
+                      return MeasurementObjectToBuffer( self );
+                   } );
    obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
                std::ostringstream os;
                os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << ">";
@@ -253,7 +258,10 @@ void init_measurement( py::module& m ) {
                  out.emplace_back( f.name, description );
               }
               return out;
-           } );
+           },
+           "Returns a list of tuples. Each tuple has two strings: the name of a feature\n"
+           "and its description. If the description ends with a '*' character, a gray-value\n"
+           "image is required for the feature." );
 
    // Other functions
    m.def( "ObjectToMeasurement", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const& >( &dip::ObjectToMeasurement ), "label"_a, "featureValues"_a );
@@ -266,7 +274,9 @@ void init_measurement( py::module& m ) {
    m.def( "MaximumAndMinimum", []( dip::Measurement::IteratorFeature const& featureValues ) {
              dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( featureValues );
              return py::make_tuple( acc.Minimum(), acc.Maximum() ).release();
-          }, "featureValues"_a );
+          }, "featureValues"_a,
+          "Instead of returning a `dip::MinMaxAccumulator` object, returns a tuple with\n"
+          "the minimum and maximum values.");
    m.def( "SampleStatistics", &dip::SampleStatistics, "featureValues"_a );
    m.def( "ObjectMinimum", &dip::ObjectMinimum, "featureValues"_a );
    m.def( "ObjectMaximum", &dip::ObjectMaximum, "featureValues"_a );
@@ -286,15 +296,22 @@ void init_measurement( py::module& m ) {
                 auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
                 auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
                 return py::make_tuple( topLeft, bottomRight ).release();
-             } );
+             },
+             "Instead of returning a `dip::BoundingBoxFloat` object, returns a tuple with\n"
+             "two tuples. The first tuple is the horizontal range, the second one is the\n"
+             "vertical range. Each of these two tuples has two values representing the\n"
+             "the lowest and highest value in the range." );
    poly.def( "IsClockWise", &dip::Polygon::IsClockWise );
    poly.def( "Area", &dip::Polygon::Area );
    poly.def( "Centroid", []( dip::Polygon const& self ) {
                 auto centroid = self.Centroid();
                 return py::make_tuple( centroid.x, centroid.y ).release();
-             } );
+             },
+             "Instead of returning a `dip::VertexFloat` object, returns a tuple with the\n"
+             "x and y coordinates of the centroid." );
    poly.def( "Length", &dip::Polygon::Length ); // is the perimeter
-   poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrix().Ellipse(); } );
+   poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrix().Ellipse(); },
+             "Corresponds to `dip::Polygon::CovarianceMatrix().Ellipse()`." );
    poly.def( "RadiusStatistics", py::overload_cast<>( &dip::Polygon::RadiusStatistics, py::const_ ));
    poly.def( "EllipseVariance", py::overload_cast<>( &dip::Polygon::EllipseVariance, py::const_ ));
    poly.def( "FractalDimension", &dip::Polygon::FractalDimension, "length"_a = 0.0 );
@@ -304,8 +321,11 @@ void init_measurement( py::module& m ) {
    poly.def( "ConvexHull", []( dip::Polygon const& self ) {
                 auto out = self.ConvexHull().Polygon(); // Make a copy of the polygon, sadly. Otherwise we'd have to return the ConvexHull object. We can't extract that data from it trivially.
                 return out;
-             } );
-   poly.def( "Feret", []( dip::Polygon const& self ) { return self.ConvexHull().Feret(); } );
+             },
+             "Returns a `dip.Polygon` object, not a `dip::ConvexHull` object as the C++\n"
+             "function does." );
+   poly.def( "Feret", []( dip::Polygon const& self ) { return self.ConvexHull().Feret(); },
+             "Corresponds to `dip::Polygon::ConvexHull().Feret()`." );
 
    // dip::ChainCode
    auto chain = py::class_< dip::ChainCode >( m, "ChainCode", "" );
@@ -315,18 +335,18 @@ void init_measurement( py::module& m ) {
                  return os.str();
               } );
    chain.def_property_readonly( "codes", []( dip::ChainCode const& self ) {
-      // We don't make this into a buffer protocol thing, because each code has two values: the code and IsBorder().
-      // This latter is encoded in the 4th bit of the number. So exposing that directly to the user would be confusing.
-      // We don't do so un C++ either. One alternative is to encapsulate the `Code` object, the other is to copy the
-      // chain code value into a Python list. We do the copy, as it is less work. Encapsulating the `Code` object would
-      // provide more functionality, but I doubt it will be used by anyone.
-      py::list list( self.codes.size() );
-      py::ssize_t index = 0;
-      for( auto value: self.codes ) {
-         PyList_SET_ITEM( list.ptr(), index++, py::cast( static_cast< unsigned >( value )).release().ptr() ); // Casting to unsigned gets the numeric value of the chain code
-      }
-      return list.release();
-   } );
+                 // We don't make this into a buffer protocol thing, because each code has two values: the code and IsBorder().
+                 // This latter is encoded in the 4th bit of the number. So exposing that directly to the user would be confusing.
+                 // We don't do so un C++ either. One alternative is to encapsulate the `Code` object, the other is to copy the
+                 // chain code value into a Python list. We do the copy, as it is less work. Encapsulating the `Code` object would
+                 // provide more functionality, but I doubt it will be used by anyone.
+                 py::list list( self.codes.size() );
+                 py::ssize_t index = 0;
+                 for( auto value: self.codes ) {
+                    PyList_SET_ITEM( list.ptr(), index++, py::cast( static_cast< unsigned >( value )).release().ptr() ); // Casting to unsigned gets the numeric value of the chain code
+                 }
+                 return list.release();
+              } );
    chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ).release(); } );
    chain.def_readonly( "objectID", &dip::ChainCode::objectID );
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );
@@ -336,11 +356,15 @@ void init_measurement( py::module& m ) {
    chain.def( "Feret", &dip::ChainCode::Feret, "angleStep"_a = 5.0 / 180.0 * dip::pi );
    chain.def( "BendingEnergy", &dip::ChainCode::BendingEnergy );
    chain.def( "BoundingBox", []( dip::ChainCode const& self ){
-      auto bb = self.BoundingBox();
-      auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
-      auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
-      return py::make_tuple( topLeft, bottomRight ).release();
-   } );
+                 auto bb = self.BoundingBox();
+                 auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
+                 auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
+                 return py::make_tuple( topLeft, bottomRight ).release();
+              },
+              "Instead of returning a `dip::BoundingBoxInteger` object, returns a tuple with\n"
+              "two tuples. The first tuple is the horizontal range, the second one is the\n"
+              "vertical range. Each of these two tuples has two values representing the\n"
+              "the lowest and highest value in the range." );
    chain.def( "LongestRun", &dip::ChainCode::LongestRun );
    chain.def( "Polygon", &dip::ChainCode::Polygon );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ));
@@ -404,4 +428,5 @@ void init_measurement( py::module& m ) {
    radiusVals.def_property_readonly( "maximum", &dip::RadiusValues::Maximum );
    radiusVals.def_property_readonly( "minimum", &dip::RadiusValues::Minimum );
    radiusVals.def_property_readonly( "circularity", &dip::RadiusValues::Circularity );
+
 }

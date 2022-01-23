@@ -1,6 +1,3 @@
-# PyDIP 3.0, Python bindings for DIPlib 3.0
-# This file contains functionality to download bioformats
-#
 # (c)2020, Wouter Caarls
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains overloaded definitions for the function dip::clamp_cast<>().
- *
  * (c)2016-2019, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

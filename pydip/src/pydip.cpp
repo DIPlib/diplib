@@ -1,6 +1,4 @@
 /*
- * PyDIP 3.0, Python bindings for DIPlib 3.0
- *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
  * (c)2022, Cris Luengo.
  *
@@ -219,4 +217,5 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    init_measurement( m );
    init_histogram( m );
    init_assorted( m );
+
 }

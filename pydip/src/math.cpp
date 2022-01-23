@@ -1,7 +1,6 @@
 /*
- * PyDIP 3.0, Python bindings for DIPlib 3.0
- *
  * (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +125,8 @@ void init_math( py::module& m ) {
              dip::Image out, eigenvectors;
              dip::EigenDecomposition( in, out, eigenvectors );
              return py::make_tuple( out, eigenvectors ).release();
-          }, "in"_a );
+          }, "in"_a,
+          "Returns a tuple containing the `out` image and the `eigenvectors` image." );
    m.def( "LargestEigenvector", py::overload_cast< dip::Image const& >( &dip::LargestEigenvector ), "in"_a );
    m.def( "SmallestEigenvector", py::overload_cast< dip::Image const& >( &dip::SmallestEigenvector ), "in"_a );
    m.def( "Inverse", py::overload_cast< dip::Image const& >( &dip::Inverse ), "in"_a );
@@ -136,7 +136,8 @@ void init_math( py::module& m ) {
              dip::Image U, S, V;
              dip::SingularValueDecomposition( in, U, S, V );
              return py::make_tuple( U, S, V ).release();
-          }, "in"_a );
+          }, "in"_a,
+          "Returns a tuple containing the `U` image, the `S` image, and the `V` image." );
    m.def( "Identity", py::overload_cast< dip::Image const& >( &dip::Identity ), "in"_a );
 
    m.def( "SumTensorElements", py::overload_cast< dip::Image const& >( &dip::SumTensorElements ), "in"_a );
@@ -154,4 +155,5 @@ void init_math( py::module& m ) {
           "in1"_a , "in2"_a , "mask"_a );
    m.def( "Toggle", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Toggle ),
           "in1"_a , "in2"_a , "in3"_a );
+
 }

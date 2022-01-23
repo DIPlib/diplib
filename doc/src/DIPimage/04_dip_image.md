@@ -1,5 +1,3 @@
-\comment DIPlib 3.0
-
 \comment (c)2017-2020, Cris Luengo.
 \comment Based on original DIPimage user manual: (c)1999-2014, Delft University of Technology.
 
@@ -506,7 +504,7 @@ In older versions of the toolbox, `reshape` and `squeeze` often reordered the
 data (i.e. incurred the cost of a data copy), whereas the methods applied to a
 normal array never do so, these methods are supposed to be essentially free.
 `reshape` was implemented to fill the output image row-wise with pixels taken
-row-wise from the input image. But because MATLAB stores matrices column-wise,
+row-wise from the input image. But because *MATLAB* stores matrices column-wise,
 the data copy was necessary. However, this behavior was inconsistent with
 linear indexing, which wasn't translated to use that same ordering. That is,
 linear indexing used the memory order of the pixels to translate an index to
@@ -524,12 +522,12 @@ b = img(200);
 ```
 
 *DIPimage 3* changed this behavior, such that `reshape` and `squeeze` are
-essentially free like they are for normal MATLAB arrays. Reshaping or squeezing
+essentially free like they are for normal *MATLAB* arrays. Reshaping or squeezing
 an image is consistent with linear indexing (i.e. `a` and `b` above have the
 same value). However, this causes a different surprising behavior: `squeeze`
 reorders dimensions!
 
-MATLAB's array memory layout is such that a `dip_image`'s dimensions are ordered
+*MATLAB*'s array memory layout is such that a `dip_image`'s dimensions are ordered
 in memory like so: [2, 1, 3, 4, ...]. If `squeeze` were to remove dimension number
 1, subsequent dimensions would move left, meaning that dimension number 3 ends up
 in the location of dimension 1, but 2 stays where it was. An image of size 1x20x30,

@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions of various Hough Transform functions.
- *
  * (c)2017, Wouter Caarls
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

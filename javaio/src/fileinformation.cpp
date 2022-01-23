@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for converting FileInformation from java
- *
  * (c)2019, Wouter Caarls.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

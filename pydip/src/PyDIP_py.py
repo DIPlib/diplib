@@ -1,5 +1,3 @@
-# PyDIP 3.0, Python bindings for DIPlib 3.0
-#
 # (c)2017-2019, Flagship Biosciences, Inc., written by Cris Luengo.
 # (c)2022, Cris Luengo.
 #
@@ -19,7 +17,7 @@
 The portion of the PyDIP module that contains Python code.
 """
 
-from .PyDIP_bin import ImageDisplay
+from .PyDIP_bin import Image, ImageDisplay
 import importlib.util
 import warnings
 
@@ -140,6 +138,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             reportedPlotLib = True
         return
 
+    if type(img) != Image:
+        img = Image(img)
     if img.IsEmpty() or img.NumberOfPixels() <= 1:
         warnings.warn("Nothing to display", SyntaxWarning)
         return

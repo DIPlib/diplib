@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains the Bio-Formats JavaIO interface.
- *
  * (c)2019, Wouter Caarls
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

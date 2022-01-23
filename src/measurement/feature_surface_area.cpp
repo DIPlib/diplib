@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0
- * This file contains definitions for function that computes 3D surface area.
- *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Original code written by Jim Mullikin, Pattern Recognition Group.

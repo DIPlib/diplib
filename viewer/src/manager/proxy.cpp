@@ -1,7 +1,4 @@
 /*
- * DIPlib 3.0 viewer
- * This file contains functionality for a rudimentary proxy window manager.
- *
  * (c)2018, Wouter Caarls
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

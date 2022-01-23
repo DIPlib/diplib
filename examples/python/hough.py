@@ -5,7 +5,7 @@ import diplib as dip
 
 # Prepare image
 a = dip.Image((512, 512))
-
+a.Fill(0)
 dip.DrawEllipsoid(a, (200, 200), (256, 256))
 dip.DrawEllipsoid(a, (50, 50), (350, 350))
 
