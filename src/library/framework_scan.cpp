@@ -111,18 +111,18 @@ void Scan(
 
    // Do singleton expansion if necessary
    UnsignedArray sizes;
-   dip::uint tsize = 1;
+   dip::uint tSize = 1;
    Tensor outTensor;
    if( nIn == 1 ) {
       sizes = in[ 0 ].Sizes();
-      tsize = in[ 0 ].TensorElements();
+      tSize = in[ 0 ].TensorElements();
       outTensor = in[ 0 ].Tensor();
    } else if( nIn > 1 ) {
       if( !opts.Contains( ScanOption::NoSingletonExpansion )) {
          DIP_START_STACK_TRACE
             sizes = SingletonExpandedSize( in );
             if( tensorToSpatial ) {
-               tsize = SingletonExpendedTensorElements( in );
+               tSize = SingletonExpendedTensorElements( in );
             }
             for( dip::uint ii = 0; ii < nIn; ++ii ) {
                if( in[ ii ].Sizes() != sizes ) {
@@ -131,8 +131,8 @@ void Scan(
                if( outTensor.IsScalar() ) {
                   outTensor = in[ ii ].Tensor();
                }
-               if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize ) ) {
-                  in[ ii ].ExpandSingletonTensor( tsize );
+               if( tensorToSpatial && ( in[ ii ].TensorElements() != tSize ) ) {
+                  in[ ii ].ExpandSingletonTensor( tSize );
                }
             }
          DIP_END_STACK_TRACE
@@ -150,7 +150,7 @@ void Scan(
    } else {
       // nOut > 0, as was checked way at the top of this function.
       sizes = c_out[ 0 ].get().Sizes();
-      tsize = c_out[ 0 ].get().TensorElements();
+      tSize = c_out[ 0 ].get().TensorElements();
    }
 
    // Figure out color spaces for the output images
@@ -158,9 +158,47 @@ void Scan(
    if( nIn > 0 ) {
       if( opts.Contains( ScanOption::TensorAsSpatialDim )) {
          colspaces.resize( 1 );
-         colspaces[ 0 ] = OutputColorSpace( c_in, tsize );
+         colspaces[ 0 ] = OutputColorSpace( c_in, tSize );
       } else {
          colspaces = OutputColorSpaces( c_in, nTensorElements );
+      }
+   }
+
+   // Ensure we don't do computations along a dimension that is singleton-expanded in all inputs
+   BooleanArray isSingletonExpanded( sizes.size(), false );
+   bool tIsSingletonExpanded = false;
+   UnsignedArray trueSizes = sizes;
+   dip::uint trueTSize = tSize;
+   if( nIn > 0 ) {
+      isSingletonExpanded.fill( true );
+      tIsSingletonExpanded = true;
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
+         for( dip::uint jj = 0; jj < sizes.size(); ++jj ) {
+            if( in[ ii ].Stride( jj ) != 0 ) {
+               isSingletonExpanded[ jj ] = false;
+            }
+         }
+         if( in[ ii ].TensorStride() != 0 ) {
+            tIsSingletonExpanded = false;
+         }
+      }
+      for( dip::uint jj = 0; jj < sizes.size(); ++jj ) {
+         if( isSingletonExpanded[ jj ] ) {
+            sizes[ jj ] = 1;
+         }
+      }
+      if( tensorToSpatial && tIsSingletonExpanded ) {
+         tSize = 1;
+      }
+   }
+   for( dip::uint ii = 0; ii < nIn; ++ii ) {
+      for( dip::uint jj = 0; jj < sizes.size(); ++jj ) {
+         if( isSingletonExpanded[ jj ] ) {
+            in[ ii ].UnexpandSingletonDimension( jj );
+         }
+      }
+      if( tensorToSpatial && tIsSingletonExpanded ) {
+         in[ ii ].UnexpandSingletonTensor();
       }
    }
 
@@ -171,7 +209,7 @@ void Scan(
       dip::uint nTensor;
       if( opts.Contains( ScanOption::TensorAsSpatialDim )) {
          // Input parameter ignored, output matches singleton-expanded number of tensor elements.
-         nTensor = tsize;
+         nTensor = tSize;
       } else {
          nTensor = nTensorElements[ ii ];
       }
@@ -179,13 +217,6 @@ void Scan(
          tmp.Strip();
       }
       tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], Option::AcceptDataTypeChange::DO_ALLOW );
-      if( tensorToSpatial && !outTensor.IsScalar() ) {
-         tmp.ReshapeTensor( outTensor );
-      }
-      tmp.SetPixelSize( std::move( pixelSize ));
-      if( !colspaces.empty() ) {
-         tmp.SetColorSpace( colspaces[ colspaces.size() == 1 ? 0 : ii ] );
-      }
    }
    DIP_END_STACK_TRACE
 
@@ -203,7 +234,7 @@ void Scan(
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
          out[ ii ].TensorToSpatial();
       }
-      sizes.push_back( tsize );
+      sizes.push_back( tSize );
    }
 
    // Can we treat the images as if they were 1D?
@@ -660,6 +691,22 @@ void Scan(
    }
    if( error.IsSet() ) {
       throw error;
+   }
+
+   // Correct output image properties
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
+      Image& tmp = c_out[ ii ].get();
+      tmp.ExpandSingletonDimensions( trueSizes );
+      if( tensorToSpatial && tmp.IsScalar() ) {
+         tmp.ExpandSingletonTensor( trueTSize );
+      }
+      if( tensorToSpatial && !outTensor.IsScalar() ) {
+         tmp.ReshapeTensor( outTensor );
+      }
+      tmp.SetPixelSize( pixelSize );
+      if( !colspaces.empty() ) {
+         tmp.SetColorSpace( colspaces[ colspaces.size() == 1 ? 0 : ii ] );
+      }
    }
 }
 

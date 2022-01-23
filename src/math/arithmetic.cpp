@@ -651,4 +651,22 @@ DOCTEST_TEST_CASE( "[DIPlib] testing inplace arithmetic operators on dip::Image:
    DOCTEST_CHECK( dip::testing::CompareImages( im, res ));
 }
 
+DOCTEST_TEST_CASE("[DIPlib] testing the scan framework with singleton-expanded dimensions") {
+
+   // Generate test image with a singleton-expanded dimension
+   dip::Image img{ dip::UnsignedArray{ 256, 1 }, 1, dip::DT_SFLOAT };
+   img.Fill( 0 );
+   img.ExpandSingletonDimension( 1, 256 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 256, 256 } );
+
+   // Arithmetic operation with a scalar -- both dimensions will get singleton expanded
+   dip::Image out = img + 1;
+   DOCTEST_CHECK( out.Sizes() == dip::UnsignedArray{ 256, 256 } );
+   DOCTEST_CHECK( out.IsSingletonExpanded() );
+   DOCTEST_CHECK( out.Stride( 0 ) == 1 );
+   DOCTEST_CHECK( out.Stride( 1 ) == 0 );
+   DOCTEST_CHECK( out.At( 0, 0 ) == 1 ); // ensure we're producing the right values
+   DOCTEST_CHECK( out.At( 50, 200 ) == 1 ); // ensure we're producing the right values
+}
+
 #endif // DIP_CONFIG_ENABLE_DOCTEST

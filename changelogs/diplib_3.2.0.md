@@ -28,6 +28,10 @@ title: "Changes DIPlib 3.2.0"
 
 - `dip::Histogram::Bin( FloatArray const& value )` now takes the input as a const reference.
 
+- The scan framework will preserve expanded singleton dimensions: if one dimension is singleton-expanded across
+  all input images, then the output images will have the same dimension be singleton-expanded.
+  See [issue #96](https://github.com/DIPlib/diplib/issues/96).
+
 ### Bug fixes
 
 - When inserting a `dip::Measurement` object into a stream, the table it produced sometimes had feature value columns
