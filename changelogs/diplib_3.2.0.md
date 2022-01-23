@@ -18,7 +18,8 @@ title: "Changes DIPlib 3.2.0"
 
 - `dip::Histogram` now has a stream output operator (`<<`), which shows basic information about the histogram.
 
-- Added `dip::ObjectMaximum()` and `dip::ObjectMinimum()` to identify the largest or smallest object.
+- Added `dip::ObjectMaximum()` and `dip::ObjectMinimum()` to identify the object with the largest or smallest
+  measurement result.
 
 - Added `dip::Image::UnexpandSingletonDimension()` and `dip::Image::UnexpandSingletonTensor()`.
 
@@ -31,6 +32,8 @@ title: "Changes DIPlib 3.2.0"
 - The scan framework will preserve expanded singleton dimensions: if one dimension is singleton-expanded across
   all input images, then the output images will have the same dimension be singleton-expanded.
   See [issue #96](https://github.com/DIPlib/diplib/issues/96).
+
+- The `dip::libraryInformation` struct now also shows whether *FFTW* and *FreeType* are being used.
 
 ### Bug fixes
 
@@ -62,6 +65,9 @@ title: "Changes DIPlib 3.2.0"
 ### New functionality
 
 ### Changed functionality
+
+- In the DIPimage GUI, "About DIPimage" and "About DIPlib" show the same URL (using HTTPS) as a link.
+  The "About DIPlib" page also reports whether *FFTW* is used.
 
 (See also changes to *DIPlib*.)
 

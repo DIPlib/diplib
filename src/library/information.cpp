@@ -52,6 +52,12 @@ DIP_EXPORT extern LibraryInformation const libraryInformation{
 #ifdef DIP_CONFIG_HAS_JPEG
             ", JPEG support"
 #endif
+#ifdef DIP_CONFIG_HAS_FFTW
+            ", using FFTW"
+#endif
+#ifdef DIP_CONFIG_HAS_FREETYPE
+            ", FreeType support"
+#endif
 };
 
 } // namespace dip

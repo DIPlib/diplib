@@ -177,6 +177,9 @@ else
    if ~isempty(strfind(info.type,'OpenMP'))
       type = [type ', with OpenMP'];
    end
+   if ~isempty(strfind(info.type,'FFTW'))
+      type = [type ', with FFTW'];
+   end
    copyright = textscan(info.copyright,'%s','delimiter',char(10));
    strings = {[info.name ', ' info.description],...
               ['Version ' info.version ' (' info.date ', ' type ')'],...
