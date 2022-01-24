@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -293,17 +293,32 @@ dip::String GetEdgeCondition( int index, int nrhs, const mxArray* prhs[], char c
 }
 
 using BinaryBasicFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip::sint, dip::uint, dip::String const& );
-void BinaryBasicFilter( BinaryBasicFilterFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[], char const* defaultValue ) {
-   DML_MAX_ARGS( 4 );
+using BinaryIsotropciFilterFunction = void ( * )( dip::Image const&, dip::Image&, dip::dfloat );
+void BinaryBasicFilter(
+      BinaryBasicFilterFunction basicFunction,
+      BinaryIsotropciFilterFunction isotropicFunction,
+      mxArray* plhs[],
+      int nrhs,
+      const mxArray* prhs[],
+      char const* defaultValue
+) {
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
-   dip::uint iterations = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 1;
-   dip::sint connectivity = nrhs > 2 ? dml::GetInteger( prhs[ 2 ] ) : -1;
-   dip::String edgeCondition = GetEdgeCondition( 3, nrhs, prhs, defaultValue );
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
-   function( in, out, connectivity, iterations, edgeCondition );
+   if( nrhs > 2 && dml::IsString( prhs[ 2 ] )) {
+      dip::String mode = dml::GetString( prhs[ 2 ] );
+      DIP_THROW_IF( mode != dip::S::ISOTROPIC, "Illegal connectivity value." );
+      DML_MAX_ARGS( 3 );
+      dip::dfloat distance = dml::GetFloat( prhs[ 1 ] );
+      isotropicFunction( in, out, distance );
+   } else {
+      DML_MAX_ARGS( 4 );
+      dip::uint iterations = nrhs > 1 ? dml::GetUnsigned( prhs[ 1 ] ) : 1;
+      dip::sint connectivity = nrhs > 2 ? dml::GetInteger( prhs[ 2 ] ) : -1;
+      dip::String edgeCondition = GetEdgeCondition( 3, nrhs, prhs, defaultValue );
+      basicFunction( in, out, connectivity, iterations, edgeCondition );
+   }
    plhs[ 0 ] = dml::GetArray( out );
-
 }
 
 void bpropagation( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
@@ -428,13 +443,13 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          MergeParamFilter( dip::WatershedMinima, plhs, nrhs, prhs );
 
       } else if( function == "bclosing" ) {
-         BinaryBasicFilter( dip::BinaryClosing, plhs, nrhs, prhs, dip::S::SPECIAL );
+         BinaryBasicFilter( dip::BinaryClosing, dip::IsotropicClosing, plhs, nrhs, prhs, dip::S::SPECIAL );
       } else if( function == "bdilation" ) {
-         BinaryBasicFilter( dip::BinaryDilation, plhs, nrhs, prhs, dip::S::BACKGROUND );
+         BinaryBasicFilter( dip::BinaryDilation, dip::IsotropicDilation, plhs, nrhs, prhs, dip::S::BACKGROUND );
       } else if( function == "berosion" ) {
-         BinaryBasicFilter( dip::BinaryErosion, plhs, nrhs, prhs, dip::S::OBJECT );
+         BinaryBasicFilter( dip::BinaryErosion, dip::IsotropicErosion, plhs, nrhs, prhs, dip::S::OBJECT );
       } else if( function == "bopening" ) {
-         BinaryBasicFilter( dip::BinaryOpening, plhs, nrhs, prhs, dip::S::SPECIAL );
+         BinaryBasicFilter( dip::BinaryOpening, dip::IsotropicOpening, plhs, nrhs, prhs, dip::S::SPECIAL );
       } else if( function == "bpropagation" ) {
          bpropagation( plhs, nrhs, prhs );
       } else if( function == "bskeleton" ) {

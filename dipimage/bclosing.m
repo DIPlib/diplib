@@ -2,10 +2,12 @@
 %
 % SYNOPSIS:
 %  image_out = bclosing(image_in,iterations,connectivity,edgeCondition)
+%  image_out = bclosing(image_in,distance,'isotropic')
 %
 % PARAMETERS:
 %  iterations: the number of steps taken, defines the size of the
 %     structuring element.
+%  distance: radius of isotropic structuring element, can be non-integer.
 %  connectivity: defines the neighborhood:
 %     * 1 indicates 4-connected neighbors in 2D or 6-connected in 3D
 %     * 2 indicates 8-connected neighbors in 2D
@@ -23,9 +25,10 @@
 %  edgeCondition = 'special'
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::BinaryClosing
+%  This function calls the DIPlib function dip::BinaryClosing and
+%  dip::IsotropicClosing.
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2022, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

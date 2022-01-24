@@ -66,6 +66,8 @@ title: "Changes DIPlib 3.2.0"
 
 ### New functionality
 
+- Added `drawtext` function.
+
 ### Changed functionality
 
 - In the DIPimage GUI, "About DIPimage" and "About DIPlib" show the same URL (using HTTPS) as a link.
@@ -73,7 +75,7 @@ title: "Changes DIPlib 3.2.0"
 
 - `readim` and `writeim` recognize `'NPY'` as a format. This is the NumPy array format supported natively by *DIPlib*.
 
-- Added `drawtext` function.
+- `bdilation`, `berosion`, `bclosing` and `bopening` have a new option `'isotropic'`.
 
 (See also changes to *DIPlib*.)
 
