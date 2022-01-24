@@ -67,7 +67,7 @@ void hitmiss( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image const se0 = dml::GetImage( prhs[ 1 ] );
    dip::Image se1, se2;
    int index = 2;
-   if(( nrhs > index ) && !mxIsChar( prhs[ index ] )) {
+   if(( nrhs > index ) && !dml::IsString( prhs[ index ] )) {
       se1 = se0;
       se2 = dml::GetImage( prhs[ index ] );
       ++index;
@@ -279,7 +279,7 @@ void MergeParamFilter( MergeParamFilterFunction function, mxArray* plhs[], int n
 dip::String GetEdgeCondition( int index, int nrhs, const mxArray* prhs[], char const* defaultValue ) {
    dip::String edgeCondition = defaultValue;
    if( nrhs > index ) {
-      if( mxIsChar( prhs[ index ] )) {
+      if( dml::IsString( prhs[ index ] )) {
          edgeCondition = dml::GetString( prhs[ index ] );
       } else {
          if( dml::GetBoolean( prhs[ index ] )) {
@@ -349,7 +349,7 @@ void countneighbors( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::String mode = dip::S::FOREGROUND;
    if( nrhs > 1 ) { // Note order difference between MATLAB and C++
-      if( mxIsChar( prhs[ 1 ] )) {
+      if( dml::IsString( prhs[ 1 ] )) {
          mode = dml::GetString( prhs[ 1 ] );
       } else {
          if( !dml::GetBoolean( prhs[ 1 ] )) {

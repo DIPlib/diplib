@@ -214,7 +214,7 @@ void threshold( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::Image mask;
    int index = 1;
-   if(( nrhs > index ) && !mxIsChar( prhs[ index ] )) {
+   if(( nrhs > index ) && !dml::IsString( prhs[ index ] )) {
       mask = dml::GetImage( prhs[ index ] );
       ++index;
    }
@@ -387,7 +387,7 @@ void FindExtrema( FindExtremaFunction function, int nlhs, mxArray* plhs[], int n
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::Image mask;
    int index = 1;
-   if(( nrhs > index ) && ( !mxIsChar( prhs[ index ] ))) {
+   if(( nrhs > index ) && ( !dml::IsString( prhs[ index ] ))) {
       mask = dml::GetImage( prhs[ index ] );
       ++index;
    }

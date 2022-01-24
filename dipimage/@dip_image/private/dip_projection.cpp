@@ -71,7 +71,7 @@ void ProjectionWithMode(
       dip::String const& defaultMode
 ) {
    dip::String mode = defaultMode;
-   if(( nrhs > 0 ) && mxIsChar( prhs[ nrhs - 1 ] )) {
+   if(( nrhs > 0 ) && dml::IsString( prhs[ nrhs - 1 ] )) {
       mode = dml::GetString( prhs[ nrhs - 1 ] );
       --nrhs;
    }
@@ -186,7 +186,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       prhs += 2;
       nrhs -= 2;
       bool doTensor = false;
-      if(( nrhs > 0 ) && mxIsChar( prhs[ nrhs - 1 ] )) {
+      if(( nrhs > 0 ) && dml::IsString( prhs[ nrhs - 1 ] )) {
          dip::String flag = dml::GetString( prhs[ 0 ] );
          doTensor = flag == "tensor";
          DIP_THROW_IF( nrhs > ( function == "percentile" ? 2 : 1 ), "Too many input arguments" );

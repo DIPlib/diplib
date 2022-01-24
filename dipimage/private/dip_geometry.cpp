@@ -111,7 +111,7 @@ void rotation( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::uint dimension2 = 1;
    dip::String method{};
    dip::String boundaryCondition = dip::S::ADD_ZEROS;
-   if(( nrhs > 2 ) && ( mxIsChar( prhs[ 2 ] ))) {
+   if(( nrhs > 2 ) && ( dml::IsString( prhs[ 2 ] ))) {
       // rotation(image_in,angle,interpolation_method,boundary_condition)
       DIP_THROW_IF( nDims != 2, "Missing argument before INTERPOLATION_METHOD" );
       DML_MAX_ARGS( 4 );
@@ -119,7 +119,7 @@ void rotation( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       if( nrhs > 3 ) {
          boundaryCondition = dml::GetString( prhs[ 3 ] );
       }
-   } else if(( nrhs == 3 ) || (( nrhs > 3 ) && mxIsChar( prhs[ 3 ]))) {
+   } else if(( nrhs == 3 ) || (( nrhs > 3 ) && dml::IsString( prhs[ 3 ]))) {
       // rotation(image_in,angle,axis,interpolation_method,boundary_condition)
       DIP_THROW_IF( nDims > 3, "For images with more than 3 dimensions, use the syntax with two DIMENSION parameters" );
       DML_MAX_ARGS( 5 );

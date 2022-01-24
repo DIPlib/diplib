@@ -254,7 +254,7 @@ void EDT( EDTFunction function, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    dip::Image const in = dml::GetImage( prhs[ 0 ] );
    dip::String edgeCondition = dip::S::OBJECT;
    if( nrhs > 1 ) {
-      if( mxIsChar( prhs[ 1 ] )) {
+      if( dml::IsString( prhs[ 1 ] )) {
          edgeCondition = dml::GetString( prhs[ 1 ] );
       } else {
          if( !dml::GetBoolean( prhs[ 1 ] )) {

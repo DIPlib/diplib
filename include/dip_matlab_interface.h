@@ -141,6 +141,11 @@ inline bool IsVector( mxArray const* mx ) {
    return ( mxGetNumberOfDimensions( mx ) == 2 ) && (( mxGetM( mx ) <= 1 ) || ( mxGetN( mx ) <= 1 ));
 }
 
+/// \brief True if `mx` is a string (char vector or string class)
+inline bool IsString( mxArray const* mx ) {
+   return mxIsClass( mx, "string" ) || mxIsChar( mx );
+}
+
 /// \brief Convert an unsigned integer from `mxArray` to \ref dip::uint by copy.
 inline dip::uint GetUnsigned( mxArray const* mx ) {
    if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
@@ -464,7 +469,7 @@ inline dip::StringSet GetStringSet( mxArray const* mx ) {
 
 /// \brief Convert a boolean (logical) from `mxArray` to `bool` by copy. Accepts `"yes"` and `"no"` as well.
 inline bool GetBoolean( mxArray const* mx ) {
-   if( mxIsChar( mx )) {
+   if( dml::IsString( mx )) {
       dip::String str = GetString( mx );
       if(( str == "yes" ) || ( str == "y" )) {
          return true;

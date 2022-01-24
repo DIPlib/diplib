@@ -29,7 +29,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       DML_MIN_ARGS( 1 );
 
-      if( mxIsChar( prhs[ 0 ] )) {
+      if( dml::IsString( prhs[ 0 ] )) {
          dip::String str = dml::GetString( prhs[ 0 ]);
          if( str == "help" ) {
             DML_MAX_ARGS( 1 );

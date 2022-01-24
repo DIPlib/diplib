@@ -23,6 +23,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip::Image::UnexpandSingletonDimension()` and `dip::Image::UnexpandSingletonTensor()`.
 
+- Added `dml::IsString()` to the *DIPlib--MATLAB* interface.
+
 ### Changed functionality
 
 - The output stream operator for `dip::Image` writes the same information in a slightly different way.

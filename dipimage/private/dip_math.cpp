@@ -200,7 +200,7 @@ void RadialProjection( RadialProjectionFunction function, mxArray* plhs[], int n
    }
    dip::FloatArray center = {};
    if( nrhs > arg + 2 ) {
-      if( mxIsChar( prhs[ arg + 2 ] )) {
+      if( dml::IsString( prhs[ arg + 2 ] )) {
          center = in.GetCenter( dml::GetString( prhs[ arg + 2 ] ) );
       } else {
          center = dml::GetFloatArray( prhs[ arg + 2 ] );

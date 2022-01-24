@@ -270,12 +270,12 @@ void drawtext( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::MatlabInterface mi;
    dip::Image out = mi.NewImage();
    // First argument: image or text?
-   if( mxIsClass( prhs[ 0 ], "string" ) || mxIsChar( prhs[ 0 ] )) {
+   if( dml::IsString( prhs[ 0 ] )) {
       // drawtext(text, font, size, orientation)
       // drawtext(text, orientation)
       dip::String text = dml::GetString( prhs[ 0 ] );
       // Second argument is text?
-      if( nrhs > 1 && ( mxIsClass( prhs[ 1 ], "string" ) || mxIsChar( prhs[ 1 ] ))) {
+      if( nrhs > 1 && dml::IsString( prhs[ 1 ] )) {
          // drawtext(text, font, size, orientation)
          DML_MAX_ARGS( 4 );
          dip::String font = dml::GetString( prhs[ 1 ] );
@@ -299,7 +299,7 @@ void drawtext( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::FloatArray origin{ out.Sizes() };
       origin[ 0 ] = 0; // Default origin
       // Third argument is text?
-      if( nrhs > 2 && ( mxIsClass( prhs[ 2 ], "string" ) || mxIsChar( prhs[ 2 ] ))) {
+      if( nrhs > 2 && dml::IsString( prhs[ 2 ] )) {
          // drawtext(image, text, font, size, origin, value, orientation, align)
          DML_MAX_ARGS( 8 );
          dip::String font = dml::GetString( prhs[ 2 ] );
@@ -576,7 +576,7 @@ void testobject( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dip::Image out = mi.NewImage();
    int index = 0;
    dip::TestObjectParams params;
-   if(( nrhs > 0 ) && !mxIsChar( prhs[ 0 ] )) {
+   if(( nrhs > 0 ) && !dml::IsString( prhs[ 0 ] )) {
       // testobject(image, [name-value pairs])
       dip::Image tmp = dml::GetImage( prhs[ 0 ] );
       dip::Convert( tmp, out, dip::DataType::SuggestFloat( tmp.DataType() ));
