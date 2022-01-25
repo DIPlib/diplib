@@ -20,8 +20,13 @@
 #include "diplib/viewer/glfw.h"
 using ViewerManager = dip::viewer::GLFWManager;
 #else
+#ifdef DIP_CONFIG_HAS_FREEGLUT
 #include "diplib/viewer/glut.h"
 using ViewerManager = dip::viewer::GLUTManager;
+#else
+#include "diplib/viewer/proxy.h"
+using ViewerManager = dip::viewer::ProxyManager;
+#endif
 #endif
 
 #include "diplib/viewer/image.h"

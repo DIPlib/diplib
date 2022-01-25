@@ -136,6 +136,8 @@ endif()
 
 if(OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
    set(DIP_BUILD_DIPVIEWER ON CACHE BOOL "Build the viewer module")
+else()
+   set(DIP_BUILD_DIPVIEWER OFF CACHE BOOL "Build the viewer module")
 endif()
 
 if(DIP_BUILD_DIPVIEWER)

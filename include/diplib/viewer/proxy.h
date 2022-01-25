@@ -114,8 +114,13 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager
       // Set useCallback to false when the creation event should not be
       // passed on to the proxy, for example when the respective window
       // will be created by the caller.
-      if (cb && useCallback)
-        cb(window.get());
+      if (useCallback)
+      {
+        if (cb)
+          cb(window.get());
+        else
+          DIP_THROW_RUNTIME("Cannot create window: callback function not set");
+      }
     }
     
     virtual dip::uint activeWindows()
