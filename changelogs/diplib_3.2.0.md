@@ -59,6 +59,8 @@ title: "Changes DIPlib 3.2.0"
 - `dip::GreyWeightedDistanceTransform` didn't properly use pixel sizes as intended with the default `"fast marching"`
   method.
 
+- Updated DocTest to version 2.4.8, which should allow building and running the tests on Apple Silicon devices.
+
 
 
 
