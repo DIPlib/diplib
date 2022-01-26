@@ -223,13 +223,14 @@ bin[100,100] = 0
 out = dip.GreyWeightedDistanceTransform(weights, bin, mask)
 out = dip.Modulo(out, 50)
 
-weights.SetPixelSize(dip.PixelSize([dip.PhysicalQuantity(0.8),dip.PhysicalQuantity(1.2)]))
+weights.SetPixelSize([0.8, 1.2])
 
 out2 = dip.GreyWeightedDistanceTransform(weights, bin, mask)
 out2 = dip.Modulo(out2, 50)
 
 dip.viewer.Show(out)
 dip.viewer.Show(out2)
+dip.viewer.Spin()
 
 ###
 

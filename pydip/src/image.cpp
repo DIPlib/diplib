@@ -325,12 +325,21 @@ void init_image( py::module& m ) {
    img.def( "PixelSize", py::overload_cast<>( &dip::Image::PixelSize, py::const_ ));
    img.def( "PixelSize", py::overload_cast< dip::uint >( &dip::Image::PixelSize, py::const_ ), "dim"_a );
    img.def( "SetPixelSize", py::overload_cast< dip::PixelSize >( &dip::Image::SetPixelSize ), "pixelSize"_a );
-   img.def( "SetPixelSize", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::Image::SetPixelSize ), "dim"_a, "sz"_a );
    img.def( "SetPixelSize", []( dip::Image& self, dip::dfloat mag, dip::Units const& units ) {
                self.SetPixelSize( dip::PhysicalQuantity( mag, units ));
             }, "magnitude"_a, "units"_a = dip::Units{},
             "Overload that accepts the two components of a `dip.PhysicalQuantity`, sets\n"
             "all dimensions to the same value." );
+   img.def( "SetPixelSize", []( dip::Image& self, dip::FloatArray mags, dip::Units const& units ) {
+               dip::PhysicalQuantityArray pq( mags.size() );
+               for( dip::uint ii = 0; ii < mags.size(); ++ii ) {
+                  pq[ ii ] = mags[ ii ] * units;
+               }
+               self.SetPixelSize( pq );
+            }, "magnitudes"_a, "units"_a = dip::Units{},
+            "Overload that accepts the two components of a `dip.PhysicalQuantity`, using\n"
+            "a different magnitude for each dimension." );
+   img.def( "SetPixelSize", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::Image::SetPixelSize ), "dim"_a, "sz"_a );
    img.def( "SetPixelSize", []( dip::Image& self, dip::uint dim, dip::dfloat mag, dip::Units const& units ) {
                self.SetPixelSize( dim, dip::PhysicalQuantity( mag, units ));
             }, "dim"_a, "magnitude"_a, "units"_a = dip::Units{},

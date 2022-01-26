@@ -166,13 +166,27 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    physQ.def( "IsPhysical", &dip::PhysicalQuantity::IsPhysical );
    physQ.def( "Normalize", &dip::PhysicalQuantity::Normalize, py::return_value_policy::reference_internal );
    physQ.def( "RemovePrefix", &dip::PhysicalQuantity::RemovePrefix, py::return_value_policy::reference_internal );
+   py::implicitly_convertible< py::float_, dip::PhysicalQuantity >();
+   py::implicitly_convertible< dip::Units, dip::PhysicalQuantity >();
+   py::implicitly_convertible< py::str, dip::PhysicalQuantity >();
 
    auto pixSz = py::class_< dip::PixelSize >( m, "PixelSize", "Represents the physical size of a pixel." );
    pixSz.def( py::init<>() );
-   pixSz.def( py::init< dip::PhysicalQuantity const& >(), "physicalQuantity"_a );
    pixSz.def( py::init< dip::PhysicalQuantityArray const& >(), "physicalQuantities"_a );
    pixSz.def( py::init( []( dip::dfloat mag, dip::Units const& units ) { return dip::PhysicalQuantity( mag, units ); } ),
-              "magnitude"_a, "units"_a = dip::Units{} );
+              "magnitude"_a, "units"_a = dip::Units{},
+              "Overload that accepts the two components of a `dip.PhysicalQuantity`, sets\n"
+              "all dimensions to the same value." );
+   pixSz.def( py::init( []( dip::FloatArray const& mags, dip::Units const& units ) {
+                 dip::PhysicalQuantityArray pq( mags.size() );
+                 for( dip::uint ii = 0; ii < mags.size(); ++ii ) {
+                    pq[ ii ] = mags[ ii ] * units;
+                 }
+                 return pq;
+              } ),
+              "magnitudes"_a, "units"_a = dip::Units{},
+              "Overload that accepts the two components of a `dip.PhysicalQuantity`, using\n"
+              "a different magnitude for each dimension." );
    pixSz.def( "__repr__", []( dip::PixelSize const& self ) { std::ostringstream os; os << "<PixelSize " << self << ">"; return os.str(); } );
    pixSz.def( "__str__", []( dip::PixelSize const& self ) { std::ostringstream os; os << self; return os.str(); } );
    pixSz.def( "__len__", []( dip::PixelSize const& self ) { return self.Size(); } );
@@ -190,6 +204,8 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    pixSz.def( "Product", &dip::PixelSize::Product );
    pixSz.def( "ToPixels", &dip::PixelSize::ToPixels );
    pixSz.def( "ToPhysical", &dip::PixelSize::ToPhysical );
+   py::implicitly_convertible< dip::PhysicalQuantity, dip::PixelSize >();
+   py::implicitly_convertible< dip::PhysicalQuantityArray, dip::PixelSize >();
 
    // diplib/neighborlist.h
 

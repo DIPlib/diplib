@@ -141,6 +141,8 @@ title: "Changes DIPlib 3.2.0"
 - The `dip::StructuringElement` class was exposed to Python as `dip.SE` (to make typing easier). It is now
   exposed as `dip.StructuringElement`, with `dip.SE` an alias for backwards compatibility (and for less typing).
 
+- Added some constructor overloads and implicit conversions that make it much easier to work with pixel sizes.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

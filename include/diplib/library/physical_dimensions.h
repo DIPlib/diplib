@@ -702,6 +702,7 @@ class DIP_NO_EXPORT PixelSize {
          }
          return size_[ d ];
       }
+
       /// \brief Returns the pixel size for the given dimension.
       /// Cannot be used to write to the array, see `Set`.
       PhysicalQuantity operator[]( dip::uint d ) const {
