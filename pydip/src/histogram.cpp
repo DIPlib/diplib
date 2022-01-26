@@ -106,12 +106,32 @@ void init_histogram( py::module& m ) {
 
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
              "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
-   hist.def( py::init< dip::Image const&, dip::Image const&, dip::Histogram::Configuration >(),
-             "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::Configuration{} );
+   hist.def( py::init( []( dip::Image const& input, dip::Image const& mask, dip::FloatArray const& bounds, dip::uint nBins, bool boundsArePercentile ) {
+                DIP_THROW_IF( bounds.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
+                dip::Histogram::Configuration config( bounds[ 0 ], bounds[ 1 ], nBins );
+                if( boundsArePercentile ) {
+                   config.lowerIsPercentile = config.upperIsPercentile = boundsArePercentile;
+                }
+                return dip::Histogram( input, mask, config );
+             } ),
+             "input"_a, "mask"_a = dip::Image{}, "bounds"_a = dip::FloatArray{ 0, 255 }, "nBins"_a = 256, "boundsArePercentile"_a = false );
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
              "input1"_a, "input2"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
+   hist.def( py::init( []( dip::Image const& input1, dip::Image const& input2, dip::Image const& mask,
+                           dip::FloatArray const& bounds1, dip::FloatArray const& bounds2, dip::uint nBins1, dip::uint nBins2, bool boundsArePercentile ) {
+                DIP_THROW_IF( bounds1.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
+                DIP_THROW_IF( bounds2.size() != 2, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
+                dip::Histogram::ConfigurationArray config{{ bounds1[ 0 ], bounds1[ 1 ], nBins1 },
+                                                          { bounds2[ 0 ], bounds2[ 1 ], nBins2 }};
+                if( boundsArePercentile ) {
+                   config[0].lowerIsPercentile = config[0].upperIsPercentile = boundsArePercentile;
+                   config[1].lowerIsPercentile = config[1].upperIsPercentile = boundsArePercentile;
+                }
+                return dip::Histogram( input1, input2, mask, config );
+             } ),
+             "input1"_a, "input2"_a, "mask"_a = dip::Image{}, "bounds1"_a = dip::FloatArray{ 0, 255 }, "bounds2"_a = dip::FloatArray{ 0, 100 },
+             "nBins1"_a = 256, "nBins2"_a = 256, "boundsArePercentile"_a = false );
    hist.def( py::init< dip::Histogram::ConfigurationArray >(), "configuration"_a );
-   hist.def( py::init< dip::Histogram::Configuration >(), "configuration"_a);
    hist.def( "__repr__", []( dip::Histogram const& self ) {
                 if( self.IsInitialized() ) {
                    std::ostringstream os;
