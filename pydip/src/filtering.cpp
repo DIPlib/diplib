@@ -50,6 +50,7 @@ void init_filtering( py::module& m ) {
    py::implicitly_convertible< py::float_, dip::Kernel >();
    py::implicitly_convertible< py::int_, dip::Kernel >();
    py::implicitly_convertible< py::list, dip::Kernel >();
+   py::implicitly_convertible< py::tuple, dip::Kernel >();
    py::implicitly_convertible< dip::Image, dip::Kernel >();
    py::implicitly_convertible< py::buffer, dip::Kernel >();
 

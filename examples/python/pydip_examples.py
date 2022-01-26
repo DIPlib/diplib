@@ -230,3 +230,15 @@ out2 = dip.Modulo(out2, 50)
 
 dip.viewer.Show(out)
 dip.viewer.Show(out2)
+
+###
+
+a = dip.ImageReadICS('../trui')
+b = dip.Dilation(a, dip.StructuringElement(30, 'rectangular'))
+c = dip.Dilation(a, dip.StructuringElement([30, 10], 'rectangular'))
+d = dip.Dilation(a, dip.StructuringElement((30, 10), 'rectangular'))
+e = dip.Dilation(a, dip.SE(30, 'rectangular'))
+f = dip.Dilation(a, 30)
+g = dip.Dilation(a, [30, 10])
+h = dip.Dilation(a, (30, 10))
+i = dip.Dilation(a, 'rectangular')

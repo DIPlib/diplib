@@ -138,6 +138,9 @@ title: "Changes DIPlib 3.2.0"
 - `dip.Show()` has a new parameter `extent`, uses proper warnings rather than just printing messages to
   the console, and no longer uses `dip.ImageDisplay()` for 1D images.
 
+- The `dip::StructuringElement` class was exposed to Python as `dip.SE` (to make typing easier). It is now
+  exposed as `dip.StructuringElement`, with `dip.SE` an alias for backwards compatibility (and for less typing).
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
@@ -145,6 +148,8 @@ title: "Changes DIPlib 3.2.0"
 - Fixed memory corruption bug when releasing data from a different thread.
 
 - Fixed name of last input argument to `dip.GreyWeightedDistanceTransform`, which is now `mode`.
+
+- A tuple with numbers now implicitly converts to a `dip.StructuringElement` and a `dip.Kernel`.
 
 (See also bugfixes to *DIPlib*.)
 
@@ -154,6 +159,10 @@ title: "Changes DIPlib 3.2.0"
 ## Changes to *DIPviewer*
 
 ### New functionality
+
+- Added possibility to build *DIPviewer* without *GLFW* or *FreeGLUT*. This must be explicitly
+  enabled by setting `DIP_BUILD_DIPVIEWER`. This is useful when building *DIPviewer* for use
+  in *MATLAB*, where Java provides the window functionality.
 
 ### Changed functionality
 

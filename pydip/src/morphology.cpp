@@ -79,7 +79,7 @@ dip::String StructuringElementRepr( dip::StructuringElement const& s ) {
 } // namespace
 
 void init_morphology( py::module& m ) {
-   auto se = py::class_< dip::StructuringElement >( m, "SE", "Represents the structuring element to use in morphological operations\n(dip::StructuringElement in DIPlib)." );
+   auto se = py::class_< dip::StructuringElement >( m, "StructuringElement", "Represents the structuring element to use in morphological operations\n(dip::StructuringElement in DIPlib)." );
    se.def( py::init<>() );
    se.def( py::init< dip::String const& >(), "shape"_a );
    se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
@@ -91,6 +91,7 @@ void init_morphology( py::module& m ) {
    py::implicitly_convertible< py::float_, dip::StructuringElement >();
    py::implicitly_convertible< py::int_, dip::StructuringElement >();
    py::implicitly_convertible< py::list, dip::StructuringElement >();
+   py::implicitly_convertible< py::tuple, dip::StructuringElement >();
    py::implicitly_convertible< dip::Image, dip::StructuringElement >();
    py::implicitly_convertible< py::buffer, dip::StructuringElement >();
 
