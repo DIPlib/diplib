@@ -300,29 +300,39 @@ DIP_EXPORT void DrawBandlimitedBox(
       // String const& blend = S::ADD
 );
 
-/// \brief Blends `mask` into `out` at position `pos`, with color `value`.
+/// \brief Blends `value` into `out` at position `pos`, according to `mask`.
+///
+/// Computes `out = value * mask + out * (1 - mask)`, after shifting `value` and `mask` by `pos`. If
+/// mask is an integer type, it will be scaled to the 0-1 range first. That is, where `mask` is maximal,
+/// `out` will be assigned `value`. Where `mask` is zero, `out` will not be changed. Intermediate values
+/// indicate how much of `value` to mix into the existing color.
+/// `value` is cast to the data type of `out` after blending.
 ///
 /// `out` is a forged image of any data type, dimensionality and number of tensor elements. `mask` is a
 /// scalar image of the same dimensionality. If it is a floating-point image, the values should be in
 /// the range 0-1; if it is an integer image, the values should be between 0 and the maximum for the data type.
 /// `mask` can also be binary, but it cannot be a complex type.
 ///
-/// `pos` has one value for each dimension in `out`, and indicates the position of the top-left corner of
-/// `mask` in `out`. That is, `mask` will be translated by this vector. Note that `mask` can fall partially
-/// outside of `out`, it is perfectly fine to specify negative coordinates.
+/// `value` is an image of the same sizes as `mask`, or can be singleton-expanded to the same sizes. It has
+/// either one tensor element or as many as `out` (i.e. the tensor dimension can be singleton-expanded to
+/// the tensor size of `out`).
 ///
-/// `value` has either one tensor element, or one tensor element for each dimension of `out`. If it is scalar,
-/// then the same value will be used for each tensor element. It indicates the color to be used to blend
-/// `mask` in `out`. Where `mask` is maximal, `out` will be assigned `value`. Where `mask` is zero, `out`
-/// will not be changed. Intermediate values indicate how much of `value` to mix into the existing color.
-/// `value` is cast to the data type of `out` after blending.
+/// Note that `value` can be a single pixel to paint `mask` in a single color. Likewise, `mask` can be a single
+/// pixel to mix in `value` at a constant level. `mask` and `value` will be singleton-expanded to the match
+/// their sizes. This means that, if both are a single pixel, only a single pixel in `out` will be modified.
+///
+/// `pos` has one value for each dimension in `out`, and indicates the position of the top-left corner of
+/// `mask` and `value` in `out`. That is, `mask` and `value` will be translated by this vector.
+/// Note that `mask` can fall partially outside of `out`, it is perfectly fine to specify negative coordinates.
+/// If `pos` is an empty array, no translation is applied, `mask` will coincide with the top-left corner
+/// of `out`.
 ///
 /// If `out` is binary, `mask` will be thresholded at 50%.
 DIP_EXPORT void BlendBandlimitedMask(
       Image& out,
       Image const& mask,
-      IntegerArray const& pos,
-      Image::Pixel const& value
+      Image const& value = dip::Image( { 255 } ),
+      IntegerArray pos = {}
 );
 
 /// \brief Class used to draw text using a specified font file (TTF, OTF, etc).

@@ -243,3 +243,30 @@ f = dip.Dilation(a, 30)
 g = dip.Dilation(a, [30, 10])
 h = dip.Dilation(a, (30, 10))
 i = dip.Dilation(a, 'rectangular')
+
+###
+
+# Replicate what ../cpp/blend_images.cpp does
+image1 = dip.ImageRead("../DIP.tif")
+image2 = dip.ImageRead("../trui.ics")
+dip.viewer.Show(image1, "image1")
+dip.viewer.Show(image2, "image2")
+
+mask = image2.Similar("SFLOAT")
+mask.Fill(0)
+dip.DrawBandlimitedBall(mask, 110, [126, 91], 1, "filled", 10)
+dip.viewer.Show(mask, "mask")
+
+out1 = image1.Copy()
+dip.BlendBandlimitedMask(out1, mask, image2, [195 - 126, 195 - 91])
+dip.viewer.Show(out1, "out1")
+
+out2 = image1.Copy()
+dip.BlendBandlimitedMask(out2, dip.Image(0.3), image2)
+dip.viewer.Show(out2, "out2")
+
+out3 = image1.Copy()
+dip.BlendBandlimitedMask(out3, mask, dip.Create0D([255, 0, 0]), [195 - 126, 195 - 91])
+dip.viewer.Show(out3, "out3")
+
+dip.viewer.Spin()

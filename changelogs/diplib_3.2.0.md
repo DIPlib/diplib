@@ -122,6 +122,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip.ObjectMaximum()` and `dip.ObjectMinimum()`.
 
+- Added `dip.BlendBandlimitedMask()`.
+
 - Added `dip.Image.IsForged()`.
 
 ### Changed functionality

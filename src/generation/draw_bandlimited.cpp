@@ -712,21 +712,33 @@ void ThresholdImage( Image& img ) {
 
 void BlendBandlimitedMask(
       Image& out,
-      Image const& mask,         // scalar, DT_UINT8, of same dimensionality as `out`
-      IntegerArray const& pos,
-      Image::Pixel const& value  // must have the same number of tensor elements as `out`
+      Image const& mask,
+      Image const& value,
+      IntegerArray pos   // by copy, if it's empty we want to modify it
 ) {
-   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsForged() || !mask.IsForged() || !value.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask.IsScalar(), E::IMAGE_NOT_SCALAR );
-   dip::uint nDims = out.Dimensionality();
-   DIP_THROW_IF( mask.Dimensionality() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
-   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( value.TensorElements() != out.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
+   DIP_THROW_IF( mask.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF( mask.Dimensionality() > nDims || value.Dimensionality() > nDims, E::DIMENSIONALITIES_DONT_MATCH );
+   if( pos.empty() ) {
+      pos.resize( nDims, 0 );
+   } else {
+      DIP_THROW_IF( pos.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+   // Find size of mask + value
+   UnsignedArray maskSize = mask.Sizes();  // mask and value use the same size
+   maskSize.resize( nDims, 1 );
+   DIP_STACK_TRACE_THIS( Framework::SingletonExpandedSize( maskSize, value.Sizes() )); // Throws if not compatible
+   Image maskWindow = mask.QuickCopy();
+   maskWindow.ExpandSingletonDimensions( maskSize );
+   Image valueWindow = value.QuickCopy();
+   valueWindow.ExpandSingletonDimensions( maskSize );
    // Find overlap region
    UnsignedArray outOrigin( nDims, 0 );
-   UnsignedArray maskOrigin( nDims, 0 );
    UnsignedArray outSize = out.Sizes();
-   UnsignedArray maskSize = mask.Sizes();
+   UnsignedArray maskOrigin( nDims, 0 );  // mask and value use the same origin
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       // Left edge of mask
       if( pos[ ii ] < 0 ) {
@@ -753,9 +765,10 @@ void BlendBandlimitedMask(
    Image outWindow = out.QuickCopy();
    outWindow.ShiftOriginUnsafe( out.Offset( outOrigin ));
    outWindow.SetSizesUnsafe( outSize );
-   Image maskWindow = mask.QuickCopy();
-   maskWindow.ShiftOriginUnsafe( mask.Offset( maskOrigin ));
+   maskWindow.ShiftOriginUnsafe( maskWindow.Offset( maskOrigin ));
    maskWindow.SetSizesUnsafe( maskSize );
+   valueWindow.ShiftOriginUnsafe( valueWindow.Offset( maskOrigin ));
+   valueWindow.SetSizesUnsafe( maskSize );
    // For a binary `out`, `mask` must be binary too.
    if( outWindow.DataType().IsBinary() && !maskWindow.DataType().IsBinary() ) {
       if( maskWindow.DataType().IsFloat() ) {
@@ -766,14 +779,18 @@ void BlendBandlimitedMask(
    }
    // Do the blending
    if( maskWindow.DataType().IsBinary() ) {
-      outWindow.At( maskWindow ) = value;
+      if( value.NumberOfPixels() == 1 ) {
+         outWindow.At( maskWindow ) = value;
+      } else {
+         outWindow.At( maskWindow ) = valueWindow.At( maskWindow );
+      }
    } else {
       DataType dt = maskWindow.DataType();
       if( !dt.IsFloat() ) {
          maskWindow.Convert( DT_SFLOAT );
          DIP_OVL_CALL_INTEGER( ScaleImage, ( maskWindow ), dt );
       }
-      outWindow.Copy( outWindow * ( 1 - maskWindow ) + value * maskWindow );
+      outWindow.Copy( outWindow * ( 1 - maskWindow ) + valueWindow * maskWindow );
    }
 }
 

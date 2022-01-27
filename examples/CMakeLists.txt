@@ -111,6 +111,11 @@ if(DIP_BUILD_DIPVIEWER)
    target_compile_definitions(using_measurement_tool PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
    target_link_libraries(using_measurement_tool DIP DIPviewer)
 
+   # An example program that shows how to blend images
+   add_executable(blend_images cpp/blend_images.cpp)
+   target_compile_definitions(blend_images PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
+   target_link_libraries(blend_images DIP DIPviewer)
+
    add_dependencies(examples
                     viewer
                     display

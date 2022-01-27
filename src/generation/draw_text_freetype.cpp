@@ -195,7 +195,7 @@ void RenderGlyphSequence(
                Image mask( NonOwnedRefToDataSegment( bitmap->bitmap.buffer ), bitmap->bitmap.buffer,
                            DT_UINT8, { bitmap->bitmap.width, bitmap->bitmap.rows }, { 1, bitmap->bitmap.pitch }, Tensor{ 1 } );
                IntegerArray pos{ glyph.pos.x + bitmap->left, glyph.pos.y - bitmap->top };
-               BlendBandlimitedMask( out, mask, pos, value );
+               BlendBandlimitedMask( out, mask, dip::Image( value ), pos );
             }
          }
       }

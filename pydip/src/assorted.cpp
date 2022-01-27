@@ -198,7 +198,9 @@ void init_assorted( py::module& m ) {
    m.def( "DrawBandlimitedLine", &dip::DrawBandlimitedLine, "out"_a, "start"_a, "end"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigma"_a = 1.0, "truncation"_a = 3.0 );
    m.def( "DrawBandlimitedBall", &dip::DrawBandlimitedBall, "out"_a, "diameter"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
    m.def( "DrawBandlimitedBox", &dip::DrawBandlimitedBox, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
-   m.def( "DrawText", []( dip::Image& out, dip::String const& text, dip::FloatArray const& origin, dip::String const& font, dip::dfloat size, dip::Image::Pixel const& value, dip::dfloat orientation, dip::String const& align ) {
+   m.def( "BlendBandlimitedMask", &dip::BlendBandlimitedMask, "out"_a, "mask"_a, "value"_a = dip::Image( { 255 } ), "pos"_a = dip::IntegerArray{} );
+   m.def( "DrawText", []( dip::Image& out, dip::String const& text, dip::FloatArray const& origin, dip::String const& font,
+                          dip::dfloat size, dip::Image::Pixel const& value, dip::dfloat orientation, dip::String const& align ) {
                dip::FreeTypeTool freeTypeTool( font );
                freeTypeTool.SetSize( size );
                freeTypeTool.DrawText( out, text, origin, value, orientation, align );

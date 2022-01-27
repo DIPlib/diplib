@@ -266,7 +266,7 @@ void DrawText(
             ypos += c1[ 1 ];
          }
          IntegerArray pos{ round_cast( origin[ 0 ] - xpos ), round_cast( origin[ 1 ] - ypos ) };
-         BlendBandlimitedMask( out, glyphData.image, pos, value );
+         BlendBandlimitedMask( out, glyphData.image, dip::Image( value ), pos );
       }
       origin[ 0 ] += advanceScaleX * static_cast< dfloat >( glyphData.advance );
       origin[ 1 ] += advanceScaleY * static_cast< dfloat >( glyphData.advance );
