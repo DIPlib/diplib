@@ -89,6 +89,8 @@ inline TemplateParams GetTemplateParams( vigra::TinyVector< PixelType, tensorEle
 /// unprotect it using \ref dip::Image::Protect.
 ///
 /// An invalid `vigra::MultiArrayView` produces a non-forged \ref dip::Image.
+///
+/// The template parameters do not need to be explicitly given, as the `input` object defines them.
 template< unsigned int Dimensionality, class PixelType, class StrideTag >
 inline dip::Image VigraToDip( vigra::MultiArrayView< Dimensionality, PixelType, StrideTag > const& input ) {
    if( !input.hasData() ) {
@@ -115,6 +117,9 @@ inline dip::Image VigraToDip( vigra::MultiArrayView< Dimensionality, PixelType, 
 /// `vigra::MultiArrayView` is deleted.
 ///
 /// A non-forged \ref dip::Image produces an invalid `vigra::MultiArrayView`.
+///
+/// Note that it is required to set the two template parameters, and that these template parameters must match the
+/// the `dip::Image` object at runtime.
 template< unsigned int Dimensionality, class PixelType >
 inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag > DipToVigra( dip::Image const& img ) {
    if( !img.IsForged() ) {
@@ -142,6 +147,10 @@ inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag 
 /// Use this function if the \ref dip::Image cannot be mapped with \ref dip_vigra::DipToVigra, for example
 /// if the data type doesn't match (or you don't know in advance what data type the *DIPlib* image
 /// will have) or if the tensor stride is not 1.
+///
+/// Note that it is required to set the two template parameters, and that the `Dimensionality` must match
+/// the `dip::Image` object at runtime. If the `PixelType` doesn't match, the sample values will be converted
+/// in the same way that \ref dip::Image::Copy does.
 template< unsigned int Dimensionality, class PixelType >
 inline vigra::MultiArray< Dimensionality, PixelType > CopyDipToVigra( dip::Image const& img ) {
    if( !img.IsForged() ) {
