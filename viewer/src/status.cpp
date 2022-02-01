@@ -51,7 +51,8 @@ void StatusViewPort::render()
   glRasterPos2i(1, 12);
 
   dip::uint rx = 1;
-  
+  dim_starts_.clear();
+
   if (o.status_ != "")
   {
     viewer()->drawString(o.status_.c_str());
@@ -76,6 +77,7 @@ void StatusViewPort::render()
     rx += viewer()->drawString("(");
     for (dip::uint ii=0; ii < op.size(); ++ii)
     {
+      dim_starts_.push_back(rx);
       rx += viewer()->drawString(std::to_string(op[ii]).c_str());
       if (viewer()->image().PixelSize(ii) != PhysicalQuantity::Pixel() || o.offset_[ii])
       {
@@ -89,6 +91,8 @@ void StatusViewPort::render()
       if (ii < op.size()-1)
         rx += viewer()->drawString(", ");
     }
+    dim_starts_.push_back(rx);
+
     rx += viewer()->drawString("): ");
     if (te > 1)
       rx += viewer()->drawString("[");
@@ -135,6 +139,41 @@ void StatusViewPort::render()
     }
     if (te > 1)
       rx += viewer()->drawString("]");
+  }
+}
+
+void StatusViewPort::click(int button, int state, int x, int y, int /*mods*/)
+{
+  auto& o = viewer()->options();
+  auto& op = o.operating_point_;
+
+  double ix, iy;
+  screenToView(x, y, &ix, &iy);
+
+  if (state == 0)
+  {
+    if (button == 0)
+    {
+      o.status_ = "";
+      viewer()->refresh();
+    }
+
+    if ((button == 3 || button == 4) && dim_starts_.size() == op.size() + 1)
+    {
+      // Find which dimension was clicked
+      dip::sint dim = -1;
+      for (dip::uint idx = 0; idx != op.size(); ++idx)
+        if (x > dim_starts_[idx] && x < dim_starts_[idx + 1])
+          dim = idx;
+
+      if (dim != -1)
+      {
+        auto sz = viewer()->original().Sizes();
+
+        dip::sint diff = (button == 3) ? -1 : 1;
+        op[dim] = std::min(std::max((int)(op[dim] + diff), 0), (int)(sz[dim] - 1));
+      }
+    }
   }
 }
 

@@ -44,6 +44,31 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    sv.def( "SetPosition", &dip::viewer::SliceViewer::setPosition, "Set the window's screen position." );
    sv.def( "SetSize", &dip::viewer::SliceViewer::setSize, "Set the window's size." );
 
+   sv.def_property( "dims", []( dip::viewer::SliceViewer& self ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      return self.options().dims_;
+   }, []( dip::viewer::SliceViewer &self, dip::IntegerArray const &dims ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      DIP_THROW_IF( dims.size() > 4, dip::E::ARRAY_PARAMETER_WRONG_LENGTH );
+      DIP_THROW_IF( ( dims < (dip::sint) -1 ).any() || ( dims >= (dip::sint)self.image().Dimensionality() ).any(), dip::E::INDEX_OUT_OF_RANGE );
+
+      // Fill unspecified dimensions with -1
+      dip::IntegerArray newdims( 4, -1 );
+      for ( dip::uint idx=0; idx < dims.size(); ++idx ) {
+         for ( dip::uint idx2 = 0; idx2 < idx; ++idx2 ) {
+            DIP_THROW_IF( dims[ idx2 ] != -1 && dims[ idx2 ] == dims[ idx ], dip::E::INDEX_OUT_OF_RANGE );
+         }
+
+         newdims[ idx ] = dims[ idx ];
+      }
+
+      // By default, both Z projections use the same axis.
+      if ( dims.size() == 3 )
+        newdims[ 3 ] = dims[ 2 ];
+      
+      self.options().dims_ = newdims;
+   });
+
    sv.def_property( "operating_point", []( dip::viewer::SliceViewer& self ) {
       dip::viewer::SliceViewer::Guard guard( self );
       return self.options().operating_point_;

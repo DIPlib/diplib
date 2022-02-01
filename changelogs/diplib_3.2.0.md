@@ -170,6 +170,10 @@ title: "Changes DIPlib 3.2.0"
   enabled by setting `DIP_BUILD_DIPVIEWER`. This is useful when building *DIPviewer* for use
   in *MATLAB*, where Java provides the window functionality.
 
+- Can now step dimensions by scrolling in the status bar when it is showing the operating point.
+
+- Can now set the visualized dimensions programmatically from Python.
+
 ### Changed functionality
 
 ### Bug fixes

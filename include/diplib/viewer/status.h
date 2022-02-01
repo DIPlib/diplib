@@ -31,12 +31,14 @@ class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort
 {
   protected:
     std::vector<std::vector<dip::String> > lists_;
+    std::vector<dip::uint> dim_starts_;
 
   public:
     explicit StatusViewPort(Viewer *viewer) : ViewPort(viewer) { }
     ~StatusViewPort() override { }
     
     DIPVIEWER_EXPORT void render() override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
 };
 
 /// \endgroup
