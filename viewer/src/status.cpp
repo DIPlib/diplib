@@ -91,9 +91,9 @@ void StatusViewPort::render()
       if (ii < op.size()-1)
         rx += viewer()->drawString(", ");
     }
-    dim_starts_.push_back(rx);
 
     rx += viewer()->drawString("): ");
+    dim_starts_.push_back(rx);
     if (te > 1)
       rx += viewer()->drawString("[");
 
@@ -161,18 +161,12 @@ void StatusViewPort::click(int button, int state, int x, int y, int /*mods*/)
     if ((button == 3 || button == 4) && dim_starts_.size() == op.size() + 1)
     {
       // Find which dimension was clicked
-      dip::sint dim = -1;
       for (dip::uint idx = 0; idx != op.size(); ++idx)
-        if (x > dim_starts_[idx] && x < dim_starts_[idx + 1])
-          dim = idx;
-
-      if (dim != -1)
-      {
-        auto sz = viewer()->original().Sizes();
-
-        dip::sint diff = (button == 3) ? -1 : 1;
-        op[dim] = std::min(std::max((int)(op[dim] + diff), 0), (int)(sz[dim] - 1));
-      }
+        if (x >= (int)dim_starts_[idx] && x < (int)dim_starts_[idx + 1])
+        {
+          auto sz = viewer()->original().Sizes();
+          op[idx] = (dip::uint)clamp((dip::sint)op[idx] + 1 - 2*(button == 3), (dip::sint)0, (dip::sint)sz[idx] - 1);
+        }
     }
   }
 }

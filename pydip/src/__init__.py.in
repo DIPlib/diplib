@@ -69,6 +69,8 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
             Window position (x and y).
         size : tuple of int, optional
             Window size (width and height).
+        dims : tuple of int, optional
+            Visualized dimensions: main X, main Y, left X, top Y.
         operating_point : tuple of float, optional
             Selected point.
         element : int, optional

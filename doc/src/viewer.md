@@ -162,6 +162,9 @@ Left-dragging in the histogram changes the mapping range limits.
 
 \subsubsection interaction_status_bar Status bar
 
+If the status bar is displaying the current operating point, using the
+scroll wheel on the coordinates will step through the appropriate dimension.
+
 To the right of the status bar is the Link indicator, which can be used to link
 to other windows. Simply click the indicator in the source window, and
 then in the destination window. Operating point, zoom and offset will then be
