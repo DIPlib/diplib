@@ -156,6 +156,7 @@ py::buffer_info PolygonToBuffer( dip::Polygon& polygon ) {
 } // namespace
 
 void init_measurement( py::module& m ) {
+
    auto mm = m.def_submodule( "MeasurementTool",
                               "A tool to quantify objects in an image.\n\n"
                               "This is a submodule that uses a static `dip::Measurement` object. Functions\n"

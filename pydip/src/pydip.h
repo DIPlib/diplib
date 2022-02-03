@@ -61,8 +61,10 @@ void init_statistics( py::module& m );
 void init_filtering( py::module& m );
 void init_morphology( py::module& m );
 void init_analysis( py::module& m );
+void init_segmentation( py::module& m );
 void init_measurement( py::module& m );
 void init_histogram( py::module& m );
+void init_generation( py::module& m );
 void init_assorted( py::module& m );
 
 dip::Random& RandomNumberGenerator();

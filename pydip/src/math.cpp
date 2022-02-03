@@ -17,8 +17,13 @@
 
 #include "pydip.h"
 #include "diplib/math.h"
+#include "diplib/mapping.h"
+
+#include "diplib/histogram.h"
 
 void init_math( py::module& m ) {
+
+   // diplib/math.h
    m.def( "Add", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Add( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
    m.def( "Add", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Add( lhs, rhs ); }, "lhs"_a, "rhs"_a );
    m.def( "Subtract", []( dip::Image const& lhs, dip::Image const& rhs, dip::DataType dt ) { return dip::Subtract( lhs, rhs, dt ); }, "lhs"_a, "rhs"_a, "datatype"_a );
@@ -155,5 +160,34 @@ void init_math( py::module& m ) {
           "in1"_a , "in2"_a , "mask"_a );
    m.def( "Toggle", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Toggle ),
           "in1"_a , "in2"_a , "in3"_a );
+
+   // diplib/mapping.h
+   m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
+          "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = dip::S::BOTH );
+   m.def( "ClipLow", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::ClipLow ), "in"_a, "low"_a = 0.0 );
+   m.def( "ClipHigh", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::ClipHigh ), "in"_a, "high"_a = 255.0 );
+   m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
+          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = dip::S::RANGE );
+   m.def( "Zero", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::Zero ), "in"_a, "threshold"_a = 128.0 );
+   m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
+          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = dip::S::LINEAR, "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
+
+   m.def( "HistogramEqualization", py::overload_cast< dip::Image const&, dip::uint >( &dip::HistogramEqualization ),
+          "in"_a, "nBins"_a = 256 );
+   m.def( "HistogramMatching", py::overload_cast< dip::Image const&, dip::Histogram const& >( &dip::HistogramMatching ),
+          "in"_a, "example"_a );
+   m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ){
+             DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
+             dip::uint nBins = example.Size( 0 );
+             // Create a histogram of the right dimensions
+             dip::Histogram::Configuration config( 0.0, static_cast< int >( nBins ), 1.0 );
+             dip::Histogram exampleHistogram( config );
+             // Fill it with the input
+             dip::Image guts = exampleHistogram.GetImage().QuickCopy();
+             guts.Copy( example ); // Copies data from example to data segment in guts, which is shared with the image in exampleHistogram. This means we're changing the histogram.
+             return dip::HistogramMatching( in, exampleHistogram );
+          }, "in"_a, "example"_a,
+          "Like the function above, but takes the example histogram as an image.\n"
+          "For backwards compatibility." );
 
 }

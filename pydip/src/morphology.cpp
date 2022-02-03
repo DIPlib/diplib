@@ -79,6 +79,7 @@ dip::String StructuringElementRepr( dip::StructuringElement const& s ) {
 } // namespace
 
 void init_morphology( py::module& m ) {
+
    auto se = py::class_< dip::StructuringElement >( m, "StructuringElement", "Represents the structuring element to use in morphological operations\n(dip::StructuringElement in DIPlib)." );
    se.def( py::init<>() );
    se.def( py::init< dip::String const& >(), "shape"_a );

@@ -74,7 +74,6 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
 
    // diplib.h
-
    auto info = py::class_< dip::LibraryInformation >( m, "LibraryInformation", "Holds information about the DIPlib library." );
    info.def_readonly( "name", &dip::LibraryInformation::name, "The library name" );
    info.def_readonly( "description", &dip::LibraryInformation::description, "A short description string" );
@@ -89,7 +88,6 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    m.attr( "__version__" ) = dip::libraryInformation.version;
 
    // diplib/library/tensor.h
-
    auto tensor = py::class_< dip::Tensor >( m, "Tensor", "Represents the tensor size and shape." );
    tensor.def( py::init<>() );
    tensor.def( py::init< dip::uint >(), "n"_a );
@@ -126,7 +124,6 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    tensor.def( py::self != py::self );
 
    // diplib/library/physical_dimensions.h
-
    auto units = py::class_< dip::Units >( m, "Units", "Represents physical units." );
    units.def( py::init<>() );
    units.def( py::init< dip::String const& >(), "string"_a );
@@ -208,7 +205,6 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    py::implicitly_convertible< dip::PhysicalQuantityArray, dip::PixelSize >();
 
    // diplib/neighborlist.h
-
    auto metric = py::class_< dip::Metric >( m, "Metric", "Represents the metric to use in some neighbor-based operations." );
    metric.def( py::init<>() );
    metric.def( py::init< dip::Image const& >(), "image"_a );
@@ -218,20 +214,20 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    py::implicitly_convertible< py::str, dip::Metric >();
 
    // diplib/multithreading.h
-
    m.def( "SetNumberOfThreads", &dip::SetNumberOfThreads, "nThreads"_a );
    m.def( "GetNumberOfThreads", &dip::GetNumberOfThreads );
 
    // Include definitions from all other source files
-
    init_image( m );
    init_math( m );
    init_statistics( m );
    init_filtering( m );
    init_morphology( m );
    init_analysis( m );
+   init_segmentation( m );
    init_measurement( m );
    init_histogram( m );
+   init_generation( m );
    init_assorted( m );
 
 }

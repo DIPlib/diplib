@@ -6,6 +6,7 @@ src/__main__.py
 src/analysis.cpp
 src/assorted.cpp
 src/filtering.cpp
+src/generation.cpp
 src/histogram.cpp
 src/image.cpp
 src/loadjvm.py
@@ -14,5 +15,6 @@ src/measurement.cpp
 src/morphology.cpp
 src/pydip.cpp
 src/pydip.h
+src/segmentation.cpp
 src/statistics.cpp
 )

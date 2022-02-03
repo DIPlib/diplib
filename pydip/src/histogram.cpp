@@ -64,6 +64,7 @@ class type_caster< dip::Histogram::Configuration::Mode > {
 
 
 void init_histogram( py::module& m ) {
+
    // diplib/histogram.h
    auto hist = py::class_< dip::Histogram >( m, "Histogram", "Computes and holds histograms." );
 

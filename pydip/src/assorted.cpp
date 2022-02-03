@@ -16,17 +16,11 @@
  */
 
 #include "pydip.h"
-#include "diplib/boundary.h"
 #include "diplib/color.h"
 #include "diplib/display.h"
 #include "diplib/file_io.h"
 #include "diplib/simple_file_io.h"
-#include "diplib/generation.h"
 #include "diplib/geometry.h"
-#include "diplib/mapping.h"
-
-#include "diplib/histogram.h"
-#include "diplib/chain_code.h"
 
 namespace pybind11 {
 namespace detail {
@@ -103,11 +97,6 @@ dip::Image ImageDisplay(
 } // namespace
 
 void init_assorted( py::module& m ) {
-   // diplib/boundary.h
-   m.def( "ExtendImage", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::StringArray const&, dip::StringSet const& >( &dip::ExtendImage ),
-          "in"_a, "borderSizes"_a, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::StringSet{} );
-   m.def( "ExtendRegion", py::overload_cast< dip::Image&, dip::RangeArray const&, dip::StringArray const& >( &dip::ExtendRegion ),
-          "image"_a, "ranges"_a, "boundaryCondition"_a = dip::StringArray{} );
 
    // diplib/color.h
    auto mcol = m.def_submodule( "ColorSpaceManager",
@@ -181,201 +170,6 @@ void init_assorted( py::module& m ) {
    m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
    m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
 
-   // diplib/generation.h
-   m.def( "FillDelta", &dip::FillDelta, "out"_a, "origin"_a = "" );
-   m.def( "CreateDelta", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::CreateDelta ), "sizes"_a, "origin"_a = "" );
-
-   m.def( "SetBorder", &dip::SetBorder, "out"_a, "value"_a = dip::Image::Pixel{ 0 }, "sizes"_a = dip::UnsignedArray{ 1 } );
-   m.def( "ApplyWindow", py::overload_cast< dip::Image const&, dip::String const&, dip::dfloat >( &dip::ApplyWindow ),
-          "in"_a, "type"_a = "Hamming", "parameter"_a = 0.5 );
-   m.def( "DrawLine", &dip::DrawLine, "out"_a, "start"_a, "end"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
-   m.def( "DrawLines", &dip::DrawLines, "out"_a, "points"_a, "value"_a = dip::Image::Pixel{ 1 }, "blend"_a = dip::S::ASSIGN );
-   m.def( "DrawPolygon2D", &dip::DrawPolygon2D, "out"_a, "polygon"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED);
-   m.def( "DrawEllipsoid", &dip::DrawEllipsoid, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );
-   m.def( "DrawDiamond", &dip::DrawDiamond, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );
-   m.def( "DrawBox", &dip::DrawBox, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 } );
-   m.def( "DrawBandlimitedPoint", &dip::DrawBandlimitedPoint, "out"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigmas"_a = dip::FloatArray{ 1.0 }, "truncation"_a = 3.0 );
-   m.def( "DrawBandlimitedLine", &dip::DrawBandlimitedLine, "out"_a, "start"_a, "end"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigma"_a = 1.0, "truncation"_a = 3.0 );
-   m.def( "DrawBandlimitedBall", &dip::DrawBandlimitedBall, "out"_a, "diameter"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
-   m.def( "DrawBandlimitedBox", &dip::DrawBandlimitedBox, "out"_a, "sizes"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "mode"_a = dip::S::FILLED, "sigma"_a = 1.0, "truncation"_a = 3.0 );
-   m.def( "BlendBandlimitedMask", &dip::BlendBandlimitedMask, "out"_a, "mask"_a, "value"_a = dip::Image( { 255 } ), "pos"_a = dip::IntegerArray{} );
-   m.def( "DrawText", []( dip::Image& out, dip::String const& text, dip::FloatArray const& origin, dip::String const& font,
-                          dip::dfloat size, dip::Image::Pixel const& value, dip::dfloat orientation, dip::String const& align ) {
-               dip::FreeTypeTool freeTypeTool( font );
-               freeTypeTool.SetSize( size );
-               freeTypeTool.DrawText( out, text, origin, value, orientation, align );
-          }, "out"_a, "text"_a, "origin"_a, "font"_a, "size"_a = 12.0, "value"_a = dip::Image::Pixel{ 1 }, "orientation"_a = 0, "align"_a = dip::S::LEFT,
-          "Function that calls `dip::FreeTypeTool::DrawText`." );
-   m.def( "DrawText", []( dip::String const& text, dip::String const& font, dip::dfloat size, dip::dfloat orientation ) {
-               dip::FreeTypeTool freeTypeTool( font );
-               freeTypeTool.SetSize( size );
-               return freeTypeTool.DrawText( text, orientation ).image;
-          }, "text"_a, "font"_a, "size"_a = 12.0, "orientation"_a = 0,
-          "Function that calls the alternate version of `dip::FreeTypeTool::DrawText`,\n"
-          "returning a tightly cropped image around the rendered text." );
-   m.def( "DrawText", py::overload_cast< dip::Image&, dip::String const&, dip::FloatArray, dip::Image::Pixel const&, dip::dfloat, dip::String const& >( &dip::DrawText ),
-          "out"_a, "text"_a, "origin"_a, "value"_a = dip::Image::Pixel{ 1 }, "orientation"_a = 0, "align"_a = dip::S::LEFT,
-          "Corresponds to `dip::DrawText`." );
-   m.def( "DrawText", py::overload_cast< dip::String const&, dip::dfloat >( &dip::DrawText ), "text"_a, "orientation"_a = 0,
-          "Corresponds to the alternate version of `dip::DrawText`, returning a tightly\n"
-          "cropped image around the rendered text." );
-   m.def( "GaussianEdgeClip", py::overload_cast< dip::Image const&, dip::Image::Pixel const&, dip::dfloat, dip::dfloat >( &dip::GaussianEdgeClip ),
-          "in"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigma"_a = 1.0, "truncation"_a = 3.0 );
-   m.def( "GaussianLineClip", py::overload_cast< dip::Image const&, dip::Image::Pixel const&, dip::dfloat, dip::dfloat >( &dip::GaussianLineClip ),
-          "in"_a, "value"_a = dip::Image::Pixel{ 1 }, "sigma"_a = 1.0, "truncation"_a = 3.0 );
-
-   m.def( "CreateGauss", py::overload_cast< dip::FloatArray const&, dip::UnsignedArray const&, dip::dfloat, dip::UnsignedArray const& >( &dip::CreateGauss ),
-          "sigmas"_a, "order"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "exponents"_a = dip::UnsignedArray{ 0 } );
-   m.def( "CreateGabor", py::overload_cast< dip::FloatArray const&, dip::FloatArray const&, dip::dfloat >( &dip::CreateGabor ),
-          "sigmas"_a, "frequencies"_a, "truncation"_a = 3.0 );
-
-   m.def( "FTEllipsoid", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat >( &dip::FTEllipsoid ),
-         "sizes"_a, "radius"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
-   m.def( "FTBox", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat >( &dip::FTBox ),
-          "sizes"_a, "length"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
-   m.def( "FTCross", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat >( &dip::FTCross ),
-         "sizes"_a, "length"_a = dip::FloatArray{ 1 }, "amplitude"_a = 1 );
-   m.def( "FTGaussian", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::dfloat, dip::dfloat >( &dip::FTGaussian ),
-         "sizes"_a, "sigma"_a, "amplitude"_a = 1, "truncation"_a = 3 );
-   m.def( "TestObject", [](
-               dip::UnsignedArray const& sizes,
-               dip::String objectShape,
-               dip::FloatArray const& objectSizes,
-               dip::dfloat objectAmplitude,
-               bool randomShift,
-               dip::String generationMethod,
-               dip::dfloat modulationDepth,
-               dip::FloatArray const& modulationFrequency,
-               dip::String pointSpreadFunction,
-               dip::dfloat oversampling,
-               dip::dfloat backgroundValue,
-               dip::dfloat signalNoiseRatio,
-               dip::dfloat gaussianNoise,
-               dip::dfloat poissonNoise
-          ) {
-               dip::TestObjectParams params;
-               params.objectShape = objectShape;
-               params.objectSizes = objectSizes;
-               params.objectAmplitude = objectAmplitude;
-               params.randomShift = randomShift;
-               params.generationMethod = generationMethod;
-               params.modulationDepth = modulationDepth;
-               params.modulationFrequency = modulationFrequency;
-               params.pointSpreadFunction = pointSpreadFunction;
-               params.oversampling = oversampling;
-               params.backgroundValue = backgroundValue;
-               params.signalNoiseRatio = signalNoiseRatio;
-               params.gaussianNoise = gaussianNoise;
-               params.poissonNoise = poissonNoise;
-               return dip::TestObject( sizes, params, RandomNumberGenerator() );
-          }, "sizes"_a,
-             "objectShape"_a = dip::S::ELLIPSOID,
-             "objectSizes"_a = dip::FloatArray{ 10 },
-             "objectAmplitude"_a = 1.0,
-             "randomShift"_a = false,
-             "generationMethod"_a = dip::S::GAUSSIAN,
-             "modulationDepth"_a = 0.0,
-             "modulationFrequency"_a = dip::FloatArray{},
-             "pointSpreadFunction"_a = dip::S::NONE,
-             "oversampling"_a = 1.0,
-             "backgroundValue"_a = 0.01,
-             "signalNoiseRatio"_a = 0.0,
-             "gaussianNoise"_a = 1.0,
-             "poissonNoise"_a = 1.0,
-          "Like the C++ function, but with individual input values rather than a single\n"
-          "`dip::TestObjectParams` object collecting all algorithm parameters.\n"
-          "Also uses an internal `dip::Random` object." );
-   m.def( "FillPoissonPointProcess", []( dip::Image& out, dip::dfloat density ){
-             dip::FillPoissonPointProcess( out, RandomNumberGenerator(), density );
-          },
-          "in"_a, "density"_a = 0.01,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "CreatePoissonPointProcess", []( dip::UnsignedArray const& sizes, dip::dfloat density ){
-             return dip::CreatePoissonPointProcess( sizes, RandomNumberGenerator(), density );
-          },
-          "sizes"_a, "density"_a = 0.01,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "FillRandomGrid", []( dip::Image& out, dip::dfloat density, dip::String const& type, dip::String const& mode ){
-             dip::FillRandomGrid( out, RandomNumberGenerator(), density, type, mode );
-          },
-          "in"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "CreateRandomGrid", []( dip::UnsignedArray const& sizes, dip::dfloat density, dip::String const& type, dip::String const& mode ){
-             return dip::CreateRandomGrid( sizes, RandomNumberGenerator(), density, type, mode );
-          },
-          "sizes"_a, "density"_a = 0.01, "type"_a = dip::S::RECTANGULAR, "mode"_a = dip::S::TRANSLATION,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-
-   m.def( "FillRamp", &dip::FillRamp, "out"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateRamp", py::overload_cast< dip::UnsignedArray const&, dip::uint, dip::StringSet const& >( &dip::CreateRamp ), "sizes"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillXCoordinate", &dip::FillXCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateXCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateXCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillYCoordinate", &dip::FillYCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateYCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateYCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillZCoordinate", &dip::FillZCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateZCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateZCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillRadiusCoordinate", &dip::FillRadiusCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateRadiusCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateRadiusCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillRadiusSquareCoordinate", &dip::FillRadiusSquareCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateRadiusSquareCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateRadiusSquareCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillPhiCoordinate", &dip::FillPhiCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreatePhiCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreatePhiCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillThetaCoordinate", &dip::FillThetaCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateThetaCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateThetaCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
-   m.def( "FillCoordinates", &dip::FillCoordinates, "out"_a, "mode"_a = dip::StringSet{}, "system"_a = dip::S::CARTESIAN );
-   m.def( "CreateCoordinates", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const&, dip::String const& >( &dip::CreateCoordinates ),
-          "sizes"_a, "mode"_a = dip::StringSet{}, "system"_a = dip::S::CARTESIAN );
-   m.def( "FillDistanceToPoint", &dip::FillDistanceToPoint, "out"_a, "point"_a, "distance"_a = dip::S::EUCLIDEAN, "scaling"_a = dip::FloatArray{} );
-   m.def( "DistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::String const&, dip::FloatArray const& >( &dip::DistanceToPoint ),
-          "sizes"_a, "point"_a, "distance"_a = dip::S::EUCLIDEAN, "scaling"_a = dip::FloatArray{} );
-   m.def( "EuclideanDistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::FloatArray const& >( &dip::EuclideanDistanceToPoint ),
-          "sizes"_a, "point"_a, "scaling"_a = dip::FloatArray{} );
-   m.def( "CityBlockDistanceToPoint", py::overload_cast< dip::UnsignedArray const&, dip::FloatArray const&, dip::FloatArray const& >( &dip::CityBlockDistanceToPoint ),
-          "sizes"_a, "point"_a, "scaling"_a = dip::FloatArray{} );
-
-   m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ){
-             return dip::UniformNoise( in, RandomNumberGenerator(), lowerBound, upperBound );
-          },
-          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 1.0,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "GaussianNoise", []( dip::Image const& in, dip::dfloat variance ){
-             return dip::GaussianNoise( in, RandomNumberGenerator(), variance );
-          },
-          "in"_a, "variance"_a = 1.0,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "PoissonNoise", []( dip::Image const& in, dip::dfloat conversion ){
-             return dip::PoissonNoise( in, RandomNumberGenerator(), conversion );
-          },
-          "in"_a, "conversion"_a = 1.0,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "BinaryNoise", []( dip::Image const& in, dip::dfloat p10, dip::dfloat p01 ){
-             return dip::BinaryNoise( in, RandomNumberGenerator(), p10, p01 );
-          },
-          "in"_a, "p10"_a = 0.05, "p01"_a = 0.05,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "SaltPepperNoise", []( dip::Image const& in, dip::dfloat p0, dip::dfloat p1, dip::dfloat white ){
-             return dip::SaltPepperNoise( in, RandomNumberGenerator(), p0, p1, white );
-          },
-          "in"_a, "p0"_a = 0.05, "p1"_a = 0.05, "white"_a = 1.0,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "FillColoredNoise", []( dip::Image& out, dip::dfloat variance, dip::dfloat color ){
-             dip::FillColoredNoise( out, RandomNumberGenerator(), variance, color );
-          },
-          "out"_a, "variance"_a = 1.0, "color"_a = -2.0,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "ColoredNoise", []( dip::Image const& in, dip::dfloat variance, dip::dfloat color  ){
-             return dip::ColoredNoise( in, RandomNumberGenerator(), variance, color );
-          },
-          "in"_a, "variance"_a = 1.0, "color"_a = -2.0,
-          "Like the C++ function, but using an internal `dip::Random` object." );
-
-   m.def( "ReseedRng", [](){ RandomNumberGenerator().Seed(); },
-          "Randomly reseed the random number generator used by the noise, grid and\n"
-          "object generation functions." );
-   m.def( "ReseedRng", []( dip::uint seed ){ RandomNumberGenerator().Seed( seed ); },
-          "Reseed the random number generator used by the noise, grid and object\n"
-          "generation functions." );
-
    // diplib/geometry.h
    m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray >( &dip::Wrap ), "in"_a, "wrap"_a );
    m.def( "Subsampling", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Subsampling ), "in"_a, "sample"_a );
@@ -424,34 +218,5 @@ void init_assorted( py::module& m ) {
           "in1"_a, "in2"_a, "dimension"_a = 0 );
    m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const& >( &dip::JoinChannels ),
           "in_array"_a );
-
-   // diplib/mapping.h
-   m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
-          "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = dip::S::BOTH );
-   m.def( "ClipLow", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::ClipLow ), "in"_a, "low"_a = 0.0 );
-   m.def( "ClipHigh", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::ClipHigh ), "in"_a, "high"_a = 255.0 );
-   m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
-          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = dip::S::RANGE );
-   m.def( "Zero", py::overload_cast< dip::Image const&, dip::dfloat >( &dip::Zero ), "in"_a, "threshold"_a = 128.0 );
-   m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
-          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = dip::S::LINEAR, "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
-
-   m.def( "HistogramEqualization", py::overload_cast< dip::Image const&, dip::uint >( &dip::HistogramEqualization ),
-          "in"_a, "nBins"_a = 256 );
-   m.def( "HistogramMatching", py::overload_cast< dip::Image const&, dip::Histogram const& >( &dip::HistogramMatching ),
-          "in"_a, "example"_a );
-   m.def( "HistogramMatching", []( dip::Image const& in, dip::Image const& example ){
-             DIP_THROW_IF( example.Dimensionality() != 1, "Example histogram must be 1D" );
-             dip::uint nBins = example.Size( 0 );
-             // Create a histogram of the right dimensions
-             dip::Histogram::Configuration config( 0.0, static_cast< int >( nBins ), 1.0 );
-             dip::Histogram exampleHistogram( config );
-             // Fill it with the input
-             dip::Image guts = exampleHistogram.GetImage().QuickCopy();
-             guts.Copy( example ); // Copies data from example to data segment in guts, which is shared with the image in exampleHistogram. This means we're changing the histogram.
-             return dip::HistogramMatching( in, exampleHistogram );
-          }, "in"_a, "example"_a,
-          "Like the function above, but takes the example histogram as an image.\n"
-          "For backwards compatibility." );
 
 }
