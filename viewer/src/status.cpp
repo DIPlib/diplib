@@ -15,6 +15,7 @@
  */
 
 #include "include_gl.h"
+#include "diplib/viewer/slice.h"
 #include "diplib/viewer/status.h"
 
 namespace dip { namespace viewer {
@@ -166,6 +167,7 @@ void StatusViewPort::click(int button, int state, int x, int y, int /*mods*/)
         {
           auto sz = viewer()->original().Sizes();
           op[idx] = (dip::uint)clamp((dip::sint)op[idx] + 1 - 2*(button == 3), (dip::sint)0, (dip::sint)sz[idx] - 1);
+          viewer_->updateLinkedViewers();
         }
     }
   }

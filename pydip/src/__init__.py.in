@@ -65,6 +65,8 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
             Image to show.
         title : str, optional
             Window title.
+        link : diplib.viewer.SliceViewer, optional
+            Window to link to.
         position : tuple of int, optional
             Window position (x and y).
         size : tuple of int, optional
@@ -88,7 +90,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
 
         Returns
         -------
-        dip.viewer.SliceViewer
+        diplib.viewer.SliceViewer
             SliceViewer object for further interaction.
         """
         showargs = dict(filter(lambda elem: elem[0] == 'in' or elem[0] == 'title', kwargs.items()))
@@ -101,6 +103,8 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
                 v.SetPosition(elem[1][0], elem[1][1])
             elif elem[0] == 'size':
                 v.SetSize(elem[1][0], elem[1][1])
+            elif elem[0] == 'link':
+                v.Link(elem[1])
             else:
                 setattr(v, elem[0], elem[1])
 

@@ -177,6 +177,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Can now set the visualized dimensions programmatically from Python.
 
+- Made window linking easier in Python.
+
 ### Changed functionality
 
 ### Bug fixes
@@ -185,7 +187,7 @@ title: "Changes DIPlib 3.2.0"
 
 - Fixed an issue that prevented Visual Studio from building *PyDIPviewer*.
 
-
+- Fixed range calculation for images with infinities.
 
 
 ## Changes to *DIPjavaio*

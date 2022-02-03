@@ -30,11 +30,12 @@ namespace dip { namespace viewer {
 class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort
 {
   protected:
+    class SliceViewer* viewer_;
     std::vector<std::vector<dip::String> > lists_;
     std::vector<dip::uint> dim_starts_;
 
   public:
-    explicit StatusViewPort(Viewer *viewer) : ViewPort(viewer) { }
+    explicit StatusViewPort(class SliceViewer* viewer) : ViewPort((Viewer*)viewer), viewer_(viewer) { }
     ~StatusViewPort() override { }
     
     DIPVIEWER_EXPORT void render() override;

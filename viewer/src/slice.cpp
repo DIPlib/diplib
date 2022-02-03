@@ -907,7 +907,7 @@ void SliceViewer::calculateTextures()
       
       for (dip::uint ii=0; ii != image.TensorElements(); ++ii)
       {
-        dip::MinMaxAccumulator acc = MaximumAndMinimum( image[ii] );
+        dip::MinMaxAccumulator acc = MaximumAndMinimum( image[ii], IsFinite(image[ii]) );
         tensor_range[ii] = {acc.Minimum(), acc.Maximum()};
         range = {std::min(range.first, tensor_range[ii].first),
                  std::max(range.second, tensor_range[ii].second)};
