@@ -30,11 +30,6 @@ int main() {
    // Convert back to a labeled image
    dip::Image output = dip::Relabel( superpixels, graph );
 
-   // Paint regions with their means
-   superpixels = dip::ObjectToMeasurement( superpixels, msr["Mean"] );
-   msr = measurementTool.Measure( output, input, { "Mean" } );
-   output = dip::ObjectToMeasurement( output, msr["Mean"] );
-
    // Display
    auto win1 = dip::viewer::Show( input, "input" );
    auto win2 = dip::viewer::Show( superpixels, "superpixels" );
@@ -42,5 +37,19 @@ int main() {
    win3->link( *win1 );
    win3->link( *win2 );
    win2->options().lut_ = dip::viewer::ViewingOptions::LookupTable::Label;
+   win3->options().lut_ = dip::viewer::ViewingOptions::LookupTable::Label;
+   dip::viewer::Spin();
+
+   // Paint regions with their means
+   superpixels = dip::ObjectToMeasurement( superpixels, msr["Mean"] );
+   msr = measurementTool.Measure( output, input, { "Mean" } );
+   output = dip::ObjectToMeasurement( output, msr["Mean"] );
+
+   // Display
+   win1 = dip::viewer::Show( input, "input" );
+   win2 = dip::viewer::Show( superpixels, "superpixels" );
+   win3 = dip::viewer::Show( output, "output" );
+   win3->link( *win1 );
+   win3->link( *win2 );
    dip::viewer::Spin();
 }

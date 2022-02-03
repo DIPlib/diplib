@@ -301,7 +301,7 @@ RangeArray DIP_EXPORT GetLabelBoundingBox(
 /// To include the background, simply increment the label image by 1.
 ///
 /// Edge weights are computed as follows: The fraction of boundary pixels for region 1 that connect to
-/// region 2 is determined. The fraction of boundary pixels for regions 2 that connect to regions 1 is determined.
+/// region 2 is determined. The fraction of boundary pixels for region 2 that connect to region 1 is determined.
 /// One minus the larger of these two fractions is the edge weight. Thus, edge weights have a value in the
 /// half-open interval [0,1). If one of the two regions has a very large fraction of its perimeter connected
 /// to another region, then the edge weight is very small to indicate a strong connection.

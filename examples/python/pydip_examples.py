@@ -270,3 +270,25 @@ dip.BlendBandlimitedMask(out3, mask, dip.Create0D([255, 0, 0]), [195 - 126, 195 
 dip.viewer.Show(out3, "out3")
 
 dip.viewer.Spin()
+
+###
+
+# Replicate what ../cpp/oversegmentation.cpp does
+input = dip.ImageReadICS("../trui.ics")
+superpixels = dip.Superpixels(input, 0.01, 1.0, "CW", {"no gaps"})
+msr = dip.MeasurementTool.Measure(superpixels, input, ["Mean"])
+graph = dip.RegionAdjacencyGraph(superpixels, msr["Mean"], "touching")
+graph = graph.MinimumSpanningForest([1])
+graph.RemoveLargestEdges(80 - 1)  # Find 80 regions
+output = dip.Relabel(superpixels, graph)
+
+superpixels = dip.ObjectToMeasurement(superpixels, msr["Mean"])
+msr = dip.MeasurementTool.Measure(output, input, ["Mean"])
+output = dip.ObjectToMeasurement(output, msr["Mean"])
+
+win1 = dip.viewer.Show(input, "input")
+win2 = dip.viewer.Show(superpixels, "superpixels")
+win3 = dip.viewer.Show(output, "output")
+win3.Link(win1)
+win3.Link(win2)
+dip.viewer.Spin()

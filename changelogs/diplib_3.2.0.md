@@ -126,6 +126,9 @@ title: "Changes DIPlib 3.2.0"
 
 - Added `dip.Image.IsForged()`.
 
+- Added the class `dip.Graph`, and the functions `dip.RegionAdjacencyGraph()` and `dip.Relabel()` with
+  a graph as input. 
+
 ### Changed functionality
 
 - The function `dip.Histogram()` is now called `dip.Histogram_old()`, to make space for the new `dip.Histogram`

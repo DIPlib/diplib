@@ -17,6 +17,7 @@
 
 #include "pydip.h"
 #include "diplib/segmentation.h"
+#include "diplib/graph.h"
 #include "diplib/regions.h"
 
 void init_segmentation( py::module& m ) {
@@ -74,12 +75,39 @@ void init_segmentation( py::module& m ) {
           "in"_a, "density"_a = 0.005, "compactness"_a = 1.0, "method"_a = dip::S::CW, "flags"_a = dip::StringSet{},
           "Like the C++ function, but using an internal `dip::Random` object." );
 
+   // diplib/graph.h
+   auto graph = py::class_< dip::Graph >( m, "Graph", "A non-directed, edge-weighted graph." );
+   graph.def( py::init<>() );
+   graph.def( py::init< dip::uint, dip::uint >(), "nVertices"_a, "nEdges"_a = 0 );
+   graph.def( py::init< dip::Image const&, dip::uint, dip::String const& >(), "image"_a, "connectivity"_a = 1, "weights"_a = "difference" );
+   graph.def( "__repr__", []( dip::Graph const& self ) {
+                 std::ostringstream os;
+                 os << "<Graph with " << self.NumberOfVertices() << " vertices and " << self.NumberOfEdges() << " edges>";
+                 return os.str();
+              } );
+   graph.def( "NumberOfVertices", &dip::Graph::NumberOfVertices );
+   graph.def( "NumberOfEdges", &dip::Graph::NumberOfEdges );
+   graph.def( "CountEdges", &dip::Graph::CountEdges );
+   graph.def( "OtherVertex", &dip::Graph::OtherVertex, "edge"_a, "vertex"_a );
+   graph.def( "EdgeWeight", &dip::Graph::EdgeWeight, "edge"_a );
+   graph.def( "EdgeIndices", &dip::Graph::EdgeIndices, "v"_a );
+   graph.def( "VertexValue", &dip::Graph::VertexValue, "v"_a );
+   graph.def( "AddEdge", &dip::Graph::AddEdge, "v1"_a, "v2"_a, "weight"_a );
+   graph.def( "AddEdgeSumWeight", &dip::Graph::AddEdgeSumWeight, "v1"_a, "v2"_a, "weight"_a );
+   graph.def( "DeleteEdge", py::overload_cast< dip::Graph::VertexIndex, dip::Graph::VertexIndex >( &dip::Graph::DeleteEdge ), "v1"_a, "v2"_a );
+   graph.def( "DeleteEdge", py::overload_cast< dip::Graph::EdgeIndex >( &dip::Graph::DeleteEdge ), "edge"_a );
+   graph.def( "Neighbors", &dip::Graph::Neighbors, "v"_a );
+   graph.def( "UpdateEdgeWeights", &dip::Graph::UpdateEdgeWeights );
+   graph.def( "MinimumSpanningForest", &dip::Graph::MinimumSpanningForest, "roots"_a = std::vector< dip::Graph::VertexIndex >{} );
+   graph.def( "RemoveLargestEdges", &dip::Graph::RemoveLargestEdges, "number"_a );
+
    // diplib/regions.h
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const& >( &dip::Label ),
           "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "GetObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::GetObjectLabels ),
           "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE );
    m.def( "Relabel", py::overload_cast< dip::Image const& >( &dip::Relabel ), "label"_a );
+   m.def( "Relabel", py::overload_cast< dip::Image const&, dip::Graph const& >( &dip::Relabel ), "label"_a, "graph"_a );
    m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),
           "in"_a, "threshold"_a, "connectivity"_a = 0 );
    m.def( "GrowRegions", py::overload_cast< dip::Image const&, dip::Image const&, dip::sint, dip::uint >( &dip::GrowRegions ),
@@ -89,5 +117,9 @@ void init_segmentation( py::module& m ) {
    m.def( "SplitRegions", py::overload_cast< dip::Image const&, dip::uint >( &dip::SplitRegions ),
           "label"_a, "connectivity"_a = 0 );
    m.def( "GetLabelBoundingBox", &dip::GetLabelBoundingBox, "label"_a, "objectID"_a );
+   m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::String const& >( &dip::RegionAdjacencyGraph ),
+          "label"_a, "mode"_a = "touching" );
+   m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::Measurement::IteratorFeature const&, dip::String const& >( &dip::RegionAdjacencyGraph ),
+          "label"_a, "featureValues"_a, "mode"_a = "touching" );
 
 }
