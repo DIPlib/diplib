@@ -112,6 +112,14 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
 
     viewer.Show = ShowViewer
 
+    def ShowSlice(self, *args, **kwargs):
+        """Show image in a new SliceViewer window.
+
+           See diplib.viewer.Show for help on parameters."""
+        return ShowViewer(self, *args, **kwargs)
+
+    Image.ShowSlice = ShowSlice
+
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
 if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:

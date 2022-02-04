@@ -189,6 +189,8 @@ title: "Changes DIPlib 3.2.0"
 
 - Fixed range calculation for images with infinities.
 
+- Added dip.Image.ShowSlice() as an alias for dip.viewer.Show()
+
 
 ## Changes to *DIPjavaio*
 

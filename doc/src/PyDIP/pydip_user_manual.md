@@ -84,17 +84,24 @@ img.Show('log')  # uses logarithmic mapping
 
 Type `help(dip.Show)` in Python to learn about many more options.
 
-If \ref dipviewer is installed, its functionality will be in the `diplib.viewer`
-namespace. Use `dip.viewer.Show(img)`. Depending on the backend used, it
+If \ref dipviewer is installed, its functionality will be in the `dip.viewer`
+namespace. Use `img.ShowSlice()` for convenience. Depending on the backend used, it
 will be necessary to do `dip.viewer.Spin()` to interact with the created
 window. `Spin()` interrupts the interactive session until all *DIPviewer*
 windows have been closed. Even when `Spin()` is not needed to interact
 with the windows, it should be run before closing the Python session to
 avoid a series of error messages. Alternatively, periodically call
 `dip.viewer.Draw()`.
-`dip.viewer.Show()` has additional parameters
-that can be used to set viewing options; type `help(dip.viewer.Show)` for details.
-It also returns an object that can be used for further interaction.
+`dip.Image.ShowSlice` and `dip.viewer.Show()` have additional parameters
+that can be used to set viewing options. It also returns an object that can be used for further interaction:
+
+```python
+wdw = img.ShowSlice('Window title', mapping='unit', lut='sequential')
+dip.viewer.Spin()
+```
+
+Type `help(dip.viewer.Show)` for details.
+
 
 \section pum_indexing Indexing into images
 

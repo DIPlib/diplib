@@ -133,7 +133,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         pip3 install matplotlib
     or under Windows:
         python3 -m pip install matplotlib
-    Alternatively, use diplib.viewer.ShowModal or diplib.viewer.Show/diplib.viewer.Spin
+    Alternatively, use diplib.viewer.ShowModal or diplib.Image.ShowSlice/diplib.viewer.Spin
     """, RuntimeWarning)
             reportedPlotLib = True
         return

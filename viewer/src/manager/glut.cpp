@@ -123,7 +123,8 @@ void GLUTManager::run()
     
       glutCreateWindow("");
       glutReshapeWindow(width, height);
-      glutPositionWindow(((glutGetWindow()-1)%2)*512, (((int)(glutGetWindow()-1))/2)*512);
+      int id = (int)(glutGetWindow() - 1);
+      glutPositionWindow((id%2)*512+(id%16)/4*16, ((id%4)/2)*512+(id % 16) / 4 * 16);
      
       glutDisplayFunc(draw);
       glutReshapeFunc(reshape);
