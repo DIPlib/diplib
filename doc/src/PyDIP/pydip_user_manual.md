@@ -93,7 +93,7 @@ with the windows, it should be run before closing the Python session to
 avoid a series of error messages. Alternatively, periodically call
 `dip.viewer.Draw()`.
 `dip.Image.ShowSlice` and `dip.viewer.Show()` have additional parameters
-that can be used to set viewing options. It also returns an object that can be used for further interaction:
+that can be used to set viewing options. They also return an object that can be used for further interaction:
 
 ```python
 wdw = img.ShowSlice('Window title', mapping='unit', lut='sequential')

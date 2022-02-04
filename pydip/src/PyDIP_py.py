@@ -26,14 +26,13 @@ reportedPlotLib = False
 if importlib.util.find_spec('matplotlib') is None:
     hasMatPlotLib = False
 else:
-    import matplotlib
-    import matplotlib.pyplot as pp
     import numpy as np
-
 
 # Label color map from the function of the same name in DIPimage:
 def _label_colormap():
     if hasMatPlotLib:
+        import matplotlib
+
         cm = np.array([
             [1.0000, 0.0000, 0.0000],
             [0.0000, 1.0000, 0.0000],
@@ -137,6 +136,9 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     """, RuntimeWarning)
             reportedPlotLib = True
         return
+
+    import matplotlib
+    import matplotlib.pyplot as pp
 
     if type(img) != Image:
         img = Image(img)

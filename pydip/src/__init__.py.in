@@ -20,7 +20,7 @@ See the User Manual online: https://diplib.org/diplib-docs/pydip_user_manual.htm
 """
 
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
-import os
+import os, time
 if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
     pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
     try:
@@ -50,13 +50,17 @@ import importlib.util
 if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
     from . import PyDIPviewer as viewer
     hasDIPviewer = True
-    def ShowModal(*args, **kwargs):
+
+    def _ShowModal(*args, **kwargs):
+        """Show an image in a new SliceViewer window, blocking until it is closed.
+
+           See diplib.viewer.Show for help on parameters."""
         viewer.Show(*args, **kwargs)
         viewer.Spin()
-    viewer.ShowModal = ShowModal
+    viewer.ShowModal = _ShowModal
 
-    __ShowViewer = viewer.Show
-    def ShowViewer(*args, **kwargs):
+    _ShowViewer = viewer.Show
+    def _ShowSlice(*args, **kwargs):
         """Show an image in a new SliceViewer window.
         
         Parameters
@@ -94,7 +98,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
             SliceViewer object for further interaction.
         """
         showargs = dict(filter(lambda elem: elem[0] == 'in' or elem[0] == 'title', kwargs.items()))
-        v = __ShowViewer(*args, **showargs)
+        v = _ShowViewer(*args, **showargs)
 
         for elem in kwargs.items():
             if elem[0] == 'in' or elem[0] == 'title':
@@ -110,15 +114,41 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
 
         return v
 
-    viewer.Show = ShowViewer
+    viewer.Show = _ShowSlice
 
-    def ShowSlice(self, *args, **kwargs):
+    def _ShowSliceMethod(self, *args, **kwargs):
         """Show image in a new SliceViewer window.
 
            See diplib.viewer.Show for help on parameters."""
-        return ShowViewer(self, *args, **kwargs)
+        return _ShowSlice(self, *args, **kwargs)
 
-    Image.ShowSlice = ShowSlice
+    Image.ShowSlice = _ShowSliceMethod
+
+    # Allow IPython users to write
+    # %gui dip 
+    # to enable interaction
+    if importlib.util.find_spec('IPython') is not None:
+        from IPython import terminal
+
+        def _inputhook(context):
+            while not context.input_is_ready():
+                viewer.Draw()
+                time.sleep(0.001)
+
+        terminal.pt_inputhooks.register('dip', _inputhook)
+
+    # Same for IPython kernels
+    if importlib.util.find_spec('ipykernel') is not None:
+        from ipykernel.eventloops import register_integration
+
+        @register_integration('dip')
+        def _loop_dip(kernel):
+            """Start a kernel with the dipviewer event loop."""
+            while not kernel.shell.exit_now:
+                if kernel.shell_stream.flush(limit=1):
+                    return
+                viewer.Draw()
+                time.sleep(0.001)
 
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
