@@ -16,13 +16,13 @@
 
 #include "dipviewer.h"
 
-#ifdef DIP_CONFIG_HAS_GLFW
-#include "diplib/viewer/glfw.h"
-using ViewerManager = dip::viewer::GLFWManager;
-#else
 #ifdef DIP_CONFIG_HAS_FREEGLUT
 #include "diplib/viewer/glut.h"
 using ViewerManager = dip::viewer::GLUTManager;
+#else
+#ifdef DIP_CONFIG_HAS_GLFW
+#include "diplib/viewer/glfw.h"
+using ViewerManager = dip::viewer::GLFWManager;
 #else
 #include "diplib/viewer/proxy.h"
 using ViewerManager = dip::viewer::ProxyManager;

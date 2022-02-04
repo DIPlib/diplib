@@ -35,6 +35,11 @@ static dip::uint toIndex( dip::String str, dip::String const* options, dip::uint
    DIP_THROW_INVALID_FLAG( str );
 }
 
+static int drawHook() {
+   dip::viewer::Draw();
+   return 0;
+}
+
 PYBIND11_MODULE( PyDIPviewer, m ) {
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
    sv.def( "SetImage", []( dip::viewer::SliceViewer &self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
@@ -135,8 +140,17 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
       self.options().lut_ = ( dip::viewer::ViewingOptions::LookupTable ) toIndex( lut, luts, 7 );
    } );
 
-   m.def( "Show", []( dip::Image const& image, dip::String const& title ) { return dip::viewer::Show( image, title ); }, "in"_a, "title"_a = "", "Show an image in the slice viewer." );
+   m.def( "Show", []( dip::Image const& image, dip::String const& title ) {
+      if ( PyOS_InputHook == NULL ) PyOS_InputHook = &drawHook;
+      return dip::viewer::Show( image, title );
+   }, "in"_a, "title"_a = "", "Show an image in the slice viewer." );
    m.def( "Draw", &dip::viewer::Draw, "Process user event queue." );
-   m.def( "Spin", &dip::viewer::Spin, "Wait until all windows are closed." );
-   m.def( "CloseAll", &dip::viewer::CloseAll, "Close all open windows." );
+   m.def( "Spin", []() {
+      dip::viewer::Spin();
+      if ( PyOS_InputHook == &drawHook ) PyOS_InputHook = NULL;
+   }, "Wait until all windows are closed." );
+   m.def( "CloseAll",  []() {
+      dip::viewer::CloseAll();
+      if ( PyOS_InputHook == &drawHook ) PyOS_InputHook = NULL;
+   }, "Close all open windows." );
 }
