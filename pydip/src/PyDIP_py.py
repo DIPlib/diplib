@@ -21,17 +21,14 @@ from .PyDIP_bin import Image, ImageDisplay
 import importlib.util
 import warnings
 
-hasMatPlotLib = True
+hasMatPlotLib = importlib.util.find_spec('matplotlib')
 reportedPlotLib = False
-if importlib.util.find_spec('matplotlib') is None:
-    hasMatPlotLib = False
-else:
-    import numpy as np
 
 # Label color map from the function of the same name in DIPimage:
 def _label_colormap():
     if hasMatPlotLib:
         import matplotlib
+        import numpy as np
 
         cm = np.array([
             [1.0000, 0.0000, 0.0000],
@@ -139,6 +136,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
 
     import matplotlib
     import matplotlib.pyplot as pp
+    import numpy as np
 
     if type(img) != Image:
         img = Image(img)

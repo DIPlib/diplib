@@ -115,14 +115,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
         return v
 
     viewer.Show = _ShowSlice
-
-    def _ShowSliceMethod(self, *args, **kwargs):
-        """Show image in a new SliceViewer window.
-
-           See diplib.viewer.Show for help on parameters."""
-        return _ShowSlice(self, *args, **kwargs)
-
-    Image.ShowSlice = _ShowSliceMethod
+    Image.ShowSlice = _ShowSlice
 
     # Allow IPython users to write
     # %gui dip 

@@ -1,6 +1,6 @@
 import diplib as dip
 import numpy as np
-import matplotlib.pyplot as pp
+import matplotlib.pyplot as plt
 import random
 import math
 
@@ -13,7 +13,7 @@ grad.Show()
 a = dip.Watershed(grad)
 a.Show()
 
-seeds = dip.Image(np.random.random(list(reversed(img.Sizes())))) > 0.999
+seeds = dip.CreatePoissonPointProcess(img.Sizes(), 0.001)
 b = dip.SeededWatershed(grad, seeds, flags={"labels"})
 b.Show()
 
@@ -51,7 +51,6 @@ print(b.Bins())
 
 a = dip.Image((250, 260), 3)
 a.Fill(0)
-
 color = list([1.0, 1.5, 0.5])
 for ii in range(0, 1000):
    random.shuffle(color)
@@ -134,14 +133,14 @@ h1 = dip.Histogram(img1, configuration=conf)
 h2 = dip.Histogram(img2, configuration=conf)
 h3 = dip.Histogram(img3, configuration=conf)
 
-pp.clf()
-pp.subplot(3, 1, 1)
-pp.bar(h1.BinCenters(), np.array(h1.GetImage()), width=3, align='center')
-pp.subplot(3, 1, 2)
-pp.bar(h2.BinCenters(), np.array(h2.GetImage()), width=3, align='center')
-pp.subplot(3, 1, 3)
-pp.bar(h3.BinCenters(), np.array(h3.GetImage()), width=3, align='center')
-pp.show(block=False)
+plt.close()
+plt.subplot(3, 1, 1)
+plt.bar(h1.BinCenters(), np.array(h1.GetImage()), width=3, align='center')
+plt.subplot(3, 1, 2)
+plt.bar(h2.BinCenters(), np.array(h2.GetImage()), width=3, align='center')
+plt.subplot(3, 1, 3)
+plt.bar(h3.BinCenters(), np.array(h3.GetImage()), width=3, align='center')
+plt.show(block=False)
 
 ###
 
@@ -165,10 +164,10 @@ print(pol.EllipseVariance())
 np.array(pol.ConvexHull())
 
 pol = np.array(pol)
-pp.clf()
-a.Show('labels')
-pp.plot(pol[:, 0], pol[:, 1], 'w-')
-pp.show(block=False)
+plt.close()
+plt.imshow(a)
+plt.plot(pol[:, 0], pol[:, 1], 'w-')
+plt.show(block=False)
 
 ###
 
