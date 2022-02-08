@@ -179,9 +179,9 @@ title: "Changes DIPlib 3.2.0"
 
 - Made window linking easier in Python.
 
-- Added dip.Image.ShowSlice() as an alias for dip.viewer.Show()
+- Added `dip.Image.ShowSlice()` as an alias for `dip.viewer.Show()`.
 
-- Better integration into the Python/IPython REPL (use %gui dip in IPython)
+- Better integration into the Python/IPython REPL (use `%gui dip` in IPython)
 
 ### Changed functionality
 
@@ -192,6 +192,8 @@ title: "Changes DIPlib 3.2.0"
 - Fixed an issue that prevented Visual Studio from building *PyDIPviewer*.
 
 - Fixed range calculation for images with infinities.
+
+
 
 
 ## Changes to *DIPjavaio*
