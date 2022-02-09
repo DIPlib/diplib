@@ -25,7 +25,7 @@
 %      h = viewslice(readim);
 %      h.dispose()
 %
-%   See https://diplib.org/diplib-docs/group__viewer.html#details
+%   See https://diplib.org/diplib-docs/dipviewer.html#viewer_ui
 %   for mouse interaction and keyboard shortcuts.
 
 % (c)2018, Wouter Caarls
