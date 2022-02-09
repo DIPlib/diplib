@@ -68,9 +68,9 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$HOME
 This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documentation
 under the `lib`, `include` and `share` directories in your home directory.
 
-Examine the output of `cmake` to verify all the features you need are enabled, and your
-chosen dependencies were found. The [`INSTALL.md`](INSTALL.md) file summarizes all the
-CMake options to manually specify paths.
+Before running `make`, examine the output of `cmake` to verify all the features you need are enabled,
+and that your chosen dependencies were found. The [`INSTALL.md`](INSTALL.md) file summarizes all the
+CMake options to manually specify paths and configure your build.
 
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building
 and installing, run
@@ -139,6 +139,8 @@ If you see error messages such as
 then please read this next section.
 
 ### *MATLAB* and the *GCC* libraries
+
+Skip this section if you do not have any problems running *DIPimage* functions.
 
 *MATLAB* is built on Linux with a version of *GCC* that is typically various years behind the latest, and it ships
 with copies of the *GCC* libraries so that it can run on older systems that have older versions of those libraries.
