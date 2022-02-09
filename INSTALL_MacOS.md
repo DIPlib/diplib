@@ -66,7 +66,7 @@ However, `cmake` is not included in this package.
 To install *CMake*, we recommend you use *Homebrew*. If you don't have *Homebrew*
 installed yet, type the following in a terminal window (or rather, copy-paste it):
 ```bash
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 See [the *Homebrew* web site](https://brew.sh) for up-to-date instructions.
 
