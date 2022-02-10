@@ -470,7 +470,7 @@ class DIP_NO_EXPORT DimensionArray {
          return p;
       }
 
-      /// Compute the product of the elements in the array.
+      /// Compute the product of the elements in the array. Returns 1 for an empty array.
       T product() const {
          T p = 1;
          for( size_type ii = 0; ii < size_; ++ii ) {

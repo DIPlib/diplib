@@ -43,11 +43,13 @@ title: "Changes DIPlib 3.2.1"
   in `secondOrder`. 
 
 - Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which
-  is interpreted as a 0D tensor image (column vector). This makes `a / a[0]` possible.
+  is interpreted as a 0D tensor image (column vector). This makes `img / img[0]` possible.
 
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
+
+- `__len__()` now properly returns 0 for an empty (raw) image. This makes `if img` fail for a raw image.
 
 (See also bugfixes to *DIPlib*.)
 

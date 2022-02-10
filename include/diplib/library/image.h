@@ -480,12 +480,12 @@ class DIP_NO_EXPORT Image {
          return sizes_[ dim ];
       }
 
-      /// \brief Get the number of pixels.
+      /// \brief Get the number of pixels. Works also for a raw image, using current values of sizes.
       dip::uint NumberOfPixels() const {
          return sizes_.product();
       }
 
-      /// \brief Get the number of samples.
+      /// \brief Get the number of samples. Works also for a raw image, using current values of sizes and tensor elements.
       dip::uint NumberOfSamples() const {
          return NumberOfPixels() * TensorElements();
       }

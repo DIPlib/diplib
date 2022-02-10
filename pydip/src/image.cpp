@@ -291,7 +291,7 @@ void init_image( py::module& m ) {
    // Basic properties
    img.def( "__repr__", &ImageRepr );
    img.def( "__str__", []( dip::Image const& self ) { std::ostringstream os; os << self; return os.str(); } );
-   img.def( "__len__", []( dip::Image const& self ) { return self.NumberOfPixels(); } );
+   img.def( "__len__", []( dip::Image const& self ) { return self.IsForged() ? self.NumberOfPixels() : 0; } );
    img.def( "IsForged", &dip::Image::IsForged, "See also `IsEmpty()`." );
    img.def( "IsEmpty", []( dip::Image const& self ) { return !self.IsForged(); },
             "Returns `True` if the image is raw. Reverse of `IsForged()`." ); // Honestly, I don't remember why I created this...
