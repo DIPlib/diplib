@@ -183,8 +183,6 @@ title: "Changes DIPlib 3.2.0"
 
 - Better integration into the Python/IPython REPL (use `%gui dip` in IPython)
 
-### Changed functionality
-
 ### Bug fixes
 
 - Fixed an issue that could cause a segmentation violation after all the *DIPviewer* windows were closed.
@@ -198,8 +196,4 @@ title: "Changes DIPlib 3.2.0"
 
 ## Changes to *DIPjavaio*
 
-### New functionality
-
-### Changed functionality
-
-### Bug fixes
+None.

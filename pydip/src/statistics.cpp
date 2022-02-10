@@ -204,12 +204,14 @@ void init_statistics( py::module& m ) {
                      os << "zerothOrder=" << s.Sum();
                      os << ", firstOrder=" << s.FirstOrder();
                      os << ", secondOrder=" << s.SecondOrder();
+                     os << ", plainSecondOrder=" << s.PlainSecondOrder();
                      os << ">";
                      return os.str();
                   } );
    momentAcc.def_property_readonly( "zerothOrder", &dip::MomentAccumulator::Sum );
    momentAcc.def_property_readonly( "firstOrder", &dip::MomentAccumulator::FirstOrder );
    momentAcc.def_property_readonly( "secondOrder", &dip::MomentAccumulator::SecondOrder );
+   momentAcc.def_property_readonly( "plainSecondOrder", &dip::MomentAccumulator::PlainSecondOrder );
 
    // dip::SpatialOverlapMetrics
    auto overlap = py::class_< dip::SpatialOverlapMetrics >( m, "SpatialOverlapMetrics", "Metrics describing spatial overlap." );

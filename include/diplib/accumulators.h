@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -661,7 +661,7 @@ class DIP_NO_EXPORT MomentAccumulator {
       /// \brief Second order central moment tensor, normalized
       ///
       /// The moments are stored in the same order as symmetric tensors are stored in an image
-      /// (see dip::Tensor::Shape). That is, fist are the main diagonal elements, then the elements
+      /// (see \ref dip::Tensor::Shape). That is, fist are the main diagonal elements, then the elements
       /// above the diagonal, column-wise. This translates to:
       ///
       /// - 2D: xx, yy, xy
@@ -669,32 +669,34 @@ class DIP_NO_EXPORT MomentAccumulator {
       /// - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
       /// - etc.
       ///
-      /// The second order moment tensor is defined as:
+      /// The second order moment tensor (inertia tensor) is defined as
       ///
       /// $$ I = \Sigma_k m_k ((\vec{r_k} \cdot \vec{r_k}) E - \vec{r_k} \otimes \vec{r_k}) $$
       ///
       /// where $E$ is the identity matrix ( $E = \Sigma_i \vec{e_i} \otimes \vec{e_i}$ ), $m_k$
-      /// is the weight of point $k$ , and $\vec{r_k}$ is its position. In 2D, this leads to:
+      /// is the weight of point $k$, and $\vec{r_k} = (x_k, y_k, \ldots)$ is its position relative to the
+      /// center of mass. In 2D, this leads to
       ///
       /// \begin{eqnarray*}
-      ///       I_{xx} & = & \mathbin{\phantom{-}}\Sigma_k m_k y^2
-      ///    \\ I_{yy} & = & \mathbin{\phantom{-}}\Sigma_k m_k x^2
-      ///    \\ I_{xy} & = &                   -  \Sigma_k m_k x y
+      ///       I_{xx} & = & \mathbin{\phantom{-}}\Sigma_k m_k y_k^2
+      ///    \\ I_{yy} & = & \mathbin{\phantom{-}}\Sigma_k m_k x_k^2
+      ///    \\ I_{xy} & = &                   -  \Sigma_k m_k x_k y_k
       /// \end{eqnarray*}
       ///
-      /// In 3D, it leads to:
+      /// In 3D, it leads to
       ///
       /// \begin{eqnarray*}
-      ///       I_{xx} & = & \mathbin{\phantom{-}}\Sigma_k m_k y^2 + \Sigma_k m_k z^2
-      ///    \\ I_{yy} & = & \mathbin{\phantom{-}}\Sigma_k m_k x^2 + \Sigma_k m_k z^2
-      ///    \\ I_{zz} & = & \mathbin{\phantom{-}}\Sigma_k m_k x^2 + \Sigma_k m_k y^2
-      ///    \\ I_{xy} & = &                   -  \Sigma_k m_k x y
-      ///    \\ I_{xz} & = &                   -  \Sigma_k m_k x z
-      ///    \\ I_{yz} & = &                   -  \Sigma_k m_k y z
+      ///       I_{xx} & = & \mathbin{\phantom{-}}\Sigma_k m_k y_k^2 + \Sigma_k m_k z_k^2
+      ///    \\ I_{yy} & = & \mathbin{\phantom{-}}\Sigma_k m_k x_k^2 + \Sigma_k m_k z_k^2
+      ///    \\ I_{zz} & = & \mathbin{\phantom{-}}\Sigma_k m_k x_k^2 + \Sigma_k m_k y_k^2
+      ///    \\ I_{xy} & = &                   -  \Sigma_k m_k x_k y_k
+      ///    \\ I_{xz} & = &                   -  \Sigma_k m_k x_k z_k
+      ///    \\ I_{yz} & = &                   -  \Sigma_k m_k y_k z_k
       /// \end{eqnarray*}
       ///
-      /// The equations above represent the second order moments, we compute instead the central moments, and
-      /// normalize them by the sum of weights.
+      /// In 1D the tensor is always 0, see \ref PlainSecondOrder for a useful result in 1D.
+      ///
+      /// Note that here we normalize each components by the sum of weights.
       FloatArray SecondOrder() const {
          FloatArray out( m2_.size(), 0.0 ); // output tensor
          if( m0_ != 0 ) {
@@ -716,6 +718,33 @@ class DIP_NO_EXPORT MomentAccumulator {
             for( dip::uint ii = 1, kk = N, ll = 1; ii < N; ++ii, ++ll ) {
                for( dip::uint jj = 0; jj < ii; ++jj, ++kk, ++ll ) {
                   out[ kk ] = m1[ ii ] * m1[ jj ] - m2_[ ll ] / m0_;
+               }
+            }
+         }
+         return out;
+      }
+
+      /// \brief Plain second order central moments, normalized
+      ///
+      /// Sometimes one just needs the normalized central moments directly, not in tensor form.
+      /// Here we return them, in the same order as described above for \ref SecondOrder. Each of
+      /// the components are defined by
+      ///
+      /// $$ M_{ij} = \frac{\Sigma_k m_k r_{ki} r_{kj}}{\Sigma_k m_k} $$
+      ///
+      /// with $m_k$ the weight of point $k$, and $\vec{r_k} = (r_{k1}, r_{k2}, \ldots)$ its position
+      /// relative to the center of mass.
+      FloatArray PlainSecondOrder() const {
+         FloatArray out( m2_.size(), 0.0 ); // output tensor
+         if( m0_ != 0 ) {
+            dip::uint N = m1_.size();
+            FloatArray m1 = FirstOrder(); // normalized first order moments
+            for( dip::uint ii = 0, kk = 0; ii < N; ++ii, kk += 1 + ii ) {
+               out[ ii ] = m2_[ kk ] / m0_ - m1[ ii ] * m1[ ii ];
+            }
+            for( dip::uint ii = 1, kk = N, ll = 1; ii < N; ++ii, ++ll ) {
+               for( dip::uint jj = 0; jj < ii; ++jj, ++kk, ++ll ) {
+                  out[ kk ] = m2_[ ll ] / m0_ - m1[ ii ] * m1[ jj ];
                }
             }
          }
