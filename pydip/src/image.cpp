@@ -265,6 +265,7 @@ dip::String ImageRepr( dip::Image const& image ) {
 } // namespace
 
 void init_image( py::module& m ) {
+
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), "The class that encapsulates DIPlib images of all types." );
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed:
    //   None implicitly converts to an image
@@ -470,65 +471,57 @@ void init_image( py::module& m ) {
    img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image::Pixel const& value ) { self.At( std::move( rangeArray )).Fill( value ); } );
    // Operators
    img.def( py::self += py::self );
-   img.def( py::self += dip::dfloat() );
+   img.def( py::self += dip::Image::Pixel() );
    img.def( py::self + py::self );
-   img.def( py::self + dip::dfloat() );
-   img.def( dip::dfloat() + py::self );
+   img.def( py::self + dip::Image::Pixel() );
+   img.def( dip::Image::Pixel() + py::self );
    img.def( py::self -= py::self );
-   img.def( py::self -= dip::dfloat() );
+   img.def( py::self -= dip::Image::Pixel() );
    img.def( py::self - py::self );
-   img.def( py::self - dip::dfloat() );
-   img.def( dip::dfloat() - py::self );
+   img.def( py::self - dip::Image::Pixel() );
+   img.def( dip::Image::Pixel() - py::self );
    img.def( py::self *= py::self );
-   img.def( py::self *= dip::dfloat() );
+   img.def( py::self *= dip::Image::Pixel() );
    img.def( py::self * py::self );
-   img.def( py::self * dip::dfloat() );
-   img.def( dip::dfloat() * py::self );
+   img.def( py::self * dip::Image::Pixel() );
+   img.def( dip::Image::Pixel() * py::self );
    img.def( py::self /= py::self );
-   img.def( py::self /= dip::dfloat() );
+   img.def( py::self /= dip::Image::Pixel() );
    img.def( py::self / py::self );
-   img.def( py::self / dip::dfloat() );
-   img.def( dip::dfloat() / py::self );
+   img.def( py::self / dip::Image::Pixel() );
+   img.def( dip::Image::Pixel() / py::self );
    img.def( py::self %= py::self );
-   img.def( py::self %= dip::dfloat() );
+   img.def( py::self %= dip::Image::Pixel() );
    img.def( py::self % py::self );
-   img.def( py::self % dip::dfloat() );
-   img.def( dip::dfloat() % py::self );
+   img.def( py::self % dip::Image::Pixel() );
+   img.def( dip::Image::Pixel() % py::self );
    img.def( "__pow__", []( dip::Image const& a, dip::Image const& b ) { return dip::Power( a, b ); }, py::is_operator() );
-   img.def( "__pow__", []( dip::Image const& a, dip::dfloat b ) { return dip::Power( a, b ); }, py::is_operator() );
-   img.def( "__pow__", []( dip::dfloat a, dip::Image const& b ) { return dip::Power( dip::Image{ a }, b ); }, py::is_operator() );
+   img.def( "__pow__", []( dip::Image const& a, dip::Image::Pixel const& b ) { return dip::Power( a, b ); }, py::is_operator() );
+   img.def( "__pow__", []( dip::Image::Pixel const& a, dip::Image const& b ) { return dip::Power( dip::Image{ a }, b ); }, py::is_operator() );
    img.def( "__ipow__", []( dip::Image& a, dip::Image const& b ) { dip::Power( a, b, a ); }, py::is_operator() );
-   img.def( "__ipow__", []( dip::Image& a, dip::dfloat b ) { dip::Power( a, b, a ); }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& a, dip::Image::Pixel const& b ) { dip::Power( a, b, a ); }, py::is_operator() );
    img.def( py::self == py::self );
-   img.def( py::self == dip::dfloat() );
+   img.def( py::self == dip::Image::Pixel() );
    img.def( py::self != py::self );
-   img.def( py::self != dip::dfloat() );
+   img.def( py::self != dip::Image::Pixel() );
    img.def( py::self > py::self );
-   img.def( py::self > dip::dfloat() );
+   img.def( py::self > dip::Image::Pixel() );
    img.def( py::self >= py::self );
-   img.def( py::self >= dip::dfloat() );
+   img.def( py::self >= dip::Image::Pixel() );
    img.def( py::self < py::self );
-   img.def( py::self < dip::dfloat() );
+   img.def( py::self < dip::Image::Pixel() );
    img.def( py::self <= py::self );
-   img.def( py::self <= dip::dfloat() );
+   img.def( py::self <= dip::Image::Pixel() );
    img.def( py::self & py::self );
-   img.def( py::self & dip::sint() );
+   img.def( py::self & dip::Image::Pixel() );
    img.def( py::self | py::self );
-   img.def( py::self | dip::sint() );
+   img.def( py::self | dip::Image::Pixel() );
    img.def( py::self ^ py::self );
-   img.def( py::self ^ dip::sint() );
+   img.def( py::self ^ dip::Image::Pixel() );
    img.def( -py::self );
    img.def( "__invert__", []( dip::Image& a ) { return dip::Not( a ); }, py::is_operator() ); //img.def( ~py::self );
-   // Iterators
-   // TODO: This does not work! Iterators need to return a writeable reference, which implies making dip::Image::Pixel available from within Python
-   //img.def( "__iter__", []( dip::Image const& image ) {
-   //         return py::make_iterator< py::return_value_policy::reference_internal,
-   //                                   dip::GenericImageIterator<>,
-   //                                   dip::GenericImageIterator<>,
-   //                                   dip::Image::Pixel >( dip::GenericImageIterator<>( image ),
-   //                                                        dip::GenericImageIterator<>() );
-   //}, py::keep_alive< 0, 1 >() ); // Essential: keep object alive while iterator exists
 
+   // Some new functions useful in Python
    m.def( "Create0D", []( dip::Image::Pixel const& in ) -> dip::Image {
              return dip::Image( in );
           },
@@ -557,6 +550,7 @@ void init_image( py::module& m ) {
           "Overload that takes a scalar image, the pixel values are the values for each\n"
           "tensor element of the output 0D image." );
 
+   // Free functions in diplib/library/image.h
    m.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Copy ), "src"_a );
    m.def( "ExpandTensor", py::overload_cast< dip::Image const& >( &dip::ExpandTensor ), "src"_a );
    m.def( "Convert", py::overload_cast< dip::Image const&, dip::DataType >( &dip::Convert ), "src"_a, "dt"_a );

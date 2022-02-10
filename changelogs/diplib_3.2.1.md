@@ -42,6 +42,9 @@ title: "Changes DIPlib 3.2.1"
   the plain old second order central moments, compared to the moment of inertia tensor contained
   in `secondOrder`. 
 
+- Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which
+  is interpreted as a 0D tensor image (column vector). This makes `a / a[0]` possible.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
