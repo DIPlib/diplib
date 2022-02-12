@@ -27,7 +27,7 @@ pip3 install clang jinja2 markdown markdown-headdown mdx_math_svg Pygments
 
 Finally, install *LaTeX*. Ubuntu has a *LaTeX* package, but we recommend [*TeX Live*](https://tug.org/texlive/).
 There is a version of *TeX Live* specifically packaged for macOS, but that just adds some macOS-specific
-GUI tools; it is perfectly fine to use the Unix installation instructions.
+GUI tools; it is perfectly fine to use the Unix installation instructions on macOS.
 
 First, download [`install-tl-unx.tar.gz`](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz),
 for example to `~/tmp/`. Extract its contents (`tar xzf install-tl-unx.tar.gz`), then navigate into the
@@ -43,7 +43,6 @@ renders equations using *LaTeX*:
 ```bash
 tlmgr install standalone preview ucs xkeyval currfile filehook newtx fontaxes xstring
 ```
-
 
 ## Installing *dox++*
 

@@ -165,9 +165,14 @@ after installing *DIPimage*, to learn more).
 
 ## Linking against the library
 
-When using *CMake*, and importing the `DIP` target into your project in the right way, you will just need
-to link against the `DIP` target and everything will be configured correctly. Otherwise, there are several
-macros that you should define when building any program that links against *DIPlib*:
+When using *CMake*, simply import the `DIPlib` package with `find_package()`, then link against the
+imported `DIPlib::DIP`, `DIPlib::DIPviewer` and/or `DIPlib::DIPjavaio` targets and everything will
+be configured correctly, see the [example *CMake* script](examples/independent_project/CMakeLists.txt).
+Alternatively, use `add_subdirectory()` to include the *DIPlib* repository as a sub-project, and
+then link against the `DIP`, `DIPviewer` and/or `DIPjavaio` targets.
+
+If you do not use *CMake*, there are several macros that you should define when building any program
+that links against *DIPlib*:
 
 If *DIPlib* was build with the `DIP_SHARED_LIBRARY` flag not set, then you need to define the `DIP_CONFIG_DIP_IS_STATIC`
 macro when compiling the code that links against it. Likewise, if the `DIP_ALWAYS_128_PRNG` flag was set,
@@ -176,8 +181,8 @@ could cause your program to not link, or worse, crash at runtime.
 
 The following flags do not need to be matched, but they should be if you want the inline functions to behave
 the same as the pre-compiled ones:
-- flag: `DIP_ENABLE_STACK_TRACE` -- macro: `DIP_CONFIG_ENABLE_STACK_TRACE`
-- flag: `DIP_ENABLE_ASSERT` -- macro: `DIP_CONFIG_ENABLE_ASSERT`
+- If the flag `DIP_ENABLE_STACK_TRACE` is set, define the macro `DIP_CONFIG_ENABLE_STACK_TRACE`.
+- If the flag `DIP_ENABLE_ASSERT` is set, define the macro `DIP_CONFIG_ENABLE_ASSERT`.
 
 Also, if your compiler supports `__PRETTY_FUNCTION__`, set the macro `DIP_CONFIG_HAS_PRETTY_FUNCTION` to
 get better stack traces.
@@ -186,4 +191,4 @@ For *DIPviewer*, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIP
 Also define `DIP_CONFIG_HAS_FREEGLUT` or `DIP_CONFIG_HAS_GLFW` depending on which back-end is used.
 
 For *DIPjavaio*, if `DIP_SHARED_LIBRARY` was not set, define the `DIP_CONFIG_DIPJAVAIO_IS_STATIC` macro.
-Also define `DIP_CONFIG_HAS_DIPJAVAIO`.
+Also define `DIP_CONFIG_HAS_DIPJAVAIO` for the function `dip::ImageRead` to be able to make use of it.
