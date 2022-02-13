@@ -61,6 +61,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=~/diplib/fftw \
     -DENABLE_FLOAT=On
 make -j
 make install
+export LD_LIBRARY_PATH=~/diplib/fftw/lib:$LD_LIBRARY_PATH
 cd ~/diplib/source
 git clone https://github.com/DIPlib/diplib.git
 cd diplib
@@ -77,5 +78,6 @@ cmake .. -DCMAKE_INSTALL_PREFIX=~/diplib/diplib \
 make -j
 make -j check
 make install
+cp ~/diplib/bioformats_package.jar ~/diplib/diplib/share/DIPimage/private
 matlab
 ```
