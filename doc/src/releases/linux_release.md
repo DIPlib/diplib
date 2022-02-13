@@ -6,6 +6,7 @@ Few things to keep in mind:
 * No Python interface
 * Build with BioFormats
 * Build with Matlab R2018b
+* Matlab R2021b install has problems with root rights in display, use `xhost` line
 * Matlab R2018b requires g++-8
 * FFTW has no recent apt-package and must be build
 * compile FFTW with THREADS for DOUBLE *and* FLOAT
@@ -17,7 +18,8 @@ cd Downloads
 mkdir matlab_R2018b
 mv matlab_R2018b_glnxa64.zip matlab_R2018b
 cd matlab_R2018b/
-unzip matlab_R2018b_glnxa64.zip 
+unzip matlab_R2018b_glnxa64.zip
+xhost +SI:localuser:root
 sudo ./install
 matlab
 ```
