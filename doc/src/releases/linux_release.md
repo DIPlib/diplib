@@ -4,8 +4,6 @@ Few things to keep in mind:
 
 * No documentation
 * No Python interface
-* Build with openJDK 17, **do not install with apt, as header-files are not found**
-* Configure JAVA_HOME with full path (not with ~)
 * Build with BioFormats
 * Build with Matlab R2018b
 * Matlab R2018b requires g++-8
@@ -29,8 +27,8 @@ matlab
 ```bash
 sudo apt install build-essential cmake git
 suda apt install gcc-8 g++-8
-sudo apt install cmake-curses-gui 
-sudo apt install openjdk-17-jdk
+sudo apt install cmake-curses-gui
+sudo apt install openjdk-8-jdk
 sudo apt install freeglut3-dev
 sudo apt install libfreetype-dev
 export CC=gcc-8
@@ -40,12 +38,8 @@ cd ~/diplib
 wget https://downloads.openmicroscopy.org/bio-formats/6.8.1/artifacts/bioformats_package.jar
 mkdir download source repository
 cd download
-wget https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz
 wget http://www.fftw.org/fftw-3.3.10.tar.gz
-cd ..
-tar xf download/openjdk-17.0.2_linux-x64_bin.tar.gz
-mv jdk-17.0.2 jdk
-cd source
+cd ../source
 tar xf ../download/fftw-3.3.10.tar.gz 
 cd fftw-3.3.10/
 mkdir build
@@ -71,6 +65,7 @@ cd ~/diplib/source
 git clone https://github.com/DIPlib/diplib.git
 cd diplib
 cmake .. -DCMAKE_INSTALL_PREFIX=~/diplib/diplib \
+    -DDIP_BUILD_PYDIP=Off \
     -DDIP_ENABLE_FFTW=On \
     -DDIP_ENABLE_FREETYPE=On \
     -DFFTW3_LIBRARY_FFTW3=~/diplib/fftw/lib/libfftw3.so \
@@ -78,8 +73,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=~/diplib/diplib \
     -DFFTW3_LIBRARY_FFTW3_THREADS=~/diplib/fftw/lib/libfftw3_threads.so \
     -DFFTW3_LIBRARY_FFTW3F_THREADS=~/diplib/fftw/lib/libfftw3f_threads.so \
     -DFFTW3_INCLUDE_DIR=~/diplib/fftw/include \
-    -DJAVA_HOME=~/diplib/jdk \
-    -DBIOFORMATS_PACKAGE=~/diplib/bioformats_package.jar
+    -DBIOFORMATS_JAR=~/diplib/bioformats_package.jar
 make -j
 make -j check
 make install
