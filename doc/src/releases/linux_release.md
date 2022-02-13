@@ -2,11 +2,11 @@
 
 Few things to keep in mind:
 
-- No documentation
-- No Python interface
-- Build with openJDK 17, **do not install with apt, as header-files are not found**
-- Configure JAVA_HOME with full path (not with ~)
-- Build with BioFormats
+* No documentation
+* No Python interface
+* Build with openJDK 17, **do not install with apt, as header-files are not found**
+* Configure JAVA_HOME with full path (not with ~)
+* Build with BioFormats
 * Build with Matlab R2018b
 * Matlab R2018b requires g++-8
 * FFTW has no recent apt-package and must be build
@@ -60,11 +60,11 @@ make -j
 make install
 cmake .. -DCMAKE_INSTALL_PREFIX=~/diplib/fftw \
     -DENABLE_AVX=On \
-        -DENABLE_AVX2=On \
-        -DENABLE_SSE=On \
-        -DENABLE_SSE2=On \
-        -DENABLE_THREADS=On \
-        -DENABLE_FLOAT=On
+    -DENABLE_AVX2=On \
+    -DENABLE_SSE=On \
+    -DENABLE_SSE2=On \
+    -DENABLE_THREADS=On \
+    -DENABLE_FLOAT=On
 make -j
 make install
 cd ~/diplib/source
