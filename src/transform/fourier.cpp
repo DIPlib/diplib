@@ -939,7 +939,7 @@ T dotest( std::size_t nfft, bool inverse ) {
       std::complex< long double > acc{ 0, 0 };
       long double phinc = ( inverse ? 2.0l : -2.0l ) * static_cast< long double >( k0 ) * M_PIl / static_cast< long double >( nfft );
       for( std::size_t k1 = 0; k1 < nfft; ++k1 ) {
-         acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, k1 * phinc ));
+         acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
       }
       totalpower += std::norm( acc );
       difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
