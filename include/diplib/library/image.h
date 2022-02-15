@@ -1,5 +1,5 @@
 /*
- * (c)2014-2021, Cris Luengo.
+ * (c)2014-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -289,6 +289,9 @@ class DIP_NO_EXPORT Image {
       ///
       /// Note that to call this constructor with a single parameter, you need to explicitly type the parameter,
       /// an initializer list by itself will be considered a pixel, see the constructor below.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       explicit Image( UnsignedArray sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
             dataType_( dt ),
             sizes_( std::move( sizes )),
@@ -442,7 +445,10 @@ class DIP_NO_EXPORT Image {
       Image( T const* data, UnsignedArray sizes, dip::uint nTensorElements = 1 )
             : Image( NonOwnedRefToDataSegment( data ), const_cast< T* >( data ), dip::DataType( data[ 0 ] ), std::move( sizes ), {}, dip::Tensor{ nTensorElements } ) {}
 
-      /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
+      /// \brief Create a new forged image similar to `this`. The data is not copied.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       DIP_NODISCARD Image Similar() const {
          Image out;
          out.CopyProperties( *this );
@@ -450,7 +456,10 @@ class DIP_NO_EXPORT Image {
          return out;
       }
 
-      /// \brief Create a new forged image similar to `this`, but with different data type. The data is not copied, and left uninitialized.
+      /// \brief Create a new forged image similar to `this`, but with different data type. The data is not copied.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       DIP_NODISCARD Image Similar( dip::DataType dt ) const {
          Image out;
          out.CopyProperties( *this );
@@ -1126,6 +1135,9 @@ class DIP_NO_EXPORT Image {
       /// external interface is registered for this image, that interface
       /// may create whatever strides are suitable, may honor or not the
       /// existing stride array, and may or may not produce normal strides.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       DIP_EXPORT void Forge();
 
       /// \brief Modify image properties and forge the image.
@@ -1146,6 +1158,9 @@ class DIP_NO_EXPORT Image {
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       void ReForge(
             Image const& src,
             Option::AcceptDataTypeChange acceptDataTypeChange = Option::AcceptDataTypeChange::DONT_ALLOW
@@ -1171,6 +1186,9 @@ class DIP_NO_EXPORT Image {
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       void ReForge(
             Image const& src,
             dip::DataType dt,
@@ -1202,6 +1220,9 @@ class DIP_NO_EXPORT Image {
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
+      ///
+      /// The data segment is not initialized, use \ref Fill to set it to constant
+      /// value.
       DIP_EXPORT void ReForge(
             UnsignedArray const& sizes,
             dip::uint tensorElems = 1,
