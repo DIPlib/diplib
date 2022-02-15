@@ -50,6 +50,7 @@ We can also set the number of tensor elements, or the data type, or both.
     <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {50}>
 
 **Note that when specifying the number of tensor elements, a single value is interpreted as the image size.**
+
     >>> dip.Image(50, 2)
     <Tensor image (2x1 column vector, 2 elements), SFLOAT, sizes {50}>
 
