@@ -143,6 +143,34 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
                 viewer.Draw()
                 time.sleep(0.001)
 
+# This is a version of ImageRead that we use if we fail to load PyDIPjavaio for any reason
+PyDIP_bin_ImageRead = ImageRead
+reportedDIPjavaio = False
+def ImageRead(*args, **kwargs):
+    """You are using this version of dip.ImageRead() because the DIPjavaio module is
+    not available. See `dip.javaioError` for the reason it is not available.
+
+    This version of dip.ImageRead() can read ICS, TIFF, JPEG and NYP files. For other
+    formats you need DIPjavaio. You can also use the imageio package to load
+    image files.
+
+    To use the DIPjavaio module, you need:
+    1. Have a PyDIP build that includes it (if you got this from PyPI, it is included).
+    2. Have a working installation of a Java VM. Download: https://www.java.com/en/
+    3. Run `python -m diplib download_bioformats` from your shell.
+    """
+    global reportedDIPjavaio
+    try:
+        return PyDIP_bin_ImageRead(*args, **kwargs)
+    except BaseException:
+        if not reportedDIPjavaio:
+            print(
+"""If you were trying to read an image format supported by BioFormats, note that
+DIPjavaio is unavailable because:""")
+            print(f" - {javaioError}\n")
+            reportedDIPjavaio = True
+        raise
+
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
 if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
@@ -151,15 +179,17 @@ if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
         from . import loadjvm
         lib = loadjvm.load_jvm()
         from . import PyDIPjavaio as javaio
+        # Replace the ImageRead from PyDIP_bin with the one in PyDIPjavaio, so that 'bioformats' is recognized as a "format".
         ImageRead = javaio.ImageRead
         hasDIPjavaio = True
     except Exception as e:
-        print("PyDIPjavaio unavailable:")
-        print(e)
+        javaioError = str(e)
         if lib:
-            print("\nload_jvm returned '" + lib + "'")
+            javaioError += f"\nload_jvm returned '{lib}'"
         else:
-            print("\nlibjvm not found")
+            javaioError += "\nlibjvm not found"
+else:
+    javaioError = "PyDIPjavaio was not included in the build of the package."
 
 # Here we display library information
 import sys

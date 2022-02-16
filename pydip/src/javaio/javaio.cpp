@@ -29,6 +29,7 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
           "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
 
    // diplib/simple_file_io.h
+   // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
    m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
-   m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
+   //m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
 }
