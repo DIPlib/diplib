@@ -265,6 +265,32 @@ DIP_NODISCARD inline Image SplitRegions(
    return out;
 }
 
+/// \brief Make each object a single, convex shape.
+///
+/// For each label, it finds the convex hull and draws it into the image. Where the convex hulls of objects
+/// overlaps, the larger label prevails, meaning that the other object might not be convex any more where the
+/// larger label overlaps it.
+///
+/// Note that defining a convex hull in a discrete space is ambiguous, and therefore this function is not
+/// idempotent (i.e. running it a second time on its own output will further modify the objects).
+/// Furthermore, this implementation might suffer from rounding errors that cause very small convexities
+/// in some boundaries.
+///
+/// If the input image is binary, a single convex hull is computed and drawn. The output image will be binary also.
+///
+/// The image must have two dimensions, and be scalar.
+DIP_EXPORT void MakeRegionsConvex2D(
+      Image const& label,
+      Image& out
+);
+DIP_NODISCARD inline Image MakeRegionsConvex2D(
+      Image const& label
+) {
+   Image out;
+   MakeRegionsConvex2D( label, out );
+   return out;
+}
+
 /// \brief Returns the bounding box for all pixels with label `objectID` in the labeled or binary image `label`.
 ///
 /// `label` must be a labeled image (of type unsigned integer) or binary, and must be scalar and have at least
@@ -274,6 +300,9 @@ DIP_NODISCARD inline Image SplitRegions(
 ///
 /// When no pixels with the value `objectID` exist in the image, the output \ref dip::RangeArray will be an
 /// empty array. Otherwise, it will have as many \ref dip::Range elements as dimensions are in the image.
+///
+/// To obtain the bounding box of all labels at once, use \ref dip::MeasurementTool::Measure with the
+/// features \ref size_features_Minimum and \ref size_features_Maximum.
 RangeArray DIP_EXPORT GetLabelBoundingBox(
       Image const& label,
       dip::uint objectID

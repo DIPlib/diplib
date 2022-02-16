@@ -15,11 +15,15 @@
  * limitations under the License.
  */
 
+#include <map>
+
 #include "diplib.h"
 #include "diplib/private/robin_map.h"
 #include "diplib/private/robin_set.h"
 #include "diplib/regions.h"
 #include "diplib/measurement.h"
+#include "diplib/chain_code.h"
+#include "diplib/generation.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
@@ -300,10 +304,128 @@ void SplitRegions(
 
 }
 
+
+namespace {
+
+struct MinMax {
+   dip::uint min;
+   dip::uint max;
+};
+using Contour = std::map< dip::uint, MinMax >; // Storing minimum and maximum x coordinate for each y coordinate. Must be iterable in order.
+using ObjectContours = tsl::robin_map< dip::uint, Contour >; // Stores a contour for each label
+
+template< typename TPI > // TPI is an unsigned integer type
+ObjectContours GetObjectContours( Image const& label ) {
+   // Find first and last pixel for each label on each image line.
+   // See Cadenas JO, Megson GM, and Luengo Hendriks CL, "Preconditioning 2D Integer Data for
+   //    Fast Convex Hull Computations", PLOS ONE 11(3):e0149860, 2016.
+   ImageIterator< TPI > it( label, 0 );
+   ObjectContours out;
+   do { // loops over rows
+      dip::uint row = it.Coordinates()[ 1 ];
+      auto lit = it.GetLineIterator();
+      do { // loops over pixels in this row
+         TPI lab = *lit;
+         if( lab ) {
+            dip::uint start = lit.Coordinate();
+            dip::uint stop = start;
+            while( ++lit && *lit == lab ) {
+               stop = lit.Coordinate();
+            }
+            auto& contour = out[ lab ];
+            auto minMax = contour.find( row );
+            if( minMax == contour.end() ) {
+               contour[ row ] = MinMax{ start, stop };
+            } else {
+               contour[ row ].max = stop;
+            }
+         } else {
+            ++lit;
+         }
+      } while( lit ); // note: no increment!
+   } while( ++it );
+   return out;
+}
+
+using ObjectConvexHulls = tsl::robin_map< dip::uint, Polygon >; // Stores a convex hull for each label
+
+template< typename TPI > // TPI is an unsigned integer type
+ObjectConvexHulls GetObjectConvexHulls( ObjectContours const& objectContours ) {
+   // Combine first and last pixels for each image line into a polygon, then compute the convex hull
+   ObjectConvexHulls out;
+   for( auto obj_it = objectContours.begin(); obj_it != objectContours.end(); ++obj_it ) {
+      Polygon polygon;
+      polygon.vertices.reserve( obj_it.value().size() * 2 );
+      for( auto it = obj_it.value().begin(); it != obj_it.value().end(); ++it ) {
+         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.min ),  static_cast< dip::sfloat >( it->first ));
+      }
+      for( auto it = obj_it.value().rbegin(); it != obj_it.value().rend(); ++it ) {
+         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.max ),  static_cast< dip::sfloat >( it->first ));
+      }
+      polygon = polygon.ConvexHull().Polygon(); // we need to copy the convex hull out, we cannot move it!
+      out[ obj_it.key() ] = std::move( polygon );
+   }
+   return out;
+}
+
+template< typename TPI > // TPI is an unsigned integer type
+void DrawObjectConvexHulls( Image& label, ObjectConvexHulls const& objectConvexHulls ) {
+   // Sort object IDs so we draw the convex objects in the right order
+   std::set< dip::uint > objects;
+   for( auto obj_it = objectConvexHulls.begin(); obj_it != objectConvexHulls.end(); ++obj_it ) {
+      objects.insert( obj_it.key() );
+   }
+   for( auto id : objects ) {
+      auto const& polygon = objectConvexHulls.at( id );
+      if( polygon.vertices.size() == 1 ) {
+         // We draw this pixel in case a previous polygon overlaps it.
+         auto pt = polygon.vertices[ 0 ].Round();
+         UnsignedArray ptu{ static_cast< dip::uint >( pt.x ), static_cast< dip::uint >( pt.y ) };
+         label.At( ptu ) = id;
+      } else if( polygon.vertices.size() == 2 ) {
+         // Idem, draw in case it was overwritten.
+         auto pt1 = polygon.vertices[ 0 ].Round();
+         auto pt2 = polygon.vertices[ 1 ].Round();
+         UnsignedArray pt1u{ static_cast< dip::uint >( pt1.x ), static_cast< dip::uint >( pt1.y ) };
+         UnsignedArray pt2u{ static_cast< dip::uint >( pt2.x ), static_cast< dip::uint >( pt2.y ) };
+         DrawLine( label, pt1u, pt2u, { id }, S::ASSIGN );
+      } else {
+         DrawPolygon2D( label, polygon, { id }, S::FILLED );
+      }
+   }
+}
+
+template< typename TPI > // TPI is an unsigned integer type
+void MakeRegionsConvex2DInternal( Image& label ) {
+   ObjectContours objectContours = GetObjectContours< TPI >( label );
+   ObjectConvexHulls objectConvexHulls = GetObjectConvexHulls< TPI >( objectContours );
+   DrawObjectConvexHulls< TPI >( label, objectConvexHulls );
+}
+
+} // namespace
+
+void MakeRegionsConvex2D(
+      Image const& label,
+      Image& out
+) {
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( !label.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
+   out.Copy( label );
+   dip::Image tmp = out.QuickCopy();
+   if( tmp.DataType().IsBinary() ) {
+      tmp.Convert( DT_UINT8 ); // This doesn't change the data, which is shared with the output.
+   }
+   DIP_OVL_CALL_UINT( MakeRegionsConvex2DInternal, ( tmp ), tmp.DataType() );
+   // We wrote into `tmp`, a UINT image, but it shares data with `out`, which is either UINT or BIN.
+}
+
+
 namespace {
 
 template< typename TPI >
-RangeArray GetLabelBoundingBoxInernal(
+RangeArray GetLabelBoundingBoxInternal(
       Image const& label,
       dip::uint objectID
 ) {
@@ -342,7 +464,7 @@ RangeArray GetLabelBoundingBox(
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( label.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    RangeArray bb;
-   DIP_OVL_CALL_ASSIGN_UNSIGNED( bb, GetLabelBoundingBoxInernal, ( label, objectID ), label.DataType() );
+   DIP_OVL_CALL_ASSIGN_UNSIGNED( bb, GetLabelBoundingBoxInternal, ( label, objectID ), label.DataType() );
    return bb;
 }
 

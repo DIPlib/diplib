@@ -7,6 +7,8 @@ title: "Changes DIPlib 3.2.1"
 
 ### New functionality
 
+- Added `dip::MakeRegionsConvex2D()`, which works for both labelled and binary images.
+
 ### Changed functionality
 
 - `dip::MomentAccumulator` has a new method `PlainSecondOrder()`, which returns the plain old second
@@ -35,6 +37,8 @@ title: "Changes DIPlib 3.2.1"
 ## Changes to *PyDIP*
 
 ### New functionality
+
+- Added `dip.MakeRegionsConvex2D()`.
 
 ### Changed functionality
 

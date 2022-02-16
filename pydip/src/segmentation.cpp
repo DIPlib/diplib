@@ -116,6 +116,8 @@ void init_segmentation( py::module& m ) {
           "label"_a, "grey"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{ dip::S::CHAMFER, 2 } );
    m.def( "SplitRegions", py::overload_cast< dip::Image const&, dip::uint >( &dip::SplitRegions ),
           "label"_a, "connectivity"_a = 0 );
+   m.def( "MakeRegionsConvex2D", py::overload_cast< dip::Image const& >( &dip::MakeRegionsConvex2D ),
+          "label"_a );
    m.def( "GetLabelBoundingBox", &dip::GetLabelBoundingBox, "label"_a, "objectID"_a );
    m.def( "RegionAdjacencyGraph", py::overload_cast< dip::Image const&, dip::String const& >( &dip::RegionAdjacencyGraph ),
           "label"_a, "mode"_a = "touching" );
