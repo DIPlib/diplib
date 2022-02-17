@@ -29,6 +29,7 @@ To read images through the Bio-Formats library, you will need to download it sep
 ```bash
 python -m diplib download_bioformats
 ```
+Note that Bio-Formats also requires a working [Java installation](https://www.java.com/en/).
 
 This user manual discusses the differences with the *DIPlib* library.
 
@@ -63,7 +64,6 @@ value in C++ also have a default value in Python.
 The class `dip.Image` has a method `Show()`. There is an identical function
 `dip.Show()`. They display an image to the current *matplotlib* window, if
 *matplotlib* is installed:
-
 ```python
 import diplib as dip
 img = dip.ImageReadTIFF('cameraman')
@@ -73,7 +73,6 @@ img.Show()
 By default, the image intensities are mapped to the full display range
 (i.e. the minimum image intensity is black and the maximum is white). This
 can be changed for example as follows:
-
 ```python
 img.Show('unit')  # maps [0,1] to the display range
 img.Show('8bit')  # maps [0,255] to the display range
@@ -92,9 +91,9 @@ windows have been closed. Even when `Spin()` is not needed to interact
 with the windows, it should be run before closing the Python session to
 avoid a series of error messages. Alternatively, periodically call
 `dip.viewer.Draw()`.
-`dip.Image.ShowSlice` and `dip.viewer.Show()` have additional parameters
-that can be used to set viewing options. They also return an object that can be used for further interaction:
 
+`dip.Image.ShowSlice()` and `dip.viewer.Show()` have additional parameters
+that can be used to set viewing options. They also return an object that can be used for further interaction:
 ```python
 wdw = img.ShowSlice('Window title', mapping='unit', lut='sequential')
 dip.viewer.Spin()
@@ -107,7 +106,6 @@ Type `help(dip.viewer.Show)` for details.
 
 Indexing into a `dip.Image` object works as it does for other array types in
 Python:
-
 ```python
 img[0]
 img[0:10]
@@ -118,7 +116,6 @@ Note that dimensions are ordered in reverse from how *NumPy* stores them
 (the first dimension is horizontal, or x).
 
 It is possible to assign to a subset of the image pixels using indexing:
-
 ```python
 img[0] = 0
 img[0:10] = img[20:30]
@@ -127,7 +124,6 @@ img[0:-1:2, 0:-1:2] = 255
 
 Unlike in *DIPlib*, the square brackets index into spatial dimensions.
 To index into tensor dimensions, use round brackets (parenthesis):
-
 ```python
 img(0)
 img(0, 2)
@@ -136,7 +132,6 @@ img(slice(0, 3))
 
 The output of any of these indexing operations shares data with the original
 image, so writing to that output also changes the original image:
-
 ```python
 img2 = img(0)        # this copy shares data with img
 img2.Fill(100)       # same as img(0).Fill(100)
@@ -149,12 +144,12 @@ img2.Fill(100)       # does not affect img
 
 Irregular indexing using a mask image is also supported. This indexing
 returns a copy of the data, but an assignment form is also available:
-
 ```python
 img2 = img[mask]  # this copy does not share data with img
 img2.Fill(0)      # does not affect img
 img[mask] = 0     # sets all pixels in mask to 0
 ```
+
 
 \section pum_testing Testing image validity
 
@@ -163,6 +158,7 @@ You can use either `IsForged()` or `IsEmpty()` to test if an image is forged.
 
 Functions that expect an image interpret `None` as an empty (non-forged) image.
 
+
 \section pum_numpy Mixing *NumPy* arrays and *DIPlib* images
 
 A NumPy array can be passed instead of an image to any *DIPlib* function. In fact, any Python object
@@ -170,18 +166,16 @@ that uses the buffer interface implicitly casts to an image. The reverse is also
 *DIPlib* images as an array, you can call any *NumPy* function on an image. However, some code that
 accepts a *NumPy* array calls methods of the array, which would not be defined for a *DIPlib* image.
 For example,
-
 ```python
-array = np.zeros((10,11))
+array = np.zeros((10, 11))
 dip.Gauss(array)          # OK
-img = dip.Image((11,10))
+img = dip.Image((11, 10))
 np.amax(img)              # OK
 img.max()                 # error! np.array method not defined for dip.Image
 img.shape                 # error! np.array property not defined for dip.Image
 ```
 
 One can "cast" from a *NumPy* array to a *DIPlib* image and back:
-
 ```python
 x = np.array(img)
 y = dip.Image(array)
@@ -195,10 +189,24 @@ to the last image index, and vice versa. If an image is indexed as `img[x,y,z]`,
 array is indexed as `array[z,y,x]`. 2D *NumPy* arrays are typically interpreted with the first dimension
 being vertical (y) and the second horizontal (x). This is how they are printed to the console, and how
 `pyplot.imshow` displays them as images. Preserving the indexing order between *DIPlib* and *NumPy* would
-therefore cause 2D images to be shown transposed by other Python tools. Furthermore, by reversing the
+therefore cause 2D images to be shown transposed by other Python tools.
+
+Thus, the following indexing operations are identical:
+```python
+array = np.zeros((10, 11, 12))
+img = dip.Image(array)
+array[1, 2, 3] == img[3, 2, 1]
+```
+
+Furthermore, by reversing the
 indexing, we map an image with normal strides to an array in *NumPy*'s standard C-ordering.
 The following evaluates to `True`:
-
 ```python
 dip.Image( np.zeros((10,11,5,7)) ).HasNormalStrides()
 ```
+
+When using a *NumPy* array as an image in a *DIPlib* function, it is implicitly cast to a `dip.Image`
+object as above, and passed to the *DIPlib* function. This means that, whether the input is a *NumPy*
+array or a *DIPlib* image, other function parameters that identify dimensions are always interpreted
+in the same way. For example, the filter sizes are ordered (x, y, z), not (z, y, x) as they would be
+ordered in *Scikit-Image* or other Python imaging libraries.
