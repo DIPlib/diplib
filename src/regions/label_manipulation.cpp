@@ -1,5 +1,5 @@
 /*
- * (c)2016-2021, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -351,16 +351,18 @@ using ObjectConvexHulls = tsl::robin_map< dip::uint, Polygon >; // Stores a conv
 
 template< typename TPI > // TPI is an unsigned integer type
 ObjectConvexHulls GetObjectConvexHulls( ObjectContours const& objectContours ) {
-   // Combine first and last pixels for each image line into a polygon, then compute the convex hull
+   // Combine first and last pixels for each image line into a polygon, then compute the convex hull.
+   // We add or subtract 0.1 from the x coordinate to ensure that the polygon is "nice", without two vertices
+   // at apposite sides of the polygon being on top of each other.
    ObjectConvexHulls out;
    for( auto obj_it = objectContours.begin(); obj_it != objectContours.end(); ++obj_it ) {
       Polygon polygon;
       polygon.vertices.reserve( obj_it.value().size() * 2 );
       for( auto it = obj_it.value().begin(); it != obj_it.value().end(); ++it ) {
-         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.min ),  static_cast< dip::sfloat >( it->first ));
+         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.max ) + 0.1,  static_cast< dip::sfloat >( it->first ));
       }
       for( auto it = obj_it.value().rbegin(); it != obj_it.value().rend(); ++it ) {
-         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.max ),  static_cast< dip::sfloat >( it->first ));
+         polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.min ) - 0.1,  static_cast< dip::sfloat >( it->first ));
       }
       polygon = polygon.ConvexHull().Polygon(); // we need to copy the convex hull out, we cannot move it!
       out[ obj_it.key() ] = std::move( polygon );
