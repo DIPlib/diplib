@@ -1,5 +1,5 @@
 /*
- * (c)2017-2019, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -270,10 +270,6 @@ void DrawFilledPolygon(
    if( y >= maxY ) {
       return; // Nothing to do!
    }
-   while(( kk < edges.size() ) && ( edges[ kk ].yMin == y )) {
-      active.emplace_back( edges[ kk ] );
-      ++kk;
-   }
    // Create an iterator
    ImageIterator< TPI > line( out, procDim );
    // Move to the first scan line we need to process
@@ -283,15 +279,40 @@ void DrawFilledPolygon(
       line.SetCoordinates( startpos );
    }
    // Process a scan line at a time
-   while( !active.empty() ) {
+   while( true ) {
+      // Add new edges, if any
+      while(( kk < edges.size() ) && ( edges[ kk ].yMin == y )) {
+         active.emplace_back( edges[ kk ] );
+         ++kk;
+      }
+      if( active.empty() ) {
+         break;
+      }
       if( y >= 0 ) {
+         // Sort according to x values
+         std::sort( active.begin(), active.end() );
          // Draw elements
-         //DIP_ASSERT( !( active.size() & 1 )); // It's odd!? No matter, we ignore the last edge.
-         for( dip::uint jj = 0; jj < active.size() - 1; jj += 2 ) {
+         dip::uint first = 0;
+         dip::uint second = 1;
+         while( true ) {
+            if(( second < active.size() ) && (( active[ first ].yMax == y ) ^ ( active[ second ].yMax == y ))) {
+               // If one of the edges has yMax == y, and the other doesn't, we are at the vertex between
+               // the two edges, these two edges should be treated as one. So we skip one and continue on.
+               // Note that the x-value of the two edges at this vertex doesn't need to be the same: there
+               // could have been a horizontal edge in between, which we ignore in this algorithm.
+               ++second;
+            }
+            if( second >= active.size() ) {
+               // We're done. If `first` is valid, we have an odd number of edges, which shouldn't be happening.
+               break;
+            }
             FillLine( line.Pointer(),
-                      round_cast( active[ jj ].x ),
-                      round_cast( active[ jj + 1 ].x ),
+                      round_cast( active[ first ].x ),
+                      round_cast( active[ second ].x ),
                       static_cast< dip::sint >( length ), stride, value_, tensorStride );
+            // Next pair
+            first = second + 1;
+            second = first + 1;
          }
          // Next scan line, don't increment if y < 0!
          ++line;
@@ -301,25 +322,17 @@ void DrawFilledPolygon(
       if( y >= maxY ) {
          return;
       }
-      // Remove edges that are no longer active
-      // NOTE: Removing edges with maxY == y means the bottom row of pixels on the polygon is not drawn.
-      //       This is a simplification, let's hope it doesn't matter.
-      for( dip::sint ii = static_cast< dip::sint >( active.size() - 1 ); ii >= 0; --ii ) {
-         if( active[ static_cast< dip::uint >( ii ) ].yMax == y ) {
-            active.erase( active.begin() + ii );
-         }
-      }
       // Update active edges
       for( auto& a : active ) {
          ++a;
       }
-      // Add new edges, if any
-      while(( kk < edges.size() ) && ( edges[ kk ].yMin == y )) {
-         active.emplace_back( edges[ kk ] );
-         ++kk;
+      // Remove edges that are no longer active
+      for( dip::uint ii = active.size(); ii > 0; ) {
+         --ii;
+         if( active[ ii ].yMax < y ) {
+            active.erase( active.begin() + static_cast< dip::sint >( ii ));
+         }
       }
-      // Sort according to x values
-      std::sort( active.begin(), active.end() );
    }
 }
 

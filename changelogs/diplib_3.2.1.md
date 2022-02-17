@@ -16,6 +16,9 @@ title: "Changes DIPlib 3.2.1"
 
 ### Bug fixes
 
+- `dip::DrawPolygon2D()`, when drawing filled polygons, would skip the bottom row in the polygon. The
+  algorithm is a bit more sophisticated now to properly handle these bottom rows.
+
 
 
 
