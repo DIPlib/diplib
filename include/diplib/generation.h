@@ -98,9 +98,9 @@ DIP_EXPORT void DrawLine(
 
 /// \brief Draws a series of Bresenham lines in an image.
 ///
-/// Lines go from `points[0]` to `points[1]`, then to `points[2]`, etc, forming a continuous line composed of
-/// straight (Bresenham) line segments that hits each of the points in sequence. To create a closed line, repeat
-/// the first point at the end.
+/// Lines are drawn from `points[0]` to `points[1]`, from `points[1]` to `points[2]`, etc, forming a continuous
+/// curve composed of straight (Bresenham) line segments that hits each of the points in sequence.
+/// To create a closed curve, repeat the first point at the end.
 ///
 /// `points` must have at least two points, and all points must be within the image.
 /// Pixels in `out` on the lines are set to `value`, other pixels are not touched.
@@ -125,8 +125,10 @@ DIP_EXPORT void DrawLines(
 /// - `"closed"`: the start and end points are connected.
 /// - `"filled"`: the polygon is filled, that is, all pixels within the polygon are painted (default).
 ///
-/// For a filled polygon, the vertices do not need to be within the image, but for non-filled polygons they
-/// must all be within the image.
+/// In the `"filled"` mode, the vertices of the polygon do not need to be within the image, but the polygon
+/// must be simple (which is guaranteed if it was obtained from a \ref ChainCode).
+/// In the `"open"` or `"closed"` mode, the vertices must all be within the image, but the polygon can
+/// self-intersect. These restrictions come from the two different algorithms used to draw the polygon.
 ///
 /// Pixels in `out` on the polygon (and within the polygon for filled polygons) are set to `value`, other pixels
 /// are not touched.

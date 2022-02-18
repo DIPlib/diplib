@@ -119,7 +119,7 @@ void DrawLines(
    DIP_THROW_IF( out.Dimensionality() < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( points.size() < 2, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   for( auto& point : points ) {
+   for( auto const& point : points ) {
       DIP_THROW_IF( point.size() != out.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
       DIP_THROW_IF( !( point < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    }
@@ -210,14 +210,12 @@ struct PolygonEdge {
    dip::sint yMax;
    dfloat x;         // initialized to value of x corresponding to yMin
    dfloat slope;     // increment x by this value for each unit increment of y
-   bool isLeft;      // true if pt1 is below pt2, the edge goes "up"
    PolygonEdge( VertexFloat pt1, VertexFloat pt2, bool horizontalScanLines ) {
       if( !horizontalScanLines ) {
          pt1 = pt1.Permute();
          pt2 = pt2.Permute();
       }
-      isLeft = pt1.y > pt2.y;
-      if( isLeft ) {
+      if( pt1.y > pt2.y ) {
          std::swap( pt1, pt2 );
       }
       yMin = round_cast( pt1.y );
@@ -245,9 +243,8 @@ struct ActiveEdge {
    dip::sint yMax;
    dfloat x;         // initialized to value of x corresponding to yMin
    dfloat slope;     // increment x by this value for each unit increment of y
-   bool isLeft;      // true if it's an edge that goes "up"
    explicit ActiveEdge( PolygonEdge const& edge ) :
-         yMin( edge.yMin ), yMax( edge.yMax ), x( edge.x ), slope( edge.slope ), isLeft( edge.isLeft ) {
+         yMin( edge.yMin ), yMax( edge.yMax ), x( edge.x ), slope( edge.slope ) {
       DIP_ASSERT( yMin < yMax ); // one of the invariants
    }
    ActiveEdge& operator++() {
@@ -511,8 +508,8 @@ void DrawEllipsoidInternal(
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    DIP_STACK_TRACE_THIS( ArrayUseParameter( sizes, nDims, 7.0 ));
-   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      DIP_THROW_IF( sizes[ ii ] <= 0.0, E::INVALID_PARAMETER );
+   for( auto size: sizes ) {
+      DIP_THROW_IF( size <= 0.0, E::INVALID_PARAMETER );
    }
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    dip::Image tmp = out;
