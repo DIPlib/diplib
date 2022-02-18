@@ -288,6 +288,7 @@ void init_image( py::module& m ) {
    // Create new similar image
    img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
    img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
+
    // Basic properties
    img.def( "__repr__", &ImageRepr );
    img.def( "__str__", []( dip::Image const& self ) { std::ostringstream os; os << self; return os.str(); } );
@@ -351,6 +352,7 @@ void init_image( py::module& m ) {
    img.def( "IsIsotropic", &dip::Image::IsIsotropic );
    img.def( "PixelsToPhysical", &dip::Image::PixelsToPhysical, "array"_a );
    img.def( "PhysicalToPixels", &dip::Image::PhysicalToPixels, "array"_a );
+
    // About the data segment
    img.def( "IsShared", &dip::Image::IsShared );
    img.def( "ShareCount", &dip::Image::ShareCount );
@@ -360,6 +362,7 @@ void init_image( py::module& m ) {
    img.def( "IsOverlappingView", py::overload_cast< dip::Image const& >( &dip::Image::IsOverlappingView, py::const_ ), "other"_a );
    img.def( "Protect", &dip::Image::Protect, "set"_a = true );
    img.def( "IsProtected", &dip::Image::IsProtected );
+
    // Modify image without copying pixel data
    img.def( "PermuteDimensions", &dip::Image::PermuteDimensions, "order"_a, py::return_value_policy::reference_internal );
    img.def( "SwapDimensions", &dip::Image::SwapDimensions, "dim1"_a, "dim2"_a, py::return_value_policy::reference_internal );
@@ -404,6 +407,7 @@ void init_image( py::module& m ) {
    img.def( "ReinterpretCastToSignedInteger", &dip::Image::ReinterpretCastToSignedInteger, py::return_value_policy::reference_internal );
    img.def( "ReinterpretCastToUnsignedInteger", &dip::Image::ReinterpretCastToUnsignedInteger, py::return_value_policy::reference_internal );
    img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop ),  "sizes"_a, "cropLocation"_a = "center", py::return_value_policy::reference_internal );
+
    // Create a view of another image.
    img.def( "Diagonal", []( dip::Image const& self ) -> dip::Image { return self.Diagonal(); } );
    img.def( "TensorRow", []( dip::Image const& self, dip::uint index ) -> dip::Image { return self.TensorRow( index ); }, "index"_a );
@@ -433,6 +437,7 @@ void init_image( py::module& m ) {
    img.def( "TensorElement", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
    img.def( "TensorElement", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "TensorElement", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
+
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));
@@ -440,10 +445,8 @@ void init_image( py::module& m ) {
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );
    img.def( "SwapBytesInSample", &dip::Image::SwapBytesInSample );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
-   img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
-   // Indexing using a mask image
-   img.def( "__getitem__", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); } );
+
    // Indexing into single pixel using coordinates
    img.def( "__getitem__", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); } );
    img.def( "__getitem__", []( dip::Image const& self, dip::UnsignedArray const& coords ) -> dip::Image::Pixel { return self.At( coords ); } );
@@ -451,24 +454,30 @@ void init_image( py::module& m ) {
    img.def( "__getitem__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self.At( range ); } );
    // Indexing into slice for nD image
    img.def( "__getitem__", []( dip::Image const& self, dip::RangeArray rangeArray ) -> dip::Image { return self.At( std::move( rangeArray )); } );
-   // Assignment using a mask image
-   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image const& source ) { self.At( std::move( mask )).Copy( source ); } );
-   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image::Sample const& sample ) { self.At( std::move( mask )).Fill( sample ); } );
-   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image::Pixel const& pixel ) { self.At( std::move( mask )).Fill( pixel ); } );
-   // Assignment into single pixel using linear index
+   // Indexing using a mask image
+   img.def( "__getitem__", []( dip::Image const& self, dip::Image mask ) -> dip::Image { return self.At( std::move( mask )); } );
+   // Indexing using a list of coordinates
+   img.def( "__getitem__", []( dip::Image const& self, dip::CoordinateArray const& coordinates ) -> dip::Image { return self.At( coordinates ); } );
+
+    // Assignment into single pixel using linear index
    img.def( "__setitem__", []( dip::Image& self, dip::uint index, dip::Image::Sample const& v ) { self.At( index ) = v; } );
    img.def( "__setitem__", []( dip::Image& self, dip::uint index, dip::Image::Pixel const& v ) { self.At( index ) = v; } );
-   // Indexing into single pixel using coordinates
+   // Assignment into single pixel using coordinates
    img.def( "__setitem__", []( dip::Image& self, dip::UnsignedArray const& coords, dip::Image::Sample const& v ) { self.At( coords ) = v; } );
    img.def( "__setitem__", []( dip::Image& self, dip::UnsignedArray const& coords, dip::Image::Pixel const& v ) { self.At( coords ) = v; } );
    // Assignment into slice for 1D image
-   img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image const& source ) { self.At( range ).Copy( source ); } );
-   img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image::Sample const& sample ) { self.At( range ).Fill( sample ); } );
    img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image::Pixel const& pixel ) { self.At( range ).Fill( pixel ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Range const& range, dip::Image const& source ) { self.At( range ).Copy( source ); } );
    // Assignment into slice for nD image
-   img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image const& source ) { self.At( std::move( rangeArray )).Copy( source ); } );
-   img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image::Sample const& sample ) { self.At( std::move( rangeArray )).Fill( sample ); } );
    img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image::Pixel const& value ) { self.At( std::move( rangeArray )).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::RangeArray rangeArray, dip::Image const& source ) { self.At( std::move( rangeArray )).Copy( source ); } );
+   // Assignment using a mask image
+   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image::Pixel const& pixel ) { self.At( std::move( mask )).Fill( pixel ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::Image mask, dip::Image const& source ) { self.At( std::move( mask )).Copy( source ); } );
+   // Assignment using a list of coordinates
+   img.def( "__setitem__", []( dip::Image& self, dip::CoordinateArray const& coordinates, dip::Image::Pixel const& pixel ) { self.At( coordinates ).Fill( pixel ); } );
+   img.def( "__setitem__", []( dip::Image& self, dip::CoordinateArray const& coordinates, dip::Image const& source ) { self.At( coordinates ).Copy( source ); } );
+
    // Operators
    img.def( py::self += py::self );
    img.def( py::self += dip::Image::Pixel() );

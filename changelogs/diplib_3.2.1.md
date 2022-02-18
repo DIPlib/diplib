@@ -66,6 +66,9 @@ title: "Changes DIPlib 3.2.1"
 
 - `__len__()` now properly returns 0 for an empty (raw) image. This makes `if img` fail for a raw image.
 
+- Fixed a few issues with indexing into image, allowing using a list of coordinates, and allowing assigning
+  a scalar value into a multi-channel image.
+
 (See also bugfixes to *DIPlib*.)
 
 
