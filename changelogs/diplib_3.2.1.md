@@ -23,6 +23,8 @@ title: "Changes DIPlib 3.2.1"
 - `dip::ResampleAt` with a `map` input argument and using `"cubic"` interpolation could overflow,
   yielding unsightly artifacts. See [issue #107](https://github.com/DIPlib/diplib/issues/107).
 
+- Better error messages for some forms of `dip::Image::View::At()`
+
 
 
 

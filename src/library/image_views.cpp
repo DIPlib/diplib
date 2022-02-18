@@ -114,7 +114,7 @@ Image::View::View( Image reference, CoordinateArray const& coordinates ) : refer
    reference_.protect_ = false;
    dip::uint nDims = reference_.Dimensionality();
    for( UnsignedArray const& pp : coordinates ) {
-      DIP_THROW_IF( pp.size() != nDims, E::COORDINATES_OUT_OF_RANGE );
+      DIP_THROW_IF( pp.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
       DIP_THROW_IF( !( pp < reference_.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    }
    offsets_.resize( coordinates.size() );

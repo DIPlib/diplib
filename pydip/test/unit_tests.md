@@ -55,7 +55,7 @@ We can also set the number of tensor elements, or the data type, or both.
     <Tensor image (2x1 column vector, 2 elements), SFLOAT, sizes {50}>
 
 Numpy arrays (buffers in general) can be converted directly.
-Note the reverse order of the dimensions!
+**Note the reverse order of the dimensions!**
 
     >>> dip.Image(np.zeros((10, 20)))
     <Scalar image, DFLOAT, sizes {20, 10}>
@@ -89,7 +89,8 @@ The data type is preserved.
     >>> dip.Image(np.zeros((10, 20), dtype=complex))
     <Scalar image, DCOMPLEX, sizes {20, 10}>
 
-As a convenience, images with the first or last dimension having less than 10 elements are interpreted as tensor images along that dimension.
+As a convenience, images with the first or last dimension having less than 10 elements are interpreted
+as tensor images along that dimension.
 
     >>> dip.Image(np.zeros((10, 20, 3)))
     <Tensor image (3x1 column vector, 3 elements), DFLOAT, sizes {20, 10}>
@@ -148,6 +149,20 @@ You can explicitly convert to a NumPy array.
     array([[0.+0.j, 0.+0.j, 0.+0.j],
            [0.+0.j, 0.+0.j, 0.+0.j]])
 
+However, **the index order is reversed**. NumPy uses (z, y, x) index order, whereas
+DIPlib uses (x, y, z) index order.
+
+    >>> m = np.zeros((10, 20))
+    >>> a = dip.Image(m)
+    >>> m.shape
+    (10, 20)
+    >>> a.Sizes()
+    [20, 10]
+    >>> m[5, 10] = 10
+    >>> a[10, 5]
+    [10.0]
+
+
 Indexing
 ---
 
@@ -159,7 +174,8 @@ First, indexing into an empty image is not allowed.
         ...
     RuntimeError: Image is not forged
 
-Indexing an image returns a ``Pixel``. As scalar images are treated as single-element tensors, this is a list.
+Indexing an image at a single coordinate returns a ``Pixel``. As scalar images are treated as single-element
+tensors, this is a list.
 
     >>> a = dip.Image(50)
     >>> a[0] = 50
@@ -176,12 +192,13 @@ Indexing an image returns a ``Pixel``. As scalar images are treated as single-el
     >>> a[0, 0]
     [50.0]
 
-When indexing using only a single index, the *linear index* is used. This is different from ``numpy``, where an array is returned.
+When indexing using only a single index, the *linear index* is used. This is different from ``numpy``,
+where an array is returned.
 
     >>> a[0]
     [50.0]
 
-If we want to extract a row or a column, we need to use *slicing*.
+If we want to extract a row or a column, we need to use *slicing* (see next section).
 
 ``Pixel``s of tensor images can be set all at once.
 
@@ -198,15 +215,38 @@ When a single value is given, it is copied to all ``Sample``s in the ``Pixel``.
     [90.0, 90.0, 90.0]
 
 It is also possible to index into an image using a binary mask image of the same size.
+This returns a 1D image.
 
     >>> b = dip.Image(a.Sizes(), dt='BIN')
     >>> b.Fill(0)
     >>> b[0:-1:5, 0:-1:10] = 1
-    >>> a[b] = [100, 110, 120]
     >>> a[b]
     <Tensor image (3x1 column vector, 3 elements), SFLOAT, sizes {4}>
-    >>> a(1)[5, 10]
-    [110.0]
+
+It is possible to assign a single value using mask indexing.
+
+    >>> a[b] = [100, 110, 120]
+    >>> a[5, 10]
+    [100.0, 110.0, 120.0]
+    >>> a[5, 15]
+    [30.0, 40.0, 50.0]
+
+And it is possible to assign an image.
+
+    >>> a[b] = -a[b]
+    >>> a[5, 10]
+    [-100.0, -110.0, -120.0]
+    >>> a[5, 15]
+    [30.0, 40.0, 50.0]
+
+Finally, it is possible to index with a list of coordinates. Like with a mask, this returns a 1D image.
+
+    >>> p = [[5, 10], [5, 15]]
+    >>> a[p]
+    <Tensor image (3x1 column vector, 3 elements), SFLOAT, sizes {2}>
+    >>> a[p] = a[1]
+    >>> a[p[0]]
+    [30.0, 40.0, 50.0]
 
 Slicing
 ---
@@ -227,7 +267,16 @@ Slicing works the same as for ``numpy`` arrays, but again, note the reversed dim
     >>> a[[2, 3], 5]
     Traceback (most recent call last):
         ...
-    TypeError: __getitem__(): incompatible function arguments. The following argument types are supported:
+    RuntimeError: Array parameter has the wrong number of elements
+
+Maybe confusingly, the following two syntaxes are interpreted exactly the same way.
+The first one is the "list of coordinates" indexing shown above, the second one looks
+like NumPy advanced indexing.
+
+    >>> a[[[5, 10], [5, 15]]]
+    <Scalar image, SFLOAT, sizes {2}>
+    >>> a[[5, 10], [5, 15]]
+    <Scalar image, SFLOAT, sizes {2}>
 
 We may slice ranges as well. **Note that unlike normal Python syntax, the end of the range is included.**
 
@@ -238,6 +287,7 @@ We may slice ranges as well. **Note that unlike normal Python syntax, the end of
     >>> a[2:9:3, 2] = 60
     >>> a[5, 2]
     [60.0]
+    >>> a[0:2, 0:2] = a[0:2, 10:12]
 
 Of course, ranges work for ``Pixel``s as well.
 
@@ -256,13 +306,15 @@ The tensor elements can be indexed using function call syntax.
     >>> a(0)
     <Scalar image, SFLOAT, sizes {10, 20}>
 
-They may be operated upon as normal scalar images. Note the list return value, as a scalar image is still a 1D tensor image.
+They may be operated upon as normal scalar images. Note the list return value, as a scalar image
+is still a 1D tensor image.
 
     >>> a(0).Fill(1)
     >>> a(0)[0, 0]
     [1.0]
 
-As with the spatial dimensions, we can extract ranges as well, although we need to use the ``slice`` keyword. **Again, the end of the range is included.**
+As with the spatial dimensions, we can extract ranges as well, although we need to use the ``slice`` keyword.
+**Again, the end of the range is included.**
 
     >>> a(1).Fill(2)
     >>> a(slice(0, 1))[0, 0]

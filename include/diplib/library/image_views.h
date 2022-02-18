@@ -1015,7 +1015,7 @@ class Image::View {
          return CastPixel< T >( At( coords ));
       }
 
-      /// \brief Extracts the pixel at the given linear index (inefficient if image is not 1D!).
+      /// \brief Extracts the pixel at the given linear index (inefficient if view is not 1D!).
       DIP_EXPORT Pixel At( dip::uint index ) const;
 
       /// \brief Same as above, but returns a type that implicitly casts to `T`.
@@ -1024,8 +1024,9 @@ class Image::View {
          return CastPixel< T >( At( index ));
       }
 
-      /// \brief Extracts the pixel at the given coordinates from a 2D image.
+      /// \brief Extracts the pixel at the given coordinates from a 2D view.
       Pixel At( dip::uint x_index, dip::uint y_index ) const {
+         DIP_THROW_IF( Dimensionality() != 2, E::ILLEGAL_DIMENSIONALITY );
          return At( UnsignedArray( { x_index, y_index } ));
       }
 
@@ -1035,8 +1036,9 @@ class Image::View {
          return CastPixel< T >( At( x_index, y_index ));
       }
 
-      /// \brief Extracts the pixel at the given coordinates from a 3D image.
+      /// \brief Extracts the pixel at the given coordinates from a 3D view.
       Pixel At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
+         DIP_THROW_IF( Dimensionality() != 3, E::ILLEGAL_DIMENSIONALITY );
          return At( UnsignedArray( { x_index, y_index, z_index } ));
       }
 
@@ -1046,22 +1048,22 @@ class Image::View {
          return CastPixel< T >( At( x_index, y_index, z_index ));
       }
 
-      /// \brief Extracts a subset of pixels from a 1D image.
+      /// \brief Extracts a subset of pixels from a 1D view.
       DIP_EXPORT View At( Range x_range ) const ;
 
-      /// \brief Extracts a subset of pixels from a 2D image.
+      /// \brief Extracts a subset of pixels from a 2D view.
       View At( Range x_range, Range y_range ) const {
          DIP_THROW_IF( Dimensionality() != 2, E::ILLEGAL_DIMENSIONALITY );
          return At( RangeArray{ x_range, y_range } );
       }
 
-      /// \brief Extracts a subset of pixels from a 3D image.
+      /// \brief Extracts a subset of pixels from a 3D view.
       View At( Range x_range, Range y_range, Range z_range ) const {
          DIP_THROW_IF( Dimensionality() != 3, E::ILLEGAL_DIMENSIONALITY );
          return At( RangeArray{ x_range, y_range, z_range } );
       }
 
-      /// \brief Extracts a subset of pixels from an image.
+      /// \brief Extracts a subset of pixels from a view.
       DIP_EXPORT View At( RangeArray ranges ) const;
 
       /// \brief Returns the dimensionality of the view. Non-regular views (created by indexing using a mask image
