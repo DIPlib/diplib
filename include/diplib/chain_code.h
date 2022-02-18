@@ -140,6 +140,10 @@ struct DIP_NO_EXPORT Vertex {
    Vertex Round() const {
       return{ std::round( x ), std::round( y ) };
    }
+   /// Permute dimensions, swapping x and y values
+   Vertex Permute() const {
+      return{ y, x };
+   }
 };
 
 /// \brief A vertex with floating-point coordinates

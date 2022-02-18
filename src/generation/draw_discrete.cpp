@@ -138,6 +138,8 @@ void DrawLines(
 //
 // Filled polygon according to the algorithm described here:
 // https://www.cs.rit.edu/~icss571/filling/how_to.html
+// Except that the "special cases" (on the 2nd page) we handle differently.
+// Also, we put in extra effort to handle floating-point vertices correctly.
 //
 
 
@@ -208,42 +210,62 @@ struct PolygonEdge {
    dip::sint yMax;
    dfloat x;         // initialized to value of x corresponding to yMin
    dfloat slope;     // increment x by this value for each unit increment of y
+   bool isLeft;      // true if pt1 is below pt2, the edge goes "up"
    PolygonEdge( VertexFloat pt1, VertexFloat pt2, bool horizontalScanLines ) {
       if( !horizontalScanLines ) {
-         std::swap( pt1.x, pt1.y );
-         std::swap( pt2.x, pt2.y );
+         pt1 = pt1.Permute();
+         pt2 = pt2.Permute();
       }
-      if( pt1.y > pt2.y ) {
+      isLeft = pt1.y > pt2.y;
+      if( isLeft ) {
          std::swap( pt1, pt2 );
       }
-      slope = ( pt1.x - pt2.x ) / ( pt1.y - pt2.y );
-      x = pt1.x;
       yMin = round_cast( pt1.y );
       yMax = round_cast( pt2.y );
-      if (yMin == yMax) {
+      if( yMin == yMax ) {
          slope = dip::infinity;
+      } else {
+         // Note that use rounded y coordinates so the slope makes sense in computations below.
+         slope = ( pt1.x - pt2.x ) / static_cast< dfloat >( yMin - yMax );
       }
+      x = pt1.x;
    }
-   bool operator<( PolygonEdge const& other) const {
+   bool operator<( PolygonEdge const& other ) const {
       return ( yMin == other.yMin ) ? ( x < other.x ) : yMin < other.yMin;
    }
    bool IsAlongScanLine() const {
-      return !std::isfinite( slope );
+      return yMin == yMax;
    }
 };
 
 struct ActiveEdge {
-   // y is the direction perpendicular to the scan lines
+   // See above for description, this is identical to PolygonEdge but sorts differently and has different methods
+   // Note that this will never be created with yMin = yMax
+   dip::sint yMin;
    dip::sint yMax;
    dfloat x;         // initialized to value of x corresponding to yMin
    dfloat slope;     // increment x by this value for each unit increment of y
-   ActiveEdge( PolygonEdge const& edge ) : yMax( edge.yMax ), x( edge.x ), slope( edge.slope ) {}
+   bool isLeft;      // true if it's an edge that goes "up"
+   explicit ActiveEdge( PolygonEdge const& edge ) :
+         yMin( edge.yMin ), yMax( edge.yMax ), x( edge.x ), slope( edge.slope ), isLeft( edge.isLeft ) {
+      DIP_ASSERT( yMin < yMax ); // one of the invariants
+   }
    ActiveEdge& operator++() {
       x += slope;
       return *this;
    }
-   bool operator<( ActiveEdge const& other) const {
+   bool operator<( ActiveEdge const& other ) const {
       return x < other.x;
+   }
+   bool FormsIVertex( ActiveEdge const& other, dip::sint y ) const {
+      // True if the two edges form a vertex at y where the polygon "moves" through y ("I" shape).
+      // Call this function only with two consecutive vertices (no other vertices in between).
+      return ((( yMax == y ) && ( other.yMin == y )) || (( yMin == y ) && ( other.yMax == y )));
+   }
+   bool FormsVVertex( ActiveEdge const& other, dip::sint y ) const {
+      // True if the two edges form a vertex at y where the polygon stays above or below y ("V" shape).
+      // Call this function only with two consecutive vertices (no other vertices in between).
+      return ((( yMax == y ) && ( other.yMax == y )) || (( yMin == y ) && ( other.yMin == y )));
    }
 };
 
@@ -263,7 +285,7 @@ void DrawFilledPolygon(
    dip::sint maxY = static_cast< dip::sint >( out.Size( 1 - procDim ));
    dip::sint stride = out.Stride( procDim );
    dip::sint tensorStride = out.TensorStride();
-   // Initialize active edge list (will automatically be sorted)
+   // Initialize active edge list
    std::vector< ActiveEdge > active;
    dip::uint kk = 0;
    dip::sint y = edges[ kk ].yMin;
@@ -294,17 +316,25 @@ void DrawFilledPolygon(
          // Draw elements
          dip::uint first = 0;
          dip::uint second = 1;
-         while( true ) {
-            if(( second < active.size() ) && (( active[ first ].yMax == y ) ^ ( active[ second ].yMax == y ))) {
-               // If one of the edges has yMax == y, and the other doesn't, we are at the vertex between
-               // the two edges, these two edges should be treated as one. So we skip one and continue on.
-               // Note that the x-value of the two edges at this vertex doesn't need to be the same: there
-               // could have been a horizontal edge in between, which we ignore in this algorithm.
-               ++second;
-            }
-            if( second >= active.size() ) {
-               // We're done. If `first` is valid, we have an odd number of edges, which shouldn't be happening.
-               break;
+         while( second < active.size() ) {
+            // If this is a "V" vertex, skip all the other tests
+            if( !active[ first ].FormsVVertex( active[ second ], y )) {
+               // Eliminate "I" vertex on the left
+               if( active[ first ].FormsIVertex( active[ second ], y )) {
+                  ++second;
+               }
+               // If second is part of a "V" vertex, ignore it
+               while( second + 1 < active.size() && active[ second ].FormsVVertex( active[ second + 1 ], y )) {
+                  second += 2;
+               }
+               if( second >= active.size()) {
+                  // We're done.
+                  break;
+               }
+               // Eliminate "I" vertex on the right
+               if(( second + 1 < active.size()) && active[ second ].FormsIVertex( active[ second + 1 ], y )) {
+                  ++second;
+               }
             }
             FillLine( line.Pointer(),
                       round_cast( active[ first ].x ),
@@ -314,10 +344,13 @@ void DrawFilledPolygon(
             first = second + 1;
             second = first + 1;
          }
+         // We exit the loop when `second` isn't a valid index;
+         // if `first` is a valid index here, we have an odd number of edges
+         DIP_ASSERT( first >= active.size());
          // Next scan line, don't increment if y < 0!
          ++line;
       }
-      // Increment y, but not past the last scan line.
+      // Increment y, but not past the last scan line
       ++y;
       if( y >= maxY ) {
          return;

@@ -17,7 +17,8 @@ title: "Changes DIPlib 3.2.1"
 ### Bug fixes
 
 - `dip::DrawPolygon2D()`, when drawing filled polygons, would skip the bottom row in the polygon. The
-  algorithm is a bit more sophisticated now to properly handle these bottom rows.
+  algorithm is a bit more sophisticated now to properly handle these bottom rows. This also takes care
+  of some rounding errors that could be seen for polygons with very short edges.
 
 - `dip::ResampleAt` with a `map` input argument and using `"cubic"` interpolation could overflow,
   yielding unsightly artifacts.
