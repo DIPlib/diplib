@@ -89,7 +89,6 @@ TPI NearestNeighborND( TPI* src, IntegerArray const& srcStride,
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       src += ( static_cast< dip::sint >( coords[ ii ] ) + (( subpos[ ii ] > 0.5) ? 1 : 0 )) * srcStride[ ii ];
    }
-
    return *src;
 }
 
@@ -110,6 +109,12 @@ DoubleType< TPI > LinearND( TPI* src, IntegerArray const& srcStride,
    TPD a = LinearND( src, srcStride, coords, subpos, nDims );
    TPD b = LinearND( src + srcStride[ nDims ], srcStride, coords, subpos, nDims );
    return Linear1D( a, b, subpos[ nDims ] );
+}
+
+template< typename TPI >
+TPI LinearND_CastToInputType( TPI* src, IntegerArray const& srcStride,
+                          UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
+   return static_cast< TPI >( LinearND( src, srcStride, coords, subpos, nDims ));
 }
 
 template< typename TPI >
@@ -135,6 +140,12 @@ DoubleType< TPI > ThirdOrderCubicSplineND( TPI* src, UnsignedArray const& srcSiz
    TPD a = start ? b : ThirdOrderCubicSplineND( src - stride, srcSizes, srcStride, coords, subpos, nDims );
    TPD d = end ? c : ThirdOrderCubicSplineND( src + 2 * stride, srcSizes, srcStride, coords, subpos, nDims );
    return ThirdOrderCubicSpline1D( a, b, c, d, subpos[ nDims ] );
+}
+
+template< typename TPI >
+TPI ThirdOrderCubicSplineND_CastToInputType( TPI* src, UnsignedArray const& srcSizes, IntegerArray const& srcStride,
+                                         UnsignedArray const& coords, FloatArray const& subpos, dip::uint nDims ) {
+   return clamp_cast< TPI >( ThirdOrderCubicSplineND( src, srcSizes, srcStride, coords, subpos, nDims ));
 }
 
 //
@@ -423,7 +434,7 @@ void ResampleAt(
          DIP_OVL_CALL_ASSIGN_NONBINARY( scanLineFilter, NewResampleAtLineFilter, (
             in,
             [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
-               return LinearND( src, in.Strides(), coords, subpos, in.Dimensionality() );
+               return LinearND_CastToInputType( src, in.Strides(), coords, subpos, in.Dimensionality() );
             },
             fill ), dt );
          break;
@@ -431,7 +442,7 @@ void ResampleAt(
          DIP_OVL_CALL_ASSIGN_NONBINARY( scanLineFilter, NewResampleAtLineFilter, (
             in,
             [ = ] ( auto *src, UnsignedArray const& coords, FloatArray const& subpos ) {
-               return ThirdOrderCubicSplineND( src, in.Sizes(), in.Strides(), coords, subpos, in.Dimensionality() );
+               return ThirdOrderCubicSplineND_CastToInputType( src, in.Sizes(), in.Strides(), coords, subpos, in.Dimensionality() );
             },
             fill ), dt );
          break;
