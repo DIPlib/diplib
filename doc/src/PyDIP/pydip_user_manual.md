@@ -209,4 +209,4 @@ When using a *NumPy* array as an image in a *DIPlib* function, it is implicitly 
 object as above, and passed to the *DIPlib* function. This means that, whether the input is a *NumPy*
 array or a *DIPlib* image, other function parameters that identify dimensions are always interpreted
 in the same way. For example, the filter sizes are ordered (x, y, z), not (z, y, x) as they would be
-ordered in *Scikit-Image* or other Python imaging libraries.
+ordered in *scikit-image* or other Python imaging libraries.
