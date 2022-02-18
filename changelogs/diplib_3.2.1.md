@@ -21,7 +21,7 @@ title: "Changes DIPlib 3.2.1"
   of some rounding errors that could be seen for polygons with very short edges.
 
 - `dip::ResampleAt` with a `map` input argument and using `"cubic"` interpolation could overflow,
-  yielding unsightly artifacts.
+  yielding unsightly artifacts. See [issue #107](https://github.com/DIPlib/diplib/issues/107).
 
 
 
@@ -55,6 +55,10 @@ title: "Changes DIPlib 3.2.1"
 
 - Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which
   is interpreted as a 0D tensor image (column vector). This makes `img / img[0]` possible.
+
+- When PyDIPjavaio fails to load, the error is no longer displayed immediately. Instead, it is
+  shown when `dip.ImageRead()` fails. The error message is also a bit more helpful.
+  See [issue #106](https://github.com/DIPlib/diplib/issues/106).
 
 (See also changes to *DIPlib*.)
 
