@@ -271,23 +271,27 @@ DIP_NODISCARD inline Image SplitRegions(
 /// overlaps, the larger label prevails, meaning that the other object might not be convex any more where the
 /// larger label overlaps it.
 ///
+/// `mode` can be `"filled"` (the default) or `"hollow"`. With `"hollow"`, the convex hull outlines are drawn
+/// into an empty image, such that overlapping convex hulls can be visually identified. With `"filled"`, the
+/// operation is increasing (like a morphological closing), meaning that `out >= label` is guaranteed.
+///
 /// Note that defining a convex hull in a discrete space is ambiguous, and therefore this function is not
-/// idempotent (i.e. running it a second time on its own output will further modify the objects).
-/// Furthermore, this implementation might suffer from rounding errors that cause very small convexities
-/// in some boundaries.
+/// idempotent (i.e. running it a second time on its own output can produce a different result).
 ///
 /// If the input image is binary, a single convex hull is computed and drawn. The output image will be binary also.
 ///
 /// The image must have two dimensions, and be scalar.
 DIP_EXPORT void MakeRegionsConvex2D(
       Image const& label,
-      Image& out
+      Image& out,
+      String const& mode = S::FILLED
 );
 DIP_NODISCARD inline Image MakeRegionsConvex2D(
-      Image const& label
+      Image const& label,
+      String const& mode = S::FILLED
 ) {
    Image out;
-   MakeRegionsConvex2D( label, out );
+   MakeRegionsConvex2D( label, out, mode );
    return out;
 }
 

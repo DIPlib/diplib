@@ -371,12 +371,19 @@ ObjectConvexHulls GetObjectConvexHulls( ObjectContours const& objectContours ) {
 }
 
 template< typename TPI > // TPI is an unsigned integer type
-void DrawObjectConvexHulls( Image& label, ObjectConvexHulls const& objectConvexHulls ) {
+void DrawObjectConvexHulls( Image& label, ObjectConvexHulls const& objectConvexHulls, bool filled ) {
+   // For hollow polygons, clear the image first
+   String mode = S::FILLED;
+   if( !filled ) {
+      label.Fill( 0 );
+      mode = S::CLOSED;
+   }
    // Sort object IDs so we draw the convex objects in the right order
    std::set< dip::uint > objects;
    for( auto obj_it = objectConvexHulls.begin(); obj_it != objectConvexHulls.end(); ++obj_it ) {
       objects.insert( obj_it.key() );
    }
+   // Draw the polygons
    for( auto id : objects ) {
       auto const& polygon = objectConvexHulls.at( id );
       if( polygon.vertices.size() == 1 ) {
@@ -392,34 +399,36 @@ void DrawObjectConvexHulls( Image& label, ObjectConvexHulls const& objectConvexH
          UnsignedArray pt2u{ static_cast< dip::uint >( pt2.x ), static_cast< dip::uint >( pt2.y ) };
          DrawLine( label, pt1u, pt2u, { id }, S::ASSIGN );
       } else {
-         DrawPolygon2D( label, polygon, { id }, S::FILLED );
+         DrawPolygon2D( label, polygon, { id }, mode );
       }
    }
 }
 
 template< typename TPI > // TPI is an unsigned integer type
-void MakeRegionsConvex2DInternal( Image& label ) {
+void MakeRegionsConvex2DInternal( Image& label, bool filled ) {
    ObjectContours objectContours = GetObjectContours< TPI >( label );
    ObjectConvexHulls objectConvexHulls = GetObjectConvexHulls< TPI >( objectContours );
-   DrawObjectConvexHulls< TPI >( label, objectConvexHulls );
+   DrawObjectConvexHulls< TPI >( label, objectConvexHulls, filled );
 }
 
 } // namespace
 
 void MakeRegionsConvex2D(
       Image const& label,
-      Image& out
+      Image& out,
+      String const& mode
 ) {
    DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( !label.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
+   bool filled = BooleanFromString( mode, S::FILLED, S::HOLLOW );
    out.Copy( label );
    dip::Image tmp = out.QuickCopy();
    if( tmp.DataType().IsBinary() ) {
       tmp.Convert( DT_UINT8 ); // This doesn't change the data, which is shared with the output.
    }
-   DIP_OVL_CALL_UINT( MakeRegionsConvex2DInternal, ( tmp ), tmp.DataType() );
+   DIP_OVL_CALL_UINT( MakeRegionsConvex2DInternal, ( tmp, filled ), tmp.DataType() );
    // We wrote into `tmp`, a UINT image, but it shares data with `out`, which is either UINT or BIN.
 }
 
