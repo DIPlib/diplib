@@ -273,7 +273,8 @@ void SliceViewPort::render()
 {
   auto &o = viewer()->options().origin_;
   auto &z = viewer()->options().zoom_;
-  
+  auto &l = viewer()->options().labels_;
+
   dip::sint dx = viewer()->options().dims_[view()->dimx()];
   dip::sint dy = viewer()->options().dims_[view()->dimy()];
   dip::dfloat odx = 0, ody = 0;
@@ -293,12 +294,11 @@ void SliceViewPort::render()
   glMatrixMode(GL_MODELVIEW);
   
   int width = width_, height = height_;
-  char dimchars[] = "xyzw56789)!@#$%%^&*()";
   
   glColor3f(1., 1., 1.);
   if (view()->dimx() == 0)
   {
-    char buf[] = {dy==-1?'-':dimchars[dy], 0};
+    char buf[] = {dy==-1?'-':l[dy%l.size()], 0};
 
     glRasterPos2i((GLint)width_-(CHAR_WIDTH+1), (GLint)height_/2-(CHAR_HEIGHT/2));
     viewer()->drawString(buf);
@@ -306,7 +306,7 @@ void SliceViewPort::render()
   }
   if (view()->dimy() == 1)
   {
-    char buf[] = {dx==-1?'-':dimchars[dx], 0};
+    char buf[] = {dx==-1?'-':l[dx%l.size()], 0};
     
     glRasterPos2i((GLint)width_/2-(CHAR_WIDTH/2), (GLint)height_-(CHAR_HEIGHT/2));
     viewer()->drawString(buf);

@@ -65,6 +65,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   Projection projection_;              ///< Type of projection.
   dip::UnsignedArray roi_origin_;      ///< Origin of projection ROI.
   dip::UnsignedArray roi_sizes_;       ///< Sizes of projection ROI.
+  dip::String labels_;                 ///< Labels to use for axes.
   
   // Mapping
   FloatRange range_;                   ///< value range across image (histogram limits).
@@ -111,6 +112,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     projection_ = Projection::None;
     roi_origin_ = dip::UnsignedArray(image.Dimensionality(), 0);
     roi_sizes_ = image.Sizes();
+    labels_ = "xyzw56789";
     
     // Mapping
     if (image.DataType().IsBinary())
@@ -179,7 +181,8 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     if (split_ != options.split_) return Diff::Draw;
     if (operating_point_ != options.operating_point_) return Diff::Draw;
     if (status_ != options.status_) return Diff::Draw;
-    
+    if (labels_ != options.labels_) return Diff::Projection;
+
     return Diff::None;
   }
   

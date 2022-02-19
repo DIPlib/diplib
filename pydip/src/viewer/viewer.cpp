@@ -74,6 +74,16 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
       self.options().dims_ = newdims;
    });
 
+   sv.def_property("labels", [](dip::viewer::SliceViewer& self) {
+     dip::viewer::SliceViewer::Guard guard(self);
+     return self.options().labels_;
+     }, [](dip::viewer::SliceViewer& self, dip::String const& labels) {
+       dip::viewer::SliceViewer::Guard guard(self);
+       DIP_THROW_IF(labels.size() < 1, dip::E::INVALID_PARAMETER);
+
+       self.options().labels_ = labels;
+     });
+
    sv.def_property( "operating_point", []( dip::viewer::SliceViewer& self ) {
       dip::viewer::SliceViewer::Guard guard( self );
       return self.options().operating_point_;

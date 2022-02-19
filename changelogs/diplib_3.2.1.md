@@ -91,6 +91,8 @@ title: "Changes DIPlib 3.2.1"
 
 ### New functionality
 
+- Added option to change axis labels.
+
 ### Changed functionality
 
 ### Bug fixes
