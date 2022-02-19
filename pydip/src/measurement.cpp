@@ -20,6 +20,37 @@
 #include "diplib/measurement.h"
 #include "diplib/chain_code.h"
 
+namespace pybind11 {
+namespace detail {
+
+// Cast Python slice to dip::Range
+template<>
+class type_caster< dip::VertexFloat > {
+   public:
+      using type = dip::VertexFloat;
+      bool load( handle src, bool ) {
+         if( !isinstance< sequence >( src )) {
+            return false;
+         }
+         auto const seq = reinterpret_borrow< sequence >( src );
+         if( seq.size() != 2 ) {
+            return false;
+         }
+         if( !PyFloat_Check( seq[ 0 ].ptr() ) || !PyFloat_Check( seq[ 1 ].ptr() )) {
+            return false;
+         }
+         value = { seq[ 0 ].cast< dip::dfloat >(), seq[ 1 ].cast< dip::dfloat >() };
+         return true;
+      }
+      static handle cast( dip::VertexFloat const& src, return_value_policy, handle ) {
+         return make_tuple( src.x, src.y ).release();
+      }
+   PYBIND11_TYPE_CASTER( type, _( "VertexFloat" ));
+};
+
+} // namespace detail
+} // namespace pybind11
+
 namespace {
 
 dip::MeasurementTool& measurementTool() {
@@ -184,7 +215,8 @@ void init_measurement( py::module& m ) {
    vInfo.def_readonly( "units", &dip::Feature::ValueInformation::units );
 
    // dip::Measurement::IteratorFeature
-   auto feat = py::class_< dip::Measurement::IteratorFeature >( mm, "MeasurementFeature", py::buffer_protocol(), "A Measurement table column group representing the results for one\nfeature." );
+   auto feat = py::class_< dip::Measurement::IteratorFeature >( mm, "MeasurementFeature", py::buffer_protocol(),
+         "A Measurement table column group representing the results for one\nfeature." );
    feat.def_buffer( []( dip::Measurement::IteratorFeature& self ) -> py::buffer_info { return MeasurementFeatureToBuffer( self ); } );
    feat.def( "__repr__", []( dip::Measurement::IteratorFeature const& self ) {
                 std::ostringstream os;
@@ -202,7 +234,8 @@ void init_measurement( py::module& m ) {
    feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );
 
    // dip::Measurement::IteratorObject
-   auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "MeasurementObject", py::buffer_protocol(), "A Measurement table row representing the results for one object." );
+   auto obj = py::class_< dip::Measurement::IteratorObject >( mm, "MeasurementObject", py::buffer_protocol(),
+         "A Measurement table row representing the results for one object." );
    obj.def_buffer( []( dip::Measurement::IteratorObject& self ) -> py::buffer_info {
                       return MeasurementObjectToBuffer( self );
                    } );
@@ -211,7 +244,9 @@ void init_measurement( py::module& m ) {
                os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << ">";
                return os.str();
             } );
-   obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) { return MeasurementValuesToList( self[ name ] ); }, "name"_a );
+   obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) {
+               return MeasurementValuesToList( self[ name ] );
+            }, "name"_a );
    obj.def( "ObjectID", &dip::Measurement::IteratorObject::ObjectID );
    obj.def( "FeatureExists", &dip::Measurement::IteratorObject::FeatureExists );
    obj.def( "Features", &dip::Measurement::IteratorObject::Features );
@@ -222,7 +257,9 @@ void init_measurement( py::module& m ) {
    obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ));
 
    // dip::Measurement
-   auto meas = py::class_< dip::Measurement >( mm, "Measurement", py::buffer_protocol(), "The result of a call to dip.MeasurementTool.Measure, a table with a column group for\neach feature and a row for each object." );
+   auto meas = py::class_< dip::Measurement >( mm, "Measurement", py::buffer_protocol(),
+         "The result of a call to dip.MeasurementTool.Measure, a table with a column\n"
+         "group foreach feature and a row for each object." );
    meas.def_buffer( []( dip::Measurement& self ) -> py::buffer_info { return MeasurementToBuffer( self ); } );
    meas.def( "__repr__", []( dip::Measurement const& self ) {
                 std::ostringstream os;
@@ -230,8 +267,10 @@ void init_measurement( py::module& m ) {
                 return os.str();
              } );
    meas.def( "__str__", []( dip::Measurement const& self ) { std::ostringstream os; os << self; return os.str(); } );
-   meas.def( "__getitem__", py::overload_cast< dip::uint >( &dip::Measurement::operator[], py::const_ ), "objectID"_a, py::return_value_policy::reference_internal );
-   meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ), "name"_a, py::return_value_policy::reference_internal );
+   meas.def( "__getitem__", py::overload_cast< dip::uint >( &dip::Measurement::operator[], py::const_ ),
+             "objectID"_a, py::return_value_policy::reference_internal );
+   meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ),
+             "name"_a, py::return_value_policy::reference_internal );
    meas.def( "FeatureExists", &dip::Measurement::FeatureExists );
    meas.def( "Features", &dip::Measurement::Features );
    meas.def( "NumberOfFeatures", &dip::Measurement::NumberOfFeatures );
@@ -283,7 +322,9 @@ void init_measurement( py::module& m ) {
    m.def( "ObjectMaximum", &dip::ObjectMaximum, "featureValues"_a );
 
    // dip::Polygon
-   auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(), "A polygon representing a 2D object." );
+   auto poly = py::class_< dip::Polygon >( m, "Polygon", py::buffer_protocol(),
+         "A polygon representing a 2D object.\n"
+         "Implicitly converts to or from a NumPy array, and can directly be indexed and iterated." );
    poly.def( py::init([]( py::double_array_t& buf ) { return BufferToPolygon( buf ); } ));
    py::implicitly_convertible< py::buffer, dip::Polygon >();
    poly.def_buffer( []( dip::Polygon& self ) -> py::buffer_info { return PolygonToBuffer( self ); } );
@@ -292,6 +333,15 @@ void init_measurement( py::module& m ) {
                 os << "<Polygon with " << self.vertices.size() << " vertices>";
                 return os.str();
              } );
+   poly.def( "__getitem__", []( dip::Polygon const& self, dip::uint index ) {
+                return self.vertices[ index ];
+             }, "index"_a );
+   poly.def( "__len__", []( dip::Polygon const& self ) {
+                return self.vertices.size();
+             } );
+   poly.def( "__iter__", []( dip::Polygon const& self ) {
+                return py::make_iterator( self.vertices.begin(), self.vertices.end() );
+             }, py::keep_alive< 0, 1 >() );
    poly.def( "BoundingBox", []( dip::Polygon const& self ){
                 auto bb = self.BoundingBox();
                 auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
@@ -304,13 +354,9 @@ void init_measurement( py::module& m ) {
              "the lowest and highest value in the range." );
    poly.def( "IsClockWise", &dip::Polygon::IsClockWise );
    poly.def( "Area", &dip::Polygon::Area );
-   poly.def( "Centroid", []( dip::Polygon const& self ) {
-                auto centroid = self.Centroid();
-                return py::make_tuple( centroid.x, centroid.y ).release();
-             },
-             "Instead of returning a `dip::VertexFloat` object, returns a tuple with the\n"
-             "x and y coordinates of the centroid." );
+   poly.def( "Centroid", &dip::Polygon::Centroid );
    poly.def( "Length", &dip::Polygon::Length ); // is the perimeter
+   poly.def( "Perimeter", &dip::Polygon::Perimeter );
    poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrix().Ellipse(); },
              "Corresponds to `dip::Polygon::CovarianceMatrix().Ellipse()`." );
    poly.def( "RadiusStatistics", py::overload_cast<>( &dip::Polygon::RadiusStatistics, py::const_ ));
@@ -319,6 +365,10 @@ void init_measurement( py::module& m ) {
    poly.def( "BendingEnergy", &dip::Polygon::BendingEnergy );
    poly.def( "Simplify", &dip::Polygon::Simplify, "tolerance"_a = 0.5 );
    poly.def( "Smooth", &dip::Polygon::Smooth, "sigma"_a = 1.0 );
+   poly.def( "Reverse", &dip::Polygon::Reverse );
+   poly.def( "Rotate", &dip::Polygon::Rotate, "angle"_a );
+   poly.def( "Scale", &dip::Polygon::Scale, "scale"_a );
+   poly.def( "Translate", &dip::Polygon::Translate, "shift"_a );
    poly.def( "ConvexHull", []( dip::Polygon const& self ) {
                 auto out = self.ConvexHull().Polygon(); // Make a copy of the polygon, sadly. Otherwise we'd have to return the ConvexHull object. We can't extract that data from it trivially.
                 return out;
@@ -335,10 +385,19 @@ void init_measurement( py::module& m ) {
                  os << "<ChainCode for object #" << self.objectID << ">";
                  return os.str();
               } );
+   chain.def( "__getitem__", []( dip::ChainCode const& self, dip::uint index ) {
+                return static_cast< unsigned >( self.codes[ index ] );
+             }, "index"_a );
+   chain.def( "__len__", []( dip::ChainCode const& self ) {
+                return self.codes.size();
+             } );
+   chain.def( "__iter__", []( dip::ChainCode const& self ) {
+                return py::make_iterator< py::return_value_policy::copy, decltype( self.codes.begin() ), decltype( self.codes.end() ), unsigned >( self.codes.begin(), self.codes.end() );
+             }, py::keep_alive< 0, 1 >() );
    chain.def_property_readonly( "codes", []( dip::ChainCode const& self ) {
                  // We don't make this into a buffer protocol thing, because each code has two values: the code and IsBorder().
                  // This latter is encoded in the 4th bit of the number. So exposing that directly to the user would be confusing.
-                 // We don't do so un C++ either. One alternative is to encapsulate the `Code` object, the other is to copy the
+                 // We don't do so in C++ either. One alternative is to encapsulate the `Code` object, the other is to copy the
                  // chain code value into a Python list. We do the copy, as it is less work. Encapsulating the `Code` object would
                  // provide more functionality, but I doubt it will be used by anyone.
                  py::list list( self.codes.size() );
@@ -347,7 +406,10 @@ void init_measurement( py::module& m ) {
                     PyList_SET_ITEM( list.ptr(), index++, py::cast( static_cast< unsigned >( value )).release().ptr() ); // Casting to unsigned gets the numeric value of the chain code
                  }
                  return list.release();
-              } );
+              },
+              "cc.codes is the same as list(cc), and copies the chain code values to a list.\n"
+              "To access individual code values, it's better to just index cc directly: cc[4],\n"
+              "or use an iterator: iter(cc)." );
    chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ).release(); } );
    chain.def_readonly( "objectID", &dip::ChainCode::objectID );
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2019, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * The algorithm to convert a simple polygon to a convex hull is from:
@@ -109,7 +109,7 @@ void SimplifySection( Polygon::Vertices const& vertices, Polygon::Vertices& out,
    }
 }
 
-}
+} // namespace
 
 Polygon& Polygon::Simplify( dfloat tolerance ) {
    // With 4 points or fewer there's nothing to simplify
@@ -144,7 +144,7 @@ void InsertPoints( Polygon::Vertices& vertices, VertexFloat start, VertexFloat e
    }
 }
 
-}
+} // namespace
 
 Polygon& Polygon::Augment( dfloat distance ) {
    if( !vertices.empty() ) {
@@ -164,6 +164,29 @@ Polygon& Polygon::Smooth( dfloat sigma ) {
       Image img( reinterpret_cast< dfloat* >( vertices.data() ), { 2, vertices.size() } );
       img.Protect();
       GaussFIR( img, img, { 0, sigma }, { 0, 0 }, { S::PERIODIC } );
+   }
+   return *this;
+}
+
+Polygon& Polygon::Rotate( dfloat angle ) {
+   dfloat cos_angle = std::cos( angle );
+   dfloat sin_angle = std::sin( angle );
+   for( auto& v: vertices ) {
+      v = { v.x * cos_angle - v.y * sin_angle, v.x * sin_angle + v.y * cos_angle };
+   }
+   return *this;
+}
+
+Polygon& Polygon::Scale( dfloat scale ) {
+   for( auto& v: vertices ) {
+      v *= scale;
+   }
+   return *this;
+}
+
+Polygon& Polygon::Translate( VertexFloat shift ) {
+   for( auto& v: vertices ) {
+      v += shift;
    }
    return *this;
 }
@@ -285,6 +308,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing polygon manipulation") {
    DOCTEST_CHECK( p5.vertices.size() == 40 );
    DOCTEST_CHECK( p5.Area() == doctest::Approx( 92.0977 ));
    DOCTEST_CHECK( p5.Length() == doctest::Approx( 35.0511 ));
+   p2.Reverse();
+   DOCTEST_CHECK( p.IsClockWise() != p2.IsClockWise() );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

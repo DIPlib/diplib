@@ -110,7 +110,7 @@ inline Iterator Next( Iterator it, Container const& con ) {
    return it;
 }
 
-}
+} // namespace
 
 FeretValues ConvexHull::Feret() const {
 
@@ -287,7 +287,7 @@ dfloat AngleDifference( dfloat a, dfloat b ) { // a and b are assumed in the [-p
    return diff;
 }
 
-}
+} // namespace
 
 dfloat Polygon::BendingEnergy() const {
    // BE = sum ( k * k * dist )

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2019, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -503,21 +503,26 @@ class DIP_NO_EXPORT ConvexHull; // Forward declaration
 
 /// \brief A polygon with floating-point vertices.
 struct DIP_NO_EXPORT Polygon {
-   /// Type used to store the vertices
+   /// Type used to store the vertices.
    using Vertices = std::vector< VertexFloat >;
 
-   Vertices vertices;  ///< The vertices
+   Vertices vertices;  ///< The vertices.
 
-   /// \brief Returns the bounding box of the polygon
+   /// \brief Returns the bounding box of the polygon.
    DIP_EXPORT BoundingBoxFloat BoundingBox() const;
 
-   /// \brief Determine the orientation of the polygon (if constructed from a chain code, should return true)
+   /// \brief Determine the orientation of the polygon.
+   ///
+   /// This is a fast algorithm that assumes that the polygon is simple. Non-simple polygons do not
+   /// have a single orientation anyway.
+   ///
+   /// If the polygon is constructed from a chain code, this function should always return `true`.
    DIP_EXPORT bool IsClockWise() const;
 
-   /// \brief Computes the (signed) area of the polygon. Default, clockwise polygons have a positive area.
+   /// \brief Computes the (signed) area of the polygon. The default, clockwise polygons have a positive area.
    DIP_EXPORT dfloat Area() const;
 
-   /// \brief Computes the centroid of the polygon
+   /// \brief Computes the centroid of the polygon.
    DIP_EXPORT VertexFloat Centroid() const;
 
    /// \brief Returns the covariance matrix for the vertices of the polygon, using centroid `g`.
@@ -529,8 +534,13 @@ struct DIP_NO_EXPORT Polygon {
    }
 
    /// \brief Computes the length of the polygon (i.e. perimeter). If the polygon represents a pixelated object,
-   /// this function will overestimate the object's perimeter. Use \ref dip::ChainCode::Length instead.
+   /// this function will overestimate the object's perimeter. In this case, use \ref dip::ChainCode::Length instead.
    DIP_EXPORT dfloat Length() const;
+
+   /// \brief An alias for \ref Length.
+   dfloat Perimeter() const {
+      return Length();
+   }
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
    /// and each of the vertices.
@@ -611,13 +621,34 @@ struct DIP_NO_EXPORT Polygon {
    /// small objects), choose a smaller `sigma`.
    DIP_EXPORT Polygon& Smooth( dfloat sigma = 1.0 );
 
-   /// \brief Returns the convex hull of the polygon.
+   /// \brief Reverses the orientation of the polygon, converting a clockwise polygon into a counter-clockwise one
+   /// and vice versa.
+   Polygon& Reverse() {
+      std::reverse( vertices.begin(), vertices.end() );
+      return *this;
+   }
+
+   /// \brief Rotates the polygon around the origin by `angle`, which is positive for clockwise rotation.
+   DIP_EXPORT Polygon& Rotate( dfloat angle );
+
+   /// \brief Scales the polygon by multiplying each vertex coordinates by `scale`.
+   DIP_EXPORT Polygon& Scale( dfloat scale );
+
+   /// \brief Translates the polygon by `shift`.
+   DIP_EXPORT Polygon& Translate( VertexFloat shift );
+
+   /// \brief Returns the convex hull of the polygon. The polygon must be simple.
    DIP_EXPORT dip::ConvexHull ConvexHull() const;
 };
 
 /// \brief A convex hull is a convex polygon. It can be constructed from a \ref dip::Polygon, and a const reference
 /// to the underlying `dip::Polygon` object can be obtained. It is guaranteed clockwise.
 class DIP_NO_EXPORT ConvexHull {
+      /*
+       * TODO (requires bumping minor version number):
+       *  - Make ConvexHull a derived class of Polygon, so that all the Polygon functions are directly available.
+       *  - Now ConvexHull::Polygon() will just return dynamic_cast<Polygon>(*this).
+       */
    public:
 
       /// Default-constructed ConvexHull (without vertices)

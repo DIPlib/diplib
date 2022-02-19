@@ -9,6 +9,9 @@ title: "Changes DIPlib 3.2.1"
 
 - Added `dip::MakeRegionsConvex2D()`, which works for both labelled and binary images.
 
+- Added `Perimeter()` (as an alias for `Length()`), `Reverse()`, `Rotate()`, `Scale()`, and `Translate()`
+  as member functions to `dip::Polygon`.
+
 ### Changed functionality
 
 - `dip::MomentAccumulator` has a new method `PlainSecondOrder()`, which returns the plain old second
@@ -48,6 +51,14 @@ title: "Changes DIPlib 3.2.1"
 ### New functionality
 
 - Added `dip.MakeRegionsConvex2D()`.
+
+- Added `Perimeter()` (as an alias for `Length()`), `Reverse()`, `Rotate()`, `Scale()`, and `Translate()`
+  as methods to `dip.Polygon`.
+
+- `dip.Polygon` and `dip.ChainCode` now both have `__len__`, `__getitem__` and `__iter__` methods,
+  meaning that they can be treated like lists or other iterables. Previously, the values of `dip.Polygon`
+  had to be extracted by conversion to a NumPy array, and the values of `dip.ChainCode` by copying to
+  a list when accessing its `codes` property.
 
 ### Changed functionality
 
