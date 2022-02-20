@@ -23,13 +23,30 @@
 using namespace pybind11::literals;
 namespace py = pybind11;
 
+// A copy of the value in PyDIP_bin -- its value should be kept in synch, we always update both at the same time.
+bool reverseDimensions = true;
+
 PYBIND11_MODULE( PyDIPjavaio, m ) {
+
+   m.def( "_ReverseDimensions", [ & ](){ return reverseDimensions; }, "Return the value of the 'PyDIPjavaio._ReverseDimensions' property." );
+   m.def( "_ReverseDimensions", [ & ]( bool newValue ){ reverseDimensions = newValue; }, "newValue"_a, "Set the 'PyDIPjavaio._ReverseDimensions' property." );
+
    // diplib/javaio.h
-   m.def( "ImageReadJavaIO", py::overload_cast< dip::String const&, dip::String const& >( dip::javaio::ImageReadJavaIO ),
-          "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
+   m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
+             auto out = dip::javaio::ImageReadJavaIO( filename, interface );
+             if( !reverseDimensions ) {
+                out.ReverseDimensions();
+             }
+             return out;
+          }, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
 
    // diplib/simple_file_io.h
    // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
-   m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
-   //m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
+   m.def( "ImageRead", []( dip::String const& filename, dip::String const& format ) {
+             auto out = dip::ImageRead( filename, format );
+             if( !reverseDimensions ) {
+                out.ReverseDimensions();
+             }
+             return out;
+          }, "filename"_a, "format"_a = "" );
 }

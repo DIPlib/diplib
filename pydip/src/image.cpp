@@ -18,6 +18,11 @@
 #include "pydip.h"
 #include "diplib/generic_iterators.h"
 
+// By default, we reverse the dimensions of the buffer protocol. This makes images
+// loaded outside of DIPlib have an (x,y,z) indexing order inside DIPlib.
+// This value can be set to `false` to keep the NumPy indexing order of (z,y,x).
+bool reverseDimensions = true;
+
 namespace {
 
 dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
@@ -106,18 +111,23 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       out.SetDataType( datatype );
       return out;
    }
-   // Sizes, reversed
+   // Sizes, optionally reversed
    dip::UnsignedArray sizes( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
-      sizes[ ii ] = static_cast< dip::uint >( info.shape[ ndim - ii - 1 ] );
+      sizes[ ii ] = static_cast< dip::uint >( info.shape[ ii ] );
    }
-   // Strides, also reversed
+   // Strides, also optionally reversed
    dip::IntegerArray strides( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
-      dip::sint s = info.strides[ ndim - ii - 1 ] / static_cast< dip::sint >( info.itemsize );
-      DIP_THROW_IF( s * static_cast< dip::sint >( info.itemsize ) != info.strides[ ndim - ii - 1 ],
+      dip::sint s = info.strides[ ii ] / static_cast< dip::sint >( info.itemsize );
+      DIP_THROW_IF( s * static_cast< dip::sint >( info.itemsize ) != info.strides[ ii ],
                     "Cannot create image out of an array where strides are not in whole pixels" );
       strides[ ii ] = s;
+   }
+   // Optionally reverse dimensions
+   if( reverseDimensions ) {
+      sizes.reverse();
+      strides.reverse();
    }
    // The containing Python object. We increase its reference count, and create a unique_ptr that decreases
    // its reference count again.
@@ -215,11 +225,10 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
    for( dip::sint& s : strides ) {
       s *= itemsize;
    }
-   // Reverse sizes and strides arrays
-   dip::uint nDims = sizes.size();
-   for( dip::uint ii = 0; ii < nDims / 2; ++ii ) {
-      std::swap( sizes[ ii ], sizes[ nDims - ii - 1 ] );
-      std::swap( strides[ ii ], strides[ nDims - ii - 1 ] );
+   // Optionally reverse sizes and strides arrays
+   if( reverseDimensions ) {
+      sizes.reverse();
+      strides.reverse();
    }
    // Add tensor dimension as the last array dimension
    if( !image.IsScalar() ) {
@@ -265,6 +274,9 @@ dip::String ImageRepr( dip::Image const& image ) {
 } // namespace
 
 void init_image( py::module& m ) {
+
+   m.def( "_ReverseDimensions", [ & ](){ return reverseDimensions; }, "Return the value of the 'PyDIP_bin._ReverseDimensions' property." );
+   m.def( "_ReverseDimensions", [ & ]( bool newValue ){ reverseDimensions = newValue; }, "newValue"_a, "Set the 'PyDIP_bin._ReverseDimensions' property." );
 
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), "The class that encapsulates DIPlib images of all types." );
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed:

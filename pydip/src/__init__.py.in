@@ -22,11 +22,11 @@ See the User Manual online: https://diplib.org/diplib-docs/pydip_user_manual.htm
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
 import os, time
 if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
-    pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
+    _pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
     try:
-        os.add_dll_directory(pydip_dir)
+        os.add_dll_directory(_pydip_dir)
     except:
-        os.environ["PATH"] += os.pathsep + pydip_dir
+        os.environ["PATH"] += os.pathsep + _pydip_dir
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
@@ -39,7 +39,7 @@ except:
 
 __version__ = PyDIP_bin.__version__
 
-from .PyDIP_py import Show, HistogramShow
+from .PyDIP_py import *
 Image.Show = Show
 Histogram.Show = HistogramShow
 SE = StructuringElement  # for backwards compatibility
@@ -144,8 +144,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
                 time.sleep(0.001)
 
 # This is a version of ImageRead that we use if we fail to load PyDIPjavaio for any reason
-PyDIP_bin_ImageRead = ImageRead
-reportedDIPjavaio = False
+_reportedDIPjavaio = False
 def ImageRead(*args, **kwargs):
     """You are using this version of dip.ImageRead() because the DIPjavaio module is
     not available. See `dip.javaioError` for the reason it is not available.
@@ -159,33 +158,33 @@ def ImageRead(*args, **kwargs):
     2. Have a working installation of a Java VM. Download: https://www.java.com/en/
     3. Run `python -m diplib download_bioformats` from your shell.
     """
-    global reportedDIPjavaio
+    global _reportedDIPjavaio
     try:
-        return PyDIP_bin_ImageRead(*args, **kwargs)
+        return PyDIP_bin.ImageRead(*args, **kwargs)
     except BaseException:
-        if not reportedDIPjavaio:
+        if not _reportedDIPjavaio:
             print(
 """If you were trying to read an image format supported by BioFormats, note that
 DIPjavaio is unavailable because:""")
             print(f" - {javaioError}\n")
-            reportedDIPjavaio = True
+            _reportedDIPjavaio = True
         raise
 
 # Here we import PyDIPjavaio if it exists
 hasDIPjavaio = False
 if importlib.util.find_spec('.PyDIPjavaio', __name__) is not None:
-    lib = None
+    _lib = None
     try:
         from . import loadjvm
-        lib = loadjvm.load_jvm()
+        _lib = loadjvm.load_jvm()
         from . import PyDIPjavaio as javaio
         # Replace the ImageRead from PyDIP_bin with the one in PyDIPjavaio, so that 'bioformats' is recognized as a "format".
         ImageRead = javaio.ImageRead
         hasDIPjavaio = True
     except Exception as e:
         javaioError = str(e)
-        if lib:
-            javaioError += f"\nload_jvm returned '{lib}'"
+        if _lib:
+            javaioError += f"\nload_jvm returned '{_lib}'"
         else:
             javaioError += "\nlibjvm not found"
 else:
@@ -197,3 +196,24 @@ if hasattr(sys,'ps1'):
     print(libraryInformation.name + " -- " + libraryInformation.description)
     print("Version " + libraryInformation.version + " (" + libraryInformation.date + ")")
     print("For more information see " + libraryInformation.URL)
+
+# The `reverseDimensions` value, which is stored in PyDIP_bin (imported into the current namespace)
+# as well as in PyDIPviewer (imported as viewer) and PyDIPjavaio (imported as javaio).
+# We set `reverseDimensions` to True by default, meaning that dimensions are reversed when
+# reading or writing from a Python buffer protocol object. Calling `ReverseDimensions()`
+# sets the `reverseDimensions` value to False.
+def ReverseDimensions():
+    """By default, DIPlib uses the (x,y,z) index order. This order is reversed from
+    how NumPy (and, by extension, packages such as scikit-image, matplotlib and
+    imageio) index. Calling `ReverseDimensions()` causes DIPlib, for the remainder
+    of the session, to also follow the (z,y,x) index order, giving dimensions the
+    same order as Python users might be used to. Use this function at the top of
+    your program, right after importing the `diplib` package. There is no way to
+    revert to the default order. Please don't try to mix dimension ordering within
+    your program.
+    """
+    PyDIP_bin._ReverseDimensions(False)
+    if hasDIPjavaio:
+        javaio._ReverseDimensions(False)
+    if hasDIPviewer:
+        viewer._ReverseDimensions(False)

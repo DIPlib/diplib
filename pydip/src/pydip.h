@@ -69,6 +69,8 @@ void init_assorted( py::module& m );
 
 dip::Random& RandomNumberGenerator();
 
+extern bool reverseDimensions;
+
 namespace pybind11 {
 
 // py::buffer type that implicitly casts to c-style dense double arrays

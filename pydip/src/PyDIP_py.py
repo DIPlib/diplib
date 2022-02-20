@@ -22,7 +22,7 @@ import importlib.util
 import warnings
 
 hasMatPlotLib = importlib.util.find_spec('matplotlib')
-reportedPlotLib = False
+_reportedPlotLib = False
 
 # Label color map from the function of the same name in DIPimage:
 def _label_colormap():
@@ -119,9 +119,9 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     `colormap` is ignored. Note that, if `dim1==dim2`, a 2D image is also
     projected as described above for higher-dimensional images.
     """
-    global reportedPlotLib
+    global _reportedPlotLib
     if not hasMatPlotLib:
-        if not reportedPlotLib:
+        if not _reportedPlotLib:
             warnings.warn("""
     PyDIP requires matplotlib for its display functionality. Matplotlib was not found
     on your system. Image display (diplib.Show and diplib.Image.Show) will not do anything.
@@ -131,7 +131,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         python3 -m pip install matplotlib
     Alternatively, use diplib.viewer.ShowModal or diplib.Image.ShowSlice/diplib.viewer.Spin
     """, RuntimeWarning)
-            reportedPlotLib = True
+            _reportedPlotLib = True
         return
 
     import matplotlib
@@ -209,3 +209,5 @@ def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean', coor
         extent = (hist.BinCenter(0, dim1), hist.BinCenter(hist.Bins() - 1, dim1),
                   hist.BinCenter(0, dim2), hist.BinCenter(hist.Bins() - 1, dim2))
     Show(hist.GetImage(), range, complexMode, projectionMode, coordinates, dim1, dim2, colormap, extent)
+
+# TODO: figure out handling of extent in Show and in HistogramShow under changes of reverseDimensions.
