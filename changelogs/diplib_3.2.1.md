@@ -17,6 +17,10 @@ title: "Changes DIPlib 3.2.1"
 
 - Added `dip::Image::Mask()`.
 
+- Added `reverse()` to `dip::DimensionArray<>` and `Reverse()` to `dip::PixelSize`.
+
+- Added `dip::Image::ReverseDimensions()`.
+
 ### Changed functionality
 
 ### Bug fixes
@@ -67,6 +71,8 @@ title: "Changes DIPlib 3.2.1"
   in `secondOrder`.
 
 - Added `dip.Image.Mask()`.
+
+- Added `dip.Image.ReverseDimensions()`.
 
 ### Changed functionality
 

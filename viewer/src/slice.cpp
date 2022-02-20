@@ -298,7 +298,7 @@ void SliceViewPort::render()
   glColor3f(1., 1., 1.);
   if (view()->dimx() == 0)
   {
-    char buf[] = {dy==-1?'-':l[dy%l.size()], 0};
+    char buf[] = {dy==-1?'-':l[static_cast<dip::uint>(dy)%l.size()], 0};
 
     glRasterPos2i((GLint)width_-(CHAR_WIDTH+1), (GLint)height_/2-(CHAR_HEIGHT/2));
     viewer()->drawString(buf);
@@ -306,7 +306,7 @@ void SliceViewPort::render()
   }
   if (view()->dimy() == 1)
   {
-    char buf[] = {dx==-1?'-':l[dx%l.size()], 0};
+    char buf[] = {dx==-1?'-':l[static_cast<dip::uint>(dx)%l.size()], 0};
     
     glRasterPos2i((GLint)width_/2-(CHAR_WIDTH/2), (GLint)height_-(CHAR_HEIGHT/2));
     viewer()->drawString(buf);

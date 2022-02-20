@@ -1,5 +1,5 @@
 /*
- * (c)2016-2021, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -346,20 +346,6 @@ class DIP_NO_EXPORT DimensionArray {
       template< typename S >
       DimensionArray< T >& operator-=( DimensionArray< S > const& other );
 
-      /// Sort the contents of the array from smallest to largest.
-      void sort() {
-         // Using insertion sort because we expect the array to be small.
-         for( size_type ii = 1; ii < size_; ++ii ) {
-            T elem = data_[ ii ];
-            size_type jj = ii;
-            while(( jj > 0 ) && ( data_[ jj - 1 ] > elem )) {
-               data_[ jj ] = data_[ jj - 1 ];
-               --jj;
-            }
-            data_[ jj ] = elem;
-         }
-      }
-
       /// Multiplies each element in the array by a constant.
       DimensionArray& operator*=( T const& v ) {
          for( size_type ii = 0; ii < size_; ++ii ) {
@@ -374,6 +360,20 @@ class DIP_NO_EXPORT DimensionArray {
             data_[ ii ] /= v;
          }
          return *this;
+      }
+
+      /// Sort the contents of the array from smallest to largest.
+      void sort() {
+         // Using insertion sort because we expect the array to be small.
+         for( size_type ii = 1; ii < size_; ++ii ) {
+            T elem = data_[ ii ];
+            size_type jj = ii;
+            while(( jj > 0 ) && ( data_[ jj - 1 ] > elem )) {
+               data_[ jj ] = data_[ jj - 1 ];
+               --jj;
+            }
+            data_[ jj ] = elem;
+         }
       }
 
       /// Sort the contents of the array from smallest to largest, and keeping `other` in the same order.
@@ -394,6 +394,11 @@ class DIP_NO_EXPORT DimensionArray {
             data_[ jj ] = elem;
             other[ jj ] = otherelem;
          }
+      }
+
+      /// Reverses the elements in the array, putting the first element at the end.
+      void reverse() {
+         std::reverse( begin(), end() );
       }
 
       /// Returns an array with indices into the array, sorted from smallest value to largest.
@@ -452,7 +457,7 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       /// Finds the first occurrence of `value` in the array, returns the index or `size()` if it is not present.
-      size_type find( T value ) {
+      size_type find( T value ) const {
          // Like in `sort`, we expect the array to be small
          size_type ii = 0;
          while(( ii < size_ ) && ( data_[ ii ] != value )) {
