@@ -56,6 +56,20 @@ class type_caster< dip::FileInformation > {
 
 namespace {
 
+void OptionallyReverseDimensions( dip::Image& img ) {
+   if( !ReverseDimensions() ) {
+      img.ReverseDimensions();
+   }
+}
+
+void OptionallyReverseDimensions( dip::FileInformation& fi ) {
+   if( !ReverseDimensions() ) {
+      fi.sizes.reverse();
+      fi.pixelSize.Reverse( fi.sizes.size() );
+      fi.origin.reverse(); // let's hope this array has the right number of elements...
+   }
+}
+
 dip::ColorSpaceManager& colorSpaceManager() {
    static dip::ColorSpaceManager manager;
    return manager;
@@ -141,34 +155,95 @@ void init_assorted( py::module& m ) {
    m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::uint >( &dip::MarkLabelEdges ), "in"_a, "factor"_a = 2 );
 
    // diplib/file_io.h
-   m.def( "ImageReadICS", py::overload_cast< dip::String const&, dip::RangeArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadICS ),
-          "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
-   m.def( "ImageReadICS", py::overload_cast< dip::String const&, dip::UnsignedArray const&, dip::UnsignedArray const&, dip::UnsignedArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadICS ),
-          "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
-   m.def( "ImageReadICSInfo", &dip::ImageReadICSInfo, "filename"_a );
+   m.def( "ImageReadICS", []( dip::String const& filename, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& mode ) {
+             auto out = dip::ImageReadICS( filename, roi, channels, mode );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
+   m.def( "ImageReadICS", []( dip::String const& filename, dip::UnsignedArray const& origin, dip::UnsignedArray const& sizes, dip::UnsignedArray const& spacing, dip::Range const& channels, dip::String const& mode ) {
+             auto out = dip::ImageReadICS( filename, origin, sizes, spacing, channels, mode );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a, "origin"_a = dip::UnsignedArray{}, "sizes"_a = dip::UnsignedArray{}, "spacing"_a = dip::UnsignedArray{}, "channels"_a = dip::Range{}, "mode"_a = "" );
+   m.def( "ImageReadICSInfo", []( dip::String const& filename ) {
+             auto fi = dip::ImageReadICSInfo( filename );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "filename"_a );
    m.def( "ImageIsICS", &dip::ImageIsICS, "filename"_a );
-   m.def( "ImageWriteICS", &dip::ImageWriteICS, "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
+   m.def( "ImageWriteICS", []( dip::Image const& image, dip::String const& filename, dip::StringArray const& history, dip::uint significantBits, dip::StringSet const& options ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             dip::ImageWriteICS( tmp, filename, history, significantBits, options );
+          }, "image"_a, "filename"_a, "history"_a = dip::StringArray{}, "significantBits"_a = 0, "options"_a = dip::StringSet {} );
 
-   m.def( "ImageReadTIFF", py::overload_cast< dip::String const&, dip::Range const&, dip::RangeArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadTIFF ),
-          "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
-   m.def( "ImageReadTIFFSeries", py::overload_cast< dip::StringArray const&, dip::String const& >( &dip::ImageReadTIFFSeries ), "filenames"_a, "useColorMap"_a = dip::S::APPLY );
-   m.def( "ImageReadTIFFInfo", &dip::ImageReadTIFFInfo, "filename"_a, "imageNumber"_a = 0 );
+   m.def( "ImageReadTIFF", []( dip::String const& filename, dip::Range const& imageNumbers, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& useColorMap ) {
+             auto out = dip::ImageReadTIFF( filename, imageNumbers, roi, channels, useColorMap );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a, "imageNumbers"_a = dip::Range{ 0 }, "roi"_a = dip::RangeArray{}, "channels"_a = dip::Range{}, "useColorMap"_a = dip::S::APPLY );
+   m.def( "ImageReadTIFFSeries", []( dip::StringArray const& filenames, dip::String const& useColorMap ) {
+             auto out = dip::ImageReadTIFFSeries( filenames, useColorMap );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filenames"_a, "useColorMap"_a = dip::S::APPLY );
+   m.def( "ImageReadTIFFInfo", []( dip::String const& filename, dip::uint imageNumber ) {
+             auto fi = dip::ImageReadTIFFInfo( filename, imageNumber );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "filename"_a, "imageNumber"_a = 0 );
    m.def( "ImageIsTIFF", &dip::ImageIsTIFF, "filename"_a );
-   m.def( "ImageWriteTIFF", &dip::ImageWriteTIFF, "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
+   m.def( "ImageWriteTIFF", []( dip::Image const& image, dip::String const& filename, dip::String const& compression, dip::uint jpegLevel ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             dip::ImageWriteTIFF( tmp, filename, compression, jpegLevel );
+          }, "image"_a, "filename"_a, "compression"_a = "", "jpegLevel"_a = 80 );
 
-   m.def( "ImageReadJPEG", py::overload_cast< dip::String const& >( &dip::ImageReadJPEG ), "filename"_a );
-   m.def( "ImageReadJPEGInfo", &dip::ImageReadJPEGInfo, "filename"_a );
+   m.def( "ImageReadJPEG", []( dip::String const& filename ) {
+             auto out = dip::ImageReadJPEG( filename );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a );
+   m.def( "ImageReadJPEGInfo", []( dip::String const& filename ) {
+             auto fi = dip::ImageReadJPEGInfo( filename );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "filename"_a );
    m.def( "ImageIsJPEG", &dip::ImageIsJPEG, "filename"_a );
-   m.def( "ImageWriteJPEG", &dip::ImageWriteJPEG, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
+   m.def( "ImageWriteJPEG", []( dip::Image const& image, dip::String const& filename, dip::uint jpegLevel ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             dip::ImageWriteJPEG( tmp, filename, jpegLevel );
+          }, "image"_a, "filename"_a, "jpegLevel"_a = 80 );
 
-   m.def( "ImageReadNPY", py::overload_cast< dip::String const& >( &dip::ImageReadNPY ), "filename"_a );
-   m.def( "ImageReadNPYInfo", &dip::ImageReadNPYInfo, "filename"_a );
+   m.def( "ImageReadNPY", []( dip::String const& filename ) {
+             auto out = dip::ImageReadNPY( filename );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a );
+   m.def( "ImageReadNPYInfo", []( dip::String const& filename ) {
+             auto fi = dip::ImageReadNPYInfo( filename );
+             OptionallyReverseDimensions( fi );
+             return fi;
+          }, "filename"_a );
    m.def( "ImageIsNPY", &dip::ImageIsNPY, "filename"_a );
-   m.def( "ImageWriteNPY", &dip::ImageWriteNPY, "image"_a, "filename"_a );
+   m.def( "ImageWriteNPY", []( dip::Image const& image, dip::String const& filename ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             dip::ImageWriteNPY( tmp, filename );
+          }, "image"_a, "filename"_a );
 
    // diplib/simple_file_io.h
-   m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
-   m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
+   m.def( "ImageRead", []( dip::String const& filename, dip::String const& format ) {
+             auto out = dip::ImageRead( filename, format );
+             OptionallyReverseDimensions( out );
+             return out;
+          }, "filename"_a, "format"_a = "" );
+   m.def( "ImageWrite", []( dip::Image const& image, dip::String const& filename, dip::String const& format, dip::String const& compression ) {
+             auto tmp = image;
+             OptionallyReverseDimensions( tmp );
+             dip::ImageWrite( tmp, filename, format, compression );
+          }, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
 
    // diplib/geometry.h
    m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray >( &dip::Wrap ), "in"_a, "wrap"_a );

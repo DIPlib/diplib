@@ -25,7 +25,7 @@ static dip::String toString( dip::uint idx, dip::String const* options, dip::uin
    return options[ idx ];
 }
 
-static dip::uint toIndex( dip::String str, dip::String const* options, dip::uint n ) {
+static dip::uint toIndex( dip::String const& str, dip::String const* options, dip::uint n ) {
    for ( dip::uint idx=0; idx < n; ++idx ) {
       if ( options[idx] == str ) {
          return idx;
@@ -41,6 +41,7 @@ static int drawHook() {
 }
 
 PYBIND11_MODULE( PyDIPviewer, m ) {
+
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
    sv.def( "SetImage", []( dip::viewer::SliceViewer &self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
    sv.def( "Destroy", &dip::viewer::SliceViewer::destroy, "Marks the window for destruction." );
@@ -59,8 +60,8 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
 
       // Fill unspecified dimensions with -1
       dip::IntegerArray newdims( 4, -1 );
-      for ( dip::uint idx=0; idx < dims.size(); ++idx ) {
-         for ( dip::uint idx2 = 0; idx2 < idx; ++idx2 ) {
+      for( dip::uint idx=0; idx < dims.size(); ++idx ) {
+         for( dip::uint idx2 = 0; idx2 < idx; ++idx2 ) {
             DIP_THROW_IF( dims[ idx2 ] != -1 && dims[ idx2 ] == dims[ idx ], dip::E::INDEX_OUT_OF_RANGE );
          }
 
@@ -68,21 +69,20 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
       }
 
       // By default, both Z projections use the same axis.
-      if ( dims.size() == 3 )
-        newdims[ 3 ] = dims[ 2 ];
+      if( dims.size() == 3 )
+         newdims[ 3 ] = dims[ 2 ];
       
       self.options().dims_ = newdims;
    });
 
-   sv.def_property("labels", [](dip::viewer::SliceViewer& self) {
-     dip::viewer::SliceViewer::Guard guard(self);
-     return self.options().labels_;
-     }, [](dip::viewer::SliceViewer& self, dip::String const& labels) {
-       dip::viewer::SliceViewer::Guard guard(self);
-       DIP_THROW_IF(labels.size() < 1, dip::E::INVALID_PARAMETER);
-
-       self.options().labels_ = labels;
-     });
+   sv.def_property( "labels", []( dip::viewer::SliceViewer& self ) {
+   dip::viewer::SliceViewer::Guard guard( self );
+   return self.options().labels_;
+   }, []( dip::viewer::SliceViewer& self, dip::String const& labels ) {
+      dip::viewer::SliceViewer::Guard guard( self );
+      DIP_THROW_IF( labels.size() < 1, dip::E::INVALID_PARAMETER );
+      self.options().labels_ = labels;
+   });
 
    sv.def_property( "operating_point", []( dip::viewer::SliceViewer& self ) {
       dip::viewer::SliceViewer::Guard guard( self );
@@ -109,7 +109,7 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    }, []( dip::viewer::SliceViewer &self, dip::FloatArray const &zoom ) {
       dip::viewer::SliceViewer::Guard guard( self );
       DIP_THROW_IF( zoom.size() != self.image().Dimensionality(), dip::E::DIMENSIONALITIES_DONT_MATCH );
-      DIP_THROW_IF( ( zoom <= 0. ).any(), dip::E::PARAMETER_OUT_OF_RANGE);
+      DIP_THROW_IF(( zoom <= 0. ).any(), dip::E::PARAMETER_OUT_OF_RANGE );
       self.options().zoom_ = zoom;
       self.updateLinkedViewers();
    });
@@ -151,16 +151,35 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    } );
 
    m.def( "Show", []( dip::Image const& image, dip::String const& title ) {
-      if ( PyOS_InputHook == NULL ) PyOS_InputHook = &drawHook;
-      return dip::viewer::Show( image, title );
-   }, "in"_a, "title"_a = "", "Show an image in the slice viewer." );
+             if( PyOS_InputHook == nullptr ) PyOS_InputHook = &drawHook;
+             auto h = dip::viewer::Show( image, title );
+             if( !ReverseDimensions() ) {
+                // Reverse shown dimensions
+                auto& dims = h->options().dims_;
+                if( image.Dimensionality() == 0 )
+                   dims = { -1, -1, -1, -1 };
+                else if( image.Dimensionality() == 1 )
+                   dims = { 0, -1, -1, -1 };
+                else if( image.Dimensionality() == 2 )
+                   dims = { 1,  0, -1, -1 };
+                else
+                   dims = { 2,  1,  0,  0 };
+                // Reverse axis labels
+                auto& labels = h->options().labels_;
+                while( labels.size() < image.Dimensionality() ) {
+                   labels.append( labels );
+                }
+                std::reverse( labels.begin(), labels.begin() + static_cast< dip::sint >( image.Dimensionality() ));
+             }
+             return h;
+          }, "in"_a, "title"_a = "", "Show an image in the slice viewer." );
    m.def( "Draw", &dip::viewer::Draw, "Process user event queue." );
    m.def( "Spin", []() {
-      dip::viewer::Spin();
-      if ( PyOS_InputHook == &drawHook ) PyOS_InputHook = NULL;
-   }, "Wait until all windows are closed." );
+             dip::viewer::Spin();
+             if( PyOS_InputHook == &drawHook ) PyOS_InputHook = nullptr;
+          }, "Wait until all windows are closed." );
    m.def( "CloseAll",  []() {
-      dip::viewer::CloseAll();
-      if ( PyOS_InputHook == &drawHook ) PyOS_InputHook = NULL;
-   }, "Close all open windows." );
+             dip::viewer::CloseAll();
+             if( PyOS_InputHook == &drawHook ) PyOS_InputHook = nullptr;
+          }, "Close all open windows." );
 }

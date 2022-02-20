@@ -18,18 +18,29 @@
 #include "diplib/javaio.h"
 #include "diplib/simple_file_io.h"
 
-#include <pybind11/pybind11.h>
+#include "../pydip.h"
 
 using namespace pybind11::literals;
 namespace py = pybind11;
 
 PYBIND11_MODULE( PyDIPjavaio, m ) {
+
    // diplib/javaio.h
-   m.def( "ImageReadJavaIO", py::overload_cast< dip::String const&, dip::String const& >( dip::javaio::ImageReadJavaIO ),
-          "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
+   m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
+             auto out = dip::javaio::ImageReadJavaIO( filename, interface );
+             if( !ReverseDimensions() ) {
+                out.ReverseDimensions();
+             }
+             return out;
+          }, "filename"_a, "interface"_a = dip::javaio::bioformatsInterface );
 
    // diplib/simple_file_io.h
    // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
-   m.def( "ImageRead", py::overload_cast< dip::String const&, dip::String const& >( &dip::ImageRead ), "filename"_a, "format"_a = "" );
-   //m.def( "ImageWrite", &dip::ImageWrite, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
+   m.def( "ImageRead", []( dip::String const& filename, dip::String const& format ) {
+             auto out = dip::ImageRead( filename, format );
+             if( !ReverseDimensions() ) {
+                out.ReverseDimensions();
+             }
+             return out;
+          }, "filename"_a, "format"_a = "" );
 }

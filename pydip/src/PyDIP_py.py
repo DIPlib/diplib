@@ -22,7 +22,7 @@ import importlib.util
 import warnings
 
 hasMatPlotLib = importlib.util.find_spec('matplotlib')
-reportedPlotLib = False
+_reportedPlotLib = False
 
 # Label color map from the function of the same name in DIPimage:
 def _label_colormap():
@@ -115,37 +115,52 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     `projectionMode` is `'max'` or `'mean'`, then a projection is computed
     across the full image volume along the non-displayed dimensions.
 
-    For 1D images, or if `dim1==dim2`, a line is plotted. In this case, the
-    `colormap` is ignored. Note that, if `dim1==dim2`, a 2D image is also
-    projected as described above for higher-dimensional images.
+    For 1D images, a line is plotted. In this case, the `colormap` is
+    ignored.
+
+    `dim1` and `dim2`, if given, must be distinct.
+    If `diplib.ReverseDimensions()` has been used, then `dim1` refers to
+    the y axis and `dim2` refers to the x axis, but the meaning of `extent`
+    doesn't change, meaning that the first two values continue referring
+    to the x axis.
+
+    Note that the 2D display, the value shown for the pixel under the
+    cursor corresponds to the value after mapping to the 0-255 display
+    range, and not to the actual pixel value. Use
+    `diplib.viewer.ShowModal()`, or `diplib.Image.ShowSlice()` and
+    `diplib.viewer.Spin()`, for a more useful interactive image display.
     """
-    global reportedPlotLib
+    global _reportedPlotLib
     if not hasMatPlotLib:
-        if not reportedPlotLib:
-            warnings.warn("""
-    PyDIP requires matplotlib for its display functionality. Matplotlib was not found
-    on your system. Image display (diplib.Show and diplib.Image.Show) will not do anything.
-    You can install matplotlib by typing on your Linux/MacOS command prompt:
+        if not _reportedPlotLib:
+            warnings.warn(
+    """PyDIP requires matplotlib for its display functionality. Matplotlib was not found
+    on your system. Image display (`diplib.Show()` and `diplib.Image.Show()`) will not do
+    anything. You can install matplotlib by typing on your Linux/MacOS command prompt:
         pip3 install matplotlib
     or under Windows:
         python3 -m pip install matplotlib
-    Alternatively, use diplib.viewer.ShowModal or diplib.Image.ShowSlice/diplib.viewer.Spin
+    Alternatively, use `diplib.viewer.ShowModal()`, or `diplib.Image.ShowSlice()` and
+    `diplib.viewer.Spin()`.
     """, RuntimeWarning)
-            reportedPlotLib = True
+            _reportedPlotLib = True
         return
+
+    if dim1 == dim2:
+        # Note that we could handle this case, but we choose not to, it complicates things a bit
+        raise RuntimeError("dim1 and dim2 should be distinct")
 
     import matplotlib
     import matplotlib.pyplot as pp
     import numpy as np
 
-    if type(img) != Image:
-        img = Image(img)
-    if img.IsEmpty() or img.NumberOfPixels() <= 1:
+    img = np.asarray(img)
+    if img.size <= 1:
         warnings.warn("Nothing to display", SyntaxWarning)
         return
-    sizes = [x for x in img.Sizes() if x > 1]
+    sizes = [x for x in img.shape if x > 1]
     if len(sizes) == 1:
-        data = np.squeeze(np.asarray(img))
+        data = np.squeeze(img)
         length = sizes[0]
         if np.iscomplexobj(data):
             if complexMode == 'abs' or complexMode == 'magnitude':
@@ -173,6 +188,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         axes.set_ylim((np.amin(data), np.amax(data)))
     else:
         out = ImageDisplay(img, range, complexMode=complexMode, projectionMode=projectionMode, coordinates=coordinates, dim1=dim1, dim2=dim2)
+        out = np.asarray(out)
         if colormap == '':
             if range == 'base' or range == 'based':
                 colormap = 'coolwarm'
@@ -188,8 +204,8 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             cmap = pp.get_cmap(colormap)
         if extent:
             if len(extent) == 4:
-                dx = (extent[1] - extent[0]) / (out.Size(0) - 1) / 2
-                dy = (extent[3] - extent[2]) / (out.Size(1) - 1) / 2
+                dx = (extent[1] - extent[0]) / (out.shape[1] - 1) / 2
+                dy = (extent[3] - extent[2]) / (out.shape[0] - 1) / 2
                 extent = (extent[0] - dx, extent[1] + dx, extent[3] + dy, extent[2] - dy)
             else:
                 warnings.warn("Parameter 'extent' has the wrong number of values, ignoring", SyntaxWarning)

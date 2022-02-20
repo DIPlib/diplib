@@ -74,6 +74,10 @@ title: "Changes DIPlib 3.2.1"
 
 - Added `dip.Image.ReverseDimensions()`.
 
+- Added `dip.ReverseDimensions()`, which reverses the indexing order for images for the remainder of the
+  session. Has repercussion on how the `dip.Image` buffer is exposed, buffer protocol objects are
+  converted to a `dip.Image`, files are read and written, and how *DIPviewer* displays images.
+
 ### Changed functionality
 
 - Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which

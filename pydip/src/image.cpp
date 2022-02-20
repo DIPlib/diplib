@@ -106,18 +106,23 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       out.SetDataType( datatype );
       return out;
    }
-   // Sizes, reversed
+   // Sizes, optionally reversed
    dip::UnsignedArray sizes( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
-      sizes[ ii ] = static_cast< dip::uint >( info.shape[ ndim - ii - 1 ] );
+      sizes[ ii ] = static_cast< dip::uint >( info.shape[ ii ] );
    }
-   // Strides, also reversed
+   // Strides, also optionally reversed
    dip::IntegerArray strides( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
-      dip::sint s = info.strides[ ndim - ii - 1 ] / static_cast< dip::sint >( info.itemsize );
-      DIP_THROW_IF( s * static_cast< dip::sint >( info.itemsize ) != info.strides[ ndim - ii - 1 ],
+      dip::sint s = info.strides[ ii ] / static_cast< dip::sint >( info.itemsize );
+      DIP_THROW_IF( s * static_cast< dip::sint >( info.itemsize ) != info.strides[ ii ],
                     "Cannot create image out of an array where strides are not in whole pixels" );
       strides[ ii ] = s;
+   }
+   // Optionally reverse dimensions
+   if( ReverseDimensions() ) {
+      sizes.reverse();
+      strides.reverse();
    }
    // The containing Python object. We increase its reference count, and create a unique_ptr that decreases
    // its reference count again.
@@ -215,11 +220,10 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
    for( dip::sint& s : strides ) {
       s *= itemsize;
    }
-   // Reverse sizes and strides arrays
-   dip::uint nDims = sizes.size();
-   for( dip::uint ii = 0; ii < nDims / 2; ++ii ) {
-      std::swap( sizes[ ii ], sizes[ nDims - ii - 1 ] );
-      std::swap( strides[ ii ], strides[ nDims - ii - 1 ] );
+   // Optionally reverse sizes and strides arrays
+   if( ReverseDimensions() ) {
+      sizes.reverse();
+      strides.reverse();
    }
    // Add tensor dimension as the last array dimension
    if( !image.IsScalar() ) {
