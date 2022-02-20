@@ -1606,6 +1606,15 @@ class DIP_NO_EXPORT Image {
       /// \see dip::Image::PermuteDimensions
       DIP_EXPORT Image& SwapDimensions( dip::uint dim1, dip::uint dim2 );
 
+      /// \brief Reverses the dimensions, such that indexing switches from (x,y,z) to (z,y,x).
+      Image& ReverseDimensions() {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         sizes_.reverse();
+         strides_.reverse();
+         pixelSize_.Reverse( Dimensionality() );
+         return *this;
+      }
+
       /// \brief Make image 1D.
       ///
       /// The image must be forged. If HasSimpleStride,

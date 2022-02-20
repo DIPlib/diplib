@@ -366,6 +366,7 @@ void init_image( py::module& m ) {
    // Modify image without copying pixel data
    img.def( "PermuteDimensions", &dip::Image::PermuteDimensions, "order"_a, py::return_value_policy::reference_internal );
    img.def( "SwapDimensions", &dip::Image::SwapDimensions, "dim1"_a, "dim2"_a, py::return_value_policy::reference_internal );
+   img.def( "ReverseDimensions", &dip::Image::ReverseDimensions, py::return_value_policy::reference_internal );
    img.def( "Flatten", &dip::Image::Flatten, py::return_value_policy::reference_internal );
    img.def( "FlattenAsMuchAsPossible", &dip::Image::FlattenAsMuchAsPossible, py::return_value_policy::reference_internal );
    img.def( "SplitDimension", &dip::Image::SplitDimension, "dim"_a, "size"_a, py::return_value_policy::reference_internal );

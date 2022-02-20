@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -833,6 +833,20 @@ class DIP_NO_EXPORT PixelSize {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( std::max( d1, d2 ) + 2 );
             swap( size_[ d1 ], size_[ d2 ] );
+         }
+      }
+
+      /// Reverses the dimensions, assuming that there are `d` dimensions.
+      ///
+      /// With this call, dimension 0 becomes dimension `d-1`, dimension 1 becomes dimension `d-2`,
+      /// etc. and dimension `d-1` becomes dimension 0.
+      void Reverse( dip::uint d ) {
+         // If we have an empty array we leave it empty.
+         // If we have a scalar array, all dimensions are identical, so we don't need to do anything.
+         if( size_.size() > 1 ) {
+            EnsureDimensionality( d );
+            size_.resize( d ); // Delete any values beyond `d`.
+            std::reverse( size_.begin(), size_.end() );
          }
       }
 
