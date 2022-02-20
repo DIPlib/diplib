@@ -23,18 +23,21 @@
 using namespace pybind11::literals;
 namespace py = pybind11;
 
-// A copy of the value in PyDIP_bin -- its value should be kept in synch, we always update both at the same time.
-bool reverseDimensions = true;
+// Copied from pydip.h, rather than including that header here.
+py::function ReverseDimensionsFcn;
+inline bool ReverseDimensions() {
+   return ReverseDimensionsFcn().cast< bool >();
+}
 
 PYBIND11_MODULE( PyDIPjavaio, m ) {
 
-   m.def( "_ReverseDimensions", [ & ](){ return reverseDimensions; }, "Return the value of the 'PyDIPjavaio._ReverseDimensions' property." );
-   m.def( "_ReverseDimensions", [ & ]( bool newValue ){ reverseDimensions = newValue; }, "newValue"_a, "Set the 'PyDIPjavaio._ReverseDimensions' property." );
+   m.def( "_SetReverseDimensionsFcn", [ & ]( py::function fcn ){ ReverseDimensionsFcn = std::move( fcn ); },
+          "Set the ReverseDimensionsFcn function in PyDIPjavaio." );
 
    // diplib/javaio.h
    m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
              auto out = dip::javaio::ImageReadJavaIO( filename, interface );
-             if( !reverseDimensions ) {
+             if( !ReverseDimensions() ) {
                 out.ReverseDimensions();
              }
              return out;
@@ -44,7 +47,7 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
    // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
    m.def( "ImageRead", []( dip::String const& filename, dip::String const& format ) {
              auto out = dip::ImageRead( filename, format );
-             if( !reverseDimensions ) {
+             if( !ReverseDimensions() ) {
                 out.ReverseDimensions();
              }
              return out;

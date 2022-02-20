@@ -18,11 +18,6 @@
 #include "pydip.h"
 #include "diplib/generic_iterators.h"
 
-// By default, we reverse the dimensions of the buffer protocol. This makes images
-// loaded outside of DIPlib have an (x,y,z) indexing order inside DIPlib.
-// This value can be set to `false` to keep the NumPy indexing order of (z,y,x).
-bool reverseDimensions = true;
-
 namespace {
 
 dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
@@ -125,7 +120,7 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       strides[ ii ] = s;
    }
    // Optionally reverse dimensions
-   if( reverseDimensions ) {
+   if( ReverseDimensions() ) {
       sizes.reverse();
       strides.reverse();
    }
@@ -226,7 +221,7 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
       s *= itemsize;
    }
    // Optionally reverse sizes and strides arrays
-   if( reverseDimensions ) {
+   if( ReverseDimensions() ) {
       sizes.reverse();
       strides.reverse();
    }
@@ -274,9 +269,6 @@ dip::String ImageRepr( dip::Image const& image ) {
 } // namespace
 
 void init_image( py::module& m ) {
-
-   m.def( "_ReverseDimensions", [ & ](){ return reverseDimensions; }, "Return the value of the 'PyDIP_bin._ReverseDimensions' property." );
-   m.def( "_ReverseDimensions", [ & ]( bool newValue ){ reverseDimensions = newValue; }, "newValue"_a, "Set the 'PyDIP_bin._ReverseDimensions' property." );
 
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), "The class that encapsulates DIPlib images of all types." );
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed:

@@ -197,11 +197,15 @@ if hasattr(sys,'ps1'):
     print("Version " + libraryInformation.version + " (" + libraryInformation.date + ")")
     print("For more information see " + libraryInformation.URL)
 
-# The `reverseDimensions` value, which is stored in PyDIP_bin (imported into the current namespace)
-# as well as in PyDIPviewer (imported as viewer) and PyDIPjavaio (imported as javaio).
-# We set `reverseDimensions` to True by default, meaning that dimensions are reversed when
+# The `_reverseDimensions` value, read through _GetReverseDimensions().
+# The binary modules (PyDIP_bin, PyDIPviewer and PyDIPjavaio) receive a reference to
+# this function, and call it to determine the value of this variable.
+# TODO: is there a way to keep a reference to a python variable (not value) in a C++ pybind11 module?
+# We set `_reverseDimensions` to True by default, meaning that dimensions are reversed when
 # reading or writing from a Python buffer protocol object. Calling `ReverseDimensions()`
 # sets the `reverseDimensions` value to False.
+_reverseDimensions = True
+
 def ReverseDimensions():
     """By default, DIPlib uses the (x,y,z) index order. This order is reversed from
     how NumPy (and, by extension, packages such as scikit-image, matplotlib and
@@ -212,8 +216,14 @@ def ReverseDimensions():
     revert to the default order. Please don't try to mix dimension ordering within
     your program.
     """
-    PyDIP_bin._ReverseDimensions(False)
-    if hasDIPjavaio:
-        javaio._ReverseDimensions(False)
-    if hasDIPviewer:
-        viewer._ReverseDimensions(False)
+    global _reverseDimensions
+    _reverseDimensions = False
+
+def _GetReverseDimensions():
+    return _reverseDimensions
+
+PyDIP_bin._SetReverseDimensionsFcn(_GetReverseDimensions)
+if hasDIPjavaio:
+    javaio._SetReverseDimensionsFcn(_GetReverseDimensions)
+if hasDIPviewer:
+    viewer._SetReverseDimensionsFcn(_GetReverseDimensions)

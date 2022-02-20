@@ -69,7 +69,11 @@ void init_assorted( py::module& m );
 
 dip::Random& RandomNumberGenerator();
 
-extern bool reverseDimensions;
+// This function should be called to determine the value of the _reverseDimensions variable in Python.
+extern py::function ReverseDimensionsFcn;
+inline bool ReverseDimensions() {
+   return ReverseDimensionsFcn().cast< bool >();
+}
 
 namespace pybind11 {
 

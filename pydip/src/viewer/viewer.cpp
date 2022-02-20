@@ -20,8 +20,8 @@
 
 #include "../pydip.h"
 
-// A copy of the value in PyDIP_bin -- its value should be kept in synch, we always update both at the same time.
-bool reverseDimensions = true;
+py::function ReverseDimensionsFcn;
+// Note that we can use the access function defined in pydip.h here!
 
 static dip::String toString( dip::uint idx, dip::String const* options, dip::uint n ) {
    DIP_THROW_IF( idx >= n, dip::E::INDEX_OUT_OF_RANGE );
@@ -45,8 +45,8 @@ static int drawHook() {
 
 PYBIND11_MODULE( PyDIPviewer, m ) {
 
-   m.def( "_ReverseDimensions", [ & ](){ return reverseDimensions; }, "Return the value of the 'PyDIPviewer._ReverseDimensions' property." );
-   m.def( "_ReverseDimensions", [ & ]( bool newValue ){ reverseDimensions = newValue; }, "newValue"_a, "Set the 'PyDIPviewer._ReverseDimensions' property." );
+   m.def( "_SetReverseDimensionsFcn", [ & ]( py::function fcn ){ ReverseDimensionsFcn = std::move( fcn ); },
+          "Set the ReverseDimensionsFcn function in PyDIPviewer." );
 
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
    sv.def( "SetImage", []( dip::viewer::SliceViewer &self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
@@ -159,7 +159,7 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    m.def( "Show", []( dip::Image const& image, dip::String const& title ) {
              if( PyOS_InputHook == nullptr ) PyOS_InputHook = &drawHook;
              auto h = dip::viewer::Show( image, title );
-             if( !reverseDimensions ) {
+             if( !ReverseDimensions() ) {
                 // Reverse shown dimensions
                 auto& dims = h->options().dims_;
                 if( image.Dimensionality() == 0 )

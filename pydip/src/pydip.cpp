@@ -21,6 +21,9 @@
 
 static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how can I work with logical Python buffers?" );
 
+// Storage for global variable
+py::function ReverseDimensionsFcn;
+
 namespace {
 
 dip::String InfoRepr( dip::LibraryInformation const& info ) {
@@ -216,6 +219,9 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    // diplib/multithreading.h
    m.def( "SetNumberOfThreads", &dip::SetNumberOfThreads, "nThreads"_a );
    m.def( "GetNumberOfThreads", &dip::GetNumberOfThreads );
+
+   m.def( "_SetReverseDimensionsFcn", [ & ]( py::function fcn ){ ReverseDimensionsFcn = std::move( fcn ); },
+          "Set the ReverseDimensionsFcn function in PyDIP_bin." );
 
    // Include definitions from all other source files
    init_image( m );
