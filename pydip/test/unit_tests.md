@@ -121,31 +121,31 @@ You can explicitly convert to a NumPy array.
 
     >>> img = dip.Image((3,2), dt='UINT8')
     >>> img.Fill(0)
-    >>> np.array(dip.Convert(img, 'BIN'))
+    >>> np.asarray(dip.Convert(img, 'BIN'))
     array([[False, False, False],
            [False, False, False]])
-    >>> np.array(dip.Convert(img, 'UINT8'))
+    >>> np.asarray(dip.Convert(img, 'UINT8'))
     array([[0, 0, 0],
            [0, 0, 0]], dtype=uint8)
-    >>> np.array(dip.Convert(img, 'UINT16'))
+    >>> np.asarray(dip.Convert(img, 'UINT16'))
     array([[0, 0, 0],
            [0, 0, 0]], dtype=uint16)
-    >>> np.array(dip.Convert(img, 'UINT32'))
+    >>> np.asarray(dip.Convert(img, 'UINT32'))
     array([[0, 0, 0],
            [0, 0, 0]], dtype=uint32)
-    >>> np.array(dip.Convert(img, 'UINT64'))
+    >>> np.asarray(dip.Convert(img, 'UINT64'))
     array([[0, 0, 0],
            [0, 0, 0]], dtype=uint64)
-    >>> np.array(dip.Convert(img, 'SFLOAT'))
+    >>> np.asarray(dip.Convert(img, 'SFLOAT'))
     array([[0., 0., 0.],
            [0., 0., 0.]], dtype=float32)
-    >>> np.array(dip.Convert(img, 'DFLOAT'))
+    >>> np.asarray(dip.Convert(img, 'DFLOAT'))
     array([[0., 0., 0.],
            [0., 0., 0.]])
-    >>> np.array(dip.Convert(img, 'SCOMPLEX'))
+    >>> np.asarray(dip.Convert(img, 'SCOMPLEX'))
     array([[0.+0.j, 0.+0.j, 0.+0.j],
            [0.+0.j, 0.+0.j, 0.+0.j]], dtype=complex64)
-    >>> np.array(dip.Convert(img, 'DCOMPLEX'))
+    >>> np.asarray(dip.Convert(img, 'DCOMPLEX'))
     array([[0.+0.j, 0.+0.j, 0.+0.j],
            [0.+0.j, 0.+0.j, 0.+0.j]])
 

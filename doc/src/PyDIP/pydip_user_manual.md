@@ -177,7 +177,7 @@ img.shape                 # error! np.array property not defined for dip.Image
 
 One can "cast" from a *NumPy* array to a *DIPlib* image and back:
 ```python
-x = np.array(img)
+x = np.asarray(img)
 y = dip.Image(array)
 ```
 

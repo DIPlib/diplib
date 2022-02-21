@@ -103,7 +103,7 @@ Permute the image, so that its strides are reversed and saved in fortran order b
     >>> img0.Strides()
     [28, 1]
     >>> dip.ImageWriteNPY(img0, fname)
-    >>> data0 = np.array(img0)
+    >>> data0 = np.asarray(img0)
 
 Load using NumPy and compare
 
@@ -166,7 +166,7 @@ Load using DIPlib and compare
     >>> img0.Mirror(1)
     <Scalar image, SINT32, sizes {12, 10, 11}>
     >>> dip.ImageWriteNPY(img0, fname)
-    >>> data0 = np.array(img0)
+    >>> data0 = np.asarray(img0)
 
 Load using NumPy and compare
 
