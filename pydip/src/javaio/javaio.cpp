@@ -18,21 +18,12 @@
 #include "diplib/javaio.h"
 #include "diplib/simple_file_io.h"
 
-#include <pybind11/pybind11.h>
+#include "../pydip.h"
 
 using namespace pybind11::literals;
 namespace py = pybind11;
 
-// Copied from pydip.h, rather than including that header here.
-py::function ReverseDimensionsFcn;
-inline bool ReverseDimensions() {
-   return ReverseDimensionsFcn().cast< bool >();
-}
-
 PYBIND11_MODULE( PyDIPjavaio, m ) {
-
-   m.def( "_SetReverseDimensionsFcn", [ & ]( py::function fcn ){ ReverseDimensionsFcn = std::move( fcn ); },
-          "Set the ReverseDimensionsFcn function in PyDIPjavaio." );
 
    // diplib/javaio.h
    m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
