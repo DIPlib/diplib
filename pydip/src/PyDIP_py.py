@@ -145,7 +145,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
         return
     sizes = [x for x in img.Sizes() if x > 1]
     if len(sizes) == 1:
-        data = np.squeeze(np.array(img))
+        data = np.squeeze(np.asarray(img))
         length = sizes[0]
         if np.iscomplexobj(data):
             if complexMode == 'abs' or complexMode == 'magnitude':
