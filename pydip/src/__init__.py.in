@@ -22,7 +22,7 @@ See the User Manual online: https://diplib.org/diplib-docs/pydip_user_manual.htm
 # We set `_reverseDimensions` to True by default, meaning that dimensions are reversed when
 # reading or writing from a Python buffer protocol object. Calling `ReverseDimensions()`
 # sets the `reverseDimensions` value to False.
-_reverseDimensions = True
+_reverseDimensions = [True]
 
 def ReverseDimensions():
     """By default, DIPlib uses the (x,y,z) index order. This order is reversed from
@@ -35,7 +35,7 @@ def ReverseDimensions():
     your program.
     """
     global _reverseDimensions
-    _reverseDimensions = False
+    _reverseDimensions[0] = False
 
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
 import os, time

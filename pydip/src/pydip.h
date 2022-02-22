@@ -71,7 +71,8 @@ dip::Random& RandomNumberGenerator();
 
 // This function should be called to determine the value of the _reverseDimensions variable in Python.
 inline bool ReverseDimensions() {
-   return py::module_::import( "diplib" ).attr( "_reverseDimensions" ).cast< bool >();
+   static py::handle _reverseDimensions = static_cast< py::object >( py::module_::import( "diplib" ).attr( "_reverseDimensions" )).release();
+   return PyList_GET_ITEM( reinterpret_cast< PyListObject* >( _reverseDimensions.ptr() ), 0) == Py_True;
 }
 
 namespace pybind11 {
