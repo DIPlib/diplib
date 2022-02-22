@@ -2494,6 +2494,10 @@ class DIP_NO_EXPORT Image {
       /// For a complex-valued image, the modulus (absolute value) is returned.
       operator FloatArray() const;
 
+      /// \brief Sets all pixels not in `mask` to zero. `img.Mask(mask)` is equivalent to `img.At(~mask).Fill(0)`, but
+      /// without creating an intermediate copy of `mask`. Can also be expressed as `img *= mask`.
+      DIP_EXPORT void Mask( dip::Image const& mask );
+
       /// \endname
 
    private:

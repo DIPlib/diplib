@@ -12,10 +12,12 @@ title: "Changes DIPlib 3.2.1"
 - Added `Perimeter()` (as an alias for `Length()`), `Reverse()`, `Rotate()`, `Scale()`, and `Translate()`
   as member functions to `dip::Polygon`.
 
-### Changed functionality
-
 - `dip::MomentAccumulator` has a new method `PlainSecondOrder()`, which returns the plain old second
   order central moments, compared to the moment of inertia tensor returned by `SecondOrder()`.
+
+- Added `dip::Image::Mask()`.
+
+### Changed functionality
 
 ### Bug fixes
 
@@ -60,11 +62,13 @@ title: "Changes DIPlib 3.2.1"
   had to be extracted by conversion to a NumPy array, and the values of `dip.ChainCode` by copying to
   a list when accessing its `codes` property.
 
-### Changed functionality
-
 - The structure returned by `dip.Moments()` has a new component `plainSecondOrder`, which contains
   the plain old second order central moments, compared to the moment of inertia tensor contained
-  in `secondOrder`. 
+  in `secondOrder`.
+
+- Added `dip.Image.Mask()`.
+
+### Changed functionality
 
 - Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which
   is interpreted as a 0D tensor image (column vector). This makes `img / img[0]` possible.

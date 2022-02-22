@@ -635,6 +635,12 @@ void Image::Fill( Image::Sample const& sample ) {
    }
 }
 
+void Image::Mask( dip::Image const& mask ) {
+   DIP_THROW_IF( !IsForged() || !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW ));
+   DIP_STACK_TRACE_THIS( *this *= mask );
+}
+
 } // namespace dip
 
 

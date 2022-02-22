@@ -446,6 +446,7 @@ void init_image( py::module& m ) {
    img.def( "SwapBytesInSample", &dip::Image::SwapBytesInSample );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
+   img.def( "Mask", &dip::Image::Mask , "mask"_a );
 
    // Indexing into single pixel using coordinates
    img.def( "__getitem__", []( dip::Image const& self, dip::uint index ) -> dip::Image::Pixel { return self.At( index ); } );
