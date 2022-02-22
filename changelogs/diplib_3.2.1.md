@@ -86,6 +86,8 @@ title: "Changes DIPlib 3.2.1"
 - Fixed a few issues with indexing into image, allowing using a list of coordinates, and allowing assigning
   a scalar value into a multi-channel image.
 
+- `dip.SubpixelMaxima()` and `dip.SubpixelMinima()`, when a mask image was given, didn't work correctly.
+
 (See also bugfixes to *DIPlib*.)
 
 

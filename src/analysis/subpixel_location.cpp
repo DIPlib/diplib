@@ -526,7 +526,7 @@ SubpixelLocationArray SubpixelExtrema(
    // Mask local extrema
    if( mask.IsForged() ) {
       DIP_STACK_TRACE_THIS( mask.CheckIsMask( localExtrema.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW ));
-      And( localExtrema, mask, localExtrema );
+      localExtrema.Mask( mask );
    }
 
    // Remove local extrema on the edge of the image
