@@ -15,11 +15,11 @@ title: "Changes DIPlib 3.2.1"
 - `dip::MomentAccumulator` has a new method `PlainSecondOrder()`, which returns the plain old second
   order central moments, compared to the moment of inertia tensor returned by `SecondOrder()`.
 
-- Added `dip::Image::Mask()`.
+- Added `dip::Image::Mask()`, to apply a mask to an image.
 
 - Added `reverse()` to `dip::DimensionArray<>` and `Reverse()` to `dip::PixelSize`.
 
-- Added `dip::Image::ReverseDimensions()`.
+- Added `dip::Image::ReverseDimensions()`, which permutes dimensions to reverse their order.
 
 ### Changed functionality
 
@@ -72,13 +72,14 @@ title: "Changes DIPlib 3.2.1"
   the plain old second order central moments, compared to the moment of inertia tensor contained
   in `secondOrder`.
 
-- Added `dip.Image.Mask()`.
-
-- Added `dip.Image.ReverseDimensions()`.
+- Added `Mask()` and `ReverseDimensions()` as methods to `dip.Image`.
 
 - Added `dip.ReverseDimensions()`, which reverses the indexing order for images for the remainder of the
   session. Has repercussion on how the `dip.Image` buffer is exposed, buffer protocol objects are
   converted to a `dip.Image`, files are read and written, and how *DIPviewer* displays images.
+  It is intended to make indexing into a `dip.Image` match the indexing into the corresponding
+  *NumPy* array, which should make it easier to mix calls to *DIPlib* and *scikit-image* in the same
+  program. Note that this also causes positive angles to be counter-clockwise instead of clockwise.
 
 ### Changed functionality
 

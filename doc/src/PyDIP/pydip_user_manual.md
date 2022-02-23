@@ -210,3 +210,10 @@ object as above, and passed to the *DIPlib* function. This means that, whether t
 array or a *DIPlib* image, other function parameters that identify dimensions are always interpreted
 in the same way. For example, the filter sizes are ordered (x, y, z), not (z, y, x) as they would be
 ordered in *scikit-image* or other Python imaging libraries.
+
+By calling `dip.ReverseDimensions()` (which one should do only directly after loading the `diplib`
+module to avoid confusing results), *PyDIP* is configured to reverse dimensions of all *DIPlib* images.
+This means that the *NumPy* indexing order will be preserved, images will be indexed as `img[z,y,x]`.
+This has several surprising results, for example the direction of all angles is reversed, with
+positive angles being counter-clockwise instead of clockwise. This option is intended to make it
+easier to mix *DIPlib* functions into code that also uses e.g. *scikit-image*.
