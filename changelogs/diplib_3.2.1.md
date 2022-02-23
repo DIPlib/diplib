@@ -34,6 +34,8 @@ title: "Changes DIPlib 3.2.1"
 
 - Better error messages for some forms of `dip::Image::View::At()`
 
+- `dip::ImageDisplay()` didn't pay attention to the `dim1` and `dim2` parameters if the image was 2D.
+
 
 
 

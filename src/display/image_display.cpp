@@ -157,13 +157,13 @@ void ImageDisplay::UpdateSlice() {
                break;
             }
          }
-         if( dim1_ == dim2_ ) {
-            slice_.PermuteDimensions( { dim1_ } );
-         } else {
-            slice_.PermuteDimensions( { dim1_, dim2_ } );
-         }
       } else {
          slice_ = image_.QuickCopy();
+      }
+      if( dim1_ == dim2_ ) {
+         slice_.PermuteDimensions( { dim1_ } );
+      } else {
+         slice_.PermuteDimensions( { dim1_, dim2_ } );
       }
       sizeIsDirty_ = false;
       sliceIsDirty_ = false;
@@ -174,7 +174,7 @@ void ImageDisplay::UpdateSlice() {
 void ImageDisplay::UpdateRgbSlice() {
    UpdateSlice();
    if( rgbSliceIsDirty_ ) {
-      if( colorspace_.empty() ) {
+      if( colorspace_.empty() || ( colorspace_ == "sRGB" )) {
          if( slice_.IsScalar() || ( colorspace_ == "sRGB" )) {
             rgbSlice_ = slice_.QuickCopy();
          } else {
