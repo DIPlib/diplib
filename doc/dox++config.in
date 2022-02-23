@@ -3,7 +3,9 @@
 [clang]
 compiler flags = -std=c++14
 include directories = @PROJECT_SOURCE_DIR@/include/
-                      /Applications/MATLAB_R2017a.app/extern/include/ /usr/local/include/opencv4/ /usr/local/include/
+                      @Matlab_INCLUDE_DIRS@
+                      @OpenCV_INCLUDE_DIRS@
+                      @Vigra_INCLUDE_DIRS@
 
 [log]
 level = warning

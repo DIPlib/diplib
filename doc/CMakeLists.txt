@@ -27,6 +27,14 @@ endif()
 set(DOXPP_FOUND ${DOXPP_FOUND} PARENT_SCOPE)
 
 if(DOXPP_FOUND)
+   find_package(OpenCV QUIET COMPONENTS core)
+   if(NOT OpenCV_FOUND)
+      set(OpenCV_INCLUDE_DIRS "")
+   endif()
+   find_package(Vigra QUIET)
+   if(NOT Vigra_FOUND)
+      set(Vigra_INCLUDE_DIRS "")
+   endif()
    configure_file("${CMAKE_CURRENT_LIST_DIR}/dox++config.in" "${CMAKE_CURRENT_BINARY_DIR}/dox++config" @ONLY)
    add_custom_target(
          apidoc
