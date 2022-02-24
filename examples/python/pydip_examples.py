@@ -62,7 +62,7 @@ a.Show()
 ###
 
 a = dip.ImageReadICS('../cermet')
-a.SetPixelSize(dip.PixelSize(dip.PhysicalQuantity(1, "um")))
+a.SetPixelSize(1, "um")
 b = dip.Label(a < 120)
 dip.MeasurementTool.Features()
 m = dip.MeasurementTool.Measure(b, a, ['Size', 'Feret', 'Solidity', 'Statistics'])

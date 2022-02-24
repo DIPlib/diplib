@@ -157,7 +157,7 @@ void init_statistics( py::module& m ) {
                     os << ", skewness=" << s.Skewness();
                     os << ", kurtosis=" << s.ExcessKurtosis();
                     os << ", number=" << s.Number();
-                    os << ">";
+                    os << '>';
                     return os.str();
                  } );
    statsAcc.def_property_readonly( "mean", &dip::StatisticsAccumulator::Mean );
@@ -182,7 +182,7 @@ void init_statistics( py::module& m ) {
                   os << ", Covariance=" << s.Covariance();
                   os << ", Correlation=" << s.Correlation();
                   os << ", Slope=" << s.Slope();
-                  os << ">";
+                  os << '>';
                   return os.str();
                } );
    covAcc.def_property_readonly( "Number", &dip::CovarianceAccumulator::Number );
@@ -205,7 +205,7 @@ void init_statistics( py::module& m ) {
                      os << ", firstOrder=" << s.FirstOrder();
                      os << ", secondOrder=" << s.SecondOrder();
                      os << ", plainSecondOrder=" << s.PlainSecondOrder();
-                     os << ">";
+                     os << '>';
                      return os.str();
                   } );
    momentAcc.def_property_readonly( "zerothOrder", &dip::MomentAccumulator::Sum );
@@ -229,7 +229,7 @@ void init_statistics( py::module& m ) {
                    os << ", fallout=" << s.fallout;
                    os << ", accuracy=" << s.accuracy;
                    os << ", precision=" << s.precision;
-                   os << ">";
+                   os << '>';
                    return os.str();
                 } );
    overlap.def_readonly( "truePositives", &dip::SpatialOverlapMetrics::truePositives );

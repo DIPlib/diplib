@@ -62,6 +62,40 @@ class type_caster< dip::Histogram::Configuration::Mode > {
 } // namespace detail
 } // namespace pybind11
 
+namespace {
+
+char const* Format( bool v ) {
+   return v ? "%" : "";
+}
+
+dip::String ConfigRepr( dip::Histogram::Configuration const& s ) {
+   std::ostringstream os;
+   os << "<Histogram.Configuration, ";
+   switch( s.mode ) {
+      case dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE:
+         os << '[' << s.lowerBound << Format(s.lowerIsPercentile)
+            << ',' << s.upperBound << Format(s.upperIsPercentile)
+            << "], " << s.nBins << " bins";
+         break;
+      case dip::Histogram::Configuration::Mode::COMPUTE_BINS:
+         os << '[' << s.lowerBound << Format(s.lowerIsPercentile)
+            << ',' << s.upperBound << Format(s.upperIsPercentile)
+            << "], bin width " << s.binSize;
+         break;
+      case dip::Histogram::Configuration::Mode::COMPUTE_LOWER:
+         os << "[?," << s.upperBound << Format(s.upperIsPercentile)
+            << "], " << s.nBins << " bins of width " << s.binSize;
+         break;
+      case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
+         os << '[' << s.lowerBound << Format(s.lowerIsPercentile)
+            << ",?], " << s.nBins << " bins of width " << s.binSize;
+         break;
+   }
+   os << '>';
+   return os.str();
+}
+
+} // namespace
 
 void init_histogram( py::module& m ) {
 
@@ -82,28 +116,7 @@ void init_histogram( py::module& m ) {
    conf.def( py::init< dip::dfloat, dip::dfloat, dip::uint >(), "lowerBound"_a, "upperBound"_a, "nBins"_a = 256 );
    conf.def( py::init< dip::dfloat, dip::uint, dip::dfloat >(), "lowerBound"_a, "nBins"_a, "binSize"_a );
    conf.def( py::init< dip::DataType >(), "dataType"_a );
-   conf.def( "__repr__", []( dip::Histogram::Configuration const& self ) {
-                std::ostringstream os;
-                switch( self.mode ) {
-                   case dip::Histogram::Configuration::Mode::COMPUTE_BINSIZE:
-                      os << "<Histogram.Configuration, [" << self.lowerBound << ',' << self.upperBound << "], "
-                         << self.nBins << " bins>";
-                      break;
-                   case dip::Histogram::Configuration::Mode::COMPUTE_BINS:
-                      os << "<Histogram.Configuration, [" << self.lowerBound << ',' << self.upperBound << "], bin width "
-                         << self.binSize << ">";
-                      break;
-                   case dip::Histogram::Configuration::Mode::COMPUTE_LOWER:
-                      os << "<Histogram.Configuration, [?," << self.upperBound << "], "
-                         << self.nBins << " bins of width " << self.binSize << ">";
-                      break;
-                   case dip::Histogram::Configuration::Mode::COMPUTE_UPPER:
-                      os << "<Histogram.Configuration, [" << self.lowerBound << ",?], "
-                         << self.nBins << " bins of width " << self.binSize << ">";
-                      break;
-                }
-                return os.str();
-             } );
+   conf.def( "__repr__", &ConfigRepr );
 
    hist.def( py::init< dip::Image const&, dip::Image const&, dip::Histogram::ConfigurationArray >(),
              "input"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::ConfigurationArray{} );
@@ -134,12 +147,12 @@ void init_histogram( py::module& m ) {
              "nBins1"_a = 256, "nBins2"_a = 256, "boundsArePercentile"_a = false );
    hist.def( py::init< dip::Histogram::ConfigurationArray >(), "configuration"_a );
    hist.def( "__repr__", []( dip::Histogram const& self ) {
-                if( self.IsInitialized() ) {
-                   std::ostringstream os;
-                   os << "<Histogram, " << self.Dimensionality() << "D>";
-                   return os.str();
+                if( !self.IsInitialized() ) {
+                   return std::string{ "<Uninitialized histogram>" };
                 }
-                return std::string{ "<Histogram, uninitialized>" };
+                std::ostringstream os;
+                os << "<Histogram, sizes " << self.GetImage().Sizes() << '>';
+                return os.str();
              } );
    hist.def( "__str__", []( dip::Histogram const& self ) { std::ostringstream os; os << self; return os.str(); } );
    hist.def( "IsInitialized", &dip::Histogram::IsInitialized );

@@ -197,7 +197,9 @@ void init_measurement( py::module& m ) {
    auto fInfo = py::class_< dip::Measurement::FeatureInformation >( mm, "FeatureInformation", "Information about one measurement feature." );
    fInfo.def( "__repr__", []( dip::Measurement::FeatureInformation const& self ) {
                  std::ostringstream os;
-                 os << "<FeatureInformation: name = " << self.name << ", numberValues = " << self.numberValues << ">";
+                 os << "<FeatureInformation: name=" << self.name
+                    << ", startColumn=" << self.startColumn
+                    << ", numberValues=" << self.numberValues << '>';
                  return os.str();
               } );
    fInfo.def_readonly( "name", &dip::Measurement::FeatureInformation::name );
@@ -208,7 +210,7 @@ void init_measurement( py::module& m ) {
    auto vInfo = py::class_< dip::Feature::ValueInformation >( mm, "ValueInformation", "Information about one measurement feature value." );
    vInfo.def( "__repr__", []( dip::Feature::ValueInformation const& self ) {
                  std::ostringstream os;
-                 os << "<ValueInformation: name = " << self.name << ", units = " << self.units << ">";
+                 os << "<ValueInformation: name=" << self.name << ", units=" << self.units << '>';
                  return os.str();
               } );
    vInfo.def_readonly( "name", &dip::Feature::ValueInformation::name );
@@ -241,7 +243,7 @@ void init_measurement( py::module& m ) {
                    } );
    obj.def( "__repr__", []( dip::Measurement::IteratorObject const& self ) {
                std::ostringstream os;
-               os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << ">";
+               os << "<MeasurementObject with " << self.NumberOfFeatures() << " features for object " << self.ObjectID() << '>';
                return os.str();
             } );
    obj.def( "__getitem__", []( dip::Measurement::IteratorObject const& self, dip::String const& name ) {
@@ -382,7 +384,7 @@ void init_measurement( py::module& m ) {
    auto chain = py::class_< dip::ChainCode >( m, "ChainCode", "" );
    chain.def( "__repr__", []( dip::ChainCode const& self ) {
                  std::ostringstream os;
-                 os << "<ChainCode for object #" << self.objectID << ">";
+                 os << "<ChainCode for object #" << self.objectID << '>';
                  return os.str();
               } );
    chain.def( "__getitem__", []( dip::ChainCode const& self, dip::uint index ) {
@@ -446,7 +448,7 @@ void init_measurement( py::module& m ) {
                          os << ", minorAxis=" << s.minorAxis;
                          os << ", orientation=" << s.orientation;
                          os << ", eccentricity=" << s.eccentricity;
-                         os << ">";
+                         os << '>';
                          return os.str();
                       } );
    ellipseParams.def_readonly( "majorAxis", &dip::CovarianceMatrix::EllipseParameters::majorAxis );
@@ -464,7 +466,7 @@ void init_measurement( py::module& m ) {
                          os << ", maxPerpendicular=" << s.maxPerpendicular;
                          os << ", maxAngle=" << s.maxAngle;
                          os << ", minAngle=" << s.minAngle;
-                         os << ">";
+                         os << '>';
                          return os.str();
                       } );
    feretVals.def_readonly( "maxDiameter", &dip::FeretValues::maxDiameter );
@@ -483,7 +485,7 @@ void init_measurement( py::module& m ) {
                          os << ", maximum=" << s.Maximum();
                          os << ", minimum=" << s.Minimum();
                          os << ", circularity=" << s.Circularity();
-                         os << ">";
+                         os << '>';
                          return os.str();
                       } );
    radiusVals.def_property_readonly( "mean", &dip::RadiusValues::Mean );

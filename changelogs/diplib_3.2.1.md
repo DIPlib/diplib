@@ -90,6 +90,8 @@ title: "Changes DIPlib 3.2.1"
   shown when `dip.ImageRead()` fails. The error message is also a bit more helpful.
   See [issue #106](https://github.com/DIPlib/diplib/issues/106).
 
+- The `__repr__` string for many classes has changed to be more consistent and informative.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

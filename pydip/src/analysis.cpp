@@ -60,7 +60,7 @@ void init_analysis( py::module& m ) {
    loc.def_readonly( "value", &dip::SubpixelLocationResult::value );
    loc.def( "__repr__", []( dip::SubpixelLocationResult const& self ) {
                std::ostringstream os;
-               os << "<SubpixelLocationResult at " << self.coordinates << " with value " << self.value << ">";
+               os << "<SubpixelLocationResult: coordinates=" << self.coordinates << ", value=" << self.value << '>';
                return os.str();
             } );
 
@@ -155,7 +155,7 @@ void init_analysis( py::module& m ) {
    rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius );
    rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {
                std::ostringstream os;
-               os << "<RadonCircleParameters at " << self.origin << " with radius " << self.radius << ">";
+               os << "<RadonCircleParameters: origin=" << self.origin << ", radius=" << self.radius << '>';
                return os.str();
             } );
 

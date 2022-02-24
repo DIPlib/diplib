@@ -23,7 +23,7 @@ static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how 
 
 namespace {
 
-dip::String InfoRepr( dip::LibraryInformation const& info ) {
+dip::String InfoString( dip::LibraryInformation const& info ) {
    std::ostringstream os;
    os << "name: " << info.name << '\n';
    os << "description: " << info.description << '\n';
@@ -43,7 +43,7 @@ dip::String TensorRepr( dip::Tensor const& tensor ) {
 
 dip::String MetricRepr( dip::Metric const& s ) {
    std::ostringstream os;
-   os << "<";
+   os << '<';
    switch( s.Type() ) {
       case dip::Metric::TypeCode::CHAMFER:
          os << "Chamfer";
@@ -58,8 +58,11 @@ dip::String MetricRepr( dip::Metric const& s ) {
          os << "Unknown";
          break;
    }
-   os << " Metric with parameter " << s.Param();
-   os << ">";
+   os << " Metric";
+   if( s.Type() != dip::Metric::TypeCode::IMAGE ) {
+      os << " with parameter " << s.Param();
+   }
+   os << '>';
    return os.str();
 }
 
@@ -82,7 +85,8 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    info.def_readonly( "version", &dip::LibraryInformation::version, "The library version number" );
    info.def_readonly( "date", &dip::LibraryInformation::date, "Compilation date" );
    info.def_readonly( "type", &dip::LibraryInformation::type, "Describes options enabled during compilation" );
-   info.def( "__repr__", &InfoRepr );
+   info.def( "__repr__", []( dip::LibraryInformation const& ){ return "<LibraryInformation>"; } );
+   info.def( "__str__", &InfoString );
 
    m.attr( "libraryInformation" ) = dip::libraryInformation;
    m.attr( "__version__" ) = dip::libraryInformation.version;
@@ -136,8 +140,15 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    physQ.def( py::init<>() );
    physQ.def( py::init< dip::dfloat, dip::Units >(), "magnitude"_a, "units"_a = dip::Units{} );
    physQ.def( py::init< dip::Units >(), "units"_a );
-   physQ.def( "__repr__", []( dip::PhysicalQuantity const& self ) { std::ostringstream os; os << "<PhysicalQuantity {" << self << "}>"; return os.str(); } );
-   physQ.def( "__str__", []( dip::PhysicalQuantity const& self ) { std::ostringstream os; os << self; return os.str(); } );
+   physQ.def( "__repr__", []( dip::PhysicalQuantity const& self ) {
+                 std::ostringstream os;
+                 os << "<PhysicalQuantity: magnitude=" << self.magnitude << ", units=" << self.units << "}>";
+                 return os.str();
+              } );
+   physQ.def( "__str__", []( dip::PhysicalQuantity const& self ) {
+                 std::ostringstream os; os << self;
+                 return os.str();
+              } );
    physQ.def_readwrite( "magnitude", &dip::PhysicalQuantity::magnitude );
    physQ.def_readwrite( "units", &dip::PhysicalQuantity::units );
    physQ.def( py::self += py::self );
@@ -184,8 +195,15 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
               "magnitudes"_a, "units"_a = dip::Units{},
               "Overload that accepts the two components of a `dip.PhysicalQuantity`, using\n"
               "a different magnitude for each dimension." );
-   pixSz.def( "__repr__", []( dip::PixelSize const& self ) { std::ostringstream os; os << "<PixelSize " << self << ">"; return os.str(); } );
-   pixSz.def( "__str__", []( dip::PixelSize const& self ) { std::ostringstream os; os << self; return os.str(); } );
+   pixSz.def( "__repr__", []( dip::PixelSize const& self ) {
+                 std::ostringstream os;
+                 os << "<PixelSize " << self << '>';
+                 return os.str();
+              } );
+   pixSz.def( "__str__", []( dip::PixelSize const& self ) {
+                 std::ostringstream os; os << self;
+                 return os.str();
+              } );
    pixSz.def( "__len__", []( dip::PixelSize const& self ) { return self.Size(); } );
    pixSz.def( "__getitem__", &dip::PixelSize::Get );
    pixSz.def( "__setitem__", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::PixelSize::Set ));

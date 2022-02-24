@@ -23,14 +23,17 @@ namespace {
 
 dip::String KernelRepr( dip::Kernel const& s ) {
    std::ostringstream os;
-   os << "<" << s.ShapeString() << " Kernel with parameters " << s.Params();
+   os << '<' << s.ShapeString() << " Kernel";
+   if( !s.IsCustom() ) {
+      os << " with parameters " << s.Params();
+   }
    if( s.HasWeights() ) {
       os << ", with weights";
    }
    if( s.IsMirrored() ) {
       os << ", mirrored";
    }
-   os << ">";
+   os << '>';
    return os.str();
 }
 

@@ -67,7 +67,7 @@ dip::String StructuringElementRepr( dip::StructuringElement const& s ) {
             os << "Unknown";
             break;
       }
-      os << " SE with parameters " << s.Params();
+      os << " StructuringElement with parameters " << s.Params();
    }
    if( s.IsMirrored() ) {
       os << ", mirrored";
@@ -248,7 +248,7 @@ void init_morphology( py::module& m ) {
    py::implicitly_convertible< dip::Image, dip::Interval >();
    intv.def( "__repr__", []( dip::Interval const& self ) {
                 std::ostringstream os;
-                os << "<" << self.Sizes() << " Interval>";
+                os << "<Interval, sizes " << self.Sizes() << '>';
                 return os.str();
              } );
    intv.def( "Image", &dip::Interval::Image, py::return_value_policy::reference_internal );

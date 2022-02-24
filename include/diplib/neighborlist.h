@@ -154,7 +154,7 @@ class DIP_NO_EXPORT Metric {
          DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
       }
 
-      /// \brief Retrieve the type string.
+      /// \brief Retrieve the type code.
       TypeCode Type() const { return type_; }
 
       /// \brief Retrieve the parameter.
