@@ -118,7 +118,7 @@ title: "Changes DIPlib 3.2.1"
 
 ### Bug fixes
 
-
+- Automatically close all PyDIPviewer windows at program exit to avoid segfault.
 
 
 ## Changes to *DIPjavaio*

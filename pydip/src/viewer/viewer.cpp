@@ -42,6 +42,12 @@ static int drawHook() {
 
 PYBIND11_MODULE( PyDIPviewer, m ) {
 
+   // Close all windows on exit
+   py::module_::import( "atexit" ).attr( "register" )( py::cpp_function([]() {
+      dip::viewer::CloseAll();
+      if (PyOS_InputHook == &drawHook) PyOS_InputHook = nullptr;
+   }));
+
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
    sv.def( "SetImage", []( dip::viewer::SliceViewer &self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
    sv.def( "Destroy", &dip::viewer::SliceViewer::destroy, "Marks the window for destruction." );
@@ -76,8 +82,8 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    });
 
    sv.def_property( "labels", []( dip::viewer::SliceViewer& self ) {
-   dip::viewer::SliceViewer::Guard guard( self );
-   return self.options().labels_;
+      dip::viewer::SliceViewer::Guard guard( self );
+      return self.options().labels_;
    }, []( dip::viewer::SliceViewer& self, dip::String const& labels ) {
       dip::viewer::SliceViewer::Guard guard( self );
       DIP_THROW_IF( labels.size() < 1, dip::E::INVALID_PARAMETER );
