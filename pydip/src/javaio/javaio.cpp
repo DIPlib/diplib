@@ -25,6 +25,10 @@ namespace py = pybind11;
 
 PYBIND11_MODULE( PyDIPjavaio, m ) {
 
+   py::module_::import("atexit").attr("register")(py::cpp_function([]() {
+      ReverseDimensions( true );
+   }));
+
    // diplib/javaio.h
    m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
              auto out = dip::javaio::ImageReadJavaIO( filename, interface );

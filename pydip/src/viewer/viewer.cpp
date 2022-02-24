@@ -42,6 +42,11 @@ static int drawHook() {
 
 PYBIND11_MODULE( PyDIPviewer, m ) {
 
+   py::module_::import("atexit").attr("register")(py::cpp_function([]() {
+      ReverseDimensions( true );
+      dip::viewer::CloseAll();
+   }));
+
    auto sv = py::class_< dip::viewer::SliceViewer, std::shared_ptr< dip::viewer::SliceViewer > >( m, "SliceViewer" );
    sv.def( "SetImage", []( dip::viewer::SliceViewer &self, dip::Image const& image ) { dip::viewer::SliceViewer::Guard guard( self ); self.setImage( image ); }, "Sets the image to be visualized." );
    sv.def( "Destroy", &dip::viewer::SliceViewer::destroy, "Marks the window for destruction." );

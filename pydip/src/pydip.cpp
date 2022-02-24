@@ -73,6 +73,10 @@ dip::Random& RandomNumberGenerator() {
 PYBIND11_MODULE( PyDIP_bin, m ) {
    m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
 
+   py::module_::import("atexit").attr("register")(py::cpp_function([]() {
+      ReverseDimensions( true );
+   }));
+
    // diplib.h
    auto info = py::class_< dip::LibraryInformation >( m, "LibraryInformation", "Holds information about the DIPlib library." );
    info.def_readonly( "name", &dip::LibraryInformation::name, "The library name" );
