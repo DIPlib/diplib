@@ -148,8 +148,8 @@ void DefineROI(
    for( dip::uint ii = 0; ii < n; ++ii ) {
       ranges[ ii ] = Range( static_cast< dip::sint >( origin[ ii ] ), static_cast< dip::sint >( sizes[ ii ] + origin[ ii ] - 1 ), spacing[ ii ] );
    }
-   dest.Strip(); // strip output image to make sure data is not copied into it.
-   dest = src.At( std::move( ranges ));
+   dip::Image tmp = src.At( std::move( ranges ));
+   dest = tmp;
 }
 
 

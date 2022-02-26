@@ -2618,6 +2618,10 @@ inline bool Alias( Image const& img1, Image const& img2 ) {
 /// ```cpp
 /// DefineROI( src, dest, {}, {}, { 2 } );
 /// ```
+///
+/// If `dest` is protected, or has an external interface set that is different from
+/// `src`'s, then the pixel data will be copied over. Otherwise, `dest` will share
+/// data with `src`.
 DIP_EXPORT void DefineROI(
       Image const& src,
       Image& dest,
