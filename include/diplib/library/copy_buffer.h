@@ -27,6 +27,7 @@
 #define DIP_COPY_BUFFER_H
 
 #include "diplib/library/datatype.h"
+#include "diplib/library/sample_iterator.h"
 
 
 namespace dip {
@@ -89,19 +90,30 @@ static inline void FillBufferFromTo(
       dip::uint tensorElements,
       outT value
 ) {
-   if( tensorElements == 1 ) {
-      for( dip::uint pp = 0; pp < pixels; ++pp ) {
-         *outBuffer = value;
-         outBuffer += outStride;
+   if( outStride == 0 ) {
+      pixels = 1;
+   }
+   if( outTensorStride == 0 ) {
+      tensorElements = 1;
+   }
+   if((( outTensorStride == 1 ) && (( pixels == 1 ) || ( outStride == static_cast< dip::sint >( tensorElements )))) ||
+      (( outStride == 1 ) && (( tensorElements == 1 ) || ( outTensorStride == static_cast< dip::sint >( pixels ))))) {
+      // Buffer is contiguous
+      std::fill_n( outBuffer, pixels * tensorElements, value );
+   } else if( tensorElements == 1 ) {
+      // Scalar buffer
+      std::fill_n( SampleIterator< outT >( outBuffer, outStride ), pixels , value );
+   } else if( outStride > outTensorStride ) {
+      // Inner loop is tensor
+      for( auto it = SampleIterator< outT >( outBuffer, outStride ); pixels > 0; ++it ) {
+         --pixels;
+         std::fill_n( SampleIterator< outT >( it.Pointer(), outTensorStride ), tensorElements , value );
       }
    } else {
-      for( dip::uint pp = 0; pp < pixels; ++pp ) {
-         outT* out = outBuffer;
-         for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-            *out = value;
-            out += outTensorStride;
-         }
-         outBuffer += outStride;
+      // Outer loop is tensor
+      for( auto it = SampleIterator< outT >( outBuffer, outTensorStride ); tensorElements > 0; ++it ) {
+         --tensorElements;
+         std::fill_n( SampleIterator< outT >( it.Pointer(), outStride ), pixels , value );
       }
    }
 }

@@ -758,6 +758,146 @@ void ExpandBuffer(
 #include "doctest.h"
 #include <numeric>
 
+DOCTEST_TEST_CASE("[DIPlib] testing the FillBufferFromTo function") {
+   // Parameter order: outBuffer, outStride, outTensorStride, pixels, tensorElements, value
+
+   std::vector< dip::uint8 > output( 125 );
+   bool error;
+
+   // Contiguous cases
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 1, 1, 20, 1, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 20; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 1, 0, 20, 5, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 20; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 1, 10, 20, 1, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 20; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 1, 1, 1, 20, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 20; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 3, 1, 1, 20, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 20; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 0, 1, 3, 20, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 20; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 3, 1, 20, 3, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 60; ++ii ) {
+      error |= output[ ii ] != 42;
+   }
+   for( dip::uint ii = 60; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   // Non-contiguous cases
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 5, 1, 20, 3, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 100; ) {
+      for( dip::uint jj = 0; jj < 3; ++jj, ++ii ) {
+         error |= output[ ii ] != 42;
+      }
+      for( dip::uint jj = 3; jj < 5; ++jj, ++ii ) {
+         error |= output[ ii ] != 101;
+      }
+   }
+   for( dip::uint ii = 100; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 1, 25, 20, 3, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 75; ) {
+      for( dip::uint jj = 0; jj < 20; ++jj, ++ii ) {
+         error |= output[ ii ] != 42;
+      }
+      for( dip::uint jj = 20; jj < 25; ++jj, ++ii ) {
+         error |= output[ ii ] != 101;
+      }
+   }
+   for( dip::uint ii = 75; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::detail::FillBufferFromTo< dip::uint8 >( output.data(), 5, 25, 4, 3, 42 );
+   error = false;
+   for( dip::uint ii = 0; ii < 75; ) {
+      for( dip::uint jj = 0; jj < 4; ++jj ) {
+         error |= output[ ii ] != 42;
+         ++ii;
+         for( dip::uint kk = 1; kk < 5; ++kk, ++ii ) {
+            error |= output[ ii ] != 101;
+         }
+      }
+      for( dip::uint kk = 0; kk < 5; ++kk, ++ii ) {
+         error |= output[ ii ] != 101;
+      }
+   }
+   for( dip::uint ii = 75; ii < output.size(); ++ii ) {
+      error |= output[ ii ] != 101;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+}
+
 DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
 
    std::vector< dip::uint8 > input( 100 );
