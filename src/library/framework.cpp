@@ -89,12 +89,17 @@ static dip::uint OptimalProcessingDim_internal(
    constexpr dip::uint SMALL_IMAGE = 63;  // A good value would depend on the size of cache.
    dip::uint processingDim = 0;
    for( dip::uint ii = 1; ii < strides.size(); ++ii ) {
-      if(( strides[ ii ] != 0 ) && ( std::abs( strides[ ii ] ) < std::abs( strides[ processingDim ] ))) {
-         if( ( sizes[ ii ] > SMALL_IMAGE ) || ( sizes[ ii ] > sizes[ processingDim ] ) ) {
+      // The processing dimension should not have a stride of 0
+      if( strides[ ii ] != 0 ) {
+         if(   // the current processing dimension is 0
+               ( strides[ processingDim ] == 0 ) ||
+               // or this is not a small dimension and the stride is smaller than the current processing dimension
+               (( sizes[ ii ] > SMALL_IMAGE ) && ( std::abs( strides[ ii ] ) < std::abs( strides[ processingDim ] ))) ||
+               // or the current processing dimension is a small dimension, and this dimension is larger
+               (( sizes[ processingDim ] <= SMALL_IMAGE ) && ( sizes[ ii ] > sizes[ processingDim ] ))) {
+               // then update the processing dimension to this one
             processingDim = ii;
          }
-      } else if( ( sizes[ processingDim ] <= SMALL_IMAGE ) && ( sizes[ ii ] > sizes[ processingDim ] ) ) {
-         processingDim = ii;
       }
    }
    return processingDim;
