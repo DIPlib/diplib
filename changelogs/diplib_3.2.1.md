@@ -23,6 +23,9 @@ title: "Changes DIPlib 3.2.1"
 
 ### Changed functionality
 
+- The deterministic initialization for `dip::GaussianMixtureModel()` is more robust, making the
+  initial Gaussians overlap instead of setting their sigma to 1.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()`, when drawing filled polygons, would skip the bottom row in the polygon. The
@@ -37,6 +40,8 @@ title: "Changes DIPlib 3.2.1"
 - `dip::ImageDisplay()` didn't pay attention to the `dim1` and `dim2` parameters if the image was 2D.
 
 - `dip::DefineROI()` was incorrect if the input and output images were the same object.
+
+- `dip::GaussianMixtureModel()` could produce NaN for amplitude, those components now have a zero amplitude.
 
 
 

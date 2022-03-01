@@ -1,5 +1,5 @@
 /*
- * (c)2015-2021, Cris Luengo.
+ * (c)2015-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -681,8 +681,9 @@ struct GaussianParameters {
 /// `data` is an iterator (or pointer) to the first of `size` samples of a GMM (not random samples drawn
 /// from such a distribution, but rather samples of a function representing the distribution).
 /// `numberOfGaussians` Gaussians will be fitted to it using the Expectation Maximization (EM) procedure.
-/// The parameters are initialized deterministically, the means are distributed equally over the domain and
-/// the sigma and amplitude are set to 1.
+///
+/// The parameters are initialized deterministically, the means are distributed equally over the domain,
+/// the sigma are all set to the distance between means, and the amplitude are set to 1.
 ///
 /// `responsibilities` optionally points to a buffer of size `size * numberOfGaussians` that will be used
 /// internally. If set to `nullptr` or a default-initialized iterator, a buffer will be allocated internally.
@@ -693,8 +694,8 @@ struct GaussianParameters {
 ///
 /// The output is sorted by amplitude, most important component first.
 DIP_EXPORT std::vector< GaussianParameters > GaussianMixtureModel(
-      ConstSampleIterator< dfloat > data,       // size, input
-      SampleIterator< dfloat > responsibilities,// size * numberOfGaussians (optional), temporary storage -- can be nullptr to not use it
+      ConstSampleIterator< dfloat > data,
+      SampleIterator< dfloat > responsibilities,
       dip::uint size,
       dip::uint numberOfGaussians,
       dip::uint maxIter = 20,

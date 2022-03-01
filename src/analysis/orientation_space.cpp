@@ -92,9 +92,9 @@ void OrientationSpace(
 
 namespace {
 
-class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
+class GaussianMixtureModelLineFilter : public Framework::SeparableLineFilter {
    public:
-      SeparableConvolutionLineFilter( dip::uint numberOfGaussians, dip::uint maxIter, Option::Periodicity periodicity, dfloat scale )
+      GaussianMixtureModelLineFilter( dip::uint numberOfGaussians, dip::uint maxIter, Option::Periodicity periodicity, dfloat scale )
             : numberOfGaussians_( numberOfGaussians ), maxIter_( maxIter ), periodicity_( periodicity ), scale_( scale ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
@@ -165,7 +165,7 @@ void GaussianMixtureModel(
    out.ReForge( outSizes, 1, DT_DFLOAT );
    BooleanArray process( nDims, false );
    process[ dimension ] = true;
-   SeparableConvolutionLineFilter lineFilter( numberOfGaussians, maxIter, periodicity, scale );
+   GaussianMixtureModelLineFilter lineFilter( numberOfGaussians, maxIter, periodicity, scale );
    Framework::Separable( in, out, DT_DFLOAT, DT_DFLOAT, process, {}, {}, lineFilter,
                          Framework::SeparableOption::DontResizeOutput );
    out.SetPixelSize( dimension, {} );

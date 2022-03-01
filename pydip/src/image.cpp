@@ -495,7 +495,7 @@ void init_image( py::module& m ) {
    img.def( py::self - py::self );
    img.def( py::self - dip::Image::Pixel() );
    img.def( dip::Image::Pixel() - py::self );
-   img.def( py::self *= py::self );
+   img.def( py::self *= py::self ); // TODO: implement __matmul__ and __imatmul__, * should be element-wise. But this is a change in behavior!
    img.def( py::self *= dip::Image::Pixel() );
    img.def( py::self * py::self );
    img.def( py::self * dip::Image::Pixel() );

@@ -1,5 +1,5 @@
 /*
- * (c)2019, Cris Luengo.
+ * (c)2019-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,14 @@ std::vector< GaussianParameters > GaussianMixtureModel(
 
    // Initialize parameters
    std::vector< GaussianParameters > params( numberOfGaussians );
-   for( dip::uint ii = 0; ii < numberOfGaussians; ++ii ) {
-      params[ ii ].position = static_cast< dfloat >(( ii + 1 ) * size ) / static_cast< dfloat >( numberOfGaussians + 1 );
-      params[ ii ].amplitude = 1;
-      params[ ii ].sigma = 1;
-   }
    dfloat sz = static_cast< dfloat >( size );
    dfloat hsz = 0.5 * sz;
+   dfloat ssz = sz / static_cast< dfloat >( numberOfGaussians + 1 );
+   for( dip::uint ii = 0; ii < numberOfGaussians; ++ii ) {
+      params[ ii ].position = static_cast< dfloat >( ii + 1 ) * ssz;
+      params[ ii ].amplitude = 1;
+      params[ ii ].sigma = ssz;
+   }
    bool isPeriodic = periodicity == Option::Periodicity::PERIODIC;
 
    // Indicators
@@ -83,7 +84,6 @@ std::vector< GaussianParameters > GaussianMixtureModel(
       {
          SampleIterator< dfloat > tp = indicators;
          for( dip::uint kk = 0; kk < numberOfGaussians; ++kk ) {
-
             dfloat oldPos = params[ kk ].position;
             params[ kk ].position = 0.0;
             params[ kk ].amplitude = 0.0;
@@ -113,7 +113,6 @@ std::vector< GaussianParameters > GaussianMixtureModel(
                   params[ kk ].position -= sz;
                }
             }
-
             params[ kk ].sigma = 0.0;
             norm = 0.0;
             for( dip::uint jj = 0; jj < size; ++jj ) {
@@ -128,8 +127,9 @@ std::vector< GaussianParameters > GaussianMixtureModel(
                params[ kk ].sigma /= norm;
             }
             params[ kk ].sigma = std::sqrt( std::abs( params[ kk ].sigma ));
-
-            params[ kk ].amplitude /= params[ kk ].sigma * std::sqrt( 2.0 * dip::pi );
+            if( params[ kk ].sigma != 0 ) {
+               params[ kk ].amplitude /= params[ kk ].sigma * std::sqrt( 2.0 * dip::pi );
+            }
             tp += size;
          }
       }
