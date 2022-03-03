@@ -169,7 +169,7 @@ DIP_NODISCARD inline Image InverseBeerLambertMapping(
 /// Stain name        | RGB absorbance triplet
 /// ----------------- | ----------------------
 /// AEC               | 0.274, 0.679, 0.680
-/// Alican blue       | 0.875, 0.458, 0.158
+/// Alcian blue       | 0.875, 0.458, 0.158
 /// Aniline blue      | 0.853, 0.509, 0.113
 /// Azocarmine        | 0.071, 0.977, 0.198
 /// DAB               | 0.268, 0.570, 0.776
@@ -180,11 +180,11 @@ DIP_NODISCARD inline Image InverseBeerLambertMapping(
 /// Hematoxylin       | 0.644, 0.717, 0.267
 /// Hematoxylin + PAS | 0.553, 0.754, 0.354
 /// Methyl blue       | 0.799, 0.591, 0.105
-/// Methyl green      | 0.799, 0.591, 0.105
+/// Methyl green      | 0.980, 0.144, 0.133
 /// Methylene blue    | 0.553, 0.754, 0.354
 /// Orange-G          | 0.107, 0.368, 0.923
 /// PAS               | 0.175, 0.972, 0.155
-/// Ponceau-Fuchsin   | 0.107, 0.368, 0.923
+/// Ponceau-Fuchsin   | 0.100, 0.737, 0.668
 ///
 /// !!! literature
 ///     - A.C. Ruifrok and D.A. Johnston, "Quantification of histochemical staining by color deconvolution",
