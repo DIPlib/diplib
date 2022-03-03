@@ -43,6 +43,13 @@ a NumPy-compatible way of representing images.
 
 See [the *DIPlib* website](https://diplib.org/) for more information.
 
+**NOTE!** We consider the Python bindings (*PyDIP*) to be in development. We aim at
+not making breaking changes, but will sometimes do so when we feel it significantly
+improves the usability of the module. These changes will always be highlighted in
+the change logs and the release notification on the *DIPlib* website.
+We recommend that you pin your project to use a specific version of the package
+on PyPI, and carefully read the change logs before upgrading.
+
 ## Installation
 
 To install, simply type
@@ -70,7 +77,7 @@ These Jupyter notebooks give a short introduction:
 
 ## License
 
-Copyright 2014-2021 Cris Luengo and contributors  
+Copyright 2014-2022 Cris Luengo and contributors  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");
