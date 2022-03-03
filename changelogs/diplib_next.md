@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Changes DIPlib 3.2.1"
+title: "Changes DIPlib 3.x.x"
 ---
 
 ## Changes to *DIPlib*
