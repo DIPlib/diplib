@@ -46,6 +46,13 @@ arch -x86_64 zsh
 This starts a new shell in the current terminal window. `exit` will exit this shell,
 returning  you to the previous, native shell in that same terminal window.
 
+Alternatively, you can add `-DCMAKE_OSX_ARCHITECTURES=x86_64` to your `cmake` command
+(see "Building" below). This will have all tools run in native mode, but cross-compile
+to produce x86_64 binaries. This works, but I had trouble getting CMake to identify
+the right version of all the libraries, and attempting to link to arm64 libraries,
+which of course doesn't work. I was able to build *DIPimage* this way, by disabling
+all optional components that depend on external libraries.
+
 ## *Xcode*
 
 You can install *Xcode* from the App Store if you don't already have it installed.
