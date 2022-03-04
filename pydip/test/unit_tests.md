@@ -375,37 +375,39 @@ All standard operators are defined and behave the same as in the C++ library
     >>> dip.All(a == b)[0]
     [True, True]
 
+except for the multiplication operator, ``*``, which applies sample-wise
+multiplication (``dip::MultiplySampleWise()``)
+
+    >>> b * b
+    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
+
 In all operators, a list of values implicitly converts to a pixel
 
     >>> b += [5,2]
     >>> [5,2] + b
     <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
 
-The multiplication operator (``*``) applies matrix multiplication to each tensor. We
-need to make sure that the tensor sizes are compatible, tensors are always column
+The matrix multiplication operator (``@``) applies matrix multiplication to each tensor.
+We need to make sure that the tensor sizes are compatible, tensors are always column
 vectors by default, and we cannot multiply two column vectors together
 
-    >>> b * [1,-1]
+    >>> b @ [1,-1]
     Traceback (most recent call last):
     ...
     RuntimeError: Inner tensor dimensions must match in multiplication
 
 This does not work to create a row vector
 
-    >>> b * [[1,-1]]
+    >>> b @ [[1,-1]]
     Traceback (most recent call last):
     ...
     TypeError: can't multiply sequence by non-int of type 'diplib.PyDIP_bin.Image'
 
 To create a row vector, we'd need to use the ``dip.Create0D()`` function
 
-    >>> b * dip.Create0D([1,-1]).Transpose()
+    >>> b @ dip.Create0D([1,-1]).Transpose()
     <Tensor image (2x2 column-major matrix, 4 elements), DFLOAT, sizes {10, 20}>
-    >>> dip.Create0D([1,-1]).Transpose() * b
+    >>> dip.Create0D([1,-1]).Transpose() @ b
     <Scalar image, DFLOAT, sizes {10, 20}>
-
-To do element-wise multiplication of tensors, use the ``dip.MultiplySampleWise()``
-function
-
-    >>> dip.MultiplySampleWise(b, [1,-1])
-    <Tensor image (2x1 column vector, 2 elements), DFLOAT, sizes {10, 20}>
+    >>> dip.Transpose(b) @ dip.Create0D([1,-1])
+    <Scalar image, DFLOAT, sizes {10, 20}>

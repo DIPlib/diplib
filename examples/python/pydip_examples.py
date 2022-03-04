@@ -289,3 +289,11 @@ win1 = input.ShowSlice("input")
 win2 = superpixels.ShowSlice("superpixels", link=win1)
 win3 = output.ShowSlice("output", link=win2)
 dip.viewer.Spin()
+
+###
+
+img = dip.ImageRead('../DIP.tif')
+img.ShowSlice('input')
+(dip.Transpose(img) * [0.299, 0.587, 0.114]).ShowSlice('scaled each channel')
+(dip.Transpose(img) @ [0.299, 0.587, 0.114]).ShowSlice('converted to grayscale')
+dip.viewer.Spin()

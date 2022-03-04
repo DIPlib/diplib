@@ -88,6 +88,12 @@ title: "Changes DIPlib 3.x.x"
   *NumPy* array, which should make it easier to mix calls to *DIPlib* and *scikit-image* in the same
   program. Note that this also causes positive angles to be counter-clockwise instead of clockwise.
 
+- Added the `@` and `@=` operators for `dip.Image` objects. These apply matrix multiplication if both
+  operands are non-scalar images. That is, the vector or matrix at each pixel is multiplied by the
+  vector or matrix at the corresponding pixel in the other operand. The two image's tensor dimensions
+  must be compatible. If one of the operands is a scalar image, the normal element-wise multiplication
+  is applied. One of the operands can be a single pixel (a list of numbers).
+
 ### Changed functionality
 
 - Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which
@@ -98,6 +104,17 @@ title: "Changes DIPlib 3.x.x"
   See [issue #106](https://github.com/DIPlib/diplib/issues/106).
 
 - The `__repr__` string for many classes has changed to be more consistent and informative.
+
+- The `*` and `*=` operators have changed meaning, they now always apply element-wise multiplication,
+    their previous behavior is now obtained with the new `@` and `@=` operators.
+    **NOTE! This breaks backwards compatibility.** To keep old code working that depends on image matrix
+    multiplications, you can do
+    ```python
+    import diplib as dip
+    dip.Image.__mul__ = dip.Image.__matmul__
+    dip.Image.__imul__ = dip.Image.__imatmul__
+    ```
+    But we recommend instead that you update the code to use the right operators.
 
 (See also changes to *DIPlib*.)
 
