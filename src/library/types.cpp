@@ -16,6 +16,15 @@
  */
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
+
+#if defined(__GNUG__)
+// This compilation unit gives a bad diagnostic in GCC 11, fixed in 12: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101854
+#pragma GCC diagnostic push
+#if __GNUC__ == 11
+#pragma GCC diagnostic ignored "-Wstringop-overflow="
+#endif
+#endif
+
 #include "doctest.h"
 #include "diplib/library/types.h"
 
@@ -206,5 +215,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
       DOCTEST_CHECK( i[ 5 ] == 5 );
    }
 }
+
+#if defined(__GNUG__)
+#pragma GCC diagnostic pop
+#endif
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

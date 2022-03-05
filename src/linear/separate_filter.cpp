@@ -117,6 +117,11 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 } // namespace dip
 
 
+#if defined(__GNUG__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
