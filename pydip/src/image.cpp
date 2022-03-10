@@ -495,16 +495,16 @@ void init_image( py::module& m ) {
    img.def( py::self - py::self );
    img.def( py::self - dip::Image::Pixel() );
    img.def( dip::Image::Pixel() - py::self );
-   img.def( "__imul__", []( dip::Image& a, dip::Image const& b ) { dip::MultiplySampleWise( a, b, a ); }, py::is_operator() );
-   img.def( "__imul__", []( dip::Image& a, dip::Image::Pixel const& b ) { dip::MultiplySampleWise( a, b, a ); }, py::is_operator() );
-   img.def( "__mul__", []( dip::Image const& a, dip::Image const& b ) { return dip::MultiplySampleWise( a, b ); }, py::is_operator() );
-   img.def( "__mul__", []( dip::Image const& a, dip::Image::Pixel const& b ) { return dip::MultiplySampleWise( a, b ); }, py::is_operator() );
-   img.def( "__mul__", []( dip::Image::Pixel const& a, dip::Image const& b ) { return dip::MultiplySampleWise( dip::Image{ a }, b ); }, py::is_operator() );
-   img.def( "__imatmul__", []( dip::Image& a, dip::Image const& b ) { dip::Multiply( a, b, a ); }, py::is_operator() );
-   img.def( "__imatmul__", []( dip::Image& a, dip::Image::Pixel const& b ) { dip::Multiply( a, b, a ); }, py::is_operator() );
-   img.def( "__matmul__", []( dip::Image const& a, dip::Image const& b ) { return dip::Multiply( a, b ); }, py::is_operator() );
-   img.def( "__matmul__", []( dip::Image const& a, dip::Image::Pixel const& b ) { return dip::Multiply( a, b ); }, py::is_operator() );
-   img.def( "__matmul__", []( dip::Image::Pixel const& a, dip::Image const& b ) { return dip::Multiply( dip::Image{ a }, b ); }, py::is_operator() );
+   img.def( "__imul__", []( dip::Image& self, dip::Image const& rhs ) { dip::MultiplySampleWise( self, rhs, self ); return self; }, py::is_operator() );
+   img.def( "__imul__", []( dip::Image& self, dip::Image::Pixel const& rhs ) { dip::MultiplySampleWise( self, rhs, self ); return self; }, py::is_operator() );
+   img.def( "__mul__", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::MultiplySampleWise( lhs, rhs ); }, py::is_operator() );
+   img.def( "__mul__", []( dip::Image const& lhs, dip::Image::Pixel const& rhs ) { return dip::MultiplySampleWise( lhs, rhs ); }, py::is_operator() );
+   img.def( "__rmul__", []( dip::Image const& rhs, dip::Image::Pixel const& lhs ) { return dip::MultiplySampleWise( dip::Image{ lhs }, rhs ); }, py::is_operator() );
+   img.def( "__imatmul__", []( dip::Image& self, dip::Image const& rhs ) { dip::Multiply( self, rhs, self ); return self; }, py::is_operator() );
+   img.def( "__imatmul__", []( dip::Image& self, dip::Image::Pixel const& rhs ) { dip::Multiply( self, rhs, self ); return self; }, py::is_operator() );
+   img.def( "__matmul__", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Multiply( lhs, rhs ); }, py::is_operator() );
+   img.def( "__matmul__", []( dip::Image const& lhs, dip::Image::Pixel const& rhs ) { return dip::Multiply( lhs, rhs ); }, py::is_operator() );
+   img.def( "__rmatmul__", []( dip::Image const& rhs, dip::Image::Pixel const& lhs ) { return dip::Multiply( dip::Image{ lhs }, rhs ); }, py::is_operator() );
    img.def( py::self /= py::self );
    img.def( py::self /= dip::Image::Pixel() );
    img.def( py::self / py::self );
@@ -515,11 +515,11 @@ void init_image( py::module& m ) {
    img.def( py::self % py::self );
    img.def( py::self % dip::Image::Pixel() );
    img.def( dip::Image::Pixel() % py::self );
-   img.def( "__ipow__", []( dip::Image& a, dip::Image const& b ) { dip::Power( a, b, a ); }, py::is_operator() );
-   img.def( "__ipow__", []( dip::Image& a, dip::Image::Pixel const& b ) { dip::Power( a, b, a ); }, py::is_operator() );
-   img.def( "__pow__", []( dip::Image const& a, dip::Image const& b ) { return dip::Power( a, b ); }, py::is_operator() );
-   img.def( "__pow__", []( dip::Image const& a, dip::Image::Pixel const& b ) { return dip::Power( a, b ); }, py::is_operator() );
-   img.def( "__pow__", []( dip::Image::Pixel const& a, dip::Image const& b ) { return dip::Power( dip::Image{ a }, b ); }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& self, dip::Image const& rhs ) { dip::Power( self, rhs, self ); return self; }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& self, dip::Image::Pixel const& rhs ) { dip::Power( self, rhs, self ); return self; }, py::is_operator() );
+   img.def( "__pow__", []( dip::Image const& lhs, dip::Image const& rhs ) { return dip::Power( lhs, rhs ); }, py::is_operator() );
+   img.def( "__pow__", []( dip::Image const& lhs, dip::Image::Pixel const& rhs ) { return dip::Power( lhs, rhs ); }, py::is_operator() );
+   img.def( "__rpow__", []( dip::Image const& rhs, dip::Image::Pixel const& lhs ) { return dip::Power( dip::Image{ lhs }, rhs ); }, py::is_operator() );
    img.def( py::self == py::self );
    img.def( py::self == dip::Image::Pixel() );
    img.def( py::self != py::self );
@@ -539,7 +539,7 @@ void init_image( py::module& m ) {
    img.def( py::self ^ py::self );
    img.def( py::self ^ dip::Image::Pixel() );
    img.def( -py::self );
-   img.def( "__invert__", []( dip::Image& a ) { return dip::Not( a ); }, py::is_operator() ); //img.def( ~py::self );
+   img.def( "__invert__", []( dip::Image& self ) { return dip::Not( self ); }, py::is_operator() ); //img.def( ~py::self );
 
    // Some new functions useful in Python
    m.def( "Create0D", []( dip::Image::Pixel const& in ) -> dip::Image {

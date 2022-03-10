@@ -112,6 +112,7 @@ title: "Changes DIPlib 3.x.x"
     ```python
     import diplib as dip
     dip.Image.__mul__ = dip.Image.__matmul__
+    dip.Image.__rmul__ = dip.Image.__rmatmul__
     dip.Image.__imul__ = dip.Image.__imatmul__
     ```
     But we recommend instead that you update the code to use the right operators.
@@ -126,6 +127,10 @@ title: "Changes DIPlib 3.x.x"
   a scalar value into a multi-channel image.
 
 - `dip.SubpixelMaxima()` and `dip.SubpixelMinima()`, when a mask image was given, didn't work correctly.
+
+- The `**=` operator did the computations correctly, but then assigned `None` to the variable instead of the
+  result of the operation. The `**` operator didn't work with a single pixel (a number or a list) on the
+  left-hand side.
 
 (See also bugfixes to *DIPlib*.)
 
