@@ -39,7 +39,7 @@ class FeatureSolidArea : public PolygonBased {
       }
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
-         *output = polygon.Area() + 0.5;
+         *output = ( polygon.Area() + 0.5 ) * scale_;
       }
 
    private:
