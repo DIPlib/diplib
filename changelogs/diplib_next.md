@@ -43,6 +43,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::GaussianMixtureModel()` could produce NaN for amplitude, those components now have a zero amplitude.
 
+- The "SolidArea" feature didn't take the pixel size into account. This also caused the "Roundness" feature to report wrong values.
+
 
 
 
