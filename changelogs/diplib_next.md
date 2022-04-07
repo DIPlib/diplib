@@ -45,6 +45,8 @@ title: "Changes DIPlib 3.x.x"
 
 - The "SolidArea" feature didn't take the pixel size into account. This also caused the "Roundness" feature to report wrong values.
 
+- `dip::div_round()` was incorrect, which caused `dip::DirectedPathOpening()` to not use certain
+  directions.
 
 
 

@@ -124,11 +124,9 @@ constexpr T div_floor( T lhs, T rhs ) {
 /// \brief Integer division, return rounded.
 template< typename T, typename = std::enable_if_t< std::is_integral< T >::value, T >>
 constexpr T div_round( T lhs, T rhs ) {
-   // Adapted from: https://stackoverflow.com/a/18067292/7328782
-   return ( lhs < 0 ) ? ( rhs < 0 ) ? (( lhs + ( -rhs + 1 ) / 2 ) / rhs + 1 )
-                                    : (( lhs + ( rhs + 1 ) / 2 ) / rhs - 1 )
-                      : ( rhs < 0 ) ? (( lhs - ( -rhs + 1 ) / 2 ) / rhs - 1 )
-                                    : (( lhs - ( rhs + 1 ) / 2 ) / rhs + 1 );
+   // Adapted from: https://stackoverflow.com/a/60009773/7328782
+   return ( lhs < 0 ) != ( rhs < 0 ) ? (( lhs - rhs / 2 ) / rhs )
+                                     : (( lhs + rhs / 2 ) / rhs );
 }
 
 /// \brief Integer modulo, result is always positive, as opposed to % operator.

@@ -491,6 +491,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_{floor|ceil|round} functions") 
    DOCTEST_CHECK( dip::div_round( -11l, -5l ) == 2 );
    DOCTEST_CHECK( dip::div_round( -11l, -4l ) == 3 );
    DOCTEST_CHECK( dip::div_round( -11l, -3l ) == 4 );
+   DOCTEST_CHECK( dip::div_round( 0l, 5l ) == 0 );
+   DOCTEST_CHECK( dip::div_round( 0l, -5l ) == 0 );
+   DOCTEST_CHECK( dip::div_round( 5l, 5l ) == 1 );
+   DOCTEST_CHECK( dip::div_round( 5l, -5l ) == -1 );
+   DOCTEST_CHECK( dip::div_round( -5l, 5l ) == -1 );
+   DOCTEST_CHECK( dip::div_round( -5l, -5l ) == 1 );
 
    // Integer overflow caused all these operations below to return 0 before.
    dip::uint m = std::numeric_limits< dip::uint >::max();
