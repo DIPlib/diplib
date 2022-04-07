@@ -29,7 +29,7 @@ class FeatureSolidArea : public PolygonBased {
          PhysicalQuantity pq = label.PixelSize( 0 );
          if( label.IsIsotropic() && pq.IsPhysical() ) {
             scale_ = pq.magnitude * pq.magnitude;
-            out[ 0 ].units = pq.units;
+            out[ 0 ].units = pq.units * pq.units;
          } else {
             scale_ = 1;
             out[ 0 ].units = Units::SquarePixel();
