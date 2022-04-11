@@ -258,13 +258,15 @@ dip::uint Label(
       dip::uint connectivity,
       dip::uint minSize,
       dip::uint maxSize,
-      StringArray boundaryCondition
+      StringArray boundaryCondition,
+      String const& mode
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
+   bool largest_only = BooleanFromString( mode, "largest", S::ALL );
 
    Image in = c_in.QuickCopy();
    auto pixelSize = c_in.PixelSize();
@@ -392,7 +394,29 @@ dip::uint Label(
 
    // Relabel
    dip::uint nLabel;
-   if(( minSize > 0 ) && ( maxSize > 0 )) {
+   if( largest_only ) {
+      // Find largest label
+      dip::uint max_size = 0;
+      LabelType max_id = 0;
+      regions.Iterate(
+            [ & ]( LabelType index, dip::uint size ){
+               if( size > max_size ) {
+                  max_size = std::max( max_size, size );
+                  max_id = index;
+               }
+            }
+      );
+      // Merge all other labels to the background label
+      regions.Iterate(
+            [ & ]( LabelType index, dip::uint ){
+               if( index != max_id ) {
+                  regions.Union( index, 0 );
+               }
+            }
+      );
+      // Relabel
+      nLabel = regions.Relabel();
+   } else if(( minSize > 0 ) && ( maxSize > 0 )) {
       nLabel = regions.Relabel(
             [ & ]( dip::uint size ){ return ( size >= minSize ) && ( size <= maxSize ); }
       );

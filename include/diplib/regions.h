@@ -61,6 +61,9 @@ namespace dip {
 ///
 /// `boundaryCondition` can also be an empty array, using the default behavior for all dimensions.
 ///
+/// `mode` can be `"all"` (default) or `"largest"`. If set to `"largest"`, only the largest object
+/// is retained, and will have a label of 1.
+///
 /// Returns the number of connected components found. The returned value is thus the maximum
 /// value in the output image.
 DIP_EXPORT dip::uint Label(
@@ -69,17 +72,19 @@ DIP_EXPORT dip::uint Label(
       dip::uint connectivity = 0,
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
-      StringArray boundaryCondition = {}
+      StringArray boundaryCondition = {},
+      String const& mode = S::ALL
 );
 DIP_NODISCARD inline Image Label(
       Image const& binary,
       dip::uint connectivity = 0,
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
-      StringArray const& boundaryCondition = {}
+      StringArray const& boundaryCondition = {},
+      String const& mode = S::ALL
 ) {
    Image out;
-   Label( binary, out, connectivity, minSize, maxSize, boundaryCondition );
+   Label( binary, out, connectivity, minSize, maxSize, boundaryCondition, mode );
    return out;
 }
 

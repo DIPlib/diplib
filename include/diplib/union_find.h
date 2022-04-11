@@ -127,6 +127,20 @@ class UnionFind {
       /// \brief Returns a reference to the value associated to the tree that contains `index`.
       ValueType const& Value( IndexType index ) const { return list[ FindRoot( index ) ].value; }
 
+      /// \brief Calls `function` for each tree root.
+      ///
+      /// `function` is a function or function object that takes the index (`IndexType`) and `ValueType`
+      /// associated to a tree.
+      template< typename Function >
+      void Iterate( Function function ) {
+         IndexType maxLab = static_cast< IndexType >( list.size() );
+         for( IndexType ii = 1; ii < maxLab; ++ii ) {
+            if( list[ ii ].parent == ii ) {
+               function( ii, list[ ii ].value );
+            }
+         }
+      }
+
       /// \brief Assigns a new label to each of the trees.
       ///
       /// Returns the number of unique labels.

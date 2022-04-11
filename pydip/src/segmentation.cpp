@@ -102,8 +102,8 @@ void init_segmentation( py::module& m ) {
    graph.def( "RemoveLargestEdges", &dip::Graph::RemoveLargestEdges, "number"_a );
 
    // diplib/regions.h
-   m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const& >( &dip::Label ),
-          "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const&, dip::String const& >( &dip::Label ),
+          "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::S::ALL );
    m.def( "GetObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::GetObjectLabels ),
           "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE );
    m.def( "Relabel", py::overload_cast< dip::Image const& >( &dip::Relabel ), "label"_a );

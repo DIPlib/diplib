@@ -21,6 +21,9 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::Image::ReverseDimensions()`, which permutes dimensions to reverse their order.
 
+- `dip::Label` has a new string argument, `mode`, which can be set to `"largest"` to return a labeled
+  image that only contains the largest connected component in the input image.
+
 ### Changed functionality
 
 - The deterministic initialization for `dip::GaussianMixtureModel()` is more robust, making the
