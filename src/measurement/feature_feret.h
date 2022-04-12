@@ -1,5 +1,5 @@
 /*
- * (c)2016, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,18 +26,11 @@ class FeatureFeret : public ConvexHullBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 5 );
-         PhysicalQuantity pq = label.PixelSize( 0 );
-         if( label.IsIsotropic() && pq.IsPhysical() ) {
-            scale_ = pq.magnitude;
-            out[ 0 ].units = pq.units;
-            out[ 1 ].units = pq.units;
-            out[ 2 ].units = pq.units;
-         } else {
-            scale_ = 1;
-            out[ 0 ].units = Units::Pixel();
-            out[ 1 ].units = Units::Pixel();
-            out[ 2 ].units = Units::Pixel();
-         }
+         PhysicalQuantity pq = label.PixelSize().UnitLength();
+         scale_ = pq.magnitude;
+         out[ 0 ].units = pq.units;
+         out[ 1 ].units = pq.units;
+         out[ 2 ].units = pq.units;
          out[ 3 ].units = Units::Radian();
          out[ 4 ].units = Units::Radian();
          out[ 0 ].name = "Max";
@@ -50,11 +43,17 @@ class FeatureFeret : public ConvexHullBased {
 
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
          FeretValues feret = convexHull.Feret();
-         output[ 0 ] = feret.maxDiameter * scale_;
-         output[ 1 ] = feret.minDiameter * scale_;
-         output[ 2 ] = feret.maxPerpendicular * scale_;
+         output[ 0 ] = feret.maxDiameter;
+         output[ 1 ] = feret.minDiameter;
+         output[ 2 ] = feret.maxPerpendicular;
          output[ 3 ] = feret.maxAngle;
          output[ 4 ] = feret.minAngle;
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         output[ 0 ] *= scale_;
+         output[ 1 ] *= scale_;
+         output[ 2 ] *= scale_;
       }
 
    private:

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2018, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -198,7 +198,7 @@ Measurement MeasurementTool::Measure(
    featureArray.reserve( features.size() );
    for( dip::uint ii = 0; ii < features.size(); ++ii ) { // NOTE! `features` can expand every iteration
       String const& name = features[ ii ];
-      if( !measurement.FeatureExists( name ) ) {
+      if( !measurement.FeatureExists( name )) {
          Feature::Base* feature = features_[ Index( name ) ].get();
          if( feature->information.needsGreyValue ) {
             DIP_THROW_IF( !grey.IsForged(), "Measurement feature requires grey-value image" );
@@ -324,13 +324,24 @@ Measurement MeasurementTool::Measure(
 
    // Let the composite functions do their work
    if( doComposite ) {
-      Measurement::IteratorObject row = measurement.FirstObject(); // these two arrays are ordered the same way
+      Measurement::IteratorObject row = measurement.FirstObject();
       do {
          for( auto const& feature : featureArray ) {
             if( feature->type == Feature::Type::COMPOSITE ) {
                auto cell = row[ feature->information.name ];
                dynamic_cast< Feature::Composite* >( feature )->Compose( row, cell.data() );
             }
+         }
+      } while( ++row );
+   }
+
+   // Scale all measurements
+   {
+      Measurement::IteratorObject row = measurement.FirstObject();
+      do {
+         for( auto const& feature : featureArray ) {
+            auto cell = row[ feature->information.name ];
+            feature->Scale( cell.data() );
          }
       } while( ++row );
    }
@@ -344,3 +355,408 @@ Measurement MeasurementTool::Measure(
 }
 
 } // namespace dip
+
+
+#ifdef DIP_CONFIG_ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/generation.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
+   // A test image with a single circle
+   dip::dfloat r = 22;
+   dip::Image img = dip::CreateRadiusCoordinate( { 50, 50 } ) < r;
+   img.Convert( dip::DT_UINT8 ); // copyless conversion from binary to unsigned integer -- like calling dip::Label()!
+
+   // Measure everything (except SurfaceArea, which requires a 3D image)
+   dip::MeasurementTool measurementTool;
+   auto msr = measurementTool.Measure( img, img, {
+         "Size",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "SolidArea",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Mass",
+         "Mean",
+         "StandardDeviation",
+         "Statistics",
+         "DirectionalStatistics",
+         "MaxVal",
+         "MinVal",
+         "MaxPos",
+         "MinPos",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+         "GreySize",
+         "Gravity",
+         "GreyMu",
+         "GreyInertia",
+         "GreyMajorAxes",
+         "GreyDimensionsCube",
+         "GreyDimensionsEllipsoid",
+   } );
+
+   // Verify all measurements
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 1 ));
+   auto msr_obj = msr[ 1 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Size" ][ 0 ] - dip::pi * r * r ) < 8 );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == 4 );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == 4 );
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == 46 );
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == 46 );
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == 2 * r - 1 );
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == 2 * r - 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.08 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 1.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1 );
+   // DOCTEST_CHECK( msr_obj[ "Feret" ][ 3 ] == 0); // arbitrary angle, ignore
+   // DOCTEST_CHECK( msr_obj[ "Feret" ][ 4 ] == 0); // arbitrary angle, ignore
+   DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r ) < 8 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r ) < 17 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 1.5 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r ) < 0.4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r ) < 0.51 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 0.007 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 0.007 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 0.05 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 0.07 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 0.05 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 0.06 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.03 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - dip::pi * r * r ) < 8 );
+   DOCTEST_CHECK( msr_obj[ "Mean" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "StandardDeviation" ][ 0 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 3 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "DirectionalStatistics" ][ 0 ] == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( msr_obj[ "DirectionalStatistics" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MaxVal" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MinVal" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MaxPos" ][ 0 ] == 19 );
+   DOCTEST_CHECK( msr_obj[ "MaxPos" ][ 1 ] == 4 );
+   DOCTEST_CHECK( msr_obj[ "MinPos" ][ 0 ] == 19 );
+   DOCTEST_CHECK( msr_obj[ "MinPos" ][ 1 ] == 4 );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == 25 );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == 25 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.2 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r ) < 0.2 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreySize" ][ 0 ] - dip::pi * r * r ) < 8 );
+   DOCTEST_CHECK( msr_obj[ "Gravity" ][ 0 ] == 25 );
+   DOCTEST_CHECK( msr_obj[ "Gravity" ][ 1 ] == 25 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyMu" ][ 0 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyMu" ][ 1 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 ) < 0.6 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 )) < 0.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r ) < 0.2 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r ) < 0.2 );
+
+   // Repeat the above, but with a pixel size and scaling the gray values
+   img *= 2; // the object ID is not also 2!
+   dip::dfloat ps = 0.21;
+   img.SetPixelSize( ps * dip::Units::Micrometer() );
+   msr = measurementTool.Measure( img, img, {
+         "Size",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "SolidArea",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Mass",
+         "Mean",
+         "StandardDeviation",
+         "Statistics",
+         "DirectionalStatistics",
+         "MaxVal",
+         "MinVal",
+         "MaxPos",
+         "MinPos",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+         "GreySize",
+         "Gravity",
+         "GreyMu",
+         "GreyInertia",
+         "GreyMajorAxes",
+         "GreyDimensionsCube",
+         "GreyDimensionsEllipsoid",
+   } );
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 2 ));
+   msr_obj = msr[ 2 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Size" ][ 0 ] - dip::pi * r * r * ps * ps ) < 8 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == 4 * ps );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == 4 * ps );
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == 46 * ps );
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == 46 * ps );
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == ( 2 * r - 1 ) * ps );
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == ( 2 * r - 1 ) * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 0.08 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r * ps ) < 1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r * ps ) < 1.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r * ps ) < 1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 8 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps ) < 17 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r * ps ) < 1.5 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r * ps ) < 0.4 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r * ps ) < 0.04 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r * ps ) < 0.51 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 0.007 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 0.007 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 0.05 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 0.07 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 0.05 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 0.06 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r / ps ) < 0.03 / ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
+   DOCTEST_CHECK( msr_obj[ "Mean" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "StandardDeviation" ][ 0 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 3 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "DirectionalStatistics" ][ 0 ] == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( msr_obj[ "DirectionalStatistics" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MaxVal" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "MinVal" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "MaxPos" ][ 0 ] == 19 * ps );
+   DOCTEST_CHECK( msr_obj[ "MaxPos" ][ 1 ] == 4 * ps );
+   DOCTEST_CHECK( msr_obj[ "MinPos" ][ 0 ] == 19 * ps );
+   DOCTEST_CHECK( msr_obj[ "MinPos" ][ 1 ] == 4 * ps );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == 25 * ps );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == 25 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.2 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.2 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreySize" ][ 0 ] - 2 * dip::pi * r * r * ps * ps ) < 2 * 8 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "Gravity" ][ 0 ] == 25 * ps );
+   DOCTEST_CHECK( msr_obj[ "Gravity" ][ 1 ] == 25 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyMu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyMu" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.2 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.2 * ps );
+
+   // Repeat the above, but with an anisotropci pixel size
+   dip::dfloat yscale = 1.3;
+   img.SetPixelSize( 1, yscale * ps * dip::Units::Micrometer() );
+   msr = measurementTool.Measure( img, img, {
+         "Size",
+         "Minimum",
+         "Maximum",
+         "CartesianBox",
+         "Perimeter",
+         "Feret",
+         "SolidArea",
+         "ConvexArea",
+         "ConvexPerimeter",
+         "AspectRatioFeret",
+         "Radius",
+         "P2A",
+         "Roundness",
+         "Circularity",
+         "PodczeckShapes",
+         "Solidity",
+         "Convexity",
+         "EllipseVariance",
+         "Eccentricity",
+         "BendingEnergy",
+         "Mass",
+         "Mean",
+         "StandardDeviation",
+         "Statistics",
+         "DirectionalStatistics",
+         "MaxVal",
+         "MinVal",
+         "MaxPos",
+         "MinPos",
+         "Center",
+         "Mu",
+         "Inertia",
+         "MajorAxes",
+         "DimensionsCube",
+         "DimensionsEllipsoid",
+         "GreySize",
+         "Gravity",
+         "GreyMu",
+         "GreyInertia",
+         "GreyMajorAxes",
+         "GreyDimensionsCube",
+         "GreyDimensionsEllipsoid",
+   } );
+   DOCTEST_REQUIRE( msr.IsForged() );
+   DOCTEST_REQUIRE( msr.ObjectExists( 2 ));
+   msr_obj = msr[ 2 ];
+   DOCTEST_CHECK( std::abs( msr_obj[ "Size" ][ 0 ] - dip::pi * r * r * ps * ps * yscale ) < 8 * ps * ps * yscale );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 0 ] == 4 * ps );
+   DOCTEST_CHECK( msr_obj[ "Minimum" ][ 1 ] == doctest::Approx( 4 * ps * yscale ));
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 0 ] == 46 * ps );
+   DOCTEST_CHECK( msr_obj[ "Maximum" ][ 1 ] == doctest::Approx( 46 * ps * yscale ));
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 0 ] == ( 2 * r - 1 ) * ps );
+   DOCTEST_CHECK( msr_obj[ "CartesianBox" ][ 1 ] == doctest::Approx(( 2 * r - 1 ) * ps * yscale ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Perimeter" ][ 0 ] - 2 * dip::pi * r ) < 0.08 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 0 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 1 ] - 2 * r ) < 1.1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Feret" ][ 2 ] - 2 * r ) < 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "SolidArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 8 * ps * ps * yscale  );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexArea" ][ 0 ] - dip::pi * r * r * ps * ps * yscale  ) < 17 * ps * yscale  );
+   DOCTEST_CHECK( std::abs( msr_obj[ "ConvexPerimeter" ][ 0 ] - 2 * dip::pi * r ) < 1.5 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "AspectRatioFeret" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 0 ] - r ) < 0.4 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 1 ] - r ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 2 ] - r ) < 0.51 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Radius" ][ 3 ] - 0 ) < 0.3 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "P2A" ][ 0 ] - 1 ) < 0.007 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Roundness" ][ 0 ] - 1 ) < 0.007 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Circularity" ][ 0 ] - 0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 0 ] - dip::pi / 4 ) < 0.04 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 1 ] - 1 ) < 0.05 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 2 ] - dip::pi / 2 ) < 0.07 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 3 ] - 1 ) < 0.05 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "PodczeckShapes" ][ 4 ] - dip::pi ) < 0.06 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Solidity" ][ 0 ] - 1 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Convexity" ][ 0 ] - 1 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "EllipseVariance" ][ 0 ] - 0 ) < 0.02 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Eccentricity" ][ 0 ] - 0 ) < 1e-6 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "BendingEnergy" ][ 0 ] - 2 * dip::pi / r ) < 0.03 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mass" ][ 0 ] - 2 * dip::pi * r * r ) < 2 * 16 );
+   DOCTEST_CHECK( msr_obj[ "Mean" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "StandardDeviation" ][ 0 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "Statistics" ][ 3 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "DirectionalStatistics" ][ 0 ] == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( msr_obj[ "DirectionalStatistics" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MaxVal" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "MinVal" ][ 0 ] == 2 );
+   DOCTEST_CHECK( msr_obj[ "MaxPos" ][ 0 ] == 19 * ps );
+   DOCTEST_CHECK( msr_obj[ "MaxPos" ][ 1 ] == doctest::Approx( 4 * ps * yscale  ));
+   DOCTEST_CHECK( msr_obj[ "MinPos" ][ 0 ] == 19 * ps );
+   DOCTEST_CHECK( msr_obj[ "MinPos" ][ 1 ] == doctest::Approx( 4 * ps * yscale  ));
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 0 ] == 25 * ps );
+   DOCTEST_CHECK( msr_obj[ "Center" ][ 1 ] == doctest::Approx( 25 * ps * yscale  ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Mu" ][ 1 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale  );
+   DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.1 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.2 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreySize" ][ 0 ] - 2 * dip::pi * r * r * ps * ps * yscale ) < 2 * 8 * ps * ps * yscale );
+   DOCTEST_CHECK( msr_obj[ "Gravity" ][ 0 ] == 25 * ps );
+   DOCTEST_CHECK( msr_obj[ "Gravity" ][ 1 ] == doctest::Approx( 25 * ps * yscale ));
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyMu" ][ 0 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyMu" ][ 1 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
+   DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.1 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
+   DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.2 * ps );
+}
+
+#endif // DIP_CONFIG_ENABLE_DOCTEST

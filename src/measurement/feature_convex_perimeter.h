@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,20 +26,19 @@ class FeatureConvexPerimeter : public ConvexHullBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
+         PhysicalQuantity pq = label.PixelSize().UnitLength();
+         scale_ = pq.magnitude;
+         out[ 0 ].units = pq.units;
          out[ 0 ].name = "";
-         PhysicalQuantity pq = label.PixelSize( 0 );
-         if( label.IsIsotropic() && pq.IsPhysical() ) {
-            scale_ = pq.magnitude;
-            out[ 0 ].units = pq.units;
-         } else {
-            scale_ = 1;
-            out[ 0 ].units = Units::Pixel();
-         }
          return out;
       }
 
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
-         output[ 0 ] = convexHull.Perimeter() * scale_;
+         output[ 0 ] = convexHull.Perimeter();
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         *output *= scale_;
       }
 
    private:

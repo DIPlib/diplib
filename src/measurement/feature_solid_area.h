@@ -1,5 +1,5 @@
 /*
- * (c)2018, Cris Luengo.
+ * (c)2018-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,20 +26,19 @@ class FeatureSolidArea : public PolygonBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
-         PhysicalQuantity pq = label.PixelSize( 0 );
-         if( label.IsIsotropic() && pq.IsPhysical() ) {
-            scale_ = pq.magnitude * pq.magnitude;
-            out[ 0 ].units = pq.units * pq.units;
-         } else {
-            scale_ = 1;
-            out[ 0 ].units = Units::SquarePixel();
-         }
+         PhysicalQuantity unitArea = label.PixelSize().UnitSize( label.Dimensionality() );
+         scale_ = unitArea.magnitude;
+         out[ 0 ].units = unitArea.units;
          out[ 0 ].name = "";
          return out;
       }
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
-         *output = ( polygon.Area() + 0.5 ) * scale_;
+         *output = polygon.Area() + 0.5;
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         *output *= scale_;
       }
 
    private:

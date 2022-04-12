@@ -1,5 +1,5 @@
 /*
- * (c)2020, Cris Luengo.
+ * (c)2020-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,15 +28,7 @@ class FeatureGreySize : public LineBased {
          nTensor_ = grey.TensorElements();
          data_.clear();
          data_.resize( nObjects * nTensor_, 0 );
-         PhysicalQuantity unitArea = 1;
-         for( dip::uint ii = 0; ii < label.Dimensionality(); ++ii ) {
-            PhysicalQuantity pq = label.PixelSize( ii );
-            if( pq.IsPhysical() ) {
-               unitArea *= pq;
-            } else {
-               unitArea *= PhysicalQuantity::Pixel();
-            }
-         }
+         PhysicalQuantity unitArea = label.PixelSize().UnitSize( label.Dimensionality() );
          scale_ = unitArea.magnitude;
          ValueInformationArray out( nTensor_ );
          if( nTensor_ == 1 ) {
@@ -85,7 +77,13 @@ class FeatureGreySize : public LineBased {
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dfloat* data = &data_[ objectIndex ];
          for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
-            output[ ii ] = data[ ii ]  * scale_;
+            output[ ii ] = data[ ii ];
+         }
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         for( dip::uint ii = 0; ii < nTensor_; ++ii, ++output ) {
+            *output *= scale_;
          }
       }
 

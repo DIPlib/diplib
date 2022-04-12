@@ -512,7 +512,9 @@ class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
       /// Estimator of population standard deviation (it is not possible to derive an unbiased estimator)
       dfloat StandardDeviation() const {
          dfloat n = static_cast< dfloat >( n_ );
-         return ( n_ > 0 ) ? ( std::sqrt( -2.0 * std::log( std::abs( sum_ ) / n ))) : ( 0.0 );
+         return ( n_ > 0 ) ? ( std::sqrt( std::max( -2.0 * std::log( std::abs( sum_ ) / n ), 0.0 ))) : ( 0.0 );
+         // If `abs(sum_)/n` is 1, rounding error can put it over 1, making `log()` positive, which causes
+         // `sqrt(-2*log(...))` to be NaN. Hence the `max(..., 0)`, which prevents negative inputs to `sqrt()`.
       }
 
    private:

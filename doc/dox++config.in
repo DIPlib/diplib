@@ -2,6 +2,7 @@
 
 [clang]
 compiler flags = -std=c++14
+                 -DMATLAB_MEXCMD_RELEASE=R2017b
 include directories = @PROJECT_SOURCE_DIR@/include/
                       @Matlab_INCLUDE_DIRS@
                       @OpenCV_INCLUDE_DIRS@

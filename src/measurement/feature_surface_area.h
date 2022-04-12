@@ -1,5 +1,5 @@
 /*
- * (c)2016, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,15 +42,9 @@ class FeatureSurfaceArea : public ImageBased {
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
-         PhysicalQuantity pq = label.PixelSize( 0 );
-         if( label.IsIsotropic() && pq.IsPhysical() ) {
-            pq *= pq;
-            scale_ = pq.magnitude;
-            out[ 0 ].units = pq.units;
-         } else {
-            scale_ = 1;
-            out[ 0 ].units = Units::SquarePixel();
-         }
+         PhysicalQuantity unitArea = label.PixelSize().UnitLength().Power( 2 );
+         scale_ = unitArea.magnitude;
+         out[ 0 ].units = unitArea.units;
          out[ 0 ].name = "SurfaceArea";
          return out;
       }
@@ -63,6 +57,10 @@ class FeatureSurfaceArea : public ImageBased {
          do {
             dst[ 0 ] = *src;
          } while( ++src, ++dst );
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         *output *= scale_;
       }
 
    private:

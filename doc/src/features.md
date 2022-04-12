@@ -1,4 +1,4 @@
-\comment (c)2016-2020, Cris Luengo.
+\comment (c)2016-2022, Cris Luengo.
 \comment Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 
 \comment Licensed under the Apache License, Version 2.0 [the "License"];
@@ -20,6 +20,12 @@ This page describes all the features known to \ref dip::MeasurementTool by defau
 are sorted into sections in the same way as the table in the documentation to
 `dip::MeasurementTool`
 
+Most features take the pixel sizes into account, and report measurements in physical units.
+If the pixel size for one dimension is not physical (i.e. it is unitless or given in pixels),
+then that value is ignored and assumed to be 1 px. Thus, for non-square pixels (anisotropic
+pixels), you must use physical units to indicate the pixel size (e.g. "1.0 um x 1.2 um"),
+it is not possible to use pixel units (e.g. "1.0 px x 1.2 px").
+
 
 \comment --------------------------------------------------------------
 
@@ -29,6 +35,8 @@ are sorted into sections in the same way as the table in the documentation to
 Computes the number of object pixels. If the image has a known pixel size, the number
 of pixels is multiplied by the area of each pixel to give an unbiased estimate of the
 object's area (2D), volume (3D), or hyper-volume (nD).
+
+This value is reported in physical units, anisotropic pixels are taken into account.
 
 \subsection size_features_CartesianBox CartesianBox
 The sizes of the smallest box around the object that is aligned with the grid axes.
@@ -56,9 +64,14 @@ connected component. If multiple connected components have the same label, only 
 connected component found for that label will be measured.
 Any holes in the object are not included in the perimeter either.
 
+This value is reported in physical units, but only for isotropic (square) pixels. For
+anisotropic pixels, the length is reported in pixels, ignoring pixel sizes.
+
 \subsection size_features_SurfaceArea SurfaceArea
 The 3D equivalent to the \ref size_features_Perimeter feature. It does not assume a single connected component,
 and will include all surfaces in the measurement, including those of holes.
+
+This value is reported in physical units, but only for isotropic (square) pixels.
 
 !!! literature
     - J.C. Mullikin and P.W. Verbeek, "Surface area estimation of digitized planes," Bioimaging 1(1):6-16, 1993.
@@ -81,6 +94,10 @@ Five values are returned:
  - 3: `MaxAng`, the angle at which `Max` was obtained.
  - 4: `MinAng`, the angle at which `Min` was obtained.
 
+The first three values are reported in physical units, but only for isotropic (square) pixels
+(otherwise the pixel sizes are ignored). The last two values are reported in radian, assuming
+isotropic pixels.
+
 \subsection size_features_SolidArea SolidArea
 Computes the area of the object ignoring any holes. It uses the object's chain code
 and the \ref dip::ChainCode::Area method.
@@ -88,6 +105,8 @@ and the \ref dip::ChainCode::Area method.
 Note that the chain code measures work only for 2D images, and expect objects to be a single
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
+
+This value is reported in physical units, anisotropic pixels are taken into account.
 
 \subsection size_features_ConvexArea ConvexArea
 The area of the convex hull of the object. The convex hull is computed from the chain code
@@ -97,12 +116,17 @@ Note that the chain code measures work only for 2D images, and expect objects to
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
 
+This value is reported in physical units, anisotropic pixels are taken into account.
+
 \subsection size_features_ConvexPerimeter ConvexPerimeter
 The perimeter of the convex hull. The convex hull is computed from the chain code.
 
 Note that the chain code measures work only for 2D images, and expect objects to be a single
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
+
+This value is reported in physical units, but only for isotropic (square) pixels. For
+anisotropic pixels, the length is reported in pixels, ignoring pixel sizes.
 
 
 \comment --------------------------------------------------------------
@@ -111,6 +135,8 @@ connected component found for that label will be measured.
 
 \subsection shape_features_AspectRatioFeret AspectRatioFeret
 The ratio `PerpMin`/`Min`, two of the values returned by the \ref size_features_Feret feature.
+
+This feature ignores pixel sizes, isotropic pixels are assumed.
 
 \subsection shape_features_Radius Radius
 Statistics on the radius of the object, computed from the chain code using
@@ -123,12 +149,16 @@ connected component found for that label will be measured.
 This feature takes the distances from the object's centroid (as determined from the chain
 code, not influenced by any holes in the object) to each of the border pixels. From these
 distances it computes four values:
+
  - 0: `Max`, the largest distance.
  - 1: `Mean`, the average distance.
  - 2: `Min`, the shortest distance.
  - 3: `StD`, the standard deviation.
 
 Note that the centroid does not necessarily lie within the object.
+
+These values are reported in physical units, but only for isotropic (square) pixels. For
+anisotropic pixels, lengths are reported in pixels, ignoring pixel sizes.
 
 \subsection shape_features_P2A P2A
 Computes:
@@ -141,6 +171,8 @@ See \ref size_features_Perimeter,
 \ref size_features_SurfaceArea and \ref size_features_Size. For solid objects, this
 measure is the reciprocal of \ref shape_features_Roundness.
 
+This feature ignores pixel sizes, isotropic pixels are assumed.
+
 \subsection shape_features_Roundness Roundness
 Computes $\frac{4\pi a}{p^2}$, where $a$ is the solid area and $p$ is the perimeter,
 using the features \ref size_features_SolidArea and \ref size_features_Perimeter.
@@ -148,11 +180,15 @@ This measure is in the range (0,1], with 1 for a perfect circle.
 For solid objects, it is the reciprocal of \ref shape_features_P2A, but for objects with holes,
 this measure takes only the outer boundary into account.
 
+This feature ignores pixel sizes, isotropic pixels are assumed.
+
 \subsection shape_features_Circularity Circularity
 Circularity is a measure of similarity to a circle, and is given by coefficient of variation
 of the radii of the object. It is computed by the ratio `StD`/`Mean`
 of the \ref shape_features_Radius feature, and is 0 for a perfect circle.
 See `dip::RadiusValues::Circularity`.
+
+This feature ignores pixel sizes, isotropic pixels are assumed.
 
 \subsection shape_features_PodczeckShapes PodczeckShapes
 Computes the 5 Podczeck shape descriptors using the results of features \ref size_features_Size,
@@ -168,6 +204,8 @@ where $a$ is the object area, $p$ the perimeter, $l$ the largest Feret diameter,
 smallest Feret diameter, and $h$ the diameter perpendicular to the smallest diameter
 (`PerpMin` value of the \ref size_features_Feret feature).
 
+This feature ignores pixel sizes, isotropic pixels are assumed.
+
 \subsection shape_features_Solidity Solidity
 The ratio `Size`/`ConvexArea` of the features \ref size_features_Size and \ref size_features_ConvexArea.
 It is in the range (0,1], with 1 for a convex object.
@@ -175,6 +213,7 @@ It is in the range (0,1], with 1 for a convex object.
 \subsection shape_features_Convexity Convexity
 The ratio `ConvexPerimeter`/`Perimeter` of the features \ref size_features_Perimeter and
 \ref size_features_ConvexPerimeter. It is in the range (0,1], with 1 for a convex object.
+This feature ignores pixel sizes, isotropic pixels are assumed.
 
 \subsection shape_features_EllipseVariance EllipseVariance
 A measure for deviation from an elliptic shape, computed using \ref dip::ChainCode::Polygon and
@@ -183,6 +222,8 @@ A measure for deviation from an elliptic shape, computed using \ref dip::ChainCo
 Note that the chain code measures work only for 2D images, and expect objects to be a single
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
+
+This feature ignores pixel sizes, isotropic pixels are assumed.
 
 \subsection shape_features_Eccentricity Eccentricity
 Aspect ratio of the best fit ellipse, computed using \ref dip::CovarianceMatrix::Eigenvalues::Eccentricity
@@ -195,6 +236,8 @@ Note that the chain code measures work only for 2D images, and expect objects to
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
 
+This feature ignores pixel sizes, isotropic pixels are assumed.
+
 \subsection shape_features_BendingEnergy BendingEnergy
 Bending energy of object perimeter, computed using \ref dip::ChainCode::BendingEnergy from the
 object's chain code.
@@ -202,6 +245,9 @@ object's chain code.
 Note that the chain code measures work only for 2D images, and expect objects to be a single
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
+
+This value is reported in physical units, but only for isotropic (square) pixels
+(otherwise pixel sizes are ignored).
 
 
 \comment --------------------------------------------------------------
@@ -290,15 +336,22 @@ tensors are stored in an image (see \ref dip::Tensor::Shape).
 
 For more information, see \ref dip::MomentAccumulator::SecondOrder.
 
+These values are reported in physical units, anisotropic pixels are taken into account.
+
 \subsection binary_moments_Inertia Inertia
 Moments of inertia of the binary object, the eigenvalues of the tensor computed by
 feature \ref binary_moments_Mu. There is one value per image dimension. The eigenvectors are sorted
 largest to smallest.
 
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units.
+
 \subsection binary_moments_MajorAxes MajorAxes
 Principal axes of the binary object, the eigenvectors of the tensor computed by
 feature \ref binary_moments_Mu. For an image with $n$ dimensions, there are $n^2$ values.
 The first $n$ values are the eigenvector associated to the largest eigenvalue, etc.
+
+This feature ignores pixel sizes, isotropic pixels are assumed.
 
 \subsection binary_moments_DimensionsCube DimensionsCube
 Lengths of the sides of a rectangle (2D) or box (3D) with the same moments of inertia
@@ -306,11 +359,17 @@ as the binary object. Derived from feature \ref binary_moments_Inertia.
 
 Currently defined only for 2D and 3D images.
 
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units.
+
 \subsection binary_moments_DimensionsEllipsoid DimensionsEllipsoid
 Diameters of an ellipse (2D) or ellipsoid (3D) with the same moments of inertia as the
 binary object. Derived from feature \ref binary_moments_Inertia.
 
 Currently defined only for 2D and 3D images.
+
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units.
 
 
 \comment --------------------------------------------------------------
@@ -322,6 +381,8 @@ The zero order moment of the object. Same as the \ref intensity_features_Mass fe
 but multiplied by the physical size of a pixel. If object pixels have a value of 1, and
 background pixels have a value of 0, then this feature is the size of the grey-value
 object.
+
+This value is reported in physical units, anisotropic pixels are taken into account.
 
 \subsection grey_moments_Gravity Gravity
 Coordinates of the center of mass of the object, which is the first order normalized
@@ -343,6 +404,8 @@ For more information, see \ref dip::MomentAccumulator::SecondOrder.
 Identical to feature \ref binary_moments_Mu but using the grey-value image as weighting.
 `grey` must be scalar.
 
+These values are reported in physical units, anisotropic pixels are taken into account.
+
 \subsection grey_moments_GreyInertia GreyInertia
 Moments of inertia of the grey-weighted object, the eigenvalues of the tensor computed by
 feature \ref grey_moments_GreyMu. There is one value per image dimension. The eigenvectors are sorted
@@ -351,6 +414,9 @@ largest to smallest.
 Identical to feature \ref binary_moments_Inertia but using the grey-value image as weighting.
 `grey` must be scalar.
 
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units.
+
 \subsection grey_moments_GreyMajorAxes GreyMajorAxes
 Principal axes of the grey-weighted object, the eigenvectors of the tensor computed by
 feature \ref grey_moments_GreyMu. For an image with $n$ dimensions, there are $n^2$ values.
@@ -358,6 +424,8 @@ The first $n$ values are the eigenvector associated to the largest eigenvalue, e
 
 Identical to feature \ref binary_moments_MajorAxes but using the grey-value image as weighting.
 `grey` must be scalar.
+
+This feature ignores pixel sizes, isotropic pixels are assumed.
 
 \subsection grey_moments_GreyDimensionsCube GreyDimensionsCube
 Lengths of the sides of a rectangle (2D) or box (3D) with the same moments of inertia
@@ -368,6 +436,9 @@ Currently defined only for 2D and 3D images.
 Identical to feature \ref binary_moments_DimensionsCube but using the grey-value image as weighting.
 `grey` must be scalar.
 
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units.
+
 \subsection grey_moments_GreyDimensionsEllipsoid GreyDimensionsEllipsoid
 Diameters of an ellipse (2D) or ellipsoid (3D) with the same moments of inertia as the
 grey-weighted object. Derived from feature \ref grey_moments_GreyInertia.
@@ -376,3 +447,6 @@ Currently defined only for 2D and 3D images.
 
 Identical to feature \ref binary_moments_DimensionsEllipsoid but using the grey-value image as weighting.
 `grey` must be scalar.
+
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units.

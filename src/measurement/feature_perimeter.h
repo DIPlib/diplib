@@ -1,5 +1,5 @@
 /*
- * (c)2016, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,20 +26,19 @@ class FeaturePerimeter : public ChainCodeBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
-         PhysicalQuantity pq = label.PixelSize( 0 );
-         if( label.IsIsotropic() && pq.IsPhysical() ) {
-            scale_ = pq.magnitude;
-            out[ 0 ].units = pq.units;
-         } else {
-            scale_ = 1;
-            out[ 0 ].units = Units::Pixel();
-         }
+         PhysicalQuantity pq = label.PixelSize().UnitLength();
+         scale_ = pq.magnitude;
+         out[ 0 ].units = pq.units;
          out[ 0 ].name = "";
          return out;
       }
 
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
-         *output = ( chainCode.Length() + pi ) * scale_;
+         *output = chainCode.Length() + pi;
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         *output *= scale_;
       }
 
    private:

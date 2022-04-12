@@ -956,6 +956,39 @@ class DIP_NO_EXPORT PixelSize {
          return out;
       }
 
+      /// \brief Returns the scale and units to use for length measurements. Equal to the size of a pixel if it is
+      /// isotropic, or 1 px otherwise.
+      PhysicalQuantity UnitLength() const {
+         if( IsDefined() && IsIsotropic() ) {
+            auto out = Get( 0 );
+            if( out.IsPhysical() ) {
+               return out;
+            }
+         }
+         return PhysicalQuantity::Pixel();
+      }
+
+      /// \brief Returns the scale and units to use for size (area/volume) measurements. Equal to the product of the pixel
+      /// sizes if that product is physical, or 1 px^d^ otherwise.
+      PhysicalQuantity UnitSize( dip::uint d ) const {
+         if( IsDefined() ) {
+            auto out = Product( d );
+            if( out.IsPhysical() ) {
+               return out;
+            }
+         }
+         return Units::Pixel().Power( clamp_cast< dip::sint8 >( d ));
+      }
+
+      /// \brief Any dimension that is not a physical dimension will be set to 1 px.
+      void ForcePhysical() {
+         for( auto& sz : size_ ) {
+            if( !sz.IsPhysical() ) {
+               sz = PhysicalQuantity::Pixel();
+            }
+         }
+      }
+
       /// Compares two pixel sizes, magnitudes are compared with a 10^-6^ relative tolerance
       bool operator==( PixelSize const& rhs ) const {
          dip::uint d = std::max( size_.size(), rhs.size_.size() );

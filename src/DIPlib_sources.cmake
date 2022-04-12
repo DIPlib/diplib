@@ -182,6 +182,7 @@ measurement/feature_bending_energy.h
 measurement/feature_cartesian_box.h
 measurement/feature_center.h
 measurement/feature_circularity.h
+measurement/feature_common_stuff.h
 measurement/feature_convex_area.h
 measurement/feature_convex_perimeter.h
 measurement/feature_convexity.h

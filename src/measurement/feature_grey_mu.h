@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,9 @@
  */
 
 
+#include "feature_common_stuff.h"
+
+
 namespace dip {
 namespace Feature {
 
@@ -28,37 +31,9 @@ class FeatureGreyMu : public LineBased {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          data_.clear();
-         dip::uint nOut = nD_ * ( nD_ + 1 ) / 2;
          data_.resize( nObjects, MomentAccumulator( nD_ ));
-         scales_.resize( nOut );
-         ValueInformationArray out( nOut );
-         dip::uint kk = 0;
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            PhysicalQuantity pq1 = label.PixelSize( ii );
-            if( !pq1.IsPhysical() ) {
-               pq1 = PhysicalQuantity::Pixel();
-            }
-            scales_[ kk ] = pq1.magnitude * pq1.magnitude;
-            out[ kk ].units = pq1.units * pq1.units;
-            out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + '_' + std::to_string( ii );
-            ++kk;
-         }
-         for( dip::uint ii = 1; ii < nD_; ++ii ) {
-            for( dip::uint jj = 0; jj < ii; ++jj ) {
-               PhysicalQuantity pq1 = label.PixelSize( ii );
-               if( !pq1.IsPhysical() ) {
-                  pq1 = PhysicalQuantity::Pixel();
-               }
-               PhysicalQuantity pq2 = label.PixelSize( jj );
-               if( !pq2.IsPhysical() ) {
-                  pq2 = PhysicalQuantity::Pixel();
-               }
-               scales_[ kk ] = pq1.magnitude * pq2.magnitude;
-               out[ kk ].units = pq1.units * pq2.units;
-               out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + '_' + std::to_string( jj );
-               ++kk;
-            }
-         }
+         ValueInformationArray out;
+         std::tie( out, scales_ ) = MuInformation( nD_, label.PixelSize() );
          return out;
       }
 
@@ -97,7 +72,13 @@ class FeatureGreyMu : public LineBased {
          MomentAccumulator* data = &( data_[ objectIndex ] );
          FloatArray values = data->SecondOrder();
          for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
-            output[ ii ] = values[ ii ] * scales_[ ii ];
+            output[ ii ] = values[ ii ];
+         }
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
+            output[ ii ] *= scales_[ ii ];
          }
       }
 

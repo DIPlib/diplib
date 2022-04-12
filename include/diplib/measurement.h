@@ -661,6 +661,7 @@ class DIP_NO_EXPORT Measurement {
          features_.emplace_back( name, startIndex, n );
          featureIndices_.emplace( name, index );
       }
+
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
       std::vector< FeatureInformation > features_;    // the column groups of the table (maps column group indices to feature names and contains other info also)
@@ -701,7 +702,9 @@ class DIP_CLASS_EXPORT Base {
 
       /// \brief A feature can have configurable parameters. Such a feature can define a `Configure` method
       /// that the user can access through \ref dip::MeasurementTool::Configure.
-      virtual void Configure( String const& /*parameter*/, dfloat /*value*/ ) {
+      virtual void Configure( String const& parameter, dfloat value ) {
+         ( void ) parameter;
+         ( void ) value;
          DIP_THROW( "Feature not configurable" );
       };
 
@@ -723,11 +726,25 @@ class DIP_CLASS_EXPORT Base {
       ///
       /// Note that this function can store information about the images in private data members of the
       /// class, so that it is available when performing measurements. For example, it can store the
-      /// pixel size to inform the measurement.
+      /// pixel size to be used later in \ref Scale.
       ///
       /// !!! attention
       ///     This function is not expected to perform any major amount of work.
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) = 0;
+
+      /// \brief Called once for each object, to scale the pixel measurements according to the pixel sizes.
+      ///
+      /// Typically measurements are first computed in pixels, and then scaled to the proper units. The scaling
+      /// is separated out, and called after all \ref Composite measurements have been computed. The `Composite`
+      /// measures therefore always receive input measurements in pixels.
+      ///
+      /// The required scaling should be computed in the \ref Initialize call, which also computes the output
+      /// units. This function should only apply the scaling.
+      ///
+      /// By default this function does nothing, which is suitable for some measurements.
+      virtual void Scale( Measurement::ValueIterator output ) {
+         ( void ) output;
+      };
 
       /// \brief All measurement features define a `Cleanup` method that is called after finishing the measurement
       /// process for one image.
@@ -765,7 +782,7 @@ class DIP_CLASS_EXPORT LineBased : public Base {
             ObjectIdToIndexMap const& objectIndices
       ) = 0;
 
-      /// \brief Called once for each object, to finalize the measurement
+      /// \brief Called once for each object, to finalize the measurement.
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) = 0;
 };
 
@@ -774,7 +791,7 @@ class DIP_CLASS_EXPORT ImageBased : public Base {
    public:
       explicit ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
 
-      /// \brief Called once to compute measurements for all objects
+      /// \brief Called once to compute measurements for all objects.
       virtual void Measure( Image const& label, Image const& grey, Measurement::IteratorFeature& output ) = 0;
 };
 
@@ -783,7 +800,7 @@ class DIP_CLASS_EXPORT ChainCodeBased : public Base {
    public:
       explicit ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
 
-      /// \brief Called once for each object
+      /// \brief Called once for each object.
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) = 0;
 };
 
@@ -792,7 +809,7 @@ class DIP_CLASS_EXPORT PolygonBased : public Base {
    public:
       explicit PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
 
-      /// \brief Called once for each object
+      /// \brief Called once for each object.
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) = 0;
 };
 
@@ -801,7 +818,7 @@ class DIP_CLASS_EXPORT ConvexHullBased : public Base {
    public:
       explicit ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
 
-      /// \brief Called once for each object
+      /// \brief Called once for each object.
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) = 0;
 };
 
@@ -821,7 +838,8 @@ class DIP_CLASS_EXPORT Composite : public Base {
       virtual StringArray Dependencies() = 0;
 
       /// \brief Called once for each object, the input `dependencies` object contains the measurements
-      /// for the object from all the features in the \ref Dependencies() list.
+      /// for the object from all the features in the \ref Dependencies() list. The measurements are always
+      /// un pixel units, not yet scaled by the pixel sizes.
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) = 0;
 };
 

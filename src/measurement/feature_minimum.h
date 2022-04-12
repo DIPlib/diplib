@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,15 +30,11 @@ class FeatureMinimum : public LineBased {
          data_.resize( nObjects * nD_, std::numeric_limits< dip::uint >::max() );
          scales_.resize( nD_ );
          ValueInformationArray out( nD_ );
+         PixelSize ps = label.PixelSize();
+         ps.ForcePhysical();
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            PhysicalQuantity pq = label.PixelSize( ii );
-            if( pq.IsPhysical() ) {
-               scales_[ ii ] = pq.magnitude;
-               out[ ii ].units = pq.units;
-            } else {
-               scales_[ ii ] = 1;
-               out[ ii ].units = Units::Pixel();
-            }
+            scales_[ ii ] = ps[ ii ].magnitude;
+            out[ ii ].units = ps[ ii ].units;
             out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
          return out;
@@ -76,7 +72,13 @@ class FeatureMinimum : public LineBased {
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dip::uint* data = &( data_[ objectIndex * nD_ ] );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            output[ ii ] = static_cast< dfloat >( data[ ii ] ) * scales_[ ii ];
+            output[ ii ] = static_cast< dfloat >( data[ ii ] );
+         }
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         for( dip::uint ii = 0; ii < nD_; ++ii ) {
+            output[ ii ] *= scales_[ ii ];
          }
       }
 

@@ -24,10 +24,19 @@ title: "Changes DIPlib 3.x.x"
 - `dip::Label` has a new string argument, `mode`, which can be set to `"largest"` to return a labeled
   image that only contains the largest connected component in the input image.
 
+- Added `dip::PixelSize::UnitLength()`, `dip::PixelSize::UnitSize()` and `dip::PixelSize::ForcePhysical()`,
+  to simplify finding the right units for measurement results.
+
 ### Changed functionality
 
 - The deterministic initialization for `dip::GaussianMixtureModel()` is more robust, making the
   initial Gaussians overlap instead of setting their sigma to 1.
+
+- The `dip::Feature::Base` class, the base class for all measurement features, has a new virtual
+  function `Scale()`, which is called for all features after they have been computed, and which
+  is meant to scale the measurement results with the pixel sizes. Most features no longer scale
+  the measurement results while computing them, as this simplifies the logic for many of the
+  composed features.
 
 ### Bug fixes
 
@@ -46,10 +55,16 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::GaussianMixtureModel()` could produce NaN for amplitude, those components now have a zero amplitude.
 
-- The "SolidArea" feature didn't take the pixel size into account. This also caused the "Roundness" feature to report wrong values.
+- The "SolidArea" feature didn't take the pixel size into account. This also caused the "Roundness" feature
+  to report wrong values. The "SurfaceArea" feature didn't properly scale the result by the pixel size.
+  Several composed features (computed from other features) didn't produce correct values for isotropic
+  pixels ("P2A", "Roundness", "PodczeckShapes", etc.)
 
 - `dip::div_round()` was incorrect, which caused `dip::DirectedPathOpening()` to not use certain
   directions.
+
+- `dip::DirectionalStatisticsAccumulator::StandardDeviation()` returned NaN if the mean was identical to zero.
+
 
 
 

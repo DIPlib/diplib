@@ -1,5 +1,5 @@
 /*
- * (c)2016, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,20 +26,12 @@ class FeatureRadius : public PolygonBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 4 );
-         PhysicalQuantity pq = label.PixelSize( 0 );
-         if( label.IsIsotropic() && pq.IsPhysical() ) {
-            scale_ = pq.magnitude;
-            out[ 0 ].units = pq.units;
-            out[ 1 ].units = pq.units;
-            out[ 2 ].units = pq.units;
-            out[ 3 ].units = pq.units;
-         } else {
-            scale_ = 1;
-            out[ 0 ].units = Units::Pixel();
-            out[ 1 ].units = Units::Pixel();
-            out[ 2 ].units = Units::Pixel();
-            out[ 3 ].units = Units::Pixel();
-         }
+         PhysicalQuantity pq = label.PixelSize().UnitLength();
+         scale_ = pq.magnitude;
+         out[ 0 ].units = pq.units;
+         out[ 1 ].units = pq.units;
+         out[ 2 ].units = pq.units;
+         out[ 3 ].units = pq.units;
          out[ 0 ].name = "Max";
          out[ 1 ].name = "Mean";
          out[ 2 ].name = "Min";
@@ -49,10 +41,17 @@ class FeatureRadius : public PolygonBased {
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
          RadiusValues radius = polygon.RadiusStatistics();
-         output[ 0 ] = radius.Maximum() * scale_;
-         output[ 1 ] = radius.Mean() * scale_;
-         output[ 2 ] = radius.Minimum() * scale_;
-         output[ 3 ] = radius.StandardDeviation() * scale_;
+         output[ 0 ] = radius.Maximum();
+         output[ 1 ] = radius.Mean();
+         output[ 2 ] = radius.Minimum();
+         output[ 3 ] = radius.StandardDeviation();
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         output[ 0 ] *= scale_;
+         output[ 1 ] *= scale_;
+         output[ 2 ] *= scale_;
+         output[ 3 ] *= scale_;
       }
 
    private:

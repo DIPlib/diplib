@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,15 +42,7 @@ class FeatureSize : public LineBased {
                out[ 0 ].name = "Size";
          }*/
          out[ 0 ].name = "";
-         PhysicalQuantity unitArea = 1;
-         for( dip::uint ii = 0; ii < label.Dimensionality(); ++ii ) {
-            PhysicalQuantity pq = label.PixelSize( ii );
-            if( pq.IsPhysical() ) {
-               unitArea *= pq;
-            } else {
-               unitArea *= PhysicalQuantity::Pixel();
-            }
-         }
+         PhysicalQuantity unitArea = label.PixelSize().UnitSize( label.Dimensionality() );
          scale_ = unitArea.magnitude;
          out[ 0 ].units = unitArea.units;
          return out;
@@ -85,7 +77,11 @@ class FeatureSize : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         *output = static_cast< dfloat >( data_[ objectIndex ] ) * scale_;
+         *output = static_cast< dfloat >( data_[ objectIndex ] );
+      }
+
+      virtual void Scale( Measurement::ValueIterator output ) override {
+         *output *= scale_;
       }
 
       virtual void Cleanup() override {
