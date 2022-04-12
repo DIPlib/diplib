@@ -34,7 +34,7 @@ namespace dip {
 template< typename T > class DIP_NO_EXPORT LineIterator;
 struct DIP_NO_EXPORT ChainCode;
 struct DIP_NO_EXPORT Polygon;
-class DIP_NO_EXPORT ConvexHull;
+struct DIP_NO_EXPORT ConvexHull;
 
 /// \group measurement Measurement
 /// \brief The measurement infrastructure and functionality.

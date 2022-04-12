@@ -116,8 +116,6 @@ FeretValues ConvexHull::Feret() const {
 
    FeretValues feret;
 
-   auto const& vertices = polygon_.vertices;
-
    if( vertices.size() < 3 ) {
       // Nothing to do, give some meaningful values
       if( vertices.size() == 2 ) {
@@ -333,7 +331,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.Area() == 0.0 );
    DOCTEST_CHECK( p.Length() == 0.0 );
    dip::ConvexHull h = p.ConvexHull();
-   DOCTEST_CHECK( h.Polygon().vertices.size() == 0 );
+   DOCTEST_CHECK( h.vertices.size() == 0 );
    DOCTEST_CHECK( h.Area() == 0.0 );
    DOCTEST_CHECK( h.Perimeter() == 0.0 );
    auto f = h.Feret();
@@ -348,7 +346,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( p.Length() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
    h = p.ConvexHull();
-   DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
+   DOCTEST_CHECK( h.vertices.size() == 4 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
    f = h.Feret();
@@ -363,7 +361,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.Length() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
    DOCTEST_CHECK( p.IsClockWise() );
    h = p.ConvexHull();
-   DOCTEST_CHECK( h.Polygon().vertices.size() == 8 );
+   DOCTEST_CHECK( h.vertices.size() == 8 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 4 - 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
    DOCTEST_CHECK( h.Polygon().IsClockWise() );
@@ -376,7 +374,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.Length() == doctest::Approx( 3 + std::sqrt( 2 )));
    DOCTEST_CHECK( !p.IsClockWise() );
    h = p.ConvexHull();
-   DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
+   DOCTEST_CHECK( h.vertices.size() == 4 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 1 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 ));
    DOCTEST_CHECK( h.Polygon().IsClockWise() );

@@ -17,7 +17,7 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::Image::Mask()`, to apply a mask to an image.
 
-- Added `reverse()` to `dip::DimensionArray<>` and `Reverse()` to `dip::PixelSize`.
+- Added `dip::DimensionArray<>::reverse()` and `dip::PixelSize::Reverse()` to reverse the elements of an array.
 
 - Added `dip::Image::ReverseDimensions()`, which permutes dimensions to reverse their order.
 
@@ -26,6 +26,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::PixelSize::UnitLength()`, `dip::PixelSize::UnitSize()` and `dip::PixelSize::ForcePhysical()`,
   to simplify finding the right units for measurement results.
+
+- Added operators to multiply and divide two `dip::Vertex` objects. They apply an element-wise product.
 
 ### Changed functionality
 
@@ -37,6 +39,10 @@ title: "Changes DIPlib 3.x.x"
   is meant to scale the measurement results with the pixel sizes. Most features no longer scale
   the measurement results while computing them, as this simplifies the logic for many of the
   composed features.
+
+- `dip::ConvexHull` no longer holds a `dip::Polygon` as a private member, instead it uses `dip::Polygon`
+  as a base class. This makes all of the `dip::Polygon` functionality directly available on the convex
+  hull. `dip::ConvexHull::Polygon()` now just returns a base class reference.
 
 ### Bug fixes
 
@@ -57,7 +63,7 @@ title: "Changes DIPlib 3.x.x"
 
 - The "SolidArea" feature didn't take the pixel size into account. This also caused the "Roundness" feature
   to report wrong values. The "SurfaceArea" feature didn't properly scale the result by the pixel size.
-  Several composed features (computed from other features) didn't produce correct values for isotropic
+  Several composed features (computed from other features) didn't produce correct values for anisotropic
   pixels ("P2A", "Roundness", "PodczeckShapes", etc.)
 
 - `dip::div_round()` was incorrect, which caused `dip::DirectedPathOpening()` to not use certain
@@ -170,6 +176,8 @@ title: "Changes DIPlib 3.x.x"
 ### Bug fixes
 
 - Automatically close all PyDIPviewer windows at program exit to avoid segfault.
+
+
 
 
 ## Changes to *DIPjavaio*

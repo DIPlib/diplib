@@ -184,6 +184,14 @@ Polygon& Polygon::Scale( dfloat scale ) {
    return *this;
 }
 
+Polygon& Polygon::Scale( dfloat scaleX, dfloat scaleY ) {
+   VertexFloat scale{ scaleX, scaleY };
+   for( auto& v: vertices ) {
+      v *= scale;
+   }
+   return *this;
+}
+
 Polygon& Polygon::Translate( VertexFloat shift ) {
    for( auto& v: vertices ) {
       v += shift;
@@ -192,17 +200,17 @@ Polygon& Polygon::Translate( VertexFloat shift ) {
 }
 
 ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
-   auto const& vertices = polygon.vertices;
-   if( vertices.size() <= 3 ) {
+   auto const& inVertices = polygon.vertices;
+   if( inVertices.size() <= 3 ) {
       // If there's less than 4 elements, we already have a convex hull
-      polygon_ = polygon;
+      vertices = inVertices;
       return;
    }
 
    // Find shortest vertex for scale
-   dfloat minLength = Distance( vertices.front(), vertices.back() );
-   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
-      minLength = std::min( minLength, Distance( vertices[ ii ], vertices[ ii - 1 ] ));
+   dfloat minLength = Distance( inVertices.front(), inVertices.back() );
+   for( dip::uint ii = 1; ii < inVertices.size(); ++ii ) {
+      minLength = std::min( minLength, Distance( inVertices[ ii ], inVertices[ ii - 1 ] ));
    }
    dfloat eps = minLength * 1e-9;
    // We ignore parallelogram distances that are 9 orders of magnitude smaller than the minimum distance
@@ -211,14 +219,14 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
 
    // Melkman's algorithm for the convex hull
    std::deque< VertexFloat > deque;
-   auto v1 = vertices.begin();
+   auto v1 = inVertices.begin();
    auto v2 = v1 + 1;
    auto v3 = v2 + 1;         // these elements exist for sure -- we have more than 3 elements!
    while( std::abs( ParallelogramSignedArea( *v1, *v2, *v3 )) < eps ) {
       // While the first three vertices are colinear, we discard the middle one and continue.
       v2 = v3;
       ++v3;
-      DIP_THROW_IF( v3 == vertices.end(), "All vertices are colinear, cannot compute convex hull" );
+      DIP_THROW_IF( v3 == inVertices.end(), "All vertices are colinear, cannot compute convex hull" );
       // Note that this error should not occur for any polygon generated from a chain code (i.e. representing a
       // set of pixels in an image). We have this test here in case the polygon has a different source.
       // We could, instead of throwing, return the two vertices that compose the bounding box. But that could
@@ -234,19 +242,19 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
    deque.push_back( *v3 );
    deque.push_front( *v3 );
    v1 = v3;
-   while( v1 != vertices.end() ) {
+   while( v1 != inVertices.end() ) {
       ++v1;
-      if( v1 == vertices.end() ) {
+      if( v1 == inVertices.end() ) {
          break;
       }
       while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) > -eps &&
              ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) > -eps ) {
          ++v1;
-         if( v1 == vertices.end() ) {
+         if( v1 == inVertices.end() ) {
             break;
          }
       }
-      if( v1 == vertices.end() ) {
+      if( v1 == inVertices.end() ) {
          break;
       }
       while( ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) < eps ) {
@@ -264,7 +272,7 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
 
    // Make a new chain of the relevant polygon vertices.
    for( auto const& v : deque ) {
-      polygon_.vertices.push_back( v );
+      vertices.push_back( v );
    }
 }
 

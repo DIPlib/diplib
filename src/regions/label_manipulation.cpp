@@ -364,7 +364,7 @@ ObjectConvexHulls GetObjectConvexHulls( ObjectContours const& objectContours ) {
       for( auto it = obj_it.value().rbegin(); it != obj_it.value().rend(); ++it ) {
          polygon.vertices.emplace_back( static_cast< dip::sfloat >( it->second.min ) - 0.1,  static_cast< dip::sfloat >( it->first ));
       }
-      polygon = polygon.ConvexHull().Polygon(); // we need to copy the convex hull out, we cannot move it!
+      polygon = std::move( polygon.ConvexHull().Polygon() );
       out[ obj_it.key() ] = std::move( polygon );
    }
    return out;

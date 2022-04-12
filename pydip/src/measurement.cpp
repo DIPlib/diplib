@@ -369,11 +369,11 @@ void init_measurement( py::module& m ) {
    poly.def( "Smooth", &dip::Polygon::Smooth, "sigma"_a = 1.0 );
    poly.def( "Reverse", &dip::Polygon::Reverse );
    poly.def( "Rotate", &dip::Polygon::Rotate, "angle"_a );
-   poly.def( "Scale", &dip::Polygon::Scale, "scale"_a );
+   poly.def( "Scale", py::overload_cast< dip::dfloat >( &dip::Polygon::Scale ), "scale"_a );
+   poly.def( "Scale", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::Polygon::Scale ), "scaleX"_a, "scaleY"_a );
    poly.def( "Translate", &dip::Polygon::Translate, "shift"_a );
    poly.def( "ConvexHull", []( dip::Polygon const& self ) {
-                auto out = self.ConvexHull().Polygon(); // Make a copy of the polygon, sadly. Otherwise we'd have to return the ConvexHull object. We can't extract that data from it trivially.
-                return out;
+                return self.ConvexHull().Polygon();
              },
              "Returns a `dip.Polygon` object, not a `dip::ConvexHull` object as the C++\n"
              "function does." );

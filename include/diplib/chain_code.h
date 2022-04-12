@@ -113,27 +113,41 @@ struct DIP_NO_EXPORT Vertex {
       return *this;
    }
    /// Add a constant to both coordinate components
-   Vertex& operator+=( T n ) {
-      x += n;
-      y += n;
+   Vertex& operator+=( T t ) {
+      x += t;
+      y += t;
       return *this;
    }
    /// Subtract a constant from both coordinate components
-   Vertex& operator-=( T n ) {
-      x -= n;
-      y -= n;
+   Vertex& operator-=( T t ) {
+      x -= t;
+      y -= t;
       return *this;
    }
    /// Scale by a constant, isotropically
-   Vertex& operator*=( dfloat n ) {
-      x = T( dfloat( x ) * n );
-      y = T( dfloat( y ) * n );
+   Vertex& operator*=( dfloat s ) {
+      x = T( dfloat( x ) * s );
+      y = T( dfloat( y ) * s );
+      return *this;
+   }
+   /// Scale by a constant, anisotropically
+   template< typename V >
+   Vertex& operator*=( Vertex< V > v ) {
+      x = T( dfloat( x ) * dfloat( v.x ));
+      y = T( dfloat( y ) * dfloat( v.y ));
       return *this;
    }
    /// Scale by the inverse of a constant, isotropically
-   Vertex& operator/=( dfloat n ) {
-      x = T( dfloat( x ) / n );
-      y = T( dfloat( y ) / n );
+   Vertex& operator/=( dfloat s ) {
+      x = T( dfloat( x ) / s );
+      y = T( dfloat( y ) / s );
+      return *this;
+   }
+   /// Scale by the inverse of a constant, anisotropically
+   template< typename V >
+   Vertex& operator/=( Vertex< V > v ) {
+      x = T( dfloat( x ) / dfloat( v.x ));
+      y = T( dfloat( y ) / dfloat( v.y ));
       return *this;
    }
    /// Round coordinates to nearest integer
@@ -281,33 +295,81 @@ inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs )
 /// \brief Add a vertex and a constant
 /// \relates dip::Vertex
 template< typename T, typename S >
-inline Vertex< T > operator+( Vertex< T > v, S n ) {
-   v += T( n );
+inline Vertex< T > operator+( Vertex< T > v, S t ) {
+   v += T( t );
    return v;
 }
 
 /// \brief Subtract a vertex and a constant
 /// \relates dip::Vertex
 template< typename T, typename S >
-inline Vertex< T > operator-( Vertex< T > v, S n ) {
-   v -= T( n );
+inline Vertex< T > operator-( Vertex< T > v, S t ) {
+   v -= T( t );
    return v;
 }
 
-/// \brief Multiply a vertex and a constant
+/// \brief Multiply a vertex and a constant, scaling isotropically
 /// \relates dip::Vertex
 template< typename T >
-inline Vertex< T > operator*( Vertex< T > v, dfloat n ) {
-   v *= n;
+inline Vertex< T > operator*( Vertex< T > v, dfloat s ) {
+   v *= s;
    return v;
 }
 
-/// \brief Divide a vertex by a constant
+/// \brief Multiply a vertex by another vertex, scaling anisotropically
 /// \relates dip::Vertex
 template< typename T >
-inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
-   v /= n;
+inline Vertex< T > operator*( Vertex< T > lhs, Vertex< T > const& rhs ) {
+   lhs *= rhs;
+   return lhs;
+}
+
+/// \brief Multiply a vertex by another vertex, scaling anisotropically, where the LHS is floating-point and the RHS is integer
+/// \relates dip::Vertex
+inline VertexFloat operator*( VertexFloat lhs, VertexInteger const& rhs ) {
+   lhs *= rhs;
+   return lhs;
+}
+
+/// \brief Multiply a vertex by another vertex, scaling anisotropically, where the LHS is integer and the RHS is floating-point
+/// \relates dip::Vertex
+inline VertexFloat operator*( VertexInteger const& lhs, VertexFloat const& rhs ) {
+   VertexFloat out{ static_cast< dfloat >( lhs.x ),
+                    static_cast< dfloat >( lhs.y ) };
+   out *= rhs;
+   return out;
+}
+
+/// \brief Divide a vertex by a constant, scaling isotropically
+/// \relates dip::Vertex
+template< typename T >
+inline Vertex< T > operator/( Vertex< T > v, dfloat s ) {
+   v /= s;
    return v;
+}
+
+/// \brief Divide a vertex by another vertex, scaling anisotropically
+/// \relates dip::Vertex
+template< typename T >
+inline Vertex< T > operator/( Vertex< T > lhs, Vertex< T > const& rhs ) {
+   lhs /= rhs;
+   return lhs;
+}
+
+/// \brief Divide a vertex by another vertex, scaling anisotropically, where the LHS is floating-point and the RHS is integer
+/// \relates dip::Vertex
+inline VertexFloat operator/( VertexFloat lhs, VertexInteger const& rhs ) {
+   lhs /= rhs;
+   return lhs;
+}
+
+/// \brief Divide a vertex by another vertex, scaling anisotropically, where the LHS is integer and the RHS is floating-point
+/// \relates dip::Vertex
+inline VertexFloat operator/( VertexInteger const& lhs, VertexFloat const& rhs ) {
+   VertexFloat out{ static_cast< dfloat >( lhs.x ),
+                    static_cast< dfloat >( lhs.y ) };
+   out /= rhs;
+   return out;
 }
 
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
@@ -499,7 +561,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
 //
 
 
-class DIP_NO_EXPORT ConvexHull; // Forward declaration
+struct DIP_NO_EXPORT ConvexHull; // Forward declaration
 
 /// \brief A polygon with floating-point vertices.
 struct DIP_NO_EXPORT Polygon {
@@ -631,8 +693,11 @@ struct DIP_NO_EXPORT Polygon {
    /// \brief Rotates the polygon around the origin by `angle`, which is positive for clockwise rotation.
    DIP_EXPORT Polygon& Rotate( dfloat angle );
 
-   /// \brief Scales the polygon by multiplying each vertex coordinates by `scale`.
+   /// \brief Scales the polygon isotropically by multiplying each vertex coordinate by `scale`.
    DIP_EXPORT Polygon& Scale( dfloat scale );
+
+   /// \brief Scales the polygon anisotropically by multiplying each vertex coordinate by `scaleX` and `scaleY`.
+   DIP_EXPORT Polygon& Scale( dfloat scaleX, dfloat scaleY );
 
    /// \brief Translates the polygon by `shift`.
    DIP_EXPORT Polygon& Translate( VertexFloat shift );
@@ -643,13 +708,7 @@ struct DIP_NO_EXPORT Polygon {
 
 /// \brief A convex hull is a convex polygon. It can be constructed from a \ref dip::Polygon, and a const reference
 /// to the underlying `dip::Polygon` object can be obtained. It is guaranteed clockwise.
-class DIP_NO_EXPORT ConvexHull {
-      /*
-       * TODO (requires bumping minor version number):
-       *  - Make ConvexHull a derived class of Polygon, so that all the Polygon functions are directly available.
-       *  - Now ConvexHull::Polygon() will just return dynamic_cast<Polygon>(*this).
-       */
-   public:
+struct DIP_NO_EXPORT ConvexHull : Polygon {
 
       /// Default-constructed ConvexHull (without vertices)
       ConvexHull() = default;
@@ -659,17 +718,12 @@ class DIP_NO_EXPORT ConvexHull {
 
       /// Returns the polygon representing the convex hull
       dip::Polygon const& Polygon() const {
-         return polygon_;
+         return dynamic_cast< dip::Polygon const& >( *this );
       }
 
-      /// Returns the area of the convex hull
-      dfloat Area() const {
-         return polygon_.Area();
-      }
-
-      /// Returns the perimeter of the convex hull
-      dfloat Perimeter() const {
-         return polygon_.Length();
+      /// Returns the polygon representing the convex hull
+      dip::Polygon& Polygon() {
+         return dynamic_cast< dip::Polygon& >( *this );
       }
 
       /// Returns the Feret diameters of the convex hull
@@ -684,9 +738,6 @@ class DIP_NO_EXPORT ConvexHull {
       /// !!! literature
       ///     - F.P. Preparata and M.I. Shamos, "Computational Geometry: an Introduction", Springer-Verlag, 1985.
       DIP_EXPORT FeretValues Feret() const;
-
-   private:
-      dip::Polygon polygon_;
 };
 
 // This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
