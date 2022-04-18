@@ -18,7 +18,7 @@ Read [the *DIPimage* User Manual](https://diplib.org/diplib-docs/dipimage_user_m
 
 - **[*PyDIP*](https://diplib.org/PyDIP.html)**, *Python* bindings to *DIPlib*.
 This is currently a thin wrapper that exposes the C++ functionality with little change.
-[the *PyDIP* User Manual](https://diplib.org/diplib-docs/pydip_user_manual.html)
+Read [the *PyDIP* User Manual](https://diplib.org/diplib-docs/pydip_user_manual.html).
 
 - ***DIPviewer***, an interactive image display utility. It is usable from C++, *Python* and *MATLAB* programs.
 Within *DIPimage* this is an optional alternative to the default *MATLAB*-native interactive display utility.

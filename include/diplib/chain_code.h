@@ -45,15 +45,15 @@ struct DIP_NO_EXPORT FeretValues {
 /// \brief Holds the various output values of the \ref dip::Polygon::RadiusStatistics function.
 class DIP_NO_EXPORT RadiusValues {
    public:
-      /// Returns the mean radius
+      /// Returns the mean radius.
       dfloat Mean() const { return vacc.Mean(); }
-      /// Returns the standard deviation of radii
+      /// Returns the standard deviation of radii.
       dfloat StandardDeviation() const { return vacc.StandardDeviation(); }
-      /// Returns the variance of radii
+      /// Returns the variance of radii.
       dfloat Variance() const { return vacc.Variance(); }
-      /// Returns the maximum radius
+      /// Returns the maximum radius.
       dfloat Maximum() const { return macc.Maximum(); }
-      /// Returns the minimum radius
+      /// Returns the minimum radius.
       dfloat Minimum() const { return macc.Minimum(); }
 
       /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
@@ -84,83 +84,83 @@ class DIP_NO_EXPORT RadiusValues {
 //
 
 
-/// \brief Encodes a location in a 2D image
+/// \brief Encodes a location in a 2D image.
 template< typename T >
 struct DIP_NO_EXPORT Vertex {
    T x;   ///< The x-coordinate
    T y;   ///< The y-coordinate
 
-   /// Default constructor
+   /// Default constructor.
    constexpr Vertex() : x( T( 0 )), y( T( 0 )) {}
-   /// Constructor
+   /// Constructor.
    constexpr Vertex( T x, T y ) : x( x ), y( y ) {}
-   /// Constructor
+   /// Constructor.
    template< typename V >
    explicit Vertex( Vertex< V > v ) : x( static_cast< T >( v.x )), y( static_cast< T >( v.y )) {}
 
-   /// Add a vertex
+   /// Add a vertex.
    template< typename V >
    Vertex& operator+=( Vertex< V > v ) {
       x += T( v.x );
       y += T( v.y );
       return *this;
    }
-   /// Subtract a vertex
+   /// Subtract a vertex.
    template< typename V >
    Vertex& operator-=( Vertex< V > v ) {
       x -= T( v.x );
       y -= T( v.y );
       return *this;
    }
-   /// Add a constant to both coordinate components
+   /// Add a constant to both coordinate components.
    Vertex& operator+=( T t ) {
       x += t;
       y += t;
       return *this;
    }
-   /// Subtract a constant from both coordinate components
+   /// Subtract a constant from both coordinate components.
    Vertex& operator-=( T t ) {
       x -= t;
       y -= t;
       return *this;
    }
-   /// Scale by a constant, isotropically
+   /// Scale by a constant, isotropically.
    Vertex& operator*=( dfloat s ) {
       x = T( dfloat( x ) * s );
       y = T( dfloat( y ) * s );
       return *this;
    }
-   /// Scale by a constant, anisotropically
+   /// Scale by a constant, anisotropically.
    template< typename V >
    Vertex& operator*=( Vertex< V > v ) {
       x = T( dfloat( x ) * dfloat( v.x ));
       y = T( dfloat( y ) * dfloat( v.y ));
       return *this;
    }
-   /// Scale by the inverse of a constant, isotropically
+   /// Scale by the inverse of a constant, isotropically.
    Vertex& operator/=( dfloat s ) {
       x = T( dfloat( x ) / s );
       y = T( dfloat( y ) / s );
       return *this;
    }
-   /// Scale by the inverse of a constant, anisotropically
+   /// Scale by the inverse of a constant, anisotropically.
    template< typename V >
    Vertex& operator/=( Vertex< V > v ) {
       x = T( dfloat( x ) / dfloat( v.x ));
       y = T( dfloat( y ) / dfloat( v.y ));
       return *this;
    }
-   /// Round coordinates to nearest integer
+   /// Round coordinates to nearest integer.
    Vertex Round() const {
       return{ std::round( x ), std::round( y ) };
    }
-   /// Permute dimensions, swapping x and y values
+   /// Permute dimensions, swapping x and y values.
    Vertex Permute() const {
       return{ y, x };
    }
 };
 
-/// \brief A vertex with floating-point coordinates
+/// \brief A vertex with floating-point coordinates.
 /// \relates dip::Vertex
 using VertexFloat = Vertex< dfloat >;
 
@@ -168,7 +168,7 @@ using VertexFloat = Vertex< dfloat >;
 /// \relates dip::Vertex
 using VertexInteger = Vertex< dip::sint >;
 
-/// \brief Compare two vertices
+/// \brief Compare two vertices.
 /// \relates dip::Vertex
 template< typename T >
 inline bool operator==( Vertex< T > v1, Vertex< T > v2 ) {
@@ -176,7 +176,7 @@ inline bool operator==( Vertex< T > v1, Vertex< T > v2 ) {
 }
 
 template< typename T >
-/// \brief Compare two vertices
+/// \brief Compare two vertices.
 /// \relates dip::Vertex
 inline bool operator!=( Vertex< T > v1, Vertex< T > v2 ) {
    return !( v1 == v2 );
@@ -218,35 +218,35 @@ inline dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    return std::atan2( v.y, v.x );
 }
 
-/// \brief Compute the z component of the cross product of vectors `v1` and `v2`
+/// \brief Compute the z component of the cross product of vectors `v1` and `v2`.
 /// \relates dip::Vertex
 template< typename T >
 inline dfloat CrossProduct( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    return v1.x * v2.y - v1.y * v2.x;
 }
 
-/// \brief Compute the z component of the cross product of vectors `v2-v1` and `v3-v1`
+/// \brief Compute the z component of the cross product of vectors `v2-v1` and `v3-v1`.
 /// \relates dip::Vertex
 template< typename T >
 inline dfloat ParallelogramSignedArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return CrossProduct( v2 - v1, v3 - v1 );
 }
 
-/// \brief Compute the area of the triangle formed by vertices `v1`, `v2` and `v3`
+/// \brief Compute the area of the triangle formed by vertices `v1`, `v2` and `v3`.
 /// \relates dip::Vertex
 template< typename T >
 inline dfloat TriangleArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / 2.0 );
 }
 
-/// \brief Compute the height of the triangle formed by vertices `v1`, `v2` and `v3`, with `v3` the tip
+/// \brief Compute the height of the triangle formed by vertices `v1`, `v2` and `v3`, with `v3` the tip.
 /// \relates dip::Vertex
 template< typename T >
 inline dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ));
 }
 
-/// \brief Add two vertices together, with identical types
+/// \brief Add two vertices together, with identical types.
 /// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
@@ -254,21 +254,21 @@ inline Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
    return lhs;
 }
 
-/// \brief Add two vertices together, where the LHS is floating-point and the RHS is integer
+/// \brief Add two vertices together, where the LHS is floating-point and the RHS is integer.
 /// \relates dip::Vertex
 inline VertexFloat operator+( VertexFloat lhs, VertexInteger const& rhs ) {
    lhs += rhs;
    return lhs;
 }
 
-/// \brief Add two vertices together, where the LHS is integer and the RHS is floating-point
+/// \brief Add two vertices together, where the LHS is integer and the RHS is floating-point.
 /// \relates dip::Vertex
 inline VertexFloat operator+( VertexInteger const& lhs, VertexFloat rhs ) {
    rhs += lhs;
    return rhs;
 }
 
-/// \brief Subtract two vertices from each other
+/// \brief Subtract two vertices from each other.
 /// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
@@ -276,14 +276,14 @@ inline Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
    return lhs;
 }
 
-/// \brief Subtract two vertices from each other, where the LHS is floating-point and the RHS is integer
+/// \brief Subtract two vertices from each other, where the LHS is floating-point and the RHS is integer.
 /// \relates dip::Vertex
 inline VertexFloat operator-( VertexFloat lhs, VertexInteger const& rhs ) {
    lhs -= rhs;
    return lhs;
 }
 
-/// \brief Subtract two vertices from each other, where the LHS is integer and the RHS is floating-point
+/// \brief Subtract two vertices from each other, where the LHS is integer and the RHS is floating-point.
 /// \relates dip::Vertex
 inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs ) {
    VertexFloat out{ static_cast< dfloat >( lhs.x ),
@@ -292,7 +292,7 @@ inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs )
    return out;
 }
 
-/// \brief Add a vertex and a constant
+/// \brief Add a vertex and a constant.
 /// \relates dip::Vertex
 template< typename T, typename S >
 inline Vertex< T > operator+( Vertex< T > v, S t ) {
@@ -300,7 +300,7 @@ inline Vertex< T > operator+( Vertex< T > v, S t ) {
    return v;
 }
 
-/// \brief Subtract a vertex and a constant
+/// \brief Subtract a vertex and a constant.
 /// \relates dip::Vertex
 template< typename T, typename S >
 inline Vertex< T > operator-( Vertex< T > v, S t ) {
@@ -308,7 +308,7 @@ inline Vertex< T > operator-( Vertex< T > v, S t ) {
    return v;
 }
 
-/// \brief Multiply a vertex and a constant, scaling isotropically
+/// \brief Multiply a vertex and a constant, scaling isotropically.
 /// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator*( Vertex< T > v, dfloat s ) {
@@ -316,7 +316,7 @@ inline Vertex< T > operator*( Vertex< T > v, dfloat s ) {
    return v;
 }
 
-/// \brief Multiply a vertex by another vertex, scaling anisotropically
+/// \brief Multiply a vertex by another vertex, scaling anisotropically.
 /// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator*( Vertex< T > lhs, Vertex< T > const& rhs ) {
@@ -324,14 +324,14 @@ inline Vertex< T > operator*( Vertex< T > lhs, Vertex< T > const& rhs ) {
    return lhs;
 }
 
-/// \brief Multiply a vertex by another vertex, scaling anisotropically, where the LHS is floating-point and the RHS is integer
+/// \brief Multiply a vertex by another vertex, scaling anisotropically, where the LHS is floating-point and the RHS is integer.
 /// \relates dip::Vertex
 inline VertexFloat operator*( VertexFloat lhs, VertexInteger const& rhs ) {
    lhs *= rhs;
    return lhs;
 }
 
-/// \brief Multiply a vertex by another vertex, scaling anisotropically, where the LHS is integer and the RHS is floating-point
+/// \brief Multiply a vertex by another vertex, scaling anisotropically, where the LHS is integer and the RHS is floating-point.
 /// \relates dip::Vertex
 inline VertexFloat operator*( VertexInteger const& lhs, VertexFloat const& rhs ) {
    VertexFloat out{ static_cast< dfloat >( lhs.x ),
@@ -340,7 +340,7 @@ inline VertexFloat operator*( VertexInteger const& lhs, VertexFloat const& rhs )
    return out;
 }
 
-/// \brief Divide a vertex by a constant, scaling isotropically
+/// \brief Divide a vertex by a constant, scaling isotropically.
 /// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator/( Vertex< T > v, dfloat s ) {
@@ -348,7 +348,7 @@ inline Vertex< T > operator/( Vertex< T > v, dfloat s ) {
    return v;
 }
 
-/// \brief Divide a vertex by another vertex, scaling anisotropically
+/// \brief Divide a vertex by another vertex, scaling anisotropically.
 /// \relates dip::Vertex
 template< typename T >
 inline Vertex< T > operator/( Vertex< T > lhs, Vertex< T > const& rhs ) {
@@ -356,14 +356,14 @@ inline Vertex< T > operator/( Vertex< T > lhs, Vertex< T > const& rhs ) {
    return lhs;
 }
 
-/// \brief Divide a vertex by another vertex, scaling anisotropically, where the LHS is floating-point and the RHS is integer
+/// \brief Divide a vertex by another vertex, scaling anisotropically, where the LHS is floating-point and the RHS is integer.
 /// \relates dip::Vertex
 inline VertexFloat operator/( VertexFloat lhs, VertexInteger const& rhs ) {
    lhs /= rhs;
    return lhs;
 }
 
-/// \brief Divide a vertex by another vertex, scaling anisotropically, where the LHS is integer and the RHS is floating-point
+/// \brief Divide a vertex by another vertex, scaling anisotropically, where the LHS is integer and the RHS is floating-point.
 /// \relates dip::Vertex
 inline VertexFloat operator/( VertexInteger const& lhs, VertexFloat const& rhs ) {
    VertexFloat out{ static_cast< dfloat >( lhs.x ),
@@ -375,17 +375,17 @@ inline VertexFloat operator/( VertexInteger const& lhs, VertexFloat const& rhs )
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
 template< typename T >
 struct DIP_NO_EXPORT BoundingBox {
-   /// The bounding box is defined in terms of two vertices
+   /// The bounding box is defined in terms of two vertices.
    using VertexType = Vertex< T >;
 
    VertexType topLeft;     ///< Top-left corner of the box
    VertexType bottomRight; ///< Bottom-right corner of the box
 
-   /// Default constructor, yields a bounding box of a single pixel at `{0,0}`
+   /// Default constructor, yields a bounding box of a single pixel at `{0,0}`.
    constexpr BoundingBox() = default;
-   /// Constructor, yields a bounding box of a single pixel at `pt`
+   /// Constructor, yields a bounding box of a single pixel at `pt`.
    constexpr explicit BoundingBox( VertexType pt ) : topLeft( pt ), bottomRight( pt ) {}
-   /// Constructor, yields a bounding box with the two points as two of its vertices
+   /// Constructor, yields a bounding box with the two points as two of its vertices.
    BoundingBox( VertexType a, VertexType b ) {
          if( a.x < b.x ) {
             topLeft.x = a.x;
@@ -429,11 +429,11 @@ struct DIP_NO_EXPORT BoundingBox {
    DimensionArray< T > Size() const;
 };
 
-/// \brief A bounding box with floating-point coordinates
+/// \brief A bounding box with floating-point coordinates.
 /// \relates dip::BoundingBox
 using BoundingBoxFloat = BoundingBox< dfloat >;
 
-/// \brief A bounding box with integer coordinates
+/// \brief A bounding box with integer coordinates.
 /// \relates dip::BoundingBox
 using BoundingBoxInteger = BoundingBox< dip::sint >;
 
@@ -463,19 +463,19 @@ inline FloatArray BoundingBox< dfloat >::Size() const {
 /// the off-diagonal elements, which are equal by definition.
 class DIP_NO_EXPORT CovarianceMatrix {
    public:
-      /// \brief Default-initialized covariance matrix is all zeros
+      /// \brief Default-initialized covariance matrix is all zeros.
       CovarianceMatrix() = default;
-      /// \brief Construct a covariance matrix as the outer product of a vector and itself
+      /// \brief Construct a covariance matrix as the outer product of a vector and itself.
       explicit CovarianceMatrix( VertexFloat v ) : xx_( v.x * v.x ), xy_( v.x * v.y ), yy_( v.y * v.y ) {}
-      /// \brief Read matrix element
+      /// \brief Read matrix element.
       dfloat xx() const { return xx_; }
-      /// \brief Read matrix element
+      /// \brief Read matrix element.
       dfloat xy() const { return xy_; }
-      /// \brief Read matrix element
+      /// \brief Read matrix element.
       dfloat yy() const { return yy_; }
-      /// \brief Compute determinant of matrix
+      /// \brief Compute determinant of matrix.
       dfloat Det() const { return xx_ * yy_ - xy_ * xy_; }
-      /// \brief Compute inverse of matrix
+      /// \brief Compute inverse of matrix.
       CovarianceMatrix Inv() const {
          dfloat d = Det();
          CovarianceMatrix out;
@@ -486,21 +486,21 @@ class DIP_NO_EXPORT CovarianceMatrix {
          }
          return out;
       }
-      /// \brief Add other matrix to this matrix
+      /// \brief Add other matrix to this matrix.
       CovarianceMatrix& operator+=( CovarianceMatrix const& other ) {
          xx_ += other.xx_;
          xy_ += other.xy_;
          yy_ += other.yy_;
          return * this;
       }
-      /// \brief Scale matrix
+      /// \brief Scale matrix.
       CovarianceMatrix& operator*=( dfloat d ) {
          xx_ *= d;
          xy_ *= d;
          yy_ *= d;
          return * this;
       }
-      /// \brief Scale matrix
+      /// \brief Scale matrix.
       CovarianceMatrix& operator/=( dfloat d ) {
          return operator*=( 1.0 / d );
       }
@@ -510,7 +510,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
          return v.x * v.x * xx_ + 2 * v.x * v.y * xy_ + v.y * v.y * yy_;
       }
 
-      /// \brief Container for matrix eigenvalues
+      /// \brief Container for matrix eigenvalues.
       struct Eigenvalues {
          dfloat largest;   ///< Largest eigenvalue
          dfloat smallest;  ///< Smallest eigenvalue
@@ -522,7 +522,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
             return largest <= 0.0 ? 0.0 : std::sqrt( 1.0 - smallest / largest );
          }
       };
-      /// \brief Compute eigenvalues of matrix
+      /// \brief Compute eigenvalues of matrix.
       Eigenvalues Eig() const {
          // Eigenvalue calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          dfloat mmu2 = ( xx_ + yy_ ) / 2.0;
@@ -531,7 +531,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
          return { mmu2 + sqroot, mmu2 - sqroot };
       }
 
-      /// \brief Container for ellipse parameters
+      /// \brief Container for ellipse parameters.
       struct EllipseParameters {
          dfloat majorAxis;    ///< Major axis length
          dfloat minorAxis;    ///< Minor axis length
@@ -706,27 +706,27 @@ struct DIP_NO_EXPORT Polygon {
    DIP_EXPORT dip::ConvexHull ConvexHull() const;
 };
 
-/// \brief A convex hull is a convex polygon. It can be constructed from a \ref dip::Polygon, and a const reference
-/// to the underlying `dip::Polygon` object can be obtained. It is guaranteed clockwise.
+/// \brief A convex hull is a convex polygon. It can be constructed from a simple \ref dip::Polygon,
+/// and is guaranteed clockwise.
 struct DIP_NO_EXPORT ConvexHull : Polygon {
 
-      /// Default-constructed ConvexHull (without vertices)
+      /// Default-constructed ConvexHull (without vertices).
       ConvexHull() = default;
 
-      /// Constructs a convex hull of a polygon
+      /// Constructs a convex hull of a polygon. The polygon must be simple (not self intersect).
       DIP_EXPORT explicit ConvexHull( dip::Polygon const& polygon );
 
-      /// Returns the polygon representing the convex hull
+      /// Returns the polygon representing the convex hull.
       dip::Polygon const& Polygon() const {
          return dynamic_cast< dip::Polygon const& >( *this );
       }
 
-      /// Returns the polygon representing the convex hull
+      /// Returns the polygon representing the convex hull.
       dip::Polygon& Polygon() {
          return dynamic_cast< dip::Polygon& >( *this );
       }
 
-      /// Returns the Feret diameters of the convex hull
+      /// Returns the Feret diameters of the convex hull.
       ///
       /// The Feret diameters of the convex hull correspond to the Feret diameters of the original polygon.
       /// Feret diameters are the lengths of the projections. This function determines the longest and the shortest
@@ -916,7 +916,7 @@ struct DIP_NO_EXPORT ChainCode {
       return Polygon().Centroid();
    }
 
-   /// \brief Finds the bounding box for the object described by the chain code
+   /// \brief Finds the bounding box for the object described by the chain code.
    DIP_EXPORT BoundingBoxInteger BoundingBox() const;
 
    /// Returns the length of the longest run of identical chain codes.
@@ -953,7 +953,7 @@ struct DIP_NO_EXPORT ChainCode {
    DIP_EXPORT ChainCode Offset() const;
 };
 
-/// \brief A collection of object contours
+/// \brief A collection of object contours.
 /// \relates dip::ChainCode
 using ChainCodeArray = std::vector< ChainCode >;
 
