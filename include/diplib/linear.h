@@ -502,8 +502,7 @@ DIP_NODISCARD inline Image Derivative(
    return out;
 }
 
-#define DIP_DERIVATIVE_OPERATOR( functionName_, dimension_, order_ ) \
-   inline void functionName_( Image const& in, Image& out, FloatArray sigmas = { 1.0 } ){ \
+#define DIP_DERIVATIVE_OPERATOR( functionName_, dimension_, order_ ) { \
       DIP_THROW_IF( in.Dimensionality() <= ( dimension_ ), E::DIMENSIONALITY_NOT_SUPPORTED ); \
       UnsignedArray derivativeOrder( in.Dimensionality(), 0 ); \
       derivativeOrder[ dimension_ ] = order_; \
@@ -513,28 +512,33 @@ DIP_NODISCARD inline Image Derivative(
       Image out; functionName_( in, out, std::move( sigmas )); return out; }
 
 /// \brief Computes the first derivative along x, see \ref dip::Derivative.
+inline void Dx( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dx, 0, 1 )
 
 /// \brief Computes the first derivative along y, see \ref dip::Derivative.
+inline void Dy( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dy, 1, 1 )
 
 /// \brief Computes the first derivative along z, see \ref dip::Derivative.
+inline void Dz( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dz, 2, 1 )
 
 /// \brief Computes the second derivative along x, see \ref dip::Derivative.
+inline void Dxx( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dxx, 0, 2 )
 
 /// \brief Computes the second derivative along y, see \ref dip::Derivative.
+inline void Dyy( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dyy, 1, 2 )
 
 /// \brief Computes the second derivative along z, see \ref dip::Derivative.
+inline void Dzz( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dzz, 2, 2 )
 
 #undef DIP_DERIVATIVE_OPERATOR
 
 // Same, but for 2nd order cross derivatives. Dimension 2 is always largest of the two!
-#define DIP_DERIVATIVE_OPERATOR( functionName_, dimension1_, dimension2_ ) \
-   inline void functionName_( Image const& in, Image& out, FloatArray sigmas = { 1.0 } ){ \
+#define DIP_DERIVATIVE_OPERATOR( functionName_, dimension1_, dimension2_ ) { \
       DIP_THROW_IF( in.Dimensionality() <= ( dimension2_ ), E::DIMENSIONALITY_NOT_SUPPORTED ); \
       UnsignedArray derivativeOrder( in.Dimensionality(), 0 ); \
       derivativeOrder[ dimension1_ ] = 1; derivativeOrder[ dimension2_ ] = 1; \
@@ -544,12 +548,15 @@ DIP_DERIVATIVE_OPERATOR( Dzz, 2, 2 )
       Image out; functionName_( in, out, std::move( sigmas )); return out; }
 
 /// \brief Computes the first derivative along x and y, see \ref dip::Derivative.
+inline void Dxy( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dxy, 0, 1 )
 
 /// \brief Computes the first derivative along x and z, see \ref dip::Derivative.
+inline void Dxz( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dxz, 0, 2 )
 
 /// \brief Computes the first derivative along y and y, see \ref dip::Derivative.
+inline void Dyz( Image const& in, Image& out, FloatArray sigmas = { 1.0 } )
 DIP_DERIVATIVE_OPERATOR( Dyz, 1, 2 )
 
 #undef DIP_DERIVATIVE_OPERATOR
