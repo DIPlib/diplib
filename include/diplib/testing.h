@@ -34,11 +34,11 @@
 
 namespace dip {
 
-namespace Option {
-
 /// \group testing Testing and debugging
 /// \brief Tools for testing and debugging.
 /// \addtogroup
+
+namespace Option {
 
 /// \brief How to compare images in \ref dip::testing::CompareImages.
 enum class DIP_NO_EXPORT CompareImagesMode {

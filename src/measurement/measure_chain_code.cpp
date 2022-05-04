@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +24,10 @@
 
 namespace dip {
 
-dfloat ChainCode::Length() const {
+dfloat ChainCode::Length( String const& boundaryPixels ) const {
    DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
+   bool includeBoundaryPixels;
+   DIP_STACK_TRACE_THIS( includeBoundaryPixels = BooleanFromString( boundaryPixels, S::INCLUDE, S::EXCLUDE ));
    if( codes.empty() ) {
       return 0;
    }
@@ -35,7 +37,7 @@ dfloat ChainCode::Length() const {
       dip::uint Nc = 0;
       Code prev = codes.back();
       for( auto code : codes ) {
-         if( !code.IsBorder() ) {
+         if( includeBoundaryPixels || !code.IsBorder() ) {
             // count the number of even and odd codes
             if( code.IsOdd() ) {
                No++;

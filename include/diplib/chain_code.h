@@ -872,14 +872,15 @@ struct DIP_NO_EXPORT ChainCode {
    /// If the chain code represents the closed contour of an object, add &pi; to the result to determine
    /// the object's perimeter.
    ///
-   /// Any portions of the chain code that run along the image edge are not measured. That is, for
+   /// Any portions of the chain code that run along the image edge are not measured by default. That is, for
    /// an object that is only partially inside the image, the portion of the object's perimeter that
-   /// is inside of the image is measured, the edge created by cutting the object is not.
+   /// is inside of the image is measured, the edge created by cutting the object is not. To include those
+   /// portions of the perimeter, set `boundaryPixels` to `"include"`.
    ///
    /// !!! literature
    ///     - A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
    ///       of straight lines of finite length", Computer Graphics and Image Processing 20(4):347-364, 1982.
-   DIP_EXPORT dfloat Length() const;
+   DIP_EXPORT dfloat Length( String const& boundaryPixels = S::EXCLUDE ) const;
 
    /// \brief Returns the Feret diameters, using an angular step size in radian of `angleStep`.
    /// It is better to use \ref dip::ConvexHull::Feret.
