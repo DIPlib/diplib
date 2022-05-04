@@ -48,6 +48,11 @@ title: "Changes DIPlib 3.x.x"
   μ (U+03BC), instead of the legacy symbol µ (U+00B5) for micron (when *DIPlib* is built with Unicode
   enabled). Both symbols are recognized when parsing a string, but the strings generated are now different.
 
+- `dip::ChainCode::Length` has an optional parameter to include the image boundary pixels in the measurement.
+
+- The `"Perimeter"` feature can be configured: setting the `"include boundary pixels"` parameter to a non-zero
+  value causes the perimeter measurement to include pixels at the image boundary.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()`, when drawing filled polygons, would skip the bottom row in the polygon. The
@@ -126,12 +131,14 @@ title: "Changes DIPlib 3.x.x"
   must be compatible. If one of the operands is a scalar image, the normal element-wise multiplication
   is applied. One of the operands can be a single pixel (a list of numbers).
 
+- Added `dip.MeasurementTool.Configure` to allow measurement features to be configured.
+
 ### Changed functionality
 
 - Operators overloaded for `dip.Image` objects can use lists of numbers as a second argument, which
   is interpreted as a 0D tensor image (column vector). This makes `img / img[0]` possible.
 
-- When PyDIPjavaio fails to load, the error is no longer displayed immediately. Instead, it is
+- When *PyDIPjavaio* fails to load, the error is no longer displayed immediately. Instead, it is
   shown when `dip.ImageRead()` fails. The error message is also a bit more helpful.
   See [issue #106](https://github.com/DIPlib/diplib/issues/106).
 

@@ -698,15 +698,14 @@ class DIP_CLASS_EXPORT Base {
       Information const information; ///< Information on the feature
       Type const type; ///< The type of the measurement
 
-      Base( Information information, Type const type ) : information( std::move( information )), type( type ) {};
+      Base( Information information, Type const type ) : information( std::move( information )), type( type ) {}
 
       /// \brief A feature can have configurable parameters. Such a feature can define a `Configure` method
       /// that the user can access through \ref dip::MeasurementTool::Configure.
       virtual void Configure( String const& parameter, dfloat value ) {
-         ( void ) parameter;
          ( void ) value;
-         DIP_THROW( "Feature not configurable" );
-      };
+         DIP_THROW_INVALID_FLAG( parameter );
+      }
 
       /// \brief All measurement features define an `Initialize` method that prepares the feature class
       /// to perform measurements on the image. It also gives information on the feature as applied to that image.
@@ -744,11 +743,11 @@ class DIP_CLASS_EXPORT Base {
       /// By default this function does nothing, which is suitable for some measurements.
       virtual void Scale( Measurement::ValueIterator output ) {
          ( void ) output;
-      };
+      }
 
       /// \brief All measurement features define a `Cleanup` method that is called after finishing the measurement
       /// process for one image.
-      virtual void Cleanup() {};
+      virtual void Cleanup() {}
 
       virtual ~Base() = default;
 };
@@ -756,7 +755,7 @@ class DIP_CLASS_EXPORT Base {
 /// \brief The pure virtual base class for all line-based measurement features.
 class DIP_CLASS_EXPORT LineBased : public Base {
    public:
-      explicit LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {};
+      explicit LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {}
 
       /// \brief Called once for each image line, to accumulate information about each object.
       /// This function is not called in parallel, and hence does not need to be thread-safe.
@@ -789,7 +788,7 @@ class DIP_CLASS_EXPORT LineBased : public Base {
 /// \brief The pure virtual base class for all image-based measurement features.
 class DIP_CLASS_EXPORT ImageBased : public Base {
    public:
-      explicit ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
+      explicit ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {}
 
       /// \brief Called once to compute measurements for all objects.
       virtual void Measure( Image const& label, Image const& grey, Measurement::IteratorFeature& output ) = 0;
@@ -798,7 +797,7 @@ class DIP_CLASS_EXPORT ImageBased : public Base {
 /// \brief The pure virtual base class for all chain-code--based measurement features.
 class DIP_CLASS_EXPORT ChainCodeBased : public Base {
    public:
-      explicit ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
+      explicit ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {}
 
       /// \brief Called once for each object.
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) = 0;
@@ -807,7 +806,7 @@ class DIP_CLASS_EXPORT ChainCodeBased : public Base {
 /// \brief The pure virtual base class for all polygon-based measurement features.
 class DIP_CLASS_EXPORT PolygonBased : public Base {
    public:
-      explicit PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
+      explicit PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {}
 
       /// \brief Called once for each object.
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) = 0;
@@ -816,7 +815,7 @@ class DIP_CLASS_EXPORT PolygonBased : public Base {
 /// \brief The pure virtual base class for all convex-hull--based measurement features.
 class DIP_CLASS_EXPORT ConvexHullBased : public Base {
    public:
-      explicit ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
+      explicit ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {}
 
       /// \brief Called once for each object.
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) = 0;
@@ -825,7 +824,7 @@ class DIP_CLASS_EXPORT ConvexHullBased : public Base {
 /// \brief The pure virtual base class for all composite measurement features.
 class DIP_CLASS_EXPORT Composite : public Base {
    public:
-      explicit Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {};
+      explicit Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {}
 
       /// \brief Lists the features that the measurement depends on. These features will be computed and made
       /// available to the `Measure` method. This function is always called after \ref dip::Feature::Base::Initialize.

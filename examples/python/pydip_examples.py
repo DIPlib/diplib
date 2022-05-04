@@ -297,3 +297,13 @@ img.ShowSlice('input')
 (dip.Transpose(img) * [0.299, 0.587, 0.114]).ShowSlice('scaled each channel')
 (dip.Transpose(img) @ [0.299, 0.587, 0.114]).ShowSlice('converted to grayscale')
 dip.viewer.Spin()
+
+###
+
+a = dip.CreateRadiusCoordinate((256, 256), {'corner'})
+a = dip.Label(a <= 200)
+print(dip.MeasurementTool.Measure(a,features=['Perimeter']))
+# note: expected value = 200 * 2 * 3.14159 / 4 = 314.159
+dip.MeasurementTool.Configure('Perimeter', 'include boundary pixels', 1)
+print(dip.MeasurementTool.Measure(a,features=['Perimeter']))
+# note: expected value = 200 * 2 * 3.14159 / 4 + 2 * 200 = 714.159

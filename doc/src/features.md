@@ -18,12 +18,15 @@
 
 This page describes all the features known to \ref dip::MeasurementTool by default. They
 are sorted into sections in the same way as the table in the documentation to
-`dip::MeasurementTool`
+`dip::MeasurementTool`.
+
+Use \ref dip::MeasurementTool::Configure to modify the behavior of features.
+Currently only the \ref size_features_Perimeter feature can be configured.
 
 Most features take the pixel sizes into account, and report measurements in physical units.
 If the pixel size for one dimension is not physical (i.e. it is unitless or given in pixels),
 then that value is ignored and assumed to be 1 px. Thus, for non-square pixels (anisotropic
-pixels), you must use physical units to indicate the pixel size (e.g. "1.0 um x 1.2 um"),
+pixels), you must use physical units to indicate the pixel size (e.g. "1.0 µm x 1.2 µm"),
 it is not possible to use pixel units (e.g. "1.0 px x 1.2 px").
 
 
@@ -56,8 +59,10 @@ to the lower image edge along each dimension.
 
 \subsection size_features_Perimeter Perimeter
 Computes the length of the object perimeter using the object's chain code, using
-\ref dip::ChainCode::Length. If the object touches the image edge, only the portion of the
-perimeter that does not coincide with the image edge is measured.
+\ref dip::ChainCode::Length. By default, if the object touches the image edge, only the portion
+of the perimeter that does not coincide with the image edge is measured. The `"include boundary pixels"`
+parameter of this feature can be set to a non-zero value to include those portions of the
+perimeter.
 
 Note that the chain code measures work only for 2D images, and expect objects to be a single
 connected component. If multiple connected components have the same label, only the first

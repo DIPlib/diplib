@@ -259,7 +259,7 @@ void init_measurement( py::module& m ) {
    obj.def( "NumberOfValues", py::overload_cast<>( &dip::Measurement::IteratorObject::NumberOfValues, py::const_ ));
 
    // dip::Measurement
-   auto meas = py::class_< dip::Measurement >( mm, "Measurement", py::buffer_protocol(),
+   auto meas = py::class_< dip::Measurement >( m, "Measurement", py::buffer_protocol(),
          "The result of a call to dip.MeasurementTool.Measure, a table with a column\n"
          "group foreach feature and a row for each object." );
    meas.def_buffer( []( dip::Measurement& self ) -> py::buffer_info { return MeasurementToBuffer( self ); } );
@@ -286,6 +286,9 @@ void init_measurement( py::module& m ) {
    meas.def( py::self + py::self );
 
    // dip::MeasurementTool
+   mm.def( "Configure", []( dip::String const& feature, dip::String const& parameter, dip::dfloat value ) {
+              measurementTool().Configure( feature, parameter, value );
+           }, "feature"_a, "parameter"_a, "value"_a );
    mm.def( "Measure", []( dip::Image const& label, dip::Image const& grey, dip::StringArray const& features, dip::UnsignedArray const& objectIDs, dip::uint connectivity ) {
               return measurementTool().Measure( label, grey, features, objectIDs, connectivity );
            }, "label"_a, "grey"_a = dip::Image{}, "features"_a = dip::StringArray{ "Size" }, "objectIDs"_a = dip::StringArray{}, "connectivity"_a = 0 );
