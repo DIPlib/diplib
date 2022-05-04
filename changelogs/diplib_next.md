@@ -44,6 +44,10 @@ title: "Changes DIPlib 3.x.x"
   as a base class. This makes all of the `dip::Polygon` functionality directly available on the convex
   hull. `dip::ConvexHull::Polygon()` now just returns a base class reference.
 
+- `dip::Units` (and by extension `dip::PhysicalQuantity` and `dip::PixelSize`) now uses the Greek letter
+  μ (U+03BC), instead of the legacy symbol µ (U+00B5) for micron (when *DIPlib* is built with Unicode
+  enabled). Both symbols are recognized when parsing a string, but the strings generated are now different.
+
 ### Bug fixes
 
 - `dip::DrawPolygon2D()`, when drawing filled polygons, would skip the bottom row in the polygon. The

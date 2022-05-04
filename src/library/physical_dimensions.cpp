@@ -23,7 +23,8 @@ namespace {
 
 #ifdef DIP_CONFIG_ENABLE_UNICODE
 
-constexpr char const micron[] = u8"\u00B5";
+constexpr char const micron[] = u8"\u03BC";
+constexpr char const micron_old[] = u8"\u00B5";  // Apparently SI recommends the actual Greek letter mu, not this "micro" UNICODE code point.
 constexpr char const cdot[] = u8"\u00B7";
 
 constexpr char const superN[] = u8"\u207B";
@@ -224,6 +225,11 @@ Units::Units( dip::String const& string ) {
 #ifdef DIP_CONFIG_ENABLE_UNICODE
       case micron[ 0 ]:
          if( string[ ii + 1 ] == micron[ 1 ] ) {
+            thousands = -2; ii += 2;          // the micron character takes 2 bytes
+         }
+         break;
+      case micron_old[ 0 ]:
+         if( string[ ii + 1 ] == micron_old[ 1 ] ) {
             thousands = -2; ii += 2;          // the micron character takes 2 bytes
          }
          break;
