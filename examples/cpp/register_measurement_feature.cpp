@@ -22,7 +22,7 @@ class FeatureTest : public dip::Feature::ImageBased {
          if( parameter == "Value" ) {
             value_ = value;
          } else {
-            std::cout << "Unknown parameter!" << std::endl;
+            std::cout << "Unknown parameter!\n";
          }
       }
 

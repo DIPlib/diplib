@@ -52,7 +52,7 @@ int main() {
       dip::viewer::Spin();
 
    } catch( dip::Error const& e ) {
-      std::cout << "Caught DIPlib exception:\n " << e.what() << std::endl;
+      std::cout << "Caught DIPlib exception:\n " << e.what() << '\n';
       return -1;
    }
 }

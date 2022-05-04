@@ -49,7 +49,7 @@ int main() {
    out = ( in1 * 100.0f ) / ( in2 * 10.0f ) + offset;
    // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
    timer.Stop();
-   std::cout << "trivial version: " << timer << std::endl;
+   std::cout << "trivial version: " << timer << '\n';
 
    // Trivial implementation, but more efficient as we re-use memory
 
@@ -61,7 +61,7 @@ int main() {
    tmp_in1 /= tmp_in2;
    tmp_in1 += offset;
    timer.Stop();
-   std::cout << "efficient trivial version: " << timer << std::endl;
+   std::cout << "efficient trivial version: " << timer << '\n';
    dip::testing::CompareImages( out, tmp_in1 );
 
    // Implementation using an iterator. Does the computation in SFLOAT type.
@@ -75,7 +75,7 @@ int main() {
       // The ScanDyadic function takes care of that, applying the same operation to each of the tensor elements.
    } while( ++it );
    timer.Stop();
-   std::cout << "JointImageIterator: " << timer << std::endl;
+   std::cout << "JointImageIterator: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );
 
    // Following example in documentation to `class VariadicScanLineFilter`. Does the computation
@@ -89,7 +89,7 @@ int main() {
    dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > diadicLineFilter( sampleOperator );
    dip::Framework::ScanDyadic( in1, in2, tmp, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, diadicLineFilter );
    timer.Stop();
-   std::cout << "diadicLineFilter: " << timer << std::endl;
+   std::cout << "diadicLineFilter: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );
 
    // Idem, but with dynamic dispatch (i.e. does the computation in data type `dt`)
@@ -102,10 +102,10 @@ int main() {
    ), dt );
    dip::Framework::ScanDyadic( in1, in2, tmp, dt, dt, dt, *diadicLineFilter2 );
    timer.Stop();
-   std::cout << "diadicLineFilter2: " << timer << std::endl;
+   std::cout << "diadicLineFilter2: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );
 
-   std::cout << std::endl;
+   std::cout << '\n';
 
    // --- Monadic computation (one input images, one output image) ---
 
@@ -115,7 +115,7 @@ int main() {
    out = ( dip::Cos( in1 ) * 100.0f ) + offset;
    // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
    timer.Stop();
-   std::cout << "trivial version: " << timer << std::endl;
+   std::cout << "trivial version: " << timer << '\n';
 
    // Trivial implementation, but more efficient as we re-use memory
 
@@ -125,7 +125,7 @@ int main() {
    tmp_in1 *= 100;
    tmp_in1 += offset;
    timer.Stop();
-   std::cout << "efficient trivial version: " << timer << std::endl;
+   std::cout << "efficient trivial version: " << timer << '\n';
    dip::testing::CompareImages( out, tmp_in1 );
 
    // Implementation using an iterator. Does the computation in SFLOAT type.
@@ -139,7 +139,7 @@ int main() {
       // The ScanDyadic function takes care of that, applying the same operation to each of the tensor elements.
    } while( ++it1 );
    timer.Stop();
-   std::cout << "JointImageIterator: " << timer << std::endl;
+   std::cout << "JointImageIterator: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );
 
    // Following example in documentation to `class VariadicScanLineFilter` (using dynamic dispatch)
@@ -152,6 +152,6 @@ int main() {
    ), dt );
    dip::Framework::ScanMonadic( in1, tmp, dt, dt, in1.TensorElements(), *monadicLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim );
    timer.Stop();
-   std::cout << "monadicLineFilter: " << timer << std::endl;
+   std::cout << "monadicLineFilter: " << timer << '\n';
    dip::testing::CompareImages( out, tmp );
 }

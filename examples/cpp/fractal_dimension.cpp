@@ -22,21 +22,21 @@ int main( int argc, char *argv[] ) {
       dip::testing::Timer timer;
       dip::dfloat FD = dip::FractalDimension( binary, 0.5 );
       timer.Stop();
-      std::cout << "Solid square: FD = " << FD << "; " << timer << std::endl;
+      std::cout << "Solid square: FD = " << FD << "; " << timer << '\n';
 
       binary -= dip::Erosion( binary, 3 );
 
       timer.Reset();
       FD = dip::FractalDimension( binary, 0.5 );
       timer.Stop();
-      std::cout << "Square edge: FD = " << FD << "; " << timer << std::endl;
+      std::cout << "Square edge: FD = " << FD << "; " << timer << '\n';
 
       dip::FillDelta( binary );
 
       timer.Reset();
       FD = dip::FractalDimension( binary, 0.5 );
       timer.Stop();
-      std::cout << "Delta function: FD = " << FD << "; " << timer << std::endl;
+      std::cout << "Delta function: FD = " << FD << "; " << timer << '\n';
 
       binary.Fill( 0 );
       dip::Random random;
@@ -45,7 +45,7 @@ int main( int argc, char *argv[] ) {
       timer.Reset();
       FD = dip::FractalDimension( binary, 0.5 );
       timer.Stop();
-      std::cout << "Sparse point process: FD = " << FD << "; " << timer << std::endl;
+      std::cout << "Sparse point process: FD = " << FD << "; " << timer << '\n';
 
       binary.Fill( 0 );
       dip::BinaryNoise( binary, binary, random, 0.4, 0.4 );
@@ -53,7 +53,7 @@ int main( int argc, char *argv[] ) {
       timer.Reset();
       FD = dip::FractalDimension( binary, 0.5 );
       timer.Stop();
-      std::cout << "Dense point process: FD = " << FD << "; " << timer << std::endl;
+      std::cout << "Dense point process: FD = " << FD << "; " << timer << '\n';
 
    } else {
 
@@ -61,7 +61,7 @@ int main( int argc, char *argv[] ) {
       try {
          binary = dip::ImageReadTIFF( argv[ 1 ] );
       } catch( dip::RunTimeError const& e ) {
-         std::cout << e.Message() << std::endl;
+         std::cout << e.Message() << '\n';
          return -1;
       }
 
@@ -70,7 +70,7 @@ int main( int argc, char *argv[] ) {
       dip::testing::Timer timer;
       dip::dfloat FD = dip::FractalDimension( binary, 0.5 );
       timer.Stop();
-      std::cout << "FD = " << FD << "; " << timer << std::endl;
+      std::cout << "FD = " << FD << "; " << timer << '\n';
 
    }
 }

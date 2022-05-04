@@ -87,7 +87,7 @@ int main() {
          dip::dfloat timeN = TimeIt( img, out );
          std::cout << "size = " << sz << ", time1 = " << time1 * 1e3 << " ms, timeN = " << timeN * 1e3 << " ms\n";
       } catch ( dip::Error& e ) {
-         std::cout << e.what() << std::endl;
+         std::cout << e.what() << '\n';
       }
    }
 }

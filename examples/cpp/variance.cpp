@@ -20,7 +20,7 @@ int main() {
    }
    acc1.Push( value2 );
    timer.Stop();
-   std::cout << "(VarianceAccumulator) mean = " << acc1.Mean() << ", var = " << acc1.Variance() << "; " << timer << std::endl;
+   std::cout << "(VarianceAccumulator) mean = " << acc1.Mean() << ", var = " << acc1.Variance() << "; " << timer << '\n';
 
    dip::FastVarianceAccumulator acc2;
    timer.Reset();
@@ -29,5 +29,5 @@ int main() {
    }
    acc2.Push( value2 );
    timer.Stop();
-   std::cout << "(FastVarianceAccumulator) mean = " << acc2.Mean() << ", var = " << acc2.Variance() << "; " << timer << std::endl;
+   std::cout << "(FastVarianceAccumulator) mean = " << acc2.Mean() << ", var = " << acc2.Variance() << "; " << timer << '\n';
 }

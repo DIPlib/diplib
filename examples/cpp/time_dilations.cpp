@@ -44,27 +44,27 @@ int main() {
          dip::dfloat timeH = TimeIt( img, out, {{ dip::dfloat( sz ), 1.0 }, "rectangular" }, 4 );
          std::cout << "size = " << sz << ", time vertical = " << timeV * 1e3 << " ms, time horizontal = " << timeH * 1e3 << " ms\n";
       } catch ( dip::Error& e ) {
-         std::cout << e.what() << std::endl;
+         std::cout << e.what() << '\n';
       }
    }
-   std::cout << std::endl;
+   std::cout << '\n';
    for( auto sz : sizes ) {
       try {
          dip::dfloat timeP = TimeIt( img, out, {{ dip::dfloat( sz ) * 2, dip::dfloat( sz ) }, "periodic line" }, 1 );
          dip::dfloat timeD = TimeIt( img, out, {{ dip::dfloat( sz ), dip::dfloat( sz ) }, "periodic line" }, 1 );
          std::cout << "size = " << sz << ", time periodic = " << timeP * 1e3 << " ms, time diagonal = " << timeD * 1e3 << " ms\n";
       } catch ( dip::Error& e ) {
-         std::cout << e.what() << std::endl;
+         std::cout << e.what() << '\n';
       }
    }
-   std::cout << std::endl;
+   std::cout << '\n';
    for( auto sz : sizes ) {
       try {
          dip::dfloat timeE = TimeIt( img, out, { dip::dfloat( sz ), "elliptic" }, 1 );
          dip::dfloat timeD = TimeIt( img, out, { dip::dfloat( sz ), "diamond" }, 1 );
          std::cout << "size = " << sz << ", time elliptic = " << timeE * 1e3 << " ms, time diamond = " << timeD * 1e3 << " ms\n";
       } catch ( dip::Error& e ) {
-         std::cout << e.what() << std::endl;
+         std::cout << e.what() << '\n';
       }
    }
 }
