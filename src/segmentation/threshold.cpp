@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,12 +99,13 @@ FloatArray GaussianMixtureModelThreshold(
 dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,
-      Image& out
+      Image& out,
+      dfloat sigma
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      dfloat threshold = TriangleThreshold( Histogram( in, mask ) );
+      dfloat threshold = TriangleThreshold( Histogram( in, mask ), sigma );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
@@ -114,12 +115,13 @@ dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,
       Image& out,
-      dfloat distance
+      dfloat distance,
+      dfloat sigma
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      dfloat threshold = BackgroundThreshold( Histogram( in, mask ), distance );
+      dfloat threshold = BackgroundThreshold( Histogram( in, mask ), distance, sigma );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE

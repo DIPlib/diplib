@@ -179,7 +179,6 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
                 x += extent[0]
             else:
                 warnings.warn("Parameter 'extent' has the wrong number of values, ignoring", SyntaxWarning)
-                extent = None
         axes = pp.gca()
         axes.clear()
         axes.set_aspect('auto')

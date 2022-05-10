@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -220,18 +220,21 @@ DIP_NODISCARD inline Image GaussianMixtureModelThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::TriangleThreshold(Histogram const&) for more information on the algorithm used.
+/// See \ref dip::TriangleThreshold(Histogram const&, dfloat) for more information on the algorithm used and the `sigma`
+/// parameter.
 DIP_EXPORT dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,
-      Image& out
+      Image& out,
+      dfloat sigma = 4.0
 );
 DIP_NODISCARD inline Image TriangleThreshold(
       Image const& in,
-      Image const& mask = {}
+      Image const& mask = {},
+      dfloat sigma = 4.0
 ) {
    Image out;
-   TriangleThreshold( in, mask, out );
+   TriangleThreshold( in, mask, out, sigma );
    return out;
 }
 
@@ -242,20 +245,23 @@ DIP_NODISCARD inline Image TriangleThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat) for more information on the algorithm used.
+/// See \ref dip::BackgroundThreshold(Histogram const&, dfloat, dfloat) for more information on the algorithm used and  the
+/// `sigma` parameter.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,
       Image& out,
-      dfloat distance = 2.0
+      dfloat distance = 2.0,
+      dfloat sigma = 4.0
 );
 DIP_NODISCARD inline Image BackgroundThreshold(
       Image const& in,
       Image const& mask = {},
-      dfloat distance = 2.0
+      dfloat distance = 2.0,
+      dfloat sigma = 4.0
 ) {
    Image out;
-   BackgroundThreshold( in, mask, out, distance );
+   BackgroundThreshold( in, mask, out, distance, sigma );
    return out;
 }
 
@@ -418,8 +424,8 @@ DIP_NODISCARD inline Image MultipleThresholds(
 /// - `"otsu"`: see \ref dip::OtsuThreshold(Image const&, Image const&, Image&). This is the default method.
 /// - `"minerror"`: see \ref dip::MinimumErrorThreshold(Image const&, Image const&, Image&)".
 /// - `"gmm"`: see \ref dip::GaussianMixtureModelThreshold(Image const&, Image const&, Image&, dip::uint).
-/// - `"triangle"`: see \ref dip::TriangleThreshold(Image const&, Image const&, Image&).
-/// - `"background"`: see \ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat).
+/// - `"triangle"`: see \ref dip::TriangleThreshold(Image const&, Image const&, Image&, dfloat).
+/// - `"background"`: see \ref dip::BackgroundThreshold(Image const&, Image const&, Image&, dfloat, dfloat).
 /// - `"volume"`: see \ref dip::VolumeThreshold(Image const&, Image const&, Image&, dfloat).
 /// - `"fixed"`: see \ref dip::FixedThreshold(Image const&, Image&, dfloat, dfloat, dfloat, String const&).
 ///   The default parameter value is 128.
@@ -447,7 +453,8 @@ inline dfloat Threshold(
       return values[ 0 ];
    }
    if( method == "triangle" ) {
-      return TriangleThreshold( in, mask, out );
+      return ( parameter == infinity ) ? TriangleThreshold( in, mask, out )
+                                       : TriangleThreshold( in, mask, out, parameter );
    }
    if( method == "background" ) {
       return ( parameter == infinity ) ? BackgroundThreshold( in, mask, out )

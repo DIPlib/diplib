@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -577,7 +577,8 @@ class DIP_NO_EXPORT Histogram {
       /// kernel of size `2 * std::ceil( 3 * sigma ) + 1` bins. See \ref dip::GaussFIR for information on the smoothing
       /// operation applied. `sigma` defaults to 1.
       ///
-      /// The histogram is extended by `std::ceil( 3 * sigma )` below and above the original bounds.
+      /// The histogram is extended by `std::ceil( 3 * sigma )` below and above the original bounds, to prevent the
+      /// histogram count to change.
       DIP_EXPORT Histogram& Smooth( FloatArray sigma );
       Histogram& Smooth( dfloat sigma = 1 ) {
          return Smooth( FloatArray{ sigma } );
@@ -845,25 +846,37 @@ DIP_EXPORT FloatArray GaussianMixtureModelThreshold(
 /// where the background forms the large peak, and the foreground contributes a small amount to the histogram and is
 /// spread out. For example, small fluorescent dots typically yield such a distribution, as does any thin line drawing.
 ///
+/// To robustly detect and characterize the background peak, smoothing is necessary. This function applies
+/// a Gaussian filter with `sigma`, in samples (i.e. this value is independent of the bin width).
+/// See \ref dip::Histogram::Smooth. Do note that smoothing also broadens the distribution.
+///
 /// !!! literature
 ///     - G.W. Zack, W.E. Rogers, and S.A. Latt, "Automatic measurement of sister chromatid exchange frequency", Journal of Histochemistry and Cytochemistry 25(7):741-753, 1977.
 ///     - P.L. Rosin, "Unimodal thresholding", Pattern Recognition 34(11):2083-2096, 2001.
 DIP_EXPORT dfloat TriangleThreshold(
-      Histogram const& in
+      Histogram const& in,
+      dfloat sigma = 4.0
 );
 
 /// \brief Determines a threshold using the unimodal background-symmetry method, and the image's histogram `in`.
 ///
-/// The method finds the peak in the intensity distribution, characterizes its half-width at half-maximum, then sets
-/// the threshold at `distance` times the half-width.
+/// The method finds the peak in the intensity distribution, characterizes its half width at half maximum, then sets
+/// the threshold at `distance` times the half width.
 ///
 /// This method assumes a unimodal distribution, where the background forms the large peak, and the foreground
 /// contributes a small amount to the histogram and is spread out. For example, small fluorescent dots typically
 /// yield such a distribution, as does any thin line drawing. The background peak can be at either end of the
-/// histogram.
+/// histogram. However, it is important that the peak is not clipped too much, for example when too many background
+/// pixels in a fluorescence image are underexposed.
+///
+/// To robustly detect and characterize the background peak, smoothing is necessary. This function applies
+/// a Gaussian filter with `sigma`, in samples (i.e. this value is independent of the bin width).
+/// See \ref dip::Histogram::Smooth. Do note that smoothing also broadens the distribution; even though this
+/// broadening is taken into account when computing the peak width, too much smoothing will be detrimental.
 DIP_EXPORT dfloat BackgroundThreshold(
       Histogram const& in,
-      dfloat distance = 2.0
+      dfloat distance = 2.0,
+      dfloat sigma = 4.0
 );
 
 

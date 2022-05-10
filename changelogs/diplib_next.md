@@ -29,6 +29,14 @@ title: "Changes DIPlib 3.x.x"
 
 - Added operators to multiply and divide two `dip::Vertex` objects. They apply an element-wise product.
 
+- `dip::ChainCode::Length` has an optional parameter to include the image boundary pixels in the measurement.
+
+- The `"Perimeter"` feature can be configured: setting the `"include boundary pixels"` parameter to a non-zero
+  value causes the perimeter measurement to include pixels at the image boundary.
+
+- `dip::TriangleThreshold()` and `dip::BackgroundThreshold()` have a new parameter `sigma`, which defaults to
+  4 to preserve the old behavior.
+
 ### Changed functionality
 
 - The deterministic initialization for `dip::GaussianMixtureModel()` is more robust, making the
@@ -48,10 +56,9 @@ title: "Changes DIPlib 3.x.x"
   μ (U+03BC), instead of the legacy symbol µ (U+00B5) for micron (when *DIPlib* is built with Unicode
   enabled). Both symbols are recognized when parsing a string, but the strings generated are now different.
 
-- `dip::ChainCode::Length` has an optional parameter to include the image boundary pixels in the measurement.
-
-- The `"Perimeter"` feature can be configured: setting the `"include boundary pixels"` parameter to a non-zero
-  value causes the perimeter measurement to include pixels at the image boundary.
+- `dip::BackgroundThreshold()` now determines the half width at half height with sub-sample precision,
+  and takes the smoothing of the histogram into account, such that the amount of smoothing should have
+  little influence in the computed threshold.
 
 ### Bug fixes
 
@@ -88,6 +95,8 @@ title: "Changes DIPlib 3.x.x"
 ### New functionality
 
 ### Changed functionality
+
+- `threshold(.., 'triangle')` now accepts a parameter to control how much smoothing to apply.
 
 (See also changes to *DIPlib*.)
 

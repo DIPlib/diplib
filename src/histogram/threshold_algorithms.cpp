@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 #include "diplib/histogram.h"
 #include "diplib/segmentation.h"
 #include "diplib/statistics.h"
+#include "diplib/analysis.h"
 #include "diplib/chain_code.h" // for VertexFloat, TriangleHeight, etc.
 
 
@@ -190,7 +191,7 @@ dfloat MinimumErrorThreshold(
       m2 += static_cast< dfloat >( data[ ii ] ) * ( offset + static_cast< dfloat >( ii ) * scale );
    }
    // Here we accumulate the error measure.
-   std::vector< double > J( nBins - 1 );
+   std::vector< dfloat > J( nBins - 1 );
    for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
       dfloat value = static_cast< dfloat >( data[ ii ] );
       w1 += value;
@@ -300,10 +301,11 @@ FloatArray GaussianMixtureModelThreshold(
 }
 
 dfloat TriangleThreshold(
-      Histogram const& in
+      Histogram const& in,
+      dfloat sigma
 ) {
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Histogram smoothIn = Smooth( in, 4 );
+   Histogram smoothIn = Smooth( in, sigma );
    Image const& hist = smoothIn.GetImage();
    DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_COUNT );
@@ -342,52 +344,64 @@ dfloat TriangleThreshold(
 
 dfloat BackgroundThreshold(
       Histogram const& in,
-      dfloat distance
+      dfloat distance,
+      dfloat sigma
 ) {
    DIP_THROW_IF( distance <= 0, E::INVALID_PARAMETER );
    DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   Histogram smoothIn = Smooth( in, 4 );
+   Histogram smoothIn = Smooth( in, sigma );
    Image const& hist = smoothIn.GetImage();
    DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_COUNT );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    Histogram::CountType const* data = static_cast< Histogram::CountType const* >( hist.Origin() );
-   // Find the peak
-   UnsignedArray maxCoords = MaximumPixel( hist );
-   dip::uint maxElement = maxCoords[ 0 ];
-   Histogram::CountType maxValue = data[ maxElement ];
-   dfloat threshold = smoothIn.BinCenter( maxElement );
+   // Find the peak with sub-sample precision
+   dip::uint maxElement = MaximumPixel( hist )[ 0 ];
+   SubpixelLocationResult maxLoc = SubpixelLocation( hist, { maxElement }, S::MAXIMUM, S::GAUSSIAN_SEPARABLE );
+   dfloat halfMaxValue = maxLoc.value / 2;
    dfloat binSize = smoothIn.BinSize();
    // Is the peak on the left or right side of the histogram?
    bool rightPeak = maxElement > ( nBins / 2 );
-   // Find the 50% height & the threshold
+   // Find the 50% height
+   dip::uint bin = 0;
    if( rightPeak ) {
-      dip::uint sigma = nBins - 1;
-      for( ; sigma >= maxElement; --sigma ) {
-         if( data[ sigma ] > maxValue / 2 ) {
+      for( bin = nBins - 1 ; bin >= maxElement; --bin ) {
+         if( static_cast< dfloat >( data[ bin ] ) > halfMaxValue ) {
             break;
          }
       }
-      sigma -= maxElement;
-      if( sigma == 0 ) {
-         sigma = 1;
-      }
-      threshold -= static_cast< dfloat >( sigma ) * distance * binSize;
    } else {
-      dip::uint sigma = 0;
-      for( ; sigma <= maxElement; ++sigma ) {
-         if( data[ sigma ] > maxValue / 2 ) {
+      for( ; bin <= maxElement; ++bin ) {
+         if( static_cast< dfloat >( data[ bin ] ) > halfMaxValue ) {
             break;
          }
       }
-      sigma = maxElement - sigma;
-      if( sigma == 0 ) {
-         sigma = 1;
-      }
-      threshold += static_cast< dfloat >( sigma ) * distance * binSize;
    }
-   return threshold;
+   // Linear interpolation to refine that
+   dfloat subsampleX = 0;
+   if(( bin >= 1 ) && ( bin < nBins - 1 )) {
+      dip::uint lowerBin = rightPeak ? bin + 1 : bin - 1;
+      dfloat y0 = static_cast< dfloat >( data[ bin ] );
+      dfloat y1 = static_cast< dfloat >( data[ lowerBin ] );
+      subsampleX = ( y0 - halfMaxValue ) / ( y0 - y1 );
+   }
+   dfloat observed_HWHM = rightPeak ? ( static_cast< dfloat >( bin ) + subsampleX ) - maxLoc.coordinates[ 0 ]
+                                    : maxLoc.coordinates[ 0 ] - ( static_cast< dfloat >( bin ) - subsampleX );
+   // Correct for smoothing applied to histogram
+   constexpr dfloat factor = 2.355 / 2.0; // Assuming a Gaussian background peak, then sigma * factor = hwhm
+   dfloat smoothing_HWHM = sigma * factor;
+   // Sigmas are added in a square sense (true_sigma^2 + smoothing_sigma^2 = observed_sigma^2)
+   // Thus the same is true for HWHM values (true_HWHM^2 + smoothing_HWHM^2 = observed_HWHM^2)
+   // Find true_HWHM given observed_HWHM and smoothing_HWHM
+   dfloat true_HWHM = ( observed_HWHM > smoothing_HWHM )
+                      ? std::sqrt( observed_HWHM * observed_HWHM - smoothing_HWHM * smoothing_HWHM )
+                      : 0.0;
+   true_HWHM = std::max( true_HWHM, 1.0 );
+   // Find the threshold
+   dfloat peak_location = smoothIn.LowerBound( 0 ) + ( maxLoc.coordinates[ 0 ] + 0.5 ) * binSize;
+   dfloat sign = rightPeak ? -1.0 : 1.0;
+   return peak_location + sign * true_HWHM * distance * binSize;
 }
 
 } // namespace dip

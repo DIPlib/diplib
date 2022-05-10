@@ -37,7 +37,8 @@
 %
 %  - triangle: Thresholding using chord method (a.k.a. skewed bi-modality,
 %    maximum distance to triangle) by Zack, Rogers and Latt (1977). PARAMETER
-%    is ignored.
+%    is the sigma of the smoothing applied (sigma measured in histogram bins).
+%    Default is 4.
 %
 %  - background: Thresholding using unimodal background-symmetry method.
 %    PARAMETER is the distance to the peak where we cut off, in terms of the

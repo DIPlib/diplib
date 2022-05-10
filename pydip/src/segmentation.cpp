@@ -38,10 +38,10 @@ void init_segmentation( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{} );
    m.def( "GaussianMixtureModelThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::GaussianMixtureModelThreshold ),
           "in"_a, "mask"_a = dip::Image{}, "nThresholds"_a = 1 );
-   m.def( "TriangleThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::TriangleThreshold ),
-          "in"_a, "mask"_a = dip::Image{} );
-   m.def( "BackgroundThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::BackgroundThreshold ),
-          "in"_a, "mask"_a = dip::Image{}, "distance"_a = 2.0 );
+   m.def( "TriangleThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::TriangleThreshold ),
+          "in"_a, "mask"_a = dip::Image{}, "sigma"_a = 4.0 );
+   m.def( "BackgroundThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat >( &dip::BackgroundThreshold ),
+          "in"_a, "mask"_a = dip::Image{}, "distance"_a = 2.0, "sigma"_a = 4.0 );
    m.def( "VolumeThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::VolumeThreshold ),
           "in"_a, "mask"_a = dip::Image{}, "volumeFraction"_a = 0.5 );
    m.def( "FixedThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::FixedThreshold ),

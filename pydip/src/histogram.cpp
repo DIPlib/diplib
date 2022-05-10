@@ -204,9 +204,9 @@ void init_histogram( py::module& m ) {
    m.def( "MinimumErrorThreshold", py::overload_cast< dip::Histogram const& >( &dip::MinimumErrorThreshold ), "in"_a );
    m.def( "GaussianMixtureModelThreshold", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::GaussianMixtureModelThreshold ),
           "in"_a, "nThresholds"_a = 1 );
-   m.def( "TriangleThreshold", py::overload_cast< dip::Histogram const& >( &dip::TriangleThreshold ), "in"_a );
-   m.def( "BackgroundThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat >( &dip::BackgroundThreshold ),
-          "in"_a, "distance"_a = 2.0 );
+   m.def( "TriangleThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat >( &dip::TriangleThreshold ), "in"_a, "sigma"_a = 4.0 );
+   m.def( "BackgroundThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat, dip::dfloat >( &dip::BackgroundThreshold ),
+          "in"_a, "distance"_a = 2.0, "sigma"_a = 4.0 );
    m.def( "KMeansClustering", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::KMeansClustering ),
           "in"_a, "nClusters"_a = 2 );
    m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::MinimumVariancePartitioning ),
