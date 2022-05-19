@@ -50,7 +50,7 @@ namespace dip {
 /// dft.Apply( in, out, buf.data() );                         // computes a different DFT, repeat as necessary
 /// ```
 ///
-/// Note that this code uses `int` for sizes, rather than \ref dip::uint. `maximumDFTSize` is the largest length
+/// Note that this code uses `int` for sizes, rather than \ref dip::uint. \ref maximumDFTSize is the largest length
 /// of the transform.
 ///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
@@ -76,14 +76,14 @@ class DFT {
 
       /// \brief Apply the transform that the `DFT` object is configured for.
       ///
-      /// `source` and `destination` are pointers to contiguous buffers with `TransformSize` elements.
-      /// This is the value of the `size` parameter of the constructor or `Initialize`. `buffer` is a pointer
-      /// to a contiguous buffer used for intermediate data. It should have `BufferSize` elements.
+      /// `source` and `destination` are pointers to contiguous buffers with \ref TransformSize elements.
+      /// This is the value of the `size` parameter of the constructor or \ref Initialize. `buffer` is a pointer
+      /// to a contiguous buffer used for intermediate data. It should have \ref BufferSize elements.
       ///
       /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
       /// the inverse transform, and 1 for the forward transform.
       ///
-      /// `source` and `destination` can only point to the same buffer if all factors of `TransformSize()` are
+      /// `source` and `destination` can only point to the same buffer if all factors of \ref TransformSize are
       /// the same. One should avoid this in general situations.
       DIP_EXPORT void Apply(
             const std::complex< T >* source,
@@ -120,7 +120,8 @@ class DFT {
 /// the transform size is too large.
 DIP_EXPORT std::size_t GetOptimalDFTSize( std::size_t size0, bool larger = true );
 
-/// \brief The largest size supported by the DFT (both the internal code and FFTW use `int` for sizes).
+/// \brief The largest size supported by \ref DFT and \ref FourierTransform, equal to 2^31^-1.
+/// Both the built-in DFT and the FFTW library use `int` for array sizes.
 constexpr std::size_t maximumDFTSize = static_cast< std::size_t >( std::numeric_limits< int >::max() );
 
 
