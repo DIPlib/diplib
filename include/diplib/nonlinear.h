@@ -501,61 +501,62 @@ DIP_NODISCARD inline Image CoherenceEnhancingDiffusion(
 
 /// \brief Adaptive Gaussian filtering.
 ///
-/// One or more parameter images control the adaptivity.
+/// One or more parameter images in the `params` array control the size and orientation of the Gaussian kernel.
+/// These images should have the same size as `in`, or be singleton-expandable to that size.
 /// The meaning of the parameter images depend on the dimensionality of the input image.
 /// The current implementation only supports 2D and 3D images.
 ///
 /// - 2D:
-///     - `params[0]` is the angle of the orientation
-///     - `params[1]` (optional) is a tensor image with the local kernel scale
+///     - `params[0]` is the angle of the first kernel axis.
+///     - `params[1]` (optional) is a tensor image with the local kernel scale.
 ///
 /// - 3D (with 1D structures):
-///     - `params[0]` is the polar coordinate phi of the first orientation
-///     - `params[1]` is the polar coordinate theta of the first orientation
-///     - `params[2]` (optional) is a tensor image with the local kernel scale
+///     - `params[0]` is the polar coordinate phi of the first kernel axis.
+///     - `params[1]` is the polar coordinate theta of the first kernel axis.
+///     - `params[2]` (optional) is a tensor image with the local kernel scale.
 ///
 /// - 3D (with 2D structures):
-///     - `params[0]` is the polar coordinate phi of the first orientation
-///     - `params[1]` is the polar coordinate theta of the first orientation
-///     - `params[2]` is the polar coordinate phi of the second orientation
-///     - `params[3]` is the polar coordinate theta of the second orientation
-///     - `params[4]` (optional) is a tensor image with the local kernel scale
+///     - `params[0]` is the polar coordinate phi of the first kernel axis.
+///     - `params[1]` is the polar coordinate theta of the first kernel axis.
+///     - `params[2]` is the polar coordinate phi of the second kernel axis.
+///     - `params[3]` is the polar coordinate theta of the second kernel axis.
+///     - `params[4]` (optional) is a tensor image with the local kernel scale.
 ///
 /// For intrinsic 1D structures, pass one set of polar coordinates. For intrinsic 2d structures, pass two.
 ///
-/// The kernel scale parameter image is interpreted as follows.
-/// Each input tensor element corresponds to a tensor row in the scale image.
-/// Each tensor column in the scale image corresponds to a convolution kernel dimension.
+/// The local kernel scale parameter image is interpreted as follows.
+/// Each row of the tensor corresponds to one tensor element of `in`, so that the kernel scaling can be
+/// different for each channel; if there is a single row, it is applied to all tensor elements equally.
+/// The tensor has one column per image dimension, or a single column applied
+/// to all dimensions equally. The `sigmas` parameter (see below) will be scaled by these values.
 /// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
 ///
 /// $$ \begin{pmatrix}
-///     R_{kx} & R_{ky}
-///  \\ G_{kx} & G_{ky}
-///  \\ B_{kx} & B_{ky}
+///     R_{x} & R_{y}
+///  \\ G_{x} & G_{y}
+///  \\ B_{x} & B_{y}
 /// \end{pmatrix} $$
 ///
 /// The kernel is first scaled and then rotated before it is applied.
-/// The scale parameter image is automatically expanded if the image or the tensor are too small.
-/// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
-/// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
-/// For more information on scaling, also see "Structure-adaptive applicability function" in Pham et al. (2006).
+/// For more information on scaling, see the section "Structure-adaptive applicability function" in Pham et al.
 ///
 /// The sigma for each kernel dimension is passed by `sigmas`.
 /// For intrinsic 1D structures, the first value is along the contour, the second perpendicular to it.
 /// For intrinsic 2D structures, the first two are in the plane, whereas the other is perpendicular to them.
 /// If a value is zero, no convolution is done is this direction.
 ///
-/// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel.
+/// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel,
+/// see \ref Gauss for details.
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
-/// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
+/// Currently `boundaryCondition` can only be `"mirror"` (default) or `"add zeros"`.
 ///
 /// # Example:
 ///
 /// ```cpp
-/// dip::Image in = dip::ImageReadTIFF( "erika.tif" );     // Defined in "diplib/file_io.h"
-/// dip::Image st = dip::StructureTensor( in, {}, 1, 3 );  // Defined in "diplib/analysis.h"
+/// dip::Image in = dip::ImageReadTIFF( "erika.tif" );             // Defined in "diplib/file_io.h"
+/// dip::Image st = dip::StructureTensor( in, {}, { 1 }, { 3 } );  // Defined in "diplib/analysis.h"
 /// dip::ImageArray params = dip::StructureTensorAnalysis( st, { "orientation" } );
-/// dip::Image out = dip::AdaptiveGauss( in, dip::CreateImageConstRefArray( params ), { 2, 0 } );
+/// dip::Image out = dip::AdaptiveGauss( in, { params[ 0 ] }, { 2, 0 } );
 /// ```
 ///
 /// \see dip::AdaptiveBanana, dip::StructureTensorAnalysis2D, dip::StructureTensorAnalysis3D
@@ -591,36 +592,23 @@ DIP_NODISCARD inline Image AdaptiveGauss(
 
 /// \brief Adaptive Gaussian filtering using curvature.
 ///
-/// The parameter images control the adaptivity.
-/// The current implementation only supports 2D images:
+/// One or more parameter images in the `params` array control the size, orientation and curvature of the Gaussian kernel.
+/// These images should have the same size as `in`, or be singleton-expandable to that size.
+/// The current implementation only supports 2D images.
 ///
-/// - `params[0]` is the angle of the orientation
-/// - `params[1]` is the curvature
-/// - `params[2]` (optional) is a tensor image with the local kernel scale
+/// - `params[0]` is the angle of the first kernel axis.
+/// - `params[1]` is the curvature of the first kernel axis.
+/// - `params[2]` (optional) is a tensor image with the local kernel scale.
 ///
-/// The kernel scale parameter image is interpreted as follows.
-/// Each input tensor element corresponds to a tensor row in the scale image.
-/// Each tensor column in the scale image corresponds to a convolution kernel dimension.
-/// As an example, consider a 2D RGB image. The scale tensor is then interpreted as:
-///
-/// $$ \begin{pmatrix}
-///     R_{kx} & R_{ky}
-///  \\ G_{kx} & G_{ky}
-///  \\ B_{kx} & B_{ky}
-/// \end{pmatrix} $$
-///
-/// The kernel is first scaled and then rotated before it is applied.
-/// The scale parameter image is automatically expanded if the image or the tensor are too small.
-/// If the scale tensor has one element, it is expanded to all input tensor elements and kernel dimensions.
-/// If the scale tensor has a single column, each element is expanded to all kernel dimensions.
-/// For more information on scaling, also see "Structure-adaptive applicability function" in Pham et al. (2006).
+/// See \ref AdaptiveGauss for details on how the local kernel scale image is interpreted.
 ///
 /// The sigma for each kernel dimension is passed by `sigmas`. The first value is along the contour,
 /// the second perpendicular to it. If a value is zero, no convolution is done is this direction.
 ///
-/// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel.
+/// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel,
+/// see \ref GaussFIR for details.
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
-/// As of yet, `boundaryCondition` can only be "mirror" or "add zeros".
+/// Currently `boundaryCondition` can only be `"mirror"` (default) or `"add zeros"`.
 ///
 /// # Example:
 ///
