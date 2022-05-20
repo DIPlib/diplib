@@ -33,6 +33,7 @@ class FeaturePodczeckShapes : public Composite {
          out[ 3 ].name = "Ellipse";
          out[ 4 ].name = "Elongation";
          hasIndex_ = false;
+         scale_ = ReverseSizeScale( 2, label.PixelSize() );
          return out;
       }
 
@@ -52,7 +53,7 @@ class FeaturePodczeckShapes : public Composite {
             perimeterIndex_ = dependencies.ValueIndex( "Perimeter" );
             hasIndex_ = true;
          }
-         dfloat area = it[ sizeIndex_ ];
+         dfloat area = it[ sizeIndex_ ] * scale_;
          if( area == 0 ) {
             output[ 0 ] = output[ 1 ] = output[ 2 ] = output[ 3 ] = output[ 4 ] = nan;
          } else {
@@ -72,6 +73,7 @@ class FeaturePodczeckShapes : public Composite {
       dip::uint sizeIndex_;
       dip::uint feretIndex_;
       dip::uint perimeterIndex_;
+      dfloat scale_;
       bool hasIndex_;
 };
 

@@ -24,8 +24,8 @@ title: "Changes DIPlib 3.x.x"
 - `dip::Label` has a new string argument, `mode`, which can be set to `"largest"` to return a labeled
   image that only contains the largest connected component in the input image.
 
-- Added `dip::PixelSize::UnitLength()`, `dip::PixelSize::UnitSize()` and `dip::PixelSize::ForcePhysical()`,
-  to simplify finding the right units for measurement results.
+- Added `dip::PixelSize::UnitLength()`, `dip::PixelSize::UnitSize()`, `dip::PixelSize::ForcePhysical()`,
+  and `dip::PixelSize::SameUnits()` to simplify finding the right units for measurement results.
 
 - Added operators to multiply and divide two `dip::Vertex` objects. They apply an element-wise product.
 
@@ -42,12 +42,6 @@ title: "Changes DIPlib 3.x.x"
 - The deterministic initialization for `dip::GaussianMixtureModel()` is more robust, making the
   initial Gaussians overlap instead of setting their sigma to 1.
 
-- The `dip::Feature::Base` class, the base class for all measurement features, has a new virtual
-  function `Scale()`, which is called for all features after they have been computed, and which
-  is meant to scale the measurement results with the pixel sizes. Most features no longer scale
-  the measurement results while computing them, as this simplifies the logic for many of the
-  composed features.
-
 - `dip::ConvexHull` no longer holds a `dip::Polygon` as a private member, instead it uses `dip::Polygon`
   as a base class. This makes all of the `dip::Polygon` functionality directly available on the convex
   hull. `dip::ConvexHull::Polygon()` now just returns a base class reference.
@@ -59,6 +53,10 @@ title: "Changes DIPlib 3.x.x"
 - `dip::BackgroundThreshold()` now determines the half width at half height with sub-sample precision,
   and takes the smoothing of the histogram into account, such that the amount of smoothing should have
   little influence in the computed threshold.
+
+- The "Mu" and "GreyMu" features no longer use the pixel sizes if the units for different image
+  dimensions differ. No uses of the tensor make sense if the units for the various dimensions
+  don't match, in this case it is more useful to report the tensor in pixel units.
 
 ### Bug fixes
 
@@ -80,7 +78,7 @@ title: "Changes DIPlib 3.x.x"
 - The "SolidArea" feature didn't take the pixel size into account. This also caused the "Roundness" feature
   to report wrong values. The "SurfaceArea" feature didn't properly scale the result by the pixel size.
   Several composed features (computed from other features) didn't produce correct values for anisotropic
-  pixels ("P2A", "Roundness", "PodczeckShapes", etc.)
+  pixels ("P2A", "Roundness", and "PodczeckShapes").
 
 - `dip::div_round()` was incorrect, which caused `dip::DirectedPathOpening()` to not use certain
   directions.
@@ -141,6 +139,9 @@ title: "Changes DIPlib 3.x.x"
   is applied. One of the operands can be a single pixel (a list of numbers).
 
 - Added `dip.MeasurementTool.Configure` to allow measurement features to be configured.
+
+- Added `AspectRatio()`, `SameUnits()`, `UnitLength()`, `UnitSize()`, `ForcePhysical()`,
+  and `ApproximatelyEquals()` as methods to `dip.PixelSize`.
 
 ### Changed functionality
 

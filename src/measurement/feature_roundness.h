@@ -29,6 +29,7 @@ class FeatureRoundness : public Composite {
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
          hasIndex_ = false;
+         scale_ = ReverseSizeScale( 2, label.PixelSize() );
          return out;
       }
 
@@ -50,7 +51,7 @@ class FeatureRoundness : public Composite {
          if( perimeter == 0 ) {
             *output = nan;
          } else {
-            dfloat area = it[ sizeIndex_ ];
+            dfloat area = it[ sizeIndex_ ] * scale_;
             *output = clamp(( 4.0 * pi * area ) / ( perimeter * perimeter ), 0.0, 1.0);
             // Note that perimeter estimate is not perfect, and the ratio could potentially go over 1.
             // We use `clamp` to prevent this.
@@ -60,6 +61,7 @@ class FeatureRoundness : public Composite {
    private:
       dip::uint sizeIndex_;
       dip::uint perimIndex_;
+      dfloat scale_;
       bool hasIndex_;
 };
 

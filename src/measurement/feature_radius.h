@@ -41,17 +41,10 @@ class FeatureRadius : public PolygonBased {
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
          RadiusValues radius = polygon.RadiusStatistics();
-         output[ 0 ] = radius.Maximum();
-         output[ 1 ] = radius.Mean();
-         output[ 2 ] = radius.Minimum();
-         output[ 3 ] = radius.StandardDeviation();
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         output[ 0 ] *= scale_;
-         output[ 1 ] *= scale_;
-         output[ 2 ] *= scale_;
-         output[ 3 ] *= scale_;
+         output[ 0 ] = radius.Maximum() * scale_;
+         output[ 1 ] = radius.Mean() * scale_;
+         output[ 2 ] = radius.Minimum() * scale_;
+         output[ 3 ] = radius.StandardDeviation() * scale_;
       }
 
    private:

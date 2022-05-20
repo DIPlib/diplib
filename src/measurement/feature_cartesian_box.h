@@ -82,14 +82,8 @@ class FeatureCartesianBox : public LineBased {
             }
          } else {
             for( dip::uint ii = 0; ii < nD_; ++ii ) {
-               output[ ii ] = static_cast< dfloat >( data[ ii ].max - data[ ii ].min + 1 );
+               output[ ii ] = static_cast< dfloat >( data[ ii ].max - data[ ii ].min + 1 ) * scales_[ ii ];
             }
-         }
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            output[ ii ] *= scales_[ ii ];
          }
       }
 

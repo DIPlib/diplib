@@ -34,11 +34,7 @@ class FeatureBendingEnergy : public ChainCodeBased {
       }
 
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
-         *output = chainCode.BendingEnergy();
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         *output *= scale_;
+         *output = chainCode.BendingEnergy() * scale_;
       }
 
    private:

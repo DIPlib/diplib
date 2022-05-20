@@ -72,13 +72,7 @@ class FeatureMinimum : public LineBased {
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dip::uint* data = &( data_[ objectIndex * nD_ ] );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            output[ ii ] = static_cast< dfloat >( data[ ii ] );
-         }
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            output[ ii ] *= scales_[ ii ];
+            output[ ii ] = static_cast< dfloat >( data[ ii ] ) * scales_[ ii ];
          }
       }
 

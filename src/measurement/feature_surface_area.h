@@ -55,12 +55,8 @@ class FeatureSurfaceArea : public ImageBased {
          auto dst = output.FirstObject();
          auto src = res.begin();
          do {
-            dst[ 0 ] = *src;
+            dst[ 0 ] = *src * scale_;
          } while( ++src, ++dst );
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         *output *= scale_;
       }
 
    private:

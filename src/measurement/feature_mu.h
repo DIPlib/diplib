@@ -16,9 +16,6 @@
  */
 
 
-#include "feature_common_stuff.h"
-
-
 namespace dip {
 namespace Feature {
 
@@ -70,13 +67,7 @@ class FeatureMu : public LineBased {
          MomentAccumulator* data = &( data_[ objectIndex ] );
          FloatArray values = data->SecondOrder();
          for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
-            output[ ii ] = values[ ii ];
-         }
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
-            output[ ii ] *= scales_[ ii ];
+            output[ ii ] = values[ ii ] * scales_[ ii ];
          }
       }
 

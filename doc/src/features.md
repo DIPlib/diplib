@@ -341,7 +341,9 @@ tensors are stored in an image (see \ref dip::Tensor::Shape).
 
 For more information, see \ref dip::MomentAccumulator::SecondOrder.
 
-These values are reported in physical units, anisotropic pixels are taken into account.
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units, else pixel sizes are ignored. Note that we don't handle different units along
+different axes here because none of the uses of the tensor would make sense.
 
 \subsection binary_moments_Inertia Inertia
 Moments of inertia of the binary object, the eigenvalues of the tensor computed by
@@ -349,14 +351,15 @@ feature \ref binary_moments_Mu. There is one value per image dimension. The eige
 largest to smallest.
 
 These values are reported in physical units, anisotropic pixels are taken into account, but they must
-have the same units.
+have the same units, else pixel sizes are ignored.
 
 \subsection binary_moments_MajorAxes MajorAxes
 Principal axes of the binary object, the eigenvectors of the tensor computed by
 feature \ref binary_moments_Mu. For an image with $n$ dimensions, there are $n^2$ values.
 The first $n$ values are the eigenvector associated to the largest eigenvalue, etc.
 
-This feature ignores pixel sizes, isotropic pixels are assumed.
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units, else pixel sizes are ignored.
 
 \subsection binary_moments_DimensionsCube DimensionsCube
 Lengths of the sides of a rectangle (2D) or box (3D) with the same moments of inertia
@@ -365,7 +368,7 @@ as the binary object. Derived from feature \ref binary_moments_Inertia.
 Currently defined only for 2D and 3D images.
 
 These values are reported in physical units, anisotropic pixels are taken into account, but they must
-have the same units.
+have the same units, else pixel sizes are ignored.
 
 \subsection binary_moments_DimensionsEllipsoid DimensionsEllipsoid
 Diameters of an ellipse (2D) or ellipsoid (3D) with the same moments of inertia as the
@@ -374,7 +377,7 @@ binary object. Derived from feature \ref binary_moments_Inertia.
 Currently defined only for 2D and 3D images.
 
 These values are reported in physical units, anisotropic pixels are taken into account, but they must
-have the same units.
+have the same units, else pixel sizes are ignored.
 
 
 \comment --------------------------------------------------------------
@@ -409,7 +412,9 @@ For more information, see \ref dip::MomentAccumulator::SecondOrder.
 Identical to feature \ref binary_moments_Mu but using the grey-value image as weighting.
 `grey` must be scalar.
 
-These values are reported in physical units, anisotropic pixels are taken into account.
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units, else pixel sizes are ignored. Note that we don't handle different units along
+different axes here because none of the uses of the tensor would make sense.
 
 \subsection grey_moments_GreyInertia GreyInertia
 Moments of inertia of the grey-weighted object, the eigenvalues of the tensor computed by
@@ -420,7 +425,7 @@ Identical to feature \ref binary_moments_Inertia but using the grey-value image 
 `grey` must be scalar.
 
 These values are reported in physical units, anisotropic pixels are taken into account, but they must
-have the same units.
+have the same units, else pixel sizes are ignored.
 
 \subsection grey_moments_GreyMajorAxes GreyMajorAxes
 Principal axes of the grey-weighted object, the eigenvectors of the tensor computed by
@@ -430,7 +435,8 @@ The first $n$ values are the eigenvector associated to the largest eigenvalue, e
 Identical to feature \ref binary_moments_MajorAxes but using the grey-value image as weighting.
 `grey` must be scalar.
 
-This feature ignores pixel sizes, isotropic pixels are assumed.
+These values are reported in physical units, anisotropic pixels are taken into account, but they must
+have the same units, else pixel sizes are ignored.
 
 \subsection grey_moments_GreyDimensionsCube GreyDimensionsCube
 Lengths of the sides of a rectangle (2D) or box (3D) with the same moments of inertia
@@ -442,7 +448,7 @@ Identical to feature \ref binary_moments_DimensionsCube but using the grey-value
 `grey` must be scalar.
 
 These values are reported in physical units, anisotropic pixels are taken into account, but they must
-have the same units.
+have the same units, else pixel sizes are ignored.
 
 \subsection grey_moments_GreyDimensionsEllipsoid GreyDimensionsEllipsoid
 Diameters of an ellipse (2D) or ellipsoid (3D) with the same moments of inertia as the
@@ -454,4 +460,4 @@ Identical to feature \ref binary_moments_DimensionsEllipsoid but using the grey-
 `grey` must be scalar.
 
 These values are reported in physical units, anisotropic pixels are taken into account, but they must
-have the same units.
+have the same units, else pixel sizes are ignored.

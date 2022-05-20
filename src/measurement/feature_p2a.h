@@ -30,6 +30,7 @@ class FeatureP2A : public Composite {
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
          hasIndex_ = false;
+         scale_ = ReverseSizeScale( nD_, label.PixelSize() );
          return out;
       }
 
@@ -55,6 +56,7 @@ class FeatureP2A : public Composite {
          if( area == 0 ) {
             *output = nan;
          } else {
+            area *= scale_;
             dfloat perimeter = it[ perimIndex_ ];
             if( nD_ == 2 ) {
                *output = ( perimeter * perimeter ) / ( 4.0 * pi * area );
@@ -68,6 +70,7 @@ class FeatureP2A : public Composite {
       dip::uint sizeIndex_;
       dip::uint perimIndex_;
       dip::uint nD_;
+      dfloat scale_;
       bool hasIndex_;
 };
 

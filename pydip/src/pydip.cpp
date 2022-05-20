@@ -215,10 +215,16 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    pixSz.def( "Invert", py::overload_cast< dip::uint >( &dip::PixelSize::Invert ), "d"_a );
    pixSz.def( "Invert", py::overload_cast<>( &dip::PixelSize::Invert ));
    pixSz.def( "IsIsotropic", &dip::PixelSize::IsIsotropic );
+   pixSz.def( "AspectRatio", &dip::PixelSize::AspectRatio, "d"_a );
    pixSz.def( "IsDefined", &dip::PixelSize::IsDefined );
-   pixSz.def( "Product", &dip::PixelSize::Product );
-   pixSz.def( "ToPixels", &dip::PixelSize::ToPixels );
-   pixSz.def( "ToPhysical", &dip::PixelSize::ToPhysical );
+   pixSz.def( "SameUnits", &dip::PixelSize::SameUnits );
+   pixSz.def( "Product", &dip::PixelSize::Product, "d"_a );
+   pixSz.def( "UnitLength", &dip::PixelSize::UnitLength );
+   pixSz.def( "UnitSize", &dip::PixelSize::UnitSize, "d"_a );
+   pixSz.def( "ForcePhysical", &dip::PixelSize::ForcePhysical );
+   pixSz.def( "ApproximatelyEquals", &dip::PixelSize::ApproximatelyEquals, "rhs"_a, "nDims"_a, "tolerance"_a = 1e-6 );
+   pixSz.def( "ToPixels", &dip::PixelSize::ToPixels, "in"_a );
+   pixSz.def( "ToPhysical", &dip::PixelSize::ToPhysical, "in"_a );
    py::implicitly_convertible< dip::PhysicalQuantity, dip::PixelSize >();
    py::implicitly_convertible< dip::PhysicalQuantityArray, dip::PixelSize >();
 

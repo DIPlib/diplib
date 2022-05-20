@@ -77,13 +77,7 @@ class FeatureGreySize : public LineBased {
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dfloat* data = &data_[ objectIndex ];
          for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
-            output[ ii ] = data[ ii ];
-         }
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         for( dip::uint ii = 0; ii < nTensor_; ++ii, ++output ) {
-            *output *= scale_;
+            output[ ii ] = data[ ii ] * scale_;
          }
       }
 

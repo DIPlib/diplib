@@ -725,31 +725,24 @@ class DIP_CLASS_EXPORT Base {
       ///
       /// Note that this function can store information about the images in private data members of the
       /// class, so that it is available when performing measurements. For example, it can store the
-      /// pixel size to be used later in \ref Scale.
+      /// pixel size.
       ///
       /// !!! attention
       ///     This function is not expected to perform any major amount of work.
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) = 0;
 
-      /// \brief Called once for each object, to scale the pixel measurements according to the pixel sizes.
-      ///
-      /// Typically measurements are first computed in pixels, and then scaled to the proper units. The scaling
-      /// is separated out, and called after all \ref Composite measurements have been computed. The `Composite`
-      /// measures therefore always receive input measurements in pixels.
-      ///
-      /// The required scaling should be computed in the \ref Initialize call, which also computes the output
-      /// units. This function should only apply the scaling.
-      ///
-      /// By default this function does nothing, which is suitable for some measurements.
-      virtual void Scale( Measurement::ValueIterator output ) {
-         ( void ) output;
-      }
-
       /// \brief All measurement features define a `Cleanup` method that is called after finishing the measurement
       /// process for one image.
       virtual void Cleanup() {}
 
+      // Ensure the destructor is virtual
       virtual ~Base() = default;
+
+      // Silence IDE warning about there being a destructor but not these other standard functions:
+      Base(const Base& other) = delete;
+      Base(Base&& other) = delete;
+      Base& operator=(const Base& other) = delete;
+      Base& operator=(Base&& other) = delete;
 };
 
 /// \brief The pure virtual base class for all line-based measurement features.
@@ -837,8 +830,7 @@ class DIP_CLASS_EXPORT Composite : public Base {
       virtual StringArray Dependencies() = 0;
 
       /// \brief Called once for each object, the input `dependencies` object contains the measurements
-      /// for the object from all the features in the \ref Dependencies() list. The measurements are always
-      /// un pixel units, not yet scaled by the pixel sizes.
+      /// for the object from all the features in the \ref Dependencies() list.
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) = 0;
 };
 

@@ -26,14 +26,7 @@ class FeatureInertia : public Composite {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
-         ValueInformationArray out( nD_ );
-         Units units;
-         std::tie( units, scales_ ) = MuEigenDecompositionUnitsAndScaling( nD_, label.PixelSize() );
-         units *= units;
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            out[ ii ].units = units;
-            out[ ii ].name = String( "lambda_" ) + std::to_string( ii );
-         }
+         ValueInformationArray out = MuEigenValueInformation( nD_, label.PixelSize() );
          hasIndex_ = false;
          return out;
       }
@@ -50,22 +43,11 @@ class FeatureInertia : public Composite {
             muIndex_ = dependencies.ValueIndex( "Mu" );
             hasIndex_ = true;
          }
-         data_.resize( scales_.size() );
-         dfloat const* input = &it[ muIndex_ ];
-         for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
-            data_[ ii ] = input[ ii ] * scales_[ ii ];
-         }
-         SymmetricEigenDecompositionPacked( nD_, data_.data(), output );
-         // Note that we must apply the scaling before computing the eigen decomposition, so we cannot have a separate Scale() function.
-      }
-
-      virtual void Cleanup() override {
-         scales_.clear();
+         dfloat const* data = &it[ muIndex_ ];
+         SymmetricEigenDecompositionPacked( nD_, data, output );
       }
 
    private:
-      FloatArray scales_;
-      FloatArray data_;
       dip::uint muIndex_;
       bool hasIndex_;
       dip::uint nD_;

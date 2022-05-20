@@ -27,12 +27,7 @@ class FeatureGreyMajorAxes : public Composite {
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
-         ValueInformationArray out( nD_ * nD_ );
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            for( dip::uint jj = 0; jj < nD_; ++jj ) {
-               out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + '_' + std::to_string( jj );
-            }
-         }
+         ValueInformationArray out = MuEigenVectorInformation( nD_, label.PixelSize() );
          hasIndex_ = false;
          return out;
       }

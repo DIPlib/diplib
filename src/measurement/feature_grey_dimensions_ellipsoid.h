@@ -28,13 +28,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
-         ValueInformationArray out( nD_ );
-         Units units;
-         std::tie( units, scales_ ) = MuEigenDecompositionUnitsAndScaling( nD_, label.PixelSize() );
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            out[ ii ].units = units;
-            out[ ii ].name = String( "axis" ) + std::to_string( ii );
-         }
+         ValueInformationArray out = MuSqrtEigenValueInformation( nD_, label.PixelSize() );
          hasIndex_ = false;
          return out;
       }
@@ -51,11 +45,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
             muIndex_ = dependencies.ValueIndex( "GreyMu" );
             hasIndex_ = true;
          }
-         dfloat data[ 6 ]; // We never have more than 6 components.
-         dfloat const* input = &it[ muIndex_ ];
-         for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
-            data[ ii ] = input[ ii ] * scales_[ ii ];
-         }
+         dfloat const* data = &it[ muIndex_ ];
          dfloat eig[ 3 ]; // We never have more than 3 eigenvectors.
          SymmetricEigenDecompositionPacked( nD_, data, eig );
          if( nD_ == 2 ) {
@@ -68,12 +58,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
          }
       }
 
-      virtual void Cleanup() override {
-         scales_.clear();
-      }
-
    private:
-      FloatArray scales_;
       dip::uint muIndex_;
       bool hasIndex_;
       dip::uint nD_;

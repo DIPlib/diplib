@@ -42,11 +42,7 @@ class FeaturePerimeter : public ChainCodeBased {
       }
 
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
-         *output = chainCode.Length( includeBoundaryPixels ? S::INCLUDE : S::EXCLUDE ) + pi;
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         *output *= scale_;
+         *output = ( chainCode.Length( includeBoundaryPixels ? S::INCLUDE : S::EXCLUDE ) + pi ) * scale_;
       }
 
    private:

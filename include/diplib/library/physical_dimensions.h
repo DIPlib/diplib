@@ -944,6 +944,24 @@ class DIP_NO_EXPORT PixelSize {
          return IsDefined();
       }
 
+      /// Tests to see if the units are the same (and physical) for all dimensions. Note that the prefix
+      /// (thousands scaling) is considered part of the units.
+      bool SameUnits() const {
+         if( size_.empty() ) {
+            return false;
+         }
+         auto units = size_[ 0 ].units;
+         if( !units.IsPhysical() ) {
+            return false;
+         }
+         for( dip::uint ii = 1; ii < size_.size(); ++ii ) {
+            if( size_[ ii ].units != units ) {
+               return false;
+            }
+         }
+         return true;
+      }
+
       /// Multiplies together the sizes for the first `d` dimensions.
       PhysicalQuantity Product( dip::uint d ) const {
          if( d == 0 ) {

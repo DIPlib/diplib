@@ -82,14 +82,8 @@ class FeatureGravity : public LineBased {
             }
          } else {
             for( dip::uint ii = 0; ii < nD_; ++ii ) {
-               output[ ii ] = data[ ii ] / data[ nD_ ];
+               output[ ii ] = data[ ii ] / data[ nD_ ] * scales_[ ii ];
             }
-         }
-      }
-
-      virtual void Scale( Measurement::ValueIterator output ) override {
-         for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            output[ ii ] *= scales_[ ii ];
          }
       }
 

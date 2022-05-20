@@ -23,6 +23,7 @@
 #include "diplib/regions.h"
 
 // FEATURES:
+#include "feature_common_stuff.h"
 // Size
 #include "feature_size.h"
 #include "feature_solid_area.h"
@@ -335,17 +336,6 @@ Measurement MeasurementTool::Measure(
       } while( ++row );
    }
 
-   // Scale all measurements
-   {
-      Measurement::IteratorObject row = measurement.FirstObject();
-      do {
-         for( auto const& feature : featureArray ) {
-            auto cell = row[ feature->information.name ];
-            feature->Scale( cell.data() );
-         }
-      } while( ++row );
-   }
-
    // Clean up
    for( auto const& feature : featureArray ) {
       feature->Cleanup();
@@ -629,7 +619,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps ) < 0.2 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 1 ] - 2 * r * ps ) < 0.2 * ps );
 
-   // Repeat the above, but with an anisotropci pixel size
+   // Repeat the above, but with an anisotropic pixel size
    dip::dfloat yscale = 1.3;
    img.SetPixelSize( 1, yscale * ps * dip::Units::Micrometer() );
    msr = measurementTool.Measure( img, img, {
@@ -733,10 +723,10 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( msr_obj[ "Mu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "Inertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 0 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 1 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 2 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "MajorAxes" ][ 3 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.1 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "DimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
@@ -749,10 +739,10 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Measurement" ) {
    DOCTEST_CHECK( msr_obj[ "GreyMu" ][ 2 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 0 ] - r * r / 4 * ps * ps * yscale * yscale ) < 0.6 * ps * ps * yscale * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyInertia" ][ 1 ] - r * r / 4 * ps * ps ) < 0.6 * ps * ps );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 1 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 0 );
-   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 0 ] == 0 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 1 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 2 ] == 1 );
+   DOCTEST_CHECK( msr_obj[ "GreyMajorAxes" ][ 3 ] == 0 );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 0 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps * yscale ) < 0.1 * ps * yscale );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsCube" ][ 1 ] - 2 * r * std::sqrt( 12.0 / 16.0 ) * ps ) < 0.1 * ps );
    DOCTEST_CHECK( std::abs( msr_obj[ "GreyDimensionsEllipsoid" ][ 0 ] - 2 * r * ps * yscale ) < 0.2 * ps * yscale );
