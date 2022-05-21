@@ -24,7 +24,7 @@ class FeaturePerimeter : public ChainCodeBased {
    public:
       FeaturePerimeter() : ChainCodeBased( { "Perimeter", "Length of the object perimeter  (chain-code method, 2D)", false } ) {};
 
-      virtual void Configure( String const& parameter, dfloat value ) {
+      virtual void Configure( String const& parameter, dfloat value ) override {
          if( parameter == "include boundary pixels" ) {
             includeBoundaryPixels = value != 0;
          } else {
