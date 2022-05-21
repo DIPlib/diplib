@@ -8,7 +8,7 @@ project(DIPlib)
 
 # The version number and latest copyright year. Update these values here, they're used all throughout the project.
 set(PROJECT_VERSION_MAJOR "3")
-set(PROJECT_VERSION_MINOR "2")
+set(PROJECT_VERSION_MINOR "3")
 set(PROJECT_VERSION_PATCH "0")
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(DIP_COPYRIGHT_YEAR "2022")
@@ -39,7 +39,7 @@ set(DIP_DESTINATIONS
     ARCHIVE DESTINATION ${ARCHIVE_DESTINATION})
 
 # Compiler flags
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matches "AppleClang"
    # Compiler flags for Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic -Wno-c++17-extensions")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
