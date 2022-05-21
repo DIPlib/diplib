@@ -111,9 +111,9 @@ void MakeNeighborLists(
 using PathLenType = uint16;
 constexpr auto DT_PATHLEN = DT_UINT16;
 
-constexpr uint8 PO_ACTIVE = 1;
-constexpr uint8 PO_QUEUED = 2;
-constexpr uint8 PO_CHANGED = 4;
+constexpr unsigned PO_ACTIVE = 1;
+constexpr unsigned PO_QUEUED = 2;
+constexpr unsigned PO_CHANGED = 4;
 
 using PixelQueue = std::queue< dip::sint >;
 

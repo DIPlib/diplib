@@ -745,7 +745,7 @@ void Eusk2D(
                pim += neigk[ dirc ][ 0 ];
                if( *pim & m2 ) {
                   *pim &= ~m2;
-                  b.STR( pim, ( dirc - 1 ) & 15 );
+                  b.STR( pim, ( dirc - 1u ) & 15u );
                }
                pim = ptemp + neigk[ dirc ][ 1 ];
                if( *pim & m2 ) {
@@ -778,21 +778,21 @@ void Eusk2D(
          // test neighbourhood in old image, use dirc to store table entry
          dirc = 0;
          pim += strideX;
-         if( *pim & m2 ) { dirc |= 1; }
+         if( *pim & m2 ) { dirc |= 1u; }
          pim -= strideX2;
-         if( *pim & m2 ) { dirc |= 16; }
+         if( *pim & m2 ) { dirc |= 16u; }
          pim -= strideY;
-         if( *pim & m2 ) { dirc |= 8; }
+         if( *pim & m2 ) { dirc |= 8u; }
          pim += strideX;
-         if( *pim & m2 ) { dirc |= 4; }
+         if( *pim & m2 ) { dirc |= 4u; }
          pim += strideX;
-         if( *pim & m2 ) { dirc |= 2; }
+         if( *pim & m2 ) { dirc |= 2u; }
          pim += strideY2;
-         if( *pim & m2 ) { dirc |= 128; }
+         if( *pim & m2 ) { dirc |= 128u; }
          pim -= strideX;
-         if( *pim & m2 ) { dirc |= 64; }
+         if( *pim & m2 ) { dirc |= 64u; }
          pim -= strideX;
-         if( *pim & m2 ) { dirc |= 32; }
+         if( *pim & m2 ) { dirc |= 32u; }
          if( luthile[ dirc ] ) { continue; }
 
          // totally recursive neighbourhood will be build in register byte
@@ -802,34 +802,34 @@ void Eusk2D(
          // and mi == 0, a situation which does not occur normally
          pim += strideX;
          if(( *pim & m1 ) == m2 ) {
-            if( luthil[ 0 ][ dirc & ~64 ] ) { continue; }
-            breg &= ~64;
+            if( luthil[ 0 ][ dirc & ~64u ] ) { continue; }
+            breg &= ~64u;
          }
          pim -= strideY - strideX;
          if(( *pim & m1 ) == m2 ) {
-            if( luthil[ 0 ][ dirc & ~1 ] ) { continue; }
-            breg &= ~1;
+            if( luthil[ 0 ][ dirc & ~1u ] ) { continue; }
+            breg &= ~1u;
          }
          pim -= strideX2;
          if(( *pim & m1 ) == m2 ) {
-            if( luthil[ 0 ][ dirc & ~16 ] ) { continue; }
-            breg &= ~16;
+            if( luthil[ 0 ][ dirc & ~16u ] ) { continue; }
+            breg &= ~16u;
          }
          pim -= strideY - strideX;
          if(( *pim & m1 ) == m2 ) {
-            if( luthil[ 0 ][ dirc & ~4 ] ) { continue; }
-            breg &= ~4;
+            if( luthil[ 0 ][ dirc & ~4u ] ) { continue; }
+            breg &= ~4u;
          }
 
          // test totally recursive neighbourhood
          pim += strideX;
-         if(( *pim & m1 ) == m2 ) { breg &= ~2; }
+         if(( *pim & m1 ) == m2 ) { breg &= ~2u; }
          pim -= strideX2;
-         if(( *pim & m1 ) == m2 ) { breg &= ~8; }
+         if(( *pim & m1 ) == m2 ) { breg &= ~8u; }
          pim += strideY2;
-         if(( *pim & m1 ) == m2 ) { breg &= ~32; }
+         if(( *pim & m1 ) == m2 ) { breg &= ~32u; }
          pim += strideX2;
-         if(( *pim & m1 ) == m2 ) { breg &= ~128; }
+         if(( *pim & m1 ) == m2 ) { breg &= ~128u; }
          if( luthil[ 0 ][ breg ] ) { continue; }
 
          // change pixel, by temporarily removing input mask
@@ -4691,9 +4691,9 @@ void EuclideanSkeleton(
    if( out.Dimensionality() == 2 ) {
       Eusk2D(
             static_cast< uint8* >( out.Origin() ),
-            uint8( 1 << 0 ),
-            uint8( 1 << 1 ),
-            uint8( 1 << 2 ),
+            uint8( 1u << 0u ),
+            uint8( 1u << 1u ),
+            uint8( 1u << 2u ),
             endPixelCondition, edgeCondition,
             5, 7, 11, 0,
             static_cast< dip::sint >( out.Size( 0 )),
@@ -4703,9 +4703,9 @@ void EuclideanSkeleton(
    } else {
       Eusk3D(
             static_cast< uint8* >( out.Origin() ),
-            uint8( 1 << 0 ),
-            uint8( 1 << 1 ),
-            uint8( 1 << 2 ),
+            uint8( 1u << 0u ),
+            uint8( 1u << 1u ),
+            uint8( 1u << 2u ),
             endPixelCondition, edgeCondition,
             4, 6, 7, 9, 10, 12, 0,
             static_cast< dip::sint >( out.Size( 0 )),
