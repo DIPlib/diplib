@@ -28,6 +28,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- Added a new parameter to `convolve`, which allows the selection of the computation method.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

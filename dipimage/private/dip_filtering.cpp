@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -75,25 +75,41 @@ dip::OneDimensionalFilter GetFilter(
    return out;
 }
 
+enum class ConvolutionMethod {
+      SEPARABLE,
+      DIRECT,
+      FOURIER
+};
+
 void convolve( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 1 );
-   DML_MAX_ARGS( 2 );
+   DML_MAX_ARGS( 3 );
    dip::StringArray bc = nrhs > 1 ? dml::GetStringArray( prhs[ 1 ] ) : dip::StringArray{};
-   dip::OneDimensionalFilterArray filterArray;
+   dip::String methodStr = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : "best";
+   dip::OneDimensionalFilterArray filterArray;  // for separable convolution
+   dip::Image filter;                           // for other methods
+   ConvolutionMethod method = ConvolutionMethod::SEPARABLE;
    mxArray const* mxFilter = prhs[ 0 ];
    if( mxIsNumeric( mxFilter ) || mxIsClass( mxFilter, "dip_image" )) {
-      dip::Image const filter = dml::GetImage( mxFilter );
-      filterArray = dip::SeparateFilter( filter );
-      if( filterArray.empty() ) {
-         if( filter.NumberOfPixels() > 7 * 7 ) { // note that this is an arbitrary threshold, and should probably depend also on log2(image size)
-            dip::ConvolveFT( in, filter, out );
-         } else {
-            dip::GeneralConvolution( in, filter, out, bc );
-         }
+      filter = dml::GetImage( mxFilter );
+      if(( methodStr == "best" ) || ( methodStr == "separable" )) {
+         filterArray = dip::SeparateFilter( filter );
+         if( filterArray.empty()) {
+            if( filter.NumberOfPixels() > 7 * 7 ) { // note that this is an arbitrary threshold, and should probably depend also on log2(image size)
+               method = ConvolutionMethod::FOURIER;
+            } else {
+               method = ConvolutionMethod::DIRECT;
+            }
+         } // else, `method` is already `SEPARABLE`
+      } else if( methodStr == "direct" ) {
+         method = ConvolutionMethod::DIRECT;
+      } else if( methodStr == "fourier" ) {
+         method = ConvolutionMethod::FOURIER;
       } else {
-         dip::SeparableConvolution( in, out, filterArray, bc );
+         DIP_THROW_INVALID_FLAG( methodStr );
       }
    } else {
+      // A separable filter. We ignore `methodStr` in this case.
       if( mxIsCell( mxFilter )) {
          DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
          dip::uint n = mxGetNumberOfElements( mxFilter );
@@ -117,8 +133,20 @@ void convolve( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* p
                DIP_THROW( wrongFilter );
             }
          }
+      } else {
+         DIP_THROW( "Kernel parameter of unexpected type." );
       }
-      dip::SeparableConvolution( in, out, filterArray, bc );
+   }
+   switch( method ) {
+      case ConvolutionMethod::SEPARABLE:
+         dip::SeparableConvolution( in, out, filterArray, bc );
+         break;
+      case ConvolutionMethod::DIRECT:
+         dip::GeneralConvolution( in, filter, out, bc );
+         break;
+      case ConvolutionMethod::FOURIER:
+         dip::ConvolveFT( in, filter, out );
+         break;
    }
 }
 

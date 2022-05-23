@@ -1,7 +1,7 @@
 %CONVOLVE   General convolution filter
 %
 % SYNOPSIS:
-%  image_out = convolve(image_in,kernel,boundary_condition)
+%  image_out = convolve(image_in,kernel,boundary_condition,method)
 %
 %  KERNEL can be a image (or an array convertible to an image) or a cell
 %  array with vectors. These are different ways of describing a convolution
@@ -36,11 +36,19 @@
 %  convolution is best computed through the Fourier Domain, where the boundary
 %  condition is always 'periodic' by construction.
 %
+%  METHOD is one of 'best', 'separable', 'direct' or 'fourier', and selects
+%  the method to use to compute the convolution in the case of KERNEL being an
+%  image. 'best' is the default, and causes the behavior described above for
+%  the image KERNEL. 'separable' has the same behavior as 'best'. 'direct'
+%  forces the direct computation of the convolution sum, and 'fourier' forces
+%  the computation through multiplication in the Fourier Domain.
+%
+%  The METHOD parameter is ignored if KERNEL is not an image, but represents
+%  an already separated kernel.
+%
 % DEFAULTS:
 %  bounary_condition = 'mirror'
-%
-% NOTE:
-%  See the user guide for the available boundary condition strings.
+%  method = 'best'
 %
 % ADVANCED USAGE:
 %  KERNEL can also be a struct array with fields 'filter', 'origin' and
@@ -53,17 +61,17 @@
 %  negative or not given, the origin will be placed at the middle of the
 %  filter, or the pixel to the right if the size is even. The 'flags' field
 %  contains one of the strings 'general' (or '', or not present), 'even',
-%  'odd', 'conj', 'd-even', 'd-odd' or 'd-conj'. These cause the filter weights to be
-%  repeated to obtain an even, odd or conjugate symmetry in the filter. The 'd-'
-%  prefix creates an even-sized filter by repeating all weights, otherwise
-%  an odd-sized filter is created, in which the right-most weight is not
-%  repeated.
+%  'odd', 'conj', 'd-even', 'd-odd' or 'd-conj'. These cause the filter weights
+%  to be repeated to obtain an even, odd or conjugate symmetry in the filter.
+%  The 'd-' prefix creates an even-sized filter by repeating all weights,
+%  otherwise an odd-sized filter is created, in which the right-most weight is
+%  not repeated.
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::SeparableConvolution,
 %  dip::ConvolveFT or dip::GeneralConvolution, depending on the input.
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2022, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
