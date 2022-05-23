@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,11 @@ dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
          DIP_END_STACK_TRACE
       } else {
          DIP_START_STACK_TRACE
-            pixelTable = dip::PixelTable{ IsFinite( kernel ), {}, procDim };
+            Image mask = IsFinite( kernel );
+            if( ignoreZeros_ ) {
+               mask &= kernel != 0;
+            }
+            pixelTable = dip::PixelTable{ mask, {}, procDim };
             pixelTable.AddWeights( kernel );
          DIP_END_STACK_TRACE
       }

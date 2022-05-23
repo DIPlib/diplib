@@ -7,11 +7,17 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
+- Added `dip::Kernel::IgnoreZeros()`, which causes subsequent calls to `dip::Kernel::PixelTable()` for that
+  object to also exclude zero values in the gray-scale kernel image.
+
 ### Changed functionality
 
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.
+
+- `dip::GeneralConvolution()` skips zero pixels in the kernel image, as was described in the documentation.
+  This makes the operation significantly faster if the kernel has many zero pixels.
 
 
 

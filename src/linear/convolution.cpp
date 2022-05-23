@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -540,6 +540,7 @@ void GeneralConvolution(
          Uniform( in, out, filter, boundaryCondition );
          return;
       }
+      filter.IgnoreZeros();
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;

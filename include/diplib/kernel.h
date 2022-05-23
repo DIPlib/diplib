@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,7 +71,8 @@ class DIP_NO_EXPORT PixelTable;
 /// mirroring is applied). As elsewhere, the origin of the kernel is in the middle of the image,
 /// and on the pixel to the right of the center in case of an even-sized image. If the image
 /// is a grey-value image, then all pixels with a finite value form the kernel. The kernel then
-/// has the given weights associated to each pixel.
+/// has the given weights associated to each pixel. After calling \ref IgnoreZeros, all pixels
+/// with a finite, non-zero value form the kernel.
 ///
 /// See dip::StructuringElement, dip::NeighborList, dip::PixelTable
 class DIP_NO_EXPORT Kernel {
@@ -144,6 +145,9 @@ class DIP_NO_EXPORT Kernel {
 
       /// \brief True if kernel is mirrored
       bool IsMirrored() const { return mirror_; }
+
+      /// \brief Causes zeros in the kernel image to be ignored when creating a \ref dip::PixelTable.
+      void IgnoreZeros() { ignoreZeros_ = true; }
 
       /// \brief Creates a \ref dip::PixelTable structure representing the shape of the kernel, given the dimensionality
       /// `nDim`. Pixel table runs will be along dimension `procDim`.
@@ -248,6 +252,7 @@ class DIP_NO_EXPORT Kernel {
       IntegerArray shift_;
       Image image_;
       bool mirror_ = false;
+      bool ignoreZeros_ = false;
 
       void SetShape( String const& shape ) {
          if( shape == S::ELLIPTIC ) {
