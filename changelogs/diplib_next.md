@@ -11,6 +11,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+- `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.
+
 
 
 

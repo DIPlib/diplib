@@ -414,6 +414,7 @@ void ResampleAt(
    DIP_THROW_IF( !fill.IsScalar() && ( in.TensorElements() != fill.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
 
    DataType dt = in.DataType();
+   String colspace = in.ColorSpace();
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
 
    auto m = Method::NEAREST_NEIGHBOR;
@@ -452,6 +453,7 @@ void ResampleAt(
    // equal to output image type (= input image type). Both have drawbacks.
    ImageRefArray outar{ out };
    DIP_STACK_TRACE_THIS( Framework::Scan( { map }, outar, { DT_DFLOAT }, { dt }, { dt }, { in.TensorElements() }, *scanLineFilter ));
+   out.SetColorSpace( std::move( colspace ));
 }
 
 
