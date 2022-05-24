@@ -21,6 +21,7 @@
 #include "diplib/file_io.h"
 #include "diplib/simple_file_io.h"
 #include "diplib/geometry.h"
+#include "diplib/testing.h"
 
 namespace pybind11 {
 namespace detail {
@@ -293,5 +294,21 @@ void init_assorted( py::module& m ) {
           "in1"_a, "in2"_a, "dimension"_a = 0 );
    m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const& >( &dip::JoinChannels ),
           "in_array"_a );
+
+   // diplib/testing.h
+   auto mtesting = m.def_submodule( "testing", "Functions to help test and debug your code." );
+   auto timer = py::class_< dip::testing::Timer >( mtesting, "Timer", "A timer object to help time algorithm execution." );
+   timer.def( py::init<>() );
+   timer.def( "__repr__", []( dip::testing::Timer const& timer ){
+                 std::ostringstream os;
+                 os << timer;
+                 return os.str();
+              } );
+   timer.def( "Reset", &dip::testing::Timer::Reset );
+   timer.def( "Stop", &dip::testing::Timer::Stop );
+   timer.def( "GetCpu", &dip::testing::Timer::GetCpu );
+   timer.def( "GetWall", &dip::testing::Timer::GetWall );
+   timer.def( "CpuResolution", &dip::testing::Timer::CpuResolution );
+   timer.def( "WallResolution", &dip::testing::Timer::WallResolution );
 
 }

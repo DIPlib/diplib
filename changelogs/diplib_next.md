@@ -12,6 +12,11 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
+
+- Stream output operator for `dip::testing::Timer` decouples the two values, choosing appropriate units
+  for them independently.
+
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.
@@ -42,6 +47,8 @@ title: "Changes DIPlib 3.x.x"
 ## Changes to *PyDIP*
 
 ### New functionality
+
+- Added bindings for `dip::testing::Timer`.
 
 ### Changed functionality
 

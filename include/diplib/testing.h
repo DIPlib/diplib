@@ -100,6 +100,7 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 /// An optional second template parameter determines the precision for displaying floating-point values.
 template< typename TPI, int DIGITS = 4 >
 void PrintPixelValues( Image const& img ) {
+   DIP_THROW_IF( !img.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( img.DataType() != DataType( TPI() ), "Wrong template parameter to PrintPixelValues() used" );
    dip::uint lineLength = img.Size( 0 );
    std::cout << "Image of size " << lineLength << " x " << img.Sizes().product() / lineLength << ":\n";
@@ -229,10 +230,9 @@ inline bool CompareImages(
 /// The stream output reports both the wall time and the CPU time, and uses meaningful units (minutes, seconds,
 /// milliseconds or microseconds).
 ///
-///
 /// Wall time is the real-world time that elapsed. CPU time is the time that the CPU spent working for the current
 /// program. These differ in two ways: CPU time might pass slower if the program has to share resources with other
-/// running programs; and CPU time might pass faster if there are multiple CPUs working for the same program. The
+/// running programs; and CPU time might pass faster if there are multiple CPUs (or cores) working for the same program. The
 /// latter case means that, on a multi-threaded environment, CPU time is the sum of times for each of the executed
 /// threads.
 ///
@@ -272,12 +272,12 @@ class DIP_NO_EXPORT Timer {
       }
 
       /// \brief Returns the number of clock ticks per second for the CPU clock.
-      dfloat CpuResolution() const {
+      static dfloat CpuResolution() {
          return 1.0 / static_cast< dfloat >( CLOCKS_PER_SEC );
       }
 
       /// \brief Returns the number of clock ticks per second for the wall clock.
-      dfloat WallResolution() const {
+      static dfloat WallResolution() {
          return static_cast< dfloat >( std::chrono::steady_clock::period::num ) /
                 static_cast< dfloat >( std::chrono::steady_clock::period::den );
       }
@@ -289,33 +289,37 @@ class DIP_NO_EXPORT Timer {
       std::clock_t endCpu_;
 };
 
+namespace detail {
+
+inline void PrintAsSecondsOrMinutes(
+      std::ostream& os,
+      PhysicalQuantity pq
+) {
+   if( pq.magnitude >= 360.0 ) {
+      os << pq.magnitude / 60.0 << " min";
+   } else {
+      if( pq.magnitude < 0.1 ) { // we don't want to report in ks, so don't normalize the larger values.
+         pq.Normalize();
+      }
+      os << pq;
+   }
+}
+
+}
+
 /// \brief Reports elapsed time to a stream.
 /// \relates dip::testing::Timer
 inline std::ostream& operator<<(
       std::ostream& os,
       Timer const& timer
 ) {
-   dfloat wall = timer.GetWall();
-   dfloat cpu = timer.GetCpu();
-   if( wall >= 360.0 ) {
-      os << "elapsed time = " << wall / 60.0 << " min (wall), " << cpu / 60.0 << " min (CPU)";
-   } else {
-      dip::sint magnitude = static_cast< dip::sint >( std::floor(( std::log10( wall ) + 1 ) / 3 ));
-      switch( magnitude ) {
-         default:
-            os << "elapsed time = " << wall << " s (wall), " << cpu << " s (CPU)";
-            break;
-         case -1:
-            os << "elapsed time = " << wall * 1e3 << " ms (wall), " << cpu * 1e3 << " ms (CPU)";
-            break;
-         case -2:
-            os << "elapsed time = " << wall * 1e6 << " us (wall), " << cpu * 1e6 << " us (CPU)";
-            break;
-         case -3:
-            os << "elapsed time = " << wall * 1e9 << " ns (wall), " << cpu * 1e9 << " ns (CPU)"; // unlikely...
-            break;
-      }
-   }
+   PhysicalQuantity wall = timer.GetWall() * Units::Second();
+   PhysicalQuantity cpu = timer.GetCpu() * Units::Second();
+   os << "elapsed time = ";
+   detail::PrintAsSecondsOrMinutes( os, wall );
+   os << " (wall), ";
+   detail::PrintAsSecondsOrMinutes( os, cpu );
+   os << " (CPU)";
    return os;
 }
 
