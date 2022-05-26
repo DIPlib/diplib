@@ -2693,22 +2693,16 @@ DIP_EXPORT void CopyTo( Image const& src, Image& dest, IntegerArray const& destO
 ///
 /// If the tensor representation in `src` is one of those that do not save symmetric or zero values, to save space,
 /// a new data segment will be allocated for `dest`, where the tensor representation is a column-major matrix
-/// (`dest` will have \ref dip::Tensor::HasNormalOrder be true). Otherwise, `dest` will share the data segment with `src`.
+/// (`dest` will have \ref dip::Tensor::HasNormalOrder be true). Otherwise, `dest` will share the data segment with `src`
+/// (unless it's protected or has an external interface, in which case data must be copied).
 /// This function simplifies manipulating tensors by normalizing their storage.
 ///
 /// \see dip::Copy, dip::Convert, dip::Image::ExpandTensor
-inline void ExpandTensor( Image const& src, Image& dest ) {
-   if( &src == &dest ) {
-      dest.ExpandTensor();
-   } else {
-      dest = src;
-      dest.ExpandTensor();
-   }
-}
+DIP_EXPORT void ExpandTensor( Image const& src, Image& dest );
 DIP_NODISCARD inline Image ExpandTensor( Image const& src ) {
-   Image dest = src;
-   dest.ExpandTensor();
-   return dest;
+   Image out;
+   ExpandTensor( src, out );
+   return out;
 }
 
 /// \brief Copies samples over from `src` to `dest`, with data type conversion.

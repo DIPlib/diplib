@@ -373,81 +373,86 @@ void Image::Copy( Image::View const& src ) {
 
 //
 
-void Image::ExpandTensor() {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   if( !Tensor().HasNormalOrder() ) {
-      //if( TensorShape() == dip::Tensor::Shape::ROW_MAJOR_MATRIX ) {
-         // Shuffle the data
-         // TODO: shuffle the data instead of copying it over to a new image.
-         // return
-      //}
-      // Copy the data into a new segment
-      std::vector< dip::sint > lookUpTable = Tensor().LookUpTable();
-      dip::Tensor tensor{ Tensor().Rows(), Tensor().Columns() };
-      dip::PixelSize pixelSize = pixelSize_;
-      Image source = QuickCopy();
-      // Prepare output image
-      ReForge( source.Sizes(), tensor.Elements(), source.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
-      tensor_ = tensor;
-      pixelSize_ = pixelSize;
-      // A single CopyBuffer call if both images have simple strides and same dimension order
-      dip::sint sstride_d;
-      void* origin_d;
-      std::tie( sstride_d, origin_d ) = GetSimpleStrideAndOrigin();
-      if( origin_d ) {
-         //std::cout << "dip::ExpandTensor: destination has simple strides\n";
-         dip::sint sstride_s;
-         void* origin_s;
-         std::tie( sstride_s, origin_s ) = source.GetSimpleStrideAndOrigin();
-         if( origin_s ) {
-            //std::cout << "dip::ExpandTensor: source has simple strides\n";
-            if( HasSameDimensionOrder( source )) {
-               // No need to loop
-               //std::cout << "dip::ExpandTensor: no need to loop\n";
-               detail::CopyBuffer(
-                     origin_s,
-                     source.DataType(),
-                     sstride_s,
-                     source.TensorStride(),
-                     origin_d,
-                     DataType(),
-                     sstride_d,
-                     TensorStride(),
-                     NumberOfPixels(),
-                     TensorElements(),
-                     lookUpTable
-               );
-               return;
-            }
+void ExpandTensor( Image const& c_in, Image& out ) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+
+   if( c_in.Tensor().HasNormalOrder() ) {
+      out = c_in;
+      return;
+   }
+
+   //if(( &c_in == &out ) && ( TensorShape() == dip::Tensor::Shape::ROW_MAJOR_MATRIX )) {
+   //   TODO: shuffle the data instead of copying it over to a new image.
+   //   return
+   //}
+
+   // Separate input from output
+   dip::Image in = c_in;
+
+   // Prepare output image
+   std::vector< dip::sint > lookUpTable = in.Tensor().LookUpTable();
+   dip::Tensor tensor{ in.Tensor().Rows(), in.Tensor().Columns() };
+   out.ReForge( in.Sizes(), tensor.Elements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+   out.ReshapeTensor( tensor );
+   out.SetPixelSize( in.PixelSize() );
+   // A single CopyBuffer call if both images have simple strides and same dimension order
+   dip::sint outStride;
+   void* outOrigin;
+   std::tie( outStride, outOrigin ) = out.GetSimpleStrideAndOrigin();
+   if( outOrigin ) {
+      //std::cout << "dip::ExpandTensor: destination has simple strides\n";
+      dip::sint inStride;
+      void* inOrigin;
+      std::tie( inStride, inOrigin ) = in.GetSimpleStrideAndOrigin();
+      if( inOrigin ) {
+         //std::cout << "dip::ExpandTensor: in has simple strides\n";
+         if( out.HasSameDimensionOrder( in )) {
+            // No need to loop
+            //std::cout << "dip::ExpandTensor: no need to loop\n";
+            detail::CopyBuffer(
+                  inOrigin,
+                  in.DataType(),
+                  inStride,
+                  in.TensorStride(),
+                  outOrigin,
+                  out.DataType(),
+                  outStride,
+                  out.TensorStride(),
+                  out.NumberOfPixels(),
+                  out.TensorElements(),
+                  lookUpTable
+            );
+            return;
          }
       }
-      // Otherwise, make nD loop
-      //std::cout << "dip::ExpandTensor: nD loop\n";
-      dip::uint processingDim = Framework::OptimalProcessingDim( source );
-      GenericJointImageIterator< 2 > it( { source, *this }, processingDim );
-      dip::DataType srcDataType = source.DataType();
-      dip::sint srcStride = source.Stride( processingDim );
-      dip::sint srcTStride = source.TensorStride();
-      dip::DataType destDataType = DataType();
-      dip::sint destStride = Stride( processingDim );
-      dip::sint destTStride = TensorStride();
-      dip::uint nPixels = Size( processingDim );
-      dip::uint nTElems = TensorElements();
-      do {
-         detail::CopyBuffer(
-               it.InPointer(),
-               srcDataType,
-               srcStride,
-               srcTStride,
-               it.OutPointer(),
-               destDataType,
-               destStride,
-               destTStride,
-               nPixels,
-               nTElems,
-               lookUpTable
-         );
-      } while( ++it );
+   }
+   // Otherwise, make nD loop
+   //std::cout << "dip::ExpandTensor: nD loop\n";
+   dip::uint processingDim = Framework::OptimalProcessingDim( in );
+   GenericJointImageIterator< 2 > it( { in, out }, processingDim );
+   dip::sint inStride = in.Stride( processingDim );
+   outStride = out.Stride( processingDim );
+   dip::uint nPixels = out.Size( processingDim );
+   do {
+      detail::CopyBuffer(
+            it.InPointer(),
+            in.DataType(),
+            inStride,
+            in.TensorStride(),
+            it.OutPointer(),
+            out.DataType(),
+            outStride,
+            out.TensorStride(),
+            nPixels,
+            out.TensorElements(),
+            lookUpTable
+      );
+   } while( ++it );
+}
+
+void Image::ExpandTensor() {
+   if( !Tensor().HasNormalOrder() ) {
+      DIP_STACK_TRACE_THIS( dip::ExpandTensor( *this, *this ));
    }
 }
 

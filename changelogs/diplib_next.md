@@ -24,6 +24,9 @@ title: "Changes DIPlib 3.x.x"
 - `dip::GeneralConvolution()` skips zero pixels in the kernel image, as was described in the documentation.
   This makes the operation significantly faster if the kernel has many zero pixels.
 
+- `dip::ExpandTensor()` didn't write to an existing data segment in its output image, even if it was allocated
+  to the right dimensions.
+
 
 
 
