@@ -10,12 +10,20 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip::Kernel::IgnoreZeros()`, which causes subsequent calls to `dip::Kernel::PixelTable()` for that
   object to also exclude zero values in the gray-scale kernel image.
 
+- Added `dip::ExtendImageToSize()`, which is like `dip::ExtendImage()` but allows instead specifying the
+  size of the output image, like in `dip::Image::Pad()`.
+
+- Added a static function `dip::Image::CropWindow()`, similar to the existing non-static one, which takes
+  the image size as input.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
 
 - Stream output operator for `dip::testing::Timer` decouples the two values, choosing appropriate units
   for them independently.
+
+- Added some more `[[nodiscard]]` annotations.
 
 ### Bug fixes
 

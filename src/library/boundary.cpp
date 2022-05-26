@@ -75,47 +75,40 @@ Image::Pixel ReadPixelWithBoundaryCondition(
    return out;
 }
 
+namespace {
+
+Option::ExtendImageFlags TranslateExtendImageFlags( StringSet const& options ) {
+   Option::ExtendImageFlags opts;
+   if( options.count( "masked" ) > 0 ) {
+      opts += Option::ExtendImage::Masked;
+   }
+   if( options.count( "expand tensor" ) > 0 ) {
+      opts += Option::ExtendImage::ExpandTensor;
+   }
+   return opts;
+}
+
 void ExtendImage(
       Image const& c_in,
       Image& out,
-      UnsignedArray borderSizes, // by copy so we can modify it
-      BoundaryConditionArray const& boundaryConditions,
+      UnsignedArray const& sizes,
+      RangeArray window,
+      BoundaryConditionArray boundaryConditions,
       Option::ExtendImageFlags options
 ) {
-   // Test input arguments
-   dip::uint nDims;
-   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   nDims = c_in.Dimensionality();
-   DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_EMPTY );
-   DIP_START_STACK_TRACE
-      ArrayUseParameter( borderSizes, nDims );
-   DIP_END_STACK_TRACE
-
-   // The image we'll fill later
-   Image tmp;
-
-   // The view on the output image that matches the input
-   RangeArray ranges( nDims );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
-      ranges[ ii ] = Range{ b, -b-1 };
-   }
+   // This is an internal function, when we call it, we've already ensured `in` is forged.
+   // We also know that `sizes` and `window` have the right number of elements.
 
    // Save input data
    Image in = c_in; // Not quick copy, so we keep the color space info and pixel size info for later
 
    // Prepare output image
-   UnsignedArray sizes = in.Sizes();
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      sizes[ ii ] += 2 * borderSizes[ ii ];
-   }
    Tensor tensor = in.Tensor();
    bool expandTensor = false;
    if( !tensor.HasNormalOrder() && options.Contains( Option::ExtendImage::ExpandTensor )) {
       expandTensor = true;
       tensor = { tensor.Rows(), tensor.Columns() };
    }
-   // Note that this can potentially affect `c_in` also, use only `in` from here on.
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, tensor.Elements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
    out.ReshapeTensor( tensor );
    out.SetPixelSize( in.PixelSize() );
@@ -123,8 +116,14 @@ void ExtendImage(
       out.SetColorSpace( in.ColorSpace() );
    }
 
+   // Fix window
+   for( dip::uint ii = 0; ii < window.size(); ++ii ) {
+      window[ ii ].Fix( sizes[ ii ] );
+   }
+
    // Copy input data to output
-   tmp = out.At( ranges );
+   Image tmp = out.At( window );
+   tmp.Protect();
    if( expandTensor ) {
       ExpandTensor( in, tmp );
    } else {
@@ -132,18 +131,98 @@ void ExtendImage(
    }
 
    // Extend the boundaries, one dimension at a time
-   DIP_STACK_TRACE_THIS( ExtendRegion( out, ranges, boundaryConditions ));
+   DIP_STACK_TRACE_THIS( ExtendRegion( out, window, std::move( boundaryConditions )));
 
    // Produce output by either using `out` directly or making a window of the original size over it.
    if( options.Contains( Option::ExtendImage::Masked )) {
-      UnsignedArray sizes = out.Sizes();
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         sizes[ ii ] -= 2 * borderSizes[ ii ];
-
+      UnsignedArray offset( window.size() );
+      for( dip::uint ii = 0; ii < window.size(); ++ii ) {
+         offset[ ii ] = window[ ii ].Offset();
       }
-      out.ShiftOriginUnsafe( out.Offset( borderSizes )); // TODO: offset calculation does tests that are not necessary.
-      out.SetSizesUnsafe( std::move( sizes ));
+      out.ShiftOriginUnsafe( out.Offset( offset )); // TODO: offset calculation does tests that are not necessary.
+      out.SetSizesUnsafe( in.Sizes() );
    }
+}
+
+} // namespace
+
+void ExtendImage(
+      Image const& in,
+      Image& out,
+      UnsignedArray borderSizes, // by copy so we can modify it
+      BoundaryConditionArray boundaryConditions,
+      Option::ExtendImageFlags options
+) {
+   // Test input arguments
+   dip::uint nDims;
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_EMPTY );
+
+   // The output sizes
+   nDims = in.Dimensionality();
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( borderSizes, nDims ));
+   UnsignedArray sizes = in.Sizes();
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      sizes[ ii ] += 2 * borderSizes[ ii ];
+   }
+
+   // The view on the output image that matches the input
+   RangeArray window( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
+      window[ ii ] = Range{ b, -b-1 };
+   }
+
+   DIP_STACK_TRACE_THIS( ExtendImage( in, out, sizes, std::move( window ), std::move( boundaryConditions ), options ));
+}
+
+void ExtendImage(
+      Image const& in,
+      Image& out,
+      UnsignedArray borderSizes,
+      StringArray const& boundaryConditions,
+      StringSet const& options
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_START_STACK_TRACE
+      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryConditions );
+      Option::ExtendImageFlags opts = TranslateExtendImageFlags( options );
+      ExtendImage( in, out, std::move( borderSizes ), bc, opts );
+   DIP_END_STACK_TRACE
+}
+
+void ExtendImageToSize(
+      Image const& in,
+      Image& out,
+      UnsignedArray const& sizes,
+      Option::CropLocation cropLocation,
+      BoundaryConditionArray boundaryConditions,
+      Option::ExtendImageFlags options
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes.size() != in.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_START_STACK_TRACE
+      RangeArray window = Image::CropWindow( sizes, in.Sizes(), cropLocation );
+      ExtendImage( in, out, sizes, std::move( window ), std::move( boundaryConditions ), options );
+   DIP_END_STACK_TRACE
+}
+
+void ExtendImageToSize(
+      Image const& in,
+      Image& out,
+      UnsignedArray const& sizes,
+      String const& cropLocation,
+      StringArray const& boundaryConditions,
+      StringSet const& options
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes.size() != in.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_START_STACK_TRACE
+      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryConditions );
+      Option::ExtendImageFlags opts = TranslateExtendImageFlags( options );
+      RangeArray window = Image::CropWindow( sizes, in.Sizes(), cropLocation );
+      ExtendImage( in, out, sizes, std::move( window ), bc, opts );
+   DIP_END_STACK_TRACE
 }
 
 void ExtendRegion(
@@ -152,6 +231,7 @@ void ExtendRegion(
       BoundaryConditionArray boundaryConditions
 ) {
    // Test input arguments
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = image.Dimensionality();
    DIP_THROW_IF( ranges.empty(), E::ARRAY_PARAMETER_EMPTY );
    DIP_START_STACK_TRACE

@@ -24,7 +24,7 @@
 void init_generation( py::module& m ) {
 
    // diplib/boundary.h
-   m.def( "ExtendImage", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::StringArray const&, dip::StringSet const& >( &dip::ExtendImage ),
+   m.def( "ExtendImage", py::overload_cast< dip::Image const&, dip::UnsignedArray, dip::StringArray const&, dip::StringSet const& >( &dip::ExtendImage ),
           "in"_a, "borderSizes"_a, "boundaryCondition"_a = dip::StringArray{}, "mode"_a = dip::StringSet{} );
    m.def( "ExtendRegion", py::overload_cast< dip::Image&, dip::RangeArray const&, dip::StringArray const& >( &dip::ExtendRegion ),
           "image"_a, "ranges"_a, "boundaryCondition"_a = dip::StringArray{} );

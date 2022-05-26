@@ -538,7 +538,7 @@ void Rotation(
          out.ReForge( newSize, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
          out.CopyNonDataProperties( in );
          DIP_STACK_TRACE_THIS( out.At( region ).Copy( in ));
-         ExtendRegion( out, region, bc );
+         ExtendRegion( out, region, std::move( bc ));
       } else {
          out.Copy( in );
       }
@@ -628,7 +628,7 @@ void Rotation(
       newOut.SetSizes( std::move( newSize ));
       newOut.Forge();
       DIP_STACK_TRACE_THIS( newOut.At( region ).Copy( out )); // This will throw if sizes don't match -- it means our assumption is wrong!
-      ExtendRegion( newOut, region, bc );
+      ExtendRegion( newOut, region, std::move( bc ));
       out.swap( newOut );
    }
    // Fix pixel sizes

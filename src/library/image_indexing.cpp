@@ -178,8 +178,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    DOCTEST_CHECK( img.At( 6 )[ 0 ] == 4 );
    DOCTEST_CHECK( img.At( 6 )[ 1 ] == 5 );
    DOCTEST_CHECK( img.At( 7 )[ 0 ] == 6 );
-   DOCTEST_CHECK_THROWS( img.At( img.NumberOfPixels() ));
-   DOCTEST_CHECK_THROWS( img[ 4 ] );
+   dip::Image::Pixel px;
+   DOCTEST_CHECK_THROWS( px = img.At( img.NumberOfPixels() ));
+   dip::Image view;
+   DOCTEST_CHECK_THROWS( view = img[ 4 ] );
    // Indexing in a 1D image, also tests range with negative values
    dip::Image img2 = img;
    img2.Flatten();

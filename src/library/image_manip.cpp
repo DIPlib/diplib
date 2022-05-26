@@ -547,28 +547,28 @@ Image& Image::ReinterpretCast( dip::DataType dataType ) {
 
 namespace {
 
-UnsignedArray GetWindowOrigin( UnsignedArray const& inSizes, UnsignedArray const& outSizes, Option::CropLocation cropLocation ) {
-   dip::uint nDims = inSizes.size();
+UnsignedArray GetWindowOrigin( UnsignedArray const& imageSizes, UnsignedArray const& windowSizes, Option::CropLocation cropLocation ) {
+   dip::uint nDims = imageSizes.size();
    UnsignedArray origin( nDims, 0 );
    switch( cropLocation ) {
       case Option::CropLocation::CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            dip::uint diff = inSizes[ ii ] - outSizes[ ii ];
-            origin[ ii ] = diff / 2 + ( !( inSizes[ ii ] & 1u ) && ( outSizes[ ii ] & 1u )); // add one if input is even in size and output is odd in size
+            dip::uint diff = imageSizes[ ii ] - windowSizes[ ii ];
+            origin[ ii ] = diff / 2 + ( !( imageSizes[ ii ] & 1u ) && ( windowSizes[ ii ] & 1u )); // add one if input is even in size and output is odd in size
          }
          break;
       case Option::CropLocation::MIRROR_CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            dip::uint diff = inSizes[ ii ] - outSizes[ ii ];
-            origin[ ii ] = diff / 2 + (( inSizes[ ii ] & 1u ) && !( outSizes[ ii ] & 1u )); // add one if input is odd in size and output is even in size
+            dip::uint diff = imageSizes[ ii ] - windowSizes[ ii ];
+            origin[ ii ] = diff / 2 + (( imageSizes[ ii ] & 1u ) && !( windowSizes[ ii ] & 1u )); // add one if input is odd in size and output is even in size
          }
          break;
       case Option::CropLocation::TOP_LEFT:
          // Origin stays at 0
          break;
       case Option::CropLocation::BOTTOM_RIGHT:
-         origin = inSizes;
-         origin -= outSizes;
+         origin = imageSizes;
+         origin -= windowSizes;
          break;
    }
    return origin;
@@ -611,21 +611,60 @@ Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
 
 RangeArray Image::CropWindow( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint nDims = sizes_.size();
-   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
-   UnsignedArray origin = GetWindowOrigin( sizes_, sizes, cropLocation );
-   RangeArray out( nDims );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      out[ ii ] = { static_cast< dip::sint >( origin[ ii ] ), static_cast< dip::sint >( origin[ ii ] + sizes[ ii ] - 1 ) };
-   }
-   return out;
+   return Image::CropWindow( sizes_, sizes, cropLocation );
 }
 
 RangeArray Image::CropWindow( UnsignedArray const& sizes, String const& cropLocation ) const {
    Option::CropLocation flag;
    DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
    return CropWindow( sizes, flag );
+}
+
+RangeArray Image::CropWindow(
+      UnsignedArray const& imageSizes,
+      UnsignedArray const& windowSizes,
+      Option::CropLocation cropLocation
+) {
+   dip::uint nDims = imageSizes.size();
+   DIP_THROW_IF( windowSizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( windowSizes > imageSizes, E::INDEX_OUT_OF_RANGE );
+   UnsignedArray origin = GetWindowOrigin( imageSizes, windowSizes, cropLocation );
+   RangeArray out( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      out[ ii ] = { static_cast< dip::sint >( origin[ ii ] ), static_cast< dip::sint >( origin[ ii ] + windowSizes[ ii ] - 1 ) };
+   }
+   return out;
+}
+
+RangeArray Image::CropWindow(
+      UnsignedArray const& imageSizes,
+      UnsignedArray const& windowSizes,
+      String const& cropLocation
+) {
+   Option::CropLocation flag;
+   DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
+   return CropWindow( imageSizes, windowSizes, flag );
+}
+
+Image Image::Pad( UnsignedArray const& sizes, Pixel const& value, Option::CropLocation cropLocation ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = sizes_.size();
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_THROW_IF( sizes < sizes_, E::INDEX_OUT_OF_RANGE );
+   Image out;
+   out.CopyProperties( *this );
+   out.sizes_ = sizes;
+   out.Forge();
+   DIP_STACK_TRACE_THIS( out.Fill( value ));
+   auto tmp = out.Cropped( sizes_, cropLocation ); // this is a view into the new image that corresponds to *this
+   tmp.Copy( *this ); // copy the data over, we're done!
+   return out;
+}
+
+Image Image::Pad( UnsignedArray const& sizes, Pixel const& value, String const& cropLocation ) const {
+   Option::CropLocation flag;
+   DIP_STACK_TRACE_THIS( flag = TranslateCropLocationFlag( cropLocation ));
+   return Pad( sizes, value, flag );
 }
 
 } // namespace dip

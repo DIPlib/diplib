@@ -595,7 +595,7 @@ void DFT_R2C_1D_compute(
                             Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
       );
       // Extend computed data into output regions outside the window (boundary extension)
-      DIP_STACK_TRACE_THIS( ExtendRegion( out, window, bc ));
+      ExtendRegion( out, window, std::move( bc ));
    DIP_END_STACK_TRACE
 }
 

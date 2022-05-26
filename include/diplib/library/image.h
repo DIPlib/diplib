@@ -1929,7 +1929,7 @@ class DIP_NO_EXPORT Image {
       /// defaults to the image dimensionality, meaning that the new dimension will
       /// be the last one. The image must be forged.
       DIP_EXPORT Image& TensorToSpatial( dip::uint dim );
-      inline Image& TensorToSpatial() {
+      Image& TensorToSpatial() {
          return TensorToSpatial( Dimensionality() );
       }
 
@@ -1940,13 +1940,13 @@ class DIP_NO_EXPORT Image {
       /// is created. `dim` defaults to the last spatial dimension. The image must
       /// be forged.
       DIP_EXPORT Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols );
-      inline Image& SpatialToTensor( dip::uint rows, dip::uint cols ) {
+      Image& SpatialToTensor( dip::uint rows, dip::uint cols ) {
          return SpatialToTensor( Dimensionality() - 1, rows, cols );
       }
-      inline Image& SpatialToTensor( dip::uint dim ) {
+      Image& SpatialToTensor( dip::uint dim ) {
          return SpatialToTensor( dim, 0, 0 );
       }
-      inline Image& SpatialToTensor() {
+      Image& SpatialToTensor() {
          return SpatialToTensor( Dimensionality() - 1, 0, 0 );
       }
 
@@ -1959,7 +1959,7 @@ class DIP_NO_EXPORT Image {
       /// image dimensionality, meaning that the new dimension will be the last one.
       /// The image must be forged.
       DIP_EXPORT Image& SplitComplex( dip::uint dim );
-      inline Image& SplitComplex() {
+      Image& SplitComplex() {
          return SplitComplex( Dimensionality() );
       }
 
@@ -1968,7 +1968,7 @@ class DIP_NO_EXPORT Image {
       /// Dimension `dim` must have size 2 and a stride of 1. `dim` defaults to the last
       /// spatial dimension. The image must be forged.
       DIP_EXPORT Image& MergeComplex( dip::uint dim );
-      inline Image& MergeComplex() {
+      Image& MergeComplex() {
          return MergeComplex( Dimensionality() - 1 );
       }
 
@@ -2081,8 +2081,8 @@ class DIP_NO_EXPORT Image {
       /// maintains the origin pixel (as defined in \ref dip::FourierTransform and other other places)
       /// at the origin of the output image.
       ///
-      /// \ref dip::Image::Pad does the inverse operation. \ref dip::Image::Cropped does the same
-      /// thing, but without modifying `this`, and returning a \ref dip::Image::View.
+      /// \ref dip::Image::Cropped does the same thing, but returning a \ref dip::Image::View instead
+      /// of modifying `this`. \ref dip::Image::Pad does the inverse operation.
       ///
       /// The image must be forged.
       DIP_EXPORT Image& Crop(
@@ -2092,15 +2092,15 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Reduces the size of the image by cropping off the borders.
       ///
-      /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
-      /// string `cropLocation` is translated to one of the \ref dip::Option::CropLocation values as follows:
+      /// This is an overloaded version of the function above. The string `cropLocation` is translated
+      /// to one of the \ref dip::Option::CropLocation values as follows:
       ///
-      /// `CropLocation` constant | String
-      /// ----------------------- | ----------
-      /// `CENTER`                | "center"
-      /// `MIRROR_CENTER`         | "mirror center"
-      /// `TOP_LEFT`              | "top left"
-      /// `BOTTOM_RIGHT`          | "bottom right"
+      /// String            | `CropLocation` constant
+      /// ----------------- | -----------------------
+      /// `"center"`        | \ref Option::CropLocation::CENTER
+      /// `"mirror center"` | \ref Option::CropLocation::MIRROR_CENTER
+      /// `"top left"`      | \ref Option::CropLocation::TOP_LEFT
+      /// `"bottom right"`  | \ref Option::CropLocation::BOTTOM_RIGHT
       DIP_EXPORT Image& Crop( UnsignedArray const& sizes, String const& cropLocation );
 
       /// \brief Returns the \ref dip::RangeArray indexing data that corresponds to the result of \ref dip::Image::Crop.
@@ -2112,6 +2112,22 @@ class DIP_NO_EXPORT Image {
       /// \brief Returns the \ref dip::RangeArray indexing data that corresponds to the result of \ref dip::Image::Crop.
       DIP_EXPORT RangeArray CropWindow( UnsignedArray const& sizes, String const& cropLocation ) const;
 
+      /// \brief Returns the \ref dip::RangeArray indexing data that corresponds to the result of \ref dip::Image::Crop,
+      /// for an image of size `imageSizes`.
+      DIP_EXPORT static RangeArray CropWindow(
+            UnsignedArray const& imageSizes,
+            UnsignedArray const& windowSizes,
+            Option::CropLocation cropLocation = Option::CropLocation::CENTER
+      );
+
+      /// \brief Returns the \ref dip::RangeArray indexing data that corresponds to the result of \ref dip::Image::Crop,
+      /// for an image of size `imageSizes`.
+      DIP_EXPORT static RangeArray CropWindow(
+            UnsignedArray const& imageSizes,
+            UnsignedArray const& windowSizes,
+            String const& cropLocation
+      );
+
       //
       // Creating views of the data -- indexing without data copy
       // Defined in src/library/image_indexing.cpp
@@ -2122,55 +2138,55 @@ class DIP_NO_EXPORT Image {
       /// is usually a \ref dip::Image::View or \ref dip::Image::Pixel object. No data is copied.
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
-      View operator[]( UnsignedArray const& indices ) const;
+      DIP_NODISCARD View operator[]( UnsignedArray const& indices ) const;
 
       /// \brief Extract a tensor element using linear indexing. Negative indices start at the end. The image must be forged.
       template< typename T, typename = std::enable_if_t< IsIndexingType< T >::value >>
-      View operator[]( T index ) const;
+      DIP_NODISCARD View operator[]( T index ) const;
 
       /// \brief Extract tensor elements using linear indexing. The image must be forged.
-      View operator[]( Range range ) const;
+      DIP_NODISCARD View operator[]( Range range ) const;
 
       /// \brief Extracts the tensor elements along the diagonal. The image must be forged.
-      DIP_EXPORT View Diagonal() const;
+      DIP_NODISCARD DIP_EXPORT View Diagonal() const;
 
       /// \brief Extracts the tensor elements along the given row. The image must be forged and the tensor
       /// representation must be full (i.e. no symmetric or triangular matrices). Use \ref dip::Image::ExpandTensor
       /// to obtain a full representation.
-      DIP_EXPORT View TensorRow( dip::uint index ) const;
+      DIP_NODISCARD DIP_EXPORT View TensorRow( dip::uint index ) const;
 
       /// \brief Extracts the tensor elements along the given column. The image must be forged and the tensor
       /// representation must be full (i.e. no symmetric or triangular matrices). Use \ref dip::Image::ExpandTensor
       /// to obtain a full representation.
-      DIP_EXPORT View TensorColumn( dip::uint index ) const;
+      DIP_NODISCARD DIP_EXPORT View TensorColumn( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
-      DIP_EXPORT Pixel At( UnsignedArray const& coords ) const;
+      DIP_NODISCARD DIP_EXPORT Pixel At( UnsignedArray const& coords ) const;
 
       /// \brief Same as above, but returns a type that implicitly casts to `T`.
       template< typename T >
-      CastPixel< T > At( UnsignedArray const& coords ) const;
+      DIP_NODISCARD CastPixel< T > At( UnsignedArray const& coords ) const;
 
       /// \brief Extracts the pixel at the given linear index (inefficient if image is not 1D!). The image must be forged.
-      DIP_EXPORT Pixel At( dip::uint index ) const;
+      DIP_NODISCARD DIP_EXPORT Pixel At( dip::uint index ) const;
 
       /// \brief Same as above, but returns a type that implicitly casts to `T`.
       template< typename T >
-      CastPixel< T > At( dip::uint index ) const;
+      DIP_NODISCARD CastPixel< T > At( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates from a 2D image. The image must be forged.
-      DIP_EXPORT Pixel At( dip::uint x_index, dip::uint y_index ) const;
+      DIP_NODISCARD DIP_EXPORT Pixel At( dip::uint x_index, dip::uint y_index ) const;
 
       /// \brief Same as above, but returns a type that implicitly casts to `T`.
       template< typename T >
-      CastPixel< T > At( dip::uint x_index, dip::uint y_index ) const;
+      DIP_NODISCARD CastPixel< T > At( dip::uint x_index, dip::uint y_index ) const;
 
       /// \brief Extracts the pixel at the given coordinates from a 3D image. The image must be forged.
-      DIP_EXPORT Pixel At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
+      DIP_NODISCARD DIP_EXPORT Pixel At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
 
       /// \brief Same as above, but returns a type that implicitly casts to `T`.
       template< typename T >
-      CastPixel< T > At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
+      DIP_NODISCARD CastPixel< T > At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
 
       /// \brief Returns an iterator to the first pixel in the image. Include \ref "diplib/generic_iterators.h"
       /// to use this.
@@ -2181,16 +2197,16 @@ class DIP_NO_EXPORT Image {
       GenericImageIterator< dip::dfloat > end();
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
-      View At( Range const& x_range ) const;
+      DIP_NODISCARD View At( Range const& x_range ) const;
 
       /// \brief Extracts a subset of pixels from a 2D image. The image must be forged.
-      View At( Range const& x_range, Range const& y_range ) const;
+      DIP_NODISCARD View At( Range const& x_range, Range const& y_range ) const;
 
       /// \brief Extracts a subset of pixels from a 3D image. The image must be forged.
-      View At( Range const& x_range, Range const& y_range, Range const& z_range ) const;
+      DIP_NODISCARD View At( Range const& x_range, Range const& y_range, Range const& z_range ) const;
 
       /// \brief Extracts a subset of pixels from an image. The image must be forged.
-      View At( RangeArray ranges ) const;
+      DIP_NODISCARD View At( RangeArray ranges ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `mask`.
       ///
@@ -2203,7 +2219,7 @@ class DIP_NO_EXPORT Image {
       /// linear index order, reading all samples for the first pixel, then all samples for the second pixel, etc.
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a binary image.
-      View At( Image mask ) const;
+      DIP_NODISCARD View At( Image mask ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `coordinates`.
       ///
@@ -2214,7 +2230,7 @@ class DIP_NO_EXPORT Image {
       /// Each of the coordinates must have the same number of dimensions as `this`.
       ///
       /// `this` must be forged.
-      View At( CoordinateArray const& coordinates ) const;
+      DIP_NODISCARD View At( CoordinateArray const& coordinates ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `indices`.
       ///
@@ -2228,7 +2244,7 @@ class DIP_NO_EXPORT Image {
       /// `this` must be forged.
       ///
       /// Note that this function is not called `At` because of the clash with `At( UnsignedArray const& )`.
-      View AtIndices( UnsignedArray const& indices ) const;
+      DIP_NODISCARD View AtIndices( UnsignedArray const& indices ) const;
 
       /// \brief Extracts a subset of pixels from an image.
       ///
@@ -2237,39 +2253,39 @@ class DIP_NO_EXPORT Image {
       /// maintains the origin pixel (as defined in \ref dip::FourierTransform and other other places)
       /// at the origin of the output image.
       ///
-      /// \ref dip::Image::Pad does the inverse operation. \ref dip::Image::Crop does the same thing, but modifies
-      /// the image directly instead of returning a view.
+      /// \ref dip::Image::Crop does the same thing, but modifies the image directly instead of returning a view.
+      /// \ref dip::Image::Pad does the inverse operation.
       ///
       /// The image must be forged.
-      DIP_EXPORT View Cropped(
+      DIP_NODISCARD DIP_EXPORT View Cropped(
             UnsignedArray const& sizes,
             Option::CropLocation cropLocation = Option::CropLocation::CENTER
       ) const;
 
       /// \brief Extracts a subset of pixels from an image.
       ///
-      /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
-      /// string `cropLocation` is translated to one of the \ref dip::Option::CropLocation values as follows:
+      /// This is an overloaded version of the function above. The string `cropLocation` is translated
+      /// to one of the \ref dip::Option::CropLocation values as follows:
       ///
-      /// `CropLocation` constant | String
-      /// ----------------------- | ----------
-      /// `CENTER`                | `"center"`
-      /// `MIRROR_CENTER`         | `"mirror center"`
-      /// `TOP_LEFT`              | `"top left"`
-      /// `BOTTOM_RIGHT`          | `"bottom right"`
-      DIP_EXPORT View Cropped( UnsignedArray const& sizes, String const& cropLocation ) const;
+      /// String            | `CropLocation` constant
+      /// ----------------- | -----------------------
+      /// `"center"`        | \ref Option::CropLocation::CENTER
+      /// `"mirror center"` | \ref Option::CropLocation::MIRROR_CENTER
+      /// `"top left"`      | \ref Option::CropLocation::TOP_LEFT
+      /// `"bottom right"`  | \ref Option::CropLocation::BOTTOM_RIGHT
+      DIP_NODISCARD DIP_EXPORT View Cropped( UnsignedArray const& sizes, String const& cropLocation ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
-      DIP_EXPORT View Real() const;
+      DIP_NODISCARD DIP_EXPORT View Real() const;
 
       /// \brief Extracts the imaginary component of a complex-typed image. The image must be forged and complex-valued.
-      DIP_EXPORT View Imaginary() const;
+      DIP_NODISCARD DIP_EXPORT View Imaginary() const;
 
       /// \brief Creates a scalar view of the image, where the tensor dimension is converted to a new spatial
       /// dimension. See \ref dip::Image::TensorToSpatial.
-      View AsScalar( dip::uint dim ) const;
+      DIP_NODISCARD View AsScalar( dip::uint dim ) const;
       /// \overload
-      View AsScalar() const;
+      DIP_NODISCARD View AsScalar() const;
 
       /// \brief Quick copy, returns a new image that points at the same data as `this`,
       /// and has mostly the same properties.
@@ -2311,7 +2327,8 @@ class DIP_NO_EXPORT Image {
       /// The object is not modified, a new image is created, with identical properties, but of the requested
       /// size.
       ///
-      /// \ref dip::Image::Crop does the inverse operation. See also \ref dip::ExtendImage.
+      /// \ref dip::ExtendImageToSize does the same thing, but filling the new regions according to a boundary
+      /// condition. \ref dip::Image::Crop does the inverse operation.
       ///
       /// The image must be forged.
       DIP_NODISCARD DIP_EXPORT Image Pad( UnsignedArray const& sizes, Pixel const& value, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
@@ -2322,32 +2339,20 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Extends the image by padding with `value`.
       ///
-      /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
-      /// string `cropLocation` is translated to one of the \ref dip::Option::CropLocation values as follows:
+      /// This is an overloaded version of the function above. The string `cropLocation` is translated
+      /// to one of the \ref dip::Option::CropLocation values as follows:
       ///
-      /// `CropLocation` constant | String
-      /// ----------------------- | ----------
-      /// `CENTER`                | `"center"`
-      /// `MIRROR_CENTER`         | `"mirror center"`
-      /// `TOP_LEFT`              | `"top left"`
-      /// `BOTTOM_RIGHT`          | `"bottom right"`
-      DIP_NODISCARD inline Image Pad( UnsignedArray const& sizes, Pixel const& value, String const& cropLocation ) const {
-         if( cropLocation == S::CENTER ) {
-            return Pad( sizes, value, Option::CropLocation::CENTER );
-         } else if( cropLocation == S::MIRROR_CENTER ) {
-            return Pad( sizes, value, Option::CropLocation::MIRROR_CENTER );
-         } else if( cropLocation == S::TOP_LEFT ) {
-            return Pad( sizes, value, Option::CropLocation::TOP_LEFT );
-         } else if( cropLocation == S::BOTTOM_RIGHT ) {
-            return Pad( sizes, value, Option::CropLocation::BOTTOM_RIGHT );
-         } else {
-            DIP_THROW_INVALID_FLAG( cropLocation );
-         }
-      }
+      /// String            | `CropLocation` constant
+      /// ----------------- | -----------------------
+      /// `"center"`        | \ref Option::CropLocation::CENTER
+      /// `"mirror center"` | \ref Option::CropLocation::MIRROR_CENTER
+      /// `"top left"`      | \ref Option::CropLocation::TOP_LEFT
+      /// `"bottom right"`  | \ref Option::CropLocation::BOTTOM_RIGHT
+      DIP_NODISCARD DIP_EXPORT Image Pad( UnsignedArray const& sizes, Pixel const& value, String const& cropLocation ) const;
 
       /// \brief Extends the image by padding with zeros, overload for function above with `value` equal to 0.
       // Note that `Pixel` is not defined here yet, so we cannot put the function body here.
-      DIP_NODISCARD inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const;
+      DIP_NODISCARD Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const;
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///
