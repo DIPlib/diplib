@@ -42,9 +42,10 @@ namespace Option {
 
 /// \brief How to compare images in \ref dip::testing::CompareImages.
 enum class DIP_NO_EXPORT CompareImagesMode {
-      APPROX,  ///< Compare the sample values (and image sizes), to match within `epsilon`
-      EXACT,   ///< Compare only the sample values (and image sizes)
-      FULL     ///< Compare for identical sample values as well as tensor shape, color space, and pixel size
+   EXACT,      ///< Compare only the sample values (and image sizes).
+   APPROX,     ///< Compare the sample values (and image sizes), to match within `epsilon` in absolute terms.
+   APPROX_REL, ///< Compare the sample values (and image sizes), to match within `epsilon` in relative terms.
+   FULL        ///< Compare for identical sample values as well as tensor shape, color space, and pixel size.
 };
 
 }
@@ -129,13 +130,17 @@ void PrintPixelValues( Image const& img ) {
 /// `[dip::testing::CompareImages]` and gives the reason that the test failed.
 ///
 /// If `mode` is \ref dip::Option::CompareImagesMode::APPROX, the sample values must all be within
-/// `epsilon`, which defaults to 1e-6. For this mode of operation there is an overloaded function
+/// `epsilon`, which defaults to 1e-6 (see \ref dip::MaximumAbsoluteError).
+/// For this mode of operation there is an overloaded function
 /// that takes `epsilon` as the 3^rd^ argument (i.e. you can skip the `mode` parameter):
 ///
 /// ```cpp
 /// dip::CompareImages( img1, img2 );       // samples must be identical
 /// dip::CompareImages( img1, img2, 1e-3 ); // samples must be within 1e-3 of each other
 /// ```
+///
+/// If `mode` is \ref dip::Option::CompareImagesMode::APPROX_REL, the relative difference between sample
+/// values must be less than `epsilon` (see \ref dip::MaximumRelativeError).
 ///
 /// If `mode` is \ref dip::Option::CompareImagesMode::FULL, the sample values must match exactly, and
 /// non-data properties (tensor shape, color space and pixel size) must also match exactly.
@@ -160,6 +165,14 @@ inline bool CompareImages(
       dfloat mae = MaximumAbsoluteError( img1, img2 );
       if( mae > epsilon ) {
          std::cout << "[dip::testing::CompareImages] Maximum absolute error = " << mae << " > " << epsilon << '\n';
+         return false;
+      }
+      return true;
+   }
+   if( mode == Option::CompareImagesMode::APPROX_REL ) {
+      dfloat mre = MaximumRelativeError( img1, img2 );
+      if( mre > epsilon ) {
+         std::cout << "[dip::testing::CompareImages] Maximum relative error = " << mre << " > " << epsilon << '\n';
          return false;
       }
       return true;
