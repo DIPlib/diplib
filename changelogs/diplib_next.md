@@ -35,6 +35,9 @@ title: "Changes DIPlib 3.x.x"
 - `dip::ExpandTensor()` didn't write to an existing data segment in its output image, even if it was allocated
   to the right dimensions.
 
+- `dip::BoundaryCondition::ASYMMETRIC_MIRROR` didn't work in some functions because it had the same value as
+  `dip::BoundaryCondition::ALREADY_EXPANDED`.
+
 
 
 

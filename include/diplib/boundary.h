@@ -58,19 +58,19 @@ namespace dip {
 /// `DEFAULT`                    | "default" or ""     | The default value, currently equal to `SYMMETRIC_MIRROR`.
 /// `ALREADY_EXPANDED`           | "already expanded"  | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
 enum class DIP_NO_EXPORT BoundaryCondition {
-      SYMMETRIC_MIRROR,
-      ASYMMETRIC_MIRROR,
-      PERIODIC,
-      ASYMMETRIC_PERIODIC,
-      ADD_ZEROS,
-      ADD_MAX_VALUE,
-      ADD_MIN_VALUE,
-      ZERO_ORDER_EXTRAPOLATE,
-      FIRST_ORDER_EXTRAPOLATE,
-      SECOND_ORDER_EXTRAPOLATE,
-      THIRD_ORDER_EXTRAPOLATE,
-      DEFAULT = SYMMETRIC_MIRROR,
-      ALREADY_EXPANDED
+   SYMMETRIC_MIRROR,
+   DEFAULT = SYMMETRIC_MIRROR,
+   ASYMMETRIC_MIRROR,
+   PERIODIC,
+   ASYMMETRIC_PERIODIC,
+   ADD_ZEROS,
+   ADD_MAX_VALUE,
+   ADD_MIN_VALUE,
+   ZERO_ORDER_EXTRAPOLATE,
+   FIRST_ORDER_EXTRAPOLATE,
+   SECOND_ORDER_EXTRAPOLATE,
+   THIRD_ORDER_EXTRAPOLATE,
+   ALREADY_EXPANDED
 };
 
 /// An array to hold boundary conditions.
@@ -139,8 +139,8 @@ namespace Option {
 ///
 /// Implicitly casts to \ref dip::Option::ExtendImageFlags. Combine constants together with the `+` operator.
 enum class DIP_NO_EXPORT ExtendImage {
-      Masked,       ///< The output image is a window on the boundary-extended image of the same size as the input.
-      ExpandTensor  ///< The output image has normal tensor storage.
+   Masked,       ///< The output image is a window on the boundary-extended image of the same size as the input.
+   ExpandTensor  ///< The output image has normal tensor storage.
 };
 /// \class dip::Option::ExtendImageFlags
 /// \brief Combines any number of \ref dip::Option::ExtendImage constants together.
