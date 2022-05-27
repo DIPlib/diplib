@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -64,6 +64,42 @@ dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask 
 dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
    DIP_STACK_TRACE_THIS( MaximumAbs( in1 - in2, mask, error ));
+   if( !error.IsScalar() ) {
+      error = MaximumTensorElement( error );
+   }
+   return error.As< dfloat >();
+}
+
+namespace {
+
+void RelativeError( Image const& in1, Image const& in2, Image& error ) {
+   // 2 * Abs(in - reference) / (Abs(in) + Abs(reference))
+   // Abs(in - reference) / (0.5 * (Abs(in) + Abs(reference)))
+   DIP_START_STACK_TRACE
+      Subtract( in1, in2, error );
+      Abs( error, error );
+      Image norm = Abs( in1 ) + Abs( in2 );
+      norm *= 0.5;
+      SafeDivide( error, norm, error );
+   DIP_END_STACK_TRACE
+}
+
+} // namespace
+
+dfloat MeanRelativeError( Image const& in1, Image const& in2, Image const& mask ) {
+   Image error;
+   DIP_STACK_TRACE_THIS( RelativeError( in1, in2, error ));
+   DIP_STACK_TRACE_THIS( Mean( error, mask, error ));
+   if( !error.IsScalar() ) {
+      error = MaximumTensorElement( error );
+   }
+   return error.As< dfloat >();
+}
+
+dfloat MaximumRelativeError( Image const& in1, Image const& in2, Image const& mask ) {
+   Image error;
+   DIP_STACK_TRACE_THIS( RelativeError( in1, in2, error ));
+   DIP_STACK_TRACE_THIS( Maximum( error, mask, error ));
    if( !error.IsScalar() ) {
       error = MaximumTensorElement( error );
    }
@@ -193,7 +229,7 @@ dfloat PSNR( Image const& in, Image const& reference, Image const& mask, dfloat 
          auto m = MaximumAndMinimum( reference, mask );
          peakSignal = m.Maximum() - m.Minimum();
       }
-      return 20.0 * std::log10( peakSignal / RootMeanSquareError( in, reference, mask ));
+      return 10.0 * std::log10( peakSignal * peakSignal / MeanSquareError( in, reference, mask ));
    DIP_END_STACK_TRACE
 }
 

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2022, Flagship Biosciences, Inc., written by Cris Luengo.
  * (c)2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -115,6 +115,10 @@ void init_statistics( py::module& m ) {
    m.def( "MeanAbsoluteError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MeanAbsoluteError ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
    m.def( "MaximumAbsoluteError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MaximumAbsoluteError ),
+          "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
+   m.def( "MeanRelativeError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MeanRelativeError ),
+          "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
+   m.def( "MaximumRelativeError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MaximumRelativeError ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
    m.def( "IDivergence", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::IDivergence ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );

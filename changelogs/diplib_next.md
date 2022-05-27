@@ -16,6 +16,8 @@ title: "Changes DIPlib 3.x.x"
 - Added a static function `dip::Image::CropWindow()`, similar to the existing non-static one, which takes
   the image size as input.
 
+- Added functions `dip::MeanRelativeError()` and `dip::MaximumRelativeError()`.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -63,6 +65,8 @@ title: "Changes DIPlib 3.x.x"
 ### New functionality
 
 - Added bindings for `dip::testing::Timer`.
+
+- Added functions `dip.MeanRelativeError()` and `dip.MaximumRelativeError()`.
 
 ### Changed functionality
 

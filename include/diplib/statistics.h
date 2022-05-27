@@ -1,5 +1,5 @@
 /*
- * (c)2014-2021, Cris Luengo.
+ * (c)2014-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
  *
@@ -941,11 +941,43 @@ DIP_EXPORT dfloat MeanAbsoluteError( Image const& in, Image const& reference, Im
 /// Singleton expansion is applied if the image sizes don't match.
 DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in, Image const& reference, Image const& mask = {} );
 
+/// \brief Calculates the mean relative error difference between corresponding sample values of `in` and `reference`.
+///
+/// The relative error is defined as
+///
+/// $$ E_\text{relative}(x,y) = \frac{ 2 |x-y| }{ |x|+|y| } \; . $$
+///
+/// This definition is symmetric, and avoids issues caused by `reference` having a zero value.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image sizes don't match.
+DIP_EXPORT dfloat MeanRelativeError( Image const& in, Image const& reference, Image const& mask = {} );
+
+/// \brief Calculates the maximum relative error difference between corresponding sample values of `in` and `reference`.
+///
+/// The relative error is defined as
+///
+/// $$ E_\text{relative}(x,y) = \frac{ 2 |x-y| }{ |x|+|y| } \; . $$
+///
+/// This definition is symmetric, and avoids issues caused by `reference` having a zero value.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image sizes don't match.
+DIP_EXPORT dfloat MaximumRelativeError( Image const& in, Image const& reference, Image const& mask = {} );
+
 /// \brief Calculates the I-divergence between corresponding sample values of `in` and `reference`.
 ///
-/// The I-Divergence is defined as $I(x,y) = x \ln(x/y) - (x - y)$ and is divided by the number of pixels.
+/// The I-Divergence is defined as
+///
+/// $$ \text{I-Divergence} = x \ln(x/y) - (x-y) \; , $$
+///
+/// and is divided by the number of pixels.
 /// It is the -log of a Poisson distribution $p(x,y) = e^{-y} / x! - y^x$ with the stirling approximation for
-/// $\ln x!$. For $x=0$, the stirling approximation would fail, $y$ is returned.
+/// $\ln x!$. For $x=0$, where the stirling approximation would fail, $y$ is returned.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
@@ -981,8 +1013,13 @@ DIP_EXPORT dfloat LnNormError( Image const& in, Image const& reference, Image co
 
 /// \brief Calculates the peak signal-to-noise ratio, in dB.
 ///
+/// PSNR is defined as
+///
+/// $$ \text{PSNR} = 10 \log_{10} \left( \frac{ p^2 }{ \text{MSE} } \right)
+///                = 20 \log_{10} \left( \frac{ p }{ \text{RMSE} } \right) \; , $$
+///
+/// with the peak signal $p$ given by `peakSignal`, MSE being the mean square error and RMSE the root mean square error.
 /// If `peakSignal<=0`, computes the peak signal as the difference between maximum and minimum in `reference`.
-/// PSNR is defined as `20 * log10( peakSignal / RootMeanSquareError( in, reference, mask ))`.
 ///
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
