@@ -59,8 +59,8 @@ void init_filtering( py::module& m ) {
 
    // diplib/linear.h
    // TODO: SeparableConvolution, SeparateFilter
-   m.def( "ConvolveFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const& >( &dip::ConvolveFT ),
-          "in"_a, "filter"_a, "inRepresentation"_a = dip::S::SPATIAL, "filterRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
+   m.def( "ConvolveFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::ConvolveFT ),
+          "in"_a, "filter"_a, "inRepresentation"_a = dip::S::SPATIAL, "filterRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "GeneralConvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::StringArray const& >( &dip::GeneralConvolution ),
           "in"_a, "filter"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),

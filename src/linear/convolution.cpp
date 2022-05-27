@@ -330,9 +330,9 @@ void SeparableConvolution(
 
    // What is the data type we'll use?
    DataType dtype = isComplexFilter ? DataType::SuggestComplex( in.DataType() ) : DataType::SuggestFlex( in.DataType() );
-   //std::cout << "dtype = " << dtype << std::endl;
+   //std::cout << "dtype = " << dtype << '\n';
    bool useDouble = dtype.IsA( DataType::Class_DComplex + DataType::Class_DFloat );
-   //std::cout << "useDouble = " << useDouble << std::endl;
+   //std::cout << "useDouble = " << useDouble << '\n';
 
    // Copy filter data over to internal representation, using the correct types
    InternOneDimensionalFilterArray filterData;
@@ -418,8 +418,10 @@ void ConvolveFT(
       Image& out,
       String const& inRepresentation,
       String const& filterRepresentation,
-      String const& outRepresentation
+      String const& outRepresentation,
+      StringArray const& boundaryCondition
 ) {
+   // Test inputs
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
    bool inSpatial;
@@ -428,25 +430,43 @@ void ConvolveFT(
    DIP_STACK_TRACE_THIS( filterSpatial = BooleanFromString( filterRepresentation, S::SPATIAL, S::FREQUENCY ));
    bool outSpatial;
    DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
+
+   // Ensure `filter` has the right dimensionality and is not larger than the input image
+   Image filterFT = filter.QuickCopy();
+   if( filterFT.Dimensionality() < in.Dimensionality() ) {
+      filterFT.ExpandDimensionality( in.Dimensionality() );
+   }
+   DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
+
+   // Prepare input image
+   bool inPadding = ( inSpatial && filterSpatial && outSpatial && !boundaryCondition.empty() );
+   UnsignedArray inSizes = in.Sizes();
    bool real = true;
    Image inFT;
    bool reuseInFT = false;
    if( inSpatial ) {
       real &= in.DataType().IsReal();
-      DIP_STACK_TRACE_THIS( FourierTransform( in, inFT ));
+      if( inPadding ) {
+         // Pad the input image with at least the size of `filter`, but make it larger so it's a nice size
+         UnsignedArray sizes = inSizes;
+         for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+            sizes[ ii ] = OptimalFourierTransformSize( sizes[ ii ] + filter.Size( ii ) - 1 );
+         }
+         ExtendImageToSize( in, inFT, sizes, S::CENTER, boundaryCondition );
+         DIP_STACK_TRACE_THIS( FourierTransform( inFT, inFT ));
+      } else {
+         DIP_STACK_TRACE_THIS( FourierTransform( in, inFT ));
+      }
       reuseInFT = true;
    } else {
       real = false;
       inFT = in.QuickCopy();
    }
-   Image filterFT = filter.QuickCopy();
+
+   // Prepare filter image
    bool reuseFilterFT = false;
-   if( filterFT.Dimensionality() < in.Dimensionality() ) {
-      filterFT.ExpandDimensionality( in.Dimensionality() );
-   }
-   DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
-   if( filterFT.Sizes() < in.Sizes() ) {
-      filterFT = filterFT.Pad( in.Sizes() );
+   if( filterFT.Sizes() < inFT.Sizes() ) {
+      filterFT = filterFT.Pad( inFT.Sizes(), { 0 }, Option::CropLocation::CENTER );
       reuseFilterFT = true;
    }
    if( filterSpatial ) {
@@ -462,11 +482,13 @@ void ConvolveFT(
    } else {
       real = false;
    }
-   Image outFT;
+
+   // Compute output image
    DataType dt = DataType::SuggestArithmetic( inFT.DataType(), filterFT.DataType() );
    if( dt.IsBinary() ) {
       dt = DT_SFLOAT; // let's not go there...
    }
+   Image outFT;
    if( !outSpatial || !real ) { // write directly into out if out is not real-valued
       DIP_STACK_TRACE_THIS( out.ReForge( inFT, dt ));
       outFT = out.QuickCopy();
@@ -483,7 +505,13 @@ void ConvolveFT(
       if( real ) {
          options.insert( S::REAL );
       }
-      DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
+      if( inPadding ) {
+         Image tmp;
+         DIP_STACK_TRACE_THIS( FourierTransform( outFT, tmp, options ));
+         out = tmp.Crop( inSizes, Option::CropLocation::CENTER ); // copies if `out` is protected
+      } else {
+         DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
+      }
    }
 }
 
@@ -532,6 +560,7 @@ void GeneralConvolution(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_filter.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( c_filter.DataType().IsComplex(), "Convolution with a complex filter not yet implemented." );
    DIP_START_STACK_TRACE
       Kernel filter{ c_filter };
       filter.Mirror();
@@ -558,6 +587,7 @@ void GeneralConvolution(
 #include "diplib/statistics.h"
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
+#include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    dip::dfloat meanval = 9563.0;
@@ -649,45 +679,96 @@ DOCTEST_TEST_CASE("[DIPlib] testing ConvolveFT") {
    dip::Image img{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SFLOAT };
    img.Fill( 10 );
    img.Protect();
-   dip::Image imgFT{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SCOMPLEX };
-   imgFT.Fill( 10 );
+   dip::Image imgFT = dip::FourierTransform( img );
    imgFT.Protect();
-   dip::Image filt{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SFLOAT };
+   dip::dcomplex imgFTValue = imgFT.At< dip::dcomplex >( 8, 4 );
+   dip::Image filt{ dip::UnsignedArray{ 4, 4 }, 1, dip::DT_SFLOAT };
    filt.Fill( 5 );
    filt.Protect();
-   dip::Image filtFT{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SCOMPLEX };
-   filtFT.Fill( 5 );
+   dip::Image filtFT = dip::FourierTransform( filt.Pad(img.Sizes() ));
    filtFT.Protect();
-   dip::Image out{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SFLOAT };
-   out.Protect();
-   dip::Image outFT{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SCOMPLEX };
-   outFT.Protect();
+   dip::dcomplex filtFTValue = filtFT.At< dip::dcomplex >( 1, 1 );
+   dip::Image outR{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SFLOAT };
+   outR.Protect();
+   void* outRData = outR.Data();
+   dip::Image outC{ dip::UnsignedArray{ 16, 8 }, 1, dip::DT_SCOMPLEX };
+   outC.Protect();
+   void* outCData = outC.Data();
    // We check each of the combinations of spatial/frequency, and we check that `out`/`outFT` are not reforged
    // and that the inputs aren't changed.
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filt, out, dip::S::SPATIAL, dip::S::SPATIAL, dip::S::SPATIAL ));
+   outR.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filt, outR, dip::S::SPATIAL, dip::S::SPATIAL, dip::S::SPATIAL ));
    DOCTEST_CHECK( img.At( 0 ) == 10.0 );
    DOCTEST_CHECK( filt.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filt, outFT, dip::S::FREQUENCY, dip::S::SPATIAL, dip::S::SPATIAL ));
-   DOCTEST_CHECK( imgFT.At( 0 ) == 10.0 );
+   DOCTEST_CHECK( outR.At( 0 ) == 10.0 * 5.0 * 4 * 4 );
+   DOCTEST_CHECK( outR.Data() == outRData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filt, outC, dip::S::FREQUENCY, dip::S::SPATIAL, dip::S::SPATIAL ));
+   DOCTEST_CHECK( imgFT.At( 8, 4 ) == imgFTValue );
    DOCTEST_CHECK( filt.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filtFT, outFT, dip::S::SPATIAL, dip::S::FREQUENCY, dip::S::SPATIAL ));
+   DOCTEST_CHECK( outC.At( 0 ) == 10.0 * 5.0 * 4 * 4 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filtFT, outC, dip::S::SPATIAL, dip::S::FREQUENCY, dip::S::SPATIAL ));
    DOCTEST_CHECK( img.At( 0 ) == 10.0 );
-   DOCTEST_CHECK( filtFT.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filtFT, outFT, dip::S::FREQUENCY, dip::S::FREQUENCY, dip::S::SPATIAL ));
-   DOCTEST_CHECK( imgFT.At( 0 ) == 10.0 );
-   DOCTEST_CHECK( filtFT.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filt, outFT, dip::S::SPATIAL, dip::S::SPATIAL, dip::S::FREQUENCY ));
+   DOCTEST_CHECK( filtFT.At( 1, 1 ) == filtFTValue );
+   DOCTEST_CHECK( outC.At( 0 ) == 10.0 * 5.0 * 4 * 4 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filtFT, outC, dip::S::FREQUENCY, dip::S::FREQUENCY, dip::S::SPATIAL ));
+   DOCTEST_CHECK( imgFT.At( 8, 4 ) == imgFTValue );
+   DOCTEST_CHECK( filtFT.At( 1, 1 ) == filtFTValue );
+   DOCTEST_CHECK( outC.At( 0 ) == 10.0 * 5.0 * 4 * 4 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filt, outC, dip::S::SPATIAL, dip::S::SPATIAL, dip::S::FREQUENCY ));
    DOCTEST_CHECK( img.At( 0 ) == 10.0 );
    DOCTEST_CHECK( filt.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filt, outFT, dip::S::FREQUENCY, dip::S::SPATIAL, dip::S::FREQUENCY ));
-   DOCTEST_CHECK( imgFT.At( 0 ) == 10.0 );
+   DOCTEST_CHECK( outC.At( 8, 4 ) == 10.0 * 5.0 * 4 * 4 * 16 * 8 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filt, outC, dip::S::FREQUENCY, dip::S::SPATIAL, dip::S::FREQUENCY ));
+   DOCTEST_CHECK( imgFT.At( 8, 4 ) == imgFTValue );
    DOCTEST_CHECK( filt.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filtFT, outFT, dip::S::SPATIAL, dip::S::FREQUENCY, dip::S::FREQUENCY ));
+   DOCTEST_CHECK( outC.At( 8, 4 ) == 10.0 * 5.0 * 4 * 4 * 16 * 8 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filtFT, outC, dip::S::SPATIAL, dip::S::FREQUENCY, dip::S::FREQUENCY ));
    DOCTEST_CHECK( img.At( 0 ) == 10.0 );
-   DOCTEST_CHECK( filtFT.At( 0 ) == 5.0 );
-   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filtFT, outFT, dip::S::FREQUENCY, dip::S::FREQUENCY, dip::S::FREQUENCY ));
-   DOCTEST_CHECK( imgFT.At( 0 ) == 10.0 );
-   DOCTEST_CHECK( filtFT.At( 0 ) == 5.0 );
+   DOCTEST_CHECK( filtFT.At( 1, 1 ) == filtFTValue );
+   DOCTEST_CHECK( outC.At( 8, 4 ) == 10.0 * 5.0 * 4 * 4 * 16 * 8 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   outC.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( imgFT, filtFT, outC, dip::S::FREQUENCY, dip::S::FREQUENCY, dip::S::FREQUENCY ));
+   DOCTEST_CHECK( imgFT.At( 8, 4 ) == imgFTValue );
+   DOCTEST_CHECK( filtFT.At( 1, 1 ) == filtFTValue );
+   DOCTEST_CHECK( outC.At( 8, 4 ) == 10.0 * 5.0 * 4 * 4 * 16 * 8 );
+   DOCTEST_CHECK( outC.Data() == outCData );
+   // We now check with a boundary condition, so that the image is padded
+   outR.Fill( 0 );
+   DOCTEST_CHECK_NOTHROW( dip::ConvolveFT( img, filt, outR, dip::S::SPATIAL, dip::S::SPATIAL, dip::S::SPATIAL, { "periodic" } ));
+   DOCTEST_CHECK( img.At( 0 ) == 10.0 );
+   DOCTEST_CHECK( filt.At( 0 ) == 5.0 );
+   DOCTEST_CHECK( outR.At< double >( 0 ) == doctest::Approx( 10.0 * 5.0 * 4 * 4 ));
+   DOCTEST_CHECK( outR.Data() == outRData );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing boundary condition in ConvolveFT") {
+   dip::Image img{ dip::UnsignedArray{ 14, 7 }, 1, dip::DT_SFLOAT };
+   dip::ImageIterator< dip::sfloat > it( img );
+   dip::sfloat counter = 0;
+   do {
+      *it = counter++;
+   } while( ++it );
+   // An asymmetric kernel that shows us we're keeping the origin in the right place everywhere
+   dip::Image kernel{ dip::UnsignedArray{ 4, 3 }, 1, dip::DT_SFLOAT };
+   kernel.Fill( 0 );
+   kernel.At( dip::Range( 1 ), dip::Range() ).Fill( 1 );
+   kernel.At( dip::Range( 3 ), dip::Range() ).Fill( -1 );
+   // Compute convolution using "asym mirror" boundary condition, for largest effect
+   dip::Image res1 = dip::ConvolveFT( img, kernel, dip::S::SPATIAL, dip::S::SPATIAL, dip::S::SPATIAL, { "asym mirror" } );
+   dip::Image res2 = dip::GeneralConvolution( img, kernel, { "asym mirror" } );
+   DOCTEST_CHECK( dip::testing::CompareImages( res1, res2, dip::Option::CompareImagesMode::APPROX_REL, 2e-5 ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -135,26 +135,41 @@ DIP_NODISCARD inline Image SeparableConvolution(
 ///
 /// If `in` or `filter` is already Fourier transformed, set `inRepresentation` or `filterRepresentation`
 /// to `"frequency"`. Similarly, if `outRepresentation` is `"frequency"`, the output will not be
-/// inverse-transformed, so will be in the frequency domain.
+/// inverse-transformed, so will be in the frequency domain. These three values are `"spatial"` by default.
+/// If any of these three values is `"frequency"`, then `out` will be complex, no checks are made to
+/// see if the inputs in frequency domain have the complex conjugate symmetry required for the result
+/// to be real-valued. Use \ref dip::Image::Real if you expect the output to be real-valued in this case.
 ///
-/// \see dip::GeneralConvolution, dip::SeparableConvolution
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension.
+/// See \ref dip::BoundaryCondition for a description of each option. It is ignored unless `inRepresentation`,
+/// `filterRepresentation` and `outRepresentation` are all `"spatial"`. If the array is empty (the default),
+/// then a periodic boundary condition is imposed. This is the natural boundary condition for the method,
+/// the image will be Fourier transformed as-is. For other boundary conditions, the image will be padded before
+/// the transform is applied. The padding will extend the image by at least half the size of `filter` in all
+/// dimensions, and the padding will make the image size a multiple of 2, 3 and/or 5 so that it is cheaper
+/// to compute the Fourier transform (see \ref dip::OptimalFourierTransformSize).
+/// The output image will be cropped to the size of the input.
+///
+/// \see dip::GeneralConvolution, dip::SeparableConvolution, dip::FourierTransform
 DIP_EXPORT void ConvolveFT(
       Image const& in,
       Image const& filter,
       Image& out,
       String const& inRepresentation = S::SPATIAL,
       String const& filterRepresentation = S::SPATIAL,
-      String const& outRepresentation = S::SPATIAL
+      String const& outRepresentation = S::SPATIAL,
+      StringArray const& boundaryCondition = {}
 );
 DIP_NODISCARD inline Image ConvolveFT(
       Image const& in,
       Image const& filter,
       String const& inRepresentation = S::SPATIAL,
       String const& filterRepresentation = S::SPATIAL,
-      String const& outRepresentation = S::SPATIAL
+      String const& outRepresentation = S::SPATIAL,
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   ConvolveFT( in, filter, out, inRepresentation, filterRepresentation, outRepresentation );
+   ConvolveFT( in, filter, out, inRepresentation, filterRepresentation, outRepresentation, boundaryCondition );
    return out;
 }
 

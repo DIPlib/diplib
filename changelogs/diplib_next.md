@@ -21,6 +21,9 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip::Option::CompareImagesMode::APPROX_REL` as an option to `dip::testing::CompareImages()`, to
   compare pixel values with a relative tolerance.
 
+- The function `dip::ConvolveFT()` has a new parameter `boundaryCondition`, if used the input image will be
+  extended before computing the FFT, and the result cropped after the inverse FFT.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
