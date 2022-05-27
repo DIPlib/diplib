@@ -33,6 +33,9 @@ title: "Changes DIPlib 3.x.x"
 
 - Added some more `[[nodiscard]]` annotations.
 
+- Updated included *libics*, which fixes some potential bugs, and adds support for metadata related
+  to multi-detector microscopes.
+
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.

@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2019:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -82,6 +82,7 @@ Ics_Symbol G_SubCatSymbols[] =
 Ics_Symbol G_SubSubCatSymbols[] =
 {
     {"Channels",            ICSTOK_CHANS},
+    {"Detectors",           ICSTOK_DETECTORS},
     {"ImagingDirection",    ICSTOK_IMDIR},
     {"NumAperture",         ICSTOK_NUMAPER},
     {"ObjectiveQuality",    ICSTOK_OBJQ},
@@ -96,10 +97,21 @@ Ics_Symbol G_SubSubCatSymbols[] =
     {"ExPhotonCnt",         ICSTOK_PHOTCNT},
     {"InterFacePrimary",    ICSTOK_IFACE1},
     {"InterFaceSecondary",  ICSTOK_IFACE2},
+    {"Description",         ICSTOK_DESCRIPTION},
     {"DetectorMagnif",      ICSTOK_DETMAG},
     {"DetectorPPU",         ICSTOK_DETPPU},
     {"DetectorBaseline",    ICSTOK_DETBASELINE},
     {"DetectorLineAvgCnt",  ICSTOK_DETLNAVGCNT},
+    {"DetectorNoiseGain",   ICSTOK_DETNOISEGAIN},
+    {"DetectorOffset",      ICSTOK_DETOFFSET},
+    {"DetectorSensitivity", ICSTOK_DETSENS},
+    {"DetectorRadius",      ICSTOK_DETRADIUS},
+    {"DetectorScale",       ICSTOK_DETSCALE},
+    {"DetectorStretch",     ICSTOK_DETSTRETCH},
+    {"DetectorRot",         ICSTOK_DETROT},
+    {"DetectorMirror",      ICSTOK_DETMIRROR},
+    {"DetectorModel",       ICSTOK_DETMODEL},
+    {"DetectorReduceHist",  ICSTOK_DETREDUCEHIST},
     {"STEDDeplMode",        ICSTOK_STEDDEPLMODE},
     {"STEDLambda",          ICSTOK_STEDLAMBDA},
     {"STEDSatFactor",       ICSTOK_STEDSATFACTOR},

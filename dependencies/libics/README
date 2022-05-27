@@ -1,5 +1,5 @@
 
-                             libics v.1.6.1
+                             libics v.1.6.5
           Image Cytometry Standard file reading and writing.
 
 This is the reference library for ICS (Image Cytometry Standard), an
@@ -172,21 +172,30 @@ Which ultimately is based upon stuff written by:
    HISTORY
 =============
 
-Unreleased:
-   Added functionality:
-   - A C++ interface.
-   - IcsSetByteOrder() allows to specify the byte order of external data.
-   Changes / improvements / fixes:
-   - Support for 64-bit integers.
-   - Various bug-fixes.
+version 1.6.5
+   - Fix typo that causes out-of-bounds read.
+
+version 1.6.4
+   - Add support for the noiseGain sensor parameter.
+   - Updated documentation with a list of supported sensor parameters.
+   - Support for building shared library on Windows with MinGW (Contributed by
+     Andrew Sun).
+
+version 1.6.3
+   - Add support for storing the parameters of multi-detector microscopes.
+   - Support for 64 bit integer images.
+   - C++ interface.
+   - Improved CMake support
+   - Various bug fixes.
+
+version 1.6.2
+   - Various bug fixes.
 
 version 1.6.1
-   Added functionality:
+   - Various bug-fixes.
    - Added SPIM parameters.
    - Added scattering parameters.
    - New functions that return ICS string properties without string copying.
-   Changes / improvements / fixes:
-   - Various bug-fixes.
    - Enable the use of negative strides.
 
 version 1.6.0
@@ -198,16 +207,15 @@ version 1.5.4
    - Small patch for supporting older Visual Studio version.
 
 version 1.5.3
-   Added functionality:
-   - Added STED and detector parameters
-   - Added a "links" page to the documentation.
    Changes / improvements / fixes:
    - Fixed documentation and made explicit the current default to version
-     2.0 files.
+   2.0 files.
+   - Added a "links" page to the documentation.
    - Fixed tests 1 and 2a, which didn't work for big-endian machines.
    - IcsWriteIcs() no longer overwrites data in the ByteOrder array.
    - Fixed a segmentation violation when trying to write an image with
-     more than 5 dimensions.
+   more than 5 dimensions.
+   - Added STED and detector parameters
    - Fixed a bug to read large compressed files.
    - Moved distribution to to github
 

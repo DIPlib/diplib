@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2019:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -55,6 +55,7 @@
  *   IcsSetDetectorPPU
  *   IcsSetDetectorBaseline
  *   IcsSetDetectorLineAvgCnt
+ *   IcsSetDetectorNoiseGain
  */
 
 
@@ -145,6 +146,27 @@ Ics_Error IcsSetSensorChannels(ICS *ics,
     if (channels < 0 || channels > ICS_MAX_LAMBDA)
         return IcsErr_NotValidAction;
     ics->sensorChannels = channels;
+    return IcsErr_Ok;
+}
+
+
+/* Get the number of sensor detectors. */
+int IcsGetSensorDetectors(const ICS *ics)
+{
+    return ics->sensorDetectors;
+}
+
+
+/* Set the number of sensor detectors. */
+Ics_Error IcsSetSensorDetectors(ICS *ics,
+                               int  detectors)
+{
+    if ((ics == NULL) || (ics->fileMode == IcsFileMode_read))
+        return IcsErr_NotValidAction;
+
+    if (detectors < 0 || detectors > ICS_MAX_DETECT)
+        return IcsErr_NotValidAction;
+    ics->sensorDetectors = detectors;
     return IcsErr_Ok;
 }
 
@@ -515,7 +537,7 @@ Ics_Error IcsSetSensorDetectorBaseline(ICS    *ics,
 
 /* Get the Detector lineAvgCnt per channel. */
 double IcsGetSensorDetectorLineAvgCnt(const ICS *ics,
- int channel)
+                                      int channel)
 {
     if (channel < 0 || channel >= ics->sensorChannels)
         return 0;
@@ -614,6 +636,22 @@ Ics_Error IcsGetSensorParameter(const ICS           *ics,
             *value = ics->detectorLineAvgCnt[channel];
             *state = ics->detectorLineAvgCntState[channel];
             break;
+        case ICS_SENSOR_DETECTOR_NOISE_GAIN:
+            *value = ics->detectorNoiseGain[channel];
+            *state = ics->detectorNoiseGainState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_SCALE:
+            *value = ics->detectorScale[channel];
+            *state = ics->detectorScaleState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_STRETCH:
+            *value = ics->detectorStretch[channel];
+            *state = ics->detectorStretchState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_ROT:
+            *value = ics->detectorRot[channel];
+            *state = ics->detectorRotState[channel];
+            break;
         case ICS_SENSOR_STED_LAMBDA:
             *value = ics->stedLambda[channel];
             *state = ics->stedLambdaState[channel];
@@ -681,13 +719,46 @@ Ics_Error IcsGetSensorParameterVector(const ICS            *ics,
 {
     if (channel < 0 || channel >= ics->sensorChannels)
         return IcsErr_NotValidAction;
-
-
-
+ 
     switch (parameter) {
         case ICS_SENSOR_SPIM_PLANE_PROP_DIR:
             *values = ics->spimPlanePropDir[channel];
             *state = ics->spimPlanePropDirState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_SENSITIVITY:
+            *values = ics->detectorSensitivity[channel];
+            *state = ics->detectorSensitivityState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_RADIUS:
+            *values = ics->detectorRadius[channel];
+            *state = ics->detectorRadiusState[channel];
+            break;
+        default:
+            *values = NULL;
+            *state = IcsSensorState_default;
+            return IcsErr_NotValidAction;
+    }
+
+    return IcsErr_Ok;
+}
+
+
+/* Get the state of a matrix sensor parameter. Sets **values to a pointer to
+   the matrix, which effectively becomes a flattened array. */
+Ics_Error IcsGetSensorParameterMatrix(const ICS             *ics,
+                                      Ics_SensorParameter    parameter,
+                                      int                    channel,
+                                      const double         **values,
+                                      Ics_SensorState       *state)
+{
+    if (channel < 0 || channel >= ics->sensorChannels) {
+        return IcsErr_NotValidAction;
+    }
+    
+    switch (parameter) {
+        case ICS_SENSOR_DETECTOR_OFFSET:
+            *values = (const double*)ics->detectorOffset[channel];
+            *state  = ics->detectorOffsetState[channel];
             break;
         default:
             *values = NULL;
@@ -708,8 +779,6 @@ Ics_Error IcsGetSensorParameterInt(const ICS           *ics,
 {
     if (channel < 0 || channel >= ics->sensorChannels)
         return IcsErr_NotValidAction;
-
-
 
     switch (parameter) {
         case ICS_SENSOR_OBJECTIVE_QUALITY:
@@ -742,6 +811,18 @@ Ics_Error IcsGetSensorParameterString(const ICS            *ics,
 
 
     switch (parameter) {
+        case ICS_SENSOR_DETECTOR_MIRROR:
+            *value = ics->detectorMirror[channel];
+            *state = ics->detectorMirrorState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_MODEL:
+            *value = ics->detectorModel[channel];
+            *state = ics->detectorModelState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_REDUCEHIST:
+            *value = ics->detectorRedHist[channel];
+            *state = ics->detectorRedHistState[channel];
+            break;
         case ICS_SENSOR_IMAGING_DIRECTION:
             *value = ics->imagingDirection[channel];
             *state = ics->imagingDirectionState[channel];
@@ -757,6 +838,10 @@ Ics_Error IcsGetSensorParameterString(const ICS            *ics,
         case ICS_SENSOR_SCATTER_MODEL:
             *value = ics->scatterModel[channel];
             *state = ics->scatterModelState[channel];
+            break;
+        case ICS_SENSOR_DESCRIPTION:
+            *value = ics->description[channel];
+            *state = ics->descriptionState[channel];
             break;
         default:
             *value = "";
@@ -846,6 +931,22 @@ Ics_Error IcsSetSensorParameter(ICS                 *ics,
             ics->detectorLineAvgCnt[channel] = value;
             ics->detectorLineAvgCntState[channel] = state;
             break;
+        case ICS_SENSOR_DETECTOR_NOISE_GAIN:
+            ics->detectorNoiseGain[channel] = value;
+            ics->detectorNoiseGainState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_SCALE:
+            ics->detectorScale[channel] = value;
+            ics->detectorScaleState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_STRETCH:
+            ics->detectorStretch[channel] = value;
+            ics->detectorStretchState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_ROT:
+            ics->detectorRot[channel] = value;
+            ics->detectorRotState[channel] = state;
+            break;
         case ICS_SENSOR_STED_LAMBDA:
             ics->stedLambda[channel] = value;
             ics->stedLambdaState[channel] = state;
@@ -902,7 +1003,7 @@ Ics_Error IcsSetSensorParameter(ICS                 *ics,
 }
 
 
-/* Set the state of a vectgor sensor parameter. */
+/* Set the state of a vector sensor parameter. */
 Ics_Error IcsSetSensorParameterVector(ICS                 *ics,
                                       Ics_SensorParameter  parameter,
                                       int                  channel,
@@ -926,9 +1027,64 @@ Ics_Error IcsSetSensorParameterVector(ICS                 *ics,
             }
             ics->spimPlanePropDirState[channel] = state;
             break;
+        case ICS_SENSOR_DETECTOR_SENSITIVITY:
+            if (nValues < 0 || nValues > ics->sensorDetectors)
+                return IcsErr_NotValidAction;
+            for (j = 0; j < nValues; j++) {
+                ics->detectorSensitivity[channel][j] = values[j];
+            }
+            ics->detectorSensitivityState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_RADIUS:
+            if (nValues < 0 || nValues > ics->sensorDetectors)
+                return IcsErr_NotValidAction;
+            for (j = 0; j < nValues; j++) {
+                ics->detectorRadius[channel][j] = values[j];
+            }
+            ics->detectorRadiusState[channel] = state;
+            break; 
         default:
-            return IcsErr_NotValidAction;
-    }
+            return IcsErr_NotValidAction; }
+
+    return IcsErr_Ok;
+}
+
+
+/* Set the state of a matrix sensor parameter. *values must be a flattened
+   [n][m] array, not an array of arrays. */
+Ics_Error IcsSetSensorParameterMatrix(ICS                  *ics,
+                                      Ics_SensorParameter   parameter,
+                                      int                   channel,
+                                      int                   nValues,
+                                      int                   mValues,
+                                      double               *values,
+                                      Ics_SensorState       state)
+{
+    int i, j;
+
+
+    if ((ics == NULL) || (ics->fileMode == IcsFileMode_read))
+        return IcsErr_NotValidAction;
+
+    if (channel < 0 || channel >= ics->sensorChannels)
+        return IcsErr_NotValidAction;
+
+    switch (parameter) {
+        case ICS_SENSOR_DETECTOR_OFFSET:
+            if (nValues < 0 || nValues > ics->sensorDetectors)
+                return IcsErr_NotValidAction;
+            if (mValues < 0 || mValues > 3)
+                return IcsErr_NotValidAction;
+            for (i= 0; i < nValues; i++) {
+                for (j= 0; j < mValues; j++) {
+                    ics->detectorOffset[channel][i][j] =
+                        values[i * mValues + j];
+                }
+            }
+            ics->detectorOffsetState[channel] = state;
+            break;
+        default:
+            return IcsErr_NotValidAction; }
 
     return IcsErr_Ok;
 }
@@ -978,6 +1134,18 @@ Ics_Error IcsSetSensorParameterString(ICS                 *ics,
         return IcsErr_NotValidAction;
 
     switch (parameter) {
+        case ICS_SENSOR_DETECTOR_MIRROR:
+            IcsStrCpy(ics->detectorMirror[channel], value, ICS_STRLEN_TOKEN);
+            ics->detectorMirrorState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_MODEL:
+            IcsStrCpy(ics->detectorModel[channel], value, ICS_STRLEN_TOKEN);
+            ics->detectorModelState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_REDUCEHIST:
+            IcsStrCpy(ics->detectorRedHist[channel], value, ICS_STRLEN_TOKEN);
+            ics->detectorRedHistState[channel] = state;
+            break;
         case ICS_SENSOR_IMAGING_DIRECTION:
             IcsStrCpy(ics->imagingDirection[channel], value, ICS_STRLEN_TOKEN);
             ics->imagingDirectionState[channel] = state;
@@ -993,6 +1161,10 @@ Ics_Error IcsSetSensorParameterString(ICS                 *ics,
         case ICS_SENSOR_SCATTER_MODEL:
             IcsStrCpy(ics->scatterModel[channel], value, ICS_STRLEN_TOKEN);
             ics->scatterModelState[channel] = state;
+            break;
+        case ICS_SENSOR_DESCRIPTION:
+            IcsStrCpy(ics->description[channel], value, ICS_STRLEN_TOKEN);
+            ics->descriptionState[channel] = state;
             break;
         default:
             return IcsErr_NotValidAction;

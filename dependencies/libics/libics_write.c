@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2019:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -140,7 +140,7 @@ static Ics_Error icsAddLastToken(char      *line,
 }
 
 
-static Ics_Error icsAddTokenWithIndex(char        *line,
+static Ics_Error icsAddTokenWithIndex(char       *line,
                                       Ics_Token   token,
                                       const char *index)
 {
@@ -155,6 +155,32 @@ static Ics_Error icsAddTokenWithIndex(char        *line,
     strcat(line, tokenName);
     strcat(line, "[");
     strcat(line, index);
+    strcat(line, "]");
+    IcsAppendChar(line, ICS_FIELD_SEP);
+
+    return error;
+}
+
+
+static Ics_Error icsAddTokenWith2Indices(char       *line,
+                                         Ics_Token   token,
+                                         const char *index1,
+                                         const char *index2)
+{
+    ICSINIT;
+    char tokenName[ICS_STRLEN_TOKEN];
+
+
+    error = icsToken2Str(token, tokenName);
+    if (error) return error;
+    if (strlen(line) + strlen(tokenName) + strlen(index1) + strlen(index2) +
+        6 > ICS_LINE_LENGTH)
+        return IcsErr_LineOverflow;
+    strcat(line, tokenName);
+    strcat(line, "[");
+    strcat(line, index1);
+    strcat(line, "][");
+    strcat(line, index2);
     strcat(line, "]");
     IcsAppendChar(line, ICS_FIELD_SEP);
 
@@ -668,19 +694,35 @@ do {                                                        \
 } while (0)
 
 
-#define ICS_ADD_SENSOR_DOUBLE_INDEX(TOKEN, FIELD, TAG, IDX)             \
-do {                                                                    \
-    problem = icsFirstToken(line, ICSTOK_SENSOR);                       \
-    problem |= icsAddToken(line, ICSTOK_SPARAMS);                       \
-    problem |= icsAddTokenWithIndex(line, TOKEN, TAG);                  \
-    for (i = 0; i < chans - 1; i++) {                                   \
-        problem |= icsAddDouble(line, icsStruct->FIELD[i][IDX]);        \
-    }                                                                   \
+#define ICS_ADD_SENSOR_DOUBLE_INDEX(TOKEN, FIELD, TAG, IDX)              \
+do {                                                                     \
+    problem = icsFirstToken(line, ICSTOK_SENSOR);                        \
+    problem |= icsAddToken(line, ICSTOK_SPARAMS);                        \
+    problem |= icsAddTokenWithIndex(line, TOKEN, TAG);                   \
+    for (i = 0; i < chans - 1; i++) {                                    \
+        problem |= icsAddDouble(line, icsStruct->FIELD[i][IDX]);         \
+    }                                                                    \
     problem |= icsAddLastDouble(line, icsStruct->FIELD[chans - 1][IDX]); \
-    if (!problem) {                                                     \
-        error = icsAddLine(line, fp);                                   \
-        if (error) return error;                                        \
-    }                                                                   \
+    if (!problem) {                                                      \
+        error = icsAddLine(line, fp);                                    \
+        if (error) return error;                                         \
+    }                                                                    \
+} while (0)
+
+
+#define ICS_ADD_SENSOR_DOUBLE_2INDICES(TOKEN, FIELD, TAG1, TAG2, IDX1, IDX2)   \
+do {                                                                           \
+    problem = icsFirstToken(line, ICSTOK_SENSOR);                              \
+    problem |= icsAddToken(line, ICSTOK_SPARAMS);                              \
+    problem |= icsAddTokenWith2Indices(line, TOKEN, TAG1, TAG2);               \
+    for (i = 0; i < chans - 1; i++) {                                          \
+        problem |= icsAddDouble(line, icsStruct->FIELD[i][IDX1][IDX2]);        \
+    }                                                                          \
+    problem |= icsAddLastDouble(line, icsStruct->FIELD[chans - 1][IDX1][IDX2]);\
+    if (!problem) {                                                            \
+        error = icsAddLine(line, fp);                                          \
+        if (error) return error;                                               \
+    }                                                                          \
 } while (0)
 
 
@@ -721,14 +763,18 @@ static Ics_Error writeIcsSensorData(Ics_Header *icsStruct,
 {
     ICSINIT;
     unsigned int    problem;
-    int  i, chans;
+    int  i, j, chans, detectors;
     char line[ICS_LINE_LENGTH];
-
+    char tag[ICS_STRLEN_OTHER];
+    
 
     if (icsStruct->writeSensor) {
 
         chans = icsStruct->sensorChannels;
         if (chans > ICS_MAX_LAMBDA) return IcsErr_TooManyChans;
+
+        detectors = icsStruct->sensorDetectors;
+        if (detectors > ICS_MAX_DETECT) return IcsErr_TooManyDetectors;
 
         problem = icsFirstToken(line, ICSTOK_SENSOR);
         problem |= icsAddToken(line, ICSTOK_TYPE);
@@ -758,6 +804,15 @@ static Ics_Error writeIcsSensorData(Ics_Header *icsStruct,
             if (error) return error;
         }
 
+        problem = icsFirstToken(line, ICSTOK_SENSOR);
+        problem |= icsAddToken(line, ICSTOK_SPARAMS);
+        problem |= icsAddToken(line, ICSTOK_DETECTORS);
+        problem |= icsAddLastInt(line, detectors);
+        if (!problem) {
+            error = icsAddLine(line, fp);
+            if (error) return error;
+        }        
+
         ICS_ADD_SENSOR_STRING(ICSTOK_IMDIR, imagingDirection);
         ICS_ADD_SENSOR_DOUBLE_ONE(ICSTOK_NUMAPER, numAperture);
         ICS_ADD_SENSOR_INT(ICSTOK_OBJQ, objectiveQuality);
@@ -772,12 +827,39 @@ static Ics_Error writeIcsSensorData(Ics_Header *icsStruct,
         ICS_ADD_SENSOR_INT(ICSTOK_PHOTCNT, exPhotonCnt);
         ICS_ADD_SENSOR_DOUBLE_ONE(ICSTOK_IFACE1, interfacePrimary);
         ICS_ADD_SENSOR_DOUBLE_ONE(ICSTOK_IFACE2, interfaceSecondary);
+        ICS_ADD_SENSOR_STRING(ICSTOK_DESCRIPTION, description);
         
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETMAG, detectorMagn);
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETPPU, detectorPPU);
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETBASELINE, detectorBaseline);
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETLNAVGCNT, detectorLineAvgCnt);
+        ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETNOISEGAIN, detectorNoiseGain);
 
+        for (j = 0; j < icsStruct->sensorDetectors; j++) {
+            sprintf(tag, "%d", j);
+            ICS_ADD_SENSOR_DOUBLE_2INDICES(ICSTOK_DETOFFSET, detectorOffset,
+                                           tag, "X", j, 0);
+            ICS_ADD_SENSOR_DOUBLE_2INDICES(ICSTOK_DETOFFSET, detectorOffset,
+                                           tag, "Y", j, 1);
+            ICS_ADD_SENSOR_DOUBLE_2INDICES(ICSTOK_DETOFFSET, detectorOffset,
+                                           tag, "Z", j, 2);
+        }
+        for (j = 0; j < icsStruct->sensorDetectors; j++) {
+            sprintf(tag, "%d", j);
+            ICS_ADD_SENSOR_DOUBLE_INDEX(ICSTOK_DETSENS, detectorSensitivity,
+                                        tag, j);
+        }
+        for (j = 0; j < icsStruct->sensorDetectors; j++) {
+            sprintf(tag, "%d", j);
+            ICS_ADD_SENSOR_DOUBLE_INDEX(ICSTOK_DETRADIUS, detectorRadius,
+                                        tag, j);
+        }
+        ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETSCALE, detectorScale);
+        ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETSTRETCH, detectorStretch);
+        ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETROT, detectorRot);
+        ICS_ADD_SENSOR_STRING(ICSTOK_DETMIRROR, detectorMirror);
+        ICS_ADD_SENSOR_STRING(ICSTOK_DETMODEL, detectorModel);
+        ICS_ADD_SENSOR_STRING(ICSTOK_DETREDUCEHIST, detectorRedHist);
         ICS_ADD_SENSOR_STRING(ICSTOK_STEDDEPLMODE, stedDepletionMode);
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_STEDLAMBDA, stedLambda);
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_STEDSATFACTOR, stedSatFactor);
@@ -866,11 +948,23 @@ static Ics_Error writeIcsSensorStates(Ics_Header *icsStruct,
         ICS_ADD_SENSOR_STATE(ICSTOK_PHOTCNT, exPhotonCnt);
         ICS_ADD_SENSOR_STATE_ONE(ICSTOK_IFACE1, interfacePrimary);
         ICS_ADD_SENSOR_STATE_ONE(ICSTOK_IFACE2, interfaceSecondary);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DESCRIPTION, description);
         
         ICS_ADD_SENSOR_STATE(ICSTOK_DETMAG, detectorMagn);
         ICS_ADD_SENSOR_STATE(ICSTOK_DETPPU, detectorPPU);
         ICS_ADD_SENSOR_STATE(ICSTOK_DETBASELINE, detectorBaseline);
         ICS_ADD_SENSOR_STATE(ICSTOK_DETLNAVGCNT, detectorLineAvgCnt);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETNOISEGAIN, detectorNoiseGain);
+
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETOFFSET, detectorOffset);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETSENS, detectorSensitivity);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETRADIUS, detectorRadius);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETSCALE, detectorScale);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETSTRETCH, detectorStretch);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETROT, detectorRot);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETMIRROR, detectorMirror);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETMODEL, detectorModel);
+        ICS_ADD_SENSOR_STATE(ICSTOK_DETREDUCEHIST, detectorRedHist);
 
         ICS_ADD_SENSOR_STATE(ICSTOK_STEDDEPLMODE, stedDepletionMode);
         ICS_ADD_SENSOR_STATE(ICSTOK_STEDLAMBDA, stedLambda);

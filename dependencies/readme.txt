@@ -4,7 +4,7 @@ doctest/    doctest 2.4.8     https://github.com/onqtam/doctest
 
 eigen3/     Eigen 3.3.9       https://eigen.tuxfamily.org
 
-libics/     libics v.1.6.2    https://github.com/svi-opensource/libics
+libics/     libics v.1.6.5    https://github.com/svi-opensource/libics
 libjpeg/    libjpeg 9c        https://www.ijg.org
 libtiff/    LibTIFF 4.0.10    https://gitlab.com/libtiff/libtiff
 zlib/       zlib 1.2.11       http://www.zlib.net

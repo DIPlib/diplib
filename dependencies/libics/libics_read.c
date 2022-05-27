@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2019:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -215,13 +215,15 @@ static Ics_Error getIcsFileName(FILE       *fi,
 static Ics_Token getIcsToken(char           *str,
                              Ics_SymbolList *listSpec)
 {
-    int i;
+    int       i;
     Ics_Token token = ICSTOK_NONE;
 
-
+        /* Because some older ics versions have uncapitalized subsubcat
+           symbols (e.g. "channels" instead of the current "Channels"), do a
+           case-insensitive string comparison for backward compatibility. */
     if (str != NULL) {
         for (i = 0; i < listSpec->entries; i++) {
-            if (strcmp(listSpec->list[i].name, str) == 0) {
+            if (ICSSTRCASECMP(listSpec->list[i].name, str) == 0) {
                 token = listSpec->list[i].token;
             }
         }
@@ -236,17 +238,19 @@ static Ics_Error getIcsCat(char        *str,
                            Ics_Token   *cat,
                            Ics_Token   *subCat,
                            Ics_Token   *subSubCat,
-                           const char **index)
+                           const char **index1,
+                           const char **index2)
 {
     ICSINIT;
-    char *token, buffer[ICS_LINE_LENGTH], *idx;
+    char *token, buffer[ICS_LINE_LENGTH], *idx1, *idx2;
 #ifdef HAVE_STRTOK_R
     char *saveptr;
 #endif
 
 
     *subCat = *subSubCat = ICSTOK_NONE;
-    *index = NULL;
+    *index1 = NULL;
+    *index2 = NULL;
 
     IcsStrCpy(buffer, str, ICS_LINE_LENGTH);
     token = STRTOK(buffer, seps);
@@ -259,11 +263,17 @@ static Ics_Error getIcsCat(char        *str,
         if (*subCat == ICSTOK_SPARAMS || *subCat == ICSTOK_SSTATES) {
             token = STRTOK(NULL, seps);
             if (token[strlen(token) - 1] == ']') {
-                idx = strchr(token, '[');
-                if (idx) {
-                    token[strlen(token) - 1] = '\0';
-                    *idx = '\0';
-                    *index = idx + 1;
+                idx1 = strchr(token, '[');
+                if (idx1) {
+                    idx2 = strchr(idx1 + 1, '[');
+                        /* Todo: Check that this line is indeed not
+                                 necessary. */
+                        /* token[strlen(token) - 1] = '\0'; */
+                    *idx1 = '\0';
+                    *index1 = idx1 + 1;
+                    if (idx2) {
+                        *index2 = idx2 + 1;
+                    }
                 }
             }
             *subSubCat = getIcsToken(token, &G_SubSubCategories);
@@ -379,7 +389,9 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
     char             seps[3], *ptr, *data;
     char             line[ICS_LINE_LENGTH];
     Ics_Token        cat, subCat, subSubCat;
-    const char      *idx;
+    int              detID;
+    const char      *idx1;
+    const char      *idx2;
         /* These are temporary buffers to hold the data read until it is copied
            to the Ics_Header structure. This is needed because the Ics_Header
            structure is made to look more like we like to see images, compared
@@ -423,10 +435,11 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
 
     if (!error) error = getIcsVersion(fp, seps, &(icsStruct->version));
     if (!error) error = getIcsFileName(fp, seps);
-
+    
     while (!end && !error
            && (icsFGetStr(line, ICS_LINE_LENGTH, fp, seps[1]) != NULL)) {
-        if (getIcsCat(line, seps, &cat, &subCat, &subSubCat, &idx) != IcsErr_Ok)
+        if (getIcsCat(line, seps, &cat, &subCat, &subSubCat, &idx1, &idx2) !=
+            IcsErr_Ok)
             continue;
         ptr = STRTOK(line, seps);
         i = 0;
@@ -629,7 +642,16 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                     int v = atoi(ptr);
                                     icsStruct->sensorChannels = v;
                                     if (v > ICS_MAX_LAMBDA) {
-                                        error = IcsErr_TooManyChans;
+                                        error = IcsErr_TooManyChans; 
+                                    }
+                                }
+                                break;
+                            case ICSTOK_DETECTORS:
+                                if (ptr != NULL) {
+                                    int v = atoi(ptr);
+                                    icsStruct->sensorDetectors = v;
+                                    if (v > ICS_MAX_DETECT) {
+                                        error = IcsErr_TooManyDetectors; 
                                     }
                                 }
                                 break;
@@ -675,6 +697,9 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                             case ICSTOK_IFACE2:
                                 ICS_SET_SENSOR_DOUBLE_ONE(interfaceSecondary);
                                 break;
+                            case ICSTOK_DESCRIPTION:
+                                ICS_SET_SENSOR_STRING(description);
+                                break;
                             case ICSTOK_DETMAG:
                                 ICS_SET_SENSOR_DOUBLE(detectorMagn);
                                 break;
@@ -686,6 +711,96 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                 break;
                             case ICSTOK_DETLNAVGCNT:
                                 ICS_SET_SENSOR_DOUBLE(detectorLineAvgCnt);
+                                break;
+                            case ICSTOK_DETNOISEGAIN:
+                                ICS_SET_SENSOR_DOUBLE(detectorNoiseGain);
+                                break;
+                            case ICSTOK_DETOFFSET:
+                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
+                                    if (idx1 && idx2) {
+                                        detID = atoi(idx1);
+                                        switch (idx2[0]) {
+                                            case 'X':
+                                                icsStruct->
+                                                    detectorOffset[i++][detID][0]
+                                                    = atof(ptr);
+                                                break;
+                                            case 'Y':
+                                                icsStruct->
+                                                    detectorOffset[i++][detID][1]
+                                                    = atof(ptr);
+                                                break;
+                                            case 'Z':
+                                                icsStruct->
+                                                    detectorOffset[i++][detID][2]
+                                                    = atof(ptr);
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                        ptr = STRTOK(NULL, seps);
+                                    } else {
+                                        error = IcsErr_MissSensorSubSubCatIndex;
+                                        break;
+                                    }
+                                }
+                                break;
+                            case ICSTOK_DETSENS:
+                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
+                                    if (idx1) {
+                                        detID = atoi(idx1);
+                                        icsStruct->detectorSensitivity[i++][detID]
+                                            = atof(ptr);
+                                        ptr = STRTOK(NULL, seps);
+                                    } else {
+                                        error = IcsErr_MissSensorSubSubCatIndex;
+                                        break;
+                                    }
+                                }
+                                break;
+                            case ICSTOK_DETRADIUS:
+                                if (idx1) {
+                                    /* This supports ics files with a non-vector
+                                       detector radius. */
+                                    while (ptr != NULL && i < ICS_MAX_LAMBDA) {
+                                        detID = atoi(idx1);
+                                        icsStruct->detectorRadius[i++][detID]
+                                            = atof(ptr);
+                                        ptr = STRTOK(NULL, seps);
+                                    }
+                                } else {
+                                    printf("Using non-vector detRadius.\n");
+                                    if (ptr != NULL) {
+                                        printf("Filling vector with single "
+                                               "value.\n");
+                                        int k;
+                                        for (i = 0; i < ICS_MAX_LAMBDA; i++) {
+                                            for (k = 0; k < ICS_MAX_DETECT;
+                                                 k++) {
+                                                icsStruct->detectorRadius[i][k]
+                                                    = atof(ptr);
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                            case ICSTOK_DETSCALE:
+                                ICS_SET_SENSOR_DOUBLE(detectorScale);
+                                break;
+                            case ICSTOK_DETSTRETCH:
+                                ICS_SET_SENSOR_DOUBLE(detectorStretch);
+                                break;
+                            case ICSTOK_DETROT:
+                                ICS_SET_SENSOR_DOUBLE(detectorRot);
+                                break;
+                            case ICSTOK_DETMIRROR:
+                                ICS_SET_SENSOR_STRING(detectorMirror);
+                                break;
+                            case ICSTOK_DETMODEL:
+                                ICS_SET_SENSOR_STRING(detectorModel);
+                                break;
+                            case ICSTOK_DETREDUCEHIST:
+                                ICS_SET_SENSOR_STRING(detectorRedHist);
                                 break;
                             case ICSTOK_STEDDEPLMODE:
                                 ICS_SET_SENSOR_STRING(stedDepletionMode);
@@ -716,23 +831,28 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                 break;
                             case ICSTOK_SPIMPLANEPROPDIR:
                                 while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    switch (idx[0]) {
-                                        case  'X':
-                                            icsStruct->spimPlanePropDir[i++][0]
-                                                = atof(ptr);
-                                            break;
-                                        case  'Y':
-                                            icsStruct->spimPlanePropDir[i++][1]
-                                                = atof(ptr);
-                                            break;
-                                        case  'Z':
-                                            icsStruct->spimPlanePropDir[i++][2]
-                                                = atof(ptr);
-                                            break;
-                                        default:
-                                            break;
+                                    if (idx1) {
+                                        switch (idx1[0]) {
+                                            case 'X':
+                                                icsStruct->spimPlanePropDir[i++][0]
+                                                    = atof(ptr);
+                                                break;
+                                            case 'Y':
+                                                icsStruct->spimPlanePropDir[i++][1]
+                                                    = atof(ptr);
+                                                break;
+                                            case 'Z':
+                                                icsStruct->spimPlanePropDir[i++][2]
+                                                    = atof(ptr);
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                        ptr = STRTOK(NULL, seps);
+                                    } else {
+                                        error = IcsErr_MissSensorSubSubCatIndex;
+                                        break;
                                     }
-                                    ptr = STRTOK(NULL, seps);
                                 }
                                 break;
                             case ICSTOK_SPIMPLANECENTEROFF:
@@ -801,6 +921,9 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                             case ICSTOK_IFACE2:
                                 ICS_SET_SENSOR_STATE_ONE(interfaceSecondary);
                                 break;
+                            case ICSTOK_DESCRIPTION:
+                                ICS_SET_SENSOR_STATE(description);
+                                break;
                             case ICSTOK_DETMAG:
                                 ICS_SET_SENSOR_STATE(detectorMagn);
                                 break;
@@ -812,6 +935,36 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                 break;
                             case ICSTOK_DETLNAVGCNT:
                                 ICS_SET_SENSOR_STATE(detectorLineAvgCnt);
+                                break;
+                            case ICSTOK_DETNOISEGAIN:
+                                ICS_SET_SENSOR_STATE(detectorNoiseGain);
+                                break;
+                            case ICSTOK_DETOFFSET:
+                                ICS_SET_SENSOR_STATE(detectorOffset);
+                                break;
+                            case ICSTOK_DETSENS:
+                                ICS_SET_SENSOR_STATE(detectorSensitivity);
+                                break;
+                            case ICSTOK_DETRADIUS:
+                                ICS_SET_SENSOR_STATE(detectorRadius);
+                                break;
+                            case ICSTOK_DETSCALE:
+                                ICS_SET_SENSOR_STATE(detectorScale);
+                                break;
+                            case ICSTOK_DETSTRETCH:
+                                ICS_SET_SENSOR_STATE(detectorStretch);
+                                break;
+                            case ICSTOK_DETROT:
+                                ICS_SET_SENSOR_STATE(detectorRot);
+                                break;
+                            case ICSTOK_DETMIRROR:
+                                ICS_SET_SENSOR_STATE(detectorMirror);
+                                break;
+                            case ICSTOK_DETMODEL:
+                                ICS_SET_SENSOR_STATE(detectorModel);
+                                break;
+                            case ICSTOK_DETREDUCEHIST:
+                                ICS_SET_SENSOR_STATE(detectorRedHist);
                                 break;
                             case ICSTOK_STEDDEPLMODE:
                                 ICS_SET_SENSOR_STATE(stedDepletionMode);

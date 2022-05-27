@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2019:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -321,7 +321,7 @@ Ics_Error IcsOpenIcs(FILE **fpp,
 /* Initialize the Ics_Header structure. */
 void IcsInit(Ics_Header *icsStruct)
 {
-    int i;
+    int i, j;
 
     icsStruct->version = 2; /* We write an ICS v.2.0 as default */
     icsStruct->fileMode = IcsFileMode_write;
@@ -369,6 +369,7 @@ void IcsInit(Ics_Header *icsStruct)
     icsStruct->interfaceSecondary = 0.0;
     icsStruct->interfaceSecondaryState = IcsSensorState_default;
     icsStruct->sensorChannels = 0;
+    icsStruct->sensorDetectors = 0;
     for (i = 0; i < ICS_MAX_LAMBDA; i++) {
         icsStruct->type[i][0] = '\0';
         icsStruct->imagingDirection[i][0] = '\0';
@@ -387,6 +388,8 @@ void IcsInit(Ics_Header *icsStruct)
         icsStruct->lambdaEmState[i] = IcsSensorState_default;
         icsStruct->exPhotonCnt[i] = 1;
         icsStruct->exPhotonCntState[i] = IcsSensorState_default;
+        icsStruct->description[i][0] = '\0';
+        icsStruct->descriptionState[i] = IcsSensorState_default;
         icsStruct->detectorMagn[i] = 1.0;
         icsStruct->detectorMagnState[i] = IcsSensorState_default;
         icsStruct->detectorPPU[i] = 1.0;
@@ -395,6 +398,35 @@ void IcsInit(Ics_Header *icsStruct)
         icsStruct->detectorBaselineState[i] = IcsSensorState_default;
         icsStruct->detectorLineAvgCnt[i] = 1.0;
         icsStruct->detectorLineAvgCntState[i] = IcsSensorState_default;
+        icsStruct->detectorNoiseGain[i] = 1.0;
+        icsStruct->detectorNoiseGainState[i] = IcsSensorState_default;
+            /* The per detector parameters must be initialized for each
+               channel for each detector. */
+        for (j = 0; j < ICS_MAX_DETECT; j++) {
+            icsStruct->detectorOffset[i][j][0]   = 0.0;
+            icsStruct->detectorOffset[i][j][1]   = 0.0;
+            icsStruct->detectorOffset[i][j][2]   = 0.0;
+            icsStruct->detectorSensitivity[i][j] = 1.0;
+            icsStruct->detectorRadius[i][j]      = 0.0;
+        }
+
+        icsStruct->detectorScale[i] = 1.0;
+        icsStruct->detectorScaleState[i] = IcsSensorState_default;
+        icsStruct->detectorStretch[i] = 1.0;
+        icsStruct->detectorStretchState[i] = IcsSensorState_default;
+        icsStruct->detectorRot[i] = 0.0;
+        icsStruct->detectorRotState[i] = IcsSensorState_default;
+        icsStruct->detectorMirror[i][0] = 'N';
+        icsStruct->detectorMirror[i][1] = '\0';
+        icsStruct->detectorMirrorState[i] = IcsSensorState_default;
+        icsStruct->detectorModel[i][0] = '\0';
+        icsStruct->detectorModelState[i] = IcsSensorState_default;
+        icsStruct->detectorRedHist[i][0] = '\0';
+        icsStruct->detectorRedHistState[i] = IcsSensorState_default;
+        
+        icsStruct->detectorOffsetState[i] = IcsSensorState_default;
+        icsStruct->detectorSensitivityState[i] = IcsSensorState_default;
+        icsStruct->detectorRadiusState[i] = IcsSensorState_default;
         icsStruct->stedDepletionMode[i][0] = '\0';
         icsStruct->stedDepletionModeState[i] = IcsSensorState_default;
         icsStruct->stedLambda[i] = 0.0;

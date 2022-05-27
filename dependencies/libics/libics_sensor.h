@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2018:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -81,6 +81,13 @@ ICSEXPORT int IcsGetSensorChannels(const ICS *ics);
 /* Set the number of sensor channels. */
 ICSEXPORT Ics_Error IcsSetSensorChannels(ICS *ics,
                                          int  channels);
+
+/* Get the number of sensor detectors. */
+ICSEXPORT int IcsGetSensorDetectors(const ICS *ics);
+
+/* Set the number of sensor detectors. */
+ICSEXPORT Ics_Error IcsSetSensorDetectors(ICS *ics,
+                                          int  detectors);
 
 /* Get the pinhole radius for a sensor channel. */
 ICSEXPORT double IcsGetSensorPinholeRadius(const ICS *ics,
@@ -226,18 +233,27 @@ ICSEXPORT Ics_Error IcsGetSensorParameter(const ICS           *ics,
                                           double              *value,
                                           Ics_SensorState     *state);
 
-Ics_Error IcsGetSensorParameterVector(const ICS            *ics,
-                                      Ics_SensorParameter   parameter,
-                                      int                   channel,
-                                      const double        **values,
-                                      Ics_SensorState      *state);
+/* Get the value and state of a vector parameter. */
+ICSEXPORT Ics_Error IcsGetSensorParameterVector(const ICS            *ics,
+                                                Ics_SensorParameter   parameter,
+                                                int                   channel,
+                                                const double        **values,
+                                                Ics_SensorState      *state);
+
+/* Get the value and state of a matrix parameter. Sets **values to a pointer to
+   the matrix, which effectively becomes a flattened array. */
+ICSEXPORT Ics_Error IcsGetSensorParameterMatrix(const ICS            *ics,
+                                                Ics_SensorParameter   parameter,
+                                                int                   channel,
+                                                const double        **values,
+                                                Ics_SensorState      *state);
 
 
 /* Get the value and state of a sensor parameter with an integer value. */
 ICSEXPORT Ics_Error IcsGetSensorParameterInt(const ICS           *ics,
                                              Ics_SensorParameter  parameter,
                                              int                  channel,
-                                             int              *value,
+                                             int                 *value,
                                              Ics_SensorState     *state);
 
 /* Get the value and state of a sensor parameter with a string value. */
@@ -254,12 +270,23 @@ ICSEXPORT Ics_Error IcsSetSensorParameter(ICS                 *ics,
                                           double               value,
                                           Ics_SensorState      state);
 
+/* Set the state of a vector parameter. */
 ICSEXPORT Ics_Error IcsSetSensorParameterVector(ICS                 *ics,
                                                 Ics_SensorParameter  parameter,
                                                 int                  channel,
                                                 int                  nValues,
                                                 double              *values,
                                                 Ics_SensorState      state);
+
+/* Set the state of a matrix parameter. *values must be a flattened
+   [n][m] array, not an array of arrays. */
+ICSEXPORT Ics_Error IcsSetSensorParameterMatrix(ICS                  *ics,
+                                                Ics_SensorParameter   parameter,
+                                                int                   channel,
+                                                int                   nValues,
+                                                int                   mValues,
+                                                double               *values,
+                                                Ics_SensorState       state);
 
 
 /* Set the state of an integer sensor parameter. */

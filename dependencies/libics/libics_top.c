@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright 2015-2017:
+ * Copyright 2015-2018:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
  *   https://www.svi.nl
@@ -1222,9 +1222,6 @@ const char *IcsGetErrorText(Ics_Error error)
         case IcsErr_EndOfStream:
             msg = "Unexpected end of stream";
             break;
-        case IcsErr_FailWriteLine:
-            msg = "Failed to write a line in .ics file";
-            break;
         case IcsErr_FCloseIcs:
             msg = "File close error on .ics file";
             break;
@@ -1256,8 +1253,8 @@ const char *IcsGetErrorText(Ics_Error error)
         case IcsErr_FWriteIds:
             msg = "File write error on .ids file";
             break;
-        case IcsErr_IllegalROI:
-            msg = "The given ROI extends outside the image";
+        case IcsErr_FailWriteLine:
+            msg = "Failed to write a line in .ics file";
             break;
         case IcsErr_IllIcsToken:
             msg = "Illegal ICS token detected";
@@ -1265,6 +1262,9 @@ const char *IcsGetErrorText(Ics_Error error)
         case IcsErr_IllParameter:
             msg = "A function parameter has a value that is not legal or does "
                 "not match with a value previously given";
+            break;
+        case IcsErr_IllegalROI:
+            msg = "The given ROI extends outside the image";
             break;
         case IcsErr_LineOverflow:
             msg = "Line overflow in .ics file";
@@ -1274,9 +1274,6 @@ const char *IcsGetErrorText(Ics_Error error)
             break;
         case IcsErr_MissCat:
             msg = "Missing main category";
-            break;
-        case IcsErr_MissingData:
-            msg = "There is no Data defined";
             break;
         case IcsErr_MissLayoutSubCat:
             msg = "Missing layout subcategory";
@@ -1293,8 +1290,14 @@ const char *IcsGetErrorText(Ics_Error error)
         case IcsErr_MissSensorSubSubCat:
             msg = "Missing sensor subsubcategory";
             break;
+        case IcsErr_MissSensorSubSubCatIndex:
+            msg = "Missing sensor subsubcategory index";
+            break;
         case IcsErr_MissSubCat:
             msg = "Missing sub category";
+            break;
+        case IcsErr_MissingData:
+            msg = "There is no Data defined";
             break;
         case IcsErr_NoLayout:
             msg = "Layout parameters missing or not defined";
@@ -1307,6 +1310,9 @@ const char *IcsGetErrorText(Ics_Error error)
             break;
         case IcsErr_NotValidAction:
             msg = "The function won't work on the ICS given";
+            break;
+        case IcsErr_TooManyDetectors:
+            msg = "Too many detectors specified";
             break;
         case IcsErr_TooManyChans:
             msg = "Too many channels specified";
