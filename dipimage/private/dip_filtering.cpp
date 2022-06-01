@@ -75,41 +75,18 @@ dip::OneDimensionalFilter GetFilter(
    return out;
 }
 
-enum class ConvolutionMethod {
-      SEPARABLE,
-      DIRECT,
-      FOURIER
-};
-
 void convolve( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 1 );
    DML_MAX_ARGS( 3 );
    dip::StringArray bc = nrhs > 1 ? dml::GetStringArray( prhs[ 1 ] ) : dip::StringArray{};
-   dip::String methodStr = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : "best";
-   dip::OneDimensionalFilterArray filterArray;  // for separable convolution
-   dip::Image filter;                           // for other methods
-   ConvolutionMethod method = ConvolutionMethod::SEPARABLE;
    mxArray const* mxFilter = prhs[ 0 ];
    if( mxIsNumeric( mxFilter ) || mxIsClass( mxFilter, "dip_image" )) {
-      filter = dml::GetImage( mxFilter );
-      if(( methodStr == "best" ) || ( methodStr == "separable" )) {
-         filterArray = dip::SeparateFilter( filter );
-         if( filterArray.empty()) {
-            if( filter.NumberOfPixels() > 7 * 7 ) { // note that this is an arbitrary threshold, and should probably depend also on log2(image size)
-               method = ConvolutionMethod::FOURIER;
-            } else {
-               method = ConvolutionMethod::DIRECT;
-            }
-         } // else, `method` is already `SEPARABLE`
-      } else if( methodStr == "direct" ) {
-         method = ConvolutionMethod::DIRECT;
-      } else if( methodStr == "fourier" ) {
-         method = ConvolutionMethod::FOURIER;
-      } else {
-         DIP_THROW_INVALID_FLAG( methodStr );
-      }
+      dip::String method = nrhs > 2 ? dml::GetString( prhs[ 2 ] ) : "best";
+      dip::Image filter = dml::GetImage( mxFilter );
+      dip::Convolution( in, filter, out, method, bc );
    } else {
-      // A separable filter. We ignore `methodStr` in this case.
+      // A separable filter. We ignore `method` in this case.
+      dip::OneDimensionalFilterArray filterArray;  // for separable convolution
       if( mxIsCell( mxFilter )) {
          DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
          dip::uint n = mxGetNumberOfElements( mxFilter );
@@ -136,17 +113,7 @@ void convolve( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* p
       } else {
          DIP_THROW( "Kernel parameter of unexpected type." );
       }
-   }
-   switch( method ) {
-      case ConvolutionMethod::SEPARABLE:
-         dip::SeparableConvolution( in, out, filterArray, bc );
-         break;
-      case ConvolutionMethod::DIRECT:
-         dip::GeneralConvolution( in, filter, out, bc );
-         break;
-      case ConvolutionMethod::FOURIER:
-         dip::ConvolveFT( in, filter, out );
-         break;
+      dip::SeparableConvolution( in, out, filterArray, bc );
    }
 }
 

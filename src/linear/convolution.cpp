@@ -608,7 +608,7 @@ void Convolution(
       // Estimate times for the different methods using model fitted with data from one particular machine -- YMMV.
       dfloat n = static_cast< dfloat >( in.NumberOfPixels() );
       dfloat ks = static_cast< dfloat >( filter.Sizes().sum() );
-      dfloat kp = static_cast< dfloat >( filter.Sizes().product() );
+      dfloat kp = static_cast< dfloat >( filter.Sizes().product() ); // TODO: This should count only the non-zero pixels...
       dip::UnsignedArray expandedSizes = in.Sizes();
       expandedSizes += filter.Sizes();
       dfloat nx = static_cast< dfloat >( expandedSizes.product() ); // number of pixels of boundary expanded image

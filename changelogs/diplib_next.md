@@ -60,7 +60,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
-- Added a new parameter to `convolve`, which allows the selection of the computation method.
+- Added a new parameter to `convolve`, which allows the selection of the computation method. The default, automatic
+  selection of the method is now handled by *DIPlib* though the `dip::Convolution()` function. When computing
+  through the Fourier domain, the periodic boundary condition is no longer the default; the operation should now
+  produce the same result (up to rounding error) no matter which computation method is chosen.
 
 (See also changes to *DIPlib*.)
 
