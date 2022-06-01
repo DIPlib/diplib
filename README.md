@@ -57,7 +57,7 @@ our [style guide](https://diplib.org/diplib-docs/styleguide.html) and make sure 
 
 ### Documentation, tutorials
 
-Documentation can always be improved (also, *PyDIP* has hardy any at all!). If you want to help write documentation,
+Documentation can always be improved (also, *PyDIP* has hardly any at all!). If you want to help write documentation,
 or create tutorials for how to use the library, read [`CONTRIBUTING.md`](CONTRIBUTING.md), then submit a
 [pull request on GitHub](https://github.com/DIPlib/diplib/pulls).
 
