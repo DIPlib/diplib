@@ -106,7 +106,7 @@ DIP_EXPORT OneDimensionalFilterArray SeparateFilter( Image const& filter );
 ///
 /// `process` indices which dimensions to process, and can be `{}` to indicate all dimensions are to be processed.
 ///
-/// \see dip::SeparateFilter, dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
+/// \see dip::SeparateFilter, dip::Convolution, dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
 DIP_EXPORT void SeparableConvolution(
       Image const& in,
       Image& out,
@@ -150,7 +150,7 @@ DIP_NODISCARD inline Image SeparableConvolution(
 /// to compute the Fourier transform (see \ref dip::OptimalFourierTransformSize).
 /// The output image will be cropped to the size of the input.
 ///
-/// \see dip::GeneralConvolution, dip::SeparableConvolution, dip::FourierTransform
+/// \see dip::Convolution, dip::GeneralConvolution, dip::SeparableConvolution, dip::FourierTransform
 DIP_EXPORT void ConvolveFT(
       Image const& in,
       Image const& filter,
@@ -190,7 +190,7 @@ DIP_NODISCARD inline Image ConvolveFT(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
 ///
-/// \see dip::ConvolveFT, dip::SeparableConvolution, dip::SeparateFilter, dip::Uniform
+/// \see dip::Convolution, dip::ConvolveFT, dip::SeparableConvolution, dip::SeparateFilter, dip::Uniform
 DIP_EXPORT void GeneralConvolution(
       Image const& in,
       Image const& filter,
@@ -204,6 +204,46 @@ DIP_NODISCARD inline Image GeneralConvolution(
 ) {
    Image out;
    GeneralConvolution( in, filter, out, boundaryCondition );
+   return out;
+}
+
+/// \brief Applies a convolution with a filter kernel (PSF).
+///
+/// Calls either \ref SeparableConvolution, \ref ConvolveFT or \ref GeneralConvolution depending on `method` and
+/// the properties of `filter`. `method` can be one of:
+///
+/// - `"separable"`: Attempts to separate `filter` into 1D kernels using \ref SeparateFilter, and applies
+///   \ref SeparableConvolution if successful. Throws an exception if the filter is not separable.
+/// - `"fourier"`: Calls \ref ConvolveFT.
+/// - `"direct"`: Calls \ref GeneralConvolution.
+/// - `"best"`: Uses the method that is most efficient given the sizes of `in` and `filter`, and whether `filter`
+///   is separable or not. It estimates the cost of each of the methods using simple models that have been fitted
+///   to timing data generated on one specific computer. These costs might not match actual costs on other machines,
+///   but form a suitable default. For applications where performance is critical, it is recommended to time the
+///   operations on the target machine, and explicitly select the best algorithm.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See \ref dip::BoundaryCondition.
+///
+/// When calling \ref ConvolveFT, it never leaves `boundaryCondition` empty, to force the function to pad the
+/// image and use the same boundary condition that other methods would use. This ensures that the function doesn't
+/// produce different results for a different choice of method. To prevent padding, call \ref ConvolveFT directly.
+///
+/// \see dip::GeneralConvolution, dip::ConvolveFT, dip::SeparableConvolution, dip::SeparateFilter, dip::Uniform
+DIP_EXPORT void Convolution(
+      Image const& in,
+      Image const& filter,
+      Image& out,
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {}
+);
+DIP_NODISCARD inline Image Convolution(
+      Image const& in,
+      Image const& filter,
+      String const& method = S::BEST,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   Convolution( in, filter, out, method, boundaryCondition );
    return out;
 }
 

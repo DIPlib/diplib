@@ -150,6 +150,7 @@ constexpr char const* FOURIER = "fourier";
 // Convolution flags
 constexpr char const* SPATIAL = "spatial";
 constexpr char const* FREQUENCY = "frequency";
+constexpr char const* DIRECT = "direct";
 constexpr char const* BEST = "best";
 constexpr char const* EVEN = "even";
 constexpr char const* ODD = "odd";

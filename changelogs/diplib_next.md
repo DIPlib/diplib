@@ -24,6 +24,8 @@ title: "Changes DIPlib 3.x.x"
 - The function `dip::ConvolveFT()` has a new parameter `boundaryCondition`, if used the input image will be
   extended before computing the FFT, and the result cropped after the inverse FFT.
 
+- Added `dip::Convolution()`, a gateway to the three implementations of the convolution.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -76,6 +78,8 @@ title: "Changes DIPlib 3.x.x"
 - Added bindings for `dip::testing::Timer`.
 
 - Added functions `dip.MeanRelativeError()` and `dip.MaximumRelativeError()`.
+
+- Added `dip.Convolution()`, a gateway to the three implementations of the convolution.
 
 ### Changed functionality
 

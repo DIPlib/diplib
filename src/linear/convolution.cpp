@@ -578,6 +578,93 @@ void GeneralConvolution(
    DIP_END_STACK_TRACE
 }
 
+void Convolution(
+      Image const& in,
+      Image const& filter_c,
+      Image& out,
+      String const& method,
+      StringArray const& boundaryCondition
+) {
+   DIP_THROW_IF( !in.IsForged() || !filter_c.IsForged(), E::IMAGE_NOT_FORGED );
+
+   // Ensure the filter has the right dimensionality
+   Image filter = filter_c.QuickCopy();
+   if( filter.Dimensionality() < in.Dimensionality() ) {
+      filter.ExpandDimensionality( in.Dimensionality() );
+   }
+   DIP_THROW_IF( filter.Dimensionality() > in.Dimensionality(), E::DIMENSIONALITIES_DONT_MATCH );
+
+   // Figure out which methods to try
+   bool trySeparable = false;
+   bool tryFourier = false;
+   bool tryDirect = false;
+   if( method == S::DIRECT ) {
+      tryDirect = true;
+   } else if( method == S::FOURIER ) {
+      tryFourier = true;
+   } else if( method == S::SEPARABLE ) {
+      trySeparable = true;
+   } else if( method == S::BEST ) {
+      // Estimate times for the different methods using model fitted with data from one particular machine -- YMMV.
+      dfloat n = static_cast< dfloat >( in.NumberOfPixels() );
+      dfloat ks = static_cast< dfloat >( filter.Sizes().sum() );
+      dfloat kp = static_cast< dfloat >( filter.Sizes().product() );
+      dip::UnsignedArray expandedSizes = in.Sizes();
+      expandedSizes += filter.Sizes();
+      dfloat nx = static_cast< dfloat >( expandedSizes.product() ); // number of pixels of boundary expanded image
+
+      dfloat timeFourier = 1.635e-08 * nx + 8.781e-04;
+      dfloat timeSeparable = 1.434e-10 * n * ks + 4.987e-06 * ks;
+      dfloat timeDirect = 1.806e-10 * n * kp + 1.206e-05 * kp;
+
+      // Only for 3x3 filters is *sometimes* the direct method faster than the separable, and it's never a big
+      // difference. We ignore this, and pretend the separable method is always faster the direct.
+      // Thus we always try the separable first unless the the Fourier method is faster.
+      trySeparable = timeSeparable < timeFourier;
+      // We should always try either the Fourier method or the direct method, no matter what decision was made
+      // for the separable one, because we don't yet know if the kernel is separable or not.
+      tryFourier = timeFourier < timeDirect;
+      tryDirect = !tryFourier;
+
+      // std::cout << "Estimated times: Fourier=" << timeFourier << ", separable=" << timeSeparable << ", direct=" << timeDirect << '\n';
+      // std::cout << "   Trying ";
+      // if( trySeparable ) std::cout << "separable, ";
+      // if( tryFourier ) std::cout << "Fourier, ";
+      // if( tryDirect ) std::cout << "direct, ";
+      // std::cout << '\n';
+   } else {
+      DIP_THROW_INVALID_FLAG( method );
+   }
+
+   if( trySeparable ) {
+      // Try to separate the filter kernel into 1D filters
+      auto filterArray = dip::SeparateFilter( filter );
+      if( !filterArray.empty()) {
+         //std::cout << "Using separable method\n";
+         dip::SeparableConvolution( in, out, filterArray, boundaryCondition );
+         return;
+      }
+      // We failed. If the user explicitly asked for a separable computation, error out.
+      DIP_THROW_IF( !tryFourier && !tryDirect, "Filter kernel not separable." );
+   }
+
+   if( tryFourier ) {
+      // Use the FT method if the filter kernel is large, or if the user didn't want the direct method.
+      if( !tryDirect || filter.NumberOfPixels() > static_cast< dip::uint >( std::pow( 7, in.Dimensionality() ))) {
+         //std::cout << "Using FT method\n";
+         if( boundaryCondition.empty() ) {
+            // Using a non-empty bc array forces padding with the boundary condition
+            dip::ConvolveFT( in, filter, out, S::SPATIAL, S::SPATIAL, S::SPATIAL, { "" } );
+         } else {
+            dip::ConvolveFT( in, filter, out, S::SPATIAL, S::SPATIAL, S::SPATIAL, boundaryCondition );
+         }
+         return;
+      }
+   }
+
+   //std::cout << "Using direct method\n";
+   dip::GeneralConvolution( in, filter, out, boundaryCondition );
+}
 
 } // namespace dip
 
