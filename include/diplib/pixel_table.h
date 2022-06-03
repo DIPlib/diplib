@@ -26,11 +26,9 @@
 /// See \ref infrastructure.
 
 
-namespace dip {
-
-
 /// \addtogroup infrastructure
 
+namespace dip {
 
 class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lower down.
 
@@ -74,54 +72,64 @@ class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lo
 class DIP_NO_EXPORT PixelTableOffsets {
    public:
 
-      /// The pixel table is formed of pixel runs, represented by this structure
+      /// The pixel table is formed of pixel runs, represented by this structure.
       struct DIP_NO_EXPORT PixelRun {
-         dip::sint offset;          ///< the offset of the first pixel in a run, w.r.t. the origin
-         dip::uint length;          ///< the length of the run
+         dip::sint offset;          ///< the offset of the first pixel in a run, w.r.t. the origin.
+         dip::uint length;          ///< the length of the run.
       };
 
       class DIP_NO_EXPORT iterator;
 
-      /// A default-constructed pixel table is kinda useless
+      /// A default-constructed pixel table is kinda useless.
       PixelTableOffsets() = default;
 
       /// A pixel table with offsets is constructed from a \ref dip::PixelTable and a \ref dip::Image.
       DIP_EXPORT PixelTableOffsets( PixelTable const& pt, Image const& image );
 
-      /// Returns the vector of runs
+      /// Returns the vector of runs.
       std::vector< PixelRun > const& Runs() const { return runs_; }
 
-      /// Returns the dimensionality of the neighborhood
+      /// Returns the dimensionality of the neighborhood.
       dip::uint Dimensionality() const { return sizes_.size(); }
 
-      /// Returns the size of the bounding box of the neighborhood
+      /// Returns the size of the bounding box of the neighborhood.
       UnsignedArray const& Sizes() const { return sizes_; }
 
-      /// Returns the coordinates of the top-left corner of the bounding box w.r.t. the origin of the neighborhood
+      /// Returns the coordinates of the top-left corner of the bounding box w.r.t. the origin of the neighborhood.
       IntegerArray const& Origin() const { return origin_; }
 
-      /// Returns the number of pixels in the neighborhood
+      /// Returns the number of pixels in the neighborhood.
       dip::uint NumberOfPixels() const { return nPixels_; }
 
-      /// Returns the processing dimension, the dimension along which pixel runs are laid out
+      /// Returns the processing dimension, the dimension along which pixel runs are laid out.
       dip::uint ProcessingDimension() const { return procDim_; }
 
-      /// Returns the stride along the processing dimension used by the iterator
+      /// Returns the stride along the processing dimension used by the iterator.
       dip::sint Stride() const { return stride_; }
 
-      /// A const iterator to the first pixel in the neighborhood
+      /// A const iterator to the first pixel in the neighborhood.
       iterator begin() const;
 
-      /// A const iterator to one past the last pixel in the neighborhood
+      /// A const iterator to one past the last pixel in the neighborhood.
       iterator end() const;
 
       /// Tests if there are weights associated to each pixel in the neighborhood.
       bool HasWeights() const { return !weights_.empty(); }
 
+      /// \brief Tests if the weights associated to each pixel, if any, are complex-valued.
+      bool WeightsAreComplex() const { return isComplex_; }
+
       /// Returns a const reference to the weights array.
+      ///
+      /// If \ref HasWeights, then the array returned is not empty. If \ref WeightsAreComplex is false, there
+      /// will be \ref NumberOfPixels weights, one for each pixel in the neighborhood, stored in the same order
+      /// as the \ref Offsets array.
+      ///
+      /// If \ref WeightsAreComplex is true, there will be two times \ref NumberOfPixels weights. Each pair of
+      /// weights represents one complex value. The pointer to the weights array data can be cast to \ref dcomplex.
       std::vector< dfloat > const& Weights() const { return weights_; }
 
-      /// Returns an array with the offsets.
+      /// Computes an array with the offsets.
       std::vector< dip::sint > Offsets() const;
 
    private:
@@ -132,6 +140,7 @@ class DIP_NO_EXPORT PixelTableOffsets {
       dip::uint nPixels_ = 0;    // the total number of pixels in the pixel table
       dip::uint procDim_ = 0;    // the dimension along which the runs go
       dip::sint stride_ = 0;     // the stride of the image along the processing dimension
+      bool isComplex_ = false;   // if true, weights_ contains complex values, stored as two consecutive values
 };
 
 /// \brief Represents an arbitrarily-shaped neighborhood (filter support)
@@ -182,12 +191,11 @@ class DIP_NO_EXPORT PixelTableOffsets {
 /// *out = sum;
 /// ```
 ///
-/// \see dip::PixelTableOffsets, dip::Kernel, dip::NeighborList, dip::StructuringElement,
-/// dip::Framework::Full, dip::ImageIterator
+/// \see dip::PixelTableOffsets, dip::Kernel, dip::NeighborList, dip::StructuringElement, dip::Framework::Full, dip::ImageIterator
 class DIP_NO_EXPORT PixelTable {
    public:
 
-      /// The pixel table is formed of pixel runs, represented by this structure
+      /// The pixel table is formed of pixel runs, represented by this structure.
       struct DIP_NO_EXPORT PixelRun {
          IntegerArray coordinates;  ///< The coordinates of the first pixel in a run, w.r.t. the origin.
          dip::uint length;          ///< The length of the run, expected to always be larger than 0.
@@ -196,7 +204,7 @@ class DIP_NO_EXPORT PixelTable {
 
       class DIP_NO_EXPORT iterator;
 
-      /// A default-constructed pixel table is kinda useless
+      /// A default-constructed pixel table is kinda useless.
       PixelTable() = default;
 
       /// \brief Construct a pixel table for default filter shapes.
@@ -240,20 +248,20 @@ class DIP_NO_EXPORT PixelTable {
       /// `procDim` indicates the processing dimension.
       DIP_EXPORT explicit PixelTable( Image const& mask, IntegerArray const& origin = {}, dip::uint procDim = 0 );
 
-      /// Returns the vector of runs
+      /// Returns the vector of runs.
       std::vector< PixelRun > const& Runs() const { return runs_; }
 
-      /// Returns the dimensionality of the neighborhood
+      /// Returns the dimensionality of the neighborhood.
       dip::uint Dimensionality() const { return sizes_.size(); }
 
-      /// Returns the size of the bounding box of the neighborhood
+      /// Returns the size of the bounding box of the neighborhood.
       UnsignedArray const& Sizes() const { return sizes_; }
 
       /// Returns the coordinates of the top-left corner of the bounding box w.r.t. the origin.
       IntegerArray const& Origin() const { return origin_; }
 
       /// \brief Returns the size of the boundary extension along each dimension that is necessary to accommodate the
-      /// neighborhood on the edge pixels of the image
+      /// neighborhood on the edge pixels of the image.
       UnsignedArray Boundary() const {
          dip::uint nDims = sizes_.size();
          UnsignedArray boundary( nDims );
@@ -263,7 +271,7 @@ class DIP_NO_EXPORT PixelTable {
          return boundary;
       }
 
-      /// Shifts the origin of the neighborhood by the given amount
+      /// Shifts the origin of the neighborhood by the given amount.
       void ShiftOrigin( IntegerArray const& shift ) {
          dip::uint nDims = origin_.size();
          DIP_THROW_IF( shift.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
@@ -297,18 +305,19 @@ class DIP_NO_EXPORT PixelTable {
             }
          }
          origin_ = origin;
+         // TODO: change order of weights_ at the same time we flip the runs.
       }
 
-      /// Returns the number of pixels in the neighborhood
+      /// Returns the number of pixels in the neighborhood.
       dip::uint NumberOfPixels() const { return nPixels_; }
 
-      /// Returns the processing dimension, the dimension along which pixel runs are laid out
+      /// Returns the processing dimension, the dimension along which pixel runs are laid out.
       dip::uint ProcessingDimension() const { return procDim_; }
 
-      /// A const iterator to the first pixel in the neighborhood
+      /// A const iterator to the first pixel in the neighborhood.
       DIP_NO_EXPORT iterator begin() const;
 
-      /// A const iterator to one past the last pixel in the neighborhood
+      /// A const iterator to one past the last pixel in the neighborhood.
       DIP_NO_EXPORT iterator end() const;
 
       /// \brief Creates a binary image representing the neighborhood, or a `dfloat` one if
@@ -332,9 +341,8 @@ class DIP_NO_EXPORT PixelTable {
       }
 
       /// \brief Add weights to each pixel in the neighborhood, taken from an image. The image must be of the same
-      /// sizes as the `PixelTable`'s bounding box (i.e. the image used to construct the pixel table), and of a
-      /// real type (i.e. integer or float).
-      // TODO: Do we need to support complex weights? Tensor weights?
+      /// sizes as the `PixelTable`'s bounding box (i.e. the image used to construct the pixel table), scalar,
+      /// and not binary (i.e. integer, float or complex).
       DIP_EXPORT void AddWeights( Image const& image );
 
       /// \brief Add weights to each pixel in the neighborhood, using the Euclidean distance to the origin
@@ -342,10 +350,20 @@ class DIP_NO_EXPORT PixelTable {
       /// neighborhood by distance to the origin.
       DIP_EXPORT void AddDistanceToOriginAsWeights();
 
-      /// Tests if there are weights associated to each pixel in the neighborhood.
+      /// \brief Tests if there are weights associated to each pixel in the neighborhood.
       bool HasWeights() const { return !weights_.empty(); }
 
-      /// Returns a const reference to the weights array.
+      /// \brief Tests if the weights associated to each pixel, if any, are complex-valued.
+      bool WeightsAreComplex() const { return isComplex_; }
+
+      /// \brief Returns a const reference to the weights array.
+      ///
+      /// If \ref HasWeights, then the array returned is not empty. If \ref WeightsAreComplex is false, there
+      /// will be \ref NumberOfPixels weights, one for each pixel in the neighborhood, stored in the same order
+      /// that the \ref iterator visits these pixels.
+      ///
+      /// If \ref WeightsAreComplex is true, there will be two times \ref NumberOfPixels weights. Each pair of
+      /// weights represents one complex value. The pointer to the weights array data can be cast to \ref dcomplex.
       std::vector< dfloat > const& Weights() const { return weights_; }
 
    private:
@@ -355,6 +373,7 @@ class DIP_NO_EXPORT PixelTable {
       IntegerArray origin_;      // the coordinates of the top-left corner of the bounding box
       dip::uint nPixels_ = 0;    // the total number of pixels in the pixel table
       dip::uint procDim_ = 0;    // the dimension along which the runs go
+      bool isComplex_ = false;   // if true, weights_ contains complex values, stored as two consecutive values
 };
 
 /// \brief An iterator that visits each of the neighborhood's pixels in turn.
@@ -363,17 +382,17 @@ class DIP_NO_EXPORT PixelTable {
 /// Satisfies the requirements for ForwardIterator.
 class DIP_NO_EXPORT PixelTable::iterator {
    public:
-      /// Iterator category
+      /// Iterator category.
       using iterator_category = std::forward_iterator_tag;
-      /// The value obtained by dereferencing are coordinates
+      /// The value obtained by dereferencing are coordinates.
       using value_type = IntegerArray;
-      /// The type of a reference
+      /// The type of a reference.
       using reference = IntegerArray const&;
 
-      /// Default constructor yields an invalid iterator that cannot be dereferenced
+      /// Default constructor yields an invalid iterator that cannot be dereferenced.
       iterator() = default;
 
-      /// Constructs an iterator to the first pixel in the neighborhood
+      /// Constructs an iterator to the first pixel in the neighborhood.
       explicit iterator( PixelTable const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          run_ = pt.runs_.begin();
@@ -383,7 +402,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
          // index_ set properly by default
       }
 
-      /// Constructs an end iterator
+      /// Constructs an end iterator.
       static iterator end( PixelTable const& pt ) {
          iterator out;
          out.end_ = out.run_ = pt.runs_.end();
@@ -391,7 +410,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
          return out;
       }
 
-      /// Swap
+      /// Swap.
       void swap( iterator& other ) {
          using std::swap;
          swap( run_, other.run_ );
@@ -401,10 +420,10 @@ class DIP_NO_EXPORT PixelTable::iterator {
          swap( coordinates_, other.coordinates_ );
       }
 
-      /// Dereference
+      /// Dereference.
       reference operator*() const { return coordinates_; }
 
-      /// Pre-increment
+      /// Pre-increment.
       iterator& operator++() {
          ++index_;
          if( index_ < run_->length ) {
@@ -419,7 +438,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
          return *this;
       }
 
-      /// Post-increment
+      /// Post-increment.
       iterator operator++( int ) {
          iterator tmp( *this );
          operator++();
@@ -431,15 +450,15 @@ class DIP_NO_EXPORT PixelTable::iterator {
          return ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
 
-      /// Inequality comparison
+      /// Inequality comparison.
       bool operator!=( iterator const& other ) const {
          return !operator==( other );
       }
 
-      /// Test to see if the iterator reached past the last pixel
+      /// Test to see if the iterator reached past the last pixel.
       bool IsAtEnd() const { return run_ == end_; }
 
-      /// Test to see if the iterator is still pointing at a pixel
+      /// Test to see if the iterator is still pointing at a pixel.
       explicit operator bool() const { return !IsAtEnd(); }
 
    private:
@@ -469,17 +488,17 @@ inline PixelTable::iterator PixelTable::end() const {
 /// Satisfies the requirements for ForwardIterator.
 class DIP_NO_EXPORT PixelTableOffsets::iterator {
    public:
-      /// Iterator category
+      /// Iterator category.
       using iterator_category = std::forward_iterator_tag;
-      /// The value obtained by dereferencing is an offset
+      /// The value obtained by dereferencing is an offset.
       using value_type = dip::sint;
-      /// The type of a reference, but we don't return by reference, it's just as easy to copy
+      /// The type of a reference, but we don't return by reference, it's just as easy to copy.
       using reference = dip::sint;
 
-      /// Default constructor yields an invalid iterator that cannot be dereferenced
+      /// Default constructor yields an invalid iterator that cannot be dereferenced.
       iterator() = default;
 
-      /// Constructs an iterator to the first pixel in the neighborhood
+      /// Constructs an iterator to the first pixel in the neighborhood.
       explicit iterator( PixelTableOffsets const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          run_ = pt.runs_.begin();
@@ -488,7 +507,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
          // index_ set properly by default
       }
 
-      /// Constructs an end iterator
+      /// Constructs an end iterator.
       static iterator end( PixelTableOffsets const& pt ) {
          iterator out;
          out.end_ = out.run_ = pt.runs_.end();
@@ -496,7 +515,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
          return out;
       }
 
-      /// Swap
+      /// Swap.
       void swap( iterator& other ) {
          using std::swap;
          swap( run_, other.run_ );
@@ -505,16 +524,16 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
          swap( stride_, other.stride_ );
       }
 
-      /// Dereference
+      /// Dereference.
       reference operator*() const { return Offset(); }
 
-      /// Get offset, identical to dereferencing
+      /// Get offset, identical to dereferencing.
       reference Offset() const { return run_->offset + static_cast< dip::sint >( index_ ) * stride_; }
 
-      /// Get index within run
+      /// Get index within run.
       dip::uint Index() const { return index_; }
 
-      /// Pre-increment
+      /// Pre-increment.
       iterator& operator++() {
          ++index_;
          if( index_ == run_->length ) {
@@ -524,7 +543,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
          return *this;
       }
 
-      /// Post-increment
+      /// Post-increment.
       iterator operator++( int ) {
          iterator tmp( *this );
          operator++();
@@ -537,15 +556,15 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
          return ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
 
-      /// Inequality comparison
+      /// Inequality comparison.
       bool operator!=( iterator const& other ) const {
          return !operator==( other );
       }
 
-      /// Test to see if the iterator reached past the last pixel
+      /// Test to see if the iterator reached past the last pixel.
       bool IsAtEnd() const { return run_ == end_; }
 
-      /// Test to see if the iterator is still pointing at a pixel
+      /// Test to see if the iterator is still pointing at a pixel.
       explicit operator bool() const { return !IsAtEnd(); }
 
    private:
@@ -558,8 +577,6 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
 inline void swap( PixelTableOffsets::iterator& v1, PixelTableOffsets::iterator& v2 ) {
    v1.swap( v2 );
 }
-
-/// \cond
 
 inline PixelTableOffsets::iterator PixelTableOffsets::begin() const {
    return iterator( *this );
@@ -578,10 +595,9 @@ inline std::vector< dip::sint > PixelTableOffsets::Offsets() const {
    return out;
 }
 
-/// \endcond
-
-/// \endgroup
 
 } // namespace dip
+
+/// \endgroup
 
 #endif // DIP_PIXEL_TABLE_H

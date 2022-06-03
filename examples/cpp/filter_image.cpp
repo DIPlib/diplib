@@ -45,42 +45,33 @@ int main( int argc, char *argv[] ) {
 
    // Create a test image
    dip::Image input = dip::ImageReadICS( DIP_EXAMPLES_DIR "/trui.ics" );
-   dip::Image output;
 
    // Try to separate the filter
    auto filterArray = dip::SeparateFilter( filter );
 
-   if( filterArray.empty() ) {
-
-      // We failed!
-      if( filter.NumberOfPixels() > 7 * 7 ) {
-         std::cout << "Not separable, using ConvolveFT\n";
-         dip::ConvolveFT( input, filter, output );
-      } else {
-         std::cout << "Not separable, using GeneralConvolution\n";
-         dip::GeneralConvolution( input, filter, output );
-      }
-
-   } else {
-
+   dip::Image output_separable;
+   if( !filterArray.empty() ) {
       // OK, the filter was separable
       std::cout << "filterArray (" << filterArray.size() << " elements)\n";
-      for( auto& filter : filterArray ) {
-         std::cout << "  - size = " << filter.filter.size() / ( filter.isComplex ? 2 : 1 )
-                   << ", isComplex = " << filter.isComplex
-                   << ", symmetry = " << filter.symmetry
-                   << ", origin = " << filter.origin << '\n';
+      for( auto& f: filterArray ) {
+         std::cout << "  - size = " << f.filter.size() / ( f.isComplex ? 2 : 1 )
+                   << ", isComplex = " << f.isComplex
+                   << ", symmetry = " << f.symmetry
+                   << ", origin = " << f.origin << '\n';
       }
-      dip::SeparableConvolution( input, output, filterArray );
-
+      dip::SeparableConvolution( input, output_separable, filterArray );
    }
 
-   // Display input and output
-   dip::viewer::ShowSimple( input, "input image" );
-   if( output.DataType().IsComplex() ) {
-      output = dip::Modulus( output );
+   // Compute the convolution through the other two methods
+   dip::Image output_ft = dip::ConvolveFT( input, filter );
+   dip::Image output_direct = dip::GeneralConvolution( input, filter );
+
+   // Display input and outputs
+   dip::viewer::Show( input, "input image" );
+   if( output_separable.IsForged() ) {
+      dip::viewer::Show( output_separable, "output image, separable implementation" );
    }
-   dip::ContrastStretch( output, output );
-   dip::viewer::ShowSimple( dip::Convert( output, dip::DT_UINT8 ), "output image" );
+   dip::viewer::Show( output_ft, "output image, Fourier implementation" );
+   dip::viewer::Show( output_direct, "output image, direct implementation" );
    dip::viewer::Spin();
 }

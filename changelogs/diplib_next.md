@@ -26,6 +26,12 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::Convolution()`, a gateway to the three implementations of the convolution.
 
+- `dip::GeneralConvolution()` accepts a complex-valued filter kernel.
+
+- `dip::Kernel`, `dip::PixelTable` and `dip::PixelTableOffsets` can now represent complex-valued weights. 
+  Added `dip::Kernel::HasComplexWeights()`, `dip::PixelTable::WeightsAreComplex()` and
+  `dip::PixelTableOffsets::WeightsAreComplex()`.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.

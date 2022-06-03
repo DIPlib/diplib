@@ -550,6 +550,39 @@ class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
       std::vector< dip::sint > offsets_;
 };
 
+template< typename TPI >
+class GeneralConvolutionLineFilterComplex : public Framework::FullLineFilter {
+      // Idem as above, but for complex kernel weights. TPI is guaranteed a complex type
+   public:
+      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+         offsets_ = pixelTable.Offsets();
+      }
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::sint inStride = params.inBuffer.stride;
+         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
+         dip::uint length = params.bufferLength;
+         PixelTableOffsets const& pixelTable = params.pixelTable;
+         std::vector< dfloat > const& weights = pixelTable.Weights();
+         for( dip::uint ii = 0; ii < length; ++ii ) {
+            TPI sum = 0;
+            auto ito = offsets_.begin();
+            dcomplex const* itw = reinterpret_cast< dcomplex const* >( weights.data() );
+            while( ito != offsets_.end() ) {
+               sum += in[ *ito ] * static_cast< TPI >( *itw );
+               ++ito;
+               ++itw;
+            }
+            *out = sum;
+            in += inStride;
+            out += outStride;
+         }
+      }
+   private:
+      std::vector< dip::sint > offsets_;
+};
+
 } // namespace
 
 void GeneralConvolution(
@@ -560,7 +593,6 @@ void GeneralConvolution(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_filter.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( c_filter.DataType().IsComplex(), "Convolution with a complex filter not yet implemented." );
    DIP_START_STACK_TRACE
       Kernel filter{ c_filter };
       filter.Mirror();
@@ -573,7 +605,12 @@ void GeneralConvolution(
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_FLEX( lineFilter, GeneralConvolutionLineFilter, (), dtype );
+      if( filter.HasComplexWeights() ) {
+         dtype = DataType::SuggestComplex( dtype );
+         DIP_OVL_NEW_COMPLEX( lineFilter, GeneralConvolutionLineFilterComplex, ( ), dtype );
+      } else {
+         DIP_OVL_NEW_FLEX( lineFilter, GeneralConvolutionLineFilter, ( ), dtype );
+      }
       Framework::Full( in, out, dtype, dtype, dtype, 1, bc, filter, *lineFilter, Framework::FullOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }

@@ -175,7 +175,7 @@ DIP_NODISCARD inline Image ConvolveFT(
 
 /// \brief Applies a convolution with a filter kernel (PSF) by direct implementation of the convolution sum.
 ///
-/// `filter` is an image, and must be equal in size or smaller than `in`. `filter` must be real-valued.
+/// `filter` is an image, and must be equal in size or smaller than `in`.
 ///
 /// As elsewhere, the origin of `filter` is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image.

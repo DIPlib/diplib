@@ -66,11 +66,11 @@ class DIP_NO_EXPORT PixelTable;
 /// that the line runs from high to low along that dimension. The line will always run from one corner of
 /// the bounding box to the opposite corner, and run through the origin.
 ///
-/// To define a kernel through an image, provide a binary image. The "on" or "true" pixels form
+/// To define a kernel through an image, provide a scalar binary image. The "on" or "true" pixels form
 /// the kernel. Note that, for most filters, the image is directly used as neighborhood (i.e. no
 /// mirroring is applied). As elsewhere, the origin of the kernel is in the middle of the image,
 /// and on the pixel to the right of the center in case of an even-sized image. If the image
-/// is a grey-value image, then all pixels with a finite value form the kernel. The kernel then
+/// is a scalar grey-value image, then all pixels with a finite value form the kernel. The kernel then
 /// has the given weights associated to each pixel. After calling \ref IgnoreZeros, all pixels
 /// with a finite, non-zero value form the kernel.
 ///
@@ -118,7 +118,6 @@ class DIP_NO_EXPORT Kernel {
       Kernel( Image image ) : shape_( ShapeCode::CUSTOM ), image_( std::move( image )) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
-         DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
       }
 
       /// Shifts the kernel by the given amount along each of the axes.
@@ -240,6 +239,11 @@ class DIP_NO_EXPORT Kernel {
       /// \brief Tests to see if the kernel has weights
       bool HasWeights() const {
          return ( shape_ == ShapeCode::CUSTOM ) && !image_.DataType().IsBinary();
+      }
+
+      /// \brief Tests to see if the kernel has complex weights
+      bool HasComplexWeights() const {
+         return ( shape_ == ShapeCode::CUSTOM ) && image_.DataType().IsComplex();
       }
 
       /// \brief Returns the number of pixels in the kernel, given the image dimensionality `nDims`.

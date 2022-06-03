@@ -26,19 +26,21 @@ namespace dip {
 PixelTableOffsets::PixelTableOffsets(
       PixelTable const& pt,
       Image const& image
-) {
-   sizes_ = pt.Sizes();
-   origin_ = pt.Origin();
-   nPixels_ = pt.NumberOfPixels();
-   procDim_ = pt.ProcessingDimension();
-   stride_ = image.Stride( procDim_ );
+) :
+      weights_{ pt.Weights() },
+      sizes_{ pt.Sizes() },
+      origin_{ pt.Origin() },
+      nPixels_{ pt.NumberOfPixels() },
+      procDim_{ pt.ProcessingDimension() },
+      stride_{ image.Stride( procDim_ ) },
+      isComplex_{ pt.WeightsAreComplex() }
+{
    auto const& inRuns = pt.Runs();
    runs_.resize( inRuns.size() );
    for( dip::uint ii = 0; ii < runs_.size(); ++ii ) {
       runs_[ ii ].offset = image.Offset( inRuns[ ii ].coordinates );
       runs_[ ii ].length = inRuns[ ii ].length;
    }
-   weights_ = pt.Weights();
 }
 
 // Construct a pixel table from a given shape and size
@@ -371,17 +373,21 @@ PixelTable::PixelTable(
 // Create a binary or grey-value image from a pixel table
 void PixelTable::AsImage( Image& out ) const {
    if( HasWeights() ) {
-      out.ReForge( sizes_, 1, DT_DFLOAT );
+      out.ReForge( sizes_, 1, isComplex_ ? DT_DCOMPLEX : DT_DFLOAT );
       out.Fill( 0.0 );
-      dip::sint stride = out.Stride( procDim_ );
+      dip::sint stride = out.Stride( procDim_ ) * ( isComplex_ ? 2 : 1 );
       auto wIt = weights_.begin();
-      for( auto& run : runs_ ) {
+      for( auto const& run : runs_ ) {
          IntegerArray position = run.coordinates;
          position -= origin_;
          dfloat* data = static_cast< dfloat* >( out.Pointer( out.Offset( position )));
          for( dip::uint ii = 0; ii < run.length; ++ii ) {
             *data = *wIt;
             ++wIt;
+            if( isComplex_ ) {
+               data[ 1 ] = *wIt;
+               ++wIt;
+            }
             data += stride;
          }
       }
@@ -389,7 +395,7 @@ void PixelTable::AsImage( Image& out ) const {
       out.ReForge( sizes_, 1, DT_BIN );
       out.Fill( false );
       dip::sint stride = out.Stride( procDim_ );
-      for( auto& run : runs_ ) {
+      for( auto const& run : runs_ ) {
          IntegerArray position = run.coordinates;
          position -= origin_;
          dip::bin* data = static_cast< dip::bin* >( out.Pointer( out.Offset( position )));
@@ -403,7 +409,7 @@ void PixelTable::AsImage( Image& out ) const {
 
 namespace {
 
-template< typename TPI >
+template< typename TPI, typename std::enable_if_t< !(std::is_same< TPI, scomplex >::value || std::is_same< TPI, dcomplex >::value), int > = 0 >
 void AddWeightsInternal(
       Image const& image,
       dip::sint stride,
@@ -411,12 +417,32 @@ void AddWeightsInternal(
       std::vector< dfloat >& weights,
       IntegerArray const& origin
 ) {
-   for( auto& run : runs ) {
+   for( auto const& run : runs ) {
       IntegerArray position = run.coordinates;
       position -= origin;
       TPI* data = static_cast< TPI* >( image.Pointer( position ));
       for( dip::uint ii = 0; ii < run.length; ++ii ) {
          weights.push_back( static_cast< dfloat >( *data ));
+         data += stride;
+      }
+   }
+}
+
+template< typename TPI, typename std::enable_if_t< std::is_same< TPI, scomplex >::value || std::is_same< TPI, dcomplex >::value, int > = 0 >
+void AddWeightsInternal(
+      Image const& image,
+      dip::sint stride,
+      std::vector< PixelTable::PixelRun > const& runs,
+      std::vector< dfloat >& weights,
+      IntegerArray const& origin
+) {
+   for( auto const& run : runs ) {
+      IntegerArray position = run.coordinates;
+      position -= origin;
+      TPI* data = static_cast< TPI* >( image.Pointer( position ));
+      for( dip::uint ii = 0; ii < run.length; ++ii ) {
+         weights.push_back( static_cast< dfloat >( data->real() ));
+         weights.push_back( static_cast< dfloat >( data->imag() ));
          data += stride;
       }
    }
@@ -429,16 +455,18 @@ void PixelTable::AddWeights( Image const& image ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( image.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( image.Sizes() != sizes_, E::SIZES_DONT_MATCH );
-   DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( image.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
+   isComplex_ = image.DataType().IsComplex();
    weights_.clear();
-   weights_.reserve( nPixels_ );
+   weights_.reserve( isComplex_ ? 2 * nPixels_ : nPixels_ );
    dip::sint stride = image.Stride( procDim_ );
-   DIP_OVL_CALL_REAL( AddWeightsInternal, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
-   DIP_ASSERT( weights_.size() == nPixels_ );
+   DIP_OVL_CALL_NONBINARY( AddWeightsInternal, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
+   DIP_ASSERT( weights_.size() == ( isComplex_ ? 2 * nPixels_ : nPixels_ ));
 }
 
 // Add weights from distances
 void PixelTable::AddDistanceToOriginAsWeights() {
+   isComplex_ = false;
    weights_.clear();
    weights_.reserve( nPixels_ );
    for( auto& run : runs_ ) {
