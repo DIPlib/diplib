@@ -255,6 +255,7 @@ void CopyTo( Image const& src, Image& dest, IntegerArray const& destOffsets ) {
 //
 
 void Image::Copy( Image const& src ) {
+   // TODO: allow copying with singleton expansion.
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    if( &src == this ) {
       // Copying self... what for?

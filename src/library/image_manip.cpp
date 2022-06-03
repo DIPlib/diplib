@@ -180,7 +180,7 @@ Image& Image::AddSingleton( dip::uint dim ) {
    return *this;
 }
 
-Image & Image::AddSingleton( UnsignedArray const& dims ) {
+Image& Image::AddSingleton( UnsignedArray const& dims ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    for( auto dim : dims ) {
       AddSingleton( dim );

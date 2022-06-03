@@ -734,7 +734,7 @@ DIP_NODISCARD inline Image Select( Image const& in1, Image const& in2, Image con
 ///
 /// Conversely, when `out` is the same image as `in2`, the operation becomes similar to (but faster than):
 /// ```cpp
-/// in2.At( mask) = in1.At( mask );
+/// in2.At( mask ) = in1.At( mask );
 /// ```
 ///
 /// The output image has the same type as `in1` and `in2`. If these types are different, the output type is given by

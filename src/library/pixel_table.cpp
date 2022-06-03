@@ -430,6 +430,7 @@ void PixelTable::AddWeights( Image const& image ) {
    DIP_THROW_IF( image.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( image.Sizes() != sizes_, E::SIZES_DONT_MATCH );
    DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   weights_.clear();
    weights_.reserve( nPixels_ );
    dip::sint stride = image.Stride( procDim_ );
    DIP_OVL_CALL_REAL( AddWeightsInternal, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
@@ -438,6 +439,7 @@ void PixelTable::AddWeights( Image const& image ) {
 
 // Add weights from distances
 void PixelTable::AddDistanceToOriginAsWeights() {
+   weights_.clear();
    weights_.reserve( nPixels_ );
    for( auto& run : runs_ ) {
       IntegerArray position = run.coordinates;

@@ -77,7 +77,7 @@ void Histogram::Configuration::Complete( bool isInteger ) {
             if( isInteger ) {
                binSize = std::ceil( binSize );
             }
-            nBins = static_cast< dip::uint >( std::round( upperBound - lowerBound ) / binSize );
+            nBins = static_cast< dip::uint >( std::round(( upperBound - lowerBound ) / binSize ));
             if( isInteger ) {
                upperBound = lowerBound + static_cast< dfloat >( nBins ) * binSize;
             } else {

@@ -46,6 +46,12 @@ void ApplyMonadicOperator( DataType in1Type, void* in1Ptr, DataType outType, voi
 template< ComputationType classes, typename F >
 struct MonadicOperatorDispatch {
    static void Call( DataType in1Type, void* in1Ptr, DataType outType, void* outPtr, DataType computeType, F const& function ) {
+      ( void )in1Type;
+      ( void )in1Ptr;
+      ( void )outType;
+      ( void )outPtr;
+      ( void )computeType;
+      ( void )function;
       DIP_THROW( E::NOT_IMPLEMENTED );
    }
 };
@@ -122,6 +128,14 @@ template< ComputationType classes, typename F >
 struct DyadicOperatorDispatch {
    static void Call( DataType in1Type, void* in1Ptr, DataType in2Type, void* in2Ptr,
                      DataType outType, void* outPtr, DataType computeType, F const& function ) {
+      (void) in1Type;
+      (void) in1Ptr;
+      (void) in2Type;
+      (void) in2Ptr;
+      (void) outType;
+      (void) outPtr;
+      (void) computeType;
+      (void) function;
       DIP_THROW( E::NOT_IMPLEMENTED );
    }
 };

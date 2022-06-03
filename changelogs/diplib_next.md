@@ -51,6 +51,9 @@ title: "Changes DIPlib 3.x.x"
 - `dip::BoundaryCondition::ASYMMETRIC_MIRROR` didn't work in some functions because it had the same value as
   `dip::BoundaryCondition::ALREADY_EXPANDED`.
 
+- `dip::Histogram::Configuration`, when given an upper and lower bounds and a bin size, computed the number of
+  bins in such a way that, for small difference between the bounds, the bin size was not respected.
+
 
 
 
