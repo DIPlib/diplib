@@ -370,6 +370,28 @@ PixelTable::PixelTable(
    } while( ++it );
 }
 
+void PixelTable::Mirror() {
+   dip::uint nDims = sizes_.size();
+   dfloat* weights = ( weights_.empty() || isComplex_ ) ? nullptr : weights_.data();
+   dcomplex* complexWeights = ( weights_.empty() || !isComplex_ ) ? nullptr : reinterpret_cast< dcomplex* >( weights_.data() );
+   IntegerArray origin( nDims, std::numeric_limits< dip::sint >::max() );
+   for( auto& run : runs_ ) {
+      run.coordinates[ procDim_ ] += static_cast< dip::sint >( run.length ) - 1; // coordinates now points at end of run
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         run.coordinates[ ii ] = -run.coordinates[ ii ]; // mirror coordinates, it points at beginning of run again
+         origin[ ii ] = std::min( origin[ ii ], run.coordinates[ ii ] );
+      }
+      if( weights ) {
+         std::reverse( weights, weights + run.length );
+         weights += run.length;
+      } else if( complexWeights ) {
+         std::reverse( complexWeights, complexWeights + run.length );
+         complexWeights += run.length;
+      }
+   }
+   origin_ = origin;
+}
+
 // Create a binary or grey-value image from a pixel table
 void PixelTable::AsImage( Image& out ) const {
    if( HasWeights() ) {

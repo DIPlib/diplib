@@ -60,6 +60,8 @@ title: "Changes DIPlib 3.x.x"
 - `dip::Histogram::Configuration`, when given an upper and lower bounds and a bin size, computed the number of
   bins in such a way that, for small difference between the bounds, the bin size was not respected.
 
+- `dip::PixelTable::Mirror()` mirrored the footprint of the kernel, but not the weights.
+
 
 
 

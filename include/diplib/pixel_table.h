@@ -294,19 +294,7 @@ class DIP_NO_EXPORT PixelTable {
       }
 
       /// \brief Mirrors the neighborhood.
-      void Mirror() {
-         dip::uint nDims = sizes_.size();
-         IntegerArray origin( nDims, std::numeric_limits< dip::sint >::max() );
-         for( auto& run : runs_ ) {
-            run.coordinates[ procDim_ ] += static_cast< dip::sint >( run.length ) - 1; // coordinates now points at end of run
-            for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               run.coordinates[ ii ] = -run.coordinates[ ii ]; // mirror coordinates, it points at beginning of run again
-               origin[ ii ] = std::min( origin[ ii ], run.coordinates[ ii ] );
-            }
-         }
-         origin_ = origin;
-         // TODO: change order of weights_ at the same time we flip the runs.
-      }
+      void Mirror();
 
       /// Returns the number of pixels in the neighborhood.
       dip::uint NumberOfPixels() const { return nPixels_; }
