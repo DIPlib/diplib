@@ -1,16 +1,13 @@
 /*
- * This program shows how to apply a convolution with a custom kernel to an image.
- * It displays the result using dip::viewer::ShowSimple.
+ * This program shows different ways to apply a convolution with a custom kernel to an image.
+ * It displays the result using dip::viewer::Show.
  */
 
-#include <vector>
-#include <diplib/math.h>
 #include "diplib.h"
 #include "dipviewer.h"
 #include "diplib/file_io.h"
 #include "diplib/linear.h"
 #include "diplib/generation.h"
-#include "diplib/mapping.h"
 #include "diplib/statistics.h"
 
 int main( int argc, char *argv[] ) {
@@ -25,14 +22,14 @@ int main( int argc, char *argv[] ) {
    switch( option ) {
       case 0:
          // Let's apply a Gabor filter
-         filter = dip::CreateGabor( { 10.0, 10.0 }, { 0.1, 0.3 } );
+         filter = dip::CreateGabor( { 10.0, 10.0 }, { 0.1, 0.2 } );
          break;
       case 1:
          // Let's apply a Gaussian filter
          filter = dip::CreateGauss( { 8.0, 8.0 } );
          break;
       case 2:
-         // Let's apply a large square filter with random values
+         // Let's apply a large square filter with random values (not separable)
          filter = dip::Image( { 21, 21 }, 1, dip::DT_DFLOAT );
          filter.Fill( 0 );
          dip::UniformNoise( filter, filter, random, 0.0, 1.0 );
@@ -53,11 +50,11 @@ int main( int argc, char *argv[] ) {
    if( !filterArray.empty() ) {
       // OK, the filter was separable
       std::cout << "filterArray (" << filterArray.size() << " elements)\n";
-      for( auto& f: filterArray ) {
+      for( auto const& f: filterArray ) {
          std::cout << "  - size = " << f.filter.size() / ( f.isComplex ? 2 : 1 )
                    << ", isComplex = " << f.isComplex
-                   << ", symmetry = " << f.symmetry
-                   << ", origin = " << f.origin << '\n';
+                   << ", symmetry = \"" << f.symmetry
+                   << "\", origin = " << f.origin << '\n';
       }
       dip::SeparableConvolution( input, output_separable, filterArray );
    }

@@ -63,7 +63,7 @@ void SeparateFilterInternal(
    // 1D filter is first column of V -- write V into 1D filter buffer
    out.resize( length * ( isComplex ? 2 : 1 ));
    Eigen::Map< Vector > oneDFilter( reinterpret_cast< T* >( out.data() ), static_cast< Eigen::Index >( length ));
-   oneDFilter = svd.matrixV().col( 0 );
+   oneDFilter = svd.matrixV().col( 0 ).conjugate();
    // The ndims-1--dimensional remainder is the first column of U * singular value --
    // write U * s1 back into input image, we'll use fewer pixels than before
    Eigen::Map< Vector > remainder( static_cast< T* >( filter.Origin() ),
@@ -124,33 +124,17 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-#include "diplib/statistics.h"
-//#include "diplib/timer.h"
+#include "diplib/generation.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
-   dip::Image delta3D( { 30, 30, 30 }, 1, dip::DT_SFLOAT );
-   delta3D.Fill( 0 );
-   delta3D.At( 15, 15, 15 ) = 1;
-
+   // Rectangular filter is separable, each 1D filter should have all identical values.
    auto rectPt = dip::PixelTable( "rectangular", { 10, 11, 5 } );
    dip::Image rect = dip::Convert( rectPt.AsImage(), dip::DT_UINT8 );
-   //dip::Timer timer;
    dip::OneDimensionalFilterArray rect1 = dip::SeparateFilter( rect );
-   //timer.Stop();
-   //std::cout << "Separating filter: " << timer << std::endl;
    DOCTEST_REQUIRE( rect1.size() == 3 );
    DOCTEST_CHECK( rect1[ 0 ].filter.size() == 10 );
    DOCTEST_CHECK( rect1[ 1 ].filter.size() == 11 );
    DOCTEST_CHECK( rect1[ 2 ].filter.size() == 5 );
-   //timer.Reset();
-   //dip::Image tmp1 = dip::SeparableConvolution( delta3D, rect1 );
-   //timer.Stop();
-   //std::cout << "Apply separated filter: " << timer << std::endl;
-   //timer.Reset();
-   //dip::Image tmp2 = dip::GeneralConvolution( delta3D, rect );
-   //timer.Stop();
-   //std::cout << "Apply full filter: " << timer << std::endl;
-   //DOCTEST_CHECK( dip::All( tmp1 == tmp2 ).As< bool >() );
    bool correct = true;
    for( dip::uint ii = 0; ii < 3; ++ii ) {
       for( auto v : rect1[ ii ].filter ) {
@@ -160,39 +144,37 @@ DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
       }
    }
    DOCTEST_CHECK( correct );
+   // The product of the three 1D filters for any given pixel should be 1.
    dip::dfloat product = rect1[ 0 ].filter[ 0 ] * rect1[ 1 ].filter[ 0 ] * rect1[ 2 ].filter[ 0 ];
    DOCTEST_CHECK( product == doctest::Approx( 1.0 ));
 
+   // Elliptic filter is not separable
    auto circPt = dip::PixelTable( "elliptic", { 10, 11, 5 } );
    dip::Image circ = dip::Convert( circPt.AsImage(), dip::DT_UINT8 );
-   //timer.Reset();
    dip::OneDimensionalFilterArray circ1 = dip::SeparateFilter( circ );
-   //timer.Stop();
-   //std::cout << "Separating filter: " << timer << std::endl;
    DOCTEST_CHECK( circ1.size() == 0 );
 
-   //timer.Reset();
-   dip::Image gaussRes = dip::GaussFIR( delta3D, { 3, 2, 3 }, { 1, 0, 2 } );
-   //timer.Stop();
-   //std::cout << "Compute Gaussian: " << timer << std::endl;
-   dip::Image gauss = gaussRes.Cropped( { 3 * 6 + 1, 2 * 6 + 1, 3 * 6 + 1 } );
-   //timer.Reset();
-   dip::OneDimensionalFilterArray gauss1 = dip::SeparateFilter( gauss );
-   //timer.Stop();
-   //std::cout << "Separating filter: " << timer << std::endl;
-   DOCTEST_REQUIRE( gauss1.size() == 3 );
-   //timer.Reset();
-   dip::Image tmp3 = dip::SeparableConvolution( delta3D, gauss1 );
-   //timer.Stop();
-   //std::cout << "Apply separated filter: " << timer << std::endl;
-   //timer.Reset();
-   //tmp2 = dip::GeneralConvolution( delta3D, gauss );
-   //timer.Stop();
-   //std::cout << "Apply full filter: " << timer << std::endl;
-   tmp3 -= gaussRes;
-   auto m = dip::MaximumAndMinimum( tmp3 );
-   DOCTEST_CHECK( m.Minimum() > -1e-5 );
-   DOCTEST_CHECK( m.Maximum() < 1e-5 );
+   // Gabor filter is separable, and also asymmetric. This also tests things work correctly for complex-valued filters.
+   dip::Image gabor_orig = dip::CreateGabor( { 6.0, 4.0 }, { 0.1, 0.05 } );
+   DOCTEST_REQUIRE( gabor_orig.DataType() == dip::DT_DCOMPLEX );
+   DOCTEST_REQUIRE( gabor_orig.Size( 0 ) == 37 );
+   DOCTEST_REQUIRE( gabor_orig.Size( 1 ) == 25 );
+   dip::OneDimensionalFilterArray gabor_1D = dip::SeparateFilter( gabor_orig );
+   DOCTEST_REQUIRE( gabor_1D.size() == 2 );
+   DOCTEST_REQUIRE( gabor_1D[ 0 ].filter.size() == 37 * 2 );
+   DOCTEST_REQUIRE( gabor_1D[ 1 ].filter.size() == 25 * 2 );
+   correct = true;
+   dip::dcomplex const* gabor_x = reinterpret_cast< dip::dcomplex const* >( gabor_1D[ 0 ].filter.data() );
+   dip::dcomplex const* gabor_y = reinterpret_cast< dip::dcomplex const* >( gabor_1D[ 1 ].filter.data() );
+   for( dip::uint ii = 0; ii < 25; ++ii ) {
+      for( dip::uint jj = 0; jj < 37; ++jj ) {
+         double diff = std::abs( gabor_orig.At( jj, ii ).As< dip::dcomplex >() - gabor_x[ jj ] * gabor_y[ ii ] );
+         if( diff > 1e-12 ) {
+            correct = false;
+         }
+      }
+   }
+   DOCTEST_CHECK( correct );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

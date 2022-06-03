@@ -118,10 +118,10 @@ void CreateGabor(
    }
 
    // Create output image
-   std::cout << "[CreateGabor] sigmas = " << sigmas << '\n';
-   std::cout << "[CreateGabor] outSizes = " << outSizes << '\n';
+   //std::cout << "[CreateGabor] sigmas = " << sigmas << '\n';
+   //std::cout << "[CreateGabor] outSizes = " << outSizes << '\n';
    out.ReForge( outSizes, 1, DT_DCOMPLEX );
-   std::cout << "[CreateGabor] out = " << out << '\n';
+   //std::cout << "[CreateGabor] out = " << out << '\n';
    ImageIterator< dcomplex > itOut( out );
    do {
       UnsignedArray const& coords = itOut.Coordinates();

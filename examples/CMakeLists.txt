@@ -33,7 +33,7 @@ add_executable(radial_mean cpp/radial_mean.cpp)
 target_compile_definitions(radial_mean PRIVATE DIP_EXAMPLES_DIR="${CMAKE_CURRENT_LIST_DIR}")
 target_link_libraries(radial_mean DIP)
 
-# This is a program that demonstates how to generate various shapes
+# This is a program that demonstrates how to generate various shapes
 add_executable(generate_shapes cpp/generate_shapes.cpp)
 target_link_libraries(generate_shapes DIP)
 

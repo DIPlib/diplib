@@ -62,6 +62,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::PixelTable::Mirror()` mirrored the footprint of the kernel, but not the weights.
 
+- `dip::SeparateFilter()` yielded the complex conjugate of the correct 1D filter for all dimensions except the first.
+
 
 
 
