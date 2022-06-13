@@ -37,7 +37,7 @@ void IncoherentOTF(
    DIP_THROW_IF( oversampling <= 0.0, E::INVALID_PARAMETER );
    DIP_THROW_IF( amplitude <= 0.0, E::INVALID_PARAMETER );
    bool stokseth;
-   DIP_STACK_TRACE_THIS( stokseth = BooleanFromString( method, "Stokseth", "Hopkins" ));
+   DIP_STACK_TRACE_THIS( stokseth = BooleanFromString( method, S::STOKSETH, "Hopkins" ));
    if( out.Dimensionality() == 0 ) {
       // No sizes given
       DIP_STACK_TRACE_THIS( out.Strip() ); // just in case...

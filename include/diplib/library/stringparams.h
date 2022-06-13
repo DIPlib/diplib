@@ -63,6 +63,7 @@ constexpr char const* EXACT = "exact";
 constexpr char const* GREY = "grey";
 constexpr char const* APPLY = "apply";
 constexpr char const* CW = "CW";
+constexpr char const* STOKSETH = "Stokseth";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

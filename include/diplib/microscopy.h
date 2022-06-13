@@ -466,13 +466,28 @@ DIP_EXPORT void IncoherentOTF(
       dfloat defocus = 0,
       dfloat oversampling = 1,
       dfloat amplitude = 1,
-      String const& method = "Stokseth"
+      String const& method = S::STOKSETH
 );
+
+/// \brief Overload for the function above, which takes image sizes instead of an image.
+DIP_NODISCARD inline Image IncoherentOTF(
+      UnsignedArray const& sizes,
+      dfloat defocus = 0,
+      dfloat oversampling = 1,
+      dfloat amplitude = 1,
+      String const& method = S::STOKSETH
+) {
+   Image out( sizes, 1, DT_SFLOAT );
+   IncoherentOTF( out, defocus, oversampling, amplitude, method );
+   return out;
+}
+
+/// \brief Overloaded version of the function above, defaulting to a 256x256 image.
 DIP_NODISCARD inline Image IncoherentOTF(
       dfloat defocus = 0,
       dfloat oversampling = 1,
       dfloat amplitude = 1,
-      String const& method = "Stokseth"
+      String const& method = S::STOKSETH
 ) {
    Image out;
    IncoherentOTF( out, defocus, oversampling, amplitude, method );

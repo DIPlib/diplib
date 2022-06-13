@@ -32,6 +32,8 @@ title: "Changes DIPlib 3.x.x"
   Added `dip::Kernel::HasComplexWeights()`, `dip::PixelTable::WeightsAreComplex()` and
   `dip::PixelTableOffsets::WeightsAreComplex()`.
 
+- Added overload for `dip::IncoherentOTF()` that takes output image sizes rather than an image as input.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -107,6 +109,12 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip.Convolution()`, a gateway to the three implementations of the convolution.
 
 ### Changed functionality
+
+- `dip.IncoherentOTF()` now takes output image sizes as first argument, instead of taking the output image. It
+  now returns the output image.
+
+- `dip.IncoherentPSF()` no longer takes the output image as an input argument, instead returning a new image of
+  appropriate sizes.
 
 (See also changes to *DIPlib*.)
 

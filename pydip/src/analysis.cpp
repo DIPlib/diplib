@@ -226,10 +226,11 @@ void init_analysis( py::module& m ) {
           },
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "blockSizes"_a = dip::UnsignedArray{ 3 }, "repetitions"_a = 200,
           "Like the C++ function, but using an internal `dip::Random` object." );
-   m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
-          "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = "Stokseth" );
-   m.def( "IncoherentPSF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
-          "out"_a, "oversampling"_a = 1.0, "amplitude"_a = 1.0 );
+
+   m.def( "IncoherentOTF", py::overload_cast< dip::UnsignedArray const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
+          "sizes"_a = dip::UnsignedArray{ 256, 256 }, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = dip::S::STOKSETH );
+   m.def( "IncoherentPSF", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
+          "oversampling"_a = 1.0, "amplitude"_a = 1.0 );
    m.def( "ExponentialFitCorrection", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::dfloat, dip::String const& >( &dip::ExponentialFitCorrection ),
           "in"_a, "mask"_a = dip::Image{}, "percentile"_a = -1.0, "fromWhere"_a = "first plane", "hysteresis"_a = 1.0, "weighting"_a = "none" );
    m.def( "AttenuationCorrection", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::AttenuationCorrection ),
