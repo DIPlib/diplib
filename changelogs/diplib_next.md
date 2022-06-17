@@ -32,6 +32,8 @@ title: "Changes DIPlib 3.x.x"
   Added `dip::Kernel::HasComplexWeights()`, `dip::PixelTable::WeightsAreComplex()` and
   `dip::PixelTableOffsets::WeightsAreComplex()`.
 
+- Added `dip::HaarWaveletTransform()`.
+
 - Added overload for `dip::IncoherentOTF()` that takes output image sizes rather than an image as input.
 
 ### Changed functionality
@@ -107,6 +109,8 @@ title: "Changes DIPlib 3.x.x"
 - Added functions `dip.MeanRelativeError()` and `dip.MaximumRelativeError()`.
 
 - Added `dip.Convolution()`, a gateway to the three implementations of the convolution.
+
+- Added `dip.HaarWaveletTransform()`.
 
 ### Changed functionality
 

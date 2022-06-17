@@ -64,6 +64,8 @@ constexpr char const* GREY = "grey";
 constexpr char const* APPLY = "apply";
 constexpr char const* CW = "CW";
 constexpr char const* STOKSETH = "Stokseth";
+constexpr char const* FORWARD = "forward";
+constexpr char const* INVERSE = "inverse";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";
@@ -165,7 +167,7 @@ constexpr char const* DISCRETE_TIME_FIT = "discrete time fit";
 constexpr char const* FORWARD_BACKWARD = "forward backward";
 
 // Fourier
-constexpr char const* INVERSE = "inverse";
+//constexpr char const* INVERSE = "inverse";
 constexpr char const* REAL = "real";
 constexpr char const* SYMMETRIC = "symmetric";
 constexpr char const* CORNER = "corner";

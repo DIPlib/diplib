@@ -131,13 +131,15 @@ void init_analysis( py::module& m ) {
    m.def( "FractalDimension", &dip::FractalDimension, "in"_a, "eta"_a = 0.5 );
 
    // diplib/transform.h
-   m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),
+   m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray >( &dip::FourierTransform ),
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = "larger" );
-   m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray const& >( &dip::RieszTransform ),
+   m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
    m.def( "StationaryWaveletTransform", py::overload_cast< dip::Image const&, dip::uint, dip::StringArray const&, dip::BooleanArray const& >( &dip::StationaryWaveletTransform ),
           "in"_a, "nLevels"_a = 4, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
+   m.def( "HaarWaveletTransform", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::BooleanArray >( &dip::HaarWaveletTransform ),
+          "in"_a, "nLevels"_a = 4, "direction"_a = dip::S::FORWARD, "process"_a = dip::BooleanArray{} );
 
    // diplib/distance.h
    m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),

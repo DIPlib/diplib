@@ -97,10 +97,10 @@ DIP_EXPORT void FourierTransform(
 DIP_NODISCARD inline Image FourierTransform(
       Image const& in,
       StringSet const& options = {},
-      BooleanArray const& process = {}
+      BooleanArray process = {}
 ) {
    Image out;
-   FourierTransform( in, out, options, process );
+   FourierTransform( in, out, options, std::move( process ));
    return out;
 }
 
@@ -147,10 +147,10 @@ DIP_NODISCARD inline Image RieszTransform(
       Image const& in,
       String const& inRepresentation = S::SPATIAL,
       String const& outRepresentation = S::SPATIAL,
-      BooleanArray const& process = {}
+      BooleanArray process = {}
 ) {
    Image out;
-   RieszTransform( in, out, inRepresentation, outRepresentation, process );
+   RieszTransform( in, out, inRepresentation, outRepresentation, std::move( process ));
    return out;
 }
 
@@ -171,8 +171,8 @@ DIP_NODISCARD inline Image RieszTransform(
 /// filtering.
 ///
 /// `in` can have any number of dimensions, any number of tensor elements, and any data type.
-/// `out` will have the smallest signed data type that can hold all values if `in` (see
-/// \ref dip::DataType::SuggestSigned. Note that the first `nLevels` slices will contain negative
+/// `out` will have the smallest signed data type that can hold all values of `in` (see
+/// \ref dip::DataType::SuggestSigned). Note that the first `nLevels` slices will contain negative
 /// values, even if `in` is purely positive, as these levels are the difference between two
 /// differently smoothed images.
 ///
@@ -183,7 +183,7 @@ DIP_NODISCARD inline Image RieszTransform(
 /// dip::Image swt = StationaryWaveletTransform( img );
 /// dip::BooleanArray process( swt.Dimensionality(), false );
 /// process.back() = true;
-/// img == dip.Sum( swt, {}, process ).Squeeze();
+/// img == Sum( swt, {}, process ).Squeeze();
 /// ```
 DIP_EXPORT void StationaryWaveletTransform(
       Image const& in,
@@ -200,6 +200,41 @@ DIP_NODISCARD inline Image StationaryWaveletTransform(
 ) {
    Image out;
    StationaryWaveletTransform( in, out, nLevels, boundaryCondition, process );
+   return out;
+}
+
+
+/// \brief Computes the Haar wavelet transform or its inverse.
+///
+/// Recursively splits the image into low-frequency and high-frequency components. Each step splits an *n*-dimensional
+/// image into 2^*n*^ smaller blocks, the one in the top-left corner containing the low-frequency components. The
+/// low-frequency block is the one recursively split in the next step. The output image has the same sizes as the
+/// input image, but is of a floating-point type.
+///
+/// However, the input must have sizes multiple of 2^`nLevels`^. The image will be padded with zeros for the forward
+/// transform if this is not the case. For the inverse transform, an exception will the thrown if the sizes are not
+/// as expected.
+///
+/// `direction` can be `"forward"` or `"inverse"`. Applying a forward transform to any image, and an inverse transform
+/// to the result, will yield an image identical to the input image, up to rounding errors, and potentially with some
+/// padding to the right and bottom.
+///
+/// `process` can be used to exclude some dimensions from the filtering.
+DIP_EXPORT void HaarWaveletTransform(
+      Image const& in,
+      Image& out,
+      dip::uint nLevels = 4,
+      String const& direction = S::FORWARD,
+      BooleanArray process = {}
+);
+DIP_NODISCARD inline Image HaarWaveletTransform(
+      Image const& in,
+      dip::uint nLevels = 4,
+      String const& direction = S::FORWARD,
+      BooleanArray process = {}
+) {
+   Image out;
+   HaarWaveletTransform( in, out, nLevels, direction, std::move( process ));
    return out;
 }
 
