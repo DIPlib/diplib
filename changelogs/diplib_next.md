@@ -34,6 +34,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip::HaarWaveletTransform()`.
 
+- Added `dip::Shrinkage()`.
+
 - Added overload for `dip::IncoherentOTF()` that takes output image sizes rather than an image as input.
 
 ### Changed functionality
@@ -111,6 +113,8 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip.Convolution()`, a gateway to the three implementations of the convolution.
 
 - Added `dip.HaarWaveletTransform()`.
+
+- Added `dip.Shrinkage()`.
 
 ### Changed functionality
 

@@ -1,5 +1,5 @@
 /*
- * (c)2017, 2019, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -155,9 +155,22 @@ void Zero(
    DIP_THROW_IF( !dtype.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
-         [ = ]( auto its ) { return static_cast< dfloat >( *its[ 0 ] ) < threshold ? static_cast< decltype( *its[ 0 ] ) >( 0 ) : *its[ 0 ]; }, 2
+         [ = ]( auto its ) { return ( static_cast< dfloat >( *its[ 0 ] ) < threshold ) ? static_cast< decltype( *its[ 0 ] ) >( 0 ) : *its[ 0 ]; }, 2
    ), dtype );
    DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
+}
+
+void Shrinkage(
+      Image const& in,
+      Image& out,
+      dfloat threshold
+) {
+   DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter = Framework::NewMonadicScanLineFilter< dfloat >(
+         [ = ]( auto its ) { return ( *its[ 0 ] > threshold ) ? ( *its[ 0 ] - threshold )
+                                                              : (( *its[ 0 ] < -threshold ) ? ( *its[ 0 ] + threshold )
+                                                                                            : 0.0 ); }, 2 );
+   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( in, out, DT_DFLOAT, in.DataType(), in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim ));
 }
 
 namespace {

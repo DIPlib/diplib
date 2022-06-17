@@ -1,5 +1,5 @@
 /*
- * (c)2017, 2019, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,7 @@ namespace dip {
 /// - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
 ///   output range is given by [`low-high/2`,`low+high/2`].
 ///
-/// `in` must be real-valued.
+/// `in` must be real-valued. Tensor elements are processed independently. `out` is of the same type as `in`.
 DIP_EXPORT void Clip(
       Image const& in,
       Image& out,
@@ -115,7 +115,7 @@ inline Image ClipHigh(
 /// - `"range"`: `low` is interpreted as the middle of the range, and `high` as the length of the range. The
 ///   input range is given by [`low-high/2`, `low+high/2`]. Note that this is the default mode.
 ///
-/// `in` must be real-valued.
+/// `in` must be real-valued. Tensor elements are processed independently. `out` is of a floating-point type.
 ///
 /// !!! literature
 ///     - L.J. van Vliet, "Grey-Scale Measurements in Multi-Dimensional Digitized Images", Ph.D. thesis, Delft University
@@ -144,7 +144,7 @@ inline Image ErfClip(
 /// zero is substituted. This operation is also referred to as thresholding, though in *DIPlib* we
 /// use "thresholding" for the process that yields a binary image.
 ///
-/// `in` must be real-valued.
+/// `in` must be real-valued. Tensor elements are processed independently. `out` is of the same type as `in`.
 DIP_EXPORT void Zero(
       Image const& in,
       Image& out,
@@ -156,6 +156,37 @@ inline Image Zero(
 ) {
    Image out;
    Zero( in, out, threshold );
+   return out;
+}
+
+/// \brief Shrinkage function, also known as soft threshold.
+///
+/// The shrinkage function shifts values towards zero by `threshold`, samples with a smaller magnitude are set to zero.
+/// That is, it applies
+///
+/// $$
+///    S_t(x) = \begin{cases}
+///                  x - t  &  x > t
+///               \\ x + t  &  x < -t
+///               \\ 0      & \text{otherwise}
+///             \end{cases}
+/// $$
+///
+/// This function can be written also as `max( abs(x) - t, 0 ) * sign(x)` (computed with
+/// \ref Maximum(dip::Image const&, dip::Image const&, dip::Image&, dip::BooleanArray const&), \ref Abs and \ref Sign).
+///
+/// `in` must be real-valued. Tensor elements are processed independently. `out` is of the same type as `in`.
+DIP_EXPORT void Shrinkage(
+      Image const& in,
+      Image& out,
+      dfloat threshold = 128.0
+);
+inline Image Shrinkage(
+      Image const& in,
+      dfloat threshold = 128.0
+) {
+   Image out;
+   Shrinkage( in, out, threshold );
    return out;
 }
 
