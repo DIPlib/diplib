@@ -268,10 +268,10 @@ DIP_NODISCARD inline Image IsotropicOpening(
 /// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 ///
-/// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed.
+/// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed. With
+/// `iterations==0`, a faster algorithm is used.
 ///
-/// The function \ref dip::MorphologicalReconstruction is faster, but does not support many of the options
-/// provided here.
+/// See also \ref dip::MorphologicalReconstruction, which is less flexible but works for gray-scale images.
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,

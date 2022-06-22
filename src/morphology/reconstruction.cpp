@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,11 +18,12 @@
 #include <queue>
 
 #include "diplib.h"
+#include "diplib/binary.h"
+#include "diplib/generation.h"
+#include "diplib/iterators.h"
 #include "diplib/morphology.h"
 #include "diplib/math.h"
-#include "diplib/generation.h"
 #include "diplib/neighborlist.h"
-#include "diplib/iterators.h"
 #include "diplib/overload.h"
 
 namespace dip {
@@ -87,14 +88,14 @@ void MorphologicalReconstructionInternal(
             if( dilation ) {
                for( dip::uint ii = 0; ii < backwardOffsets.size(); ++ii ) {
                   if( neighborList.IsInImage( ii, it.Coordinates(), imsz )) {
-                     val = std::max( val, it.Pointer()[ backwardOffsets[ ii ] ] );
+                     val = std::max( val, it.Pointer()[ backwardOffsets[ ii ]] );
                   }
                }
                val = std::min( val, in[ offset ] );
             } else {
                for( dip::uint ii = 0; ii < backwardOffsets.size(); ++ii ) {
                   if( neighborList.IsInImage( ii, it.Coordinates(), imsz )) {
-                     val = std::min( val, it.Pointer()[ backwardOffsets[ ii ] ] );
+                     val = std::min( val, it.Pointer()[ backwardOffsets[ ii ]] );
                   }
                }
                val = std::max( val, in[ offset ] );
@@ -136,46 +137,32 @@ void MorphologicalReconstructionInternal(
          if( isBorder( flag[ offset ] )) {
             for( dip::uint ii = 0; ii < backwardOffsets.size(); ++ii ) {
                if( neighborList.IsInImage( ii, it.Coordinates(), imsz )) {
-                  maxNeighborValue = std::max( maxNeighborValue, it.Pointer()[ backwardOffsets[ ii ] ] );
-                  minNeighborValue = std::min( minNeighborValue, it.Pointer()[ backwardOffsets[ ii ] ] );
-               }
-            }
-            if( dilation ) {
-               val = std::max( val, maxNeighborValue );
-               val = std::min( val, in[ offset ] );
-            } else {
-               val = std::min( val, minNeighborValue );
-               val = std::max( val, in[ offset ] );
-            }
-            if( *it != val ) {
-               *it = val;
-               // Enqueue only if pixels in the backward direction might be propagated into (the forward pixels we'll
-               // be propagating into later in this raster scan).
-               if( dilation ? ( minNeighborValue < val ) : ( maxNeighborValue > val )) {
-                  Q.push( Qitem< TPI >{ val, offset } );
-                  // TODO: we are still enqueueing too many elements, we have not checked to see if the neighbor can be incremented
+                  TPI v = it.Pointer()[ backwardOffsets[ ii ]];
+                  maxNeighborValue = std::max( maxNeighborValue, v );
+                  minNeighborValue = std::min( minNeighborValue, v );
                }
             }
          } else {
-            for( auto o : backwardOffsets ) {
-               maxNeighborValue = std::max( maxNeighborValue, it.Pointer()[ o ] );
-               minNeighborValue = std::min( minNeighborValue, it.Pointer()[ o ] );
+            for( auto n : backwardOffsets ) {
+               TPI v = it.Pointer()[ n ];
+               maxNeighborValue = std::max( maxNeighborValue, v );
+               minNeighborValue = std::min( minNeighborValue, v );
             }
-            if( dilation ) {
-               val = std::max( val, maxNeighborValue );
-               val = std::min( val, in[ offset ] );
-            } else {
-               val = std::min( val, minNeighborValue );
-               val = std::max( val, in[ offset ] );
-            }
-            if( *it != val ) {
-               *it = val;
-               // Enqueue only if pixels in the backward direction might be propagated into (the forward pixels we'll
-               // be propagating into later in this raster scan).
-               if( dilation ? ( minNeighborValue < val ) : ( maxNeighborValue > val )) {
-                  Q.push( Qitem< TPI >{ val, offset } );
-                  // TODO: we are still enqueueing too many elements, we have not checked to see if the neighbor can be incremented
-               }
+         }
+         if( dilation ) {
+            val = std::max( val, maxNeighborValue );
+            val = std::min( val, in[ offset ] );
+         } else {
+            val = std::min( val, minNeighborValue );
+            val = std::max( val, in[ offset ] );
+         }
+         if( *it != val ) {
+            *it = val;
+            // Enqueue only if pixels in the backward direction might be propagated into (the forward pixels we'll
+            // be propagating into later in this raster scan).
+            if( dilation ? ( minNeighborValue < val ) : ( maxNeighborValue > val )) {
+               Q.push( Qitem< TPI >{ val, offset } );
+               // TODO: we are still enqueueing too many elements, we have not checked to see if the neighbor can be incremented
             }
          }
       } while( ++it );
@@ -195,12 +182,13 @@ void MorphologicalReconstructionInternal(
       }
       // Compute coordinates if we're a border pixel
       UnsignedArray coords;
-      if( isBorder( flag[ offset ] )) {
+      bool onBorder = isBorder( flag[ offset ] );
+      if( onBorder ) {
          coords = coordinatesComputer( offset );
       }
       // Iterate over all neighbors
       for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
-         if( !isBorder( flag[ offset ] ) || neighborList.IsInImage( jj, coords, imsz )) { // test IsInImage only for border pixels
+         if( !onBorder || neighborList.IsInImage( jj, coords, imsz )) { // test IsInImage only for border pixels
             // Propagate this pixel's value to its unfinished neighbors
             dip::sint nOffset = offset + neighborOffsets[ jj ];
             TPI newval = in[ nOffset ];
@@ -239,13 +227,23 @@ void MorphologicalReconstruction (
    // Check input
    DIP_THROW_IF( !c_marker.IsForged() || !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_marker.IsScalar() || !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   UnsignedArray inSizes = c_in.Sizes();
+   UnsignedArray const& inSizes = c_in.Sizes();
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( inSizes != c_marker.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    bool dilation;
    DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, S::DILATION, S::EROSION ));
+
+   if( c_in.DataType().IsBinary() && c_marker.DataType().IsBinary() ) {
+      if( dilation ) {
+         DIP_STACK_TRACE_THIS( dip::BinaryPropagation( c_marker, c_in, out, static_cast< dip::sint >( connectivity ), 0, S::BACKGROUND ));
+      } else {
+         DIP_STACK_TRACE_THIS( dip::BinaryPropagation( ~c_marker, ~c_in, out, static_cast< dip::sint >( connectivity ), 0, S::BACKGROUND ));
+         dip::Not( out, out );
+      }
+      return;
+   }
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
@@ -309,7 +307,7 @@ void MorphologicalReconstruction (
    IntegerArray neighborOffsets = neighborList.ComputeOffsets( fout.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_NONCOMPLEX( MorphologicalReconstructionInternal,
+   DIP_OVL_CALL_REAL( MorphologicalReconstructionInternal,
                             ( in, fout, flag, neighborOffsets, neighborList, dilation ),
                             in.DataType() );
    out.SetPixelSize( std::move( pixelSize ));

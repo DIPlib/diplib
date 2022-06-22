@@ -16,7 +16,6 @@
  */
 
 #include "binary_support.h"
-#include "diplib/framework.h"
 #include "diplib/iterators.h"
 #include "diplib/border.h"
 
@@ -63,13 +62,12 @@ bool IsBinaryEdgePixel(
    }
 
    uint8* pPixel = static_cast< uint8* >( in.Origin() ) + pixelOffset; // It's a binary image, but we read pixels as uint8.
+   bool pixelIsObject = TestAnyBit( *pPixel, dataMask );
    // Check for all valid neighbors if any of them has a differing value. If so, break and return true.
    dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsets.begin();
    for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
       if( !checkBounds || itNeighbor.IsInImage( pixelCoords, in.Sizes() )) {
-         uint8 const pixelByte = *pPixel;
          uint8 const neighborByte = *( pPixel + *itNeighborOffset ); // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
-         bool pixelIsObject = TestAnyBit( pixelByte, dataMask );
          bool neighborIsObject = TestAnyBit( neighborByte, dataMask );
          // If the pixel value is different from the neighbor value, it is an edge pixel
          if( pixelIsObject != neighborIsObject ) {

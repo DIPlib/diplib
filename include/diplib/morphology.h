@@ -1370,10 +1370,8 @@ DIP_NODISCARD inline Image UpperSkeleton2D(
 /// (a priority queue method). We implement the forward and backward scan, and follow it by a priority queue propagation.
 /// The priority queue method has the advantage of visiting each pixels exactly once.
 ///
-/// For binary images, \ref dip::BinaryPropagation is more flexible. That function additionally allows choosing a
-/// boundary condition, allows limiting the number of reconstruction steps, and supports alternating connectivity,
-/// which yields a more isotropic result when limiting the number of reconstruction steps.
-/// However, this function is faster.
+/// For binary images, this function calls \ref dip::BinaryPropagation, which uses the same algorithm but is specialized
+/// for the binary case (e.g. using a stack instead of a priority queue).
 ///
 /// This functions is used by \ref dip::LimitedMorphologicalReconstruction, \ref dip::HMinima, \ref dip::HMaxima,
 /// \ref dip::Leveling, \ref dip::OpeningByReconstruction, \ref dip::ClosingByReconstruction

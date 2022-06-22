@@ -44,6 +44,10 @@ title: "Changes DIPlib 3.x.x"
 - Updated included *libics*, which fixes some potential bugs, and adds support for metadata related
   to multi-detector microscopes.
 
+- `dip::BinaryPropagation()` is now much faster when `iterations` is 0, using an algorithm similar to the
+  one used for `dip::MorphologicalReconstruction()`, but specialized for the binary case.
+  `dip::MorphologicalReconstruction()` now calls `dip::BinaryPropagation()` for binary images.
+
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.

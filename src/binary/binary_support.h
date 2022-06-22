@@ -46,7 +46,7 @@ inline bool TestAnyBit( uint8 const value, uint8 const mask ) {
 }
 
 // True if all of the bits specified in `mask` are set.
-inline bool TestBits( uint8 const value, uint8 const mask ) {
+inline bool TestAllBits( uint8 const value, uint8 const mask ) {
    return ( value & mask ) == mask;
 }
 

@@ -26,8 +26,11 @@ int main( int argc, char** argv ) {
 
    std::cout << "Reading " << inputPath << "/erika\n";
    dip::Image image = dip::ImageReadTIFF( inputPath + "/erika" ) > 100;
-   dip::Tile( { image, image, image, image, image, image }, image, { 3, 2 } );
+   dip::Tile( { image, image, image, image, image, image, image, image, image, image, image, image }, image, { 4, 3 } );
    std::cout << image;
+
+   std::cout << "\nTimes below are for grayscale vs binary version of operator.\n";
+   std::cout << "Each operator is applied " << reps << " times.\n";
 
    //dip::SetNumberOfThreads( 1 ); // Uncomment this line if you don't want to allow dip::Dilation and dip::EuclideanDistanceTransform to use parallelism
 
@@ -137,26 +140,27 @@ int main( int argc, char** argv ) {
 
    }
 
-   std::cout << "\npropagation:\n";
+   std::cout << "\npropagation (with a large number of iterations, not using 0 because then both use the same code):\n";
+   // Note that MorphologicalReconstruction calls BinaryPropagation with iterations=0.
 
    for( dip::uint kk = 1; kk < 10; kk += 1 ) {
 
       dip::Image seeds = dip::Erosion( image, static_cast< dip::dfloat >( kk ));
 
-      dip::Image diff = dip::BinaryPropagation( seeds, image, 1 ) != dip::MorphologicalReconstruction( seeds, image, 1 );
+      dip::Image diff = dip::BinaryPropagation( seeds, image, 1, 100000 ) != dip::MorphologicalReconstruction( seeds, image, 1 );
       if( dip::Any( diff ).As< bool >() ) {
          std::cout << "!!!Error for kk = " << kk << '\n';
       }
 
       timer.Reset();
-      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
-         dip::Image out = dip::BinaryPropagation( seeds, image, 1 );
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Image out = dip::BinaryPropagation( seeds, image, 1, 100000 );
       }
       timer.Stop();
       double binTime = timer.GetWall();
 
       timer.Reset();
-      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
          dip::Image out = dip::MorphologicalReconstruction( seeds, image, 1 );
       }
       timer.Stop();
@@ -165,26 +169,26 @@ int main( int argc, char** argv ) {
 
    }
 
-   std::cout << "\ninverse propagation:\n";
+   std::cout << "\ninverse propagation (with a large number of iterations, not using 0 because then both use the same code):\n";
 
    for( dip::uint kk = 1; kk < 10; kk += 1 ) {
 
       dip::Image mask = dip::Erosion( image, static_cast< dip::dfloat >( kk ));
 
-      dip::Image diff = ~dip::BinaryPropagation( ~image, ~mask, 1 ) != dip::MorphologicalReconstruction( image, mask, 1, dip::S::EROSION );
+      dip::Image diff = ~dip::BinaryPropagation( ~image, ~mask, 1, 100000 ) != dip::MorphologicalReconstruction( image, mask, 1, dip::S::EROSION );
       if( dip::Any( diff ).As< bool >() ) {
          std::cout << "!!!Error for kk = " << kk << '\n';
       }
 
       timer.Reset();
-      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
-         dip::Image out = ~dip::BinaryPropagation( ~image, ~mask, 1 );
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
+         dip::Image out = ~dip::BinaryPropagation( ~image, ~mask, 1, 100000 );
       }
       timer.Stop();
       double binTime = timer.GetWall();
 
       timer.Reset();
-      for( dip::uint ii = 0; ii < reps/4; ++ii ) {
+      for( dip::uint ii = 0; ii < reps; ++ii ) {
          dip::Image out = dip::MorphologicalReconstruction( image, mask, 1, dip::S::EROSION );
       }
       timer.Stop();
