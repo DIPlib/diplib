@@ -48,6 +48,11 @@ title: "Changes DIPlib 3.x.x"
   one used for `dip::MorphologicalReconstruction()`, but specialized for the binary case.
   `dip::MorphologicalReconstruction()` now calls `dip::BinaryPropagation()` for binary images.
 
+- `dip::MedianFilter()`, `dip::PercentileFilter()` and `dip::RankFilter()` now use an algorithm with
+  reduced complexity for larger kernels, which significantly reduces the computational time. For a kernel
+  of size *k*x*k*, the naive algorithm is O(*k*^2^ log(*k*)), whereas the new one is O(*k* log(*k*)).
+  This algorithm is applicable to kernels of any size and any number of dimensions.
+
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.
