@@ -1173,7 +1173,6 @@ void BasicMorphology(
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
-#include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    dip::Image in( { 64, 41 }, 1, dip::DT_UINT8 );

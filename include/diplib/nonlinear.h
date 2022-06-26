@@ -546,7 +546,7 @@ DIP_NODISCARD inline Image CoherenceEnhancingDiffusion(
 /// If a value is zero, no convolution is done is this direction.
 ///
 /// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel,
-/// see \ref Gauss for details.
+/// see \ref CreateGauss for details.
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// Currently `boundaryCondition` can only be `"mirror"` (default) or `"add zeros"`.
 ///
@@ -606,7 +606,7 @@ DIP_NODISCARD inline Image AdaptiveGauss(
 /// the second perpendicular to it. If a value is zero, no convolution is done is this direction.
 ///
 /// Together with `sigmas`, the `orders`, `truncation` and `exponents` parameters define the gaussian kernel,
-/// see \ref GaussFIR for details.
+/// see \ref CreateGauss for details.
 /// `interpolationMethod` can be `"linear"` (default) or `"zero order"` (faster).
 /// Currently `boundaryCondition` can only be `"mirror"` (default) or `"add zeros"`.
 ///
