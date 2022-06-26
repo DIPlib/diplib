@@ -44,8 +44,8 @@ class OrderStatisticTree {
       OrderStatisticTree() = default;
 
       // Default move operators should do the right thing
-      OrderStatisticTree( OrderStatisticTree& ) = default;
-      OrderStatisticTree& operator=( OrderStatisticTree& ) = default;
+      OrderStatisticTree( OrderStatisticTree&& ) = default;
+      OrderStatisticTree& operator=( OrderStatisticTree&& ) = default;
 
       // We can only copy the default-initialized tree, not one with data (that would be difficult to do with all those pointers)
       OrderStatisticTree( OrderStatisticTree const& other ) {
