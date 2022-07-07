@@ -18,6 +18,7 @@
 #include "pydip.h"
 #include "diplib/linear.h"
 #include "diplib/nonlinear.h"
+#include "diplib/deconvolution.h"
 
 namespace {
 
@@ -152,5 +153,19 @@ void init_filtering( py::module& m ) {
           "in"_a, "params"_a, "sigmas"_a = dip::FloatArray{ 5.0, 1.0 }, "orders"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 2.0, "exponents"_a = dip::UnsignedArray{ 0 }, "interpolationMethod"_a = dip::S::LINEAR, "boundaryCondition"_a = dip::S::SYMMETRIC_MIRROR );
    m.def( "BilateralFilter", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::BilateralFilter ),
           "in"_a, "estimate"_a = dip::Image{}, "spatialSigmas"_a = dip::FloatArray{ 2.0 }, "tonalSigma"_a = 30.0, "truncation"_a = 2.0, "method"_a = "xysep", "boundaryCondition"_a = dip::StringArray{} );
+
+   // diplib/deconvolution.h
+   m.def( "WienerDeconvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::StringSet const& >( &dip::WienerDeconvolution ),
+          "in"_a, "psf"_a, "signalPower"_a, "noisePower"_a, "options"_a = dip::StringSet{ dip::S::PAD } );
+   m.def( "WienerDeconvolution", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::StringSet const& >( &dip::WienerDeconvolution ),
+          "in"_a, "psf"_a, "regularization"_a = 1e-4, "options"_a = dip::StringSet{ dip::S::PAD } );
+   m.def( "TikhonovMiller", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::StringSet const& >( &dip::TikhonovMiller ),
+          "in"_a, "psf"_a, "regularization"_a = 0.1, "options"_a = dip::StringSet{ dip::S::PAD } );
+   m.def( "IterativeConstrainedTikhonovMiller", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat, dip::uint, dip::dfloat, dip::StringSet const& >( &dip::IterativeConstrainedTikhonovMiller ),
+          "in"_a, "psf"_a, "regularization"_a = 0.1, "tolerance"_a = 1e-6, "maxIterations"_a = 30, "stepSize"_a = 0.0, "options"_a = dip::StringSet{ dip::S::PAD } );
+   m.def( "RichardsonLucy", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::uint, dip::StringSet const& >( &dip::RichardsonLucy ),
+          "in"_a, "psf"_a, "regularization"_a = 0.0, "nIterations"_a = 30, "options"_a = dip::StringSet{ dip::S::PAD } );
+   m.def( "FastIterativeShrinkageThresholding", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat, dip::uint, dip::uint, dip::StringSet const& >( &dip::FastIterativeShrinkageThresholding ),
+          "in"_a, "psf"_a, "regularization"_a = 0.1, "tolerance"_a = 1e-6, "maxIterations"_a = 30, "nScales"_a = 3, "options"_a = dip::StringSet{ dip::S::PAD } );
 
 }

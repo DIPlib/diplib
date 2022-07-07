@@ -1,5 +1,5 @@
 /*
- * (c)2018, Cris Luengo.
+ * (c)2018-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -17,41 +17,33 @@
  */
 
 #include "diplib.h"
-#include "diplib/microscopy.h"
+#include "diplib/deconvolution.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/transform.h"
+
+#include "common_deconv_utility.h"
 
 namespace dip {
 
 namespace {
 
-bool ParseWienerOptions( StringSet const& options ) {
+std::tuple< bool, bool > ParseWienerOptions( StringSet const& options ) {
    bool isOtf = false;
-   for( auto& opt : options ) {
-      if( opt == "OTF" ) {
+   bool pad = false;
+   for( auto const& opt : options ) {
+      if( opt == S::OTF ) {
          isOtf = true;
+      } else if( opt == S::PAD ) {
+         pad = true;
       } else {
          DIP_THROW_INVALID_FLAG( opt );
       }
    }
-   return isOtf;
+   return { isOtf, pad };
 }
 
-Image GetOTF( Image const& psf, UnsignedArray const& sizes, bool isOtf ) {
-   Image H;
-   if( isOtf ) {
-      H = psf.QuickCopy();
-      DIP_THROW_IF( H.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
-   } else {
-      DIP_THROW_IF( !psf.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-      DIP_STACK_TRACE_THIS( H = psf.Pad( sizes ));
-      FourierTransform( H, H );
-   }
-   return H;
-}
-
-}
+} // namespace
 
 void WienerDeconvolution(
       Image const& in,
@@ -64,12 +56,12 @@ void WienerDeconvolution(
    DIP_THROW_IF( !in.IsForged() || !psf.IsForged() || !noisePower.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar() || !psf.IsScalar() || !noisePower.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal() || !noisePower.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   bool isOtf;
-   DIP_STACK_TRACE_THIS( isOtf = ParseWienerOptions( options ));
+   bool isOtf, pad;
+   DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseWienerOptions( options ));
+
    // Fourier transforms etc.
-   Image H;
-   DIP_STACK_TRACE_THIS( H = GetOTF( psf, in.Sizes(), isOtf ));
-   Image G = FourierTransform( in );
+   Image G, H;
+   DIP_STACK_TRACE_THIS( FourierTransformImageAndKernel( in, psf, G, H, isOtf, pad ));
    Image S;
    if( signalPower.IsForged() ) {
       DIP_THROW_IF( !signalPower.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -78,16 +70,25 @@ void WienerDeconvolution(
    } else {
       S = SquareModulus( G );
    }
-   Image N = noisePower.QuickCopy(); // To make the computations below look more like the equation
+
    // Compute the Wiener filter in the frequency domain
-   MultiplyConjugate( G, H, G, G.DataType() );
-   MultiplySampleWise( G, S, G, G.DataType() );
-   Image divisor = SquareModulus( H );
-   MultiplySampleWise( divisor, S, divisor, divisor.DataType() );
-   divisor += noisePower;
-   G /= divisor; // Not using dip::SafeDivide() on purpose: zeros indicate a true problem here
+   DIP_START_STACK_TRACE
+      MultiplyConjugate( G, H, G, G.DataType() );
+      MultiplySampleWise( G, S, G, G.DataType() );  // Throws if `signalPower` is the wrong size
+      Image divisor = SquareModulus( H );
+      MultiplySampleWise( divisor, S, divisor, divisor.DataType() );
+      divisor += noisePower;  // Throws if `noisePower` is the wrong size
+      G /= divisor; // Not using dip::SafeDivide() on purpose: zeros indicate a true problem here
+   DIP_END_STACK_TRACE
+
    // Inverse Fourier transform
-   DIP_STACK_TRACE_THIS( FourierTransform( G, out, { S::INVERSE, S::REAL } ));
+   if( pad ) {
+      Image tmp;
+      DIP_STACK_TRACE_THIS( FourierTransform( G, tmp, { S::INVERSE, S::REAL } ));
+      out = tmp.Cropped( in.Sizes() );
+   } else {
+      DIP_STACK_TRACE_THIS( FourierTransform( G, out, { S::INVERSE, S::REAL } ));
+   }
 }
 
 void WienerDeconvolution(
@@ -101,20 +102,30 @@ void WienerDeconvolution(
    DIP_THROW_IF( !in.IsScalar() || !psf.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( regularization <= 0, E::PARAMETER_OUT_OF_RANGE );
-   bool isOtf;
-   DIP_STACK_TRACE_THIS( isOtf = ParseWienerOptions( options ));
+   bool isOtf, pad;
+   DIP_STACK_TRACE_THIS( std::tie( isOtf, pad ) = ParseWienerOptions( options ));
+
    // Fourier transforms etc.
-   Image H;
-   DIP_STACK_TRACE_THIS( H = GetOTF( psf, in.Sizes(), isOtf ));
-   Image G = FourierTransform( in );
+   Image G, H;
+   DIP_STACK_TRACE_THIS( FourierTransformImageAndKernel( in, psf, G, H, isOtf, pad ));
+
    // Compute the Wiener filter in the frequency domain
-   MultiplyConjugate( G, H, G, G.DataType() );
-   Image divisor = SquareModulus( H );
-   dfloat K = regularization * Maximum( divisor ).As< dfloat >();
-   divisor += K;
-   G /= divisor; // Not using dip::SafeDivide() on purpose: zeros indicate a true problem here
+   DIP_START_STACK_TRACE
+      MultiplyConjugate( G, H, G, G.DataType() );
+      Image divisor = SquareModulus( H );
+      dfloat K = regularization * Maximum( divisor ).As< dfloat >();
+      divisor += K;
+      G /= divisor; // Not using dip::SafeDivide() on purpose: zeros indicate a true problem here
+   DIP_END_STACK_TRACE
+
    // Inverse Fourier transform
-   DIP_STACK_TRACE_THIS( FourierTransform( G, out, { S::INVERSE, S::REAL } ));
+   if( pad ) {
+      Image tmp;
+      DIP_STACK_TRACE_THIS( FourierTransform( G, tmp, { S::INVERSE, S::REAL } ));
+      out = tmp.Cropped( in.Sizes() );
+   } else {
+      DIP_STACK_TRACE_THIS( FourierTransform( G, out, { S::INVERSE, S::REAL } ));
+   }
 }
 
 } // namespace dip

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/random.h"
+#include "diplib/deconvolution.h" // for backwards compatibility
 
 
 /// \file
@@ -33,6 +34,7 @@ namespace dip {
 /// \group microscopy Microscopy
 /// \brief Assorted tools useful in microscopy, some presumably also in astronomy and other applications.
 /// \addtogroup
+
 
 /// \brief Applies a logarithmic mapping to a transmittance image to obtain an absorbance image
 ///
@@ -440,6 +442,7 @@ inline dfloat CostesSignificanceTest(
    return CostesSignificanceTest( channel1, channel2, mask, random, std::move( blockSizes ), repetitions );
 }
 
+
 /// \brief Generates an incoherent OTF (optical transfer function)
 ///
 /// This function implements the formulae for a (defocused) incoherent OTF as described by Castleman.
@@ -520,85 +523,6 @@ DIP_NODISCARD inline Image IncoherentPSF(
 ) {
    Image out;
    IncoherentPSF( out, oversampling, amplitude );
-   return out;
-}
-
-
-/// \brief Wiener Deconvolution using estimates of signal and noise power
-///
-/// If $G$ is the Fourier transform of `in`, $H$ is the Fourier transform of `psf`,
-/// and $F$ is the Fourier transform of `out`, then this function estimates the $F$ that optimally
-/// (in the least squares sense) satisfies $G = FH$ (that is, `in` is the result of the convolution of
-/// `out` with `psf`).
-///
-/// Finding `out` requires knowledge of the power spectrum of the signal and the noise. The Wiener deconvolution
-/// filter is defined in the frequency domain as
-///
-/// $$ H_\text{inv} = \frac{H^* S}{ H^* H S + N } \; , $$
-///
-/// where $S$ is `signalPower`, and $N$ is `noisePower`. These functions are typically not known, but:
-///
-/// - `signalPower` can be estimated as the Fourier transform of the autocorrelation of `in`. If a raw image
-///   is passed for this argument (`dip::Image{}`), then it will be computed as such.
-///
-/// - `noisePower` can be estimated as a flat function. A 0D image can be given here, it will be expanded to
-///   the size of the other images. `noisePower` should not be zero anywhere, as that might lead to division
-///   by zero and consequently meaningless results.
-///
-/// The other syntax for \ref dip::WienerDeconvolution takes an estimate of the noise-to-signal
-/// ratio instead of the signal and noise power spectra. Note that $H_\text{inv}$ can be rewritten as
-///
-/// $$ H_\text{inv} = \frac{H^*}{ H^* H  + \frac{N}{S} } = \frac{H^*}{ H^* H  + K } \; , $$
-///
-/// where $K$ is the noise-to-signal ratio.
-///
-/// `psf` is given in the spatial domain, and will be zero-padded to the size of `in` and Fourier transformed.
-/// The PSF (point spread function) should sum to one in order to preserve the mean image intensity.
-/// If the OTF (optical transfer function, the Fourier transform of the PSF) is known, it is possible to pass
-/// that as `psf`; add the string `"OTF"` to `options`.
-///
-/// All input images must be real-valued and scalar, except if the OFT is given instead of the PSF, in which
-/// case `psf` could be complex-valued.
-DIP_EXPORT void WienerDeconvolution(
-      Image const& in,
-      Image const& psf,
-      Image const& signalPower,
-      Image const& noisePower,
-      Image& out,
-      StringSet const& options = {}
-);
-DIP_NODISCARD inline Image WienerDeconvolution(
-      Image const& in,
-      Image const& psf,
-      Image const& signalPower,
-      Image const& noisePower,
-      StringSet const& options = {}
-) {
-   Image out;
-   WienerDeconvolution( in, psf, signalPower, noisePower, out, options );
-   return out;
-}
-
-/// \brief Wiener Deconvolution using an estimate of noise-to-signal ratio
-///
-/// See the description of the function with the same name above. The difference here is that a single number,
-/// `regularization`, is given instead of the signal and noise power spectra. We then set $K$ (the
-/// noise-to-signal ratio) to `regularization * dip::Maximum(P)`, with `P` equal to $H^* H$.
-DIP_EXPORT void WienerDeconvolution(
-      Image const& in,
-      Image const& psf,
-      Image& out,
-      dfloat regularization = 1e-4,
-      StringSet const& options = {}
-);
-DIP_NODISCARD inline Image WienerDeconvolution(
-      Image const& in,
-      Image const& psf,
-      dfloat regularization = 1e-4,
-      StringSet const& options = {}
-) {
-   Image out;
-   WienerDeconvolution( in, psf, out, regularization, options );
    return out;
 }
 

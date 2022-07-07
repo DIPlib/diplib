@@ -66,6 +66,8 @@ constexpr char const* CW = "CW";
 constexpr char const* STOKSETH = "Stokseth";
 constexpr char const* FORWARD = "forward";
 constexpr char const* INVERSE = "inverse";
+constexpr char const* OTF = "OTF";
+constexpr char const* PAD = "pad";
 
 // Binary processing
 constexpr char const* BACKGROUND = "background";

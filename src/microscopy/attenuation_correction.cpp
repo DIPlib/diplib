@@ -809,7 +809,7 @@ void AttenuationCorrection(
    out.CopyNonDataProperties( in );
 }
 
-// --- AttenuationCorrection ---
+// --- SimulatedAttenuation ---
 
 namespace {
 

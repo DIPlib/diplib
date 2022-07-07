@@ -172,7 +172,7 @@ inline Image Zero(
 ///             \end{cases}
 /// $$
 ///
-/// This function can be written also as `max( abs(x) - t, 0 ) * sign(x)` (computed with
+/// This function can be written also as `dip::Maximum( dip::Abs(x) - t, 0 ) * dip::Sign(x)` (see
 /// \ref Maximum(dip::Image const&, dip::Image const&, dip::Image&, dip::BooleanArray const&), \ref Abs and \ref Sign).
 ///
 /// `in` must be real-valued. Tensor elements are processed independently. `out` is of the same type as `in`.

@@ -8,6 +8,7 @@ set(DIPlib_sources_bogus
 ../include/diplib/boundary.h
 ../include/diplib/chain_code.h
 ../include/diplib/color.h
+../include/diplib/deconvolution.h
 ../include/diplib/detection.h
 ../include/diplib/dft.h
 ../include/diplib/display.h
@@ -94,6 +95,11 @@ color/lab.h
 color/rgb.h
 color/wavelength.h
 color/xyz.h
+deconvolution/common_deconv_utility.h
+deconvolution/fista.cpp
+deconvolution/richardson_lucy.cpp
+deconvolution/tikhonov_miller.cpp
+deconvolution/wiener.cpp
 detection/corners.cpp
 detection/hough.cpp
 detection/lines.cpp
@@ -233,7 +239,6 @@ microscopy/attenuation_correction.cpp
 microscopy/colocalization.cpp
 microscopy/psf.cpp
 microscopy/unmix_stains.cpp
-microscopy/wiener.cpp
 morphology/areaopening.cpp
 morphology/basic.cpp
 morphology/filters.cpp

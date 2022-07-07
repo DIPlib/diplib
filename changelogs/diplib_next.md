@@ -38,6 +38,11 @@ title: "Changes DIPlib 3.x.x"
 
 - Added overload for `dip::IncoherentOTF()` that takes output image sizes rather than an image as input.
 
+- `dip::WienerDeconvolution()` has a new option `"pad"` to reduce the border effects of the frequency-domain filtering.
+
+- Added deconvolution functions `dip::TikhonovMiller()`, `dip::IterativeConstrainedTikhonovMiller()`,
+  `dip::RichardsonLucy()`, and `dip::FastIterativeSoftThresholding()`.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -115,6 +120,9 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip.HaarWaveletTransform()`.
 
 - Added `dip.Shrinkage()`.
+
+- Added deconvolution functions `dip.TikhonovMiller()`, `dip.IterativeConstrainedTikhonovMiller()`,
+  `dip.RichardsonLucy()`, and `dip.FastIterativeSoftThresholding()`.
 
 ### Changed functionality
 
