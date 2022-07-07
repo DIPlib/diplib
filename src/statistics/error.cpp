@@ -42,10 +42,7 @@ dfloat MeanError( Image const& in1, Image const& in2, Image const& mask ) {
 dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
    DIP_STACK_TRACE_THIS( error = in1 - in2 );
-   if( error.DataType().IsComplex() ) {
-      Modulus( error, error );
-   }
-   DIP_STACK_TRACE_THIS( MeanSquare( error, mask, error ));
+   DIP_STACK_TRACE_THIS( MeanSquareModulus( error, mask, error ));
    if( !error.IsScalar() ) {
       error = MeanTensorElement( error );
    }
