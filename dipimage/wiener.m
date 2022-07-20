@@ -25,8 +25,8 @@
 %
 %  Alternatively, S and N can be replaced with a scalar value K equivalent to
 %  the ratio N/S:
-%     W = H*/(H*H+K),
-%  where K is reg*max(H*H).
+%     W = H'/(H'H+K),
+%  where K is reg*max(H'H).
 %
 % EXAMPLE:
 %  a = readim('blurr1.tif')    % an out-of-focus image
@@ -39,7 +39,7 @@
 %  wiener(a,psf,1.5e-2)        % experimentally determined regularization parameter
 %
 % SEE ALSO:
-%  tikhonovmiller, mappg
+%  tikhonovmiller, richardsonlucy, ictm, fista
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::WienerDeconvolution.

@@ -107,6 +107,7 @@ findlocmax.m
 findmaxima.m
 findminima.m
 findshift.m
+fista.m
 fmmatch.m
 ft.m
 gabor.m
@@ -138,6 +139,7 @@ hitmiss.m
 hmaxima.m
 hminima.m
 hull.m
+ictm.m
 ift.m
 im2array.m
 im2cell.m
@@ -212,6 +214,7 @@ rebin.m
 reconstruction.m
 relabel.m
 resample.m
+richardsonlucy.m
 riesz.m
 rngseed.m
 rotation.m
@@ -242,6 +245,7 @@ testobject.m
 tframehessian.m
 thetatheta.m
 threshold.m
+tikhonovmiller.m
 tile.m
 tophat.m
 traceobjects.m

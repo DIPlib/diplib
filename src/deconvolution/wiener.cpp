@@ -66,9 +66,15 @@ void WienerDeconvolution(
    if( signalPower.IsForged() ) {
       DIP_THROW_IF( !signalPower.IsScalar(), E::IMAGE_NOT_SCALAR );
       DIP_THROW_IF( !signalPower.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-      S = signalPower;
+      S = signalPower.Pad( G.Sizes() );
    } else {
       S = SquareModulus( G );
+   }
+   Image N;
+   if( noisePower.NumberOfPixels() > 1 ) {
+      N = noisePower.Pad( G.Sizes() );
+   } else {
+      N = noisePower.QuickCopy();
    }
 
    // Compute the Wiener filter in the frequency domain
@@ -77,7 +83,7 @@ void WienerDeconvolution(
       MultiplySampleWise( G, S, G, G.DataType() );  // Throws if `signalPower` is the wrong size
       Image divisor = SquareModulus( H );
       MultiplySampleWise( divisor, S, divisor, divisor.DataType() );
-      divisor += noisePower;  // Throws if `noisePower` is the wrong size
+      divisor += N;
       G /= divisor; // Not using dip::SafeDivide() on purpose: zeros indicate a true problem here
    DIP_END_STACK_TRACE
 

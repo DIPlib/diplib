@@ -98,6 +98,10 @@ title: "Changes DIPlib 3.x.x"
   through the Fourier domain, the periodic boundary condition is no longer the default; the operation should now
   produce the same result (up to rounding error) no matter which computation method is chosen.
 
+- Added the following deconvolution functions: `tikhonovmiller`, `ictm`, `richardsonlucy`, `fista`.
+
+- `wiener` now uses padding to reduce the edge effects.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

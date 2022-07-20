@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -19,6 +19,7 @@
 #include "dip_matlab_interface.h"
 
 #include "diplib/microscopy.h"
+#include "diplib/deconvolution.h"
 
 namespace {
 
@@ -43,7 +44,7 @@ void psf( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::IncoherentPSF( out, oversampling, amplitude );
    } else {
       if(( method == "OTF" ) || ( method == "otf" )) {
-         method = "Stokseth";
+         method = dip::S::STOKSETH;
       }
       dip::dfloat defocus = nrhs > 4 ? dml::GetFloat( prhs[ 4 ] ) : 0.0;
       dip::IncoherentOTF( out, defocus, oversampling, amplitude, method );
@@ -74,12 +75,67 @@ void wiener( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       DML_MAX_ARGS( hasReg ? 5 : 4 );
       dip::Image const N = dml::GetImage( prhs[ 3 ] );
       dip::Image const S = ( !hasReg || ( nrhs > 4 )) ? dml::GetImage( prhs[ hasReg ? 4 : 2 ] ) : dip::Image{};
-      dip::WienerDeconvolution( in, psf, S, N, out );
+      dip::WienerDeconvolution( in, psf, S, N, out, { dip::S::PAD } );
    } else {
       // image_out = wiener(image_in,psf,reg)
       DML_MAX_ARGS( 5 ); // ignore additional two input arguments
-      dip::WienerDeconvolution( in, psf, out, reg );
+      dip::WienerDeconvolution( in, psf, out, reg, { dip::S::PAD } );
    }
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void tikhonovmiller( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 3 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::Image const psf = dml::GetImage( prhs[ 1 ] );
+   dip::dfloat reg = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.1;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::TikhonovMiller( in, psf, out, reg, { dip::S::PAD } );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void ictm( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 6 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::Image const psf = dml::GetImage( prhs[ 1 ] );
+   dip::dfloat reg = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.1;
+   dip::dfloat tol = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 1e-6;
+   dip::uint maxiter = nrhs > 4 ? dml::GetUnsigned( prhs[ 4 ] ) : 30;
+   dip::dfloat stepsize = nrhs > 5 ? dml::GetFloat( prhs[ 5 ] ) : 0;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::IterativeConstrainedTikhonovMiller( in, psf, out, reg, tol, maxiter, stepsize, { dip::S::PAD } );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void richardsonlucy( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 4 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::Image const psf = dml::GetImage( prhs[ 1 ] );
+   dip::dfloat reg = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.1;
+   dip::uint niter = nrhs > 3 ? dml::GetUnsigned( prhs[ 3 ] ) : 30;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::RichardsonLucy( in, psf, out, reg, niter, { dip::S::PAD } );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
+void fista( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 6 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::Image const psf = dml::GetImage( prhs[ 1 ] );
+   dip::dfloat reg = nrhs > 2 ? dml::GetFloat( prhs[ 2 ] ) : 0.1;
+   dip::dfloat tol = nrhs > 3 ? dml::GetFloat( prhs[ 3 ] ) : 1e-6;
+   dip::uint maxiter = nrhs > 4 ? dml::GetUnsigned( prhs[ 4 ] ) : 30;
+   dip::uint nscales = nrhs > 5 ? dml::GetUnsigned( prhs[ 5 ] ) : 3;
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::FastIterativeShrinkageThresholding( in, psf, out, reg, tol, maxiter, nscales, { dip::S::PAD } );
    plhs[ 0 ] = dml::GetArray( out );
 }
 
@@ -98,6 +154,14 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          psf( plhs, nrhs, prhs );
       } else if( function == "wiener" ) {
          wiener( plhs, nrhs, prhs );
+      } else if( function == "tikhonovmiller" ) {
+         tikhonovmiller( plhs, nrhs, prhs );
+      } else if( function == "ictm" ) {
+         ictm( plhs, nrhs, prhs );
+      } else if( function == "richardsonlucy" ) {
+         richardsonlucy( plhs, nrhs, prhs );
+      } else if( function == "fista" ) {
+         fista( plhs, nrhs, prhs );
 
       } else {
          DIP_THROW_INVALID_FLAG( function );
