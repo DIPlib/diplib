@@ -356,9 +356,9 @@ else()
 endif()
 
 if(DIP_ENABLE_FFTW)
-   message(" * Using FFT from FFTW3 library (GPL)")
+   message(" * Using FFTW3 (GPL)")
 else()
-   message(" * Using built-in FFT")
+   message(" * Using PocketFFT")
 endif()
 
 if(DIP_ENABLE_FREETYPE)

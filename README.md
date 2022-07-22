@@ -96,10 +96,11 @@ limitations under the License.
   MIT License  
   see [`dependencies/doctest/LICENSE.txt`](dependencies/doctest/LICENSE.txt)
 
-- The DFT algorithm out of *OpenCV* 3.1  
-  Copyright 2000 Intel Corporation  
+- *PocketFFT*  
+  Copyright 2010-2021 Max-Planck-Society  
+  Copyright 2019-2020 Peter Bell  
   3-Clause BSD License  
-  see [`src/transform/opencv_dxt.cpp`](src/transform/opencv_dxt.cpp)
+  see [`dependencies/pocketfft/LICENSE.md`](dependencies/pocketfft/LICENSE.md)
 
 - *PCG Random Number Generation for C++*  
   Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors  

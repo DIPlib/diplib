@@ -278,10 +278,10 @@ support/gaussian_mixture.cpp
 support/matrix.cpp
 support/numeric.cpp
 support/thin_plate_spline.cpp
+transform/dft.cpp
 transform/fftw3api.h
 transform/fourier.cpp
 transform/haar.cpp
-transform/opencv_dxt.cpp
 transform/riesz.cpp
 transform/swt.cpp
 )

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2020, Cris Luengo, Erik Schuitema
+ * (c)2017-2022, Cris Luengo, Erik Schuitema
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,13 @@
  * limitations under the License.
  */
 
+/* TODO
+    - Make use of R2C and C2R transforms in PocketFFT and FFTW
+    - Implement a DCT function
+    - Remove FFTW_UNALIGNED by ensuring that the buffers are 16-byte aligned; for this, we need the Separable
+        framework to make 16-byte boundary aligned buffers
+*/
+
 #include "diplib.h"
 #include "diplib/transform.h"
 #include "diplib/dft.h"
@@ -24,12 +31,6 @@
 #include "diplib/geometry.h"
 #include "diplib/math.h"
 
-#ifdef DIP_CONFIG_HAS_FFTW
-   #ifdef _WIN32
-      #define NOMINMAX // windows.h must not define min() and max(), which conflict with std::min() and std::max()
-   #endif
-   #include "fftw3api.h"
-#endif
 
 namespace dip {
 
@@ -40,126 +41,10 @@ constexpr BoundaryCondition DFT_PADDING_MODE = BoundaryCondition::ZERO_ORDER_EXT
 constexpr BoundaryCondition IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS;
 
 
-#ifdef DIP_CONFIG_HAS_FFTW
-
 // FFTW documentation specifies 16-byte alignment required for SIMD implementations:
 // http://www.fftw.org/fftw3_doc/SIMD-alignment-and-fftw_005fmalloc.html#SIMD-alignment-and-fftw_005fmalloc
 // constexpr dip::uint FFTW_MAX_ALIGN_REQUIRED = 16;
 
-// This is the equivalent of dip::DFT, but encapsulating FFTW functionality
-template< typename T >
-class FFTW {
-   public:
-      using complex = typename fftwapidef< T >::complex;
-
-      /// \brief A default-initialized `%FFTW` object is useless. Call `Initialize` to make it useful.
-      FFTW() = default;
-
-      /// \brief Equivalent to calling `Initialize()` on a default-initialized object.
-      FFTW( dip::uint size, bool inverse ) : inverse_( inverse ) { this->Initialize( size, inverse ); }
-
-      ~FFTW() {
-         Destroy();
-      }
-
-      // Prevent copying
-      FFTW( FFTW const& ) = delete;
-      FFTW operator=( FFTW const& ) = delete;
-
-      // Allow moving
-      FFTW( FFTW&& other ) noexcept {
-         nfft_ = other.nfft_;
-         inverse_ = other.inverse_;
-         plan_ = other.plan_;
-         other.plan_ = nullptr;
-      }
-      FFTW operator=( FFTW&& other ) noexcept {
-         Destroy();
-         nfft_ = other.nfft_;
-         inverse_ = other.inverse_;
-         plan_ = other.plan_;
-         other.plan_ = nullptr;
-      }
-
-      /// \brief Re-configure a `%FFTW` object to the given transform size and direction.
-      ///
-      /// Note that this is not a trivial operation.
-      ///
-      /// This function is not thread safe, as it calls the FFTW planner.
-      ///
-      /// If `inplace` is `true`, then `Apply` expects `source` and `destination` to be
-      /// the same.
-      void Initialize( dip::uint size, bool inverse, bool inplace = false ) {
-         Destroy();
-         nfft_ = size;
-         inverse_ = inverse;
-         int sign = inverse ? FFTW_BACKWARD : FFTW_FORWARD;
-         std::vector< std::complex< T >> in( size ); // allocate temporary arrays just for planning...
-         if( inplace ) {
-            plan_ = fftwapidef< T >::plan_dft_1d(
-                  static_cast< int >( size ),
-                  reinterpret_cast< complex* >( in.data() ),
-                  reinterpret_cast< complex* >( in.data() ),
-                  sign, FFTW_MEASURE | FFTW_UNALIGNED);
-         } else {
-            std::vector< std::complex< T >> out( size ); // allocate temporary arrays just for planning...
-            plan_ = fftwapidef< T >::plan_dft_1d(
-                  static_cast< int >( size ),
-                  reinterpret_cast< complex* >( in.data() ),
-                  reinterpret_cast< complex* >( out.data() ),
-                  sign, FFTW_MEASURE | FFTW_UNALIGNED);
-         }
-         // FFTW_MEASURE is almost always faster than FFTW_ESTIMATE, only for very trivial sizes it's not.
-         // TODO: Remove FFTW_UNALIGNED by ensuring that the buffers are 16-byte aligned.
-         //       This requires aligning buffers created by the Separable framework.
-         // TODO: Separable framework needs an option for 16-byte boundary aligned buffers.
-      }
-
-      /// \brief Apply the transform that the `%FFTW` object is configured for.
-      ///
-      /// `source` and `destination` are pointers to contiguous buffers with the appropriate number of
-      /// elements for a transform of size `TransformSize`. This is the value of the `size` parameter of
-      /// the constructor or `Initialize`.
-      /// If `inplace` was true in the last call to `Initialize`,  then `source` and `destination` must
-      /// be the same, otherwise they must be different.
-      ///
-      /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
-      /// the inverse transform, and 1 for the forward transform.
-      ///
-      /// This function is thread-safe, as opposed to `Initialse()`.
-      void Apply(
-            std::complex< T >* source,
-            std::complex< T >* destination,
-            T scale
-      ) const {
-         fftwapidef< T >::execute_dft( plan_, reinterpret_cast< complex* >( source ), reinterpret_cast< complex* >( destination ));
-         if( scale != 1.0 ) {
-            for( std::complex< T >* ptr = destination; ptr < destination + nfft_; ++ptr ) {
-               *ptr *= scale;
-            }
-         }
-      }
-
-      /// \brief Returns true if this represents an inverse transform, false for a forward transform.
-      bool IsInverse() const { return inverse_; }
-
-      /// \brief Returns the size that the transform is configured for. If not configured, returns 0.
-      dip::uint TransformSize() const { return plan_ ? nfft_ : 0; }
-
-   private:
-      dip::uint nfft_ = 0;
-      bool inverse_ = false;
-      typename fftwapidef< T >::plan plan_ = nullptr;
-
-      void Destroy() {
-         if( plan_ ) {
-            fftwapidef< T >::destroy_plan( plan_ );
-            plan_ = nullptr;
-         }
-      }
-};
-
-#endif
 
 // This function by Alexei: http://stackoverflow.com/a/19752002/7328782
 template< typename TPI >
@@ -255,53 +140,19 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             BooleanArray const& process,
             bool inverse, bool corner, dfloat scale
       ) : scale_( static_cast< FloatType< TPI >>( scale )), shift_( !corner ) {
-#ifdef DIP_CONFIG_HAS_FFTW
-         fftw_.resize( outSize.size() );
-#else
          dft_.resize( outSize.size() );
-#endif
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
-#ifdef DIP_CONFIG_HAS_FFTW
-               // FFTW re-uses plans internally
-               fftw_[ ii ].Initialize( outSize[ ii ], inverse );
-#else
-               bool found = false;
-               for( dip::uint jj = 0; jj < ii; ++jj ) {
-                  if( process[ jj ] && ( outSize[ jj ] == outSize[ ii ] )) {
-                     dft_[ ii ] = dft_[ jj ];
-                     found = true;
-                     break;
-                  }
-               }
-               if( !found ) {
-                  dft_[ ii ].Initialize( outSize[ ii ], inverse );
-               }
-#endif
+               dft_[ ii ].Initialize( outSize[ ii ], inverse );
             }
          }
-      }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-#ifdef DIP_CONFIG_HAS_FFTW
-         ( void )threads;
-#else
-         buffers_.resize( threads );
-#endif
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-#ifdef DIP_CONFIG_HAS_FFTW
-         auto const& fftw = fftw_[ params.dimension ];
-         dip::uint length = fftw.TransformSize();
-#else
          auto const& dft = dft_[ params.dimension ];
-         if( buffers_[ params.thread ].size() != dft.BufferSize() ) {
-            buffers_[ params.thread ].resize( dft.BufferSize() );
-         }
          dip::uint length = dft.TransformSize();
-#endif
          dip::uint border = params.inBuffer.border;
          DIP_ASSERT( params.inBuffer.length + 2 * border >= length );
          DIP_ASSERT( params.outBuffer.length == length );
@@ -320,32 +171,19 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             ShiftCenterToCorner( in, length );
          } else if( border > 0 ) {
             // we only get here with "corner"+"fast", we cannot combine those with "inverse".
-#ifdef DIP_CONFIG_HAS_FFTW
-            DIP_ASSERT( !fftw.IsInverse() );
-#else
             DIP_ASSERT( !dft.IsInverse() );
-#endif
             // If not shifting, we need the padding to be on the right, thus we move data over a bit
             std::copy( in + border, in + length, in );
             // We copy the padded border as well, extending it appropriately
          }
-#ifdef DIP_CONFIG_HAS_FFTW
-         fftw.Apply( in, out, scale );
-#else
-         dft.Apply( in, out, buffers_[ params.thread ].data(), scale );
-#endif
+         dft.Apply( in, out, scale );
          if( shift_ ) {
             ShiftCornerToCenter( out, length );
          }
       }
 
    private:
-#ifdef DIP_CONFIG_HAS_FFTW
-      std::vector< FFTW< FloatType< TPI >>> fftw_; // one for each dimension
-#else
       std::vector< DFT< FloatType< TPI >>> dft_; // one for each dimension
-      std::vector< std::vector< TPI >> buffers_; // one for each thread
-#endif
       FloatType< TPI > scale_;
       bool shift_;
 };
@@ -357,31 +195,13 @@ template< typename TPI >
 class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
    public:
       R2C_DFT_LineFilter( dip::uint outSize, bool corner ) : shift_( !corner ) {
-#ifdef DIP_CONFIG_HAS_FFTW
-         fftw_.Initialize( outSize, false );
-#else
          dft_.Initialize( outSize, false );
-#endif
-      }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-#ifdef DIP_CONFIG_HAS_FFTW
-         ( void )threads;
-#else
-         buffers_.resize( threads );
-#endif
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-#ifdef DIP_CONFIG_HAS_FFTW
-         dip::uint length = fftw_.TransformSize();
-#else
-         if( buffers_[ params.thread ].size() != dft_.BufferSize() ) {
-            buffers_[ params.thread ].resize( dft_.BufferSize() );
-         }
          dip::uint length = dft_.TransformSize();
-#endif
          dip::uint border = params.inBuffer.border;
          DIP_ASSERT( params.inBuffer.length + 2 * border >= length );
          DIP_ASSERT( params.outBuffer.length == length );
@@ -399,23 +219,14 @@ class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             std::copy( in + border, in + length, in );
             // We copy the padded border as well, extending it appropriately
          }
-#ifdef DIP_CONFIG_HAS_FFTW
-         fftw_.Apply( in, out, 1 );
-#else
-         dft_.Apply( in, out, buffers_[ params.thread ].data(), 1 );
-#endif
+         dft_.Apply( in, out, 1 );
          if( shift_ ) {
             ShiftCornerToCenterHalfLine( out, length );
          }
       }
 
    private:
-#ifdef DIP_CONFIG_HAS_FFTW
-      FFTW< FloatType< TPI >> fftw_;
-#else
       DFT< FloatType< TPI >> dft_;
-      std::vector< std::vector< TPI >> buffers_; // one for each thread
-#endif
       bool shift_;
 };
 
@@ -425,40 +236,18 @@ template< typename TPI >
 class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
    public:
       C2R_IDFT_LineFilter( dip::uint outSize, dip::uint inSize, bool corner ) : shift_( !corner ), inSize_( inSize ) {
-#ifdef DIP_CONFIG_HAS_FFTW
-         fftw_.Initialize( outSize, true, true );
-#else
-         dft_.Initialize( outSize, true );
-#endif
-      }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-#ifdef DIP_CONFIG_HAS_FFTW
-         ( void )threads;
-#else
-         buffers_.resize( threads );
-#endif
+         dft_.Initialize( outSize, true, true );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-#ifdef DIP_CONFIG_HAS_FFTW
-         dip::uint length = fftw_.TransformSize();
-#else
          dip::uint length = dft_.TransformSize();
-#endif
          DIP_ASSERT(( inSize_ / 2 + 1 ) == params.inBuffer.length );
          DIP_ASSERT( length >= inSize_ );
          DIP_ASSERT( params.outBuffer.length == length );
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-#ifdef DIP_CONFIG_HAS_FFTW
-         TPI* tmp = out;
-#else
-         buffers_[ params.thread ].resize( length + dft_.BufferSize() );
-         TPI* tmp = buffers_[ params.thread ].data(); // we need an additional buffer: `in` is too short, and the DFT routine cannot work in-place in general (only for specific lengths)
-         TPI* buffer = tmp + length;
-#endif
          dip::uint firstSample = 0;
          dip::uint start = params.inBuffer.length;
          dip::uint end = 0;
@@ -474,7 +263,7 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
             start -= ( inSize_ & 1u ) ? 0 : 1;  // for even-sized buffer, the last value is not to be copied.
             end = 1;                            // the first value is the 0 frequency, don't copy it
          }
-         TPI* outPtr = tmp;
+         TPI* outPtr = out;
          // Pad the output array by adding zeros (IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS)
          for( dip::uint ii = 0; ii < firstSample; ++ii ) {
             *outPtr = 0;
@@ -492,30 +281,21 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
             ++outPtr;
          }
          // Pad the output array by adding zeros (IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS)
-         while( outPtr < tmp + length ) {
+         while( outPtr < out + length ) {
             *outPtr = 0;
             ++outPtr;
          }
          if( shift_ ) {
-            ShiftCenterToCorner( tmp, length );
+            ShiftCenterToCorner( out, length );
          }
-#ifdef DIP_CONFIG_HAS_FFTW
-         fftw_.Apply( out, out, 1 ); // note that tmp == out
-#else
-         dft_.Apply( tmp, out, buffer, 1 );
-#endif
+         dft_.Apply( out, out, 1 );
          if( shift_ ) {
             ShiftCornerToCenter( out, length );
          }
       }
 
    private:
-#ifdef DIP_CONFIG_HAS_FFTW
-      FFTW< FloatType< TPI >> fftw_;
-#else
       DFT< FloatType< TPI >> dft_;
-      std::vector< std::vector< TPI >> buffers_; // one for each thread
-#endif
       bool shift_;
       dip::uint inSize_;
 };
@@ -615,7 +395,7 @@ void DFT_R2C_1D_finalize(
    dip::uint size = img.Size( dimension );
    RangeArray leftWindow( nDims );
    if( !( size & 1u )) {
-      // even size: pixels 1 and size/2 stay where they are
+      // even size: pixels 0 and size/2 stay where they are
       leftWindow[ dimension ] = { 1, static_cast< dip::sint >( size / 2 - 1 ) };
    } else {
       if( corner ) {
@@ -776,7 +556,7 @@ void FourierTransform(
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
          if( fast ) {
-            dip::uint sz = GetOptimalDFTSize( outSize[ ii ] ); // Awkward: OpenCV uses int a lot. We cannot handle image sizes larger than can fit in an int (2^31-1 on most platforms)
+            dip::uint sz = GetOptimalDFTSize( outSize[ ii ] );
             DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size." );
             outSize[ ii ] = sz;
          } else {
@@ -883,9 +663,6 @@ void FourierTransform(
 
 
 dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which ) {
-   // OpenCV's optimal size can be factorized into small primes: 2, 3, and 5.
-   // FFTW performs best with sizes that can be factorized into 2, 3, 5, and 7.
-   // For FFTW, we'll stick with the OpenCV implementation.
    DIP_STACK_TRACE_THIS( size = GetOptimalDFTSize( size, BooleanFromString( which, "larger", "smaller" )));
    DIP_THROW_IF( size == 0, E::SIZE_EXCEEDS_LIMIT );
    return size;
@@ -922,53 +699,6 @@ template< typename T >
 T dotest( std::size_t nfft, bool inverse ) {
    // Initialize
    dip::DFT< T > opts( nfft, inverse );
-   std::vector< std::complex< T >> buf( opts.BufferSize() );
-   // Create test data
-   std::vector< std::complex< T >> inbuf( nfft );
-   std::vector< std::complex< T >> outbuf( nfft );
-   dip::Random random;
-   for( std::size_t k = 0; k < nfft; ++k ) {
-      inbuf[ k ] = std::complex< T >( static_cast< T >( random() ), static_cast< T >( random() )) / static_cast< T >( random.max() ) - T( 0.5 );
-   }
-   // Do the thing
-   opts.Apply( inbuf.data(), outbuf.data(), buf.data(), T( 1 ));
-   // Check
-   long double totalpower = 0;
-   long double difpower = 0;
-   for( std::size_t k0 = 0; k0 < nfft; ++k0 ) {
-      std::complex< long double > acc{ 0, 0 };
-      long double phinc = ( inverse ? 2.0l : -2.0l ) * static_cast< long double >( k0 ) * M_PIl / static_cast< long double >( nfft );
-      for( std::size_t k1 = 0; k1 < nfft; ++k1 ) {
-         acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
-      }
-      totalpower += std::norm( acc );
-      difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
-   }
-   return static_cast< T >( std::sqrt( difpower / totalpower )); // Root mean square error
-}
-
-DOCTEST_TEST_CASE("[DIPlib] testing the DFT function") {
-   // Test a few different sizes that have all different radixes.
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 32, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 32, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 256, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 105, false )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 154, false )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, false )) == 0 ); // prime
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 32, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 32, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 256, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 105, true )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 154, true )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, true )) == 0 ); // prime
-}
-
-#ifdef DIP_CONFIG_HAS_FFTW
-
-template< typename T >
-T dotest_FFTW( std::size_t nfft, bool inverse ) {
-   // Initialize
-   dip::FFTW< T > opts( nfft, inverse );
    // Create test data
    std::vector< std::complex< T >> inbuf( nfft );
    std::vector< std::complex< T >> outbuf( nfft );
@@ -985,8 +715,7 @@ T dotest_FFTW( std::size_t nfft, bool inverse ) {
       std::complex< long double > acc{ 0, 0 };
       long double phinc = ( inverse ? 2.0l : -2.0l ) * static_cast< long double >( k0 ) * M_PIl / static_cast< long double >( nfft );
       for( std::size_t k1 = 0; k1 < nfft; ++k1 ) {
-         acc += std::complex< long double >( inbuf[ k1 ] ) *
-                std::exp( std::complex< long double >( 0, k1 * phinc ));
+         acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
       }
       totalpower += std::norm( acc );
       difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
@@ -994,7 +723,7 @@ T dotest_FFTW( std::size_t nfft, bool inverse ) {
    return static_cast< T >( std::sqrt( difpower / totalpower )); // Root mean square error
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the FFTW integration") {
+DOCTEST_TEST_CASE("[DIPlib] testing the DFT class") {
    // Test a few different sizes that have all different radixes.
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 32, false )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 32, false )) == 0 );
@@ -1009,8 +738,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FFTW integration") {
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 154, true )) == 0 ); // 2*7*11
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, true )) == 0 ); // prime
 }
-
-#endif // DIP_CONFIG_HAS_FFTW
 
 #include "diplib/generation.h"
 #include "diplib/statistics.h"

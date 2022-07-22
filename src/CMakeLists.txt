@@ -131,7 +131,7 @@ if(DIP_ENABLE_TIFF)
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_TIFF)
 endif()
 
-# Switch to link against the FFTW library for Fourier transforms
+# FFTW or PocketFFT for Fourier transforms
 find_package(FFTW3)
 if(FFTW3_FOUND)
    set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
@@ -140,6 +140,8 @@ if(DIP_ENABLE_FFTW)
    target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS})
    target_link_libraries(DIP PRIVATE ${FFTW3_LIBRARIES})
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_FFTW)
+else()
+   target_include_directories(DIP PRIVATE "${PROJECT_SOURCE_DIR}/dependencies/pocketfft")
 endif()
 
 # Use FreeType

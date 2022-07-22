@@ -64,6 +64,21 @@ title: "Changes DIPlib 3.x.x"
   of size *k*x*k*, the naive algorithm is O(*k*^2^ log(*k*)), whereas the new one is O(*k* log(*k*)).
   This algorithm is applicable to kernels of any size and any number of dimensions.
 
+- The `dip::DFT` class now uses either *FFTW* or *PocketFFT*, depending on compile-time configuration.
+  *PocketFFT* is much faster than our previous code for non-nice transform sizes. All Fourier transforms in
+  *DIPlib* are now based on `dip::DFT`. Previously, `dip::FourierTransform()` would use either `dip::DFT`
+  with our internal FFT algorithm (modified from *OpenCV*), or *FFTW*. The switch between the two libraries
+  is now fully contained within the `dip::DFT` class, meaning that other functions that use the FFT also benefit
+  from linking against *FFTW*.
+    - `dip::DFT::Apply()` no longer requires a buffer. If passing in the buffer, a deprecation warning is issued by
+      the compiler.
+    - `dip::DFT::BufferSize()` is deprecated, and now always returns 0.
+    - `dip::DFT::Initialize()`, as well as the constructor, has a new argument `inplace`, which defaults to `false`,
+      and needs to be set correctly when using *FFTW*. When configured for inplace operation, the input and output
+      buffers given to `Apply()` must be the same.
+    - Added `dip::DFT::IsInplace()`.
+    - `dip::DFT` now caches plans, it is cheap to instantiate a new object for the same transform size.
+
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.

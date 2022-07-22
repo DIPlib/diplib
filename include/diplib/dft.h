@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  *
  * Encapsulates code Taken from OpenCV 3.1: (c)2000, Intel Corporation.
  * (see src/transform/opencv_dxt.cpp)
@@ -20,7 +20,6 @@
 #ifndef DIP_DFT_H
 #define DIP_DFT_H
 
-#include <vector>
 #include <complex>
 #include <limits>
 
@@ -50,13 +49,12 @@ namespace dip {
 /// dft.Apply( in, out, buf.data() );                         // computes a different DFT, repeat as necessary
 /// ```
 ///
-/// Note that this code uses `int` for sizes, rather than \ref dip::uint. \ref maximumDFTSize is the largest length
-/// of the transform.
-///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
 ///
-/// The DFT is computed using an FFT algorithm that is optimized for lengths that are a multiple of 2, 3 and 5.
-/// The larger the factors above 5, the longer the algorithm will take.
+/// The DFT is computed using either PocketFFT or FFTW, depending on compile-time configuration (see the
+/// `DIP_ENABLE_FFTW` CMake configuration option).
+///
+/// When using FFTW, \ref maximumDFTSize is the largest length of the transform. PocketFFT does not have this limit.
 template< typename T >
 class DFT {
    public:
@@ -64,65 +62,118 @@ class DFT {
       /// \brief A default-initialized `DFT` object is useless. Call `Initialize` to make it useful.
       DFT() = default;
 
-      /// \brief Construct a `DFT` object by specifying the size and direction of the transform.
-      /// Note that this is not a trivial operation.
-      DFT( std::size_t size, bool inverse ) {
-         Initialize( size, inverse );
+      /// \brief Construct a `DFT` object, see \ref Initialize for the meaning of the parameters.
+      /// Note that this is not a trivial operation. Not thread safe.
+      DFT( std::size_t size, bool inverse, bool inplace = false ) {
+         Initialize( size, inverse, inplace );
+      }
+
+      // Destructor.
+      ~DFT() {
+         Destroy();
+      }
+
+      // Copying is creating a new plan -- allow plan creation code to buffer plans
+      DFT( DFT const& other ) {
+         Initialize( other.nfft_, other.inverse_, other.inplace_ );
+      }
+      DFT& operator=( DFT const& other ) {
+         Destroy();
+         Initialize( other.nfft_, other.inverse_, other.inplace_ );
+         return *this;
+      }
+
+      // Allow moving
+      DFT( DFT&& other ) noexcept
+            : plan_( other.plan_ ), nfft_( other.nfft_ ), inverse_( other.inverse_ ), inplace_( other.inplace_ ) {
+         other.plan_ = nullptr;
+      }
+      DFT& operator=( DFT&& other ) noexcept {
+         Destroy();
+         plan_ = other.plan_;
+         other.plan_ = nullptr;
+         nfft_ = other.nfft_;
+         inverse_ = other.inverse_;
+         inplace_ = other.inplace_;
+         return *this;
       }
 
       /// \brief Re-configure a `DFT` object to the given transform size and direction.
+      ///
+      /// `size` is the size of the transform. The two pointers passed to \ref Apply are expected to point at
+      /// buffers with this length. If `inverse` is `true`, an inverse transform will be computed. If `inplace`
+      /// is `true`, the two pointers passed to \ref Apply must be the same, otherwise they must be different.
+      /// However, when using PocketFFT this value is ignored.
+      ///
       /// Note that this is not a trivial operation.
-      DIP_EXPORT void Initialize( std::size_t size, bool inverse );
+      ///
+      /// This operation is not thread safe.
+      DIP_EXPORT void Initialize( std::size_t size, bool inverse, bool inplace = false );
 
       /// \brief Apply the transform that the `DFT` object is configured for.
       ///
       /// `source` and `destination` are pointers to contiguous buffers with \ref TransformSize elements.
-      /// This is the value of the `size` parameter of the constructor or \ref Initialize. `buffer` is a pointer
-      /// to a contiguous buffer used for intermediate data. It should have \ref BufferSize elements.
+      /// This is the value of the `size` parameter of the constructor or \ref Initialize. These two pointers
+      /// can point to the same address for in-place operation; otherwise they must point to non-overlapping
+      /// regions of memory. When using FFTW, the `inplace` parameter to the constructor or \ref Initialize
+      /// must be `true` if the two pointers here are the same, or `false` if they are different.
       ///
       /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
       /// the inverse transform, and 1 for the forward transform.
-      ///
-      /// `source` and `destination` can only point to the same buffer if all factors of \ref TransformSize are
-      /// the same. One should avoid this in general situations.
       DIP_EXPORT void Apply(
+            const std::complex< T >* source,
+            std::complex< T >* destination,
+            T scale
+      ) const;
+
+      [[ deprecated( "A buffer is no longer necessary." ) ]]
+      void Apply(
             const std::complex< T >* source,
             std::complex< T >* destination,
             std::complex< T >* buffer,
             T scale
-      ) const;
+      ) const {
+         (void) buffer;
+         Apply( source, destination, scale );
+      }
 
-      /// \brief Returns true if this represents an inverse transform, false for a forward transform.
+      /// \brief Returns `true` if this represents an inverse transform, `false` for a forward transform.
       bool IsInverse() const { return inverse_; }
 
+      /// \brief Returns whether the transform is configured to work in place or not. Not meaningful when using PocketFFT.
+      bool IsInplace() const { return inplace_; }
+
       /// \brief Returns the size that the transform is configured for.
-      std::size_t TransformSize() const { return static_cast< std::size_t >( nfft_ ); }
+      std::size_t TransformSize() const { return nfft_; }
 
       /// \brief Returns the size of the buffer expected by `Apply`.
-      std::size_t BufferSize() const { return static_cast< std::size_t >( sz_ ); }
+      [[ deprecated( "A buffer is no longer necessary." ) ]]
+      std::size_t BufferSize() const { return 0; }
 
    private:
-      int nfft_ = 0;
+      void* plan_ = nullptr;
+      std::size_t nfft_ = 0;
       bool inverse_ = false;
-      std::vector< int > factors_;
-      std::vector< int > itab_;
-      std::vector< std::complex< T >> wave_;
-      int sz_ = 0; // Size of the buffer to be passed to DFT.
+      bool inplace_ = false;
+
+      /// \brief Frees memory
+      DIP_EXPORT void Destroy();
+
 };
 
-/// \brief Returns a size equal or larger to `size0` that is efficient for our DFT implementation.
+/// \brief Returns a size equal or larger to `size0` that is efficient for the DFT implementation.
 ///
 /// Set `larger` to false to return a size equal or smaller instead.
 ///
-/// Returns 0 if `size0` is too large for our DFT implementation.
+/// Returns 0 if `size0` is too large for the DFT implementation.
 ///
 /// Prefer to use \ref dip::OptimalFourierTransformSize in your applications, it will throw an error if
 /// the transform size is too large.
 DIP_EXPORT std::size_t GetOptimalDFTSize( std::size_t size0, bool larger = true );
 
-/// \brief The largest size supported by \ref DFT and \ref FourierTransform, equal to 2^31^-1.
-/// Both the built-in DFT and the FFTW library use `int` for array sizes.
-constexpr std::size_t maximumDFTSize = static_cast< std::size_t >( std::numeric_limits< int >::max() );
+/// \brief The largest size supported by \ref DFT and \ref FourierTransform. Is equal to 2^31^-1 when using FFTW,
+/// or 2^64-1 when using PocketFFT.
+extern std::size_t const maximumDFTSize;
 
 
 /// \endgroup

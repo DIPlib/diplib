@@ -399,15 +399,13 @@ void Fourier(
       DFT< TPI > const& ft,               // DFT object configured for a transform of <size of input>
       DFT< TPI > const& ift,              // DFT object configured for an inverse transform of <size of output>
       std::complex< TPI > const* weights, // weights to apply a shift in the FT, <size of input> elements; if nullptr, use <shift>
-      std::complex< TPI >* buffer         // temporary buffer, size = FourierBufferSize()
+      std::complex< TPI >* intermediate   // temporary buffer, size = max( <size of input>, <size of output> )
 ) {
-   std::complex< TPI >* intermediate = buffer;
    dip::uint inSize = ft.TransformSize();
    dip::uint outSize = ift.TransformSize();
-   buffer += std::max( inSize, outSize );
    TPI invScale = static_cast< TPI >( 1.0 / static_cast< dip::dfloat >( inSize ));
    // FT of input
-   ft.Apply( input, intermediate, buffer, 1.0 );
+   ft.Apply( input, intermediate, 1.0 );
    // Shift
    if( weights ) {
       // Use given weights
@@ -435,7 +433,7 @@ void Fourier(
       std::fill( intermediate + inSize - inSize / 2, intermediate + outSize - inSize / 2, std::complex< TPI >( 0 ));
    }
    // Inverse FT
-   ift.Apply( intermediate, output, buffer, invScale );
+   ift.Apply( intermediate, output, invScale );
 }
 
 template< typename TPI >
@@ -468,7 +466,7 @@ inline dip::uint FourierBufferSize(
       DFT< TPI > const& ft,         // DFT object configured for a transform of <size of input>
       DFT< TPI > const& ift         // DFT object configured for an inverse transform of <size of output>
 ) {
-   return std::max( ft.TransformSize(), ift.TransformSize() ) + std::max( ft.BufferSize(), ift.BufferSize() );
+   return std::max( ft.TransformSize(), ift.TransformSize() );
 }
 
 

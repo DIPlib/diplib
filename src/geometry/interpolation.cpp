@@ -80,34 +80,16 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
          ift_.resize( nDims );
          weights_.resize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            bool foundInSize = false;
-            bool foundOutSize = false;
-            bool foundShift = false;
             dip::uint outSize = interpolation::ComputeOutputSize( sizes[ ii ], zoom[ ii ] );
+            ft_[ ii ].Initialize( sizes[ ii ], false );
+            ift_[ ii ].Initialize( outSize, true );
+            bool foundShift = false;
             for( dip::uint jj = 0; jj < ii; ++jj ) {
-               if( sizes[ jj ] == sizes[ ii ] ) {
-                  if( !foundInSize ) {
-                     ft_[ ii ] = ft_[ jj ];
-                     foundInSize = true;
-                  }
-                  if( !foundShift && ( shift[ jj ] == shift[ ii ] )) {
-                     weights_[ ii ] = weights_[ jj ];
-                     foundShift = true; // note that foundShift implies foundInSize.
-                  }
-               }
-               if( !foundOutSize && ( ift_[ jj ].TransformSize() == outSize )) {
-                  ift_[ ii ] = ift_[ jj ];
-                  foundOutSize = true;
-               }
-               if( foundOutSize && foundShift ) {
+               if(( sizes[ jj ] == sizes[ ii ] ) && ( shift[ jj ] == shift[ ii ] )) {
+                  weights_[ ii ] = weights_[ jj ];
+                  foundShift = true;
                   break;
                }
-            }
-            if( !foundInSize ) {
-               ft_[ ii ].Initialize( sizes[ ii ], false );
-            }
-            if( !foundOutSize ) {
-               ift_[ ii ].Initialize( outSize, true );
             }
             if( !foundShift ) {
                weights_[ ii ].resize( sizes[ ii ] );

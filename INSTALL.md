@@ -138,9 +138,8 @@ dynamic linking to a few external libraries, none of these dependencies are requ
 *DIPlib* library (that is, *DIPlib*'s public header files do not import headers from other projects).
 
 If you have [*FFTW3*](http://www.fftw.org) installed, you can set the `DIP_ENABLE_FFTW`
-*CMake* variable to have *DIPlib* use *FFTW3* instead of the built-in FFT algorithm.
-*FFTW3* is more efficient, especially for image sizes that do not factor into small
-numbers, but it has a copyleft license.
+*CMake* variable to have *DIPlib* use *FFTW3* instead of the default *PocketFFT* library.
+*FFTW3* is usually a bit faster, but it has a copyleft license.
 
 If you have [*FreeType 2*](https://www.freetype.org) installed, you can set the `DIP_ENABLE_FREETYPE`
 *CMake* variable to have *DIPlib* use *FreeType* for rendering text, the
