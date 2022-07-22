@@ -117,7 +117,7 @@ constexpr unsigned PO_CHANGED = 4;
 
 using PixelQueue = std::queue< dip::sint >;
 
-#if defined(__GNUG__) // GCC seems to thing that `uint8 |= uint8` needs a conversion warning just because the computation is performed with an int.
+#if defined(__GNUG__) // GCC seems to think that `uint8 |= uint8` needs a conversion warning just because the computation is performed with an int.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #endif

@@ -20,7 +20,7 @@
 #include "diplib/pixel_table.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For this file, turn off -Wsign-conversion, Eigen is really bad at this!
+// For Eigen, turn off -Wsign-conversion
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #if __GNUC__ == 11
@@ -29,6 +29,11 @@
 #endif
 
 #include <Eigen/SVD>
+
+#if defined(__GNUG__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 
 namespace dip {
 
@@ -115,11 +120,6 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 
 
 } // namespace dip
-
-
-#if defined(__GNUG__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST

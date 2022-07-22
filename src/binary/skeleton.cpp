@@ -20,11 +20,6 @@
 #include "bucket.h"
 #include "hilditch_condition_lut.h"
 
-#if defined(__GNUG__)
-// The conversion warnings are all for `a &= b`, where `a` and `b` are both uint8. The operation is performed in an int.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
 
 namespace dip {
 
@@ -108,6 +103,14 @@ namespace dip {
  */
 
 namespace {
+
+
+#if defined(__GNUG__)
+// The conversion warnings are all for `a &= b`, where `a` and `b` are both uint8. The operation is performed in an int.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 
 // How many nodes in each bucket in the queue?
 constexpr dip::uint QUEUE_SIZE_2D = 65536;
@@ -4648,6 +4651,12 @@ void Eusk3D(
    EuskSetFromPlane( pimb1, mo, sizex, sizey, sizez, strideX, strideY, strideZ );
 }
 
+
+#if defined(__GNUG__)
+#pragma GCC diagnostic pop
+#endif
+
+
 } // namespace
 
 void EuclideanSkeleton(
@@ -4718,7 +4727,3 @@ void EuclideanSkeleton(
 }
 
 } // namespace dip
-
-#if defined(__GNUG__)
-#pragma GCC diagnostic pop
-#endif

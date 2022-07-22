@@ -17,7 +17,7 @@
 #include "diplib/library/numeric.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For this file, turn off -Wsign-conversion, Eigen is really bad at this!
+// For Eigen, turn off -Wsign-conversion
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #if __GNUC__ == 11

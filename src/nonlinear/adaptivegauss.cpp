@@ -23,12 +23,17 @@
 #include "diplib/private/constfor.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For this file, turn off -Wsign-conversion, Eigen is really bad at this!
+// For Eigen, turn off -Wsign-conversion
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #include <Eigen/Geometry>
+
+#if defined(__GNUG__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 
 namespace dip {
 
@@ -125,7 +130,9 @@ class KernelTransformScale {
             // scaleTensorRowIndex = iTE : The scale tensor has a row for each input tensor element.
             for( dip::uint iDim = 0; iDim < nDims; ++iDim ) {
                // scaleTensorColIndex = iDim : The scale tensor has a column for each kernel/input dimension ( 0 for X, 1 for Y ).
-               scaleAtImgCoords_[ iTE ][ iDim ] = scalePixel[ scaleTensorLUT_[ iDim * inputTensorElements_ + iTE ]].template As< dfloat >();
+               scaleAtImgCoords_[ iTE ][ iDim ] = scalePixel[
+                     static_cast< dip::uint >( scaleTensorLUT_[ iDim * inputTensorElements_ + iTE ] )
+               ].template As< dfloat >();
             }
          }
       }
@@ -838,7 +845,3 @@ void AdaptiveBanana(
 }
 
 } // namespace dip
-
-#if defined(__GNUG__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
