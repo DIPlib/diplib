@@ -674,7 +674,6 @@ dip::uint OptimalFourierTransformSize( dip::uint size, dip::String const& which 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-#include "diplib/random.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the OptimalFourierTransformSize function") {
    DOCTEST_CHECK_THROWS( dip::OptimalFourierTransformSize( 0 ));
@@ -689,54 +688,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the OptimalFourierTransformSize function") {
    DOCTEST_CHECK( dip::OptimalFourierTransformSize( 490 ) == 500 );
    DOCTEST_CHECK( dip::OptimalFourierTransformSize( 500, "smaller" ) == 500 );
    DOCTEST_CHECK( dip::OptimalFourierTransformSize( 510, "smaller" ) == 500 );
-}
-
-#ifndef M_PIl
-#define M_PIl 3.1415926535897932384626433832795029L
-#endif
-
-template< typename T >
-T dotest( std::size_t nfft, bool inverse ) {
-   // Initialize
-   dip::DFT< T > opts( nfft, inverse );
-   // Create test data
-   std::vector< std::complex< T >> inbuf( nfft );
-   std::vector< std::complex< T >> outbuf( nfft );
-   dip::Random random;
-   for( std::size_t k = 0; k < nfft; ++k ) {
-      inbuf[ k ] = std::complex< T >( static_cast< T >( random() ), static_cast< T >( random() )) / static_cast< T >( random.max() ) - T( 0.5 );
-   }
-   // Do the thing
-   opts.Apply( inbuf.data(), outbuf.data(), T( 1 ));
-   // Check
-   long double totalpower = 0;
-   long double difpower = 0;
-   for( std::size_t k0 = 0; k0 < nfft; ++k0 ) {
-      std::complex< long double > acc{ 0, 0 };
-      long double phinc = ( inverse ? 2.0l : -2.0l ) * static_cast< long double >( k0 ) * M_PIl / static_cast< long double >( nfft );
-      for( std::size_t k1 = 0; k1 < nfft; ++k1 ) {
-         acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
-      }
-      totalpower += std::norm( acc );
-      difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
-   }
-   return static_cast< T >( std::sqrt( difpower / totalpower )); // Root mean square error
-}
-
-DOCTEST_TEST_CASE("[DIPlib] testing the DFT class") {
-   // Test a few different sizes that have all different radixes.
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 32, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 32, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 256, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 105, false )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 154, false )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, false )) == 0 ); // prime
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 32, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 32, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 256, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 105, true )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 154, true )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 97, true )) == 0 ); // prime
 }
 
 #include "diplib/generation.h"

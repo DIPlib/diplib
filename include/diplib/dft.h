@@ -41,12 +41,10 @@ namespace dip {
 /// Usage:
 ///
 /// ```cpp
-/// DFT dft( size, inverse );               // creates the object with all the data ready to start running DFTs.
-/// std::vector< std::complex< T >> buf( opts.BufferSize() ); // creates a buffer
-/// dft.Apply( in, out, buf.data() );                         // computes a DFT, repeat as necessary
-/// dft.Initialize( size2, inverse );                         // changes the options for the new size / direction
-/// buf.resize( opts.BufferSize() );                          // resizes the buffer
-/// dft.Apply( in, out, buf.data() );                         // computes a different DFT, repeat as necessary
+/// DFT dft( size, inverse );          // creates the object with all the data ready to start running DFTs.
+/// dft.Apply( in, out );              // computes a DFT, repeat as necessary
+/// dft.Initialize( size2, inverse );  // changes the options for the new size / direction
+/// dft.Apply( in, out );              // computes a different DFT, repeat as necessary
 /// ```
 ///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
@@ -160,6 +158,122 @@ class DFT {
       DIP_EXPORT void Destroy();
 
 };
+
+
+/// \brief An object that encapsulates the real-valued Discrete Fourier Transform (DFT).
+///
+/// Usage:
+///
+/// ```cpp
+/// RDFT rdft( size, inverse );        // creates the object with all the data ready to start running DFTs.
+/// dft.Apply( in, out );              // computes a DFT, repeat as necessary
+/// dft.Initialize( size2, inverse );  // changes the options for the new size / direction
+/// dft.Apply( in, out );              // computes a different DFT, repeat as necessary
+/// ```
+///
+/// Here, `in` is a real-valued array with `size` elements , and `out` is a complex-valued array with
+/// `size/2+1` elements, containing only the non-redundant values of the transform; the remaining values
+/// can be trivially computed if needed using `std::conj`. For the inverse transform, the output is the real-valued
+/// array. Both arrays are passed into \ref Apply using a real-valued pointer.
+///
+/// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
+///
+/// The DFT is computed using either PocketFFT or FFTW, depending on compile-time configuration (see the
+/// `DIP_ENABLE_FFTW` CMake configuration option).
+///
+/// When using FFTW, \ref maximumDFTSize is the largest length of the transform. PocketFFT does not have this limit.
+template< typename T >
+class RDFT {
+   public:
+
+      /// \brief A default-initialized `DFT` object is useless. Call `Initialize` to make it useful.
+      RDFT() = default;
+
+      /// \brief Construct a `DFT` object, see \ref Initialize for the meaning of the parameters.
+      /// Note that this is not a trivial operation. Not thread safe.
+      RDFT( std::size_t size, bool inverse ) {
+         Initialize( size, inverse );
+      }
+
+      // Destructor.
+      ~RDFT() {
+         Destroy();
+      }
+
+      // Copying is creating a new plan -- allow plan creation code to buffer plans
+      RDFT( RDFT const& other ) {
+         Initialize( other.nfft_, other.inverse_ );
+      }
+      RDFT& operator=( RDFT const& other ) {
+         Destroy();
+         Initialize( other.nfft_, other.inverse_ );
+         return *this;
+      }
+
+      // Allow moving
+      RDFT( RDFT&& other ) noexcept
+            : plan_( other.plan_ ), nfft_( other.nfft_ ), inverse_( other.inverse_ ) {
+         other.plan_ = nullptr;
+      }
+      RDFT& operator=( RDFT&& other ) noexcept {
+         Destroy();
+         plan_ = other.plan_;
+         other.plan_ = nullptr;
+         nfft_ = other.nfft_;
+         inverse_ = other.inverse_;
+         return *this;
+      }
+
+      /// \brief Re-configure a `RDFT` object to the given transform size and direction.
+      ///
+      /// `size` is the size of the transform. The real-valued pointer passed to \ref Apply is expected to point at
+      /// a buffer with this length. If `inverse` is `true`, an inverse transform will be computed (complex to real).
+      ///
+      /// Note that this is not a trivial operation.
+      ///
+      /// This operation is not thread safe.
+      DIP_EXPORT void Initialize( std::size_t size, bool inverse );
+
+      /// \brief Apply the transform that the `RDFT` object is configured for.
+      ///
+      /// `source` and `destination` are pointers to contiguous buffers.
+      /// If configured as a forward transform, `source` is the real-valued array with \ref TransformSize elements,
+      /// and `destination` is the complex-valued array with `TransformSize() / 2 + 1` elements (presented as a
+      /// pointer to a real-valued array with twice the number of elements). If configured as an inverse transform,
+      /// the two descriptions are swapped. The two arrays must not overlap.
+      ///
+      /// In the above description, `TransformSize()` is the value of the `size` parameter of the constructor or
+      /// \ref Initialize.
+      ///
+      /// `complex` has `TransformSize() / 2 + 1` elements. If configured as a forward transform, `real` is
+      /// the input and `complex` is the output. If configured for an inverse transform, `real` is
+      /// the output and `complex` is the input. The two buffers should not overlap. Though neither pointer
+      /// is marked `const`, the input array will not be modified.
+      ///
+      /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
+      /// the inverse transform, and 1 for the forward transform.
+      DIP_EXPORT void Apply(
+            T const* source,
+            T* destination,
+            T scale
+      ) const;
+
+      /// \brief Returns `true` if this represents an inverse transform, `false` for a forward transform.
+      bool IsInverse() const { return inverse_; }
+
+      /// \brief Returns the size that the transform is configured for.
+      std::size_t TransformSize() const { return nfft_; }
+
+   private:
+      void* plan_ = nullptr;
+      std::size_t nfft_ = 0;
+      bool inverse_ = false;
+
+      /// \brief Frees memory
+      DIP_EXPORT void Destroy();
+
+};
+
 
 /// \brief Returns a size equal or larger to `size0` that is efficient for the DFT implementation.
 ///

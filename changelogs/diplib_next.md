@@ -43,6 +43,9 @@ title: "Changes DIPlib 3.x.x"
 - Added deconvolution functions `dip::TikhonovMiller()`, `dip::IterativeConstrainedTikhonovMiller()`,
   `dip::RichardsonLucy()`, and `dip::FastIterativeSoftThresholding()`.
 
+- `dip::RDFT` is similar to `dip::DFT`, and computes real-to-complex forward DFTs and complex-to-real inverse DFTs.
+  It uses either *FFTW* or *PocketFFT*, depending on compile-time configuration.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
