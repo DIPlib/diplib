@@ -46,7 +46,7 @@ namespace dip {
 /// For dilations with arbitrary structuring elements, see \ref dip::Dilation, for dilations with an isotropic (disk)
 /// structuring element, see \ref dip::IsotropicDilation.
 ///
-/// !!! warning
+/// !!! attention
 ///     This algorithm exists for historical reasons. \ref dip::Dilation with a diamond, square or octagonal
 ///     structuring element is always faster.
 DIP_EXPORT void BinaryDilation(
@@ -79,7 +79,7 @@ DIP_NODISCARD inline Image BinaryDilation(
 /// For erosions with arbitrary structuring elements, see \ref dip::Erosion, for erosions with an isotropic (disk)
 /// structuring element, see \ref dip::IsotropicDilation.
 ///
-/// !!! warning
+/// !!! attention
 ///     This algorithm exists for historical reasons. \ref dip::Erosion with a diamond, square or octagonal
 ///     structuring element is always faster.
 DIP_EXPORT void BinaryErosion(
@@ -114,7 +114,7 @@ DIP_NODISCARD inline Image BinaryErosion(
 ///
 /// For closings with arbitrary structuring elements, see \ref dip::Closing.
 ///
-/// !!! warning
+/// !!! attention
 ///     This algorithm exists for historical reasons. \ref dip::Closing with a diamond, square or octagonal
 ///     structuring element is always faster.
 DIP_EXPORT void BinaryClosing(
@@ -149,7 +149,7 @@ DIP_NODISCARD inline Image BinaryClosing(
 ///
 /// For openings with arbitrary structuring elements, see \ref dip::Opening.
 ///
-/// !!! warning
+/// !!! attention
 ///     This algorithm exists for historical reasons. \ref dip::Opening with a diamond, square or octagonal
 ///     structuring element is always faster.
 DIP_EXPORT void BinaryOpening(
