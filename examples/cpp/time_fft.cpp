@@ -7,6 +7,7 @@
 #include "diplib.h"
 #include "diplib/multithreading.h"
 #include "diplib/transform.h"
+#include "diplib/dft.h"
 #include "diplib/generation.h"
 #include "diplib/testing.h"
 
@@ -29,14 +30,17 @@ int main() {
    // A set of sizes: powers of 2,                     3,              5,              7,             11,        primes
    dip::UnsignedArray sizes = { 256, 1024, 2048, 4096, 243, 729, 2187, 125, 625, 3125, 49, 343, 2401, 121, 1331, 211, 521, 1013, 1531 };
 
+   bool complexInput = true;
    dip::SetNumberOfThreads( 0 );
-   std::cout << "Number of threads: " << dip::GetNumberOfThreads() << '\n';
+   std::cout << ( dip::usingFFTW ? "FFTW" : "PocketFFT" ) << ", "
+             << ( complexInput ? "C2C" : "R2C" ) << ", "
+             << dip::GetNumberOfThreads() << " threads\n";
 
    dip::Random rndGen( 0 );
    dip::Image in;
    dip::Image out;
    for( auto sz : sizes ) {
-      if( false ) {
+      if( complexInput ) {
          // For complex to complex transform:
          in.ReForge( { sz, sz }, 1, dip::DT_SCOMPLEX );
          dip::Image tmp = in.SplitComplex();
@@ -44,6 +48,7 @@ int main() {
          tmp.Fill( 0 );
          dip::UniformNoise( tmp, tmp, rndGen );
       } else {
+         // For real to complex transform:
          in.ReForge( { sz, sz }, 1, dip::DT_SFLOAT );
          in.Fill( 0 );
          dip::UniformNoise( in, in, rndGen );
@@ -69,8 +74,8 @@ Complex-to-complex transform:
    2048 |  167.879 |   49.558 |  188.559 |   54.019 |  231.366 |   62.997 |
    4096 |  722.095 |  193.423 |  805.594 |  208.841 |  987.625 |  248.634 |
     243 |    1.494 |    0.730 |    1.837 |    0.836 |    2.204 |    0.912 | powers of 3
-    729 |   13.928 |    4.092 |   17.543 |    4.91  |   20.224 |    5.587 |
-   2187 |  149.26  |   39.890 |  180.178 |   48.539 |  202.16  |   50.902 |
+    729 |   13.928 |    4.092 |   17.543 |    4.910 |   20.224 |    5.587 |
+   2187 |  149.260 |   39.890 |  180.178 |   48.539 |  202.160 |   50.902 |
     125 |    0.378 |    0.350 |    0.456 |    0.459 |    0.584 |    0.507 | powers of 5
     625 |   10.591 |    3.244 |   12.716 |    3.864 |   14.920 |    4.388 |
    3125 |  334.252 |   85.032 |  389.352 |   98.530 |  433.798 |  108.911 |
@@ -79,7 +84,7 @@ Complex-to-complex transform:
    2401 |  189.464 |   49.373 |  333.255 |   84.019 |  266.883 |   69.240 |
     121 |    0.402 |    0.454 |    0.624 |    0.524 |    0.578 |    0.519 | powers of 11
    1331 |   62.785 |   17.218 |  101.326 |   26.983 |   83.167 |   22.177 |
-    211 |    2.590 |    0.948 |   11.883 |    3.088 |    3.13  |    1.162 | primes
+    211 |    2.590 |    0.948 |   11.883 |    3.088 |    3.130 |    1.162 | primes
     521 |   19.672 |    5.511 |  179.597 |   37.794 |   18.702 |    5.358 |
    1013 |   82.101 |   20.139 | 1321.51  |  254.447 |   70.472 |   18.966 |
    1531 |  163.703 |   40.256 | 4571.56  |  895.703 |  196.947 |   50.495 |
@@ -103,7 +108,7 @@ Real-to-complex transform:
     125 |    0.104 |    0.197 |    N/A   |    N/A   |    0.091 |    0.182 | powers of 5
     625 |    3.064 |    1.275 |    N/A   |    N/A   |    2.406 |    0.991 |
    3125 |   111.20 |   31.105 |    N/A   |    N/A   |   88.345 |   26.829 |
-     49 |    0.024 |    0.231 |    N/A   |    N/A   |    0.02  |    0.269 | powers of 7
+     49 |    0.024 |    0.231 |    N/A   |    N/A   |    0.020 |    0.269 | powers of 7
     343 |    0.869 |    0.439 |    N/A   |    N/A   |    0.816 |    0.397 |
    2401 |   61.717 |   18.361 |    N/A   |    N/A   |   58.099 |   17.601 |
     121 |    0.124 |    0.275 |    N/A   |    N/A   |    0.101 |    0.269 | powers of 11

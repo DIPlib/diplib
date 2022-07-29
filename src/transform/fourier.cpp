@@ -16,10 +16,13 @@
  */
 
 /* TODO
-    - Make use of R2C and C2R transforms in PocketFFT and FFTW
+    - Make use of dip::RDFT in dip::Fourier and dip::Interpolation::Fourier
     - Implement a DCT function
     - Remove FFTW_UNALIGNED by ensuring that the buffers are 16-byte aligned; for this, we need the Separable
         framework to make 16-byte boundary aligned buffers
+    - Figure out how to properly pad "fast"+"inverse"+"corner"...
+    - dip::GetOptimalDFTSize must work for sizes larger than 2^31-1.
+    - dip::maximumDFTSize can be 2^63-1 for FFTW if we use the guru interface.
 */
 
 #include "diplib.h"
@@ -143,7 +146,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
          dft_.resize( outSize.size() );
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
-               dft_[ ii ].Initialize( outSize[ ii ], inverse );
+               dft_[ ii ].Initialize( outSize[ ii ], inverse, Option::DFTOption::Aligned + Option::DFTOption::TrashInput );
             }
          }
       }
@@ -159,7 +162,8 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
          if( !( params.inBuffer.length & 1u ) && ( length & 1u )) {
             // When padding from an even-sized array to an odd-sized array, we pad one fewer element to the left
             // In other cases we pad evenly or we pad one fewer element to the right.
-            --border;
+            --border; // TODO: This beaks the alignment of the buffer!!!
+            DIP_THROW( "Buffer misalignment! Fix this! " );
          }
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer ) - border;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -190,7 +194,7 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
 
 // TPI is either scomplex or dcomplex.
 // This will always only be called for a single dimension.
-// Input buffer is actually complex-valued too. TODO: make it real-valued, and call FFTW's R2C function.
+// Input buffer is actually complex-valued too.
 template< typename TPI >
 class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
    public:
@@ -236,7 +240,7 @@ template< typename TPI >
 class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
    public:
       C2R_IDFT_LineFilter( dip::uint outSize, dip::uint inSize, bool corner ) : shift_( !corner ), inSize_( inSize ) {
-         dft_.Initialize( outSize, true, true );
+         dft_.Initialize( outSize, true, Option::DFTOption::InPlace );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
@@ -534,7 +538,7 @@ void FourierTransform(
    if( inverse ) {
       // If the output is protected and real-valued, compute a real-valued inverse transform
       realOutput |= out.IsProtected() && !out.DataType().IsComplex();
-      DIP_THROW_IF( fast && corner, "Cannot use 'corner', 'fast' and 'inverse' together" ); // TODO: figure out how to properly pad "fast"+"inverse"+"corner"...
+      DIP_THROW_IF( fast && corner, "Cannot use 'corner', 'fast' and 'inverse' together" );
    } else {
       DIP_THROW_IF( realOutput, "Cannot use 'real' without 'inverse' option" );
    }

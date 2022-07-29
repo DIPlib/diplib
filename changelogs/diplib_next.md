@@ -78,10 +78,10 @@ title: "Changes DIPlib 3.x.x"
     - `dip::DFT::Apply()` no longer requires a buffer. If passing in the buffer, a deprecation warning is issued by
       the compiler.
     - `dip::DFT::BufferSize()` is deprecated, and now always returns 0.
-    - `dip::DFT::Initialize()`, as well as the constructor, has a new argument `inplace`, which defaults to `false`,
-      and needs to be set correctly when using *FFTW*. When configured for inplace operation, the input and output
-      buffers given to `Apply()` must be the same.
-    - Added `dip::DFT::IsInplace()`.
+    - `dip::DFT::Initialize()`, as well as the constructor, has a new argument `options`, which allows to control
+      the algorithm used to compute the DFT when using *FFTW*.
+    - `dip::DFT` can compute a transform using aligned buffers, which speeds up computation when using *FFTW*.
+    - Added `dip::DFT::IsInplace()` and `dip::DFT::IsAligned()`.
     - `dip::DFT` now caches plans, it is cheap to instantiate a new object for the same transform size.
 
 - The filtering frameworks, when using input and/or output buffers for an image line, the buffers will be aligned

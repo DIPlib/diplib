@@ -56,7 +56,8 @@ namespace dip {
 
 #ifdef DIP_CONFIG_HAS_FFTW
 
-std::size_t const maximumDFTSize = static_cast< std::size_t >( std::numeric_limits< int >::max() );
+dip::uint const maximumDFTSize = static_cast< dip::uint >( std::numeric_limits< int >::max() );
+extern bool const usingFFTW = true;
 
 template< typename T >
 using complex = typename fftwapidef< T >::complex;
@@ -69,7 +70,8 @@ using RPlan = typename fftwapidef< T >::plan;
 
 #else // DIP_CONFIG_HAS_FFTW
 
-std::size_t const maximumDFTSize = std::numeric_limits< dip::uint >::max();
+dip::uint const maximumDFTSize = std::numeric_limits< dip::uint >::max();
+extern bool const usingFFTW = false;
 
 template< typename T >
 using complex = pocketfft::cmplx< T >;
@@ -167,32 +169,35 @@ PlanType* PlanCache( dip::uint length, bool free = false ) {
 
 
 template< typename T >
-void DFT< T >::Initialize( std::size_t size, bool inverse, bool inplace ) {
+void DFT< T >::Initialize( dip::uint size, bool inverse, Option::DFTOptions options ) {
    Destroy();
    nfft_ = size;
    inverse_ = inverse;
-   inplace_ = inplace;
+   options_ = options;
 #ifdef DIP_CONFIG_HAS_FFTW
    int sign = inverse ? FFTW_BACKWARD : FFTW_FORWARD;
-   std::vector< complex< T >> in( size ); // allocate temporary arrays just for planning...
-   if( inplace ) {
-      plan_ = fftwapidef< T >::plan_dft_1d( static_cast< int >( size ), in.data(), in.data(), sign, FFTW_MEASURE | FFTW_UNALIGNED );
-   } else {
-      std::vector< complex< T >> out( size ); // allocate temporary arrays just for planning...
-      plan_ = fftwapidef< T >::plan_dft_1d( static_cast< int >( size ), in.data(), out.data(), sign, FFTW_MEASURE | FFTW_UNALIGNED );
+   unsigned flags = FFTW_MEASURE; // FFTW_MEASURE is almost always faster than FFTW_ESTIMATE, only for very trivial sizes it's not.
+   if( !options_.Contains( Option::DFTOption::Aligned )) {
+      flags |= FFTW_UNALIGNED;
    }
-   // FFTW_MEASURE is almost always faster than FFTW_ESTIMATE, only for very trivial sizes it's not.
-   // TODO: Remove FFTW_UNALIGNED by ensuring that the buffers are 16-byte aligned.
-   //       This requires aligning buffers created by the Separable framework.
-   // TODO: Separable framework needs an option for 16-byte boundary aligned buffers.
+   AlignedBuffer inBuffer( size * sizeof( complex< T > )); // allocate temporary arrays just for planning...
+   complex< T >* in = reinterpret_cast< complex< T >* >( inBuffer.data() );
+   if( options_.Contains( Option::DFTOption::InPlace )) {
+      plan_ = fftwapidef< T >::plan_dft_1d( static_cast< int >( size ), in, in, sign, flags );
+   } else {
+      flags |= options_.Contains( Option::DFTOption::TrashInput ) ? FFTW_DESTROY_INPUT : FFTW_PRESERVE_INPUT;
+      AlignedBuffer outBuffer( size * sizeof( complex< T > )); // allocate temporary arrays just for planning...
+      complex< T >* out = reinterpret_cast< complex< T >* >( outBuffer.data() );
+      plan_ = fftwapidef< T >::plan_dft_1d( static_cast< int >( size ), in, out, sign, flags );
+   }
 #else // DIP_CONFIG_HAS_FFTW
-   ( void ) inplace; // parameter ignored
+   ( void ) options; // parameter ignored
    plan_ = PlanCache< CPlan< T >>( size );
 #endif // DIP_CONFIG_HAS_FFTW
 }
 
-template void DFT< dfloat >::Initialize( std::size_t, bool, bool );
-template void DFT< sfloat >::Initialize( std::size_t, bool, bool );
+template void DFT< dfloat >::Initialize( dip::uint, bool, Option::DFTOptions );
+template void DFT< sfloat >::Initialize( dip::uint, bool, Option::DFTOptions );
 
 
 template< typename T >
@@ -201,7 +206,9 @@ void DFT< T >::Apply(
       std::complex< T >* destination,
       T scale
 ) const {
+   DIP_THROW_IF( !plan_, "No plan defined." );
 #ifdef DIP_CONFIG_HAS_FFTW
+   DIP_ASSERT(( source == destination) ^ !options_.Contains( Option::DFTOption::InPlace ));
    fftwapidef< T >::execute_dft( static_cast< CPlan< T >>( plan_ ),
                                  reinterpret_cast< complex< T >* >( const_cast< std::complex< T >* >( source )),
                                  reinterpret_cast< complex< T >* >( destination ));
@@ -224,13 +231,14 @@ template void DFT< sfloat >::Apply( std::complex< sfloat > const*, std::complex<
 
 template< typename T >
 void DFT< T >::Destroy() {
-#ifdef DIP_CONFIG_HAS_FFTW
    if( plan_ ) {
+#ifdef DIP_CONFIG_HAS_FFTW
       fftwapidef< T >::destroy_plan( static_cast< CPlan< T >>( plan_ ));
-   }
 #else // DIP_CONFIG_HAS_FFTW
-   PlanCache< CPlan< T >>( nfft_, true );
+      PlanCache< CPlan< T >>( nfft_, true );
 #endif // DIP_CONFIG_HAS_FFTW
+      plan_ = nullptr;
+   }
 }
 
 template void DFT< dfloat >::Destroy();
@@ -241,26 +249,33 @@ template void DFT< sfloat >::Destroy();
 
 
 template< typename T >
-void RDFT< T >::Initialize( std::size_t size, bool inverse ) {
+void RDFT< T >::Initialize( dip::uint size, bool inverse, Option::DFTOptions options ) {
    Destroy();
    nfft_ = size;
    inverse_ = inverse;
+   options_ = options;
 #ifdef DIP_CONFIG_HAS_FFTW
-   std::vector< T > real( size ); // allocate temporary arrays just for planning...
-   std::vector< complex< T >> complex( size ); // allocate temporary arrays just for planning...
-   if( inverse_ ) {
-      plan_ = fftwapidef< T >::plan_dft_c2r_1d( static_cast< int >( size ), complex.data(), real.data(), FFTW_MEASURE | FFTW_UNALIGNED | FFTW_PRESERVE_INPUT );
-   } else {
-      plan_ = fftwapidef< T >::plan_dft_r2c_1d( static_cast< int >( size ), real.data(), complex.data(), FFTW_MEASURE | FFTW_UNALIGNED ); // preserve input is the default here
+   unsigned flags = FFTW_MEASURE; // FFTW_MEASURE is almost always faster than FFTW_ESTIMATE, only for very trivial sizes it's not.
+   flags |= options_.Contains( Option::DFTOption::TrashInput ) ? FFTW_DESTROY_INPUT : FFTW_PRESERVE_INPUT;
+   if( !options_.Contains( Option::DFTOption::Aligned )) {
+      flags |= FFTW_UNALIGNED;
    }
-   // FFTW_MEASURE is almost always faster than FFTW_ESTIMATE, only for very trivial sizes it's not.
+   AlignedBuffer realBuffer( size * sizeof( T )); // allocate temporary arrays just for planning...
+   AlignedBuffer compBuffer(( size / 2 + 1 ) * 2 * sizeof( T )); // allocate temporary arrays just for planning...
+   T* real = reinterpret_cast< T* >( realBuffer.data() );
+   complex< T >* comp = reinterpret_cast< complex< T >* >( compBuffer.data() );
+   if( inverse_ ) {
+      plan_ = fftwapidef< T >::plan_dft_c2r_1d( static_cast< int >( size ), comp, real, flags );
+   } else {
+      plan_ = fftwapidef< T >::plan_dft_r2c_1d( static_cast< int >( size ), real, comp, flags );
+   }
 #else // DIP_CONFIG_HAS_FFTW
    plan_ = PlanCache< RPlan< T >>( size );
 #endif // DIP_CONFIG_HAS_FFTW
 }
 
-template void RDFT< dfloat >::Initialize( std::size_t, bool );
-template void RDFT< sfloat >::Initialize( std::size_t, bool );
+template void RDFT< dfloat >::Initialize( dip::uint, bool, Option::DFTOptions );
+template void RDFT< sfloat >::Initialize( dip::uint, bool, Option::DFTOptions );
 
 
 template< typename T >
@@ -269,6 +284,7 @@ void RDFT< T >::Apply(
       T* destination,
       T scale
 ) const {
+   DIP_THROW_IF( !plan_, "No plan defined." );
 #ifdef DIP_CONFIG_HAS_FFTW
    dip::uint len = nfft_;
    if( inverse_ ) {
@@ -316,13 +332,14 @@ template void RDFT< sfloat >::Apply( sfloat const*, sfloat*, sfloat ) const;
 
 template< typename T >
 void RDFT< T >::Destroy() {
-#ifdef DIP_CONFIG_HAS_FFTW
    if( plan_ ) {
+#ifdef DIP_CONFIG_HAS_FFTW
       fftwapidef< T >::destroy_plan( static_cast< RPlan< T >>( plan_ ));
-   }
 #else // DIP_CONFIG_HAS_FFTW
-   PlanCache< RPlan< T >>( nfft_, true );
+      PlanCache< RPlan< T >>( nfft_, true );
 #endif // DIP_CONFIG_HAS_FFTW
+      plan_ = nullptr;
+   }
 }
 
 template void RDFT< dfloat >::Destroy();
@@ -538,17 +555,17 @@ list = sort(list);
 
 } // namespace
 
-std::size_t GetOptimalDFTSize( std::size_t size0, bool larger ) {
+dip::uint GetOptimalDFTSize( dip::uint size0, bool larger ) {
    // TODO: This only handles sizes up to 2^31-1, DIPlib will currently refuse to do "nice" sizes for larger transforms.
    //       I don't think it matters a whole lot, it's not like we'd ever use images that large in the foreseeable future.
-   std::size_t a = 0;
-   std::size_t b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
+   dip::uint a = 0;
+   dip::uint b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
    if(( size0 > optimalDFTSizeTab[ b ] ) || ( size0 == 0 )) {
       return 0; // 0 indicates an error condition -- of course we don't do DFT on an empty array!
    }
    if( larger ) {
       while( a < b ) {
-         std::size_t c = ( a + b ) / 2;
+         dip::uint c = ( a + b ) / 2;
          if( size0 <= optimalDFTSizeTab[ c ] ) {
             b = c;
          } else {
@@ -557,7 +574,7 @@ std::size_t GetOptimalDFTSize( std::size_t size0, bool larger ) {
       }
    } else {
       while( a < b ) {
-         std::size_t c = ( a + b + 1 ) / 2;
+         dip::uint c = ( a + b + 1 ) / 2;
          if( size0 >= optimalDFTSizeTab[ c ] ) {
             a = c;
          } else {
@@ -579,14 +596,14 @@ std::size_t GetOptimalDFTSize( std::size_t size0, bool larger ) {
 constexpr long double pi = 3.1415926535897932384626433832795029l;
 
 template< typename T >
-T test_DFT( std::size_t nfft, bool inverse ) {
+T test_DFT( dip::uint nfft, bool inverse ) {
    // Initialize
    dip::DFT< T > opts( nfft, inverse );
    // Create test data
    std::vector< std::complex< T >> inbuf( nfft );
    std::vector< std::complex< T >> outbuf( nfft );
    dip::Random random;
-   for( std::size_t k = 0; k < nfft; ++k ) {
+   for( dip::uint k = 0; k < nfft; ++k ) {
       inbuf[ k ] = std::complex< T >( static_cast< T >( random() ), static_cast< T >( random() )) / static_cast< T >( random.max() ) - T( 0.5 );
    }
    // Do the thing
@@ -594,10 +611,10 @@ T test_DFT( std::size_t nfft, bool inverse ) {
    // Check
    long double totalpower = 0;
    long double difpower = 0;
-   for( std::size_t k0 = 0; k0 < nfft; ++k0 ) {
+   for( dip::uint k0 = 0; k0 < nfft; ++k0 ) {
       std::complex< long double > acc{ 0, 0 };
       long double phinc = ( inverse ? 2 : -2 ) * static_cast< long double >( k0 ) * pi / static_cast< long double >( nfft );
-      for( std::size_t k1 = 0; k1 < nfft; ++k1 ) {
+      for( dip::uint k1 = 0; k1 < nfft; ++k1 ) {
          acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
       }
       totalpower += std::norm( acc );
@@ -608,32 +625,32 @@ T test_DFT( std::size_t nfft, bool inverse ) {
 
 DOCTEST_TEST_CASE("[DIPlib] testing the DFT class") {
    // Test forward (C2C) transform for a few different sizes that have all different radixes.
-   DOCTEST_CHECK( doctest::Approx( test_DFT< float >( 32, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_DFT< double >( 32, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_DFT< double >( 256, false )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_DFT< float >( 105, false )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( test_DFT< double >( 154, false )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( test_DFT< float >( 97, false )) == 0 ); // prime
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::sfloat >( 32, false )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::dfloat >( 32, false )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::dfloat >( 256, false )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::sfloat >( 105, false )) == 0 ); // 3*5*7
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::dfloat >( 154, false )) == 0 ); // 2*7*11
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::sfloat >( 97, false )) == 0 ); // prime
    // Idem for inverse (C2C) transform
-   DOCTEST_CHECK( doctest::Approx( test_DFT< float >( 32, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_DFT< double >( 32, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_DFT< double >( 256, true )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_DFT< float >( 105, true )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( test_DFT< double >( 154, true )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( test_DFT< float >( 97, true )) == 0 ); // prime
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::sfloat >( 32, true )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::dfloat >( 32, true )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::dfloat >( 256, true )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::sfloat >( 105, true )) == 0 ); // 3*5*7
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::dfloat >( 154, true )) == 0 ); // 2*7*11
+   DOCTEST_CHECK( doctest::Approx( test_DFT< dip::sfloat >( 97, true )) == 0 ); // prime
 }
 
 template< typename T >
-T test_RDFT( std::size_t nfft ) {
+T test_RDFT( dip::uint nfft ) {
    // Initialize
    dip::RDFT< T > opts( nfft, false );
-   std::size_t nOut = nfft / 2 + 1;
+   dip::uint nOut = nfft / 2 + 1;
    // Create test data
    std::vector< T > inbuf( nfft );
    std::vector< std::complex< T >> outbuf( nOut + 1 );
    outbuf.back() = 1e6; // make sure we're not reading past where we're supposed to
    dip::Random random;
-   for( std::size_t k = 0; k < nfft; ++k ) {
+   for( dip::uint k = 0; k < nfft; ++k ) {
       inbuf[ k ] = static_cast< T >( random() ) / static_cast< T >( random.max() ) - T( 0.5 );
    }
    // Do the thing
@@ -642,10 +659,10 @@ T test_RDFT( std::size_t nfft ) {
    // Check
    long double totalpower = 0;
    long double difpower = 0;
-   for( std::size_t k0 = 0; k0 < nOut; ++k0 ) {
+   for( dip::uint k0 = 0; k0 < nOut; ++k0 ) {
       std::complex< long double > acc{ 0, 0 };
       long double phinc = -2 * static_cast< long double >( k0 ) * pi / static_cast< long double >( nfft );
-      for( std::size_t k1 = 0; k1 < nfft; ++k1 ) {
+      for( dip::uint k1 = 0; k1 < nfft; ++k1 ) {
          acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
       }
       totalpower += std::norm( acc );
@@ -655,10 +672,10 @@ T test_RDFT( std::size_t nfft ) {
 }
 
 template< typename T >
-T test_RDFTi( std::size_t nfft ) {
+T test_RDFTi( dip::uint nfft ) {
    // Initialize
    dip::RDFT< T > opts( nfft, true );
-   std::size_t nIn = nfft / 2 + 1;
+   dip::uint nIn = nfft / 2 + 1;
    // Create test data
    std::vector< std::complex< T >> inbuf( nIn + 1 );
    std::vector< T > outbuf( nfft );
@@ -669,7 +686,7 @@ T test_RDFTi( std::size_t nfft ) {
       --nIn;
       inbuf[ nIn ] = static_cast< T >( random() ) / static_cast< T >( random.max() ) - T( 0.5 );
    }
-   for( std::size_t k = 1; k < nIn; ++k ) {
+   for( dip::uint k = 1; k < nIn; ++k ) {
       inbuf[ k ] = std::complex< T >( static_cast< T >( random() ), static_cast< T >( random() )) / static_cast< T >( random.max() ) - T( 0.5 );
    }
    // Do the thing
@@ -677,11 +694,11 @@ T test_RDFTi( std::size_t nfft ) {
    // Check
    long double totalpower = 0;
    long double difpower = 0;
-   for( std::size_t k0 = 0; k0 < nfft; ++k0 ) {
+   for( dip::uint k0 = 0; k0 < nfft; ++k0 ) {
       long double phinc = 2 * static_cast< long double >( k0 ) * pi / static_cast< long double >( nfft );
       //long double acc = inbuf[ 0 ].real();
       std::complex< long double > acc = inbuf[ 0 ];
-      for( std::size_t k1 = 1; k1 < nIn; ++k1 ) {
+      for( dip::uint k1 = 1; k1 < nIn; ++k1 ) {
          //acc += 2 * ( std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc )) ).real();
          acc += std::complex< long double >( inbuf[ k1 ] ) * std::exp( std::complex< long double >( 0, static_cast< long double >( k1 ) * phinc ));
          acc += std::conj( std::complex< long double >( inbuf[ k1 ] )) * std::exp( std::complex< long double >( 0, -static_cast< long double >( k1 ) * phinc ));
@@ -697,19 +714,19 @@ T test_RDFTi( std::size_t nfft ) {
 
 DOCTEST_TEST_CASE("[DIPlib] testing the RDFT class") {
    // Test forward (R2C) transform for a few different sizes that have all different radixes.
-   DOCTEST_CHECK( doctest::Approx( test_RDFT< float >( 32 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_RDFT< double >( 32 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_RDFT< double >( 256 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_RDFT< float >( 105 )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( test_RDFT< double >( 154 )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( test_RDFT< float >( 97 )) == 0 ); // prime
+   DOCTEST_CHECK( doctest::Approx( test_RDFT< dip::sfloat >( 32 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_RDFT< dip::dfloat >( 32 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_RDFT< dip::dfloat >( 256 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_RDFT< dip::sfloat >( 105 )) == 0 ); // 3*5*7
+   DOCTEST_CHECK( doctest::Approx( test_RDFT< dip::dfloat >( 154 )) == 0 ); // 2*7*11
+   DOCTEST_CHECK( doctest::Approx( test_RDFT< dip::sfloat >( 97 )) == 0 ); // prime
    // Idem for inverse (C2R) transform
-   DOCTEST_CHECK( doctest::Approx( test_RDFTi< float >( 32 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_RDFTi< double >( 32 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_RDFTi< double >( 256 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( test_RDFTi< float >( 105 )) == 0 ); // 3*5*7
-   DOCTEST_CHECK( doctest::Approx( test_RDFTi< double >( 154 )) == 0 ); // 2*7*11
-   DOCTEST_CHECK( doctest::Approx( test_RDFTi< float >( 97 )) == 0 ); // prime
+   DOCTEST_CHECK( doctest::Approx( test_RDFTi< dip::sfloat >( 32 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_RDFTi< dip::dfloat >( 32 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_RDFTi< dip::dfloat >( 256 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( test_RDFTi< dip::sfloat >( 105 )) == 0 ); // 3*5*7
+   DOCTEST_CHECK( doctest::Approx( test_RDFTi< dip::dfloat >( 154 )) == 0 ); // 2*7*11
+   DOCTEST_CHECK( doctest::Approx( test_RDFTi< dip::sfloat >( 97 )) == 0 ); // prime
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

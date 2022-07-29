@@ -23,7 +23,7 @@
 #include <complex>
 #include <limits>
 
-#include "diplib/library/export.h"
+#include "diplib/library/types.h"
 
 /// \file
 /// \brief Declares an interface to a DFT function.
@@ -34,6 +34,24 @@ namespace dip {
 
 
 /// \addtogroup transform
+
+
+namespace Option {
+
+/// \brief Determines working mode for \ref DFT and \ref RDFT.
+///
+/// Implicitly casts to \ref dip::Option::DFTOptions. Combine constants together with the `+` operator.
+enum class DIP_NO_EXPORT DFTOption {
+   InPlace,      ///< Work in place, the input and output buffers are the same.
+   TrashInput,   ///< Allowed to trash the input buffer, we don't need to preserve it.
+   Aligned       ///< Both buffers are aligned to 16-byte boundaries.
+};
+
+/// \class dip::Option::DFTOptions
+/// \brief Determines working mode for \ref DFT and \ref RDFT. Combines multiple \ref DFTOption values,.
+DIP_DECLARE_OPTIONS( DFTOption, DFTOptions )
+
+} // namespace Option
 
 
 /// \brief An object that encapsulates the Discrete Fourier Transform (DFT).
@@ -49,6 +67,9 @@ namespace dip {
 ///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
 ///
+/// !!! attention
+///     The object should not be created, copied or destroyed in multiple threads at the same time.
+///
 /// The DFT is computed using either PocketFFT or FFTW, depending on compile-time configuration (see the
 /// `DIP_ENABLE_FFTW` CMake configuration option).
 ///
@@ -62,8 +83,8 @@ class DFT {
 
       /// \brief Construct a `DFT` object, see \ref Initialize for the meaning of the parameters.
       /// Note that this is not a trivial operation. Not thread safe.
-      DFT( std::size_t size, bool inverse, bool inplace = false ) {
-         Initialize( size, inverse, inplace );
+      DFT( dip::uint size, bool inverse, Option::DFTOptions options = {} ) {
+         Initialize( size, inverse, options );
       }
 
       // Destructor.
@@ -73,17 +94,17 @@ class DFT {
 
       // Copying is creating a new plan -- allow plan creation code to buffer plans
       DFT( DFT const& other ) {
-         Initialize( other.nfft_, other.inverse_, other.inplace_ );
+         Initialize( other.nfft_, other.inverse_, other.options_ );
       }
       DFT& operator=( DFT const& other ) {
          Destroy();
-         Initialize( other.nfft_, other.inverse_, other.inplace_ );
+         Initialize( other.nfft_, other.inverse_, other.options_ );
          return *this;
       }
 
       // Allow moving
       DFT( DFT&& other ) noexcept
-            : plan_( other.plan_ ), nfft_( other.nfft_ ), inverse_( other.inverse_ ), inplace_( other.inplace_ ) {
+            : plan_( other.plan_ ), nfft_( other.nfft_ ), inverse_( other.inverse_ ), options_( other.options_ ) {
          other.plan_ = nullptr;
       }
       DFT& operator=( DFT&& other ) noexcept {
@@ -92,21 +113,38 @@ class DFT {
          other.plan_ = nullptr;
          nfft_ = other.nfft_;
          inverse_ = other.inverse_;
-         inplace_ = other.inplace_;
+         options_ = other.options_;
          return *this;
       }
 
       /// \brief Re-configure a `DFT` object to the given transform size and direction.
       ///
       /// `size` is the size of the transform. The two pointers passed to \ref Apply are expected to point at
-      /// buffers with this length. If `inverse` is `true`, an inverse transform will be computed. If `inplace`
-      /// is `true`, the two pointers passed to \ref Apply must be the same, otherwise they must be different.
-      /// However, when using PocketFFT this value is ignored.
+      /// buffers with this length. If `inverse` is `true`, an inverse transform will be computed.
+      ///
+      /// `options` determines some properties for the algorithm that will compute the DFT.
+      ///  - \ref Option::DFTOption::InPlace means the input and output pointers passed to \ref Apply must be the same.
+      ///  - \ref Option::DFTOption::TrashInput means that the algorithm is free to overwrite the input array.
+      ///    Ignored when working in place.
+      ///  - \ref Option::DFTOption::Aligned means that the input and output buffers are aligned to 16-bit boundaries,
+      ///    which can significantly improve the speed of the algorithm.
+      ///
+      /// When using PocketFFT, all these options are ignored. With PocketFFT, the operation can always be applied
+      /// in place if desired.
       ///
       /// Note that this is not a trivial operation.
       ///
       /// This operation is not thread safe.
-      DIP_EXPORT void Initialize( std::size_t size, bool inverse, bool inplace = false );
+      DIP_EXPORT void Initialize( dip::uint size, bool inverse, Option::DFTOptions options = {} );
+
+      [[ deprecated( "Use the dip::Option::DFTOptions flags." ) ]]
+      DIP_EXPORT void Initialize( dip::uint size, bool inverse, bool inplace ) {
+         if( inplace ) {
+            Initialize( size, inverse, Option::DFTOption::InPlace );
+         } else {
+            Initialize( size, inverse );
+         }
+      }
 
       /// \brief Apply the transform that the `DFT` object is configured for.
       ///
@@ -139,20 +177,23 @@ class DFT {
       bool IsInverse() const { return inverse_; }
 
       /// \brief Returns whether the transform is configured to work in place or not. Not meaningful when using PocketFFT.
-      bool IsInplace() const { return inplace_; }
+      bool IsInplace() const { return options_.Contains( Option::DFTOption::InPlace ); }
+
+      /// \brief Returns whether the transform is configured to work on aligned buffers or not. Not meaningful when using PocketFFT.
+      bool IsAligned() const { return options_.Contains( Option::DFTOption::Aligned ); }
 
       /// \brief Returns the size that the transform is configured for.
-      std::size_t TransformSize() const { return nfft_; }
+      dip::uint TransformSize() const { return nfft_; }
 
       /// \brief Returns the size of the buffer expected by `Apply`.
       [[ deprecated( "A buffer is no longer necessary." ) ]]
-      std::size_t BufferSize() const { return 0; }
+      dip::uint BufferSize() const { return 0; }
 
    private:
       void* plan_ = nullptr;
-      std::size_t nfft_ = 0;
+      dip::uint nfft_ = 0;
       bool inverse_ = false;
-      bool inplace_ = false;
+      Option::DFTOptions options_ = {};
 
       /// \brief Frees memory
       DIP_EXPORT void Destroy();
@@ -178,6 +219,9 @@ class DFT {
 ///
 /// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
 ///
+/// !!! attention
+///     The object should not be created, copied or destroyed in multiple threads at the same time.
+///
 /// The DFT is computed using either PocketFFT or FFTW, depending on compile-time configuration (see the
 /// `DIP_ENABLE_FFTW` CMake configuration option).
 ///
@@ -191,8 +235,8 @@ class RDFT {
 
       /// \brief Construct a `DFT` object, see \ref Initialize for the meaning of the parameters.
       /// Note that this is not a trivial operation. Not thread safe.
-      RDFT( std::size_t size, bool inverse ) {
-         Initialize( size, inverse );
+      RDFT( dip::uint size, bool inverse, Option::DFTOptions options = {} ) {
+         Initialize( size, inverse, options );
       }
 
       // Destructor.
@@ -202,17 +246,17 @@ class RDFT {
 
       // Copying is creating a new plan -- allow plan creation code to buffer plans
       RDFT( RDFT const& other ) {
-         Initialize( other.nfft_, other.inverse_ );
+         Initialize( other.nfft_, other.inverse_, other.options_ );
       }
       RDFT& operator=( RDFT const& other ) {
          Destroy();
-         Initialize( other.nfft_, other.inverse_ );
+         Initialize( other.nfft_, other.inverse_, other.options_ );
          return *this;
       }
 
       // Allow moving
       RDFT( RDFT&& other ) noexcept
-            : plan_( other.plan_ ), nfft_( other.nfft_ ), inverse_( other.inverse_ ) {
+            : plan_( other.plan_ ), nfft_( other.nfft_ ), inverse_( other.inverse_ ), options_( other.options_ ) {
          other.plan_ = nullptr;
       }
       RDFT& operator=( RDFT&& other ) noexcept {
@@ -221,6 +265,7 @@ class RDFT {
          other.plan_ = nullptr;
          nfft_ = other.nfft_;
          inverse_ = other.inverse_;
+         options_ = other.options_;
          return *this;
       }
 
@@ -232,7 +277,7 @@ class RDFT {
       /// Note that this is not a trivial operation.
       ///
       /// This operation is not thread safe.
-      DIP_EXPORT void Initialize( std::size_t size, bool inverse );
+      DIP_EXPORT void Initialize( dip::uint size, bool inverse, Option::DFTOptions options = {} );
 
       /// \brief Apply the transform that the `RDFT` object is configured for.
       ///
@@ -261,13 +306,20 @@ class RDFT {
       /// \brief Returns `true` if this represents an inverse transform, `false` for a forward transform.
       bool IsInverse() const { return inverse_; }
 
+      /// \brief Returns whether the transform is configured to work in place or not. Not meaningful when using PocketFFT.
+      bool IsInplace() const { return options_.Contains( Option::DFTOption::InPlace ); }
+
+      /// \brief Returns whether the transform is configured to work on aligned buffers or not. Not meaningful when using PocketFFT.
+      bool IsAligned() const { return options_.Contains( Option::DFTOption::Aligned ); }
+
       /// \brief Returns the size that the transform is configured for.
-      std::size_t TransformSize() const { return nfft_; }
+      dip::uint TransformSize() const { return nfft_; }
 
    private:
       void* plan_ = nullptr;
-      std::size_t nfft_ = 0;
+      dip::uint nfft_ = 0;
       bool inverse_ = false;
+      Option::DFTOptions options_ = {};
 
       /// \brief Frees memory
       DIP_EXPORT void Destroy();
@@ -283,11 +335,15 @@ class RDFT {
 ///
 /// Prefer to use \ref dip::OptimalFourierTransformSize in your applications, it will throw an error if
 /// the transform size is too large.
-DIP_EXPORT std::size_t GetOptimalDFTSize( std::size_t size0, bool larger = true );
+DIP_EXPORT dip::uint GetOptimalDFTSize( dip::uint size0, bool larger = true );
+
 
 /// \brief The largest size supported by \ref DFT and \ref FourierTransform. Is equal to 2^31^-1 when using FFTW,
-/// or 2^64-1 when using PocketFFT.
-extern std::size_t const maximumDFTSize;
+/// or 2^64^-1 when using PocketFFT.
+DIP_EXPORT extern dip::uint const maximumDFTSize;
+
+/// \brief Is `true` if `dip::DFT` and `dip::RDFT` use the FFTW library, or false if they use PocketFFT.
+DIP_EXPORT extern bool const usingFFTW;
 
 
 /// \endgroup
