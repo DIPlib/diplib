@@ -234,7 +234,7 @@ void Full(
       inBuffer.buffer = nullptr;
 
       // Create output buffer data struct and allocate buffer if necessary
-      std::vector< uint8 > outputBuffer;
+      AlignedBuffer outputBuffer;
       FullBuffer outBuffer;
       outBuffer.tensorLength = output.TensorElements();
       if( useOutBuffer ) {

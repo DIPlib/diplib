@@ -244,8 +244,8 @@ void Separable(
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // The temporary buffers, if needed, will be stored here (each thread their own!)
-      std::vector< uint8 > inBufferStorage;
-      std::vector< uint8 > outBufferStorage;
+      AlignedBuffer inBufferStorage;
+      AlignedBuffer outBufferStorage;
 
       // Iterate over the dimensions to be processed. This loop should not parallelized!
       for( dip::uint rep = 0; rep < order.size(); ++rep ) {

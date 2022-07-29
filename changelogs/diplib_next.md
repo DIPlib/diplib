@@ -46,6 +46,8 @@ title: "Changes DIPlib 3.x.x"
 - `dip::RDFT` is similar to `dip::DFT`, and computes real-to-complex forward DFTs and complex-to-real inverse DFTs.
   It uses either *FFTW* or *PocketFFT*, depending on compile-time configuration.
 
+- `dip::AlignedBuffer` is a utility class used to allocate buffers that are aligned to 32-byte boundaries.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -81,6 +83,9 @@ title: "Changes DIPlib 3.x.x"
       buffers given to `Apply()` must be the same.
     - Added `dip::DFT::IsInplace()`.
     - `dip::DFT` now caches plans, it is cheap to instantiate a new object for the same transform size.
+
+- The filtering frameworks, when using input and/or output buffers for an image line, the buffers will be aligned
+  to a 32-byte boundary.
 
 ### Bug fixes
 

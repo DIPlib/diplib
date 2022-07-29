@@ -670,11 +670,12 @@ class DIP_CLASS_EXPORT SeparableLineFilter {
 /// (because the question arises: in which image pass does this change occur?).
 ///
 /// The buffers are not guaranteed to be contiguous, please use the `stride` and `tensorStride` values to access samples.
-/// The \ref dip::Framework::SeparableOption::UseInputBuffer and \ref dip::Framework::SeparableOption::UseInputBuffer
+/// The \ref dip::Framework::SeparableOption::UseInputBuffer and \ref dip::Framework::SeparableOption::UseOutputBuffer
 /// options force the use of temporary buffers to store each image line. These temporary buffers always have contiguous
 /// samples, with the tensor stride equal to 1 and the spatial stride equal to the number of tensor elements.
 /// That is, the tensor elements for each pixel are contiguous, and the pixels are contiguous. This is useful when
 /// calling external code to process the buffers, and that external code expects input data to be contiguous.
+/// These buffers will also be aligned to a 32-byte boundary.
 /// Forcing the use of an input buffer is also useful when the algorithm needs to write temporary data to its input,
 /// for example, to compute the median of the input data by sorting. If the input has a stride of 0 in the dimension
 /// being processed (this happens when expanding singleton dimensions), it means that a single pixel is repeated across

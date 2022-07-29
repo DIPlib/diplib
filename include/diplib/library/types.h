@@ -829,6 +829,86 @@ struct RegressionParameters {
    dfloat slope = 0.0;     ///< slope, $b$.
 };
 
+
+/// \brief A container used to allocate 32-byte aligned buffers.
+///
+/// This is a highly simplified version of `std::vector< dip::uint8 >` for the purposes of allocating
+/// a buffer with a 32-byte alignment. The buffer is not initialized.
+class AlignedBuffer {
+   public:
+      /// A default-initialized buffer is empty.
+      AlignedBuffer() = default;
+      /// A buffer of size `size`, uninitialized.
+      explicit AlignedBuffer( dip::uint size ) {
+         resize( size );
+      }
+      AlignedBuffer( AlignedBuffer const& other ) {
+         resize( other.size_ );
+         std::copy_n( other.data(), size_, data_ );
+      }
+      AlignedBuffer( AlignedBuffer&& other ) noexcept {
+         swap( other );
+      }
+      ~AlignedBuffer() noexcept {
+         free_array();
+      }
+      AlignedBuffer& operator=( AlignedBuffer const& other ) {
+         if( this != &other ) {
+            resize( other.size_ );
+            std::copy_n( other.data(), size_, data_ );
+         }
+         return *this;
+      }
+      AlignedBuffer& operator=( AlignedBuffer&& other ) noexcept {
+         swap( other );
+         return *this;
+      }
+      void swap( AlignedBuffer& other ) noexcept {
+         std::swap( size_, other.size_ );
+         std::swap( offset_, other.offset_ );
+         std::swap( data_, other.data_ );
+      }
+      /// Change the size of the buffer to `size`. Data is not preserved.
+      void resize( dip::uint newsz ) {
+         free_array();
+         size_ = newsz;
+         if( newsz > 0 ) {
+            data_ = static_cast< dip::uint8* >( std::malloc( newsz + align_ - 1 ));
+            if( data_ == nullptr ) {
+               throw std::bad_alloc();
+            }
+            dip::uint diff = reinterpret_cast< dip::uint >( data_ ) & ( align_ - 1 );
+            offset_ = diff == 0 ? 0 : align_ - diff;
+            DIP_ASSERT( reinterpret_cast< dip::uint >( data() ) % align_ == 0 );
+         }
+      }
+      /// Free the buffer's memory.
+      void clear() noexcept {
+         free_array();
+         size_ = 0;
+      }
+      /// True if the buffer is empty (its size is zero).
+      DIP_NODISCARD bool empty() const noexcept { return size_ == 0; }
+      /// Returns  the size of the buffer.
+      dip::uint size() const noexcept { return size_; }
+      /// Returns a pointer to the first byte of the buffer.
+      dip::uint8* data() noexcept { return data_ + offset_; };
+      /// Returns a pointer to the first byte of the buffer.
+      dip::uint8 const* data() const noexcept { return data_ + offset_; };
+
+   private:
+      constexpr static dip::uint align_ = 32; // Must be a power of two!
+      dip::uint size_ = 0;
+      dip::uint offset_ = 0;
+      dip::uint8* data_ = nullptr;
+
+      void free_array() noexcept {
+         if( data_ ) {
+            std::free( data_ );
+         }
+      }
+};
+
 /// \endgroup
 
 } // namespace dip
