@@ -405,7 +405,7 @@ void Fourier(
    dip::uint outSize = ift.TransformSize();
    TPI invScale = static_cast< TPI >( 1.0 / static_cast< dip::dfloat >( inSize ));
    // FT of input
-   ft.Apply( input, intermediate, 1.0 );
+   ft.Apply( const_cast< std::complex< TPI >* >( input ), intermediate, 1.0 ); // TODO: remove const from input?
    // Shift
    if( weights ) {
       // Use given weights

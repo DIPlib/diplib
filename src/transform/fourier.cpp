@@ -16,11 +16,7 @@
  */
 
 /* TODO
-    - Make use of dip::RDFT in dip::Fourier and dip::Interpolation::Fourier
     - Implement a DCT function
-    - Remove FFTW_UNALIGNED by ensuring that the buffers are 16-byte aligned; for this, we need the Separable
-        framework to make 16-byte boundary aligned buffers
-    - Figure out how to properly pad "fast"+"inverse"+"corner"...
     - dip::GetOptimalDFTSize must work for sizes larger than 2^31-1.
     - dip::maximumDFTSize can be 2^63-1 for FFTW if we use the guru interface.
 */
@@ -30,7 +26,6 @@
 #include "diplib/dft.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include "diplib/multithreading.h"
 #include "diplib/geometry.h"
 #include "diplib/math.h"
 
@@ -44,14 +39,9 @@ constexpr BoundaryCondition DFT_PADDING_MODE = BoundaryCondition::ZERO_ORDER_EXT
 constexpr BoundaryCondition IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS;
 
 
-// FFTW documentation specifies 16-byte alignment required for SIMD implementations:
-// http://www.fftw.org/fftw3_doc/SIMD-alignment-and-fftw_005fmalloc.html#SIMD-alignment-and-fftw_005fmalloc
-// constexpr dip::uint FFTW_MAX_ALIGN_REQUIRED = 16;
-
-
 // This function by Alexei: http://stackoverflow.com/a/19752002/7328782
 template< typename TPI >
-static void ShiftCornerToCenter( TPI* data, dip::uint length ) { // fftshift
+void ShiftCornerToCenter( TPI* data, dip::uint length ) { // fftshift
    dip::uint jj = length / 2;
    if( length & 1u ) { // Odd-sized transform
       TPI tmp = data[ 0 ];
@@ -69,7 +59,7 @@ static void ShiftCornerToCenter( TPI* data, dip::uint length ) { // fftshift
 
 // This function by Alexei: http://stackoverflow.com/a/19752002/7328782
 template< typename TPI >
-static void ShiftCenterToCorner( TPI* data, dip::uint length ) { // ifftshift
+void ShiftCenterToCorner( TPI* data, dip::uint length ) { // ifftshift
    dip::uint jj = length / 2;
    if( length & 1u ) { // Odd-sized transform
       TPI tmp = data[ length - 1 ];
@@ -87,7 +77,7 @@ static void ShiftCenterToCorner( TPI* data, dip::uint length ) { // ifftshift
 }
 
 template< typename TPI >
-static void ShiftCornerToCenterHalfLine( TPI* data, dip::uint length ) { // ifftshift, but for a half-line only
+void ShiftCornerToCenterHalfLine( TPI* data, dip::uint length ) { // fftshift & ifftshift, but for a half-line only
    bool isOdd = length & 1u;
    length /= 2;  // the central pixel, the last value in the line that we'll use
    dip::uint jj = ( length + 1 ) / 2;  // the number of swaps
@@ -96,6 +86,70 @@ static void ShiftCornerToCenterHalfLine( TPI* data, dip::uint length ) { // ifft
    }
    for( dip::uint ii = 1; ii < ( length + isOdd ); ++ii ) {
       data[ ii ] = std::conj( data[ ii ] );
+   }
+}
+
+template< typename T >
+static inline void CopyDataToBuffer(
+      T const* inBuffer,
+      dip::sint inStride,
+      T* outBuffer,
+      dip::uint pixels
+) {
+   if( inStride == 0 ) {
+      std::fill_n( outBuffer, pixels, *inBuffer );
+   } else if( inStride == 1 ) {
+      std::copy( inBuffer, inBuffer + pixels, outBuffer );
+   } else {
+      auto inIt = ConstSampleIterator< T >( inBuffer, inStride );
+      std::copy( inIt, inIt + pixels, outBuffer );
+   }
+}
+
+template< typename TPI >
+void CopyForDFT( TPI const* in, dip::uint inLength, dip::sint inStride, TPI* out, dip::uint outLength, bool shift, bool inverse ) {
+   dip::uint k = outLength - inLength; // total amount of padding
+   if( shift ) {
+      // This is the same for both forward and inverse transform
+      // Copy right side to left, and left side to right
+      dip::uint n = inLength / 2; // position of origin in shifted input array
+      CopyDataToBuffer( in, inStride, out + outLength - n, n );
+      CopyDataToBuffer( in + static_cast< dip::sint >( n ) * inStride, inStride, out, inLength - n );
+      if( k > 0 ) {
+         if( inverse ) {
+            // Pad the middle part with zeros
+            std::fill_n( out + inLength - n, k, 0 );
+            if(( k & 1u ) == 0 ) {
+               // For an even input buffer, we need to split the highest frequency element to maintain symmetry
+               out[ outLength - n ] /= 2;
+               out[ inLength - n ] = out[ outLength - n ];
+            }
+         } else {
+            // Pad the middle part by repeating last value
+            std::fill_n( out + inLength - n, k / 2, out[ inLength - n - 1 ] );
+            std::fill_n( out + inLength - n + k / 2, k - k / 2, out[ outLength - n ] );
+         }
+      }
+   } else {
+      if( inverse && ( k > 0 )) {
+         // Copy left half to left end, and right half to right end, and pad the middle part with zeros
+         dip::uint n = ( inLength + 1 ) / 2; // size of the left half
+         CopyDataToBuffer( in, inStride, out, n );
+         std::fill_n( out + n, k, 0 );
+         CopyDataToBuffer( in + static_cast< dip::sint >( n ) * inStride, inStride, out + n + k, inLength - n );
+         if(( k & 1u ) == 0 ) {
+            // For an even input buffer, we need to duplicate the highest frequency element to maintain symmetry
+            out[ n + k ] /= 2;
+            out[ n ] = out[ n + k ];
+         }
+      } else {
+         // Copy identically
+         CopyDataToBuffer( in, inStride, out, inLength );
+         if( k > 0 ) {
+            // This only happens if !inverse: pad on the right only, keeping the origin on the left pixel
+            std::fill_n( out + inLength, k, out[ inLength - 1 ] );
+         }
+      }
    }
 }
 
@@ -137,16 +191,17 @@ void MirrorInPlace( Image& img, BooleanArray const& flip ) {
 // TPI is either scomplex or dcomplex.
 template< typename TPI >
 class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
+      using TPF = FloatType< TPI >;
    public:
       C2C_DFT_LineFilter(
             UnsignedArray const& outSize,
             BooleanArray const& process,
             bool inverse, bool corner, dfloat scale
-      ) : scale_( static_cast< FloatType< TPI >>( scale )), shift_( !corner ) {
+      ) : scale_( static_cast< TPF >( scale )), shift_( !corner ) {
          dft_.resize( outSize.size() );
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
-               dft_[ ii ].Initialize( outSize[ ii ], inverse, Option::DFTOption::Aligned + Option::DFTOption::TrashInput );
+               dft_[ ii ].Initialize( outSize[ ii ], inverse, Option::DFTOption::InPlace + Option::DFTOption::Aligned );
             }
          }
       }
@@ -156,150 +211,108 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          auto const& dft = dft_[ params.dimension ];
          dip::uint length = dft.TransformSize();
-         dip::uint border = params.inBuffer.border;
-         DIP_ASSERT( params.inBuffer.length + 2 * border >= length );
+         DIP_ASSERT( params.inBuffer.length <= length );
          DIP_ASSERT( params.outBuffer.length == length );
-         if( !( params.inBuffer.length & 1u ) && ( length & 1u )) {
-            // When padding from an even-sized array to an odd-sized array, we pad one fewer element to the left
-            // In other cases we pad evenly or we pad one fewer element to the right.
-            --border; // TODO: This beaks the alignment of the buffer!!!
-            DIP_THROW( "Buffer misalignment! Fix this! " );
-         }
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer ) - border;
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::sint stride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-         FloatType< TPI > scale{ 1.0 };
-         if( params.pass == params.nPasses - 1 ) {
+         DIP_ASSERT(  params.outBuffer.stride == 1 );
+         TPF scale{ 1.0 };
+         if( params.pass == 0 ) {
             scale = scale_;
          }
-         if( shift_ ) {
-            ShiftCenterToCorner( in, length );
-         } else if( border > 0 ) {
-            // we only get here with "corner"+"fast", we cannot combine those with "inverse".
-            DIP_ASSERT( !dft.IsInverse() );
-            // If not shifting, we need the padding to be on the right, thus we move data over a bit
-            std::copy( in + border, in + length, in );
-            // We copy the padded border as well, extending it appropriately
-         }
-         dft.Apply( in, out, scale );
+         CopyForDFT( in, params.inBuffer.length, stride, out, length, shift_, dft.IsInverse() );
+         DIP_ASSERT( reinterpret_cast< dip::uint >( out ) % 32 == 0 );
+         dft.Apply( out, out, scale );
          if( shift_ ) {
             ShiftCornerToCenter( out, length );
          }
       }
 
    private:
-      std::vector< DFT< FloatType< TPI >>> dft_; // one for each dimension
-      FloatType< TPI > scale_;
+      std::vector< DFT< TPF >> dft_; // one for each dimension
+      TPF scale_;
       bool shift_;
 };
 
-// TPI is either scomplex or dcomplex.
+// TPI is either sfloat or dfloat.
 // This will always only be called for a single dimension.
-// Input buffer is actually complex-valued too.
 template< typename TPI >
 class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
+      using TPC = ComplexType< TPI >;
    public:
-      R2C_DFT_LineFilter( dip::uint outSize, bool corner ) : shift_( !corner ) {
-         dft_.Initialize( outSize, false );
+      R2C_DFT_LineFilter(
+            dip::uint outSize, bool corner, dfloat scale
+      ) : scale_( static_cast< TPI >( scale )), shift_( !corner ) {
+         dft_.Initialize( outSize, false, Option::DFTOption::InPlace + Option::DFTOption::Aligned );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
-         return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
+         return 5 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dip::uint length = dft_.TransformSize();
-         dip::uint border = params.inBuffer.border;
-         DIP_ASSERT( params.inBuffer.length + 2 * border >= length );
+         DIP_ASSERT( params.inBuffer.length <= length );
          DIP_ASSERT( params.outBuffer.length == length );
-         if( !( params.inBuffer.length & 1u ) && ( length & 1u )) {
-            // When padding from an even-sized array to an odd-sized array, we pad one fewer element to the left
-            // In other cases we pad evenly or we pad one fewer element to the right.
-            --border;
-         }
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer ) - border;
-         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-         if( shift_ ) {
-            ShiftCenterToCorner( in, length );
-         } else if( border > 0 ) {
-            // If not shifting, we need the padding to be on the right, thus we move data over a bit
-            std::copy( in + border, in + length, in );
-            // We copy the padded border as well, extending it appropriately
-         }
-         dft_.Apply( in, out, 1 );
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::sint stride = params.inBuffer.stride;
+         TPI* outR = static_cast< TPI* >( params.outBuffer.buffer ); // view of complex output data as a real array with double the elements
+         TPC* out = static_cast< TPC* >( params.outBuffer.buffer );
+         DIP_ASSERT( params.outBuffer.stride == 1 );
+         CopyForDFT( in, params.inBuffer.length, stride, outR, length, shift_, false );
+         DIP_ASSERT( reinterpret_cast< dip::uint >( outR ) % 32 == 0 );
+         dft_.Apply( outR, outR, scale_ );
          if( shift_ ) {
             ShiftCornerToCenterHalfLine( out, length );
          }
       }
 
    private:
-      DFT< FloatType< TPI >> dft_;
+      RDFT< TPI > dft_;
+      TPI scale_;
       bool shift_;
 };
 
-// TPI is either scomplex or dcomplex.
+// TPI is either sfloat or dfloat.
 // This will always only be called for a single dimension.
 template< typename TPI >
 class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
+      using TPC = ComplexType< TPI >;
    public:
-      C2R_IDFT_LineFilter( dip::uint outSize, dip::uint inSize, bool corner ) : shift_( !corner ), inSize_( inSize ) {
-         dft_.Initialize( outSize, true, Option::DFTOption::InPlace );
+      C2R_IDFT_LineFilter(
+            dip::uint outSize, dip::uint inSize, bool corner, dfloat scale
+      ) : scale_( static_cast< TPI >( scale )), shift_( !corner ), inSize_( inSize ) {
+         dft_.Initialize( outSize, true, Option::DFTOption::Aligned + Option::DFTOption::TrashInput );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
-         return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
+         return 5 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dip::uint length = dft_.TransformSize();
          DIP_ASSERT(( inSize_ / 2 + 1 ) == params.inBuffer.length );
          DIP_ASSERT( length >= inSize_ );
          DIP_ASSERT( params.outBuffer.length == length );
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         DIP_ASSERT( params.inBuffer.length + 2 * params.inBuffer.border >= length / 2 + 1 );
+         TPC* in = static_cast< TPC* >( params.inBuffer.buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-         dip::uint firstSample = 0;
-         dip::uint start = params.inBuffer.length;
-         dip::uint end = 0;
-         if( shift_ ) {
-            // Rightmost input sample is central output sample: `params.inBuffer.length-1` ==> `length/2`
-            firstSample = length / 2 - params.inBuffer.length + 1;
-            start -= 1;                         // the last value is the 0 frequency, don't copy it
-            end = ( inSize_ & 1u ) ? 0 : 1;     // for even-sized buffer, the first value is not to be copied.
-         } else {
-            // Leftmost input sample is leftmost output sample, but we never pad in this case
-            DIP_ASSERT( length == inSize_ );
-            //firstSample = 0;
-            start -= ( inSize_ & 1u ) ? 0 : 1;  // for even-sized buffer, the last value is not to be copied.
-            end = 1;                            // the first value is the 0 frequency, don't copy it
-         }
-         TPI* outPtr = out;
-         // Pad the output array by adding zeros (IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS)
-         for( dip::uint ii = 0; ii < firstSample; ++ii ) {
-            *outPtr = 0;
-            ++outPtr;
-         }
-         // Copy the data from in to the left half of out
-         for( dip::uint ii = 0; ii < params.inBuffer.length; ++ii ) {
-            *outPtr = in[ ii ];
-            ++outPtr;
-         }
-         // Copy the complex conjugated data from in to the right half of out
-         for( dip::uint ii = start; ii > end; ) {      // loop excludes start, includes end!
-            --ii;
-            *outPtr = std::conj( in[ ii ] );
-            ++outPtr;
-         }
-         // Pad the output array by adding zeros (IDFT_PADDING_MODE = BoundaryCondition::ADD_ZEROS)
-         while( outPtr < out + length ) {
-            *outPtr = 0;
-            ++outPtr;
+         if( params.inBuffer.border > 0 ) {
+            std::copy( in, in + params.inBuffer.length, in - params.inBuffer.border );
+            in -= params.inBuffer.border;
+            std::fill_n( in + params.inBuffer.length, 2 * params.inBuffer.border, TPC( 0 ));
          }
          if( shift_ ) {
-            ShiftCenterToCorner( out, length );
+            ShiftCornerToCenterHalfLine( in, inSize_ );
          }
-         dft_.Apply( out, out, 1 );
+         DIP_ASSERT( reinterpret_cast< dip::uint >( in ) % 32 == 0 );
+         DIP_ASSERT( reinterpret_cast< dip::uint >( out ) % 32 == 0 );
+         dft_.Apply( reinterpret_cast< TPI* >( in ), out, scale_ );
          if( shift_ ) {
             ShiftCornerToCenter( out, length );
          }
       }
 
    private:
-      DFT< FloatType< TPI >> dft_;
+      RDFT< TPI > dft_;
+      TPI scale_;
       bool shift_;
       dip::uint inSize_;
 };
@@ -312,29 +325,16 @@ void DFT_C2C_compute(
       bool inverse,
       bool corner,
       dfloat scale
-
 ) {
    DIP_ASSERT( in.IsForged() );
    DIP_ASSERT( out.IsForged() );
-   //DIP_ASSERT( in.DataType().IsComplex() ); // NOTE! Input could be real-valued: if 1D we don't do R2C transform.
+   DIP_ASSERT( in.DataType().IsComplex() );
    DIP_ASSERT( out.DataType().IsComplex() );
-   // Find parameters for separable framework
    DataType dtype = out.DataType();
-   dip::uint nDims = in.Dimensionality();
-   UnsignedArray border( nDims, 0 );
-   BoundaryConditionArray bc{ inverse ? IDFT_PADDING_MODE : DFT_PADDING_MODE };
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( out.Size( ii ) > in.Size( ii )) {
-         border[ ii ] = div_ceil< dip::uint >( out.Size( ii ) - in.Size( ii ), 2 );
-      }
-   }
-   // Do the processing
    DIP_START_STACK_TRACE
-      // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_COMPLEX( lineFilter, C2C_DFT_LineFilter, ( out.Sizes(), process, inverse, corner, scale ), dtype );
-      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter,
-                            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1, buffer is aligned
+      Framework::Separable( in, out, dtype, dtype, process, {}, {}, *lineFilter,
                             Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1, buffer is aligned
                             Framework::SeparableOption::DontResizeOutput + // output is potentially larger than input, if padding with zeros
                             Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
@@ -347,17 +347,17 @@ void DFT_R2C_1D_compute(
       Image const& in,     // real-valued
       Image& out,          // the first half of the image is filled in, pixels 0 through size/2+1
       dip::uint dimension, // dimension along which to compute
-      bool corner          // where to put the origin
+      bool corner,         // where to put the origin
+      dfloat scale
 ) {
    DIP_ASSERT( in.IsForged() );
    DIP_ASSERT( out.IsForged() );
    DIP_ASSERT( !in.DataType().IsComplex() );
    DIP_ASSERT( out.DataType().IsComplex() );
-   dip::uint nDims = in.Dimensionality();
-   DIP_ASSERT( dimension < nDims );
+   DIP_ASSERT( dimension < in.Dimensionality() );
    // Find parameters for separable framework
-   DataType dtype = out.DataType();
-   dip::uint border = div_ceil< dip::uint >( out.Size( dimension ) - in.Size( dimension ), 2 );
+   DataType outType = out.DataType();
+   DataType dtype = outType.Real();
 
    DIP_START_STACK_TRACE
       // Create a window over `out` that has same dimensions as `in` in the non-processing dimensions
@@ -367,9 +367,8 @@ void DFT_R2C_1D_compute(
       dip::Image tmp = out.At( window );
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_COMPLEX( lineFilter, R2C_DFT_LineFilter, ( tmp.Size( dimension ), corner ), dtype );
-      Framework::OneDimensionalLineFilter( in, tmp, dtype, dtype, dtype, dimension, border, DFT_PADDING_MODE, *lineFilter,
-                                           Framework::SeparableOption::UseInputBuffer +   // input stride is always 1, buffer is aligned
+      DIP_OVL_NEW_FLOAT( lineFilter, R2C_DFT_LineFilter, ( tmp.Size( dimension ), corner, scale ), dtype );
+      Framework::OneDimensionalLineFilter( in, tmp, dtype, outType, outType, dimension, 0, DFT_PADDING_MODE, *lineFilter,
                                            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1, buffer is aligned
                                            Framework::SeparableOption::DontResizeOutput + // output is potentially larger than input, if padding with zeros
                                            Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
@@ -433,64 +432,41 @@ void DFT_R2C_1D_finalize(
    DIP_STACK_TRACE_THIS( MirrorInPlace( right, flip ));
 }
 
-// Copies the left half of the input image, and applies boundary extension for C2C dimensions
-void IDFT_C2R_1D_prepare(
-      Image const& in,     // real- or complex-valued, only half of it is used
-      Image& out,          // half-sized copy of data, can be modified -- Note that the Sizes array of this image are expected to be set to the expected output size of the FT
-      dip::uint dimension, // dimension along which to compute
-      bool corner
-) {
-   DIP_ASSERT( in.IsForged() );
-   dip::uint nDims = in.Dimensionality();
-   DIP_ASSERT( dimension < nDims );
-   UnsignedArray outSize = out.Sizes(); // NOTE!!! we're reading  the sizes from `out`, but then modifying them
-   outSize[ dimension ] = in.Size( dimension ) / 2 + 1;
-   DIP_STACK_TRACE_THIS( out.ReForge( outSize, in.TensorElements(), DataType::SuggestComplex( in.DataType() )));
-   RangeArray inWindow( nDims );
-   inWindow[ dimension ] = { 0, static_cast< dip::sint >( outSize[ dimension ] - 1 ) };
-   outSize = in.Sizes();
-   outSize[ dimension ] = out.Size( dimension );
-   RangeArray outWindow = out.CropWindow( outSize, corner ? Option::CropLocation::TOP_LEFT : Option::CropLocation::CENTER );
-   DIP_START_STACK_TRACE
-      out.At( outWindow ).Copy( in.At( inWindow ) );
-      ExtendRegion( out, outWindow, { IDFT_PADDING_MODE } );
-   DIP_END_STACK_TRACE
-}
-
 // Computes a 1D complex-to-real IDFT. Uses only the left half of the input.
 void IDFT_C2R_1D_compute(
-      Image const& in,     // complex-valued, result of IDFT_C2R_1D_prepare() (where possibly other dimensions had full DFTs computed)
-      Image& out,          // real-valued, already forged and with the right sizes
-      dip::uint dimension, // dimension along which to compute -- same value passed to IDFT_C2R_1D_prepare()!
-      dip::uint length,    // number of samples of the original input image along `dimension`. `in.Size(dimension)==length/2+1`
-      bool corner          // where to put the origin -- same value passed to IDFT_C2R_1D_prepare()!
+      Image const& in,     // complex-valued (where possibly other dimensions had full DFTs computed)
+      Image& out,          // real-valued, already forged and with the right sizes -- all sizes equal to `in` except `dimension`
+      dip::uint dimension, // dimension along which to compute
+      dip::uint length,    // number of samples of the original input image along `dimension` -- `in.Size(dimension)==length/2+1`
+      bool corner,         // where to put the origin
+      dfloat scale
 ) {
    DIP_ASSERT( in.IsForged() );
    DIP_ASSERT( out.IsForged() );
-   DIP_ASSERT( in.DataType().IsComplex() );
+   //DIP_ASSERT( in.DataType().IsComplex() ); // it doesn't need to be, we can compute the inverse transform of the magnitude, for example.
    DIP_ASSERT( !out.DataType().IsComplex() );
-   dip::uint nDims = in.Dimensionality();
-   DIP_ASSERT( dimension < nDims );
+   DIP_ASSERT( dimension < in.Dimensionality() );
+   DIP_ASSERT( length <= out.Size( dimension ));
 #ifdef DIP_CONFIG_ENABLE_ASSERT
-   UnsignedArray outSizes = out.Sizes();
-   DIP_ASSERT( length <= outSizes[ dimension ] );
-   outSizes[ dimension ] = length / 2 + 1;
-   DIP_ASSERT( in.Sizes() == outSizes );
+   UnsignedArray sz = out.Sizes();
+   sz[ dimension ] = length / 2 + 1;
+   DIP_ASSERT( in.Sizes() == sz );
 #endif
    // Find parameters for separable framework
-   DataType outType = out.DataType();
-   DataType dtype = DataType::SuggestComplex( outType );
+   DataType inType = DataType::SuggestComplex( in.DataType() );
+   DataType dtype = inType.Real();
+   dip::uint border = div_ceil( out.Size( dimension ) - length, dip::uint( 2 ));
+
    // Do the processing
    DIP_START_STACK_TRACE
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_COMPLEX( lineFilter, C2R_IDFT_LineFilter, ( out.Size( dimension ), length, corner ), dtype );
-      Framework::OneDimensionalLineFilter( in, out, dtype, dtype, outType, dimension, 0, IDFT_PADDING_MODE, *lineFilter,
+      DIP_OVL_NEW_FLOAT( lineFilter, C2R_IDFT_LineFilter, ( out.Size( dimension ), length, corner, scale ), dtype );
+      Framework::OneDimensionalLineFilter( in, out, inType, dtype, dtype, dimension, border, IDFT_PADDING_MODE, *lineFilter,
                                            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1, buffer is aligned
                                            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1, buffer is aligned
                                            Framework::SeparableOption::DontResizeOutput + // output is larger than input
-                                           Framework::SeparableOption::AsScalarImage +    // each tensor element processed separately
-                                           Framework::SeparableOption::UseRealComponentOfOutput // the buffers are complex-valued, don't cast to real using abs(), but using real().
+                                           Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
       );
    DIP_END_STACK_TRACE
 }
@@ -530,7 +506,6 @@ void FourierTransform(
    if( inverse ) {
       // If the output is protected and real-valued, compute a real-valued inverse transform
       realOutput |= out.IsProtected() && !out.DataType().IsComplex();
-      DIP_THROW_IF( fast && corner, "Cannot use 'corner', 'fast' and 'inverse' together" );
    } else {
       DIP_THROW_IF( realOutput, "Cannot use 'real' without 'inverse' option" );
    }
@@ -546,7 +521,9 @@ void FourierTransform(
    DIP_THROW_IF( nProcDims == 0, "Zero dimensions selected for processing" );
 
    // Determine output size and scaling
-   dip::uint longestDimension = 0;
+   dip::uint optimalDimension = 0;  // The dimension with the smallest stride is the best to do the R2C or C2R transform on.
+                                    // Of course this should probably be the stride of the intermediate (C2R) or output (R2C)
+                                    // image, but we haven't allocated those yet... So we look at the input strides?
    UnsignedArray outSize = in.Sizes();
    dfloat scale = 1.0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -558,8 +535,8 @@ void FourierTransform(
          } else {
             DIP_THROW_IF( outSize[ ii ] > maximumDFTSize, "Image size too large for DFT algorithm." );
          }
-         if( !process[ longestDimension ] || ( outSize[ ii ] > outSize[ longestDimension ] )) {
-            longestDimension = ii;
+         if( !process[ optimalDimension ] || ( std::abs( out.Stride( ii )) < std::abs( out.Stride( optimalDimension )))) {
+            optimalDimension = ii;
          }
          scale /= static_cast< dfloat >( outSize[ ii ] );
       }
@@ -572,8 +549,8 @@ void FourierTransform(
 
    // Do the processing
    Image const in_copy = in; // Preserve input in case *in == *out
-   if( realInput && nProcDims > 1 ) {
-      // Real-to-complex transform, but only if more than one dimension is processed
+   if( realInput ) {
+      // Real-to-complex transform
 
       // Create complex-valued output, all processing happens in here
       DIP_STACK_TRACE_THIS( out.ReForge( outSize, in_copy.TensorElements(), DataType::SuggestComplex( in.DataType() ), Option::AcceptDataTypeChange::DO_ALLOW ));
@@ -581,60 +558,54 @@ void FourierTransform(
       Image tmp = out.QuickCopy();
       tmp.Protect(); // make sure it won't be reforged by the framework function.
       // One dimension we process with the R2C function
-      DIP_STACK_TRACE_THIS( DFT_R2C_1D_compute( in_copy, tmp, longestDimension, corner ));
+      DIP_STACK_TRACE_THIS( DFT_R2C_1D_compute( in_copy, tmp, optimalDimension, corner, scale ));
       // Make window over half the image
       RangeArray window( nDims );
-      window[ longestDimension ].stop = static_cast< dip::sint >( tmp.Size( longestDimension ) / 2 );
-      dip::Image tmp2;
+      window[ optimalDimension ].stop = static_cast< dip::sint >( tmp.Size( optimalDimension ) / 2 );
+      Image tmp2;
       DIP_STACK_TRACE_THIS( tmp2 = tmp.At( window ));
       tmp2.Protect();
-      // Compute other dimensions in place (it is this step where we do the normalization)
-      process[ longestDimension ] = false;
-      DIP_STACK_TRACE_THIS( DFT_C2C_compute( tmp2, tmp2, process, inverse, corner, scale ));
+      // Compute other dimensions in place
+      process[ optimalDimension ] = false;
+      if( nProcDims > 1 ) {
+         DIP_STACK_TRACE_THIS( DFT_C2C_compute( tmp2, tmp2, process, inverse, corner, 1.0 ));
+      }
       // Copy data to other half of image
-      DIP_STACK_TRACE_THIS( DFT_R2C_1D_finalize( tmp, process, longestDimension, corner ));
+      DIP_STACK_TRACE_THIS( DFT_R2C_1D_finalize( tmp, process, optimalDimension, corner ));
 
-   } else if( realOutput && nProcDims > 1 ) {
-      // Complex-to-real transform, but only if more than one dimension is processed
+   } else if( realOutput ) {
+      // Complex-to-real transform
 
-      // Make a complex-valued copy of about half of the input
-      Image tmp;
-      tmp.SetSizes( outSize );
-      dip::uint longestDimSize = in_copy.Size( longestDimension );
-      DIP_STACK_TRACE_THIS( IDFT_C2R_1D_prepare( in_copy, tmp, longestDimension, corner )); // Note that tmp now has `longestDimSize/2+1` pixels along `longestDimension`.
-      // Do the complex-to-complex transform in all but one dimension, in-place (it is this step where we do the normalization)
-      process[ longestDimension ] = false;
-      DIP_STACK_TRACE_THIS( DFT_C2C_compute( tmp, tmp, process, inverse, corner, scale ));
+      // Make a window of about half of the input
+      dip::uint optimalDimSize = in.Size( optimalDimension );
+      RangeArray window( nDims );
+      window[ optimalDimension ].stop = static_cast< dip::sint >( optimalDimSize / 2 );
+      Image tmpIn;
+      DIP_STACK_TRACE_THIS( tmpIn = in.At( window ));
+      // Do the complex-to-complex transform in all but one dimension (it is this step where we do the normalization)
+      process[ optimalDimension ] = false;
+      if( nProcDims > 1 ) {
+         UnsignedArray tmpSize = outSize;
+         tmpSize[ optimalDimension ] = tmpIn.Size( optimalDimension );
+         Image tmpOut( tmpSize, in_copy.TensorElements(), DataType::SuggestComplex( in.DataType() ));
+         DIP_STACK_TRACE_THIS( DFT_C2C_compute( tmpIn, tmpOut, process, inverse, corner, 1.0 ));
+         tmpIn.swap( tmpOut );
+      }
       // Create real-valued output image
-      DIP_STACK_TRACE_THIS( out.ReForge( outSize, tmp.TensorElements(), tmp.DataType().Real(), Option::AcceptDataTypeChange::DO_ALLOW ));
+      DIP_STACK_TRACE_THIS( out.ReForge( outSize, in_copy.TensorElements(), tmpIn.DataType().Real(), Option::AcceptDataTypeChange::DO_ALLOW ));
       // Do the complex-to-real transform in the remaining dimension
-      DIP_STACK_TRACE_THIS( IDFT_C2R_1D_compute( tmp, out, longestDimension, longestDimSize, corner ));
+      DIP_STACK_TRACE_THIS( IDFT_C2R_1D_compute( tmpIn, out, optimalDimension, optimalDimSize, corner, scale ));
 
    } else {
-      // Plain old complex-to-complex transform, or 1D transform
-      // In the 1D case, using the C2R or R2C machinery above yields little or no benefit, so we don't use it.
+      // Plain old complex-to-complex transform
 
       // Create complex-valued output, all processing happens in there
-      Image tmp;
-      if( realOutput ) {
-         DIP_STACK_TRACE_THIS( tmp.ReForge( outSize, in_copy.TensorElements(), DataType::SuggestComplex( in.DataType() )));
-      } else {
-         DIP_STACK_TRACE_THIS( out.ReForge( outSize, in_copy.TensorElements(), DataType::SuggestComplex( in.DataType() ), Option::AcceptDataTypeChange::DO_ALLOW ));
-         tmp = out.QuickCopy();
-      }
+      DIP_STACK_TRACE_THIS( out.ReForge( outSize, in_copy.TensorElements(), DataType::SuggestComplex( in.DataType() ), Option::AcceptDataTypeChange::DO_ALLOW ));
+      Image tmp = out.QuickCopy();
       // Compute transform
       tmp.Protect(); // make sure it won't be reforged by the framework function.
       DIP_STACK_TRACE_THIS( DFT_C2C_compute( in_copy, tmp, process, inverse, corner, scale ));
       tmp.Protect( false );
-      // Create real-valued output if necessary
-      if( realOutput ) { // Could happen if nProcDims==1
-         tmp = tmp.Real();
-         if(( out.DataType() != tmp.DataType() ) && ( !out.IsProtected() )) {
-            out.Strip(); // Avoid accidental data conversion.
-         }
-         DIP_STACK_TRACE_THIS( out.Copy( tmp ));
-      }
-
    }
 
    // Set output tensor shape
@@ -711,33 +682,33 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   auto maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-7 );
+   double maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-7 );
 
    dip::FourierTransform( output, output, { "inverse" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
    // Real-to-complex transform (even-sized axis)
    output = input.Copy();
    dip::FourierTransform( output, output );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-7 );
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-7 );
 
    // Complex-to-real inverse transform  (even-sized axis)
    dip::FourierTransform( output, output, { "inverse", "real" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
    // === 2D image, 2D transform -- repeat with different R2C and C2R dimension ===
    sz = { 64, 105 };
@@ -757,17 +728,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-4 ); // Much larger error because of smaller image
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-4 ); // Much larger error because of smaller image
 
    // Complex-to-real inverse transform (odd-sized axis)
    dip::FourierTransform( output, output, { "inverse", "real" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
    // === Test "fast" option
    sz = { 97, 107 }; // prime sizes
@@ -790,17 +761,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-7 );
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-7 );
 
    dip::FourierTransform( output, output, { "inverse", "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
-   output.Crop( sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   output.Crop( sz ); // This should really be a scaling, but it doesn't matter because the scaling factor is so small
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
    // Real-to-complex transform (fast)
    output = input.Copy();
@@ -808,18 +779,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
    output.Crop( sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-7 );
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-7 );
 
    // Complex-to-real inverse transform (fast)
    dip::FourierTransform( output, output, { "inverse", "fast", "real" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
-   output.Crop( sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   output.Crop( sz ); // This should really be a scaling, but it doesn't matter because the scaling factor is so small
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
    // === Test "corner" and "symmetric" option (we test these at the same time because they're orthogonal features)
    sz = { 64, 105 };
@@ -843,35 +814,35 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output, { "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
 
    dip::FourierTransform( output, output, { "inverse", "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
    // Real-to-complex transform (corner)
    output = input.Copy();
    dip::FourierTransform( output, output, { "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-6 ); // Much larger error because of smaller image, but smaller error also because of normalization
 
    // Complex-to-real inverse transform (corner)
    dip::FourierTransform( output, output, { "inverse", "real", "corner", "symmetric" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-9 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-9 );
 
-   // === Test "corner" + "fast" option (only forward, the combination is not allowed with inverse transform)
+   // === Test "corner" + "fast" option
    sz = { 97, 107 }; // prime sizes
    expectedOutSz = { 100, 108 };
    input = dip::Image{ sz, 1, dip::DT_SFLOAT };
@@ -888,24 +859,45 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::ShiftFT( expectedOutput, expectedOutput, newShift );
    dip::Wrap( expectedOutput, expectedOutput, { -static_cast< dip::sint >( expectedOutSz[ 0 ] ) / 2,
                                                 -static_cast< dip::sint >( expectedOutSz[ 1 ] ) / 2 } );
+   dip::FloatArray zoom{ static_cast< dip::dfloat >( expectedOutSz[ 0 ] ) / static_cast< dip::dfloat >( sz[ 0 ] ),
+                         static_cast< dip::dfloat >( expectedOutSz[ 1 ] ) / static_cast< dip::dfloat >( sz[ 1 ] )};
+   dip::Image expectedInverseOutput = dip::Resampling( input, zoom );
+   expectedInverseOutput *= static_cast< dip::dfloat >( sz.product() ) / static_cast< dip::dfloat >( expectedOutSz.product() );
 
    // Complex-to-complex transform (fast + corner)
    output = dip::Convert( input, dip::DT_SCOMPLEX );
    dip::FourierTransform( output, output, { "corner", "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-7 );
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-7 );
+
+   dip::FourierTransform( input, output, { "corner" } );
+   dip::FourierTransform( output, output, { "inverse", "corner", "fast" } );
+   DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
+   DOCTEST_CHECK( output.Sizes() == expectedOutSz );
+   maxabs = dip::MaximumAbs( output - expectedInverseOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-6 ); // interpolation error
 
    // Real-to-complex transform (fast + corner)
    output = input.Copy();
    dip::FourierTransform( output, output, { "corner", "fast" } );
    DOCTEST_CHECK( output.DataType() == dip::DT_SCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == expectedOutSz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-7 );
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-7 );
+
+   // Complex-to-real inverse transform (corner)
+   dip::FourierTransform( input, output, { "corner" } );
+   dip::FourierTransform( output, output, { "inverse", "real", "corner", "fast" } );
+   DOCTEST_CHECK( output.DataType() == dip::DT_SFLOAT );
+   DOCTEST_CHECK( output.Sizes() == expectedOutSz );
+   maxabs = dip::MaximumAbs( output - expectedInverseOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-6 ); // interpolation error
 
    // === 3D image, 1D transform ===
    sz = { 3, 32, 2 };
@@ -931,33 +923,33 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FourierTransform function") {
    dip::FourierTransform( output, output, {}, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-8 ); // Much larger error because of smaller image
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-8 ); // Much larger error because of smaller image
 
    dip::FourierTransform( output, output, { "inverse" }, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-18 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-18 );
 
    // Real-to-complex transform
    output = input.Copy();
    dip::FourierTransform( output, output, {}, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DCOMPLEX );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - expectedOutput ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 1e-8 ); // Much larger error because of smaller image
+   maxabs = dip::MaximumAbs( output - expectedOutput ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 1e-8 ); // Much larger error because of smaller image
 
    // Complex-to-real inverse transform
    dip::FourierTransform( output, output, { "inverse", "real" }, process );
    DOCTEST_CHECK( output.DataType() == dip::DT_DFLOAT );
    DOCTEST_CHECK( output.Sizes() == sz );
-   maxmin = dip::MaximumAbs( output - input ).As< double >();
-   //std::cout << "max = " << maxmin << '\n';
-   DOCTEST_CHECK( maxmin < 2e-18 );
+   maxabs = dip::MaximumAbs( output - input ).As< double >();
+   //std::cout << "max = " << maxabs << '\n';
+   DOCTEST_CHECK( maxabs < 2e-18 );
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

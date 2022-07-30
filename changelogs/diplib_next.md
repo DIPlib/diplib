@@ -28,7 +28,7 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::GeneralConvolution()` accepts a complex-valued filter kernel.
 
-- `dip::Kernel`, `dip::PixelTable` and `dip::PixelTableOffsets` can now represent complex-valued weights. 
+- `dip::Kernel`, `dip::PixelTable` and `dip::PixelTableOffsets` can now represent complex-valued weights.
   Added `dip::Kernel::HasComplexWeights()`, `dip::PixelTable::WeightsAreComplex()` and
   `dip::PixelTableOffsets::WeightsAreComplex()`.
 
@@ -73,19 +73,25 @@ title: "Changes DIPlib 3.x.x"
   This algorithm is applicable to kernels of any size and any number of dimensions.
 
 - The `dip::DFT` class now uses either *FFTW* or *PocketFFT*, depending on compile-time configuration.
-  *PocketFFT* is much faster than our previous code for non-nice transform sizes. All Fourier transforms in
-  *DIPlib* are now based on `dip::DFT`. Previously, `dip::FourierTransform()` would use either `dip::DFT`
-  with our internal FFT algorithm (modified from *OpenCV*), or *FFTW*. The switch between the two libraries
-  is now fully contained within the `dip::DFT` class, meaning that other functions that use the FFT also benefit
-  from linking against *FFTW*.
-    - `dip::DFT::Apply()` no longer requires a buffer. If passing in the buffer, a deprecation warning is issued by
-      the compiler.
+  Both are much faster than our previous code for non-nice transform sizes. The old code is no longer available.
+    - `dip::DFT::Apply()` no longer requires a buffer for intermediate storage. If passing in the buffer,
+      a deprecation warning is issued by the compiler.
     - `dip::DFT::BufferSize()` is deprecated, and now always returns 0.
     - `dip::DFT::Initialize()`, as well as the constructor, has a new argument `options`, which allows to control
       the algorithm used to compute the DFT when using *FFTW*.
+    - The first argument to `dip::DFT::Apply()`, the pointer to the input array, is no longer marked `const`.
+      The array will not be written to unless an option is passed to `Initialize` specifically giving permission
+      to do so.
     - `dip::DFT` can compute a transform using aligned buffers, which speeds up computation when using *FFTW*.
     - Added `dip::DFT::IsInplace()` and `dip::DFT::IsAligned()`.
     - `dip::DFT` now caches plans, it is cheap to instantiate a new object for the same transform size.
+
+- Previously, `dip::FourierTransform()` would use either `dip::DFT` with our internal FFT algorithm, or *FFTW*,
+  depending on a compile-time configuration option. Now it always uses `dip::DFT`, which as noted above uses either
+  *FFTW* or *PocketFFT*, depending on that same compile-time configuration. Besides the change to the FFT implementation,
+  the code passing image data into the FFT algorithm is more efficient.
+
+- `dip::FourierTransform()` can now handle the combination of `"inverse"`, `"corner"` and `"fast"`.
 
 - The filtering frameworks, when using input and/or output buffers for an image line, the buffers will be aligned
   to a 32-byte boundary.

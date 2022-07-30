@@ -202,7 +202,7 @@ template void DFT< sfloat >::Initialize( dip::uint, bool, Option::DFTOptions );
 
 template< typename T >
 void DFT< T >::Apply(
-      std::complex< T > const* source,
+      std::complex< T >* source,
       std::complex< T >* destination,
       T scale
 ) const {
@@ -210,7 +210,7 @@ void DFT< T >::Apply(
 #ifdef DIP_CONFIG_HAS_FFTW
    DIP_ASSERT(( source == destination) ^ !options_.Contains( Option::DFTOption::InPlace ));
    fftwapidef< T >::execute_dft( static_cast< CPlan< T >>( plan_ ),
-                                 reinterpret_cast< complex< T >* >( const_cast< std::complex< T >* >( source )),
+                                 reinterpret_cast< complex< T >* >( source ),
                                  reinterpret_cast< complex< T >* >( destination ));
    if( scale != 1.0 ) {
       for( std::complex< T >* ptr = destination; ptr < destination + nfft_; ++ptr ) {
@@ -225,8 +225,8 @@ void DFT< T >::Apply(
 #endif // DIP_CONFIG_HAS_FFTW
 }
 
-template void DFT< dfloat >::Apply( std::complex< dfloat > const*, std::complex< dfloat >*, dfloat ) const;
-template void DFT< sfloat >::Apply( std::complex< sfloat > const*, std::complex< sfloat >*, sfloat ) const;
+template void DFT< dfloat >::Apply( std::complex< dfloat >*, std::complex< dfloat >*, dfloat ) const;
+template void DFT< sfloat >::Apply( std::complex< sfloat >*, std::complex< sfloat >*, sfloat ) const;
 
 
 template< typename T >
@@ -256,18 +256,28 @@ void RDFT< T >::Initialize( dip::uint size, bool inverse, Option::DFTOptions opt
    options_ = options;
 #ifdef DIP_CONFIG_HAS_FFTW
    unsigned flags = FFTW_MEASURE; // FFTW_MEASURE is almost always faster than FFTW_ESTIMATE, only for very trivial sizes it's not.
-   flags |= options_.Contains( Option::DFTOption::TrashInput ) ? FFTW_DESTROY_INPUT : FFTW_PRESERVE_INPUT;
    if( !options_.Contains( Option::DFTOption::Aligned )) {
       flags |= FFTW_UNALIGNED;
    }
-   AlignedBuffer realBuffer( size * sizeof( T )); // allocate temporary arrays just for planning...
-   AlignedBuffer compBuffer(( size / 2 + 1 ) * 2 * sizeof( T )); // allocate temporary arrays just for planning...
-   T* real = reinterpret_cast< T* >( realBuffer.data() );
-   complex< T >* comp = reinterpret_cast< complex< T >* >( compBuffer.data() );
-   if( inverse_ ) {
-      plan_ = fftwapidef< T >::plan_dft_c2r_1d( static_cast< int >( size ), comp, real, flags );
+   AlignedBuffer firstBuffer(( size / 2 + 1 ) * 2 * sizeof( T )); // allocate temporary arrays just for planning...
+   if( options_.Contains( Option::DFTOption::InPlace )) {
+      T* real = reinterpret_cast< T* >( firstBuffer.data() );
+      complex< T >* comp = reinterpret_cast< complex< T >* >( firstBuffer.data() );
+      if( inverse_ ) {
+         plan_ = fftwapidef< T >::plan_dft_c2r_1d( static_cast< int >( size ), comp, real, flags );
+      } else {
+         plan_ = fftwapidef< T >::plan_dft_r2c_1d( static_cast< int >( size ), real, comp, flags );
+      }
    } else {
-      plan_ = fftwapidef< T >::plan_dft_r2c_1d( static_cast< int >( size ), real, comp, flags );
+      flags |= options_.Contains( Option::DFTOption::TrashInput ) ? FFTW_DESTROY_INPUT : FFTW_PRESERVE_INPUT;
+      AlignedBuffer secondBuffer( size * sizeof( T )); // allocate temporary arrays just for planning...
+      T* real = reinterpret_cast< T* >( secondBuffer.data() );
+      complex< T >* comp = reinterpret_cast< complex< T >* >( firstBuffer.data() );
+      if( inverse_ ) {
+         plan_ = fftwapidef< T >::plan_dft_c2r_1d( static_cast< int >( size ), comp, real, flags );
+      } else {
+         plan_ = fftwapidef< T >::plan_dft_r2c_1d( static_cast< int >( size ), real, comp, flags );
+      }
    }
 #else // DIP_CONFIG_HAS_FFTW
    plan_ = PlanCache< RPlan< T >>( size );
@@ -280,7 +290,7 @@ template void RDFT< sfloat >::Initialize( dip::uint, bool, Option::DFTOptions );
 
 template< typename T >
 void RDFT< T >::Apply(
-      T const* source,
+      T* source,
       T* destination,
       T scale
 ) const {
@@ -289,11 +299,11 @@ void RDFT< T >::Apply(
    dip::uint len = nfft_;
    if( inverse_ ) {
       fftwapidef< T >::execute_dft_c2r( static_cast< RPlan< T >>( plan_ ),
-                                        reinterpret_cast< complex< T >* >( const_cast< T* >( source )),
+                                        reinterpret_cast< complex< T >* >( source ),
                                         destination );
    } else {
       fftwapidef< T >::execute_dft_r2c( static_cast< RPlan< T >>( plan_ ),
-                                        const_cast< T* >( source ),
+                                        source,
                                         reinterpret_cast< complex< T >* >( destination ));
       len = 2 * ( nfft_ / 2 + 1 );
    }
@@ -303,14 +313,15 @@ void RDFT< T >::Apply(
       }
    }
 #else // DIP_CONFIG_HAS_FFTW
-   DIP_ASSERT( destination != source );
    if( inverse_ ) {
       // Coerce the complex input data into the form expected by PocketFFT: the first (and last if nfft_ is even) elements only have a real value
       destination[ 0 ] = source[ 0 ];
-      std::copy_n( source + 2, nfft_ - 1, destination + 1 );
+      std::copy_n( source + 2, nfft_ - 1, destination + 1 ); // should work if source==destination
    } else {
-      // Copy the real input data into the complex output array, which should always have enough space
-      std::copy_n( source, nfft_, destination );
+      if( source != destination ) {
+         // Copy the real input data into the complex output array, which should always have enough space
+         std::copy_n( source, nfft_, destination );
+      }
    }
    static_cast< RPlan< T >* >( plan_ )->exec( destination, scale, !inverse_ );
    if( !inverse_ ) {
@@ -326,8 +337,8 @@ void RDFT< T >::Apply(
 #endif // DIP_CONFIG_HAS_FFTW
 }
 
-template void RDFT< dfloat >::Apply( dfloat const*, dfloat*, dfloat ) const;
-template void RDFT< sfloat >::Apply( sfloat const*, sfloat*, sfloat ) const;
+template void RDFT< dfloat >::Apply( dfloat*, dfloat*, dfloat ) const;
+template void RDFT< sfloat >::Apply( sfloat*, sfloat*, sfloat ) const;
 
 
 template< typename T >

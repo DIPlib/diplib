@@ -1,6 +1,6 @@
 /*
  * This program times the Fourier transform for different image sizes.
- * Use it to compare the timing of the built-in DFT vs FFTW with different planning methods.
+ * Use it to compare the timing of PocketFFT vs FFTW.
  */
 
 #include <iostream>
@@ -11,17 +11,14 @@
 #include "diplib/generation.h"
 #include "diplib/testing.h"
 
-dip::dfloat TimeIt( dip::Image const& img, dip::Image& out ) {
-   dip::uint N = 5;
+dip::dfloat TimeIt( dip::Image const& img, dip::Image& out, dip::StringSet const& opts ) {
    dip::dfloat time = 1e9;
-   for( dip::uint ii = 0; ii < 5; ++ii ) {
+   for( dip::uint ii = 0; ii < 15; ++ii ) {
+      out.Strip();
       dip::testing::Timer timer;
-      for( dip::uint jj = 0; jj < N; ++jj ) {
-         out.Strip();
-         dip::FourierTransform( img, out );
-      }
+      dip::FourierTransform( img, out, opts );
       timer.Stop();
-      time = std::min( time, timer.GetWall() / dip::dfloat( N ));
+      time = std::min( time, timer.GetWall() );
    }
    return time;
 }
@@ -30,93 +27,101 @@ int main() {
    // A set of sizes: powers of 2,                     3,              5,              7,             11,        primes
    dip::UnsignedArray sizes = { 256, 1024, 2048, 4096, 243, 729, 2187, 125, 625, 3125, 49, 343, 2401, 121, 1331, 211, 521, 1013, 1531 };
 
-   bool complexInput = true;
-   dip::SetNumberOfThreads( 0 );
+   dip::SetNumberOfThreads( 1 );
    std::cout << ( dip::usingFFTW ? "FFTW" : "PocketFFT" ) << ", "
-             << ( complexInput ? "C2C" : "R2C" ) << ", "
              << dip::GetNumberOfThreads() << " threads\n";
 
    dip::Random rndGen( 0 );
    dip::Image in;
    dip::Image out;
+
+   std::cout << std::setw(6) << std::right << "size"
+              << std::setw(10) << std::right << "C2C (ms)"
+              << std::setw(10) << std::right << "R2C (ms)"
+              << std::setw(10) << std::right << "C2R (ms)" << '\n';
+   std::cout << std::setw(6) << std::right << "-----"
+             << std::setw(10) << std::right << "---------"
+             << std::setw(10) << std::right << "---------"
+             << std::setw(10) << std::right << "---------" << '\n';
+
    for( auto sz : sizes ) {
-      if( complexInput ) {
-         // For complex to complex transform:
-         in.ReForge( { sz, sz }, 1, dip::DT_SCOMPLEX );
-         dip::Image tmp = in.SplitComplex();
-         tmp.Protect();
-         tmp.Fill( 0 );
-         dip::UniformNoise( tmp, tmp, rndGen );
-      } else {
-         // For real to complex transform:
-         in.ReForge( { sz, sz }, 1, dip::DT_SFLOAT );
-         in.Fill( 0 );
-         dip::UniformNoise( in, in, rndGen );
-      }
-      dip::dfloat t = TimeIt( in, out );
-      std::cout << "size = " << sz << ", time = " << t * 1e3 << " ms\n";
+      // C2C
+      in.ReForge( { sz, sz }, 1, dip::DT_SCOMPLEX );
+      dip::Image tmp = in.QuickCopy();
+      tmp.SplitComplex();
+      tmp.Protect();
+      tmp.Fill( 0 );
+      dip::UniformNoise( tmp, tmp, rndGen );
+      dip::dfloat t_c2c = TimeIt( in, out, {} );
+
+      // C2R
+      dip::dfloat t_c2r = TimeIt( in, out, { "inverse", "real" } );
+
+      // R2C
+      in.ReForge( { sz, sz }, 1, dip::DT_SFLOAT );
+      in.Fill( 0 );
+      dip::UniformNoise( in, in, rndGen );
+      dip::dfloat t_r2c = TimeIt( in, out, {} );
+
+      std::cout << std::setw(6) << std::right << sz
+                << std::setw(10) << std::fixed << std::setprecision(2) << std::right << t_c2c * 1e3
+                << std::setw(10) << std::fixed << std::setprecision(2) << std::right << t_r2c * 1e3
+                << std::setw(10) << std::fixed << std::setprecision(2) << std::right << t_c2r * 1e3 << '\n';
    }
-   std::cout << '\n';
 }
 
-/* On my computer (2021 M1 iMac):
+/* Timings of `dip::FourierTransform()` for a square image with side `size` on Cris' M1 iMac.
 
-Complex-to-complex transform:
+=== DIPlib 3.3 ===
 
-        |                            time (ms)                            |
-        +---------------------+---------------------+---------------------+
-  size  |        FFTW         |       OpenCV        |      PocketFFT      | method
-  (px)  +----------+----------+----------+----------+----------+----------+
-        |     1    |     8    |     1    |     8    |     1    |     8    | threads
---------+----------+----------+----------+----------+----------+----------+
-    256 |    1.925 |    1.150 |    2.165 |    1.324 |    2.743 |    1.281 | powers of 2
-   1024 |   35.815 |   10.238 |   40.567 |   11.413 |   51.594 |   13.982 |
-   2048 |  167.879 |   49.558 |  188.559 |   54.019 |  231.366 |   62.997 |
-   4096 |  722.095 |  193.423 |  805.594 |  208.841 |  987.625 |  248.634 |
-    243 |    1.494 |    0.730 |    1.837 |    0.836 |    2.204 |    0.912 | powers of 3
-    729 |   13.928 |    4.092 |   17.543 |    4.910 |   20.224 |    5.587 |
-   2187 |  149.260 |   39.890 |  180.178 |   48.539 |  202.160 |   50.902 |
-    125 |    0.378 |    0.350 |    0.456 |    0.459 |    0.584 |    0.507 | powers of 5
-    625 |   10.591 |    3.244 |   12.716 |    3.864 |   14.920 |    4.388 |
-   3125 |  334.252 |   85.032 |  389.352 |   98.530 |  433.798 |  108.911 |
-     49 |    0.068 |    0.340 |    0.094 |    0.346 |    0.101 |    0.341 | powers of 7
-    343 |    3.127 |    1.197 |    5.388 |    1.790 |    4.763 |    1.584 |
-   2401 |  189.464 |   49.373 |  333.255 |   84.019 |  266.883 |   69.240 |
-    121 |    0.402 |    0.454 |    0.624 |    0.524 |    0.578 |    0.519 | powers of 11
-   1331 |   62.785 |   17.218 |  101.326 |   26.983 |   83.167 |   22.177 |
-    211 |    2.590 |    0.948 |   11.883 |    3.088 |    3.130 |    1.162 | primes
-    521 |   19.672 |    5.511 |  179.597 |   37.794 |   18.702 |    5.358 |
-   1013 |   82.101 |   20.139 | 1321.51  |  254.447 |   70.472 |   18.966 |
-   1531 |  163.703 |   40.256 | 4571.56  |  895.703 |  196.947 |   50.495 |
---------+----------+----------+----------+----------+----------+----------+
+                FFTW, 1 threads               OpenCV, 1 threads
+        -----------------------------  -----------------------------
+  size   C2C (ms)  R2C (ms)  C2R (ms)   C2C (ms)  R2C (ms)  C2R (ms)
+ -----  --------- --------- ---------  --------- --------- ---------
+   256       0.90      0.72      0.63       1.09      0.82      0.74  powers of 2
+  1024      15.14     14.31      7.38      17.01     15.80      8.77
+  2048      78.51     69.36     34.36      86.34     75.02     39.93
+  4096     358.98    303.45    188.91     391.51    328.29    213.73
+   243       0.50      0.42      0.49       0.66      0.53      0.56  powers of 3
+   729       5.00      4.06      4.26       6.72      5.34      5.42
+  2187      59.98     46.21     50.69      74.77     57.56     57.89
+   125       0.12      0.11      0.12       0.15      0.13      0.13  powers of 5
+   625       3.70      3.04      3.05       4.65      3.77      3.79
+  3125     148.52    109.52    104.17     174.64    128.72    123.26
+    49       0.03      0.03      0.03       0.04      0.03      0.03  powers of 7
+   343       1.06      0.87      1.00       2.42      1.88      1.93
+  2401      79.38     60.74     65.60     167.80    127.21    128.56
+   121       0.15      0.12      0.14       0.27      0.22      0.22  powers of 11
+  1331      24.25     19.33     24.66      47.69     36.96     37.40
+   211       1.36      1.06      1.07       7.48      5.65      5.66  primes
+   521      10.81      8.30      8.36     116.68     87.63     87.66
+  1013      46.06     34.98     35.05     868.79    654.88    659.31
+  1531      87.69     67.03     65.88    3018.81   2272.91   2272.69
 
-Real-to-complex transform:
+=== New code ===
 
-        |                            time (ms)                            |
-        +---------------------+---------------------+---------------------+
-  size  |        FFTW         |       OpenCV        |      PocketFFT      | method
-  (px)  +----------+----------+----------+----------+----------+----------+
-        |     1    |     8    |     1    |     8    |     1    |     8    | threads
---------+----------+----------+----------+----------+----------+----------+
-    256 |    0.877 |    0.783 |    N/A   |    N/A   |    0.946 |    0.802 | powers of 2
-   1024 |   14.421 |    4.357 |    N/A   |    N/A   |   14.812 |    4.532 |
-   2048 |   69.697 |   22.847 |    N/A   |    N/A   |    70.99 |   23.477 |
-   4096 |  306.084 |   87.382 |    N/A   |    N/A   |  309.35  |   88.591 |
-    243 |    0.417 |    0.393 |    N/A   |    N/A   |    0.332 |    0.383 | powers of 3
-    729 |    4.113 |    1.522 |    N/A   |    N/A   |    3.409 |    1.303 |
-   2187 |   47.198 |   14.491 |    N/A   |    N/A   |   38.831 |   12.804 |
-    125 |    0.104 |    0.197 |    N/A   |    N/A   |    0.091 |    0.182 | powers of 5
-    625 |    3.064 |    1.275 |    N/A   |    N/A   |    2.406 |    0.991 |
-   3125 |   111.20 |   31.105 |    N/A   |    N/A   |   88.345 |   26.829 |
-     49 |    0.024 |    0.231 |    N/A   |    N/A   |    0.020 |    0.269 | powers of 7
-    343 |    0.869 |    0.439 |    N/A   |    N/A   |    0.816 |    0.397 |
-   2401 |   61.717 |   18.361 |    N/A   |    N/A   |   58.099 |   17.601 |
-    121 |    0.124 |    0.275 |    N/A   |    N/A   |    0.101 |    0.269 | powers of 11
-   1331 |   19.522 |    5.688 |    N/A   |    N/A   |   16.685 |    4.976 |
-    211 |    1.057 |    0.485 |    N/A   |    N/A   |    0.986 |    0.418 | primes
-    521 |    8.296 |    2.466 |    N/A   |    N/A   |    5.857 |    1.873 |
-   1013 |   35.117 |    9.283 |    N/A   |    N/A   |   22.029 |    6.132 |
-   1531 |   67.230 |   17.176 |    N/A   |    N/A   |   66.942 |   17.196 |
---------+----------+----------+----------+----------+----------+----------+
+                FFTW, 1 threads             PocketFFT, 1 threads
+        -----------------------------  -----------------------------
+  size   C2C (ms)  R2C (ms)  C2R (ms)   C2C (ms)  R2C (ms)  C2R (ms)
+ -----  --------- --------- ---------  --------- --------- ---------
+   256       0.90      0.61      0.36       0.71      0.61      0.37  powers of 2
+  1024      14.88     12.71      5.07      14.99     12.78      5.59
+  2048      77.45     61.32     26.15      77.99     61.87     28.17
+  4096     354.52    269.27    147.96     359.06    268.56    154.13
+   243       0.56      0.41      0.34       0.35      0.27      0.28  powers of 3
+   729       4.95      3.53      3.02       3.62      2.69      2.81
+  2187      64.58     40.15     42.11      44.49     30.98     38.04
+   125       0.13      0.12      0.10       0.10      0.07      0.07  powers of 5
+   625       3.44      2.45      2.06       2.49      1.90      1.78
+  3125     140.96     86.75     94.29     109.23     72.13     82.51
+    49       0.03      0.03      0.03       0.02      0.02      0.02  powers of 7
+   343       1.19      0.72      0.68       0.92      0.70      0.68
+  2401      82.36     46.95     55.91      69.35     45.84     55.83
+   121       0.15      0.12      0.11       0.11      0.10      0.10  powers of 11
+  1331      32.90     17.56     19.00      18.94     12.15     12.76
+   211       1.33      1.01      0.99       1.23      0.97      0.96  primes
+   521      10.66      7.08      6.98       7.30      5.69      5.58
+  1013      45.35     30.54     30.48      27.49     21.43     21.16
+  1531      86.77     67.25     66.62      85.34     64.88     63.96
 
 */

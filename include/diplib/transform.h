@@ -58,16 +58,13 @@ namespace dip {
 /// This function will compute the Fourier Transform along the dimensions indicated by `process`. If
 /// `process` is an empty array, all dimensions will be processed (normal multi-dimensional transform).
 ///
-/// `options` is an set of strings that indicate how the transform is applied:
+/// `options` is a set of strings that indicate how the transform is applied:
 ///
 /// - "inverse": compute the inverse transform; not providing this string causes the the forward
 ///   transform to be computed.
 /// - "real": assumes that the (complex) input is conjugate symmetric, and returns a real-valued
-///   result. Only to be used together with "inverse".
+///   result. Can only be used together with "inverse".
 /// - "fast": pads the input to a "nice" size, multiple of 2, 3 and 5, which can be processed faster.
-///   Note that "fast" causes the output to be interpolated. This is not always a problem
-///   when computing convolutions or correlations, but will introduce e.g. edge effects in the result
-///   of the convolution.
 /// - "corner": sets the origin to the top-left corner of the image (both in the spatial and the
 ///   frequency domain). This yields a standard DFT (Discrete Fourier Transform).
 /// - "symmetric": the normalization is made symmetric, where both forward and inverse transforms
@@ -76,12 +73,18 @@ namespace dip {
 ///
 /// For tensor images, each plane is transformed independently.
 ///
-/// With the "fast" mode, the input might be padded. If "corner" is given, the padding is to the right.
-/// Otherwise it is split evenly on both sides, in such a way that the origin remains in the middle pixel.
-/// For the forward transform, the padding applied is the "zero order" boundary condition (see \ref dip::BoundaryCondition).
-/// Its effect is similar to padding with zeros, but with reduced edge effects.
-/// For the inverse transform, padding is with zeros ("add zeros" boundary condition). However, the combination
-/// of "fast", "corner" and "inverse" is not allowed, since padding in that case is non-trivial.
+/// With the "fast" mode, the input might be padded. This padding causes the output to be interpolated.
+/// This is not always a problem when computing convolutions or correlations, but could introduce e.g. edge effects
+/// in the result of the convolution. The normalization applied relates to the output sizes, not the input
+/// sizes. Padding is applied as follows:
+///
+/// - Forward transform: If `"corner"` is given, the padding is to the right of each image line.
+///   Otherwise it is split evenly on both sides, in such a way that the origin remains in the middle pixel.
+///   Added pixels replicate the border pixel (the "zero order" boundary condition, see \ref dip::BoundaryCondition).
+///   Its effect is similar to padding with zeros, but with reduced edge effects.
+/// - Inverse transform: Padding is with zeros ("add zeros" boundary condition), and naturally add higher-frequency
+///   components. If `"corner"` is given, the padding is thus in the middle of each image line. Otherwise, the padding
+///   is symmetrically on both ends of the line.
 ///
 /// !!! warning
 ///     The largest size that can be transformed is given by \ref maximumDFTSize. In *DIPlib*, image sizes are

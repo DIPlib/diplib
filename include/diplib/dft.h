@@ -129,10 +129,9 @@ class DFT {
       ///  - \ref Option::DFTOption::Aligned means that the input and output buffers are aligned to 16-bit boundaries,
       ///    which can significantly improve the speed of the algorithm.
       ///
-      /// When using PocketFFT, all these options are ignored. With PocketFFT, the operation can always be applied
-      /// in place if desired.
+      /// When using PocketFFT, all these options are ignored.
       ///
-      /// Note that this is not a trivial operation.
+      /// Note that this is not a trivial operation, planning an FFT costs time.
       ///
       /// This operation is not thread safe.
       DIP_EXPORT void Initialize( dip::uint size, bool inverse, Option::DFTOptions options = {} );
@@ -154,17 +153,20 @@ class DFT {
       /// regions of memory. When using FFTW, the `inplace` parameter to the constructor or \ref Initialize
       /// must be `true` if the two pointers here are the same, or `false` if they are different.
       ///
+      /// The input array is not marked `const`. If \ref Option::DFTOption::TrashInput` is given when planning,
+      /// the input array can be overwritten with intermediate data, but otherwise will be left intact.
+      ///
       /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
       /// the inverse transform, and 1 for the forward transform.
       DIP_EXPORT void Apply(
-            const std::complex< T >* source,
+            std::complex< T >* source,
             std::complex< T >* destination,
             T scale
       ) const;
 
       [[ deprecated( "A buffer is no longer necessary." ) ]]
       void Apply(
-            const std::complex< T >* source,
+            std::complex< T >* source,
             std::complex< T >* destination,
             std::complex< T >* buffer,
             T scale
@@ -273,8 +275,20 @@ class RDFT {
       ///
       /// `size` is the size of the transform. The real-valued pointer passed to \ref Apply is expected to point at
       /// a buffer with this length. If `inverse` is `true`, an inverse transform will be computed (complex to real).
+      /// The complex buffer has a size of `size/2+1`.
       ///
-      /// Note that this is not a trivial operation.
+      /// `options` determines some properties for the algorithm that will compute the DFT.
+      ///  - \ref Option::DFTOption::InPlace means the input and output pointers passed to \ref Apply must be the same.
+      ///    Do note that the complex array has one or two floats more than the real array, the buffer must be large
+      ///    enough.
+      ///  - \ref Option::DFTOption::TrashInput means that the algorithm is free to overwrite the input array.
+      ///    Ignored when working in place.
+      ///  - \ref Option::DFTOption::Aligned means that the input and output buffers are aligned to 16-bit boundaries,
+      ///    which can significantly improve the speed of the algorithm.
+      ///
+      /// When using PocketFFT, all these options are ignored.
+      ///
+      /// Note that this is not a trivial operation, planning an FFT costs time.
       ///
       /// This operation is not thread safe.
       DIP_EXPORT void Initialize( dip::uint size, bool inverse, Option::DFTOptions options = {} );
@@ -285,20 +299,21 @@ class RDFT {
       /// If configured as a forward transform, `source` is the real-valued array with \ref TransformSize elements,
       /// and `destination` is the complex-valued array with `TransformSize() / 2 + 1` elements (presented as a
       /// pointer to a real-valued array with twice the number of elements). If configured as an inverse transform,
-      /// the two descriptions are swapped. The two arrays must not overlap.
+      /// the two descriptions are swapped. These two pointers can point to the same address for in-place operation;
+      /// otherwise they must point to non-overlapping regions of memory. When using FFTW, the `inplace` parameter
+      /// to the constructor or \ref Initialize must be `true` if the two pointers here are the same, or `false`
+      /// if they are different.
       ///
       /// In the above description, `TransformSize()` is the value of the `size` parameter of the constructor or
       /// \ref Initialize.
       ///
-      /// `complex` has `TransformSize() / 2 + 1` elements. If configured as a forward transform, `real` is
-      /// the input and `complex` is the output. If configured for an inverse transform, `real` is
-      /// the output and `complex` is the input. The two buffers should not overlap. Though neither pointer
-      /// is marked `const`, the input array will not be modified.
+      /// The input array is not marked `const`. If \ref Option::DFTOption::TrashInput` is given when planning,
+      /// the input array can be overwritten with intermediate data, but otherwise will be left intact.
       ///
       /// `scale` is a real scalar that the output values are multiplied by. It is typically set to `1/size` for
       /// the inverse transform, and 1 for the forward transform.
       DIP_EXPORT void Apply(
-            T const* source,
+            T* source,
             T* destination,
             T scale
       ) const;
