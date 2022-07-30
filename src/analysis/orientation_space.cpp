@@ -163,11 +163,9 @@ void GaussianMixtureModel(
    UnsignedArray outSizes = in.Sizes();
    outSizes[ dimension ] = 3 * numberOfGaussians;
    out.ReForge( outSizes, 1, DT_DFLOAT );
-   BooleanArray process( nDims, false );
-   process[ dimension ] = true;
    GaussianMixtureModelLineFilter lineFilter( numberOfGaussians, maxIter, periodicity, scale );
-   Framework::Separable( in, out, DT_DFLOAT, DT_DFLOAT, process, {}, {}, lineFilter,
-                         Framework::SeparableOption::DontResizeOutput );
+   Framework::OneDimensionalLineFilter( in, out, DT_DFLOAT, DT_DFLOAT, DT_DFLOAT, dimension, 0, {}, lineFilter,
+                                        Framework::SeparableOption::DontResizeOutput );
    out.SetPixelSize( dimension, {} );
    out.SplitDimension( dimension, 3 );
    out.SpatialToTensor( dimension );

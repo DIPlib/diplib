@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Credit to Wouter Caarls for suggesting what is now `VariadicScanLineFilter`.
@@ -625,7 +625,7 @@ class DIP_CLASS_EXPORT SeparableLineFilter {
 /// The function object `lineFilter` is called for each image line, and along each dimension, with input and output
 /// buffers either pointing directly to the input and output images, or pointing to temporary buffers that are handled
 /// by the framework and present the line's pixel data with a different data type, with expanded borders, etc.
-/// The buffers are always of the type specified in `inBuffer` and `outBuffer`, but are passed as `void*`.
+/// The buffers are always of the type specified in `bufferType`, but are passed as `void*`.
 /// `lineFilter` should cast these pointers to the right types. The output buffer is not initialized, `lineFilter`
 /// is responsible for setting all its values.
 ///
@@ -717,6 +717,33 @@ DIP_EXPORT void Separable(
       BooleanArray process,
       UnsignedArray border,
       BoundaryConditionArray boundaryCondition,
+      SeparableLineFilter& lineFilter,
+      SeparableOptions opts = {}
+);
+
+
+/// \brief Framework for filtering of image lines. This is a version of \ref Separable that works along one
+/// dimension only.
+///
+/// Here we describe only the differences with `dip::Framework::Separable`. If it is not described here, refer to
+/// \ref Separable.
+///
+/// The input and output buffers can be of different types, `inBufferType` and  `outBufferType` determine these
+/// two types. Note that this would not be possible in the separable framework function: the output of one
+/// pass is the input to the next pass, so the data types of input and output must be the same.
+///
+/// Instead of a `process` array, there is a `processingDimension` parameter, which specifies which dimension
+/// the filter will be applied along. Both `border` and `boundaryCondition` are scalars instead of arrays, and
+/// apply to `processingDimension`.
+DIP_EXPORT void OneDimensionalLineFilter(
+      Image const& in,
+      Image& out,
+      DataType inBufferType,
+      DataType outBufferType,
+      DataType outImageType,
+      dip::uint processingDimension,
+      dip::uint border,
+      BoundaryCondition boundaryCondition,
       SeparableLineFilter& lineFilter,
       SeparableOptions opts = {}
 );

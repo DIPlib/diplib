@@ -334,8 +334,8 @@ void DFT_C2C_compute(
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_COMPLEX( lineFilter, C2C_DFT_LineFilter, ( out.Sizes(), process, inverse, corner, scale ), dtype );
       Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter,
-                            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1
-                            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1
+                            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1, buffer is aligned
+                            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1, buffer is aligned
                             Framework::SeparableOption::DontResizeOutput + // output is potentially larger than input, if padding with zeros
                             Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
       );
@@ -357,11 +357,7 @@ void DFT_R2C_1D_compute(
    DIP_ASSERT( dimension < nDims );
    // Find parameters for separable framework
    DataType dtype = out.DataType();
-   BooleanArray process( nDims, false );
-   process[ dimension ] = true;
-   UnsignedArray border( nDims, 0 );
-   border[ dimension ] = div_ceil< dip::uint >( out.Size( dimension ) - in.Size( dimension ), 2 );
-   BoundaryConditionArray bc{ DFT_PADDING_MODE };
+   dip::uint border = div_ceil< dip::uint >( out.Size( dimension ) - in.Size( dimension ), 2 );
 
    DIP_START_STACK_TRACE
       // Create a window over `out` that has same dimensions as `in` in the non-processing dimensions
@@ -372,14 +368,14 @@ void DFT_R2C_1D_compute(
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_COMPLEX( lineFilter, R2C_DFT_LineFilter, ( tmp.Size( dimension ), corner ), dtype );
-      Framework::Separable( in, tmp, dtype, dtype, process, border, bc, *lineFilter,
-                            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1
-                            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1
-                            Framework::SeparableOption::DontResizeOutput + // output is potentially larger than input, if padding with zeros
-                            Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
+      Framework::OneDimensionalLineFilter( in, tmp, dtype, dtype, dtype, dimension, border, DFT_PADDING_MODE, *lineFilter,
+                                           Framework::SeparableOption::UseInputBuffer +   // input stride is always 1, buffer is aligned
+                                           Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1, buffer is aligned
+                                           Framework::SeparableOption::DontResizeOutput + // output is potentially larger than input, if padding with zeros
+                                           Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
       );
       // Extend computed data into output regions outside the window (boundary extension)
-      ExtendRegion( out, window, std::move( bc ));
+      ExtendRegion( out, window, { DFT_PADDING_MODE } );
    DIP_END_STACK_TRACE
 }
 
@@ -484,21 +480,17 @@ void IDFT_C2R_1D_compute(
    // Find parameters for separable framework
    DataType outType = out.DataType();
    DataType dtype = DataType::SuggestComplex( outType );
-   BooleanArray process( nDims, false );
-   process[ dimension ] = true;
-   UnsignedArray border( nDims, 0 );
-   BoundaryConditionArray bc{ IDFT_PADDING_MODE };
    // Do the processing
    DIP_START_STACK_TRACE
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_COMPLEX( lineFilter, C2R_IDFT_LineFilter, ( out.Size( dimension ), length, corner ), dtype );
-      Framework::Separable( in, out, dtype, outType, process, border, bc, *lineFilter,
-                            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1
-                            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1
-                            Framework::SeparableOption::DontResizeOutput + // output is larger than input
-                            Framework::SeparableOption::AsScalarImage +    // each tensor element processed separately
-                            Framework::SeparableOption::UseRealComponentOfOutput // the buffers are complex-valued, don't cast to real using abs(), but using real().
+      Framework::OneDimensionalLineFilter( in, out, dtype, dtype, outType, dimension, 0, IDFT_PADDING_MODE, *lineFilter,
+                                           Framework::SeparableOption::UseInputBuffer +   // input stride is always 1, buffer is aligned
+                                           Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1, buffer is aligned
+                                           Framework::SeparableOption::DontResizeOutput + // output is larger than input
+                                           Framework::SeparableOption::AsScalarImage +    // each tensor element processed separately
+                                           Framework::SeparableOption::UseRealComponentOfOutput // the buffers are complex-valued, don't cast to real using abs(), but using real().
       );
    DIP_END_STACK_TRACE
 }

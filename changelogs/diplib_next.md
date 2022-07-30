@@ -48,6 +48,9 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::AlignedBuffer` is a utility class used to allocate buffers that are aligned to 32-byte boundaries.
 
+- `dip::Framework::OneDimensionalLineFilter()` is a version of `dip::Framework::Separable()` that filters in only
+  one dimension, and allows input and output buffers to be of different types.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
