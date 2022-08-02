@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -391,25 +391,45 @@ void Lanczos(
    }
 }
 
+namespace detail {
+template< typename T > struct IsComplexType { static constexpr bool value = false; };
+template<> struct IsComplexType< dcomplex > { static constexpr bool value = true; };
+template<> struct IsComplexType< scomplex > { static constexpr bool value = true; };
+};
+
+template< typename TPI, typename = void >
+struct DFTClass {
+   using type = RDFT< TPI >;
+};
+
+template< typename TPI >
+struct DFTClass< TPI, std::enable_if_t< detail::IsComplexType< TPI >::value >> {
+   using type = DFT< FloatType< TPI >>;
+};
+
 template< typename TPI >
 void Fourier(
-      std::complex< TPI > const* input,
-      std::complex< TPI >* output,
+      TPI const* input,
+      TPI* output,
       dfloat shift,
-      DFT< TPI > const& ft,               // DFT object configured for a transform of <size of input>
-      DFT< TPI > const& ift,              // DFT object configured for an inverse transform of <size of output>
-      std::complex< TPI > const* weights, // weights to apply a shift in the FT, <size of input> elements; if nullptr, use <shift>
-      std::complex< TPI >* intermediate   // temporary buffer, size = max( <size of input>, <size of output> )
+      typename DFTClass< TPI >::type const& ft,   // DFT object configured for a transform of <size of input>
+      typename DFTClass< TPI >::type const& ift,  // DFT object configured for an inverse transform of <size of output>
+      ComplexType< TPI > const* weights,  // weights to apply a shift in the FT, <size of input> elements; if nullptr, use <shift>
+      ComplexType< TPI >* intermediate    // temporary buffer, size = max( <size of input>, <size of output> )
 ) {
+   using TPR = RealType< TPI >;
+   using TPC = ComplexType< TPI >;
    dip::uint inSize = ft.TransformSize();
    dip::uint outSize = ift.TransformSize();
-   TPI invScale = static_cast< TPI >( 1.0 / static_cast< dip::dfloat >( inSize ));
+   constexpr bool realData = std::is_same< TPI, TPR >::value; // In this case, we only get inSize / 2 + 1 elements
+   TPR invScale = static_cast< TPR >( 1.0 / static_cast< dip::dfloat >( inSize ));
    // FT of input
-   ft.Apply( const_cast< std::complex< TPI >* >( input ), intermediate, 1.0 ); // TODO: remove const from input?
+   ft.Apply( const_cast< TPI* >( input ), reinterpret_cast< TPI* >( intermediate ), 1.0 );
    // Shift
    if( weights ) {
       // Use given weights
-      for( auto ptr = intermediate; ptr < intermediate + inSize; ++ptr, ++weights ) {
+      dip::uint n = realData ? inSize / 2 + 1 : inSize;
+      for( auto ptr = intermediate; ptr < intermediate + n; ++ptr, ++weights ) {
          *ptr *= *weights;
       }
    } else if( shift != 0.0 ) {
@@ -417,23 +437,32 @@ void Fourier(
       dfloat inc = -2 * pi / static_cast< dfloat >( inSize ) * shift;
       dfloat theta = inc;
       for( dip::uint ii = 1; ii < inSize / 2; ++ii ) {
-         std::complex< TPI > w ( static_cast< TPI >( std::cos( theta )), static_cast< TPI >( std::sin( theta )));
+         TPC w{ static_cast< TPR >( std::cos( theta )), static_cast< TPR >( std::sin( theta )) };
          intermediate[ ii ] *= w;
-         intermediate[ inSize - ii ] *= std::conj( w );
+         if( !realData ) {
+            intermediate[ inSize - ii ] *= std::conj( w );
+         }
          theta += inc;
       }
    }
    // Scale
-   if( outSize < inSize ) {
-      // Crop: we keep (outSize+1)/2 on the left side, and outSize/2 on the right.
-      std::move( intermediate + inSize - outSize / 2, intermediate + inSize, intermediate + ( outSize + 1 ) / 2 );
-   } else if( outSize > inSize ) {
-      // Expand: we keep (inSize+1)/2 on the left side, and inSize/2 on the right; the space in between we fill with 0.
-      std::move_backward( intermediate + inSize - inSize / 2, intermediate + inSize, intermediate + outSize );
-      std::fill( intermediate + inSize - inSize / 2, intermediate + outSize - inSize / 2, std::complex< TPI >( 0 ));
+   if( realData ) {
+      if( outSize > inSize ) {
+         // Expand: we keep (inSize+1)/2 on the left side; the space in between we fill with 0.
+         std::fill( intermediate + inSize - inSize / 2, intermediate + outSize / 2 + 1, TPC( 0 ));
+      }
+   } else {
+      if( outSize < inSize ) {
+         // Crop: we keep (outSize+1)/2 on the left side, and outSize/2 on the right.
+         std::move( intermediate + inSize - outSize / 2, intermediate + inSize, intermediate + ( outSize + 1 ) / 2 );
+      } else if( outSize > inSize ) {
+         // Expand: we keep (inSize+1)/2 on the left side, and inSize/2 on the right; the space in between we fill with 0.
+         std::move_backward( intermediate + inSize - inSize / 2, intermediate + inSize, intermediate + outSize );
+         std::fill( intermediate + inSize - inSize / 2, intermediate + outSize - inSize / 2, TPC( 0 ));
+      }
    }
    // Inverse FT
-   ift.Apply( intermediate, output, invScale );
+   ift.Apply( reinterpret_cast< TPI* >( intermediate ), output, invScale );
 }
 
 template< typename TPI >
@@ -467,6 +496,13 @@ inline dip::uint FourierBufferSize(
       DFT< TPI > const& ift         // DFT object configured for an inverse transform of <size of output>
 ) {
    return std::max( ft.TransformSize(), ift.TransformSize() );
+}
+template< typename TPI >
+inline dip::uint FourierBufferSize(
+      RDFT< TPI > const& ft,        // DFT object configured for a transform of <size of input>
+      RDFT< TPI > const& ift        // DFT object configured for an inverse transform of <size of output>
+) {
+   return std::max( ft.TransformSize(), ift.TransformSize() ) / 2 + 1;
 }
 
 

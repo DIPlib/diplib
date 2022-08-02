@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,15 +61,6 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
 };
 
 template< typename TPI >
-TPI CastToOutType( std::complex< TPI > in ) {
-   return std::real( in );
-}
-template< typename TPI >
-TPI CastToOutType( TPI in ) {
-   return in;
-}
-
-template< typename TPI >
 class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
       using TPF = FloatType< TPI >;
       using TPC = ComplexType< TPI >;
@@ -81,8 +72,8 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
          weights_.resize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             dip::uint outSize = interpolation::ComputeOutputSize( sizes[ ii ], zoom[ ii ] );
-            ft_[ ii ].Initialize( sizes[ ii ], false );
-            ift_[ ii ].Initialize( outSize, true );
+            ft_[ ii ].Initialize( sizes[ ii ], false, Option::DFTOption::TrashInput );
+            ift_[ ii ].Initialize( outSize, true, Option::DFTOption::TrashInput );
             bool foundShift = false;
             for( dip::uint jj = 0; jj < ii; ++jj ) {
                if(( sizes[ jj ] == sizes[ ii ] ) && ( shift[ jj ] == shift[ ii ] )) {
@@ -106,64 +97,23 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
               + 10 * outLength  * static_cast< dip::uint >( std::round( std::log2( outLength  )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         constexpr bool complexInput = std::is_same< TPI, TPC >::value;
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         DIP_ASSERT( params.inBuffer.stride == 1 );
+         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         DIP_ASSERT( params.outBuffer.stride == 1 );
          dip::uint procDim = params.dimension;
          dip::uint bufferSize = interpolation::FourierBufferSize( ft_[ procDim ], ift_[ procDim ] );
-         dip::uint inOutSize = 0;
-         bool useOutBuffer = true;
-         if( complexInput ) {
-            useOutBuffer = params.outBuffer.stride != 1;
-            if( useOutBuffer ) {
-               bufferSize += params.outBuffer.length;
-            }
-         } else {
-            inOutSize = std::max( params.inBuffer.length, params.outBuffer.length );
-            bufferSize += inOutSize;
-         }
          buffer_[ params.thread ].resize( bufferSize ); // NOP if already that size
-         TPC* buffer = buffer_[ params.thread ].data();
-         // Copy input to `data`
-         TPC* tmpIn;
-         TPC* tmpOut;
-         if( complexInput ) {
-            tmpIn = reinterpret_cast< TPC* >( in ); // Cast does nothing if `complexInput`, this is here so we can compile.
-            if( useOutBuffer ) {
-               tmpOut = buffer;
-               buffer += params.outBuffer.length;
-            } else {
-               tmpOut = static_cast< TPC* >( params.outBuffer.buffer );
-            }
-         } else {
-            tmpIn = buffer;
-            for( dip::uint ii = 0; ii < params.inBuffer.length; ++ii ) {
-               *tmpIn = *in;
-               ++tmpIn;
-               ++in;
-            }
-            tmpOut = tmpIn = buffer;
-            buffer += inOutSize;
-         }
-         // Interpolate
-         interpolation::Fourier< TPF >( tmpIn, tmpOut, 0.0, ft_[ procDim ], ift_[ procDim ], weights_[ procDim ].data(), buffer );
-         // Copy `data` to output
-         if( useOutBuffer ) {
-            SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
-            for( dip::uint ii = 0; ii < params.outBuffer.length; ++ii ) {
-               *out = CastToOutType< TPI >( *tmpIn );
-               ++out;
-               ++tmpIn;
-            }
-         }
+         interpolation::Fourier< TPI >( in, out, 0.0, ft_[ procDim ], ift_[ procDim ], weights_[ procDim ].data(), buffer_[ params.thread ].data() );
          // TODO: For FOURIER method, add a border to: improve results, use boundary condition, use an optimal transform size.
          //       This will be easy only for the zoom==1.0 case, for other cases, you cannot pick one of the two FT sizes.
       }
 
    private:
-      std::vector< DFT< TPF >> ft_;                // One per dimension
-      std::vector< DFT< TPF >> ift_;               // One per dimension
-      std::vector< std::vector< TPC >> weights_;   // One per dimension
-      std::vector< std::vector< TPC >> buffer_;    // One per thread
+      std::vector< typename interpolation::DFTClass< TPI >::type > ft_;    // One per dimension
+      std::vector< typename interpolation::DFTClass< TPI >::type > ift_;   // One per dimension
+      std::vector< std::vector< TPC >> weights_;                           // One per dimension
+      std::vector< std::vector< TPC >> buffer_;                            // One per thread
 };
 
 } // namespace
@@ -230,7 +180,10 @@ void Resampling(
 
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, borders, bc, *lineFilter,
-                         Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
+                         Framework::SeparableOption::AsScalarImage +
+                         Framework::SeparableOption::DontResizeOutput +
+                         Framework::SeparableOption::UseInputBuffer +
+                         Framework::SeparableOption::UseOutputBuffer );
    out.SetPixelSize( std::move( pixelSize ));
    out.SetColorSpace( std::move( colorSpace ));
 }
@@ -943,77 +896,157 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions (except Fourier)
 
 DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
 
-   // 1- Test using unit zoom (shift only)
+   // === Complex-valued data
+   {
 
-   std::vector< dip::scomplex > input( 100 );
-   dip::uint inSize = input.size();
-   for( dip::uint ii = 0; ii < inSize; ++ii ) {
-      auto x = static_cast< dip::dfloat >( ii ) / static_cast< dip::dfloat >( inSize );
-      input[ ii ] = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+      // 1- Test using unit zoom (shift only)
+
+      std::vector< dip::scomplex > input( 100 );
+      dip::uint inSize = input.size();
+      for( dip::uint ii = 0; ii < inSize; ++ii ) {
+         auto x = static_cast< dip::dfloat >( ii ) / static_cast< dip::dfloat >( inSize );
+         input[ ii ] = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+      }
+      dip::dfloat shift = 4.3;
+      dip::uint outSize = inSize;
+      std::vector< dip::scomplex > output( outSize, -1e6f );
+
+      dip::DFT< dip::sfloat > ft( inSize, false );
+      dip::DFT< dip::sfloat > ift( outSize, true );
+      std::vector< dip::scomplex > buffer( dip::interpolation::FourierBufferSize( ft, ift ));
+      dip::interpolation::Fourier< dip::scomplex >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+      bool error = false;
+      for( dip::uint ii = 0; ii < outSize; ++ii ) {
+         auto x = ( static_cast< dip::dfloat >( ii ) - shift ) / static_cast< dip::dfloat >( outSize );
+         dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         error |= abs_diff( output[ ii ], expected ) > 1e-6;
+         //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      }
+      DOCTEST_CHECK_FALSE( error );
+
+      // 2- Test using zoom > 1
+
+      shift = -3.4;
+      dip::dfloat scale = 3.3;
+      outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+      scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
+      output.resize( outSize );
+      std::fill( output.begin(), output.end(), -1e6f );
+      ft.Initialize( inSize, false );
+      ift.Initialize( outSize, true );
+      buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
+      dip::interpolation::Fourier< dip::scomplex >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+      error = false;
+      for( dip::uint ii = 0; ii < outSize; ++ii ) {
+         auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
+         dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         error |= abs_diff( output[ ii ], expected ) > 1e-6;
+         //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      }
+      DOCTEST_CHECK_FALSE( error );
+
+      // 3- Test using zoom < 1
+
+      shift = 10.51;
+      scale = 0.41;
+      outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+      scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
+      output.resize( outSize );
+      std::fill( output.begin(), output.end(), -1e6f );
+
+      ft.Initialize( inSize, false );
+      ift.Initialize( outSize, true );
+      buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
+      dip::interpolation::Fourier< dip::scomplex >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+      error = false;
+      for( dip::uint ii = 0; ii < outSize; ++ii ) {
+         auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
+         dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         error |= abs_diff( output[ ii ], expected ) > 1e-6;
+         //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      }
+      DOCTEST_CHECK_FALSE( error );
+
    }
-   dip::dfloat shift = 4.3;
-   dip::uint outSize = inSize;
-   std::vector< dip::scomplex > output( outSize, -1e6f );
 
-   dip::DFT< dip::sfloat > ft( inSize, false );
-   dip::DFT< dip::sfloat > ift( outSize, true );
-   std::vector< dip::scomplex > buffer( dip::interpolation::FourierBufferSize( ft, ift ));
-   dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+   // === Repeat same with real-valued data
+   {
 
-   bool error = false;
-   for( dip::uint ii = 0; ii < outSize; ++ii ) {
-      auto x = ( static_cast< dip::dfloat >( ii ) - shift ) / static_cast< dip::dfloat >( outSize );
-      dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
-      error |= abs_diff( output[ ii ], expected ) > 1e-6;
-      //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      // 1- Test using unit zoom (shift only)
+
+      std::vector< dip::sfloat > input( 100 );
+      dip::uint inSize = input.size();
+      for( dip::uint ii = 0; ii < inSize; ++ii ) {
+         auto x = static_cast< dip::dfloat >( ii ) / static_cast< dip::dfloat >( inSize );
+         input[ ii ] = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+      }
+      dip::dfloat shift = 4.3;
+      dip::uint outSize = inSize;
+      std::vector< dip::sfloat > output( outSize, -1e6f );
+
+      dip::RDFT< dip::sfloat > ft( inSize, false );
+      dip::RDFT< dip::sfloat > ift( outSize, true );
+      std::vector< dip::scomplex > buffer( dip::interpolation::FourierBufferSize( ft, ift ));
+      dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+      bool error = false;
+      for( dip::uint ii = 0; ii < outSize; ++ii ) {
+         auto x = ( static_cast< dip::dfloat >( ii ) - shift ) / static_cast< dip::dfloat >( outSize );
+         dip::sfloat expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         error |= abs_diff( output[ ii ], expected ) > 1e-6;
+         //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      }
+      DOCTEST_CHECK_FALSE( error );
+
+      // 2- Test using zoom > 1
+
+      shift = -3.4;
+      dip::dfloat scale = 3.3;
+      outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+      scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
+      output.resize( outSize );
+      std::fill( output.begin(), output.end(), -1e6f );
+      ft.Initialize( inSize, false );
+      ift.Initialize( outSize, true );
+      buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
+      dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+      error = false;
+      for( dip::uint ii = 0; ii < outSize; ++ii ) {
+         auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
+         dip::sfloat expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         error |= abs_diff( output[ ii ], expected ) > 1e-6;
+         //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      }
+      DOCTEST_CHECK_FALSE( error );
+
+      // 3- Test using zoom < 1
+
+      shift = 10.51;
+      scale = 0.41;
+      outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
+      scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
+      output.resize( outSize );
+      std::fill( output.begin(), output.end(), -1e6f );
+
+      ft.Initialize( inSize, false );
+      ift.Initialize( outSize, true );
+      buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
+      dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
+
+      error = false;
+      for( dip::uint ii = 0; ii < outSize; ++ii ) {
+         auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
+         dip::sfloat expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
+         error |= abs_diff( output[ ii ], expected ) > 1e-6;
+         //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
+      }
+      DOCTEST_CHECK_FALSE( error );
+
    }
-   DOCTEST_CHECK_FALSE( error );
-
-   // 2- Test using zoom > 1
-
-   shift = -3.4;
-   dip::dfloat scale = 3.3;
-   outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
-   scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
-   output.resize( outSize );
-   std::fill( output.begin(), output.end(), -1e6f );
-   ft.Initialize( inSize, false );
-   ift.Initialize( outSize, true );
-   buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
-   dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
-
-   error = false;
-   for( dip::uint ii = 0; ii < outSize; ++ii ) {
-      auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
-      dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
-      error |= abs_diff( output[ ii ], expected ) > 1e-6;
-      //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
-   }
-   DOCTEST_CHECK_FALSE( error );
-
-   // 3- Test using zoom < 1
-
-   shift = 10.51;
-   scale = 0.41;
-   outSize = dip::interpolation::ComputeOutputSize( inSize, scale );
-   scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
-   output.resize( outSize );
-   std::fill( output.begin(), output.end(), -1e6f );
-
-   ft.Initialize( inSize, false );
-   ift.Initialize( outSize, true );
-   buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
-   dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
-
-   error = false;
-   for( dip::uint ii = 0; ii < outSize; ++ii ) {
-      auto x = ( static_cast< dip::dfloat >( ii ) - shift * scale ) / static_cast< dip::dfloat >( outSize );
-      dip::scomplex expected = static_cast< dip::sfloat >( std::cos( 4.0 * dip::pi * x ));
-      error |= abs_diff( output[ ii ], expected ) > 1e-6;
-      //std::cout << x << ": " << output[ ii ] << " == " << expected << std::endl;
-   }
-   DOCTEST_CHECK_FALSE( error );
-
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::Rotation() preserves the origin location") {
