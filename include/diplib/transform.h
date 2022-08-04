@@ -108,6 +108,27 @@ DIP_NODISCARD inline Image FourierTransform(
    return out;
 }
 
+/// \brief Inverse Fourier Transform. Convenience function that calls \ref FourierTransform after adding
+/// "inverse" to `options`.
+inline void InverseFourierTransform(
+      Image const& in,
+      Image& out,
+      StringSet options = {},
+      BooleanArray process = {}
+) {
+   options.emplace( S::INVERSE );
+   FourierTransform( in, out, options, std::move( process ));
+}
+DIP_NODISCARD inline Image InverseFourierTransform(
+      Image const& in,
+      StringSet options = {},
+      BooleanArray process = {}
+) {
+   Image out;
+   InverseFourierTransform( in, out, std::move( options ), std::move( process ));
+   return out;
+}
+
 /// \brief Returns the next larger (or smaller) multiple of {2, 3, 5}, an image of this size is more
 /// efficient for FFT computations.
 ///

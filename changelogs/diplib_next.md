@@ -46,6 +46,9 @@ title: "Changes DIPlib 3.x.x"
 - `dip::RDFT` is similar to `dip::DFT`, and computes real-to-complex forward DFTs and complex-to-real inverse DFTs.
   It uses either *FFTW* or *PocketFFT*, depending on compile-time configuration.
 
+- Added `dip::InverseFourierTransform()`, a convenience function that calls `dip::FourierTransform()` adding the
+  `"inverse"` flag to the `options` parameter.
+
 - `dip::AlignedBuffer` is a utility class used to allocate buffers that are aligned to 32-byte boundaries.
 
 - `dip::Framework::OneDimensionalLineFilter()` is a version of `dip::Framework::Separable()` that filters in only
@@ -159,6 +162,8 @@ title: "Changes DIPlib 3.x.x"
 
 - Added deconvolution functions `dip.TikhonovMiller()`, `dip.IterativeConstrainedTikhonovMiller()`,
   `dip.RichardsonLucy()`, and `dip.FastIterativeSoftThresholding()`.
+
+- Added `dip::InverseFourierTransform()`.
 
 ### Changed functionality
 

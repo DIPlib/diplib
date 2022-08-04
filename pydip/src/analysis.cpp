@@ -133,6 +133,8 @@ void init_analysis( py::module& m ) {
    // diplib/transform.h
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray >( &dip::FourierTransform ),
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
+   m.def( "InverseFourierTransform", py::overload_cast< dip::Image const&, dip::StringSet, dip::BooleanArray >( &dip::InverseFourierTransform ),
+          "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = "larger" );
    m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
