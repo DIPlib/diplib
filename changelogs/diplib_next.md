@@ -96,6 +96,9 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::FourierTransform()` can now handle the combination of `"inverse"`, `"corner"` and `"fast"`.
 
+- `dip::interpolation::Fourier<>()` uses `dip::RDFT` if the data is real-valued. `dip::Resampling()` and all functions
+  that depend on it are thus a little faster for real-valued images when using Fourier-based interpolation.
+
 - The filtering frameworks, when using input and/or output buffers for an image line, the buffers will be aligned
   to a 32-byte boundary.
 

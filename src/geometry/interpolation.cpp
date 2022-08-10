@@ -20,7 +20,6 @@
 #include "diplib/boundary.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include "diplib/iterators.h"
 #include "diplib/library/copy_buffer.h"
 
 #include "interpolation.h"
@@ -64,6 +63,7 @@ template< typename TPI >
 class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
       using TPF = FloatType< TPI >;
       using TPC = ComplexType< TPI >;
+      bool realValued = std::is_same< TPI, TPF >::value;
    public:
       FourierResamplingLineFilter( FloatArray const& zoom, FloatArray const& shift, UnsignedArray const& sizes ) {
          dip::uint nDims = sizes.size();
@@ -84,7 +84,7 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
             }
             if( !foundShift ) {
                weights_[ ii ].resize( sizes[ ii ] );
-               interpolation::FourierShiftWeights( weights_[ ii ], shift[ ii ] );
+               interpolation::FourierShiftWeights( weights_[ ii ], shift[ ii ], realValued );
             }
          }
       }

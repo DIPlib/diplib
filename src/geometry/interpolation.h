@@ -414,8 +414,8 @@ void Fourier(
       dfloat shift,
       typename DFTClass< TPI >::type const& ft,   // DFT object configured for a transform of <size of input>
       typename DFTClass< TPI >::type const& ift,  // DFT object configured for an inverse transform of <size of output>
-      ComplexType< TPI > const* weights,  // weights to apply a shift in the FT, <size of input> elements; if nullptr, use <shift>
-      ComplexType< TPI >* intermediate    // temporary buffer, size = max( <size of input>, <size of output> )
+      ComplexType< TPI > const* weights,  // weights to apply a shift in the FT, <size of input> elements; if nullptr, use <shift> -- see FourierShiftWeights()
+      ComplexType< TPI >* intermediate    // temporary buffer, size = max( <size of input>, <size of output> ), or size / 2 + 1 for real-valued inputs
 ) {
    using TPR = RealType< TPI >;
    using TPC = ComplexType< TPI >;
@@ -428,7 +428,7 @@ void Fourier(
    // Shift
    if( weights ) {
       // Use given weights
-      dip::uint n = realData ? inSize / 2 + 1 : inSize;
+      dip::uint n = realData ? inSize / 2 : inSize;
       for( auto ptr = intermediate; ptr < intermediate + n; ++ptr, ++weights ) {
          *ptr *= *weights;
       }
@@ -474,7 +474,8 @@ void FourierShiftWeights( std::vector< TPI >&, dfloat ) {
 template< typename TPI >
 void FourierShiftWeights(
       std::vector< std::complex< TPI >>& weights,
-      dfloat shift
+      dfloat shift,
+      bool realValued = false
 ) {
    dip::uint inSize = weights.size();
    dfloat inc = -2 * pi / static_cast< dfloat >( inSize ) * shift;
@@ -484,7 +485,9 @@ void FourierShiftWeights(
    for( dip::uint ii = 1; ii < inSize / 2; ++ii ) {
       std::complex< TPI > w ( static_cast< TPI >( std::cos( theta )), static_cast< TPI >( std::sin( theta )));
       weights[ ii ] = w;
-      weights[ inSize - ii ] = std::conj( w );
+      if( !realValued ) {
+         weights[ inSize - ii ] = std::conj( w );
+      }
       theta += inc;
    }
 }
