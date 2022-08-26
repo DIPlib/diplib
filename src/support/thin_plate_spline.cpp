@@ -20,7 +20,7 @@
 // For Eigen, turn off -Wsign-conversion
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#if __GNUC__ == 11
+#if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 #endif
