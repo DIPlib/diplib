@@ -594,7 +594,7 @@ inline MinMaxAccumulator operator+( MinMaxAccumulator lhs, MinMaxAccumulator con
 
 
 /// \brief `MomentAccumulator` accumulates the zeroth order moment, the first order normalized moments, and the
-/// second order central normalized moments, in `N` dimensions.
+/// second order normalized central moments, in `N` dimensions.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve the moments.
 ///
@@ -651,13 +651,12 @@ class DIP_NO_EXPORT MomentAccumulator {
       FloatArray FirstOrder() const {
          if( m0_ == 0 ) {
             return FloatArray( m1_.size(), 0.0 );
-         } else {
-            FloatArray out = m1_;
-            for( dfloat& v : out ) {
-               v /= m0_;
-            }
-            return out;
          }
+         FloatArray out = m1_;
+         for( dfloat& v : out ) {
+            v /= m0_;
+         }
+         return out;
       }
 
       /// \brief Second order central moment tensor, normalized
@@ -698,7 +697,8 @@ class DIP_NO_EXPORT MomentAccumulator {
       ///
       /// In 1D the tensor is always 0, see \ref PlainSecondOrder for a useful result in 1D.
       ///
-      /// Note that here we normalize each components by the sum of weights.
+      /// Note that here we normalize each components by the sum of weights. This makes the tensor invariant
+      /// to scaling of the weights (e.g. scaling the image intensity).
       FloatArray SecondOrder() const {
          FloatArray out( m2_.size(), 0.0 ); // output tensor
          if( m0_ != 0 ) {
@@ -736,6 +736,10 @@ class DIP_NO_EXPORT MomentAccumulator {
       ///
       /// with $m_k$ the weight of point $k$, and $\vec{r_k} = (r_{k1}, r_{k2}, \ldots)$ its position
       /// relative to the center of mass.
+      ///
+      /// The normalization makes the moments invariant to scaling of the weights (e.g. scaling of the
+      /// image intensity). Divide each component by \ref Sum (the zeroth order moment) to obtain
+      /// size-invariant second order moments.
       FloatArray PlainSecondOrder() const {
          FloatArray out( m2_.size(), 0.0 ); // output tensor
          if( m0_ != 0 ) {

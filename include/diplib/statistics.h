@@ -139,10 +139,27 @@ DIP_EXPORT dfloat SpearmanRankCorrelation( Image const& in1, Image const& in2, I
 /// If `mask` is not forged, all input pixels are considered. `in` must be scalar and real-valued.
 DIP_EXPORT FloatArray CenterOfMass( Image const& in, Image const& mask = {} );
 
-/// \brief Computes the first order moments and second order central moments of the image `in`,
+/// \brief Computes the first order normalized moments and second order normalized central moments of the image `in`,
 /// optionally using only those pixels selected by `mask`.
 ///
 /// If `mask` is not forged, all input pixels are considered. `in` must be scalar and real-valued.
+///
+/// Note that the normalization makes the moments invariant to scaling the image intensities, but not to
+/// spatial scaling. Divide each element of \ref MomentAccumulator::PlainSecondOrder by \ref MomentAccumulator::Sum
+/// to obtain a value that is invariant also to spatial scaling. The first two Hu moments of a 2D image are obtained
+/// as follows:
+/// ```cpp
+/// auto moments = dip::Moments( img );
+/// auto m0 = moments.Sum();
+/// auto m2 = moments.PlainSecondOrder();
+/// // scale and translation invariant second order moments:
+/// double nu20 = m2[ 0 ] / m0;
+/// double nu02 = m2[ 1 ] / m0;
+/// double nu11 = m2[ 2 ] / m0;
+/// // scale, translation and rotation-invariant values:
+/// double hu1 = nu20 + nu02;
+/// double hu2 = ( nu20 - nu02 ) * ( nu20 - nu02 ) + 4 * nu11 * nu11;
+/// ```
 DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 
 #undef DIP_DEFINE_VIEW_FUNCTION
