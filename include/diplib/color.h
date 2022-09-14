@@ -257,7 +257,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       }
 
       // for backwards compatibility
-      using XYZ [[deprecated]] = dip::XYZ;
+      using XYZ [[ deprecated( "Use dip::XYZ" ) ]] = dip::XYZ;
 
       /// \brief The CIE Standard Illuminant A (typical, domestic, tungsten-filament lighting).
       DIP_EXPORT static constexpr dip::XYZ IlluminantA{{ 1.0985, 1.0000, 0.3558 }};

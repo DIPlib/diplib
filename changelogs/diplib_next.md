@@ -54,6 +54,10 @@ title: "Changes DIPlib 3.x.x"
 - `dip::Framework::OneDimensionalLineFilter()` is a version of `dip::Framework::Separable()` that filters in only
   one dimension, and allows input and output buffers to be of different types.
 
+- `dip::Polygon::CovarianceMatrixSolid()` computes the covariance of the solid shape formed by the filled polygon.
+  This produces more consistent and meaningful values than the old `dip::Polygon:CovarianceMatrix()`, which
+  produced different results depending on the discretization of the shape.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -101,6 +105,16 @@ title: "Changes DIPlib 3.x.x"
 
 - The filtering frameworks, when using input and/or output buffers for an image line, the buffers will be aligned
   to a 32-byte boundary.
+
+- `dip::Polygon::CovarianceMatrix()` has been renamed to `dip::Polygon::CovarianceMatrixVertices()`, the old name
+  still exists but is deprecated.
+
+- `dip::CovarianceMatrix::Ellipse()` now takes an optional input argument. The default value (`false`) keeps the old
+  behavior, and should be used with objects produced by `dip::Polygon::CovarianceMatrixVertices()`. The alternative
+  value (`true`) should be used with objects produced by `dip::Polygon::CovarianceMatrixSolid()`.
+
+- The `dip::MeasurementTool` feature `"Eccentricity"` is now computed more precisely,
+  using the new `dip::Polygon::CovarianceMatrixSolid()` rather than `dip::Polygon::CovarianceMatrixVertices()`.
 
 ### Bug fixes
 
@@ -175,6 +189,9 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip.IncoherentPSF()` no longer takes the output image as an input argument, instead returning a new image of
   appropriate sizes.
+
+- `dip.Polygon.EllipseParameters()` now uses the new `dip::Polygon::CovarianceMatrixSolid()` rather than
+  `dip::Polygon::CovarianceMatrixVertices()`.
 
 (See also changes to *DIPlib*.)
 

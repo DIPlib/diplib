@@ -30,7 +30,7 @@ class FeatureEccentricity : public PolygonBased {
       }
 
       virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
-         *output = polygon.CovarianceMatrix().Eig().Eccentricity();
+         *output = polygon.CovarianceMatrixSolid().Eig().Eccentricity();
       }
 };
 

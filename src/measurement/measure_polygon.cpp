@@ -49,7 +49,7 @@ VertexFloat Polygon::Centroid() const {
    return sum == 0.0 ? VertexFloat{ 0.0, 0.0 } : VertexFloat{ xsum, ysum } / ( 3 * sum );
 }
 
-dip::CovarianceMatrix Polygon::CovarianceMatrix( VertexFloat const& g ) const {
+dip::CovarianceMatrix Polygon::CovarianceMatrixVertices( VertexFloat const& g ) const {
    dip::CovarianceMatrix C;
    if( vertices.size() >= 3 ) {
       for( auto v : vertices ) {
@@ -57,6 +57,32 @@ dip::CovarianceMatrix Polygon::CovarianceMatrix( VertexFloat const& g ) const {
       }
       C /= static_cast< dfloat >( vertices.size() );
    }
+   return C;
+}
+
+namespace {
+
+dip::CovarianceMatrix GreenIntegralCovariance( VertexFloat const& v0, VertexFloat const& v1 ) {
+   // See for example https://medium.com/@aleozlx/the-maths-behind-contour-moments-from-opencv-491e5c348b91
+   dfloat v = CrossProduct( v0, v1 );
+   return dip::CovarianceMatrix{
+         /* xx = */ v / 12.0 * ( v0.x * ( v0.x + v1.x ) + v1.x * v1.x ),
+         /* yy = */ v / 12.0 * ( v0.y * ( v0.y + v1.y ) + v1.y * v1.y ),
+         /* xy = */ v / 24.0 * ( v0.x * ( 2 * v0.y + v1.y ) + v1.x * ( v0.y + 2 * v1.y )),
+   };
+}
+
+} // namespace
+
+dip::CovarianceMatrix Polygon::CovarianceMatrixSolid( VertexFloat const& g ) const {
+   if( vertices.size() < 3 ) {
+      return {};
+   }
+   dip::CovarianceMatrix C = GreenIntegralCovariance( vertices.back() - g, vertices.front() - g );
+   for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+      C += GreenIntegralCovariance( vertices[ ii - 1 ] - g, vertices[ ii ] - g );
+   }
+   C /= Area();
    return C;
 }
 

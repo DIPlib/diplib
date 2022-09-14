@@ -467,6 +467,8 @@ class DIP_NO_EXPORT CovarianceMatrix {
       CovarianceMatrix() = default;
       /// \brief Construct a covariance matrix as the outer product of a vector and itself.
       explicit CovarianceMatrix( VertexFloat v ) : xx_( v.x * v.x ), xy_( v.x * v.y ), yy_( v.y * v.y ) {}
+      /// \brief Construct a covariance matrix with the three components.
+      explicit CovarianceMatrix( dfloat xx, dfloat yy, dfloat xy ) : xx_( xx ), xy_( xy ), yy_( yy ) {}
       /// \brief Read matrix element.
       dfloat xx() const { return xx_; }
       /// \brief Read matrix element.
@@ -539,12 +541,18 @@ class DIP_NO_EXPORT CovarianceMatrix {
          dfloat eccentricity; ///< Ellipse eccentricity
       };
       /// \brief Compute parameters of ellipse with same covariance matrix.
-      EllipseParameters Ellipse() const {
+      ///
+      /// If `solid` is `false` (default), then it is assumed that the covariance matrix corresponds to an ellipse
+      /// shell (e.g. obtained through \ref Polygon::CovarianceMatrixVertices). This is the default for
+      /// backwards-compatibility. If `true`, the covariance matrix corresponds to a solid ellipse (e.g. obtained
+      /// though \ref \ref Polygon::CovarianceMatrixSolid).
+      EllipseParameters Ellipse( bool solid = false ) const {
          // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          Eigenvalues lambda = Eig();
+         double scale = solid ? 16.0 : 8.0;
          return {
-               std::sqrt( 8.0 * lambda.largest ),
-               std::sqrt( 8.0 * lambda.smallest ),
+               std::sqrt( scale * lambda.largest ),
+               std::sqrt( scale * lambda.smallest ),
                // eigenvector is {xy, lambda.largest - xx}, always has an angle in the range [0,pi).
                std::atan2( lambda.largest - xx_, xy_ ),
                lambda.Eccentricity()
@@ -587,12 +595,30 @@ struct DIP_NO_EXPORT Polygon {
    /// \brief Computes the centroid of the polygon.
    DIP_EXPORT VertexFloat Centroid() const;
 
+   [[ deprecated( "Use CovarianceMatrixVertices or CovarianceMatrixSolid instead." ) ]]
+   dip::CovarianceMatrix CovarianceMatrix( VertexFloat const& g ) const {
+      return CovarianceMatrixVertices( g );
+   }
+
+   [[ deprecated( "Use CovarianceMatrixVertices or CovarianceMatrixSolid instead." ) ]]
+   dip::CovarianceMatrix CovarianceMatrix() const {
+      return CovarianceMatrixVertices();
+   }
+
    /// \brief Returns the covariance matrix for the vertices of the polygon, using centroid `g`.
-   DIP_EXPORT dip::CovarianceMatrix CovarianceMatrix( VertexFloat const& g ) const;
+   DIP_EXPORT dip::CovarianceMatrix CovarianceMatrixVertices( VertexFloat const& g ) const;
 
    /// \brief Returns the covariance matrix for the vertices of the polygon.
-   dip::CovarianceMatrix CovarianceMatrix() const {
-      return this->CovarianceMatrix( Centroid() );
+   dip::CovarianceMatrix CovarianceMatrixVertices() const {
+      return this->CovarianceMatrixVertices( Centroid() );
+   }
+
+   /// \brief Returns the covariance matrix for the solid object represented by the polygon, using centroid `g`.
+   DIP_EXPORT dip::CovarianceMatrix CovarianceMatrixSolid( VertexFloat const& g ) const;
+
+   /// \brief Returns the covariance matrix for the solid object represented by the polygon.
+   dip::CovarianceMatrix CovarianceMatrixSolid() const {
+      return this->CovarianceMatrixSolid( Centroid() );
    }
 
    /// \brief Computes the length of the polygon (i.e. perimeter). If the polygon represents a pixelated object,
@@ -624,7 +650,7 @@ struct DIP_NO_EXPORT Polygon {
    dfloat EllipseVariance() const {
        // Covariance matrix of polygon vertices
        VertexFloat g = Centroid();
-       dip::CovarianceMatrix C = this->CovarianceMatrix(g);
+       dip::CovarianceMatrix C = this->CovarianceMatrixVertices(g);
        return EllipseVariance( g, C );
    }
 

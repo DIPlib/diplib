@@ -362,8 +362,8 @@ void init_measurement( py::module& m ) {
    poly.def( "Centroid", &dip::Polygon::Centroid );
    poly.def( "Length", &dip::Polygon::Length ); // is the perimeter
    poly.def( "Perimeter", &dip::Polygon::Perimeter );
-   poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrix().Ellipse(); },
-             "Corresponds to `dip::Polygon::CovarianceMatrix().Ellipse()`." );
+   poly.def( "EllipseParameters", []( dip::Polygon const& self ) { return self.CovarianceMatrixSolid().Ellipse( true ); },
+             "Corresponds to `dip::Polygon::CovarianceMatrixSolid().Ellipse( true )`." );
    poly.def( "RadiusStatistics", py::overload_cast<>( &dip::Polygon::RadiusStatistics, py::const_ ));
    poly.def( "EllipseVariance", py::overload_cast<>( &dip::Polygon::EllipseVariance, py::const_ ));
    poly.def( "FractalDimension", &dip::Polygon::FractalDimension, "length"_a = 0.0 );
