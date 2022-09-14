@@ -738,7 +738,7 @@ class DIP_NO_EXPORT MomentAccumulator {
       /// relative to the center of mass.
       ///
       /// The normalization makes the moments invariant to scaling of the weights (e.g. scaling of the
-      /// image intensity). Divide each component by \ref Sum (the zeroth order moment) to obtain
+      /// image intensity). Divide each component by \ref "Sum" (the zeroth order moment) to obtain
       /// size-invariant second order moments.
       FloatArray PlainSecondOrder() const {
          FloatArray out( m2_.size(), 0.0 ); // output tensor

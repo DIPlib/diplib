@@ -545,7 +545,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
       /// If `solid` is `false` (default), then it is assumed that the covariance matrix corresponds to an ellipse
       /// shell (e.g. obtained through \ref Polygon::CovarianceMatrixVertices). This is the default for
       /// backwards-compatibility. If `true`, the covariance matrix corresponds to a solid ellipse (e.g. obtained
-      /// though \ref \ref Polygon::CovarianceMatrixSolid).
+      /// though \ref Polygon::CovarianceMatrixSolid).
       EllipseParameters Ellipse( bool solid = false ) const {
          // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          Eigenvalues lambda = Eig();
