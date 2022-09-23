@@ -395,7 +395,7 @@ namespace detail {
 template< typename T > struct IsComplexType { static constexpr bool value = false; };
 template<> struct IsComplexType< dcomplex > { static constexpr bool value = true; };
 template<> struct IsComplexType< scomplex > { static constexpr bool value = true; };
-};
+}
 
 template< typename TPI, typename = void >
 struct DFTClass {

@@ -114,7 +114,7 @@ GlyphSequence GetGlyphSequence(
          static_cast< FT_Fixed >( advanceScaleX * 0x10000L ),
    };
    FT_UInt previous = 0;
-   auto* str = reinterpret_cast< unsigned char const* >( text.data());
+   auto* str = reinterpret_cast< unsigned char const* >( text.data() );
    auto* end = str + text.size();
    while( str < end ) {
       // Find glyph and kerning
