@@ -572,6 +572,7 @@ void FourierTransform(
       }
       // Copy data to other half of image
       DIP_STACK_TRACE_THIS( DFT_R2C_1D_finalize( tmp, process, optimalDimension, corner ));
+      process[ optimalDimension ] = true; // reset to ensure pixel size is updated along this dimension
 
    } else if( realOutput ) {
       // Complex-to-real transform
@@ -583,13 +584,14 @@ void FourierTransform(
       Image tmpIn;
       DIP_STACK_TRACE_THIS( tmpIn = in.At( window ));
       // Do the complex-to-complex transform in all but one dimension (it is this step where we do the normalization)
-      process[ optimalDimension ] = false;
       if( nProcDims > 1 ) {
+         process[ optimalDimension ] = false;
          UnsignedArray tmpSize = outSize;
          tmpSize[ optimalDimension ] = tmpIn.Size( optimalDimension );
          Image tmpOut( tmpSize, in_copy.TensorElements(), DataType::SuggestComplex( in.DataType() ));
          DIP_STACK_TRACE_THIS( DFT_C2C_compute( tmpIn, tmpOut, process, inverse, corner, 1.0 ));
          tmpIn.swap( tmpOut );
+         process[ optimalDimension ] = true; // reset to ensure pixel size is updated along this dimension
       }
       // Create real-valued output image
       DIP_STACK_TRACE_THIS( out.ReForge( outSize, in_copy.TensorElements(), tmpIn.DataType().Real(), Option::AcceptDataTypeChange::DO_ALLOW ));
