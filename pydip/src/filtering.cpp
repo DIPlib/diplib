@@ -68,6 +68,10 @@ void init_filtering( py::module& m ) {
           "in"_a, "filter"_a = dip::Kernel{}, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),
           "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const& >( &dip::GaussFT ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
+   m.def( "GaussIIR", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::StringArray const&, dip::UnsignedArray, dip::String const&, dip::dfloat >( &dip::GaussIIR ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "boundaryCondition"_a = dip::StringArray{}, "filterOrder"_a = dip::UnsignedArray{}, "designMethod"_a = dip::S::DISCRETE_TIME_FIT, "truncation"_a = 3.0 );
    m.def( "Gauss", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Gauss ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "FiniteDifference", py::overload_cast< dip::Image const&, dip::UnsignedArray, dip::String const&, dip::StringArray const&, dip::BooleanArray >( &dip::FiniteDifference ),

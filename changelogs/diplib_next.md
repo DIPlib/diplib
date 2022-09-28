@@ -184,7 +184,9 @@ title: "Changes DIPlib 3.x.x"
 - Added deconvolution functions `dip.TikhonovMiller()`, `dip.IterativeConstrainedTikhonovMiller()`,
   `dip.RichardsonLucy()`, and `dip.FastIterativeSoftThresholding()`.
 
-- Added `dip::InverseFourierTransform()`.
+- Added `dip.InverseFourierTransform()`.
+
+- Added `dip.GaussFT()` and `dip.GaussIIR()`.
 
 ### Changed functionality
 
