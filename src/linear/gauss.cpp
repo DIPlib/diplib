@@ -356,9 +356,18 @@ void GaussFT(
       Image& out,
       FloatArray sigmas,
       UnsignedArray order,
-      dfloat truncation
+      dfloat truncation,
+      String const& inRepresentation,
+      String const& outRepresentation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   bool inSpatial;
+   DIP_STACK_TRACE_THIS( inSpatial = BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY ));
+   bool outSpatial;
+   DIP_STACK_TRACE_THIS( outSpatial = BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY ));
+   if( !inSpatial ) {
+      DIP_THROW_IF( !in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   }
    dip::uint nDims = in.Dimensionality();
    DIP_START_STACK_TRACE
       ArrayUseParameter( sigmas, nDims, 1.0 );
@@ -375,21 +384,46 @@ void GaussFT(
       }
    }
    if( sigmas.any() || order.any() ) {
-      bool isreal = !in.DataType().IsComplex();
-      Image ft = FourierTransform( in );
-      DataType dtype = DataType::SuggestComplex( ft.DataType() );
-      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_COMPLEX( scanLineFilter, GaussFTLineFilter, ( in.Sizes(), sigmas, order, truncation ), dtype );
-      Framework::ScanMonadic(
-            ft, ft, dtype, dtype, 1, *scanLineFilter,
-            Framework::ScanOption::TensorAsSpatialDim + Framework::ScanOption::NeedCoordinates );
-      StringSet opts = { S::INVERSE };
-      if( isreal ) {
-         opts.emplace( S::REAL );
+      bool real = false;
+      Image inFT;
+      bool reuseInFT = false;
+      if( inSpatial ) {
+         real = !in.DataType().IsComplex();
+         inFT = FourierTransform( in );
+         reuseInFT = true;
+      } else {
+         inFT = in;
       }
-      FourierTransform( ft, out, opts );
+      DataType dtype = inFT.DataType(); // a complex type
+      Image outFT;
+      if( !outSpatial || !real ) { // write directly into out if out is not real-valued
+         DIP_STACK_TRACE_THIS( out.ReForge( inFT, dtype ));
+         outFT = out.QuickCopy();
+      } else {
+         if( reuseInFT ) {
+            outFT = inFT.QuickCopy();
+         } // else outFT will be a new temporary
+      }
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_NEW_COMPLEX( scanLineFilter, GaussFTLineFilter, ( inFT.Sizes(), sigmas, order, truncation ), dtype );
+      Framework::ScanMonadic(
+            inFT, outFT, dtype, dtype, 1, *scanLineFilter,
+            Framework::ScanOption::TensorAsSpatialDim + Framework::ScanOption::NeedCoordinates );
+      if( outSpatial ) {
+         StringSet options{ S::INVERSE };
+         if( real ) {
+            options.insert( S::REAL );
+         }
+         DIP_STACK_TRACE_THIS( FourierTransform( outFT, out, options ));
+      }
    } else {
-      out = in;
+      if( inSpatial == outSpatial ) {
+         out = in;
+      } else if( inSpatial ) {
+         FourierTransform( in, out );
+      } else {
+         FourierTransform( in, out, { S::INVERSE } );
+      }
    }
 }
 

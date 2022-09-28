@@ -58,6 +58,10 @@ title: "Changes DIPlib 3.x.x"
   This produces more consistent and meaningful values than the old `dip::Polygon:CovarianceMatrix()`, which
   produced different results depending on the discretization of the shape.
 
+- `dip::GaussFT()` has two new parameters `inRepresentation` and `outRepresentation`, which have the same function
+  as the parameters with the same name in `dip::ConvolveFT()`: it is now possible to apply Gaussian smoothing to
+  an image that is already in the frequency domain.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.

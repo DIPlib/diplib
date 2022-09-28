@@ -327,22 +327,33 @@ DIP_NODISCARD inline Image GaussFIR(
 /// Dimensions where sigma is 0 or negative are not smoothed. Note that it is possible to compute a derivative
 /// without smoothing in the Fourier domain.
 ///
+/// If `in` is already Fourier transformed, set `inRepresentation` to `"frequency"`.
+/// Similarly, if `outRepresentation` is `"frequency"`, the output will not be inverse-transformed,
+/// and so will be in the frequency domain. These two values are `"spatial"` by default.
+/// If any of these values is `"frequency"`, then `out` will be complex, no checks are made to
+/// see if the inputs in frequency domain have the complex conjugate symmetry required for the result
+/// to be real-valued. Use \ref dip::Image::Real if you expect the output to be real-valued in this case.
+///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void GaussFT(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
-      dfloat truncation = 3
+      dfloat truncation = 3,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
 );
 DIP_NODISCARD inline Image GaussFT(
       Image const& in,
       FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
-      dfloat truncation = 3
+      dfloat truncation = 3,
+      String const& inRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
 ) {
    Image out;
-   GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation );
+   GaussFT( in, out, std::move( sigmas ), std::move( derivativeOrder ), truncation, inRepresentation, outRepresentation );
    return out;
 }
 
