@@ -71,9 +71,6 @@ title: "Changes DIPlib 3.x.x"
 
 - Added some more `[[nodiscard]]` annotations.
 
-- Updated included *libics*, which fixes some potential bugs, and adds support for metadata related
-  to multi-detector microscopes.
-
 - `dip::BinaryPropagation()` is now much faster when `iterations` is 0, using an algorithm similar to the
   one used for `dip::MorphologicalReconstruction()`, but specialized for the binary case.
   `dip::MorphologicalReconstruction()` now calls `dip::BinaryPropagation()` for binary images.
@@ -140,6 +137,12 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::SeparateFilter()` yielded the complex conjugate of the correct 1D filter for all dimensions except the first.
 
+### Updated dependencies
+
+- Updated included *libics*, which fixes some potential bugs, and adds support for metadata related
+  to multi-detector microscopes.
+
+- Updated included *Eigen* to 3.4. This version of *Eigen* allows for negative strides.
 
 
 

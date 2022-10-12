@@ -20,18 +20,21 @@
 #include "diplib/pixel_table.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For Eigen, turn off -Wsign-conversion
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+   // For Eigen, turn off -Wsign-conversion
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wsign-conversion"
+   #ifndef __clang__
+      #pragma GCC diagnostic ignored "-Wclass-memaccess"
+   #endif
+   #if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
+      #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+   #endif
 #endif
 
 #include <Eigen/SVD>
 
 #if defined(__GNUG__) || defined(__clang__)
-#pragma GCC diagnostic pop
+   #pragma GCC diagnostic pop
 #endif
 
 
@@ -50,6 +53,7 @@ void SeparateFilterInternal(
    using Matrix = Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >;
    using Vector = Eigen::Matrix< T, Eigen::Dynamic, 1 >;
    // Make a matrix out of `filter` that has `nPixel` rows and `length` columns
+   // `filter` is assured to have normal strides at this point
    Eigen::Map< Matrix > matrix( static_cast< T* >( filter.Origin() ),
                                 static_cast< Eigen::Index >( nPixels ),
                                 static_cast< Eigen::Index >( length ));

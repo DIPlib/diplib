@@ -23,15 +23,18 @@
 #include "diplib/private/constfor.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For Eigen, turn off -Wsign-conversion
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+   // For Eigen, turn off -Wsign-conversion
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wsign-conversion"
+   #ifndef __clang__
+      #pragma GCC diagnostic ignored "-Wclass-memaccess"
+   #endif
 #endif
 
 #include <Eigen/Geometry>
 
 #if defined(__GNUG__) || defined(__clang__)
-#pragma GCC diagnostic pop
+   #pragma GCC diagnostic pop
 #endif
 
 

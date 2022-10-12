@@ -1,5 +1,5 @@
 /*
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,16 +19,24 @@
 #include "diplib/library/numeric.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For Eigen, turn off -Wsign-conversion
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+   // For Eigen, turn off -Wsign-conversion
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wsign-conversion"
+   #ifndef __clang__
+      #pragma GCC diagnostic ignored "-Wclass-memaccess"
+   #endif
+   #if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
+      #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+   #endif
 #endif
 
 #include <Eigen/Eigenvalues>
 #include <Eigen/SVD>
+
+#if defined(__GNUG__) || defined(__clang__)
+   #pragma GCC diagnostic pop
+#endif
+
 
 namespace dip {
 
@@ -44,31 +52,30 @@ struct GreaterMagnitude {
 } // namespace
 
 void SymmetricEigenDecomposition(
-      dip::uint n,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 ); // TODO: (here and other asserts in this file) Eigen doesn't support negative strides, but there's a ticket for that: https://gitlab.com/libeigen/eigen/-/issues/747
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
       //if( eigensolver.info() != Eigen::Success ) { abort(); }
       Eigen::VectorXd const& eigenvalues = eigensolver.eigenvalues();
       Eigen::MatrixXd const& eigenvectors = eigensolver.eigenvectors();
-      std::vector< dip::uint > indices( n );
+      std::vector< dip::sint > indices( u_n );
       std::iota( indices.begin(), indices.end(), 0 );
-      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         dip::uint kk = indices[ ii ];
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::sint a, dip::sint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::sint ii = 0; ii < n; ++ii ) {
+         dip::sint kk = indices[ static_cast< dip::uint >( ii ) ];
          lambdas[ ii ] = eigenvalues[ kk ];
-         dip::uint offset = ii * n;
-         for( dip::uint jj = 0; jj < n; ++jj ) {
+         dip::sint offset = ii * n;
+         for( dip::sint jj = 0; jj < n; ++jj ) {
             vectors[ jj + offset ] = eigenvectors( jj, kk );
          }
       }
    } else {
-      DIP_ASSERT( lambdas.Stride() >= 0 );
       Eigen::Map< Eigen::VectorXd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
       std::sort( lambdas, lambdas + n, GreaterMagnitude< dfloat >() );
@@ -80,15 +87,14 @@ void SymmetricEigenDecomposition2(
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
    Eigen::Map< Eigen::Matrix2d const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::SelfAdjointEigenSolver< Eigen::Matrix2d > eigensolver( matrix );
       //if( eigensolver.info() != Eigen::Success ) { abort(); }
       Eigen::Vector2d const& eigenvalues = eigensolver.eigenvalues();
       Eigen::Matrix2d const& eigenvectors = eigensolver.eigenvectors();
-      dip::uint indices0 = 0;
-      dip::uint indices1 = 1;
+      dip::sint indices0 = 0;
+      dip::sint indices1 = 1;
       if( std::abs( eigenvalues[ 0 ] ) < std::abs( eigenvalues[ 1 ] )) {
          indices0 = 1;
          indices1 = 0;
@@ -100,7 +106,6 @@ void SymmetricEigenDecomposition2(
       vectors[ 2 ] = eigenvectors( 0, indices1 );
       vectors[ 3 ] = eigenvectors( 1, indices1 );
    } else {
-      DIP_ASSERT( lambdas.Stride() >= 0 );
       Eigen::Map< Eigen::Vector2d, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
       if( std::abs( lambdas[ 0 ] ) < std::abs( lambdas[ 1 ] )) {
@@ -114,25 +119,23 @@ void SymmetricEigenDecomposition3(
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
    Eigen::Map< Eigen::Matrix3d const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::SelfAdjointEigenSolver< Eigen::Matrix3d > eigensolver( matrix );
       //if( eigensolver.info() != Eigen::Success ) { abort(); }
       Eigen::Vector3d const& eigenvalues = eigensolver.eigenvalues();
       Eigen::Matrix3d const& eigenvectors = eigensolver.eigenvectors();
-      std::array< dip::uint, 3 > indices{{ 0, 1, 2 }};
-      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
-      for( dip::uint ii = 0; ii < 3; ++ii ) {
-         dip::uint kk = indices[ ii ];
+      std::array< dip::sint, 3 > indices{{ 0, 1, 2 }};
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::sint a, dip::sint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::sint ii = 0; ii < 3; ++ii ) {
+         dip::sint kk = indices[ static_cast< dip::uint >( ii ) ];
          lambdas[ ii ] = eigenvalues[ kk ];
-         dip::uint offset = ii * 3;
-         for( dip::uint jj = 0; jj < 3; ++jj ) {
+         dip::sint offset = ii * 3;
+         for( dip::sint jj = 0; jj < 3; ++jj ) {
             vectors[ jj + offset ] = eigenvectors( jj, kk );
          }
       }
    } else {
-      DIP_ASSERT( lambdas.Stride() >= 0 );
       Eigen::Map< Eigen::Vector3d, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
       std::sort( lambdas, lambdas + 3, GreaterMagnitude< dfloat >() );
@@ -140,70 +143,69 @@ void SymmetricEigenDecomposition3(
 }
 
 void LargestEigenvector(
-      dip::uint n,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > vector
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
    //if( eigensolver.info() != Eigen::Success ) { abort(); }
    Eigen::VectorXd const& eigenvalues = eigensolver.eigenvalues();
    Eigen::MatrixXd const& eigenvectors = eigensolver.eigenvectors();
-   std::vector< dip::uint > indices( n );
+   std::vector< dip::sint > indices( u_n );
    std::iota( indices.begin(), indices.end(), 0 );
-   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
-   dip::uint kk = indices[ 0 ];
-   for( dip::uint jj = 0; jj < n; ++jj ) {
-      vector[ jj ] = eigenvectors( jj, kk );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::sint a, dip::sint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+   dip::sint kk = indices[ 0 ];
+   for( dip::sint jj = 0; jj < n; ++jj ) {
+      vector[ static_cast< dip::uint >( jj ) ] = eigenvectors( jj, kk );
    }
 }
 
 void SmallestEigenvector(
-      dip::uint n,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > vector
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eigensolver( matrix );
    //if( eigensolver.info() != Eigen::Success ) { abort(); }
    Eigen::VectorXd const& eigenvalues = eigensolver.eigenvalues();
    Eigen::MatrixXd const& eigenvectors = eigensolver.eigenvectors();
-   std::vector< dip::uint > indices( n );
+   std::vector< dip::sint > indices( u_n );
    std::iota( indices.begin(), indices.end(), 0 );
-   std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
-   dip::uint kk = indices.back();
-   for( dip::uint jj = 0; jj < n; ++jj ) {
-      vector[ jj ] = eigenvectors( jj, kk );
+   std::sort( indices.begin(), indices.end(), [ & ]( dip::sint a, dip::sint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+   dip::sint kk = indices.back();
+   for( dip::sint jj = 0; jj < n; ++jj ) {
+      vector[ static_cast< dip::uint >( jj ) ] = eigenvectors( jj, kk );
    }
 }
 
 void EigenDecomposition(
-      dip::uint n,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dcomplex > lambdas,
       SampleIterator< dcomplex > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::EigenSolver< Eigen::MatrixXd > eigensolver( matrix );
       Eigen::VectorXcd const& eigenvalues = eigensolver.eigenvalues();
       Eigen::MatrixXcd const& eigenvectors = eigensolver.eigenvectors();
-      std::vector< dip::uint > indices( n );
+      std::vector< dip::sint > indices( u_n );
       std::iota( indices.begin(), indices.end(), 0 );
-      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         dip::uint kk = indices[ ii ];
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::sint a, dip::sint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::sint ii = 0; ii < n; ++ii ) {
+         dip::sint kk = indices[ static_cast< dip::uint >( ii ) ];
          lambdas[ ii ] = eigenvalues[ kk ];
-         dip::uint offset = ii * n;
-         for( dip::uint jj = 0; jj < n; ++jj ) {
+         dip::sint offset = ii * n;
+         for( dip::sint jj = 0; jj < n; ++jj ) {
             vectors[ jj + offset ] = eigenvectors( jj, kk );
          }
       }
    } else {
-      DIP_ASSERT( lambdas.Stride() >= 0 );
       Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.eigenvalues();
       std::sort( lambdas, lambdas + n, GreaterMagnitude< dcomplex >() );
@@ -211,67 +213,70 @@ void EigenDecomposition(
 }
 
 void EigenDecomposition(
-      dip::uint n,
+      dip::uint u_n,
       ConstSampleIterator< dcomplex > input,
       SampleIterator< dcomplex > lambdas,
       SampleIterator< dcomplex > vectors
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    if( vectors ) {
       Eigen::ComplexEigenSolver< Eigen::MatrixXcd > eigensolver( matrix );
       Eigen::VectorXcd const& eigenvalues = eigensolver.eigenvalues();
       Eigen::MatrixXcd const& eigenvectors = eigensolver.eigenvectors();
-      std::vector< dip::uint > indices( n );
+      std::vector< dip::sint > indices( u_n );
       std::iota( indices.begin(), indices.end(), 0 );
-      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         dip::uint kk = indices[ ii ];
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::sint a, dip::sint b ) { return std::abs( eigenvalues[ b ] ) < std::abs( eigenvalues[ a ] ); } );
+      for( dip::sint ii = 0; ii < n; ++ii ) {
+         dip::sint kk = indices[ static_cast< dip::uint >( ii ) ];
          lambdas[ ii ] = eigenvalues[ kk ];
-         dip::uint offset = ii * n;
-         for( dip::uint jj = 0; jj < n; ++jj ) {
+         dip::sint offset = ii * n;
+         for( dip::sint jj = 0; jj < n; ++jj ) {
             vectors[ jj + offset ] = eigenvectors( jj, kk );
          }
       }
    } else {
-      DIP_ASSERT( lambdas.Stride() >= 0 );
       Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > eigenvalues( lambdas.Pointer(), n, Eigen::InnerStride<>( lambdas.Stride() ));
       eigenvalues = matrix.eigenvalues();
       std::sort( lambdas, lambdas + n, GreaterMagnitude< dcomplex >() );
    }
 }
 
-dfloat Determinant( dip::uint n, ConstSampleIterator< dfloat > input ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+dfloat Determinant(
+      dip::uint u_n,
+      ConstSampleIterator< dfloat > input
+) {
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    return matrix.determinant();
 }
 
-dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > input ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+dcomplex Determinant(
+      dip::uint u_n,
+      ConstSampleIterator< dcomplex > input
+) {
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
    return matrix.determinant();
 }
 
 void SingularValueDecomposition(
-      dip::uint m,
-      dip::uint n,
+      dip::uint u_m,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > Sout,
       SampleIterator< dfloat > Uout,
       SampleIterator< dfloat > Vout
 ) {
-   dip::uint p = std::min( m, n );
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
+   dip::sint p = std::min( m, n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > M( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::JacobiSVD< Eigen::MatrixXd > svd( M, Eigen::ComputeThinU | Eigen::ComputeThinV );
-   DIP_ASSERT( Sout.Stride() >= 0 );
    Eigen::Map< Eigen::VectorXd, 0, Eigen::InnerStride<> > S( Sout.Pointer(), p, Eigen::InnerStride<>( Sout.Stride() ));
    S = svd.singularValues();
    if( Uout && Vout ) {
-      DIP_ASSERT( Uout.Stride() >= 0 );
       Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > U( Uout.Pointer(), m, p, Eigen::InnerStride<>( Uout.Stride() ));
-      DIP_ASSERT( Vout.Stride() >= 0 );
       Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > V( Vout.Pointer(), n, p, Eigen::InnerStride<>( Vout.Stride() ));
       U = svd.matrixU();
       V = svd.matrixV();
@@ -279,58 +284,62 @@ void SingularValueDecomposition(
 }
 
 void SingularValueDecomposition(
-      dip::uint m,
-      dip::uint n,
+      dip::uint u_m,
+      dip::uint u_n,
       ConstSampleIterator< dcomplex > input,
       SampleIterator< dcomplex > Sout,
       SampleIterator< dcomplex > Uout,
       SampleIterator< dcomplex > Vout
 ) {
-   dip::uint p = std::min( m, n );
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
+   dip::sint p = std::min( m, n );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > M( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::JacobiSVD< Eigen::MatrixXcd > svd( M, Eigen::ComputeThinU | Eigen::ComputeThinV );
-   DIP_ASSERT( Sout.Stride() >= 0 );
    Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > S( Sout.Pointer(), p, Eigen::InnerStride<>( Sout.Stride() ));
    S = svd.singularValues();
    if( Uout && Vout ) {
-      DIP_ASSERT( Uout.Stride() >= 0 );
       Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > U( Uout.Pointer(), m, p, Eigen::InnerStride<>( Uout.Stride() ));
-      DIP_ASSERT( Vout.Stride() >= 0 );
       Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > V( Vout.Pointer(), n, p, Eigen::InnerStride<>( Vout.Stride() ));
       U = svd.matrixU();
       V = svd.matrixV();
    }
 }
 
-void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+void Inverse(
+      dip::uint u_n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > output
+) {
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
-   DIP_ASSERT( output.Stride() >= 0 );
    Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, n, Eigen::InnerStride<>( output.Stride() ));
    result = matrix.inverse();
 }
 
-void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+void Inverse(
+      dip::uint u_n,
+      ConstSampleIterator< dcomplex > input,
+      SampleIterator< dcomplex > output
+) {
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), n, n, Eigen::InnerStride<>( input.Stride() ));
-   DIP_ASSERT( output.Stride() >= 0 );
    Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, n, Eigen::InnerStride<>( output.Stride() ));
    result = matrix.inverse();
 }
 
 void PseudoInverse(
-      dip::uint m,
-      dip::uint n,
+      dip::uint u_m,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > output,
       dfloat tolerance
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::JacobiSVD< Eigen::MatrixXd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
    tolerance = tolerance * static_cast< dfloat >( std::max( m, n )) * svd.singularValues().array().abs()( 0 );
-   DIP_ASSERT( output.Stride() >= 0 );
    Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, m, Eigen::InnerStride<>( output.Stride() ));
    result = svd.matrixV() *
             ( svd.singularValues().array().abs() > tolerance ).select( svd.singularValues().array().inverse(), 0 )
@@ -339,17 +348,17 @@ void PseudoInverse(
 }
 
 void PseudoInverse(
-      dip::uint m,
-      dip::uint n,
+      dip::uint u_m,
+      dip::uint u_n,
       ConstSampleIterator< dcomplex > input,
       SampleIterator< dcomplex > output,
       dfloat tolerance
 ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::JacobiSVD< Eigen::MatrixXcd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
    tolerance = tolerance * static_cast< dfloat >( std::max( m, n )) * svd.singularValues().array().abs()( 0 );
-   DIP_ASSERT( output.Stride() >= 0 );
    Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, m, Eigen::InnerStride<>( output.Stride() ));
    result = svd.matrixV() *
             ( svd.singularValues().array().abs() > tolerance ).select( svd.singularValues().array().inverse(), 0 )
@@ -357,29 +366,39 @@ void PseudoInverse(
             * svd.matrixU().adjoint();
 }
 
-dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+dip::uint Rank(
+      dip::uint u_m,
+      dip::uint u_n,
+      ConstSampleIterator< dfloat > input
+) {
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::CompleteOrthogonalDecomposition< Eigen::MatrixXd > decomposition( matrix );
    return static_cast< dip::uint >( decomposition.rank() );
 }
 
-dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input ) {
-   DIP_ASSERT( input.Stride() >= 0 );
+dip::uint Rank(
+      dip::uint u_m,
+      dip::uint u_n,
+      ConstSampleIterator< dcomplex > input
+) {
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
    Eigen::CompleteOrthogonalDecomposition< Eigen::MatrixXcd > decomposition( matrix );
    return static_cast< dip::uint >( decomposition.rank() );
 }
 
 void Solve(
-      dip::uint m,
-      dip::uint n,
+      dip::uint u_m,
+      dip::uint u_n,
       ConstSampleIterator< dfloat > A,
       ConstSampleIterator< dfloat > b,
       SampleIterator< dfloat > output
 ) {
-   DIP_ASSERT( A.Stride() >= 0 );
-   DIP_ASSERT( b.Stride() >= 0 );
+   dip::sint m = static_cast< dip::sint >( u_m );
+   dip::sint n = static_cast< dip::sint >( u_n );
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( A.Pointer(), m, n, Eigen::InnerStride<>( A.Stride() ));
    Eigen::JacobiSVD< Eigen::MatrixXd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
    Eigen::Map< Eigen::VectorXd const, 0, Eigen::InnerStride<> > vector( b.Pointer(), m, Eigen::InnerStride<>( b.Stride() ));
@@ -388,11 +407,6 @@ void Solve(
 }
 
 } // namespace dip
-
-
-#if defined(__GNUG__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
@@ -425,6 +439,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    DOCTEST_CHECK( vectors[ 1 ] == 0 );
    DOCTEST_CHECK( vectors[ 2 ] == 0 );
    DOCTEST_CHECK( vectors[ 3 ] == 1 );
+   matrix2[ 0 ] = 0;
+   matrix2[ 2 ] = 8;
+   dip::SymmetricEigenDecompositionPacked( 2, dip::SampleIterator< dip::dfloat >( matrix2 + 2, -1 ), lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
    matrix2[ 0 ] = 3;
    matrix2[ 1 ] = 3;
    matrix2[ 2 ] = -1;

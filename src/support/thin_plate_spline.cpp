@@ -1,5 +1,5 @@
 /*
- * (c)2019, Cris Luengo.
+ * (c)2019-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,24 @@
 #include "diplib/library/numeric.h"
 
 #if defined(__GNUG__) || defined(__clang__)
-// For Eigen, turn off -Wsign-conversion
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+   // For Eigen, turn off -Wsign-conversion
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wsign-conversion"
+   #ifndef __clang__
+      #pragma GCC diagnostic ignored "-Wclass-memaccess"
+   #endif
+   #if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
+      #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+   #endif
 #endif
 
 #include <Eigen/QR>
 #include <Eigen/Cholesky>
+
+#if defined(__GNUG__) || defined(__clang__)
+   #pragma GCC diagnostic pop
+#endif
+
 
 namespace dip {
 
@@ -45,40 +53,41 @@ ThinPlateSpline::ThinPlateSpline(
 ) {
    // NOTE: `source` and `destination` are already checked for sizes
    c_ = std::move( coordinate );
-   dip::uint nPoints = c_.size();
-   dip::uint nDims = c_[ 0 ].size();
+   dip::sint nPoints = static_cast< dip::sint >( c_.size() );
+   dip::sint nDims = static_cast< dip::sint >( c_[ 0 ].size() );
 
    // Create matrices L and b
    DIP_ASSERT( value.size() == nPoints );
-   dip::uint N = nPoints + nDims + 1;
+   dip::sint N = nPoints + nDims + 1;
    Eigen::MatrixXd L( N, N );
    L.fill( 0 );
    Eigen::MatrixXd b( N, nDims );
    b.fill( 0 );
    dfloat alpha = 0;
-   for( dip::uint ii = 0; ii < nPoints; ++ii ) {
-      for( dip::uint jj = 0; jj < ii; ++jj ) {
+   for( dip::sint ii = 0; ii < nPoints; ++ii ) {
+      for( dip::sint jj = 0; jj < ii; ++jj ) {
          L( ii, jj ) = L( jj, ii ); // Previously computed, L is symmetric
       }
-      for( dip::uint jj = ii + 1; jj < nPoints; ++jj ) {
-         dfloat d = Distance( c_[ ii ], c_[ jj ] );
+      for( dip::sint jj = ii + 1; jj < nPoints; ++jj ) {
+         dfloat d = Distance( c_[ static_cast< dip::uint >( ii ) ], c_[ static_cast< dip::uint >( jj ) ] );
          L( ii, jj ) = RadialBasis( d );
          alpha += d;
       }
       L( ii, nPoints ) = 1;
-      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-         L( ii, nPoints + 1 + jj ) = c_[ ii ][ jj ];
-         b( ii, jj ) = value[ ii ][ jj ] - c_[ ii ][ jj ];
+      for( dip::sint jj = 0; jj < nDims; ++jj ) {
+         L( ii, nPoints + 1 + jj ) = c_[ static_cast< dip::uint >( ii ) ][ static_cast< dip::uint >( jj ) ];
+         b( ii, jj ) = value[ static_cast< dip::uint >( ii ) ][ static_cast< dip::uint >( jj ) ]
+                       - c_[ static_cast< dip::uint >( ii ) ][ static_cast< dip::uint >( jj ) ];
       }
    }
    if( lambda > 0.0 ) {
       alpha /= static_cast< dfloat >( nPoints * ( nPoints - 1 ) / 2 );
       alpha *= alpha * lambda;
-      for( dip::uint ii = 0; ii < nPoints; ++ii ) {
+      for( dip::sint ii = 0; ii < nPoints; ++ii ) {
          L( ii, ii ) = alpha;
       }
    }
-   for( dip::uint jj = 0; jj < nDims + 1; ++jj ) {
+   for( dip::sint jj = 0; jj < nDims + 1; ++jj ) {
       L.row( nPoints + jj ) = L.col( nPoints + jj );
    }
 
@@ -87,37 +96,33 @@ ThinPlateSpline::ThinPlateSpline(
    Eigen::HouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
    //Eigen::ColPivHouseholderQR <Eigen::Ref< Eigen::MatrixXd >> decomposition( L );
    // TODO: Eigen::HouseholderQR is faster but less accurate than Eigen::ColPivHouseholderQR. Which one to pick?
-   x_.resize( N * nDims );
+   x_.resize( static_cast< dip::uint >( N * nDims ));
    Eigen::Map< Eigen::MatrixXd >( x_.data(), N, nDims ) = decomposition.solve( b );
 }
 
 // Evaluates the thin plate spline function at point `pt`.
 FloatArray ThinPlateSpline::Evaluate( FloatArray const& pt ) {
-   dip::uint nPoints = c_.size();
-   dip::uint nDims = c_[ 0 ].size();
-   dip::uint N = nPoints + nDims + 1;
-   Eigen::Map <Eigen::MatrixXd> x( x_.data(), N, nDims );
+   dip::sint nPoints = static_cast< dip::sint >( c_.size() );
+   dip::sint nDims = static_cast< dip::sint >( c_[ 0 ].size() );
+   dip::sint N = nPoints + nDims + 1;
+   Eigen::Map< Eigen::MatrixXd > x( x_.data(), N, nDims );
    // Note: w( ii, jj ) = x( ii, jj ), and a( ii, jj ) = x( nPoints + ii, jj )
    FloatArray res = pt;
-   for( dip::uint ii = 0; ii < nPoints; ++ii ) {
-      dfloat scale = RadialBasis( Distance( pt, c_[ ii ] ));
-      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-         res[ jj ] += x( ii, jj ) * scale;
+   for( dip::sint ii = 0; ii < nPoints; ++ii ) {
+      dfloat scale = RadialBasis( Distance( pt, c_[ static_cast< dip::uint >( ii ) ] ));
+      for( dip::sint jj = 0; jj < nDims; ++jj ) {
+         res[ static_cast< dip::uint >( jj ) ] += x( ii, jj ) * scale;
       }
    }
-   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-      res[ jj ] += x( nPoints, jj );
+   for( dip::sint jj = 0; jj < nDims; ++jj ) {
+      res[ static_cast< dip::uint >( jj ) ] += x( nPoints, jj );
    }
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-         res[ jj ] += x( nPoints + 1 + ii, jj ) * pt[ ii ];
+   for( dip::sint ii = 0; ii < nDims; ++ii ) {
+      for( dip::sint jj = 0; jj < nDims; ++jj ) {
+         res[ static_cast< dip::uint >( jj ) ] += x( nPoints + 1 + ii, jj ) * pt[ static_cast< dip::uint >( ii ) ];
       }
    }
    return res;
 }
 
 } // namespace dip
-
-#if defined(__GNUG__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
