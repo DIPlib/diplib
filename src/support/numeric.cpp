@@ -544,7 +544,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {
    DOCTEST_CHECK( dip::pow10( 10 ) == std::pow( 10, 10 ));
    DOCTEST_CHECK( dip::pow10( 1 ) == std::pow( 10, 1 ));
    DOCTEST_CHECK( dip::pow10( 0 ) == std::pow( 10, 0 ));
-   DOCTEST_CHECK( dip::pow10( -5 ) == std::pow( 10, -5 ));
+   DOCTEST_CHECK( dip::pow10( -5 ) == doctest::Approx( std::pow( 10, -5 )));
    DOCTEST_CHECK( dip::pow10( -21 ) == doctest::Approx( std::pow( 10, -21 )));
 }
 
