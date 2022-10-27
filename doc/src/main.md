@@ -22,7 +22,7 @@
 - contains hundreds of image processing and analysis algorithms,
 - is designed for precision foremost,
 - tries to be fast, but is not meant for real-time video processing,
-- is easy to use, providing a simple an intuitive interface to algorithms,
+- is easy to use, providing a simple and intuitive interface to algorithms,
 - allows for writing programs that don't know at compile time what the data
   type or number of dimensions of the image to be processed are,
 - reduces the edit-compile-run loop compared to other image processing libraries,
@@ -30,7 +30,7 @@
   see \ref why_tensors.
 
 There are many other unique things about *DIPlib*, we encourage you to
-explore the documentation to learn more about it. A good place to start
+explore the documentation to learn more about it. Good places to start
 are the following documentation pages:
 
 - The \ref dip::Image class, everything else revolves around it.
