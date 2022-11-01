@@ -1,14 +1,14 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a bug in the DIPlib project
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
 
 **Component**
-Select one or more of: DIPlib / DIPimage / PyDIP / Documentation / CMake build scripts.
+Select one or more of: DIPlib / DIPviewer / dipIO / DIPimage / PyDIP / Documentation / CMake build scripts.
 Include the release version (if installed from a binary distribution) or the Git commit ID (if installed from sources).
 
 **Describe the bug**
