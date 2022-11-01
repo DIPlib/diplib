@@ -23,7 +23,7 @@
 namespace pybind11 {
 namespace detail {
 
-// Cast Python slice to dip::Range
+// Cast Python 2-tuple to dip::VertexFloat
 template<>
 class type_caster< dip::VertexFloat > {
    public:
