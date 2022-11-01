@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Component**
-Select one or more of: DIPlib / DIPviewer / dipIO / DIPimage / PyDIP / Documentation / CMake build scripts.
+Select one or more of: DIPlib / DIPviewer / DIPjavaio / DIPimage / PyDIP / Documentation / CMake build scripts.
 
 **Describe the problem that this feature would solve**
 A clear and concise description of what the problem is.

@@ -87,7 +87,7 @@ this list will help in porting your old code that used *DIPlib* to the new versi
 
 - The *dipIO* library no longer exists. Some `dipio_Xxx` functions are now defined in the
   `diplib/file_io.h` header file (reading and writing ICS, TIFF and JPEG files).
-  `dipio_MeasurementWriteCSV` is is `diplib/measurement.h`.
+  `dipio_MeasurementWriteCSV` is in `diplib/measurement.h`.
   `dipio_Colour2Gray` functionality is replaced (significantly improved) by `dip::ColorSpaceManager`.
   Other functionality no longer exists.
 

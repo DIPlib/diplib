@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Component**
-Select one or more of: DIPlib / DIPviewer / dipIO / DIPimage / PyDIP / Documentation / CMake build scripts.
+Select one or more of: DIPlib / DIPviewer / DIPjavaio / DIPimage / PyDIP / Documentation / CMake build scripts.
 Include the release version (if installed from a binary distribution) or the Git commit ID (if installed from sources).
 
 **Describe the bug**
