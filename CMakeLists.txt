@@ -169,8 +169,7 @@ endif()
 # build to fail if Python is not installed. Here we disable the `DIP_BUILD_PYDIP` setting
 # if there is no Python libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/pybind11/tools")
-set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
-   # CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
+set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION})
 find_package(PythonLibsNew)
 
 if(PYTHONLIBS_FOUND)

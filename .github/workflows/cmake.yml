@@ -49,7 +49,7 @@ jobs:
       fail-fast: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install
         # Install libraries and Python packages we need
