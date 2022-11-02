@@ -2,7 +2,7 @@
 # set $PYPI_TOKEN to the PyPI token for the diplib project
 
 # Setup
-export BUILD_THREADS=2
+export BUILD_THREADS=3
 export DELOCATE=`pwd`/tools/travis/delocate
 
 brew install python@3.7

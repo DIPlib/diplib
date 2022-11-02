@@ -26,6 +26,7 @@ jobs:
 
       - name: Install
         # Install libraries and Python packages we need
+        # Note that twine and delocate and so on are installed by deploy_macos.sh
         run: |
           brew install libomp glfw
           python3 -m pip install numpy
