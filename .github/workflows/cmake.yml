@@ -38,7 +38,12 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         include:
+          - os: ubuntu-latest
+            n_cores: 2
+          - os: macos-latest
+            n_cores: 3
           - os: windows-latest
+            n_cores: 2
             dip_cmake_opts: -A x64 -DDIP_ENABLE_UNICODE=Off -DGLFW_INCLUDE_DIR="glfw-3.3.5.bin.WIN64/include" -DGLFW_LIBRARY="glfw-3.3.5.bin.WIN64/lib-vc2019/glfw3.lib"
             # Windows build must be 64-bit. We're also disabling Unicode because otherwise some tests fail.
       fail-fast: true
@@ -68,8 +73,7 @@ jobs:
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{matrix.dip_cmake_opts}} -DDIP_ENABLE_ASSERT=ON -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=ON
 
       - name: Build
-        # TODO: on macOS  there are 3 cores, use them all
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 2
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{matrix.n_cores}}
 
       - name: Test
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target check
