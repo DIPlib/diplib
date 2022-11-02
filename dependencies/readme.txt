@@ -11,6 +11,6 @@ zlib/       zlib 1.2.11       http://www.zlib.net
 
 pocketfft/  PocketFFT for C++ https://gitlab.mpcdf.mpg.de/mtr/pocketfft/-/tree/cpp
 
-pybind11/   pybind11 2.9.0    https://github.com/pybind/pybind11
+pybind11/   pybind11 2.10.1   https://github.com/pybind/pybind11
 
 We don't include test code, examples, etc. from the original source distributions.

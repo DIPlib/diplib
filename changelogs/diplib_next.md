@@ -147,6 +147,7 @@ title: "Changes DIPlib 3.x.x"
 
 - Updated included *Eigen* to 3.4. This version of *Eigen* allows for negative strides.
 
+- Updated *pybind* to 2.10.1, to support Python 3.11.
 
 
 ## Changes to *DIPimage*
