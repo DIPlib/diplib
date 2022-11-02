@@ -201,6 +201,25 @@ dip::Polygon ChainCode::Polygon() const {
    return polygon;
 }
 
+CoordinateArray ChainCode::Coordinates() const {
+   if( Empty() ) {
+      return {};
+   }
+   CoordinateArray out;
+   out.reserve( codes.size() + 1 );
+   VertexInteger const* freeman = is8connected ? deltas8 : deltas4;
+   VertexInteger pos = start;
+   for( auto code : codes ) {
+      out.push_back( { static_cast< dip::uint >( pos.x ), static_cast< dip::uint >( pos.y ) } );
+      pos += freeman[ code ];
+   }
+   if( pos != start ) {
+      // The last pixel we only output if it's not the same as the first.
+      out.push_back( { static_cast< dip::uint >( pos.x ), static_cast< dip::uint >( pos.y ) } );
+   }
+   return out;
+}
+
 }
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
@@ -226,15 +245,33 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to polygon") {
    dip::ChainCode cc8;
    cc8.codes = { 0, 0, 7, 6, 6, 5, 4, 4, 3, 2, 2, 1 }; // A chain code that is a little circle.
    cc8.is8connected = true;
+   cc8.start = { 10, 12 };
    dip::ChainCode cc4;
    cc4.codes = { 0, 0, 3, 0, 3, 3, 2, 3, 2, 2, 1, 2, 1, 1, 0, 1 }; // A 4-connected chain code for the same object.
    cc4.is8connected = false;
+   cc4.start = { 10, 12 };
    auto P8 = cc8.Polygon();
    auto P4 = cc4.Polygon();
    DOCTEST_REQUIRE( P8.vertices.size() == P4.vertices.size() );
    for( dip::uint ii = 0; ii < P8.vertices.size(); ++ii ) {
       DOCTEST_CHECK( P8.vertices[ ii ] == P4.vertices[ ii ] );
    }
+
+   auto C8 = cc8.Coordinates();
+   DOCTEST_REQUIRE( C8.size() == cc8.codes.size() );
+   DOCTEST_CHECK( C8[ 0 ] == dip::UnsignedArray( { 10, 12 } ));
+   DOCTEST_CHECK( C8[ 1 ] == dip::UnsignedArray( { 11, 12 } ));
+   DOCTEST_CHECK( C8[ 2 ] == dip::UnsignedArray( { 12, 12 } ));
+   DOCTEST_CHECK( C8[ 3 ] == dip::UnsignedArray( { 13, 13 } ));
+   DOCTEST_CHECK( C8.back() == dip::UnsignedArray( { 9, 13 } ));
+
+   auto C4 = cc4.Coordinates();
+   DOCTEST_REQUIRE( C4.size() == cc4.codes.size() );
+   DOCTEST_CHECK( C4[ 0 ] == dip::UnsignedArray( { 10, 12 } ));
+   DOCTEST_CHECK( C4[ 1 ] == dip::UnsignedArray( { 11, 12 } ));
+   DOCTEST_CHECK( C4[ 2 ] == dip::UnsignedArray( { 12, 12 } ));
+   DOCTEST_CHECK( C4[ 3 ] == dip::UnsignedArray( { 12, 13 } ));
+   DOCTEST_CHECK( C4.back() == dip::UnsignedArray( { 10, 13 } ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

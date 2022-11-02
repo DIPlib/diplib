@@ -974,6 +974,13 @@ struct DIP_NO_EXPORT ChainCode {
       return out;
    }
 
+   /// \brief Returns the pixel coordinates for each of the pixels represented in the chain code.
+   ///
+   /// Very large coordinate values will be returned if the chain code runs outside the image
+   /// on the left or top (i.e. if the pixels encoded by the chain code have negative coordinates)
+   /// because the output object uses unsigned integers.
+   DIP_EXPORT CoordinateArray Coordinates() const;
+
    /// \brief Create a new chain code that goes around the object in the same direction, but traces the background
    /// pixels that are 4-connected to the object. That is, it grows the object by one pixel. Only defined for
    /// 8-connected chain codes.

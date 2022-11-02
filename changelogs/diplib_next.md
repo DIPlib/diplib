@@ -62,6 +62,9 @@ title: "Changes DIPlib 3.x.x"
   as the parameters with the same name in `dip::ConvolveFT()`: it is now possible to apply Gaussian smoothing to
   an image that is already in the frequency domain.
 
+- Added `dip::ChainCode::Coordinates()`, which returns an array with the coordinates of each pixel represented by
+  the chain code.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
@@ -190,6 +193,8 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip.InverseFourierTransform()`.
 
 - Added `dip.GaussFT()` and `dip.GaussIIR()`.
+
+- Added `dip.ChainCode.Coordinates()`.
 
 ### Changed functionality
 

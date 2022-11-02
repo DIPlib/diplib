@@ -436,6 +436,7 @@ void init_measurement( py::module& m ) {
    chain.def( "LongestRun", &dip::ChainCode::LongestRun );
    chain.def( "Polygon", &dip::ChainCode::Polygon );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ));
+   chain.def( "Coordinates", &dip::ChainCode::Coordinates );
    chain.def( "Offset", &dip::ChainCode::Offset );
 
    // Chain code functions
