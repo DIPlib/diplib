@@ -54,9 +54,9 @@ namespace dip {
 ///       ([Wikipedia](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) has the same code).
 ///     - T. B. Terriberry, ["Computing higher-order moments online"](http://people.xiph.org/~tterribe/notes/homs.html), 2008.
 ///     - Philippe P. Pébay, "Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
-///       Technical Report [SAND2008-6212](http://infoserve.sandia.gov/sand_doc/2008/086212.pdf), Sandia National Laboratories, September 2008.
+///       Technical Report [SAND2008-6212](https://www.osti.gov/biblio/1028931), Sandia National Laboratories, September 2008.
 ///     - Wikipedia: ["Skewness", section "Sample skewness"](https://en.wikipedia.org/wiki/Skewness#Sample_skewness).
-///     - Wikipedia: ["Kurtosis", section "Estimators of population kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis).
+///     - Wikipedia: ["Kurtosis", section "Sample kurtosis"](https://en.wikipedia.org/wiki/Kurtosis#Sample_kurtosis).
 class DIP_NO_EXPORT StatisticsAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
