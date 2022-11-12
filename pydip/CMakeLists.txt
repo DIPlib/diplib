@@ -1,4 +1,5 @@
 # (c)2017-2021, Flagship Biosciences, Inc., written by Cris Luengo.
+# (c)2018-2022, Wouter Caarls.
 # (c)2022, Cris Luengo.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +15,49 @@
 # limitations under the License.
 
 
+# CMakeLists file for DIPlib 3
+cmake_minimum_required(VERSION 3.5)
+if(POLICY CMP0068)
+   cmake_policy(SET CMP0068 NEW)
+endif()
+
+project(PyDIP)
+
+# Debug or Release?
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# RPATH
+set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
+
+# Extend CMake module path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../tools")
+
+include(${CMAKE_CURRENT_LIST_DIR}/../tools/compiler_flags.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../tools/update_deps_file.cmake)
+
+# Python
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../dependencies/pybind11/tools")
+set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.11 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
+# CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
+find_package(PythonLibsNew REQUIRED)
+
+# Pybind11
 set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION}) # Avoid a warning message
-add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../dependencies/pybind11" "${PROJECT_BINARY_DIR}/pybind11" EXCLUDE_FROM_ALL)
+
+# DIPlib
+if(NOT TARGET DIP)
+   find_package(DIPlib REQUIRED)
+   add_library(DIP ALIAS DIPlib::DIP)
+   if(TARGET DIPlib::DIPviewer)
+      add_library(DIPviewer ALIAS DIPlib::DIPviewer)
+   endif()
+   if(TARGET DIPlib::DIPjavaio)
+      add_library(DIPjavaio ALIAS DIPlib::DIPjavaio)
+   endif()
+endif()
 
 # Find sources
 file(GLOB DIP_PYTHON_SRC "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/*.h")
@@ -52,7 +94,7 @@ set_target_properties(PyDIP_bin PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILI
 add_custom_target(PyDIP DEPENDS PyDIP_bin)
 
 # Repeat the above for PyDIPviewer
-if(DIP_BUILD_DIPVIEWER)
+if(TARGET DIPviewer)
 
    # Find sources
    file(GLOB DIP_PYTHON_VIEWER_SRC "${CMAKE_CURRENT_LIST_DIR}/src/viewer/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/viewer/*.h")
@@ -72,7 +114,7 @@ if(DIP_BUILD_DIPVIEWER)
 endif()
 
 # Repeat the above for PyDIPjavaio
-if(DIP_BUILD_JAVAIO)
+if(TARGET DIPjavaio)
 
    # Find sources
    file(GLOB DIP_PYTHON_JAVAIO_SRC "${CMAKE_CURRENT_LIST_DIR}/src/javaio/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/src/javaio/*.h")
@@ -106,7 +148,7 @@ file(GENERATE
 file(GENERATE
    OUTPUT "$<TARGET_FILE_DIR:PyDIP_bin>/cmake_pip_install.cmake"
    CONTENT "file(STRINGS $<TARGET_FILE_DIR:PyDIP_bin>/wheel.txt PYDIP_WHEEL_NAME)
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade --force-reinstall \${PYDIP_WHEEL_NAME})"
+   execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --upgrade --force-reinstall \${PYDIP_WHEEL_NAME})"
 )
 
 add_custom_target(staging
@@ -125,20 +167,20 @@ add_custom_target(pip_uninstall
                   COMMAND ${PYTHON_EXECUTABLE} -m pip uninstall diplib)
 
 # PyDIP unit tests
-if(DIP_ENABLE_DOCTEST)
+# Resolve standard CMake variables
+configure_file(${CMAKE_CURRENT_LIST_DIR}/test/unit_tests.py.in ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.py.out @ONLY)
 
-   # Resolve standard CMake variables
-   configure_file(${CMAKE_CURRENT_LIST_DIR}/test/unit_tests.py.in ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.py.out @ONLY)
+# Resolve generator expressions
+file(GENERATE
+   OUTPUT $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
+   INPUT ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.py.out
+)
 
-   # Resolve generator expressions
-   file(GENERATE
-      OUTPUT $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
-      INPUT ${CMAKE_CURRENT_BINARY_DIR}/unit_tests.py.out
-   )
-
-   add_custom_target(PyDIP_check
-                     COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${PYTHON_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
-                     DEPENDS staging)
+add_custom_target(PyDIP_check
+                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin> ${PYTHON_EXECUTABLE} $<TARGET_FILE_DIR:PyDIP_bin>/unit_tests.py
+                  DEPENDS staging)
+if(TARGET check)
    add_dependencies(check PyDIP_check)
-
+else()
+   add_custom_target(check DEPENDS PyDIP_check)
 endif()

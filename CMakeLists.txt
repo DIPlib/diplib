@@ -53,38 +53,6 @@ set(DIP_DESTINATIONS
     LIBRARY DESTINATION ${LIBRARY_DESTINATION}
     ARCHIVE DESTINATION ${ARCHIVE_DESTINATION})
 
-# Compiler flags
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matches "AppleClang"
-   # Compiler flags for Clang C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion -pedantic -Wno-c++17-extensions")
-   #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
-   set(CMAKE_C_FLAGS_SANITIZE "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
-   set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-   # Compiler flags for GNU C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -pedantic")
-   # "#pragma omp" causes a warning if OpenMP is not enabled.
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
-   # "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
-   # "DIP_EXPORT" in forward class declaration sometimes causes a warning in GCC 6.0 and 7.0.
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
-   #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage; to see which flags are enabled: gcc -march=native -Q --help=target
-   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
-   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
-   set(CMAKE_C_FLAGS_SANITIZE "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
-   set(CMAKE_CXX_FLAGS_SANITIZE "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-   # Compiler flags for Intel C++
-   # TODO: compiler flags for Intel compiler
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-   # Compiler flags for Visual Studio C++
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-   add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
-   add_definitions(/wd4180) # Disable "qualifier applied to function type has no meaning; ignored" that happens in union_find.h as used in maxima.cpp
-   add_definitions(/EHa) # This exception handling model apparently is what MATLAB uses (default is /EHsc)
-   add_definitions(/MP) # Enable Multi-Processor compilation
-endif()
-
 # RPATH
 #set(CMAKE_MACOSX_RPATH 1) # This is the default
 #set(CMAKE_SKIP_BUILD_RPATH 0)
@@ -92,7 +60,7 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
 # Extend CMake module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/tools")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/tools")
 
 # OpenMP
 find_package(OpenMP)
@@ -100,7 +68,8 @@ if(OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
    set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
 endif()
 
-include(tools/update_deps_file.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/tools/compiler_flags.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/tools/update_deps_file.cmake)
 
 
 ### DIPlib library
@@ -164,11 +133,7 @@ endif()
 
 ### PyDIP module for Python
 
-# Some code modified from the Pybind11 cmake file, to determine if Python is installed.
-# Pybind11 cmake file calls `find_package` for Python with `REQUIRED`, which causes the
-# build to fail if Python is not installed. Here we disable the `DIP_BUILD_PYDIP` setting
-# if there is no Python libraries.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/pybind11/tools")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/dependencies/pybind11/tools")
 set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.11 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
    # CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
 find_package(PythonLibsNew)
@@ -256,10 +221,10 @@ else()
    # On Linux (or any other platform) we use a tar file
    set(CPACK_GENERATOR "TBZ2")
 endif()
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_LIST_DIR}/README.md")
 set(CPACK_PACKAGE_VENDOR "The DIPlib Project")
 set(CPACK_PACKAGE_CONTACT "https://github.com/DIPlib/DIPlib")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE.txt")
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 string(TIMESTAMP TODAYS_DATE "%Y%m%d" UTC)
