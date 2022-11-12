@@ -1,6 +1,5 @@
-import sys, platform, os
+import os
 from setuptools import setup, Extension, Distribution
-from wheel.bdist_wheel import bdist_wheel
 
 # https://stackoverflow.com/questions/51939257/how-do-you-get-the-filename-of-a-python-wheel-when-running-setup-py
 def wheel_name(**kwargs):
@@ -33,7 +32,7 @@ if @pydip_wheel_include_libs@:
 
 setup_kwargs = dict(
     name="diplib",
-    version="${PROJECT_VERSION}",
+    version="${DIPlib_VERSION}",
     description="Python bindings for DIPlib, the quantitative image analysis library",
     long_description=long_description,
     long_description_content_type="text/markdown",

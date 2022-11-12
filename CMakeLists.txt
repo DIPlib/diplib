@@ -143,6 +143,7 @@ if(PYTHONLIBS_FOUND)
 endif()
 
 if(DIP_BUILD_PYDIP)
+   set(DIPlib_VERSION ${PROJECT_VERSION})
    add_subdirectory(pydip)
 endif()
 

@@ -1,6 +1,6 @@
 include("${CMAKE_CURRENT_LIST_DIR}/DIPlibTargets.cmake")
 
-set(_supported_components DIP DIPviewer)
+set(_supported_components DIP DIPviewer DIPjavaio)
 
 foreach(_comp ${DIPlib_FIND_COMPONENTS})
    if (NOT _comp IN_LIST _supported_components)
