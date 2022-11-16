@@ -1,16 +1,34 @@
-# Building the *DIPlib* project on Linux
+\comment (c)2017-2022, Cris Luengo.
+
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
+
+
+\page building_linux Building the *DIPlib* project on Linux
 
 Compiling *DIPlib* requires a few programs that often are not present on a bare Linux
 installation. It depends on your distribution how you can obtain these. Below we give
-instructions for Ubuntu (*TODO: add instructions for other distros*).
+instructions for Ubuntu.
 
-See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
-on the compilation options.
+!!! todo
+    Add instructions for other distros.
+
+See \ref building_cmake for additional information on the build targets and *CMake* configuration options.
 
 Everything here requires a shell (such as Bash), which typically runs inside a terminal
 window. If you're using Linux we'll assume you know where to find this.
 
-## Installing build tools and dependencies on Ubuntu
+
+\section linux_init Installing build tools and dependencies on Ubuntu
 
 Type the following command in your shell:
 ```bash
@@ -31,7 +49,7 @@ sudo apt install freeglut3-dev
 ```
 
 To compile the documentation yourself (note that the compiled documentation can be found
-online), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
+online), you need *dox++*. See \ref building_documentation for details.
 
 Finally, even if the `python3` program is already installed, you might need to
 install the *Python 3* header files and static library:
@@ -39,7 +57,8 @@ install the *Python 3* header files and static library:
 sudo apt install python3-dev
 ```
 
-## Cloning the repository
+
+\section linux_git Cloning the repository
 
 Next, get the source repository from *GitHub*:
 ```bash
@@ -49,9 +68,10 @@ git clone https://github.com/DIPlib/diplib.git
 ```
 This creates a directory `src/diplib` in your home directory.
 
-## Building
 
-As explained in the [`INSTALL.md`](INSTALL.md) file, type
+\section linux_build Building
+
+To build, run `cmake` and `make` from a build directory:
 ```bash
 mkdir ~/src/diplib/target
 cd ~/src/diplib/target
@@ -69,8 +89,8 @@ This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documen
 under the `lib`, `include` and `share` directories in your home directory.
 
 Before running `make`, examine the output of `cmake` to verify all the features you need are enabled,
-and that your chosen dependencies were found. The [`INSTALL.md`](INSTALL.md) file summarizes all the
-CMake options to manually specify paths and configure your build.
+and that your chosen dependencies were found. See \ref cmake_variables for a summary of all the
+*CMake* options to manually specify paths and configure your build.
 
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building
 and installing, run
@@ -86,7 +106,8 @@ computer, and possibly not work at all.
 If you build a static version of the *DIPlib* library, *DIPimage* and *PyDIP* will not work
 correctly.
 
-## Enabling *Bio-Formats*
+
+\section linux_bioformats Enabling *Bio-Formats*
 
 First, make sure you have the *Java 8 SDK* (*JDK 8*) installed, you can obtain it from the
 [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html) for commercial
@@ -109,7 +130,8 @@ cmake .. -DBIOFORMATS_JAR=$HOME/java/bioformats_package.jar -DJAVA_HOME=/opt/jvm
 Note that these arguments to `cmake` must be combined with the arguments mentioned earlier, into a single,
 long command line argument.
 
-## Using *DIPimage*
+
+\section linux_dipimage Using *DIPimage*
 
 Once the `install` target has finished building and installing the toolbox, start
 *MATLAB*. Type the following command:
@@ -119,8 +141,7 @@ addpath('/Users/<name>/dip/share/DIPimage')
 This will make the toolbox available (replace `/Users/<name>/dip` with the
 actual path you installed to).
 
-To get started using *DIPimage*, read the
-[*DIPimage User Manual*](https://diplib.org/diplib-docs/dipimage_user_manual.html),
+To get started using *DIPimage*, read the \ref dipimage_user_manual,
 and look through the help, starting at
 ```matlab
 help DIPimage
@@ -131,14 +152,14 @@ dipimage
 ```
 
 If you see error messages such as
-
-> Invalid MEX-file '/Users/\<name>/dip/share/DIPimage/measure.mexa64':
-> \<path>/bin/glnxa64/../../sys/os/glnxa64/libstdc++.so.6: version `GLIBCXX_3.4.26' not found
-> (required by /Users/\<name>/dip/share/DIPimage/../../lib/libDIP.so)
-
+```text
+Invalid MEX-file '/Users/\<name>/dip/share/DIPimage/measure.mexa64':
+/<path>/bin/glnxa64/../../sys/os/glnxa64/libstdc++.so.6: version `GLIBCXX_3.4.26' not found
+(required by /Users/\<name>/dip/share/DIPimage/../../lib/libDIP.so)
+```
 then please read this next section.
 
-### *MATLAB* and the *GCC* libraries
+\subsection linux_matlab_gcc  *MATLAB* and the *GCC* libraries
 
 Skip this section if you do not have any problems running *DIPimage* functions.
 
@@ -164,7 +185,8 @@ the file `libstdc++.*`, and possibly also the files `libg2c.*` and `libgcc_s*` (
 them back if things go sour). Note that you need to restart *MATLAB* after making this change. You can discover
 what `<matlabroot>` is by typing `matlabroot` at the *MATLAB* command prompt.
 
-## Using *PyDIP*
+
+\section linux_pydip Using *PyDIP*
 
 Once the `pip_install` target has finished installing, start *Python*.
 The following command will import the *PyDIP* package as `dip`, which is shorter to
@@ -177,3 +199,5 @@ To get started using *PyDIP*, look through the help, starting at
 ```python
 help(dip)
 ```
+The \ref pydip_user_manual is still quite short, but does contain some important
+information to get you started.

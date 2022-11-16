@@ -36,10 +36,10 @@ See [the *DIPlib* website](https://diplib.org/) for more information.
 ## Building and using the project
 
 To build the library you will need a C++14 compliant compiler and *CMake*.
-Please see [`INSTALL.md`](INSTALL.md) for detailed instructions.
+See [Building the *DIPlib* library](https://diplib.org/diplib-docs/building_diplib.html) for detailed instructions.
 
-When linking against the *DIPlib* library without using CMake, it is important to set a few preprocessor
-macros. Please read at the bottom of [`INSTALL.md`](INSTALL.md) for details.
+When linking against the *DIPlib* library without using *CMake*, it is important to set a few preprocessor
+macros. See [Linking against the *DIPlib* library](https://diplib.org/diplib-docs/building_diplib.html#linking_diplib)
 
 
 ## Contributing

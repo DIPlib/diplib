@@ -1,17 +1,32 @@
-# Building the *DIPlib* project on macOS
+\comment (c)2017-2022, Cris Luengo.
+
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
+
+
+\page building_macos Building the *DIPlib* project on macOS
 
 Compiling *DIPlib* requires a few programs that do not come preinstalled on macOS.
 Here we offer a simple way to install these programs.
 
-See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
-on the compilation options.
+See \ref building_cmake for additional information on the build targets and *CMake* configuration options.
 
 We mostly use the command line here, which you will find in the terminal window. To
 open a terminal window, press \<Command>-\<Space> to bring up the *Spotlight* search tool,
 type `terminal`, and press \<Enter>. Alternatively, in *Finder*, go to the 'Applications'
 folder, find the 'Utilities' folder in it, and the 'Terminal' app inside it.
 
-## Computers with an Apple Silicon chip (M1, M1 Pro)
+
+\section macos_silicon Computers with an Apple Silicon chip (M1, M1 Pro)
 
 If you are building *DIPlib* for use in C++ or *Python* on a Apple Silicon computer,
 you don't need to do anything  special. The instructions below will result in native
@@ -48,12 +63,13 @@ returning  you to the previous, native shell in that same terminal window.
 
 Alternatively, you can add `-DCMAKE_OSX_ARCHITECTURES=x86_64` to your `cmake` command
 (see "Building" below). This will have all tools run in native mode, but cross-compile
-to produce x86_64 binaries. This works, but I had trouble getting CMake to identify
+to produce x86_64 binaries. This works, but I had trouble getting *CMake* to identify
 the right version of all the libraries, and attempting to link to arm64 libraries,
 which of course doesn't work. I was able to build *DIPimage* this way, by disabling
 all optional components that depend on external libraries.
 
-## *Xcode*
+
+\section macos_xcode *Xcode*
 
 You can install *Xcode* from the App Store if you don't already have it installed.
 However, you will not need all of *Xcode*, it is the command line tools that we're after.
@@ -68,7 +84,8 @@ The developer command line tools include `git`, `make`, compilers (`clang`) and 
 
 However, `cmake` is not included in this package.
 
-## *Homebrew*
+
+\section macos_homebrew *Homebrew*
 
 To install *CMake*, we recommend you use *Homebrew*. If you don't have *Homebrew*
 installed yet, type the following in a terminal window (or rather, copy-paste it):
@@ -88,9 +105,10 @@ brew install glfw
 ```
 
 To compile the documentation yourself (note that the compiled documentation can be found
-online), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
+online), you need *dox++*. See \ref building_documentation for details.
 
-Finally, macOS comes with *Python 2*. We recommend *Python 3*:
+Finally, if you have a version of macOS that is older than 12.0, then you have *Python 2* by default.
+You need to install *Python 3*:
 ```bash
 brew install python3
 ```
@@ -99,12 +117,13 @@ Other useful tools available through *Homebrew* are *Valgrind*, *QCacheGrind*, a
 tools included in the `binutils` package, though we won't use any of them in this
 guide.
 
-## *OpenMP*
 
-*Clang*, as provided with *Xcode*, does support *OpenMP*, but does not provide the OpenMP library.
+\section macos_openmp *OpenMP*
+
+*Clang*, as provided with *Xcode*, does support *OpenMP*, but does not provide the *OpenMP* library.
 If you want to enable parallel processing within *DIPlib*, you have two options:
 
-1. Install the OpenMP library for use with *Xcode*'s *Clang*:
+1. Install the *OpenMP* library for use with *Xcode*'s *Clang*:
    ```bash
    brew install libomp
    ```
@@ -118,7 +137,8 @@ If you want to enable parallel processing within *DIPlib*, you have two options:
 
 In our experience, *Clang* is faster at compiling, but *GCC* usually produces slightly faster code.
 
-## Cloning the repository
+
+\section macos_git Cloning the repository
 
 Next, get the source repository from *GitHub*:
 ```bash
@@ -128,9 +148,10 @@ git clone https://github.com/DIPlib/diplib.git
 ```
 This creates a directory `src/diplib` in your home directory.
 
-## Building
 
-As explained in the [`INSTALL.md`](INSTALL.md) file, type
+\section macos_build Building
+
+To build, run `cmake` and `make` from a build directory:
 ```bash
 mkdir ~/src/diplib/target
 cd ~/src/diplib/target
@@ -148,8 +169,8 @@ This will install *DIPlib*, *DIPviewer*, *DIPjavaio*, *DIPimage* and the documen
 under the `dip` directory in your home directory.
 
 Before running `make`, examine the output of `cmake` to verify all the features you need are enabled,
-and that your chosen dependencies were found. The [`INSTALL.md`](INSTALL.md) file summarizes all the
-CMake options to manually specify paths and configure your build.
+and that your chosen dependencies were found. See \ref cmake_variables for a summary of all the
+*CMake* options to manually specify paths and configure your build.
 
 *PyDIP* is installed separately through `pip`. Once the `install` target has finished building
 and installing, run
@@ -171,9 +192,10 @@ line. By default, `cmake` will find the compiler that came with *Xcode*. These
 two options specify that you want to use the *GCC* compilers instead.
 (**Note**: at the time of this writing, `gcc-11` and `g++-11` were the executables installed by
 the `gcc` package. This will change over time, as new versions of *GCC* are adopted
-by HomeBrew. Adjust as necessary.)
+by *HomeBrew*. Adjust as necessary.)
 
-## Enabling *Bio-Formats*
+
+\section macos_bioformats Enabling *Bio-Formats*
 
 First, make sure you have the *Java 8 SDK* (*JDK 8*) installed, you can obtain it from the
 [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html) for commercial
@@ -201,7 +223,8 @@ legacy *Java 6*, then your *Java 8* is not configured properly.
 [See here](https://oliverdowling.com.au/2014/03/28/java-se-8-on-mac-os-x/) for instructions
 on how to set it up.
 
-## Using *DIPimage*
+
+\section macos_dipimage Using *DIPimage*
 
 Once the `install` target has finished building and installing the toolbox, start
 *MATLAB*. Type the following command:
@@ -211,8 +234,7 @@ addpath('/Users/<name>/dip/share/DIPimage')
 This will make the toolbox available (replace `/Users/<name>/dip` with the
 actual path you installed to).
 
-To get started using *DIPimage*, read the
-[*DIPimage User Manual*](https://diplib.org/diplib-docs/dipimage_user_manual.html),
+To get started using *DIPimage*, read the \ref dipimage_user_manual,
 and look through the help, starting at
 ```matlab
 help DIPimage
@@ -222,7 +244,8 @@ Or start the GUI:
 dipimage
 ```
 
-## Using *PyDIP*
+
+\section macos_pydip Using *PyDIP*
 
 Once the `pip_install` target has finished installing, start *Python*.
 The following command will import the *PyDIP* package as `dip`, which is shorter to
@@ -235,3 +258,5 @@ To get started using *PyDIP*, look through the help, starting at
 ```python
 help(dip)
 ```
+The \ref pydip_user_manual is still quite short, but does contain some important
+information to get you started.

@@ -67,10 +67,10 @@ In *DIPlib 2*, (written in C), all functions returned an
 error code, and so output values had to be function arguments
 (style 1). But in C++ we have exceptions to handle error conditions, and so
 are free to have an image as the return value of the function (style 2).
-However, the advantage of style 1 is too large to ignore. Therefore, we have
-kept the function signature style (and argument order) of *DIPlib 2*.
-However, we have written a small, inline wrapper function for most of the image
-filters that follow the signature style 2. Such a wrapper is very straight-forward:
+Because, the advantage of style 1 is too large to ignore, we have
+kept the function signature style (and argument order) of *DIPlib 2*, but
+additionally we have written a small, inline wrapper function for each of the functions
+that follows the signature style 2. Such a wrapper is very straight-forward:
 
 ```cpp
 inline dip::Image Filter( dip::Image &in, int size ) {
@@ -81,7 +81,7 @@ inline dip::Image Filter( dip::Image &in, int size ) {
 ```
 
 We have chosen not to pollute the documentation with these wrapper functions.
-However, if a function `Filter( in, out )` exists, then you can assume that
+If a function `Filter( in, out )` exists, then you can assume that
 there will also be a function `out = Filter( in )`.
 
 
@@ -91,11 +91,14 @@ there will also be a function `out = Filter( in )`.
 
 Some libraries put all image processing/analysis functionality into the
 image object as methods. The idea is to filter an image by
-`img.Gauss(sigma)`. This is a terrible idea for many reasons: it's ugly, one
-never knows if the image object is modified by the method or not, and the core
-include file for the library changes when adding any type of functionality,
-forcing recompilation of the whole library. Filters should be functions, not
-methods.
+`img.Gauss(sigma)`. This is a terrible idea for many reasons:
+
+1. one never knows if the image object is modified by the method or not,
+2. the core include file for the library changes when adding any type of functionality,
+   forcing recompilation of the whole library, and
+3. it's ugly.
+
+Filters should be functions, not methods.
 
 In *DIPlib*, methods to the core \ref dip::Image class query and manipulate image
 properties, not pixel data (with the exception of \ref dip::Image::Copy and
@@ -108,7 +111,7 @@ the object-oriented approach to an extreme, where each algorithm is encapsulated
 in an object, and parameters to the algorithm are set through object methods.
 This leads to very verbose code that is not readable. For example, compare the
 two code snippets below (function object version is not *ITK* code, but a simplified
-version of that that ignores *ITK*'s templates and processing pipeline):
+version that ignores *ITK*'s templates and processing pipeline):
 
 ```cpp
 lib::GaussianFilter gauss;

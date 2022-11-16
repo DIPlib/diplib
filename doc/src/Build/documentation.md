@@ -1,13 +1,29 @@
-# Building the *DIPlib* documentation
+\comment (c)2017-2022, Cris Luengo.
+
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
+
+
+\page building_documentation Building the *DIPlib* documentation
 
 The documentation is built using [*dox++*](https://crisluengo.github.io/doxpp/), which
 requires *Python 3* and a set of packages. It also requires a *LaTeX* installation to render
 the equations. Here we show how to install dependencies on Ubuntu Linux and macOS. For
 other Linux distributions the instructions are similar. We have not yet tried building
 the documentation on Windows, if you manage to get that done, please write down some
-instructions in this file.
+instructions below.
 
-## Installing the dependencies
+
+\section apidoc_dependencies Installing the dependencies
 
 *Python 3* can be installed on Ubuntu with
 ```bash
@@ -44,7 +60,8 @@ renders equations using *LaTeX*:
 tlmgr install standalone preview ucs xkeyval currfile filehook newtx fontaxes xstring
 ```
 
-## Installing *dox++*
+
+\section apidoc_doxpp Installing *dox++*
 
 This tool can be installed anywhere. For the purposes of these instructions, we will put it into `/opt/`,
 but you can put it in your home directory as well. All that is needed is cloning the repository:
@@ -55,7 +72,8 @@ git clone https://github.com/crisluengo/doxpp.git
 This will create the directory `/opt/doxpp/`, containing the two executables `dox++parse` and `dox++html`.
 We will need to tell *CMake* where to find these tools.
 
-## Configuring *CMake*
+
+\section apidoc_cmake Configuring *CMake*
 
 To set up *CMake* to build the documentation, we need to tell it where the *dox++* programs are. From
 your *DIPlib* build directory,
@@ -70,7 +88,8 @@ Documentation installed to /usr/local/share/doc/DIPlib
 ```
 (or something similar, depending on the chosen installation path.)
 
-## Building the documentation
+
+\section apidoc_building Building the documentation
 
 Once everything is set up, the documentation is build with
 ```bash
@@ -94,7 +113,8 @@ Other errors are not fatal. Some errors even are irrelevant because they relate 
 members. If Clang produces an error while parsing a header file, the contents of that header file will
 not make it into the documentation.
 
-## Building the official documentation
+
+\section apidoc_official Building the official documentation
 
 The official documentation at [`diplib.org/diplib-docs/`](https://diplib.org/diplib-docs/) is uploaded
 to [the `diplib-docs` GitHub repository](https://github.com/DIPlib/diplib-docs).
@@ -107,4 +127,6 @@ requires that their dependencies be present. Therefore, it is necessary to have
 [*MATLAB*](https://www.mathworks.com/products/matlab.html), [*OpenCV*](https://opencv.org) and
 [*Vigra*](http://ukoethe.github.io/vigra/) installed, and the "include directories" option in the
 `doc/dox++config.in` file adjusted so that Clang runs through all header files without error.
-\[TODO: Have *CMake* write all configured include directories into the `dox++config` file.\]
+
+!!! todo
+    Have *CMake* write all configured include directories into the `dox++config` file.

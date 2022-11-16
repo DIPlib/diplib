@@ -1,42 +1,59 @@
-# Building the *DIPlib* project on Windows
+\comment (c)2017-2022, Cris Luengo.
+
+\comment Licensed under the Apache License, Version 2.0 [the "License"];
+\comment you may not use this file except in compliance with the License.
+\comment You may obtain a copy of the License at
+\comment
+\comment    http://www.apache.org/licenses/LICENSE-2.0
+\comment
+\comment Unless required by applicable law or agreed to in writing, software
+\comment distributed under the License is distributed on an "AS IS" BASIS,
+\comment WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+\comment See the License for the specific language governing permissions and
+\comment limitations under the License.
+
+
+\page building_windows Building the *DIPlib* project on Windows
 
 Compiling *DIPlib* requires a few programs that do not come preinstalled on Windows.
 We describe here how to obtain these programs, and how to use them to compile the
 *DIPlib* project.
 
-See [`INSTALL.md`](INSTALL.md) for general concepts and additional information
-on the compilation options.
+See \ref building_cmake for additional information on the build targets and *CMake* configuration options.
 
-## *Visual Studio*
 
-You can download the free *MS Visual Studio Community Edition* here:
-https://www.visualstudio.com/vs/community/.
+\section windows_msvc *Visual Studio*
 
-We recommend that you use at least the 2019 edition. In principle you need
-at least the 2015 edition. However, *DIPlib* uses some advanced C++14 constructs
-that will not compile with older versions of *MSVC*, and it is necessary to turn
-off some components to compile the project with those.
+You can download the free *MS Visual Studio Community Edition*
+[from its website](https://www.visualstudio.com/vs/community/).
+
+We recommend that you use at least the 2019 edition. We were able to build with the
+2015 and 2017 editions, but had to turn off some components that would not build because
+they used some advanced C++14 constructs that will not compile with older versions of *MSVC*.
 
 Download and install as directed. Select the "Desktop C++ applications" option.
 Optionally, you can select to install *Python 3* as well. You can do this if you
 don't have *Python* but want to compile the *PyDIP* interface.
 
 Make sure you select the *Git* option as well. If you don't have *Git* installed,
-and cannot install it through *Visual Studio*, download and install it from here:
-https://git-scm.com/downloads.
+and cannot install it through *Visual Studio*,
+[download and install it from here](https://git-scm.com/downloads).
 
-## *CMake*
 
-You can obtain the latest *CMake* here: https://cmake.org/download/.
+\section windows_cmake *CMake*
+
+You can obtain the latest *CMake* [on its website](https://cmake.org/download/).
 
 Again, download and install as directed.
 
-## *dox++*
+
+\section windows_doxpp *dox++*
 
 To compile the documentation yourself (which shouldn't be necessary, but some IDEs
-might require), you need *dox++*. See [`INSTALL_documentation.md`](INSTALL_documentation.md) for details.
+might require), you need *dox++*. See \ref building_documentation for details.
 
-## Cloning the repository
+
+\section windows_git Cloning the repository
 
 Next, get the source repository from *GitHub*. Open the "Git GUI" program on your
 start menu, and select "Clone existing repository". The source location is
@@ -46,26 +63,29 @@ start menu, and select "Clone existing repository". The source location is
 Pick any directory on your system as destination. For example `src\DIPlib` in
 your user directory. The standard clone type is OK to use. Click "Clone".
 
-## Installing dependencies
+
+\section windows_dependencies Installing dependencies
 
 Windows does not have a simple dependency installation system, so this step
 involves a lot of manual labor. Fortunately, all these dependencies are optional,
 so feel free to skip this section.
 
-- Download the *GLFW* binaries from here: http://www.glfw.org/download.html.
+- Download [the *GLFW* binaries](http://www.glfw.org/download.html).
 If you intend to build a 64-bit version of *DIPlib* (recommended!) get the 64-bit
 version of *GLFW*. Extract the ZIP file and note the location.
 
-- TODO: *FFTW3*.
-
-- Download the *Bio-Formats* library from here: https://www.openmicroscopy.org/bio-formats/downloads.
+- Download [the *Bio-Formats* library](https://www.openmicroscopy.org/bio-formats/downloads).
 Put it somewhere sensible and note the location. The same location (as well as the
 library installation path) will be used to find it during execution.
 
-## Creating *Visual Studio* project files
+!!! todo
+    Describe how to get *FFTW3*.
+
+
+\section windows_configure Creating *Visual Studio* project files
 
 Open the *CMake* program. Enter the name of the directory you cloned the repository
-in (in your example, `C:\Users\<name>\src\DIPlib`); you can browse to this directory.
+in (in our example, `C:\Users\<name>\src\DIPlib`); you can browse to this directory.
 Under "Where to build the binaries" enter a different, new directory. For example
 `target\DIPlib` in your user directory. Click on "Configure". A pop-up window will
 ask you for which generator to use. You should select your version of *Visual Studio*
@@ -108,7 +128,8 @@ correctly.
 
 Finally, click on "Generate" to create a *Visual Studio* solution file.
 
-## Building
+
+\section windows_build Building
 
 Find the file `DIPlib.sln` in the directory you selected as output for *CMake*, and
 open it. Also, *CMake* will prompt you to open this file after it has generated it.
@@ -129,7 +150,7 @@ If everything works correctly, you will have:
 - `C:\Users\<name>\DIPlib\bin`: `DIP.dll`, as well as `DIPviewer.dll`,
 `DIPjavaio.dll`, `DIPjavaio.jar`, `dipview.exe` and `dipviewjava.exe`.
 
-- `C:\Users\<name>\DIPlib\lib`: `DIP.lib`, as well as `DIPviewer.lib` and `DIPjavaio.lib`. 
+- `C:\Users\<name>\DIPlib\lib`: `DIP.lib`, as well as `DIPviewer.lib` and `DIPjavaio.lib`.
 
 - `C:\Users\<name>\DIPlib\include`: The *DIPlib* include files, which you'll need when
 building your own C++ programs using *DIPlib*.
@@ -139,7 +160,7 @@ building your own C++ programs using *DIPlib*.
 - In your selected *Python* package path: `diplib` (the *Python* module).
 
 
-## Using *DIPimage*
+\section windows_dipimage Using *DIPimage*
 
 Once the `INSTALL` target has finished building and installing the toolbox, start
 *MATLAB*. Type the following commands:
@@ -150,8 +171,7 @@ setenv('PATH',['C:\Users\<name>\DIPlib\bin',';',getenv('PATH')]);
 This will make the toolbox available (replace `C:\Users\<name>\DIPlib` with the
 actual path you installed to).
 
-To get started using *DIPimage*, read the
-[*DIPimage User Manual*](https://diplib.org/diplib-docs/dipimage_user_manual.html),
+To get started using *DIPimage*, read the \ref dipimage_user_manual,
 and look through the help, starting at
 ```matlab
 help DIPimage
@@ -161,7 +181,8 @@ Or start the GUI:
 dipimage
 ```
 
-## Using *PyDIP*
+
+\section windows_pydip Using *PyDIP*
 
 Once the `pip_install` target has finished installing, start *Python*.
 The following command will import the *PyDIP* package as `dip`, which is shorter to
@@ -174,3 +195,5 @@ To get started using *PyDIP*, look through the help, starting at
 ```python
 help(dip)
 ```
+The \ref pydip_user_manual is still quite short, but does contain some important
+information to get you started.
