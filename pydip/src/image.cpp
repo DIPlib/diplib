@@ -134,15 +134,15 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       PyGILState_STATE gstate;
       gstate = PyGILState_Ensure();
       Py_XDECREF( static_cast< PyObject* >( obj ));
-      PyGILState_Release(gstate);
+      PyGILState_Release( gstate);
    }};
    // Create an image with all of this.
    dip::Image out( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
 
    if( auto_tensor ) {
       // If it's a 3D image and the first or last dimension has <10 pixels, let's assume it's a tensor dimension:
-      if( (sizes.size() > 2) && (sizes[0] < 10 || sizes[ndim - 1] < 10) ) {
-         if( sizes[0] < sizes[ndim - 1] ) {
+      if(( sizes.size() > 2 ) && ( sizes[ 0 ] < 10 || sizes[ ndim - 1 ] < 10 )) {
+         if( sizes[ 0 ] < sizes[ ndim - 1 ] ) {
             out.SpatialToTensor( 0 );
          } else {
             out.SpatialToTensor( ndim - 1 );
@@ -292,6 +292,24 @@ void init_image( py::module& m ) {
    // Create new similar image
    img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
    img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
+   // Interop with NumPy
+   img.def( "__array_wrap__", []( dip::Image const& self, py::buffer& buf ) {
+               dip::Image out = BufferToImage( buf, false );
+               // Step 1: maybe one dimension is the tensor dimension
+               dip::uint nTensor = self.TensorElements();
+               for( dip::uint ii = 0; ii < out.Dimensionality(); ++ii ) {
+                  if( out.Size( ii ) == nTensor ) {
+                     out.SpatialToTensor( ii );
+                     out.ReshapeTensor( self.Tensor() );
+                     out.SetColorSpace( self.ColorSpace() );
+                     break;
+                  }
+               }
+               // Step 2: match dimensions by size (some might be missing, some might be new?)
+               // TODO: how do we do this? It's an impossible task!
+               // Step 3: copy over pixel sizes
+               return out; // TODO: return a Python object so that we can return a scalar as not an image.
+            });
 
    // Basic properties
    img.def( "__repr__", &ImageRepr );
