@@ -292,6 +292,24 @@ void init_image( py::module& m ) {
    // Create new similar image
    img.def( "Similar", py::overload_cast< >( &dip::Image::Similar, py::const_ ));
    img.def( "Similar", py::overload_cast< dip::DataType >( &dip::Image::Similar, py::const_ ), "dt"_a );
+   // Interop with NumPy
+   img.def( "__array_wrap__", []( dip::Image const& self, py::buffer& buf ) {
+      dip::Image out = BufferToImage( buf, false );
+      // Step 1: maybe one dimension is the tensor dimension
+      dip::uint nTensor = self.TensorElements();
+      for( dip::uint ii = 0; ii < out.Dimensionality(); ++ii ) {
+         if( out.Size( ii ) == nTensor ) {
+            out.SpatialToTensor( ii );
+            out.ReshapeTensor( self.Tensor() );
+            out.SetColorSpace( self.ColorSpace() );
+            break;
+         }
+      }
+      // Step 2: match dimensions by size (some might be missing, some might be new?)
+      // TODO: how do we do this? It's an impossible task!
+      // Step 3: copy over pixel sizes
+      return out; // TODO: return a Python object so that we can return a scalar as not an image.
+   });
 
    // Basic properties
    img.def( "__repr__", &ImageRepr );
