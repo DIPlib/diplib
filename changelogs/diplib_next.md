@@ -208,6 +208,10 @@ title: "Changes DIPlib 3.x.x"
 - `dip.Polygon.EllipseParameters()` now uses the new `dip::Polygon::CovarianceMatrixSolid()` rather than
   `dip::Polygon::CovarianceMatrixVertices()`.
 
+- Creating a `dip.Image` object around an existing buffer (i.e. converting a *NumPy* array) causes the image
+  to be [protected](https://diplib.org/diplib-docs/dip-Image.html#protect) by default.
+  It is possible to manually unprotect the image after conversion.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

@@ -149,6 +149,7 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
          }
       }
    }
+   out.Protect();
    return out;
 }
 
