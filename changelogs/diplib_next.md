@@ -65,6 +65,8 @@ title: "Changes DIPlib 3.x.x"
 - Added `dip::ChainCode::Coordinates()`, which returns an array with the coordinates of each pixel represented by
   the chain code.
 
+- Added unary operator `+`, which converts binary images to `dip::DT_UINT8`, and does not affect other images.
+
 ### Changed functionality
 
 - `dip::testing::Timer::CpuResolution()` and `WallResolution()` are static members.
