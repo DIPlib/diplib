@@ -236,12 +236,12 @@ DIP_MONADIC_OPERATOR( SquareModulus )
 DIP_EXPORT void Phase( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Phase )
 
-DIP_NODISCARD inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
 /// \brief Returns the real component of a complex image. Returns \ref dip::Image::Real if the input is complex.
+DIP_NODISCARD inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
 inline void Real( Image const& in, Image& out ) { out = Real( in ); }
 
-DIP_NODISCARD inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Imaginary() ) : in; }
 /// \brief Returns the imaginary component of a complex image. Returns \ref dip::Image::Imaginary if the input is complex
+DIP_NODISCARD inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Imaginary() ) : in; }
 inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 
 /// \brief Computes the complex conjugate of each sample.
@@ -400,6 +400,7 @@ DIP_NODISCARD inline Image Transpose( Image const& in ) {
    out.Transpose();
    return out;
 }
+inline void Transpose( Image const& in, Image& out ) { out = Transpose( in ); }
 
 /// \brief Computes the conjugate transpose of the tensor image `in`.
 inline void ConjugateTranspose( Image const& in, Image& out ) {
