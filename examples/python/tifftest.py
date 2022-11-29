@@ -12,9 +12,8 @@
 
 import diplib as dip
 
-# Step 1: Read in full images, make sure they are the same
 
-print("Step 1: full image")
+print("Step 1: Read in full images, make sure they are the same")
 
 first = dip.ImageReadTIFF('tifftest-stripes01-contiguous-08.tif')
 
@@ -49,11 +48,10 @@ if any(dip.Any(first - dip.ImageReadTIFF('tifftest-tiles-separated-08.tif'))[0])
 if any(dip.Any(first - dip.ImageReadTIFF('tifftest-tiles-separated-16.tif') / 257)[0]):
     print("Error: tifftest-tiles-separated-16")
 
-# Step 2: Read in 2nd tensor element only
 
-print("Step 2: TensorElement(1)")
+print("Step 2: Read in 2nd tensor element only")
 
-compare = first.TensorElement(1)
+compare = first(1)
 
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-stripes01-contiguous-08.tif', slice(0, 0, 1), [slice(0, -1, 1), slice(0, -1, 1)], slice(1, 1, 1)))[0]):
     print("Error: tifftest-stripes01-contiguous-08")
@@ -88,11 +86,10 @@ if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-08.tif',  s
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-16.tif',  slice(0, 0, 1), [slice(0, -1, 1), slice(0, -1, 1)], slice(1, 1, 1)) / 257)[0]):
     print("Error: tifftest-tiles-separated-16")
 
-# Step 3: Read in 1st and 3rd tensor elements only
 
-print("Step 3: TensorElement(slice(0,-1,2))")
+print("Step 3: Read in 1st and 3rd tensor elements only")
 
-compare = first.TensorElement(slice(0, -1, 2))
+compare = first(slice(0, -1, 2))
 
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-stripes01-contiguous-08.tif', slice(0, 0, 1), [slice(0, -1, 1), slice(0, -1, 1)], slice(0, -1, 2)))[0]):
     print("Error: tifftest-stripes01-contiguous-08")
@@ -127,9 +124,8 @@ if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-08.tif', sl
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-16.tif', slice(0, 0, 1), [slice(0, -1, 1), slice(0, -1, 1)], slice(0, -1, 2)) / 257)[0]):
     print("Error: tifftest-tiles-separated-16")
 
-# Step 4: Read in all tensor elements for a continuous ROI
 
-print("Step 4: [slice(2,601,1),slice(11,401,1)]")
+print("Step 4: Read in all tensor elements for a continuous ROI")
 
 compare = first[slice(2, 601, 1), slice(11, 401, 1)]
 
@@ -166,9 +162,8 @@ if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-08.tif', sl
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-16.tif', slice(0, 0, 1), [slice(2, 601, 1), slice(11, 401, 1)], slice(0, -1, 1)) / 257)[0]):
     print("Error: tifftest-tiles-separated-16")
 
-# Step 5: Read in all tensor elements for a subsampled ROI
 
-print("Step 5: [slice(2,601,3),slice(11,401,5)]")
+print("Step 5: Read in all tensor elements for a subsampled ROI")
 
 compare = first[slice(2, 601, 3), slice(11, 401, 5)]
 
@@ -205,11 +200,10 @@ if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-08.tif', sl
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-16.tif', slice(0, 0, 1), [slice(2, 601, 3), slice(11, 401, 5)], slice(0, -1, 1)) / 257)[0]):
     print("Error: tifftest-tiles-separated-16")
 
-# Step 4: Read in 2nd tensor element for a continuous ROI
 
-print("Step 6: TensorElement(1)[slice(2,601,1),slice(11,401,1)]")
+print("Step 6: Read in 2nd tensor element for a continuous ROI")
 
-compare = first.TensorElement(1)[slice(2, 601, 1), slice(11, 401, 1)]
+compare = first(1)[slice(2, 601, 1), slice(11, 401, 1)]
 
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-stripes01-contiguous-08.tif', slice(0, 0, 1), [slice(2, 601, 1), slice(11, 401, 1)], slice(1, 1, 1)))[0]):
     print("Error: tifftest-stripes01-contiguous-08")
@@ -244,11 +238,10 @@ if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-08.tif', sl
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-tiles-separated-16.tif', slice(0, 0, 1), [slice(2, 601, 1), slice(11, 401, 1)], slice(1, 1, 1)) / 257)[0]):
     print("Error: tifftest-tiles-separated-16")
 
-# Step 5: Read in 2nd tensor element for a subsampled ROI
 
-print("Step 7: TensorElement(1)[slice(2,601,3),slice(11,401,5)]")
+print("Step 7: Read in 2nd tensor element for a subsampled ROI")
 
-compare = first.TensorElement(1)[slice(2, 601, 3), slice(11, 401, 5)]
+compare = first(1)[slice(2, 601, 3), slice(11, 401, 5)]
 
 if any(dip.Any(compare - dip.ImageReadTIFF('tifftest-stripes01-contiguous-08.tif', slice(0, 0, 1), [slice(2, 601, 3), slice(11, 401, 5)], slice(1, 1, 1)))[0]):
     print("Error: tifftest-stripes01-contiguous-08")

@@ -226,6 +226,10 @@ title: "Changes DIPlib 3.x.x"
   to be [protected](https://diplib.org/diplib-docs/dip-Image.html#protect) by default.
   It is possible to manually unprotect the image after conversion.
 
+- `dip.Image.TensorElement()` is deprecated and will be removed in a future version of PyDIP. Since the first
+  non-beta release it has been possible to index the tensor element using `()`, so this function has no purpose.
+  It also does not exist in *DIPlib* itself.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

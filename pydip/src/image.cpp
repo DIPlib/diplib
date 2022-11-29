@@ -267,6 +267,8 @@ dip::String ImageRepr( dip::Image const& image ) {
    return os.str();
 }
 
+constexpr char const* TensorElementDeprecationMessage = "dip.Image.TensorElement() is deprecated and will be removed in a future version of PyDIP. Use () indexing instead.";
+
 } // namespace
 
 void init_image( py::module& m ) {
@@ -430,8 +432,7 @@ void init_image( py::module& m ) {
    img.def( "At", []( dip::Image const& self, dip::CoordinateArray const& coordinates ) -> dip::Image { return self.At( coordinates ); }, "coordinates"_a );
    img.def( "Cropped", []( dip::Image const& self, dip::UnsignedArray const& sizes, dip::String const& cropLocation ) -> dip::Image {
                return self.Cropped( sizes, cropLocation );
-            },
-            "sizes"_a, "cropLocation"_a = "center" );
+            }, "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", []( dip::Image const& self ) -> dip::Image { return self.Real(); } );
    img.def( "Imaginary", []( dip::Image const& self ) -> dip::Image { return self.Imaginary(); } );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
@@ -439,10 +440,19 @@ void init_image( py::module& m ) {
    img.def( "__call__", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
    img.def( "__call__", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "__call__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
-   // NOTE: Compatibility with beta PyDIP. Remove?
-   img.def( "TensorElement", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
-   img.def( "TensorElement", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
-   img.def( "TensorElement", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
+   // Deprescated functions Nov 29, 2022 (after release 3.3.0) TODO: remove eventually.
+   img.def( "TensorElement", []( dip::Image const& self, dip::sint index ) -> dip::Image {
+               PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
+               return self[ index ];
+            }, "index"_a );
+   img.def( "TensorElement", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image {
+               PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
+               return self[ dip::UnsignedArray{ i, j } ];
+            }, "i"_a, "j"_a );
+   img.def( "TensorElement", []( dip::Image const& self, dip::Range const& range ) -> dip::Image {
+               PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
+               return self[ range ];
+            }, "range"_a );
 
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
