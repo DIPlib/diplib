@@ -118,7 +118,7 @@ void CopyForDFT( TPI const* in, dip::uint inLength, dip::sint inStride, TPI* out
       if( k > 0 ) {
          if( inverse ) {
             // Pad the middle part with zeros
-            std::fill_n( out + inLength - n, k, 0 );
+            std::fill_n( out + inLength - n, k, TPI( 0 ));
             if(( k & 1u ) == 0 ) {
                // For an even input buffer, we need to split the highest frequency element to maintain symmetry
                out[ outLength - n ] /= 2;
@@ -135,7 +135,7 @@ void CopyForDFT( TPI const* in, dip::uint inLength, dip::sint inStride, TPI* out
          // Copy left half to left end, and right half to right end, and pad the middle part with zeros
          dip::uint n = ( inLength + 1 ) / 2; // size of the left half
          CopyDataToBuffer( in, inStride, out, n );
-         std::fill_n( out + n, k, 0 );
+         std::fill_n( out + n, k, TPI( 0 ));
          CopyDataToBuffer( in + static_cast< dip::sint >( n ) * inStride, inStride, out + n + k, inLength - n );
          if(( k & 1u ) == 0 ) {
             // For an even input buffer, we need to duplicate the highest frequency element to maintain symmetry
