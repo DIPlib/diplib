@@ -659,12 +659,12 @@ DIP_EXPORT void CreateGauss(
 );
 DIP_NODISCARD inline Image CreateGauss(
       FloatArray const& sigmas,
-      UnsignedArray const& derivativeOrder = { 0 },
+      UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 3.0,
-      UnsignedArray const& exponents = { 0 }
+      UnsignedArray exponents = { 0 }
 ) {
    Image out;
-   CreateGauss( out, sigmas, derivativeOrder, truncation, exponents );
+   CreateGauss( out, sigmas, std::move( derivativeOrder ), truncation, std::move( exponents ));
    return out;
 }
 
@@ -716,11 +716,11 @@ DIP_EXPORT void FTEllipsoid(
 /// \brief Overload for the function above, which takes image sizes instead of an image.
 DIP_NODISCARD inline Image FTEllipsoid(
       UnsignedArray const& sizes,
-      FloatArray const& radius = { 1 },
+      FloatArray radius = { 1 },
       dfloat amplitude = 1
 ) {
    Image out( sizes, 1, DT_SFLOAT );
-   FTEllipsoid( out, radius, amplitude );
+   FTEllipsoid( out, std::move( radius ), amplitude );
    return out;
 }
 
@@ -738,11 +738,11 @@ DIP_EXPORT void FTBox(
 /// \brief Overload for the function above, which takes image sizes instead of an image.
 DIP_NODISCARD inline Image FTBox(
       UnsignedArray const& sizes,
-      FloatArray const& length = { 1 },
+      FloatArray length = { 1 },
       dfloat amplitude = 1
 ) {
    Image out( sizes, 1, DT_SFLOAT );
-   FTBox( out, length, amplitude );
+   FTBox( out, std::move( length ), amplitude );
    return out;
 }
 
@@ -760,11 +760,11 @@ DIP_EXPORT void FTCross(
 /// \brief Overload for the function above, which takes image sizes instead of an image.
 DIP_NODISCARD inline Image FTCross(
       UnsignedArray const& sizes,
-      FloatArray const& length = { 1 },
+      FloatArray length = { 1 },
       dfloat amplitude = 1
 ) {
    Image out( sizes, 1, DT_SFLOAT );
-   FTCross( out, length, amplitude );
+   FTCross( out, std::move( length ), amplitude );
    return out;
 }
 
@@ -783,12 +783,12 @@ DIP_EXPORT void FTGaussian(
 /// \brief Overload for the function above, which takes image sizes instead of an image.
 DIP_NODISCARD inline Image FTGaussian(
       UnsignedArray const& sizes,
-      FloatArray const& sigma,
+      FloatArray sigma,
       dfloat amplitude = 1,
       dfloat truncation = 3
 ) {
    Image out( sizes, 1, DT_SFLOAT );
-   FTGaussian( out, sigma, amplitude, truncation );
+   FTGaussian( out, std::move( sigma ), amplitude, truncation );
    return out;
 }
 
@@ -1322,19 +1322,19 @@ inline void DistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
       String const& distance = S::EUCLIDEAN,
-      FloatArray const& scaling = {}
+      FloatArray scaling = {}
 ) {
    DIP_STACK_TRACE_THIS( out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW ));
-   DIP_STACK_TRACE_THIS( FillDistanceToPoint( out, point, distance, scaling ));
+   DIP_STACK_TRACE_THIS( FillDistanceToPoint( out, point, distance, std::move( scaling )));
 }
 DIP_NODISCARD inline Image DistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
       String const& distance = S::EUCLIDEAN,
-      FloatArray const& scaling = {}
+      FloatArray scaling = {}
 ) {
    Image out;
-   DistanceToPoint( out, sizes, point, distance, scaling );
+   DistanceToPoint( out, sizes, point, distance, std::move( scaling ));
    return out;
 }
 
@@ -1347,17 +1347,17 @@ inline void EuclideanDistanceToPoint(
       Image& out,
       UnsignedArray const& sizes,
       FloatArray const& point,
-      FloatArray const& scaling = {}
+      FloatArray scaling = {}
 ) {
-   DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::EUCLIDEAN, scaling ));
+   DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::EUCLIDEAN, std::move( scaling )));
 }
 DIP_NODISCARD inline Image EuclideanDistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
-      FloatArray const& scaling = {}
+      FloatArray scaling = {}
 ) {
    Image out;
-   EuclideanDistanceToPoint( out, sizes, point, scaling );
+   EuclideanDistanceToPoint( out, sizes, point, std::move( scaling ));
    return out;
 }
 
@@ -1370,17 +1370,17 @@ inline void CityBlockDistanceToPoint(
       Image& out,
       UnsignedArray const& sizes,
       FloatArray const& point,
-      FloatArray const& scaling = {}
+      FloatArray scaling = {}
 ) {
-   DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::CITY, scaling ));
+   DIP_STACK_TRACE_THIS( DistanceToPoint( out, sizes, point, S::CITY, std::move( scaling )));
 }
 DIP_NODISCARD inline Image CityBlockDistanceToPoint(
       UnsignedArray const& sizes,
       FloatArray const& point,
-      FloatArray const& scaling = {}
+      FloatArray scaling = {}
 ) {
    Image out;
-   CityBlockDistanceToPoint( out, sizes, point, scaling );
+   CityBlockDistanceToPoint( out, sizes, point, std::move( scaling ));
    return out;
 }
 
@@ -1637,6 +1637,7 @@ DIP_NODISCARD inline Image ColoredNoise(
 /// \endgroup
 
 
+// Inline body of function declared above
 inline void FillPoissonPointProcess(
       Image& out,
       Random& random,

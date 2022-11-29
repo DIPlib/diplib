@@ -211,11 +211,11 @@ DIP_NODISCARD inline Image GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& bin,
       Image const& mask = {},
-      Metric const& metric = { S::CHAMFER, 2 },
+      Metric metric = { S::CHAMFER, 2 },
       String const& mode = S::FASTMARCHING
 ) {
    Image out;
-   GreyWeightedDistanceTransform( grey, bin, mask, out, metric, mode );
+   GreyWeightedDistanceTransform( grey, bin, mask, out, std::move( metric ), mode );
    return out;
 }
 

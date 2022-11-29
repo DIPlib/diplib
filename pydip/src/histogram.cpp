@@ -157,8 +157,10 @@ void init_histogram( py::module& m ) {
    hist.def( "__str__", []( dip::Histogram const& self ) { std::ostringstream os; os << self; return os.str(); } );
    hist.def( "IsInitialized", &dip::Histogram::IsInitialized );
    hist.def( "Copy", &dip::Histogram::Copy );
-   hist.def( "ReverseLookup", py::overload_cast< dip::Image const&, dip::BooleanArray const& >( &dip::Histogram::ReverseLookup ),
+   hist.def( "ReverseLookup", py::overload_cast< dip::Image const&, dip::BooleanArray >( &dip::Histogram::ReverseLookup ),
              "input"_a, "excludeOutOfBoundValues"_a = dip::BooleanArray{ false } );
+   hist.def( "ReverseLookup", py::overload_cast< dip::Image const&, dip::Image&, dip::BooleanArray >( &dip::Histogram::ReverseLookup ),
+             "input"_a, py::kw_only(), "out"_a, "excludeOutOfBoundValues"_a = dip::BooleanArray{ false } );
    hist.def( py::self += py::self );
    hist.def( py::self + py::self );
    hist.def( py::self -= py::self );
@@ -200,22 +202,27 @@ void init_histogram( py::module& m ) {
 
    m.def( "IsodataThreshold", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::IsodataThreshold ),
           "in"_a, "nThresholds"_a = 1 );
-   m.def( "OtsuThreshold", py::overload_cast< dip::Histogram const& >( &dip::OtsuThreshold ), "in"_a );
-   m.def( "MinimumErrorThreshold", py::overload_cast< dip::Histogram const& >( &dip::MinimumErrorThreshold ), "in"_a );
+   m.def( "OtsuThreshold", py::overload_cast< dip::Histogram const& >( &dip::OtsuThreshold ),
+          "in"_a );
+   m.def( "MinimumErrorThreshold", py::overload_cast< dip::Histogram const& >( &dip::MinimumErrorThreshold ),
+          "in"_a );
    m.def( "GaussianMixtureModelThreshold", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::GaussianMixtureModelThreshold ),
           "in"_a, "nThresholds"_a = 1 );
-   m.def( "TriangleThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat >( &dip::TriangleThreshold ), "in"_a, "sigma"_a = 4.0 );
+   m.def( "TriangleThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat >( &dip::TriangleThreshold ),
+          "in"_a, "sigma"_a = 4.0 );
    m.def( "BackgroundThreshold", py::overload_cast< dip::Histogram const&, dip::dfloat, dip::dfloat >( &dip::BackgroundThreshold ),
           "in"_a, "distance"_a = 2.0, "sigma"_a = 4.0 );
    m.def( "KMeansClustering", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::KMeansClustering ),
           "in"_a, "nClusters"_a = 2 );
    m.def( "MinimumVariancePartitioning", py::overload_cast< dip::Histogram const&, dip::uint >( &dip::MinimumVariancePartitioning ),
           "in"_a, "nClusters"_a = 2 );
-   m.def( "EqualizationLookupTable", &dip::EqualizationLookupTable, "in"_a );
-   m.def( "MatchingLookupTable", &dip::MatchingLookupTable, "in"_a, "example"_a );
+   m.def( "EqualizationLookupTable", &dip::EqualizationLookupTable,
+          "in"_a );
+   m.def( "MatchingLookupTable", &dip::MatchingLookupTable,
+          "in"_a, "example"_a );
 
-   m.def( "PerObjectHistogram", &dip::PerObjectHistogram, "grey"_a, "label"_a, "mask"_a = dip::Image{},
-          "configuration"_a = dip::Histogram::Configuration{}, "mode"_a = dip::S::FRACTION, "background"_a = dip::S::EXCLUDE );
+   m.def( "PerObjectHistogram", &dip::PerObjectHistogram,
+          "grey"_a, "label"_a, "mask"_a = dip::Image{}, "configuration"_a = dip::Histogram::Configuration{}, "mode"_a = dip::S::FRACTION, "background"_a = dip::S::EXCLUDE );
 
    auto regParams = py::class_< dip::RegressionParameters >( m, "RegressionParameters", "Regression parameters." );
    regParams.def( "__repr__", []( dip::RegressionParameters const& s ) {
@@ -271,13 +278,20 @@ void init_histogram( py::module& m ) {
             } );
    lut.def( "HasIndex", &dip::LookupTable::HasIndex );
    lut.def( "DataType", &dip::LookupTable::DataType );
-   lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ), "value"_a );
-   lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ), "lowerValue"_a, "upperValue"_a );
+   lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ),
+            "value"_a );
+   lut.def( "SetOutOfBoundsValue", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::LookupTable::SetOutOfBoundsValue ),
+            "lowerValue"_a, "upperValue"_a );
    lut.def( "KeepInputValueOnOutOfBounds", &dip::LookupTable::KeepInputValueOnOutOfBounds );
    lut.def( "ClampOutOfBoundsValues", &dip::LookupTable::ClampOutOfBoundsValues );
-   lut.def( "Apply", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ), "in"_a, "interpolation"_a = dip::S::LINEAR );
-   lut.def( "Apply", py::overload_cast< dip::dfloat, dip::String const& >( &dip::LookupTable::Apply, py::const_ ), "value"_a, "interpolation"_a = dip::S::LINEAR );
-   lut.def( "Convert", &dip::LookupTable::Convert, "dataType"_a );
+   lut.def( "Apply", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
+            "in"_a, "interpolation"_a = dip::S::LINEAR );
+   lut.def( "Apply", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
+            "in"_a, py::kw_only(), "out"_a, "interpolation"_a = dip::S::LINEAR );
+   lut.def( "Apply", py::overload_cast< dip::dfloat, dip::String const& >( &dip::LookupTable::Apply, py::const_ ),
+            "value"_a, "interpolation"_a = dip::S::LINEAR );
+   lut.def( "Convert", &dip::LookupTable::Convert,
+            "dataType"_a );
 
    // This next function is the old implementation of `dip.LookupTable`, which we keep
    // here for backwards compatibility. Setting `dip.LookupTable = dip.LookupTable_old` in Python

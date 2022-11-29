@@ -1141,11 +1141,11 @@ DIP_NODISCARD inline Image GaborIIR(
       FloatArray const& frequencies,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
-      IntegerArray const& filterOrder = {},
+      IntegerArray filterOrder = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaborIIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, std::move( process ), filterOrder, truncation );
+   GaborIIR( in, out, std::move( sigmas ), frequencies, boundaryCondition, std::move( process ), std::move( filterOrder ), truncation );
    return out;
 }
 

@@ -353,4 +353,16 @@ class type_caster< dip::Image::Pixel > {
 } // namespace detail
 } // namespace pybind11
 
+inline dip::Image ImageOrPixel( py::object const& obj ) {
+   pybind11::detail::type_caster< dip::Image > image_caster;
+   if ( image_caster.load( obj, true )) {
+      return image_caster;
+   }
+   pybind11::detail::type_caster< dip::Image::Pixel > pixel_caster;
+   if ( pixel_caster.load( obj, true )) {
+      return dip::Image( pixel_caster ); // static_cast< dip::Image::Pixel>( caster ));
+   }
+   throw dip::RunTimeError( "Cannot convert input to dip::Image" );
+};
+
 #endif // DIP_PYDIP_H

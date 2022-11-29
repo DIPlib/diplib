@@ -29,5 +29,5 @@ if failure_count > 0:
 if failure_count > 0:
     sys.exit(1)
 else:
-    print("All tests passed")
+    print("\033[35m[Python tests]\033[0m All tests passed")
     sys.exit(0)

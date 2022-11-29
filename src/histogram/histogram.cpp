@@ -518,7 +518,7 @@ class ReverseLookupLineFilter : public Framework::ScanLineFilter {
 
 }
 
-void Histogram::ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues ) {
+void Histogram::ReverseLookup( Image const& input, Image& out, BooleanArray excludeOutOfBoundValues ) {
    // Check inputs
    DIP_THROW_IF( !IsInitialized(), E::HISTOGRAM_NOT_INITIALIZED );
    DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
@@ -540,7 +540,7 @@ void Histogram::ReverseLookup( Image const& input, Image& output, BooleanArray e
    // Create and call ReverseLookupLineFilter
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, ReverseLookupLineFilter, ( data_, configuration ), input.DataType() );
-   ImageRefArray outar{ output };
+   ImageRefArray outar{ out };
    DIP_STACK_TRACE_THIS( Framework::Scan( { input }, outar, { input.DataType() }, { DT_COUNT }, { DT_COUNT }, { 1 }, *scanLineFilter ));
 }
 

@@ -400,10 +400,10 @@ std::unique_ptr< Framework::ScanLineFilter > NewResampleAtLineFilter( Image cons
 } // namespace
 
 void ResampleAt(
-      Image const &in,
-      Image const &map,
-      Image &out,
-      String const &method,
+      Image const& in,
+      Image const& map,
+      Image& out,
+      String const& method,
       Image::Pixel const& fill
 )
 {

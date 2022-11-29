@@ -122,6 +122,13 @@ title: "Changes DIPlib 3.x.x"
 - The `dip::MeasurementTool` feature `"Eccentricity"` is now computed more precisely,
   using the new `dip::Polygon::CovarianceMatrixSolid()` rather than `dip::Polygon::CovarianceMatrixVertices()`.
 
+- Removed overload `dip::Threshold( dip::Image const& in, dip::Image& out, ...)` because of the ambiguity with the
+  overload `dip::Threshold( dip::Image const& in, dip::Image comst& mask, ...)`, which is more important to have.
+  The user needed to ensure `mask` was `const` to call the second version, this was too error-prone. If you used
+  the removed overload, add `{}` as the second (`mask`) argument.
+
+- A few functions have changed signature to capture a parameter by copy rather than const reference
+
 ### Bug fixes
 
 - `dip::ResampleAt(in, map)` didn't copy the color space information from the input image to the output image.
@@ -199,6 +206,11 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `dip.ChainCode.Coordinates()`.
 
+- Added bindings for most functions with an `out` argument, which doesn't return the output image but
+  writes it to the image passed as `out`. `out` and all subsequent arguments are keyword-only.
+
+- Added unary operator `+`, which converts binary images to `uint8`, and does not affect other images.
+
 ### Changed functionality
 
 - `dip.IncoherentOTF()` now takes output image sizes as first argument, instead of taking the output image. It
@@ -217,6 +229,11 @@ title: "Changes DIPlib 3.x.x"
 (See also changes to *DIPlib*.)
 
 ### Bug fixes
+
+- In-place operators for multiplication and power (`*=`, `@=` and `**=`) didn't preserve the image's data type, as
+  was intended. Instead, they casted the image to a floating-point type if it was of an integer type, which is the
+  behavior of the corresponding binary operators (`*`, `@` and `**`). That is, `img *= 2` had exactly the same effect
+  as `img = img * 2`.
 
 (See also bugfixes to *DIPlib*.)
 

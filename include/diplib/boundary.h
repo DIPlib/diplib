@@ -205,7 +205,7 @@ DIP_EXPORT void ExtendImageToSize(
       Option::ExtendImageFlags options = {}
 );
 
-/// \brief Extends the image `in` by `sizes`.
+/// \brief Extends the image `in` to `sizes`.
 ///
 /// The output image has size `sizes( ii )` along dimension `ii`. `sizes` must have `in.Dimensionality()` elements.
 ///

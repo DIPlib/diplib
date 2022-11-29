@@ -473,14 +473,6 @@ inline dfloat Threshold(
    }
    DIP_THROW_INVALID_FLAG( method );
 }
-inline dfloat Threshold(
-      Image const& in,
-      Image& out,
-      String const& method = S::OTSU,
-      dfloat parameter = infinity
-) {
-   return Threshold( in, {}, out, method, parameter );
-}
 DIP_NODISCARD inline Image Threshold(
       Image const& in,
       Image const& mask,

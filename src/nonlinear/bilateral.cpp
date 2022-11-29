@@ -404,18 +404,18 @@ void BilateralFilter(
       Image const& in,
       Image const& estimate,
       Image& out,
-      FloatArray const& spatialSigmas,
+      FloatArray spatialSigmas,
       dfloat tonalSigma,
       dfloat truncation,
       String const& method,
       StringArray const& boundaryCondition
 ) {
    if( method == "full" ) {
-      DIP_STACK_TRACE_THIS( FullBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation, boundaryCondition ));
+      DIP_STACK_TRACE_THIS( FullBilateralFilter( in, estimate, out, std::move( spatialSigmas ), tonalSigma, truncation, boundaryCondition ));
    } else if( method == "pwlinear" ) {
-      DIP_STACK_TRACE_THIS( QuantizedBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, {}, truncation, boundaryCondition ));
+      DIP_STACK_TRACE_THIS( QuantizedBilateralFilter( in, estimate, out, std::move( spatialSigmas ), tonalSigma, {}, truncation, boundaryCondition ));
    } else if( method == "xysep" ) {
-      DIP_STACK_TRACE_THIS( SeparableBilateralFilter( in, estimate, out, {}, spatialSigmas, tonalSigma, truncation, boundaryCondition ));
+      DIP_STACK_TRACE_THIS( SeparableBilateralFilter( in, estimate, out, {}, std::move( spatialSigmas ), tonalSigma, truncation, boundaryCondition ));
    } else {
       DIP_THROW_INVALID_FLAG( method );
    }

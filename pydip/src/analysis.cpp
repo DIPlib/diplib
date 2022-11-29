@@ -78,10 +78,16 @@ void init_analysis( py::module& m ) {
           "meanShiftVectorResult"_a, "startArray"_a, "epsilon"_a = 1e-3 );
    m.def( "GaussianMixtureModel", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringSet const& >( &dip::GaussianMixtureModel ),
           "in"_a, "dimension"_a = 2, "numberOfGaussians"_a = 2, "maxIter"_a = 20, "flags"_a = dip::StringSet{} );
+   m.def( "GaussianMixtureModel", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::uint, dip::uint, dip::StringSet const& >( &dip::GaussianMixtureModel ),
+          "in"_a, py::kw_only(), "out"_a, "dimension"_a = 2, "numberOfGaussians"_a = 2, "maxIter"_a = 20, "flags"_a = dip::StringSet{} );
    m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
           "in1"_a, "in2"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
+   m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
+          "in1"_a, "in2"_a, py::kw_only(), "out"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
    m.def( "AutoCorrelationFT", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::AutoCorrelationFT ),
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
+   m.def( "AutoCorrelationFT", py::overload_cast< dip::Image const&, dip::Image&, dip::String const&, dip::String const& >( &dip::AutoCorrelationFT ),
+          "in"_a, py::kw_only(), "out"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
    m.def( "FindShift", &dip::FindShift,
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = dip::UnsignedArray{ std::numeric_limits< dip::uint >::max() } );
    m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const& >( &dip::FourierMellinMatch2D ),
@@ -96,20 +102,32 @@ void init_analysis( py::module& m ) {
           "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE,
           "Returns a tuple, the first element is the transformed image, the second\n"
           "element is the transformation matrix." );
+   m.def( "FourierMellinMatch2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::String const&, dip::String const& >( &dip::FourierMellinMatch2D ),
+          "in1"_a, "in2"_a, py::kw_only(), "out"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE );
 
    m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
           "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
+          "in"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "StructureTensorAnalysis", py::overload_cast< dip::Image const&, dip::StringArray const& >( &dip::StructureTensorAnalysis ),
           "in"_a, "outputs"_a );
+   m.def( "StructureTensorAnalysis", py::overload_cast< dip::Image const&, dip::ImageRefArray&, dip::StringArray const& >( &dip::StructureTensorAnalysis ),
+          "in"_a, py::kw_only(), "out"_a, "outputs"_a );
    m.def( "StructureAnalysis", &dip::StructureAnalysis,
           "in"_a, "mask"_a = dip::Image{}, "scales"_a = std::vector< dip::dfloat >{}, "feature"_a = "energy",
           "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "MonogenicSignal", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::MonogenicSignal ),
           "in"_a, "wavelengths"_a = dip::FloatArray{ 3.0, 24.0 }, "bandwidth"_a = 0.41, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
+   m.def( "MonogenicSignal", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::MonogenicSignal ),
+          "in"_a, py::kw_only(), "out"_a, "wavelengths"_a = dip::FloatArray{ 3.0, 24.0 }, "bandwidth"_a = 0.41, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
    m.def( "MonogenicSignalAnalysis", py::overload_cast< dip::Image const&, dip::StringArray const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::MonogenicSignalAnalysis ),
           "in"_a, "outputs"_a, "noiseThreshold"_a = 0.2, "frequencySpreadThreshold"_a = 0.5, "sigmoidParameter"_a = 10, "deviationGain"_a = 1.5, "polarity"_a = dip::S::BOTH );
+   m.def( "MonogenicSignalAnalysis", py::overload_cast< dip::Image const&, dip::ImageRefArray&, dip::StringArray const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::MonogenicSignalAnalysis ),
+          "in"_a, py::kw_only(), "out"_a, "outputs"_a, "noiseThreshold"_a = 0.2, "frequencySpreadThreshold"_a = 0.5, "sigmoidParameter"_a = 10, "deviationGain"_a = 1.5, "polarity"_a = dip::S::BOTH );
    m.def( "OrientationSpace", py::overload_cast< dip::Image const&, dip::uint, dip::dfloat, dip::dfloat, dip::uint >( &dip::OrientationSpace ),
           "in"_a, "order"_a = 8, "radCenter"_a = 0.1, "radSigma"_a = 0.8, "orientations"_a = 0 );
+   m.def( "OrientationSpace", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::dfloat, dip::dfloat, dip::uint >( &dip::OrientationSpace ),
+          "in"_a, py::kw_only(), "out"_a, "order"_a = 8, "radCenter"_a = 0.1, "radSigma"_a = 0.8, "orientations"_a = 0 );
    m.def( "PairCorrelation", []( dip::Image const& object, dip::Image const& mask, dip::uint probes, dip::uint length, dip::String const& sampling, dip::StringSet const& options ){
              return dip::PairCorrelation( object, mask, RandomNumberGenerator(), probes, length, sampling, options );
           },
@@ -133,28 +151,46 @@ void init_analysis( py::module& m ) {
    // diplib/transform.h
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray >( &dip::FourierTransform ),
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
+   m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::StringSet const&, dip::BooleanArray >( &dip::FourierTransform ),
+          "in"_a, py::kw_only(), "out"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "InverseFourierTransform", py::overload_cast< dip::Image const&, dip::StringSet, dip::BooleanArray >( &dip::InverseFourierTransform ),
           "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
+   m.def( "InverseFourierTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::StringSet, dip::BooleanArray >( &dip::InverseFourierTransform ),
+          "in"_a, py::kw_only(), "out"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
    m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a, "which"_a = "larger" );
    m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
           "in"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
+   m.def( "RieszTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::String const&, dip::String const&, dip::BooleanArray >( &dip::RieszTransform ),
+          "in"_a, py::kw_only(), "out"_a, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "process"_a = dip::BooleanArray{} );
    m.def( "StationaryWaveletTransform", py::overload_cast< dip::Image const&, dip::uint, dip::StringArray const&, dip::BooleanArray const& >( &dip::StationaryWaveletTransform ),
           "in"_a, "nLevels"_a = 4, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
+   m.def( "StationaryWaveletTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::StringArray const&, dip::BooleanArray const& >( &dip::StationaryWaveletTransform ),
+          "in"_a, py::kw_only(), "out"_a, "nLevels"_a = 4, "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{} );
    m.def( "HaarWaveletTransform", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::BooleanArray >( &dip::HaarWaveletTransform ),
           "in"_a, "nLevels"_a = 4, "direction"_a = dip::S::FORWARD, "process"_a = dip::BooleanArray{} );
+   m.def( "HaarWaveletTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const&, dip::BooleanArray >( &dip::HaarWaveletTransform ),
+          "in"_a, py::kw_only(), "out"_a, "nLevels"_a = 4, "direction"_a = dip::S::FORWARD, "process"_a = dip::BooleanArray{} );
 
    // diplib/distance.h
    m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),
           "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::SEPARABLE );
+   m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),
+          "in"_a, py::kw_only(), "out"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::SEPARABLE );
    m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
           "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
-   m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
+   m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
+          "in"_a, py::kw_only(), "out"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
+   m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Metric, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
           "grey"_a, "bin"_a, "mask"_a = dip::Image{}, "metric"_a = dip::Metric{}, "mode"_a = dip::S::FASTMARCHING );
+   m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image&, dip::Metric, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
+          "grey"_a, "bin"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "metric"_a = dip::Metric{}, "mode"_a = dip::S::FASTMARCHING );
    m.def( "GeodesicDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::GeodesicDistanceTransform ),
           "marker"_a, "condition"_a );
+   m.def( "GeodesicDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image& >( &dip::GeodesicDistanceTransform ),
+          "marker"_a, "condition"_a, py::kw_only(), "out"_a );
 
    // diplib/detection.h
-   auto rcp = py::class_< dip::RadonCircleParameters >( m, "RadonCircleParameters", "The result of a call to dip.SubpixelLocation." );
+   auto rcp = py::class_< dip::RadonCircleParameters >( m, "RadonCircleParameters", "The result of a call to dip.RadonTransformCircles." );
    rcp.def_readonly( "origin", &dip::RadonCircleParameters::origin );
    rcp.def_readonly( "radius", &dip::RadonCircleParameters::radius );
    rcp.def( "__repr__", []( dip::RadonCircleParameters const& self ) {
@@ -165,6 +201,8 @@ void init_analysis( py::module& m ) {
 
    m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
           "in"_a, "gv"_a, "range"_a = dip::UnsignedArray{} );
+   m.def( "HoughTransformCircleCenters", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::UnsignedArray const& >( &dip::HoughTransformCircleCenters ),
+          "in"_a, "gv"_a, py::kw_only(), "out"_a, "range"_a = dip::UnsignedArray{} );
    m.def( "FindHoughMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat >( &dip::FindHoughMaxima ),
           "in"_a, "distance"_a = 10.0, "fraction"_a = 0.1 );
    m.def( "PointDistanceDistribution", py::overload_cast< dip::Image const&, dip::CoordinateArray const&, dip::UnsignedArray >( &dip::PointDistanceDistribution ),
@@ -180,34 +218,60 @@ void init_analysis( py::module& m ) {
           "Returns a tuple, the first element is the parameter space (the `out` image),\n"
           "the second element is a list of `dip.RadonCircleParameters` containing the\n"
           "parameters of the detected circles." );
+   m.def( "RadonTransformCircles", py::overload_cast< dip::Image const&, dip::Image&, dip::Range, dip::dfloat, dip::dfloat, dip::String const&, dip::StringSet const& >( dip::RadonTransformCircles ),
+          "in"_a, py::kw_only(), "out"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT } );
 
    m.def( "HarrisCornerDetector", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::HarrisCornerDetector ),
           "in"_a, "kappa"_a = 0.04, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "HarrisCornerDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::HarrisCornerDetector ),
+          "in"_a, py::kw_only(), "out"_a, "kappa"_a = 0.04, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "ShiTomasiCornerDetector", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::StringArray const& >( &dip::ShiTomasiCornerDetector ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "ShiTomasiCornerDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::StringArray const& >( &dip::ShiTomasiCornerDetector ),
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "NobleCornerDetector", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::StringArray const& >( &dip::NobleCornerDetector ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "NobleCornerDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::StringArray const& >( &dip::NobleCornerDetector ),
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "WangBradyCornerDetector", py::overload_cast< dip::Image const&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::WangBradyCornerDetector ),
           "in"_a, "threshold"_a = 0.1, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "WangBradyCornerDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::FloatArray const&, dip::StringArray const& >( &dip::WangBradyCornerDetector ),
+          "in"_a, py::kw_only(), "out"_a, "threshold"_a = 0.1, "sigmas"_a = dip::FloatArray{ 2.0 }, "boundaryCondition"_a = dip::StringArray{} );
 
-   m.def( "FrangiVesselness", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::FrangiVesselness ),
+   m.def( "FrangiVesselness", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::FloatArray, dip::String const&, dip::StringArray const& >( &dip::FrangiVesselness ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "parameters"_a = dip::FloatArray{}, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "FrangiVesselness", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::FloatArray, dip::String const&, dip::StringArray const& >( &dip::FrangiVesselness ),
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "parameters"_a = dip::FloatArray{}, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MatchedFiltersLineDetector2D", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::MatchedFiltersLineDetector2D ),
           "in"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "MatchedFiltersLineDetector2D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::MatchedFiltersLineDetector2D ),
+          "in"_a, py::kw_only(), "out"_a, "sigma"_a = 2.0, "length"_a = 10.0, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "DanielssonLineDetector", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::DanielssonLineDetector ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "DanielssonLineDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::DanielssonLineDetector ),
+          "in"_a, py::kw_only(), "out"_a, "sigmas"_a = dip::FloatArray{ 2.0 }, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RORPOLineDetector", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::RORPOLineDetector ),
           "in"_a, "length"_a = 15, "polarity"_a = dip::S::WHITE );
+   m.def( "RORPOLineDetector", py::overload_cast< dip::Image const&, dip::Image&, dip::uint, dip::String const& >( &dip::RORPOLineDetector ),
+          "in"_a, py::kw_only(), "out"_a, "length"_a = 15, "polarity"_a = dip::S::WHITE );
 
    // diplib/microscopy.h
    m.def( "BeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image::Pixel const& >( &dip::BeerLambertMapping ),
           "in"_a, "background"_a );
+   m.def( "BeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image&, dip::Image::Pixel const& >( &dip::BeerLambertMapping ),
+          "in"_a, py::kw_only(), "out"_a, "background"_a );
    m.def( "InverseBeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image::Pixel const& >( &dip::InverseBeerLambertMapping ),
           "in"_a, "background"_a = dip::Image::Pixel{ 255 } );
+   m.def( "InverseBeerLambertMapping", py::overload_cast< dip::Image const&, dip::Image&, dip::Image::Pixel const& >( &dip::InverseBeerLambertMapping ),
+          "in"_a, py::kw_only(), "out"_a, "background"_a = dip::Image::Pixel{ 255 } );
    m.def( "UnmixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::UnmixStains ),
           "in"_a, "stains"_a );
+   m.def( "UnmixStains", py::overload_cast< dip::Image const&, dip::Image&, std::vector< dip::Image::Pixel > const& >( &dip::UnmixStains ),
+          "in"_a, py::kw_only(), "out"_a, "stains"_a );
    m.def( "MixStains", py::overload_cast< dip::Image const&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
           "in"_a, "stains"_a );
+   m.def( "MixStains", py::overload_cast< dip::Image const&, dip::Image&, std::vector< dip::Image::Pixel > const& >( &dip::MixStains ),
+          "in"_a, py::kw_only(), "out"_a, "stains"_a );
 
    m.def( "MandersOverlapCoefficient", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MandersOverlapCoefficient ),
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
@@ -233,13 +297,23 @@ void init_analysis( py::module& m ) {
 
    m.def( "IncoherentOTF", py::overload_cast< dip::UnsignedArray const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
           "sizes"_a = dip::UnsignedArray{ 256, 256 }, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = dip::S::STOKSETH );
+   m.def( "IncoherentOTF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::IncoherentOTF ),
+          py::kw_only(), "out"_a, "defocus"_a = 0.0, "oversampling"_a = 1.0, "amplitude"_a = 1.0, "method"_a = dip::S::STOKSETH );
    m.def( "IncoherentPSF", py::overload_cast< dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
           "oversampling"_a = 1.0, "amplitude"_a = 1.0 );
+   m.def( "IncoherentPSF", py::overload_cast< dip::Image&, dip::dfloat, dip::dfloat >( &dip::IncoherentPSF ),
+          py::kw_only(), "out"_a, "oversampling"_a = 1.0, "amplitude"_a = 1.0 );
    m.def( "ExponentialFitCorrection", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::String const&, dip::dfloat, dip::String const& >( &dip::ExponentialFitCorrection ),
           "in"_a, "mask"_a = dip::Image{}, "percentile"_a = -1.0, "fromWhere"_a = "first plane", "hysteresis"_a = 1.0, "weighting"_a = "none" );
+   m.def( "ExponentialFitCorrection", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::dfloat, dip::String const&, dip::dfloat, dip::String const& >( &dip::ExponentialFitCorrection ),
+          "in"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "percentile"_a = -1.0, "fromWhere"_a = "first plane", "hysteresis"_a = 1.0, "weighting"_a = "none" );
    m.def( "AttenuationCorrection", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::AttenuationCorrection ),
           "in"_a, "fAttenuation"_a = 0.01, "bAttenuation"_a = 0.01, "background"_a = 0.0, "threshold"_a = 0.0, "NA"_a = 1.4, "refIndex"_a = 1.518, "method"_a = "DET" );
+   m.def( "AttenuationCorrection", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::AttenuationCorrection ),
+          "in"_a, py::kw_only(), "out"_a, "fAttenuation"_a = 0.01, "bAttenuation"_a = 0.01, "background"_a = 0.0, "threshold"_a = 0.0, "NA"_a = 1.4, "refIndex"_a = 1.518, "method"_a = "DET" );
    m.def( "SimulatedAttenuation", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::uint, dip::dfloat >( &dip::SimulatedAttenuation ),
           "in"_a, "fAttenuation"_a = 0.01, "bAttenuation"_a = 0.01, "NA"_a = 1.4, "refIndex"_a = 1.518, "oversample"_a = 1, "rayStep"_a = 1 );
+   m.def( "SimulatedAttenuation", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::uint, dip::dfloat >( &dip::SimulatedAttenuation ),
+          "in"_a, py::kw_only(), "out"_a, "fAttenuation"_a = 0.01, "bAttenuation"_a = 0.01, "NA"_a = 1.4, "refIndex"_a = 1.518, "oversample"_a = 1, "rayStep"_a = 1 );
 
 }

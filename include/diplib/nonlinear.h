@@ -224,12 +224,12 @@ DIP_EXPORT void Kuwahara(
 );
 DIP_NODISCARD inline Image Kuwahara(
       Image const& in,
-      Kernel const& kernel = {},
+      Kernel kernel = {},
       dfloat threshold = 0.0,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   Kuwahara( in, out, kernel, threshold, boundaryCondition );
+   Kuwahara( in, out, std::move( kernel ), threshold, boundaryCondition );
    return out;
 }
 
@@ -264,7 +264,7 @@ DIP_EXPORT void NonMaximumSuppression(
 DIP_NODISCARD inline Image NonMaximumSuppression(
       Image const& gradmag,
       Image const& gradient,
-      Image const& mask,
+      Image const& mask = {},
       String const& mode = S::INTERPOLATE
 ) {
    Image out;
@@ -684,13 +684,13 @@ DIP_EXPORT void FullBilateralFilter(
 DIP_NODISCARD inline Image FullBilateralFilter(
       Image const& in,
       Image const& estimate = {},
-      FloatArray const& spatialSigmas = { 2.0 },
+      FloatArray spatialSigmas = { 2.0 },
       dfloat tonalSigma = 30.0,
       dfloat truncation = 2.0,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   FullBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation, boundaryCondition );
+   FullBilateralFilter( in, estimate, out, std::move( spatialSigmas ), tonalSigma, truncation, boundaryCondition );
    return out;
 }
 
@@ -732,14 +732,14 @@ DIP_EXPORT void QuantizedBilateralFilter(
 DIP_NODISCARD inline Image QuantizedBilateralFilter(
       Image const& in,
       Image const& estimate = {},
-      FloatArray const& spatialSigmas = { 2.0 },
+      FloatArray spatialSigmas = { 2.0 },
       dfloat tonalSigma = 30.0,
-      FloatArray const& tonalBins = {},
+      FloatArray tonalBins = {},
       dfloat truncation = 2.0,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   QuantizedBilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, tonalBins, truncation, boundaryCondition );
+   QuantizedBilateralFilter( in, estimate, out, std::move( spatialSigmas ), tonalSigma, std::move( tonalBins ), truncation, boundaryCondition );
    return out;
 }
 
@@ -782,13 +782,13 @@ DIP_NODISCARD inline Image SeparableBilateralFilter(
       Image const& in,
       Image const& estimate = {},
       BooleanArray const& process = {},
-      FloatArray const& spatialSigmas = { 2.0 },
+      FloatArray spatialSigmas = { 2.0 },
       dfloat tonalSigma = 30.0,
       dfloat truncation = 2.0,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   SeparableBilateralFilter( in, estimate, out, process, spatialSigmas, tonalSigma, truncation, boundaryCondition );
+   SeparableBilateralFilter( in, estimate, out, process, std::move( spatialSigmas ), tonalSigma, truncation, boundaryCondition );
    return out;
 }
 
@@ -810,7 +810,7 @@ DIP_EXPORT void BilateralFilter(
       Image const& in,
       Image const& estimate,
       Image& out,
-      FloatArray const& spatialSigmas = { 2.0 },
+      FloatArray spatialSigmas = { 2.0 },
       dfloat tonalSigma = 30.0,
       dfloat truncation = 2.0,
       String const& method = "xysep",
@@ -819,14 +819,14 @@ DIP_EXPORT void BilateralFilter(
 DIP_NODISCARD inline Image BilateralFilter(
       Image const& in,
       Image const& estimate = {},
-      FloatArray const& spatialSigmas = { 2.0 },
+      FloatArray spatialSigmas = { 2.0 },
       dfloat tonalSigma = 30.0,
       dfloat truncation = 2.0,
       String const& method = "xysep",
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   BilateralFilter( in, estimate, out, spatialSigmas, tonalSigma, truncation, method, boundaryCondition );
+   BilateralFilter( in, estimate, out, std::move( spatialSigmas ), tonalSigma, truncation, method, boundaryCondition );
    return out;
 }
 

@@ -401,7 +401,7 @@ This does not work to create a row vector
     >>> b @ [[1,-1]]
     Traceback (most recent call last):
     ...
-    TypeError: can't multiply sequence by non-int of type 'diplib.PyDIP_bin.Image'
+    RuntimeError: Cannot convert input to dip::Image
 
 To create a row vector, we'd need to use the ``dip.Create0D()`` function
 

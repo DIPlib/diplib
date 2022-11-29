@@ -45,7 +45,7 @@ namespace dip {
 #define DIP_DEFINE_VIEW_FUNCTION( name, ret_type ) \
 inline ret_type name( Image::View const& in ) { \
    if( in.Offsets().empty() ) { return name( in.Reference(), in.Mask() ); } \
-   else { return name( Image( in ) ); }}
+   return name( Image( in ) ); }
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
 ///
@@ -1245,9 +1245,8 @@ DIP_EXPORT dfloat Entropy( Image const& in, Image const& mask = {}, dip::uint nB
 inline dfloat Entropy( Image::View const& in, dip::uint nBins = 256 ) {
    if( in.Offsets().empty() ) {
       return Entropy( in.Reference(), in.Mask(), nBins );
-   } else {
-      return Entropy( Image( in ), {}, nBins );
    }
+   return Entropy( Image( in ), {}, nBins );
 }
 
 /// \brief Estimates the variance of white Gaussian noise in an image.
@@ -1260,6 +1259,12 @@ inline dfloat Entropy( Image::View const& in, dip::uint nBins = 256 ) {
 /// !!! literature
 ///     - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and Image Understanding 64(2):300-302, 1996.
 DIP_EXPORT dfloat EstimateNoiseVariance( Image const& in, Image const& mask = {} );
+inline dfloat EstimateNoiseVariance( Image::View const& in ) {
+   if( in.Offsets().empty() ) {
+      return EstimateNoiseVariance( in.Reference(), in.Mask() );
+   }
+   return EstimateNoiseVariance( Image( in ) );
+}
 
 /// \endgroup
 

@@ -230,7 +230,7 @@ DIP_NODISCARD inline Image Shift(
 /// dip::Image img = dip::ImageReadTIFF( "erika" );
 /// dip::Image ft = dip::FourierTransform( img );
 /// dip::ShiftFT( ft, ft, { 10.3, -5.2 } );
-/// dip::Image shifted = dip::FourierTransform( img, { "inverse", "real" } );
+/// dip::Image shifted = dip::FourierTransform( ft, { "inverse", "real" } );
 /// ```
 ///
 /// Produces the same output as:
@@ -325,16 +325,16 @@ DIP_EXPORT Image::Pixel ResampleAtUnchecked(
 /// `out` will have the same size as `map`, and the same data type and tensor shape as `in`. If `out` is protected,
 /// its data type will not change, but the computations will still be performed in the data type of `in`.
 DIP_EXPORT void ResampleAt(
-      Image const &in,
-      Image const &map,
-      Image &out,
-      String const &interpolationMethod = S::LINEAR,
+      Image const& in,
+      Image const& map,
+      Image& out,
+      String const& interpolationMethod = S::LINEAR,
       Image::Pixel const& fill = { 0 }
 );
 DIP_NODISCARD inline Image ResampleAt(
-      Image const &in,
-      Image const &map,
-      String const &interpolationMethod = S::LINEAR,
+      Image const& in,
+      Image const& map,
+      String const& interpolationMethod = S::LINEAR,
       Image::Pixel const& fill = { 0 }
 ) {
   Image out;

@@ -359,10 +359,10 @@ class DIP_NO_EXPORT Histogram {
       /// This function is particularly interesting when applied to a histogram resulting from clustering
       /// algorithms such as \ref dip::KMeansClustering( dip::Histogram const&, dip::uint ) or
       /// \ref dip::MinimumVariancePartitioning( dip::Histogram const&, dip::uint ).
-      DIP_EXPORT void ReverseLookup( Image const& input, Image& output, BooleanArray excludeOutOfBoundValues = { false } );
-      DIP_NODISCARD Image ReverseLookup( Image const& input, BooleanArray const& excludeOutOfBoundValues = { false } ) {
+      DIP_EXPORT void ReverseLookup( Image const& input, Image& out, BooleanArray excludeOutOfBoundValues = { false } );
+      DIP_NODISCARD Image ReverseLookup( Image const& input, BooleanArray excludeOutOfBoundValues = { false } ) {
          Image out;
-         ReverseLookup( input, out, excludeOutOfBoundValues );
+         ReverseLookup( input, out, std::move( excludeOutOfBoundValues ));
          return out;
       }
 

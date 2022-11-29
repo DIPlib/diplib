@@ -80,11 +80,11 @@ DIP_NODISCARD inline Image Label(
       dip::uint connectivity = 0,
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
-      StringArray const& boundaryCondition = {},
+      StringArray boundaryCondition = {},
       String const& mode = S::ALL
 ) {
    Image out;
-   Label( binary, out, connectivity, minSize, maxSize, boundaryCondition, mode );
+   Label( binary, out, connectivity, minSize, maxSize, std::move( boundaryCondition ), mode );
    return out;
 }
 

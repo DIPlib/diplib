@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include <diplib/file_io.h>
 #include "pydip.h"
 #include "diplib/measurement.h"
 #include "diplib/chain_code.h"
@@ -436,6 +435,7 @@ void init_measurement( py::module& m ) {
    chain.def( "LongestRun", &dip::ChainCode::LongestRun );
    chain.def( "Polygon", &dip::ChainCode::Polygon );
    chain.def( "Image", py::overload_cast<>( &dip::ChainCode::Image, py::const_ ));
+   chain.def( "Image", py::overload_cast< dip::Image& >( &dip::ChainCode::Image, py::const_ ), "out"_a );
    chain.def( "Coordinates", &dip::ChainCode::Coordinates );
    chain.def( "Offset", &dip::ChainCode::Offset );
 

@@ -119,10 +119,16 @@ void init_assorted( py::module& m ) {
                                 "This is a submodule that uses a static `dip::ColorSpaceManager` object.\n"
                                 "Functions defined in this module correspond to the object member functions\n"
                                 "in C++." );
-   mcol.def( "Convert", []( dip::Image const& in, dip::String const& colorSpaceName ){ return colorSpaceManager().Convert( in, colorSpaceName ); }, "in"_a, "colorSpaceName"_a = "RGB" );
-   mcol.def( "IsDefined", []( dip::String const& colorSpaceName ){ return colorSpaceManager().IsDefined( colorSpaceName ); }, "colorSpaceName"_a = "RGB" );
-   mcol.def( "NumberOfChannels", []( dip::String const& colorSpaceName ){ return colorSpaceManager().NumberOfChannels( colorSpaceName ); }, "colorSpaceName"_a = "RGB" );
-   mcol.def( "CanonicalName", []( dip::String const& colorSpaceName ){ return colorSpaceManager().CanonicalName( colorSpaceName ); }, "colorSpaceName"_a = "RGB" );
+   mcol.def( "Convert", []( dip::Image const& in, dip::String const& colorSpaceName ){ return colorSpaceManager().Convert( in, colorSpaceName ); },
+             "in"_a, "colorSpaceName"_a = "RGB" );
+   mcol.def( "Convert", []( dip::Image const& in, dip::Image& out, dip::String const& colorSpaceName ){ return colorSpaceManager().Convert( in, out, colorSpaceName ); },
+             "in"_a, py::kw_only(), "out"_a, "colorSpaceName"_a = "RGB" );
+   mcol.def( "IsDefined", []( dip::String const& colorSpaceName ){ return colorSpaceManager().IsDefined( colorSpaceName ); },
+             "colorSpaceName"_a = "RGB" );
+   mcol.def( "NumberOfChannels", []( dip::String const& colorSpaceName ){ return colorSpaceManager().NumberOfChannels( colorSpaceName ); },
+             "colorSpaceName"_a = "RGB" );
+   mcol.def( "CanonicalName", []( dip::String const& colorSpaceName ){ return colorSpaceManager().CanonicalName( colorSpaceName ); },
+             "colorSpaceName"_a = "RGB" );
    // TODO: WhitePoint stuff
 
    // diplib/display.h
@@ -148,12 +154,21 @@ void init_assorted( py::module& m ) {
                dip::uint dim2
           ) {
             return ImageDisplay( input, {}, mappingMode, complexMode, projectionMode, coordinates, dim1, dim2 );
-          }, "in"_a, "mappingMode"_a = "", "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1,
+          }, "in"_a, "mappingMode"_a, "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1,
           "Overload of the above that allows a `mappingMode` to be given instead of\n"
           "a `range`." );
-   m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::String const& >( &dip::ApplyColorMap ), "in"_a, "colorMap"_a = "grey" );
-   m.def( "Overlay", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image::Pixel const& >( &dip::Overlay ), "in"_a, "overlay"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 } );
-   m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::uint >( &dip::MarkLabelEdges ), "in"_a, "factor"_a = 2 );
+   m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::String const& >( &dip::ApplyColorMap ),
+          "in"_a, "colorMap"_a = "grey" );
+   m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::ApplyColorMap ),
+          "in"_a, py::kw_only(), "out"_a, "colorMap"_a = "grey" );
+   m.def( "Overlay", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image::Pixel const& >( &dip::Overlay ),
+          "in"_a, "overlay"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 } );
+   m.def( "Overlay", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::Image::Pixel const& >( &dip::Overlay ),
+          "in"_a, "overlay"_a, py::kw_only(), "out"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 } );
+   m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::uint >( &dip::MarkLabelEdges ),
+          "in"_a, "factor"_a = 2 );
+   m.def( "MarkLabelEdges", py::overload_cast< dip::Image const&, dip::Image&, dip::uint >( &dip::MarkLabelEdges ),
+          "in"_a, py::kw_only(), "out"_a, "factor"_a = 2 );
 
    // diplib/file_io.h
    m.def( "ImageReadICS", []( dip::String const& filename, dip::RangeArray const& roi, dip::Range const& channels, dip::String const& mode ) {
@@ -247,30 +262,60 @@ void init_assorted( py::module& m ) {
           }, "image"_a, "filename"_a, "format"_a = "", "compression"_a = "" );
 
    // diplib/geometry.h
-   m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray >( &dip::Wrap ), "in"_a, "wrap"_a );
-   m.def( "Subsampling", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Subsampling ), "in"_a, "sample"_a );
+   m.def( "Wrap", py::overload_cast< dip::Image const&, dip::IntegerArray >( &dip::Wrap ),
+          "in"_a, "wrap"_a );
+   m.def( "Wrap", py::overload_cast< dip::Image const&, dip::Image&, dip::IntegerArray >( &dip::Wrap ),
+          "in"_a, py::kw_only(), "out"_a, "wrap"_a );
+   m.def( "Subsampling", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Subsampling ),
+          "in"_a, "sample"_a );
+   m.def( "Subsampling", py::overload_cast< dip::Image const&, dip::Image&, dip::UnsignedArray const& >( &dip::Subsampling ),
+          "in"_a, py::kw_only(), "out"_a, "sample"_a );
    m.def( "Resampling", py::overload_cast< dip::Image const&, dip::FloatArray, dip::FloatArray, dip::String const&, dip::StringArray const& >( &dip::Resampling ),
           "in"_a, "zoom"_a = dip::FloatArray{ 1.0 }, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "Resampling", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray, dip::FloatArray, dip::String const&, dip::StringArray const& >( &dip::Resampling ),
+          "in"_a, py::kw_only(), "out"_a, "zoom"_a = dip::FloatArray{ 1.0 }, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Shift", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::Shift ),
           "in"_a, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = dip::S::FOURIER, "boundaryCondition"_a = dip::StringArray{} );
-   m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::Image::Pixel const& >( &dip::ResampleAt ),
-          "in"_a, "map"_a, "method"_a = dip::S::LINEAR, "fill"_a = dip::Image::Pixel{ 0 } );
+   m.def( "Shift", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::String const&, dip::StringArray const& >( &dip::Shift ),
+          "in"_a, py::kw_only(), "out"_a, "shift"_a = dip::FloatArray{ 0.0 }, "interpolationMethod"_a = dip::S::FOURIER, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "ShiftFT", py::overload_cast< dip::Image const&, dip::FloatArray >( &dip::ShiftFT ),
+          "in"_a, "shift"_a = dip::FloatArray{ 0.0 } );
+   m.def( "ShiftFT", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray >( &dip::ShiftFT ),
+          "in"_a, py::kw_only(), "out"_a, "shift"_a = dip::FloatArray{ 0.0 } );
    m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::FloatCoordinateArray const&, dip::String const&, dip::Image::Pixel const& >( &dip::ResampleAt ),
           "in"_a, "coordinates"_a, "method"_a = dip::S::LINEAR, "fill"_a = dip::Image::Pixel{ 0 } );
+   m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatCoordinateArray const&, dip::String const&, dip::Image::Pixel const& >( &dip::ResampleAt ),
+          "in"_a, py::kw_only(), "out"_a, "coordinates"_a, "method"_a = dip::S::LINEAR, "fill"_a = dip::Image::Pixel{ 0 } );
    m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::Image::Pixel const& >( &dip::ResampleAt ),
           "in"_a, "coordinates"_a, "method"_a = dip::S::LINEAR, "fill"_a = dip::Image::Pixel{ 0 } );
+   m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::Image::Pixel const& >( &dip::ResampleAt ),
+          "in"_a, "map"_a, "method"_a = dip::S::LINEAR, "fill"_a = dip::Image::Pixel{ 0 } );
+   m.def( "ResampleAt", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::String const&, dip::Image::Pixel const& >( &dip::ResampleAt ),
+          "in"_a, "map"_a, py::kw_only(), "out"_a, "method"_a = dip::S::LINEAR, "fill"_a = dip::Image::Pixel{ 0 } );
    m.def( "Skew", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::uint, dip::String const&, dip::StringArray const& >( &dip::Skew ),
           "in"_a, "shearArray"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "Skew", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::uint, dip::String const&, dip::StringArray const& >( &dip::Skew ),
+          "in"_a, py::kw_only(), "out"_a, "shearArray"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Skew", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Skew ),
           "in"_a, "shear"_a, "skew"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
+   m.def( "Skew", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Skew ),
+          "in"_a, py::kw_only(), "out"_a, "shear"_a, "skew"_a, "axis"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
    m.def( "Rotation", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation ),
           "in"_a, "angle"_a, "dimension1"_a, "dimension2"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS );
+   m.def( "Rotation", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::uint, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation ),
+          "in"_a, py::kw_only(), "out"_a, "angle"_a, "dimension1"_a, "dimension2"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = dip::S::ADD_ZEROS );
    m.def( "Rotation2D", py::overload_cast< dip::Image const&, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation2D ),
           "in"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
+   m.def( "Rotation2D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation2D ),
+          "in"_a, py::kw_only(), "out"_a, "angle"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
    m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation3D ),
           "in"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
+   m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::uint, dip::String const&, dip::String const& >( &dip::Rotation3D ),
+          "in"_a, py::kw_only(), "out"_a, "angle"_a, "axis"_a = 2, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
    m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3D ),
           "in"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
+   m.def( "Rotation3D", py::overload_cast< dip::Image const&, dip::Image&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::String const& >( &dip::Rotation3D ),
+          "in"_a, py::kw_only(), "out"_a, "alpha"_a, "beta"_a, "gamma"_a, "interpolationMethod"_a = "", "boundaryCondition"_a = "" );
    m.def( "RotationMatrix2D", py::overload_cast< dip::dfloat >( &dip::RotationMatrix2D ),
           "angle"_a );
    m.def( "RotationMatrix3D", py::overload_cast< dip::dfloat, dip::dfloat, dip::dfloat >( &dip::RotationMatrix3D ),
@@ -279,21 +324,37 @@ void init_assorted( py::module& m ) {
           "vector"_a, "angle"_a );
    m.def( "AffineTransform", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const& >( &dip::AffineTransform ),
           "in"_a, "matrix"_a, "interpolationMethod"_a = dip::S::LINEAR );
+   m.def( "AffineTransform", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray const&, dip::String const& >( &dip::AffineTransform ),
+          "in"_a, py::kw_only(), "out"_a, "matrix"_a, "interpolationMethod"_a = dip::S::LINEAR );
    m.def( "WarpControlPoints", py::overload_cast< dip::Image const&, dip::FloatCoordinateArray const&, dip::FloatCoordinateArray const&, dip::dfloat, dip::String const& >( &dip::WarpControlPoints ),
           "in"_a, "inCoordinates"_a, "outCoordinates"_a, "regularizationLambda"_a = 0.0, "interpolationMethod"_a = dip::S::LINEAR );
+   m.def( "WarpControlPoints", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatCoordinateArray const&, dip::FloatCoordinateArray const&, dip::dfloat, dip::String const& >( &dip::WarpControlPoints ),
+          "in"_a, py::kw_only(), "out"_a, "inCoordinates"_a, "outCoordinates"_a, "regularizationLambda"_a = 0.0, "interpolationMethod"_a = dip::S::LINEAR );
    m.def( "LogPolarTransform2D", py::overload_cast< dip::Image const&, dip::String const& >( &dip::LogPolarTransform2D ),
           "in"_a, "interpolationMethod"_a = dip::S::LINEAR );
+   m.def( "LogPolarTransform2D", py::overload_cast< dip::Image const&, dip::Image&, dip::String const& >( &dip::LogPolarTransform2D ),
+          "in"_a, py::kw_only(), "out"_a, "interpolationMethod"_a = dip::S::LINEAR );
 
    m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::UnsignedArray >( &dip::Tile ),
           "in_array"_a, "tiling"_a = dip::UnsignedArray{} );
+   m.def( "Tile", py::overload_cast< dip::ImageConstRefArray const&, dip::Image&, dip::UnsignedArray >( &dip::Tile ),
+          "in_array"_a, py::kw_only(), "out"_a, "tiling"_a = dip::UnsignedArray{} );
    m.def( "TileTensorElements", py::overload_cast< dip::Image const& >( &dip::TileTensorElements ),
           "in"_a );
+   m.def( "TileTensorElements", py::overload_cast< dip::Image const&, dip::Image& >( &dip::TileTensorElements ),
+          "in"_a, py::kw_only(), "out"_a );
    m.def( "Concatenate", py::overload_cast< dip::ImageConstRefArray const&, dip::uint >( &dip::Concatenate ),
           "in_array"_a, "dimension"_a = 0 );
+   m.def( "Concatenate", py::overload_cast< dip::ImageConstRefArray const&, dip::Image&, dip::uint >( &dip::Concatenate ),
+          "in_array"_a, py::kw_only(), "out"_a, "dimension"_a = 0 );
    m.def( "Concatenate", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::Concatenate ),
           "in1"_a, "in2"_a, "dimension"_a = 0 );
+   m.def( "Concatenate", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image&, dip::uint >( &dip::Concatenate ),
+          "in1"_a, "in2"_a, py::kw_only(), "out"_a, "dimension"_a = 0 );
    m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const& >( &dip::JoinChannels ),
           "in_array"_a );
+   m.def( "JoinChannels", py::overload_cast< dip::ImageConstRefArray const&, dip::Image& >( &dip::JoinChannels ),
+          "in_array"_a, py::kw_only(), "out"_a );
 
    // diplib/testing.h
    auto mtesting = m.def_submodule( "testing", "Functions to help test and debug your code." );

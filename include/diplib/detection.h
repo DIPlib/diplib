@@ -438,12 +438,12 @@ DIP_EXPORT void FrangiVesselness(
 DIP_NODISCARD inline Image FrangiVesselness(
       Image const& in,
       FloatArray const& sigmas = { 2.0 },
-      FloatArray const& parameters = {}, // for 3D: { 0.5, 0.5, 500 }; for 2D: { 0.5, 15 }
+      FloatArray parameters = {}, // for 3D: { 0.5, 0.5, 500 }; for 2D: { 0.5, 15 }
       String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   FrangiVesselness( in, out, sigmas, parameters, polarity, boundaryCondition );
+   FrangiVesselness( in, out, sigmas, std::move( parameters ), polarity, boundaryCondition );
    return out;
 }
 

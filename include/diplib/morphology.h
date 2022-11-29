@@ -856,12 +856,12 @@ DIP_EXPORT void RankMinClosing(
 );
 DIP_NODISCARD inline Image RankMinClosing(
       Image const& in,
-      StructuringElement const& se = {},
+      StructuringElement se = {},
       dip::uint rank = 2,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   RankMinClosing( in, out, se, rank, boundaryCondition );
+   RankMinClosing( in, out, std::move( se ), rank, boundaryCondition );
    return out;
 }
 
@@ -894,12 +894,12 @@ DIP_EXPORT void RankMaxOpening(
 );
 DIP_NODISCARD inline Image RankMaxOpening(
       Image const& in,
-      StructuringElement const& se = {},
+      StructuringElement se = {},
       dip::uint rank = 2,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   RankMaxOpening( in, out, se, rank, boundaryCondition );
+   RankMaxOpening( in, out, std::move( se ), rank, boundaryCondition );
    return out;
 }
 
@@ -982,10 +982,10 @@ DIP_NODISCARD inline Image Watershed(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      StringSet const& flags = {}
+      StringSet flags = {}
 ) {
    Image out;
-   Watershed( in, mask, out, connectivity, maxDepth, maxSize, flags );
+   Watershed( in, mask, out, connectivity, maxDepth, maxSize, std::move( flags ));
    return out;
 }
 
@@ -1504,7 +1504,7 @@ DIP_NODISCARD inline Image ImposeMinima(
       Image const& in,
       Image const& marker,
       dip::uint connectivity = 0
-            ) {
+) {
    Image out;
    ImposeMinima( in, marker, out, connectivity );
    return out;
@@ -1585,7 +1585,6 @@ DIP_EXPORT void AreaOpening(
       Image& out,
       dip::uint filterSize,
       dip::uint connectivity = 0,
-      // TODO: we could use a boundary condition parameter here (keep or preserve smaller areas at the image edge)
       String const& polarity = S::OPENING
 );
 DIP_NODISCARD inline Image AreaOpening(
@@ -1657,7 +1656,6 @@ DIP_EXPORT void VolumeOpening(
       Image& out,
       dfloat filterSize,
       dip::uint connectivity = 0,
-      // TODO: we could use a boundary condition parameter here (keep or preserve smaller areas at the image edge)
       String const& polarity = S::OPENING
 );
 DIP_NODISCARD inline Image VolumeOpening(
@@ -1778,12 +1776,12 @@ DIP_EXPORT void DirectedPathOpening(
 DIP_NODISCARD inline Image DirectedPathOpening(
       Image const& in,
       Image const& mask,
-      IntegerArray const& filterParam,
+      IntegerArray filterParam,
       String const& polarity = S::OPENING,
       StringSet const& mode = {}
 ) {
    Image out;
-   DirectedPathOpening( in, mask, out, filterParam, polarity, mode );
+   DirectedPathOpening( in, mask, out, std::move( filterParam ), polarity, mode );
    return out;
 }
 
