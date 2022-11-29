@@ -12,7 +12,7 @@ Write some arrays with NumPy, then read in as DIPlib images
 A test matrix, 2D (double float), write using NumPy
 
     >>> fname = 'test2Da'
-    >>> data0 = np.random.rand(25,28)
+    >>> data0 = np.random.rand(25, 28)
     >>> np.save(fname, data0)
     >>> img0 = dip.Image(data0)
 
@@ -48,7 +48,7 @@ Load using DIPlib and compare
 A test matrix, 1D (single complex), write using NumPy
 
     >>> fname = 'test1Da'
-    >>> data0 = np.random.rand(25,2).astype(np.single)
+    >>> data0 = np.random.rand(25, 2).astype(np.single)
     >>> data0 = data0.view(dtype=np.csingle)
     >>> np.save(fname, data0)
     >>> img0 = dip.Image(data0)
@@ -69,7 +69,7 @@ Write some images with DIPlib, then read in as NumPy arrays and as DIPlib images
 A test image, 2D (single float), write using DIPlib
 
     >>> fname = 'test2Db.npy'
-    >>> data0 = np.random.rand(25,28).astype(np.single)
+    >>> data0 = np.random.rand(25, 28).astype(np.single)
     >>> img0 = dip.Image(data0)
     >>> dip.ImageWriteNPY(img0, fname)
 
@@ -193,7 +193,7 @@ Load using DIPlib and compare
 A test matrix, 1D (double complex), write using DIPlib
 
     >>> fname = 'test1Db.npy'
-    >>> data0 = np.random.rand(25,2)
+    >>> data0 = np.random.rand(25, 2)
     >>> data0 = data0.view(dtype=np.cdouble)
     >>> img0 = dip.Image(data0)
     >>> dip.ImageWriteNPY(img0, fname)

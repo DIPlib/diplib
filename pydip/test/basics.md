@@ -1,4 +1,4 @@
-``pydip`` unit tests
+PyDIP basics
 ===
 
 First import PyDIP (``diplib``). Usually, we put it in the ``dip`` namespace.
