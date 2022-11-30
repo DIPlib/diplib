@@ -66,3 +66,8 @@ Currently, *DIPlib 3* has interfaces or bindings to the following packages:
 The *DIPlib* project further contains these additional modules:
 
 - \ref dipviewer: an interactive image display utility.
+
+# Building the project
+
+See \ref building_summary for a quick summary and links to detailed, step-by-step
+instructions.
