@@ -140,7 +140,8 @@ The `DIP` target is the *DIPlib* library itself. To build the *DIPimage* toolbox
 the `INSTALL` target. This target builds everything
 and installs it in the destination directory you specified in *CMake*
 (`C:\Users\<name>\DIPlib` in our example). This is the target you will want to build.
-To additionally install *PyDIP*, use the `pip_install` target.
+To additionally install *PyDIP*, use the `pip_install` target (but note that you need
+to run the `INSTALL` target first).
 
 In the tool bar, make sure that "Release" and "x64" are selected (or x86 if you want to
 build 32-bit binaries). Right-click on `INSTALL` and select "Build".

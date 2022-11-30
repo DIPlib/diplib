@@ -177,6 +177,7 @@ and installing, run
 ```bash
 make pip_install
 ```
+Note that it is necessary to install the *DIPlib* libraries before running the `pip_install` target.
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
 option to `cmake`. This will enable additional optimizations that are specific

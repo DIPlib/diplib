@@ -111,6 +111,8 @@ The `apidoc` target requires that [*dox++*](https://crisluengo.github.io/doxpp/)
 the target will not be available if it is not; this target will fail to build if additional tools are not installed.
 See \ref building_documentation for details.
 
+The `pip_install` target requires the *DIPlib* libraries to already be installed, so always run the `install` target
+first.
 
 \section cmake_variables *CMake* variables
 
