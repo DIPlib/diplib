@@ -156,7 +156,7 @@ add_custom_target(staging
                   DEPENDS PyDIP)
 
 add_custom_target(bdist_wheel
-                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin>/staging ${PYTHON_EXECUTABLE} ../setup.py bdist_wheel
+                  COMMAND ${CMAKE_COMMAND} -E chdir $<TARGET_FILE_DIR:PyDIP_bin>/staging ${PYTHON_EXECUTABLE} -m build --wheel --no-isolation
                   DEPENDS staging)
 
 add_custom_target(pip_install

@@ -21,6 +21,7 @@ os.makedirs(diplib_dir)
 # Copy files
 shutil.copy(os.path.join(source_dir, 'setup', 'README.md'), staging_dir)
 shutil.copy(os.path.join(source_dir, '..', 'LICENSE.txt'), staging_dir)
+shutil.copy(os.path.join(staging_dir, '..', 'setup.py'), staging_dir)
 for f in files:
     shutil.copy(f, diplib_dir)
 for f in binaries:

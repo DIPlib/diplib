@@ -22,7 +22,7 @@ except:
 libraries = [$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:'$<TARGET_FILE_NAME:PyDIPviewer>',>
              $<$<BOOL:${DIP_BUILD_JAVAIO}>:'$<TARGET_FILE_NAME:PyDIPjavaio>',>
              '$<TARGET_FILE_NAME:PyDIP_bin>']
-if @pydip_wheel_include_libs@:
+if ${pydip_wheel_include_libs}:
     libraries.extend([$<$<BOOL:${DIP_BUILD_DIPVIEWER}>:'$<TARGET_FILE_NAME:DIPviewer>',>
                       $<$<BOOL:${DIP_BUILD_JAVAIO}>:'$<TARGET_FILE_NAME:DIPjavaio>',>
                       '$<TARGET_FILE_NAME:DIP>'])
