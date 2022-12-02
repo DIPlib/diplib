@@ -57,20 +57,6 @@ class type_caster< dip::FileInformation > {
 
 namespace {
 
-void OptionallyReverseDimensions( dip::Image& img ) {
-   if( !ReverseDimensions() ) {
-      img.ReverseDimensions();
-   }
-}
-
-void OptionallyReverseDimensions( dip::FileInformation& fi ) {
-   if( !ReverseDimensions() ) {
-      fi.sizes.reverse();
-      fi.pixelSize.Reverse( fi.sizes.size() );
-      fi.origin.reverse(); // let's hope this array has the right number of elements...
-   }
-}
-
 dip::ColorSpaceManager& colorSpaceManager() {
    static dip::ColorSpaceManager manager;
    return manager;

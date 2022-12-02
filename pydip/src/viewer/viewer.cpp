@@ -18,7 +18,14 @@
 #include "dipviewer.h"
 #include "diplib/viewer/slice.h"
 
-#include "../pydip.h"
+#include <pybind11/pybind11.h>
+
+using namespace pybind11::literals;
+namespace py = pybind11;
+
+bool AreDimensionsReversed() {
+   return static_cast< py::object >( py::module_::import( "diplib" ).attr( "AreDimensionsReversed" ))().cast< bool >();
+}
 
 static dip::String toString( dip::uint idx, dip::String const* options, dip::uint n ) {
    DIP_THROW_IF( idx >= n, dip::E::INDEX_OUT_OF_RANGE );
@@ -159,7 +166,7 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    m.def( "Show", []( dip::Image const& image, dip::String const& title ) {
              if( PyOS_InputHook == nullptr ) PyOS_InputHook = &drawHook;
              auto h = dip::viewer::Show( image, title );
-             if( !ReverseDimensions() ) {
+             if( !AreDimensionsReversed() ) {
                 // Reverse shown dimensions
                 auto& dims = h->options().dims_;
                 if( image.Dimensionality() == 0 )

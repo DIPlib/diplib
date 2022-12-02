@@ -18,6 +18,25 @@
 #include "pydip.h"
 #include "diplib/generic_iterators.h"
 
+// We set `reverseDimensions` to `true` by default, meaning that dimensions are reversed when
+// reading or writing from a Python buffer protocol object. Calling `ReverseDimensions()`
+// from Python sets the `reverseDimensions` value to `false`.
+static bool reverseDimensions = true;
+
+void OptionallyReverseDimensions( dip::Image& img ) {
+   if( !reverseDimensions ) {
+      img.ReverseDimensions();
+   }
+}
+
+void OptionallyReverseDimensions( dip::FileInformation& fi ) {
+   if( !reverseDimensions ) {
+      fi.sizes.reverse();
+      fi.pixelSize.Reverse( fi.sizes.size() );
+      fi.origin.reverse(); // let's hope this array has the right number of elements...
+   }
+}
+
 namespace {
 
 dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
@@ -106,12 +125,12 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       out.SetDataType( datatype );
       return out;
    }
-   // Sizes, optionally reversed
+   // Sizes
    dip::UnsignedArray sizes( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
       sizes[ ii ] = static_cast< dip::uint >( info.shape[ ii ] );
    }
-   // Strides, also optionally reversed
+   // Strides
    dip::IntegerArray strides( ndim, 1 );
    for( dip::uint ii = 0; ii < ndim; ++ii ) {
       dip::sint s = info.strides[ ii ] / static_cast< dip::sint >( info.itemsize );
@@ -120,7 +139,7 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       strides[ ii ] = s;
    }
    // Optionally reverse dimensions
-   if( ReverseDimensions() ) {
+   if( reverseDimensions ) {
       sizes.reverse();
       strides.reverse();
    }
@@ -222,7 +241,7 @@ py::buffer_info ImageToBuffer( dip::Image const& image ) {
       s *= itemsize;
    }
    // Optionally reverse sizes and strides arrays
-   if( ReverseDimensions() ) {
+   if( reverseDimensions ) {
       sizes.reverse();
       strides.reverse();
    }
@@ -593,4 +612,15 @@ void init_image( py::module& m ) {
    m.def( "Convert", py::overload_cast< dip::Image const&, dip::Image&, dip::DataType >( &dip::Convert ),
           "src"_a, py::kw_only(), "dest"_a, "dt"_a );
 
+   m.def( "ReverseDimensions", [](){ reverseDimensions = false; },
+          "By default, DIPlib uses the (x,y,z) index order. This order is reversed from\n"
+          "how NumPy (and, by extension, packages such as scikit-image, matplotlib and\n"
+          "imageio) index. Calling `ReverseDimensions()` causes DIPlib, for the remainder\n"
+          "of the session, to also follow the (z,y,x) index order, giving dimensions the\n"
+          "same order as Python users might be used to. Use this function at the top of\n"
+          "your program, right after importing the `diplib` package. There is no way to\n"
+          "revert to the default order. Please don't try to mix dimension ordering within\n"
+          "your program.\n\nSee dip.AreDimensionsReversed().");
+   m.def( "AreDimensionsReversed", [](){ return reverseDimensions; },
+          "Shows the status of the dimension order flag, see dip.ReverseDimensions().");
 }

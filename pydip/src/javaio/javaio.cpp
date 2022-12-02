@@ -18,17 +18,21 @@
 #include "diplib/javaio.h"
 #include "diplib/simple_file_io.h"
 
-#include "../pydip.h"
+#include <pybind11/pybind11.h>
 
 using namespace pybind11::literals;
 namespace py = pybind11;
+
+bool AreDimensionsReversed() {
+   return static_cast< py::object >( py::module_::import( "diplib" ).attr( "AreDimensionsReversed" ))().cast< bool >();
+}
 
 PYBIND11_MODULE( PyDIPjavaio, m ) {
 
    // diplib/javaio.h
    m.def( "ImageReadJavaIO", []( dip::String const& filename, dip::String const& interface ) {
              auto out = dip::javaio::ImageReadJavaIO( filename, interface );
-             if( !ReverseDimensions() ) {
+             if( !AreDimensionsReversed() ) {
                 out.ReverseDimensions();
              }
              return out;
@@ -38,7 +42,7 @@ PYBIND11_MODULE( PyDIPjavaio, m ) {
    // We redefine ImageRead here, the version in PyDIP_bin is without DIPjavaio.
    m.def( "ImageRead", []( dip::String const& filename, dip::String const& format ) {
              auto out = dip::ImageRead( filename, format );
-             if( !ReverseDimensions() ) {
+             if( !AreDimensionsReversed() ) {
                 out.ReverseDimensions();
              }
              return out;
