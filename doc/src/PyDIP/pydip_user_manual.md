@@ -217,3 +217,12 @@ This means that the *NumPy* indexing order will be preserved, images will be ind
 This has several surprising results, for example the direction of all angles is reversed, with
 positive angles being counter-clockwise instead of clockwise. This option is intended to make it
 easier to mix *DIPlib* functions into code that also uses e.g. *scikit-image*.
+
+When casting a tensor image to a *NumPy* array, the tensor dimension will become the last array dimension.
+When casting a *NumPy* array to a *DIPlib* image, there is no information about which dimension, if
+any, is the tensor dimension. By default the following heuristic is used: if the array has more than
+two dimensions, and if the smaller of the last or the first array dimension has no more than 4 elements,
+then that dimension will be the tensor dimension. The tensor will have a column vector shape (this is the
+default tensor shape in *DIPlib*). The threshold of 4 was picked because it will handle correctly all color
+images. This threshold can be adjusted using `dip.SetTensorConversionThreshold()`. If set to 0, all arrays
+will be converted to a scalar image.

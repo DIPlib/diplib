@@ -89,7 +89,7 @@ The data type is preserved.
     >>> dip.Image(np.zeros((10, 20), dtype=complex))
     <Scalar image, DCOMPLEX, sizes {20, 10}>
 
-As a convenience, images with the first or last dimension having less than 10 elements are interpreted
+As a convenience, images with the first or last dimension having 4 or fewer elements are interpreted
 as tensor images along that dimension.
 
     >>> dip.Image(np.zeros((10, 20, 3)))

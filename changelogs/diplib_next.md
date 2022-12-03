@@ -230,6 +230,10 @@ title: "Changes DIPlib 3.x.x"
   non-beta release it has been possible to index the tensor element using `()`, so this function has no purpose.
   It also does not exist in *DIPlib* itself.
 
+- By default, it is now at most 4 elements for a *NumPy* array dimension to be interpreted as the tensor
+  dimension when converting the array to a `dip.Image` (the threshold used to be 9). This threshold can
+  be adjusted at runtime using `dip.SetTensorConversionThreshold()`.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

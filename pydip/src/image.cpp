@@ -37,6 +37,11 @@ void OptionallyReverseDimensions( dip::FileInformation& fi ) {
    }
 }
 
+// This is the number of elements along the first or last dimension of an array that will
+// be interpreted as the tensor dimension when converting the array to a dip.Image.
+// Use dip.SetTensorConversionThreshold() in Python to change this value.
+static dip::uint tensorConversionThreshold = 4;
+
 namespace {
 
 dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
@@ -153,18 +158,20 @@ dip::Image BufferToImage( py::buffer& buf, bool auto_tensor = true ) {
       PyGILState_STATE gstate;
       gstate = PyGILState_Ensure();
       Py_XDECREF( static_cast< PyObject* >( obj ));
-      PyGILState_Release( gstate);
+      PyGILState_Release( gstate );
    }};
    // Create an image with all of this.
    dip::Image out( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
 
    if( auto_tensor ) {
-      // If it's a 3D image and the first or last dimension has <10 pixels, let's assume it's a tensor dimension:
-      if(( sizes.size() > 2 ) && ( sizes[ 0 ] < 10 || sizes[ ndim - 1 ] < 10 )) {
-         if( sizes[ 0 ] < sizes[ ndim - 1 ] ) {
-            out.SpatialToTensor( 0 );
-         } else {
-            out.SpatialToTensor( ndim - 1 );
+      // If it's a 3D image and the first or last dimension has few pixels, let's assume it's a tensor dimension:
+      if( sizes.size() > 2 ) {
+         dip::uint dim = ndim - 1;
+         if( sizes[ 0 ] < sizes[ dim ] ) {
+            dim = 0;
+         }
+         if( sizes[ dim ] <= tensorConversionThreshold ) {
+            out.SpatialToTensor( dim );
          }
       }
    }
@@ -623,4 +630,10 @@ void init_image( py::module& m ) {
           "your program.\n\nSee dip.AreDimensionsReversed().");
    m.def( "AreDimensionsReversed", [](){ return reverseDimensions; },
           "Shows the status of the dimension order flag, see dip.ReverseDimensions().");
+
+   m.def( "SetTensorConversionThreshold", []( dip::uint n ){ tensorConversionThreshold = n; },
+          "n"_a = 4,
+          "Sets the threshold for the size of array dimension to be converted to the image\n"
+          "tensor dimension, used when converting a NumPy array to a DIPlib image." );
+
 }
