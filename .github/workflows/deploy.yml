@@ -46,7 +46,7 @@ jobs:
         # Install libraries and Python packages we need
         run: |
           choco install openjdk8 --no-progress --yes
-          python -m pip install wheel numpy twine wget
+          python -m pip install wheel build numpy twine wget
 
       - name: Deploy
         run: tools/travis/deploy_windows.bat

@@ -57,15 +57,15 @@ jobs:
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
             sudo apt-get -y install freeglut3-dev
-            python3 -m pip install setuptools wheel numpy
+            python3 -m pip install setuptools wheel build numpy
           elif [ "$RUNNER_OS" == "Windows" ]; then
             choco install openjdk8 --no-progress --yes
-            python -m pip install setuptools wheel numpy wget
+            python -m pip install setuptools wheel build numpy wget
             python -m wget https://github.com/glfw/glfw/releases/download/3.3.5/glfw-3.3.5.bin.WIN64.zip
             python -c "import zipfile; zip = zipfile.ZipFile('glfw-3.3.5.bin.WIN64.zip', 'r'); zip.extractall()"
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install libomp glfw
-            python3 -m pip install setuptools wheel numpy
+            python3 -m pip install setuptools wheel build numpy
           fi
         shell: bash
 
