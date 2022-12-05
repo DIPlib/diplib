@@ -187,7 +187,7 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
-- Added bindings for `dip::testing::Timer`.
+- Added bindings for `dip.testing.Timer`.
 
 - Added functions `dip.MeanRelativeError()` and `dip.MaximumRelativeError()`.
 
@@ -210,6 +210,9 @@ title: "Changes DIPlib 3.x.x"
   writes it to the image passed as `out`. `out` and all subsequent arguments are keyword-only.
 
 - Added unary operator `+`, which converts binary images to `uint8`, and does not affect other images.
+
+- Added `dip.Image.SetDataType()`, which can be used only on raw images, and became useful when we added
+  the `out` keyword argument to functions.
 
 ### Changed functionality
 

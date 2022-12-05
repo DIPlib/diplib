@@ -352,6 +352,7 @@ void init_image( py::module& m ) {
    img.def( "IsVector", &dip::Image::IsVector );
    img.def( "IsSquare", &dip::Image::IsSquare );
    img.def( "DataType", &dip::Image::DataType );
+   img.def( "SetDataType", &dip::Image::SetDataType );
    img.def( "ColorSpace", &dip::Image::ColorSpace );
    img.def( "IsColor", &dip::Image::IsColor );
    img.def( "SetColorSpace", &dip::Image::SetColorSpace, "colorSpace"_a );

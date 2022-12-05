@@ -75,7 +75,7 @@ void init_filtering( py::module& m ) {
    m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),
           "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Image&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),
-          "in"_a, "kernel"_a, py::kw_only(), "out"_a, "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, py::kw_only(), "out"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const& >( &dip::GaussFT ),
           "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "truncation"_a = 3.0, "inRepresentation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL );
    m.def( "GaussFT", py::overload_cast< dip::Image const&, dip::Image&, dip::FloatArray, dip::UnsignedArray, dip::dfloat, dip::String const&, dip::String const& >( &dip::GaussFT ),
