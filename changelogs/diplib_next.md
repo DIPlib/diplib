@@ -243,6 +243,9 @@ title: "Changes DIPlib 3.x.x"
   behavior of the corresponding binary operators (`*`, `@` and `**`). That is, `img *= 2` had exactly the same effect
   as `img = img * 2`.
 
+- Release 3.3.0 unintentionally broke `dip.Show()` for color images, the color space information was lost, showing
+  any 3-channel image as an RGB image.
+
 (See also bugfixes to *DIPlib*.)
 
 

@@ -154,13 +154,13 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
     import matplotlib.pyplot as pp
     import numpy as np
 
-    img = np.asarray(img)
-    if img.size <= 1:
+    data = np.asarray(img)
+    if data.size <= 1:
         warnings.warn("Nothing to display", SyntaxWarning)
         return
-    sizes = [x for x in img.shape if x > 1]
+    sizes = [x for x in data.shape if x > 1]
     if len(sizes) == 1:
-        data = np.squeeze(img)
+        data = np.squeeze(data)
         length = sizes[0]
         if np.iscomplexobj(data):
             if complexMode == 'abs' or complexMode == 'magnitude':
