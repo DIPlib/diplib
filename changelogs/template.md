@@ -24,6 +24,7 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+None, but see bugfixes to *DIPlib*.
 (See also bugfixes to *DIPlib*.)
 
 
@@ -39,6 +40,7 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+None, but see bugfixes to *DIPlib*.
 (See also bugfixes to *DIPlib*.)
 
 
