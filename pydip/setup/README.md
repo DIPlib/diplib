@@ -21,11 +21,10 @@ all other principles have a lower priority. Our principles are:
 
 2. **Ease of use**
 
-   Although our Python bindings are still quite rudimentary, and not much more
-   than a thin wrapper of the C++ library functionality, the image analysis
-   functionality is always easy to use. For example, the user does not, in
-   general, need to be aware of the data type of the image to use these
-   algorithms effectively.
+   Although our Python bindings are not much more than a thin wrapper of the
+   C++ library functionality, the image analysis functionality is always easy
+   to use. For example, the user does not, in general, need to be aware of
+   the data type of the image to use these algorithms effectively.
 
 3. **Efficiency**
 
@@ -38,8 +37,8 @@ Besides an extensive collection of image processing and analysis algorithms,
 this package contains *DIPviewer*, an interactive multi-dimensional image viewer,
 and *DIPjavaio*, an interface to the
 [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) library.
-The package is compatible with NumPy and any image processing package that uses
-a NumPy-compatible way of representing images.
+The package is compatible with *NumPy* and any image processing package that uses
+a *NumPy*-compatible way of representing images.
 
 See [the *DIPlib* website](https://diplib.org/) for more information.
 
@@ -72,8 +71,10 @@ function. Get started by reading [the User Manual](https://diplib.org/diplib-doc
 
 These Jupyter notebooks give a short introduction:
 
-- [pydip_basics.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/pydip_basics.ipynb)
-- [tensor_images.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/tensor_images.ipynb)
+- [01_pydip_basics.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/01_pydip_basics.ipynb)
+- [02_filtering.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/02_filtering.ipynb)
+- [03_numpy_interaction.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/03_numpy_interaction.ipynb)
+- [04_tensor_images.ipynb](https://github.com/DIPlib/diplib/blob/master/examples/python/04_tensor_images.ipynb)
 
 ## License
 
