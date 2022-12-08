@@ -16,7 +16,7 @@ brew install python@3.9
 brew install python@3.10
 brew install python@3.11
 # The install above might have changed the default version of `python3`, so we need to reinstall packages:
-python3 -m pip install setuptools wheel build twine delocate
+python3 -m pip install twine delocate
 brew install wget
 
 mkdir build
@@ -27,29 +27,33 @@ wget https://downloads.openmicroscopy.org/bio-formats/6.5.0/artifacts/bioformats
 cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off
 
 # Python 3.8
-export PYTHON=/opt/homebrew/opt/python@3.8/bin/python3
+export PYTHON=/opt/homebrew/opt/python@3.8/bin/python3.8
 export PYTHON_VERSION=3.8
+$PYTHON -m pip install build
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.9
-export PYTHON=/opt/homebrew/opt/python@3.9/bin/python3
+export PYTHON=/opt/homebrew/opt/python@3.9/bin/python3.9
 export PYTHON_VERSION=3.9
+$PYTHON -m pip install build
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.10
-export PYTHON=/opt/homebrew/opt/python@3.10/bin/python3
+export PYTHON=/opt/homebrew/opt/python@3.10/bin/python3.10
 export PYTHON_VERSION=3.10
+$PYTHON -m pip install build
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 
 # Python 3.11
-export PYTHON=/opt/homebrew/opt/python@3.11/bin/python3
+export PYTHON=/opt/homebrew/opt/python@3.11/bin/python3.11
 export PYTHON_VERSION=3.11
+$PYTHON -m pip install build
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
