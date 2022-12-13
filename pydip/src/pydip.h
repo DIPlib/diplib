@@ -354,6 +354,6 @@ inline dip::Image ImageOrPixel( py::object const& obj ) {
       return dip::Image( pixel_caster ); // static_cast< dip::Image::Pixel>( caster ));
    }
    throw dip::RunTimeError( "Cannot convert input to dip::Image" );
-};
+}
 
 #endif // DIP_PYDIP_H
