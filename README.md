@@ -40,6 +40,7 @@ See [Building the *DIPlib* library](https://diplib.org/diplib-docs/building_dipl
 
 When linking against the *DIPlib* library without using *CMake*, it is important to set a few preprocessor
 macros. See [Linking against the *DIPlib* library](https://diplib.org/diplib-docs/building_diplib.html#linking_diplib)
+for details.
 
 
 ## Contributing

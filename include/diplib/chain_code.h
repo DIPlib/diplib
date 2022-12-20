@@ -956,8 +956,12 @@ struct DIP_NO_EXPORT ChainCode {
    /// one gets when joining pixel vertices into a polygon. The polygon always has an area exactly half a
    /// pixel smaller than the solid binary object it represents.
    ///
-   /// This idea comes from Steve Eddins:
-   /// <http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/>
+   /// !!! literature
+   ///     - K. Dunkelberger, and O. Mitchell, "Contour tracing for precision measurement",
+   ///       Proceedings of the IEEE International Conference on Robotics and Automation, vol 2, 1985,
+   ///       doi:10.1109/ROBOT.1985.1087356.
+   ///     - S. Eddins, "Binary image convex hull – algorithm notes", MathWorks Blog, 2006,
+   ///       <http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/>.
    DIP_EXPORT dip::Polygon Polygon() const;
 
    /// Returns the convex hull of the object, see \ref dip::ChainCode::Polygon.
