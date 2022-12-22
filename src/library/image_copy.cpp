@@ -1,5 +1,5 @@
 /*
- * (c)2014-2021, Cris Luengo.
+ * (c)2014-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,6 +68,10 @@ void CopyFrom( Image const& src, Image& dest, Image const& srcMask ) {
    DIP_THROW_IF( !srcMask.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_STACK_TRACE_THIS( srcMask.CheckIsMask( src.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
    dip::uint N = Count( srcMask );
+   if( N == 0 ) {
+      dest.Strip();
+      return;
+   }
    if( !dest.IsForged() || ( dest.NumberOfPixels() != N ) || ( dest.TensorElements() != src.TensorElements() )) {
       DIP_STACK_TRACE_THIS( dest.ReForge( UnsignedArray( { N } ), src.TensorElements(), src.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
       dest.CopyNonDataProperties( src );

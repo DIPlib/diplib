@@ -2211,7 +2211,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Creates a 1D image view containing the pixels selected by `mask`.
       ///
       /// When cast to an image, the values will be copied, not referenced. The output is of the same data type
-      /// and tensor shape as `this`, but have only one dimension. Pixels will be read from `mask` in the linear
+      /// and tensor shape as `this`, but has only one dimension. Pixels will be read from `mask` in the linear
       /// index order.
       ///
       /// If `mask` is a non-scalar image, it must have the same number of tensor elements as `this`. The created
@@ -2219,6 +2219,9 @@ class DIP_NO_EXPORT Image {
       /// linear index order, reading all samples for the first pixel, then all samples for the second pixel, etc.
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a binary image.
+      ///
+      /// If mask has no set pixels (i.e. it selects nothing) an exception will be thrown. A valid output always
+      /// references at least one pixel.
       DIP_NODISCARD View At( Image mask ) const;
 
       /// \brief Creates a 1D image view containing the pixels selected by `coordinates`.
@@ -2674,6 +2677,8 @@ void Copy( Image::View const& src, Image::View& dest ); // Implemented in image_
 /// If `dest` is already forged and has the right number of pixels and tensor elements, it will not be reforged.
 /// In this case, the copy will apply data type conversion, where values are clipped to the target range and/or
 /// truncated, as applicable, and complex values are converted to non-complex values by taking the absolute value.
+///
+/// If `srcMask` selects no pixels, `dest` will be a raw image.
 /// \relates dip::Image
 DIP_EXPORT void CopyFrom( Image const& src, Image& dest, Image const& srcMask );
 

@@ -1,5 +1,5 @@
 /*
- * (c)2014-2021, Cris Luengo.
+ * (c)2014-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1287,9 +1287,9 @@ inline Image::Image( Image::Sample const& sample, dip::DataType dt ) : dataType_
 
 inline Image::Image( Image::View const& view ) {
    if( view.mask_.IsForged() ) {
-      CopyFrom( view.reference_, *this, view.mask_ );
+      DIP_STACK_TRACE_THIS( CopyFrom( view.reference_, *this, view.mask_ ));
    } else if( !view.offsets_.empty() ) {
-      CopyFrom( view.reference_, *this, view.offsets_ );
+      DIP_STACK_TRACE_THIS( CopyFrom( view.reference_, *this, view.offsets_ ));
    } else {
       *this = view.reference_;
    }
@@ -1297,9 +1297,9 @@ inline Image::Image( Image::View const& view ) {
 
 inline Image::Image( Image::View&& view ) {
    if( view.mask_.IsForged() ) {
-      CopyFrom( view.reference_, *this, view.mask_ );
+      DIP_STACK_TRACE_THIS( CopyFrom( view.reference_, *this, view.mask_ ));
    } else if( !view.offsets_.empty() ) {
-      CopyFrom( view.reference_, *this, view.offsets_ );
+      DIP_STACK_TRACE_THIS( CopyFrom( view.reference_, *this, view.offsets_ ));
    } else {
       this->move( std::move( view.reference_ ));
    }

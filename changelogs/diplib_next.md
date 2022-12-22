@@ -9,7 +9,21 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- `dip::Image::At( dip::Image mask )` will throw an exception if the mask has no pixels set. This ensures that a
+  `dip::Image::View` always selects at least one pixel, it no longer is possible to create an empty `View` object. 
+
+- `dip::CopyFrom( dip::Image const& src, dip::Image& dest, dip::Image const& srcMask )` returns a raw image
+  instead of trying to allocate space for 0 pixels if `srcMask` has no pixels set. Forging an image with 0 pixels
+  is not possible.
+
 ### Bug fixes
+
+- `dip::Image out = view` threw an exception with the message "Sizes must be non-zero and no larger than
+  9223372036854775807" if the `view` was empty. This could happen if `view` was created using a mask with
+  no pixels set. This issue has been corrected by making it impossible to create an empty `View` object.  
+  Note that `out = img.At( img < 0 )` still throws an exception if `img` has no negative values, because
+  the indexing operation is now illegal. The exception thrown now, "The mask image selects no pixels",
+  is more useful. 
 
 
 

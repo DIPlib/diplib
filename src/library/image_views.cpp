@@ -1,5 +1,5 @@
 /*
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,6 +89,8 @@ Image::View::View( Image reference, Image mask ) : reference_( std::move( refere
       mask_.TensorToSpatial( 0 );
    }
    DIP_STACK_TRACE_THIS( mask_.CheckIsMask( reference_.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
+   // A valid view always has at least one pixel, so we need to ensure this is the case there
+   DIP_THROW_IF( !Any( mask ).As< bool >(), "The mask image selects no pixels" );
 }
 
 Image::View::View( Image reference, UnsignedArray const& indices ) : reference_( std::move( reference )) {
