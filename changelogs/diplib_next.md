@@ -25,6 +25,7 @@ title: "Changes DIPlib 3.x.x"
   the indexing operation is now illegal. The exception thrown now, "The mask image selects no pixels",
   is more useful. 
 
+- The `dip::FileInformation` data structure crated for a NPY file reported the file type was `"NYP"`.
 
 
 

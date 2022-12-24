@@ -262,7 +262,7 @@ std::ifstream OpenNPYForReading( String filename, FileInformation& fileInformati
       }
    }
    ReadHeader( istream, fileInformation.dataType, fileInformation.sizes, fortranOrder, swapEndianness );
-   fileInformation.fileType = "NYP";
+   fileInformation.fileType = "NPY";
    fileInformation.significantBits = fileInformation.dataType.SizeOf() * 8;
    fileInformation.tensorElements = 1;
    fileInformation.numberOfImages = 1;
