@@ -107,7 +107,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       if( !label.DataType().IsUInt() ) {
          // Not yet labeled
-         DIP_THROW_IF( !label.DataType().IsBinary(), "Object input image must be either labeled or binary." );
+         DIP_THROW_IF( !label.DataType().IsBinary(), "Object input image must be either labeled or binary" );
          dip::Image tmp = dip::Label( label, connectivity ); // using this form so that we don't overwrite input data.
          label.Strip();
          label = tmp;

@@ -1,5 +1,5 @@
 /*
- * (c)2021, Cris Luengo.
+ * (c)2022, Cris Luengo.
  * Based on cnpy: (c)2011  Carl Rogers (MIT License)
  * Based on libnpy: (c)2017 Leon Merten Lohse (MIT License)
  *
@@ -30,6 +30,9 @@
 namespace dip {
 
 namespace {
+
+constexpr char const* BAD_NPY_HEADER = "Could not read NPY file header";
+constexpr char const* BAD_NPY_BITDEPTH = "Failed to parse NPY header keyword 'descr': unacceptable bit depth";
 
 constexpr dip::uint magicStringLength = 8;
 constexpr char const* magicString = "\x93NUMPY\x01\x00"; // version number is hard-coded here.
@@ -123,26 +126,26 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
    DIP_THROW_IF( !ReadMagic( istream ), "File is not NPY version 1.0" );
    char buf[ 2 ];
    istream.read( buf, 2 );
-   DIP_THROW_IF( !istream, "Could not read NPY file header" );
+   DIP_THROW_IF( !istream, BAD_NPY_HEADER );
    dip::uint length = static_cast< dip::uint >( buf[ 0 ] ) + ( static_cast< dip::uint >( buf[ 1 ] ) << 8u );
    std::string headerDict( length, '\0' );
    istream.read( &headerDict[ 0 ], static_cast< dip::sint >( length ));
    //std::cout << "Header length: " << length << '\n';
    //std::cout << "Header contents: >>" << headerDict << "<<\n";
-   DIP_THROW_IF( !istream, "Could not read NPY file header" );
+   DIP_THROW_IF( !istream, BAD_NPY_HEADER );
 
    // 'fortran_order'
    std::smatch res;
    std::regex regex_fortran_order( "'fortran_order': *(True|False)" );
    std::regex_search( headerDict, res, regex_fortran_order );
-   DIP_THROW_IF ( res.size() != 2, "Failed to parse NYP header keyword 'fortran_order'" );
+   DIP_THROW_IF ( res.size() != 2, "Failed to parse NPY header keyword 'fortran_order'" );
    fortranOrder = res.str( 1 ) == "True";
 
    // 'shape'
    sizes.clear();
    std::regex regex_shape( "'shape': *\\(([^)]*)\\)" );
    std::regex_search( headerDict, res, regex_shape );
-   DIP_THROW_IF ( res.size() != 2, "Failed to parse NYP header keyword 'shape'" );
+   DIP_THROW_IF ( res.size() != 2, "Failed to parse NPY header keyword 'shape'" );
    //std::cout << "shape: " << res.str() << '\n' << "     : ";
    std::string shapeStr = res.str( 1 );
    std::regex regex_num( "[0-9]+" );
@@ -156,7 +159,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
    // 'descr'
    std::regex regex_descr( "'descr': *'([^']+)'" );
    std::regex_search( headerDict, res, regex_descr );
-   DIP_THROW_IF ( res.size() != 2, "Failed to parse NYP header keyword 'descr'" );
+   DIP_THROW_IF ( res.size() != 2, "Failed to parse NPY header keyword 'descr'" );
    //std::cout << "descr: " << res.str() << '\n';
    // ABxxxx
    //   A is the endianness char, one of littleEndianChar, bigEndianChar or noEndianChar
@@ -171,7 +174,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
    switch( descr[ 1 ] ) {
       case 'b':
          dataType = DT_BIN;
-         DIP_THROW_IF( bytes != 1, "Failed to parse NYP header keyword 'descr': unacceptable bit depth" );
+         DIP_THROW_IF( bytes != 1, BAD_NPY_BITDEPTH );
          break;
       case 'u':
          switch( bytes ) {
@@ -188,7 +191,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
                dataType = DT_UINT64;
                break;
             default:
-               DIP_THROW( "Failed to parse NYP header keyword 'descr': unacceptable bit depth" );
+               DIP_THROW( BAD_NPY_BITDEPTH );
          }
          break;
       case 'i':
@@ -206,7 +209,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
                dataType = DT_SINT64;
                break;
             default:
-               DIP_THROW( "Failed to parse NYP header keyword 'descr': unacceptable bit depth" );
+               DIP_THROW( BAD_NPY_BITDEPTH );
          }
          break;
       case 'f':
@@ -218,7 +221,7 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
                dataType = DT_DFLOAT;
                break;
             default:
-               DIP_THROW( "Failed to parse NYP header keyword 'descr': unacceptable bit depth" );
+               DIP_THROW( BAD_NPY_BITDEPTH );
          }
          break;
       case 'c':
@@ -230,11 +233,11 @@ void ReadHeader( std::istream& istream, DataType& dataType, UnsignedArray& sizes
                dataType = DT_DCOMPLEX;
                break;
             default:
-               DIP_THROW( "Failed to parse NYP header keyword 'descr': unacceptable bit depth" );
+               DIP_THROW( BAD_NPY_BITDEPTH );
          }
          break;
       default:
-         DIP_THROW( "Failed to parse NYP header keyword 'descr': unrecognized type character" );
+         DIP_THROW( "Failed to parse NPY header keyword 'descr': unrecognized type character" );
    }
 }
 

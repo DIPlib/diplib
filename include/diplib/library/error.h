@@ -1,5 +1,5 @@
 /*
- * (c)2014-2021, Cris Luengo.
+ * (c)2014-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -147,10 +147,13 @@ constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't matc
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
 constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
 constexpr char const* DIMENSION_NOT_EXPANDED = "Dimension is not singleton-expanded";
+constexpr char const* IMAGE_TOO_SMALL = "Image dimension is too small";
 
 // image tensor sizes error
 constexpr char const* IMAGE_NOT_SCALAR = "Image is not scalar";
 constexpr char const* IMAGE_NOT_VECTOR = "Image is not vector";
+constexpr char const* IMAGE_NOT_SYMMETRIC_MATRIX = "Image is not square matrix";
+constexpr char const* IMAGE_NOT_SQUARE_MATRIX = "Image is not symmetric matrix";
 constexpr char const* TENSOR_NOT_2_OR_3 = "Only defined for 2- and 3-vector images";
 constexpr char const* NTENSORELEM_DONT_MATCH = "Number of tensor elements doesn't match";
 
@@ -175,6 +178,7 @@ constexpr char const* ITERATOR_NOT_VALID = "Iterator is not valid";
 
 // miscellaneous errors
 constexpr char const* NOT_IMPLEMENTED = "Functionality has not (yet) been implemented";
+constexpr char const* NOT_REACHABLE = "Something unexpected happened, please report the bug you just found";
 
 // function parameter errors
 constexpr char const* INVALID_PARAMETER = "Parameter has invalid value";
@@ -192,6 +196,7 @@ constexpr char const* KERNEL_NOT_BINARY = "Kernel has weights, a binary kernel i
 constexpr char const* CONNECTIVITY_NOT_SUPPORTED = "Connectivity is not supported";
 constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 constexpr char const* ILLEGAL_FLAG_COMBINATION = "Illegal flag combination";
+constexpr char const* ITERATOR_HAS_NO_PROCDIM = "Iterator has no processing dimension";
 
 }
 

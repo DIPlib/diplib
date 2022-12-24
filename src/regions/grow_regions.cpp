@@ -160,7 +160,7 @@ void GrowRegions(
 
    // Initialize out with label
    if( out.Aliases( mask )) {
-      DIP_THROW_IF( &out == &c_label, "The output and label images are the same, but alias the mask image. This is unexpected and weird, and I cannot handle it." );
+      DIP_THROW_IF( &out == &c_label, "The output and label images are the same, but alias the mask image. This is unexpected and weird, and I cannot handle it" );
       DIP_STACK_TRACE_THIS( out.Strip() );
    }
    DIP_STACK_TRACE_THIS( out.Copy( c_label ));

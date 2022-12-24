@@ -49,13 +49,13 @@ class OrderStatisticTree {
 
       // We can only copy the default-initialized tree, not one with data (that would be difficult to do with all those pointers)
       OrderStatisticTree( OrderStatisticTree const& other ) {
-         DIP_THROW_IF( !other.nodes.empty(), "Internal error: cannot copy OrderStatisticTree<> with data." );
+         DIP_ASSERT( other.nodes.empty() );
          DIP_ASSERT( nodes.empty() );
          DIP_ASSERT( root == nullptr );
          DIP_ASSERT( free == nullptr );
       };
       OrderStatisticTree& operator=( OrderStatisticTree const& other ) {
-         DIP_THROW_IF( !other.nodes.empty(), "Internal error: cannot copy OrderStatisticTree<> with data." );
+         DIP_ASSERT( other.nodes.empty() );
          nodes.clear();
          root = nullptr;
          free = nullptr;
@@ -76,7 +76,7 @@ class OrderStatisticTree {
 
       // Insert a value into the tree. There is no balancing of the tree, so this by itself could be inefficient
       void Insert( T value ) {
-         DIP_THROW_IF( free == nullptr, "Internal error: OrderStatisticTree<> is full." );
+         DIP_ASSERT( free != nullptr );
 
          // Insert at root if empty tree
          if( root == nullptr ) {
@@ -128,7 +128,7 @@ class OrderStatisticTree {
       void Remove( T value ) {
          // Which node to remove?
          Node* p = Find( value );
-         DIP_THROW_IF( p == nullptr, "Internal error: value not in OrderStatisticTree<>." );
+         DIP_ASSERT( p != nullptr );
          DIP_ASSERT( p->value == value );
          DIP_ASSERT( p->count > 0 );
 
@@ -217,7 +217,7 @@ class OrderStatisticTree {
             }
          }
          //PrintTree();
-         DIP_THROW( "Internal error: OrderStatisticTree<> is likely inconsistent." );
+         DIP_THROW_ASSERTION( "Internal error: OrderStatisticTree<> is likely inconsistent" );
       }
 
       // Used for testing everything is OK.
@@ -262,7 +262,7 @@ class OrderStatisticTree {
 
       void ValidateNode( Node* p ) const {
          if( p ) {
-            DIP_THROW_IF( Size( p->child[ 0 ] ) + Size( p->child[ 1 ] ) + p->count != p->size, "Internal error: OrderStatisticTree<> is inconsistent." );
+            DIP_ASSERT( Size( p->child[ 0 ] ) + Size( p->child[ 1 ] ) + p->count == p->size );
             ValidateNode( p->child[ 0 ] );
             ValidateNode( p->child[ 1 ] );
          }

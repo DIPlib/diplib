@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,8 +32,15 @@ namespace dip {
 
 namespace {
 
+constexpr char const* CANNOT_READ_ICS_FILE = "Couldn't read ICS file";
+constexpr char const* CANNOT_READ_ICS_METADATA = "Couldn't read ICS metadata";
+constexpr char const* CANNOT_READ_ICS_PIXELS = "Couldn't read pixel data from ICS file";
+constexpr char const* CANNOT_WRITE_ICS_FILE = "Couldn't write to ICS file";
+constexpr char const* CANNOT_WRITE_ICS_METADATA = "Couldn't write metadata to ICS file";
+constexpr char const* CANNOT_WRITE_ICS_PIXELS = "Couldn't write data to ICS file";
+
 #define CALL_ICS( function_call, message ) do { Ics_Error error_ = function_call; if( error_ != IcsErr_Ok ) \
-{ DIP_THROW_RUNTIME( String( message ": " ) + IcsGetErrorText( error_ )); }} while(false)
+{ DIP_THROW_RUNTIME( String( message ) + ": " + IcsGetErrorText( error_ )); }} while(false)
 
 dip::uint FindTensorDimension(
       ICS* ics,
@@ -45,7 +52,7 @@ dip::uint FindTensorDimension(
    dip::uint tensorDim;
    for( tensorDim = 0; tensorDim < nDims; ++tensorDim ) {
       char const* c_order;
-      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &c_order, nullptr ), "Couldn't read ICS file" );
+      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &c_order, nullptr ), CANNOT_READ_ICS_FILE );
       String order = c_order;
       ToLowerCase( order );
       if( order == "rgb" ) {
@@ -151,7 +158,7 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
          continue;
       }
       char const* order;
-      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( ii ), &order, nullptr ), "Couldn't read ICS file" );
+      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( ii ), &order, nullptr ), CANNOT_READ_ICS_FILE );
       //std::cout << "dim " << ii << " is " << order << std::endl;
       if( StringCompareCaseInsensitive( order, "x" )) {
          file[ ii ].order = 0;
@@ -304,10 +311,10 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    Ics_DataType dt;
    int ndims_;
    std::size_t icsSizes[ICS_MAXDIM];
-   CALL_ICS( IcsGetLayout( icsFile, &dt, &ndims_, icsSizes ), "Couldn't read ICS file" );
+   CALL_ICS( IcsGetLayout( icsFile, &dt, &ndims_, icsSizes ), CANNOT_READ_ICS_FILE );
    dip::uint nDims = static_cast< dip::uint >( ndims_ );
    std::size_t significantBits;
-   CALL_ICS( IcsGetSignificantBits( icsFile, &significantBits ), "Couldn't read ICS file" );
+   CALL_ICS( IcsGetSignificantBits( icsFile, &significantBits ), CANNOT_READ_ICS_FILE );
    data.fileInformation.significantBits = significantBits;
    // convert ICS data type to DIP data type
    switch( dt ) {
@@ -361,7 +368,7 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       double scale, offset;
       char const* units;
-      CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), &offset, &scale, &units ), "Couldn't read ICS file" );
+      CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), &offset, &scale, &units ), CANNOT_READ_ICS_FILE );
       if( StringCompareCaseInsensitive( units, "undefined" )) {
          pixelSize.Set( ii, PhysicalQuantity::Pixel() );
          origin[ ii ] = offset * PhysicalQuantity::Pixel();
@@ -402,14 +409,14 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
 
    // History tags
    int history_lines;
-   CALL_ICS( IcsGetNumHistoryStrings( icsFile, &history_lines ), "Couldn't read ICS metadata" );
+   CALL_ICS( IcsGetNumHistoryStrings( icsFile, &history_lines ), CANNOT_READ_ICS_METADATA );
    data.fileInformation.history.resize( static_cast< dip::uint >( history_lines ));
    if( history_lines > 0 ) {
       Ics_HistoryIterator it;
-      CALL_ICS( IcsNewHistoryIterator( icsFile, &it, nullptr ), "Couldn't read ICS metadata");
+      CALL_ICS( IcsNewHistoryIterator( icsFile, &it, nullptr ), CANNOT_READ_ICS_METADATA );
       char const* hist;
       for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
-         CALL_ICS( IcsGetHistoryStringIF( icsFile, &it, &hist ), "Couldn't read ICS metadata");
+         CALL_ICS( IcsGetHistoryStringIF( icsFile, &it, &hist ), CANNOT_READ_ICS_METADATA );
          data.fileInformation.history[ ii ] = hist;
       }
    }
@@ -538,8 +545,7 @@ FileInformation ImageReadICS(
       // Fast reading!
       //std::cout << "[ImageReadICS] fast reading!\n";
 
-      CALL_ICS( IcsGetData( icsFile, outRef.Origin(), outRef.NumberOfPixels() * outRef.DataType().SizeOf() ),
-                "Couldn't read pixel data from ICS file" );
+      CALL_ICS( IcsGetData( icsFile, outRef.Origin(), outRef.NumberOfPixels() * outRef.DataType().SizeOf() ), CANNOT_READ_ICS_PIXELS );
 
    } else {
       // Reading using strides
@@ -599,7 +605,7 @@ FileInformation ImageReadICS(
             IcsSkipDataBlock( icsFile, new_loc - cur_loc );
             cur_loc = new_loc;
          }
-         CALL_ICS( IcsGetDataBlock( icsFile, buffer.data(), bufSize ), "Couldn't read pixel data from ICS file" );
+         CALL_ICS( IcsGetDataBlock( icsFile, buffer.data(), bufSize ), CANNOT_READ_ICS_PIXELS );
          cur_loc += bufSize;
          // copy buffer to image
          detail::CopyBuffer( buffer.data(), data.fileInformation.dataType, static_cast< dip::sint >( roiSpec.roi[ procDim ].step ), 1,
@@ -740,37 +746,36 @@ void ImageWriteICS(
 
    // set info on image
    int nDims = static_cast< int >( image.Dimensionality() );
-   CALL_ICS( IcsSetLayout( icsFile, dt, nDims, image.Sizes().data() ), "Couldn't write to ICS file" );
+   CALL_ICS( IcsSetLayout( icsFile, dt, nDims, image.Sizes().data() ), CANNOT_WRITE_ICS_FILE );
    if( nDims >= 5 ) {
       // By default, 5th dimension is called "probe", but this is turned into a tensor dimension...
-      CALL_ICS( IcsSetOrder( icsFile, 4, "dim_4", nullptr ), "Couldn't write to ICS file" );
+      CALL_ICS( IcsSetOrder( icsFile, 4, "dim_4", nullptr ), CANNOT_WRITE_ICS_FILE );
    }
-   CALL_ICS( IcsSetSignificantBits( icsFile, significantBits ), "Couldn't write to ICS file" );
+   CALL_ICS( IcsSetSignificantBits( icsFile, significantBits ), CANNOT_WRITE_ICS_FILE );
    if( c_image.IsColor() ) {
-      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), nullptr ), "Couldn't write to ICS file" );
+      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), nullptr ), CANNOT_WRITE_ICS_FILE );
    } else if( isTensor ) {
-      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, "tensor", nullptr ), "Couldn't write to ICS file" );
+      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, "tensor", nullptr ), CANNOT_WRITE_ICS_FILE );
    }
    if( c_image.HasPixelSize() ) {
       if( isTensor ) { nDims--; }
       for( int ii = 0; ii < nDims; ii++ ) {
          auto pixelSize = c_image.PixelSize( static_cast< dip::uint >( ii ));
-         CALL_ICS( IcsSetPosition( icsFile, ii, 0.0, pixelSize.magnitude, pixelSize.units.String().c_str() ), "Couldn't write to ICS file" );
+         CALL_ICS( IcsSetPosition( icsFile, ii, 0.0, pixelSize.magnitude, pixelSize.units.String().c_str() ), CANNOT_WRITE_ICS_FILE );
       }
       if( isTensor ) {
-         CALL_ICS( IcsSetPosition( icsFile, nDims, 0.0, 1.0, nullptr ), "Couldn't write to ICS file" );
+         CALL_ICS( IcsSetPosition( icsFile, nDims, 0.0, 1.0, nullptr ), CANNOT_WRITE_ICS_FILE );
       }
    }
    if( isTensor ) {
       String tensorShape = c_image.Tensor().TensorShapeAsString() + "\t" +
                            std::to_string( c_image.Tensor().Rows() ) + "\t" +
                            std::to_string( c_image.Tensor().Columns() );
-      CALL_ICS( IcsAddHistory( icsFile, "tensor", tensorShape.c_str() ), "Couldn't write metadata to ICS file" );
+      CALL_ICS( IcsAddHistory( icsFile, "tensor", tensorShape.c_str() ), CANNOT_WRITE_ICS_METADATA );
    }
 
    // set type of compression
-   CALL_ICS( IcsSetCompression( icsFile, compress ? IcsCompr_gzip : IcsCompr_uncompressed, 9 ),
-                 "Couldn't write to ICS file" );
+   CALL_ICS( IcsSetCompression( icsFile, compress ? IcsCompr_gzip : IcsCompr_uncompressed, 9 ), CANNOT_WRITE_ICS_FILE );
 
    // set the image data
    if( fast ) {
@@ -786,15 +791,14 @@ void ImageWriteICS(
       std::memcpy( ics->dim, dim, sizeof( Ics_DataRepresentation ) * nd ); // Copy only the dimensions we've set.
    }
    if( image.HasNormalStrides() ) {
-      CALL_ICS( IcsSetData( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf() ), "Couldn't write data to ICS file" );
+      CALL_ICS( IcsSetData( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf() ), CANNOT_WRITE_ICS_PIXELS );
    } else {
       CALL_ICS( IcsSetDataWithStrides( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf(),
-                                       image.Strides().data(), static_cast< int >( image.Dimensionality() )),
-                "Couldn't write data to ICS file" );
+                                       image.Strides().data(), static_cast< int >( image.Dimensionality() )), CANNOT_WRITE_ICS_PIXELS );
    }
 
    // tag the data
-   CALL_ICS( IcsAddHistory( icsFile, "software", "DIPlib " DIP_VERSION_STRING ), "Couldn't write metadata to ICS file" );
+   CALL_ICS( IcsAddHistory( icsFile, "software", "DIPlib " DIP_VERSION_STRING ), CANNOT_WRITE_ICS_METADATA );
 
    // write history lines
    for( auto const& line : history ) {
@@ -803,7 +807,7 @@ void ImageWriteICS(
          ( error == IcsErr_IllParameter )) { // history line contains illegal characters
          // Ignore these errors, the history line will not be written.
       }
-      CALL_ICS( error, "Couldn't write metadata to ICS file" );
+      CALL_ICS( error, CANNOT_WRITE_ICS_METADATA );
    }
 
    // write everything to file by closing it

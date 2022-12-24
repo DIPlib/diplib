@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on Exact stochastic watershed code: (c)2013, Filip Malmberg.
  *
@@ -38,6 +38,9 @@
 namespace dip {
 
 namespace {
+
+constexpr char const* STRIDES_STILL_DONOT_MATCH = "Couldn't get input and output strides to match";
+constexpr char const* TOO_MANY_SEEDS = "The seed image has too many seeds";
 
 // --- COMMON TO BOTH WATERSHED ALGORITHMS ---
 
@@ -300,7 +303,7 @@ void FastWatershed(
    Image labels;
    if( binaryOutput ) {
       out.ReForge( in, DT_BIN );
-      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
+      DIP_THROW_IF( in.Strides() != out.Strides(), STRIDES_STILL_DONOT_MATCH );
       binary = out.QuickCopy();
       binary.Fill( false );
       labels.SetStrides( in.Strides() );
@@ -308,7 +311,7 @@ void FastWatershed(
       DIP_ASSERT( in.Strides() == labels.Strides() );
    } else {
       out.ReForge( in, DT_LABEL );
-      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
+      DIP_THROW_IF( in.Strides() != out.Strides(), STRIDES_STILL_DONOT_MATCH );
       labels = out.QuickCopy();
       // binary remains unforged.
    }
@@ -675,7 +678,7 @@ void SeededWatershed(
          out.SetStrides( in.Strides() );
       }
       out.ReForge( in, DT_LABEL );
-      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
+      DIP_THROW_IF( in.Strides() != out.Strides(), STRIDES_STILL_DONOT_MATCH );
       labels = out.QuickCopy();
    }
    dip::uint numlabs;
@@ -688,7 +691,7 @@ void SeededWatershed(
          labels.Copy( c_seeds );
       }
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
+   DIP_THROW_IF( numlabs > MAX_LABEL, TOO_MANY_SEEDS );
    // Set pixels outside the mask region to the watershed label
    if( mask.IsForged() ) {
       labels.At( !mask ) = WATERSHED_LABEL;
@@ -962,7 +965,7 @@ void CompactWatershed(
          out.SetStrides( in.Strides() );
       }
       out.ReForge( in, DT_LABEL );
-      DIP_THROW_IF( in.Strides() != out.Strides(), "Couldn't get input and output strides to match" );
+      DIP_THROW_IF( in.Strides() != out.Strides(), STRIDES_STILL_DONOT_MATCH );
       labels = out.QuickCopy();
    }
    dip::uint numlabs;
@@ -975,7 +978,7 @@ void CompactWatershed(
       labels.Copy( c_seeds );
    }
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
+   DIP_THROW_IF( numlabs > MAX_LABEL, TOO_MANY_SEEDS );
    // Set pixels outside the mask region to the watershed label
    if( mask.IsForged() ) {
       labels.At( !mask ) = WATERSHED_LABEL;

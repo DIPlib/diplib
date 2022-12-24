@@ -22,6 +22,12 @@
 
 namespace dip {
 
+namespace {
+
+constexpr char const* INCOMPATIBLE_IMAGAE = "Image not compatible with requested cast";
+
+} // namespace
+
 Image& Image::PermuteDimensions( UnsignedArray const& order ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
@@ -520,14 +526,14 @@ Image& Image::ReinterpretCast( dip::DataType dataType ) {
          }
          tensorStride_ *= ratio_s;
       } else { // inSize < outSize
-         DIP_THROW_IF( dim == nDims, "Image not compatible with requested cast" );
+         DIP_THROW_IF( dim == nDims, INCOMPATIBLE_IMAGAE );
          dip::uint ratio = outSize / inSize;
          dip::sint ratio_s = static_cast< dip::sint >( ratio );
          // Do all checks before we change anything about the image
-         DIP_THROW_IF( sizes_[ dim ] % ratio != 0, "Image not compatible with requested cast" );
+         DIP_THROW_IF( sizes_[ dim ] % ratio != 0, INCOMPATIBLE_IMAGAE );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if( ii != dim ) {
-               DIP_THROW_IF( strides_[ ii ] % ratio_s != 0, "Image not compatible with requested cast" );
+               DIP_THROW_IF( strides_[ ii ] % ratio_s != 0, INCOMPATIBLE_IMAGAE );
             }
          }
          // Now we're OK to make changes

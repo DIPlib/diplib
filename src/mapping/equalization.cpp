@@ -82,7 +82,7 @@ void HistogramMatching(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-   DIP_THROW_IF( example.Dimensionality() != 1, "The Example histogram must be one-dimensional." );
+   DIP_THROW_IF( example.Dimensionality() != 1, "The Example histogram must be one-dimensional" );
    // Get histogram
    Histogram::Configuration configuration( in.DataType() );
    configuration.nBins = example.Bins();

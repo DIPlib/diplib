@@ -1193,7 +1193,7 @@ void PositionMinMax(
       } else if( mode == S::LAST ) {
          DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionPositionLastMaximum, (), in.DataType() );
       } else {
-         DIP_THROW( "Unsupported mode for PositionMaximum: " + mode );
+         DIP_THROW_INVALID_FLAG( mode );
       }
    } else { // minimum
       if( mode == S::FIRST ) {
@@ -1201,7 +1201,7 @@ void PositionMinMax(
       } else if( mode == S::LAST ) {
          DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionPositionLastMinimum, (), in.DataType() );
       } else {
-         DIP_THROW( "Unsupported mode for PositionMinimum: " + mode );
+         DIP_THROW_INVALID_FLAG( mode );
       }
    }
 
@@ -1344,7 +1344,7 @@ void PositionPercentile(
       } else if( mode == S::LAST ) {
          DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionPositionPercentile, ( percentile, false ), in.DataType() );
       } else {
-         DIP_THROW( "Unsupported mode for PositionPercentile: " + mode );
+         DIP_THROW_INVALID_FLAG( mode );
       }
 
       // Positions in the out image will be of type DT_UINT32

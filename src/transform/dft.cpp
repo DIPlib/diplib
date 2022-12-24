@@ -167,6 +167,11 @@ PlanType* PlanCache( dip::uint length, bool free = false ) {
 
 //--- dip::DFT implementation ---
 
+namespace {
+
+constexpr char const* DFT_NO_PLAN = "No plan defined";
+
+} // namespace
 
 template< typename T >
 void DFT< T >::Initialize( dip::uint size, bool inverse, Option::DFTOptions options ) {
@@ -206,7 +211,7 @@ void DFT< T >::Apply(
       std::complex< T >* destination,
       T scale
 ) const {
-   DIP_THROW_IF( !plan_, "No plan defined." );
+   DIP_THROW_IF( !plan_, DFT_NO_PLAN );
 #ifdef DIP_CONFIG_HAS_FFTW
    DIP_ASSERT(( source == destination) ^ !options_.Contains( Option::DFTOption::InPlace ));
    fftwapidef< T >::execute_dft( static_cast< CPlan< T >>( plan_ ),
@@ -294,7 +299,7 @@ void RDFT< T >::Apply(
       T* destination,
       T scale
 ) const {
-   DIP_THROW_IF( !plan_, "No plan defined." );
+   DIP_THROW_IF( !plan_, DFT_NO_PLAN );
 #ifdef DIP_CONFIG_HAS_FFTW
    dip::uint len = nfft_;
    if( inverse_ ) {

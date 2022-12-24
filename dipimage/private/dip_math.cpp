@@ -59,7 +59,7 @@ void select( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       }
       dip::Select( in1, in2, in3, in4, out, selector );
    } else {
-      DIP_THROW( "Need either 3 or 5 input arguments." );
+      DIP_THROW( "Need either 3 or 5 input arguments" );
    }
    plhs[ 0 ] = dml::GetArray( out );
 }

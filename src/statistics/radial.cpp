@@ -347,7 +347,7 @@ void RadialProjectionScan(
       }
       radius = std::sqrt( radius );
    } else {
-      DIP_THROW( "Invalid maxRadius mode" );
+      DIP_THROW_INVALID_FLAG( maxRadius );
    }
    dip::uint numBins = static_cast< dip::uint >( radius / binSize ) + 1;
 
@@ -379,7 +379,7 @@ void RadialProjectionScan(
    } else if( type == RadialProjectionType::max ) {
       DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionRadialMax, ( out, binSize, center ), c_in.DataType() );
    } else {
-      DIP_THROW( "Unknown projection type" );
+      DIP_THROW_ASSERTION( E::NOT_REACHABLE );
    }
 
    // Call projection scan function object

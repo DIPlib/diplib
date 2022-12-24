@@ -52,7 +52,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
 
       // Get operator
       DML_MIN_ARGS( 2 );
-      DIP_THROW_IF( !mxIsChar( prhs[ 0 ] ), "First argument must be a string.");
+      DIP_THROW_IF( !mxIsChar( prhs[ 0 ] ), "First argument must be a string");
       mxChar* ch = mxGetChars( prhs[ 0 ] );
 
       // Get images
@@ -60,10 +60,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image lhs = dml::GetImage( prhs[ 1 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
       dip::Image rhs;
       if( *ch == 'm' ) {
-         DIP_THROW_IF( nrhs != ( ch[ 1 ] == 'p' ? 3 : 2 ), "Wrong number of input arguments." ); // pinv has a 2nd input argument
+         DIP_THROW_IF( nrhs != ( ch[ 1 ] == 'p' ? 3 : 2 ), "Wrong number of input arguments" ); // pinv has a 2nd input argument
          returnEmpty = !lhs.IsForged();
       } else {
-         DIP_THROW_IF(( nrhs < 3 ) || ( nrhs > 4 ), "Wrong number of input arguments." );
+         DIP_THROW_IF(( nrhs < 3 ) || ( nrhs > 4 ), "Wrong number of input arguments" );
          rhs = dml::GetImage( prhs[ 2 ], dml::GetImageMode::REFERENCE, dml::ArrayConversionMode::TENSOR_OPERATOR );
          returnEmpty = ( !lhs.IsForged() && ( rhs.NumberOfPixels() == 1 ))
                     || ( !rhs.IsForged() && ( lhs.NumberOfPixels() == 1 ));
@@ -262,12 +262,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
                      dip::LnGamma( lhs, out );
                      break;
                   default:
-                     DIP_THROW( "Unknown operator." );
+                     DIP_THROW( "Unknown operator" );
                }
                break;
          // That's it!
             default:
-               DIP_THROW( "Unknown operator." );
+               DIP_THROW( "Unknown operator" );
          }
       }
 

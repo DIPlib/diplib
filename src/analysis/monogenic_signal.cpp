@@ -150,7 +150,7 @@ void MonogenicSignalAnalysis(
          DIP_THROW_IF( deviationGain <= 0, E::INVALID_PARAMETER );
          kovesi = true;
       } else {
-         DIP_THROW_IF( nScales != 2, "Phase congruency for dimensionalities other than 2 can only be computed when given two scales." );
+         DIP_THROW_IF( nScales != 2, "Phase congruency for dimensionalities other than 2 can only be computed when given two scales" );
       }
    }
    dip::sint polarityValue = 0;

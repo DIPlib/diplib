@@ -566,6 +566,7 @@ inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
 
 /// \brief Reads a histogram \ref dip::Histogram::Configuration "`Configuration`" struct from a cell `mxArray` with key-value pairs.
 inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* mx ) {
+   constexpr char const* SPECS_KEY_NO_VALUE = "SPECS key requires a value pair";
    dip::Histogram::Configuration out;
    out.lowerIsPercentile = true;
    out.upperIsPercentile = true;
@@ -580,22 +581,22 @@ inline dip::Histogram::Configuration GetHistogramConfiguration( mxArray const* m
       dip::String key = dml::GetString( mxGetCell( mx, ii ));
       ++ii;
       if( key == "lower" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         DIP_THROW_IF( ii >= N, SPECS_KEY_NO_VALUE );
          out.lowerBound = dml::GetFloat( mxGetCell( mx, ii ));
          hasLower = true;
          ++ii;
       } else if( key == "upper" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         DIP_THROW_IF( ii >= N, SPECS_KEY_NO_VALUE );
          out.upperBound = dml::GetFloat( mxGetCell( mx, ii ));
          hasUpper = true;
          ++ii;
       } else if( key == "bins" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         DIP_THROW_IF( ii >= N, SPECS_KEY_NO_VALUE );
          out.nBins = dml::GetUnsigned( mxGetCell( mx, ii ));
          hasNBins = true;
          ++ii;
       } else if( key == "binsize" ) {
-         DIP_THROW_IF( ii >= N, "SPECS key requires a value pair" );
+         DIP_THROW_IF( ii >= N, SPECS_KEY_NO_VALUE );
          out.binSize = dml::GetFloat( mxGetCell( mx, ii ));
          hasBinSize = true;
          ++ii;
@@ -1213,7 +1214,7 @@ inline mxClassID GetMatlabClassID(
          type = mxDOUBLE_CLASS;
          break;
       default:
-         DIP_THROW_ASSERTION( "Unhandled DataType" ); // Should not be possible
+         DIP_THROW_ASSERTION( dip::E::NOT_REACHABLE );
    }
    return type;
 }

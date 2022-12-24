@@ -24,6 +24,8 @@ namespace dip {
 
 namespace {
 
+constexpr char const* ITERATOR_AT_END = "Iterator at end cannot be dereferenced";
+
 template< typename TPI >
 void SetMaxValue( Image::Sample& out ) {
    *(static_cast< TPI* >( out.Origin() )) = std::numeric_limits< TPI >::max();
@@ -404,7 +406,7 @@ Image::View::Iterator& Image::View::Iterator::operator++() {
 }
 
 void* Image::View::Iterator::Pointer() const {
-   DIP_THROW_IF( atEnd_, "Iterator at end cannot be dereferenced" );
+   DIP_THROW_IF( atEnd_, ITERATOR_AT_END );
    if( maskIt_ ) {
       return maskIt_->Pointer< 0 >();
    }
@@ -415,7 +417,7 @@ void* Image::View::Iterator::Pointer() const {
 }
 
 void* Image::View::Iterator::Pointer( dip::uint index ) const {
-   DIP_THROW_IF( atEnd_, "Iterator at end cannot be dereferenced" );
+   DIP_THROW_IF( atEnd_, ITERATOR_AT_END );
    if( maskIt_ ) {
       return maskIt_->Pointer< 0 >( index );
    }
@@ -426,7 +428,7 @@ void* Image::View::Iterator::Pointer( dip::uint index ) const {
 }
 
 dip::sint Image::View::Iterator::Offset() const {
-   DIP_THROW_IF( atEnd_, "Iterator at end cannot be dereferenced" );
+   DIP_THROW_IF( atEnd_, ITERATOR_AT_END );
    if( maskIt_ ) {
       return maskIt_->Offset< 0 >();
    }

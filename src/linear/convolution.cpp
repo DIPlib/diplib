@@ -69,8 +69,8 @@ struct InternOneDimensionalFilter {
       dataSize = size = in.filter.size();
       dip::uint sampleSize = isDouble ? sizeof( dfloat ) : sizeof( sfloat );
       if( in.isComplex ) {
-         DIP_THROW_IF( dataSize & 1, "Complex filter must have an even number of values." );
-         DIP_THROW_IF( !isComplex, "Found a complex filter where none was expected." );
+         DIP_THROW_IF( dataSize & 1, "Complex filter must have an even number of values" );
+         DIP_THROW_IF( !isComplex, "Found a complex filter where none was expected" );
          dataSize /= 2;
          size /= 2;
       }
@@ -404,7 +404,7 @@ void SeparableConvolution(
             }
             break;
          default:
-            DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED ); // This will never happen
+            DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED ); // This will never happen
       }
       Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter,
                             Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::UseInputBuffer );
@@ -682,7 +682,7 @@ void Convolution(
          return;
       }
       // We failed. If the user explicitly asked for a separable computation, error out.
-      DIP_THROW_IF( !tryFourier && !tryDirect, "Filter kernel not separable." );
+      DIP_THROW_IF( !tryFourier && !tryDirect, "Filter kernel not separable" );
    }
 
    if( tryFourier ) {

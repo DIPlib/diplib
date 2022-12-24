@@ -468,12 +468,12 @@ class DIP_NO_EXPORT ImageIterator {
       ConstSampleIterator< value_type > cend() const { return cbegin() + tensorElements_; }
       /// Get an iterator over the current line
       LineIterator< value_type > GetLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return LineIterator< value_type >( ptr_, sizes_[ procDim_ ], strides_[ procDim_ ], tensorElements_, tensorStride_ );
       }
       /// Get a const iterator over the current line
       ConstLineIterator< value_type > GetConstLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return ConstLineIterator< value_type >( ptr_, sizes_[ procDim_ ], strides_[ procDim_ ], tensorElements_, tensorStride_ );
       }
 
@@ -847,16 +847,14 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Get an iterator over the current line of image `I`
       template< dip::uint I >
       LineIterator< value_type< I >> GetLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(),
-                       "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return LineIterator< value_type< I >>( Pointer< I >(), sizes_[ procDim_ ], stridess_[ I ][ procDim_ ],
                                                 tensorElementss_[ I ], tensorStrides_[ I ] );
       }
       /// Get a const iterator over the current line of image `I`
       template< dip::uint I >
       ConstLineIterator< value_type< I >> GetConstLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(),
-                       "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return ConstLineIterator< value_type< I >>( Pointer< I >(), sizes_[ procDim_ ], stridess_[ I ][ procDim_ ],
                                                      tensorElementss_[ I ], tensorStrides_[ I ] );
       }

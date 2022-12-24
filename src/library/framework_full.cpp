@@ -83,7 +83,7 @@ void Full(
    //      But we need to convert the image's type or expand its tensor, meaning that we need to create an
    //      input buffer and copy data into it. This requires copying data from the expanded image, not only
    //      the input image.
-   DIP_THROW_IF( alreadyExpanded && ( dataTypeChange || expandTensor ), "Input buffer was already expanded, but I need to expand the tensor or convert data type." );
+   DIP_THROW_IF( alreadyExpanded && ( dataTypeChange || expandTensor ), "Input buffer was already expanded, but I need to expand the tensor or convert data type" );
    bool adjustInput = !alreadyExpanded && ( dataTypeChange || expandTensor || expandBoundary );
 
    // Adjust c_out if necessary (and possible)

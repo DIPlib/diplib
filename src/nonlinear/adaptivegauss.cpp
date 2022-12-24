@@ -394,7 +394,8 @@ class KernelTransform2DScaledBanana : public KernelTransform2DBanana, public Ker
       virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          // First scale, then curve, then rotate
          dfloat kernelCoordX = scaleAtImgCoords_[ tensorIndex ][ 0 ] * static_cast< dfloat >( kernelCoords[ 0 ] );
-         dfloat kernelCoordY = scaleAtImgCoords_[ tensorIndex ][ 1 ] * static_cast< dfloat >( kernelCoords[ 1 ] ) + ( hcurv_[ tensorIndex ] * kernelCoordX * kernelCoordX );
+         dfloat kernelCoordY = scaleAtImgCoords_[ tensorIndex ][ 1 ] * static_cast< dfloat >( kernelCoords[ 1 ] ) +
+                               ( hcurv_[ tensorIndex ] * kernelCoordX * kernelCoordX );
          transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoordX * csn_[ tensorIndex ] + kernelCoordY * sn_[ tensorIndex ];
          transformedCoords[ 1 ] = imgCoords_[ 1 ] - kernelCoordX * sn_[ tensorIndex ] + kernelCoordY * csn_[ tensorIndex ];
       }
@@ -636,8 +637,14 @@ class InputInterpolatorFOH : public InputInterpolatorFixedDims< nDims, TPI, TPO 
 template< typename TPI, typename TPO = FlexType< TPI >>
 class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
    public:
-      AdaptiveWindowConvolutionLineFilter( Image const& in, Kernel const& kernel, ImageArray const& params, String const& interpolation, BoundaryCondition bc, String const& transform )
-            : in_( in ), kernel_( kernel ) {
+      AdaptiveWindowConvolutionLineFilter(
+            Image const& in,
+            Kernel const& kernel,
+            ImageArray const& params,
+            String const& interpolation,
+            BoundaryCondition bc,
+            String const& transform
+      ) : in_( in ), kernel_( kernel ) {
          // Determine kernel transformation
          if( in_.Dimensionality() == 2 ) {
             // === 2D ===
@@ -655,7 +662,7 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
             // Determine kernel transformation
             ConstructKernelTransform3D( transform, params, in.TensorElements() );
          } else {
-            DIP_THROW( "No transform \"" + transform + "\" known for input dimensionality " + std::to_string( in_.Dimensionality() ));
+            DIP_THROW_INVALID_FLAG( transform );
          }
 
          // Store boundary condition. We only support mirroring or zeros for now.
@@ -723,7 +730,7 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
          } else if( interpolation == S::LINEAR ) {
             inputInterpolator_ = std::make_unique< InputInterpolatorFOH< nDims, TPI, TPO >>( in );
          } else {
-            DIP_THROW( "Unknown interpolation \"" + interpolation + "\"" );
+            DIP_THROW_INVALID_FLAG( interpolation );
          }
       }
 
@@ -751,7 +758,7 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
             DIP_THROW_IF( params.size() != 1, E::ARRAY_PARAMETER_WRONG_LENGTH );
             kernelTransform_ = std::make_unique< KernelTransform2DSkew >( params[ 0 ], inputTensorElements );
          } else {
-            DIP_THROW( "Unknown 2D transform \"" + transform + "\"" );
+            DIP_THROW_INVALID_FLAG( transform );
          }
       }
 
@@ -765,7 +772,7 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
                kernelTransform_ = std::make_unique< KernelTransform3DRotationXY >( params[ 0 ], params[ 1 ], params[ 2 ], params[ 3 ], inputTensorElements );
             }
          } else {
-            DIP_THROW( "Unknown 3D transform \"" + transform + "\"" );
+            DIP_THROW_INVALID_FLAG( transform );
          }
       }
 
@@ -814,7 +821,7 @@ void AdaptiveFilter(
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_ALL( lineFilter, AdaptiveWindowConvolutionLineFilter, ( in, kernel, paramImages, interpolationMethod, bc, transform ), in.DataType() );
       // We use the full framework to allow multi-threading. Its parameters prevent input or output buffering to minimize overhead. Border expansion is not used either.
-      Framework::Full( in, out, in.DataType(), outputType, outputType, in.TensorElements(), { bc }, kernel, *lineFilter, Framework::FullOption::BorderAlreadyExpanded );// for performance comparisons: +Framework::FullOption::NoMultiThreading );
+      Framework::Full( in, out, in.DataType(), outputType, outputType, in.TensorElements(), { bc }, kernel, *lineFilter, Framework::FullOption::BorderAlreadyExpanded );
 
    DIP_END_STACK_TRACE
 }

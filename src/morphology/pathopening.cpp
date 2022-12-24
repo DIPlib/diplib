@@ -393,7 +393,7 @@ void PathOpening(
    dip::uint ndims = c_in.Dimensionality();
    DIP_THROW_IF( ndims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      DIP_THROW_IF( c_in.Size( ii ) < 3, "Input image is too small." );
+      DIP_THROW_IF( c_in.Size( ii ) < 3, E::IMAGE_TOO_SMALL );
    }
 
    bool opening, constrained, robust;
@@ -587,7 +587,7 @@ void DirectedPathOpening(
    dip::uint ndims = c_in.Dimensionality();
    DIP_THROW_IF( ndims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      DIP_THROW_IF( c_in.Size( ii ) < 3, "Input image is too small." );
+      DIP_THROW_IF( c_in.Size( ii ) < 3, E::IMAGE_TOO_SMALL );
    }
    DIP_THROW_IF( filterParam.size() != ndims, E::ARRAY_PARAMETER_WRONG_LENGTH );
 

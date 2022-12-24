@@ -103,7 +103,7 @@ ChainCode ChainCode::Offset() const {
                out.Push( code );
                break;
             default:
-               DIP_THROW_ASSERTION( "Not reachable" );
+               DIP_THROW_ASSERTION( E::NOT_REACHABLE );
          }
       } else {
          switch( n ) {
@@ -123,7 +123,7 @@ ChainCode ChainCode::Offset() const {
                // no points to add
                break;
             default:
-               DIP_THROW_ASSERTION( "Not reachable" );
+               DIP_THROW_ASSERTION( E::NOT_REACHABLE );
          }
       }
       prev = code;

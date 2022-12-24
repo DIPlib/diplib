@@ -1,5 +1,5 @@
 /*
- * (c)2017-2018, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,9 @@ namespace {
 
 constexpr char const* TIFF_NO_TAG = "Invalid TIFF: Required tag not found";
 constexpr char const* TIFF_DIRECTORY_NOT_FOUND = "Could not find the requested image in the file";
+constexpr char const* TIFF_UNKNOWN_BIT_DEPTH = "Unsupported TIFF: Unknown bit depth";
+constexpr char const* TIFF_UNKNOWN_PLANAR_CONFIG = "Unsupported TIFF: unknown PlanarConfiguration value";
+constexpr char const* TIFF_ERROR_READING_DATA = "TIFF_UNKNOWN_BIT_DEPTH";
 
 #define READ_REQUIRED_TIFF_TAG( tiff, tag, ... ) do { if( !TIFFGetField( tiff, tag, __VA_ARGS__ )) { DIP_THROW_RUNTIME( TIFF_NO_TAG ); }} while(false)
 
@@ -97,7 +100,7 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
             case 64:
                return DT_UINT64;
             default:
-               DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
+               DIP_THROW_RUNTIME( TIFF_UNKNOWN_BIT_DEPTH );
          }
       case SAMPLEFORMAT_INT:
          switch( bitsPerSample ) {
@@ -110,7 +113,7 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
             case 64:
                return DT_SINT64;
             default:
-               DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
+               DIP_THROW_RUNTIME( TIFF_UNKNOWN_BIT_DEPTH );
          }
       case SAMPLEFORMAT_IEEEFP:
          switch( bitsPerSample ) {
@@ -121,7 +124,7 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
             case 64:
                return DT_DFLOAT;
             default:
-               DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
+               DIP_THROW_RUNTIME( TIFF_UNKNOWN_BIT_DEPTH );
          }
       default:
          DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown pixel format" );
@@ -375,7 +378,7 @@ void ReadTIFFColorMap(
    uint16 bitsPerSample;
    READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample );
    if(( bitsPerSample != 4 ) && ( bitsPerSample != 8 )) {
-      DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
+      DIP_THROW_RUNTIME( TIFF_UNKNOWN_BIT_DEPTH );
    }
    uint16* CMRed;
    uint16* CMGreen;
@@ -403,7 +406,7 @@ void ReadTIFFColorMap(
    for( uint32 strip = 0; strip < nStrips; ++strip ) {
       dip::uint nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
       if( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0 ) {
-         DIP_THROW_RUNTIME( "Error reading data" );
+         DIP_THROW_RUNTIME( TIFF_ERROR_READING_DATA );
       }
       if( bitsPerSample == 4 ) {
          ExpandColourMap4( imagedata, buf.data(), imageWidth, nrow, image.TensorStride(), image.Strides(), CMRed, CMGreen, CMBlue );
@@ -503,7 +506,7 @@ void ReadTIFFBinary(
    for( uint32 strip = 0; strip < nStrips; ++strip ) {
       uint32 nrow = ( row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip );
       if( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0 ) {
-         DIP_THROW_RUNTIME( "Error reading data" );
+         DIP_THROW_RUNTIME( TIFF_ERROR_READING_DATA );
       }
       if( data.photometricInterpretation == PHOTOMETRIC_MINISWHITE ) {
          CopyBufferInv1( imagedata, buf.data(), imageWidth, nrow, image.Strides() );
@@ -781,7 +784,7 @@ void ReadTIFFData(
             imagedata += static_cast< dip::sint >( sizeOf ) * tensorStride;
          }
       } else {
-         DIP_THROW_RUNTIME( "Unsupported TIFF: unknown PlanarConfiguration value" );
+         DIP_THROW_RUNTIME( TIFF_UNKNOWN_PLANAR_CONFIG );
       }
    } else {
       // --- Striped TIFF file ---
@@ -800,7 +803,7 @@ void ReadTIFFData(
             for( uint32 strip = 0; strip < nStrips; ++strip ) {
                dip::uint copyHeight = ( yPos + stripHeight > data.sizes[ 1 ] ? data.sizes[ 1 ] - yPos : stripHeight );
                if( TIFFReadEncodedStrip( tiff, strip, imagedata, stripSize ) < 0 ) {
-                  DIP_THROW_RUNTIME( "Error reading data (planar config cont)" );
+                  DIP_THROW_RUNTIME( TIFF_ERROR_READING_DATA );
                }
                imagedata += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
                yPos += stripHeight;
@@ -821,7 +824,7 @@ void ReadTIFFData(
                dip::uint offset = ( offsetY + roiSpec.roi[ 0 ].Offset() * data.tensorElements + roiSpec.channels.Offset() );
                uint32 strip = TIFFComputeStrip( tiff, static_cast< uint32 >( y ), 0 );
                if( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripSize ) < 0 ) {
-                  DIP_THROW_RUNTIME( "Error reading data (planar config cont)" );
+                  DIP_THROW_RUNTIME( TIFF_ERROR_READING_DATA );
                }
                if( sizeOf == 1 ) {
                   //std::cout << "Copying " << roiSpec.sizes[ 0 ] << "x" << copyHeight << " pixels from stripe, pos = " << roiSpec.roi[ 0 ].Offset() << ", " << yPos << std::endl;
@@ -854,7 +857,7 @@ void ReadTIFFData(
                for( uint32 strip = 0; strip < nStrips; ++strip ) {
                   dip::uint copyHeight = ( yPos + stripHeight > data.sizes[ 1 ] ? data.sizes[ 1 ] - yPos : stripHeight );
                   if( TIFFReadEncodedStrip( tiff, stripOffset + strip, imagedataRow, stripSize ) < 0 ) {
-                     DIP_THROW_RUNTIME( "Error reading data (planar config separate)" );
+                     DIP_THROW_RUNTIME( TIFF_ERROR_READING_DATA );
                   }
                   imagedataRow += static_cast< dip::sint >( copyHeight * sizeOf ) * strides[ 1 ];
                   yPos += stripHeight;
@@ -879,7 +882,7 @@ void ReadTIFFData(
                   dip::uint offset = ( offsetY + roiSpec.roi[ 0 ].Offset() );
                   uint32 strip = TIFFComputeStrip( tiff, static_cast< uint32 >( y ), static_cast< uint16 >( plane ));
                   if( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripSize ) < 0 ) {
-                     DIP_THROW_RUNTIME( "Error reading data (planar config separate)" );
+                     DIP_THROW_RUNTIME( TIFF_ERROR_READING_DATA );
                   }
                   if( sizeOf == 1 ) {
                      CopyBuffer2D_8bit( imagedataRow, buf.data() + offset, roiSpec.sizes[ 0 ], copyHeight,
@@ -898,7 +901,7 @@ void ReadTIFFData(
             }
          }
       } else {
-         DIP_THROW_RUNTIME( "Unsupported TIFF: unknown PlanarConfiguration value" );
+         DIP_THROW_RUNTIME( TIFF_UNKNOWN_PLANAR_CONFIG );
       }
    }
 }

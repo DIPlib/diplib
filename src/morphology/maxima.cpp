@@ -242,7 +242,7 @@ void Extrema(
    // Find processing dimension
    dip::uint procDim = Framework::OptimalProcessingDim( out );
    dip::uint length = out.Size( procDim );
-   DIP_THROW_IF( length < 2, "Input image is too small" );
+   DIP_THROW_IF( length < 2, E::IMAGE_TOO_SMALL );
 
    // Create array with offsets to neighbours
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );

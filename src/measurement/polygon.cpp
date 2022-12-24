@@ -27,6 +27,12 @@
 
 namespace dip {
 
+namespace {
+
+constexpr char const* POLYGON_SELF_INTERSECTS = "The polygon is self-intersecting, cannot compute convex hull";
+
+} // namespace
+
 BoundingBoxFloat Polygon::BoundingBox() const {
    if( vertices.empty() ) {
       return {}; // Should we generate an error instead?
@@ -259,12 +265,12 @@ ConvexHull::ConvexHull( dip::Polygon const& polygon ) {
       }
       while( ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) < eps ) {
          deque.pop_back();
-         DIP_THROW_IF( deque.size() < 2, "The polygon is self-intersecting, cannot compute convex hull" );
+         DIP_THROW_IF( deque.size() < 2, POLYGON_SELF_INTERSECTS );
       }
       deque.push_back( *v1 );
       while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) < eps ) {
          deque.pop_front();
-         DIP_THROW_IF( deque.size() < 2, "The polygon is self-intersecting, cannot compute convex hull" );
+         DIP_THROW_IF( deque.size() < 2, POLYGON_SELF_INTERSECTS );
       }
       deque.push_front( *v1 );
    }

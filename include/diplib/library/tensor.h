@@ -408,7 +408,7 @@ class DIP_NO_EXPORT Tensor {
                // stride doesn't change
                break;
             default:
-               DIP_THROW( "Cannot obtain row for non-full tensor representation." );
+               DIP_THROW( "Cannot obtain row for non-full tensor representation" );
          }
          SetShape( Shape::ROW_VECTOR, 1, N );
          return offset;
@@ -432,7 +432,7 @@ class DIP_NO_EXPORT Tensor {
                stride *= static_cast< dip::sint >( N );
                break;
             default:
-               DIP_THROW( "Cannot obtain row for non-full tensor representation." );
+               DIP_THROW( "Cannot obtain row for non-full tensor representation" );
          }
          SetShape( Shape::COL_VECTOR, rows_, 1 );
          return offset;

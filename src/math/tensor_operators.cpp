@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -260,7 +260,7 @@ class CrossProductLineFilter : public Framework::ScanLineFilter {
                } while( ++lhs, ++rhs, ++out );
                break;
             default:
-               DIP_THROW_ASSERTION( "This should not happen" );
+               DIP_THROW_ASSERTION( E::NOT_REACHABLE );
          }
       }
 };
@@ -446,7 +446,7 @@ void PolarToCartesian( Image const& in, Image& out ) {
 
 void Determinant( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.Tensor().IsSquare(), "The determinant can only be computed from square matrices" );
+   DIP_THROW_IF( !in.Tensor().IsSquare(), E::IMAGE_NOT_SQUARE_MATRIX );
    dip::uint n = in.TensorRows();
    if( n == 1 ) {
       out = in;
@@ -487,7 +487,7 @@ void Determinant( Image const& in, Image& out ) {
 
 void Trace( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsSquare(), "Trace only defined for square matrix images" );
+   DIP_THROW_IF( !in.IsSquare(), E::IMAGE_NOT_SQUARE_MATRIX );
    if( in.IsScalar() ) {
       out = in;
    } else {
@@ -519,7 +519,7 @@ void Rank( Image const& in, Image& out ) {
 
 void Eigenvalues( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
+   DIP_THROW_IF( !in.Tensor().IsSquare(), E::IMAGE_NOT_SQUARE_MATRIX );
    if( in.IsScalar() ) {
       out = in;
    } else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
@@ -665,7 +665,7 @@ class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
 
 void SelectEigenvalue( Image const& in, Image& out, bool first ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
+   DIP_THROW_IF( !in.Tensor().IsSquare(), E::IMAGE_NOT_SQUARE_MATRIX );
    if( in.IsScalar() ) {
       out = in;
    } else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
@@ -730,7 +730,7 @@ void SmallestEigenvalue( Image const& in, Image& out ) {
 
 void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
+   DIP_THROW_IF( !in.Tensor().IsSquare(), E::IMAGE_NOT_SQUARE_MATRIX );
    if( in.IsScalar() ) {
       out = in;
       eigenvectors.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
@@ -791,7 +791,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
 
 void LargestEigenvector( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, "The image is not a symmetric matrix" );
+   DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, E::IMAGE_NOT_SYMMETRIC_MATRIX );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint n = in.TensorRows();
    DataType dataType = DataType::SuggestFlex( in.DataType() );
@@ -806,7 +806,7 @@ void LargestEigenvector( Image const& in, Image& out ) {
 
 void SmallestEigenvector( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, "The image is not a symmetric matrix" );
+   DIP_THROW_IF( in.TensorShape() != Tensor::Shape::SYMMETRIC_MATRIX, E::IMAGE_NOT_SYMMETRIC_MATRIX );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint n = in.TensorRows();
    DataType dataType = DataType::SuggestFlex( in.DataType() );
@@ -821,7 +821,7 @@ void SmallestEigenvector( Image const& in, Image& out ) {
 
 void Inverse( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.Tensor().IsSquare(), "The regular inverse can only be computed from square matrices" );
+   DIP_THROW_IF( !in.Tensor().IsSquare(), E::IMAGE_NOT_SQUARE_MATRIX);
    DataType outtype = DataType::SuggestFlex( in.DataType() );
    if(( in.IsScalar() ) || ( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX )) {
       DIP_STACK_TRACE_THIS( Divide( Image( 1, outtype ), in, out, outtype )); // computes 1/in for each of the diagonal elements

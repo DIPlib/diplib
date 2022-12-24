@@ -307,7 +307,7 @@ void BinaryBasicFilter(
    dip::Image out = mi.NewImage();
    if( nrhs > 2 && dml::IsString( prhs[ 2 ] )) {
       dip::String mode = dml::GetString( prhs[ 2 ] );
-      DIP_THROW_IF( mode != dip::S::ISOTROPIC, "Illegal connectivity value." );
+      DIP_THROW_IF( mode != dip::S::ISOTROPIC, "Illegal connectivity value" );
       DML_MAX_ARGS( 3 );
       dip::dfloat distance = dml::GetFloat( prhs[ 1 ] );
       isotropicFunction( in, out, distance );

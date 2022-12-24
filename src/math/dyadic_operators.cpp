@@ -22,6 +22,12 @@
 
 namespace dip {
 
+namespace {
+
+constexpr char const* IMAGE_ARRAY_TOO_SMALL = "Need at least two input images";
+
+} // namespace
+
 void Atan2( Image const& y, Image const& x, Image& out ) {
    DIP_THROW_IF( !y.IsScalar() || !x.IsScalar(), E::IMAGE_NOT_SCALAR );
    DataType dt = DataType::SuggestArithmetic( y.DataType(), x.DataType() );
@@ -83,7 +89,7 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewMultiScanLineFilter( F co
 } // namespace
 
 void Supremum( ImageConstRefArray const& in, Image& out ) {
-   DIP_THROW_IF( in.size() < 2, "Need at least two input images" );
+   DIP_THROW_IF( in.size() < 2, IMAGE_ARRAY_TOO_SMALL );
    DataType dt = in[ 0 ].get().DataType();
    for( dip::uint ii = 1; ii < in.size(); ++ii ) {
       dt = DataType::SuggestDyadicOperation( dt, in[ ii ].get().DataType() );
@@ -98,7 +104,7 @@ void Supremum( ImageConstRefArray const& in, Image& out ) {
 }
 
 void Infimum( ImageConstRefArray const& in, Image& out ) {
-   DIP_THROW_IF( in.size() < 2, "Need at least two input images" );
+   DIP_THROW_IF( in.size() < 2, IMAGE_ARRAY_TOO_SMALL );
    DataType dt = in[ 0 ].get().DataType();
    for( dip::uint ii = 1; ii < in.size(); ++ii ) {
       dt = DataType::SuggestDyadicOperation( dt, in[ ii ].get().DataType() );

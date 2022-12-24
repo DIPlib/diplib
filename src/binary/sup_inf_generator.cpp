@@ -1,5 +1,5 @@
 /*
- * (c)2018-2021, Cris Luengo.
+ * (c)2018-2022, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,9 @@ namespace dip {
 namespace {
 // The "don't care" pixels.
 constexpr sfloat X = std::numeric_limits< sfloat >::quiet_NaN(); // dip::nan is a dfloat...
+
+constexpr char const* INTERVAL_NOT_ODD = "The interval is not odd in size";
+constexpr char const* INTERVAL_NO_FOREGROUND = "The interval needs at least one foreground pixel";
 }
 
 Interval::Interval( dip::Image image ) : image_( std::move( image )) {
@@ -36,13 +39,13 @@ Interval::Interval( dip::Image image ) : image_( std::move( image )) {
    DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    for( auto& s : image_.Sizes() ) {
-      DIP_THROW_IF( !( s & 1 ), "The interval is not odd in size" );
+      DIP_THROW_IF( !( s & 1u ), INTERVAL_NOT_ODD );
    }
-   DIP_THROW_IF( !Any( image_ == 1 ).As< bool >(), "The interval needs at least one foreground pixel" );
+   DIP_THROW_IF( !Any( image_ == 1 ).As< bool >(), INTERVAL_NO_FOREGROUND );
    image_.Convert( DT_SFLOAT );
    ImageIterator< sfloat > it( image_ );
    do {
-      if(!(( *it == 0.0 ) || ( *it == 1.0 ))) {
+      if(( *it != 0.0 ) && ( *it != 1.0 )) {
          *it = X;
       }
    } while( ++it );
@@ -54,9 +57,9 @@ Interval::Interval( dip::Image hit, dip::Image miss ) {
    DIP_THROW_IF( !hit.DataType().IsBinary() || !miss.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( hit.Sizes() != miss.Sizes(), E::SIZES_DONT_MATCH );
    for( auto s : hit.Sizes() ) {
-      DIP_THROW_IF( !( s & 1u ), "The interval is not odd in size" );
+      DIP_THROW_IF( !( s & 1u ), INTERVAL_NOT_ODD );
    }
-   DIP_THROW_IF( !Any( hit ).As< bool >(), "The interval needs at least one foreground pixel" );
+   DIP_THROW_IF( !Any( hit ).As< bool >(), INTERVAL_NO_FOREGROUND );
    DIP_THROW_IF( dip::Any( dip::Infimum( hit, miss )).As< bool >(), "The hit and miss images are not disjoint" );
    image_.ReForge( hit.Sizes(), 1, DT_SFLOAT );
    image_.Fill( X );

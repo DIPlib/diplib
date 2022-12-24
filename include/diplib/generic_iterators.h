@@ -328,13 +328,13 @@ class DIP_NO_EXPORT GenericImageIterator {
       /// Get an iterator over the current line
       template< typename S = T >
       LineIterator< S > GetLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return LineIterator< S >( Pointer(), sizes_[ procDim_ ], strides_[ procDim_ ], tensorElements_, tensorStride_ );
       }
       /// Get a const iterator over the current line
       template< typename S = T >
       ConstLineIterator< S > GetConstLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return ConstLineIterator< S >( Pointer(), sizes_[ procDim_ ], strides_[ procDim_ ], tensorElements_, tensorStride_ );
       }
 
@@ -696,14 +696,14 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Get an iterator over the current line of image `I`
       template< dip::uint I, typename S = T >
       LineIterator< S > GetLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return LineIterator< S >( Pointer< I >(), sizes_[ procDim_ ], stridess_[ I ][ procDim_ ],
                                    tensorElementss_[ I ], tensorStrides_[ I ] );
       }
       /// Get a const iterator over the current line of image `I`
       template< dip::uint I, typename S = T >
       ConstLineIterator< S > GetConstLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         DIP_THROW_IF( !HasProcessingDimension(), E::ITERATOR_HAS_NO_PROCDIM );
          return ConstLineIterator< S >( Pointer< I >(), sizes_[ procDim_ ], stridess_[ I ][ procDim_ ],
                                         tensorElementss_[ I ], tensorStrides_[ I ] );
       }

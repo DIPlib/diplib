@@ -86,7 +86,7 @@ void Select(
    } else if( selector == "<=" ) {
       DIP_OVL_CALL_ASSIGN_ALL( lineFilter, NewSelect1ScanLineFilter, ( []( dfloat in1, dfloat in2 ) { return in1 <= in2; } ), dataType );
    } else {
-      DIP_THROW( "Illegal selector string" );
+      DIP_THROW_INVALID_FLAG( selector );
    }
    ImageConstRefArray inar{ in1, in2, in3, in4 };
    ImageRefArray outar{ out };

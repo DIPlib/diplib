@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2022, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@ namespace dip {
 namespace {
 
 static char const* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
+static char const* TIFF_WRITE_DATA = "Error writing data";
 
 #define WRITE_TIFF_TAG( tiff, tag, value ) do { if( !TIFFSetField( tiff, tag, value )) { DIP_THROW_RUNTIME( TIFF_WRITE_TAG ); }} while(false)
 
@@ -231,7 +232,7 @@ void WriteTIFFStrips(
       for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
          uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
          if( TIFFWriteEncodedStrip( tiff, strip, data, nrow * scanline ) < 0 ) {
-            DIP_THROW_RUNTIME( "Error writing data" );
+            DIP_THROW_RUNTIME( TIFF_WRITE_DATA );
          }
          data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
          ++strip;
@@ -259,7 +260,7 @@ void WriteTIFFStrips(
             }
          }
          if( TIFFWriteEncodedStrip( tiff, strip, buf.data(), nrow * scanline ) < 0 ) {
-            DIP_THROW_RUNTIME( "Error writing data" );
+            DIP_THROW_RUNTIME( TIFF_WRITE_DATA );
          }
          data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
          ++strip;

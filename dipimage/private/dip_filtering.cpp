@@ -111,7 +111,7 @@ void convolve( dip::Image const& in, dip::Image& out, int nrhs, const mxArray* p
             }
          }
       } else {
-         DIP_THROW( "Kernel parameter of unexpected type." );
+         DIP_THROW( "Kernel parameter of unexpected type" );
       }
       dip::SeparableConvolution( in, out, filterArray, bc );
    }

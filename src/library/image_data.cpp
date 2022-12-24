@@ -26,6 +26,8 @@ namespace dip {
 
 namespace { // Internal functions
 
+constexpr char const* MALLOC_FAILED = "Failed to allocate memory";
+
 // Compute a normal stride array.
 void ComputeStrides(
       UnsignedArray const& sizes,
@@ -173,11 +175,15 @@ DataSegment AlignedAllocInterface::AllocateData(
    dip::uint unalignedSize = size + alignment_;
    // Allocate unaligned memory
    void* pUnaligned = std::malloc( unalignedSize );
-   DIP_THROW_IF( !pUnaligned, "Failed to allocate memory" );
+   if( !pUnaligned ) {
+      DIP_THROW_RUNTIME( MALLOC_FAILED );
+   }
    auto dataBlock = DataSegment{ pUnaligned, std::free };
    // Create pointer to the aligned block within the unaligned block
    void* pAligned = std::align( alignment_, size, pUnaligned, unalignedSize );
-   DIP_THROW_IF( !pAligned, "Failed to align memory" );
+   if( !pAligned ) {
+      DIP_THROW_RUNTIME( "Failed to align memory" );
+   }
    // Set strides and tensorStride
    tensorStride = 1; // We set tensor strides to 1 by default.
    ComputeStrides( sizes, tensor.Elements(), strides );
@@ -660,8 +666,7 @@ void Image::Forge() {
    if( !IsForged() ) {
       dip::uint size = FindNumberOfPixels( sizes_ );
       DIP_THROW_IF( size == 0, "Cannot forge an image without pixels (sizes must be > 0)" );
-      DIP_THROW_IF( TensorElements() > std::numeric_limits< dip::uint >::max() / size,
-                   E::SIZE_EXCEEDS_LIMIT );
+      DIP_THROW_IF( TensorElements() > std::numeric_limits< dip::uint >::max() / size, E::SIZE_EXCEEDS_LIMIT );
       size *= TensorElements();
       if( externalInterface_ ) {
          dataBlock_ = externalInterface_->AllocateData( origin_, dataType_, sizes_, strides_, tensor_, tensorStride_ );
@@ -685,7 +690,9 @@ void Image::Forge() {
          }
          dip::uint sz = dataType_.SizeOf();
          void* p = std::malloc( size * sz );
-         DIP_THROW_IF( !p, "Failed to allocate memory" );
+         if( !p ) {
+            DIP_THROW_RUNTIME( MALLOC_FAILED );
+         }
          dataBlock_ = DataSegment{ p, std::free };
          //[]( void* ptr ) { std::cout << "   Successfully freed image with DataSegment " << ptr << std::endl; std::free( ptr ); }
          origin_ = static_cast< uint8* >( p ) - start * static_cast< dip::sint >( sz );

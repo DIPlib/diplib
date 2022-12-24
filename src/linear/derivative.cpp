@@ -76,7 +76,7 @@ void Gauss(
    } else if(( method == "IIR" ) || ( method == IIR )) {
       DIP_STACK_TRACE_THIS( GaussIIR( in, out, std::move( sigmas ), std::move( derivativeOrder ), boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation ));
    } else {
-      DIP_THROW( "Unknown Gauss filter method" );
+      DIP_THROW_INVALID_FLAG( method );
    }
 }
 
@@ -107,7 +107,7 @@ void Derivative(
       DIP_STACK_TRACE_THIS( Gauss( in, out, std::move( sigmas ), std::move( derivativeOrder ), method == GAUSS ? S::BEST : method, boundaryCondition, truncation ));
       return;
    }
-   DIP_THROW( "Unknown derivative method" );
+   DIP_THROW_INVALID_FLAG( method );
 }
 
 namespace {

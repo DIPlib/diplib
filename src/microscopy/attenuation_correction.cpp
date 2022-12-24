@@ -31,6 +31,8 @@ namespace dip {
 
 namespace {
 
+constexpr char const* ILLEGAL_PIXEL_SIZES = "Pixel sizes must be identical in x and y axes, and have same units in z axis";
+
 struct ExponentialParams {
    dfloat a;
    dfloat b;
@@ -790,8 +792,8 @@ void AttenuationCorrection(
    DIP_THROW_IF( in.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Check pixel sizes and compute ratio
-   DIP_THROW_IF( in.PixelSize( 0 ) != in.PixelSize( 1 ), "X and Y pixel sizes must be identical" );
-   DIP_THROW_IF( in.PixelSize( 0 ).units != in.PixelSize( 2 ).units, "Z pixel size must have same units as X and Y pixel size" );
+   DIP_THROW_IF( in.PixelSize( 0 ) != in.PixelSize( 1 ), ILLEGAL_PIXEL_SIZES );
+   DIP_THROW_IF( in.PixelSize( 0 ).units != in.PixelSize( 2 ).units, ILLEGAL_PIXEL_SIZES );
    dfloat ratio = in.PixelSize( 2 ).magnitude / in.PixelSize( 0 ).magnitude;
 
    // Compute theta
@@ -1007,8 +1009,8 @@ void SimulatedAttenuation(
    DIP_THROW_IF( in.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
 
    // Check pixel sizes and compute ratio
-   DIP_THROW_IF( in.PixelSize( 0 ) != in.PixelSize( 1 ), "X and Y pixel sizes must be identical" );
-   DIP_THROW_IF( in.PixelSize( 0 ).units != in.PixelSize( 2 ).units, "Z pixel size must have same units as X and Y pixel size" );
+   DIP_THROW_IF( in.PixelSize( 0 ) != in.PixelSize( 1 ), ILLEGAL_PIXEL_SIZES );
+   DIP_THROW_IF( in.PixelSize( 0 ).units != in.PixelSize( 2 ).units, ILLEGAL_PIXEL_SIZES );
    dfloat zxratio = in.PixelSize( 2 ).magnitude / in.PixelSize( 0 ).magnitude;
 
    // Convert `in` to `sfloat`

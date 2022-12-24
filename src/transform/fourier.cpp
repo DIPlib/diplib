@@ -530,10 +530,10 @@ void FourierTransform(
       if( process[ ii ] ) {
          if( fast ) {
             dip::uint sz = GetOptimalDFTSize( outSize[ ii ] );
-            DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size." );
+            DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size" );
             outSize[ ii ] = sz;
          } else {
-            DIP_THROW_IF( outSize[ ii ] > maximumDFTSize, "Image size too large for DFT algorithm." );
+            DIP_THROW_IF( outSize[ ii ] > maximumDFTSize, "Image size too large for DFT algorithm" );
          }
          if( !process[ optimalDimension ] || ( std::abs( out.Stride( ii )) < std::abs( out.Stride( optimalDimension )))) {
             optimalDimension = ii;
