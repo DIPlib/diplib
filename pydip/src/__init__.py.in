@@ -19,8 +19,11 @@ This module is PyDIP, the Python interface to DIPlib.
 See the User Manual online: https://diplib.org/diplib-docs/pydip_user_manual.html
 """
 
+import os
+import sys
+import time
+
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
-import os, time
 if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
     _pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
     try:
@@ -120,7 +123,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
     # Allow IPython users to write
     # %gui dip 
     # to enable interaction
-    if importlib.util.find_spec('IPython') is not None:
+    if 'IPython' in sys.modules:
         from IPython import terminal
 
         def _inputhook(context):
@@ -131,7 +134,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
         terminal.pt_inputhooks.register('dip', _inputhook)
 
     # Same for IPython kernels
-    if importlib.util.find_spec('ipykernel') is not None:
+    if 'ipykernel' in sys.modules:
         from ipykernel.eventloops import register_integration
 
         @register_integration('dip')
@@ -191,7 +194,6 @@ else:
     javaioError = "PyDIPjavaio was not included in the build of the package."
 
 # Here we display library information
-import sys
 if hasattr(sys,'ps1'):
     print(libraryInformation.name + " -- " + libraryInformation.description)
     print("Version " + libraryInformation.version + " (" + libraryInformation.date + ")")
