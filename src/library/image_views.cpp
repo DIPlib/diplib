@@ -154,7 +154,7 @@ void Image::View::Copy( Image const& source ) {
 void Image::View::Copy( View const& source ) {
    DIP_THROW_IF( reference_.TensorElements() != source.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    if( source.IsRegular() ) {
-      Copy( source.reference_ );
+      DIP_STACK_TRACE_THIS( Copy( source.reference_ ));
       return;
    }
    if( IsRegular() ) {
@@ -183,11 +183,11 @@ Image Image::View::Copy() const {
    // This is similar to `Image out = *this`, except in the case of no mask or offsets, we copy the pixels too.
    Image out;
    if( mask_.IsForged() ) {
-      CopyFrom( reference_, out, mask_ );
+      DIP_STACK_TRACE_THIS( CopyFrom( reference_, out, mask_ ));
    } else if( !offsets_.empty() ) {
-      CopyFrom( reference_, out, offsets_ );
+      DIP_STACK_TRACE_THIS( CopyFrom( reference_, out, offsets_ ));
    } else {
-      out = reference_.Copy();
+      DIP_STACK_TRACE_THIS( out = reference_.Copy());
    }
    return out;
 }
