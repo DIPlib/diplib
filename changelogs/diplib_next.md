@@ -51,6 +51,11 @@ None, but see bugfixes to *DIPlib*.
 
 ### Changed functionality
 
+- Significantly faster load times ([PR #127](https://github.com/DIPlib/diplib/pull/127), [PR #128](https://github.com/DIPlib/diplib/pull/128)).
+  The undocumented variable `dip.hasDIPjavaio` no longer exists. The *DIPjavaio* module is loaded when first used.
+
+- Updated the version of Bio-Formats that is downloaded with `python -m diplib download_bioformats` to 6.11.1
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

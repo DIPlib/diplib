@@ -153,7 +153,6 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
 @functools.lru_cache()
 def _get_javaio_imageread_or_error():
     # Here we import PyDIPjavaio if it exists
-    hasDIPjavaio = False
     javaioError = (
         "If you were trying to read an image format supported by BioFormats, "
         "note that DIPjavaio is unavailable because:\n - ")
