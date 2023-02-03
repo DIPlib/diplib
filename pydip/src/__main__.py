@@ -14,14 +14,19 @@
 
 import sys, os, urllib.request
 
+
 def progress(blocks, bs, size):
     barsize = 52
-    pct = blocks*bs / float(size)
-    bardone = int(pct*barsize)
-    print('[{0}{1}] {2: >3}%'.format('=' * bardone, '.'*(barsize-bardone), int(pct*100)), end='\r', flush=True)
+    pct = blocks * bs / float(size)
+    bardone = int(pct * barsize)
+    print('[{0}{1}] {2: >3}%'.format('=' * bardone, '.' * (barsize - bardone), int(pct * 100)), end='\r', flush=True)
+
 
 if __name__ == '__main__':
-    if 'download_bioformats' in sys.argv:
+    if (
+            ('download_bioformats' in sys.argv) or
+            ('download' in sys.argv and 'bioformats' in sys.argv)
+    ):
         url = 'https://downloads.openmicroscopy.org/bio-formats/6.11.1/artifacts/bioformats_package.jar'
         filename = os.path.join(os.path.dirname(__file__), 'bioformats_package.jar')
         print('Retrieving', url)

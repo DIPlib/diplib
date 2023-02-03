@@ -24,6 +24,7 @@ import os
 import sys
 import time
 
+
 # (WINDOWS ONLY) First, we make sure that the DIP.dll file is on the PATH
 if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
     _pydip_dir = os.path.join("@CMAKE_INSTALL_PREFIX@", "@LIBRARY_DESTINATION@")
@@ -31,6 +32,7 @@ if os.name == 'nt' and @pydip_wheel_include_libs@ == False:
         os.add_dll_directory(_pydip_dir)
     except:
         os.environ["PATH"] += os.pathsep + _pydip_dir
+
 
 # Here we import classes and functions from the binary and the python-code modules into
 # the same namespace.
@@ -41,12 +43,15 @@ except:
         print("Could not load PyDIP binary extension. Did you install the Microsoft Visual C++ Redistributable?")
     raise
 
+
 __version__ = PyDIP_bin.__version__
+
 
 from .PyDIP_py import *
 Image.Show = Show
 Histogram.Show = HistogramShow
 SE = StructuringElement  # for backwards compatibility
+
 
 # Here we import PyDIPviewer if it exists
 hasDIPviewer = False
@@ -121,9 +126,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
     viewer.Show = _ShowSlice
     Image.ShowSlice = _ShowSlice
 
-    # Allow IPython users to write
-    # %gui dip 
-    # to enable interaction
+    # Allow IPython users to write `%gui dip` to enable interaction
     if 'IPython' in sys.modules:
         from IPython import terminal
 
@@ -148,8 +151,7 @@ if importlib.util.find_spec('.PyDIPviewer', __name__) is not None:
                 time.sleep(0.001)
 
 
-# LRU cache really means that this function is only ever called once and the
-# return value reused afterwards.
+# LRU cache really means that this function is only ever called once and the return value reused afterwards.
 @functools.lru_cache()
 def _get_javaio_imageread_or_error():
     # Here we import PyDIPjavaio if it exists
@@ -162,7 +164,6 @@ def _get_javaio_imageread_or_error():
             from . import loadjvm
             _lib = loadjvm.load_jvm()
             from . import PyDIPjavaio
-            # Replace the ImageRead from PyDIP_bin with the one in PyDIPjavaio, so that 'bioformats' is recognized as a "format".
             return PyDIPjavaio.ImageRead
         except Exception as e:
             javaioError += str(e)
@@ -175,8 +176,9 @@ def _get_javaio_imageread_or_error():
     return javaioError
 
 
-# This is a version of ImageRead that we use if we fail to load PyDIPjavaio for any reason
 _reportedDIPjavaio = False
+
+
 def ImageRead(*args, **kwargs):
     """
     Either call PyDIPjavaio.ImageRead (if available) or fall back to

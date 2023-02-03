@@ -24,6 +24,7 @@ import warnings
 hasMatPlotLib = importlib.util.find_spec('matplotlib')
 _reportedPlotLib = False
 
+
 # Label color map from the function of the same name in DIPimage:
 def _label_colormap():
     if hasMatPlotLib:
@@ -216,6 +217,7 @@ def Show(img, range=(), complexMode='abs', projectionMode='mean', coordinates=()
             axes.set_aspect(dx / dy)
     pp.draw()
     pp.pause(0.001)
+
 
 def HistogramShow(hist, range=(), complexMode='abs', projectionMode='mean', coordinates=(), dim1=0, dim2=1, colormap=''):
     if hist.Dimensionality() == 1:

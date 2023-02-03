@@ -52,9 +52,11 @@ import shutil
 import subprocess
 import ctypes
 
+
 is_win = platform.system() == 'Windows'
 is_mac = platform.system() == 'Darwin'
 is_linux = platform.system() == 'Linux'
+
 
 def suggest_javahome():
     if "JAVA_HOME" in os.environ:
@@ -97,6 +99,7 @@ def suggest_javahome():
         except subprocess.CalledProcessError:
             yield "/System/Library/Frameworks/JavaVM.framework/Home"
 
+
 def suggest_jvm_paths():
     archs = ["amd64", "i386", "aarch64", "arm"]
 
@@ -111,6 +114,7 @@ def suggest_jvm_paths():
             yield os.path.join(jh, "lib", arch, "server")
             yield os.path.join(jh, "jre", "lib", arch, "server")
 
+
 def suggest_jvm_files():
     if is_win:
         yield "jvm.dll"
@@ -122,6 +126,7 @@ def suggest_jvm_files():
 
     if is_linux:
         yield "libjvm.so"
+
 
 def load_jvm():
     for path in suggest_jvm_paths():
