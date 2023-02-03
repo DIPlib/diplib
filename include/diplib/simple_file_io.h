@@ -18,6 +18,8 @@
 #ifndef DIP_SIMPLE_FILE_IO_H
 #define DIP_SIMPLE_FILE_IO_H
 
+#include <cstdio>
+
 #include "diplib.h"
 #include "diplib/file_io.h"
 #ifdef DIP_CONFIG_HAS_DIPJAVAIO
@@ -60,32 +62,42 @@ inline FileInformation ImageRead(
 ) {
    if( format.empty() ) {
       format = FileGetExtension( filename );
-      if( StringCompareCaseInsensitive( format, "ics" ) || StringCompareCaseInsensitive( format, "ids" )) {
-         DIP_THROW_IF( !ImageIsICS( filename ), "File has an ICS extension but is not an ICS file" );
-         format = "ics";
-      } else if( StringCompareCaseInsensitive( format, "tif" ) || StringCompareCaseInsensitive( format, "tiff" )) {
-         DIP_THROW_IF( !ImageIsTIFF( filename ), "File has a TIFF extension but is not a TIFF file" );
-         format = "tiff";
-      } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
-         DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but is not a JPEG file" );
-         format = "jpeg";
-      } else if( StringCompareCaseInsensitive( format, "npy" )) {
-         DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but is not an NPY file" );
-         format = "npy";
-      } else if( ImageIsICS( filename )) {
-         format = "ics";
-      } else if( ImageIsTIFF( filename )) {
-         format = "tiff";
-      } else if( ImageIsJPEG( filename )) {
-         format = "jpeg";
-      } else if( ImageIsNPY( filename )) {
-         format = "npy";
-      } else {
+      if( !format.empty() ) {
+         std::FILE* f = std::fopen(filename.c_str(), "rb");
+         DIP_THROW_IF( f == nullptr, "File could not be opened" );
+         std::fclose( f );
+         if( StringCompareCaseInsensitive( format, "ics" ) || StringCompareCaseInsensitive( format, "ids" )) {
+            DIP_THROW_IF( !ImageIsICS( filename ), "File has an ICS extension but is not an ICS file" );
+            format = "ics";
+         } else if( StringCompareCaseInsensitive( format, "tif" ) || StringCompareCaseInsensitive( format, "tiff" )) {
+            DIP_THROW_IF( !ImageIsTIFF( filename ), "File has a TIFF extension but is not a TIFF file" );
+            format = "tiff";
+         } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
+            DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but is not a JPEG file" );
+            format = "jpeg";
+         } else if( StringCompareCaseInsensitive( format, "npy" )) {
+            DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but is not an NPY file" );
+            format = "npy";
+         } else {
+            format.clear();
+         }
+      }
+      if( format.empty() ) {
+         if( ImageIsICS( filename )) {
+            format = "ics";
+         } else if( ImageIsTIFF( filename )) {
+            format = "tiff";
+         } else if( ImageIsJPEG( filename )) {
+            format = "jpeg";
+         } else if( ImageIsNPY( filename )) {
+            format = "npy";
+         } else {
 #ifdef DIP_CONFIG_HAS_DIPJAVAIO
-         format = "bioformats";
+            format = "bioformats";
 #else
-         DIP_THROW( "File not of a recognized format" );
+            DIP_THROW( "File not of a recognized format" );
 #endif
+         }
       }
    }
    FileInformation info;
