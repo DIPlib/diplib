@@ -1,0 +1,10 @@
+paths:
+   - src
+   - include
+   - viewer
+   - javaio
+   - pydip
+   - examples
+paths-ignore:
+   - include/diplib/private
+   - dependencies

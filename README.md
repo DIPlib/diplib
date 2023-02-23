@@ -1,7 +1,7 @@
 # *DIPlib 3*
 
-[![Build Status](https://github.com/DIPlib/diplib/actions/workflows/cmake.yml/badge.svg)](https://github.com/DIPlib/diplib/actions)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/DIPlib/diplib.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DIPlib/diplib/context:cpp)
+[![Build Status](https://github.com/DIPlib/diplib/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/DIPlib/diplib/actions/workflows/cmake.yml)
+[![CodeQL](https://github.com/DIPlib/diplib/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/DIPlib/diplib/security/code-scanning)
 
 The *DIPlib* project contains:
 
