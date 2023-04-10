@@ -624,12 +624,13 @@ class DIP_NO_EXPORT MomentAccumulator {
          dip::uint N = m1_.size();
          DIP_ASSERT( pos.size() == N );
          m0_ += weight;
-         dip::uint kk = 0;
          for( dip::uint ii = 0; ii < N; ++ii ) {
             m1_[ ii ] += pos[ ii ] * weight;
-            for( dip::uint jj = 0; jj <= ii; ++jj ) {
+            m2_[ ii ] += pos[ ii ] * pos[ ii ] * weight;
+         }
+         for( dip::uint ii = 1, kk = N; ii < N; ++ii ) {
+            for( dip::uint jj = 0; jj < ii; ++jj, ++kk ) {
                m2_[ kk ] += pos[ ii ] * pos[ jj ] * weight;
-               ++kk;
             }
          }
       }
@@ -702,12 +703,8 @@ class DIP_NO_EXPORT MomentAccumulator {
       FloatArray SecondOrder() const {
          FloatArray out( m2_.size(), 0.0 ); // output tensor
          if( m0_ != 0 ) {
-            dip::uint N = m1_.size();
-            FloatArray m1 = FirstOrder(); // normalized first order moments
-            FloatArray m2( N, 0.0 );      // normalized second order central moments, diagonal elements
-            for( dip::uint ii = 0, kk = 0; ii < N; ++ii, kk += 1 + ii ) {
-               m2[ ii ] = m2_[ kk ] / m0_ - m1[ ii ] * m1[ ii ];
-            }
+            dip::uint const N = m1_.size();
+            FloatArray m2 = PlainSecondOrder(); // normalized second order central moments
             for( dip::uint ii = 0; ii < N; ++ii ) {
                dfloat acc = 0.0;
                for( dip::uint jj = 0; jj < N; ++jj ) {
@@ -717,10 +714,8 @@ class DIP_NO_EXPORT MomentAccumulator {
                }
                out[ ii ] = acc;
             }
-            for( dip::uint ii = 1, kk = N, ll = 1; ii < N; ++ii, ++ll ) {
-               for( dip::uint jj = 0; jj < ii; ++jj, ++kk, ++ll ) {
-                  out[ kk ] = m1[ ii ] * m1[ jj ] - m2_[ ll ] / m0_;
-               }
+            for( dip::uint ii = N; ii < m2.size(); ++ii ) {
+                  out[ ii ] = -m2[ ii ];
             }
          }
          return out;
@@ -744,13 +739,12 @@ class DIP_NO_EXPORT MomentAccumulator {
          FloatArray out( m2_.size(), 0.0 ); // output tensor
          if( m0_ != 0 ) {
             dip::uint N = m1_.size();
-            FloatArray m1 = FirstOrder(); // normalized first order moments
-            for( dip::uint ii = 0, kk = 0; ii < N; ++ii, kk += 1 + ii ) {
-               out[ ii ] = m2_[ kk ] / m0_ - m1[ ii ] * m1[ ii ];
+            for( dip::uint ii = 0; ii < N; ++ii ) {
+               out[ ii ] = ( m2_[ ii ] - m1_[ ii ] * m1_[ ii ] / m0_ ) / m0_;
             }
-            for( dip::uint ii = 1, kk = N, ll = 1; ii < N; ++ii, ++ll ) {
-               for( dip::uint jj = 0; jj < ii; ++jj, ++kk, ++ll ) {
-                  out[ kk ] = m2_[ ll ] / m0_ - m1[ ii ] * m1[ jj ];
+            for( dip::uint ii = 1, kk = N; ii < N; ++ii ) {
+               for( dip::uint jj = 0; jj < ii; ++jj, ++kk ) {
+                  out[ kk ] = ( m2_[ kk ] - m1_[ ii ] * m1_[ jj ] / m0_ ) / m0_ ;
                }
             }
          }
@@ -761,13 +755,7 @@ class DIP_NO_EXPORT MomentAccumulator {
       dfloat m0_;       // zeroth order moments accumulated here (sum of weights)
       FloatArray m1_;   // first order moments accumulated here (N values)
       FloatArray m2_;   // second order moments accumulated here (N*(N+1)/2 values)
-      // Second order moments are stored column-wise, after removing the symmetric elements below the main diagonal:
-      //  - 2D: xx, xy, yy
-      //  - 3D: xx, xy, yy, xz, yz, zz
-      //  - 4D: xx, xy, yy, xz, yz, zz, xt, yt, zt, tt
-      //  - etc.
-      // Note that this order is different from the one we use for the output. This is more convenient in computation,
-      // the output order matches that of pixel storage.
+      // Second order moments are stored in the "DIPlib standard" way, see the docs to SecondOrder().
 };
 
 /// \brief Combine two accumulators
