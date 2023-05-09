@@ -16,6 +16,8 @@ title: "Changes DIPlib 3.x.x"
   instead of trying to allocate space for 0 pixels if `srcMask` has no pixels set. Forging an image with 0 pixels
   is not possible.
 
+- `dip::ImageRead()` produces a better error message if the file doesn't exist.
+
 ### Bug fixes
 
 - `dip::Image out = view` threw an exception with the message "Sizes must be non-zero and no larger than
@@ -27,6 +29,9 @@ title: "Changes DIPlib 3.x.x"
 
 - The `dip::FileInformation` data structure crated for a NPY file reported the file type was `"NYP"`.
 
+- Third and fourth order cubic spline interpolation (methods `"3-cubic"` and `"4-cubic"`) now always use
+  double-precision floats internally for computation. The improved precision is necessary to evaluate the third-order
+  polynomials with sufficient precision, the errors could be seen in flat areas of the rescaled image.
 
 
 ## Changes to *DIPimage*

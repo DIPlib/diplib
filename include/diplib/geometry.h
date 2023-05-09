@@ -44,7 +44,7 @@ namespace dip {
 ///   compute each output sample. This is the default method for most functions.
 ///
 /// - `"4-cubic"`: Fourth-order cubic spline interpolation (Keys, 1981), using 6 input samples to compute
-///   compute each output sample.
+///   each output sample.
 ///
 /// - `"linear"`: Linear interpolation, using 2 input samples to compute each output sample.
 ///

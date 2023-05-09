@@ -155,45 +155,45 @@ void FourthOrderCubicSpline(
       dfloat zoom,
       dfloat shift
 ) {
-   using TPF = FloatType< TPI >;
+   using TPD = DoubleType< TPI >;
    dip::sint offset = floor_cast( shift );
    input += offset;
-   TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
+   dfloat pos = shift - static_cast< dfloat >( offset );
    if( zoom == 1.0 ) {
-      TPF pos2 = pos * pos;
-      TPF pos3 = pos2 * pos;
-      TPF filter_m2 = ( pos3 - TPF( 2 ) * pos2 + pos ) / TPF( 12 );
-      TPF filter_m1 = ( TPF( -7 ) * pos3 + TPF( 15 ) * pos2 - TPF( 8 ) * pos ) / TPF( 12 );
-      TPF filter_0 = ( TPF( 16 ) * pos3 - TPF( 28 ) * pos2 + TPF( 12 )) / TPF( 12 );
-      TPF filter_1 = ( TPF( -16 ) * pos3 + TPF( 20 ) * pos2 + TPF( 8 ) * pos ) / TPF( 12 );
-      TPF filter_2 = ( TPF( 7 ) * pos3 - TPF( 6 ) * pos2 - pos ) / TPF( 12 );
-      TPF filter_3 = ( -pos3 + pos2 ) / TPF( 12 );
+      dfloat pos2 = pos * pos;
+      dfloat pos3 = pos2 * pos;
+      dfloat filter_m2 = ( pos3 - 2 * pos2 + pos ) / 12;
+      dfloat filter_m1 = ( -7 * pos3 + 15 * pos2 - 8 * pos ) / 12;
+      dfloat filter_0 = ( 16 * pos3 - 28 * pos2 + 12 ) / 12;
+      dfloat filter_1 = ( -16 * pos3 + 20 * pos2 + 8 * pos ) / 12;
+      dfloat filter_2 = ( 7 * pos3 - 6 * pos2 - pos ) / 12;
+      dfloat filter_3 = ( -pos3 + pos2 ) / 12;
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
-         *output = input[ -2 ] * filter_m2 +
-                   input[ -1 ] * filter_m1 +
-                   input[  0 ] * filter_0 +
-                   input[  1 ] * filter_1 +
-                   input[  2 ] * filter_2 +
-                   input[  3 ] * filter_3;
+         *output = static_cast< TPI >( static_cast< TPD >( input[ -2 ] ) * filter_m2 +
+                                       static_cast< TPD >( input[ -1 ] ) * filter_m1 +
+                                       static_cast< TPD >( input[  0 ] ) * filter_0 +
+                                       static_cast< TPD >( input[  1 ] ) * filter_1 +
+                                       static_cast< TPD >( input[  2 ] ) * filter_2 +
+                                       static_cast< TPD >( input[  3 ] ) * filter_3 );
          ++input;
          ++output;
       }
    } else {
-      TPF step = static_cast< TPF >( 1.0 / zoom );
+      dfloat step = 1.0 / zoom;
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
-         TPF pos2 = pos * pos;
-         TPF pos3 = pos2 * pos;
-         *output = input[ -2 ] * ( pos3 - TPF( 2 ) * pos2 + pos ) / TPF( 12 ) +
-                   input[ -1 ] * ( TPF( -7 ) * pos3 + TPF( 15 ) * pos2 - TPF( 8 ) * pos ) / TPF( 12 ) +
-                   input[  0 ] * ( TPF( 16 ) * pos3 - TPF( 28 ) * pos2 + TPF( 12 )) / TPF( 12 ) +
-                   input[  1 ] * ( TPF( -16 ) * pos3 + TPF( 20 ) * pos2 + TPF( 8 ) * pos ) / TPF( 12 ) +
-                   input[  2 ] * ( TPF( 7 ) * pos3 - TPF( 6 ) * pos2 - pos ) / TPF( 12 ) +
-                   input[  3 ] * ( -pos3 + pos2 ) / TPF( 12 );
+         dfloat pos2 = pos * pos;
+         dfloat pos3 = pos2 * pos;
+         *output = static_cast< TPI >( static_cast< TPD >( input[ -2 ] ) * ( pos3 - 2 * pos2 + pos ) / 12.0 +
+                                       static_cast< TPD >( input[ -1 ] ) * ( -7 * pos3 + 15 * pos2 - 8 * pos ) / 12.0 +
+                                       static_cast< TPD >( input[  0 ] ) * ( 16 * pos3 - 28 * pos2 + 12 ) / 12.0 +
+                                       static_cast< TPD >( input[  1 ] ) * ( -16 * pos3 + 20 * pos2 + 8 * pos ) / 12.0 +
+                                       static_cast< TPD >( input[  2 ] ) * ( 7 * pos3 - 6 * pos2 - pos ) / 12.0 +
+                                       static_cast< TPD >( input[  3 ] ) * ( -pos3 + pos2 ) / 12.0 );
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
             offset = floor_cast( pos );
-            pos -= static_cast< TPF >( offset );
+            pos -= static_cast< dfloat >( offset );
             input += offset;
          }
       }
@@ -208,39 +208,39 @@ void ThirdOrderCubicSpline(
       dfloat zoom,
       dfloat shift
 ) {
-   using TPF = FloatType< TPI >;
+   using TPD = DoubleType< TPI >;
    dip::sint offset = floor_cast( shift );
    input += offset;
-   TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
+   dfloat pos = shift - static_cast< dfloat >( offset );
    if( zoom == 1.0 ) {
-      TPF pos2 = pos * pos;
-      TPF pos3 = pos2 * pos;
-      TPF filter_m1 = ( -pos3 + TPF( 2 ) * pos2 - pos ) / TPF( 2 );
-      TPF filter_0 = ( TPF( 3 ) * pos3 - TPF( 5 ) * pos2 + TPF( 2 )) / TPF( 2 );
-      TPF filter_1 = ( TPF( -3 ) * pos3 + TPF( 4 ) * pos2 + pos ) / TPF( 2 );
-      TPF filter_2 = ( pos3 - pos2 ) / TPF( 2 );
+      dfloat pos2 = pos * pos;
+      dfloat pos3 = pos2 * pos;
+      dfloat filter_m1 = ( -pos3 + 2 * pos2 - pos ) / 2;
+      dfloat filter_0 = ( 3 * pos3 - 5 * pos2 + 2) / 2;
+      dfloat filter_1 = ( -3 * pos3 + 4 * pos2 + pos ) / 2;
+      dfloat filter_2 = ( pos3 - pos2 ) / 2;
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
-         *output = input[ -1 ] * filter_m1 +
-                   input[  0 ] * filter_0 +
-                   input[  1 ] * filter_1 +
-                   input[  2 ] * filter_2;
+         *output = static_cast< TPI >( static_cast< TPD >( input[ -1 ] ) * filter_m1 +
+                                       static_cast< TPD >( input[  0 ] ) * filter_0 +
+                                       static_cast< TPD >( input[  1 ] ) * filter_1 +
+                                       static_cast< TPD >( input[  2 ] ) * filter_2 );
          ++input;
          ++output;
       }
    } else {
-      TPF step = static_cast< TPF >( 1.0 / zoom );
+      dfloat step = 1.0 / zoom;
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
-         TPF pos2 = pos * pos;
-         TPF pos3 = pos2 * pos;
-         *output = TPF( 0.5 ) * ( input[ -1 ] * ( -pos3 + TPF( 2 ) * pos2 - pos ) +
-                                  input[  0 ] * ( TPF( 3 ) * pos3 - TPF( 5 ) * pos2 + TPF( 2 )) +
-                                  input[  1 ] * ( TPF( -3 ) * pos3 + TPF( 4 ) * pos2 + pos ) +
-                                  input[  2 ] * ( pos3 - pos2 ));
+         dfloat pos2 = pos * pos;
+         dfloat pos3 = pos2 * pos;
+         *output = static_cast< TPI >( 0.5 * ( static_cast< TPD >( input[ -1 ] ) * ( -pos3 + 2 * pos2 - pos ) +
+                                               static_cast< TPD >( input[  0 ] ) * ( 3 * pos3 - 5 * pos2 + 2) +
+                                               static_cast< TPD >( input[  1 ] ) * ( -3 * pos3 + 4 * pos2 + pos ) +
+                                               static_cast< TPD >( input[  2 ] ) * ( pos3 - pos2 )));
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
             offset = floor_cast( pos );
-            pos -= static_cast< TPF >( offset );
+            pos -= static_cast< dfloat >( offset );
             input += offset;
          }
       }
