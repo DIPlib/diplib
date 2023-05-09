@@ -64,7 +64,7 @@ namespace interpolation {
  *
  * TPI is expected to be a floating-point type or a complex type: sfloat, dfloat, scomplex, dcomplex.
  * NearestNeighbor can work with any type.
- * Fourier works only with complex types: scomplex, dcomplex, and expects the output to be contiguous (stride==1).
+ * Fourier expects the output to be contiguous (stride==1).
  */
 
 // Computes the second derivative at each point, as required for B-spline interpolation.

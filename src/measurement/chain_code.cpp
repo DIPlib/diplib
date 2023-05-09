@@ -28,17 +28,18 @@ ChainCode ChainCode::ConvertTo8Connected() const {
    out.objectID = objectID;
    out.start = start;
    if( codes.size() < 3 ) {
-#if __GNUC__ == 12
-      // A bug in GCC 12 puts out a bogus warning here
-#pragma GCC diagnostic ignored "-Wstringop-overflow="
-#endif
+      #if __GNUC__ >= 12 && __GNUC__ <= 13
+         // A bug in GCC 12 puts out a bogus warning here
+         #pragma GCC diagnostic push
+         #pragma GCC diagnostic ignored "-Wstringop-overflow="
+      #endif
       out.codes = codes;
       for( auto& c : out.codes ) {
          c = Code( c * 2, c.IsBorder() );
       }
-#if __GNUC__ == 12
-#pragma GCC diagnostic pop
-#endif
+      #if __GNUC__ >= 12 && __GNUC__ <= 13
+         #pragma GCC diagnostic pop
+      #endif
    } else {
       Code cur = codes.back();
       bool skipLast = false;

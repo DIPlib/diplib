@@ -23,7 +23,7 @@
    #ifndef __clang__
       #pragma GCC diagnostic ignored "-Wclass-memaccess"
    #endif
-   #if ( __GNUC__ == 11 ) || ( __GNUC__ == 12 )
+   #if ( __GNUC__ >= 11 ) && ( __GNUC__ <= 13 )
       #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
    #endif
 #endif
