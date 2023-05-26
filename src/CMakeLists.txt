@@ -126,6 +126,7 @@ set(DIP_ENABLE_JPEG ON CACHE BOOL "Enable JPEG file support and compression in T
 if(DIP_ENABLE_JPEG)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libjpeg" "${PROJECT_BINARY_DIR}/libjpeg" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE jpeg)
+   target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:jpeg,INTERFACE_INCLUDE_DIRECTORIES>) # these need to come before system include directories
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_JPEG)
 endif()
 
@@ -135,6 +136,7 @@ if(DIP_ENABLE_ICS)
    set(LIBICS_INCLUDE_CPP Off) # TODO: we should start using the C++ interface
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libics" "${PROJECT_BINARY_DIR}/libics" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE libics)
+   target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:libics,INTERFACE_INCLUDE_DIRECTORIES>) # these need to come before system include directories
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_ICS)
 endif()
 
@@ -143,6 +145,7 @@ set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 if(DIP_ENABLE_TIFF)
    add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/libtiff" "${PROJECT_BINARY_DIR}/libtiff" EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE tiff)
+   target_include_directories(DIP PRIVATE $<TARGET_PROPERTY:tiff,INTERFACE_INCLUDE_DIRECTORIES>) # these need to come before system include directories
    target_compile_definitions(DIP PRIVATE DIP_CONFIG_HAS_TIFF)
 endif()
 
