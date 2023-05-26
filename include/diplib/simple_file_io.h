@@ -55,6 +55,11 @@ namespace dip {
 /// if not using *CMake*).
 ///
 /// Use the filetype-specific functions directly for more control over how the image is read.
+///
+/// If an exception is thrown saying that the file could not be read as the type indicated by its extension, use the
+/// filetype-specific function directly, it will give a more specific reason for why the file could not be read.
+/// Especially in the case of TIFF files, which allows data to be stored in an infinite number of ways, the reader
+/// cannot be expected to read all possible files.
 inline FileInformation ImageRead(
       Image& out,
       String const& filename,
@@ -67,16 +72,16 @@ inline FileInformation ImageRead(
          DIP_THROW_IF( f == nullptr, "File could not be opened" );
          std::fclose( f );
          if( StringCompareCaseInsensitive( format, "ics" ) || StringCompareCaseInsensitive( format, "ids" )) {
-            DIP_THROW_IF( !ImageIsICS( filename ), "File has an ICS extension but is not an ICS file" );
+            DIP_THROW_IF( !ImageIsICS( filename ), "File has an ICS extension but could not be read as an ICS file" );
             format = "ics";
          } else if( StringCompareCaseInsensitive( format, "tif" ) || StringCompareCaseInsensitive( format, "tiff" )) {
-            DIP_THROW_IF( !ImageIsTIFF( filename ), "File has a TIFF extension but is not a TIFF file" );
+            DIP_THROW_IF( !ImageIsTIFF( filename ), "File has a TIFF extension but could not be read as a TIFF file" );
             format = "tiff";
          } else if( StringCompareCaseInsensitive( format, "jpg" ) || StringCompareCaseInsensitive( format, "jpeg" )) {
-            DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but is not a JPEG file" );
+            DIP_THROW_IF( !ImageIsJPEG( filename ), "File has a JPEG extension but could not be read as a JPEG file" );
             format = "jpeg";
          } else if( StringCompareCaseInsensitive( format, "npy" )) {
-            DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but is not an NPY file" );
+            DIP_THROW_IF( !ImageIsNPY( filename ), "File has an NPY extension but could not be read as an NPY file" );
             format = "npy";
          } else {
             format.clear();

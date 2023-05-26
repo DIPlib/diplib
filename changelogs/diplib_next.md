@@ -18,6 +18,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::ImageRead()` produces a better error message if the file doesn't exist.
 
+- Improved error messages when reading or writing JPEG files.
+
 ### Bug fixes
 
 - `dip::Image out = view` threw an exception with the message "Sizes must be non-zero and no larger than
