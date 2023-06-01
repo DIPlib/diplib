@@ -1,5 +1,5 @@
 /*
- * (c)2017-2022, Cris Luengo.
+ * (c)2017-2023, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,89 @@ namespace dip {
 
 namespace {
 
+// Cohen-Sutherland line clipping algorithm according to Wikipedia
+// https://en.wikipedia.org/wiki/Cohen–Sutherland_algorithm
+
+// outcodes
+constexpr int INSIDE = 0b0000;
+constexpr int LEFT = 0b0001;
+constexpr int RIGHT = 0b0010;
+constexpr int BOTTOM = 0b0100;
+constexpr int TOP = 0b1000;
+
+// Computes the outcode for one point, w.r.t. the image domain
+int OutcodeForPoint( VertexFloat p, VertexFloat bottom_right ) {
+   int code = INSIDE;
+   if( p.x < 0 ) {
+      code |= LEFT;
+   } else if( p.x > bottom_right.x - 1 ) {
+      code |= RIGHT;
+   }
+   if( p.y < 0 ) {
+      code |= BOTTOM;
+   } else if( p.y > bottom_right.y - 1 ) {
+      code |= TOP;
+   }
+   return code;
+}
+
+// Moves points p0 and p1 to be within the image. If the line doesn't intersect the image at all, returns false.
+bool ClipLineToImageDomain( VertexFloat& p0, VertexFloat& p1, UnsignedArray const& img_size ) {
+   VertexFloat bottom_right{
+         static_cast< double >( img_size[0] - 1 ),
+         static_cast< double >( img_size[1] - 1 )
+   };
+   int outcode0 = OutcodeForPoint( p0, bottom_right );
+   int outcode1 = OutcodeForPoint( p1, bottom_right );
+
+   while( true ) {
+      if(( outcode0 | outcode1 ) == 0 ) {
+         // Both points are inside the image
+         return true;
+      }
+      if(( outcode0 & outcode1 ) != 0 ) {
+         // The line does not intersect the image
+         return false;
+      }
+      // Find the point that is outside the image domain
+      int outcode = std::max( outcode1, outcode0 );
+      // Find the intersection point of the line with the given image edge
+      VertexFloat p; // this is the new point
+      if(( outcode & TOP ) != 0 ) {
+         p.x = p0.x + ( p1.x - p0.x ) * ( bottom_right.y - p0.y ) / ( p1.y - p0.y );
+         p.y = bottom_right.y;
+      } else if(( outcode & BOTTOM ) != 0 ) {
+         p.x = p0.x + ( p1.x - p0.x ) * ( 0 - p0.y ) / ( p1.y - p0.y );
+         p.y = 0;
+      } else if(( outcode & RIGHT ) != 0 ) {
+         p.y = p0.y + ( p1.y - p0.y ) * ( bottom_right.x - p0.x ) / ( p1.x - p0.x );
+         p.x = bottom_right.x;
+      } else if(( outcode & LEFT ) != 0 ) {
+         p.y = p0.y + ( p1.y - p0.y ) * ( 0 - p0.x ) / ( p1.x - p0.x );
+         p.x = 0;
+      }
+      // Figure out which of the points to replace with the new p
+      if( outcode == outcode0 ) {
+         p0 = p;
+         outcode0 = OutcodeForPoint( p0, bottom_right );
+      } else {
+         p1 = p;
+         outcode1 = OutcodeForPoint( p1, bottom_right );
+      }
+   }
+}
+
+// Finds the two endpoints of the line as uint coordinates within the image.
+// Returns false if the line does not intersect the image
+bool VerticesToUnsignedArrays( VertexFloat p0, VertexFloat p1, UnsignedArray const& img_size, UnsignedArray& out_p0, UnsignedArray& out_p1 ) {
+   if( !ClipLineToImageDomain( p0, p1, img_size ) ) {
+      return false;
+   }
+   out_p0 = { static_cast< dip::uint >( std::round( p0.x )), static_cast< dip::uint >( std::round( p0.y )) };
+   out_p1 = { static_cast< dip::uint >( std::round( p1.x )), static_cast< dip::uint >( std::round( p1.y )) };
+   return true;
+}
+
 template< typename TPI, typename F >
 void DrawOneLine(
       TPI* origin,
@@ -44,8 +127,8 @@ void DrawOneLine(
 ) {
    do {
       dip::sint offset = *iterator;
-      for( auto v : value ) {
-         origin[ offset ] = blend(origin[ offset ], v);
+      for( auto v: value ) {
+         origin[ offset ] = blend( origin[ offset ], v );
          offset += stride;
       }
    } while( ++iterator );
@@ -60,7 +143,7 @@ void DrawLineInternal(
 ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
-   DrawOneLine( static_cast< TPI* >( out.Origin() ), out.TensorStride(), iterator, value_, blend);
+   DrawOneLine( static_cast< TPI* >( out.Origin() ), out.TensorStride(), iterator, value_, blend );
 }
 
 template< typename TPI, typename F >
@@ -79,7 +162,7 @@ void DrawLinesInternal(
       if( jj != 1 ) {
          ++iterator; // skip the first point, it's already drawn
       }
-      DrawOneLine( origin, stride, iterator, value_, blend);
+      DrawOneLine( origin, stride, iterator, value_, blend );
    }
 }
 
@@ -100,10 +183,10 @@ void DrawLine(
    DIP_THROW_IF( !( start < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    DIP_THROW_IF( !( end < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    BresenhamLineIterator iterator( out.Strides(), start, end );
-   if (blend == S::ASSIGN) {
-      DIP_OVL_CALL_ALL( DrawLineInternal, ( out, iterator, value, [](auto, auto b) { return b; } ), out.DataType() );
-   } else if (blend == S::ADD) {
-      DIP_OVL_CALL_ALL( DrawLineInternal, ( out, iterator, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
+   if( blend == S::ASSIGN ) {
+      DIP_OVL_CALL_ALL( DrawLineInternal, ( out, iterator, value, []( auto, auto b ) { return b; } ), out.DataType() );
+   } else if( blend == S::ADD ) {
+      DIP_OVL_CALL_ALL( DrawLineInternal, ( out, iterator, value, []( auto a, auto b ) { return saturated_add( a, b ); } ), out.DataType() );
    } else {
       DIP_THROW_INVALID_FLAG( blend );
    }
@@ -123,10 +206,10 @@ void DrawLines(
       DIP_THROW_IF( point.size() != out.Dimensionality(), E::ARRAY_PARAMETER_WRONG_LENGTH );
       DIP_THROW_IF( !( point < out.Sizes() ), E::COORDINATES_OUT_OF_RANGE );
    }
-   if (blend == S::ASSIGN) {
-      DIP_OVL_CALL_ALL( DrawLinesInternal, ( out, points, value, [](auto, auto b) { return b; } ), out.DataType() );
-   } else if (blend == S::ADD) {
-      DIP_OVL_CALL_ALL( DrawLinesInternal, ( out, points, value, [](auto a, auto b) { return saturated_add(a, b); } ), out.DataType() );
+   if( blend == S::ASSIGN ) {
+      DIP_OVL_CALL_ALL( DrawLinesInternal, ( out, points, value, []( auto, auto b ) { return b; } ), out.DataType() );
+   } else if( blend == S::ADD ) {
+      DIP_OVL_CALL_ALL( DrawLinesInternal, ( out, points, value, []( auto a, auto b ) { return saturated_add( a, b ); } ), out.DataType() );
    } else {
       DIP_THROW_INVALID_FLAG( blend );
    }
@@ -144,11 +227,6 @@ void DrawLines(
 
 
 namespace {
-
-UnsignedArray VertexToUnsignedArray( VertexFloat p ) {
-   p = p.Round();
-   return { static_cast< dip::uint >( p.x ), static_cast< dip::uint >( p.y ) };
-}
 
 template< typename TPI >
 void FillLine(
@@ -186,21 +264,21 @@ void DrawPolygonInternal(
    CopyPixelToVector( value, value_, out.TensorElements() );
    dip::sint stride = out.TensorStride();
    TPI* origin = static_cast< TPI* >( out.Origin() );
-   UnsignedArray prev = VertexToUnsignedArray( polygon.vertices[ 0 ] );
+   VertexFloat prev = polygon.vertices[ 0 ];
+   UnsignedArray p0;
+   UnsignedArray p1;
    for( dip::uint jj = 1; jj < polygon.vertices.size(); ++jj ) {
-      UnsignedArray cur = VertexToUnsignedArray( polygon.vertices[ jj ] );
-      BresenhamLineIterator iterator( out.Strides(), prev, cur );
-      if( jj != 1 ) {
-         ++iterator; // skip the first point, it's already drawn
-      }
-      DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
+      VertexFloat cur = polygon.vertices[ jj ];
+      VerticesToUnsignedArrays( prev, cur, out.Sizes(), p0, p1 );
+      BresenhamLineIterator iterator( out.Strides(), p0, p1 );
+      DrawOneLine( origin, stride, iterator, value_, []( auto, auto b ) { return b; } );
       prev = cur;
    }
    if( !open ) {
-      UnsignedArray cur = VertexToUnsignedArray( polygon.vertices[ 0 ] );
-      BresenhamLineIterator iterator( out.Strides(), prev, cur );
-      ++iterator; // skip the first point, it's already drawn
-      DrawOneLine( origin, stride, iterator, value_, [](auto, auto b) { return b; } );
+      VertexFloat cur = polygon.vertices[ 0 ];
+      VerticesToUnsignedArrays( prev, cur, out.Sizes(), p0, p1 );
+      BresenhamLineIterator iterator( out.Strides(), p0, p1 );
+      DrawOneLine( origin, stride, iterator, value_, []( auto, auto b ) { return b; } );
    }
 }
 
@@ -405,14 +483,6 @@ void DrawPolygon2D(
       std::sort( edges.begin(), edges.end() );
       DIP_OVL_CALL_ALL( DrawFilledPolygon, ( out, edges, value, horizontalScanLines ), out.DataType() );
    } else {
-      // Test all points to be within the image
-      BoundingBoxInteger bb{ VertexInteger{ 0, 0 },
-                             VertexInteger{ static_cast< dip::sint >( out.Size( 0 ) - 1 ),
-                                            static_cast< dip::sint >( out.Size( 1 ) - 1 ) }};
-      for( auto point : polygon.vertices ) {
-         point = point.Round();
-         DIP_THROW_IF( !bb.Contains( point ), E::COORDINATES_OUT_OF_RANGE );
-      }
       // Draw polygon as a set of Bresenham lines
       DIP_OVL_CALL_ALL( DrawPolygonInternal, ( out, polygon, value, open ), out.DataType() );
    }

@@ -1,5 +1,5 @@
 /*
- * (c)2017-2021, Cris Luengo.
+ * (c)2017-2023, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -125,10 +125,10 @@ DIP_EXPORT void DrawLines(
 /// - `"closed"`: the start and end points are connected.
 /// - `"filled"`: the polygon is filled, that is, all pixels within the polygon are painted (default).
 ///
-/// In the `"filled"` mode, the vertices of the polygon do not need to be within the image, but the polygon
-/// must be simple (which is guaranteed if it was obtained from a \ref ChainCode).
-/// In the `"open"` or `"closed"` mode, the vertices must all be within the image, but the polygon can
-/// self-intersect. These restrictions come from the two different algorithms used to draw the polygon.
+/// In the `"filled"` mode, the polygon must be simple (which is guaranteed if it was obtained from a \ref ChainCode).
+/// In the `"open"` or `"closed"` mode, the polygon can self-intersect. In all cases, polygon vertices can be outside
+/// the image. The two different algorithms (filled and not filled) do not necessarily produce the exact same polygon
+/// outline, rounding errors can be different.
 ///
 /// Pixels in `out` on the polygon (and within the polygon for filled polygons) are set to `value`, other pixels
 /// are not touched.
