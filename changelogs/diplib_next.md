@@ -35,6 +35,9 @@ title: "Changes DIPlib 3.x.x"
   double-precision floats internally for computation. The improved precision is necessary to evaluate the third-order
   polynomials with sufficient precision, the errors could be seen in flat areas of the rescaled image.
 
+- `dip::Sharpen()` and `dip::UnsharpMask()` didn't work correctly when the input and output images were the same.
+
+
 
 ## Changes to *DIPimage*
 

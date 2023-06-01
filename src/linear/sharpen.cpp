@@ -1,5 +1,5 @@
 /*
- * (c)2017, Cris Luengo.
+ * (c)2017-2023, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +30,8 @@ void Sharpen(
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   Laplace( in, out, std::move( sigmas ), method, boundaryCondition, {}, truncation );
-   LinearCombination( in, out, out, 1.0, -weight );
+   Image laplace = Laplace( in, std::move( sigmas ), method, boundaryCondition, {}, truncation );
+   LinearCombination( in, laplace, out, 1.0, -weight );
 }
 
 void UnsharpMask(
@@ -43,8 +43,8 @@ void UnsharpMask(
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   Gauss( in, out, std::move( sigmas ), { 0 }, method, boundaryCondition, truncation );
-   LinearCombination( in, out, out, 1.0 + weight, -weight );
+   Image unsharp = Gauss( in, std::move( sigmas ), { 0 }, method, boundaryCondition, truncation );
+   LinearCombination( in, unsharp, out, 1.0 + weight, -weight );
 }
 
 }
