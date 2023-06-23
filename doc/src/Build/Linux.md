@@ -110,6 +110,9 @@ correctly.
 
 \section linux_bioformats Enabling *Bio-Formats*
 
+If building only *DIPimage* (the *MATLAB* toolbox), skip this section and instead follow the directions
+you can read when you do `help readim` in *MATLAB* after installation.
+
 First, make sure you have the *Java 8 SDK* (*JDK 8*) installed, you can obtain it from the
 [Oracle website](http://www.oracle.com/technetwork/java/javase/downloads/index.html) for commercial
 purposes, or from [jdk.java.net](https://jdk.java.net) for an open-source build. Next, download

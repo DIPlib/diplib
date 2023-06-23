@@ -141,11 +141,13 @@ Important *CMake* variables controlling the build of *DIPlib*:
 - `DIP_ENABLE_ICS`: `On` (default) or `Off`. Enable support for the ICS file format using the included *libics* library.
 - `DIP_ENABLE_TIFF`: `On` (default) or `Off`. Enable support for the TIFF file format using the included *LibTIFF* library.
 - `DIP_ENABLE_JPEG`: `On` (default) or `Off`. Enable support for the JPEG file format using the included *libjpeg* library.
-- `DIP_ENABLE_ZLIB`: `On` (default) or `Off`. Enable support for ZIP (deflate) compression in the ICS and TIFF file formats using the included *zlib* library.
+- `DIP_ENABLE_ZLIB`: `On` (default) or `Off`. Enable support for ZIP (deflate) compression in the ICS and TIFF file
+    formats using the included *zlib* library.
 - `DIP_ENABLE_FFTW`: `On` or `Off` (default). Enable the use of the *FFTW3* library, if available.
 - `DIP_ENABLE_FREETYPE`: `On` or `Off` (default). Enable the use of the *FreeType2* library, if available.
 - `DIP_ENABLE_UNICODE`: `On` (default) or `Off`. Enable support for UTF-8 strings within *DIPlib*.
-- `DIP_ALWAYS_128_PRNG`: `On` or `Off` (default). If `On`, use the 128-bit PRNG code even if 128-bit integers are not natively supported.
+- `DIP_ALWAYS_128_PRNG`: `On` or `Off` (default). If `On`, use the 128-bit PRNG code even if 128-bit integers
+    are not natively supported.
 
 Controlling the build of *DIPviewer*:
 
@@ -158,6 +160,7 @@ Controlling the build of *DIPjavaio*:
     if its dependencies are available.
 - `JAVA_HOME`: Set the path to the JDK to use.
 - `BIOFORMATS_JAR`: Set the path to the Bio-Formats JAR file (`bioformats_package.jar`).
+- Note that for the *MATLAB* toolbox, *DIPjavaio* is not used; build this only if you work in C++ or Python.
 
 Controlling the build of *DIPimage*:
 
@@ -204,7 +207,8 @@ as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http
 
 *DIPjavaio* requires that the *Java 8 SDK* (*JDK 8*) or later be installed. This module is intended as a
 bridge to [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/), which you will need
-to download separately. *Bio-Formats* has a copyleft license.
+to download separately. *Bio-Formats* has a copyleft license. Note that the *MATLAB* toolbox *DIPimage*
+does not use this component, it uses *Bio-Formats* directly.
 
 *DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
 for compilation and (of course) execution.

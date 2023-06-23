@@ -78,6 +78,11 @@ version of *GLFW*. Extract the ZIP file and note the location.
 Put it somewhere sensible and note the location. The same location (as well as the
 library installation path) will be used to find it during execution.
 
+    If building only *DIPimage* (the *MATLAB* toolbox), you don't need to download *Bio-Formats*
+before building; instead follow the directions you can read when you do `help readim` in *MATLAB*
+after installation.
+
+
 !!! todo
     Describe how to get *FFTW3*.
 
@@ -113,12 +118,14 @@ at the right and navigate to where you extracted the *GLFW* ZIP file. Select the
 directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second.
 
 - If `DIP_BUILD_DIPVIEWER_JAVA` is not on the list but `DIP_BUILD_DIPVIEWER` is, you
-don't have *MATLAB* installed, you are building 32-bit binaries or the *Java SDK* could not
+don't have *MATLAB* installed, you are building 32-bit binaries, or the *Java SDK* could not
 be found. This is only necessary if you want to use the `viewslice` command from *DIPimage*.
 
 - If `BIOFORMATS_JAR` is not on the list, the *Java SDK* could not be found. If it is,
 point it to the "bioformats_package.jar" you downloaded earlier. This is only necessary if
-you want to import image formats that are not directly supported by *DIPlib*.
+you want to import image formats that are not directly supported by *DIPlib*, and only
+for *Python* and C++ (*MATLAB* uses the *Bio-Formats* package differently, see `help readim`
+after installation).
 
 - If using a version of *MSVC* older than the 2019 edition, set both `DIP_ENABLE_UNICODE`
 and `DIP_ENABLE_DOCTEST` to `Off`. You will get compilation errors if you don't do this.
@@ -146,7 +153,7 @@ to run the `INSTALL` target first).
 In the tool bar, make sure that "Release" and "x64" are selected (or x86 if you want to
 build 32-bit binaries). Right-click on `INSTALL` and select "Build".
 
-If everything works correctly, you will have:
+If everything works correctly, you will have (depending on which options were enabled during configuration):
 
 - `C:\Users\<name>\DIPlib\bin`: `DIP.dll`, as well as `DIPviewer.dll`,
 `DIPjavaio.dll`, `DIPjavaio.jar`, `dipview.exe` and `dipviewjava.exe`.
