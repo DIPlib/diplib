@@ -246,7 +246,7 @@ void init_histogram( py::module& m ) {
              for( dip::uint ii = 0; ii < bins.size(); ++ii ) {
                 bins[ ii ] = histogram.BinCenters( ii );
              }
-             return py::make_tuple( im, bins ).release();
+             return py::make_tuple( im, bins );
           }, "input"_a, "mask"_a = dip::Image{}, "nBins"_a = 256,
           "This function exists for backwards compatibility. It takes an image `input`,\n"
           "and optional `mask`, and computes a histogram with `nBins` bins. The output is\n"
@@ -260,7 +260,7 @@ void init_histogram( py::module& m ) {
              std::vector< dip::FloatArray > bins( 2 );
              bins[ 0 ] = histogram.BinCenters( 0 );
              bins[ 1 ] = histogram.BinCenters( 1 );
-             return py::make_tuple( im, bins ).release();
+             return py::make_tuple( im, bins );
           }, "input1"_a, "input2"_a, "mask"_a = dip::Image{},
           "Overload that takes two scalar images and outputs a 2D histogram." );
 

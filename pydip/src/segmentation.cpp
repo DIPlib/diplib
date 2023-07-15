@@ -84,7 +84,7 @@ void init_segmentation( py::module& m ) {
    m.def( "Threshold", []( dip::Image const& in, dip::Image const& mask, dip::String const& method, dip::dfloat parameter ) {
              dip::Image out;
              dip::dfloat threshold = Threshold( in, mask, out, method, parameter );
-             return py::make_tuple( out, threshold ).release();
+             return py::make_tuple( out, threshold );
           }, "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity,
           "Returns a tuple, the first element is the thresholded image, the second one\n"
           "is the threshold value." );

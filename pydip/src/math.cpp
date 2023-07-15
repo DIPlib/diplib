@@ -224,7 +224,7 @@ void init_math( py::module& m ) {
    m.def( "EigenDecomposition", []( dip::Image const& in ){
              dip::Image out, eigenvectors;
              dip::EigenDecomposition( in, out, eigenvectors );
-             return py::make_tuple( out, eigenvectors ).release();
+             return py::make_tuple( out, eigenvectors );
           }, "in"_a,
           "Returns a tuple containing the `out` image and the `eigenvectors` image." );
    m.def( "EigenDecomposition", py::overload_cast< dip::Image const&, dip::Image&, dip::Image& >( &dip::EigenDecomposition ), "in"_a, py::kw_only(), "out"_a, "eigenvectors"_a );
@@ -241,7 +241,7 @@ void init_math( py::module& m ) {
    m.def( "SingularValueDecomposition", []( dip::Image const& in ){
              dip::Image U, S, V;
              dip::SingularValueDecomposition( in, U, S, V );
-             return py::make_tuple( U, S, V ).release();
+             return py::make_tuple( U, S, V );
           }, "in"_a,
           "Returns a tuple containing the `U` image, the `S` image, and the `V` image." );
    m.def( "SingularValueDecomposition", py::overload_cast< dip::Image const&, dip::Image&, dip::Image&, dip::Image& >( &dip::SingularValueDecomposition ), "in"_a, py::kw_only(), "U"_a, "out"_a, "V"_a );

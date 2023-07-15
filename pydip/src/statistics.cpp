@@ -29,7 +29,7 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, py::kw_only(), "out"_a, "process"_a = dip::BooleanArray{} );
    m.def( "MaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
                 dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( in, mask );
-                return py::make_tuple( acc.Minimum(), acc.Maximum() ).release();
+                return py::make_tuple( acc.Minimum(), acc.Maximum() );
           }, "in"_a, "mask"_a = dip::Image{},
           "Instead of returning a `dip::MinMaxAccumulator` object, returns a tuple with\n"
           "the minimum and maximum values.");

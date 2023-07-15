@@ -58,13 +58,13 @@ dip::MeasurementTool& measurementTool() {
 }
 
 template< typename MeasurementValues >
-py::handle MeasurementValuesToList( MeasurementValues values ) {
+py::object MeasurementValuesToList( MeasurementValues values ) {
    py::list list( values.size() );
    py::ssize_t index = 0;
    for( auto& value: values ) {
       PyList_SET_ITEM( list.ptr(), index++, py::cast( value ).release().ptr() );
    }
-   return list.release();
+   return list;
 }
 
 py::buffer_info MeasurementFeatureToBuffer( dip::Measurement::IteratorFeature& feature ) {
@@ -317,7 +317,7 @@ void init_measurement( py::module& m ) {
    m.def( "Mean", py::overload_cast< dip::Measurement::IteratorFeature const& >( &dip::Mean ), "featureValues"_a  );
    m.def( "MaximumAndMinimum", []( dip::Measurement::IteratorFeature const& featureValues ) {
              dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( featureValues );
-             return py::make_tuple( acc.Minimum(), acc.Maximum() ).release();
+             return py::make_tuple( acc.Minimum(), acc.Maximum() );
           }, "featureValues"_a,
           "Instead of returning a `dip::MinMaxAccumulator` object, returns a tuple with\n"
           "the minimum and maximum values.");
@@ -350,7 +350,7 @@ void init_measurement( py::module& m ) {
                 auto bb = self.BoundingBox();
                 auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
                 auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
-                return py::make_tuple( topLeft, bottomRight ).release();
+                return py::make_tuple( topLeft, bottomRight );
              },
              "Instead of returning a `dip::BoundingBoxFloat` object, returns a tuple with\n"
              "two tuples. The first tuple is the horizontal range, the second one is the\n"
@@ -409,12 +409,12 @@ void init_measurement( py::module& m ) {
                  for( auto value: self.codes ) {
                     PyList_SET_ITEM( list.ptr(), index++, py::cast( static_cast< unsigned >( value )).release().ptr() ); // Casting to unsigned gets the numeric value of the chain code
                  }
-                 return list.release();
+                 return list;
               },
               "cc.codes is the same as list(cc), and copies the chain code values to a list.\n"
               "To access individual code values, it's better to just index cc directly: cc[4],\n"
               "or use an iterator: iter(cc)." );
-   chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ).release(); } );
+   chain.def_property_readonly( "start", []( dip::ChainCode const& self ) { return py::make_tuple( self.start.x, self.start.y ); } );
    chain.def_readonly( "objectID", &dip::ChainCode::objectID );
    chain.def_readonly( "is8connected", &dip::ChainCode::is8connected );
    chain.def( "ConvertTo8Connected", &dip::ChainCode::ConvertTo8Connected );
@@ -426,7 +426,7 @@ void init_measurement( py::module& m ) {
                  auto bb = self.BoundingBox();
                  auto topLeft = py::make_tuple( bb.topLeft.x, bb.topLeft.y );
                  auto bottomRight = py::make_tuple( bb.bottomRight.x, bb.bottomRight.y );
-                 return py::make_tuple( topLeft, bottomRight ).release();
+                 return py::make_tuple( topLeft, bottomRight );
               },
               "Instead of returning a `dip::BoundingBoxInteger` object, returns a tuple with\n"
               "two tuples. The first tuple is the horizontal range, the second one is the\n"

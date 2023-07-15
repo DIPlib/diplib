@@ -35,7 +35,7 @@ void init_analysis( py::module& m ) {
    distr.def( "__str__", []( dip::Distribution const& self ) { std::ostringstream os; os << self; return os.str(); } );
    distr.def( "__getitem__", []( dip::Distribution const& self, dip::uint index ) {
                  auto const& sample = self[ index ];
-                 return py::make_tuple( sample.X(), sample.Y() ).release();
+                 return py::make_tuple( sample.X(), sample.Y() );
               }, "index"_a );
    distr.def( py::self += py::self );
    distr.def( "Empty", &dip::Distribution::Empty );
@@ -97,7 +97,7 @@ void init_analysis( py::module& m ) {
    m.def( "FourierMellinMatch2Dparams", []( dip::Image const& in1, dip::Image const& in2, dip::String const& interpolationMethod, dip::String const& correlationMethod){
              dip::Image out;
              auto params = FourierMellinMatch2D(in1, in2, out, interpolationMethod, correlationMethod);
-             return py::make_tuple( out, params ).release();
+             return py::make_tuple( out, params );
           },
           "in1"_a, "in2"_a, "interpolationMethod"_a = dip::S::LINEAR, "correlationMethod"_a = dip::S::PHASE,
           "Returns a tuple, the first element is the transformed image, the second\n"
@@ -213,7 +213,7 @@ void init_analysis( py::module& m ) {
    m.def( "RadonTransformCircles", []( dip::Image const& in, dip::Range radii, dip::dfloat sigma, dip::dfloat threshold, dip::String const& mode, dip::StringSet const& options ) {
              dip::Image out;
              dip::RadonCircleParametersArray params = dip::RadonTransformCircles( in, out, radii, sigma, threshold, mode, options );
-             return py::make_tuple( out, params ).release();
+             return py::make_tuple( out, params );
           }, "in"_a, "radii"_a = dip::Range{ 10, 30 }, "sigma"_a = 1.0, "threshold"_a = 1.0, "mode"_a = dip::S::FULL, "options"_a = dip::StringSet{ dip::S::NORMALIZE, dip::S::CORRECT },
           "Returns a tuple, the first element is the parameter space (the `out` image),\n"
           "the second element is a list of `dip.RadonCircleParameters` containing the\n"
@@ -279,13 +279,13 @@ void init_analysis( py::module& m ) {
           "channel1"_a, "channel2"_a, "mask"_a = dip::Image{} );
    m.def( "MandersColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask, dip::dfloat threshold1, dip::dfloat threshold2 ){
              auto out = dip::MandersColocalizationCoefficients( channel1, channel2, mask, threshold1, threshold2 );
-             return py::make_tuple( out.M1, out.M2 ).release();
+             return py::make_tuple( out.M1, out.M2 );
           }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{}, "threshold1"_a = 0.0, "threshold2"_a = 0.0,
           "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
           "the `M1` and `M2` values." );
    m.def( "CostesColocalizationCoefficients", []( dip::Image const& channel1, dip::Image const& channel2, dip::Image const& mask ){
              auto out = dip::CostesColocalizationCoefficients( channel1, channel2, mask );
-             return py::make_tuple( out.M1, out.M2 ).release();
+             return py::make_tuple( out.M1, out.M2 );
           }, "channel1"_a, "channel2"_a, "mask"_a = dip::Image{},
           "Instead of a `dip::ColocalizationCoefficients` object, returns a tuple with\n"
           "the `M1` and `M2` values." );
