@@ -230,22 +230,22 @@ inline dip::uint LengthUnicode( String const& string ) {
 #endif
 }
 
-/// \brief Computes the Bessel function J of the order 0.
+/// \brief Computes the Bessel function J of the order 0 (with around 7 digits of precision).
 DIP_EXPORT dfloat BesselJ0( dfloat x );
 
-/// \brief Computes the Bessel function J of the order 1.
+/// \brief Computes the Bessel function J of the order 1 (with around 7 digits of precision).
 DIP_EXPORT dfloat BesselJ1( dfloat x );
 
-/// \brief Computes the Bessel function J of the order `n`.
+/// \brief Computes the Bessel function J of the order `n` (with around 7 digits of precision).
 DIP_EXPORT dfloat BesselJN( dfloat x, dip::uint n );
 
-/// \brief Computes the Bessel function Y of the order 0.
+/// \brief Computes the Bessel function Y of the order 0 (with around 7 digits of precision).
 DIP_EXPORT dfloat BesselY0( dfloat x );
 
-/// \brief Computes the Bessel function Y of the order 1.
+/// \brief Computes the Bessel function Y of the order 1 (with around 7 digits of precision).
 DIP_EXPORT dfloat BesselY1( dfloat x );
 
-/// \brief Computes the Bessel function Y of the order `n`.
+/// \brief Computes the Bessel function Y of the order `n` (with around 7 digits of precision).
 DIP_EXPORT dfloat BesselYN( dfloat x, dip::uint n );
 
 /// \brief Computes the sinc function.

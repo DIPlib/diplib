@@ -156,27 +156,27 @@ DIP_MONADIC_OPERATOR( Cosh )
 DIP_EXPORT void Tanh( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( Tanh )
 
-/// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 0.
+/// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 0. Precise up to about 7 digits.
 DIP_EXPORT void BesselJ0( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselJ0 )
 
-/// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 1.
+/// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 1. Precise up to about 7 digits.
 DIP_EXPORT void BesselJ1( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselJ1 )
 
-/// \brief Computes the Bessel functions of the first kind of each sample, of order `alpha`.
+/// \brief Computes the Bessel functions of the first kind of each sample, of order `alpha`. Precise up to about 7 digits.
 DIP_EXPORT void BesselJN( Image const& in, Image& out, dip::uint alpha );
 DIP_MONADIC_OPERATOR_WITH_PARAM( BesselJN, dip::uint )
 
-/// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 0.
+/// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 0. Precise up to about 7 digits.
 DIP_EXPORT void BesselY0( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselY0 )
 
-/// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 1.
+/// \brief Computes the Bessel functions of the second kind of each sample, of order alpha = 1. Precise up to about 7 digits.
 DIP_EXPORT void BesselY1( Image const& in, Image& out );
 DIP_MONADIC_OPERATOR( BesselY1 )
 
-/// \brief Computes the Bessel functions of the second kind of each sample, of order `alpha`.
+/// \brief Computes the Bessel functions of the second kind of each sample, of order `alpha`. Precise up to about 7 digits.
 DIP_EXPORT void BesselYN( Image const& in, Image& out, dip::uint alpha );
 DIP_MONADIC_OPERATOR_WITH_PARAM( BesselYN, dip::uint )
 

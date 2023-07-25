@@ -20,6 +20,13 @@
 
 namespace dip {
 
+// NOTE: C++17 introduces std::cyl_bessel_j() and std::cyl_neumann() for dip::BesselJN() and dip::BesselYN().
+//       The implementations here are anywhere between 30 and 300 times faster (depending on the input arguments)
+//       than these new functions in the C++ std lib (the GCC implementation, on an M1 Mac). But these algorithms
+//       here are designed for single-float precision (witness the number of digits). This more than enough precision
+//       for the purposes in DIPlib, though.
+//
+//       Also, Clang (Apple clang version 14.0.0) does not define the Bessel functions.
 
 dfloat BesselJ0(
       dfloat x
