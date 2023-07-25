@@ -90,9 +90,6 @@ dfloat BesselJN(
       dfloat x,
       dip::uint n
 ) {
-   if( x == 0.0 ) {
-      return 0.0;
-   }
    if( n == 0 ) {
       return BesselJ0( x );
    }
@@ -100,9 +97,12 @@ dfloat BesselJN(
       return BesselJ1( x );
    }
    // calculate Bessel function for order 2 and higher
+   if( x == 0.0 ) {
+      return 0.0;
+   }
    dfloat ax = std::abs( x );
    dfloat ans = 0.0;
-   if( ax > ( dfloat )n ) {
+   if( ax > static_cast< dfloat >( n )) {
       dfloat tox = 2.0 / ax;
       dfloat bjm = BesselJ0( ax );
       dfloat bj = BesselJ1( ax );

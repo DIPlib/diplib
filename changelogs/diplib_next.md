@@ -40,6 +40,7 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::Sharpen()` and `dip::UnsharpMask()` didn't work correctly when the input and output images were the same.
 
+- `dip::BesselJN( 0, 0 )` returned 0.0 instead of 1.0.
 
 
 ## Changes to *DIPimage*
