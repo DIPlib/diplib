@@ -1,8 +1,5 @@
 # Python bindings to DIPlib 3 (a.k.a. PyDIP)
 
-[![Build Status](https://github.com/DIPlib/diplib/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/DIPlib/diplib/actions/workflows/cmake.yml)
-[![CodeQL](https://github.com/DIPlib/diplib/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/DIPlib/diplib/security/code-scanning)
-
 ## Introduction
 
 The purpose of the *DIPlib* project is to provide a one-stop library and
@@ -42,7 +39,7 @@ a *NumPy*-compatible way of representing images.
 
 See [the *DIPlib* website](https://diplib.org/) for more information.
 
-**NOTE!** We consider the Python bindings (*PyDIP*) to be in development. We aim at
+**Note!** We consider the Python bindings (*PyDIP*) to be in development. We aim at
 not making breaking changes, but will sometimes do so when we feel it significantly
 improves the usability of the module. These changes will always be highlighted in
 the change logs and the release notification on the *DIPlib* website.
@@ -62,6 +59,14 @@ To read images through the *Bio-Formats* library, you will need to download it
 separately:
 
     python -m diplib download_bioformats
+
+**Note:** The `diplib` package on PyPI vendors the *OpenMP* library for some platforms
+(`libomp.dylib` on macOS, `libgomp.so` on Linux). It is possible, though rare, for another package to vendor
+an incompatible *OpenMP* library, and for the combined use to cause Python to crash.
+See for example [this issue](https://github.com/DIPlib/diplib/issues/130). If you happen to run into this problem,
+please [let us know!](https://github.com/DIPlib/diplib/issues/new/choose).
+You can find more information about the simultaneous use of multiple *OpenMP* libraries
+[on this page](https://github.com/joblib/threadpoolctl/blob/master/multiple_openmp.md).
 
 ## Usage
 
