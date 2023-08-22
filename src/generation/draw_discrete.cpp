@@ -41,8 +41,8 @@ namespace {
 constexpr int INSIDE = 0b0000;
 constexpr int LEFT = 0b0001;
 constexpr int RIGHT = 0b0010;
-constexpr int BOTTOM = 0b0100;
-constexpr int TOP = 0b1000;
+constexpr int TOP = 0b0100;
+constexpr int BOTTOM = 0b1000;
 
 // Computes the outcode for one point, w.r.t. the image domain
 int OutcodeForPoint( VertexFloat p, VertexFloat bottom_right ) {
@@ -53,9 +53,9 @@ int OutcodeForPoint( VertexFloat p, VertexFloat bottom_right ) {
       code |= RIGHT;
    }
    if( p.y < 0 ) {
-      code |= BOTTOM;
-   } else if( p.y > bottom_right.y ) {
       code |= TOP;
+   } else if( p.y > bottom_right.y ) {
+      code |= BOTTOM;
    }
    return code;
 }
@@ -82,10 +82,10 @@ bool ClipLineToImageDomain( VertexFloat& p0, VertexFloat& p1, UnsignedArray cons
       int outcode = std::max( outcode1, outcode0 );
       // Find the intersection point of the line with the given image edge
       VertexFloat p; // this is the new point
-      if(( outcode & TOP ) != 0 ) {
+      if(( outcode & BOTTOM ) != 0 ) {
          p.x = p0.x + ( p1.x - p0.x ) * ( bottom_right.y - p0.y ) / ( p1.y - p0.y );
          p.y = bottom_right.y;
-      } else if(( outcode & BOTTOM ) != 0 ) {
+      } else if(( outcode & TOP ) != 0 ) {
          p.x = p0.x + ( p1.x - p0.x ) * ( 0 - p0.y ) / ( p1.y - p0.y );
          p.y = 0;
       } else if(( outcode & RIGHT ) != 0 ) {
