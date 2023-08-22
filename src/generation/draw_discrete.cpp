@@ -49,12 +49,12 @@ int OutcodeForPoint( VertexFloat p, VertexFloat bottom_right ) {
    int code = INSIDE;
    if( p.x < 0 ) {
       code |= LEFT;
-   } else if( p.x > bottom_right.x - 1 ) {
+   } else if( p.x > bottom_right.x ) {
       code |= RIGHT;
    }
    if( p.y < 0 ) {
       code |= BOTTOM;
-   } else if( p.y > bottom_right.y - 1 ) {
+   } else if( p.y > bottom_right.y ) {
       code |= TOP;
    }
    return code;
