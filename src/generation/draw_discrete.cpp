@@ -269,16 +269,18 @@ void DrawPolygonInternal(
    UnsignedArray p1;
    for( dip::uint jj = 1; jj < polygon.vertices.size(); ++jj ) {
       VertexFloat cur = polygon.vertices[ jj ];
-      VerticesToUnsignedArrays( prev, cur, out.Sizes(), p0, p1 );
-      BresenhamLineIterator iterator( out.Strides(), p0, p1 );
-      DrawOneLine( origin, stride, iterator, value_, []( auto, auto b ) { return b; } );
+      if( VerticesToUnsignedArrays( prev, cur, out.Sizes(), p0, p1 )) {
+         BresenhamLineIterator iterator( out.Strides(), p0, p1 );
+         DrawOneLine( origin, stride, iterator, value_, []( auto, auto b ) { return b; } );
+      }
       prev = cur;
    }
    if( !open ) {
       VertexFloat cur = polygon.vertices[ 0 ];
-      VerticesToUnsignedArrays( prev, cur, out.Sizes(), p0, p1 );
-      BresenhamLineIterator iterator( out.Strides(), p0, p1 );
-      DrawOneLine( origin, stride, iterator, value_, []( auto, auto b ) { return b; } );
+      if( VerticesToUnsignedArrays( prev, cur, out.Sizes(), p0, p1 )) {
+         BresenhamLineIterator iterator( out.Strides(), p0, p1 );
+         DrawOneLine( origin, stride, iterator, value_, []( auto, auto b ) { return b; } );
+      }
    }
 }
 
