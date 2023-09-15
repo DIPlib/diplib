@@ -70,7 +70,7 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_Forge( JNIEnv *, jobject, jlong );
 JNIEXPORT void JNICALL Java_org_diplib_Image_Strip( JNIEnv *, jobject, jlong );
 
 /// dip::Image::Origin()
-JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *, jobject, jlong );
+JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *, jobject, jlong, jlong );
 
 /// dip::Image::Image( dip::UnsignedArray, dip::uint, dip::DataType )
 JNIEXPORT jlong JNICALL Java_org_diplib_Image_Constructor( JNIEnv *, jobject, jlongArray, jlong, jstring );

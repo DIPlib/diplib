@@ -149,10 +149,10 @@ JNIEXPORT void JNICALL Java_org_diplib_Image_Strip( JNIEnv *, jobject, jlong ptr
    image->Strip();
 }
 
-// dip::Image::Origin()
-JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *env, jobject, jlong ptr ) {
+// dip::Image::Origin( offset )
+JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *env, jobject, jlong ptr, jlong offset ) {
    Image *image = (Image*) ptr;
-   dip::uint n = 1;
+   size_t n = 1;
 
    for( auto sz : image->Sizes() ) {
       n *= sz;
@@ -160,7 +160,11 @@ JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *env, jobject, jl
    n *= image->TensorElements();
    n *= image->DataType().SizeOf();
    
-   return env->NewDirectByteBuffer( image->Origin(), (long) n );
+   n -= (size_t)offset;
+   if (n > (1L<<31)-1)
+     n = (1L<<31)-1;
+   
+   return env->NewDirectByteBuffer( (void*) ( ( (char*) image->Origin() ) + offset ), (jlong) n );
 }
 
 // dip::Image::Image( dip::UnsignedArray, dip::uint, dip::DataType )
@@ -204,7 +208,7 @@ static JNINativeMethodCPP image_natives_[] = {
    {"Squeeze",         "(J)V",                     (void*)Java_org_diplib_Image_Squeeze },
    {"Forge",           "(J)V",                     (void*)Java_org_diplib_Image_Forge },
    {"Strip",           "(J)V",                     (void*)Java_org_diplib_Image_Strip },
-   {"Origin",          "(J)Ljava/nio/ByteBuffer;", (void*)Java_org_diplib_Image_Origin },
+   {"Origin",          "(JJ)Ljava/nio/ByteBuffer;", (void*)Java_org_diplib_Image_Origin },
    {"Constructor",     "([JJLjava/lang/String;)J", (void*)Java_org_diplib_Image_Constructor },
    {"Destructor",      "(J)V",                     (void*)Java_org_diplib_Image_Destructor } };
 

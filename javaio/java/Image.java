@@ -130,9 +130,9 @@ public class Image {
       verify();
       Strip( ptr_ );
    }
-   public ByteBuffer Origin( ) {
+   public ByteBuffer Origin( long offset ) {
       verify();
-      return Origin( ptr_ );
+      return Origin( ptr_, offset );
    }
    
    // Native methods
@@ -154,7 +154,7 @@ public class Image {
    protected native void Squeeze( long ptr );
    protected native void Forge( long ptr );
    protected native void Strip( long ptr );
-   protected native ByteBuffer Origin( long ptr );
+   protected native ByteBuffer Origin( long ptr, long offset );
 
    protected native long Constructor( long[] sizes, long nelems, String dt );
    protected native void Destructor( long ptr );

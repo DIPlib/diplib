@@ -61,8 +61,8 @@ public class BioFormatsInterface {
 
       // Calculate strides
       long[] strides = { 0, 0, 0, 0 };
-      long tstride = 0;
-      for ( int oo=0, ss=0, stride=1; oo < 5; oo++ ) {
+      long stride = 1, tstride = 0;
+      for ( int oo=0, ss=0; oo < 5; oo++ ) {
          long sz = 0;
          switch ( order.charAt( oo ) )
          {
@@ -112,10 +112,14 @@ public class BioFormatsInterface {
       
       image.Forge();
       image.Squeeze();
-      ByteBuffer buf = image.Origin();
       
-      for (int ii=0; ii < reader.getImageCount(); ii++)
-        buf.put( reader.openBytes( ii ) );
+      long sz = 0;
+      for (int ii=0; ii < reader.getImageCount(); ii++) {
+        ByteBuffer buf = image.Origin( sz );
+        byte[] biobuf = reader.openBytes( ii );
+        buf.put( biobuf );
+        sz += biobuf.length;
+      }
         
       FileInformation info = new FileInformation();
       info.name = file;
