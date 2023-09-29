@@ -41,7 +41,7 @@ constexpr char const* bioformatsInterface = "org/diplib/BioFormatsInterface";
 /// `interface` can be one of:
 ///
 /// - `"org/diplib/BioFormatsInterface"`: The openmicroscopy.org Bio-Formats package (default).
-///   Can read [over 140 different image file formats](https://bio-formats.readthedocs.io/en/latest/formats/index.html).
+///   Can read [over 140 different image file formats](https://bio-formats.readthedocs.io/en/latest/supported-formats.html).
 ///   Limitation: each x-y plane of a (multi-dimensional) image must occupy no more than 2 GB when uncompressed,
 ///   and each individual dimension must be smaller than 2^31^-1.
 ///

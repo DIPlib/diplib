@@ -27,7 +27,7 @@ if __name__ == '__main__':
             ('download_bioformats' in sys.argv) or
             ('download' in sys.argv and 'bioformats' in sys.argv)
     ):
-        url = 'https://downloads.openmicroscopy.org/bio-formats/6.11.1/artifacts/bioformats_package.jar'
+        url = 'https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar'
         filename = os.path.join(os.path.dirname(__file__), 'bioformats_package.jar')
         print('Retrieving', url)
         urllib.request.urlretrieve(url, filename, progress)

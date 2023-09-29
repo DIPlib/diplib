@@ -37,7 +37,7 @@ export CC=gcc-8
 export CXX=g++-8
 mkdir ~/diplib
 cd ~/diplib
-wget https://downloads.openmicroscopy.org/bio-formats/6.8.1/artifacts/bioformats_package.jar
+wget https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 mkdir download source repository
 cd download
 wget http://www.fftw.org/fftw-3.3.10.tar.gz
