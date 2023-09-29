@@ -79,18 +79,18 @@ namespace dip {
 MeasurementTool::MeasurementTool() {
    // Size
    Register( new Feature::FeatureSize );
+   Register( new Feature::FeatureSolidArea );
+   Register( new Feature::FeaturePerimeter );
+   Register( new Feature::FeatureSurfaceArea );
    Register( new Feature::FeatureMinimum );
    Register( new Feature::FeatureMaximum );
    Register( new Feature::FeatureCartesianBox );
-   Register( new Feature::FeaturePerimeter );
-   Register( new Feature::FeatureSurfaceArea );
    Register( new Feature::FeatureFeret );
-   Register( new Feature::FeatureSolidArea );
+   Register( new Feature::FeatureRadius );
    Register( new Feature::FeatureConvexArea );
    Register( new Feature::FeatureConvexPerimeter );
    // Shape
    Register( new Feature::FeatureAspectRatioFeret );
-   Register( new Feature::FeatureRadius );
    Register( new Feature::FeatureP2A );
    Register( new Feature::FeatureRoundness );
    Register( new Feature::FeatureCircularity );

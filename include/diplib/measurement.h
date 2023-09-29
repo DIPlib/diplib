@@ -861,18 +861,18 @@ class DIP_CLASS_EXPORT Composite : public Base {
 /// --------------------------- | ----------------- | -----------
 ///                             | **Size features**{ .m-text .m-success } |
 /// `"Size"`                    | Number of object pixels |
-/// `"CartesianBox"`            | Cartesian box size of the object in all dimensions |
-/// `"Minimum"`                 | Minimum coordinates of the object |
-/// `"Maximum"`                 | Maximum coordinates of the object |
+/// `"SolidArea"`               | Area of object with any holes filled | 2D (CC)
 /// `"Perimeter"`               | Length of the object perimeter | 2D (CC)
 /// `"SurfaceArea"`             | Surface area of object | 3D
+/// `"Minimum"`                 | Minimum coordinates of the object |
+/// `"Maximum"`                 | Maximum coordinates of the object |
+/// `"CartesianBox"`            | Cartesian box size of the object in all dimensions |
 /// `"Feret"`                   | Maximum and minimum object diameters | 2D (CC)
-/// `"SolidArea"`               | Area of object with any holes filled | 2D (CC)
+/// `"Radius"`                  | Statistics on radius of object | 2D (CC)
 /// `"ConvexArea"`              | Area of the convex hull | 2D (CC)
 /// `"ConvexPerimeter"`         | Perimeter of the convex hull | 2D (CC)
 ///                             | **Shape features**{ .m-text .m-success } |
 /// `"AspectRatioFeret"`        | Feret-based aspect ratio | 2D (CC)
-/// `"Radius"`                  | Statistics on radius of object | 2D (CC)
 /// `"P2A"`                     | Perimeter to area ratio of the object | 2D (CC) & 3D
 /// `"Roundness"`               | Roundness of the object | 2D (CC)
 /// `"Circularity"`             | Circularity of the object | 2D (CC)

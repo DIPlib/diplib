@@ -41,21 +41,15 @@ object's area (2D), volume (3D), or hyper-volume (nD).
 
 This value is reported in physical units, anisotropic pixels are taken into account.
 
-\subsection size_features_CartesianBox CartesianBox
-The sizes of the smallest box around the object that is aligned with the grid axes.
-There is one value per image dimension. The size is in pixels or in physical units if known.
+\subsection size_features_SolidArea SolidArea
+Computes the area of the object ignoring any holes. It uses the object's chain code
+and the \ref dip::ChainCode::Area method.
 
-\subsection size_features_Minimum Minimum
-The smallest index along each dimension to a pixel within the object. This
-corresponds to the top-left corner of the cartesian bounding box. There is one value per
-image dimension. If the image has a known pixel size, the values represent the distances
-to the lower image edge along each dimension.
+Note that the chain code measures work only for 2D images, and expect objects to be a single
+connected component. If multiple connected components have the same label, only the first
+connected component found for that label will be measured.
 
-\subsection size_features_Maximum Maximum
-The largest index along each dimension to a pixel within the object. This
-corresponds to the bottom-right corner of the cartesian bounding box. There is one value per
-image dimension. If the image has a known pixel size, the values represent the distances
-to the lower image edge along each dimension.
+This value is reported in physical units, anisotropic pixels are taken into account.
 
 \subsection size_features_Perimeter Perimeter
 Computes the length of the object perimeter using the object's chain code, using
@@ -81,6 +75,22 @@ This value is reported in physical units, but only for isotropic (square) pixels
 !!! literature
     - J.C. Mullikin and P.W. Verbeek, "Surface area estimation of digitized planes," Bioimaging 1(1):6-16, 1993.
 
+\subsection size_features_Minimum Minimum
+The smallest index along each dimension to a pixel within the object. This
+corresponds to the top-left corner of the cartesian bounding box. There is one value per
+image dimension. If the image has a known pixel size, the values represent the distances
+to the lower image edge along each dimension.
+
+\subsection size_features_Maximum Maximum
+The largest index along each dimension to a pixel within the object. This
+corresponds to the bottom-right corner of the cartesian bounding box. There is one value per
+image dimension. If the image has a known pixel size, the values represent the distances
+to the lower image edge along each dimension.
+
+\subsection size_features_CartesianBox CartesianBox
+The sizes of the smallest box around the object that is aligned with the grid axes.
+There is one value per image dimension. The size is in pixels or in physical units if known.
+
 \subsection size_features_Feret Feret
 Computes the maximum and minimum object diameters from the object's convex hull, using
 \ref dip::ConvexHull::Feret. The convex hull is computed from the chain code using \ref dip::ChainCode::ConvexHull.
@@ -103,15 +113,27 @@ The first three values are reported in physical units, but only for isotropic (s
 (otherwise the pixel sizes are ignored). The last two values are reported in radian, assuming
 isotropic pixels.
 
-\subsection size_features_SolidArea SolidArea
-Computes the area of the object ignoring any holes. It uses the object's chain code
-and the \ref dip::ChainCode::Area method.
+\subsection shape_features_Radius Radius
+Statistics on the radius of the object, computed from the chain code using
+\ref dip::ChainCode::Polygon and \ref dip::Polygon::RadiusStatistics.
 
 Note that the chain code measures work only for 2D images, and expect objects to be a single
 connected component. If multiple connected components have the same label, only the first
 connected component found for that label will be measured.
 
-This value is reported in physical units, anisotropic pixels are taken into account.
+This feature takes the distances from the object's centroid (as determined from the chain
+code, not influenced by any holes in the object) to each of the border pixels. From these
+distances it computes four values:
+
+- 0: `Max`, the largest distance.
+- 1: `Mean`, the average distance.
+- 2: `Min`, the shortest distance.
+- 3: `StD`, the standard deviation.
+
+Note that the centroid does not necessarily lie within the object.
+
+These values are reported in physical units, but only for isotropic (square) pixels. For
+anisotropic pixels, lengths are reported in pixels, ignoring pixel sizes.
 
 \subsection size_features_ConvexArea ConvexArea
 The area of the convex hull of the object. The convex hull is computed from the chain code
@@ -142,28 +164,6 @@ anisotropic pixels, the length is reported in pixels, ignoring pixel sizes.
 The ratio `PerpMin`/`Min`, two of the values returned by the \ref size_features_Feret feature.
 
 This feature ignores pixel sizes, isotropic pixels are assumed.
-
-\subsection shape_features_Radius Radius
-Statistics on the radius of the object, computed from the chain code using
-\ref dip::ChainCode::Polygon and \ref dip::Polygon::RadiusStatistics.
-
-Note that the chain code measures work only for 2D images, and expect objects to be a single
-connected component. If multiple connected components have the same label, only the first
-connected component found for that label will be measured.
-
-This feature takes the distances from the object's centroid (as determined from the chain
-code, not influenced by any holes in the object) to each of the border pixels. From these
-distances it computes four values:
-
- - 0: `Max`, the largest distance.
- - 1: `Mean`, the average distance.
- - 2: `Min`, the shortest distance.
- - 3: `StD`, the standard deviation.
-
-Note that the centroid does not necessarily lie within the object.
-
-These values are reported in physical units, but only for isotropic (square) pixels. For
-anisotropic pixels, lengths are reported in pixels, ignoring pixel sizes.
 
 \subsection shape_features_P2A P2A
 Computes:
