@@ -243,7 +243,7 @@ set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}-${TODAYS_DATE}")
 include(CPack)
 # TODO: The package doesn't contain any of the dependencies: OpenMP, C++ stdlib, etc.
 #       Including these is highly dependent on the configuration of the system used for compiling.
-#       Posible solutions:
+#       Possible solutions:
 #        - `install(PROGRAMS ${libname} DESTINATION lib)`
 #          We'd then need to modify the library names and the search locations using `install_name_tool`,
 #          see http://doc.qt.io/qt-4.8/deployment-mac.html#linking-the-application-to-qt-as-frameworks

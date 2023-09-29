@@ -293,7 +293,6 @@ class LookUpTable {
             table_ = { 1 };
          } else {
             sparseTable_ = { sequence_ };
-            //table_ = { sequence_.size(), sequence_.size() }; // TODO: This is a huge table!? Only half of it is used.
             table_ = { sequence_.size() };
             for( dip::uint i = 0; i < sequence_.size(); ++i ) {
                table_.at( i, i ) = i;

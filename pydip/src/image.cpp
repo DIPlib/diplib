@@ -467,7 +467,7 @@ void init_image( py::module& m ) {
    img.def( "__call__", []( dip::Image const& self, dip::sint index ) -> dip::Image { return self[ index ]; }, "index"_a );
    img.def( "__call__", []( dip::Image const& self, dip::uint i, dip::uint j ) -> dip::Image { return self[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "__call__", []( dip::Image const& self, dip::Range const& range ) -> dip::Image { return self[ range ]; }, "range"_a );
-   // Deprescated functions Nov 29, 2022 (after release 3.3.0) TODO: remove eventually.
+   // Deprecated functions Nov 29, 2022 (after release 3.3.0) TODO: remove eventually.
    img.def( "TensorElement", []( dip::Image const& self, dip::sint index ) -> dip::Image {
                PyErr_WarnEx(PyExc_DeprecationWarning, TensorElementDeprecationMessage, 1);
                return self[ index ];

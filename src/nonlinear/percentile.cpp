@@ -53,9 +53,11 @@ class OrderStatisticTree {
          DIP_ASSERT( nodes.empty() );
          DIP_ASSERT( root == nullptr );
          DIP_ASSERT( free == nullptr );
+         ( void ) other;
       };
       OrderStatisticTree& operator=( OrderStatisticTree const& other ) {
          DIP_ASSERT( other.nodes.empty() );
+         ( void ) other;
          nodes.clear();
          root = nullptr;
          free = nullptr;

@@ -228,10 +228,9 @@ class ShiftFTLineFilter : public Framework::ScanLineFilter {
                out[ jj * outTStride ] = in[ jj * inTStride ] * mul;
             }
          }
-         // TODO: We can speed up this code
-         // by computing the cos and sin once outside the loop, and tabulating cos and sin values to be used inside
-         // the loop. To create the tables, we need a function like SetNumberOfThreads to receive also the processing
-         // dimension. Mike's description of this:
+         // TODO: We can speed up this code by computing the cos and sin once outside the loop, and tabulating cos
+         //       and sin values to be used inside the loop. To create the tables, we need a function like
+         //       SetNumberOfThreads to receive also the processing dimension. Mike's description of this:
          //
          //  >   Below we need the quantities:
          //  >
