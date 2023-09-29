@@ -98,3 +98,5 @@ None, but see bugfixes to *DIPlib*.
 ### Changed functionality
 
 ### Bug fixes
+
+- Images of more than 2 GB can now be read using Bio-Formats. But each single x-y plane still must be smaller than 2 GB.
