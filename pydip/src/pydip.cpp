@@ -142,7 +142,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    physQ.def( py::init< dip::Units >(), "units"_a );
    physQ.def( "__repr__", []( dip::PhysicalQuantity const& self ) {
                  std::ostringstream os;
-                 os << "<PhysicalQuantity: magnitude=" << self.magnitude << ", units=" << self.units << ">";
+                 os << "<PhysicalQuantity {" << self << "}>";
                  return os.str();
               } );
    physQ.def( "__str__", []( dip::PhysicalQuantity const& self ) {

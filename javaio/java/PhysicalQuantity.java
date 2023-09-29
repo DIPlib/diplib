@@ -27,6 +27,8 @@ public class PhysicalQuantity {
    }
    public PhysicalQuantity( double _magnitude, String _units ) {
       magnitude = _magnitude;
-      units = _units;
+      // Replace the micro symbol with "u", in case DIPlib is built without Unicode support. "u" always works.
+      units = _units.replace("μ", "u"); // U+03BC (mu)
+      units = units.replace("µ", "u"); // legacy symbol U+00B5 (micro)
    }
 }

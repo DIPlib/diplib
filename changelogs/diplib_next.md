@@ -100,3 +100,7 @@ None, but see bugfixes to *DIPlib*.
 ### Bug fixes
 
 - Images of more than 2 GB can now be read using Bio-Formats. But each single x-y plane still must be smaller than 2 GB.
+  See [issue #133](https://github.com/DIPlib/diplib/issues/133).
+
+- When reading through Bio-Formats, pixel sizes in reported in micron would be ignored with a warning.
+  See [issue #133](https://github.com/DIPlib/diplib/issues/133).
