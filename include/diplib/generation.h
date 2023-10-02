@@ -627,6 +627,7 @@ DIP_NODISCARD inline Image CreateDelta( UnsignedArray const& sizes, String const
 
 
 // Create 1D Gaussian, used in linear/gauss.cpp (where it is defined) and in nonlinear/bilateral.cpp
+// Not documented because not a public function. We suggest you use `CreateGauss()` instead.
 // Length will be given by truncation and sigma, but limited to meaningful values.
 DIP_EXPORT std::vector< dfloat > MakeGaussian(
       dfloat sigma,
@@ -649,6 +650,9 @@ DIP_EXPORT std::vector< dfloat > MakeGaussian(
 ///
 /// By setting `exponents` to a positive value for each dimension, the created kernel will be multiplied by
 /// the coordinates to the power of `exponents`.
+///
+/// !!! warning
+///     Convolving an image with the result of this function is much less efficient than calling \ref Gauss.
 // Defined in src/linear/gauss.cpp
 DIP_EXPORT void CreateGauss(
       Image& out,
@@ -679,6 +683,9 @@ DIP_NODISCARD inline Image CreateGauss(
 /// The size of the kernel is given by `2 * std::ceil( truncation * sigma ) + 1`.
 /// The default value for `truncation` is 3, which assures a good approximation of the kernel without
 /// unnecessary expense. Truncation is limited to avoid unusefully small values.
+///
+/// !!! warning
+///     Convolving an image with the result of this function is much less efficient than calling \ref Gabor.
 // Defined in src/linear/gabor.cpp
 DIP_EXPORT void CreateGabor(
       Image& out,
