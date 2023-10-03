@@ -1,6 +1,6 @@
 External dependencies needed to build DIPlib et al., and statically linked in.
 
-doctest/    doctest 2.4.8     https://github.com/onqtam/doctest
+doctest/    doctest 2.4.11    https://github.com/onqtam/doctest
 
 eigen3/     Eigen 3.4.0       https://eigen.tuxfamily.org
 

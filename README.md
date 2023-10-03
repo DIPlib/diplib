@@ -93,7 +93,7 @@ limitations under the License.
   (we do not use any of the components with more restrictive licenses)
 
 - *DocTest* (its use can be disabled)  
-  Copyright 2016-2019 Viktor Kirilov  
+  Copyright 2016-2023 Viktor Kirilov  
   MIT License  
   see [`dependencies/doctest/LICENSE.txt`](dependencies/doctest/LICENSE.txt)
 
