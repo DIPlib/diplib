@@ -172,13 +172,14 @@ void HistogramViewPort::render()
   glOrtho(0, width-24, height, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
 
-  char buf[20];
+  const std::size_t n = 20;
+  char buf[n];
   glColor3f(.5, .5, .5);
   glRasterPos2i(1, 11);
-  sprintf(buf, "%9.2e", o.range_.second);
+  std::snprintf(buf, n, "%9.2e", o.range_.second);
   viewer()->drawString(buf);
   glRasterPos2i(1, height-3);
-  sprintf(buf, "%9.2e", o.range_.first);
+  std::snprintf(buf, n, "%9.2e", o.range_.first);
   viewer()->drawString(buf);
 }
 
