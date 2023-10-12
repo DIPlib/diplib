@@ -185,6 +185,11 @@ void BinaryPropagation_Fast (
          }
       }
    }
+
+   // Last step: turn off pixels in `out_img` where `mask_img` is not set: If any input seed pixels were set where
+   // the mask wasn't, we discard those pixels now. If we discard them at the start, then we don't get the same
+   // behaviour as the older `BinaryPropagation_Iterative()`.
+   out_img &= mask_img;
 }
 
 
@@ -343,6 +348,7 @@ void BinaryPropagation(
       // If zero iterations (propagate until stability) use the fast algorithm
       dip::uint conn = static_cast< dip::uint >( std::max( dip::sint( 0 ), connectivity ));
       DIP_STACK_TRACE_THIS( BinaryPropagation_Fast( out, inMask, conn, outsideImageIsObject ));
+
    } else {
       // Iterate the given number of steps
       DIP_STACK_TRACE_THIS( BinaryPropagation_Iterative( out, inMask, connectivity, iterations, outsideImageIsObject ));
