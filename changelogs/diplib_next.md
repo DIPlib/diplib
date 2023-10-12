@@ -42,6 +42,9 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::BesselJN( 0, 0 )` returned 0.0 instead of 1.0.
 
+- `dip::BinaryPropagation` unwittingly changed behavior in 3.4.0: When `iterations` was 0, the seed pixels outside
+  the mask made it into the output image, but shouldn't have. See [issue #135](https://github.com/DIPlib/diplib/issues/135).
+
 
 ## Changes to *DIPimage*
 
