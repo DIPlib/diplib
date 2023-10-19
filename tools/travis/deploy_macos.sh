@@ -9,6 +9,7 @@ brew install python@3.8
 brew install python@3.9
 brew install python@3.10
 brew install python@3.11
+brew install python@3.12
 # The install above might have changed the default version of `python3`, so we need to reinstall packages:
 python3 -m pip install twine delocate
 brew install wget
@@ -47,6 +48,14 @@ python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 # Python 3.11
 export PYTHON=/usr/local/opt/python@3.11/bin/python3.11
 export PYTHON_VERSION=3.11
+$PYTHON -m pip install build
+cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
+make -j $BUILD_THREADS bdist_wheel
+python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
+
+# Python 3.12
+export PYTHON=/usr/local/opt/python@3.12/bin/python3.12
+export PYTHON_VERSION=3.12
 $PYTHON -m pip install build
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel

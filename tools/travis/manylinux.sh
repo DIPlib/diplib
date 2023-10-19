@@ -46,4 +46,11 @@ $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/pyt
 make -j $BUILD_THREADS bdist_wheel
 /opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
 
+# Python 3.12
+export PYTHON=cp312-cp312
+export PYTHON_VERSION=3.12
+$CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/python/$PYTHON/bin/python
+make -j $BUILD_THREADS bdist_wheel
+/opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
+
 mv wheelhouse /io

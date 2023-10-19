@@ -6,6 +6,7 @@ FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.8.* /B') do (
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.9.* /B') do (SET PYTHON39=%%g)
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.10.* /B') do (SET PYTHON310=%%g)
 FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.11.* /B') do (SET PYTHON311=%%g)
+FOR /F "tokens=*" %%g IN ('dir C:\hostedtoolcache\windows\Python\3.12.* /B') do (SET PYTHON312=%%g)
 
 REM Setup
 mkdir build
@@ -47,6 +48,12 @@ copy pydip\Release\staging\dist\*.whl wheelhouse
 REM Python 3.11
 C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe -m pip install setuptools wheel build
 cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON311%\x64\python.exe
+cmake --build . --target bdist_wheel --config Release
+copy pydip\Release\staging\dist\*.whl wheelhouse
+
+REM Python 3.12
+C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe -m pip install setuptools wheel build
+cmake .. -A x64 -DPYTHON_EXECUTABLE=C:\hostedtoolcache\windows\Python\%PYTHON312%\x64\python.exe
 cmake --build . --target bdist_wheel --config Release
 copy pydip\Release\staging\dist\*.whl wheelhouse
 
