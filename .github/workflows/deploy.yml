@@ -17,7 +17,7 @@ jobs:
         run: bash tools/travis/deploy_linux.sh
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      
+
   deploy_macos:
     runs-on: macos-latest
 
@@ -27,15 +27,17 @@ jobs:
       - name: Install
         # Install libraries and Python packages we need
         # Note that twine and delocate and so on are installed by deploy_macos.sh
+        # If Homebrew doesn't know the newest Python version or something like that, add:
+        #     export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        #     brew update
         run: |
           brew install libomp glfw
-          python3 -m pip install numpy
 
       - name: Deploy
         run: bash tools/travis/deploy_macos.sh
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-          
+
   deploy_windows:
     runs-on: windows-latest
 
@@ -46,7 +48,7 @@ jobs:
         # Install libraries and Python packages we need
         run: |
           choco install openjdk8 --no-progress --yes
-          python -m pip install wheel build numpy twine wget
+          python -m pip install wheel build twine wget
 
       - name: Deploy
         run: tools/travis/deploy_windows.bat

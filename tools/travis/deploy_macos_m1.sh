@@ -22,7 +22,7 @@ brew install wget
 
 mkdir build
 cd build
-wget https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
+wget -nv https://downloads.openmicroscopy.org/bio-formats/7.0.0/artifacts/bioformats_package.jar
 
 # Basic configuration
 cmake .. -DDIP_PYDIP_WHEEL_INCLUDE_LIBS=On -DBIOFORMATS_JAR=`pwd`/bioformats_package.jar -DDIP_BUILD_DIPIMAGE=Off
@@ -62,7 +62,7 @@ python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
 # Python 3.12
 export PYTHON=/opt/homebrew/opt/python@3.12/bin/python3.12
 export PYTHON_VERSION=3.12
-$PYTHON -m pip install build
+$PYTHON -m pip install build setuptools --break-system-packages
 cmake .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=$PYTHON
 make -j $BUILD_THREADS bdist_wheel
 python3 $DELOCATE -w wheelhouse/ -v pydip/staging/dist/*.whl
