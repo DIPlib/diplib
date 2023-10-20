@@ -32,13 +32,14 @@
 %   DIPSHOW(...,COLMAP) set the colormap to a custom colormap COLMAP. See the
 %   function COLORMAP for more information on colormaps. Additionally, these
 %   strings choose one of the default color maps:
-%      'grey'         grey-value colormap
-%      'periodic'     periodic colormap for angle display
-%      'saturation'   grey-value colormap with saturated pixels in red and
+%      'grey'         Grey-value colormap.
+%      'saturation'   Grey-value colormap with saturated pixels in red and
 %                     underexposed pixels in blue.
+%      'sequential'   A blue-magenta-yellow, highly saturated color map.
 %      'zerobased'    The 50% value is shown in grey, with lower values
 %                     increasingly saturated and lighter blue, and higher
 %                     values increasingly saturated and lighter yellow.
+%      'periodic'     Periodic colormap for angle display.
 %   When combining a COLMAP and a RANGESTR parameter, the COLMAP overrules
 %   the default color map belonging to RANGESTR.
 %
@@ -62,7 +63,7 @@
 %   See also DIPSETPREF, DIPFIG, DIPTRUESIZE, DIPMAPPING, DIPZOOM, DIPTEST,
 %   DIPLINK, DIPSTEP.
 
-% (c)2017-2018, Cris Luengo.
+% (c)2017-2023, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,7 +99,8 @@
 %      DIPSHOW(H,'ch_mappingmode',MAPPINGMODE)
 %   RANGE or MAPPINGMODE are as defined above for regular DIPSHOW syntax.
 %      DIPSHOW(H,'ch_colormap',COLORMAP)
-%   COLORMAP is 'grey', 'periodic', 'saturation', 'labels' or a colormap.
+%   COLORMAP is 'grey', 'gray', 'saturation', 'sequential', 'zerobased',
+%   'periodic', 'labels' or a colormap.
 %      DIPSHOW(H,'ch_globalstretch',BOOLEAN)
 %   BOOLEAN is 'yes', 'no', 'on', 'off', 1, 0, true or false.
 %      DIPSHOW(H,'ch_complexmapping',COMPLEXMAP)
@@ -131,8 +133,8 @@
 %   - For all images:
 %      - udata.handle         -> dip_imagedisplay handle.
 %      - udata.imsize         -> Size of the display in pixels ([x] for 1D images, [x,y] for others).
-%      - udata.colmap         -> String representing the colormap: 'grey', 'periodic', 'saturation',
-%                                'zerobased', 'labels', 'custom'.
+%      - udata.colmap         -> String representing the colormap: 'grey', 'saturation', 'sequential'
+%                                'zerobased', 'periodic', 'labels', 'custom'.
 %      - udata.colspace       -> Name of color space: '' (for grey), 'RGB', 'Lab', 'XYZ', etc.
 %      - udata.zoom           -> Pixel size or [] if aspect ratio is not 1:1. If 0, don't show zoom!
 %      - udata.state          -> Action state: 'none', 'dipstep', 'diptest', 'dipzoom', etc.
@@ -329,7 +331,7 @@ while nargin >= n
             if hasrange, error('Only one stretching mode allowed on the command line.'); end
             rangestr = tmp;
             hasrange = 1;
-         case {'grey','gray','saturation','zerobased','periodic'}
+         case {'grey','gray','saturation','sequential','zerobased','periodic'}
             if hascolmap, error('Only one colormap allowed on the command line.'); end
             colmapstr = tmp;
             hascolmap = 1;
@@ -498,12 +500,14 @@ if ishandle(fig)
       switch colmap
          case 'custom'
             colmapdata = get(fig,'colormap');
-         case 'periodic'
-            colmapdata = nicelut;
          case 'saturation'
             colmapdata = saturation_colormap;
+         case 'sequential'
+            colmapdata = sequential_colormap;
          case 'zerobased'
             colmapdata = zerobased_colormap;
+         case 'periodic'
+            colmapdata = periodic_colormap;
          case 'labels'
             colmapdata = label_colormap;
          otherwise
@@ -558,10 +562,12 @@ if ischar(colmap)
          colmapdata = gray(256);
       case 'saturation'
          colmapdata = saturation_colormap;
+      case 'sequential'
+         colmapdata = sequential_colormap;
       case 'zerobased'
          colmapdata = zerobased_colormap;
       case 'periodic'
-         colmapdata = nicelut;
+         colmapdata = periodic_colormap;
       case 'labels'
          colmapdata = label_colormap;
       otherwise
@@ -1176,6 +1182,8 @@ else
              @(~,~)dipshow(gcbf,'ch_colormap','grey'),'Separator','on');
       uimenu(h,'Label','Saturation','Tag','saturation','Callback',...
              @(~,~)dipshow(gcbf,'ch_colormap','saturation'));
+      uimenu(h,'Label','Sequential','Tag','sequential','Callback',...
+             @(~,~)dipshow(gcbf,'ch_colormap','sequential'));
       uimenu(h,'Label','Zero-based','Tag','zerobased','Callback',...
              @(~,~)dipshow(gcbf,'ch_colormap','zerobased'));
       uimenu(h,'Label','Periodic','Tag','periodic','Callback',...

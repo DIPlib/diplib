@@ -1,8 +1,6 @@
-% Grey-value color map with the middle intensity grey, negative
-% intensities blue and positive intensities yellow.
+% Zero-based color map.
 
-% (c)2017, Cris Luengo.
-% (c)1999-2014, Delft University of Technology.
+% (c)2023, Cris Luengo.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -17,11 +15,9 @@
 % limitations under the License.
 
 function g = zerobased_colormap
-
-gv = 0.4;
-a = linspace(gv,1.0,128)'; % blue
-b = linspace(gv,0.9,128)'; % yellow
-c = linspace(gv,0.0,128)'; % black
-g = [flipud([c,c,a]);b,b,c]; % blue-yellow
-
-%g = [flipud([b,b,a]);a,b,b]; % blue-red
+persistent cm
+if isempty(cm)
+   cm = dip_array(apply_colormap(0:255, 'diverging'));
+   cm = permute(cm, [3,1,2]);
+end
+g = cm;

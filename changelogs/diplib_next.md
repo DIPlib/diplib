@@ -23,6 +23,14 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- New function `apply_colormap` calls `dip::ApplyColorMap()`.
+
+- The color maps used in the `dipshow` tool are now directly taken from DIPlib. This changes the 'periodic' and
+  'diverging' color maps.
+
+- The `dipshow` 'Mappings' menu has a new option 'Sequential', which applies the `"linear"` color map from
+  `dip::ApplyColorMap()`. This also affects `dipmapping`, which has a new option `'sequential'`.
+
 (See also changes to *DIPlib*.)
 
 ### Bug fixes

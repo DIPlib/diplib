@@ -345,6 +345,17 @@ void lut( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    plhs[ 0 ] = dml::GetArray( out );
 }
 
+void apply_colormap( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   DML_MIN_ARGS( 2 );
+   DML_MAX_ARGS( 2 );
+   dip::Image const in = dml::GetImage( prhs[ 0 ] );
+   dip::String colormap = dml::GetString( prhs[ 1 ] );
+   dml::MatlabInterface mi;
+   dip::Image out = mi.NewImage();
+   dip::ApplyColorMap( in, out, colormap );
+   plhs[ 0 ] = dml::GetArray( out );
+}
+
 void overlay( mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    DML_MIN_ARGS( 2 );
    DML_MAX_ARGS( 3 );
@@ -506,6 +517,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       } else if( function == "lut" ) {
          lut( plhs, nrhs, prhs );
 
+      } else if( function == "apply_colormap" ) {
+         apply_colormap( plhs, nrhs, prhs );
       } else if( function == "overlay" ) {
          overlay( plhs, nrhs, prhs );
 

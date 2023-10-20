@@ -84,7 +84,8 @@ for `[percentile(image,5) percentile(image,95)]`, and `'angle'` and
 `'orientation'` are equivalent to `[-pi,pi]` and `[-pi,pi]/2`
 respectively. The default range is `[0,255]`, which is used unless a
 range is given explicitly. `colmap` is a colormap. It can either be
-`'grey'`, `'periodic'`, `'labels'` or an array with 3 columns such as
+`'grey'` (or `'gray'`), `'saturation'`, `'sequential'`, `'zerobased'`,
+`'periodic'`, `'labels'` or an array with 3 columns such as
 those returned by the *MATLAB* functions `hsv`, `cool`, `summer`, etc.
 (see the help on `colormap` for more information on this).
 

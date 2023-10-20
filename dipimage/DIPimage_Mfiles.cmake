@@ -3,6 +3,7 @@ set(DIPimage_Mfiles_bogus
 abssqr.m
 affine_trans.m
 aniso.m
+apply_colormap.m
 areaclosing.m
 areaopening.m
 arrangeslices.m

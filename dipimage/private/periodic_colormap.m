@@ -1,4 +1,4 @@
-% Saturation color map.
+% Periodic color map.
 
 % (c)2023, Cris Luengo.
 %
@@ -14,10 +14,10 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function g = saturation_colormap
+function g = periodic_colormap
 persistent cm
 if isempty(cm)
-   cm = dip_array(apply_colormap(0:255, 'saturation'));
+   cm = dip_array(apply_colormap(0:255, 'cyclic'));
    cm = permute(cm, [3,1,2]);
 end
 g = cm;

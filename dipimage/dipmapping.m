@@ -2,12 +2,12 @@
 %   DIPMAPPING(H,MAPPING) changes the mapping setting for figure window
 %   H. MAPPING can be any string of the following:
 %
-%      'unit'                 'labels'          'xy'
-%      'normal' or '8bit'     'periodic'        'xz'
-%      '12bit'                'grey'            'yz'
-%      '16bit'                'saturation'      'xt'
-%      's8bit'                'zerobased'       'yt'
-%      's12bit'                                 'zt'
+%      'unit'                 'grey'            'xy'
+%      'normal' or '8bit'     'saturation'      'xz'
+%      '12bit'                'sequential'      'yz'
+%      '16bit'                'zerobased'       'xt'
+%      's8bit'                'periodic'        'yt'
+%      's12bit'               'labels'          'zt'
 %      's16bit'
 %      'lin' or 'all'         'abs'
 %      'percentile'           'real'            'global'
@@ -41,7 +41,7 @@
 %
 %   See also DIPSHOW.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2023, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,7 +91,7 @@ while ii<=N
             if hasrange, error('Too many arguments.'); end
             currange = arg;
             hasrange = 1;
-         case {'grey','gray','periodic','saturation','zerobased'}
+         case {'grey','gray','saturation','sequential','zerobased', 'periodic'}
             if hascolmap, error('Too many arguments.'); end
             colmap = arg;
             hascolmap = 1;

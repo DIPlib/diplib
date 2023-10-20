@@ -21,7 +21,7 @@
 %  image as well. In all other cases, the output is an RGB image.
 %
 % SEE ALSO:
-%  colormap, lut.
+%  apply_colormap, lut.
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Overlay.
