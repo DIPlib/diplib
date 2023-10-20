@@ -9,6 +9,9 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- The 'diverging' color map in `dip::ApplyColorMap()` switched from CET-D08 to CET-D07 (i.e. using yellow
+  instead of red for positive values).
+
 ### Bug fixes
 
 

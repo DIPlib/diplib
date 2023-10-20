@@ -602,8 +602,8 @@ class DIP_NO_EXPORT ImageDisplay {
 ///   with a value 0 and 255, which are colored blue and red respectively. This can be used to show which
 ///   pixels were likely saturated during acquisition.
 /// - `"linear"`: A blue-magenta-yellow highly saturated, perceptually linear color map.
-/// - `"diverging"`: A blue-grey-red diverging, perceptually linear color map, where the middle value maps
-///   to a neutral grey-value, high values map to increasingly bright reds, and low values map to increasingly
+/// - `"diverging"`: A blue-grey-yellow diverging, perceptually linear color map, where the middle value maps
+///   to a neutral grey-value, high values map to increasingly bright yellows, and low values map to increasingly
 ///   bright blues. This is meant to be used in combination with the `"base"` range mode of \ref dip::ImageDisplay.
 /// - `"cyclic"`: A magenta-yellow-green-blue cyclic, perceptually linear color map, which allows four orientations
 ///   or angles to be visualised. Use in combination with the `"angle"` or `"orientation"` range mode of
@@ -614,7 +614,7 @@ class DIP_NO_EXPORT ImageDisplay {
 ///
 /// For more information regarding the range modes of \ref dip::ImageDisplay, see \ref dip::ImageDisplay::SetRange.
 ///
-/// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](http://peterkovesi.com/projects/colourmaps/index.html).
+/// The `"linear"`, `"diverging"` and `"cyclic"` are by [Peter Kovesi](https://colorcet.com).
 ///
 /// !!! literature
 ///     - Peter Kovesi, "Good Colour Maps: How to Design Them", [arXiv:1509.03700](https://arxiv.org/abs/1509.03700) [cs.GR], 2015.
