@@ -34,9 +34,16 @@ class xyz2grey : public ColorSpaceConverter {
       }
 };
 
-class yxy2grey : public xyz2grey {
+class yxy2grey : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return Yxy_name; }
+      virtual String OutputColorSpace() const override { return dip::S::GREY; }
+      virtual dip::uint Cost() const override { return 100; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = input[ 0 ] * 255;
+         } while( ++input, ++output );
+      }
 };
 
 class grey2xyz : public ColorSpaceConverter {

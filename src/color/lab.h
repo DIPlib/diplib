@@ -237,8 +237,8 @@ class lab2lch : public ColorSpaceConverter {
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
-            output[ 1 ] = hypot( input[ 1 ], input[ 2 ] );
-            dfloat H = 180.0 * atan2( input[ 2 ], input[ 1 ] ) / pi;
+            output[ 1 ] = std::hypot( input[ 1 ], input[ 2 ] );
+            dfloat H = 180.0 * std::atan2( input[ 2 ], input[ 1 ] ) / pi;
             if( H < 0.0 ) {
                H += 360.0;
             }

@@ -132,18 +132,24 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"ISH"`  |            | Intensity-Saturation-Hue. Based in ICH, where S is the C channel normalized so that the maximum saturation for each H is 1. For each H, the largest value of C is attained for a different value of I.
 /// `"HCV"`  |            | Hue-Chroma-Value. V is the max of R, G and B, and C is the difference between largest and smallest RGB intensities. C and V are in range [0,255], H is an angle in degrees.
 /// `"HSV"`  |            | Hue-Saturation-Value. Based on HCV, where S is equal to C normalized by V. S is in range [0,1] and V in range [0,255], H is an angle in degrees.
-/// `"XYZ"`  |            | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis.
+/// `"XYZ"`  |            | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis. X, Y and Z are in the range [0,1].
 /// `"Yxy"`  |            | CIE Yxy, where x and y are normalized X and Y. They are the chromacity coordinates.
-/// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromacity coordinates. A color space that is much closer to being perceptually uniform than Yxy.
-/// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromacity coordinates. An alternative to CIE Lab.
+/// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromacity coordinates. A color space that is much closer to being perceptually uniform than Yxy. L is in the range [0,100], and a and b are approximately in the range [-100,100].
+/// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromacity coordinates. An alternative to CIE Lab. L is in the range [0,100], and u and v are in a range significantly wider than [-100,100].
 /// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
+/// `"Oklab"` |           | An "OK Lab colorspace", a better approximation to perceptual uniformity than CIE Lab. Oklab was designed to better predict CAM16-UCS results than other existing color spaces, while being numerically stable. Assumes a D65 white point L is in the range [0,1], a and b are approximately in the range [-1,1]. Defined by Ottosson (2020).
+/// `"Oklch"` |           | Lightness-Chroma-Hue derived from Oklab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
 /// `"wavelength"` |      | Can only be converted from, not to. Yields an approximate color representation for the given wavelength in nanometers, in the range 380 through 780 nanometers. For values outside the range, produces black. The conversion to XYZ is according to CIE rec. 709, but most of these colors lie outside of the RGB gamut. The conversion to RGB produces colors within the gamut, computed according to Young (2012).
+///
+/// Note that most color images are stored to file as (nonlinear) sRGB. After loading a color image,
+/// it is therefore often advantageous to convert the image to (linear) RGB for computation (or some
+/// other desired color space).
 ///
 /// !!! literature
 ///     - C. Poynton, "Color FAQ", 1997. <https://poynton.ca/PDFs/ColorFAQ.pdf> (last retrieved February 3, 2021).
 ///     - A. Hanbury and J. Serra, "Colour image analysis in 3D-polar coordinates", Joint Pattern Recognition Symposium, 2003.
 ///     - A.T. Young, "Rendering Spectra", 2012. <https://aty.sdsu.edu/explain/optics/rendering.html> (last retrieved August 1, 2020).
-// TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
+///     - B. Ottosson, "A perceptual color space for image processing", 2020. <https://bottosson.github.io/posts/oklab/> (last retrieved October 23, 2023).
 class DIP_NO_EXPORT ColorSpaceManager {
       using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >; // TODO: MSVC does not like us using a unique_ptr here, which is really what we want to do.
 

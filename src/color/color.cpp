@@ -1,5 +1,5 @@
 /*
- * (c)2016-2020, Cris Luengo.
+ * (c)2016-2023, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
@@ -37,6 +37,7 @@ using XYZMatrix = std::array< dfloat, 9 >;
 #include "hcv.h"
 #include "xyz.h"
 #include "lab.h"
+#include "oklab.h"
 #include "wavelength.h"
 
 namespace dip {
@@ -146,6 +147,20 @@ ColorSpaceManager::ColorSpaceManager() {
    Register( std::make_shared< lab2lch >() );
    Register( std::make_shared< lch2lab >() );
    Register( std::make_shared< lch2grey >() );
+   // Oklab
+   Define( Oklab_name, 3 );
+   DefineAlias( "oklab", Oklab_name );
+   Register( std::make_shared< grey2oklab >() );
+   Register( std::make_shared< xyz2oklab >() );
+   Register( std::make_shared< oklab2grey >() );
+   Register( std::make_shared< oklab2xyz >() );
+   // Oklch
+   Define( Oklch_name, 3 );
+   DefineAlias( "oklch", Oklch_name );
+   Register( std::make_shared< grey2oklch >() );
+   Register( std::make_shared< oklab2oklch >() );
+   Register( std::make_shared< oklch2grey >() );
+   Register( std::make_shared< oklch2oklab >() );
    // wavelength
    Define( wavelength_name, 1 );
    Register( std::make_shared< wavelength2xyz >() );
@@ -435,6 +450,48 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD50 );
    csm.Convert( img, out, "XYZ" );
    DOCTEST_CHECK_FALSE( xyz.At( 0 ) == out.At( 0 ));
+   // Check the XYX<->Oklab pairs shown by Ottosson
+   auto round = []( double x ) { return std::round( x * 1000 ) / 1000; };
+   img = { 0.950,	1.000,	1.089 };
+   img.SetColorSpace( "XYZ" );
+   dip::Image oklab = csm.Convert( img, "Oklab" );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 0 ].As< dip::dfloat >() ) == 1.000 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 1 ].As< dip::dfloat >() ) == 0.000 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 2 ].As< dip::dfloat >() ) == 0.000 );
+   out = csm.Convert( img, "XYZ" );
+   DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
+   img = { 1.000, 0.000, 0.000 };
+   img.SetColorSpace( "XYZ" );
+   oklab = csm.Convert( img, "Oklab" );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 0 ].As< dip::dfloat >() ) ==  0.450 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 1 ].As< dip::dfloat >() ) ==  1.236 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 2 ].As< dip::dfloat >() ) == -0.019 );
+   out = csm.Convert( img, "XYZ" );
+   DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
+   img = { 0.000, 1.000, 0.000 };
+   img.SetColorSpace( "XYZ" );
+   oklab = csm.Convert( img, "Oklab" );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 0 ].As< dip::dfloat >() ) ==  0.922 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 1 ].As< dip::dfloat >() ) == -0.671 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 2 ].As< dip::dfloat >() ) ==  0.263 );
+   out = csm.Convert( img, "XYZ" );
+   DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
+   img = { 0.000, 0.000, 1.000 };
+   img.SetColorSpace( "XYZ" );
+   oklab = csm.Convert( img, "Oklab" );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 0 ].As< dip::dfloat >() ) ==  0.153 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 1 ].As< dip::dfloat >() ) == -1.415 );
+   DOCTEST_CHECK( round( oklab.At( 0 )[ 2 ].As< dip::dfloat >() ) == -0.449 );
+   out = csm.Convert( img, "XYZ" );
+   DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
 }
 
 #endif // DIP_CONFIG_ENABLE_DOCTEST

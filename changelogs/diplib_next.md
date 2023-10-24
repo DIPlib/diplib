@@ -7,6 +7,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
+- Added `"Oklab"` and `"Oklch"` as color spaces.
+
 ### Changed functionality
 
 - The 'diverging' color map in `dip::ApplyColorMap()` switched from CET-D08 to CET-D07 (i.e. using yellow
