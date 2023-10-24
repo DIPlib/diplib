@@ -158,7 +158,7 @@ void SliceView::map()
     // Image data
     if (o.lut_ == ViewingOptions::LookupTable::ColorSpace)
     {
-      csm_.Convert(projected_, colored_, "RGB");
+      csm_.Convert(projected_, colored_, "sRGB");
       colored_.Convert(dip::DT_UINT8);
       colored_.ForceNormalStrides();
     } 

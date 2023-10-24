@@ -63,6 +63,9 @@ title: "Changes DIPlib 3.x.x"
 
 ### Changed functionality
 
+- The "RGB" display will convert the colors in the image to sRGB, rather than linear RGB, to match
+  the behavior in other parts of the DIPlib project.
+
 ### Bug fixes
 
 
