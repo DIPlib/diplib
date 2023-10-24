@@ -99,10 +99,10 @@ class yxy2xyz : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return XYZ_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            output[ 0 ] = input[ 1 ];
-            dfloat sum = input[ 0 ] + input[ 1 ] + input[ 2 ];
-            output[ 1 ] = sum == 0 ? 0 : input[ 0 ] / sum;
-            output[ 2 ] = sum == 0 ? 0 : input[ 1 ] / sum;
+            dfloat sum = input[ 2 ] == 0 ? 0 : input[ 0 ] / input[ 2 ];
+            output[ 0 ] = input[ 1 ] * sum;
+            output[ 1 ] = input[ 0 ];
+            output[ 2 ] = sum - output[ 0 ] - output[ 1 ];
          } while( ++input, ++output );
       }
 };
@@ -113,10 +113,10 @@ class xyz2yxy : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return Yxy_name; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            dfloat sum = input[ 2 ] == 0 ? 0 : input[ 0 ] / input[ 2 ];
-            output[ 0 ] = input[ 1 ] * sum;
-            output[ 1 ] = input[ 0 ];
-            output[ 2 ] = sum - output[ 0 ] - output[ 1 ];
+            output[ 0 ] = input[ 1 ];
+            dfloat sum = input[ 0 ] + input[ 1 ] + input[ 2 ];
+            output[ 1 ] = sum == 0 ? 0 : input[ 0 ] / sum;
+            output[ 2 ] = sum == 0 ? 0 : input[ 1 ] / sum;
          } while( ++input, ++output );
       }
 };

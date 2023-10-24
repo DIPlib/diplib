@@ -14,6 +14,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+- XYZ to Yxy conversion and its inverse were reversed, and Yxy to gray conversion was incorrect. This means 
+  that the Yxy color space was all wrong and inconsistent.
 
 
 
