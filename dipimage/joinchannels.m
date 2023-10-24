@@ -80,7 +80,8 @@ else
       end
    end
    if N < chans
-      varargin{N+1:chans} = newim(imsize(varargin{1}),datatype(varargin{1}));
+      tmp = dip_image(varargin{1});
+      varargin{N+1:chans} = newim(imsize(tmp),datatype(tmp));
    end
    out = dip_image(varargin);
    out = colorspace(out,col);

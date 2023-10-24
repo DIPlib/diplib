@@ -9,7 +9,7 @@
 %    - 'grey':       A 1:1 mapping of intensities to the RGB value for the same intensity.
 %    - 'saturation': Like 'grey', except 0 and 255 are blue and red respectively.
 %    - 'linear':     A blue-magenta-yellow highly saturated, perceptually linear color map.
-%    - 'diverging':  A blue-grey-red diverging, perceptually linear color map.
+%    - 'diverging':  A blue-grey-yellow diverging, perceptually linear color map.
 %    - 'cyclic':     A magenta-yellow-green-blue cyclic, perceptually linear color map.
 %    - 'label':      Each grey value gets a color that can easily be distinguished from that
 %                    of nearby grey values. Has 16 different colors, plus black for 0.

@@ -39,6 +39,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+- `joinchannels` produced an error if the first input image was a MATLAB array rather than a `dip_image` object.
+
 (See also bugfixes to *DIPlib*.)
 
 
