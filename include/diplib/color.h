@@ -40,7 +40,7 @@ namespace dip {
 /// \brief An XYZ triplet, used to specify a white point for color spaces.
 using XYZ = std::array< dfloat, 3 >;
 
-/// \brief A color, as (x,y) chromacity coordinates, used to specify a white point for color spaces.
+/// \brief A color, as (x,y) chromaticity coordinates, used to specify a white point for color spaces.
 using xy = std::array< dfloat, 2 >;
 
 /// \brief XYZ matrix (3x3 matrix, column-major order) for conversion between RGB and XYZ. Computed from a \ref XYZ triplet.
@@ -95,31 +95,22 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// \brief An object of this class is used to convert images between color spaces.
 ///
 /// By default, the object will known a set of color spaces, and be able to convert between
-/// them. It is possible to define new color spaces, and register conversion functions that
-/// translate from one color space to another. The object is capable of finding optimal
-/// paths, defined by these conversion functions, to convert between color spaces. Thus,
-/// it is not necessary to create functions that translate from your new color space to
-/// all known color spaces, it is sufficient to register two function that translate to
-/// and from your new color space to any existing color space:
+/// them. It is possible to define new color spaces, see below.
 ///
+/// To convert an image into a different color space, simply call the \ref Convert function.
+/// In  this code snippet, we first set the image's color space to sRGB. This causes no
+/// change to the pixel values, it simply tags the image object with the color space name.
 /// ```cpp
 /// dip::ColorSpaceManager csm;
 /// dip::Image img = ...
-/// csm.Set( img, "RGB" );                           // img is RGB
-/// img = csm.Convert( img, "Lab" );                 // img will be converted to Lab
-///
-/// csm.Define( "Frank", 4 );                        // A new color space with 4 channels
-/// csm.DefineAlias( "f", "Frank" );                 // "f" is an alias for "Frank"
-/// csm.Register( std::make_shared< frank2xyz >() ); // an object that converts from Frank to XYZ
-/// csm.Register( std::make_shared< yxy2frank >() ); // an object that converts from Yxy to Frank
-/// img = csm.Convert( img, "f" );                   // img will be converted from Lab to Frank
+/// img.SetColorSpace( "sRGB" );                     // img is sRGB
+/// dip::Image img_lab = csm.Convert( img, "Lab" );  // img_lab will be Lab
 /// ```
 ///
-/// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from \ref dip::ColorSpaceConverter.
-///
-/// The color spaces known by default are given in the table below. Color space names are case-sensitive,
+/// These are the color spaces known by default. Color space names are case-sensitive,
 /// but aliases are registered for all these names using all-lowercase.
 ///
+/// <div markdown="1" class="m-spaced m-block m-flat">
 /// Name     | Aliases    | Description
 /// -------- | ---------- | ------------
 /// `"grey"` | `"gray"`   | An empty string is also interpreted as grey. Defined to be in the range [0,255].
@@ -133,17 +124,47 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"HCV"`  |            | Hue-Chroma-Value. V is the max of R, G and B, and C is the difference between largest and smallest RGB intensities. C and V are in range [0,255], H is an angle in degrees.
 /// `"HSV"`  |            | Hue-Saturation-Value. Based on HCV, where S is equal to C normalized by V. S is in range [0,1] and V in range [0,255], H is an angle in degrees.
 /// `"XYZ"`  |            | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis. X, Y and Z are in the range [0,1].
-/// `"Yxy"`  |            | CIE Yxy, where x and y are normalized X and Y. They are the chromacity coordinates.
-/// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromacity coordinates. A color space that is much closer to being perceptually uniform than Yxy. L is in the range [0,100], and a and b are approximately in the range [-100,100].
-/// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromacity coordinates. An alternative to CIE Lab. L is in the range [0,100], and u and v are in a range significantly wider than [-100,100].
-/// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
-/// `"Oklab"` |           | An "OK Lab colorspace", a better approximation to perceptual uniformity than CIE Lab. Oklab was designed to better predict CAM16-UCS results than other existing color spaces, while being numerically stable. Assumes a D65 white point L is in the range [0,1], a and b are approximately in the range [-1,1]. Defined by Ottosson (2020).
+/// `"Yxy"`  |            | CIE Yxy, where x and y are normalized X and Y. They are the chromaticity coordinates.
+/// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromaticity coordinates. A color space that is much closer to being perceptually uniform than Yxy. L is in the range [0,100], and a and b are approximately in the range [-100,100].
+/// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromaticity coordinates. An alternative to CIE Lab. L is in the range [0,100], and u and v are in a range significantly wider than [-100,100].
+/// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from CIE Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
+/// `"Oklab"` |           | An "OK Lab colorspace", a better approximation to perceptual uniformity than CIE Lab. Oklab was designed to better predict CAM16-UCS results than other existing color spaces, while being numerically stable. Assumes a D65 white point. L is in the range [0,1], a and b are approximately in the range [-1,1]. Defined by Ottosson (2020).
 /// `"Oklch"` |           | Lightness-Chroma-Hue derived from Oklab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
 /// `"wavelength"` |      | Can only be converted from, not to. Yields an approximate color representation for the given wavelength in nanometers, in the range 380 through 780 nanometers. For values outside the range, produces black. The conversion to XYZ is according to CIE rec. 709, but most of these colors lie outside of the RGB gamut. The conversion to RGB produces colors within the gamut, computed according to Young (2012).
+/// </div>
 ///
 /// Note that most color images are stored to file as (nonlinear) sRGB. After loading a color image,
 /// it is therefore often advantageous to convert the image to (linear) RGB for computation (or some
 /// other desired color space).
+///
+/// # Defining a new color space
+///
+/// It is possible to define new color spaces, and register conversion functions that
+/// translate from one color space to another. The `ColorSpaceManager` object is capable of finding optimal
+/// paths trough the graph defined by these conversion functions, to convert between color spaces. Thus,
+/// it is not necessary to create functions that translate from your new color space to
+/// all known color spaces, it is sufficient to register two function that translate to
+/// and from your new color space from/to any existing color space.
+///
+/// In this example, we define a conversion from a new color space (Frank) to XYZ, and from Yxy to Frank.
+/// The \ref Convert function then is able to convert an image from any color space to Frank, and from Frank
+/// to any color space.
+/// ```cpp
+/// dip::ColorSpaceManager csm;
+/// csm.Define( "Frank", 4 );                        // A new color space with 4 channels
+/// csm.DefineAlias( "f", "Frank" );                 // "f" is an alias for "Frank"
+/// csm.Register( std::make_shared< frank2xyz >() ); // an object that converts from Frank to XYZ
+/// csm.Register( std::make_shared< yxy2frank >() ); // an object that converts from Yxy to Frank
+///
+/// dip::Image img = ...                             // assume img is sRGB
+/// csm.Convert( img, img, "f" );                    // img will be converted from sRGB to Frank
+/// ```
+/// In the example above, `frank2xyz` and `yxy2frank` are objects derived from \ref dip::ColorSpaceConverter.
+///
+/// Note that one could add conversion functions to and from more color spaces as deemed appropriate,
+/// for example to save computational time. And it is not necessary for a new color space to have a conversion
+/// path to or from it. For example, by default the "wavelength" color space has only a conversion function
+/// from it to XYZ and to RGB, there are no functions that can convert to the "wavelength" color space.
 ///
 /// !!! literature
 ///     - C. Poynton, "Color FAQ", 1997. <https://poynton.ca/PDFs/ColorFAQ.pdf> (last retrieved February 3, 2021).
@@ -151,9 +172,10 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 ///     - A.T. Young, "Rendering Spectra", 2012. <https://aty.sdsu.edu/explain/optics/rendering.html> (last retrieved August 1, 2020).
 ///     - B. Ottosson, "A perceptual color space for image processing", 2020. <https://bottosson.github.io/posts/oklab/> (last retrieved October 23, 2023).
 class DIP_NO_EXPORT ColorSpaceManager {
+   public:
+      /// \brief A shared pointer to a \ref ColorSpaceConverter object.
       using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >; // TODO: MSVC does not like us using a unique_ptr here, which is really what we want to do.
 
-   public:
       /// \brief Constructor, registers the default color spaces.
       DIP_EXPORT ColorSpaceManager();
 
@@ -186,7 +208,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
          }
       }
 
-      /// \brief Overload for the previous function, for backwards compatibility.
+      /// \brief Overload for the previous function, for backwards compatibility. Not recommended.
       void Register( ColorSpaceConverter* converter ) {
          Register( ColorSpaceConverterPointer( converter ));
       }
@@ -222,7 +244,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
 
       /// \brief Converts an image to a different color space.
       ///
-      /// Both the source (`in.ColorSpace`) and destination (`colorSpaceName`) color spaces must be known,
+      /// Both the source (`in.ColorSpace()`) and destination (`colorSpaceName`) color spaces must be known,
       /// and a path of registered conversion functions must exist between the two.
       ///
       /// Note that it is possible to assign an arbitrary string as a color space name in an image. Setting
@@ -232,10 +254,12 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// When converting from one color channel to another, the input image is checked for number of color
       /// channels. If it doesn't match the number expected for its color space, an exception will be thrown.
       ///
-      /// If the input color space name is an empty string, and the image is scalar, it will be assumed that
-      /// the color space is "grey". If the image has the same number of color channels as expected for
-      /// `colorSpaceName`, then the color space will be set to that name. Otherwise, an exception will be
-      /// thrown.
+      /// If `in.ColorSpace()` is an empty string:
+      ///
+      /// - If the image has the same number of color channels as expected for `colorSpaceName`, it will
+      ///     be assumed that the image already is in the `colorSpaceName` color space, and no conversion is done.
+      /// - Else, if the image is scalar, it will be assumed that its color space is "grey".
+      /// - Otherwise, an exception will be thrown.
       ///
       /// If `colorSpaceName` is an empty string, "grey" is assumed.
       ///
@@ -286,8 +310,10 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// (grey &harr; RGB &harr; XYZ &harr; Lab/Luv). The default white point is the Standard Illuminant D65
       /// (\ref dip::ColorSpaceManager::IlluminantD65).
       ///
-      /// The white point is given as an XYZ triplet or (x,y) chromacity coordinates.
+      /// The white point is given as an XYZ triplet or (x,y) chromaticity coordinates.
       DIP_EXPORT void SetWhitePoint( dip::XYZ whitePoint );
+
+      /// \brief Overload of the function above that takes a (x,y) chromaticity coordinate.
       void SetWhitePoint( xy const& whitePoint ) {
          dip::XYZ triplet;
          triplet[ 0 ] = whitePoint[ 0 ];

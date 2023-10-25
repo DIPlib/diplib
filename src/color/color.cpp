@@ -262,8 +262,7 @@ void ColorSpaceManager::Convert(
    // Make sure the input color space is consistent
    String const& startColorSpace = in.ColorSpace();
    dip::uint endIndex = Index( endColorSpace.empty() ? dip::S::GREY : endColorSpace );
-   if( startColorSpace.empty() && in.TensorElements() > 1 ) {
-      DIP_THROW_IF( colorSpaces_[ endIndex].nChannels != in.TensorElements(), E::INCONSISTENT_COLORSPACE );
+   if( startColorSpace.empty() && ( colorSpaces_[ endIndex ].nChannels == in.TensorElements() )) {
       out = in;
    } else {
       dip::uint startIndex = Index( startColorSpace.empty() ? dip::S::GREY : startColorSpace );
@@ -304,7 +303,7 @@ void ColorSpaceManager::Convert(
    if( newColorSpace == dip::S::GREY ) {
       out.ResetColorSpace();
    } else {
-      out.SetColorSpace( colorSpaces_[ endIndex ].name );
+      out.SetColorSpace( newColorSpace );
    }
 }
 
@@ -418,10 +417,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( csm.CanonicalName( "CIELUV" ) == "Luv" );
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "cmy" )->Cost() == 1 );
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "grey" )->Cost() == 100 );
-   // Test grey->RGB conversion
+   // Test no conversion
    dip::Image img( {}, 1 );
    img.Fill( 100 );
-   dip::Image out = csm.Convert( img, "RGB" );
+   dip::Image out = csm.Convert( img, "wavelength" );
+   DOCTEST_CHECK( out.ColorSpace() == "wavelength" );
+   DOCTEST_CHECK( out.TensorElements() == 1 );
+   DOCTEST_CHECK( out.At( 0 ) == 100 );
+   // Test grey->RGB conversion
+   out = csm.Convert( img, "RGB" );
    DOCTEST_CHECK( out.ColorSpace() == "RGB" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
    DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 100, 100, 100 } ));
