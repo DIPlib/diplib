@@ -22,6 +22,15 @@ namespace {
 constexpr char const* HCV_name = "HCV";
 constexpr char const* HSV_name = "HSV";
 
+// A proper floating-point modulo operation, y is assumed positive.
+inline double modulo(double x, double y) {
+   double m = std::fmod(x, y);
+   if( m < 0 ) {
+      m += y;
+   }
+   return m;
+}
+
 // Ranges:
 //    0 < Value < 255
 //    0 < Chroma < 255
@@ -39,29 +48,38 @@ class rgb2hcv : public ColorSpaceConverter {
             dfloat G = input[ 1 ];
             dfloat B = input[ 2 ];
             // Sort RGB values
-            dfloat RGBsum = R + G + B;
-            dfloat RGBmin = std::min( R, std::min( G, B ) );
-            dfloat RGBmax = std::max( R, std::max( G, B ) );
-            dfloat RGBmed = RGBsum - RGBmin - RGBmax;
+            dfloat RGBmin = R;
+            dfloat RGBmed = G;
+            dfloat RGBmax = B;
+            if (RGBmin > RGBmed) {
+               std::swap( RGBmin, RGBmed );
+            }
+            if (RGBmed > RGBmax) {
+               std::swap( RGBmed, RGBmax );
+               if (RGBmin > RGBmed) {
+                  std::swap( RGBmin, RGBmed );
+               }
+            }
             // Value
             dfloat V = RGBmax;
             // Chroma
             dfloat C = RGBmax - RGBmin;
             // Hue sextant
-            dfloat m = C == 0 ? 0 : ( RGBmed - RGBmin ) / C;
-            dfloat H = m;
-          //if( ( R == RGBmax ) && ( B == RGBmin ) ) { H =     m; } else
-            if( ( G == RGBmax ) && ( B == RGBmin ) ) { H = 2 - m; } else
-            if( ( G == RGBmax ) && ( R == RGBmin ) ) { H = 2 + m; } else
-            if( ( B == RGBmax ) && ( R == RGBmin ) ) { H = 4 - m; } else
-            if( ( B == RGBmax ) && ( G == RGBmin ) ) { H = 4 + m; } else
-            if( ( R == RGBmax ) && ( G == RGBmin ) ) { H = 6 - m; }
-            H = std::fmod( H, 6.0 ) * 60.0;
+            dfloat H = 0;
+            if( C > 0 ) {
+               if( RGBmax == R ) {
+                  H = modulo(( G - B ) / C, 6.0 );
+               } else if( RGBmax == G ) {
+                  H = ( B - R ) / C + 2;
+               } else { // RGBmax == B
+                  H = ( R - G ) / C + 4;
+               }
+            }
+            H *= 60.0;
             // Output
             output[ 0 ] = H;
             output[ 1 ] = C;
             output[ 2 ] = V;
-
          } while( ++input, ++output );
       }
 };
@@ -79,7 +97,7 @@ class hcv2rgb : public ColorSpaceConverter {
             dfloat RGBmin = V-C;
             dfloat RGBmax = V;
             // Hue sextant
-            H = std::fmod( H / 60.0, 6 );
+            H = modulo( H / 60.0, 6 );
             int Hs = static_cast< int >( std::floor( H ));
             dfloat m = H - Hs;
             dfloat RGBmed = C * ( Hs & 1 ? 1 - m : m ) + RGBmin;

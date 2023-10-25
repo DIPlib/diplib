@@ -125,8 +125,8 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// `"HSV"`  |            | Hue-Saturation-Value. Based on HCV, where S is equal to C normalized by V. S is in range [0,1] and V in range [0,255], H is an angle in degrees.
 /// `"XYZ"`  |            | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis. X, Y and Z are in the range [0,1].
 /// `"Yxy"`  |            | CIE Yxy, where x and y are normalized X and Y. They are the chromaticity coordinates.
-/// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromaticity coordinates. A color space that is much closer to being perceptually uniform than Yxy. L is in the range [0,100], and a and b are approximately in the range [-100,100].
-/// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromaticity coordinates. An alternative to CIE Lab. L is in the range [0,100], and u and v are in a range significantly wider than [-100,100].
+/// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromaticity coordinates. One of two color spaces proposed by CIE in 1976 in an attempt for perceptual uniformity. L is in the range [0,100], and a and b are approximately in the range [-100,100].
+/// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromaticity coordinates. One of two color spaces proposed by CIE in 1976 in an attempt for perceptual uniformity. L is in the range [0,100], and u and v are in a range significantly wider than [-100,100].
 /// `"LCH"`  | `"L*C*H*"` | Lightness-Chroma-Hue. Computed from CIE Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
 /// `"Oklab"` |           | An "OK Lab colorspace", a better approximation to perceptual uniformity than CIE Lab. Oklab was designed to better predict CAM16-UCS results than other existing color spaces, while being numerically stable. Assumes a D65 white point. L is in the range [0,1], a and b are approximately in the range [-1,1]. Defined by Ottosson (2020).
 /// `"Oklch"` |           | Lightness-Chroma-Hue derived from Oklab, where C and H are the polar coordinates to a and b. H is an angle in degrees.

@@ -57,12 +57,20 @@ class rgb2hsi : public ColorSpaceConverter {
             dfloat G = input[ 1 ];
             dfloat B = input[ 2 ];
             // Sort RGB values
-            dfloat RGBsum = R + G + B;
-            dfloat RGBmin = std::min( R, std::min( G, B ) );
-            dfloat RGBmax = std::max( R, std::max( G, B ) );
-            dfloat RGBmed = RGBsum - RGBmin - RGBmax;
+            dfloat RGBmin = R;
+            dfloat RGBmed = G;
+            dfloat RGBmax = B;
+            if (RGBmin > RGBmed) {
+               std::swap( RGBmin, RGBmed );
+            }
+            if (RGBmed > RGBmax) {
+               std::swap( RGBmed, RGBmax );
+               if (RGBmin > RGBmed) {
+                  std::swap( RGBmin, RGBmed );
+               }
+            }
             // Intensity
-            dfloat I = RGBsum / 3.0;
+            dfloat I = ( R + G + B ) / 3.0;
             // Saturation
             dfloat S = ( I >= RGBmed ) ? ( 3.0 / 2.0 ) * ( RGBmax - I ) : ( 3.0 / 2.0 ) * ( I - RGBmin );
             if( S < 1e-6 ) { S = 0.0; } // Avoid rounding error causing a non-zero saturation
@@ -76,7 +84,7 @@ class rgb2hsi : public ColorSpaceConverter {
             if(( R >= B ) && ( B > G )) { lambda = 5; }
             // Hue
             dfloat phi = S != 0.0 ? 0.5 - 3.0 / 2.0 * ( I - RGBmed ) / S : 0.0;
-            if( lambda % 2 ) { phi = 1.0 - phi; }
+            if( lambda % 2 != 0 ) { phi = 1.0 - phi; }
             dfloat H = ( lambda + phi ) * 60.0;
             // Output
             output[ 0 ] = H;

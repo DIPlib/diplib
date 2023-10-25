@@ -685,7 +685,7 @@ DIP_NODISCARD inline Image CreateGauss(
 /// unnecessary expense. Truncation is limited to avoid unusefully small values.
 ///
 /// !!! warning
-///     Convolving an image with the result of this function is much less efficient than calling \ref Gabor.
+///     Convolving an image with the result of this function is much less efficient than calling \ref GaborIIR.
 // Defined in src/linear/gabor.cpp
 DIP_EXPORT void CreateGabor(
       Image& out,
