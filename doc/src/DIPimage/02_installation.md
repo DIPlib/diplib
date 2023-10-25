@@ -55,11 +55,9 @@ executed automatically every time *MATLAB* starts.
 \subsection sec_dum_installing_windows_source Installation from source
 
 Clone the git repository (or download a ZIP file) from
-[GitHub](https://github.com/DIPlib/diplib). The file `INSTALL_Windows.md`
-in the root of the repository contains step-by-step instructions to
-build *DIPimage*, including how to obtain the necessary tools and
-dependencies. You can also
-[read the instructions online](https://github.com/DIPlib/diplib/blob/master/INSTALL_Windows.md).
+[GitHub](https://github.com/DIPlib/diplib). Read \ref building_windows
+for step-by-step instructions to build *DIPimage*, including how to obtain
+the necessary tools and dependencies.
 
 Once all the binaries are compiled, start *MATLAB* and type:
 ```matlab
@@ -83,11 +81,9 @@ Clone the git repository (or download a ZIP file) from
 [GitHub](https://github.com/DIPlib/diplib). You will require a C++14
 compiler (GCC and Clang are available on all platforms), and CMake.
 
-The root directory of the git repository has an
-[INSTALL_Linux.md](https://github.com/DIPlib/diplib/blob/master/INSTALL_Linux.md) file
-that gives detailed directions on compiling, including how to get the required build tools
-and optional dependencies. In principle it should suffice to open a terminal and type
-the following commands:
+Read \ref building_linux for detailed directions on compiling, including how to
+get the required build tools and optional dependencies. In principle it should
+suffice to open a terminal and type the following commands:
 ```bash
 git clone https://github.com/DIPlib/diplib.git
 mkdir diplib/target
@@ -129,5 +125,4 @@ You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 \subsection sec_dum_installing_macos_source Installation from source
 
 Building from source under macOS is very similar to Linux, see the directions
-in \ref sec_dum_installing_linux_source, but refer to the file
-[INSTALL_MacOS.md](https://github.com/DIPlib/diplib/blob/master/INSTALL_MacOS.md) instead.
+in \ref sec_dum_installing_linux_source, but refer to \ref building_macos instead.
