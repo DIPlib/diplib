@@ -118,7 +118,6 @@ void WriteHeader( std::ostream& ostream, DataType dataType, UnsignedArray const&
    headerDict += std::string( padding, ' ' );
    headerDict += '\n';
    length = headerDict.length();
-   DIP_ASSERT( length % 64 == 0 );
    ostream.put( static_cast< char >( length & 0xffu ));
    ostream.put( static_cast< char >(( length >> 8u ) & 0xffu ));
    ostream.write( headerDict.data(), static_cast< dip::sint >( length ));
