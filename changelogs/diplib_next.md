@@ -19,6 +19,8 @@ title: "Changes DIPlib 3.x.x"
 - XYZ to Yxy conversion and its inverse were reversed, and Yxy to gray conversion was incorrect. This means 
   that the Yxy color space was all wrong and inconsistent.
 
+- NPY file header written was correct according to the specification, but didn't exactly match what was written
+  by NumPy itself. NumPy under Python 3.12 errored out reading these files. Now the header exactly matches NumPy's.
 
 
 ## Changes to *DIPimage*

@@ -106,17 +106,19 @@ std::string CreateHeaderDict( DataType dataType, UnsignedArray const& sizes, boo
    for( dip::uint s : sizes ) {
       out << s << ", ";
    }
-   out << "), }\n";
+   out << "), }";
    return out.str();
 }
 
 void WriteHeader( std::ostream& ostream, DataType dataType, UnsignedArray const& sizes, bool fortranOrder ) {
    WriteMagic( ostream );
    std::string headerDict = CreateHeaderDict( dataType, sizes, fortranOrder );
-   dip::uint length = magicStringLength + 2 + headerDict.length();
+   dip::uint length = magicStringLength + 3 + headerDict.length();
    dip::uint padding = 64 - length % 64;
    headerDict += std::string( padding, ' ' );
+   headerDict += '\n';
    length = headerDict.length();
+   DIP_ASSERT( length % 64 == 0 );
    ostream.put( static_cast< char >( length & 0xffu ));
    ostream.put( static_cast< char >(( length >> 8u ) & 0xffu ));
    ostream.write( headerDict.data(), static_cast< dip::sint >( length ));
