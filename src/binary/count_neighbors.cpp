@@ -44,6 +44,7 @@ class CountNeighborsLineFilter : public Framework::ScanLineFilter {
                if(( params.position[ ii ] == 0 ) || ( params.position[ ii ] == sizes_[ ii ] - 1 )) {
                   isOnEdge = true;
                   break;
+                  // TODO: Instead, remove elements from neighbors_ and offsets_ that point outside the image.
                }
             }
          }
@@ -89,7 +90,7 @@ class CountNeighborsLineFilter : public Framework::ScanLineFilter {
                auto off = offsets_.begin();
                uint8 count = *in;
                while( it != neighbors_.end() ) {
-                  if( it.IsInImage( params.position, sizes_ )) {
+                  if( it.Coordinates()[ params.dimension ] >= 0 ) {
                      if( in[ *off ] ) {
                         ++count;
                      }
@@ -139,7 +140,7 @@ class CountNeighborsLineFilter : public Framework::ScanLineFilter {
                auto off = offsets_.begin();
                uint8 count = *in;
                while( it != neighbors_.end() ) {
-                  if( it.IsInImage( pos, sizes_ )) {
+                  if( it.Coordinates()[ params.dimension ] <= 0 ) {
                      if( in[ *off ] ) {
                         ++count;
                      }
