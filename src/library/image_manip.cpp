@@ -76,7 +76,7 @@ Image& Image::Flatten() {
       newimg.Copy( *this ); // TODO: why not directly forge a 1D image?
       std::tie( stride, p ) = newimg.GetSimpleStrideAndOrigin();
       DIP_THROW_IF( !p, "Copying over the image data didn't yield simple strides" );
-      this->move( std::move( newimg ));
+      swap( newimg );
    }
    strides_ = { stride };
    sizes_ = { NumberOfPixels() };

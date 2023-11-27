@@ -20,20 +20,26 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_TYPES_H
 #define DIP_TYPES_H
 
-#include <cstddef>   // std::size_t, std::ptrdiff_t
-#include <cstdint>   // std::uint8_t, etc.
-#include <complex>
-#include <vector>
-#include <string>
-#include <set>
+#include <algorithm>
 #include <cctype>
 #include <climits>
+#include <complex>
+#include <cstddef>   // std::size_t, std::ptrdiff_t
+#include <cstdint>   // std::uint8_t, etc.
+#include <cstdlib>
+#include <iterator>
 #include <limits>
+#include <ostream>
+#include <set>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 #include "diplib/library/dimension_array.h"
 
@@ -164,32 +170,32 @@ template<> struct IsIndexingType< dip::sint > { static constexpr bool value = tr
 /// template< typename T, typename std::enable_if_t< !dip::IsSampleType< T >::value, int > = 0 >
 /// void MyFunction( T value ) { ... }
 /// ```
-template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
+template< typename T > struct IsSampleType : public detail::IsSampleType< std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are numeric types, similar to
 /// `std::is_arithmetic` but also true for complex types. See \ref dip::IsSampleType for usage details.
-template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
+template< typename T > struct IsNumericType : public detail::IsNumericType< std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are indexing types, true for
 /// signed and unsigned integers. See \ref dip::IsSampleType for usage details.
-template< typename T > struct IsIndexingType : public detail::IsIndexingType< typename std::remove_cv_t< std::remove_reference_t< T >>> {};
+template< typename T > struct IsIndexingType : public detail::IsIndexingType< std::remove_cv_t< std::remove_reference_t< T >>> {};
 
 /// \brief A templated function to check for positive infinity, which works also for integer types (always returning false)
-template< typename TPI, typename std::enable_if_t< !std::numeric_limits< TPI >::has_infinity, int > = 0 >
+template< typename TPI, std::enable_if_t< !std::numeric_limits< TPI >::has_infinity, int > = 0 >
 bool PixelIsInfinity( TPI /*value*/ ) {
    return false;
 }
-template< typename TPI, typename std::enable_if_t< std::numeric_limits< TPI >::has_infinity, int > = 0 >
+template< typename TPI, std::enable_if_t< std::numeric_limits< TPI >::has_infinity, int > = 0 >
 bool PixelIsInfinity( TPI value ) {
    return value == std::numeric_limits< TPI >::infinity();
 }
 
 /// \brief A templated function to check for negative infinity, which works also for integer types (always returning false)
-template< typename TPI, typename std::enable_if_t< !std::numeric_limits< TPI >::has_infinity, int > = 0 >
+template< typename TPI, std::enable_if_t< !std::numeric_limits< TPI >::has_infinity, int > = 0 >
    bool PixelIsMinusInfinity( TPI /*value*/ ) {
    return false;
 }
-template< typename TPI, typename std::enable_if_t< std::numeric_limits< TPI >::has_infinity, int > = 0 >
+template< typename TPI, std::enable_if_t< std::numeric_limits< TPI >::has_infinity, int > = 0 >
 bool PixelIsMinusInfinity( TPI value ) {
    return value == -std::numeric_limits< TPI >::infinity();
 }
@@ -432,7 +438,7 @@ inline bool StringCompareCaseInsensitive( String const& string1, String const& s
       return false;
    }
    for( auto it1 = string1.begin(), it2 = string2.begin(); it1 != string1.end(); ++it1, ++it2 ) {
-      if( std::tolower( static_cast< unsigned char >( *it1 )) != std::tolower( static_cast< unsigned char >( *it2 ))) {
+      if( std::tolower( *it1 ) != std::tolower( *it2 )) {
          return false;
       }
    }
@@ -442,14 +448,14 @@ inline bool StringCompareCaseInsensitive( String const& string1, String const& s
 /// \brief Convert a string to lower case, use only with ASCII characters!
 inline void ToLowerCase( String& string ) {
    for( auto& s : string ) {
-      s = static_cast< char >( std::tolower( static_cast< unsigned char >( s )));
+      s = static_cast< char >( std::tolower( s ));
    }
 }
 
 /// \brief Convert a string to upper case, use only with ASCII characters!
 inline void ToUpperCase( String& string ) {
    for( auto& s : string ) {
-      s = static_cast< char >( std::toupper( static_cast< unsigned char >( s )));
+      s = static_cast< char >( std::toupper( s ));
    }
 }
 
@@ -516,7 +522,7 @@ struct DIP_NO_EXPORT Range {
    Range() = default;
 
    /// Create a range that indicates a single pixel
-   explicit Range( dip::sint i ) : start{ i }, stop{ i }, step{ 1 } {}
+   explicit Range( dip::sint i ) : start{ i }, stop{ i } {}
 
    /// \brief Create a range using two or three values; it indicates all pixels between `i` and `j`, both inclusive.
    /// The step size defaults to 1.
@@ -613,13 +619,13 @@ struct DIP_NO_EXPORT Range {
 
    /// Get an iterator to the beginning of the range (must be fixed first!).
    Iterator begin() const {
-      return Iterator( start, Step() );
+      return { start, Step() };
    }
 
    /// \brief Get an iterator to the end of the range (must be fixed first!). This iterator points one past
    /// the `stop` value, as is usual for the end iterator.
    Iterator end() const {
-      return Iterator( start + static_cast< dip::sint >( Size() ) * Step(), Step() );
+      return { start + static_cast< dip::sint >( Size() ) * Step(), Step() };
    }
 };
 
@@ -651,7 +657,7 @@ namespace detail {
 template< typename Enum, typename = std::enable_if_t< std::is_enum< Enum >::value >>
 class DIP_NO_EXPORT Options {
       using value_type = unsigned long;
-      using enum_u_type = typename std::underlying_type< Enum >::type;
+      using enum_u_type = std::underlying_type_t< Enum >;
       value_type values = 0;
 
    private:
@@ -746,25 +752,25 @@ namespace Option {
 
 /// \brief Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
-enum class DIP_NO_EXPORT ThrowException {
+enum class DIP_NO_EXPORT ThrowException : uint8 {
    DONT_THROW, ///< Do not throw and exception, return false if the condition is not met.
    DO_THROW    ///< Throw an exception if the condition is not met.
 };
 
 /// \brief The function \ref dip::Image::CheckIsMask takes this option to control how sizes are compared.
-enum class DIP_NO_EXPORT AllowSingletonExpansion {
+enum class DIP_NO_EXPORT AllowSingletonExpansion : uint8 {
    DONT_ALLOW, ///< Do not allow singleton expansion.
    DO_ALLOW    ///< Allow singleton expansion.
 };
 
 /// \brief The function \ref dip::Image::ReForge takes this option to control how to handle protected images.
-enum class DIP_NO_EXPORT AcceptDataTypeChange {
+enum class DIP_NO_EXPORT AcceptDataTypeChange : uint8 {
    DONT_ALLOW, ///< Do not allow data type change, the output image is always of the requested type.
    DO_ALLOW    ///< Allow data type change, if the output image is protected, it will be used as is.
 };
 
 /// \brief The function \ref dip::Image::Crop takes this option to control which pixels are taken.
-enum class DIP_NO_EXPORT CropLocation {
+enum class DIP_NO_EXPORT CropLocation : uint8 {
    CENTER,        ///< The pixel at the origin of the input image is also at the origin in the output image.
    MIRROR_CENTER, ///< Same as `CENTER`, but for even-sized images, the origin is presumed to be left of center, rather than right of center.
    TOP_LEFT,      ///< The corner of the image at coordinates {0,0,0...} is kept in the corner.
@@ -774,7 +780,7 @@ enum class DIP_NO_EXPORT CropLocation {
 /// \brief Determines which properties to compare.
 ///
 /// Implicitly casts to \ref dip::Option::CmpPropFlags. Combine constants together with the `+` operator.
-enum class DIP_NO_EXPORT CmpPropEnumerator {
+enum class DIP_NO_EXPORT CmpPropEnumerator : uint8 {
       DataType,       ///< Compares data type
       Dimensionality, ///< Compares number of dimensions
       Sizes,          ///< Compares image size

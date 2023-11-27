@@ -19,19 +19,21 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_DIMENSIONARRAY_H
 #define DIP_DIMENSIONARRAY_H
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <cstdlib>   // std::malloc, std::realloc, std::free, std::size_t
 #include <initializer_list>
-#include <iterator>
-#include <algorithm>
-#include <utility>
 #include <iostream>
+#include <iterator>
 #include <type_traits>
-#include <cmath>
+#include <utility>
 
 #include "diplib/library/error.h"
 
@@ -893,7 +895,7 @@ inline std::ostream& operator<<(
 }
 
 template< typename T >
-inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {
+inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) noexcept {
    v1.swap( v2 );
 }
 

@@ -58,7 +58,7 @@ void ProcessBorders(
    static_assert( ProcessBorder || ProcessNonBorder, "At least one of the two boolean template parameters must be set" );
 
    dip::uint nDims = out.Dimensionality();
-   DIP_STACK_TRACE_THIS( ArrayUseParameter( borderWidth, nDims, dip::uint( 1 )));
+   DIP_STACK_TRACE_THIS( ArrayUseParameter< dip::uint >( borderWidth, nDims, 1 ));
 
    // See if there are any non-border pixels at all
    bool nonBorder = false;

@@ -17,6 +17,8 @@
 #ifndef DIPVIEWER_H
 #define DIPVIEWER_H
 
+#include <memory>
+
 #include "diplib.h"
 #include "diplib/viewer/export.h"
 

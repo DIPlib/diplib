@@ -19,14 +19,16 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_CLAMP_CAST_H
 #define DIP_CLAMP_CAST_H
 
+#include <complex>
 #include <limits>
+#include <type_traits>
 
-#include "diplib/library/numeric.h"
 #include "diplib/library/datatype.h"
 
 
@@ -84,7 +86,7 @@ struct numeric_limits< __uint128_t > {
    static constexpr bool has_infinity = false;
    static constexpr bool has_quiet_NaN = false;
    static constexpr bool has_signaling_NaN = false;
-   static constexpr __uint128_t max() noexcept { return static_cast< __uint128_t >( __int128_t( -1 )); }
+   static constexpr __uint128_t max() noexcept { return static_cast< __uint128_t >( __int128_t( -1 ) ); }
    static constexpr __uint128_t min() noexcept { return 0; }
    static constexpr __uint128_t lowest() noexcept { return min(); }
 };
@@ -106,23 +108,37 @@ struct numeric_limits< __int128_t > {
 #endif // __SIZEOF_INT128__
 
 // These in the std:: namespace don't always work for 128-bit types. Let's make our own based on our version of numeric_limits:
-template< typename T > struct is_floating_point{ static constexpr bool value =
-         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
-         && !detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer; };
-template< typename T > struct is_signed{ static constexpr bool value =
-         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
-         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_signed; };
-template< typename T > struct is_integer{ static constexpr bool value =
-         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
-         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer; };
-template< typename T > struct is_unsigned_integer{ static constexpr bool value =
-         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
-         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer
-         && !detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_signed; };
-template< typename T > struct is_signed_integer{ static constexpr bool value =
-         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_specialized
-         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_integer
-         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T >>>::is_signed; };
+template< typename T > struct is_floating_point {
+   static constexpr bool value =
+         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_specialized
+         && !detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_integer;
+};
+
+template< typename T > struct is_signed {
+   static constexpr bool value =
+         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_specialized
+         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_signed;
+};
+
+template< typename T > struct is_integer {
+   static constexpr bool value =
+         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_specialized
+         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_integer;
+};
+
+template< typename T > struct is_unsigned_integer {
+   static constexpr bool value =
+         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_specialized
+         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_integer
+         && !detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_signed;
+};
+
+template< typename T > struct is_signed_integer {
+   static constexpr bool value =
+         detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_specialized
+         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_integer
+         && detail::numeric_limits< typename std::remove_cv_t< std::remove_reference_t< T > > >::is_signed;
+};
 
 template< typename T > struct is_complex_base{ static constexpr bool value = false; };
 template<> struct is_complex_base< scomplex >{ static constexpr bool value = true; };
@@ -150,17 +166,16 @@ struct NeedsLowerClamping {
               && ( is_unsigned_integer< LimitType >::value // `limit` is an unsigned integer
                    || ( detail::numeric_limits< ValueType >::digits > detail::numeric_limits< LimitType >::digits ) // `limit` is a signed integer with fewer digits
                  )
-            )
-   ;
+            );
 };
 
 template< typename ValueType, typename LimitType, typename std::enable_if_t< NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
-constexpr inline const ValueType clamp_lower( ValueType value, LimitType limit ) {
+constexpr inline ValueType clamp_lower( ValueType value, LimitType limit ) {
    // `value` is a float or a signed integer with more digits than limit. Casting `limit` to the type of `value` is not a problem.
    return std::max( value, static_cast< ValueType >( limit ));
 }
 template< typename ValueType, typename LimitType, typename std::enable_if_t< !NeedsLowerClamping< ValueType, LimitType >::value, int > = 0 >
-constexpr inline const ValueType clamp_lower( ValueType value, LimitType ) {
+constexpr inline ValueType clamp_lower( ValueType value, LimitType /*limit*/ ) {
    // `value` is a signed integer with same or fewer digits than `limit`
    return value;
 }
@@ -180,11 +195,11 @@ struct NeedsUpperClamping {
 };
 
 template< typename ValueType, typename LimitType, typename std::enable_if_t< NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
-constexpr inline const ValueType clamp_upper( ValueType value, LimitType limit ) {
+constexpr inline ValueType clamp_upper( ValueType value, LimitType limit ) {
    return std::min( value, static_cast< ValueType >( limit ));
 }
 template< typename ValueType, typename LimitType, typename std::enable_if_t< !NeedsUpperClamping< ValueType, LimitType >::value, int > = 0 >
-constexpr inline const ValueType clamp_upper( ValueType value, LimitType ) {
+constexpr inline ValueType clamp_upper( ValueType value, LimitType /*limit*/ ) {
    return value;
 }
 
@@ -195,21 +210,21 @@ constexpr inline const ValueType clamp_upper( ValueType value, LimitType ) {
 // Cast non-complex value to float
 template< typename TargetType, typename SourceType,
           typename std::enable_if_t< detail::is_floating_point< TargetType >::value, int > = 0 >
-constexpr inline const TargetType clamp_cast( SourceType v ) {
+constexpr inline TargetType clamp_cast( SourceType v ) {
    return static_cast< TargetType >( v );
 }
 
 // Cast non-complex value to complex
 template< typename TargetType, typename SourceType,
           typename std::enable_if_t< detail::is_complex< TargetType >::value, int > = 0 >
-constexpr inline const TargetType clamp_cast( SourceType v ) {
+constexpr inline TargetType clamp_cast( SourceType v ) {
    return static_cast< TargetType >( static_cast< typename TargetType::value_type >( v ));
 }
 
 // Cast non-complex value to integer
 template< typename TargetType, typename SourceType,
           typename std::enable_if_t< detail::is_integer< TargetType >::value, int > = 0 >
-constexpr inline const TargetType clamp_cast( SourceType v ) {
+constexpr inline TargetType clamp_cast( SourceType v ) {
    static_assert( detail::numeric_limits< TargetType >::is_specialized, "It looks like detail::numeric_limits is not specialized for the target type." );
    static_assert( detail::numeric_limits< SourceType >::is_specialized, "It looks like detail::numeric_limits is not specialized for the source type." );
    return static_cast< TargetType >(
@@ -223,7 +238,7 @@ constexpr inline const TargetType clamp_cast( SourceType v ) {
 // Cast non-complex value to bin
 template< typename TargetType, typename SourceType,
           typename std::enable_if_t< detail::is_binary< TargetType >::value, int > = 0 >
-constexpr inline const TargetType clamp_cast( SourceType v ) {
+constexpr inline TargetType clamp_cast( SourceType v ) {
    return static_cast< TargetType >( v ); // The logic is built into the `dip::bin` class
 }
 

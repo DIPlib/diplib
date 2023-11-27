@@ -508,7 +508,7 @@ void Image::Convert( dip::DataType dt ) {
          newimg.externalInterface_ = externalInterface_;
          newimg.ReForge( *this, dt );
          newimg.Copy( *this );
-         this->move( std::move( newimg ));
+         swap( newimg );
       }
    }
 }

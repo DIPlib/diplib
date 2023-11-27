@@ -19,6 +19,7 @@
 #define DIPLIB_H
 
 
+#include "diplib/library/export.h"
 #include "diplib/library/dimension_array.h"
 #include "diplib/library/types.h"
 #include "diplib/library/sample_iterator.h"

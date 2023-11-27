@@ -20,6 +20,7 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_IMAGE_VIEWS_H
@@ -98,7 +99,7 @@ class Image::Sample {
       explicit Sample( Image const& image ) : origin_( image.Origin() ), dataType_( image.DataType() ) {}
 
       /// Swaps `*this` and `other`.
-      void swap( Sample& other ) {
+      void swap( Sample& other ) noexcept {
          using std::swap;
          bool thisInternal = origin_ == &buffer_;
          bool otherInternal = other.origin_ == &other.buffer_;
@@ -122,7 +123,7 @@ class Image::Sample {
          swap( dataType_, other.dataType_ );
       }
 
-      void swap( Sample&& other ) { swap( other ); };
+      void swap( Sample&& other ) noexcept { swap( other ); };
 
       /// \brief Creates a sample with the largest finite value for the given data type. Not implemented for complex types.
       static Sample Maximum( dip::DataType dt );
@@ -1301,7 +1302,7 @@ inline Image::Image( Image::View&& view ) {
    } else if( !view.offsets_.empty() ) {
       DIP_STACK_TRACE_THIS( CopyFrom( view.reference_, *this, view.offsets_ ));
    } else {
-      this->move( std::move( view.reference_ ));
+      swap( view.reference_ );
    }
 }
 

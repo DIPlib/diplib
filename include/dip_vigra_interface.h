@@ -18,11 +18,7 @@
 #ifndef DIP_VIGRA_INTERFACE_H
 #define DIP_VIGRA_INTERFACE_H
 
-#include <map>
-#include <utility>
-
 #include "diplib.h"
-#include "diplib/iterators.h"
 
 #include <vigra/multi_array.hxx>
 
@@ -66,11 +62,11 @@ namespace detail {
 
 struct TemplateParams {
    dip::DataType dataType;
-   dip::uint tensorElements;
+   dip::uint tensorElements = 1;
 };
 
 template< typename PixelType, typename = std::enable_if_t< dip::IsSampleType< PixelType >::value >>
-inline TemplateParams GetTemplateParams( PixelType ) {
+inline TemplateParams GetTemplateParams( PixelType /**/ ) {
    return { dip::DataType( PixelType{} ), 1 };
 }
 
@@ -122,6 +118,7 @@ inline dip::Image VigraToDip( vigra::MultiArrayView< Dimensionality, PixelType, 
 /// the `dip::Image` object at runtime.
 template< unsigned int Dimensionality, class PixelType >
 inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag > DipToVigra( dip::Image const& img ) {
+   using VigraView = typename vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag >;
    if( !img.IsForged() ) {
       return {};
    }
@@ -130,14 +127,14 @@ inline vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag 
    DIP_THROW_IF( img.TensorElements() != templateParams.tensorElements, dip::E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( img.DataType() != templateParams.dataType, dip::E::DATA_TYPES_DONT_MATCH );
    DIP_THROW_IF(( img.TensorElements() > 1 ) && ( img.TensorStride() != 1 ), "Vigra requires a tensor stride of 1" );
-   typename vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag >::difference_type shape;
-   typename vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag >::difference_type stride;
+   VigraView::difference_type shape;
+   VigraView::difference_type stride;
    for( dip::uint ii = 0; ii < Dimensionality; ++ii ) {
       shape[ ii ] = img.Size( ii );
       stride[ ii ] = img.Stride( ii ) / static_cast< dip::sint >( templateParams.tensorElements );
    }
-   auto ptr = static_cast< typename vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag >::const_pointer >( img.Origin() );
-   return vigra::MultiArrayView< Dimensionality, PixelType, vigra::StridedArrayTag >( shape, stride, ptr );
+   auto ptr = static_cast< VigraView::const_pointer >( img.Origin() );
+   return VigraView( shape, stride, ptr );
 }
 
 /// \brief Creates a *Vigra* `vigra::MultiArrayView` object from a *DIPlib* image by copy.

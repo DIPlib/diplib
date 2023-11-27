@@ -26,6 +26,8 @@
 #ifndef DIP_COPY_BUFFER_H
 #define DIP_COPY_BUFFER_H
 
+#include <vector>
+
 #include "diplib/library/datatype.h"
 #include "diplib/library/sample_iterator.h"
 

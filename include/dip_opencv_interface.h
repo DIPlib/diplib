@@ -19,6 +19,8 @@
 #ifndef DIP_OPENCV_INTERFACE_H
 #define DIP_OPENCV_INTERFACE_H
 
+#include <cstddef>
+#include <limits>
 #include <utility>
 
 #include "diplib.h"
@@ -365,7 +367,7 @@ inline cv::Mat CopyDipToMat( dip::Image const& img ) {
 class ExternalInterface : public dip::ExternalInterface {
    private:
       // This map holds `cv::Mat`s, we can find the right one if we have the data pointer.
-      tsl::robin_map< void const*, cv::Mat > images_;
+      tsl::robin_map< void const*, cv::Mat > images_{};
       // This is the deleter functor we'll associate to the dip::DataSegment.
       class StripHandler {
          private:

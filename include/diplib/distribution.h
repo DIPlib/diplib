@@ -254,11 +254,11 @@ class DIP_NO_EXPORT Distribution {
             }
 
             /// Equality comparison
-            bool operator==( Iterator const& other ) {
+            bool operator==( Iterator const& other ) const {
                return ( sample_.distribution_ == other.sample_.distribution_ ) && ( sample_.index_ == other.sample_.index_ );
             }
             /// Inequality comparison
-            bool operator!=( Iterator const& other ) {
+            bool operator!=( Iterator const& other ) const {
                return !operator==( other );
             }
 

@@ -20,6 +20,7 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_ERROR_H
@@ -27,6 +28,7 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 
 #include "diplib/library/export.h"
 
@@ -241,7 +243,7 @@ constexpr char const* ITERATOR_HAS_NO_PROCDIM = "Iterator has no processing dime
 
 // Here we explicitly cast the output of `error.AddStackTrace` to the right type, since that function returns a
 // reference to the base class and we need the type of the thrown exception to be correct.
-#define DIP_THROW_INTERNAL( type, str ) throw static_cast< type& >( DIP_ADD_STACK_TRACE( type( str )))
+#define DIP_THROW_INTERNAL( type, str ) throw dynamic_cast< type& >( DIP_ADD_STACK_TRACE( type( str )))
 // This used to be as follows, but GCC 5.4 cannot handle such a thing in a constexpr function.
 // #define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 

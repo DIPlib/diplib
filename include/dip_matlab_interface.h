@@ -19,10 +19,14 @@
 #ifndef DIP_MATLAB_INTERFACE_H
 #define DIP_MATLAB_INTERFACE_H
 
-#include <utility>
-#include <streambuf>
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
 #include <iostream>
-#include <cstring>
+#include <limits>
+#include <memory>
+#include <streambuf>
+#include <utility>
 #ifdef DIP_CONFIG_ENABLE_UNICODE
 #include <codecvt>
 #include <locale>
@@ -85,7 +89,7 @@ constexpr char const* tshapePropertyName = "TensorShape"; // Get tensor shape en
 constexpr char const* pxsizePropertyName = "PixelSize"; // Set/get pixel size array
 constexpr char const* colspPropertyName = "ColorSpace"; // Set/get color space name
 constexpr dip::uint nPxsizeStructFields = 2;
-char const* pxsizeStructFields[ nPxsizeStructFields ] = { "magnitude", "units" };
+char const* pxsizeStructFields[ nPxsizeStructFields ] = { "magnitude", "units" }; // Should be const, but MATLAB's API doesn't like that
 
 // Make sure that MATLAB stores logical arrays the same way we store binary images
 static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one byte!" );
@@ -735,11 +739,12 @@ inline mxArray* GetArrayUnicode( dip::String const& in ) {
 inline mxArray* GetArray( dip::Image::Sample const& in ) {
    if( in.DataType().IsBinary() ) { // logical array
       return GetArray( dip::detail::CastSample< bool >( in.DataType(), in.Origin() ));
-   } else if( in.DataType().IsComplex() ) { // double complex array
-      return GetArray( dip::detail::CastSample< dip::dcomplex >( in.DataType(), in.Origin() ));
-   } else { // integer or floating-point : double array
-      return GetArray( dip::detail::CastSample< dip::dfloat >( in.DataType(), in.Origin() ));
    }
+   if( in.DataType().IsComplex() ) { // double complex array
+      return GetArray( dip::detail::CastSample< dip::dcomplex >( in.DataType(), in.Origin() ));
+   }
+   // integer or floating-point : double array
+   return GetArray( dip::detail::CastSample< dip::dfloat >( in.DataType(), in.Origin() ));
 }
 
 /// \brief Convert a set of samples from \ref dip::Image::Pixel to `mxArray` by copy.
@@ -878,14 +883,14 @@ inline void MaybeCastScalar( dip::Image& img ) {
 
 /// \brief \ref dml::GetImage can optionally create a shared copy of the input `mxArray`, which extends its lifetime.
 /// This is useful if the MEX-file needs to keep a reference to the object.
-enum class GetImageMode {
+enum class GetImageMode : dip::uint8 {
       REFERENCE,     ///< Reference the `mxArray` in the \ref dip::Image object.
       SHARED_COPY    ///< Make a shared copy of the `mxArray` and take ownership of the copy.
 };
 
 /// \brief \ref dml::GetImage can optionally turn an input numeric array to a tensor image. If the numeric array
 /// is a short vector (up to 5 elements) or a small matrix (up to 5x5 elements) it will be seen as a 0D tensor image.
-enum class ArrayConversionMode {
+enum class ArrayConversionMode : dip::uint8 {
       STANDARD,        ///< All arrays are scalar images.
       TENSOR_OPERATOR  ///< Small arrays are 0D tensor images.
 };
@@ -1340,8 +1345,8 @@ inline bool MatchSizes(
    dip::uint nDimsDip = img.Dimensionality();
    dip::UnsignedArray const& dipSizes = img.Sizes();
    // Check number of pixels
-   dip::uint totalDip = std::accumulate( dipSizes.begin(), dipSizes.end(), static_cast< dip::uint >(1), std::multiplies< dip::uint >() );
-   dip::uint totalMex = std::accumulate( mexSizes + 2, mexSizes + nDimsMex, static_cast< dip::uint >(1), std::multiplies< dip::uint >() );
+   dip::uint totalDip = std::accumulate( dipSizes.begin(), dipSizes.end(), static_cast< dip::uint >(1), std::multiplies<>() );
+   dip::uint totalMex = std::accumulate( mexSizes + 2, mexSizes + nDimsMex, static_cast< dip::uint >(1), std::multiplies<>() );
    if( totalDip != totalMex ) {
       //mexPrintf( "MatchSizes: number of pixels test failed\n" );
       return false;
@@ -1694,9 +1699,7 @@ inline K GetKernel( int nrhs, const mxArray* prhs[], int& index, dip::uint nDims
 /// This class simplifies their use.
 class streambuf : public std::streambuf {
    public:
-      streambuf() {
-         stdoutbuf = std::cout.rdbuf( this );
-      }
+      streambuf() : stdoutbuf( std::cout.rdbuf( this )) {};
       ~streambuf() override {
          std::cout.rdbuf( stdoutbuf );
       }

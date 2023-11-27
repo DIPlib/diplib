@@ -20,10 +20,16 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_DATATYPE_H
 #define DIP_DATATYPE_H
+
+#include <cstdint>
+#include <limits>
+#include <ostream>
+#include <type_traits>
 
 #include "diplib/library/types.h"
 
@@ -150,7 +156,7 @@ namespace dip {
 struct DIP_NO_EXPORT DataType {
 
    // Not documented because the user doesn't need these.
-   enum class DT {
+   enum class DT : uint8 {
          BIN,
          UINT8,
          SINT8,
@@ -189,11 +195,11 @@ struct DIP_NO_EXPORT DataType {
 
    /// \brief Get the data type value of any expression, as long as that expression is of one of the known data types
    template< typename T >
-   constexpr explicit DataType( T );
-   constexpr explicit DataType( unsigned long long ); // On some platforms, a long long is not the same as uint64_t!
-   constexpr explicit DataType( long long );
-   constexpr explicit DataType( unsigned long ); // On some platforms, a long is not the same as uint32_t nor uint64_t!
-   constexpr explicit DataType( long );
+   constexpr explicit DataType( T /*v*/ );
+   constexpr explicit DataType( unsigned long long /*v*/ ); // On some platforms, a long long is not the same as uint64_t!
+   constexpr explicit DataType( long long /*v*/ );
+   constexpr explicit DataType( unsigned long /*v*/ ); // On some platforms, a long is not the same as uint32_t nor uint64_t!
+   constexpr explicit DataType( long /*v*/ );
 
    /// \brief A string can be cast to a data type. See \ref pixeltypes for recognized strings.
    explicit DataType( String const& name ) {
@@ -216,7 +222,7 @@ struct DIP_NO_EXPORT DataType {
    }
 
    /// \brief Swaps the values of `this` and `other`
-   void swap( DataType& other ) {
+   void swap( DataType& other ) noexcept {
       using std::swap;
       swap( dt, other.dt );
    }
@@ -324,7 +330,7 @@ struct DIP_NO_EXPORT DataType {
    }
 
    /// \brief Returns the real data type corresponding to a complex data type
-   DataType Real() {
+   DataType Real() const {
       switch( dt ) {
          case DT::SCOMPLEX:
             return DT::SFLOAT;
@@ -583,7 +589,7 @@ inline std::ostream& operator<<( std::ostream& os, DataType type ) {
    return os;
 }
 
-inline void swap( DataType& v1, DataType& v2 ) {
+inline void swap( DataType& v1, DataType& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -606,31 +612,31 @@ struct assert_false : std::false_type {};
 
 // Main template definition, it always bombs out
 template< typename T >
-constexpr DataType MakeDataType( T ) {
+constexpr DataType MakeDataType( T /**/ ) {
    static_assert( assert_false< T >::value, "You need to cast your constant to one of the known data types" );
    return DataType{};
 }
-template<> constexpr DataType MakeDataType( bool     ) { return DataType::DT::BIN; }
-template<> constexpr DataType MakeDataType( bin      ) { return DataType::DT::BIN; }
-template<> constexpr DataType MakeDataType( uint8    ) { return DataType::DT::UINT8; }
-template<> constexpr DataType MakeDataType( sint8    ) { return DataType::DT::SINT8; }
-template<> constexpr DataType MakeDataType( uint16   ) { return DataType::DT::UINT16; }
-template<> constexpr DataType MakeDataType( sint16   ) { return DataType::DT::SINT16; }
-template<> constexpr DataType MakeDataType( uint32   ) { return DataType::DT::UINT32; }
-template<> constexpr DataType MakeDataType( sint32   ) { return DataType::DT::SINT32; }
-template<> constexpr DataType MakeDataType( uint64   ) { return DataType::DT::UINT64; }
-template<> constexpr DataType MakeDataType( sint64   ) { return DataType::DT::SINT64; }
-template<> constexpr DataType MakeDataType( sfloat   ) { return DataType::DT::SFLOAT; }
-template<> constexpr DataType MakeDataType( dfloat   ) { return DataType::DT::DFLOAT; }
-template<> constexpr DataType MakeDataType( scomplex ) { return DataType::DT::SCOMPLEX; }
-template<> constexpr DataType MakeDataType( dcomplex ) { return DataType::DT::DCOMPLEX; }
+template<> constexpr DataType MakeDataType( bool /**/     ) { return DataType::DT::BIN; }
+template<> constexpr DataType MakeDataType( bin /**/      ) { return DataType::DT::BIN; }
+template<> constexpr DataType MakeDataType( uint8 /**/    ) { return DataType::DT::UINT8; }
+template<> constexpr DataType MakeDataType( sint8 /**/    ) { return DataType::DT::SINT8; }
+template<> constexpr DataType MakeDataType( uint16 /**/   ) { return DataType::DT::UINT16; }
+template<> constexpr DataType MakeDataType( sint16 /**/   ) { return DataType::DT::SINT16; }
+template<> constexpr DataType MakeDataType( uint32 /**/   ) { return DataType::DT::UINT32; }
+template<> constexpr DataType MakeDataType( sint32 /**/   ) { return DataType::DT::SINT32; }
+template<> constexpr DataType MakeDataType( uint64 /**/   ) { return DataType::DT::UINT64; }
+template<> constexpr DataType MakeDataType( sint64 /**/   ) { return DataType::DT::SINT64; }
+template<> constexpr DataType MakeDataType( sfloat /**/   ) { return DataType::DT::SFLOAT; }
+template<> constexpr DataType MakeDataType( dfloat /**/   ) { return DataType::DT::DFLOAT; }
+template<> constexpr DataType MakeDataType( scomplex /**/ ) { return DataType::DT::SCOMPLEX; }
+template<> constexpr DataType MakeDataType( dcomplex /**/ ) { return DataType::DT::DCOMPLEX; }
 
 #if SIZE_MAX == UINT32_MAX
-constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT32; }
-constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT32; }
+constexpr DataType MakeDataType( dip::uint /**/ ) { return DataType::DT::UINT32; }
+constexpr DataType MakeDataType( dip::sint /**/ ) { return DataType::DT::SINT32; }
 #elif SIZE_MAX == UINT64_MAX
-constexpr DataType MakeDataType( dip::uint ) { return DataType::DT::UINT64; }
-constexpr DataType MakeDataType( dip::sint ) { return DataType::DT::SINT64; }
+constexpr DataType MakeDataType( dip::uint /**/ ) { return DataType::DT::UINT64; }
+constexpr DataType MakeDataType( dip::sint /**/ ) { return DataType::DT::SINT64; }
 #endif
 
 } // namespace detail
@@ -639,14 +645,14 @@ template< typename T >
 constexpr DataType::DataType( T v ) : dt( detail::MakeDataType( v ).dt ) {}
 
 static_assert( sizeof( unsigned long long ) == 8, "unsigned long long type is not 64 bits" );
-constexpr DataType::DataType( unsigned long long ) : dt( DataType::DT::UINT64 ) {}
+constexpr DataType::DataType( unsigned long long /*v*/ ) : dt( DataType::DT::UINT64 ) {}
 static_assert( sizeof( long long ) == 8, "long long type is not 64 bits" );
-constexpr DataType::DataType( long long ) : dt( DataType::DT::SINT64 ) {}
+constexpr DataType::DataType( long long /*v*/ ) : dt( DataType::DT::SINT64 ) {}
 
 static_assert( sizeof( unsigned long ) == 8 || sizeof( unsigned long ) == 4, "unsigned long type is not 32 nor 64 bits" );
-constexpr DataType::DataType( unsigned long ) : dt( sizeof( unsigned long ) == 8 ? DataType::DT::UINT64 : DataType::DT::UINT32 ) {}
+constexpr DataType::DataType( unsigned long /*v*/ ) : dt( sizeof( unsigned long ) == 8 ? DataType::DT::UINT64 : DataType::DT::UINT32 ) {}
 static_assert( sizeof( long ) == 8 || sizeof( long ) == 4, "long type is not 32 nor 64 bits" );
-constexpr DataType::DataType( long ) : dt( sizeof( long ) == 8 ? DataType::DT::SINT64 : DataType::DT::SINT32 ) {}
+constexpr DataType::DataType( long /*v*/ ) : dt( sizeof( long ) == 8 ? DataType::DT::SINT64 : DataType::DT::SINT32 ) {}
 
 //
 // Constants that people will use where a DataType is needed

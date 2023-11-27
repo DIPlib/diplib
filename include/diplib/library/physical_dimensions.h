@@ -20,6 +20,7 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_PHYSICAL_DIMENSIONS_H
@@ -28,6 +29,7 @@
 #include <array>
 
 #include "diplib/library/clamp_cast.h"
+#include "diplib/library/numeric.h"
 
 
 /// \file

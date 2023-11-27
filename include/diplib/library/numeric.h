@@ -20,14 +20,15 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_NUMERIC_H
 #define DIP_NUMERIC_H
 
 #include <cmath>
-#include <numeric>
 #include <limits>
+#include <numeric>
 
 #include "diplib/library/sample_iterator.h"
 

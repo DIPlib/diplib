@@ -1,5 +1,5 @@
 /*
- * (c)2014-2022, Cris Luengo.
+ * (c)2014-2023, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,20 +20,26 @@
 // NOTE!
 // This file is included through diplib.h -- no need to include directly
 //
+// IWYU pragma: private, include "diplib.h"
 
 
 #ifndef DIP_IMAGE_H
 #define DIP_IMAGE_H
 
-#include <memory>
-#include <functional>
 #include <cstring> // std::memcpy
+#include <functional>
+#include <initializer_list>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "diplib/library/tensor.h"
 #include "diplib/library/physical_dimensions.h"
 #include "diplib/library/clamp_cast.h"
-#include "diplib/library/sample_iterator.h"
-#include "diplib/library/stringparams.h"
 
 
 /// \file
@@ -102,6 +108,9 @@ class DIP_CLASS_EXPORT ExternalInterface {
             dip::Tensor const& tensor,
             dip::sint& tensorStride
       ) = 0;
+
+      // Virtual destructor so derived classes can be destructed correctly from the base class handle
+      virtual ~ExternalInterface() = default;
 };
 
 /// \brief \ref dip::ExternalInterface that allocates aligned data.
@@ -247,6 +256,9 @@ class DIP_NO_EXPORT Image {
       ///
       /// The `protect` flag will not be copied over.
       Image& operator=( Image const& rhs ) {
+         if( this == &rhs ) {
+            return *this;
+         }
          if( protect_ || ( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ ))) {
             // Copy pixel data too
             DIP_STACK_TRACE_THIS( this->Copy( rhs ));
@@ -271,7 +283,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// Copies the data if the LHS (`this`) is protected or has an external interface set, and this external
       /// interface is different from the one in `rhs` (see \ref protect and \ref external_interface).
-      /// In this case, `rhs` will not be modified.
+      /// In this case, `rhs` will not be modified. Note that this copy can throw.
       ///
       /// Otherwise, `this` will become exactly what `rhs` was, and `rhs` will become raw.
       Image& operator=( Image&& rhs ) {
@@ -280,7 +292,7 @@ class DIP_NO_EXPORT Image {
             DIP_STACK_TRACE_THIS( this->Copy( rhs ));
          } else {
             // Do what the default move assignment would do
-            this->move( std::move( rhs ));
+            swap( rhs );
          }
          return *this;
       }
@@ -583,8 +595,8 @@ class DIP_NO_EXPORT Image {
       bool HasContiguousData() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          dip::uint size = NumberOfPixels() * TensorElements();
-         dip::sint start;
-         dip::uint sz;
+         dip::sint start = 0;
+         dip::uint sz = 0;
          GetDataBlockSizeAndStartWithTensor( sz, start );
          return sz == size;
       }
@@ -622,7 +634,7 @@ class DIP_NO_EXPORT Image {
       /// \see dip::Image::GetSimpleStrideAndOrigin, dip::Image::HasContiguousData, dip::Image::HasNormalStrides,
       /// dip::Image::Strides, dip::Image::TensorStride
       bool HasSimpleStride() const {
-         void* p;
+         void* p = nullptr;
          std::tie( std::ignore, p ) = GetSimpleStrideAndOrigin();
          return p != nullptr;
       }
@@ -961,7 +973,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Swaps `this` and `other`.
-      void swap( Image& other ) {
+      void swap( Image& other ) noexcept {
          using std::swap;
          swap( dataType_, other.dataType_ );
          swap( sizes_, other.sizes_ );
@@ -1232,6 +1244,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Disassociate the data segment from the image. If there are no
       /// other images using the same data segment, it will be freed.
+      /// Throws if the image is protected and has a data segment.
       void Strip() {
          if( IsForged() ) {
             DIP_THROW_IF( IsProtected(), "Image is protected" );
@@ -1492,7 +1505,7 @@ class DIP_NO_EXPORT Image {
       /// dip::Image::IndexToCoordinatesComputer
       CoordinatesComputer OffsetToCoordinatesComputer() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         return CoordinatesComputer( sizes_, strides_ );
+         return { sizes_, strides_ };
       }
 
       /// \brief Compute linear index (not offset) given coordinates and image sizes.
@@ -1822,11 +1835,12 @@ class DIP_NO_EXPORT Image {
       /// (i.e. this is a quick and cheap operation).
       Image& Rotation90( dip::sint n, dip::uint axis ) {
          DIP_THROW_IF( Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
-         dip::uint dim1, dim2;
+         dip::uint dim1 = 1;
+         dip::uint dim2 = 2;
          switch( axis ) {
             case 0: // x-axis
-               dim1 = 1;
-               dim2 = 2;
+               // dim1 = 1;
+               // dim2 = 2;
                break;
             case 1: // y-axis
                dim1 = 2;
@@ -2040,6 +2054,8 @@ class DIP_NO_EXPORT Image {
             case DT_UINT64:
                dataType_ = DT_SINT64;
                break;
+            default:
+               break;
          }
          return *this;
       }
@@ -2069,6 +2085,8 @@ class DIP_NO_EXPORT Image {
                break;
             case DT_SINT64:
                dataType_ = DT_UINT64;
+               break;
+            default:
                break;
          }
          return *this;
@@ -2550,31 +2568,10 @@ class DIP_NO_EXPORT Image {
       // top left corner and origin (will be <0 if any strides[ii] < 0). All measured in samples.
 
       // Throws is `sizes_` is not good.
-      DIP_NO_EXPORT static void TestSizes( UnsignedArray sizes ) {
+      DIP_NO_EXPORT static void TestSizes( UnsignedArray const& sizes ) {
          for( auto s : sizes ) {
             DIP_THROW_IF(( s == 0 ) || ( s > maxint ), "Sizes must be non-zero and no larger than " + std::to_string( maxint ));
          }
-      }
-
-      /// \brief Moves data from `other` to `this`. `this` will be identical to what `other` was, `other` will
-      /// become a raw image.
-      void move( Image&& other ) {
-         using std::swap;
-         dataType_ = other.dataType_;
-         sizes_ = std::move( other.sizes_ );
-         strides_ = std::move( other.strides_ );
-         tensor_ = other.tensor_;
-         tensorStride_ = other.tensorStride_;
-         protect_ = other.protect_;
-         colorSpace_ = std::move( other.colorSpace_ );
-         pixelSize_ = std::move( other.pixelSize_ );
-         swap( dataBlock_, other.dataBlock_ );  // prevent incrementing and decrementing counters
-         other.dataBlock_ = nullptr;            // free previous data block, if any
-         origin_ = other.origin_;
-         other.origin_ = nullptr;               // keep `other` consistent
-         externalData_ = other.externalData_;
-         other.externalData_ = false;
-         externalInterface_ = other.externalInterface_;
       }
 
       /// \brief Allocates a new data segment and copies the data over. The image will be the same as before, but
@@ -2587,7 +2584,7 @@ class DIP_NO_EXPORT Image {
          tmp.externalInterface_ = externalInterface_;
          tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
          tmp.Copy( *this );
-         this->move( std::move( tmp ));
+         swap( tmp );
       }
 
 }; // class Image
@@ -2602,7 +2599,7 @@ class DIP_NO_EXPORT Image {
 /// \relates dip::Image
 DIP_EXPORT std::ostream& operator<<( std::ostream& os, Image const& img );
 
-inline void swap( Image& v1, Image& v2 ) {
+inline void swap( Image& v1, Image& v2 ) noexcept {
    v1.swap( v2 );
 }
 
