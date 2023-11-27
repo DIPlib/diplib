@@ -92,6 +92,7 @@ color/hcv.h
 color/hsi.h
 color/ish.h
 color/lab.h
+color/oklab.h
 color/rgb.h
 color/wavelength.h
 color/xyz.h
