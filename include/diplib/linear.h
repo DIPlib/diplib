@@ -18,6 +18,10 @@
 #ifndef DIP_LINEAR_H
 #define DIP_LINEAR_H
 
+#include <cmath>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/kernel.h"
 
@@ -80,7 +84,7 @@ namespace dip {
 struct DIP_NO_EXPORT OneDimensionalFilter {
    std::vector< dfloat > filter; ///< Filter weights.
    dip::sint origin = -1;        ///< Origin of the filter if non-negative.
-   String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"conj"`, `"d-even"`, `"d-odd"` or `"d-conj"`.
+   String symmetry;              ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"conj"`, `"d-even"`, `"d-odd"` or `"d-conj"`.
    bool isComplex = false;       ///< If true, `filter` contains complex data.
 };
 

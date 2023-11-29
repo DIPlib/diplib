@@ -18,6 +18,13 @@
 #ifndef DIP_MEASUREMENT_H
 #define DIP_MEASUREMENT_H
 
+#include <memory>
+#include <ostream>
+#include <iterator>
+#include <string>
+#include <vector>
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/private/robin_map.h"
 #include "diplib/accumulators.h"
@@ -48,7 +55,7 @@ struct DIP_NO_EXPORT ConvexHull;
 namespace Feature {
 
 /// \brief The types of measurement features
-enum class DIP_NO_EXPORT Type {
+enum class DIP_NO_EXPORT Type : uint8 {
       LINE_BASED,       ///< The feature is derived from \ref dip::Feature::LineBased
       IMAGE_BASED,      ///< The feature is derived from \ref dip::Feature::ImageBased
       CHAINCODE_BASED,  ///< The feature is derived from \ref dip::Feature::ChainCodeBased
@@ -59,12 +66,12 @@ enum class DIP_NO_EXPORT Type {
 
 /// \brief Information about a measurement feature
 struct DIP_NO_EXPORT Information {
-   String name;               ///< The name of the feature, used to identify it
-   String description;        ///< A description of the feature, to be shown to the user
-   bool needsGreyValue;       ///< Does the feature need a grey-value image?
+   String name;                 ///< The name of the feature, used to identify it
+   String description;          ///< A description of the feature, to be shown to the user
+   bool needsGreyValue = false; ///< Does the feature need a grey-value image?
+   Information() = default;
    Information( String name, String description, bool needsGreyValue = false ) :
          name( std::move( name )), description( std::move( description )), needsGreyValue( needsGreyValue ) {}
-   Information() : name( "" ), description( "" ), needsGreyValue( false ) {}
 };
 
 /// \brief Information about the known measurement features
@@ -242,9 +249,9 @@ class DIP_NO_EXPORT Measurement {
             };
 
             /// \brief Iterator to the first object for this feature
-            Iterator FirstObject() const { return Iterator( *this, 0 ); }
+            Iterator FirstObject() const { return { *this, 0 }; }
             /// \brief Iterator to the given object for this feature
-            Iterator operator[]( dip::uint objectID ) const { return Iterator( *this, ObjectIndex( objectID )); }
+            Iterator operator[]( dip::uint objectID ) const { return { *this, ObjectIndex( objectID ) }; }
             /// \brief Pre-increment, to access the next feature
             IteratorFeature& operator++() {
                ++featureIndex_;
@@ -300,10 +307,9 @@ class DIP_NO_EXPORT Measurement {
             dip::sint Stride() const { return measurement_->Stride(); }
 
          private:
-            IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), featureIndex_( index ) {
-               startColumn_ = Feature().startColumn;
-               numberValues_ = Feature().numberValues;
-            }
+            IteratorFeature( Measurement const& measurement, dip::uint index ) :
+                  measurement_( &measurement ), featureIndex_( index ),
+                  startColumn_( Feature().startColumn ), numberValues_( Feature().numberValues ) {}
             IteratorFeature( Measurement const& measurement, dip::uint startColumn, dip::uint numberValues ) :
                   measurement_( &measurement ), featureIndex_( 0 ),
                   startColumn_( startColumn ), numberValues_( numberValues ) {}
@@ -373,9 +379,9 @@ class DIP_NO_EXPORT Measurement {
             };
 
             /// \brief Iterator to the first feature for this object
-            Iterator FirstFeature() const { return Iterator( *this, 0 ); }
+            Iterator FirstFeature() const { return { *this, 0 }; }
             /// \brief Iterator to the given feature for this object
-            Iterator operator[]( String const& name ) const { return Iterator( *this, FeatureIndex( name )); }
+            Iterator operator[]( String const& name ) const { return { *this, FeatureIndex( name ) }; }
             /// \brief Pre-increment, to access the next object
             IteratorObject& operator++() { ++objectIndex_; return *this; }
             /// \brief Post-increment, to access the next object
@@ -737,12 +743,6 @@ class DIP_CLASS_EXPORT Base {
 
       // Ensure the destructor is virtual
       virtual ~Base() = default;
-
-      // Silence IDE warning about there being a destructor but not these other standard functions:
-      Base(const Base& other) = delete;
-      Base(Base&& other) = delete;
-      Base& operator=(const Base& other) = delete;
-      Base& operator=(Base&& other) = delete;
 };
 
 /// \brief The pure virtual base class for all line-based measurement features.

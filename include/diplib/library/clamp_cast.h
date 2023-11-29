@@ -29,6 +29,7 @@
 #include <limits>
 #include <type_traits>
 
+#include "diplib/library/types.h"
 #include "diplib/library/datatype.h"
 
 

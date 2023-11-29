@@ -27,9 +27,15 @@
 #define DIP_NUMERIC_H
 
 #include <cmath>
+#include <complex>
+#include <functional>
 #include <limits>
 #include <numeric>
+#include <type_traits>
+#include <vector>
 
+#include "diplib/library/export.h"
+#include "diplib/library/types.h"
 #include "diplib/library/sample_iterator.h"
 
 
@@ -661,7 +667,7 @@ class DIP_NO_EXPORT ThinPlateSpline {
 namespace Option {
 
 /// \brief Select if the operation is periodic or not. Used in \ref dip::GaussianMixtureModel.
-enum class DIP_NO_EXPORT Periodicity {
+enum class DIP_NO_EXPORT Periodicity : uint8 {
       NOT_PERIODIC,  ///< The operation is not periodic
       PERIODIC       ///< The operation is periodic, left and right ends of the data are contiguous
 };

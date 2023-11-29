@@ -17,6 +17,9 @@
 #ifndef DIP_SATURATED_ARITHMETIC_H
 #define DIP_SATURATED_ARITHMETIC_H
 
+#include <limits>
+#include <type_traits>
+
 #include "diplib/library/types.h"
 #include "diplib/library/clamp_cast.h"
 

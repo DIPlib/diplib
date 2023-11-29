@@ -26,8 +26,15 @@
 #ifndef DIP_PHYSICAL_DIMENSIONS_H
 #define DIP_PHYSICAL_DIMENSIONS_H
 
-#include <array>
+#include <algorithm>
+#include <cmath>
+#include <ostream>
+#include <utility>
 
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
+#include "diplib/library/dimension_array.h"
+#include "diplib/library/types.h"
 #include "diplib/library/clamp_cast.h"
 #include "diplib/library/numeric.h"
 
@@ -82,7 +89,7 @@ class DIP_NO_EXPORT Units {
    public:
 
       /// These are the base units for the SI system.
-      enum class BaseUnits {
+      enum class BaseUnits : uint8 {
             // NOTE: these are used as indices into an array, so we must start at 1 here and use unit increments.
             THOUSANDS = 0,       ///< prefix
             LENGTH,              ///< m
@@ -237,7 +244,7 @@ class DIP_NO_EXPORT Units {
       void FromString( dip::String const& string );
 
       /// Swaps the values of `this` and `other`.
-      void swap( Units& other ) {
+      void swap( Units& other ) noexcept {
          using std::swap;
          swap( power_, other.power_ );
       }
@@ -334,7 +341,7 @@ inline std::ostream& operator<<( std::ostream& os, Units const& units ) {
    return os;
 }
 
-inline void swap( Units& v1, Units& v2 ) {
+inline void swap( Units& v1, Units& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -528,7 +535,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    constexpr explicit operator bool() const { return magnitude != 0; };
 
    /// Swaps the values of `this` and `other`.
-   void swap( PhysicalQuantity& other ) {
+   void swap( PhysicalQuantity& other ) noexcept {
       using std::swap;
       swap( magnitude, other.magnitude );
       swap( units, other.units );
@@ -561,7 +568,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
 
       // Throws an exception if the physical quantities cannot be added together.
       // A workaround for GCC 5.4 bug that only allows a `throw` in a constexpr function in this way.
-      constexpr void CheckHasSameDimensions( PhysicalQuantity const& other ) {
+      constexpr void CheckHasSameDimensions( PhysicalQuantity const& other ) const {
          ( void ) ( units.HasSameDimensions( other.units ) ? 0 : throw dip::ParameterError( "Units don't match" ));
       }
 };
@@ -623,7 +630,7 @@ inline std::ostream& operator<<( std::ostream& os, PhysicalQuantity const& pq ) 
    return os;
 }
 
-inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) {
+inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -1054,7 +1061,7 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Swaps the values of `this` and `other`.
-      void swap( PixelSize& other ) {
+      void swap( PixelSize& other ) noexcept {
          using std::swap;
          swap( size_, other.size_ );
       }
@@ -1093,7 +1100,7 @@ inline std::ostream& operator<<( std::ostream& os, PixelSize const& ps ) {
    return os;
 }
 
-inline void swap( PixelSize& v1, PixelSize& v2 ) {
+inline void swap( PixelSize& v1, PixelSize& v2 ) noexcept {
    v1.swap( v2 );
 }
 

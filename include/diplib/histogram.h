@@ -18,6 +18,10 @@
 #ifndef DIP_HISTOGRAM_H
 #define DIP_HISTOGRAM_H
 
+#include <cmath>
+#include <ostream>
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/iterators.h"
 #include "diplib/measurement.h"
@@ -96,7 +100,7 @@ class DIP_NO_EXPORT Histogram {
          dip::uint nBins = 256;        ///< Number of bins for this dimension.
          dfloat binSize = 1.0;         ///< Size of each bin for this dimension.
          /// Which of the four values to compute based on the other three
-         enum class Mode {
+         enum class Mode : uint8 {
                COMPUTE_BINSIZE,
                COMPUTE_BINS,
                COMPUTE_LOWER,
@@ -308,7 +312,7 @@ class DIP_NO_EXPORT Histogram {
       Histogram() = default;
 
       /// \brief Swaps `this` and `other`.
-      void swap( Histogram& other ) {
+      void swap( Histogram& other ) noexcept {
          using std::swap;
          swap( data_, other.data_ );
          swap( lowerBounds_, other.lowerBounds_ );
@@ -540,7 +544,7 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Returns an end iterator
-      ConstImageIterator< CountType > end() const {
+      static ConstImageIterator< CountType > end() {
          return {};
       }
 
@@ -614,7 +618,7 @@ constexpr DataType DT_COUNT{ Histogram::CountType{} };
 // Operators
 //
 
-inline void swap( Histogram& v1, Histogram& v2 ) {
+inline void swap( Histogram& v1, Histogram& v2 ) noexcept {
    v1.swap( v2 );
 }
 

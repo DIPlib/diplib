@@ -94,6 +94,7 @@
 /// `ALL`            | \ref dip::DataType::Class_All
 /// \addtogroup
 
+// NOLINTBEGIN(*-macro-parentheses)
 
 #define DIP_OVL_IMPL_HEAD( dtype ) \
    do { switch( dtype ) {
@@ -633,6 +634,7 @@
    DIP_OVL_IMPL_HEAD( dtype ) \
    DIP_OVL_IMPL_ALL( x = ( decltype( x )) new cname, paramlist ) \
    DIP_OVL_IMPL_FOOT
+// NOLINTEND(*-macro-parentheses)
 
 
 /// \endgroup

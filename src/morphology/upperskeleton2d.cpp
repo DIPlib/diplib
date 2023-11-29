@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <array>
+
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/generation.h"

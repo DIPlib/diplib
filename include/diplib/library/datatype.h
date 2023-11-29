@@ -31,6 +31,9 @@
 #include <ostream>
 #include <type_traits>
 
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
+#include "diplib/library/dimension_array.h"
 #include "diplib/library/types.h"
 
 

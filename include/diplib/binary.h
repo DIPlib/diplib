@@ -18,6 +18,8 @@
 #ifndef DIP_BINARY_H
 #define DIP_BINARY_H
 
+#include <vector>
+
 #include "diplib.h"
 
 

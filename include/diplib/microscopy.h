@@ -18,6 +18,9 @@
 #ifndef DIP_MICROSCOPY_H
 #define DIP_MICROSCOPY_H
 
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/random.h"
 #include "diplib/deconvolution.h" // for backwards compatibility

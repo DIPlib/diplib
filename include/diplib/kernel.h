@@ -18,6 +18,10 @@
 #ifndef DIP_KERNEL_H
 #define DIP_KERNEL_H
 
+#include <algorithm>
+#include <cmath>
+#include <utility>
+
 #include "diplib.h"
 
 
@@ -79,7 +83,7 @@ class DIP_NO_EXPORT Kernel {
    public:
 
       /// \brief Possible shapes of a kernel
-      enum class ShapeCode {
+      enum class ShapeCode : uint8 {
             RECTANGULAR,  ///< A rectangular kernel, the user will use the string `"rectangular"`.
             ELLIPTIC,     ///< An elliptical (or circular) kernel, corresponding to the string `"elliptic"`.
             DIAMOND,      ///< A diamond-shaped kernel, corresponding to the string `"diamond"`.
@@ -89,7 +93,7 @@ class DIP_NO_EXPORT Kernel {
       };
 
       /// \brief The default kernel is a disk with a diameter of 7 pixels.
-      Kernel() : shape_( ShapeCode::ELLIPTIC ), params_( { 7 } ) {}
+      Kernel() : params_( { 7 } ) {}
 
       /// \brief A string implicitly converts to a kernel, it is interpreted as a shape.
       Kernel( String const& shape ) : params_( { 7 } ) {
@@ -251,7 +255,7 @@ class DIP_NO_EXPORT Kernel {
       DIP_EXPORT dip::uint NumberOfPixels( dip::uint nDims ) const;
 
    private:
-      ShapeCode shape_;
+      ShapeCode shape_ = ShapeCode::ELLIPTIC;
       FloatArray params_;
       IntegerArray shift_;
       Image image_;

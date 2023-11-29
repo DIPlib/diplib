@@ -18,6 +18,8 @@
 #ifndef DIP_DISTANCE_H
 #define DIP_DISTANCE_H
 
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/neighborlist.h"
 

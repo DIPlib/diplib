@@ -18,6 +18,8 @@
 #ifndef DIP_NONLINEAR_H
 #define DIP_NONLINEAR_H
 
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/kernel.h"
 

@@ -19,8 +19,6 @@
 #ifndef DIP_MULTITHREADING_H
 #define DIP_MULTITHREADING_H
 
-#include "diplib/library/types.h"
-
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -28,6 +26,8 @@
 inline int omp_get_thread_num() { return 0; }
 inline int omp_get_max_threads() { return 1; }
 #endif
+
+#include "diplib.h"
 
 
 /// \file

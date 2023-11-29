@@ -41,6 +41,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
 #include "diplib/library/dimension_array.h"
 
 
@@ -210,6 +212,7 @@ class DIP_NO_EXPORT bin {
       // Default copy and move constructors, just in case the templated constructor overrides one of these.
       constexpr bin( bin const& ) = default;
       constexpr bin( bin&& ) = default;
+      ~bin() = default;
       bin& operator=( bin const& ) = default;
       bin& operator=( bin&& ) = default;
 

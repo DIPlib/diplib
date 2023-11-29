@@ -18,6 +18,12 @@
 #ifndef DIP_GRAPH_H
 #define DIP_GRAPH_H
 
+#include <array>
+#include <cstdlib>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 
 
@@ -245,7 +251,7 @@ class DIP_NO_EXPORT Graph {
          EdgeIndex ii = edges_.size();
          vertices_[ edge.vertices[ 0 ]].edges.push_back( ii );
          vertices_[ edge.vertices[ 1 ]].edges.push_back( ii );
-         edges_.push_back( std::move( edge ));
+         edges_.push_back( edge );
       }
       void AddEdgeNoCheck( VertexIndex v1, VertexIndex v2, dfloat weight ) {
          AddEdgeNoCheck( {{ v1, v2 }, weight } );
@@ -297,7 +303,10 @@ class DIP_NO_EXPORT LowestCommonAncestorSolver {
 
       // Prevent copying, that might go wrong because we use a shared pointer, `rmq_` might be shared...
       LowestCommonAncestorSolver( LowestCommonAncestorSolver const& ) = delete;
+      LowestCommonAncestorSolver( LowestCommonAncestorSolver&& ) = default;
       LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver const& ) = delete;
+      LowestCommonAncestorSolver& operator=( LowestCommonAncestorSolver&& ) = default;
+      ~LowestCommonAncestorSolver() = default;
 
       /// \brief Returns the vertex that is the nearest common ancestor to vertices `a` and `b`.
       DIP_EXPORT dip::uint GetLCA( dip::uint a, dip::uint b ) const;

@@ -18,6 +18,8 @@
 #ifndef DIP_TRANSFORM_H
 #define DIP_TRANSFORM_H
 
+#include <utility>
+
 #include "diplib.h"
 
 

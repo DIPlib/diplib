@@ -18,6 +18,9 @@
 #ifndef DIP_GEOMETRY_H
 #define DIP_GEOMETRY_H
 
+#include <cmath>
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/boundary.h"
 

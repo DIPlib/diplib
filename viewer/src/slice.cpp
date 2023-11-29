@@ -17,10 +17,14 @@
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
-#include "diplib/overload.h"
 
 #include "include_gl.h"
+#include "diplib/viewer/control.h"
+#include "diplib/viewer/histogram.h"
+#include "diplib/viewer/link.h"
 #include "diplib/viewer/slice.h"
+#include "diplib/viewer/status.h"
+#include "diplib/viewer/tensor.h"
 
 #define CHAR_WIDTH   8
 #define CHAR_HEIGHT 13

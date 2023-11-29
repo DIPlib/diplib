@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#include <array>
+
 #include "diplib.h"
 #include "diplib/linear.h"
 #include "diplib/framework.h"

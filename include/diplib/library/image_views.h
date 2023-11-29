@@ -26,6 +26,24 @@
 #ifndef DIP_IMAGE_VIEWS_H
 #define DIP_IMAGE_VIEWS_H
 
+#include <algorithm>
+#include <cstring>
+#include <initializer_list>
+#include <iterator>
+#include <memory>
+#include <ostream>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
+#include "diplib/library/dimension_array.h"
+#include "diplib/library/types.h"
+#include "diplib/library/datatype.h"
+#include "diplib/library/tensor.h"
+#include "diplib/library/physical_dimensions.h"
+#include "diplib/library/clamp_cast.h"
 #include "diplib/library/image.h"
 
 
@@ -68,12 +86,13 @@ class Image::Sample {
 
       // Default copy constructor doesn't do what we need
       Sample( Sample const& sample ) : dataType_( sample.dataType_ ) {
-         origin_ = &buffer_;
          std::memcpy( origin_, sample.origin_, dataType_.SizeOf() );
       }
 
       // Default move constructor, otherwise it's implicitly deleted.
       Sample( Sample&& ) = default;
+
+      ~Sample() = default;
 
       // Construct a Sample over existing data, used by dip::Image, dip::GenericImageIterator,
       // dip::GenericJointImageIterator.
@@ -123,7 +142,7 @@ class Image::Sample {
          swap( dataType_, other.dataType_ );
       }
 
-      void swap( Sample&& other ) noexcept { swap( other ); };
+      void swap( Sample&& other ) noexcept { swap( other ); }; // NOLINT(*-rvalue-reference-param-not-moved)
 
       /// \brief Creates a sample with the largest finite value for the given data type. Not implemented for complex types.
       static Sample Maximum( dip::DataType dt );
@@ -151,17 +170,18 @@ class Image::Sample {
       constexpr explicit operator dcomplex() const { return As< dcomplex >(); }
 
       /// Assigning to a `Sample` copies the value over to the sample referenced.
-      constexpr Sample& operator=( Sample const& sample ) {
+      constexpr Sample& operator=( Sample const& sample ) { // NOLINT(*-unhandled-self-assignment)
          detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
          return *this;
       }
-      constexpr Sample& operator=( Sample&& sample ) {
+      constexpr Sample& operator=( Sample&& sample ) { // NOLINT(*-noexcept-move-operations, *-noexcept-move-constructor)
          detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
          return *this;
       }
       template< typename T >
       constexpr Sample& operator=( CastSample< T > const& sample ) {
-         return operator=( static_cast< Sample const& >( sample ));
+         operator=( static_cast< Sample const& >( sample ));
+         return *this;
       }
 
       /// It is also possible to assign a constant directly.
@@ -228,7 +248,7 @@ class Image::Sample {
       dip::DataType dataType_;
 };
 
-inline void swap( Image::Sample& v1, Image::Sample& v2 ) { v1.swap( v2 ); }
+inline void swap( Image::Sample& v1, Image::Sample& v2 ) noexcept { v1.swap( v2 ); }
 
 
 /// \brief You can output a \ref dip::Image::Sample to `std::cout` or any other stream.
@@ -284,7 +304,7 @@ class Image::Pixel {
    public:
 
       // Default copy constructor doesn't do what we need
-      Pixel( Pixel const& pixel ) : dataType_( pixel.dataType_ ), tensor_( pixel.tensor_ ) {
+      Pixel( Pixel const& pixel ) : dataType_( pixel.dataType_ ), tensor_( pixel.tensor_ ) { // NOLINT(*-pro-type-member-init)
          SetInternalData();
          operator=( pixel );
       }
@@ -292,13 +312,15 @@ class Image::Pixel {
       // Default move constructor, otherwise it's implicitly deleted.
       Pixel( Pixel&& ) = default;
 
+      ~Pixel() = default;
+
       // Construct a Pixel over existing data, used by dip::Image, dip::GenericImageIterator,
       // dip::GenericJointImageIterator, dml::GetArray.
       Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
             origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
 
       /// Construct a new `Pixel` by giving data type and number of tensor elements. Initialized to 0.
-      explicit Pixel( dip::DataType dataType = DT_SFLOAT, dip::uint tensorElements = 1 ) :
+      explicit Pixel( dip::DataType dataType = DT_SFLOAT, dip::uint tensorElements = 1 ) : // NOLINT(*-pro-type-member-init)
             dataType_( dataType ), tensor_( tensorElements ) {
          SetInternalData();
          std::fill( buffer_.begin(), buffer_.end(), 0 );
@@ -306,7 +328,8 @@ class Image::Pixel {
 
       /// \brief A `Pixel` can be constructed from a single sample, yielding a scalar pixel with the same
       /// data type as the sample.
-      Pixel( Sample const& sample ) : dataType_( sample.DataType() ) { // tensor_ is scalar by default
+      Pixel( Sample const& sample ) : dataType_( sample.DataType() ) { // NOLINT(*-pro-type-member-init)
+         // tensor_ is scalar by default
          SetInternalData();
          std::memcpy( buffer_.data(), sample.Origin(), dataType_.SizeOf() );
       }
@@ -317,7 +340,7 @@ class Image::Pixel {
       /// \brief A `Pixel` can be constructed from an initializer list, yielding a pixel with the same data
       /// type and number of tensor elements as the initializer list. The pixel will be a column vector.
       template< typename T, typename std::enable_if_t< IsNumericType< T >::value, int > = 0 >
-      Pixel( std::initializer_list< T > values ) {
+      Pixel( std::initializer_list< T > values ) { // NOLINT(*-pro-type-member-init)
          dip::uint N = values.size();
          tensor_.SetVector( N );
          dataType_ = dip::DataType( T( 0 ));
@@ -338,7 +361,7 @@ class Image::Pixel {
             tensorStride_( image.TensorStride() ) {}
 
       /// Swaps `*this` and `other`.
-      void swap( Pixel& other ) {
+      void swap( Pixel& other ) noexcept {
          using std::swap;
          bool thisInternal = origin_ == buffer_.data();
          bool otherInternal = other.origin_ == other.buffer_.data();
@@ -366,7 +389,7 @@ class Image::Pixel {
          swap( tensorStride_, other.tensorStride_ );
       }
 
-      void swap( Pixel&& other ) { swap( other ); }
+      void swap( Pixel&& other ) noexcept { swap( other ); } // NOLINT(*-rvalue-reference-param-not-moved)
 
       /// Returns the value of the first sample in the pixel as the given numeric type, similar to using `static_cast`.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
@@ -405,7 +428,7 @@ class Image::Pixel {
          return *this;
       }
       /// Assigning to a `Pixel` copies the values over to the pixel referenced.
-      Pixel& operator=( Pixel const& pixel ) {
+      Pixel& operator=( Pixel const& pixel ) { // NOLINT(*-unhandled-self-assignment)
          dip::uint N = tensor_.Elements();
          DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
          dip::sint srcSz = static_cast< dip::sint >( pixel.DataType().SizeOf() );
@@ -419,12 +442,14 @@ class Image::Pixel {
          }
          return *this;
       }
-      Pixel& operator=( Pixel&& pixel ) {
-         return operator=( const_cast< Pixel const& >( pixel )); // Call copy assignment instead
+      Pixel& operator=( Pixel&& pixel ) { // NOLINT(*-noexcept-move-operations, *-noexcept-move-constructor, *-exception-escape)
+         operator=( const_cast< Pixel const& >( pixel )); // Call copy assignment instead
+         return *this;
       }
       template< typename T >
       Pixel& operator=( CastPixel< T > const& pixel ) {
-         return operator=( static_cast< Pixel const& >( pixel ));
+         operator=( static_cast< Pixel const& >( pixel ));
+         return *this;
       }
       /// It is also possible to assign from an initializer list.
       template< typename T, typename = std::enable_if_t< IsNumericType< T >::value >>
@@ -484,9 +509,8 @@ class Image::Pixel {
       Sample operator[]( dip::uint index ) const {
          DIP_ASSERT( index < tensor_.Elements() );
          dip::uint sz = dataType_.SizeOf();
-         return Sample(
-               static_cast< uint8* >( origin_ ) + static_cast< dip::sint >( sz * index ) * tensorStride_,
-               dataType_ );
+         return { static_cast< uint8 * >( origin_ ) + static_cast< dip::sint >( sz * index ) * tensorStride_,
+                    dataType_ };
       }
       /// Indexing into a `Pixel` retrieves a reference to the specific sample, `indices` must have one or two elements.
       Sample operator[]( UnsignedArray const& indices ) const {
@@ -573,7 +597,7 @@ class Image::Pixel {
             Iterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ), position_( 0 ) {}
 
             /// Swap two iterators
-            void swap( Iterator& other ) {
+            void swap( Iterator& other ) noexcept {
                value_.swap( other.value_ );
                std::swap( tensorStride_, other.tensorStride_ );
                std::swap( position_, other.position_ );
@@ -627,9 +651,9 @@ class Image::Pixel {
       };
 
       /// Returns an iterator to the first sample in the pixel.
-      Iterator begin() const { return Iterator( origin_, dataType_, tensorStride_ ); }
+      Iterator begin() const { return { origin_, dataType_, tensorStride_ }; }
       /// Returns an iterator to one past the last sample in the pixel.
-      Iterator end() const { return Iterator( origin_, dataType_, tensorStride_, tensor_.Elements() ); }
+      Iterator end() const { return { origin_, dataType_, tensorStride_, tensor_.Elements() }; }
 
       /// True if all tensor elements are non-zero.
       bool All() const {
@@ -689,8 +713,8 @@ class Image::Pixel {
       }
 };
 
-inline void swap( Image::Pixel& v1, Image::Pixel& v2 ) { v1.swap( v2 ); }
-inline void swap( Image::Pixel::Iterator& v1, Image::Pixel::Iterator& v2 ) { v1.swap( v2 ); }
+inline void swap( Image::Pixel& v1, Image::Pixel& v2 ) noexcept { v1.swap( v2 ); }
+inline void swap( Image::Pixel::Iterator& v1, Image::Pixel::Iterator& v2 ) noexcept { v1.swap( v2 ); }
 
 /// \brief Arithmetic operator, element-wise.
 /// \relates dip::Image::Pixel
@@ -926,9 +950,10 @@ class Image::View {
       View() = delete;                          // No default constructor
       View( View const& ) = default;            // Default copy constructor is OK
       View( View&& ) = default;                 // Default move constructor is OK
+      ~View() = default;
 
       /// \brief Move assignment doesn't move, this behaves in the same way as the copy assignment.
-      View& operator=( View&& source ) {
+      View& operator=( View&& source ) { // NOLINT(*-noexcept-move-operations, *-noexcept-move-constructor)
          Copy( source );
          return *this;
       }
@@ -1001,7 +1026,7 @@ class Image::View {
 
       /// \brief Extract tensor elements using linear indexing.
       View operator[]( Range range ) const {
-         View out( reference_, std::move( range ));
+         View out( reference_, range );
          out.mask_ = mask_;
          out.offsets_ = offsets_;
          return out;
@@ -1165,13 +1190,17 @@ class Image::View::Iterator {
       /// To construct a useful iterator, provide a view
       explicit Iterator( View&& view );
       // Define move constructor (not generated automatically because destructor is defined)
-      Iterator( Iterator &&iterator );
+      Iterator( Iterator &&iterator ) noexcept;
+      // Disable copy constructor and assignments
+      Iterator( Iterator const& ) = delete;
+      Iterator operator=( Iterator const& ) = delete;
+      Iterator operator=( Iterator&& ) = delete;
       // Don't generate default destructor until GenericImageIterator is complete
       ~Iterator();
 
       /// Dereference
       value_type operator*() const {
-         return value_type( Pointer(), view_.reference_.DataType(), view_.reference_.Tensor(), view_.reference_.TensorStride() );
+         return { Pointer(), view_.reference_.DataType(), view_.reference_.Tensor(), view_.reference_.TensorStride() };
       }
       /// Dereference
       value_type operator->() const {
@@ -1187,11 +1216,11 @@ class Image::View::Iterator {
 
       /// Get an iterator over the tensor for the current pixel, `it.begin()` is equal to `(*it).begin()`.
       value_type::Iterator begin() const {
-         return value_type::Iterator( Pointer(), view_.reference_.DataType(), view_.reference_.TensorStride() );
+         return { Pointer(), view_.reference_.DataType(), view_.reference_.TensorStride() };
       }
       /// Get an end iterator over the tensor for the current pixel
       value_type::Iterator end() const {
-         return value_type::Iterator( Pointer(), view_.reference_.DataType(), view_.reference_.TensorStride(), view_.reference_.TensorElements() );
+         return { Pointer(), view_.reference_.DataType(), view_.reference_.TensorStride(), view_.reference_.TensorElements() };
       }
 
       /// Equality comparison, is equal if the two iterators have the same position.
@@ -1296,7 +1325,7 @@ inline Image::Image( Image::View const& view ) {
    }
 }
 
-inline Image::Image( Image::View&& view ) {
+inline Image::Image( Image::View&& view ) { // NOLINT(*-rvalue-reference-param-not-moved)
    if( view.mask_.IsForged() ) {
       DIP_STACK_TRACE_THIS( CopyFrom( view.reference_, *this, view.mask_ ));
    } else if( !view.offsets_.empty() ) {
@@ -1340,7 +1369,7 @@ inline Image::View Image::operator[]( T index ) const {
 }
 
 inline Image::View Image::operator[]( Range range ) const {
-   DIP_STACK_TRACE_THIS( return Image::View( *this, std::move( range )));
+   DIP_STACK_TRACE_THIS( return Image::View( *this, range ));
 }
 
 inline Image::View Image::At( Range const& x_range ) const {

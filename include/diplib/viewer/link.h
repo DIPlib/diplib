@@ -19,51 +19,60 @@
 
 #include <set>
 
+#include "diplib/viewer/export.h"
 #include "diplib/viewer/viewer.h"
 
 /// \file
 /// \brief Declares \ref dip::viewer::LinkViewPort.
 
-namespace dip { namespace viewer {
+namespace dip {
+namespace viewer {
 
 /// \addtogroup dipviewer
 
 /// \brief Handles viewer linking.
-class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort
-{
-  protected:
-    static LinkViewPort *link_source_;
-    std::set<LinkViewPort*> links_;
+class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort {
+   protected:
+      static LinkViewPort* link_source_;
+      std::set< LinkViewPort* > links_;
 
-  public:
-    explicit LinkViewPort(Viewer *viewer) : ViewPort(viewer) { }
-    ~LinkViewPort() override
-    {
-      for (auto it=links_.begin(); it != links_.end(); ++it)
-        (*it)->unlink(this);
-      links_.clear();
-      if (link_source_ == this)
-        link_source_ = NULL;
-    }
-    
-    DIPVIEWER_EXPORT void render() override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
-    
-    /// \brief Update linked viewers' options
-    DIPVIEWER_EXPORT void update();
-    
-    /// \brief Update from linked viewer's options
-    DIPVIEWER_EXPORT void update(const ViewingOptions &options);
+   public:
+      explicit LinkViewPort( Viewer* viewer ) : ViewPort( viewer ) {}
 
-    /// \brief Add linked viewer
-    DIPVIEWER_EXPORT void link(LinkViewPort *link);
-    
-    /// \brief Remove linked viewer
-    DIPVIEWER_EXPORT void unlink(LinkViewPort *link);
+      LinkViewPort( LinkViewPort const& ) = delete;
+      LinkViewPort( LinkViewPort&& ) = default;
+      LinkViewPort& operator=( LinkViewPort const& ) = delete;
+      LinkViewPort& operator=( LinkViewPort&& ) = default;
+
+      ~LinkViewPort() override {
+         for( auto port : links_ ) {
+            port->unlink( this );
+         }
+         links_.clear();
+         if( link_source_ == this ) {
+            link_source_ = nullptr;
+         }
+      }
+
+      DIPVIEWER_EXPORT void render() override;
+      DIPVIEWER_EXPORT void click( int button, int state, int x, int y, int mods ) override;
+
+      /// \brief Update linked viewers' options
+      DIPVIEWER_EXPORT void update();
+
+      /// \brief Update from linked viewer's options
+      DIPVIEWER_EXPORT void update( const ViewingOptions& options );
+
+      /// \brief Add linked viewer
+      DIPVIEWER_EXPORT void link( LinkViewPort* link );
+
+      /// \brief Remove linked viewer
+      DIPVIEWER_EXPORT void unlink( LinkViewPort* link );
 };
 
 /// \endgroup
 
-}} // namespace dip::viewer
+} // namespace viewer
+} // namespace dip
 
 #endif // DIP_VIEWER_LINK_H

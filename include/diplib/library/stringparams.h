@@ -26,8 +26,6 @@
 #ifndef DIP_STRINGPARAMS_H
 #define DIP_STRINGPARAMS_H
 
-#include "diplib/library/types.h"
-
 
 namespace dip {
 

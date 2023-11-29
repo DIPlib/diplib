@@ -18,6 +18,11 @@
 #ifndef DIP_NEIGHBORLIST_H
 #define DIP_NEIGHBORLIST_H
 
+#include <cstdlib>
+#include <algorithm>
+#include <iterator>
+#include <vector>
+
 #include "diplib.h"
 
 
@@ -43,7 +48,7 @@ class DIP_NO_EXPORT Metric {
    public:
 
       /// \brief The type of metric
-      enum class TypeCode {
+      enum class TypeCode : uint8 {
             CONNECTED, ///< A connectivity metric, where the neighbors are all at the same distance.
             CHAMFER,   ///< A chamfer metric, where different neighbors have different distances.
             IMAGE      ///< Metric defined through an image.
@@ -186,8 +191,8 @@ class DIP_NO_EXPORT Metric {
       }
 
    private:
-      TypeCode type_;
-      dip::uint param_;
+      TypeCode type_ = TypeCode::CONNECTED;
+      dip::uint param_ = 1;
       dip::Image image_;
       FloatArray pixelSize_;
 };
@@ -229,7 +234,7 @@ class DIP_NO_EXPORT NeighborList {
             /// Default constructible, yields an invalid iterator.
             Iterator() = default;
             /// Swap
-            void swap( Iterator& other ) {
+            void swap( Iterator& other ) noexcept {
                using std::swap;
                swap( it_, other.it_ );
             }
@@ -390,7 +395,7 @@ class DIP_NO_EXPORT NeighborList {
       }
 };
 
-inline void swap( NeighborList::Iterator& v1, NeighborList::Iterator& v2 ) {
+inline void swap( NeighborList::Iterator& v1, NeighborList::Iterator& v2 ) noexcept {
    v1.swap( v2 );
 }
 

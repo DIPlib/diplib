@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
+#include "diplib.h"
 #include "diplib/multithreading.h"
 
 namespace dip {

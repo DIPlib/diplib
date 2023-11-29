@@ -26,6 +26,10 @@
 #ifndef DIP_OPERATORS_H
 #define DIP_OPERATORS_H
 
+#include <type_traits>
+
+#include "diplib/library/export.h"
+#include "diplib/library/datatype.h"
 #include "diplib/library/image.h"
 
 

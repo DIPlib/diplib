@@ -17,6 +17,7 @@
 #ifndef CONSTFOR_H_INCLUDED
 #define CONSTFOR_H_INCLUDED 1
 
+#include <cstddef>
 #include <utility>
 #include <type_traits>
 

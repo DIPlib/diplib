@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <array>
+
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"

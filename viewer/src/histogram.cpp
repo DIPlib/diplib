@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include "diplib/statistics.h"
+#include "diplib/framework.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
+#include "diplib/statistics.h"
 
 #include "include_gl.h"
 #include "diplib/viewer/histogram.h"

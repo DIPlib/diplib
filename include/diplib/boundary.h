@@ -18,6 +18,8 @@
 #ifndef DIP_BOUNDARY_H
 #define DIP_BOUNDARY_H
 
+#include <utility>
+
 #include "diplib.h"
 
 
@@ -57,7 +59,7 @@ namespace dip {
 /// `THIRD_ORDER_EXTRAPOLATE`    | "third order"       | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                    | "default" or ""     | The default value, currently equal to `SYMMETRIC_MIRROR`.
 /// `ALREADY_EXPANDED`           | "already expanded"  | The dangerous option. The image is an ROI of a larger image, the filter should read existing data outside of the image. The user must be sure that there exists sufficient data to satisfy the filter, for this she must understand how far the filter will read data outside of the image bounds. Not supported by all functions, and cannot always be combined with other options.
-enum class DIP_NO_EXPORT BoundaryCondition {
+enum class DIP_NO_EXPORT BoundaryCondition : uint8 {
    SYMMETRIC_MIRROR,
    DEFAULT = SYMMETRIC_MIRROR,
    ASYMMETRIC_MIRROR,
@@ -138,7 +140,7 @@ namespace Option {
 /// \brief Defines options to the \ref dip::ExtendImage function.
 ///
 /// Implicitly casts to \ref dip::Option::ExtendImageFlags. Combine constants together with the `+` operator.
-enum class DIP_NO_EXPORT ExtendImage {
+enum class DIP_NO_EXPORT ExtendImage : uint8 {
    Masked,       ///< The output image is a window on the boundary-extended image of the same size as the input.
    ExpandTensor  ///< The output image has normal tensor storage.
 };

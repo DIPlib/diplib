@@ -17,33 +17,43 @@
 #ifndef DIP_VIEWER_STATUS_H
 #define DIP_VIEWER_STATUS_H
 
+#include <vector>
+
+#include "diplib.h"
+#include "diplib/viewer/export.h"
+#include "diplib/viewer/slice.h"
 #include "diplib/viewer/viewer.h"
 
 /// \file
 /// \brief Declares \ref dip::viewer::StatusViewPort.
 
-namespace dip { namespace viewer {
+namespace dip {
+namespace viewer {
 
 /// \addtogroup dipviewer
 
 /// \brief Displays the \ref Viewer's status.
-class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort
-{
-  protected:
-    class SliceViewer* viewer_;
-    std::vector<std::vector<dip::String> > lists_;
-    std::vector<dip::uint> dim_starts_;
+class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort {
+   protected:
+      class SliceViewer* viewer_;
+      std::vector< std::vector< dip::String >> lists_;
+      std::vector< dip::uint > dim_starts_;
 
-  public:
-    explicit StatusViewPort(class SliceViewer* viewer) : ViewPort((Viewer*)viewer), viewer_(viewer) { }
-    ~StatusViewPort() override { }
-    
-    DIPVIEWER_EXPORT void render() override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
+   public:
+      explicit StatusViewPort( class SliceViewer* viewer ) : ViewPort( viewer ), viewer_( viewer ) {}
+      StatusViewPort( StatusViewPort const& ) = delete;
+      StatusViewPort( StatusViewPort&& ) = default;
+      StatusViewPort& operator=( StatusViewPort const& ) = delete;
+      StatusViewPort& operator=( StatusViewPort&& ) = default;
+      ~StatusViewPort() override = default;
+
+      DIPVIEWER_EXPORT void render() override;
+      DIPVIEWER_EXPORT void click( int button, int state, int x, int y, int mods ) override;
 };
 
 /// \endgroup
 
-}} // namespace dip::viewer
+} // namespace viewer
+} // namespace dip
 
 #endif // DIP_VIEWER_STATUS_H

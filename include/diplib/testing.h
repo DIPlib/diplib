@@ -19,8 +19,12 @@
 #define DIP_TESTING_H
 
 #include <chrono>
+#include <complex>
 #include <ctime>
 #include <iomanip>
+#include <ostream>
+#include <iostream>
+#include <type_traits>
 
 #include "diplib.h"
 #include "diplib/statistics.h"
@@ -41,7 +45,7 @@ namespace dip {
 namespace Option {
 
 /// \brief How to compare images in \ref dip::testing::CompareImages.
-enum class DIP_NO_EXPORT CompareImagesMode {
+enum class DIP_NO_EXPORT CompareImagesMode : uint8 {
    EXACT,      ///< Compare only the sample values (and image sizes).
    APPROX,     ///< Compare the sample values (and image sizes), to match within `epsilon` in absolute terms.
    APPROX_REL, ///< Compare the sample values (and image sizes), to match within `epsilon` in relative terms.
@@ -298,8 +302,8 @@ class DIP_NO_EXPORT Timer {
    private:
       std::chrono::time_point< std::chrono::steady_clock > startWall_;
       std::chrono::time_point< std::chrono::steady_clock > endWall_;
-      std::clock_t startCpu_;
-      std::clock_t endCpu_;
+      std::clock_t startCpu_ = 0;
+      std::clock_t endCpu_ = 0;
 };
 
 namespace detail {

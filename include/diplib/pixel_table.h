@@ -18,6 +18,12 @@
 #ifndef DIP_PIXEL_TABLE_H
 #define DIP_PIXEL_TABLE_H
 
+#include <cstdlib>
+#include <algorithm>
+#include <iterator>
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 
 
@@ -325,7 +331,7 @@ class DIP_NO_EXPORT PixelTable {
       /// but has knowledge of the image's strides and thus directly gives offsets rather than coordinates to
       /// the neighbors.
       PixelTableOffsets Prepare( Image const& image ) const {
-         return PixelTableOffsets( *this, image );
+         return { *this, image };
       }
 
       /// \brief Add weights to each pixel in the neighborhood, taken from an image. The image must be of the same
@@ -399,7 +405,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
       }
 
       /// Swap.
-      void swap( iterator& other ) {
+      void swap( iterator& other ) noexcept {
          using std::swap;
          swap( run_, other.run_ );
          swap( end_, other.end_ );
@@ -457,7 +463,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
       value_type coordinates_;   // the coordinates of the pixel
 };
 
-inline void swap( PixelTable::iterator& v1, PixelTable::iterator& v2 ) {
+inline void swap( PixelTable::iterator& v1, PixelTable::iterator& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -504,7 +510,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       }
 
       /// Swap.
-      void swap( iterator& other ) {
+      void swap( iterator& other ) noexcept {
          using std::swap;
          swap( run_, other.run_ );
          swap( end_, other.end_ );
@@ -562,7 +568,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       dip::sint stride_ = 1;     // image stride along the run direction
 };
 
-inline void swap( PixelTableOffsets::iterator& v1, PixelTableOffsets::iterator& v2 ) {
+inline void swap( PixelTableOffsets::iterator& v1, PixelTableOffsets::iterator& v2 ) noexcept {
    v1.swap( v2 );
 }
 

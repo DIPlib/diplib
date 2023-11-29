@@ -19,10 +19,13 @@
 #ifndef DIP_ACCUMULATORS_H
 #define DIP_ACCUMULATORS_H
 
+#include <algorithm>
 #include <cmath>
-#include <numeric>
+#include <complex>
 #include <limits>
 
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
 #include "diplib/library/types.h"
 
 

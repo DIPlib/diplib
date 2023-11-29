@@ -18,6 +18,13 @@
 #ifndef DIP_DISTRIBUTION_H
 #define DIP_DISTRIBUTION_H
 
+#include <algorithm>
+#include <iterator>
+#include <numeric>
+#include <ostream>
+#include <type_traits>
+#include <vector>
+
 #include "diplib.h"
 
 /// \file
@@ -87,20 +94,22 @@ class DIP_NO_EXPORT Distribution {
             /// Move constructor
             Sample( Sample&& ) = default;
             /// \brief Copy constructor, references the same data. Careful!
-            Sample( const Sample& ) = default;
+            Sample( Sample const& ) = default;
             /// Move assignment actually copies value over to sample referenced
-            Sample& operator=( Sample&& other ) {
+            Sample& operator=( Sample&& other ) { // NOLINT(*-noexcept-move-operations, *-noexcept-move-constructor, *-exception-escape)
                *this = other; // Call copy assignment
                return *this;
             }
             /// Copy assignment, data is copied to sample referenced
-            Sample& operator=( Sample const& other ) {
+            Sample& operator=( Sample const& other ) { // NOLINT(*-unhandled-self-assignment)
                DIP_ASSERT( distribution_->ValuesPerSample() == other.distribution_->ValuesPerSample() );
                dfloat const* src = other.distribution_->data_.data() + other.index_;
                dfloat* dest = distribution_->data_.data() + index_;
                std::copy( src, src + distribution_->ValuesPerSample() + 1, dest );
                return *this;
             };
+            // Destructor
+            ~Sample() = default;
             /// Returns reference to sample's *x* value.
             dfloat& X() {
                return distribution_->data_[ index_ ];
@@ -130,7 +139,7 @@ class DIP_NO_EXPORT Distribution {
                return distribution_->data_[ index_ + 1 ];
             }
             /// Swaps two samples. Will do bad things if `*this` and `other` don't have the same number of values
-            void swap( Sample& other ) {
+            void swap( Sample& other ) { // NOLINT(*-noexcept-swap, *-exception-escape)
                DIP_ASSERT( distribution_->ValuesPerSample() == other.distribution_->ValuesPerSample() );
                dfloat* ptr1 = distribution_->data_.data() + index_;
                dfloat* ptr2 = other.distribution_->data_.data() + other.index_;
@@ -138,7 +147,7 @@ class DIP_NO_EXPORT Distribution {
                   std::swap( ptr1[ ii ], ptr2[ ii ] );
                }
             }
-            friend void swap( Sample& a, Sample& b ) {
+            friend void swap( Sample& a, Sample& b ) { // NOLINT(*-noexcept-swap, *-exception-escape)
                a.swap( b );
             }
          private:
@@ -171,10 +180,11 @@ class DIP_NO_EXPORT Distribution {
             /// Move constructor
             Iterator( Iterator&& ) = default;
             /// Copy constructor
-            Iterator( const Iterator& ) = default;
+            Iterator( Iterator const& ) = default;
             /// Move assignment, identical to move assignment
             Iterator& operator=( Iterator&& other ) noexcept {
-               return operator=( other ); // Call copy assignment
+               operator=( other ); // Call copy assignment
+               return *this;
             }
             /// Copy assignment
             Iterator& operator=( Iterator const& other ) noexcept {
@@ -184,6 +194,8 @@ class DIP_NO_EXPORT Distribution {
                stride_ = other.stride_;
                return *this;
             };
+            // Destructor
+            ~Iterator() = default;
 
             /// Dereference
             Sample& operator*() noexcept { return sample_; }
@@ -267,7 +279,7 @@ class DIP_NO_EXPORT Distribution {
             dip::uint stride_;
             explicit Iterator( Distribution const& distribution ) noexcept
                   : sample_( &distribution, 0 ), stride_( distribution.Stride() ) {}
-            explicit Iterator( Distribution const& distribution, int ) noexcept // A second argument, ignored, creates an end iterator
+            explicit Iterator( Distribution const& distribution, int /*isEnd*/) noexcept // A second argument, ignored, creates an end iterator
                   : sample_( &distribution, distribution.Size() ), stride_( distribution.Stride() ) {}
       };
 
@@ -331,7 +343,7 @@ class DIP_NO_EXPORT Distribution {
          return { this, index };
       }
       /// Gets the *x* and *y* values at location `index`
-      Sample const operator[]( dip::uint index ) const {
+      Sample operator[]( dip::uint index ) const { // TODO: Should return a ConstSample
          DIP_THROW_IF( index >= Size(), E::INDEX_OUT_OF_RANGE );
          return { this, index };
       }
@@ -342,7 +354,7 @@ class DIP_NO_EXPORT Distribution {
          return { this, ( Size() - 1 ) };
       }
       /// Gets the *x* and *y* values at the end
-      Sample const Back() const {
+      Sample Back() const { // TODO: Should return a ConstSample
          DIP_THROW_IF( Empty(), "Attempting to access last element in an empty distribution" );
          return { this, ( Size() - 1 ) };
       }
@@ -350,11 +362,11 @@ class DIP_NO_EXPORT Distribution {
       /// Returns an iterator to the beginning
       Iterator begin() noexcept { return Iterator( *this ); }
       /// Returns an iterator to the beginning
-      Iterator begin() const noexcept { return Iterator( *this ); }
+      Iterator begin() const noexcept { return Iterator( *this ); } // TODO: Should return a ConstIterator
       /// Returns an iterator to the end
       Iterator end() noexcept { return Iterator( *this, 0 ); }
       /// Returns an iterator to the end
-      Iterator end() const noexcept { return Iterator( *this, 0 ); }
+      Iterator end() const noexcept { return Iterator( *this, 0 ); } // TODO: Should return a ConstIterator
 
       /// Returns an *x*-value iterator to the beginning
       SampleIterator< dfloat > Xbegin() noexcept {

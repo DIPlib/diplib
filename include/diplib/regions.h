@@ -18,6 +18,8 @@
 #ifndef DIP_REGIONS_H
 #define DIP_REGIONS_H
 
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/neighborlist.h"
 #include "diplib/graph.h"

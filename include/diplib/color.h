@@ -19,7 +19,11 @@
 #ifndef DIP_COLOR_H
 #define DIP_COLOR_H
 
+#include <array>
 #include <map>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/iterators.h"
@@ -88,6 +92,11 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
          ( void )inverseMatrix;
       }
 
+      ColorSpaceConverter() = default;
+      ColorSpaceConverter( ColorSpaceConverter const& ) = delete;
+      ColorSpaceConverter( ColorSpaceConverter&& ) = default;
+      ColorSpaceConverter& operator=( ColorSpaceConverter const& ) = delete;
+      ColorSpaceConverter& operator=( ColorSpaceConverter&& ) = default;
       virtual ~ColorSpaceConverter() = default;
 };
 

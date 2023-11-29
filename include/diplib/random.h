@@ -19,6 +19,7 @@
 #define DIP_RANDOM_H
 
 
+#include <limits>
 #include <random>
 
 #include "diplib.h"

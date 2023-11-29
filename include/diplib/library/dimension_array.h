@@ -35,6 +35,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "diplib/library/export.h"
 #include "diplib/library/error.h"
 
 
@@ -104,7 +105,7 @@ class DIP_NO_EXPORT DimensionArray {
       using size_type = std::size_t;
 
       /// The default-initialized array has zero size.
-      DimensionArray() {}; // Using `=default` causes weird sequence of "constructor required before non-static data member for ‘dip::Histogram::Configuration::lowerBound’ has been parsed" in GCC
+      DimensionArray() {}; // NOLINT(*-use-equals-default) Using `=default` causes weird sequence of "constructor required before non-static data member for ‘dip::Histogram::Configuration::lowerBound’ has been parsed" in GCC
 
       /// Like `std::vector`, you can initialize with a size and a default value.
       explicit DimensionArray( size_type sz, T newval = T() ) {

@@ -26,6 +26,13 @@
 #ifndef DIP_TENSOR_H
 #define DIP_TENSOR_H
 
+#include <algorithm>
+#include <ostream>
+#include <string>
+#include <vector>
+
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
 #include "diplib/library/types.h"
 
 
@@ -103,7 +110,7 @@ class DIP_NO_EXPORT Tensor {
       ///    }
       /// }
       /// ```
-      enum class Shape {
+      enum class Shape : uint8 {
             COL_VECTOR = 0,   ///< a vector (stores n elements), default vector shape
             ROW_VECTOR,       ///< a row vector (stores n elements)
             COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements), default matrix shape
@@ -601,7 +608,7 @@ class DIP_NO_EXPORT Tensor {
       }
 
       /// Swaps the contents of `this` and `other`.
-      void swap( Tensor& other ) {
+      void swap( Tensor& other ) noexcept {
          using std::swap;
          swap( shape_, other.shape_ );
          swap( elements_, other.elements_ );
@@ -674,7 +681,7 @@ class DIP_NO_EXPORT Tensor {
       }
 };
 
-inline void swap( Tensor& v1, Tensor& v2 ) {
+inline void swap( Tensor& v1, Tensor& v2 ) noexcept {
    v1.swap( v2 );
 }
 

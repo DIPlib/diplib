@@ -18,6 +18,8 @@
 #ifndef DIP_MORPHOLOGY_H
 #define DIP_MORPHOLOGY_H
 
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/random.h"
 
@@ -190,7 +192,7 @@ class DIP_NO_EXPORT StructuringElement {
    public:
 
       /// \brief Possible shapes of a structuring element
-      enum class ShapeCode {
+      enum class ShapeCode : uint8 {
             RECTANGULAR,       ///< Corresponding to string `"rectangular"`.
             ELLIPTIC,          ///< Corresponding to string `"elliptic"`.
             DIAMOND,           ///< Corresponding to string `"diamond"`.
@@ -205,7 +207,7 @@ class DIP_NO_EXPORT StructuringElement {
       };
 
       /// \brief The default structuring element is a disk with a diameter of 7 pixels.
-      StructuringElement() : shape_( ShapeCode::ELLIPTIC ), params_( { 7 } ) {}
+      StructuringElement() : params_( { 7 } ) {}
 
       /// \brief A string implicitly converts to a structuring element, it is interpreted as a shape.
       StructuringElement( String const& shape ) : params_( { 7 } ) {
@@ -285,7 +287,7 @@ class DIP_NO_EXPORT StructuringElement {
       }
 
    private:
-      ShapeCode shape_;
+      ShapeCode shape_ = ShapeCode::ELLIPTIC;
       FloatArray params_;
       Image image_;
       bool mirror_ = false;
@@ -324,7 +326,7 @@ class DIP_NO_EXPORT StructuringElement {
 
 namespace detail {
 
-enum class BasicMorphologyOperation {
+enum class BasicMorphologyOperation : uint8 {
       DILATION,
       EROSION,
       CLOSING,

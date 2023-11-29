@@ -21,8 +21,8 @@
 #define DIP_DFT_H
 
 #include <complex>
-#include <limits>
 
+#include "diplib/library/export.h"
 #include "diplib/library/types.h"
 
 /// \file
@@ -41,7 +41,7 @@ namespace Option {
 /// \brief Determines working mode for \ref DFT and \ref RDFT.
 ///
 /// Implicitly casts to \ref dip::Option::DFTOptions. Combine constants together with the `+` operator.
-enum class DIP_NO_EXPORT DFTOption {
+enum class DIP_NO_EXPORT DFTOption : uint8 {
    InPlace,      ///< Work in place, the input and output buffers are the same.
    TrashInput,   ///< Allowed to trash the input buffer, we don't need to preserve it.
    Aligned       ///< Both buffers are aligned to 16-byte boundaries.
@@ -97,8 +97,10 @@ class DFT {
          Initialize( other.nfft_, other.inverse_, other.options_ );
       }
       DFT& operator=( DFT const& other ) {
-         Destroy();
-         Initialize( other.nfft_, other.inverse_, other.options_ );
+         if ( this != &other ) {
+            Destroy();
+            Initialize( other.nfft_, other.inverse_, other.options_ );
+         }
          return *this;
       }
 
@@ -108,12 +110,11 @@ class DFT {
          other.plan_ = nullptr;
       }
       DFT& operator=( DFT&& other ) noexcept {
-         Destroy();
-         plan_ = other.plan_;
-         other.plan_ = nullptr;
-         nfft_ = other.nfft_;
-         inverse_ = other.inverse_;
-         options_ = other.options_;
+         using std::swap;
+         swap( plan_, other.plan_ );
+         swap( nfft_, other.nfft_ );
+         swap( inverse_, other.inverse_ );
+         swap( options_, other.options_ );
          return *this;
       }
 
@@ -251,8 +252,10 @@ class RDFT {
          Initialize( other.nfft_, other.inverse_, other.options_ );
       }
       RDFT& operator=( RDFT const& other ) {
-         Destroy();
-         Initialize( other.nfft_, other.inverse_, other.options_ );
+         if ( this != &other ) {
+            Destroy();
+            Initialize( other.nfft_, other.inverse_, other.options_ );
+         }
          return *this;
       }
 
@@ -262,12 +265,11 @@ class RDFT {
          other.plan_ = nullptr;
       }
       RDFT& operator=( RDFT&& other ) noexcept {
-         Destroy();
-         plan_ = other.plan_;
-         other.plan_ = nullptr;
-         nfft_ = other.nfft_;
-         inverse_ = other.inverse_;
-         options_ = other.options_;
+         using std::swap;
+         swap( plan_, other.plan_ );
+         swap( nfft_, other.nfft_ );
+         swap( inverse_, other.inverse_ );
+         swap( options_, other.options_ );
          return *this;
       }
 

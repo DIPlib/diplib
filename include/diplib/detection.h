@@ -18,6 +18,9 @@
 #ifndef DIP_DETECTION_H
 #define DIP_DETECTION_H
 
+#include <utility>
+#include <vector>
+
 #include "diplib.h"
 #include "distribution.h"
 

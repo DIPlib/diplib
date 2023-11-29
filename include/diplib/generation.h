@@ -18,12 +18,15 @@
 #ifndef DIP_GENERATION_H
 #define DIP_GENERATION_H
 
+#include <vector>
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/random.h"
 
 // Forward declarations taken from the FreeType headers. This avoids making FreeType a dependency of these headers.
-typedef struct FT_LibraryRec_* FT_Library;
-typedef struct FT_FaceRec_* FT_Face;
+using FT_Library = struct FT_LibraryRec_*;
+using FT_Face = struct FT_FaceRec_*;
 
 
 /// \file

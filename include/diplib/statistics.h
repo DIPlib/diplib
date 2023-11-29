@@ -19,6 +19,8 @@
 #ifndef DIP_STATISTICS_H
 #define DIP_STATISTICS_H
 
+#include <cmath>
+
 #include "diplib.h"
 #include "diplib/accumulators.h"
 
@@ -186,12 +188,12 @@ DIP_NODISCARD inline Image name( Image::View const& in ) { \
    Image out; name( in, out ); return out; }
 
 #define DIP_DEFINE_PROJECTION_FUNCTIONS_WITH_MODE( name, default_mode ) \
-DIP_NODISCARD inline Image name( Image const& in, Image const& mask = {}, String const& mode = default_mode, BooleanArray const& process = {} ) { \
+DIP_NODISCARD inline Image name( Image const& in, Image const& mask = {}, String const& mode = ( default_mode ), BooleanArray const& process = {} ) { \
    Image out; name( in, mask, out, mode, process ); return out; } \
-inline void name( Image::View const& in, Image& out, String const& mode = default_mode ) { \
+inline void name( Image::View const& in, Image& out, String const& mode = ( default_mode )) { \
    if( in.Offsets().empty() ) { name( in.Reference(), in.Mask(), out, mode ); } \
    else { name( Image( in ), {}, out, mode ); }} \
-DIP_NODISCARD inline Image name( Image::View const& in, String const& mode = default_mode ) { \
+DIP_NODISCARD inline Image name( Image::View const& in, String const& mode = ( default_mode )) { \
    Image out; name( in, out, mode ); return out; }
 
 /// \brief Calculates the (arithmetic) mean of the pixel values over all those dimensions which are specified by `process`.

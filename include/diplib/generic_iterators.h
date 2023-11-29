@@ -18,6 +18,13 @@
 #ifndef DIP_GENERIC_ITERATORS_H
 #define DIP_GENERIC_ITERATORS_H
 
+#include <algorithm>
+#include <cstdlib>
+#include <iterator>
+#include <limits>
+#include <tuple>
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/iterators.h"
 
@@ -128,7 +135,7 @@ class DIP_NO_EXPORT BresenhamLineIterator {
       }
 
       /// Swap
-      void swap( BresenhamLineIterator& other ) {
+      void swap( BresenhamLineIterator& other ) noexcept {
          using std::swap;
          swap( offset_, other.offset_ );
          swap( coord_, other.coord_ );
@@ -196,7 +203,7 @@ class DIP_NO_EXPORT BresenhamLineIterator {
       IntegerArray strides_;  // image strides, to compute offset.
 };
 
-inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) {
+inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -252,7 +259,6 @@ class DIP_NO_EXPORT GenericImageIterator {
             strides_( image.Strides() ),
             tensorElements_( image.TensorElements() ),
             tensorStride_( image.TensorStride() ),
-            offset_( 0 ),
             coords_( image.Dimensionality(), 0 ),
             procDim_( procDim ),
             dataType_( image.DataType() ),
@@ -290,8 +296,8 @@ class DIP_NO_EXPORT GenericImageIterator {
       /// Pre-increment
       GenericImageIterator& operator++() {
          DIP_ASSERT( origin_ );
-         dip::uint dd;
-         for( dd = 0; dd < coords_.size(); ++dd ) {
+         dip::uint dd = 0;
+         for( ; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
                // Increment coordinate and adjust offset
                ++coords_[ dd ];
@@ -493,7 +499,7 @@ class DIP_NO_EXPORT GenericImageIterator {
       void* origin_ = nullptr;
       UnsignedArray sizes_;
       IntegerArray strides_;
-      dip::uint tensorElements_;
+      dip::uint tensorElements_ = 1;
       dip::sint tensorStride_ = 0;
       dip::sint offset_ = 0;
       UnsignedArray coords_;
@@ -513,7 +519,7 @@ inline GenericImageIterator< dip::dfloat > Image::begin() {
 }
 
 inline GenericImageIterator< dip::dfloat > Image::end() {
-   return GenericImageIterator< dip::dfloat >();
+   return {};
 }
 
 
@@ -651,8 +657,8 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Pre-increment
       GenericJointImageIterator& operator++() {
          if( *this ) {
-            dip::uint dd;
-            for( dd = 0; dd < coords_.size(); ++dd ) {
+            dip::uint dd = 0;
+            for( ; dd < coords_.size(); ++dd ) {
                if( dd != procDim_ ) {
                   // Increment coordinate and adjust pointer
                   ++coords_[ dd ];
@@ -1033,7 +1039,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
       }
 
       /// Swap
-      void swap( ImageSliceIterator& other ) {
+      void swap( ImageSliceIterator& other ) noexcept {
          using std::swap;
          swap( image_, other.image_ );
          swap( size_, other.size_ );
@@ -1179,7 +1185,7 @@ inline ImageSliceIterator operator+( ImageSliceIterator it, dip::sint n ) {
 /// \brief Increment an image slice iterator by `n`
 /// \relates dip::ImageSliceIterator
 inline ImageSliceIterator operator+( ImageSliceIterator it, dip::uint n ) {
-   return operator+( it, static_cast< dip::sint >( n ));
+   return operator+( std::move( it ), static_cast< dip::sint >( n ));
 }
 /// \brief Decrement an image slice iterator by `n`, but never moves the iterator to before the first slide
 /// \relates dip::ImageSliceIterator
@@ -1190,10 +1196,10 @@ inline ImageSliceIterator operator-( ImageSliceIterator it, dip::sint n ) {
 /// \brief Decrement an image slice iterator by `n`, but never moves the iterator to before the first slide
 /// \relates dip::ImageSliceIterator
 inline ImageSliceIterator operator-( ImageSliceIterator it, dip::uint n ) {
-   return operator-( it, static_cast< dip::sint >( n ));
+   return operator-( std::move( it ), static_cast< dip::sint >( n ));
 }
 
-inline void swap( ImageSliceIterator& v1, ImageSliceIterator& v2 ) {
+inline void swap( ImageSliceIterator& v1, ImageSliceIterator& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -1230,7 +1236,7 @@ inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
    Image tmp = image;
    dip::uint dim = tmp.Dimensionality();
    tmp.TensorToSpatial( dim ); // adds the tensor dimension as the last dimension, the same as -1.
-   return ImageSliceIterator( tmp, dim );
+   return { tmp, dim };
 }
 
 

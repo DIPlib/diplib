@@ -17,45 +17,52 @@
 #ifndef DIP_VIEWER_HISTOGRAM_H
 #define DIP_VIEWER_HISTOGRAM_H
 
-#include "diplib/framework.h"
+#include <mutex>
 
+#include "diplib.h"
+#include "diplib/viewer/export.h"
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
 
 /// \file
 /// \brief Declares \ref dip::viewer::HistogramViewPort.
 
-namespace dip { namespace viewer {
+namespace dip {
+namespace viewer {
 
 /// \addtogroup dipviewer
 
 /// \brief Controls grey-value mapping range and shows color mapping.
-class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort
-{
-  protected:
-    ImageView colorbar_;
-    dip::Image histogram_;
-    std::mutex mutex_;
-    
-    int drag_limit_, drag_x_, drag_y_;
+class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort {
+   protected:
+      ImageView colorbar_;
+      dip::Image histogram_;
+      std::mutex mutex_;
 
-  public:
-    explicit HistogramViewPort(Viewer *viewer) : ViewPort(viewer), colorbar_(this)
-    {
-    }
-    ~HistogramViewPort() override { }
-    
-    DIPVIEWER_EXPORT void calculate();
-    DIPVIEWER_EXPORT void render() override;
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods) override;
-    DIPVIEWER_EXPORT void motion(int button, int x, int y) override;
-    
-  protected:
-    DIPVIEWER_EXPORT void screenToView(int x, int y, double *ix, double *iy) override;
+      int drag_limit_, drag_x_, drag_y_;
+
+   public:
+      explicit HistogramViewPort( Viewer* viewer ) :
+         ViewPort( viewer ), colorbar_( this ) {}
+
+      HistogramViewPort( HistogramViewPort const& ) = delete;
+      HistogramViewPort( HistogramViewPort&& ) = delete;
+      HistogramViewPort& operator=( HistogramViewPort const& ) = delete;
+      HistogramViewPort& operator=( HistogramViewPort&& ) = delete;
+      ~HistogramViewPort() override = default;
+
+      DIPVIEWER_EXPORT void calculate();
+      DIPVIEWER_EXPORT void render() override;
+      DIPVIEWER_EXPORT void click( int button, int state, int x, int y, int mods ) override;
+      DIPVIEWER_EXPORT void motion( int button, int x, int y ) override;
+
+   protected:
+      DIPVIEWER_EXPORT void screenToView( int x, int y, double* ix, double* iy ) override;
 };
 
 /// \endgroup
 
-}} // namespace dip::viewer
+} // namespace viewer
+} // namespace dip
 
 #endif // DIP_VIEWER_HISTOGRAM_H

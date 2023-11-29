@@ -17,28 +17,34 @@
 #ifndef DIP_VIEWER_TENSOR_H
 #define DIP_VIEWER_TENSOR_H
 
+#include "diplib/viewer/export.h"
 #include "diplib/viewer/viewer.h"
 
 /// \file
 /// \brief Declares \ref dip::viewer::TensorViewPort.
 
-namespace dip { namespace viewer {
+namespace dip {
+namespace viewer {
 
 /// \addtogroup dipviewer
 
 /// \brief Allows the user to control which tensor elements are visualized.
-class DIPVIEWER_CLASS_EXPORT TensorViewPort : public ViewPort
-{
-  public:
-    TensorViewPort(Viewer *viewer) : ViewPort(viewer) { }
-    ~TensorViewPort() { }
-    
-    DIPVIEWER_EXPORT void render();
-    DIPVIEWER_EXPORT void click(int button, int state, int x, int y, int mods);
+class DIPVIEWER_CLASS_EXPORT TensorViewPort : public ViewPort {
+   public:
+      TensorViewPort( Viewer* viewer ) : ViewPort( viewer ) {}
+      TensorViewPort( TensorViewPort const& ) = delete;
+      TensorViewPort( TensorViewPort&& ) = default;
+      TensorViewPort& operator=( TensorViewPort const& ) = delete;
+      TensorViewPort& operator=( TensorViewPort&& ) = default;
+      ~TensorViewPort() override = default;
+
+      DIPVIEWER_EXPORT void render() override;
+      DIPVIEWER_EXPORT void click( int button, int state, int x, int y, int mods ) override;
 };
 
 /// \endgroup
 
-}} // namespace dip::viewer
+} // namespace viewer
+} // namespace dip
 
 #endif // DIP_VIEWER_TENSOR_H

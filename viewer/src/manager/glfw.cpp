@@ -17,7 +17,6 @@
 #ifdef DIP_CONFIG_HAS_GLFW
 
 #include <cstring>
-#include <exception>
 
 #include <GLFW/glfw3.h>
 

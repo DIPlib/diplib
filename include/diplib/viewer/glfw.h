@@ -17,164 +17,155 @@
 #ifndef DIP_VIEWER_GLFW_H_
 #define DIP_VIEWER_GLFW_H_
 
+#include <mutex>
+#include <map>
+#include <utility>
+
+#include "diplib.h"
+#include "diplib/viewer/export.h"
 #include "diplib/viewer/manager.h"
 
 struct GLFWwindow;
 
-#include <thread>
-#include <mutex>
-#include <map>
-#include <set>
-
 /// \file
 /// \brief Declares the GLFW interface of \ref dipviewer.
 
-namespace dip { namespace viewer {
+namespace dip {
+namespace viewer {
 
 /// \addtogroup dipviewer
 
 /// Simple GLFW window manager.
-class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
-{
-  protected:
-    struct WindowInfo
-    {
-      WindowPtr wdw;
-      bool refresh;
-      
-      WindowInfo(WindowPtr _wdw=WindowPtr(), bool _refresh=false) : wdw(_wdw), refresh(_refresh) { }
-    };
-  
-    typedef std::map<void *, WindowInfo> WindowMap;
-    typedef std::lock_guard<std::recursive_mutex> Guard;
-    
-  protected:
-    std::recursive_mutex mutex_;
+class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager {
+   protected:
+      struct WindowInfo {
+         WindowPtr wdw;
+         bool refresh;
 
-    WindowMap windows_;
+         WindowInfo( WindowPtr _wdw = WindowPtr(), bool _refresh = false ) :
+            wdw( std::move( _wdw )), refresh( _refresh ) {}
+      };
 
-    static GLFWManager *instance_;
-    
-  public:
-    DIPVIEWER_EXPORT GLFWManager();
-    DIPVIEWER_EXPORT ~GLFWManager() override;
-  
-    DIPVIEWER_EXPORT void createWindow(WindowPtr window) override;
-    dip::uint activeWindows() override { Guard guard(mutex_); return windows_.size(); }
-    DIPVIEWER_EXPORT void destroyWindows() override;
-    DIPVIEWER_EXPORT void processEvents() override;
-    
-  protected:    
-    DIPVIEWER_EXPORT void swapBuffers(Window* window) override;
-    DIPVIEWER_EXPORT void setWindowTitle(Window* window, const char *name) override;
-    DIPVIEWER_EXPORT void refreshWindow(Window* window) override;
-    DIPVIEWER_EXPORT void setWindowPosition(Window* window, int x, int y) override;
-    DIPVIEWER_EXPORT void setWindowSize(Window* window, int x, int y) override;
+      using WindowMap = std::map< void*, WindowInfo >;
+      using Guard = std::lock_guard< std::recursive_mutex >;
 
-    DIPVIEWER_EXPORT void run();
-    DIPVIEWER_EXPORT WindowPtr getWindow(GLFWwindow *window);
-    DIPVIEWER_EXPORT void getCursorPos(Window *window, int *x, int *y);
-    DIPVIEWER_EXPORT void makeCurrent(Window *window);
+      std::recursive_mutex mutex_;
+      WindowMap windows_;
+      static GLFWManager* instance_;
 
-    // Delegates
-    static void refresh(GLFWwindow *window)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        instance_->makeCurrent(wdw.get());
-        wdw->draw();
-      }
-    }
-    
-    static void reshape(GLFWwindow *window, int width, int height)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        instance_->makeCurrent(wdw.get());
-        wdw->resize(width, height);
-        wdw->reshape(width, height);
-      }
-    }
-    
-    static void iconify(GLFWwindow *window, int iconified)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        instance_->makeCurrent(wdw.get());
-        wdw->visible(!iconified);
-      }
-    }
-    
-    static void close(GLFWwindow *window)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        instance_->makeCurrent(wdw.get());
-        wdw->close();
-      }
-    }
+   public:
+      DIPVIEWER_EXPORT GLFWManager();
+      DIPVIEWER_EXPORT ~GLFWManager() override;
+      GLFWManager( GLFWManager const& ) = delete;
+      GLFWManager( GLFWManager&& ) = delete;
+      GLFWManager& operator=( GLFWManager const& ) = delete;
+      GLFWManager& operator=( GLFWManager&& ) = delete;
 
-    static void key(GLFWwindow *window, int key, int /*scancode*/, int action, int mods)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw && action > 0 && key < 128)
-      {
-        int x, y;
-        instance_->makeCurrent(wdw.get());
-        instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->key((unsigned char)key, x, y, mods);
-      }
-    }
-    
-    static void click(GLFWwindow *window, int button, int state, int mods)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        int x, y;
-        instance_->makeCurrent(wdw.get());
-        instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->click(button==1?2:button==2?1:0, state==0, x, y, mods);
-      }
-    }
+      DIPVIEWER_EXPORT void createWindow( WindowPtr window ) override;
 
-    static void scroll(GLFWwindow *window, double /*xoffset*/, double yoffset)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        int x, y;
-        instance_->makeCurrent(wdw.get());
-        instance_->getCursorPos(wdw.get(), &x, &y);
-                
-        int button = 3 + (yoffset < 0);
-        if (yoffset != 0)
-        {
-          wdw->click(button, 1, x, y, 0);
-          wdw->click(button, 0, x, y, 0);
-        }
+      dip::uint activeWindows() override {
+         Guard guard( mutex_ );
+         return windows_.size();
       }
-    }
 
-    static void motion(GLFWwindow *window, double /*x*/, double /*y*/)
-    {
-      WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
-      {
-        int x, y;
-        instance_->makeCurrent(wdw.get());
-        instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->motion(x, y);
+      DIPVIEWER_EXPORT void destroyWindows() override;
+      DIPVIEWER_EXPORT void processEvents() override;
+
+   protected:
+      DIPVIEWER_EXPORT void swapBuffers( Window* window ) override;
+      DIPVIEWER_EXPORT void setWindowTitle( Window* window, const char* name ) override;
+      DIPVIEWER_EXPORT void refreshWindow( Window* window ) override;
+      DIPVIEWER_EXPORT void setWindowPosition( Window* window, int x, int y ) override;
+      DIPVIEWER_EXPORT void setWindowSize( Window* window, int x, int y ) override;
+
+      DIPVIEWER_EXPORT void run();
+      DIPVIEWER_EXPORT WindowPtr getWindow( GLFWwindow* window );
+      DIPVIEWER_EXPORT void getCursorPos( Window* window, int* x, int* y );
+      DIPVIEWER_EXPORT void makeCurrent( Window* window );
+
+      // Delegates
+      static void refresh( GLFWwindow* window ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            instance_->makeCurrent( wdw.get() );
+            wdw->draw();
+         }
       }
-    }
+
+      static void reshape( GLFWwindow* window, int width, int height ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            instance_->makeCurrent( wdw.get() );
+            wdw->resize( width, height );
+            wdw->reshape( width, height );
+         }
+      }
+
+      static void iconify( GLFWwindow* window, int iconified ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            instance_->makeCurrent( wdw.get() );
+            wdw->visible( !iconified );
+         }
+      }
+
+      static void close( GLFWwindow* window ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            instance_->makeCurrent( wdw.get() );
+            wdw->close();
+         }
+      }
+
+      static void key( GLFWwindow* window, int key, int /*scancode*/, int action, int mods ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw && action > 0 && key < 128 ) {
+            int x, y;
+            instance_->makeCurrent( wdw.get() );
+            instance_->getCursorPos( wdw.get(), &x, &y );
+            wdw->key( ( unsigned char )key, x, y, mods );
+         }
+      }
+
+      static void click( GLFWwindow* window, int button, int state, int mods ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            int x, y;
+            instance_->makeCurrent( wdw.get() );
+            instance_->getCursorPos( wdw.get(), &x, &y );
+            wdw->click( button == 1 ? 2 : button == 2 ? 1 : 0, state == 0, x, y, mods );
+         }
+      }
+
+      static void scroll( GLFWwindow* window, double /*xoffset*/, double yoffset ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            int x, y;
+            instance_->makeCurrent( wdw.get() );
+            instance_->getCursorPos( wdw.get(), &x, &y );
+
+            int button = 3 + ( yoffset < 0 );
+            if( yoffset != 0 ) {
+               wdw->click( button, 1, x, y, 0 );
+               wdw->click( button, 0, x, y, 0 );
+            }
+         }
+      }
+
+      static void motion( GLFWwindow* window, double /*x*/, double /*y*/ ) {
+         WindowPtr wdw = instance_->getWindow( window );
+         if( wdw ) {
+            int x, y;
+            instance_->makeCurrent( wdw.get() );
+            instance_->getCursorPos( wdw.get(), &x, &y );
+            wdw->motion( x, y );
+         }
+      }
 };
 
 /// \endgroup
 
-}} // namespace dip::viewer
+} // namespace viewer
+} // namespace dip
 
 #endif /* DIP_VIEWER_GLFW_H_ */

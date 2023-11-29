@@ -18,6 +18,11 @@
 #ifndef DIP_CHAIN_CODE_H
 #define DIP_CHAIN_CODE_H
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <vector>
+
 #include "diplib.h"
 #include "accumulators.h"
 
@@ -422,8 +427,8 @@ struct DIP_NO_EXPORT BoundingBox {
    }
    /// Tests to see if the given point is inside the bounding box.
    bool Contains( VertexFloat pt ) {
-      return !(( pt.x < static_cast< dfloat >( topLeft.x )) || ( pt.x > static_cast< dfloat >( bottomRight.x )) ||
-               ( pt.y < static_cast< dfloat >( topLeft.y )) || ( pt.y > static_cast< dfloat >( bottomRight.y )));
+      return ( pt.x >= static_cast< dfloat >( topLeft.x )) && ( pt.x <= static_cast< dfloat >( bottomRight.x )) &&
+             ( pt.y >= static_cast< dfloat >( topLeft.y )) && ( pt.y <= static_cast< dfloat >( bottomRight.y ));
    }
    /// Returns the size of the bounding box.
    DimensionArray< T > Size() const;
@@ -814,13 +819,12 @@ struct DIP_NO_EXPORT ChainCode {
    /// first four table elements can be used. Otherwise, eight table elements exist and are valid.
    struct DIP_NO_EXPORT CodeTable {
          VertexInteger const* pos; ///< Array with position offsets for each chain code.
-         std::array< dip::sint, 8 > offset; ///< Array with pointer offsets for each chain code.
+         std::array< dip::sint, 8 > offset{ 0 }; ///< Array with pointer offsets for each chain code.
       private:
          friend struct ChainCode; // make it so that we can only create one of these tables through the dip::ChainCode::PrepareCodeTable method.
-         CodeTable( bool is8connected, IntegerArray strides ) {
+         CodeTable( bool is8connected, IntegerArray strides ) : pos( is8connected ? deltas8 : deltas4 ) {
             dip::sint xS = strides[ 0 ];
             dip::sint yS = strides[ 1 ];
-            pos = is8connected ? deltas8 : deltas4;
             for( dip::uint ii = 0; ii < ( is8connected ? 8u : 4u ); ++ii ) {
                offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
             }
@@ -836,7 +840,7 @@ struct DIP_NO_EXPORT ChainCode {
          /// Default constructor
          Code() = default;
          /// Constructor
-         Code( unsigned code, bool border = false ) { value = static_cast< dip::uint8 >(( code & 7u ) | ( static_cast< unsigned >( border ) << 3u )); }
+         Code( unsigned code, bool border = false ) : value( static_cast< dip::uint8 >(( code & 7u ) | ( static_cast< unsigned >( border ) << 3u )) ) {}
          /// Returns whether the border flag is set
          bool IsBorder() const { return static_cast< bool >( isBorder() ); }
          /// Returns the chain code

@@ -18,6 +18,9 @@
 #ifndef DIP_UNION_FIND_H
 #define DIP_UNION_FIND_H
 
+#include <limits>
+
+#include "diplib/library/error.h"
 #include "diplib/library/types.h"
 
 
@@ -228,7 +231,7 @@ class UnionFind {
 
 namespace detail {
    struct DummyUnionFindData {};
-   inline DummyUnionFindData DummyUnionFindFunc( DummyUnionFindData const&, detail::DummyUnionFindData const& ) { return {}; }
+   inline DummyUnionFindData DummyUnionFindFunc( DummyUnionFindData const& /**/, detail::DummyUnionFindData const& /**/) { return {}; }
 }
 
 /// \brief A simplified version of \ref dip::UnionFind that doesn't store any information about the regions, only equivalences.

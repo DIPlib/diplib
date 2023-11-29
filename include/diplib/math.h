@@ -18,6 +18,8 @@
 #ifndef DIP_MATH_H
 #define DIP_MATH_H
 
+#include <algorithm>
+
 #include "diplib.h"
 
 

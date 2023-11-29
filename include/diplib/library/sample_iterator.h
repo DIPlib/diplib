@@ -26,6 +26,10 @@
 #ifndef DIP_SAMPLE_ITERATOR_H
 #define DIP_SAMPLE_ITERATOR_H
 
+#include <iterator>
+#include <type_traits>
+
+#include "diplib/library/export.h"
 #include "diplib/library/types.h"
 
 
@@ -169,7 +173,7 @@ inline SampleIterator< T > operator-( SampleIterator< T > it, I n ) {
 }
 
 template< typename T >
-inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) {
+inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) noexcept {
    v1.swap( v2 );
 }
 

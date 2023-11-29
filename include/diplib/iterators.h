@@ -18,7 +18,11 @@
 #ifndef DIP_ITERATORS_H
 #define DIP_ITERATORS_H
 
+#include <array>
+#include <iterator>
+#include <limits>
 #include <tuple>
+#include <utility>
 
 #include "diplib.h"
 
@@ -119,7 +123,6 @@ class DIP_NO_EXPORT LineIterator {
             dip::sint tensorStride
       ) :
             ptr_( ptr ),
-            coord_( 0 ),
             size_( size ),
             stride_( stride ),
             nTensorElements_( nTensorElements ),
@@ -135,9 +138,7 @@ class DIP_NO_EXPORT LineIterator {
             ptr_( ptr ),
             coord_( coord ),
             size_( size ),
-            stride_( stride ),
-            nTensorElements_( 1 ),
-            tensorStride_( 0 ) {}
+            stride_( stride ) {}
       /// \brief To construct a useful iterator, provide a pointer, the length of the line, and the stride.
       /// A single tensor element is assumed. The iterator starts at the beginning of the line.
       LineIterator(
@@ -146,14 +147,11 @@ class DIP_NO_EXPORT LineIterator {
             dip::sint stride
       ) :
             ptr_( ptr ),
-            coord_( 0 ),
             size_( size ),
-            stride_( stride ),
-            nTensorElements_( 1 ),
-            tensorStride_( 0 ) {}
+            stride_( stride ) {}
 
       /// Swap
-      void swap( LineIterator& other ) {
+      void swap( LineIterator& other ) noexcept {
          using std::swap;
          swap( ptr_, other.ptr_ );
          swap( coord_, other.coord_ );
@@ -234,13 +232,13 @@ class DIP_NO_EXPORT LineIterator {
       pointer ptr_ = nullptr;
       dip::uint coord_ = 0;
       dip::uint size_ = 0;
-      dip::sint stride_;
-      dip::uint nTensorElements_ = 0;
-      dip::sint tensorStride_;
+      dip::sint stride_ = 0;
+      dip::uint nTensorElements_ = 1;
+      dip::sint tensorStride_ = 0;
 };
 
 template< typename T >
-inline void swap( LineIterator< T >& v1, LineIterator< T >& v2 ) {
+inline void swap( LineIterator< T >& v1, LineIterator< T >& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -399,7 +397,7 @@ class DIP_NO_EXPORT ImageIterator {
       }
 
       /// Swap
-      void swap( ImageIterator& other ) {
+      void swap( ImageIterator& other ) noexcept {
          using std::swap;
          swap( origin_, other.origin_ );
          swap( sizes_, other.sizes_ );
@@ -424,8 +422,8 @@ class DIP_NO_EXPORT ImageIterator {
       /// Pre-increment
       ImageIterator& operator++() {
          if( ptr_ ) {
-            dip::uint dd;
-            for( dd = 0; dd < coords_.size(); ++dd ) {
+            dip::uint dd = 0;
+            for( ; dd < coords_.size(); ++dd ) {
                if( dd != procDim_ ) {
                   // Increment coordinate and adjust pointer
                   ++coords_[ dd ];
@@ -633,7 +631,7 @@ class DIP_NO_EXPORT ImageIterator {
 };
 
 template< typename T >
-inline void swap( ImageIterator< T >& v1, ImageIterator< T >& v2 ) {
+inline void swap( ImageIterator< T >& v1, ImageIterator< T >& v2 ) noexcept {
    v1.swap( v2 );
 }
 
@@ -662,7 +660,7 @@ void TestDataType( ImageConstRefArray::const_pointer images ) {
    TestDataType< OtherTs... >( images + 1 );
 }
 template<>
-inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End of iteration
+inline void TestDataType<>( const ImageConstRefArray::const_pointer /**/ ) {} // End of iteration
 
 } // namespace detail
 
@@ -760,7 +758,7 @@ class DIP_NO_EXPORT JointImageIterator {
       }
 
       /// Swap
-      void swap( JointImageIterator& other ) {
+      void swap( JointImageIterator& other ) noexcept {
          using std::swap;
          swap( origins_, other.origins_ );
          swap( sizes_, other.sizes_ );
@@ -796,8 +794,8 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Pre-increment
       JointImageIterator& operator++() {
          if( *this ) {
-            dip::uint dd;
-            for( dd = 0; dd < coords_.size(); ++dd ) {
+            dip::uint dd = 0;
+            for( ; dd < coords_.size(); ++dd ) {
                if( dd != procDim_ ) {
                   // Increment coordinate and adjust pointer
                   ++coords_[ dd ];
@@ -1096,7 +1094,7 @@ class DIP_NO_EXPORT JointImageIterator {
 };
 
 template< typename inT, typename outT >
-inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, outT >& v2 ) {
+inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, outT >& v2 ) noexcept {
    v1.swap( v2 );
 }
 

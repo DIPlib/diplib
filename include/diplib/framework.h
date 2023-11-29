@@ -20,6 +20,11 @@
 #ifndef DIP_FRAMEWORK_H
 #define DIP_FRAMEWORK_H
 
+#include <algorithm>
+#include <array>
+#include <memory>
+#include <vector>
+
 #include "diplib.h"
 #include "diplib/boundary.h"
 #include "diplib/kernel.h"
@@ -59,7 +64,7 @@ namespace Framework {
 
 
 // Maximum number of pixels in a buffer for the scan framework
-constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
+constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024; // NOLINT(*-implicit-widening-of-multiplication-result)
 
 
 //
@@ -115,7 +120,7 @@ DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const&
 /// \brief Defines options to the \ref dip::Framework::Scan function.
 ///
 /// Implicitly casts to \ref dip::Framework::ScanOptions. Combine constants together with the `+` operator.
-enum class ScanOption {
+enum class ScanOption : uint8 {
       NoMultiThreading,       ///< Do not call the line filter simultaneously from multiple threads (it is not thread safe).
       NeedCoordinates,        ///< The line filter needs the coordinates to the first pixel in the buffer.
       TensorAsSpatialDim,     ///< Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
@@ -293,7 +298,7 @@ inline void ScanSingleInput(
 ) {
    ImageConstRefArray inar;
    inar.reserve( 2 );
-   inar.push_back( in );
+   inar.emplace_back( in );
    DataTypeArray inBufT{ bufferType };
    Image mask;
    if( c_mask.IsForged() ) {
@@ -303,7 +308,7 @@ inline void ScanSingleInput(
          mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
          mask.ExpandSingletonDimensions( in.Sizes() );
       DIP_END_STACK_TRACE
-      inar.push_back( mask );
+      inar.emplace_back( mask );
       inBufT.push_back( mask.DataType() );
    }
    ImageRefArray outar{};
@@ -354,10 +359,7 @@ inline void ScanDyadic(
    if( in1.IsScalar() ) {
       outTensor = in2.Tensor();
       opts += ScanOption::TensorAsSpatialDim;
-   } else if( in2.IsScalar() ) {
-      outTensor = in1.Tensor();
-      opts += ScanOption::TensorAsSpatialDim;
-   } else if( in1.Tensor() == in2.Tensor() ) {
+   } else if( in2.IsScalar() || ( in1.Tensor() == in2.Tensor() )) {
       outTensor = in1.Tensor();
       opts += ScanOption::TensorAsSpatialDim;
    } else if( in1.TensorSizes() == in2.TensorSizes() ) {
@@ -447,10 +449,10 @@ class DIP_NO_EXPORT VariadicScanLineFilter : public ScanLineFilter {
    public:
       static_assert( N > 0, "VariadicScanLineFilter does not work without input images" );
       VariadicScanLineFilter( F const& func, dip::uint cost = 1 ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint nTensorElements ) override {
          return cost_ * nTensorElements;
       }
-      virtual void Filter( ScanLineFilterParameters const& params ) override {
+      void Filter( ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
          std::array< TPI const*, N > in;
@@ -538,7 +540,7 @@ inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& fun
 /// \brief Defines options to the \ref dip::Framework::Separable function.
 ///
 /// Implicitly casts to \ref dip::Framework::SeparableOptions. Combine constants together with the `+` operator.
-enum class SeparableOption {
+enum class SeparableOption : uint8 {
       NoMultiThreading,          ///< Do not call the line filter simultaneously from multiple threads (it is not thread safe).
       AsScalarImage,             ///< The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
       ExpandTensorInBuffer,      ///< The line filter always gets input tensor elements as a standard, column-major matrix.
@@ -758,7 +760,7 @@ DIP_EXPORT void OneDimensionalLineFilter(
 /// \brief Defines options to the \ref dip::Framework::Full function.
 ///
 /// Implicitly casts to \ref dip::Framework::FullOptions. Combine constants together with the `+` operator.
-enum class FullOption {
+enum class FullOption : uint8 {
       NoMultiThreading,       ///< Do not call the line filter simultaneously from multiple threads (it is not thread safe).
       AsScalarImage,          ///< The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
       ExpandTensorInBuffer,   ///< The line filter always gets input tensor elements as a standard, column-major matrix.

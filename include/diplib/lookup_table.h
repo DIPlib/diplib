@@ -18,6 +18,8 @@
 #ifndef DIP_LOOKUP_TABLE_H
 #define DIP_LOOKUP_TABLE_H
 
+#include <utility>
+
 #include "diplib.h"
 
 
@@ -64,13 +66,13 @@ namespace dip {
 class DIP_NO_EXPORT LookupTable{
    public:
 
-      enum class OutOfBoundsMode {
+      enum class OutOfBoundsMode : uint8 {
             USE_OUT_OF_BOUNDS_VALUE,
             KEEP_INPUT_VALUE,
             CLAMP_TO_RANGE
       };
 
-      enum class InterpolationMode {
+      enum class InterpolationMode : uint8 {
             LINEAR,
             NEAREST_NEIGHBOR,
             ZERO_ORDER_HOLD
@@ -162,9 +164,10 @@ class DIP_NO_EXPORT LookupTable{
       /// - `"nearest"`: uses nearest neighbor interpolation (i.e. rounds the input value to the nearest index).
       /// - `"zero order"`: uses zero order hold interpolation (i.e. uses the `floor` of the input value).
       void Apply( Image const& in, Image& out, String const& interpolation ) const {
-         InterpolationMode mode;
-         DIP_STACK_TRACE_THIS( mode = DecodeInterpolationMode( interpolation ));
-         Apply( in, out, mode );
+         DIP_START_STACK_TRACE
+            InterpolationMode mode = DecodeInterpolationMode( interpolation );
+            Apply( in, out, mode );
+         DIP_END_STACK_TRACE
       }
       DIP_NODISCARD Image Apply( Image const& in, String const& interpolation = S::LINEAR ) const {
          Image out;
@@ -176,9 +179,10 @@ class DIP_NO_EXPORT LookupTable{
 
       /// \brief Apply the LUT to a scalar value.
       Image::Pixel Apply( dfloat value, String const& interpolation ) const {
-         InterpolationMode mode;
-         DIP_STACK_TRACE_THIS( mode = DecodeInterpolationMode( interpolation ));
-         return Apply( value, mode );
+         DIP_START_STACK_TRACE
+            InterpolationMode mode = DecodeInterpolationMode( interpolation );
+            return Apply( value, mode );
+         DIP_END_STACK_TRACE
       }
 
       /// \brief Converts the LUT to a different data type. Values are clipped to the target range and/or truncated,
@@ -196,8 +200,8 @@ class DIP_NO_EXPORT LookupTable{
       // `values_` is found, again using interpolation. Interpolation is always linear.
 
       OutOfBoundsMode outOfBoundsMode_ = OutOfBoundsMode::CLAMP_TO_RANGE;
-      dfloat outOfBoundsLowerValue_;  // Used when outOfBoundsMode_==OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE
-      dfloat outOfBoundsUpperValue_;  // LowerValue is for below the lower bound, UpperValue for above the upper bound
+      dfloat outOfBoundsLowerValue_ = 0;  // Used when outOfBoundsMode_==OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE
+      dfloat outOfBoundsUpperValue_ = 0;  // LowerValue is for below the lower bound, UpperValue for above the upper bound
 
       static InterpolationMode DecodeInterpolationMode( String const& interpolation ) {
          if( interpolation == S::LINEAR ) {

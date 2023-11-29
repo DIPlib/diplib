@@ -18,6 +18,8 @@
 #ifndef DIP_DISPLAY_H
 #define DIP_DISPLAY_H
 
+#include <array>
+#include <utility>
 #include "diplib.h"
 #include "diplib/color.h"
 
@@ -55,20 +57,20 @@ class DIP_NO_EXPORT ImageDisplay {
    public:
 
       /// Enumerator for the projection mode
-      enum class ProjectionMode : unsigned char {
+      enum class ProjectionMode : uint8 {
          SLICE,      ///< A slice is prepared for display
          MAX,        ///< The max projection is prepared for display
          MEAN        ///< The mean projection is prepared for display
       };
       /// Enumerator for the complex mapping mode
-      enum class ComplexMode : unsigned char {
+      enum class ComplexMode : uint8 {
          MAGNITUDE,  ///< The magnitude is prepared for display
          PHASE,      ///< The complex phase is prepared for display
          REAL,       ///< The real component is prepared for display
          IMAG        ///< The imaginary component is prepared for display
       };
       /// Enumerator for the intensity mapping mode
-      enum class MappingMode : unsigned char {
+      enum class MappingMode : uint8 {
          MANUAL,     ///< \ref Limits are used as-is
          MAXMIN,     ///< The max and min values are taken as the display limits
          PERCENTILE, ///< The 5% and 95% values are taken as the display limits
@@ -86,7 +88,10 @@ class DIP_NO_EXPORT ImageDisplay {
       // The reason we disallow copy constructors and assignment is that these shouldn't be necessary.
       ImageDisplay() = delete;
       ImageDisplay( ImageDisplay const& ) = delete;
-      ImageDisplay& operator=( const ImageDisplay& ) = delete;
+      ImageDisplay( ImageDisplay&& ) noexcept = default;
+      ImageDisplay& operator=( ImageDisplay const& ) = delete;
+      ImageDisplay& operator=( ImageDisplay&& ) noexcept = default;
+      ~ImageDisplay() = default;
 
       /// \brief The constructor takes an image with at least 1 dimension.
       ///
@@ -320,9 +325,7 @@ class DIP_NO_EXPORT ImageDisplay {
       /// | `"real"`              | the intensity displayed is the real component of the complex values |
       /// | `"imag"`              | the intensity displayed is the imaginary component of the complex values |
       void SetComplexMode( String const& complexMode )  {
-         if( complexMode == "abs" ) {
-            SetComplexMode( ComplexMode::MAGNITUDE );
-         } else if( complexMode == "magnitude" ) {
+         if(( complexMode == "abs" ) || ( complexMode == "magnitude" )) {
             SetComplexMode( ComplexMode::MAGNITUDE );
          } else if( complexMode == "phase" ) {
             SetComplexMode( ComplexMode::PHASE );
@@ -461,11 +464,11 @@ class DIP_NO_EXPORT ImageDisplay {
       dip::uint Dimensionality() const { return image_.Dimensionality(); }
 
       /// \brief Get the tensor element to be shown in the red channel.
-      dip::sint GetRedTensorElement() { return red_; }
+      dip::sint GetRedTensorElement() const { return red_; }
       /// \brief Get the tensor element to be shown in the green channel.
-      dip::sint GetGreenTensorElement() { return green_; }
+      dip::sint GetGreenTensorElement() const { return green_; }
       /// \brief Get the tensor element to be shown in the blue channel.
-      dip::sint GetBlueTensorElement() { return blue_; }
+      dip::sint GetBlueTensorElement() const { return blue_; }
 
       /// \brief Get the current projection mode.
       String GetProjectionMode() const {

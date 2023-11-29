@@ -18,6 +18,8 @@
 #ifndef DIP_ANALYSIS_H
 #define DIP_ANALYSIS_H
 
+#include <vector>
+
 #include "diplib.h"
 #include "distribution.h"
 #include "random.h"

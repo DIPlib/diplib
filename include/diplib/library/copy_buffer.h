@@ -28,13 +28,15 @@
 
 #include <vector>
 
+#include "diplib/library/export.h"
+#include "diplib/library/types.h"
 #include "diplib/library/datatype.h"
 #include "diplib/library/sample_iterator.h"
 
 
 namespace dip {
 
-enum class DIP_NO_EXPORT BoundaryCondition; // forward declaration, defined in diplib/boundary.h
+enum class DIP_NO_EXPORT BoundaryCondition : uint8; // forward declaration, defined in diplib/boundary.h
 
 namespace detail {
 

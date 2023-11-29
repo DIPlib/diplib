@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include "diplib.h"
+#include "diplib/display.h"
+#include "diplib/overload.h"
 #include "diplib/viewer/viewer.h"
 
 namespace dip { namespace viewer {

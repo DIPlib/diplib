@@ -26,7 +26,7 @@
 #ifndef DIP_IMAGE_H
 #define DIP_IMAGE_H
 
-#include <cstring> // std::memcpy
+#include <cstring>
 #include <functional>
 #include <initializer_list>
 #include <memory>
@@ -37,6 +37,11 @@
 #include <utility>
 #include <vector>
 
+#include "diplib/library/export.h"
+#include "diplib/library/error.h"
+#include "diplib/library/dimension_array.h"
+#include "diplib/library/types.h"
+#include "diplib/library/datatype.h"
 #include "diplib/library/tensor.h"
 #include "diplib/library/physical_dimensions.h"
 #include "diplib/library/clamp_cast.h"
@@ -145,7 +150,7 @@ class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
 
    public:
       /// Called by \ref dip::Image::Forge.
-      DIP_EXPORT virtual DataSegment AllocateData(
+      DIP_EXPORT DataSegment AllocateData(
             void*& origin,
             dip::DataType dataType,
             UnsignedArray const& sizes,
@@ -286,7 +291,7 @@ class DIP_NO_EXPORT Image {
       /// In this case, `rhs` will not be modified. Note that this copy can throw.
       ///
       /// Otherwise, `this` will become exactly what `rhs` was, and `rhs` will become raw.
-      Image& operator=( Image&& rhs ) {
+      Image& operator=( Image&& rhs ) { // NOLINT(*-noexcept-move-operations, *-noexcept-move-constructor)
          if( protect_ || ( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ ))) {
             // Copy pixel data too
             DIP_STACK_TRACE_THIS( this->Copy( rhs ));
@@ -2212,7 +2217,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Returns an iterator to the end of the iterator range. It cannot be dereferenced or manipulated,
       /// and is meant solely as an end-of-iteration marker.
-      GenericImageIterator< dip::dfloat > end();
+      static GenericImageIterator< dip::dfloat > end();
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
       DIP_NODISCARD View At( Range const& x_range ) const;
