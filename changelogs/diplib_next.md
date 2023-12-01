@@ -27,6 +27,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
+- New overload `dip_image/linspace`.
+
 ### Changed functionality
 
 - New function `apply_colormap` calls `dip::ApplyColorMap()`.
