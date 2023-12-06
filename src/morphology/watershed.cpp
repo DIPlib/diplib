@@ -654,6 +654,9 @@ void SeededWatershed(
    // reason has non-contiguous data.
    in.ForceContiguousData();
 
+   // Also separate the seeds image in case it's the same as out.
+   Image seeds = c_seeds.QuickCopy();
+
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
    if( c_mask.IsForged() ) {
@@ -683,12 +686,12 @@ void SeededWatershed(
    }
    dip::uint numlabs;
    DIP_START_STACK_TRACE
-      if( c_seeds.DataType().IsBinary() ) {
-         numlabs = Label( c_seeds, labels, connectivity );
+      if( seeds.DataType().IsBinary() ) {
+         numlabs = Label( seeds, labels, connectivity );
       } else {
-         auto m = MaximumAndMinimum( c_seeds, mask );
+         auto m = MaximumAndMinimum( seeds, mask );
          numlabs = static_cast< dip::uint >( m.Maximum() );
-         labels.Copy( c_seeds );
+         labels.Copy( seeds );
       }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, TOO_MANY_SEEDS );
@@ -940,6 +943,9 @@ void CompactWatershed(
    // reason has non-contiguous data.
    in.ForceContiguousData();
 
+   // Also separate the seeds image in case it's the same as out.
+   Image seeds = c_seeds.QuickCopy();
+
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
    if( c_mask.IsForged() ) {
@@ -970,12 +976,12 @@ void CompactWatershed(
    }
    dip::uint numlabs;
    DIP_START_STACK_TRACE
-   if( c_seeds.DataType().IsBinary() ) {
-      numlabs = Label( c_seeds, labels, connectivity );
+   if( seeds.DataType().IsBinary() ) {
+      numlabs = Label( seeds, labels, connectivity );
    } else {
-      auto m = MaximumAndMinimum( c_seeds, mask );
+      auto m = MaximumAndMinimum( seeds, mask );
       numlabs = static_cast< dip::uint >( m.Maximum() );
-      labels.Copy( c_seeds );
+      labels.Copy( seeds );
    }
    DIP_END_STACK_TRACE
    DIP_THROW_IF( numlabs > MAX_LABEL, TOO_MANY_SEEDS );

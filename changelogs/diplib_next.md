@@ -22,6 +22,8 @@ title: "Changes DIPlib 3.x.x"
 - NPY file header written was correct according to the specification, but didn't exactly match what was written
   by NumPy itself. NumPy under Python 3.12 errored out reading these files. Now the header exactly matches NumPy's.
 
+- `dip::SeededWatershed()` and `dip::CompactWatershed()` discarded the `seeds` input image when it was the same
+  as the `out` image (when the caller intended for the algorithm to work in-place).
 
 ## Changes to *DIPimage*
 
