@@ -126,15 +126,15 @@ class GaborIIRLineFilter : public Framework::SeparableLineFilter
 {
 public:
    GaborIIRLineFilter( std::vector< GaborIIRParams > const& filterParams ) : filterParams_( filterParams ) {}
-   virtual void SetNumberOfThreads( dip::uint threads ) override {
+   void SetNumberOfThreads( dip::uint threads ) override {
       buffers_.resize( threads );
    }
-   virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
+   dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
       // TODO: figure out how filter parameters affect amount of computation
       //GaborIIRParams const& fParams = filterParams_[ procDim ];
       return lineLength * 40;
    }
-   virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+   void Filter( Framework::SeparableLineFilterParameters const& params ) override {
       dcomplex* in = static_cast< dcomplex* >(params.inBuffer.buffer);
       dcomplex* out = static_cast< dcomplex* >(params.outBuffer.buffer);
       DIP_ASSERT( params.inBuffer.stride == 1 );

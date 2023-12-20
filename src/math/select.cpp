@@ -29,8 +29,8 @@ template< typename TPI, typename F >
 class Select1ScanLineFilter : public Framework::ScanLineFilter {
    public:
       Select1ScanLineFilter( F func ) : func_( func ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );
          TPI const* in3 = static_cast< TPI const* >( params.inBuffer[ 2 ].buffer );
@@ -100,8 +100,8 @@ namespace {
 template< typename TPI >
 class Select2ScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
          bin const* mask = static_cast< bin const* >( params.inBuffer[ 2 ].buffer );
@@ -149,8 +149,8 @@ template< typename TPI >
 class ToggleScanLineFilter : public Framework::ScanLineFilter {
       using TPS = FlexType< TPI >; // we want to compute the difference in a signed type
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 8; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 8; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 2 ].buffer );

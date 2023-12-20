@@ -507,7 +507,7 @@ class DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
             scale_( scale ), origin_( origin ), norm_( norm ) {
          CopyPixelToVector( value, value_, nTensor );
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
@@ -675,7 +675,7 @@ class FillRandomGridnDLineFilter : public Framework::ScanLineFilter {
          inv_M_.resize( M_.size() );
          Inverse( offset_.size(), M_.data(), inv_M_.data() );
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint length = params.bufferLength;
@@ -811,7 +811,7 @@ class FillRandomGrid2DLineFilter : public Framework::ScanLineFilter {
       FillRandomGrid2DLineFilter( std::array< dfloat, 4 > const& M, VertexFloat offset ) : M_( M ), offset_( offset ) {
          Inverse( 2, M_.data(), inv_M_.data() );
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint length = params.bufferLength;

@@ -47,10 +47,10 @@ dfloat ModifiedSinc( dfloat rr, dfloat scale, dfloat center ) {
 
 class FTBoxLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return center_.size() * 20;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -78,10 +78,10 @@ class FTBoxLineFilter : public Framework::ScanLineFilter {
 
 class FTCrossLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return center_.size() * 20;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;

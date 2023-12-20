@@ -23,10 +23,10 @@ constexpr char const* Oklch_name = "Oklch";
 
 class oklab2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return Oklab_name; }
-      virtual String OutputColorSpace() const override { return dip::S::GREY; }
-      virtual dip::uint Cost() const override { return 101; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return Oklab_name; }
+      String OutputColorSpace() const override { return dip::S::GREY; }
+      dip::uint Cost() const override { return 101; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat l = input[ 0 ];
             l = l * l * l;
@@ -37,10 +37,10 @@ class oklab2grey : public ColorSpaceConverter {
 
 class grey2oklab : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return dip::S::GREY; }
-      virtual String OutputColorSpace() const override { return Oklab_name; }
-      virtual dip::uint Cost() const override { return 3; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return dip::S::GREY; }
+      String OutputColorSpace() const override { return Oklab_name; }
+      dip::uint Cost() const override { return 3; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat l = input[ 0 ] / 255;  // Yn == 1.000 by definition
             l = std::cbrt( l );
@@ -53,10 +53,10 @@ class grey2oklab : public ColorSpaceConverter {
 
 class oklab2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return Oklab_name; }
-      virtual String OutputColorSpace() const override { return XYZ_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return Oklab_name; }
+      String OutputColorSpace() const override { return XYZ_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat l = 0.999999998450520 * input[ 0 ] + 0.396337792173768 * input[ 1 ] + 0.215803758060759 * input[ 2 ];
             dfloat m = 1.000000008881761 * input[ 0 ] - 0.105561342323656 * input[ 1 ] - 0.063854174771706 * input[ 2 ];
@@ -73,10 +73,10 @@ class oklab2xyz : public ColorSpaceConverter {
 
 class xyz2oklab : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return XYZ_name; }
-      virtual String OutputColorSpace() const override { return Oklab_name; }
-      virtual dip::uint Cost() const override { return 3; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return XYZ_name; }
+      String OutputColorSpace() const override { return Oklab_name; }
+      dip::uint Cost() const override { return 3; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat l = 0.8189330101 * input[ 0 ] + 0.3618667424 * input[ 1 ] - 0.1288597137 * input[ 2 ];
             dfloat m = 0.0329845436 * input[ 0 ] + 0.9293118715 * input[ 1 ] + 0.0361456387 * input[ 2 ];
@@ -93,22 +93,22 @@ class xyz2oklab : public ColorSpaceConverter {
 
 class oklch2grey : public oklab2grey {
    public:
-      virtual String InputColorSpace() const override { return Oklch_name; }
+      String InputColorSpace() const override { return Oklch_name; }
       // Oklch to grey is identical to Oklab to grey, so we re-use its code.
 };
 
 class grey2oklch : public grey2oklab {
    public:
-      virtual String OutputColorSpace() const override { return Oklch_name; }
+      String OutputColorSpace() const override { return Oklch_name; }
       // Grey to Oklch is identical to grey to Oklab, so we re-use its code.
 };
 
 class oklch2oklab : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return Oklch_name; }
-      virtual String OutputColorSpace() const override { return Oklab_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return Oklch_name; }
+      String OutputColorSpace() const override { return Oklab_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             dfloat h = pi * input[ 2 ] / 180.0;
@@ -120,10 +120,10 @@ class oklch2oklab : public ColorSpaceConverter {
 
 class oklab2oklch : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return Oklab_name; }
-      virtual String OutputColorSpace() const override { return Oklch_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return Oklab_name; }
+      String OutputColorSpace() const override { return Oklch_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             output[ 1 ] = std::hypot( input[ 1 ], input[ 2 ] );

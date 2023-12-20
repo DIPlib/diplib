@@ -27,8 +27,8 @@ template< typename TPI, typename TPO, typename F >
 class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorMonadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
@@ -62,8 +62,8 @@ template< typename TPI, typename TPO, typename F >
 class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorDyadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
@@ -104,8 +104,8 @@ template< typename TPI, typename TPO, typename F >
 class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorTriadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
@@ -217,10 +217,10 @@ namespace {
 template< typename TPI >
 class CrossProductLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return tensorElements == 2 ? 2 : 6;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > lhs(
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
@@ -579,13 +579,13 @@ template< typename TPI, typename TPO, typename F >
 class SelectEigenvalueLineFilter : public Framework::ScanLineFilter {
    public:
       SelectEigenvalueLineFilter( F function, dip::uint n, bool first ) : function_( function ), n_( n ), first_( first ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return ( typeid( TPI ) == typeid( dfloat ) ? 400 : 800 ) * tensorElements;
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
@@ -627,10 +627,10 @@ template< typename TPI, typename TPO, typename F >
 class SelectEigenvalueLineFilterN : public Framework::ScanLineFilter {
    public:
       SelectEigenvalueLineFilterN( F function, dip::uint n, bool first ) : function_( function ), n_( n ), first_( first ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return ( typeid( TPI ) == typeid( dfloat ) ? 400 : 800 ) * tensorElements;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),

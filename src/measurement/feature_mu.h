@@ -24,7 +24,7 @@ class FeatureMu : public LineBased {
    public:
       FeatureMu() : LineBased( { "Mu", "Elements of the inertia tensor", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects, MomentAccumulator( nD_ ));
@@ -33,7 +33,7 @@ class FeatureMu : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat >,
             UnsignedArray coordinates,
@@ -63,7 +63,7 @@ class FeatureMu : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          MomentAccumulator* data = &( data_[ objectIndex ] );
          FloatArray values = data->SecondOrder();
          for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
@@ -71,7 +71,7 @@ class FeatureMu : public LineBased {
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
          scales_.clear();

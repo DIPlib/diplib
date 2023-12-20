@@ -28,10 +28,10 @@ template< typename TPI >
 class WrapLineFilter : public Framework::SeparableLineFilter {
    public:
       WrapLineFilter( UnsignedArray const& wrap ) : wrap_( wrap ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength;
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          SampleIterator< TPI > in{ static_cast< TPI* >( params.inBuffer.buffer ), params.inBuffer.stride };
          SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
          dip::uint length = params.inBuffer.length;

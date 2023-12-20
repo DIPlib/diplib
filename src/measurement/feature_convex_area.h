@@ -24,7 +24,7 @@ class FeatureConvexArea : public ConvexHullBased {
    public:
       FeatureConvexArea() : ConvexHullBased( { "ConvexArea", "Area of the convex hull (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
          PhysicalQuantity unitArea = label.PixelSize().UnitSize( label.Dimensionality() );
          scale_ = unitArea.magnitude;
@@ -33,7 +33,7 @@ class FeatureConvexArea : public ConvexHullBased {
          return out;
       }
 
-      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
+      void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
          output[ 0 ] = ( convexHull.Area() + 0.5 ) * scale_;
       }
 

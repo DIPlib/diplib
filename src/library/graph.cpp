@@ -32,7 +32,7 @@ class CreateGraphLineFilter : public Framework::ScanLineFilter {
    public:
       CreateGraphLineFilter( Graph& graph, UnsignedArray const& sizes, IntegerArray const& strides, bool useDifferences )
             : graph_( graph ), sizes_( sizes ), strides_( strides ), useDifferences_( useDifferences ) {}
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
          dip::uint length = params.bufferLength - 1;

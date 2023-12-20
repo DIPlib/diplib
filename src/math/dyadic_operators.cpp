@@ -56,8 +56,8 @@ template< typename TPI, typename F >
 class MultiScanLineFilter : public Framework::ScanLineFilter {
    public:
       MultiScanLineFilter( F const& func ) : func_( func ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint, dip::uint ) override { return nInput; } // assuming this is only used for Supremum and Infimum!
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint, dip::uint ) override { return nInput; } // assuming this is only used for Supremum and Infimum!
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint N = params.inBuffer.size();
          dip::uint const bufferLength = params.bufferLength;
          std::vector< TPI const* > in( N );
@@ -134,8 +134,8 @@ namespace {
 template< typename TPI >
 class LinearCombinationScanLineFilter: public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          TPI const* a = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint const aStride = params.inBuffer[ 0 ].stride;

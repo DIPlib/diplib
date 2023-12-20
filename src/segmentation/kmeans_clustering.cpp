@@ -38,7 +38,7 @@ using ClusterArray = std::vector< Cluster >;
 template< typename TPI >
 class ClusteringLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // Either we have one input image, or one output image.
          TPI const* in = nullptr;
          LabelType* out = nullptr;

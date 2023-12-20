@@ -157,10 +157,10 @@ void CopyForDFT( TPI const* in, dip::uint inLength, dip::sint inStride, TPI* out
 template< typename TPI >
 class MirrorInPlaceLineFilter : public Framework::SeparableLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength;
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.length == params.outBuffer.length );
          DIP_ASSERT( params.inBuffer.stride == params.outBuffer.stride );
          DIP_ASSERT( params.inBuffer.buffer == params.outBuffer.buffer ); // We're reading and writing directly from the image!
@@ -205,10 +205,10 @@ class C2C_DFT_LineFilter : public Framework::SeparableLineFilter {
             }
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          auto const& dft = dft_[ params.dimension ];
          dip::uint length = dft.TransformSize();
          DIP_ASSERT( params.inBuffer.length <= length );
@@ -246,10 +246,10 @@ class R2C_DFT_LineFilter : public Framework::SeparableLineFilter {
       ) : scale_( static_cast< TPI >( scale )), shift_( !corner ) {
          dft_.Initialize( outSize, false, Option::DFTOption::InPlace + Option::DFTOption::Aligned );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 5 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dip::uint length = dft_.TransformSize();
          DIP_ASSERT( params.inBuffer.length <= length );
          DIP_ASSERT( params.outBuffer.length == length );
@@ -283,10 +283,10 @@ class C2R_IDFT_LineFilter : public Framework::SeparableLineFilter {
       ) : scale_( static_cast< TPI >( scale )), shift_( !corner ), inSize_( inSize ) {
          dft_.Initialize( outSize, true, Option::DFTOption::Aligned + Option::DFTOption::TrashInput );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 5 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dip::uint length = dft_.TransformSize();
          DIP_ASSERT(( inSize_ / 2 + 1 ) == params.inBuffer.length );
          DIP_ASSERT( length >= inSize_ );

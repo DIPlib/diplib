@@ -24,7 +24,7 @@ class FeatureMaximum : public LineBased {
    public:
       FeatureMaximum() : LineBased( { "Maximum", "Maximum coordinates of the object", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects * nD_, 0 );
@@ -40,7 +40,7 @@ class FeatureMaximum : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat >, // unused
             UnsignedArray coordinates,
@@ -73,14 +73,14 @@ class FeatureMaximum : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dip::uint* data = &( data_[ objectIndex * nD_ ] );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             output[ ii ] = static_cast< dfloat >( data[ ii ] ) * scales_[ ii ];
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
          scales_.clear();

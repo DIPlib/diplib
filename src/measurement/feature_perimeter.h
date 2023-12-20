@@ -24,7 +24,7 @@ class FeaturePerimeter : public ChainCodeBased {
    public:
       FeaturePerimeter() : ChainCodeBased( { "Perimeter", "Length of the object perimeter  (chain-code method, 2D)", false } ) {};
 
-      virtual void Configure( String const& parameter, dfloat value ) override {
+      void Configure( String const& parameter, dfloat value ) override {
          if( parameter == "include boundary pixels" ) {
             includeBoundaryPixels = value != 0;
          } else {
@@ -32,7 +32,7 @@ class FeaturePerimeter : public ChainCodeBased {
          }
       }
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
          PhysicalQuantity pq = label.PixelSize().UnitLength();
          scale_ = pq.magnitude;
@@ -41,7 +41,7 @@ class FeaturePerimeter : public ChainCodeBased {
          return out;
       }
 
-      virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
+      void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
          *output = ( chainCode.Length( includeBoundaryPixels ? S::INCLUDE : S::EXCLUDE ) + pi ) * scale_;
       }
 

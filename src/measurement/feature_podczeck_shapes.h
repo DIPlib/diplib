@@ -24,7 +24,7 @@ class FeaturePodczeckShapes : public Composite {
    public:
       FeaturePodczeckShapes() : Composite( { "PodczeckShapes", "Podczeck shape descriptors (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 5 );
          out[ 0 ].name = "Square";
@@ -37,7 +37,7 @@ class FeaturePodczeckShapes : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 3 );
          out[ 0 ] = "Size";
          out[ 1 ] = "Feret";
@@ -45,7 +45,7 @@ class FeaturePodczeckShapes : public Composite {
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );

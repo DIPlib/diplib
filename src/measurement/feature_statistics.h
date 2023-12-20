@@ -25,7 +25,7 @@ class FeatureStatistics : public LineBased {
    public:
       FeatureStatistics() : LineBased( { "Statistics", "Mean, standard deviation, skewness and excess kurtosis of object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          data_.clear();
          data_.resize( nObjects );
@@ -37,7 +37,7 @@ class FeatureStatistics : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray /*coordinates*/,
@@ -66,7 +66,7 @@ class FeatureStatistics : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          StatisticsAccumulator data = data_[ objectIndex ];
          output[ 0 ] = data.Mean();
          output[ 1 ] = data.StandardDeviation();
@@ -74,7 +74,7 @@ class FeatureStatistics : public LineBased {
          output[ 3 ] = data.ExcessKurtosis();
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
       }

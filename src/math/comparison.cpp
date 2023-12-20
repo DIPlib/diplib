@@ -33,7 +33,7 @@ class VariadicScanLineFilterBinOut : public Framework::ScanLineFilter {
    public:
       static_assert( N > 0, "VariadicScanLineFilterBinOut does not work without input images" );
       VariadicScanLineFilterBinOut( F const& func ) : func_( func ) {}
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
          std::array< TPI const*, N > in;

@@ -27,17 +27,17 @@ namespace {
 
 class PerObjectHistogramLineFilter : public Framework::ScanLineFilter {
    public:
-      //virtual void SetNumberOfThreads( dip::uint threads ) override {
+      //void SetNumberOfThreads( dip::uint threads ) override {
       //   for( dip::uint ii = 1; ii < threads; ++ii ) {
       //      imageArray_.emplace_back( image_ );       // makes a copy; image_ is not yet forged, so data is not shared.
       //   }
       //   // We don't forge the images here, the Filter() function should do that so each thread allocates its own
       //   // data segment. This ensures there's no false sharing.
       //}
-      //virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      //dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
       //   return ( tensorInput_ ? tensorElements : 2 ) * 6;
       //}
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // 0: Grey image
          dfloat const* grey = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint gStride = params.inBuffer[ 0 ].stride;

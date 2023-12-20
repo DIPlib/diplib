@@ -27,8 +27,8 @@ namespace {
 
 class CountLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::uint count = 0;
          auto bufferLength = params.bufferLength;
@@ -55,7 +55,7 @@ class CountLineFilter : public Framework::ScanLineFilter {
          }
          counts_[ params.thread ] += count;
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          counts_.resize( threads );
       }
       dip::uint GetResult() {
@@ -92,8 +92,8 @@ class MaxMinPixelLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class MaxPixelLineFilter : public MaxMinPixelLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          UnsignedArray coord( params.position.size() );
          TPI value = std::numeric_limits< TPI >::lowest();
@@ -164,12 +164,12 @@ class MaxPixelLineFilter : public MaxMinPixelLineFilter {
             }
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          coord_.resize( threads );
          value_.resize( threads, std::numeric_limits< TPI >::lowest() );
       }
       MaxPixelLineFilter( bool first ) : first_( first ) {}
-      virtual UnsignedArray GetResult() override {
+      UnsignedArray GetResult() override {
          dip::uint index = 0;
          for( dip::uint ii = 1; ii < coord_.size(); ++ii ) {
             if( first_ ? value_[ ii ] > value_[ index ] : value_[ ii ] >= value_[ index ] ) {
@@ -187,8 +187,8 @@ class MaxPixelLineFilter : public MaxMinPixelLineFilter {
 template< typename TPI >
 class MinPixelLineFilter : public MaxMinPixelLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          UnsignedArray coord( params.position.size() );
          TPI value = std::numeric_limits< TPI >::max();
@@ -259,12 +259,12 @@ class MinPixelLineFilter : public MaxMinPixelLineFilter {
             }
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          coord_.resize( threads );
          value_.resize( threads, std::numeric_limits< TPI >::max() );
       }
       MinPixelLineFilter( bool first ) : first_( first ) {}
-      virtual UnsignedArray GetResult() override {
+      UnsignedArray GetResult() override {
          dip::uint index = 0;
          for( dip::uint ii = 1; ii < coord_.size(); ++ii ) {
             if( first_ ? value_[ ii ] < value_[ index ] : value_[ ii ] <= value_[ index ] ) {
@@ -312,10 +312,10 @@ namespace {
 template< typename TPI >
 class CumSumFilter : public Framework::SeparableLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength;
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -364,8 +364,8 @@ class MaximumAndMinimumLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class MaximumAndMinimumLineFilter : public MaximumAndMinimumLineFilterBase {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          MinMaxAccumulator vars;
          auto bufferLength = params.bufferLength;
@@ -396,10 +396,10 @@ class MaximumAndMinimumLineFilter : public MaximumAndMinimumLineFilterBase {
          }
          accArray_[ params.thread ] += vars;
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
       }
-      virtual MinMaxAccumulator GetResult() override {
+      MinMaxAccumulator GetResult() override {
          MinMaxAccumulator out = accArray_[ 0 ];
          for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
             out += accArray_[ ii ];
@@ -440,8 +440,8 @@ class SampleStatisticsLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class SampleStatisticsLineFilter : public SampleStatisticsLineFilterBase {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          StatisticsAccumulator vars;
          auto bufferLength = params.bufferLength;
@@ -466,10 +466,10 @@ class SampleStatisticsLineFilter : public SampleStatisticsLineFilterBase {
          }
          accArray_[ params.thread ] += vars;
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
       }
-      virtual StatisticsAccumulator GetResult() override {
+      StatisticsAccumulator GetResult() override {
          StatisticsAccumulator out = accArray_[ 0 ];
          for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
             out += accArray_[ ii ];
@@ -504,8 +504,8 @@ class CovarianceLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class CovarianceLineFilter : public CovarianceLineFilterBase {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 10; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 10; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
          CovarianceAccumulator vars;
@@ -534,10 +534,10 @@ class CovarianceLineFilter : public CovarianceLineFilterBase {
          }
          accArray_[ params.thread ] += vars;
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
       }
-      virtual CovarianceAccumulator GetResult() override {
+      CovarianceAccumulator GetResult() override {
          CovarianceAccumulator out = accArray_[ 0 ];
          for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
             out += accArray_[ ii ];
@@ -664,8 +664,8 @@ class CenterOfMassLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class CenterOfMassLineFilter : public CenterOfMassLineFilterBase {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return nD_ + 1; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return nD_ + 1; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          FloatArray vars( nD_ + 1, 0.0 );
          auto bufferLength = params.bufferLength;
@@ -701,13 +701,13 @@ class CenterOfMassLineFilter : public CenterOfMassLineFilterBase {
          accArray_[ params.thread ] += vars;
       }
       CenterOfMassLineFilter( dip::uint nD ) : nD_( nD ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
          for( dip::uint ii = 0; ii < threads; ++ii ) {
             accArray_[ ii ].resize( nD_ + 1, 0.0 );
          }
       }
-      virtual FloatArray GetResult() override {
+      FloatArray GetResult() override {
          FloatArray out = accArray_[ 0 ];
          for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
             out += accArray_[ ii ];
@@ -751,10 +751,10 @@ class MomentsLineFilterBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class MomentsLineFilter : public MomentsLineFilterBase {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return nD_ * ( nD_ + 1 ) / 2 * 3 + nD_ + 2;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          MomentAccumulator vars( nD_ );
          auto bufferLength = params.bufferLength;
@@ -784,10 +784,10 @@ class MomentsLineFilter : public MomentsLineFilterBase {
          accArray_[ params.thread ] += vars;
       }
       MomentsLineFilter( dip::uint nD ) : nD_( nD ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads, MomentAccumulator( nD_ ));
       }
-      virtual MomentAccumulator GetResult() override {
+      MomentAccumulator GetResult() override {
          MomentAccumulator out = accArray_[ 0 ];
          for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
             out += accArray_[ ii ];

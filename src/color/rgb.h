@@ -24,17 +24,17 @@ constexpr char const* sRGB_name = "sRGB";
 
 class rgb2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return RGB_name; }
-      virtual String OutputColorSpace() const override { return dip::S::GREY; }
-      virtual dip::uint Cost() const override { return 100; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return RGB_name; }
+      String OutputColorSpace() const override { return dip::S::GREY; }
+      dip::uint Cost() const override { return 100; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ] * Y_[ 0 ] +
                           input[ 1 ] * Y_[ 1 ] +
                           input[ 2 ] * Y_[ 2 ];
          } while( ++input, ++output );
       }
-      virtual void SetWhitePoint( XYZ const&, XYZMatrix const& matrix, XYZMatrix const& ) override {
+      void SetWhitePoint( XYZ const&, XYZMatrix const& matrix, XYZMatrix const& ) override {
          Y_[ 0 ] = matrix[ 1 ];
          Y_[ 1 ] = matrix[ 4 ];
          Y_[ 2 ] = matrix[ 7 ];
@@ -45,9 +45,9 @@ class rgb2grey : public ColorSpaceConverter {
 
 class grey2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return dip::S::GREY; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return dip::S::GREY; }
+      String OutputColorSpace() const override { return RGB_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             output[ 1 ] = input[ 0 ];
@@ -85,10 +85,10 @@ inline dfloat SToLinear( dfloat in ) {
 
 class rgb2srgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return RGB_name; }
-      virtual String OutputColorSpace() const override { return sRGB_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return RGB_name; }
+      String OutputColorSpace() const override { return sRGB_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = LinearToS( input[ 0 ] / 255.0 ) * 255.0;
             output[ 1 ] = LinearToS( input[ 1 ] / 255.0 ) * 255.0;
@@ -99,10 +99,10 @@ class rgb2srgb : public ColorSpaceConverter {
 
 class srgb2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return sRGB_name; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return sRGB_name; }
+      String OutputColorSpace() const override { return RGB_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = SToLinear( input[ 0 ] / 255.0 ) * 255.0;
             output[ 1 ] = SToLinear( input[ 1 ] / 255.0 ) * 255.0;

@@ -24,7 +24,7 @@ class FeatureGreySize : public LineBased {
    public:
       FeatureGreySize() : LineBased( { "GreySize", "Mass of object (sum of intensities times size of a pixel)", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          nTensor_ = grey.TensorElements();
          data_.clear();
          data_.resize( nObjects * nTensor_, 0 );
@@ -43,7 +43,7 @@ class FeatureGreySize : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray /*coordinates*/,
@@ -74,14 +74,14 @@ class FeatureGreySize : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dfloat* data = &data_[ objectIndex ];
          for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
             output[ ii ] = data[ ii ] * scale_;
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
       }

@@ -187,11 +187,11 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
          }
          nBuffers_ = std::min< dip::uint >( 2, steps.size() - 1 );
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffer1_.resize( threads );
          buffer2_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          dip::uint cost = 0;
          for( auto const& step : steps_ ) {
             dip::uint c = step.converterFunction->Cost();
@@ -202,7 +202,7 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
          }
          return cost;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint thread = params.thread;
          dip::uint nPixels = params.bufferLength;
          if( nBuffers_ > 0 ) {

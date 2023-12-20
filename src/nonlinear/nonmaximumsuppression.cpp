@@ -86,10 +86,10 @@ class NonMaximumSuppression2D : public Framework::ScanLineFilter {
    public:
       NonMaximumSuppression2D( UnsignedArray const& sizes, IntegerArray const& gradmagStrides, bool interpolate ) :
             sizes_( sizes ), gradmagStrides_( gradmagStrides ), interpolate_( interpolate ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return interpolate_ ? 20 : 12;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::sint gmstridex = gradmagStrides_[ 0 ];
          dip::sint gmstridey = gradmagStrides_[ 1 ];
          TPI const* pgm = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -220,10 +220,10 @@ class NonMaximumSuppressionND : public Framework::ScanLineFilter {
    public:
       NonMaximumSuppressionND( UnsignedArray const& sizes, IntegerArray const& gradmagStrides ) :
             sizes_( sizes ), gradmagStrides_( gradmagStrides ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return 6 * sizes_.size() + 2;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* pgm = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint gmStride = params.inBuffer[ 0 ].stride;
          TPI const* pgv = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );

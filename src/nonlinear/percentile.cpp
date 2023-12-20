@@ -15,7 +15,13 @@
  * limitations under the License.
  */
 
+#include <cmath>
+#include <memory>
+#include <numeric>
+#include <vector>
+
 #include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/nonlinear.h"
 #include "diplib/morphology.h"
 #include "diplib/framework.h"
@@ -43,6 +49,9 @@ class OrderStatisticTree {
       // Constructor. By default we can't store anything in here
       OrderStatisticTree() = default;
 
+      // Destructor
+      ~OrderStatisticTree() = default;
+
       // Default move operators should do the right thing
       OrderStatisticTree( OrderStatisticTree&& ) = default;
       OrderStatisticTree& operator=( OrderStatisticTree&& ) = default;
@@ -55,7 +64,7 @@ class OrderStatisticTree {
          DIP_ASSERT( free == nullptr );
          ( void ) other;
       };
-      OrderStatisticTree& operator=( OrderStatisticTree const& other ) {
+      OrderStatisticTree& operator=( OrderStatisticTree const& other ) { // NOLINT(*-unhandled-self-assignment)
          DIP_ASSERT( other.nodes.empty() );
          ( void ) other;
          nodes.clear();
@@ -451,7 +460,7 @@ class RankLineFilter : public Framework::FullLineFilter {
             offsets_ = pixelTable.Offsets();
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint /**/, dip::uint nKernelPixels, dip::uint nRuns ) override {
          if( UseBinaryTreeMethod( nKernelPixels, nRuns )) {
             // Very rough guess here... Where did I get those 10 from?
             return 10 * nKernelPixels * static_cast< dip::uint >( std::round( std::log( nKernelPixels )))
@@ -465,7 +474,7 @@ class RankLineFilter : public Framework::FullLineFilter {
                   + 2 * nKernelPixels + nRuns );   // iterating over pixel table
          }
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );

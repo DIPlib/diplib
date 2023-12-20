@@ -96,13 +96,13 @@ class GaussianMixtureModelLineFilter : public Framework::SeparableLineFilter {
    public:
       GaussianMixtureModelLineFilter( dip::uint numberOfGaussians, dip::uint maxIter, Option::Periodicity periodicity, dfloat scale )
             : numberOfGaussians_( numberOfGaussians ), maxIter_( maxIter ), periodicity_( periodicity ), scale_( scale ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength * numberOfGaussians_ * maxIter_ * 100; // the 100 is a totally wild guess...
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          ConstSampleIterator< dfloat > in{
                static_cast< dfloat const* >( params.inBuffer.buffer ),
                params.inBuffer.stride

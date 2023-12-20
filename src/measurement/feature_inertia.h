@@ -24,20 +24,20 @@ class FeatureInertia : public Composite {
    public:
       FeatureInertia() : Composite( { "Inertia", "Moments of inertia of the binary object", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
          ValueInformationArray out = MuEigenValueInformation( nD_, label.PixelSize() );
          hasIndex_ = false;
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 1 );
          out[ 0 ] = "Mu";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "Mu" );

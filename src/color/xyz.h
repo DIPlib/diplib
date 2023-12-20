@@ -24,10 +24,10 @@ constexpr char const* Yxy_name = "Yxy";
 
 class xyz2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return XYZ_name; }
-      virtual String OutputColorSpace() const override { return dip::S::GREY; }
-      virtual dip::uint Cost() const override { return 100; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return XYZ_name; }
+      String OutputColorSpace() const override { return dip::S::GREY; }
+      dip::uint Cost() const override { return 100; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 1 ] * 255;
          } while( ++input, ++output );
@@ -36,10 +36,10 @@ class xyz2grey : public ColorSpaceConverter {
 
 class yxy2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return Yxy_name; }
-      virtual String OutputColorSpace() const override { return dip::S::GREY; }
-      virtual dip::uint Cost() const override { return 100; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return Yxy_name; }
+      String OutputColorSpace() const override { return dip::S::GREY; }
+      dip::uint Cost() const override { return 100; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ] * 255;
          } while( ++input, ++output );
@@ -48,16 +48,16 @@ class yxy2grey : public ColorSpaceConverter {
 
 class grey2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return dip::S::GREY; }
-      virtual String OutputColorSpace() const override { return XYZ_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return dip::S::GREY; }
+      String OutputColorSpace() const override { return XYZ_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ] * whitePoint_[ 0 ] / 255;
             output[ 1 ] = input[ 0 ] * whitePoint_[ 1 ] / 255;
             output[ 2 ] = input[ 0 ] * whitePoint_[ 2 ] / 255;
          } while( ++input, ++output );
       }
-      virtual void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
+      void SetWhitePoint( XYZ const& whitePoint, XYZMatrix const&, XYZMatrix const& ) override {
          whitePoint_ = whitePoint;
       }
    private:
@@ -66,16 +66,16 @@ class grey2xyz : public ColorSpaceConverter {
 
 class rgb2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return RGB_name; }
-      virtual String OutputColorSpace() const override { return XYZ_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return RGB_name; }
+      String OutputColorSpace() const override { return XYZ_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = ( input[ 0 ] * matrix_[ 0 ] + input[ 1 ] * matrix_[ 3 ] + input[ 2 ] * matrix_[ 6 ] ) / 255;
             output[ 1 ] = ( input[ 0 ] * matrix_[ 1 ] + input[ 1 ] * matrix_[ 4 ] + input[ 2 ] * matrix_[ 7 ] ) / 255;
             output[ 2 ] = ( input[ 0 ] * matrix_[ 2 ] + input[ 1 ] * matrix_[ 5 ] + input[ 2 ] * matrix_[ 8 ] ) / 255;
          } while( ++input, ++output );
       }
-      virtual void SetWhitePoint( XYZ const&, XYZMatrix const& matrix, XYZMatrix const& ) override {
+      void SetWhitePoint( XYZ const&, XYZMatrix const& matrix, XYZMatrix const& ) override {
          matrix_ = matrix;
       }
    private:
@@ -84,16 +84,16 @@ class rgb2xyz : public ColorSpaceConverter {
 
 class xyz2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return XYZ_name; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return XYZ_name; }
+      String OutputColorSpace() const override { return RGB_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = ( input[ 0 ] * invMatrix_[ 0 ] + input[ 1 ] * invMatrix_[ 3 ] + input[ 2 ] * invMatrix_[ 6 ] ) * 255;
             output[ 1 ] = ( input[ 0 ] * invMatrix_[ 1 ] + input[ 1 ] * invMatrix_[ 4 ] + input[ 2 ] * invMatrix_[ 7 ] ) * 255;
             output[ 2 ] = ( input[ 0 ] * invMatrix_[ 2 ] + input[ 1 ] * invMatrix_[ 5 ] + input[ 2 ] * invMatrix_[ 8 ] ) * 255;
          } while( ++input, ++output );
       }
-      virtual void SetWhitePoint( XYZ const&, XYZMatrix const&, XYZMatrix const& inverseMatrix ) override {
+      void SetWhitePoint( XYZ const&, XYZMatrix const&, XYZMatrix const& inverseMatrix ) override {
          invMatrix_ = inverseMatrix;
       }
    private:
@@ -102,9 +102,9 @@ class xyz2rgb : public ColorSpaceConverter {
 
 class yxy2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return Yxy_name; }
-      virtual String OutputColorSpace() const override { return XYZ_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return Yxy_name; }
+      String OutputColorSpace() const override { return XYZ_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat sum = input[ 2 ] == 0 ? 0 : input[ 0 ] / input[ 2 ];
             output[ 0 ] = input[ 1 ] * sum;
@@ -116,9 +116,9 @@ class yxy2xyz : public ColorSpaceConverter {
 
 class xyz2yxy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return XYZ_name; }
-      virtual String OutputColorSpace() const override { return Yxy_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return XYZ_name; }
+      String OutputColorSpace() const override { return Yxy_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 1 ];
             dfloat sum = input[ 0 ] + input[ 1 ] + input[ 2 ];

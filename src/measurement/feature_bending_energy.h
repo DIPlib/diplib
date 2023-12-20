@@ -24,7 +24,7 @@ class FeatureBendingEnergy : public ChainCodeBased {
    public:
       FeatureBendingEnergy() : ChainCodeBased( { "BendingEnergy", "Bending energy of object perimeter (chain-code method, 2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
          PhysicalQuantity pq = label.PixelSize().UnitLength().Power( - 1 );
          scale_ = pq.magnitude;
@@ -33,7 +33,7 @@ class FeatureBendingEnergy : public ChainCodeBased {
          return out;
       }
 
-      virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
+      void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) override {
          *output = chainCode.BendingEnergy() * scale_;
       }
 

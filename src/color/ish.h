@@ -33,10 +33,10 @@ constexpr std::array< dfloat, 9 > invRotMatrix = {{ 1.0, 1.0, 1.0, b, -a, -a, 0.
 
 class ich2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return ICH_name; }
-      virtual String OutputColorSpace() const override { return dip::S::GREY; }
-      virtual dip::uint Cost() const override { return 100; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return ICH_name; }
+      String OutputColorSpace() const override { return dip::S::GREY; }
+      dip::uint Cost() const override { return 100; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
          } while( ++input, ++output );
@@ -45,9 +45,9 @@ class ich2grey : public ColorSpaceConverter {
 
 class grey2ich : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return dip::S::GREY; }
-      virtual String OutputColorSpace() const override { return ICH_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return dip::S::GREY; }
+      String OutputColorSpace() const override { return ICH_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             output[ 1 ] = 0;
@@ -58,10 +58,10 @@ class grey2ich : public ColorSpaceConverter {
 
 class rgb2ich : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return RGB_name; }
-      virtual String OutputColorSpace() const override { return ICH_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return RGB_name; }
+      String OutputColorSpace() const override { return ICH_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             // Input
             dfloat R = input[ 0 ];
@@ -81,10 +81,10 @@ class rgb2ich : public ColorSpaceConverter {
 
 class ich2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return ICH_name; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return ICH_name; }
+      String OutputColorSpace() const override { return RGB_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             // Input
             dfloat I = input[ 0 ];
@@ -103,22 +103,22 @@ class ich2rgb : public ColorSpaceConverter {
 
 class ish2grey : public ich2grey {
    public:
-      virtual String InputColorSpace() const override { return ISH_name; }
+      String InputColorSpace() const override { return ISH_name; }
       // ISH to grey is identical to ICH to grey, so we re-use its code.
 };
 
 class grey2ish : public grey2ich {
    public:
-      virtual String OutputColorSpace() const override { return ISH_name; }
+      String OutputColorSpace() const override { return ISH_name; }
       // Grey to ISH is identical to grey to ICH, so we re-use its code.
 };
 
 class ich2ish : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return ICH_name; }
-      virtual String OutputColorSpace() const override { return ISH_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return ICH_name; }
+      String OutputColorSpace() const override { return ISH_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             dfloat H = output[ 2 ] = input[ 2 ];
@@ -130,10 +130,10 @@ class ich2ish : public ColorSpaceConverter {
 
 class ish2ich : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return ISH_name; }
-      virtual String OutputColorSpace() const override { return ICH_name; }
-      virtual dip::uint Cost() const override { return 2; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return ISH_name; }
+      String OutputColorSpace() const override { return ICH_name; }
+      dip::uint Cost() const override { return 2; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             dfloat H = output[ 2 ] = input[ 2 ];

@@ -311,7 +311,7 @@ class KDTree {
 
 class PaintClustersLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          LabelType* out = static_cast< LabelType* >( params.outBuffer[ 0 ].buffer );
          dip::sint outStride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;

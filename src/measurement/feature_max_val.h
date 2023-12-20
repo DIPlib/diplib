@@ -24,7 +24,7 @@ class FeatureMaxVal : public LineBased {
    public:
       FeatureMaxVal() : LineBased( { "MaxVal", "Maximum object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          nTensor_ = grey.TensorElements();
          data_.clear();
          data_.resize( nObjects * nTensor_, -infinity );
@@ -39,7 +39,7 @@ class FeatureMaxVal : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray /*coordinates*/,
@@ -70,14 +70,14 @@ class FeatureMaxVal : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dfloat* data = &data_[ objectIndex ];
          for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
             output[ ii ] = data[ ii ];
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
       }

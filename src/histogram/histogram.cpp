@@ -136,7 +136,7 @@ namespace {
 class HistogramBaseLineFilter : public Framework::ScanLineFilter {
    public:
       HistogramBaseLineFilter( Image& image ) : image_( image ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          for( dip::uint ii = 1; ii < threads; ++ii ) {
             imageArray_.emplace_back( image_ );       // makes a copy; image_ is not yet forged, so data is not shared.
          }
@@ -156,8 +156,8 @@ class HistogramBaseLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 6; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 6; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -215,10 +215,10 @@ class ScalarImageHistogramLineFilter : public HistogramBaseLineFilter {
 template< typename TPI >
 class JointImageHistogramLineFilter : public HistogramBaseLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return ( tensorInput_ ? tensorElements : 2 ) * 6;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          std::vector< TPI const* > in;
          std::vector< dip::sint > stride;
          dip::uint nDims;
@@ -474,10 +474,10 @@ namespace {
 template< typename TPI >
 class ReverseLookupLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return tensorElements * 6;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::uint nDims = params.inBuffer[ 0 ].tensorLength;

@@ -138,7 +138,7 @@ namespace {
 class MeasureLineFilter : public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          LineIterator< LabelType > label(
                static_cast< LabelType* >( params.inBuffer[ 0 ].buffer ),
                0, params.bufferLength, params.inBuffer[ 0 ].stride,

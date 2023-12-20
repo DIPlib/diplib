@@ -172,7 +172,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          // If TPF is complex, so is TPI.
          static_assert( !( IsComplexType< TPF >::value && !IsComplexType< TPI >::value ), "Complex filter applied to non-complex data" );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          DIP_ASSERT( params.inBuffer.stride == 1 );
@@ -521,10 +521,10 @@ namespace {
 template< typename TPI >
 class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
    public:
-      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -554,10 +554,10 @@ template< typename TPI >
 class GeneralConvolutionLineFilterComplex : public Framework::FullLineFilter {
       // Idem as above, but for complex kernel weights. TPI is guaranteed a complex type
    public:
-      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );

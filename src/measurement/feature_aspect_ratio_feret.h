@@ -24,7 +24,7 @@ class FeatureAspectRatioFeret : public Composite {
    public:
       FeatureAspectRatioFeret() : Composite( { "AspectRatioFeret", "Feret-based aspect ratio (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
@@ -32,13 +32,13 @@ class FeatureAspectRatioFeret : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 1 );
          out[ 0 ] = "Feret";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             feretIndex_ = dependencies.ValueIndex( "Feret" );

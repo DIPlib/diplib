@@ -34,10 +34,10 @@ template< typename F >
 class PeronaMalikLineFilter : public Framework::FullLineFilter {
    public:
       PeronaMalikLineFilter( F g, dip::uint cost, sfloat lambda ) : g_( std::move( g )), cost_( cost ), lambda_( lambda ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return cost_ * lineLength;
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          sfloat* in = static_cast< sfloat* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          sfloat* out = static_cast< sfloat* >( params.outBuffer.buffer );
@@ -134,10 +134,10 @@ template< typename F >
 class GaussianAnisotropicDiffusionLineFilter : public Framework::ScanLineFilter {
    public:
       GaussianAnisotropicDiffusionLineFilter( F g, dip::uint cost ) : g_( std::move( g )), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return cost_ + nTensorElements + 20;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          sfloat* in = static_cast< sfloat* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::sint inTStride = params.inBuffer[ 0 ].tensorStride;

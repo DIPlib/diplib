@@ -23,13 +23,13 @@ class FeatureEccentricity : public PolygonBased {
    public:
       FeatureEccentricity() : PolygonBased( { "Eccentricity", "Aspect ratio of best fit ellipse (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
          return out;
       }
 
-      virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
          *output = polygon.CovarianceMatrixSolid().Eig().Eccentricity();
       }
 };

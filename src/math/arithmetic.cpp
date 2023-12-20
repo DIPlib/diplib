@@ -56,10 +56,10 @@ namespace {
 template< typename TPI >
 class MultiplyLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return nRows_ * nColumns_ * nInner_;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // This function is only called for two non-scalar images.
          DIP_ASSERT( params.inBuffer.size() == 2 );
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -112,10 +112,10 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return nOuter_ * ( nOuter_ + 1 ) * nInner_ / 2;
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // This function is only called for one non-scalar image.
          DIP_ASSERT( params.inBuffer.size() == 1 ); // RHS matrix, meaning the inner dimension is the columns
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -175,10 +175,10 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
 template< typename TPI >
 class MultiplyDiagonalLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return lhsTensor_.Elements();
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == 2 );
          DIP_ASSERT( params.outBuffer.size() == 1 );
          TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -459,7 +459,7 @@ void Power(
 template< typename TPI >
 class InvertLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint const inStride = params.inBuffer[ 0 ].stride;

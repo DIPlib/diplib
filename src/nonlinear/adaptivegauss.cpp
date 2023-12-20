@@ -157,9 +157,9 @@ class KernelTransform2DRotation : public KernelTransform {
          sn_.resize( inputTensorElements );
       }
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform2DRotation( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform2DRotation( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          KernelTransform::SetImageCoords( imgCoords );
          Image::Pixel dirPixel = orientation_.At( imgCoords );
          // Iterate over tensor elements
@@ -169,7 +169,7 @@ class KernelTransform2DRotation : public KernelTransform {
          }
       }
 
-      virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          transformedCoords[ 0 ] = imgCoords_[ 0 ] + static_cast< dfloat >( kernelCoords[ 0 ] ) * csn_[ tensorIndex ]
                                   + static_cast< dfloat >( kernelCoords[ 1 ] ) * sn_[ tensorIndex ];
          transformedCoords[ 1 ] = imgCoords_[ 1 ] - static_cast< dfloat >( kernelCoords[ 0 ] ) * sn_[ tensorIndex ]
@@ -187,14 +187,14 @@ class KernelTransform2DScaledRotation : public KernelTransform2DRotation, public
       KernelTransform2DScaledRotation( Image const& orientation, Image const& kernelScale, dip::uint inputTensorElements )
             : KernelTransform2DRotation( orientation, inputTensorElements ), KernelTransformScale< 2 >( kernelScale, inputTensorElements ) {}
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledRotation( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform2DScaledRotation( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          KernelTransform2DRotation::SetImageCoords( imgCoords );
          SetScaleAtImgCoords( imgCoords );
       }
 
-      virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          // First scale, then rotate
          dfloat scaledKernelCoords[ 2 ] = {
                scaleAtImgCoords_[ tensorIndex ][ 0 ] * static_cast< dfloat >( kernelCoords[ 0 ] ),
@@ -217,9 +217,9 @@ class KernelTransform3DRotationZ : public KernelTransform {
          R_.resize( inputTensorElements );
       }
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationZ( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform3DRotationZ( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          KernelTransform::SetImageCoords( imgCoords );
          Image::Pixel phiPixel = phi3_.At( imgCoords );
          Image::Pixel thetaPixel = theta3_.At( imgCoords );
@@ -238,7 +238,7 @@ class KernelTransform3DRotationZ : public KernelTransform {
          }
       }
 
-      virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          RotMatrix const& R = R_[ tensorIndex ];
          transformedCoords[ 0 ] = imgCoords_[ 0 ] + static_cast< dfloat >( kernelCoords[ 0 ] ) * R[ 0 ]
                                   + static_cast< dfloat >( kernelCoords[ 1 ] ) * R[ 1 ]
@@ -270,9 +270,9 @@ class KernelTransform3DRotationXY : public KernelTransform {
          T_.resize( inputTensorElements );
       }
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform3DRotationXY( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform3DRotationXY( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          Image::Pixel phi2Pixel = phi2_.At( imgCoords );
          Image::Pixel theta2Pixel = theta2_.At( imgCoords );
          Image::Pixel phi3Pixel = phi3_.At( imgCoords );
@@ -294,7 +294,7 @@ class KernelTransform3DRotationXY : public KernelTransform {
          }
       }
 
-      virtual void Transform( IntegerArray const& /*kernelCoords*/, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& /*kernelCoords*/, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          Eigen::Map< Eigen::Vector3d > output( transformedCoords.data() );   // Create an Eigen map that directly accesses transformedCoords
          output = T_[ tensorIndex ] * output;
       }
@@ -325,9 +325,9 @@ class KernelTransform2DSkew : public KernelTransform {
          s_.resize( inputTensorElements );
       }
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform2DSkew( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform2DSkew( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          KernelTransform::SetImageCoords( imgCoords );
          Image::Pixel skewPixel = skew_.At( imgCoords );
          for( dip::uint iTE = 0; iTE < skew_.TensorElements(); ++iTE ) {
@@ -335,7 +335,7 @@ class KernelTransform2DSkew : public KernelTransform {
          }
       }
 
-      virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          dfloat kernelCoordX = static_cast< dfloat >( kernelCoords[ 0 ] );
          transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoordX;
          transformedCoords[ 1 ] = imgCoords_[ 1 ] + static_cast< dfloat >( kernelCoords[ 1 ] ) + s_[ tensorIndex ] * kernelCoordX;
@@ -356,9 +356,9 @@ class KernelTransform2DBanana : public KernelTransform2DRotation {
          hcurv_.resize( inputTensorElements );
       }
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform2DBanana( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform2DBanana( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          KernelTransform2DRotation::SetImageCoords( imgCoords );
          Image::Pixel cPixel = hcurvature_.At( imgCoords );
          for( dip::uint iTE = 0; iTE < orientation_.TensorElements(); ++iTE ) {
@@ -366,7 +366,7 @@ class KernelTransform2DBanana : public KernelTransform2DRotation {
          }
       }
 
-      virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          dfloat kernelCoordX = static_cast< dfloat> ( kernelCoords[ 0 ] );
          dfloat kernelCoordY = static_cast< dfloat >( kernelCoords[ 1 ] ) + ( hcurv_[ tensorIndex ] * kernelCoordX * kernelCoordX );
          transformedCoords[ 0 ] = imgCoords_[ 0 ] + kernelCoordX * csn_[ tensorIndex ] + kernelCoordY * sn_[ tensorIndex ];
@@ -384,14 +384,14 @@ class KernelTransform2DScaledBanana : public KernelTransform2DBanana, public Ker
       KernelTransform2DScaledBanana( Image const& orientation, Image const& hcurvature, Image const& kernelScale, dip::uint inputTensorElements )
             : KernelTransform2DBanana( orientation, hcurvature, inputTensorElements ), KernelTransformScale< 2 >( kernelScale, inputTensorElements ) {}
 
-      virtual KernelTransform* Clone() const override { return new KernelTransform2DScaledBanana( *this ); }
+      KernelTransform* Clone() const override { return new KernelTransform2DScaledBanana( *this ); }
 
-      virtual void SetImageCoords( UnsignedArray const& imgCoords ) override {
+      void SetImageCoords( UnsignedArray const& imgCoords ) override {
          KernelTransform2DBanana::SetImageCoords( imgCoords );
          SetScaleAtImgCoords( imgCoords );
       }
 
-      virtual void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
+      void Transform( IntegerArray const& kernelCoords, dip::uint tensorIndex, FloatArray& transformedCoords ) const override {
          // First scale, then curve, then rotate
          dfloat kernelCoordX = scaleAtImgCoords_[ tensorIndex ][ 0 ] * static_cast< dfloat >( kernelCoords[ 0 ] );
          dfloat kernelCoordY = scaleAtImgCoords_[ tensorIndex ][ 1 ] * static_cast< dfloat >( kernelCoords[ 1 ] ) +
@@ -670,12 +670,12 @@ class AdaptiveWindowConvolutionLineFilter : public Framework::FullLineFilter {
          mirrorAtInputBoundaries_ = ( bc == BoundaryCondition::SYMMETRIC_MIRROR );
       }
 
-      virtual void SetNumberOfThreads( dip::uint numThreads, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint numThreads, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
          kernelTransforms_.resize( numThreads - 1 );  // kernelTransform_ is used for thread 0
       }
 
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPO* out = static_cast< TPO* >( params.outBuffer.buffer );

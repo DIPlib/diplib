@@ -96,7 +96,7 @@ template< typename TPI >
 class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       FlatSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
          // Number of operations depends on data, so we cannot guess as to how many we'll do. On average:
          dip::uint averageRunLength = div_ceil( nKernelPixels, nRuns );
          dip::uint timesNoMaxInFilter = lineLength / averageRunLength;
@@ -108,7 +108,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      nKernelPixels * 2                // number of comparisons
                      + 2 * nKernelPixels + nRuns );   // iterating over pixel table
       }
-      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          // Let's determine how to process the neighborhood
          dip::uint averageRunLength = div_ceil( pixelTable.NumberOfPixels(), pixelTable.Runs().size() );
          bruteForce_ = averageRunLength < 4; // Experimentally determined
@@ -117,7 +117,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
             offsets_ = pixelTable.Offsets();
          }
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -251,13 +251,13 @@ template< typename TPI >
 class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       GreyValueSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
          return lineLength * nKernelPixels * 3;
       }
-      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          offsets_ = pixelTable.Offsets();
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -385,14 +385,14 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
    public:
       ParabolicMorphologyLineFilter( FloatArray const& params, Polarity polarity ) :
             params_( params ), dilation_( polarity == Polarity::DILATION ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          // Actual cost depends on data!
          return lineLength * 12;
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -557,10 +557,10 @@ void ParabolicMorphology(
 template< typename TPI >
 class Elemental2DDiamondMorphologyLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
          return 5; // number of pixels in SE.
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          auto bufferLength = params.bufferLength;
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;

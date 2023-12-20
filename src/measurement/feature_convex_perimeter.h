@@ -24,7 +24,7 @@ class FeatureConvexPerimeter : public ConvexHullBased {
    public:
       FeatureConvexPerimeter() : ConvexHullBased( { "ConvexPerimeter", "Perimeter of the convex hull (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
          PhysicalQuantity pq = label.PixelSize().UnitLength();
          scale_ = pq.magnitude;
@@ -33,7 +33,7 @@ class FeatureConvexPerimeter : public ConvexHullBased {
          return out;
       }
 
-      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
+      void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
          output[ 0 ] = convexHull.Perimeter() * scale_;
       }
 

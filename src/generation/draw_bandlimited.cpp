@@ -57,7 +57,7 @@ class DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
@@ -159,7 +159,7 @@ class DrawBandlimitedLineLineFilter : public Framework::ScanLineFilter {
             dot_BA_BA_ += BA_[ ii ] * BA_[ ii ];
          }
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
@@ -375,10 +375,10 @@ class DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return ( filled_ ? 74 : 45 ) + nTensorElements; // This is not correct, we only do this for a subset of pixels on each line...
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
@@ -581,10 +581,10 @@ class DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return ( filled_ ? 55 : 25 ) + nTensorElements; // This is not correct, we only do this for a subset of pixels on each line...
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
@@ -806,10 +806,10 @@ class GaussianEdgeClipLineFilter : public Framework::ScanLineFilter {
             v *= FloatType< TPI >( 0.5 );
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return 52 + nTensorElements; // but only on a subset of pixels...
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
@@ -873,10 +873,10 @@ class GaussianLineClipLineFilter : public Framework::ScanLineFilter {
             v *= norm;
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return 22 + nTensorElements; // but only on a subset of pixels...
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );

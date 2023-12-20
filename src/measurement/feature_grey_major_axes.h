@@ -24,7 +24,7 @@ class FeatureGreyMajorAxes : public Composite {
    public:
       FeatureGreyMajorAxes() : Composite( { "GreyMajorAxes", "Grey-weighted principal axes of the object", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
+      ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          ValueInformationArray out = MuEigenVectorInformation( nD_, label.PixelSize() );
@@ -32,13 +32,13 @@ class FeatureGreyMajorAxes : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 1 );
          out[ 0 ] = "GreyMu";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "GreyMu" );

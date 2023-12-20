@@ -24,7 +24,7 @@ class FeatureCenter : public LineBased {
    public:
       FeatureCenter() : LineBased( { "Center", "Coordinates of the geometric mean of the object", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects * ( nD_ + 1 ), 0 );
@@ -40,7 +40,7 @@ class FeatureCenter : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat >,
             UnsignedArray coordinates,
@@ -72,7 +72,7 @@ class FeatureCenter : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dfloat* data = &( data_[ objectIndex * ( nD_ + 1 ) ] );
          if( data[ nD_ ] == 0 ) {
             for( dip::uint ii = 0; ii < nD_; ++ii ) {
@@ -85,7 +85,7 @@ class FeatureCenter : public LineBased {
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
          scales_.clear();

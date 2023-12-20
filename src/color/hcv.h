@@ -39,9 +39,9 @@ inline double modulo(double x, double y) {
 
 class rgb2hcv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return RGB_name; }
-      virtual String OutputColorSpace() const override { return HCV_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return RGB_name; }
+      String OutputColorSpace() const override { return HCV_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             // Input
             dfloat R = input[ 0 ];
@@ -86,9 +86,9 @@ class rgb2hcv : public ColorSpaceConverter {
 
 class hcv2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return HCV_name; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return HCV_name; }
+      String OutputColorSpace() const override { return RGB_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             // Input
             dfloat H = input[ 0 ];
@@ -122,9 +122,9 @@ class hcv2rgb : public ColorSpaceConverter {
 
 class hcv2hsv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return HCV_name; }
-      virtual String OutputColorSpace() const override { return HSV_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return HCV_name; }
+      String OutputColorSpace() const override { return HSV_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             output[ 1 ] = input[ 2 ] == 0 ? 0 : input[ 1 ] / input[ 2 ]; // Chroma = Saturation * Value
@@ -135,9 +135,9 @@ class hcv2hsv : public ColorSpaceConverter {
 
 class hsv2hcv : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return HSV_name; }
-      virtual String OutputColorSpace() const override { return HCV_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return HSV_name; }
+      String OutputColorSpace() const override { return HCV_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
             output[ 1 ] = input[ 1 ] * input[ 2 ]; // Chroma = Saturation * Value

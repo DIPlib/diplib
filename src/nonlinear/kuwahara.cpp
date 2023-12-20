@@ -54,7 +54,7 @@ class SelectionLineFilterBase {
 template< typename TPI >
 class SelectionLineFilter : public SelectionLineFilterBase {
    public:
-      virtual void Filter( SelectionLineFilterParameters const& params ) override {
+      void Filter( SelectionLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer );
          dfloat const* control = params.controlBuffer;
          TPI* out = static_cast< TPI* >( params.outBuffer );

@@ -24,7 +24,7 @@ class FeatureMean : public LineBased {
    public:
       FeatureMean() : LineBased( { "Mean", "Mean object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          nTensor_ = grey.TensorElements();
          data_.clear();
          data_.resize( nObjects * nTensor_ );
@@ -39,7 +39,7 @@ class FeatureMean : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray /*coordinates*/,
@@ -71,14 +71,14 @@ class FeatureMean : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          Data* data = &data_[ objectIndex * nTensor_ ];
          for( dip::uint ii = 0; ii < nTensor_; ++ii ) {
             output[ ii ] = ( data[ ii ].number != 0 ) ? ( data[ ii ].sum / static_cast< dfloat >( data[ ii ].number )) : ( 0.0 );
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
       }

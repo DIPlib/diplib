@@ -38,7 +38,7 @@ template< typename TPI >
 class GetLabelsLineFilter: public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* data = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -125,7 +125,7 @@ template< typename TPI >
 class RelabelLineFilter: public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;

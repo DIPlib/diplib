@@ -322,8 +322,8 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; } // not counting initialization
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; } // not counting initialization
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          auto bufferLength = params.bufferLength;
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;

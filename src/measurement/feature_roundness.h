@@ -24,7 +24,7 @@ class FeatureRoundness : public Composite {
    public:
       FeatureRoundness() : Composite( { "Roundness", "Roundness of the object (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
@@ -33,14 +33,14 @@ class FeatureRoundness : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 2 );
          out[ 0 ] = "SolidArea";
          out[ 1 ] = "Perimeter";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "SolidArea" );

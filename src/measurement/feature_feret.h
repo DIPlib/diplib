@@ -24,7 +24,7 @@ class FeatureFeret : public ConvexHullBased {
    public:
       FeatureFeret() : ConvexHullBased( { "Feret", "Maximum and minimum object diameters (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 5 );
          PhysicalQuantity pq = label.PixelSize().UnitLength();
          scale_ = pq.magnitude;
@@ -41,7 +41,7 @@ class FeatureFeret : public ConvexHullBased {
          return out;
       }
 
-      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
+      void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
          FeretValues feret = convexHull.Feret();
          output[ 0 ] = feret.maxDiameter * scale_;
          output[ 1 ] = feret.minDiameter * scale_;

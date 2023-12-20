@@ -107,8 +107,8 @@ namespace {
 
 class IDivergenceLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );
          dfloat value = 0;
@@ -150,7 +150,7 @@ class IDivergenceLineFilter : public Framework::ScanLineFilter {
          count_[ params.thread ] += count;
 
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          value_.resize( threads, 0.0 );
          count_.resize( threads, 0 );
       }

@@ -36,7 +36,7 @@ class RadialProjectionScanFunction {
       // Reduce the outputs of all threads to a single output.
       virtual void Reduce() {}
       // A virtual destructor guarantees that we can destroy a derived class by a pointer to base
-      virtual ~RadialProjectionScanFunction() {}
+      virtual ~RadialProjectionScanFunction() = default;
 };
 
 template< typename TPI, typename TPO >
@@ -44,7 +44,7 @@ class ProjectionRadialBase : public RadialProjectionScanFunction {
    public:
       ProjectionRadialBase( Image& out, dfloat binSize, FloatArray center ) : out_( out ), binSize_( binSize ), center_( std::move( center )) {}
 
-      virtual void Project( Image const& in, Image const& mask, dip::uint thread ) override {
+      void Project( Image const& in, Image const& mask, dip::uint thread ) override {
 
          // Obtain local output image
          // The output of thread 0 is stored in out_; the output of the other threads is stored in outPerThread_
@@ -106,7 +106,7 @@ class ProjectionRadialBase : public RadialProjectionScanFunction {
       }
 
       // Set number of threads. The output per thread is prepared here
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          // Force output image (once) and initialize
          InitializeOutputImage();
          // Allocate space for output values. Start at 1, because thread 0 is stored in image_.
@@ -153,19 +153,19 @@ class ProjectionRadialSum : public ProjectionRadialBase< TPI, TPO > {
       ProjectionRadialSum( Image& out, dfloat binSize, FloatArray const& center ) :
             ProjectionRadialBase< TPI, TPO >( out, binSize, center ) {}
 
-      virtual void InitializeOutputImage() override {
+      void InitializeOutputImage() override {
          // Initialize with zeros
          out_.Fill( 0 );
       }
 
-      virtual void Reduce() override {
+      void Reduce() override {
          // Take sum of all images
          for( auto const& out : outPerThread_ ) {
             out_ += out;
          }
       }
    protected:
-      virtual void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPO > pOut, dip::uint inTensorLength ) override {
+      void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPO > pOut, dip::uint inTensorLength ) override {
          for( dip::uint iT = 0; iT < inTensorLength; ++iT, ++pIn, ++pOut ) {
             *pOut += static_cast< TPO >( *pIn );
          }
@@ -182,7 +182,7 @@ class ProjectionRadialMean : public ProjectionRadialSum< TPI, TPO > {
       ProjectionRadialMean( Image& out, dfloat binSize, FloatArray const& center ) :
             ProjectionRadialSum< TPI, TPO >( out, binSize, center ) {}
 
-      virtual void Reduce() override {
+      void Reduce() override {
          // Take sum of all images
          for( auto const& out : outPerThread_ ) {
             out_ += out;
@@ -210,7 +210,7 @@ class ProjectionRadialMean : public ProjectionRadialSum< TPI, TPO > {
       }
 
    protected:
-      virtual void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPO > pOut, dip::uint inTensorLength ) override {
+      void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPO > pOut, dip::uint inTensorLength ) override {
          for( dip::uint iT = 0; iT < inTensorLength; ++iT, ++pIn, ++pOut ) {
             *pOut += static_cast< TPO >( *pIn );
          }
@@ -233,12 +233,12 @@ class ProjectionRadialMinMax : public ProjectionRadialBase< TPI, TPI > {
       ProjectionRadialMinMax( Image& out, dfloat binSize, FloatArray const& center, TPI limitInitVal ) :
             ProjectionRadialBase< TPI, TPI >( out, binSize, center ), limitInitVal_( limitInitVal ) {}
 
-      virtual void InitializeOutputImage() override {
+      void InitializeOutputImage() override {
          // Initialize with limitInitVal_
          out_.Fill( limitInitVal_ );
       }
 
-      virtual void Reduce() override {
+      void Reduce() override {
          // Take limit of all images
          //TODO: does it help to use Supremum() and Infimum() here?
          for( dip::uint iOut = 0; iOut < outPerThread_.size(); ++iOut ) {
@@ -252,7 +252,7 @@ class ProjectionRadialMinMax : public ProjectionRadialBase< TPI, TPI > {
       }
 
    protected:
-      virtual void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPI > pOut, dip::uint tensorLength ) override {
+      void ProcessPixel( ConstSampleIterator< TPI > pIn, SampleIterator< TPI > pOut, dip::uint tensorLength ) override {
          for( dip::uint iT = 0; iT < tensorLength; ++iT, ++pIn, ++pOut ) {
             if( compareOp_( *pIn, *pOut ))
                *pOut = *pIn;

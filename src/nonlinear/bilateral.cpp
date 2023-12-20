@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "diplib.h"
 #include "diplib/nonlinear.h"
 #include "diplib/lookup_table.h"
 #include "diplib/pixel_table.h"
@@ -106,7 +107,7 @@ class FullBilateralLineFilter : public Framework::FullLineFilter {
          tonalGaussScaling_ = CreateTonalGauss( tonalGauss_, tonalSigma, DataType( TPF( 0 ) ) );
       }
 
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -309,7 +310,7 @@ class SeparableBilateralLineFilter : public Framework::SeparableLineFilter {
          tonalGaussScaling_ = CreateTonalGauss( tonalGauss_, tonalSigma, DataType( TPF( 0 )));
       }
 
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );

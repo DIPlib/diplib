@@ -24,9 +24,9 @@ constexpr char const* CMYK_name = "CMYK";
 
 class rgb2cmy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return RGB_name; }
-      virtual String OutputColorSpace() const override { return CMY_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return RGB_name; }
+      String OutputColorSpace() const override { return CMY_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = 255.0 - input[ 0 ];
             output[ 1 ] = 255.0 - input[ 1 ];
@@ -37,9 +37,9 @@ class rgb2cmy : public ColorSpaceConverter {
 
 class cmy2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return CMY_name; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return CMY_name; }
+      String OutputColorSpace() const override { return RGB_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = ( 255.0 - input[ 0 ] );
             output[ 1 ] = ( 255.0 - input[ 1 ] );
@@ -50,9 +50,9 @@ class cmy2rgb : public ColorSpaceConverter {
 
 class cmy2cmyk : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return CMY_name; }
-      virtual String OutputColorSpace() const override { return CMYK_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return CMY_name; }
+      String OutputColorSpace() const override { return CMYK_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat k = std::min( std::min( input[ 0 ], input[ 1 ] ), input[ 2 ] );
             k = clamp( k, 0.0, 254.9999 );
@@ -67,9 +67,9 @@ class cmy2cmyk : public ColorSpaceConverter {
 
 class cmyk2cmy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return CMYK_name; }
-      virtual String OutputColorSpace() const override { return CMY_name; }
-      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+      String InputColorSpace() const override { return CMYK_name; }
+      String OutputColorSpace() const override { return CMY_name; }
+      void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             dfloat k = input[ 3 ];
             // The alternative definition doesn't multiply by 1-k, and therefore doesn't need the `std::min` either.

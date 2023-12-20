@@ -24,7 +24,7 @@ class FeatureSolidArea : public PolygonBased {
    public:
       FeatureSolidArea() : PolygonBased( { "SolidArea", "Area of object with any holes filled (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
          PhysicalQuantity unitArea = label.PixelSize().UnitSize( label.Dimensionality() );
          scale_ = unitArea.magnitude;
@@ -33,7 +33,7 @@ class FeatureSolidArea : public PolygonBased {
          return out;
       }
 
-      virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
          *output = ( polygon.Area() + 0.5 ) * scale_;
       }
 

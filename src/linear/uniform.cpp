@@ -31,10 +31,10 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
    public:
       RectangularUniformLineFilter( UnsignedArray const& sizes ) :
             sizes_( sizes ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
          return sizes_[ procDim ] + lineLength * 4;
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -91,7 +91,7 @@ void RectangularUniform(
 template< typename TPI >
 class PixelTableUniformLineFilter : public Framework::FullLineFilter {
    public:
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -116,7 +116,7 @@ class PixelTableUniformLineFilter : public Framework::FullLineFilter {
             *out = sum * norm;
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint nRuns ) override {
          return lineLength * nRuns * 4    // number of adds
                 + lineLength * nRuns;     // iterating over pixel table runs
       }

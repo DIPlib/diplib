@@ -1485,7 +1485,7 @@ class MatlabInterface : public dip::ExternalInterface {
       /// deleter functor. It also adjusts strides to match the `mxArray` storage.
       ///
       /// A user will never call this function directly.
-      virtual dip::DataSegment AllocateData(
+      dip::DataSegment AllocateData(
             void*& origin,
             dip::DataType datatype,
             dip::UnsignedArray const& sizes,
@@ -1709,11 +1709,11 @@ class streambuf : public std::streambuf {
       streambuf& operator=( streambuf const& ) = delete;
       streambuf& operator=( streambuf&& ) = delete;
    protected:
-      virtual std::streamsize xsputn( const char* s, std::streamsize n ) override {
+      std::streamsize xsputn( const char* s, std::streamsize n ) override {
          mexPrintf( "%.*s", n, s );
          return n;
       }
-      virtual int overflow( int c = EOF ) override {
+      int overflow( int c = EOF ) override {
          if( c != EOF ) {
             mexPrintf( "%.1s", &c );
          }

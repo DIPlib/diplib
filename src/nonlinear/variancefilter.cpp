@@ -29,12 +29,12 @@ namespace {
 template< typename TPI >
 class VarianceLineFilter : public Framework::FullLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
          return 5 * nKernelPixels + lineLength * (
                nRuns * 2      // number of multiply-adds
                + nRuns );     // iterating over pixel table runs
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );

@@ -24,7 +24,7 @@ class FeatureMaxPos : public LineBased {
    public:
       FeatureMaxPos() : LineBased( { "MaxPos", "Position of pixel with maximum intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          pos_.clear();
@@ -43,7 +43,7 @@ class FeatureMaxPos : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray coordinates,
@@ -79,14 +79,14 @@ class FeatureMaxPos : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          dip::uint* pos = &( pos_[ objectIndex * nD_ ] );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             output[ ii ] = static_cast< dfloat >( pos[ ii ] ) * scales_[ ii ];
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          pos_.clear();
          pos_.shrink_to_fit();
          data_.clear();

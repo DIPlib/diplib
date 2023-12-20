@@ -296,10 +296,10 @@ class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
    public:
       SupInfGeneratingLineFilter( PolarityMode mode )
             : supGenerating_( mode != PolarityMode::InfGenerating ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
          return lineLength * nKernelPixels;
       }
-      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          // Fill in `offsets_` and `hitmiss_` using `pixelTable`.
          // The pixel table has been prepared such that pixels with a positive weight are hit, and a negative
          // weight are miss. "Don't care" pixels are not in the table.
@@ -311,7 +311,7 @@ class SupInfGeneratingLineFilter : public Framework::FullLineFilter {
             // hitmiss_ is 1 or 0, for hit and miss respectively.
          }
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          dip::bin* in = static_cast< dip::bin* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          dip::bin* out = static_cast< dip::bin* >( params.outBuffer.buffer );
@@ -442,10 +442,10 @@ class ThickeningThinningLineFilter : public Framework::FullLineFilter {
    public:
       ThickeningThinningLineFilter( DirectionMode mode, Image const& mask, bool& change )
             : mode_( mode ), changed_( change ), mask_( mask ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
          return lineLength * nKernelPixels;
       }
-      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+      void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          // Fill in `offsets_` and `hitmiss_` using `pixelTable`.
          // The pixel table has been prepared such that pixels with a positive weight are hit, and a negative
          // weight are miss. "Don't care" pixels are not in the table.
@@ -457,7 +457,7 @@ class ThickeningThinningLineFilter : public Framework::FullLineFilter {
             // hitmiss_ is 1 or 0, for hit and miss respectively.
          }
       }
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+      void Filter( Framework::FullLineFilterParameters const& params ) override {
          dip::bin* in = static_cast< dip::bin* >( params.inBuffer.buffer ); // yes, it's dip::bin, but this is simpler.
          dip::sint inStride = params.inBuffer.stride;
          dip::bin* out = static_cast< dip::bin* >( params.outBuffer.buffer );

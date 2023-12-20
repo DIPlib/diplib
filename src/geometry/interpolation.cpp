@@ -33,13 +33,13 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
    public:
       ResamplingLineFilter( interpolation::Method method, FloatArray const& zoom, FloatArray const& shift ) :
             method_( method ), zoom_( zoom ), shift_( shift ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
          return interpolation::GetNumberOfOperations( method_, lineLength, zoom_[ procDim ] );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          DIP_ASSERT( params.inBuffer.stride == 1 );
          dip::uint procDim = params.dimension;
@@ -88,15 +88,15 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
             }
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
          dip::uint outLength = ift_[ procDim ].TransformSize();
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )))
               + 10 * outLength  * static_cast< dip::uint >( std::round( std::log2( outLength  )));
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          DIP_ASSERT( params.inBuffer.stride == 1 );
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -193,10 +193,10 @@ namespace {
 template< typename TPI > // TPI is a complex type
 class ShiftFTLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return 40 + nTensorElements; // TODO: is this OK?
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer[ 0 ].buffer );
          dip::sint nTensor = static_cast< dip::sint >( params.inBuffer[ 0 ].tensorLength );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -288,13 +288,13 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
    public:
       SkewLineFilter( interpolation::Method method, FloatArray const& tanShear, FloatArray const& offset, dip::uint axis, BoundaryConditionArray const& boundaryCondition ) :
             method_( method ), tanShear_( tanShear ), offset_( offset ), axis_( axis ), boundaryCondition_( boundaryCondition ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return interpolation::GetNumberOfOperations( method_, lineLength, 1.0 );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          DIP_ASSERT( params.inBuffer.stride == 1 );
          SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };

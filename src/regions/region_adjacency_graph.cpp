@@ -33,7 +33,7 @@ class TouchingRegionAdjacencyGraphLineFilter : public Framework::ScanLineFilter 
    public:
       TouchingRegionAdjacencyGraphLineFilter( Graph& graph, std::vector< dfloat >& boundaryLength, UnsignedArray const& sizes, IntegerArray const& strides )
             : graph_( graph ), boundaryLength_( boundaryLength ), sizes_( sizes ), strides_( strides ) {}
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // We iterate from 0 to N-1.
          // We look in directions in which we're not the last line.
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -83,7 +83,7 @@ class WatershedRegionAdjacencyGraphLineFilter : public Framework::ScanLineFilter
    public:
       WatershedRegionAdjacencyGraphLineFilter( Graph& graph, std::vector< dfloat >& boundaryLength, UnsignedArray const& sizes, IntegerArray const& strides )
             : graph_( graph ), boundaryLength_( boundaryLength ), sizes_( sizes ), strides_( strides ) {}
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // We iterate from 1 to N-1.
          // We look in directions in which we're not the first or last line.
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );

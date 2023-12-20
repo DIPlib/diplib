@@ -24,7 +24,7 @@ class FeatureConvexity : public Composite {
    public:
       FeatureConvexity() : Composite( { "Convexity", "Ratio of perimeter of convex hull to perimeter of object (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "";
@@ -32,14 +32,14 @@ class FeatureConvexity : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 2 );
          out[ 0 ] = "Perimeter";
          out[ 1 ] = "ConvexPerimeter";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             perimeterIndex_ = dependencies.ValueIndex( "Perimeter" );

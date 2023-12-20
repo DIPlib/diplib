@@ -98,9 +98,9 @@ constexpr char const* wavelength_name = "wavelength";
 
 class wavelength2xyz : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return wavelength_name; }
-      virtual String OutputColorSpace() const override { return XYZ_name; }
-      virtual void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
+      String InputColorSpace() const override { return wavelength_name; }
+      String OutputColorSpace() const override { return XYZ_name; }
+      void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
          do {
             wl::ConvertWavelengthToXYZ( input[ 0 ], output[ 0 ], output[ 1 ], output[ 2 ] );
          } while( ++input, ++output );
@@ -116,9 +116,9 @@ void adjustToGammut( dfloat& R, dfloat& G, dfloat& B, dfloat Y, dfloat channel )
 
 class wavelength2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return wavelength_name; }
-      virtual String OutputColorSpace() const override { return RGB_name; }
-      virtual void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
+      String InputColorSpace() const override { return wavelength_name; }
+      String OutputColorSpace() const override { return RGB_name; }
+      void Convert( ConstLineIterator <dfloat>& input, LineIterator <dfloat>& output ) const override {
          do {
             // Look up XYZ value for wavelength
             dfloat X, Y, Z;
@@ -146,7 +146,7 @@ class wavelength2rgb : public ColorSpaceConverter {
             output[ 2 ] = B * 255;
          } while( ++input, ++output );
       }
-      virtual void SetWhitePoint( XYZ const&, XYZMatrix const&, XYZMatrix const& inverseMatrix ) override {
+      void SetWhitePoint( XYZ const&, XYZMatrix const&, XYZMatrix const& inverseMatrix ) override {
          invMatrix_ = inverseMatrix;
       }
    private:

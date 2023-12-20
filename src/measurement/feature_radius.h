@@ -24,7 +24,7 @@ class FeatureRadius : public PolygonBased {
    public:
       FeatureRadius() : PolygonBased( { "Radius", "Statistics on radius of object (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 4 );
          PhysicalQuantity pq = label.PixelSize().UnitLength();
          scale_ = pq.magnitude;
@@ -39,7 +39,7 @@ class FeatureRadius : public PolygonBased {
          return out;
       }
 
-      virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+      void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
          RadiusValues radius = polygon.RadiusStatistics();
          output[ 0 ] = radius.Maximum() * scale_;
          output[ 1 ] = radius.Mean() * scale_;

@@ -24,7 +24,7 @@ class FeatureDimensionsCube : public Composite {
    public:
       FeatureDimensionsCube() : Composite( { "DimensionsCube", "Extent along the principal axes of a cube (2D & 3D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out = MuSqrtEigenValueInformation( nD_, label.PixelSize() );
@@ -32,13 +32,13 @@ class FeatureDimensionsCube : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 1 );
          out[ 0 ] = "Mu";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "Mu" );

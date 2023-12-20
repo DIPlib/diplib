@@ -53,7 +53,7 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
       // NOTE! This filter needs input and output buffers to be distinct only for the brute-force version (filterLength <= 3)
       DilationErosionLineFilter( UnsignedArray const& filterLengths, Mirror mirror, dip::uint maxSize ) :
             filterLengths_( filterLengths ), mirror_( mirror == Mirror::YES ), maxSize_( maxSize ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          bool needBuffers = false;
          for( dip::uint ii = 0; ii < filterLengths_.size(); ++ii ) {
             if( filterLengths_[ ii ] > 3 ) {
@@ -65,10 +65,10 @@ class DilationErosionLineFilter : public Framework::SeparableLineFilter {
             buffers_.resize( threads );
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength * 6; // 3 comparisons, 3 iterations
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -304,15 +304,15 @@ class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter 
       // NOTE! This filer needs input and output buffers to be distinct only for the brute-force version (filterLength <= 3)
       PeriodicDilationErosionLineFilter( dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) :
             stepSize_( stepSize ), filterLength_( filterLength ), mirror_( mirror == Mirror::YES ), maxSize_( maxSize ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          if( filterLength_ / stepSize_ > 3 ) {
             buffers_.resize( threads );
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength * 6; // 3 comparisons, 3 iterations
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -599,15 +599,15 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
       };
    public:
       OpeningClosingLineFilter( dip::uint filterLength ) : filterLength_( filterLength ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          if( filterLength_ > 3 ) {
             stack_.resize( threads );
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return lineLength * 6; // TODO: determine correct number of operations
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -800,18 +800,18 @@ class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
             filterLength_ = std::max( filterLength_, filterLengths_[ ii ] );
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          if( filterLength_ > 3 ) {
             erosion_.SetNumberOfThreads( threads );
             dilation_.SetNumberOfThreads( threads );
             buffer_.resize( threads );
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return erosion_.GetNumberOfOperations( lineLength, 0, 0, 0 ) +
                 dilation_.GetNumberOfOperations( lineLength, 0, 0, 0 );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dip::uint length = params.inBuffer.length;
          dip::uint margin = params.inBuffer.border;
          if( filterLength_ > 3 ) {
@@ -948,16 +948,16 @@ class PeriodicOpeningClosingLineFilter : public Framework::SeparableLineFilter {
       PeriodicOpeningClosingLineFilter( dip::uint stepSize, dip::uint filterLength, dip::uint maxSize, BoundaryConditionArray const& bc ) :
             erosion_( stepSize, filterLength, Mirror::NO, maxSize ), dilation_( stepSize, filterLength, Mirror::YES, maxSize ),
             filterLength_( filterLength ), maxSize_( maxSize ), boundaryCondition_( bc ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          erosion_.SetNumberOfThreads( threads );
          dilation_.SetNumberOfThreads( threads );
          buffer_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return erosion_.GetNumberOfOperations( lineLength, 0, 0, 0 ) +
                 dilation_.GetNumberOfOperations( lineLength, 0, 0, 0 );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dip::uint length = params.inBuffer.length;
          dip::uint margin = params.inBuffer.border;
          std::vector< TPI >& buffer = buffer_[ params.thread ];

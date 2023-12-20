@@ -29,15 +29,15 @@ class DistanceTransformLineFilter : public Framework::SeparableLineFilter {
    public:
       DistanceTransformLineFilter( FloatArray const& spacing, dfloat maxDistance2, bool squareDistance )
             : spacing_( spacing ), maxDistance2_( static_cast< TPI >( maxDistance2 )), squareDistance_( squareDistance ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          if( spacing_.size() > 1 ) {
             buffers_.resize( threads ); // We don't need buffers for 1D thing.
          }
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
          return lineLength * ( procDim == 0 ? 6 : 20 ); // TODO: how to estimate this one? It's not exactly linear...
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          DIP_ASSERT( params.inBuffer.stride == 1 ); // Guaranteed because we use an input buffer

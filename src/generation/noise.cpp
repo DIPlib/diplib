@@ -29,8 +29,8 @@ namespace dip {
 namespace {
 class UniformScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::uint const bufferLength = params.bufferLength;
@@ -43,7 +43,7 @@ class UniformScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override  {
+      void SetNumberOfThreads( dip::uint threads ) override  {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< UniformRandomGenerator >( random_ );
          if( threads > 1 ) {
@@ -79,8 +79,8 @@ void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBoun
 namespace {
 class GaussianScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 150; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 150; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::uint const bufferLength = params.bufferLength;
@@ -93,7 +93,7 @@ class GaussianScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< GaussianRandomGenerator >( random_ );
          if( threads > 1 ) {
@@ -127,8 +127,8 @@ void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance
 namespace {
 class PoissonScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 800; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 800; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::uint const bufferLength = params.bufferLength;
@@ -141,7 +141,7 @@ class PoissonScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< PoissonRandomGenerator >( random_ );
          if( threads > 1 ) {
@@ -175,8 +175,8 @@ void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversio
 namespace {
 class BinaryScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::uint const bufferLength = params.bufferLength;
@@ -189,7 +189,7 @@ class BinaryScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< BinaryRandomGenerator >( random_ );
          if( threads > 1 ) {
@@ -224,8 +224,8 @@ void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10, dfloa
 namespace {
 class SaltPepperScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
          dip::uint const bufferLength = params.bufferLength;
@@ -245,7 +245,7 @@ class SaltPepperScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override  {
+      void SetNumberOfThreads( dip::uint threads ) override  {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< UniformRandomGenerator >( random_ );
          if( threads > 1 ) {

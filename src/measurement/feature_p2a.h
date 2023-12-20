@@ -24,7 +24,7 @@ class FeatureP2A : public Composite {
    public:
       FeatureP2A() : Composite( { "P2A", "Perimeter to area ratio of the object (2D & 3D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
@@ -34,14 +34,14 @@ class FeatureP2A : public Composite {
          return out;
       }
 
-      virtual StringArray Dependencies() override {
+      StringArray Dependencies() override {
          StringArray out( 2 );
          out[ 0 ] = "Size";
          out[ 1 ] = nD_ == 2 ? "Perimeter" : "SurfaceArea";
          return out;
       }
 
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
+      void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );

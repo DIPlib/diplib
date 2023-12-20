@@ -25,7 +25,7 @@ class FeatureDirectionalStatistics : public LineBased {
    public:
       FeatureDirectionalStatistics() : LineBased( { "DirectionalStatistics", "Directional mean and standard deviation of object intensity", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& /*label*/, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          data_.clear();
          data_.resize( nObjects );
@@ -35,7 +35,7 @@ class FeatureDirectionalStatistics : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray /*coordinates*/,
@@ -64,13 +64,13 @@ class FeatureDirectionalStatistics : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          DirectionalStatisticsAccumulator data = data_[ objectIndex ];
          output[ 0 ] = data.Mean();
          output[ 1 ] = data.StandardDeviation();
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
       }

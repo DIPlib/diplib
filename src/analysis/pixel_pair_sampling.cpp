@@ -211,7 +211,7 @@ using PhaseLookupTable = tsl::robin_map< dip::uint, dip::uint >;
 
 class PairCorrelationFunction : public PixelPairFunction {
    public:
-      virtual void UpdateRandom(
+      void UpdateRandom(
             UnsignedArray const& coords1,
             UnsignedArray const& coords2,
             dip::uint distance
@@ -219,7 +219,7 @@ class PairCorrelationFunction : public PixelPairFunction {
          UpdateGrid( object_.Pointer( coords1 ), object_.Pointer( coords2 ), distance );
       }
 
-      virtual void UpdateGrid(
+      void UpdateGrid(
             void const* dataPtr1,
             void const* dataPtr2,
             dip::uint distance
@@ -392,7 +392,7 @@ namespace {
 
 class ProbabilisticPairCorrelationFunction : public PixelPairFunction {
    public:
-      virtual void UpdateRandom(
+      void UpdateRandom(
             UnsignedArray const& coords1,
             UnsignedArray const& coords2,
             dip::uint distance
@@ -400,7 +400,7 @@ class ProbabilisticPairCorrelationFunction : public PixelPairFunction {
          UpdateGrid( phases_.Pointer( coords1 ), phases_.Pointer( coords2 ), distance );
       }
 
-      virtual void UpdateGrid(
+      void UpdateGrid(
             void const* dataPtr1,
             void const* dataPtr2,
             dip::uint distance
@@ -498,7 +498,7 @@ namespace {
 
 class SemivariogramFunction : public PixelPairFunction {
    public:
-      virtual void UpdateRandom(
+      void UpdateRandom(
             UnsignedArray const& coords1,
             UnsignedArray const& coords2,
             dip::uint distance
@@ -506,7 +506,7 @@ class SemivariogramFunction : public PixelPairFunction {
          UpdateGrid( image_.Pointer( coords1 ), image_.Pointer( coords2 ), distance );
       }
 
-      virtual void UpdateGrid(
+      void UpdateGrid(
             void const* dataPtr1,
             void const* dataPtr2,
             dip::uint distance

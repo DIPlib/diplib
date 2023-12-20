@@ -1068,8 +1068,8 @@ namespace {
 
 class ExactSWLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 100; } // TODO: this is absolutely a wild guess...
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 100; } // TODO: this is absolutely a wild guess...
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          sfloat* out = static_cast< sfloat* >( params.outBuffer[ 0 ].buffer );
          auto stride = params.outBuffer[ 0 ].stride;
          dip::uint length = params.bufferLength - 1;

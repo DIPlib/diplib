@@ -29,10 +29,10 @@ class HaarWaveletLineFilter : public Framework::SeparableLineFilter {
       using TPF = FloatType< TPI >;
    public:
       HaarWaveletLineFilter( bool isForward ) : isForward( isForward ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
          return 2 * lineLength;
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+      void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          const TPF scale = static_cast< TPF >( 1 / std::sqrt( 2 ));
          DIP_ASSERT( params.inBuffer.length == params.outBuffer.length );
          DIP_ASSERT(( params.inBuffer.length & 1u ) == 0 );

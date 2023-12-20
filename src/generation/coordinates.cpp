@@ -167,7 +167,7 @@ namespace {
 
 class RampLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -217,8 +217,8 @@ namespace {
 
 class RadiusLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 20; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 20; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -264,8 +264,8 @@ namespace {
 
 class RadiusSquareLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -311,8 +311,8 @@ namespace {
 
 class PhiLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; } // worst case (dim != 2)
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; } // worst case (dim != 2)
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -367,8 +367,8 @@ namespace {
 
 class ThetaLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; }
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( transformation_.size() == 3 );
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
@@ -431,10 +431,10 @@ namespace {
 
 class CoordinatesLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorLength ) override {
+      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorLength ) override {
          return spherical_ ? ( tensorLength == 2 ? 50 : 70 ) : ( 2 + tensorLength );
       }
-      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+      void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;

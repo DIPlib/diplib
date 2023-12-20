@@ -39,7 +39,7 @@ class FeatureSurfaceArea : public ImageBased {
    public:
       FeatureSurfaceArea() : ImageBased( { "SurfaceArea", "surface area of object (3D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          PhysicalQuantity unitArea = label.PixelSize().UnitLength().Power( 2 );
@@ -49,7 +49,7 @@ class FeatureSurfaceArea : public ImageBased {
          return out;
       }
 
-      virtual void Measure( Image const& label, Image const&, Measurement::IteratorFeature& output ) override {
+      void Measure( Image const& label, Image const&, Measurement::IteratorFeature& output ) override {
          std::vector< dfloat > res = SurfaceArea( label, output.Objects() );
          // Note that `res` has objects sorted in the same way as `output`.
          auto dst = output.FirstObject();

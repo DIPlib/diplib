@@ -24,7 +24,7 @@ class FeatureGreyMu : public LineBased {
    public:
       FeatureGreyMu() : LineBased( { "GreyMu", "Elements of the grey-weighted inertia tensor", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          data_.clear();
@@ -34,7 +34,7 @@ class FeatureGreyMu : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat > grey,
             UnsignedArray coordinates,
@@ -65,7 +65,7 @@ class FeatureGreyMu : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          MomentAccumulator* data = &( data_[ objectIndex ] );
          FloatArray values = data->SecondOrder();
          for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
@@ -73,7 +73,7 @@ class FeatureGreyMu : public LineBased {
          }
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
          scales_.clear();

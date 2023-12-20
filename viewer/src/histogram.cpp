@@ -275,7 +275,7 @@ class HistogramLineFilter : public dip::Framework::ScanLineFilter
    public:
       HistogramLineFilter( dip::Image &histogram, FloatRange range) : histogram_( histogram), range_( range) { }
 
-      virtual void Filter( dip::Framework::ScanLineFilterParameters const& params ) override
+      void Filter( dip::Framework::ScanLineFilterParameters const& params ) override
       {
         T const* in = static_cast< T const* >( params.inBuffer[ 0 ].buffer );
         dip::uint32 * out = static_cast< dip::uint32 * >( histogram_.Origin() );

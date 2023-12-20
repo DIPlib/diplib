@@ -24,7 +24,7 @@ class FeatureSize : public LineBased {
    public:
       FeatureSize() : LineBased( { "Size", "Number of object pixels", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          data_.clear();
          data_.resize( nObjects, 0 );
          ValueInformationArray out( 1 );
@@ -48,7 +48,7 @@ class FeatureSize : public LineBased {
          return out;
       }
 
-      virtual void ScanLine(
+      void ScanLine(
             LineIterator< LabelType > label,
             LineIterator< dfloat >, // unused
             UnsignedArray, // unused
@@ -76,11 +76,11 @@ class FeatureSize : public LineBased {
          } while( ++label );
       }
 
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
+      void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          *output = static_cast< dfloat >( data_[ objectIndex ] ) * scale_;
       }
 
-      virtual void Cleanup() override {
+      void Cleanup() override {
          data_.clear();
          data_.shrink_to_fit();
       }
