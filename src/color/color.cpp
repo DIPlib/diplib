@@ -16,11 +16,18 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <array>
+#include <limits>
+#include <functional>
+#include <memory>
 #include <queue>
+#include <vector>
 
 #include "diplib.h"
 #include "diplib/color.h"
 #include "diplib/framework.h"
+#include "diplib/iterators.h"
 
 namespace dip {
 namespace {
@@ -35,6 +42,7 @@ using XYZMatrix = std::array< dfloat, 9 >;
 #include "hsi.h"
 #include "ish.h"
 #include "hcv.h"
+#include "ycbcr.h"
 #include "xyz.h"
 #include "lab.h"
 #include "oklab.h"
@@ -60,6 +68,8 @@ ColorSpaceManager::ColorSpaceManager() {
    // sRGB
    Define( sRGB_name, 3 );
    DefineAlias( "srgb", sRGB_name );
+   DefineAlias( "R'G'B'", sRGB_name );
+   DefineAlias( "r'g'b'", sRGB_name );
    Register( std::make_shared< rgb2srgb >() );
    Register( std::make_shared< srgb2rgb >() );
    // CMY
@@ -103,6 +113,24 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "hsv", HSV_name );
    Register( std::make_shared< hcv2hsv >() );
    Register( std::make_shared< hsv2hcv >() );
+   // YPbPr
+   Define( YPbPr_name, 3 );
+   DefineAlias( "y'pbpr", YPbPr_name );
+   DefineAlias( "YPbPr", YPbPr_name );
+   DefineAlias( "ypbpr", YPbPr_name );
+   DefineAlias( "YPP", YPbPr_name );
+   DefineAlias( "ypp", YPbPr_name );
+   Register( std::make_shared< srgb2ypbpr >() );
+   Register( std::make_shared< ypbpr2srgb >() );
+   // YCbCr
+   Define( YCbCr_name, 3 );
+   DefineAlias( "y'cbcr", YCbCr_name );
+   DefineAlias( "YCbCr", YCbCr_name );
+   DefineAlias( "ycbcr", YCbCr_name );
+   DefineAlias( "YCC", YCbCr_name );
+   DefineAlias( "ycc", YCbCr_name );
+   Register( std::make_shared< ypbpr2ycbcr >() );
+   Register( std::make_shared< ycbcr2ypbpr >() );
    // XYZ
    Define( XYZ_name, 3 );
    DefineAlias( "xyz", XYZ_name );
@@ -171,8 +199,8 @@ ColorSpaceManager::ColorSpaceManager() {
 namespace {
 
 struct ConversionStep {
-   ColorSpaceConverter const* converterFunction;
-   dip::uint nOutputChannels;
+   ColorSpaceConverter const* converterFunction = nullptr;
+   dip::uint nOutputChannels = 0;
    bool last = false;
 };
 
@@ -180,8 +208,9 @@ using ConversionStepArray = std::vector< ConversionStep >;
 
 class ConverterLineFilter : public Framework::ScanLineFilter {
    public:
-      explicit ConverterLineFilter( ConversionStepArray const& steps ) : steps_( steps ) {
-         maxIntermediateChannels_ = steps[ 0 ].nOutputChannels;
+      explicit ConverterLineFilter( ConversionStepArray const& steps ) :
+            steps_( steps ),
+            maxIntermediateChannels_(steps[ 0 ].nOutputChannels) {
          for( dip::uint ii = 1; ii < steps.size() - 1; ++ii ) {
             maxIntermediateChannels_ = std::max( maxIntermediateChannels_, steps[ 1 ].nOutputChannels );
          }
@@ -191,7 +220,7 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
          buffer1_.resize( threads );
          buffer2_.resize( threads );
       }
-      dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+      dip::uint GetNumberOfOperations( dip::uint /**/, dip::uint /**/, dip::uint /**/ ) override {
          dip::uint cost = 0;
          for( auto const& step : steps_ ) {
             dip::uint c = step.converterFunction->Cost();
@@ -407,7 +436,7 @@ void ColorSpaceManager::SetWhitePoint( dip::XYZ whitePoint ) {
 
 #ifdef DIP_CONFIG_ENABLE_DOCTEST
 #include "doctest.h"
-#include "diplib/math.h"
+#include <cmath>
 
 DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    dip::ColorSpaceManager csm;
@@ -417,6 +446,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( csm.CanonicalName( "CIELUV" ) == "Luv" );
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "cmy" )->Cost() == 1 );
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "grey" )->Cost() == 100 );
+
    // Test no conversion
    dip::Image img( {}, 1 );
    img.Fill( 100 );
@@ -424,14 +454,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( out.ColorSpace() == "wavelength" );
    DOCTEST_CHECK( out.TensorElements() == 1 );
    DOCTEST_CHECK( out.At( 0 ) == 100 );
-   // Test grey->RGB conversion
+
+   // Test grey -> RGB conversion
    out = csm.Convert( img, "RGB" );
    DOCTEST_CHECK( out.ColorSpace() == "RGB" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
    DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 100, 100, 100 } ));
+
    // CMYK should have 4 tensor elements, not 3!
    img.SetColorSpace( "CMYK" );
    DOCTEST_CHECK_THROWS( csm.Convert( img, img, "RGB" ));
+
    // Run through a long conversion chain, probably just for Valgrind.
    img = dip::Image( {}, 4 );
    img.Fill( 0 );
@@ -439,7 +472,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    csm.Convert( img, out, "LCH" ); // This is the longest path we have so far.
    DOCTEST_CHECK( out.ColorSpace() == "LCH" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   // Check that converting RGB->XYZ using default settings, and then XYZ->RGB using D65, yields the input image again.
+
+   // Check that converting RGB -> XYZ using default settings, and then XYZ -> RGB using D65, yields the input image again.
    // This tests the white point setting functions do what they should.
    img = dip::Image( {}, 3 );
    img = { 200, 150, 100 };
@@ -450,11 +484,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
    DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
    DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
-   // Check that RGB->XYZ yields something different when using a different white point.
+
+   // Check that RGB -> XYZ yields something different when using a different white point.
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD50 );
    csm.Convert( img, out, "XYZ" );
    DOCTEST_CHECK_FALSE( xyz.At( 0 ) == out.At( 0 ));
-   // Check the XYX<->Oklab pairs shown by Ottosson
+
+   // Check the XYX <-> Oklab pairs shown by Ottosson
    auto round = []( double x ) { return std::round( x * 1000 ) / 1000; };
    img = { 0.950,	1.000,	1.089 };
    img.SetColorSpace( "XYZ" );
@@ -493,6 +529,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( round( oklab.At( 0 )[ 1 ].As< dip::dfloat >() ) == -1.415 );
    DOCTEST_CHECK( round( oklab.At( 0 )[ 2 ].As< dip::dfloat >() ) == -0.449 );
    out = csm.Convert( img, "XYZ" );
+   DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
+
+   // Check sRGB <-> Y'CbCr roundtrip
+   img = { 200, 150, 100 };
+   img.SetColorSpace( "sRGB" );
+   dip::Image ycbcr = csm.Convert( img, "Y'CbCr" );
+   out = csm.Convert( ycbcr, "sRGB" );
    DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
    DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
    DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));

@@ -1,5 +1,5 @@
 /*
- * (c)2016-2021, Cris Luengo.
+ * (c)2016-2023, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
@@ -124,15 +124,17 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// -------- | ---------- | ------------
 /// `"grey"` | `"gray"`   | An empty string is also interpreted as grey. Defined to be in the range [0,255].
 /// `"RGB"`  |            | Linear RGB, defined in the range [0,255].
-/// `"sRGB"` |            | Industry-standard non-linear RGB, gamma-corrected linear RGB (average gamma is approximately 2.2, with a linear segment near 0). Values in the range is [0,255].
-/// `"CMY"`  |            | Cyan-Magenta-Yellow. Subtractive colors, defined simply as 255-RGB. Values in the range is [0,255].
+/// `"sRGB"` | `"R'G'B'"` | Industry-standard non-linear, gamma-corrected RGB (average gamma is approximately 2.2, with a linear segment near 0). Values are in the range [0,255].
+/// `"CMY"`  |            | Cyan-Magenta-Yellow. Subtractive colors, defined simply as 255-RGB. Values are in the range [0,255].
 /// `"CMYK"` |            | Cyan-Magenta-Yellow-blacK. Subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
 /// `"HSI"`  |            | Hue-Saturation-Intensity. L^1^ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra (2003).
 /// `"ICH"`  |            | Intensity-Chroma-Hue. Rotation of the RGB cube, where I is along the black-white diagonal of the cube, and the CH-plane is perpendicular. I is in the range [0,255], H is an angle in degrees.
 /// `"ISH"`  |            | Intensity-Saturation-Hue. Based in ICH, where S is the C channel normalized so that the maximum saturation for each H is 1. For each H, the largest value of C is attained for a different value of I.
 /// `"HCV"`  |            | Hue-Chroma-Value. V is the max of R, G and B, and C is the difference between largest and smallest RGB intensities. C and V are in range [0,255], H is an angle in degrees.
 /// `"HSV"`  |            | Hue-Saturation-Value. Based on HCV, where S is equal to C normalized by V. S is in range [0,1] and V in range [0,255], H is an angle in degrees.
-/// `"XYZ"`  |            | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis. X, Y and Z are in the range [0,1].
+/// `"Y'PbPr"` | `"YPbPr"`, `"YPP"` | Luma and two chroma components. Computed from R'G'B' (non-linear, gamma-corrected RGB). Y' is in the range [0,1], and Pb and Pr are in the range [-0.5,0.5].
+/// `"Y'CbCr"` | `"YCbCr"`, `"YCC"` | Luma and two chroma components. Scaled Y'PbPr such that all three components are in the range [0,255]. Sometimes incorrectly referred to as YUV.
+/// `"XYZ"`  |            | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the (linear) RGB cube that aligns Y with the luminance axis. X, Y and Z are in the range [0,1].
 /// `"Yxy"`  |            | CIE Yxy, where x and y are normalized X and Y. They are the chromaticity coordinates.
 /// `"Lab"`  | `"L*a*b*"`, `"CIELAB"` | Lightness and two chromaticity coordinates. One of two color spaces proposed by CIE in 1976 in an attempt for perceptual uniformity. L is in the range [0,100], and a and b are approximately in the range [-100,100].
 /// `"Luv"`  | `"L*u*v*"`, `"CIELUV"` | Lightness and two chromaticity coordinates. One of two color spaces proposed by CIE in 1976 in an attempt for perceptual uniformity. L is in the range [0,100], and u and v are in a range significantly wider than [-100,100].
@@ -145,6 +147,10 @@ class DIP_CLASS_EXPORT ColorSpaceConverter {
 /// Note that most color images are stored to file as (nonlinear) sRGB. After loading a color image,
 /// it is therefore often advantageous to convert the image to (linear) RGB for computation (or some
 /// other desired color space).
+///
+/// When converting to/from gray, it is assumed that gray is linear (i.e. a weighted addition of the linear R, G and B
+/// values, the weights depending on the white point). But in the case of HSI and ISH color spaces, the I channel is the
+/// gray channel; I is a non-weighted mean of linear RGB, the conversion does not take the white point into accout.
 ///
 /// # Defining a new color space
 ///

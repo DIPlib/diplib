@@ -7,7 +7,7 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
-- Added `"Oklab"` and `"Oklch"` as color spaces.
+- Added `"Oklab"`, `"Oklch"`, `"Y'PbPr"` and `"Y'CbCr"` as color spaces.
 
 ### Changed functionality
 
@@ -24,6 +24,9 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::SeededWatershed()` and `dip::CompactWatershed()` discarded the `seeds` input image when it was the same
   as the `out` image (when the caller intended for the algorithm to work in-place).
+
+
+
 
 ## Changes to *DIPimage*
 
