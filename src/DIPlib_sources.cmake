@@ -96,6 +96,7 @@ color/oklab.h
 color/rgb.h
 color/wavelength.h
 color/xyz.h
+color/ycbcr.h
 deconvolution/common_deconv_utility.h
 deconvolution/fista.cpp
 deconvolution/richardson_lucy.cpp
