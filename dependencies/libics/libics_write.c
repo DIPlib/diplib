@@ -242,7 +242,7 @@ static Ics_Error icsAddInt(char     *line,
     char intStr[ICS_STRLEN_OTHER];
 
 
-    sprintf(intStr, "%ld%c", i, ICS_FIELD_SEP);
+    snprintf(intStr, ICS_STRLEN_OTHER, "%ld%c", i, ICS_FIELD_SEP);
     if (strlen(line) + strlen(intStr) + 1 > ICS_LINE_LENGTH)
         return IcsErr_LineOverflow;
     strcat(line, intStr);
@@ -258,7 +258,7 @@ static Ics_Error icsAddLastInt(char     *line,
     char intStr[ICS_STRLEN_OTHER];
 
 
-    sprintf(intStr, "%ld%c", i, ICS_EOL);
+    snprintf(intStr, ICS_STRLEN_OTHER, "%ld%c", i, ICS_EOL);
     if (strlen(line) + strlen(intStr) + 1 > ICS_LINE_LENGTH)
         return IcsErr_LineOverflow;
     strcat(line, intStr);
@@ -275,9 +275,9 @@ static Ics_Error icsAddDouble(char   *line,
 
 
     if (d == 0 ||(fabs(d) < ICS_MAX_DOUBLE && fabs(d) >= ICS_MIN_DOUBLE)) {
-        sprintf(dStr, "%f%c", d, ICS_FIELD_SEP);
+        snprintf(dStr, ICS_STRLEN_OTHER, "%f%c", d, ICS_FIELD_SEP);
     } else {
-        sprintf(dStr, "%e%c", d, ICS_FIELD_SEP);
+        snprintf(dStr, ICS_STRLEN_OTHER, "%e%c", d, ICS_FIELD_SEP);
     }
     if (strlen(line) + strlen(dStr) + 1 > ICS_LINE_LENGTH)
         return IcsErr_LineOverflow;
@@ -295,9 +295,9 @@ static Ics_Error icsAddLastDouble(char   *line,
 
 
     if (d == 0 || (fabs(d) < ICS_MAX_DOUBLE && fabs(d) >= ICS_MIN_DOUBLE)) {
-        sprintf(dStr, "%f%c", d, ICS_EOL);
+        snprintf(dStr, ICS_STRLEN_OTHER, "%f%c", d, ICS_EOL);
     } else {
-        sprintf(dStr, "%e%c", d, ICS_EOL);
+        snprintf(dStr, ICS_STRLEN_OTHER, "%e%c", d, ICS_EOL);
     }
     if (strlen(line) + strlen(dStr) + 1 > ICS_LINE_LENGTH)
         return IcsErr_LineOverflow;
@@ -836,7 +836,7 @@ static Ics_Error writeIcsSensorData(Ics_Header *icsStruct,
         ICS_ADD_SENSOR_DOUBLE(ICSTOK_DETNOISEGAIN, detectorNoiseGain);
 
         for (j = 0; j < icsStruct->sensorDetectors; j++) {
-            sprintf(tag, "%d", j);
+            snprintf(tag, ICS_STRLEN_OTHER, "%d", j);
             ICS_ADD_SENSOR_DOUBLE_2INDICES(ICSTOK_DETOFFSET, detectorOffset,
                                            tag, "X", j, 0);
             ICS_ADD_SENSOR_DOUBLE_2INDICES(ICSTOK_DETOFFSET, detectorOffset,
@@ -845,12 +845,12 @@ static Ics_Error writeIcsSensorData(Ics_Header *icsStruct,
                                            tag, "Z", j, 2);
         }
         for (j = 0; j < icsStruct->sensorDetectors; j++) {
-            sprintf(tag, "%d", j);
+            snprintf(tag, ICS_STRLEN_OTHER, "%d", j);
             ICS_ADD_SENSOR_DOUBLE_INDEX(ICSTOK_DETSENS, detectorSensitivity,
                                         tag, j);
         }
         for (j = 0; j < icsStruct->sensorDetectors; j++) {
-            sprintf(tag, "%d", j);
+            snprintf(tag, ICS_STRLEN_OTHER, "%d", j);
             ICS_ADD_SENSOR_DOUBLE_INDEX(ICSTOK_DETRADIUS, detectorRadius,
                                         tag, j);
         }

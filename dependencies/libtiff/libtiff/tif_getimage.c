@@ -49,6 +49,11 @@ static const char photoTag[] = "PhotometricInterpretation";
 #define FLIP_HORIZONTALLY 0x02
 
 /*
+ * Size of buffer to hold error message
+ */
+#define EMSG_SIZE 1024
+
+/*
  * Color conversion constants. We will define display types here.
  */
 
@@ -71,14 +76,14 @@ static const TIFFDisplay display_sRGB = {
  * why it is being rejected.
  */
 int
-TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
+TIFFRGBAImageOK(TIFF* tif, char emsg[EMSG_SIZE])
 {
 	TIFFDirectory* td = &tif->tif_dir;
 	uint16 photometric;
 	int colorchannels;
 
 	if (!tif->tif_decodestatus) {
-		sprintf(emsg, "Sorry, requested compression method is not configured");
+		snprintf(emsg, EMSG_SIZE, "Sorry, requested compression method is not configured");
 		return (0);
 	}
 	switch (td->td_bitspersample) {
@@ -89,12 +94,12 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 		case 16:
 			break;
 		default:
-			sprintf(emsg, "Sorry, can not handle images with %d-bit samples",
+			snprintf(emsg, EMSG_SIZE, "Sorry, can not handle images with %d-bit samples",
 			    td->td_bitspersample);
 			return (0);
 	}
         if (td->td_sampleformat == SAMPLEFORMAT_IEEEFP) {
-                sprintf(emsg, "Sorry, can not handle images with IEEE floating-point samples");
+                snprintf(emsg, EMSG_SIZE, "Sorry, can not handle images with IEEE floating-point samples");
                 return (0);
         }
 	colorchannels = td->td_samplesperpixel - td->td_extrasamples;
@@ -107,7 +112,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 				photometric = PHOTOMETRIC_RGB;
 				break;
 			default:
-				sprintf(emsg, "Missing needed %s tag", photoTag);
+				snprintf(emsg, EMSG_SIZE, "Missing needed %s tag", photoTag);
 				return (0);
 		}
 	}
@@ -118,7 +123,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 			if (td->td_planarconfig == PLANARCONFIG_CONTIG
 			    && td->td_samplesperpixel != 1
 			    && td->td_bitspersample < 8 ) {
-				sprintf(emsg,
+				snprintf(emsg, EMSG_SIZE,
 				    "Sorry, can not handle contiguous data with %s=%d, "
 				    "and %s=%d and Bits/Sample=%d",
 				    photoTag, photometric,
@@ -142,7 +147,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 			break;
 		case PHOTOMETRIC_RGB:
 			if (colorchannels < 3) {
-				sprintf(emsg, "Sorry, can not handle RGB image with %s=%d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, can not handle RGB image with %s=%d",
 				    "Color channels", colorchannels);
 				return (0);
 			}
@@ -152,13 +157,13 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 				uint16 inkset;
 				TIFFGetFieldDefaulted(tif, TIFFTAG_INKSET, &inkset);
 				if (inkset != INKSET_CMYK) {
-					sprintf(emsg,
+					snprintf(emsg, EMSG_SIZE,
 					    "Sorry, can not handle separated image with %s=%d",
 					    "InkSet", inkset);
 					return 0;
 				}
 				if (td->td_samplesperpixel < 4) {
-					sprintf(emsg,
+					snprintf(emsg, EMSG_SIZE,
 					    "Sorry, can not handle separated image with %s=%d",
 					    "Samples/pixel", td->td_samplesperpixel);
 					return 0;
@@ -167,7 +172,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 			}
 		case PHOTOMETRIC_LOGL:
 			if (td->td_compression != COMPRESSION_SGILOG) {
-				sprintf(emsg, "Sorry, LogL data must have %s=%d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, LogL data must have %s=%d",
 				    "Compression", COMPRESSION_SGILOG);
 				return (0);
 			}
@@ -175,17 +180,17 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 		case PHOTOMETRIC_LOGLUV:
 			if (td->td_compression != COMPRESSION_SGILOG &&
 			    td->td_compression != COMPRESSION_SGILOG24) {
-				sprintf(emsg, "Sorry, LogLuv data must have %s=%d or %d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, LogLuv data must have %s=%d or %d",
 				    "Compression", COMPRESSION_SGILOG, COMPRESSION_SGILOG24);
 				return (0);
 			}
 			if (td->td_planarconfig != PLANARCONFIG_CONTIG) {
-				sprintf(emsg, "Sorry, can not handle LogLuv images with %s=%d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, can not handle LogLuv images with %s=%d",
 				    "Planarconfiguration", td->td_planarconfig);
 				return (0);
 			}
 			if ( td->td_samplesperpixel != 3 || colorchannels != 3 ) {
-                                sprintf(emsg,
+                                snprintf(emsg, EMSG_SIZE,
                                         "Sorry, can not handle image with %s=%d, %s=%d",
                                         "Samples/pixel", td->td_samplesperpixel,
                                         "colorchannels", colorchannels);
@@ -194,7 +199,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 			break;
 		case PHOTOMETRIC_CIELAB:
                         if ( td->td_samplesperpixel != 3 || colorchannels != 3 || td->td_bitspersample != 8 ) {
-                                sprintf(emsg,
+                                snprintf(emsg, EMSG_SIZE,
                                         "Sorry, can not handle image with %s=%d, %s=%d and %s=%d",
                                         "Samples/pixel", td->td_samplesperpixel,
                                         "colorchannels", colorchannels,
@@ -203,7 +208,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
                         }
 			break;
                 default:
-			sprintf(emsg, "Sorry, can not handle image with %s=%d",
+			snprintf(emsg, EMSG_SIZE, "Sorry, can not handle image with %s=%d",
 			    photoTag, photometric);
 			return (0);
 	}
@@ -262,7 +267,7 @@ isCCITTCompression(TIFF* tif)
 }
 
 int
-TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
+TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[EMSG_SIZE])
 {
 	uint16* sampleinfo;
 	uint16 extrasamples;
@@ -301,7 +306,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 		case 16:
 			break;
 		default:
-			sprintf(emsg, "Sorry, can not handle images with %d-bit samples",
+			snprintf(emsg, EMSG_SIZE, "Sorry, can not handle images with %d-bit samples",
 			    img->bitspersample);
 			goto fail_return;
 	}
@@ -351,7 +356,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 				img->photometric = PHOTOMETRIC_RGB;
 				break;
 			default:
-				sprintf(emsg, "Missing needed %s tag", photoTag);
+				snprintf(emsg, EMSG_SIZE, "Missing needed %s tag", photoTag);
                                 goto fail_return;
 		}
 	}
@@ -359,7 +364,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 		case PHOTOMETRIC_PALETTE:
 			if (!TIFFGetField(tif, TIFFTAG_COLORMAP,
 			    &red_orig, &green_orig, &blue_orig)) {
-				sprintf(emsg, "Missing required \"Colormap\" tag");
+				snprintf(emsg, EMSG_SIZE, "Missing required \"Colormap\" tag");
                                 goto fail_return;
 			}
 
@@ -369,7 +374,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 			img->greencmap = (uint16 *) _TIFFmalloc(sizeof(uint16)*n_color);
 			img->bluecmap = (uint16 *) _TIFFmalloc(sizeof(uint16)*n_color);
 			if( !img->redcmap || !img->greencmap || !img->bluecmap ) {
-				sprintf(emsg, "Out of memory for colormap copy");
+				snprintf(emsg, EMSG_SIZE, "Out of memory for colormap copy");
                                 goto fail_return;
 			}
 
@@ -383,7 +388,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 			if (planarconfig == PLANARCONFIG_CONTIG
 			    && img->samplesperpixel != 1
 			    && img->bitspersample < 8 ) {
-				sprintf(emsg,
+				snprintf(emsg, EMSG_SIZE,
 				    "Sorry, can not handle contiguous data with %s=%d, "
 				    "and %s=%d and Bits/Sample=%d",
 				    photoTag, img->photometric,
@@ -420,7 +425,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 			break;
 		case PHOTOMETRIC_RGB:
 			if (colorchannels < 3) {
-				sprintf(emsg, "Sorry, can not handle RGB image with %s=%d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, can not handle RGB image with %s=%d",
 				    "Color channels", colorchannels);
                                 goto fail_return;
 			}
@@ -430,12 +435,12 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 				uint16 inkset;
 				TIFFGetFieldDefaulted(tif, TIFFTAG_INKSET, &inkset);
 				if (inkset != INKSET_CMYK) {
-					sprintf(emsg, "Sorry, can not handle separated image with %s=%d",
+					snprintf(emsg, EMSG_SIZE, "Sorry, can not handle separated image with %s=%d",
 					    "InkSet", inkset);
                                         goto fail_return;
 				}
 				if (img->samplesperpixel < 4) {
-					sprintf(emsg, "Sorry, can not handle separated image with %s=%d",
+					snprintf(emsg, EMSG_SIZE, "Sorry, can not handle separated image with %s=%d",
 					    "Samples/pixel", img->samplesperpixel);
                                         goto fail_return;
 				}
@@ -443,7 +448,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 			break;
 		case PHOTOMETRIC_LOGL:
 			if (compress != COMPRESSION_SGILOG) {
-				sprintf(emsg, "Sorry, LogL data must have %s=%d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, LogL data must have %s=%d",
 				    "Compression", COMPRESSION_SGILOG);
                                 goto fail_return;
 			}
@@ -453,12 +458,12 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 			break;
 		case PHOTOMETRIC_LOGLUV:
 			if (compress != COMPRESSION_SGILOG && compress != COMPRESSION_SGILOG24) {
-				sprintf(emsg, "Sorry, LogLuv data must have %s=%d or %d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, LogLuv data must have %s=%d or %d",
 				    "Compression", COMPRESSION_SGILOG, COMPRESSION_SGILOG24);
                                 goto fail_return;
 			}
 			if (planarconfig != PLANARCONFIG_CONTIG) {
-				sprintf(emsg, "Sorry, can not handle LogLuv images with %s=%d",
+				snprintf(emsg, EMSG_SIZE, "Sorry, can not handle LogLuv images with %s=%d",
 				    "Planarconfiguration", planarconfig);
 				return (0);
 			}
@@ -469,7 +474,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 		case PHOTOMETRIC_CIELAB:
 			break;
 		default:
-			sprintf(emsg, "Sorry, can not handle image with %s=%d",
+			snprintf(emsg, EMSG_SIZE, "Sorry, can not handle image with %s=%d",
 			    photoTag, img->photometric);
                         goto fail_return;
 	}
@@ -480,12 +485,12 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
 	    !(planarconfig == PLANARCONFIG_SEPARATE && img->samplesperpixel > 1);
 	if (img->isContig) {
 		if (!PickContigCase(img)) {
-			sprintf(emsg, "Sorry, can not handle image");
+			snprintf(emsg, EMSG_SIZE, "Sorry, can not handle image");
 			goto fail_return;
 		}
 	} else {
 		if (!PickSeparateCase(img)) {
-			sprintf(emsg, "Sorry, can not handle image");
+			snprintf(emsg, EMSG_SIZE, "Sorry, can not handle image");
 			goto fail_return;
 		}
 	}
@@ -520,7 +525,7 @@ TIFFReadRGBAImageOriented(TIFF* tif,
 			  uint32 rwidth, uint32 rheight, uint32* raster,
 			  int orientation, int stop)
 {
-    char emsg[1024] = "";
+    char emsg[EMSG_SIZE] = "";
     TIFFRGBAImage img;
     int ok;
 
@@ -2884,7 +2889,7 @@ int
 TIFFReadRGBAStripExt(TIFF* tif, uint32 row, uint32 * raster, int stop_on_error)
 
 {
-    char 	emsg[1024] = "";
+    char 	emsg[EMSG_SIZE] = "";
     TIFFRGBAImage img;
     int 	ok;
     uint32	rowsperstrip, rows_to_read;
@@ -2942,7 +2947,7 @@ TIFFReadRGBATile(TIFF* tif, uint32 col, uint32 row, uint32 * raster)
 int
 TIFFReadRGBATileExt(TIFF* tif, uint32 col, uint32 row, uint32 * raster, int stop_on_error )
 {
-    char 	emsg[1024] = "";
+    char 	emsg[EMSG_SIZE] = "";
     TIFFRGBAImage img;
     int 	ok;
     uint32	tile_xsize, tile_ysize;
