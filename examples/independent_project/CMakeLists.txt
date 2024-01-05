@@ -10,7 +10,7 @@
 #
 #    cmake ~/src/diplib/examples/independent_project/ -DCMAKE_PREFIX_PATH=~/.local/
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5...3.28)
 
 project(fileviewer)
 

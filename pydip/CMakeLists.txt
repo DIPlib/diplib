@@ -16,10 +16,7 @@
 
 
 # CMakeLists file for DIPlib 3
-cmake_minimum_required(VERSION 3.5)
-if(POLICY CMP0068)
-   cmake_policy(SET CMP0068 NEW)
-endif()
+cmake_minimum_required(VERSION 3.5...3.28)
 
 project(PyDIP)
 

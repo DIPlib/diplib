@@ -1,7 +1,7 @@
 # CMake script for libjpeg 9c
 # (c)2019 Cris Luengo
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5...3.28)
 
 project(libjpeg LANGUAGES C VERSION 9.3.0)
 
