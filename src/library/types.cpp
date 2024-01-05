@@ -146,6 +146,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
       DOCTEST_CHECK( b.sum() == 63 );
    }
 
+   #if defined(__GNUG__) && !defined( __clang__ )
+      // Compiling these tests with GCC-10 and later gives a bogus warning:
+      //    'void* __builtin_memset(void*, int, long unsigned int)' specified bound 18446744073709551612 exceeds maximum object size 9223372036854775807
+      #pragma GCC diagnostic push
+      #if ( __GNUC__ >= 10 )
+         #pragma GCC diagnostic ignored "-Wstringop-overflow="
+      #endif
+   #endif
+
    DOCTEST_SUBCASE("pushing, popping") {
       a.push_back( 1 );
       DOCTEST_CHECK( a.size() == 7 );
@@ -183,6 +192,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
       a.clear();
       DOCTEST_CHECK( a.size() == 0 );
    }
+
+   #if defined(__GNUG__) && !defined( __clang__ )
+      #pragma GCC diagnostic pop
+   #endif
 
    DOCTEST_SUBCASE("indexing") {
       DOCTEST_CHECK( a[ 3 ] == 8 );

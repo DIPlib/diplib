@@ -20,6 +20,12 @@
 #include "diplib/distribution.h"
 #include "diplib/lookup_table.h"
 
+#if defined(__clang__)
+// Clang gives a bogus diagnostic here for `py::self -= py::self`
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
+
 namespace pybind11 {
 namespace detail {
 
@@ -318,3 +324,7 @@ void init_histogram( py::module& m ) {
           "without modification." );
 
 }
+
+#if defined(__clang__)
+   #pragma GCC diagnostic pop
+#endif

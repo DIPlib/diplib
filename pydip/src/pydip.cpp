@@ -19,6 +19,12 @@
 #include "diplib/neighborlist.h"
 #include "diplib/multithreading.h"
 
+#if defined(__clang__)
+   // Clang gives a bogus diagnostic here for `py::self -= py::self`
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
+
 static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how can I work with logical Python buffers?" );
 
 namespace {
@@ -255,3 +261,7 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    init_assorted( m );
 
 }
+
+#if defined(__clang__)
+   #pragma GCC diagnostic pop
+#endif
