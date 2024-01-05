@@ -9,10 +9,16 @@ title: "Changes DIPlib 3.x.x"
 
 - Added `"Oklab"`, `"Oklch"`, `"Y'PbPr"` and `"Y'CbCr"` as color spaces.
 
+- Added `dip::Distribution::ConstSample` as an unmutable version of `dip::Distribution::Sample`.
+
 ### Changed functionality
 
 - The 'diverging' color map in `dip::ApplyColorMap()` switched from CET-D08 to CET-D07 (i.e. using yellow
   instead of red for positive values).
+
+- `dip::Distribution::Iterator` is now a template class that takes either `dip::Distribution::Sample` or
+  `dip::Distribution::ConstSample` as argument. `dip::Distribution::MutableIterator` and `dip::Distribution::ConstIterator`
+  are two template specializations, the first one replaces the use of `dip::Distribution::Iterator`.
 
 ### Bug fixes
 
@@ -24,6 +30,9 @@ title: "Changes DIPlib 3.x.x"
 
 - `dip::SeededWatershed()` and `dip::CompactWatershed()` discarded the `seeds` input image when it was the same
   as the `out` image (when the caller intended for the algorithm to work in-place).
+
+- Member functions of `dip::Distribution` return `ConstSample` or `ConstIterator` when the distribution object
+  is const. See [issue #135](https://github.com/DIPlib/diplib/issues/138).
 
 
 
