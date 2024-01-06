@@ -161,8 +161,8 @@ JNIEXPORT jobject JNICALL Java_org_diplib_Image_Origin( JNIEnv *env, jobject, jl
    n *= image->DataType().SizeOf();
    
    n -= (size_t)offset;
-   if (n > (1L<<31)-1)
-     n = (1L<<31)-1;
+   if (n > (1LL<<31)-1)
+     n = (1LL<<31)-1;
    
    return env->NewDirectByteBuffer( (void*) ( ( (char*) image->Origin() ) + offset ), (jlong) n );
 }

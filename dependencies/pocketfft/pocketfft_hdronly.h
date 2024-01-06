@@ -227,7 +227,7 @@ template<typename T> class arr
   };
 
 template<typename T> struct cmplx {
-  T r, i;
+  T r{}, i{};
   cmplx() {}
   cmplx(T r_, T i_) : r(r_), i(i_) {}
   void Set(T r_, T i_) { r=r_; i=i_; }

@@ -57,7 +57,7 @@ ThinPlateSpline::ThinPlateSpline(
    dip::sint nDims = static_cast< dip::sint >( c_[ 0 ].size() );
 
    // Create matrices L and b
-   DIP_ASSERT( value.size() == nPoints );
+   DIP_ASSERT( value.size() == c_.size() );
    dip::sint N = nPoints + nDims + 1;
    Eigen::MatrixXd L( N, N );
    L.fill( 0 );
