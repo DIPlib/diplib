@@ -173,7 +173,7 @@ void GLUTManager::run()
 WindowPtr GLUTManager::getCurrentWindow()
 {
   WindowMap::iterator it = windows_.find((void*)(intptr_t)glutGetWindow());
-  if (it != windows_.end())
+  if (it != windows_.end() && !it->second->destroyed())
     return it->second;
   else
     return NULL;

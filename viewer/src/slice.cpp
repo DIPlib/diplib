@@ -609,6 +609,14 @@ SliceViewer::SliceViewer(const dip::Image &image, std::string name, dip::uint wi
 
 void SliceViewer::create()
 {
+  if (continue_)
+  {
+    // Deal with recreating OpenGL context
+    continue_ = false;
+    thread_.join();
+    updated_ = false;
+  }
+
   setWindowTitle("");
   
   continue_ = true;

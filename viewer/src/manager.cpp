@@ -86,7 +86,11 @@ void Window::key(unsigned char k, int /*x*/, int /*y*/, int mods)
     if (mods == KEY_MOD_CONTROL)
       destroy();
     else if (mods == (KEY_MOD_CONTROL | KEY_MOD_SHIFT))
+    {
+      // Cannot destroy own window under lock, so do it here first
+      destroy();
       manager()->destroyWindows();
+    }
   }
 }
 

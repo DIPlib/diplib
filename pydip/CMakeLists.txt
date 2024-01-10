@@ -99,6 +99,7 @@ if(TARGET DIPviewer)
 
    # Build PyDIPviewer
    pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
+   target_include_directories(PyDIPviewer PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
    target_link_libraries(PyDIPviewer PRIVATE DIP DIPviewer)
    set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "${rpath}")
 

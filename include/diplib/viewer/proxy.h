@@ -184,6 +184,9 @@ class DIPVIEWER_CLASS_EXPORT ProxyManager : public Manager {
             refresh_window_callbacks_.erase( window );
             create_window_callbacks_.erase( window );
          }
+         
+         if (wdw)
+            wdw->destroy();
       }
 
       // Events

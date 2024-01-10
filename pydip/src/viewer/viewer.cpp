@@ -18,7 +18,7 @@
 #include "dipviewer.h"
 #include "diplib/viewer/slice.h"
 
-#include <pybind11/pybind11.h>
+#include "pydip.h"
 
 using namespace pybind11::literals;
 namespace py = pybind11;

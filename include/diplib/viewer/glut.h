@@ -107,6 +107,7 @@ class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager {
          WindowPtr window = instance_->getCurrentWindow();
          if( window ) {
             window->close();
+            window->destroy();
             instance_->windows_.erase( window->id() );
          }
       }

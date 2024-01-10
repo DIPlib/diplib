@@ -141,7 +141,7 @@ void GLFWManager::processEvents()
 WindowPtr GLFWManager::getWindow(GLFWwindow *window)
 {
   WindowMap::iterator it = windows_.find((void*)window);
-  if (it != windows_.end())
+  if (it != windows_.end() && !it->second.wdw->destroyed())
     return it->second.wdw;
   else
     return NULL;

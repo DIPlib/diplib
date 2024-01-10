@@ -5,6 +5,7 @@ src/__init__.py.in
 src/__main__.py
 src/analysis.cpp
 src/assorted.cpp
+src/dipview.py
 src/filtering.cpp
 src/generation.cpp
 src/histogram.cpp

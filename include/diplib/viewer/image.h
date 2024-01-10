@@ -125,8 +125,12 @@ class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer {
       ImageViewer& operator=( ImageViewer const& ) = delete;
       ImageViewer& operator=( ImageViewer&& ) = delete;
 
-      ~ImageViewer() override {
-         delete viewport_;
+      void release() override {
+         if (viewport_)
+         {
+            delete viewport_;
+            viewport_ = nullptr;
+         }
       }
 
       ViewingOptions& options() override { return options_; }

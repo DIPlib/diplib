@@ -65,7 +65,10 @@ class DIPVIEWER_CLASS_EXPORT Window {
       DIPVIEWER_EXPORT void refresh();
 
       /// \brief Marks the window for destruction.
-      void destroy() { destroyed_ = true; }
+      void destroy() {
+         destroyed_ = true;
+         release();
+      }
 
       /// \brief Returns whether the window is marked for destruction.
       ///
@@ -115,6 +118,9 @@ class DIPVIEWER_CLASS_EXPORT Window {
             height_ = ( int )height;
          }
       }
+
+      /// \brief Release any resources held or referenced by this window.
+      virtual void release() { }
 
       /// Overridable callback that draws the visualization.
       virtual void draw() {}

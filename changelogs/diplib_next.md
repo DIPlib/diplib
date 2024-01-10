@@ -59,6 +59,8 @@ title: "Changes DIPlib 3.x.x"
 
 - `joinchannels` produced an error if the first input image was a MATLAB array rather than a `dip_image` object.
 
+- Dragging `viewslice` windows between screens no longer causes MATLAB to crash.
+
 (See also bugfixes to *DIPlib*.)
 
 
@@ -83,6 +85,8 @@ title: "Changes DIPlib 3.x.x"
 
 ### New functionality
 
+- Added `dipview` entry point.
+
 ### Changed functionality
 
 - The "RGB" display will convert the colors in the image to sRGB, rather than linear RGB, to match
@@ -90,6 +94,10 @@ title: "Changes DIPlib 3.x.x"
 
 ### Bug fixes
 
+- `SliceViewer` properties given as `DimensionArray`s are now properly converted to Python buffers
+  again.
+- Maintaining a `SliceViewer` handle after a window has been closed no longer
+  causes a crash.
 
 
 

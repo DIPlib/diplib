@@ -107,7 +107,7 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
       SliceViewer& operator=( SliceViewer const& ) = delete;
       SliceViewer& operator=( SliceViewer&& ) = delete;
 
-      ~SliceViewer() override {
+      void release() override {
          if( continue_ ) {
             continue_ = false;
             thread_.join();
@@ -116,6 +116,8 @@ class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer {
          for( dip::uint ii = 0; ii < viewports_.size(); ++ii ) {
             delete viewports_[ ii ];
          }
+         
+         viewports_.clear();
       }
 
       std::shared_ptr< SliceViewer > clone() {
