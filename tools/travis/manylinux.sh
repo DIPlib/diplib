@@ -6,7 +6,6 @@ yum -y install wget freeglut-devel java-1.8.0-openjdk-devel.x86_64
 /opt/python/cp39-cp39/bin/python -m pip install cmake auditwheel
 export CMAKE=/opt/python/cp39-cp39/lib/python3.9/site-packages/cmake/data/bin/cmake
 export BUILD_THREADS=2
-export AUDITWHEEL=`pwd`/diplib/tools/travis/auditwheel
 
 # Clone diplib repository
 git clone https://github.com/diplib/diplib
@@ -23,34 +22,34 @@ export PYTHON=cp38-cp38
 export PYTHON_VERSION=3.8
 $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/python/$PYTHON/bin/python
 make -j $BUILD_THREADS bdist_wheel
-/opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
+auditwheel repair --exclude libjvm.so pydip/staging/dist/*.whl
 
 # Python 3.9
 export PYTHON=cp39-cp39
 export PYTHON_VERSION=3.9
 $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/python/$PYTHON/bin/python
 make -j $BUILD_THREADS bdist_wheel
-/opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
+auditwheel repair --exclude libjvm.so pydip/staging/dist/*.whl
 
 # Python 3.10
 export PYTHON=cp310-cp310
 export PYTHON_VERSION=3.10
 $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/python/$PYTHON/bin/python
 make -j $BUILD_THREADS bdist_wheel
-/opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
+auditwheel repair --exclude libjvm.so pydip/staging/dist/*.whl
 
 # Python 3.11
 export PYTHON=cp311-cp311
 export PYTHON_VERSION=3.11
 $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/python/$PYTHON/bin/python
 make -j $BUILD_THREADS bdist_wheel
-/opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
+auditwheel repair --exclude libjvm.so pydip/staging/dist/*.whl
 
 # Python 3.12
 export PYTHON=cp312-cp312
 export PYTHON_VERSION=3.12
 $CMAKE .. -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION -DPYTHON_EXECUTABLE=/opt/python/$PYTHON/bin/python
 make -j $BUILD_THREADS bdist_wheel
-/opt/python/cp39-cp39/bin/python $AUDITWHEEL repair pydip/staging/dist/*.whl
+auditwheel repair --exclude libjvm.so pydip/staging/dist/*.whl
 
 mv wheelhouse /io
