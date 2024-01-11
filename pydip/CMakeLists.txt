@@ -36,7 +36,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../tools/update_deps_file.cmake)
 
 # Python
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../dependencies/pybind11/tools")
-set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.11 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
+set(Python_ADDITIONAL_VERSIONS ${PYBIND11_PYTHON_VERSION} 3.12 3.11 3.10 3.9 3.8 3.7 3.6 3.5) # TODO: This line will need to be updated when new versions of Python are released
 # CMake 3.5 knows about Python 3.6 and older, but by adding these version numbers here we make sure Python3 is found over Python2.
 find_package(PythonLibsNew REQUIRED)
 

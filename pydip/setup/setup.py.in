@@ -60,7 +60,7 @@ setup_kwargs = dict(
     packages=['diplib'],
     ext_modules=[Extension('diplib.PyDIP_bin', [])],
     package_data={'diplib': libraries},
-    entry_points={'console_scripts': ['dipview = diplib.dipview:main']},
+    entry_points={'gui_scripts': ['dipview = diplib.dipview:main']},
     python_requires='>=3.6'
 )
 
